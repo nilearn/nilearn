@@ -1,4 +1,4 @@
-//Created using https://unminify.com/ on the brainsprite.min.js (that nilearn uses)
+//now manually updated to maintain variable names to see the diff
 
 function brainsprite(d) {
     function a(f, e) {
@@ -24,6 +24,8 @@ function brainsprite(d) {
         sizeCrosshair: 0.9,
         title: false,
         numSlice: false,
+        radiological: false,
+        showLR: false,
     };
     var b = Object.assign({}, c, d);
     if (typeof b.affine === "boolean" && b.affine === false) {
@@ -282,6 +284,30 @@ function brainsprite(d) {
                     e = b.context.measureText(i).width;
                     b.context.fillText(i, b.widthCanvas.X + b.widthCanvas.Y / 2 - e / 2, Math.round(b.canvas.height - b.sizeFontPixels / 2));
                 }
+                if (typeof b.showLR !== "undefined" && b.showLR) {
+                    var isRadiological = b.radiological || false;
+                    var fontSize = Math.round(1 * b.sizeFontPixels);
+                    var centerY = Math.round(b.canvas.height / 2);
+                    var prevFont = b.context.font;
+                    var prevAlign = b.context.textAlign;
+                    var prevBaseline = b.context.textBaseline;
+            
+                    b.context.font = fontSize + "px Arial";
+                    b.context.textAlign = "center";
+                    b.context.textBaseline = "middle";
+                    b.context.fillStyle = b.colorFont;
+            
+                    var labelLeft = isRadiological ? "R" : "L";
+                    var labelRight = isRadiological ? "L" : "R";
+                    b.context.fillText(labelLeft, b.widthCanvas.X + 40, centerY);
+                    b.context.fillText(labelRight, b.widthCanvas.X + b.widthCanvas.Y - 40, centerY);
+            
+                    b.context.font = prevFont;
+                    b.context.textAlign = prevAlign;
+                    b.context.textBaseline = prevBaseline;
+                }
+                break;
+                
             case "Z":
                 b.context.fillStyle = b.colorBackground;
                 b.context.fillRect(b.widthCanvas.X + b.widthCanvas.Y, 0, b.widthCanvas.Z, b.canvas.height);
@@ -302,6 +328,29 @@ function brainsprite(d) {
                     b.context.fillStyle = b.colorFont;
                     b.context.fillText(i, b.widthCanvas.X + b.widthCanvas.Y + b.widthCanvas.Z / 2 - e / 2, Math.round(b.canvas.height - b.sizeFontPixels / 2));
                 }
+                if (typeof b.showLR !== "undefined" && b.showLR) {
+                    var isRadiological = b.radiological || false;
+                    var fontSize = Math.round(1 * b.sizeFontPixels);
+                    var centerY = Math.round(b.canvas.height / 2);
+                    var prevFont = b.context.font;
+                    var prevAlign = b.context.textAlign;
+                    var prevBaseline = b.context.textBaseline;
+            
+                    b.context.font = fontSize + "px Arial";
+                    b.context.textAlign = "center";
+                    b.context.textBaseline = "middle";
+                    b.context.fillStyle = b.colorFont;
+            
+                    var labelLeft = isRadiological ? "R" : "L";
+                    var labelRight = isRadiological ? "L" : "R";
+                    b.context.fillText(labelLeft, b.widthCanvas.X + b.widthCanvas.Y + 35, centerY);
+                    b.context.fillText(labelRight, b.widthCanvas.X + b.widthCanvas.Y + b.widthCanvas.Z - 35, centerY);
+            
+                    b.context.font = prevFont;
+                    b.context.textAlign = prevAlign;
+                    b.context.textBaseline = prevBaseline;
+                }
+                break;
         }
     };
     b.clickBrain = function (h) {
