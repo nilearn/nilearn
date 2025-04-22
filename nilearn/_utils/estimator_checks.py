@@ -40,7 +40,8 @@ from nilearn.conftest import (
     _rng,
     _shape_3d_default,
 )
-from nilearn.maskers import NiftiSpheresMasker
+from nilearn.maskers import NiftiMasker, NiftiSpheresMasker, SurfaceMasker
+from nilearn.masking import load_mask_img
 from nilearn.regions import RegionExtractor
 from nilearn.reporting.tests.test_html_report import _check_html
 from nilearn.surface import SurfaceImage
@@ -324,6 +325,7 @@ def nilearn_check_estimator(estimator):
             clone(estimator),
             check_masker_fit_with_non_finite_in_mask,
         )
+        yield (clone(estimator), check_masker_mask_binary)
         yield (clone(estimator), check_masker_smooth)
 
         if not is_multimasker(estimator):
@@ -422,6 +424,9 @@ def check_estimator_has_sklearn_is_fitted(estimator):
 
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         check_is_fitted(estimator)
+
+
+# ------------------ MASKER CHECKS ------------------
 
 
 def check_masker_fitted(estimator):
@@ -544,6 +549,42 @@ def check_masker_compatibility_mask_image(estimator):
         assert isinstance(estimator.mask_img_, Nifti1Image)
     else:
         assert isinstance(estimator.mask_img_, SurfaceImage)
+
+
+def check_masker_mask_binary(estimator):
+    """Check maskers mask_img_ post fit is valid.
+
+    Maskers should be fittable even when passing a non-binary image as mask.
+
+    whether a mask is passed at construction or not,
+    then mask_img_ should be binary after fit.
+    """
+    if accept_niimg_input(estimator):
+        binary_mask_img = _img_mask_mni()
+        # non_binary_mask_img = _img_3d_mni()
+        input_img = _img_3d_mni()
+    else:
+        binary_mask_img = _make_surface_mask()
+        # non_binary_mask_img = _make_surface_img()
+        input_img = _make_surface_img()
+
+    estimator.fit([input_img, input_img])
+
+    # Only (Multi)NiftiMasker and SurfaceMasker
+    # have a non None mask_img_ after fitting some input image
+    if mask_img_ := estimator.mask_img_:
+        assert isinstance(estimator, (NiftiMasker, SurfaceMasker))
+
+        if accept_niimg_input(estimator):
+            assert isinstance(mask_img_, Nifti1Image)
+        else:
+            assert isinstance(mask_img_, SurfaceImage)
+
+        load_mask_img(mask_img_)
+
+    estimator = clone(estimator)
+    estimator.mask_img = binary_mask_img
+    estimator.fit()
 
 
 def check_masker_clean(estimator):

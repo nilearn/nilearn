@@ -161,12 +161,11 @@ class SurfaceMasker(_BaseSurfaceMasker):
             img = [img]
         img = concat_imgs(img)
 
-        # TODO: don't store a full array of 1 to mean "no masking"; use some
-        # sentinel value
-        mask_data = {
-            part: np.ones((v.n_vertices, 1), dtype=bool)
-            for (part, v) in img.mesh.parts.items()
-        }
+        mask_data = {}
+        for part, v in img.data.parts.items():
+            non_finite_mask = np.logical_not(np.isfinite(v))
+            v[non_finite_mask] = 0
+            mask_data[part] = v.astype("bool").all(axis=1)
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
     @rename_parameters(
