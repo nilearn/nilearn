@@ -118,7 +118,8 @@ def _threshold_data(data, threshold=None):
 
 
 def _save_sprite(
-    data, output_sprite, vmax, vmin, mask=None, cmap="Greys", format="png",radiological=False,
+    data, output_sprite, vmax, vmin, mask=None, cmap="Greys", format="png",
+    radiological=False,
 ):
     """Generate a sprite from a 3D Niimg-like object.
 
@@ -400,7 +401,6 @@ def _json_view_data(
     cmap,
     colorbar,
     radiological,
-    show_lr,
 ):
     """Create a json-like viewer object, and populate with base64 data.
 
@@ -424,7 +424,8 @@ def _json_view_data(
     bg_sprite = BytesIO()
     bg_data = safe_get_data(bg_img, ensure_finite=True).astype(float)
     bg_mask, bg_cmap = _get_bg_mask_and_cmap(bg_img, black_bg)
-    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, "png",radiological)
+    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, "png",
+                 radiological)
     json_view["bg_base64"] = _bytes_io_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
