@@ -470,7 +470,7 @@ class NiftiLabelsMasker(BaseMasker):
             )
             warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
-            display = plotting.plot_roi(labels_image, cmap=self.lut_)
+            display = plotting.plot_roi(labels_image)
             plt.close()
 
         # If we have a mask, show its contours
