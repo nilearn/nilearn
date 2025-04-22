@@ -1598,28 +1598,21 @@ class InMemoryMesh(SurfaceMesh):
         """Compute area of mesh.
 
         Get the vertex coordinates for each face
-         Compute vectors for two edges of the triangle
-         Compute the cross product of the two edge vectors
-         Area of triangle = 0.5 * norm of cross product
+        Compute vectors for two edges of the triangle
+        Compute the cross product of the two edge vectors
+        Area of triangle = 0.5 * norm of cross product
         """
-        total_area = 0.0
-        for face in self.faces:
-            v0, v1, v2 = (
-                self.coordinates[face[0]],
-                self.coordinates[face[1]],
-                self.coordinates[face[2]],
-            )
-
-            edge1 = v1 - v0
-            edge2 = v2 - v0
-
-            cross_prod = np.cross(edge1, edge2)
-
-            area = 0.5 * np.linalg.norm(cross_prod)
-
-            total_area += area
-
-        return total_area
+        (idx0, idx1, idx2) = self.faces.T
+        (v0, v1, v2) = (
+            self.coordinates[idx0],
+            self.coordinates[idx1],
+            self.coordinates[idx2],
+        )
+        edge1 = v1 - v0
+        edge2 = v2 - v0
+        cross_prod = np.cross(edge1, edge2)
+        area = 0.5 * np.sqrt(np.sum(cross_prod**2, axis=1))
+        return np.sum(area)
 
     def __iter__(self):
         return iter([self.coordinates, self.faces])
