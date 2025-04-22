@@ -1,3 +1,10 @@
+"""Functions specific to "matplotlib" backend for surface visualization
+functions in :obj:`~nilearn.plotting.surface.surf_plotting`.
+
+Any imports from "matplotlib" package, or "matplotlib" engine specific utility
+functions in :obj:`~nilearn.plotting.surface` should be in this file.
+"""
+
 from warnings import warn
 
 import numpy as np
@@ -11,9 +18,9 @@ from nilearn.plotting._utils import (
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.surface._backend import (
     BaseSurfaceBackend,
-    _check_hemispheres,
-    _check_surf_map,
-    _check_views,
+    check_hemispheres,
+    check_surf_map,
+    check_views,
 )
 from nilearn.surface import load_surf_data
 
@@ -117,7 +124,7 @@ def _colorbar_from_array(
     return sm
 
 
-def _compute_facecolors_matplotlib(bg_map, faces, n_vertices, darkness, alpha):
+def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
     """Help for plot_surf with matplotlib engine.
 
     This function computes the facecolors.
@@ -160,7 +167,7 @@ def _compute_facecolors_matplotlib(bg_map, faces, n_vertices, darkness, alpha):
     return face_colors
 
 
-def _compute_surf_map_faces_matplotlib(
+def _compute_surf_map_faces(
     surf_map, faces, avg_method, n_vertices, face_colors_size
 ):
     """Help for plot_surf.
@@ -174,7 +181,7 @@ def _compute_surf_map_faces_matplotlib(
         vertex-colour maps.
 
     """
-    surf_map_data = _check_surf_map(surf_map, n_vertices)
+    surf_map_data = check_surf_map(surf_map, n_vertices)
 
     # create face values from vertex values by selected avg methods
     error_message = (
@@ -229,7 +236,7 @@ def _get_bounds(data, vmin=None, vmax=None):
     return vmin, vmax
 
 
-def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
+def _get_cmap(cmap, vmin, vmax, cbar_tick_format, threshold=None):
     """Help for plot_surf with matplotlib engine.
 
     This function returns the colormap.
@@ -254,7 +261,7 @@ def _get_cmap_matplotlib(cmap, vmin, vmax, cbar_tick_format, threshold=None):
     return our_cmap, norm
 
 
-def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold):
+def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
     """Help for plot_surf with matplotlib engine.
 
     This function computes the tick values for the colorbar.
@@ -269,14 +276,14 @@ def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold):
         return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
 
 
-def _get_view_plot_surf_matplotlib(hemi, view):
+def _get_view_plot_surf(hemi, view):
     """Help function for plot_surf with matplotlib engine.
 
     This function checks the selected hemisphere and view, and
     returns elev and azim.
     """
-    _check_views([view])
-    _check_hemispheres([hemi])
+    check_views([view])
+    check_hemispheres([hemi])
     if isinstance(view, str):
         if hemi == "both" and view in ["lateral", "medial"]:
             raise ValueError(
@@ -321,9 +328,10 @@ def _threshold_and_rescale(data, threshold, vmin, vmax):
     return data_copy, _threshold(data, threshold, vmin, vmax), vmin, vmax
 
 
-class MatplotlibBackend(BaseSurfaceBackend):
-    def _check_backend_params(self, params):
-        pass
+class MatplotlibSurfaceBackend(BaseSurfaceBackend):
+    @property
+    def name(self):
+        return "matplotlib"
 
     def _plot_surf(
         self,
@@ -334,7 +342,7 @@ class MatplotlibBackend(BaseSurfaceBackend):
         hemi="left",
         view=None,
         cmap=None,
-        symmetric_cmap=False,
+        symmetric_cmap=None,
         colorbar=True,
         avg_method=None,
         threshold=None,
@@ -347,27 +355,31 @@ class MatplotlibBackend(BaseSurfaceBackend):
         cbar_vmax=None,
         cbar_tick_format="auto",
         title=None,
-        title_font_size=18,
+        title_font_size=None,
         output_file=None,
         axes=None,
         figure=None,
     ):
-        self._check_backend_params(locals())
+        parameters_not_implemented_in_matplotlib = {
+            "symmetric_cmap": symmetric_cmap,
+            "title_font_size": title_font_size,
+        }
 
-        # setting defaults
-        if avg_method is None:
-            avg_method = "mean"
-        if alpha is None:
-            alpha = "auto"
+        self._check_engine_params(parameters_not_implemented_in_matplotlib)
 
-        if cbar_tick_format == "auto":
-            cbar_tick_format = "%.2g"
+        # adjust values
+        avg_method = "mean" if avg_method is None else avg_method
+        alpha = "auto" if alpha is None else alpha
+        cbar_tick_format = (
+            "%.2g" if cbar_tick_format == "auto" else cbar_tick_format
+        )
+        # Leave space for colorbar
+        figsize = [4.7, 5] if colorbar else [4, 5]
 
-        _default_figsize = [4, 5]
         limits = [coords.min(), coords.max()]
 
         # Get elevation and azimut from view
-        elev, azim = _get_view_plot_surf_matplotlib(hemi, view)
+        elev, azim = _get_view_plot_surf(hemi, view)
 
         # if no cmap is given, set to matplotlib default
         if cmap is None:
@@ -376,10 +388,6 @@ class MatplotlibBackend(BaseSurfaceBackend):
         elif isinstance(cmap, str):
             cmap = plt.get_cmap(cmap)
 
-        figsize = _default_figsize
-        # Leave space for colorbar
-        if colorbar:
-            figsize[0] += 0.7
         # initiate figure and 3d axes
         if axes is None:
             if figure is None:
@@ -418,11 +426,11 @@ class MatplotlibBackend(BaseSurfaceBackend):
         # reduce viewing distance to remove space around mesh
         axes.set_box_aspect(None, zoom=1.3)
 
-        bg_face_colors = _compute_facecolors_matplotlib(
+        bg_face_colors = _compute_facecolors(
             bg_map, faces, coords.shape[0], darkness, alpha
         )
         if surf_map is not None:
-            surf_map_faces = _compute_surf_map_faces_matplotlib(
+            surf_map_faces = _compute_surf_map_faces(
                 surf_map,
                 faces,
                 avg_method,
@@ -446,10 +454,10 @@ class MatplotlibBackend(BaseSurfaceBackend):
             if colorbar:
                 cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
                 cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
-                ticks = _get_ticks_matplotlib(
+                ticks = _get_ticks(
                     cbar_vmin, cbar_vmax, cbar_tick_format, threshold
                 )
-                our_cmap, norm = _get_cmap_matplotlib(
+                our_cmap, norm = _get_cmap(
                     cmap, vmin, vmax, cbar_tick_format, threshold
                 )
                 bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)

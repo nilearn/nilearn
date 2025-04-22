@@ -1,10 +1,7 @@
-# ruff: noqa: ARG001
-
-from unittest import mock
+"""Test nilearn.plotting.surface._plotly_backend functions."""
 
 import numpy as np
 import pytest
-from matplotlib.figure import Figure
 
 from nilearn._utils.helpers import is_kaleido_installed
 from nilearn.plotting import (
@@ -13,28 +10,19 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.surface._plotly_backend import (
-    _configure_title_plotly,
+    _configure_title,
     _get_camera_view_from_elevation_and_azimut,
     _get_camera_view_from_string_view,
-    _get_view_plot_surf_plotly,
+    _get_view_plot_surf,
 )
 
 ENGINE = "plotly"
 
 pytest.importorskip(
     ENGINE,
-    reason="Plotly is not installed. It is required to run the tests!",
+    reason="Plotly is not installed; required to run the tests!",
 )
-
-try:
-    import IPython.display  # noqa:F401
-except ImportError:
-    IPYTHON_INSTALLED = False
-else:
-    IPYTHON_INSTALLED = True
-
 
 EXPECTED_CAMERAS_PLOTLY = [
     (
@@ -171,9 +159,12 @@ EXPECTED_CAMERAS_PLOTLY = [
 
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
-def test_get_view_plot_surf_plotly(full_view):
+def test_get_view_plot_surf(full_view):
+    """Test if nilearn.plotting.surface._plotly_backend._get_view_plot_surf
+    returns expected values.
+    """
     hemi, view_name, (elev, azim), expected_camera_view = full_view
-    camera_view = _get_view_plot_surf_plotly(hemi, view_name)
+    camera_view = _get_view_plot_surf(hemi, view_name)
     camera_view_string = _get_camera_view_from_string_view(hemi, view_name)
     camera_view_elev_azim = _get_camera_view_from_elevation_and_azimut(
         (elev, azim)
@@ -199,29 +190,36 @@ def test_get_view_plot_surf_plotly(full_view):
 
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
 def test_get_view_plot_surf_hemisphere_errors(hemi, view):
+    """Test nilearn.plotting.surface._plotly_backend._get_view_plot_surf
+    for invalid hemisphere values.
+    """
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
-        _get_view_plot_surf_plotly(hemi, view)
+        _get_view_plot_surf(hemi, view)
 
 
 @pytest.mark.parametrize(
-    "hemi,view,f",
+    "hemi,view",
     [
-        ("left", "foo", _get_view_plot_surf_plotly),
-        ("right", "bar", _get_view_plot_surf_plotly),
-        ("both", "lateral", _get_view_plot_surf_plotly),
-        ("both", "medial", _get_view_plot_surf_plotly),
-        ("both", "foo", _get_view_plot_surf_plotly),
+        ("left", "foo"),
+        ("right", "bar"),
+        ("both", "lateral"),
+        ("both", "medial"),
+        ("both", "foo"),
     ],
 )
-def test_get_view_plot_surf_view_errors(hemi, view, f):
+def test_get_view_plot_surf_view_errors(hemi, view):
+    """Test nilearn.plotting.surface._plotly_backend._get_view_plot_surf
+    for invalid view values.
+    """
     with pytest.raises(ValueError, match="Invalid view definition"):
-        f(hemi, view)
+        _get_view_plot_surf(hemi, view)
 
 
-def test_configure_title_plotly():
-    assert _configure_title_plotly(None, None) == {}
-    assert _configure_title_plotly(None, 22) == {}
-    config = _configure_title_plotly("Test Title", 22, color="green")
+def test_configure_title():
+    """Test nilearn.plotting.surface._plotly_backend._configure_title."""
+    assert _configure_title(None, None) == {}
+    assert _configure_title(None, 22) == {}
+    config = _configure_title("Test Title", 22, color="green")
     assert config["text"] == "Test Title"
     assert config["x"] == 0.5
     assert config["y"] == 0.96
@@ -231,225 +229,20 @@ def test_configure_title_plotly():
     assert config["font"]["color"] == "green"
 
 
-@pytest.mark.skipif(
-    is_kaleido_installed(),
-    reason=("This test only runs if Plotly is installed, but not kaleido."),
-)
-def test_plotly_surface_figure_savefig_error():
-    """Test that an ImportError is raised when saving \
-       a PlotlySurfaceFigure without having kaleido installed.
-    """
-    with pytest.raises(ImportError, match="`kaleido` is required"):
-        PlotlySurfaceFigure().savefig()
-
-
-@pytest.mark.skipif(
-    not is_kaleido_installed(),
-    reason=("Plotly and/or kaleido not installed; required for this test."),
-)
-def test_plotly_surface_figure():
-    ps = PlotlySurfaceFigure()
-    assert ps.output_file is None
-    assert ps.figure is None
-    ps.show()
-    with pytest.raises(ValueError, match="You must provide an output file"):
-        ps.savefig()
-    ps.savefig("foo.png")
-
-
-@pytest.mark.skipif(
-    not IPYTHON_INSTALLED or not is_kaleido_installed(),
-    reason=(
-        "Plotly, Kaleido and/or Ipython is not installed; required for this"
-        " test."
-    ),
-)
-@pytest.mark.parametrize("renderer", ["png", "jpeg", "svg"])
-def test_plotly_show(renderer):
-    import plotly.graph_objects as go
-
-    ps = PlotlySurfaceFigure(go.Figure())
-    assert ps.output_file is None
-    assert ps.figure is not None
-    with mock.patch("IPython.display.display") as mock_display:
-        ps.show(renderer=renderer)
-    assert len(mock_display.call_args.args) == 1
-    key = "svg+xml" if renderer == "svg" else renderer
-    assert f"image/{key}" in mock_display.call_args.args[0]
-
-
-@pytest.mark.skipif(
-    not is_kaleido_installed(),
-    reason=("Plotly and/or kaleido not installed; required for this test."),
-)
-def test_plotly_savefig(tmp_path):
-    import plotly.graph_objects as go
-
-    ps = PlotlySurfaceFigure(go.Figure(), output_file=tmp_path / "foo.png")
-    assert ps.output_file == tmp_path / "foo.png"
-    assert ps.figure is not None
-    ps.savefig()
-    assert (tmp_path / "foo.png").exists()
-
-
-@pytest.mark.parametrize("input_obj", ["foo", Figure(), ["foo", "bar"]])
-def test_instantiation_error_plotly_surface_figure(plotly, input_obj):
-    with pytest.raises(
-        TypeError,
-        match=("`PlotlySurfaceFigure` accepts only plotly figure objects."),
-    ):
-        PlotlySurfaceFigure(input_obj)
-
-
-def test_value_error_get_faces_on_edge(plotly, in_memory_mesh):
-    """Test that calling _get_faces_on_edge raises a ValueError when \
-       called with with indices that do not form a region.
-    """
-    figure = plot_surf(in_memory_mesh, engine="plotly")
-    with pytest.raises(
-        ValueError, match=("Vertices in parcellation do not form region.")
-    ):
-        figure._get_faces_on_edge([91])
-
-
-def test_plot_surf_contours_errors_with_plotly_figure(plotly, in_memory_mesh):
-    """Test that plot_surf_contours rasises error when given plotly obj."""
-    figure = plot_surf(in_memory_mesh, engine="plotly")
+def test_plot_surf_contours_errors_with_plotly_figure(in_memory_mesh):
+    """Test that plot_surf_contours raises error when given plotly obj."""
+    figure = plot_surf(in_memory_mesh, engine=ENGINE)
     with pytest.raises(ValueError):
         plot_surf_contours(in_memory_mesh, np.ones((10,)), figure=figure)
 
 
-def test_plot_surf_contours_errors_with_plotly_axes(plotly, in_memory_mesh):
-    """Test that plot_surf_contours rasises error when given plotly \
-        obj as axis.
+def test_plot_surf_contours_errors_with_plotly_axes(in_memory_mesh):
+    """Test that plot_surf_contours raises error when given plotly obj as
+    axis.
     """
-    figure = plot_surf(in_memory_mesh, engine="plotly")
+    figure = plot_surf(in_memory_mesh, engine=ENGINE)
     with pytest.raises(ValueError):
         plot_surf_contours(in_memory_mesh, np.ones((10,)), axes=figure)
-
-
-def test_plotly_surface_figure_warns_on_isolated_roi(plotly, in_memory_mesh):
-    """Test that a warning is generated for ROIs with isolated vertices."""
-    figure = plot_surf(in_memory_mesh, engine="plotly")
-    # the method raises an error because the (randomly generated)
-    # vertices don't form regions
-    try:
-        with pytest.raises(UserWarning, match="contains isolated vertices:"):
-            figure.add_contours(levels=[0], roi_map=np.array([0, 1] * 10))
-    except Exception:
-        pass
-
-
-def test_distant_line_segments_detected_as_not_intersecting(plotly):
-    """Test that distant lines are detected as not intersecting."""
-    assert not PlotlySurfaceFigure._do_segs_intersect(0, 0, 1, 1, 5, 5, 6, 6)
-
-
-@pytest.mark.parametrize("levels,labels", [([0], ["a", "b"]), ([0, 1], ["a"])])
-def test_value_error_add_contours_levels_labels(
-    plotly, levels, labels, in_memory_mesh
-):
-    """Test that add_contours raises a ValueError when called with levels and \
-    labels that have incompatible lengths.
-    """
-    figure = plot_surf(in_memory_mesh, engine="plotly")
-    with pytest.raises(
-        ValueError,
-        match=("levels and labels need to be either the same length or None."),
-    ):
-        figure.add_contours(
-            levels=levels, labels=labels, roi_map=np.ones((10,))
-        )
-
-
-@pytest.mark.parametrize(
-    "levels,lines",
-    [([0], [{}, {}]), ([0, 1], [{}, {}, {}])],
-)
-def test_value_error_add_contours_levels_lines(
-    plotly, levels, lines, in_memory_mesh
-):
-    """Test that add_contours raises a ValueError when called with levels and \
-    lines that have incompatible lengths.
-    """
-    figure = plot_surf(in_memory_mesh, engine="plotly")
-    with pytest.raises(
-        ValueError,
-        match=("levels and lines need to be either the same length or None."),
-    ):
-        figure.add_contours(levels=levels, lines=lines, roi_map=np.ones((10,)))
-
-
-def test_add_contours(plotly, surface_image_roi):
-    """Test that add_contours updates data in PlotlySurfaceFigure."""
-    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
-    figure.add_contours(surface_image_roi)
-    assert len(figure.figure.to_dict().get("data")) == 4
-
-    figure.add_contours(surface_image_roi, levels=[1])
-    assert len(figure.figure.to_dict().get("data")) == 5
-
-
-@pytest.mark.parametrize("hemi", ["left", "right", "both"])
-def test_add_contours_hemi(
-    plotly,
-    surface_image_roi,
-    hemi,
-):
-    """Test that add_contours works with all hemi inputs."""
-    if hemi == "both":
-        n_vertices = surface_image_roi.mesh.n_vertices
-    else:
-        n_vertices = surface_image_roi.data.parts[hemi].shape[0]
-    figure = plot_surf(
-        surface_image_roi.mesh,
-        engine="plotly",
-        hemi=hemi,
-    )
-    figure.add_contours(surface_image_roi)
-    assert figure._coords.shape[0] == n_vertices
-
-
-def test_add_contours_plotly_surface_image(plotly, surface_image_roi):
-    """Test that add_contours works with SurfaceImage."""
-    figure = plot_surf(
-        surf_map=surface_image_roi, hemi="left", engine="plotly"
-    )
-    figure.add_contours(roi_map=surface_image_roi)
-
-
-def test_add_contours_has_name(plotly, surface_image_roi):
-    """Test that contours added to a PlotlySurfaceFigure can be named."""
-    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
-    figure.add_contours(surface_image_roi, levels=[1], labels=["x"])
-    assert figure.figure.to_dict().get("data")[2].get("name") == "x"
-
-
-def test_add_contours_lines_duplicated(plotly, surface_image_roi):
-    """Test that the specifications of length 1 line provided to \
-     add_contours are duplicated to all requested contours.
-    """
-    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
-    figure.add_contours(surface_image_roi, lines=[{"width": 10}])
-    newlines = figure.figure.to_dict().get("data")[2:]
-    assert all(x.get("line").__contains__("width") for x in newlines)
-
-
-@pytest.mark.parametrize(
-    "key,value",
-    [
-        ("color", "yellow"),
-        ("width", 10),
-    ],
-)
-def test_add_contours_line_properties(plotly, key, value, surface_image_roi):
-    """Test that the specifications of a line provided to add_contours are \
-    stored in the PlotlySurfaceFigure data.
-    """
-    figure = plot_surf(surface_image_roi.mesh, engine="plotly")
-    figure.add_contours(surface_image_roi, levels=[1], lines=[{key: value}])
-    newline = figure.figure.to_dict().get("data")[2].get("line")
-    assert newline.get(key) == value
 
 
 @pytest.mark.skipif(
@@ -460,45 +253,47 @@ def test_plot_surf_error_when_kaleido_missing(
     tmp_path, in_memory_mesh, bg_map
 ):
     with pytest.raises(ImportError, match="Saving figures"):
-        engine = "plotly"
         # Plot with non None output file
         plot_surf(
             in_memory_mesh,
             bg_map=bg_map,
-            engine=engine,
+            engine=ENGINE,
             output_file=tmp_path / "tmp.png",
         )
 
 
 @pytest.mark.parametrize("kwargs", [{"avg_method": "mean"}, {"alpha": "auto"}])
 def test_plot_surf_warnings_not_implemented_in_plotly(
-    plotly, kwargs, in_memory_mesh, bg_map
+    kwargs, in_memory_mesh, bg_map
 ):
+    """Test if nilearn.plotting.surface.surf_plotting.plot_surf raises error
+    when a parameter that is not supported by plotly is specified with a
+    value other than None.
+    """
     with pytest.warns(
         UserWarning, match="is not implemented for the plotly engine"
     ):
         plot_surf(
             in_memory_mesh,
             surf_map=bg_map,
-            engine="plotly",
+            engine=ENGINE,
             **kwargs,
         )
 
 
-def test_plot_surf_stat_map_colorbar_tick(plotly, in_memory_mesh, bg_map):
+def test_plot_surf_stat_map_colorbar_tick(in_memory_mesh, bg_map):
     """Change colorbar tick format."""
     plot_surf_stat_map(
         in_memory_mesh,
         stat_map=bg_map,
         cbar_tick_format="%.2g",
-        engine="plotly",
+        engine=ENGINE,
     )
 
 
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
 def test_plot_surf_parcellation_plotly(
-    plotly,
     colorbar,
     surface_image_parcellation,
     cbar_tick_format,
@@ -506,35 +301,7 @@ def test_plot_surf_parcellation_plotly(
     plot_surf_roi(
         surface_image_parcellation.mesh,
         roi_map=surface_image_parcellation,
-        engine="plotly",
+        engine=ENGINE,
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
-    )
-
-
-@pytest.mark.parametrize(
-    "kwargs", [{"vmin": 2}, {"vmin": 2, "threshold": 5}, {"threshold": 5}]
-)
-def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
-    matplotlib_pyplot, kwargs, in_memory_mesh
-):
-    """See issue https://github.com/nilearn/nilearn/issues/3944."""
-    roi_map = np.arange(0, len(in_memory_mesh.coordinates))
-
-    mpl_plot = plot_surf_roi(
-        in_memory_mesh,
-        roi_map=roi_map,
-        colorbar=True,
-        engine="matplotlib",
-        **kwargs,
-    )
-    plotly_plot = plot_surf_roi(
-        in_memory_mesh,
-        roi_map=roi_map,
-        colorbar=True,
-        engine="plotly",
-        **kwargs,
-    )
-    assert (
-        mpl_plot.axes[-1].get_ylim()[0] == plotly_plot.figure.data[1]["cmin"]
     )
