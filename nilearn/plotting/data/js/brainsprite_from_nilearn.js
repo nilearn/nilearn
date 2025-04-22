@@ -1,4 +1,4 @@
-//Created using https://unminify.com/ on the brainsprite.min.js
+//Created using https://unminify.com/ on the brainsprite.min.js (that nilearn uses)
 
 function brainsprite(d) {
     function a(f, e) {
