@@ -80,39 +80,32 @@ def plot_surf(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
-        Surface :term:`mesh` geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the :term:`mesh` :term:`vertices<vertex>`,
-        the second containing the indices (into coords)
-        of the :term:`mesh` :term:`faces`,
-        or a :obj:`~nilearn.surface.InMemoryMesh` object with
-        "coordinates" and "faces" attributes,
-        or a :obj:`~nilearn.surface.PolyMesh` object,
-        or None.
-        If None is passed, then ``surf_map``
-        must be a :obj:`~nilearn.surface.SurfaceImage` instance
-        and the mesh from that :obj:`~nilearn.surface.SurfaceImage` instance
-        will be used.
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`
+                or a :obj:`~nilearn.surface.InMemoryMesh`, or a
+                :obj:`~nilearn.surface.PolyMesh`, or None, default=None
+        Surface :term:`mesh` geometry, can be a file (valid formats are .gii or
+        Freesurfer specific files such as .orig, .pial, .sphere, .white,
+        .inflated) or a list of two Numpy arrays, the first containing the
+        x-y-z coordinates of the :term:`mesh` :term:`vertices<vertex>`, the
+        second containing the indices (into coords) of the :term:`mesh`
+        :term:`faces`, or a :obj:`~nilearn.surface.InMemoryMesh` object with
+        "coordinates" and "faces" attributes, or a
+        :obj:`~nilearn.surface.PolyMesh` object, or None.
+        If None is passed, then ``surf_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
+        :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
-    surf_map : :obj:`str` or :class:`numpy.ndarray`\
-               or :obj:`~nilearn.surface.SurfaceImage` or None, \
-               default=None
+    surf_map : :obj:`str` or :class:`numpy.ndarray` or
+               :obj:`~nilearn.surface.SurfaceImage` or None, default=None
         Data to be displayed on the surface :term:`mesh`.
-        Can be a file
-        (valid formats are .gii, .mgz, .nii, .nii.gz,
-        or Freesurfer specific files such as
-        .thickness, .area, .curv, .sulc, .annot, .label) or
-        a Numpy array with a value for each :term:`vertex` of the `surf_mesh`,
-        or a :obj:`~nilearn.surface.SurfaceImage` instance.
-        If None is passed for ``surf_mesh``
-        then ``surf_map``
-        must be a :obj:`~nilearn.surface.SurfaceImage` instance
-        and its the mesh will be used for plotting.
+        Can be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
+        Freesurfer specific files such as .thickness, .area, .curv, .sulc,
+        .annot, .label) or a Numpy array with a value for each :term:`vertex`
+        of the `surf_mesh`, or a :obj:`~nilearn.surface.SurfaceImage`
+        instance.
+        If None is passed for ``surf_mesh`` then ``surf_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and its the mesh will be
+        used for plotting.
 
     %(bg_map)s
 
@@ -128,13 +121,12 @@ def plot_surf(
         Currently, only ``matplotlib`` and ``plotly`` are supported.
 
         .. note::
-            To use the ``plotly`` engine, you need to
-            have ``plotly`` installed.
+            To use the ``plotly`` engine, you need to have ``plotly``
+            installed.
 
         .. note::
-            To be able to save figures to disk with the
-            ``plotly`` engine, you need to have
-            ``kaleido`` installed.
+            To be able to save figures to disk with the ``plotly`` engine, you
+            need to have ``kaleido`` installed.
 
         .. warning::
             The ``plotly`` engine is new and experimental.
@@ -161,11 +153,11 @@ def plot_surf(
     %(avg_method)s
 
         .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
+            This option is currently only implemented for the ``matplotlib``
+            engine.
 
-        When using matplotlib as engine,
-        `avg_method` will default to ``"mean"`` if ``None`` is passed.
+        When using matplotlib as engine, `avg_method` will default to
+        ``"mean"`` if ``None`` is passed.
 
     threshold : a number or None, default=None.
         If None is given, the image is not thresholded.
@@ -175,15 +167,15 @@ def plot_surf(
     alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
 
-        If 'auto' is chosen, alpha will default to 0.5 when no bg_map
-        is passed and to 1 if a bg_map is passed.
+        If 'auto' is chosen, alpha will default to 0.5 when no bg_map is passed
+        and to 1 if a bg_map is passed.
 
         .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
+            This option is currently only implemented for the ``matplotlib``
+            engine.
 
-        When using matplotlib as engine,
-        `alpha` will default to ``"auto"`` if ``None`` is passed.
+        When using matplotlib as engine, `alpha` will default to ``"auto"`` if
+        ``None`` is passed.
 
     %(bg_on_data)s
 
@@ -199,16 +191,16 @@ def plot_surf(
         If None, the value will be set from the data.
 
         .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
+            This option is currently only implemented for the ``matplotlib``
+            engine.
 
     cbar_vmax : :obj:`float` or None, default=None
         Upper bound for the colorbar.
         If None, the value will be set from the data.
 
         .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
+            This option is currently only implemented for the ``matplotlib``
+            engine.
 
     %(cbar_tick_format)s
         Default="auto" which will select:
@@ -224,8 +216,8 @@ def plot_surf(
         Size of the title font
 
         .. note::
-            This option is currently only implemented for
-            the ``plotly`` engine.
+            This option is currently only implemented for the ``plotly``
+            engine.
 
         When using plotly as engine, `title_font_size` will default to ``18``
         if ``None`` is passed.
@@ -241,18 +233,18 @@ def plot_surf(
         If None, a new axes is created.
 
         .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
+            This option is currently only implemented for the ``matplotlib``
+            engine.
 
     %(figure)s
 
         .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
+            This option is currently only implemented for the ``matplotlib``
+            engine.
 
     Returns
     -------
-    fig : :class:`~matplotlib.figure.Figure` or\
+    fig : :class:`~matplotlib.figure.Figure` or
     :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
         The surface figure. If ``engine='matplotlib'`` then a
         :class:`~matplotlib.figure.Figure` is returned.
@@ -303,8 +295,8 @@ def plot_surf(
 
 
 def _get_faces_on_edge(faces, parc_idx):
-    """Identify which faces lie on the outeredge of the parcellation \
-    defined by the indices in parc_idx.
+    """Identify which faces lie on the outeredge of the parcellation defined by
+    the indices in parc_idx.
 
     Parameters
     ----------
@@ -345,51 +337,41 @@ def plot_surf_contours(
     output_file=None,
     **kwargs,
 ):
-    """Plot contours of ROIs on a surface, \
-    optionally over a statistical map.
+    """Plot contours of ROIs on a surface, optionally over a statistical map.
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
-        Surface :term:`mesh` geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the :term:`mesh` :term:`vertices<vertex>`,
-        the second containing the indices (into coords)
-        of the :term:`mesh` :term:`faces`,
-        or a :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
-        and "faces" attributes,
-        or a :obj:`~nilearn.surface.PolyMesh` object,
-        or None.
-        If None is passed, then ``roi_map``
-        must be a :obj:`~nilearn.surface.SurfaceImage` instance
-        and the mesh from that :obj:`~nilearn.surface.SurfaceImage` instance
-        will be used.
+    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`
+                or a :obj:`~nilearn.surface.InMemoryMesh`, or a
+                :obj:`~nilearn.surface.PolyMesh`, or None, default=None
+        Surface :term:`mesh` geometry, can be a file (valid formats are .gii or
+        Freesurfer specific files such as .orig, .pial, .sphere, .white,
+        .inflated) or a list of two Numpy arrays, the first containing the
+        x-y-z coordinates of the :term:`mesh` :term:`vertices<vertex>`, the
+        second containing the indices (into coords) of the :term:`mesh`
+        :term:`faces`, or a :obj:`~nilearn.surface.InMemoryMesh` object with
+        "coordinates" and "faces" attributes, or a
+        :obj:`~nilearn.surface.PolyMesh` object, or None.
+        If None is passed, then ``roi_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
+        :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
-    roi_map : :obj:`str` or :class:`numpy.ndarray` or \
-              :obj:`~nilearn.surface.SurfaceImage` or None, \
-              default=None
-        ROI map to be displayed on the surface mesh,
-        can be a file
-        (valid formats are .gii, .mgz, or
-        Freesurfer specific files such as
-        .thickness, .area, .curv, .sulc, .annot, .label) or
-        a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
-        The value at each :term:`vertex` one inside the ROI
-        and zero inside ROI,
-        or an integer giving the label number for atlases.
-        If None is passed for ``surf_mesh``
-        then ``roi_map``
-        must be a :obj:`~nilearn.surface.SurfaceImage` instance
-        and its the mesh will be used for plotting.
+    roi_map : :obj:`str` or :class:`numpy.ndarray` or
+              :obj:`~nilearn.surface.SurfaceImage` or None, default=None
+        ROI map to be displayed on the surface mesh, can be a file (valid
+        formats are .gii, .mgz, or Freesurfer specific files such as
+        .thickness, .area, .curv, .sulc, .annot, .label) or a Numpy array with
+        a value for each :term:`vertex` of the `surf_mesh`.
+        The value at each :term:`vertex` one inside the ROI and zero inside
+        ROI, or an integer giving the label number for atlases.
+        If None is passed for ``surf_mesh`` then ``roi_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and its the mesh will be
+        used for plotting.
 
     hemi : {"left", "right", "both", None}, default=None
         Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
-        is passed as ``roi_map``
-        and / or if PolyMesh is passed as ``surf_mesh``.
+        is passed as ``roi_map`` and / or if PolyMesh is passed as
+        ``surf_mesh``.
         In these cases, if ``hemi`` is set to None, it will default to "left".
 
         .. versionadded:: 0.11.0
@@ -412,7 +394,7 @@ def plot_surf_contours(
         Provide None as list entry to skip showing the label of that region.
         If None no labels are used.
 
-    colors : :obj:`list` of matplotlib color names or RGBA values, or None \
+    colors : :obj:`list` of matplotlib color names or RGBA values, or None,
         default=None
         Colors to be used.
 
@@ -427,8 +409,7 @@ def plot_surf_contours(
     %(output_file)s
 
     kwargs : extra keyword arguments, optional
-        Extra keyword arguments passed to
-        :func:`~nilearn.plotting.plot_surf`.
+        Extra keyword arguments passed to :func:`~nilearn.plotting.plot_surf`.
 
     See Also
     --------
