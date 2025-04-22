@@ -52,18 +52,19 @@ def _data_to_sprite(data, radiological=False):
     if radiological:
         for xx in range(nx):
             sprite[
-            (indrow[xx] * nz): ((indrow[xx] + 1) * nz),
-            (indcol[xx] * ny): ((indcol[xx] + 1) * ny),
-            ] = data[nx-xx-1, :, ::-1].transpose()
+                (indrow[xx] * nz) : ((indrow[xx] + 1) * nz),
+                (indcol[xx] * ny) : ((indcol[xx] + 1) * ny),
+            ] = data[nx - xx - 1, :, ::-1].transpose()
 
     else:
         for xx in range(nx):
             sprite[
-            (indrow[xx] * nz): ((indrow[xx] + 1) * nz),
-            (indcol[xx] * ny): ((indcol[xx] + 1) * ny),
+                (indrow[xx] * nz) : ((indrow[xx] + 1) * nz),
+                (indcol[xx] * ny) : ((indcol[xx] + 1) * ny),
             ] = data[xx, :, ::-1].transpose()
 
     return sprite
+
 
 def _threshold_data(data, threshold=None):
     """Threshold a data array.
@@ -118,7 +119,13 @@ def _threshold_data(data, threshold=None):
 
 
 def _save_sprite(
-    data, output_sprite, vmax, vmin, mask=None, cmap="Greys", format="png",
+    data,
+    output_sprite,
+    vmax,
+    vmin,
+    mask=None,
+    cmap="Greys",
+    format="png",
     radiological=False,
 ):
     """Generate a sprite from a 3D Niimg-like object.
@@ -151,11 +158,11 @@ def _save_sprite(
 
     """
     # Create sprite
-    sprite = _data_to_sprite(data,radiological)
+    sprite = _data_to_sprite(data, radiological)
 
     # Mask the sprite
     if mask is not None:
-        mask = _data_to_sprite(mask,radiological)
+        mask = _data_to_sprite(mask, radiological)
         sprite = np.ma.array(sprite, mask=mask)
 
     # Save the sprite
@@ -424,8 +431,16 @@ def _json_view_data(
     bg_sprite = BytesIO()
     bg_data = safe_get_data(bg_img, ensure_finite=True).astype(float)
     bg_mask, bg_cmap = _get_bg_mask_and_cmap(bg_img, black_bg)
-    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, "png",
-                 radiological)
+    _save_sprite(
+        bg_data,
+        bg_sprite,
+        bg_max,
+        bg_min,
+        bg_mask,
+        bg_cmap,
+        "png",
+        radiological,
+    )
     json_view["bg_base64"] = _bytes_io_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
@@ -440,7 +455,7 @@ def _json_view_data(
         mask,
         cmap,
         "png",
-        radiological
+        radiological,
     )
     json_view["stat_map_base64"] = _bytes_io_to_base64(stat_map_sprite)
 
