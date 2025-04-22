@@ -333,6 +333,10 @@ authors:
     family-names: Kai
     website: https://github.com/kaitj
     affiliation: Child Mind Institute
+  - given-names: Jason D.
+    family-names: Yeatman
+    website: https://edneuro.stanford.edu/
+    affiliation: Stanford University, Stanford, California, USA
   - given-names: Javier
     family-names: Rasero
     website: https://jrasero.github.io/
@@ -558,6 +562,10 @@ authors:
     family-names: Krish
     website: https://github.com/NIkhilgKrish
     affiliation: University of Texas, Austin
+  - given-names: Noah C.
+    family-names: Benson
+    website: https://nben.net/
+    affiliation: University of Washington, Seattle, Washington, USA
   - given-names: Oliver
     family-names: Warrington
     website: https://github.com/OliverWarrington
