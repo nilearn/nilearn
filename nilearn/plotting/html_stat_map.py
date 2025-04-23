@@ -677,7 +677,6 @@ def view_img(
         cmap,
         colorbar,
         radiological,
-        show_lr,
     )
 
     json_view["params"] = _json_view_params(
