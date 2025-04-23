@@ -84,7 +84,7 @@ def plot_surf(
         :term:`faces`, or a :obj:`~nilearn.surface.InMemoryMesh` object with
         "coordinates" and "faces" attributes, or a
         :obj:`~nilearn.surface.PolyMesh` object, or None.
-        If None is passed, then ``surf_map`` must be a
+        If `None` is passed, then ``surf_map`` must be a
         :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
         :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
@@ -96,8 +96,8 @@ def plot_surf(
         .annot, .label) or a Numpy array with a value for each :term:`vertex`
         of the `surf_mesh`, or a :obj:`~nilearn.surface.SurfaceImage`
         instance.
-        If None is passed for ``surf_mesh`` then ``surf_map`` must be a
-        :obj:`~nilearn.surface.SurfaceImage` instance and its the mesh will be
+        If `None` is passed for ``surf_mesh``, then ``surf_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and its mesh will be
         used for plotting.
 
     %(bg_map)s
@@ -122,21 +122,21 @@ def plot_surf(
             need to have ``kaleido`` installed.
 
         .. warning::
-            The ``plotly`` engine is new and experimental.
-            Please report bugs that you may encounter.
+            The ``plotly`` engine is new and experimental. Please report bugs
+            that you may encounter.
 
     %(cmap)s
-        If None, matplotlib default will be chosen.
+        If `None`, ``matplotlib`` default will be chosen.
 
     symmetric_cmap : :obj:`bool`, default=None
         Whether to use a symmetric colormap or not.
 
         .. note::
-            This option is currently only implemented for
-            the ``plotly`` engine.
+            This option is currently only implemented for the ``plotly``
+            engine.
 
-        When using plotly as engine, `symmetric_cmap` will default to ``False``
-        if ``None`` is passed.
+        When using ``plotly`` as engine, ``symmetric_cmap`` will default to
+        `False` if `None` is passed.
 
         .. versionadded:: 0.9.0
 
@@ -149,26 +149,26 @@ def plot_surf(
             This option is currently only implemented for the ``matplotlib``
             engine.
 
-        When using matplotlib as engine, `avg_method` will default to
-        ``"mean"`` if ``None`` is passed.
+        When using ``matplotlib`` as engine, ``avg_method`` will default to
+        ``"mean"`` if `None` is passed.
 
     threshold : a number or None, default=None.
-        If None is given, the image is not thresholded.
+        If `None` is given, the image is not thresholded.
         If a number is given, it is used to threshold the image, values
         below the threshold (in absolute value) are plotted as transparent.
 
     alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
 
-        If 'auto' is chosen, alpha will default to 0.5 when no bg_map is passed
-        and to 1 if a bg_map is passed.
+        If `'auto'` is chosen, ``alpha`` will default to `0.5` when no
+        ``bg_map`` is passed and to `1` if a ``bg_map`` is passed.
 
         .. note::
             This option is currently only implemented for the ``matplotlib``
             engine.
 
-        When using matplotlib as engine, `alpha` will default to ``"auto"`` if
-        ``None`` is passed.
+        When using ``matplotlib`` as engine, ``alpha`` will default to `"auto"`
+        if `None` is passed.
 
     %(bg_on_data)s
 
@@ -181,7 +181,7 @@ def plot_surf(
 
     cbar_vmin : :obj:`float` or None, default=None
         Lower bound for the colorbar.
-        If None, the value will be set from the data.
+        If `None`, the value will be set from the data.
 
         .. note::
             This option is currently only implemented for the ``matplotlib``
@@ -189,7 +189,7 @@ def plot_surf(
 
     cbar_vmax : :obj:`float` or None, default=None
         Upper bound for the colorbar.
-        If None, the value will be set from the data.
+        If `None`, the value will be set from the data.
 
         .. note::
             This option is currently only implemented for the ``matplotlib``
@@ -198,8 +198,8 @@ def plot_surf(
     %(cbar_tick_format)s
         Default="auto" which will select:
 
-        - '%%.2g' (scientific notation) with ``matplotlib`` engine.
-        - '.1f' (rounded floats) with ``plotly`` engine.
+        - `'%%.2g'` (scientific notation) with ``matplotlib`` engine.
+        - `'.1f'` (rounded floats) with ``plotly`` engine.
 
         .. versionadded:: 0.7.1
 
@@ -212,18 +212,18 @@ def plot_surf(
             This option is currently only implemented for the ``plotly``
             engine.
 
-        When using plotly as engine, `title_font_size` will default to ``18``
-        if ``None`` is passed.
+        When using ``plotly`` as engine, ``title_font_size`` will default to
+        `18` if `None` is passed.
 
         .. versionadded:: 0.9.0
 
     %(output_file)s
 
     axes : instance of matplotlib axes or None, default=None
-        The axes instance to plot to. The projection must be '3d' (e.g.,
-        `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
+        The axes instance to plot to. The projection must be `"3d"` (e.g.,
+        `figure, axes = plt.subplots(subplot_kw={'projection': "3d"})`,
         where axes should be passed.).
-        If None, a new axes is created.
+        If `None`, a new axes is created.
 
         .. note::
             This option is currently only implemented for the ``matplotlib``
@@ -336,21 +336,22 @@ def plot_surf_contours(
 
     hemi : {"left", "right", "both", None}, default=None
         Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
-        is passed as ``roi_map`` and / or if PolyMesh is passed as
-        ``surf_mesh``.
-        In these cases, if ``hemi`` is set to None, it will default to "left".
+        is passed as ``roi_map`` and / or if :obj:`~nilearn.surface.PolyMesh`
+        is passed as ``surf_mesh``.
+        In these cases, if ``hemi`` is set to `None`, it will default to
+        `"left"`.
 
         .. versionadded:: 0.11.0
 
     levels : :obj:`list` of :obj:`int`, or None, default=None
         A list of indices of the regions that are to be outlined.
-        Every index needs to correspond to one index in roi_map.
-        If None, all regions in roi_map are used.
+        Every index needs to correspond to one index in ``roi_map``.
+        If `None`, all regions in ``roi_map`` are used.
 
     labels : :obj:`list` of :obj:`str` or None, or None, default=None
         A list of labels for the individual regions of interest.
-        Provide None as list entry to skip showing the label of that region.
-        If None no labels are used.
+        Provide `None` as list entry to skip showing the label of that region.
+        If `None`, no labels are used.
 
     colors : :obj:`list` of matplotlib color names or RGBA values, or None,
         default=None
@@ -367,10 +368,10 @@ def plot_surf_contours(
     %(output_file)s
 
     axes : instance of matplotlib axes or None, default=None
-        The axes instance to plot to. The projection must be '3d' (e.g.,
-        `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
+        The axes instance to plot to. The projection must be `"3d"` (e.g.,
+        `figure, axes = plt.subplots(subplot_kw={'projection': "3d"})`,
         where axes should be passed.).
-        If None, uses axes from figure if available, else creates new axes.
+        If `None`, uses axes from figure if available, else creates new axes.
 
     %(figure)s
 

@@ -19,7 +19,8 @@ def get_surface_backend(engine="matplotlib"):
     Parameters
     ----------
     engine: :obj:`str`, default='matplotlib'
-        Name of the required backend engine. Can be 'matplotlib' or 'plotly'.
+        Name of the required backend engine. Can be ``matplotlib`` or
+    ``plotly``.
 
     Returns
     -------
@@ -58,19 +59,20 @@ def get_surface_backend(engine="matplotlib"):
 
 
 def _check_bg_map(bg_map, hemi):
-    """Get the requested hemisphere if bg_map is a SurfaceImage. If the
-    hemisphere is not present, raise an error. If the hemisphere is "both",
-    concatenate the left and right hemispheres.
+    """Get the requested hemisphere if ``bg_map`` is a
+    :obj:`~nilearn.surface.SurfaceImage`. If the hemisphere is not present,
+    raise an error. If the hemisphere is `"both"`, concatenate the left and
+    right hemispheres.
 
+    Parameters
+    ----------
     bg_map : Any
 
-    hemi : str
-
-    surf_map: SurfaceImage
+    hemi : :obj:`str`
 
     Returns
     -------
-    bg_map : str | pathlib.Path | numpy.ndarray | None
+    bg_map : :obj:`str` | :obj:`pathlib.Path` | :obj:`numpy.ndarray` | None
     """
     if isinstance(bg_map, SurfaceImage):
         if len(bg_map.shape) > 1 and bg_map.shape[1] > 1:
@@ -89,16 +91,16 @@ def _check_bg_map(bg_map, hemi):
 
 
 def _get_hemi(mesh, hemi):
-    """Check that a given hemisphere exists in a PolyMesh and return the
-    corresponding mesh. If "both" is requested, combine the left and right
-    hemispheres.
+    """Check that a given hemisphere exists in a
+    :obj:`~nilearn.surface.PolyMesh` and return the corresponding mesh. If
+    "both" is requested, combine the left and right hemispheres.
     """
     if hemi == "both":
         return combine_hemispheres_meshes(mesh)
     elif hemi in mesh.parts:
         return mesh.parts[hemi]
     else:
-        raise ValueError("hemi must be one of left, right or both.")
+        raise ValueError("hemi must be one of 'left', 'right' or 'both'.")
 
 
 def check_surface_plotting_inputs(
@@ -111,17 +113,18 @@ def check_surface_plotting_inputs(
 ):
     """Check inputs for surface plotting.
 
-    Where possible this will 'convert' the inputs
-    if SurfaceImage or PolyMesh objects are passed
-    to be able to give them to the surface plotting functions.
+    Where possible this will 'convert' the inputs if
+    :obj:`~nilearn.surface.SurfaceImage` or :obj:`~nilearn.surface.PolyMesh`
+    objects are passed to be able to give them to the surface plotting
+    functions.
 
     Returns
     -------
-    surf_map : numpy.ndarray
+    surf_map : :obj:`numpy.ndarray`
 
-    surf_mesh : numpy.ndarray
+    surf_mesh : :obj:`numpy.ndarray`
 
-    bg_map : str | pathlib.Path | numpy.ndarray | None
+    bg_map : :obj:`str` | :obj:`pathlib.Path` | :obj:`numpy.ndarray` | None
 
     """
     if surf_mesh is None and surf_map is None:
@@ -179,10 +182,10 @@ def get_faces_on_edge(faces, parc_idx):
 
     Parameters
     ----------
-    faces : :class:`numpy.ndarray` of shape (n, 3), indices of the mesh faces
+    faces : :obj:`numpy.ndarray` of shape (n, 3), indices of the mesh faces
 
-    parc_idx : :class:`numpy.ndarray`, indices of the vertices
-        of the region to be plotted
+    parc_idx : :obj:`numpy.ndarray`, indices of the vertices of the region to
+    be plotted
 
     """
     # count how many vertices belong to the given parcellation in each face
@@ -218,7 +221,7 @@ def sanitize_hemi_for_surface_image(hemi, map, mesh):
                 f"with {type(map)=} and {type(mesh)=}.\n"
                 "This value will be ignored as it is only used when "
                 "'roi_map' is a SurfaceImage instance "
-                "and  / or 'surf_mesh' is a PolyMesh instance."
+                "and / or 'surf_mesh' is a PolyMesh instance."
             ),
             stacklevel=3,
         )
