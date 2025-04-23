@@ -12,6 +12,7 @@ from nilearn import DEFAULT_DIVERGING_CMAP, image, surface
 from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
+    DEFAULT_ENGINE,
     create_colormap_from_lut,
     get_colorbar_and_data_ranges,
 )
@@ -47,7 +48,7 @@ def plot_surf(
     bg_map=None,
     hemi="left",
     view=None,
-    engine="matplotlib",
+    engine=DEFAULT_ENGINE,
     cmap=None,
     symmetric_cmap=None,
     colorbar=True,
@@ -388,7 +389,7 @@ def plot_surf_contours(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    fig = get_surface_backend("matplotlib").plot_surf_contours(
+    fig = get_surface_backend(DEFAULT_ENGINE).plot_surf_contours(
         surf_mesh=surf_mesh,
         roi_map=roi_map,
         hemi=hemi,
@@ -414,7 +415,7 @@ def plot_surf_stat_map(
     bg_map=None,
     hemi="left",
     view=None,
-    engine="matplotlib",
+    engine=DEFAULT_ENGINE,
     threshold=None,
     alpha=None,
     vmin=None,
@@ -884,7 +885,7 @@ def plot_surf_roi(
     bg_map=None,
     hemi="left",
     view=None,
-    engine="matplotlib",
+    engine=DEFAULT_ENGINE,
     avg_method=None,
     threshold=1e-14,
     alpha=None,
