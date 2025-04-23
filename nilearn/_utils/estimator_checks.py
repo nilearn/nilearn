@@ -597,7 +597,23 @@ def check_masker_mask_img(estimator):
     else:
         estimator.fit()
 
-    # Except (Multi)NiftiMasker and SurfaceMasker,
+    # happy path
+    estimator = clone(estimator)
+    estimator.mask_img = binary_mask_img
+
+    assert not hasattr(estimator, "mask_img_")
+
+    estimator.fit()
+
+    assert hasattr(estimator, "mask_img_")
+
+    if accept_niimg_input(estimator):
+        assert isinstance(estimator.mask_img_, Nifti1Image)
+    else:
+        assert isinstance(estimator.mask_img_, SurfaceImage)
+    load_mask_img(estimator.mask_img_)
+
+    # Except for (Multi)NiftiMasker and SurfaceMasker,
     # maskers have mask_img_ = None after fitting some input image
     # when no mask was passed at construction
     estimator = clone(estimator)
@@ -615,22 +631,6 @@ def check_masker_mask_img(estimator):
         else:
             assert isinstance(mask_img_, SurfaceImage)
         load_mask_img(mask_img_)
-
-    # happy path
-    estimator = clone(estimator)
-    estimator.mask_img = binary_mask_img
-
-    assert not hasattr(estimator, "mask_img_")
-
-    estimator.fit()
-
-    assert hasattr(estimator, "mask_img_")
-
-    if accept_niimg_input(estimator):
-        assert isinstance(estimator.mask_img_, Nifti1Image)
-    else:
-        assert isinstance(estimator.mask_img_, SurfaceImage)
-    load_mask_img(estimator.mask_img_)
 
     # use non binary multi-sample image as mask
     estimator = clone(estimator)
