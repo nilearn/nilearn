@@ -290,7 +290,7 @@ def _get_data_and_json_view(black_bg, cbar):
     colors = colorscale(
         "cold_hot", data.ravel(), threshold=0, symmetric_cmap=True, vmax=1
     )
-
+    radiological = False
     # Build a sprite
     json_view = _json_view_data(
         bg_img,
@@ -302,6 +302,7 @@ def _get_data_and_json_view(black_bg, cbar):
         colors=colors,
         cmap="cold_hot",
         colorbar=cbar,
+        radiological=radiological,
     )
     return data, json_view
 
@@ -332,6 +333,7 @@ def test_json_view_to_html(affine_eye, black_bg, cbar):
         annotate=False,
         title="test",
         colorbar=True,
+        radiological=False,
     )
 
     # Create a viewer
