@@ -327,7 +327,7 @@ def nilearn_check_estimator(estimator):
             clone(estimator),
             check_masker_fit_with_non_finite_in_mask,
         )
-        yield (clone(estimator), check_masker_mask_binary)
+        yield (clone(estimator), check_masker_mask_img)
         yield (clone(estimator), check_masker_smooth)
 
         if not is_multimasker(estimator):
@@ -552,20 +552,20 @@ def check_masker_compatibility_mask_image(estimator):
         assert isinstance(estimator.mask_img_, SurfaceImage)
 
 
-def check_masker_mask_binary(estimator):
+def check_masker_mask_img(estimator):
     """Check maskers mask_img_ post fit is valid.
 
     If a mask is passed at construction,
     then mask_img_ should be a valid mask after fit.
 
-    For (Multi)NiftiMasker and SurfaceMasker
-    they must have a valid mask_img_ after fit
-    even when no mask was passed.
-
     Maskers should be fittable
     even when passing a non-binary image
     with multiple samples (4D for volume, 2D for surface) as mask.
     Resulting mask_img_ should be binary and have a single sample.
+
+    For (Multi)NiftiMasker and SurfaceMasker:
+    - raise errors if no mask passed at init and no imgs passed at fit
+    - they must have a valid mask_img_ after fit even when no mask was passed.
     """
     if accept_niimg_input(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
@@ -588,9 +588,19 @@ def check_masker_mask_binary(estimator):
 
         input_img = _make_surface_img(2)
 
+    # fit with no mask
+    if isinstance(estimator, (NiftiMasker, SurfaceMasker)):
+        with pytest.raises(
+            ValueError, match="Parameter 'imgs' must be provided to "
+        ):
+            estimator.fit()
+    else:
+        estimator.fit()
+
     # Except (Multi)NiftiMasker and SurfaceMasker,
     # maskers have mask_img_ = None after fitting some input image
     # when no mask was passed at construction
+    estimator = clone(estimator)
     assert not hasattr(estimator, "mask_img_")
 
     estimator.fit(input_img)

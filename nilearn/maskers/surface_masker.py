@@ -150,9 +150,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         if img is None:
             raise ValueError(
-                "Please provide either a mask_img "
-                "when initializing the masker "
-                "or an img when calling fit()."
+                "Parameter 'imgs' must be provided to "
+                f"{self.__class__.__name__}.fit() "
+                "if no mask is passed to mask_img."
             )
 
         if not isinstance(img, list):
