@@ -258,7 +258,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
         mask_data = (
-            get_data(self.mask_img) if self.mask_img is not None else None
+            get_data(self.mask_img_) if self.mask_img_ is not None else None
         )
 
         parameters = get_params(

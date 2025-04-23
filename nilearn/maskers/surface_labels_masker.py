@@ -402,7 +402,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         if self.mask_img_ is not None:
             mask_data = np.concatenate(
-                list(self.mask_img.data.parts.values()), axis=0
+                list(self.mask_img_.data.parts.values()), axis=0
             )
             labels_data, labels = _apply_surf_mask_on_labels(
                 mask_data,

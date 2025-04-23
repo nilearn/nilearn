@@ -21,12 +21,13 @@ from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import repr_niimgs
-from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
+from nilearn._utils.niimg import repr_niimgs, safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     concat_imgs,
     high_variance_confounds,
+    new_img_like,
     resample_img,
     smooth_img,
 )
@@ -256,20 +257,25 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        mask_img_ : None or 3D nifti
+        mask_img_ : None or 3D binary nifti
         """
         if self.mask_img is None:
+            # in this case
+            # (Multi)Niftimasker will infer one from imaged to fit
+            # other nifti maskers are OK with None
             return None
 
         repr = repr_niimgs(self.mask_img, shorten=(not self.verbose))
         msg = f"loading mask from {repr}"
         log(msg=msg, verbose=self.verbose)
 
-        mask_img_ = check_niimg_3d(self.mask_img)
+        # ensure that the mask_img_ is a 3D binary image
+        tmp = check_niimg(self.mask_img, atleast_4d=True)
+        mask = safe_get_data(tmp, ensure_finite=True)
+        mask = mask.astype(bool).all(axis=3)
+        mask_img_ = new_img_like(self.mask_img, mask)
 
-        # Just check that the mask is valid
         load_mask_img(mask_img_)
-
         if imgs is not None:
             check_compatibility_mask_and_images(self.mask_img, imgs)
 
@@ -457,7 +463,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        mask_img_ : None or SurfaceImage
+        mask_img_ : None or 1D binary SurfaceImage
         """
         if self.mask_img is None:
             return None
@@ -469,15 +475,20 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             verbose=self.verbose,
         )
 
-        # squeeze the mask data if it is 2D and has a single column
-        for part in mask_img_.data.parts:
-            if (
-                mask_img_.data.parts[part].ndim == 2
-                and mask_img_.data.parts[part].shape[1] == 1
-            ):
-                mask_img_.data.parts[part] = np.squeeze(
-                    mask_img_.data.parts[part], axis=1
+        mask = {}
+        for part, v in mask_img_.data.parts.items():
+            mask[part] = np.atleast_2d(v)
+            non_finite_mask = np.logical_not(np.isfinite(mask[part]))
+            if non_finite_mask.any():
+                warnings.warn(
+                    "Non-finite values detected. "
+                    "These values will be replaced with zeros.",
+                    stacklevel=find_stack_level(),
                 )
+                mask[part][non_finite_mask] = 0
+            mask[part] = mask[part].astype(bool).all(axis=1)
+
+        mask_img_ = new_img_like(self.mask_img, mask)
 
         # Just check that the mask is valid
         load_mask_img(mask_img_)

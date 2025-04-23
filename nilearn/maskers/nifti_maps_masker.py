@@ -416,7 +416,7 @@ class NiftiMapsMasker(BaseMasker):
         }
 
         # Load images
-        repr = _utils.repr_niimgs(self.mask_img, shorten=(not self.verbose))
+        repr = _utils.repr_niimgs(self.maps_img, shorten=(not self.verbose))
         msg = f"loading regions from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
         self.maps_img_ = _utils.check_niimg(
