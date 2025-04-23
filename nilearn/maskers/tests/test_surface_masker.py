@@ -36,7 +36,7 @@ def test_fit_list_surf_images(surf_img_2d):
     """
     masker = SurfaceMasker()
     masker.fit([surf_img_2d(3), surf_img_2d(5)])
-    assert masker.mask_img_.shape == (surf_img_2d(1).shape[0], 1)
+    assert masker.mask_img_.shape == (surf_img_2d(1).shape[0],)
 
 
 def test_fit_list_surf_images_with_mask(surf_mask_1d, surf_img_2d):

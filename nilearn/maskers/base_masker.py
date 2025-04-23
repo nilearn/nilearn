@@ -2,6 +2,7 @@
 
 import abc
 import contextlib
+import copy
 import warnings
 from collections.abc import Iterable
 
@@ -33,6 +34,7 @@ from nilearn.image import (
 )
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
+from nilearn.surface.surface import at_least_2d
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -468,16 +470,17 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if self.mask_img is None:
             return None
 
-        mask_img_ = self.mask_img
+        mask_img_ = copy.deepcopy(self.mask_img)
 
         logger.log(
             msg=f"loading mask from {mask_img_.__repr__()}",
             verbose=self.verbose,
         )
 
+        mask_img_ = at_least_2d(mask_img_)
         mask = {}
         for part, v in mask_img_.data.parts.items():
-            mask[part] = np.atleast_2d(v)
+            mask[part] = v
             non_finite_mask = np.logical_not(np.isfinite(mask[part]))
             if non_finite_mask.any():
                 warnings.warn(

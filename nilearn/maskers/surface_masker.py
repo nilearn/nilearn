@@ -18,9 +18,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface.surface import (
-    SurfaceImage,
-)
+from nilearn.surface.surface import SurfaceImage, at_least_2d
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -161,11 +159,13 @@ class SurfaceMasker(_BaseSurfaceMasker):
             img = [img]
         img = concat_imgs(img)
 
+        img = at_least_2d(img)
         mask_data = {}
         for part, v in img.data.parts.items():
-            non_finite_mask = np.logical_not(np.isfinite(v))
-            v[non_finite_mask] = 0
-            mask_data[part] = v.astype("bool").all(axis=1)
+            mask_data[part] = v.copy()
+            non_finite_mask = np.logical_not(np.isfinite(mask_data[part]))
+            mask_data[part][non_finite_mask] = 0
+            mask_data[part] = mask_data[part].astype("bool").all(axis=1)
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
     @rename_parameters(
