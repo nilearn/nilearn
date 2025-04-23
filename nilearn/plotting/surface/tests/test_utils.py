@@ -197,7 +197,7 @@ def test_check_surface_plotting_hemi_both_mesh_none(surf_img_1d):
 def test_check_surface_plotting_hemi_error(surf_img_1d, surf_mesh):
     """Test that an error is raised when hemi is not valid."""
     with pytest.raises(
-        ValueError, match="hemi must be one of left, right or both"
+        ValueError, match="hemi must be one of 'left', 'right' or 'both'"
     ):
         check_surface_plotting_inputs(
             surf_map=surf_img_1d, surf_mesh=surf_mesh, hemi="foo"
