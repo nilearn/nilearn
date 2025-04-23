@@ -478,6 +478,14 @@ class NiftiMasker(BaseMasker):
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs, verbose=max(0, self.verbose - 1), **mask_args
             )
+        elif imgs is not None:
+            warnings.warn(
+                f"[{self.__class__.__name__}.fit] "
+                "Generation of a mask has been requested (imgs != None) "
+                "while a mask was given at masker creation. "
+                "Given mask will be used.",
+                stacklevel=find_stack_level(),
+            )
 
         if self.reports:  # save inputs for reporting
             self._reporting_data = {

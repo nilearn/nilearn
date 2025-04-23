@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import copy
+from warnings import warn
+
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -12,6 +15,7 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import (
     rename_parameters,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -146,6 +150,15 @@ class SurfaceMasker(_BaseSurfaceMasker):
         self.mask_img_ = self._load_mask(img)
 
         if self.mask_img_ is not None:
+            if img is not None:
+                warn(
+                    f"[{self.__class__.__name__}.fit] "
+                    "Generation of a mask has been"
+                    " requested (y != None) while a mask was"
+                    " given at masker creation. Given mask"
+                    " will be used.",
+                    stacklevel=find_stack_level(),
+                )
             return
 
         if img is None:
@@ -155,6 +168,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 "if no mask is passed to mask_img."
             )
 
+        img = copy.deepcopy(img)
         if not isinstance(img, list):
             img = [img]
         img = concat_imgs(img)
@@ -162,7 +176,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         img = at_least_2d(img)
         mask_data = {}
         for part, v in img.data.parts.items():
-            mask_data[part] = v.copy()
+            mask_data[part] = v
             non_finite_mask = np.logical_not(np.isfinite(mask_data[part]))
             mask_data[part][non_finite_mask] = 0
             mask_data[part] = mask_data[part].astype("bool").all(axis=1)

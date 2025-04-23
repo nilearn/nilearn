@@ -76,7 +76,7 @@ def test_fit_transform_warning(img_3d_rand_eye, mask_img_1):
     with pytest.warns(
         UserWarning,
         match="Generation of a mask has been requested .*"
-        "while a mask has been provided at masker creation.",
+        "while a mask was given at masker creation.",
     ):
         X = masker.fit_transform(X=img_3d_rand_eye, y=y)
         assert np.any(X != 0)
