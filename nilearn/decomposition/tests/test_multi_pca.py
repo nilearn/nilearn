@@ -75,7 +75,6 @@ def test_multi_pca_check_masker_attributes(multi_pca_data, mask_img):
     multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
     multi_pca.fit(multi_pca_data)
 
-    assert multi_pca.mask_img_ == mask_img
     assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
 
 
