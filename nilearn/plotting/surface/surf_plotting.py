@@ -3,24 +3,18 @@
 import itertools
 from warnings import warn
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib import gridspec
-from matplotlib.colors import Normalize, to_rgba
-from matplotlib.patches import Patch
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from nilearn import DEFAULT_DIVERGING_CMAP, image, surface
-from nilearn._utils import check_niimg_3d, compare_version, fill_doc
+from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
     create_colormap_from_lut,
     get_colorbar_and_data_ranges,
-    save_figure_if_needed,
 )
-from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.surface._backend import (
     DATA_EXTENSIONS,
     check_hemispheres,
@@ -33,7 +27,6 @@ from nilearn.plotting.surface._matplotlib_backend import (
 from nilearn.plotting.surface._utils import (
     check_surface_plotting_inputs,
     get_surface_backend,
-    sanitize_hemi_for_surface_image,
 )
 from nilearn.surface import (
     load_surf_data,
@@ -294,40 +287,11 @@ def plot_surf(
     return fig
 
 
-def _get_faces_on_edge(faces, parc_idx):
-    """Identify which faces lie on the outeredge of the parcellation defined by
-    the indices in parc_idx.
-
-    Parameters
-    ----------
-    faces : :class:`numpy.ndarray` of shape (n, 3), indices of the mesh faces
-
-    parc_idx : :class:`numpy.ndarray`, indices of the vertices
-        of the region to be plotted
-
-    """
-    # count how many vertices belong to the given parcellation in each face
-    verts_per_face = np.isin(faces, parc_idx).sum(axis=1)
-
-    # test if parcellation forms regions
-    if np.all(verts_per_face < 2):
-        raise ValueError("Vertices in parcellation do not form region.")
-
-    vertices_on_edge = np.intersect1d(
-        np.unique(faces[verts_per_face == 2]), parc_idx
-    )
-    faces_outside_edge = np.isin(faces, vertices_on_edge).sum(axis=1)
-
-    return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
-
-
 @fill_doc
 def plot_surf_contours(
     surf_mesh=None,
     roi_map=None,
     hemi=None,
-    axes=None,
-    figure=None,
     levels=None,
     labels=None,
     colors=None,
@@ -335,6 +299,8 @@ def plot_surf_contours(
     cmap="tab20",
     title=None,
     output_file=None,
+    axes=None,
+    figure=None,
     **kwargs,
 ):
     """Plot contours of ROIs on a surface, optionally over a statistical map.
@@ -376,14 +342,6 @@ def plot_surf_contours(
 
         .. versionadded:: 0.11.0
 
-    axes : instance of matplotlib axes or None, default=None
-        The axes instance to plot to. The projection must be '3d' (e.g.,
-        `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
-        where axes should be passed.).
-        If None, uses axes from figure if available, else creates new axes.
-
-    %(figure)s
-
     levels : :obj:`list` of :obj:`int`, or None, default=None
         A list of indices of the regions that are to be outlined.
         Every index needs to correspond to one index in roi_map.
@@ -408,6 +366,14 @@ def plot_surf_contours(
 
     %(output_file)s
 
+    axes : instance of matplotlib axes or None, default=None
+        The axes instance to plot to. The projection must be '3d' (e.g.,
+        `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
+        where axes should be passed.).
+        If None, uses axes from figure if available, else creates new axes.
+
+    %(figure)s
+
     kwargs : extra keyword arguments, optional
         Extra keyword arguments passed to :func:`~nilearn.plotting.plot_surf`.
 
@@ -421,104 +387,23 @@ def plot_surf_contours(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    hemi = sanitize_hemi_for_surface_image(hemi, roi_map, surf_mesh)
-    roi_map, surf_mesh, _ = check_surface_plotting_inputs(
-        roi_map, surf_mesh, hemi, map_var_name="roi_map"
+    fig = get_surface_backend("matplotlib").plot_surf_contours(
+        surf_mesh=surf_mesh,
+        roi_map=roi_map,
+        hemi=hemi,
+        levels=levels,
+        labels=labels,
+        colors=colors,
+        legend=legend,
+        cmap=cmap,
+        title=title,
+        output_file=output_file,
+        axes=axes,
+        figure=figure,
+        **kwargs,
     )
 
-    _check_figure_axes_inputs_plot_surf_contours(figure, axes)
-
-    if figure is None and axes is None:
-        figure = plot_surf(surf_mesh, **kwargs)
-        axes = figure.axes[0]
-    if figure is None:
-        figure = axes.get_figure()
-    if axes is None:
-        axes = figure.axes[0]
-    if axes.name != "3d":
-        raise ValueError("Axes must be 3D.")
-    # test if axes contains Poly3DCollection, if not initialize surface
-    if not axes.collections or not isinstance(
-        axes.collections[0], Poly3DCollection
-    ):
-        _ = plot_surf(surf_mesh, axes=axes, **kwargs)
-
-    _, faces = load_surf_mesh(surf_mesh)
-
-    check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
-    roi = load_surf_data(roi_map)
-
-    if levels is None:
-        levels = np.unique(roi_map)
-    if colors is None:
-        n_levels = len(levels)
-        vmax = n_levels
-        cmap = plt.get_cmap(cmap)
-        norm = Normalize(vmin=0, vmax=vmax)
-        colors = [cmap(norm(color_i)) for color_i in range(vmax)]
-    else:
-        try:
-            colors = [to_rgba(color, alpha=1.0) for color in colors]
-        except ValueError:
-            raise ValueError(
-                "All elements of colors need to be either a"
-                " matplotlib color string or RGBA values."
-            )
-
-    if labels is None:
-        labels = [None] * len(levels)
-    if not (len(levels) == len(labels) == len(colors)):
-        raise ValueError(
-            "Levels, labels, and colors "
-            "argument need to be either the same length or None."
-        )
-
-    patch_list = []
-    for level, color, label in zip(levels, colors, labels):
-        roi_indices = np.where(roi == level)[0]
-        faces_outside = _get_faces_on_edge(faces, roi_indices)
-        # Fix: Matplotlib version 3.3.2 to 3.3.3
-        # Attribute _facecolors3d changed to _facecolor3d in
-        # matplotlib version 3.3.3
-        if compare_version(mpl.__version__, "<", "3.3.3"):
-            axes.collections[0]._facecolors3d[faces_outside] = color
-            if axes.collections[0]._edgecolors3d.size == 0:
-                axes.collections[0].set_edgecolor(
-                    axes.collections[0]._facecolors3d
-                )
-            axes.collections[0]._edgecolors3d[faces_outside] = color
-        else:
-            axes.collections[0]._facecolor3d[faces_outside] = color
-            if axes.collections[0]._edgecolor3d.size == 0:
-                axes.collections[0].set_edgecolor(
-                    axes.collections[0]._facecolor3d
-                )
-            axes.collections[0]._edgecolor3d[faces_outside] = color
-        if label and legend:
-            patch_list.append(Patch(color=color, label=label))
-    # plot legend only if indicated and labels provided
-    if legend and np.any([lbl is not None for lbl in labels]):
-        figure.legend(handles=patch_list)
-        # if legends, then move title to the left
-    if title is None and hasattr(figure._suptitle, "_text"):
-        title = figure._suptitle._text
-    if title:
-        axes.set_title(title)
-
-    return save_figure_if_needed(figure, output_file)
-
-
-def _check_figure_axes_inputs_plot_surf_contours(figure, axes):
-    if isinstance(figure, PlotlySurfaceFigure):
-        raise ValueError(
-            "figure argument is a PlotlySurfaceFigure"
-            "but it should be None or a matplotlib figure"
-        )
-    if isinstance(axes, PlotlySurfaceFigure):
-        raise ValueError(
-            "axes argument is a PlotlySurfaceFigure"
-            "but it should be None or a matplotlib axes"
-        )
+    return fig
 
 
 @fill_doc

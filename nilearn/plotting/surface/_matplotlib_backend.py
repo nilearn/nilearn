@@ -10,6 +10,7 @@ from warnings import warn
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils import compare_version
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
@@ -22,14 +23,20 @@ from nilearn.plotting.surface._backend import (
     check_surf_map,
     check_views,
 )
-from nilearn.surface import load_surf_data
+from nilearn.plotting.surface._utils import get_faces_on_edge
+from nilearn.surface import (
+    load_surf_data,
+    load_surf_mesh,
+)
 
 try:
     import matplotlib as mpl
     import matplotlib.pyplot as plt
     from matplotlib.cm import ScalarMappable
     from matplotlib.colorbar import make_axes
-    from matplotlib.colors import LinearSegmentedColormap, Normalize
+    from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
+    from matplotlib.patches import Patch
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 except ImportError:
     from nilearn.plotting._utils import engine_warning
 
@@ -333,6 +340,18 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
     def name(self):
         return "matplotlib"
 
+    def _check_figure_axes_inputs(self, figure, axes):
+        """Check if the specified figure and axes are matplotlib objects."""
+        if figure is not None and not isinstance(figure, plt.Figure):
+            raise ValueError(
+                "figure argument should be None or a "
+                "'matplotlib.pyplot.Figure'."
+            )
+        if axes is not None and not isinstance(axes, plt.Axes):
+            raise ValueError(
+                "axes argument should be None or a 'matplotlib.pyplot.Axes'."
+            )
+
     def _plot_surf(
         self,
         coords,
@@ -491,6 +510,105 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
             p3dcollec.set_edgecolors(face_colors)
 
         if title is not None:
+            axes.set_title(title)
+
+        return save_figure_if_needed(figure, output_file)
+
+    def _plot_surf_contours(
+        self,
+        surf_mesh=None,
+        roi_map=None,
+        hemi=None,
+        levels=None,
+        labels=None,
+        colors=None,
+        legend=False,
+        cmap="tab20",
+        title=None,
+        output_file=None,
+        axes=None,
+        figure=None,
+        **kwargs,
+    ):
+        self._check_figure_axes_inputs(figure, axes)
+
+        if figure is None and axes is None:
+            figure = self.plot_surf(surf_mesh, hemi=hemi, **kwargs)
+            axes = figure.axes[0]
+        elif figure is None:
+            figure = axes.get_figure()
+        elif axes is None:
+            axes = figure.axes[0]
+
+        if axes.name != "3d":
+            raise ValueError("Axes must be 3D.")
+
+        # test if axes contains Poly3DCollection, if not initialize surface
+        if not axes.collections or not isinstance(
+            axes.collections[0], Poly3DCollection
+        ):
+            _ = self.plot_surf(surf_mesh, hemi=hemi, axes=axes, **kwargs)
+
+        if levels is None:
+            levels = np.unique(roi_map)
+
+        if labels is None:
+            labels = [None] * len(levels)
+
+        if colors is None:
+            n_levels = len(levels)
+            vmax = n_levels
+            cmap = plt.get_cmap(cmap)
+            norm = Normalize(vmin=0, vmax=vmax)
+            colors = [cmap(norm(color_i)) for color_i in range(vmax)]
+        else:
+            try:
+                colors = [to_rgba(color, alpha=1.0) for color in colors]
+            except ValueError:
+                raise ValueError(
+                    "All elements of colors need to be either a"
+                    " matplotlib color string or RGBA values."
+                )
+
+        if not (len(levels) == len(labels) == len(colors)):
+            raise ValueError(
+                "Levels, labels, and colors "
+                "argument need to be either the same length or None."
+            )
+
+        _, faces = load_surf_mesh(surf_mesh)
+        roi = load_surf_data(roi_map)
+
+        patch_list = []
+        for level, color, label in zip(levels, colors, labels):
+            roi_indices = np.where(roi == level)[0]
+            faces_outside = get_faces_on_edge(faces, roi_indices)
+            # Fix: Matplotlib version 3.3.2 to 3.3.3
+            # Attribute _facecolors3d changed to _facecolor3d in
+            # matplotlib version 3.3.3
+            if compare_version(mpl.__version__, "<", "3.3.3"):
+                axes.collections[0]._facecolors3d[faces_outside] = color
+                if axes.collections[0]._edgecolors3d.size == 0:
+                    axes.collections[0].set_edgecolor(
+                        axes.collections[0]._facecolors3d
+                    )
+                axes.collections[0]._edgecolors3d[faces_outside] = color
+            else:
+                axes.collections[0]._facecolor3d[faces_outside] = color
+                if axes.collections[0]._edgecolor3d.size == 0:
+                    axes.collections[0].set_edgecolor(
+                        axes.collections[0]._facecolor3d
+                    )
+                axes.collections[0]._edgecolor3d[faces_outside] = color
+            if label and legend:
+                patch_list.append(Patch(color=color, label=label))
+        # plot legend only if indicated and labels provided
+        if legend and np.any([lbl is not None for lbl in labels]):
+            figure.legend(handles=patch_list)
+            # if legends, then move title to the left
+        if title is None and hasattr(figure._suptitle, "_text"):
+            title = figure._suptitle._text
+        if title:
             axes.set_title(title)
 
         return save_figure_if_needed(figure, output_file)

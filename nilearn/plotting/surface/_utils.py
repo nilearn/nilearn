@@ -2,6 +2,8 @@
 
 from warnings import warn
 
+import numpy as np
+
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn.surface import (
     PolyMesh,
@@ -169,6 +171,33 @@ def check_surface_plotting_inputs(
     bg_map = _check_bg_map(bg_map, hemi)
 
     return surf_map, surf_mesh, bg_map
+
+
+def get_faces_on_edge(faces, parc_idx):
+    """Identify which faces lie on the outeredge of the parcellation defined by
+    the indices in parc_idx.
+
+    Parameters
+    ----------
+    faces : :class:`numpy.ndarray` of shape (n, 3), indices of the mesh faces
+
+    parc_idx : :class:`numpy.ndarray`, indices of the vertices
+        of the region to be plotted
+
+    """
+    # count how many vertices belong to the given parcellation in each face
+    verts_per_face = np.isin(faces, parc_idx).sum(axis=1)
+
+    # test if parcellation forms regions
+    if np.all(verts_per_face < 2):
+        raise ValueError("Vertices in parcellation do not form region.")
+
+    vertices_on_edge = np.intersect1d(
+        np.unique(faces[verts_per_face == 2]), parc_idx
+    )
+    faces_outside_edge = np.isin(faces, vertices_on_edge).sum(axis=1)
+
+    return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
 
 
 def sanitize_hemi_for_surface_image(hemi, map, mesh):

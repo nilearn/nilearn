@@ -353,3 +353,21 @@ class PlotlySurfaceBackend(BaseSurfaceBackend):
             plotly_figure.savefig()
 
         return plotly_figure
+
+    def _plot_surf_contours(
+        self,
+        surf_mesh=None,
+        roi_map=None,
+        hemi=None,
+        levels=None,
+        labels=None,
+        colors=None,
+        legend=False,
+        cmap="tab20",
+        title=None,
+        output_file=None,
+        axes=None,
+        figure=None,
+        **kwargs,
+    ):
+        raise NotImplementedError()
