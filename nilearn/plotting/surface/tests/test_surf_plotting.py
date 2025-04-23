@@ -498,6 +498,9 @@ def test_plot_img_on_surf_input_as_file(matplotlib_pyplot, img_3d_mni_as_file):
 def test_plot_surf_contours(
     matplotlib_pyplot, in_memory_mesh, parcellation, surf_mask_1d
 ):
+    """Test nilearn.plotting.surface.plot_surf_contours for valid input
+    values.
+    """
     plot_surf_contours(in_memory_mesh, parcellation)
     plot_surf_contours(in_memory_mesh, parcellation, levels=[1, 2])
     plot_surf_contours(
@@ -515,6 +518,9 @@ def test_plot_surf_contour_roi_map_as_surface_image(
 def test_plot_surf_contours_legend(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
+    """Test nilearn.plotting.surface.plot_surf_contours creates figure legend
+    when `legend=True`.
+    """
     fig = plot_surf_contours(
         in_memory_mesh,
         parcellation,
@@ -526,6 +532,9 @@ def test_plot_surf_contours_legend(
 def test_plot_surf_contours_colors(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
+    """Test nilearn.plotting.surface.plot_surf_contours for different inputs as
+    `colors`.
+    """
     plot_surf_contours(
         in_memory_mesh, parcellation, levels=[1, 2], colors=["r", "g"]
     )
@@ -547,6 +556,7 @@ def test_plot_surf_contours_colors(
 def test_plot_surf_contours_axis_title(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
+    """Test nilearn.plotting.surface.plot_surf_contours for axis title."""
     fig = plot_surf(in_memory_mesh)
     plot_surf_contours(in_memory_mesh, parcellation, figure=fig)
     display = plot_surf_contours(
