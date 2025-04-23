@@ -30,8 +30,8 @@ from nilearn.surface import (
 )
 
 try:
-    import matplotlib as mpl
     import matplotlib.pyplot as plt
+    from matplotlib import __version__ as mpl_version
     from matplotlib.cm import ScalarMappable
     from matplotlib.colorbar import make_axes
     from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
@@ -150,7 +150,7 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
     # scale background map if need be
     bg_vmin, bg_vmax = np.min(bg_faces), np.max(bg_faces)
     if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
+        bg_norm = Normalize(vmin=bg_vmin, vmax=bg_vmax)
         bg_faces = bg_norm(bg_faces)
 
     if darkness is not None:
@@ -586,7 +586,7 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
             # Fix: Matplotlib version 3.3.2 to 3.3.3
             # Attribute _facecolors3d changed to _facecolor3d in
             # matplotlib version 3.3.3
-            if compare_version(mpl.__version__, "<", "3.3.3"):
+            if compare_version(mpl_version, "<", "3.3.3"):
                 axes.collections[0]._facecolors3d[faces_outside] = color
                 if axes.collections[0]._edgecolors3d.size == 0:
                     axes.collections[0].set_edgecolor(
