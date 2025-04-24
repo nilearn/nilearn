@@ -82,7 +82,10 @@ view
 # %%
 # It's also possible to visualize volumes in a LR-flipped "radiological" view
 # Just set radiological=True
-plotting.view_img(stat_img, threshold=3 ,radiological=True)
+plotting.view_img(stat_img, 
+                  threshold=3, 
+                  radiological=True)
+
 view
 
 # %%
