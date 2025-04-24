@@ -277,6 +277,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         mask = mask.astype(bool).all(axis=3)
         mask_img_ = new_img_like(self.mask_img, mask)
 
+        # Just check that the mask is valid
         load_mask_img(mask_img_)
         if imgs is not None:
             check_compatibility_mask_and_images(self.mask_img, imgs)
@@ -495,7 +496,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         # Just check that the mask is valid
         load_mask_img(mask_img_)
-
         if imgs is not None:
             check_compatibility_mask_and_images(mask_img_, imgs)
             if not isinstance(imgs, Iterable):

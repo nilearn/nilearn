@@ -627,12 +627,12 @@ def check_masker_mask_img(estimator):
 
         mask_data = np.zeros(shape, dtype="int8")
         mask_data[2:-2, 2:-2, 2:-2] = 1
-        binary_mask_img = Nifti1Image(mask_data, _affine_mni())
+        binary_mask_img = Nifti1Image(mask_data, _affine_eye())
 
-        input_img = Nifti1Image(_rng().random(shape), _affine_mni())
+        input_img = Nifti1Image(_rng().random(shape), _affine_eye())
 
         non_binary_mask_img = Nifti1Image(
-            _rng().random((*shape, 2)), _affine_mni()
+            _rng().random((*shape, 2)), _affine_eye()
         )
 
     else:
