@@ -579,7 +579,7 @@ def check_masker_mask_img_from_imgs(estimator):
     """Check maskers mask_img_ inferred from imgs.
 
     For (Multi)NiftiMasker and SurfaceMasker:
-    they must have a valid mask_img_ after fit even when no mask was passed.
+    they must have a valid mask_img_ after fit.
     For all other maskers mask_img_ should be None after fit.
     """
     if accept_niimg_input(estimator):
