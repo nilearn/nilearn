@@ -72,7 +72,7 @@ def generate_atlas_look_up_table(
     if fname in ["fetch_atlas_basc_multiscale_2015"]:
         index = []
         for x in name:
-            tmp = x if isinstance(x, str) else int(x)
+            tmp = 0.0 if x in ["background", "Background"] else float(x)
             index.append(tmp)
     elif fname in ["fetch_atlas_schaefer_2018", "fetch_atlas_pauli_2017"]:
         index = list(range(1, len(name) + 1))
