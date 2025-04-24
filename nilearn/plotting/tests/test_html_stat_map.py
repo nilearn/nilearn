@@ -335,7 +335,7 @@ def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
         annotate=False,
         title="test",
         colorbar=True,
-        radiological=False,
+        radiological=radiological,
     )
 
     # Create a viewer
