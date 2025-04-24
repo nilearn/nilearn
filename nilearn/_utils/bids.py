@@ -112,6 +112,12 @@ def generate_atlas_look_up_table(
             ignore_index=True,
         )
 
+    # enforce little endian of index column
+    if lut["index"].dtype.byteorder == ">":
+        lut["index"] = lut["index"].astype(
+            lut["index"].dtype.newbyteorder("=")
+        )
+
     return lut
 
 
