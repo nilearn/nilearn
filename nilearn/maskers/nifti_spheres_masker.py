@@ -742,6 +742,8 @@ class NiftiSpheresMasker(BaseMasker):
         """
         check_is_fitted(self)
 
+        self._check_signal_shape(region_signals)
+
         logger.log("computing image from signals", verbose=self.verbose)
 
         if self.mask_img is not None:

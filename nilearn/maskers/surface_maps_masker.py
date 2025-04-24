@@ -340,6 +340,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
+        self._check_signal_shape(region_signals)
+
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
         mask_data = (

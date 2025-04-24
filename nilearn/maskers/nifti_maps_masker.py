@@ -686,6 +686,8 @@ class NiftiMapsMasker(BaseMasker):
 
         check_is_fitted(self)
 
+        self._check_signal_shape(region_signals)
+
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_maps(
             region_signals, self.maps_img_, mask_img=self.mask_img_

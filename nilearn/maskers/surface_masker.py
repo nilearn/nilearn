@@ -314,12 +314,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         if signals.ndim == 1:
             signals = np.array([signals])
 
-        if signals.shape[1] != self.n_elements_:
-            raise ValueError(
-                "Input to 'inverse_transform' has wrong shape.\n"
-                f"Last dimension should be {self.n_elements_}.\n"
-                f"Got {signals.shape[1]}."
-            )
+        self._check_signal_shape(signals)
 
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():

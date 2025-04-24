@@ -490,6 +490,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
+        self._check_signal_shape(signals)
+
         return signals_to_surf_img_labels(
             signals,
             np.asarray(self.labels_),

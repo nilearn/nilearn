@@ -89,19 +89,6 @@ def test_inverse_transform_list_surf_images(
     assert img.shape == (surf_mask.mesh.n_vertices, 7)
 
 
-def test_error_inverse_transform_shape(surf_img_1d, surf_mask_1d, rng):
-    """Check input shape of inverse transform."""
-    masker = SurfaceMasker(surf_mask_1d).fit()
-    signals = masker.transform(surf_img_1d)
-    signals_wrong_shape = rng.random(
-        size=(signals.shape[0] + 1, signals.shape[1] + 1)
-    )
-    with pytest.raises(
-        ValueError, match="Input to 'inverse_transform' has wrong shape"
-    ):
-        masker.inverse_transform(signals_wrong_shape)
-
-
 @pytest.mark.parametrize("n_timepoints", [3])
 def test_transform_inverse_transform_no_mask(surf_mesh, n_timepoints):
     """Check output of inverse transform when not using a mask."""

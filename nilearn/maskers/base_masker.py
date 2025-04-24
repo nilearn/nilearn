@@ -413,12 +413,22 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
+        self._check_signal_shape(X)
+
         img = self._cache(unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array
         with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
         return img
+
+    def _check_signal_shape(self, signals):
+        if signals.shape[-1] != self.n_elements_:
+            raise ValueError(
+                "Input to 'inverse_transform' has wrong shape.\n"
+                f"Last dimension should be {self.n_elements_}.\n"
+                f"Got {signals.shape[-1]}."
+            )
 
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
@@ -599,3 +609,11 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         del y
         return self.fit(imgs).transform(imgs, confounds, sample_mask)
+
+    def _check_signal_shape(self, signals):
+        if signals.shape[-1] != self.n_elements_:
+            raise ValueError(
+                "Input to 'inverse_transform' has wrong shape.\n"
+                f"Last dimension should be {self.n_elements_}.\n"
+                f"Got {signals.shape[-1]}."
+            )

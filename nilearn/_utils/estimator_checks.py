@@ -901,6 +901,13 @@ def check_masker_smooth(estimator):
 
 
 def check_masker_inverse_transform(estimator):
+    """Check output of inverse transform.
+
+    For signal with 1 or more samples.
+
+    Check that the proper error is thrown,
+    if signal has the wrong shape.
+    """
     if accept_niimg_input(estimator):
         n_sample = 1
         imgs = _img_3d_rand()
@@ -917,6 +924,15 @@ def check_masker_inverse_transform(estimator):
 
     signals = _rng().random((1, estimator.n_elements_))
     imgs = estimator.inverse_transform(signals)
+
+    signals = _rng().random((10, estimator.n_elements_))
+    imgs = estimator.inverse_transform(signals)
+
+    signals = _rng().random((1, estimator.n_elements_ + 1))
+    with pytest.raises(
+        ValueError, match="Input to 'inverse_transform' has wrong shape."
+    ):
+        imgs = estimator.inverse_transform(signals)
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------
