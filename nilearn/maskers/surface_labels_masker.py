@@ -2,6 +2,7 @@
 
 import warnings
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -171,11 +172,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
-    n_elements_ : :obj:`int`
-        The number of discrete values in the mask.
-        This is equivalent to the number of unique values in the mask image,
-        ignoring the background value.
-
     lut_ : :obj:`pandas.DataFrame`
         Look-up table derived from the ``labels`` or ``lut``
         or from the values of the label image.
@@ -231,6 +227,57 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         all_labels = [x.ravel() for x in self.labels_img.data.parts.values()]
         return np.concatenate(all_labels)
 
+    @property
+    def n_elements_(self) -> int:
+        """Return number of regions.
+
+        This is equal to the number of unique values
+        in the fitted label image,
+        minus the background value.
+        """
+        check_is_fitted(self)
+        lut = self.lut_
+        return len(lut) - 1
+
+    @property
+    def labels_(self) -> list[str]:
+        """Return list of labels of the regions."""
+        check_is_fitted(self)
+        lut = self.lut_
+        return lut["index"].to_list()
+
+    @property
+    def region_names_(self) -> dict[int, str]:
+        """Return a dictionary containing the region names corresponding \n
+            to each column in the array returned by `transform`.
+
+        The region names correspond to the labels provided
+        in labels in input.
+        The region name corresponding to ``region_signal[:,i]``
+        is ``region_names_[i]``.
+
+        .. versionadded:: 0.10.3
+        """
+        check_is_fitted(self)
+        lut = self.lut_
+        return lut.loc[lut["index"] != self.background_label, "name"].to_dict()
+
+    @property
+    def region_ids_(self) -> dict[Union[str, int], int]:
+        """Return dictionary containing the region ids corresponding \n
+           to each column in the array \n
+           returned by `transform`.
+
+        The region id corresponding to ``region_signal[:,i]``
+        is ``region_ids_[i]``.
+        ``region_ids_['background']`` is the background label.
+
+        .. versionadded:: 0.10.3
+        """
+        check_is_fitted(self)
+        lut = self.lut_
+        return lut["index"].to_dict()
+
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.2"
     )
@@ -273,8 +320,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         all_labels.discard(self.background_label)
         self._labels_ = list(all_labels)
 
-        self.n_elements_ = len(self._labels_)
-
         # generate a look up table if one was not provided
         if self.lut is not None:
             if isinstance(self.lut, (str, Path)):
@@ -293,8 +338,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             )
 
         self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img)
-
-        self.label_names_ = self.lut_.name.to_list()
 
         self.mask_img_ = self._load_mask(imgs)
         if self.mask_img_ is not None:
@@ -357,11 +400,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         }
 
     def __sklearn_is_fitted__(self):
-        return (
-            hasattr(self, "n_elements_")
-            and hasattr(self, "lut_")
-            and hasattr(self, "mask_img_")
-        )
+        return hasattr(self, "lut_") and hasattr(self, "mask_img_")
 
     @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
