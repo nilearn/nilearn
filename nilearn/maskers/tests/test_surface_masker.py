@@ -72,9 +72,9 @@ def test_transform_list_surf_images(
     surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
     masker = SurfaceMasker(surf_mask).fit()
     signals = masker.transform([surf_img_1d, surf_img_1d, surf_img_1d])
-    assert signals.shape == (3, masker.output_dimension_)
+    assert signals.shape == (3, masker.n_elements_)
     signals = masker.transform([surf_img_2d(5), surf_img_2d(4)])
-    assert signals.shape == (9, masker.output_dimension_)
+    assert signals.shape == (9, masker.n_elements_)
 
 
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
@@ -152,7 +152,7 @@ def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
     signals = masker.transform(img)
 
     # check mask shape is as expected
-    assert signals.shape == (n_timepoints, masker.output_dimension_)
+    assert signals.shape == (n_timepoints, masker.n_elements_)
 
     # check the data for first seven vertices is as expected
     assert np.array_equal(signals.ravel()[:7], [2, 3, 4, 20, 30, 40, 50])

@@ -71,7 +71,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
-    output_dimension_ : :obj:`int` or None
+    n_elements_ : :obj:`int` or None
         number of vertices included in mask
 
     mask_img_ : :obj:`~nilearn.surface.SurfaceImage` or None
@@ -124,6 +124,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
             "number_of_regions": None,
             "summary": None,
             "warning_message": None,
+            "n_elements": 0,
+            "coverage": 0,
         }
         # data necessary to construct figure for the report
         self._reporting_data = None
@@ -131,9 +133,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
     def __sklearn_is_fitted__(self):
         return (
             hasattr(self, "mask_img_")
-            and hasattr(self, "output_dimension_")
+            and hasattr(self, "n_elements_")
             and self.mask_img_ is not None
-            and self.output_dimension_ is not None
+            and self.n_elements_ is not None
         )
 
     def _fit_mask_img(self, img):
@@ -201,13 +203,17 @@ class SurfaceMasker(_BaseSurfaceMasker):
             stop = start + mask.sum()
             self._slices[part_name] = start, stop
             start = stop
-        self.output_dimension_ = stop
+        self.n_elements_ = int(stop)
 
         if self.reports:
+            self._report_content["n_elements"] = self.n_elements_
             for part in self.mask_img_.data.parts:
                 self._report_content["n_vertices"][part] = (
                     self.mask_img_.mesh.parts[part].n_vertices
                 )
+            self._report_content["coverage"] = (
+                self.n_elements_ / self.mask_img_.mesh.n_vertices * 100
+            )
             self._reporting_data = {
                 "mask": self.mask_img_,
                 "images": imgs,
@@ -263,9 +269,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
         if self.reports:
             self._reporting_data["images"] = imgs
 
-        output = np.empty((1, self.output_dimension_))
+        output = np.empty((1, self.n_elements_))
         if len(imgs.shape) == 2:
-            output = np.empty((imgs.shape[1], self.output_dimension_))
+            output = np.empty((imgs.shape[1], self.n_elements_))
         for part_name, (start, stop) in self._slices.items():
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = imgs.data.parts[part_name][mask].T
@@ -310,10 +316,10 @@ class SurfaceMasker(_BaseSurfaceMasker):
         if signals.ndim == 1:
             signals = np.array([signals])
 
-        if signals.shape[1] != self.output_dimension_:
+        if signals.shape[1] != self.n_elements_:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
-                f"Last dimension should be {self.output_dimension_}.\n"
+                f"Last dimension should be {self.n_elements_}.\n"
                 f"Got {signals.shape[1]}."
             )
 

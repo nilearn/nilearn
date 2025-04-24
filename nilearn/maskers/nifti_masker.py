@@ -4,6 +4,7 @@ import warnings
 from copy import copy as copy_object
 from functools import partial
 
+import numpy as np
 from joblib import Memory
 
 from nilearn import _utils
@@ -441,6 +442,8 @@ class NiftiMasker(BaseMasker):
                 "between the mask and its input image. "
             ),
             "warning_message": None,
+            "n_elements": 0,
+            "coverage": 0,
         }
         self._overlay_text = (
             "\n To see the input Nifti image before resampling, "
@@ -515,6 +518,10 @@ class NiftiMasker(BaseMasker):
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
+        self._report_content["n_elements"] = self.n_elements_
+        self._report_content["coverage"] = (
+            self.n_elements_ / np.prod(data.shape) * 100
+        )
 
         logger.log("Finished fit", verbose=self.verbose)
 

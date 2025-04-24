@@ -7,6 +7,7 @@ import itertools
 import warnings
 from functools import partial
 
+import numpy as np
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -268,6 +269,8 @@ class MultiNiftiMasker(NiftiMasker):
                 "between the mask and its input image. "
             ),
             "warning_message": None,
+            "n_elements": 0,
+            "coverage": 0,
         }
         self._overlay_text = (
             "\n To see the input Nifti image before resampling, "
@@ -359,6 +362,10 @@ class MultiNiftiMasker(NiftiMasker):
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
+        self._report_content["n_elements"] = self.n_elements_
+        self._report_content["coverage"] = (
+            self.n_elements_ / np.prod(data.shape) * 100
+        )
 
         if (self.target_shape is not None) or (
             (self.target_affine is not None) and self.reports
