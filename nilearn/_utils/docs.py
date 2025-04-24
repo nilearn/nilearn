@@ -583,6 +583,15 @@ lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
 """
 
+# masker_lut
+docdict["masker_lut"] = """lut : :obj:`pandas.DataFrame` or :obj:`str` \
+            or :obj:`pathlib.Path` to a TSV file or None, default=None
+        Mutually exclusive with ``labels``.
+        Act as a look up table (lut)
+        with at least columns 'index' and 'name'.
+        Formatted according to 'dseg.tsv' format from
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+
 
 # mask_strategy
 docdict["mask_strategy"] = """

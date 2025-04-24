@@ -192,7 +192,7 @@ def check_look_up_table(lut, atlas, strict=False, verbose=1):
                 warnings.warn(msg, stacklevel=find_stack_level())
 
 
-def sanitize_look_up_table(lut, atlas):
+def sanitize_look_up_table(lut, atlas) -> pd.DataFrame:
     """Remove entries in lut that are missing from image."""
     check_look_up_table(lut, atlas, strict=False, verbose=0)
     indices = _get_indices_from_image(atlas)
