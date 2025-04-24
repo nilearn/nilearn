@@ -560,8 +560,8 @@ def check_masker_compatibility_mask_image(estimator):
 def check_masker_no_mask_no_img(estimator):
     """Check maskers mask_img_ when no mask passed at init or imgs at fit.
 
-    For (Multi)NiftiMasker and SurfaceMasker
-    should raise errors in this case.
+    For (Multi)NiftiMasker and SurfaceMasker fit should raise ValueError.
+    For all other maskers mask_img_ should be None after fit.
     """
     assert not hasattr(estimator, "mask_img_")
 
