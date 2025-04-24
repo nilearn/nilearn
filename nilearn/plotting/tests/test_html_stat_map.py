@@ -310,7 +310,7 @@ def _get_data_and_json_view(black_bg, cbar, radiological):
 @pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("cbar", [True, False])
 @pytest.mark.parametrize("radiological", [True, False])
-def test_json_view_data(black_bg, cbar):
+def test_json_view_data(black_bg, cbar, radiological):
     _, json_view = _get_data_and_json_view(black_bg, cbar, radiological)
     # Check the presence of critical fields
     assert isinstance(json_view["bg_base64"], str)
