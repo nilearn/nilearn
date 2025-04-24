@@ -322,7 +322,7 @@ class NiftiLabelsMasker(BaseMasker):
         lut = self.lut_
         if hasattr(self, "_lut_"):
             lut = self._lut_
-        return len(lut) - 1
+        return len(lut[lut["index"] != self.background_label])
 
     def _post_masking_atlas(self, visualize=False):
         """

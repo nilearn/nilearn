@@ -154,15 +154,14 @@ def test_surface_label_masker_transform(
     signal = masker.transform(surf_img_1d)
 
     assert isinstance(signal, np.ndarray)
-    n_labels = len(masker.labels_)
-    assert signal.shape == (1, n_labels)
+    assert signal.shape == (1, masker.n_elements_)
 
     # 5 'timepoint'
     n_timepoints = 5
     signal = masker.transform(surf_img_2d(n_timepoints))
 
     assert isinstance(signal, np.ndarray)
-    assert signal.shape == (n_timepoints, n_labels)
+    assert signal.shape == (n_timepoints, masker.n_elements_)
 
 
 def test_surface_label_masker_transform_with_mask(surf_mesh, surf_img_2d):
@@ -193,7 +192,9 @@ def test_surface_label_masker_transform_with_mask(surf_mesh, surf_img_2d):
     ):
         signal = masker.transform(surf_img_2d(n_timepoints))
     assert isinstance(signal, np.ndarray)
-    assert signal.shape == (n_timepoints, 2)
+    expected_n_regions = 2
+    assert masker.n_elements_ == expected_n_regions
+    assert signal.shape == (n_timepoints, masker.n_elements_)
 
 
 @pytest.fixture
@@ -310,8 +311,6 @@ def test_surface_label_masker_check_output_1d(
     }
     surf_img_1d = SurfaceImage(surf_mesh, data)
     signal = masker.transform(surf_img_1d)
-
-    assert signal.shape == (1, masker.n_elements_)
 
     assert_array_equal(signal, np.asarray([expected_signal]))
 

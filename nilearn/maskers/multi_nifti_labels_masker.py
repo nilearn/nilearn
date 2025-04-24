@@ -97,13 +97,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
 
-    n_elements_ : :obj:`int`
-        The number of discrete values in the mask.
-        This is equivalent to the number of unique values in the mask image,
-        ignoring the background value.
-
-        .. versionadded:: 0.9.2
-
     See Also
     --------
     nilearn.maskers.NiftiMasker

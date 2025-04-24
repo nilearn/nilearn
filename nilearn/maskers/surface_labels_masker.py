@@ -237,7 +237,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
         lut = self.lut_
-        return len(lut) - 1
+        return len(lut[lut["index"] != self.background_label])
 
     @property
     def labels_(self) -> list[str]:
