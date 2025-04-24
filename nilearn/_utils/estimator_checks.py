@@ -877,7 +877,8 @@ def check_masker_smooth(estimator):
     signal = estimator.fit_transform(imgs)
 
     assert isinstance(signal, np.ndarray)
-    assert signal.shape == (n_sample, estimator.n_elements_)
+    n_elements = estimator.n_elements_
+    assert signal.shape == (n_sample, n_elements)
 
     estimator.smoothing_fwhm = 3
     estimator.fit(imgs)

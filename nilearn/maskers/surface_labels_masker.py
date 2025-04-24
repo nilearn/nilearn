@@ -1,5 +1,6 @@
 """Extract data from a SurfaceImage, averaging over atlas regions."""
 
+import copy
 import warnings
 from pathlib import Path
 from typing import Union
@@ -31,62 +32,18 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.image import mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface.surface import (
-    SurfaceImage,
-    at_least_2d,
-)
+from nilearn.surface.surface import SurfaceImage, at_least_2d, get_data
 from nilearn.surface.utils import check_polymesh_equal
-
-
-def _apply_surf_mask_on_labels(
-    mask_data: np.ndarray, labels_data: np.ndarray, background_label=0
-) -> tuple[np.ndarray, np.ndarray]:
-    """Apply mask to labels data.
-
-    Ensures that we only get the data back
-    according to the mask that was applied.
-    So if some labels were removed,
-    we will only get the data for the remaining labels,
-    the vertices that were masked out will be set to the background label.
-    """
-    labels_before_mask = {int(label) for label in np.unique(labels_data)}
-    labels_data[np.logical_not(mask_data.flatten())] = background_label
-    labels_after_mask = {int(label) for label in np.unique(labels_data)}
-    labels_diff = labels_before_mask - labels_after_mask
-    if labels_diff:
-        warnings.warn(
-            "After applying mask to the labels image, "
-            "the following labels were "
-            f"removed: {labels_diff}. "
-            f"Out of {len(labels_before_mask)} labels, the "
-            "masked labels image only contains "
-            f"{len(labels_after_mask)} labels "
-            "(including background).",
-            stacklevel=find_stack_level(),
-        )
-    labels = np.unique(labels_data)
-    labels = labels[labels != background_label]
-
-    return labels_data, labels
 
 
 def signals_to_surf_img_labels(
     signals: np.ndarray,
     labels: np.ndarray,
     labels_img: SurfaceImage,
-    mask_img: SurfaceImage,
     background_label=0,
 ):
     """Transform signals to surface image labels."""
     labels = labels[labels != background_label]
-    if mask_img is not None:
-        mask_data = np.concatenate(list(mask_img.data.parts.values()), axis=0)
-        labels_data = np.concatenate(
-            list(labels_img.data.parts.values()), axis=0
-        )
-        _, labels = _apply_surf_mask_on_labels(
-            mask_data, labels_data, background_label
-        )
 
     data = {}
     for part_name, labels_part in labels_img.data.parts.items():
@@ -225,12 +182,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self.clean_args = clean_args
 
     @property
-    def _labels_data(self):
-        """Return data of label image concatenated over hemispheres."""
-        all_labels = [x.ravel() for x in self.labels_img.data.parts.values()]
-        return np.concatenate(all_labels)
-
-    @property
     def n_elements_(self) -> int:
         """Return number of regions.
 
@@ -317,6 +268,37 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "but not both."
             )
 
+        self.labels_img_ = copy.deepcopy(self.labels_img)
+
+        self.mask_img_ = self._load_mask(imgs)
+        if self.mask_img_ is not None:
+            check_polymesh_equal(self.labels_img_.mesh, self.mask_img.mesh)
+
+            for k in self.labels_img_.data.parts:
+                mask = self.mask_img_.data.parts[k]
+                self.labels_img_.data.parts[k][np.logical_not(mask)] = (
+                    self.background_label
+                )
+
+            labels_before_mask = {
+                int(x) for x in np.unique(get_data(self.labels_img))
+            }
+            labels_after_mask = {
+                int(x) for x in np.unique(get_data(self.labels_img_))
+            }
+            labels_diff = labels_before_mask - labels_after_mask
+            if labels_diff:
+                warnings.warn(
+                    "After applying mask to the labels image, "
+                    "the following labels were "
+                    f"removed: {labels_diff}. "
+                    f"Out of {len(labels_before_mask)} labels, the "
+                    "masked labels image only contains "
+                    f"{len(labels_after_mask)} labels "
+                    "(including background).",
+                    stacklevel=find_stack_level(),
+                )
+
         self._shelving = False
 
         # generate a look up table if one was not provided
@@ -329,18 +311,14 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             lut = generate_atlas_look_up_table(
                 function=None,
                 name=self.labels,
-                index=self.labels_img,
+                index=self.labels_img_,
             )
         else:
             lut = generate_atlas_look_up_table(
-                function=None, index=self.labels_img
+                function=None, index=self.labels_img_
             )
 
-        self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img)
-
-        self.mask_img_ = self._load_mask(imgs)
-        if self.mask_img_ is not None:
-            check_polymesh_equal(self.labels_img.mesh, self.mask_img.mesh)
+        self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img_)
 
         self._shelving = False
 
@@ -362,9 +340,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             "warning_message": None,
         }
 
-        for part in self.labels_img.data.parts:
+        for part in self.labels_img_.data.parts:
             self._report_content["n_vertices"][part] = (
-                self.labels_img.mesh.parts[part].n_vertices
+                self.labels_img_.mesh.parts[part].n_vertices
             )
 
         self._reporting_data = self._generate_reporting_data()
@@ -372,18 +350,18 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         return self
 
     def _generate_reporting_data(self):
-        for part in self.labels_img.data.parts:
+        for part in self.labels_img_.data.parts:
             size = []
             relative_size = []
 
             table = self.lut_.copy()
 
             for _, row in table.iterrows():
-                n_vertices = self.labels_img.data.parts[part] == row["index"]
+                n_vertices = self.labels_img_.data.parts[part] == row["index"]
                 size.append(n_vertices.sum())
                 tmp = (
                     n_vertices.sum()
-                    / self.labels_img.mesh.parts[part].n_vertices
+                    / self.labels_img_.mesh.parts[part].n_vertices
                     * 100
                 )
                 relative_size.append(f"{tmp:.2}")
@@ -394,7 +372,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             self._report_content["summary"][part] = table
 
         return {
-            "labels_image": self.labels_img,
+            "labels_image": self.labels_img_,
             "images": None,
         }
 
@@ -422,25 +400,16 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             Signal for each element.
             shape: (img data shape, total number of vertices)
         """
-        check_compatibility_mask_and_images(self.labels_img, imgs)
-        check_polymesh_equal(self.labels_img.mesh, imgs.mesh)
+        check_compatibility_mask_and_images(self.labels_img_, imgs)
+        check_polymesh_equal(self.labels_img_.mesh, imgs.mesh)
         imgs = at_least_2d(imgs)
 
         # concatenate data over hemispheres
-        img_data = np.concatenate(list(imgs.data.parts.values()), axis=0)
+        img_data = get_data(imgs)
 
-        labels_data = self._labels_data
+        labels_data = get_data(self.labels_img_)
         index = self.labels_
         index.pop(self.background_label)
-        if self.mask_img_ is not None:
-            mask_data = np.concatenate(
-                list(self.mask_img.data.parts.values()), axis=0
-            )
-            labels_data, index = _apply_surf_mask_on_labels(
-                mask_data,
-                self._labels_data,
-                self.background_label,
-            )
 
         target_datatype = (
             np.float32 if img_data.dtype == np.float32 else np.float64
@@ -517,8 +486,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         return signals_to_surf_img_labels(
             signals,
             np.asarray(self.labels_),
-            self.labels_img,
-            self.mask_img,
+            self.labels_img_,
             self.background_label,
         )
 

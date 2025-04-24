@@ -184,13 +184,16 @@ def test_surface_label_masker_transform_with_mask(surf_mesh, surf_img_2d):
     }
     surf_mask = SurfaceImage(surf_mesh, mask_data)
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, mask_img=surf_mask)
-    masker = masker.fit()
-    n_timepoints = 5
+
     with pytest.warns(
         UserWarning,
         match="the following labels were removed",
     ):
-        signal = masker.transform(surf_img_2d(n_timepoints))
+        masker = masker.fit()
+
+    n_timepoints = 5
+    signal = masker.transform(surf_img_2d(n_timepoints))
+
     assert isinstance(signal, np.ndarray)
     expected_n_regions = 2
     assert masker.n_elements_ == expected_n_regions
@@ -459,18 +462,22 @@ def test_surface_label_masker_inverse_transform_with_mask(
     }
     surf_mask = SurfaceImage(surf_mesh, mask_data)
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, mask_img=surf_mask)
-    masker = masker.fit()
-    n_timepoints = 5
+
     with pytest.warns(
         UserWarning,
         match="the following labels were removed",
     ):
-        signal = masker.transform(surf_img_2d(n_timepoints))
-        img_inverted = masker.inverse_transform(signal)
-        assert img_inverted.shape == surf_img_2d(n_timepoints).shape
-        # the data for label 2 should be zeros
-        assert np.all(img_inverted.data.parts["left"][-1, :] == 0)
-        assert np.all(img_inverted.data.parts["right"][2:, :] == 0)
+        masker = masker.fit()
+
+    n_timepoints = 5
+    signal = masker.transform(surf_img_2d(n_timepoints))
+
+    img_inverted = masker.inverse_transform(signal)
+
+    assert img_inverted.shape == surf_img_2d(n_timepoints).shape
+    # the data for label 2 should be zeros
+    assert np.all(img_inverted.data.parts["left"][-1, :] == 0)
+    assert np.all(img_inverted.data.parts["right"][2:, :] == 0)
 
 
 def test_surface_label_masker_transform_list_surf_images(
