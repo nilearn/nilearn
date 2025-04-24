@@ -290,7 +290,7 @@ def _get_data_and_json_view(black_bg, cbar, radiological):
     colors = colorscale(
         "cold_hot", data.ravel(), threshold=0, symmetric_cmap=True, vmax=1
     )
-    
+
     # Build a sprite
     json_view = _json_view_data(
         bg_img,
