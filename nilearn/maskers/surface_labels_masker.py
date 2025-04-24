@@ -132,6 +132,11 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
+        The labels image after fitting.
+        If a mask_img was used,
+        then mask vertices will have the background value.
+
     lut_ : :obj:`pandas.DataFrame`
         Look-up table derived from the ``labels`` or ``lut``
         or from the values of the label image.
@@ -274,6 +279,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         if self.mask_img_ is not None:
             check_polymesh_equal(self.labels_img_.mesh, self.mask_img.mesh)
 
+            # apply mask to label image
             for k in self.labels_img_.data.parts:
                 mask = self.mask_img_.data.parts[k]
                 self.labels_img_.data.parts[k][np.logical_not(mask)] = (
@@ -402,14 +408,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         check_compatibility_mask_and_images(self.labels_img_, imgs)
         check_polymesh_equal(self.labels_img_.mesh, imgs.mesh)
+
         imgs = at_least_2d(imgs)
-
-        # concatenate data over hemispheres
         img_data = get_data(imgs)
-
-        labels_data = get_data(self.labels_img_)
-        index = self.labels_
-        index.pop(self.background_label)
 
         target_datatype = (
             np.float32 if img_data.dtype == np.float32 else np.float64
@@ -417,14 +418,20 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         img_data = img_data.astype(target_datatype)
 
-        n_time_points = 1 if len(img_data.shape) == 1 else img_data.shape[1]
+        n_samples = 1 if len(img_data.shape) == 1 else img_data.shape[1]
 
         region_signals = np.ndarray(
-            (n_time_points, len(index)), dtype=target_datatype
+            (n_samples, self.n_elements_), dtype=target_datatype
         )
         # adapted from nilearn.regions.signal_extraction.img_to_signals_labels
         # iterate over time points and apply reduction function over labels.
+        labels_data = get_data(self.labels_img_)
+
+        index = self.labels_
+        index.pop(self.background_label)
+
         reduction_function = getattr(ndimage, self.strategy)
+
         for n, sample in enumerate(np.rollaxis(img_data, -1)):
             region_signals[n] = np.asarray(
                 reduction_function(sample, labels=labels_data, index=index)

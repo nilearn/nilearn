@@ -1317,7 +1317,7 @@ docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
         List of the names of the regions."""
 
 # look up table
-docdict["lut"] = """'lut' : :obj:`pandas.DataFrame`
+docdict["lut"] = """lut : :obj:`pandas.DataFrame`
         Act as a look up table (lut)
         with at least columns 'index' and 'name'.
         Formatted according to 'dseg.tsv' format from
