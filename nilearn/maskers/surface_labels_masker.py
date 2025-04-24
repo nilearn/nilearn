@@ -250,8 +250,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         -------
         SurfaceLabelsMasker object
         """
-        check_params(self.__dict__)
         del y
+        check_params(self.__dict__)
 
         check_reduction_strategy(self.strategy)
 
