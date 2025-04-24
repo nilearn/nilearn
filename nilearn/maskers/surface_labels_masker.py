@@ -38,7 +38,9 @@ from nilearn.surface.surface import (
 from nilearn.surface.utils import check_polymesh_equal
 
 
-def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
+def _apply_surf_mask_on_labels(
+    mask_data: np.ndarray, labels_data: np.ndarray, background_label=0
+) -> tuple[np.ndarray, np.ndarray]:
     """Apply mask to labels data.
 
     Ensures that we only get the data back
@@ -69,13 +71,14 @@ def _apply_surf_mask_on_labels(mask_data, labels_data, background_label=0):
 
 
 def signals_to_surf_img_labels(
-    signals,
-    labels,
-    labels_img,
-    mask_img,
+    signals: np.ndarray,
+    labels: np.ndarray,
+    labels_img: SurfaceImage,
+    mask_img: SurfaceImage,
     background_label=0,
 ):
     """Transform signals to surface image labels."""
+    labels = labels[labels != background_label]
     if mask_img is not None:
         mask_data = np.concatenate(list(mask_img.data.parts.values()), axis=0)
         labels_data = np.concatenate(
@@ -240,7 +243,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         return len(lut[lut["index"] != self.background_label])
 
     @property
-    def labels_(self) -> list[str]:
+    def labels_(self) -> list[Union[int | float]]:
         """Return list of labels of the regions."""
         check_is_fitted(self)
         lut = self.lut_
@@ -427,13 +430,13 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         img_data = np.concatenate(list(imgs.data.parts.values()), axis=0)
 
         labels_data = self._labels_data
-        labels = self.labels_
-
+        index = self.labels_
+        index.pop(self.background_label)
         if self.mask_img_ is not None:
             mask_data = np.concatenate(
                 list(self.mask_img.data.parts.values()), axis=0
             )
-            labels_data, labels = _apply_surf_mask_on_labels(
+            labels_data, index = _apply_surf_mask_on_labels(
                 mask_data,
                 self._labels_data,
                 self.background_label,
@@ -448,14 +451,14 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         n_time_points = 1 if len(img_data.shape) == 1 else img_data.shape[1]
 
         region_signals = np.ndarray(
-            (n_time_points, len(labels)), dtype=target_datatype
+            (n_time_points, len(index)), dtype=target_datatype
         )
         # adapted from nilearn.regions.signal_extraction.img_to_signals_labels
         # iterate over time points and apply reduction function over labels.
         reduction_function = getattr(ndimage, self.strategy)
         for n, sample in enumerate(np.rollaxis(img_data, -1)):
             region_signals[n] = np.asarray(
-                reduction_function(sample, labels=labels_data, index=labels)
+                reduction_function(sample, labels=labels_data, index=index)
             )
 
         parameters = get_params(
@@ -513,7 +516,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         return signals_to_surf_img_labels(
             signals,
-            self.labels_,
+            np.asarray(self.labels_),
             self.labels_img,
             self.mask_img,
             self.background_label,
