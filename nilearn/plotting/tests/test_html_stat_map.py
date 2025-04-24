@@ -321,7 +321,7 @@ def test_json_view_data(black_bg, cbar):
 @pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("cbar", [True, False])
 @pytest.mark.parametrize("radiological", [True, False])
-def test_json_view_to_html(affine_eye, black_bg, cbar):
+def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
     data, json_view = _get_data_and_json_view(black_bg, cbar, radiological)
     json_view["params"] = _json_view_params(
         data.shape,
