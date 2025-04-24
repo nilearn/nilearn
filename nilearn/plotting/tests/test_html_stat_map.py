@@ -278,7 +278,7 @@ def test_json_view_size():
     assert height == height_exp, "html viewer does not have expected height"
 
 
-def _get_data_and_json_view(black_bg, cbar):
+def _get_data_and_json_view(black_bg, cbar, radiological):
     # simple simulated data for stat_img and background
     bg_img, data = _simulate_img()
     stat_map_img, data = _simulate_img()
@@ -290,7 +290,7 @@ def _get_data_and_json_view(black_bg, cbar):
     colors = colorscale(
         "cold_hot", data.ravel(), threshold=0, symmetric_cmap=True, vmax=1
     )
-    radiological = False
+    
     # Build a sprite
     json_view = _json_view_data(
         bg_img,
@@ -309,8 +309,9 @@ def _get_data_and_json_view(black_bg, cbar):
 
 @pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("cbar", [True, False])
+@pytest.mark.parametrize("radiological", [True, False])
 def test_json_view_data(black_bg, cbar):
-    _, json_view = _get_data_and_json_view(black_bg, cbar)
+    _, json_view = _get_data_and_json_view(black_bg, cbar, radiological)
     # Check the presence of critical fields
     assert isinstance(json_view["bg_base64"], str)
     assert isinstance(json_view["stat_map_base64"], str)
@@ -319,8 +320,9 @@ def test_json_view_data(black_bg, cbar):
 
 @pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("cbar", [True, False])
+@pytest.mark.parametrize("radiological", [True, False])
 def test_json_view_to_html(affine_eye, black_bg, cbar):
-    data, json_view = _get_data_and_json_view(black_bg, cbar)
+    data, json_view = _get_data_and_json_view(black_bg, cbar, radiological)
     json_view["params"] = _json_view_params(
         data.shape,
         affine_eye,
