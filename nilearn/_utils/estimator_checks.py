@@ -580,7 +580,7 @@ def check_masker_mask_img_from_imgs(estimator):
 
     For (Multi)NiftiMasker and SurfaceMasker:
     they must have a valid mask_img_ after fit even when no mask was passed.
-    For all other maskers in this case mask_img_ will be None.
+    For all other maskers mask_img_ should be None after fit.
     """
     if accept_niimg_input(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
