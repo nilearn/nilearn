@@ -316,10 +316,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         self._shelving = False
 
-        all_labels = set(self._labels_data.ravel())
-        all_labels.discard(self.background_label)
-        self._labels_ = list(all_labels)
-
         # generate a look up table if one was not provided
         if self.lut is not None:
             if isinstance(self.lut, (str, Path)):
@@ -431,7 +427,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         img_data = np.concatenate(list(imgs.data.parts.values()), axis=0)
 
         labels_data = self._labels_data
-        labels = self._labels_
+        labels = self.labels_
 
         if self.mask_img_ is not None:
             mask_data = np.concatenate(
@@ -517,7 +513,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         return signals_to_surf_img_labels(
             signals,
-            self._labels_,
+            self.labels_,
             self.labels_img,
             self.mask_img,
             self.background_label,

@@ -54,10 +54,9 @@ def test_surface_label_masker_fit(surf_label_img):
     masker = masker.fit()
 
     assert masker.n_elements_ == 1
-    assert masker._labels_ == [1]
+    assert masker.labels_ == [0, 1]
     assert masker._reporting_data is not None
     assert masker.lut_["name"].to_list() == ["0", "1"]
-    assert masker.lut_["index"].to_list() == [0, 1]
 
 
 def test_surface_label_masker_fit_with_names(surf_label_img):
@@ -70,9 +69,8 @@ def test_surface_label_masker_fit_with_names(surf_label_img):
         masker = masker.fit()
 
     assert masker.n_elements_ == 1
-    assert masker._labels_ == [1]
+    assert masker.labels_ == [0, 1]
     assert masker.lut_["name"].to_list() == ["background", "bar"]
-    assert masker.lut_["index"].to_list() == [0, 1]
 
     masker = SurfaceLabelsMasker(
         labels_img=surf_label_img, labels=["background"]
@@ -82,9 +80,8 @@ def test_surface_label_masker_fit_with_names(surf_label_img):
         masker = masker.fit()
 
     assert masker.n_elements_ == 1
-    assert masker._labels_ == [1]
+    assert masker.labels_ == [0, 1]
     assert masker.lut_["name"].to_list() == ["background", "unknown"]
-    assert masker.lut_["index"].to_list() == [0, 1]
 
 
 def test_surface_label_masker_fit_with_lut(surf_label_img, tmp_path):
@@ -107,7 +104,7 @@ def test_surface_label_masker_fit_with_lut(surf_label_img, tmp_path):
         masker = SurfaceLabelsMasker(labels_img=surf_label_img, lut=lut).fit()
 
         assert masker.n_elements_ == 1
-        assert masker._labels_ == [1]
+        assert masker.labels_ == [0, 1]
         assert masker.lut_["name"].to_list() == ["background", "bar"]
 
 
@@ -157,7 +154,7 @@ def test_surface_label_masker_transform(
     signal = masker.transform(surf_img_1d)
 
     assert isinstance(signal, np.ndarray)
-    n_labels = len(masker._labels_)
+    n_labels = len(masker.labels_)
     assert signal.shape == (1, n_labels)
 
     # 5 'timepoint'
