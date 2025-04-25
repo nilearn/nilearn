@@ -284,6 +284,8 @@ class NiftiSpheresMasker(BaseMasker):
 
     Attributes
     ----------
+    %(nifti_mask_img_)s
+
     n_elements_ : :obj:`int`
         The number of seeds in the masker.
 

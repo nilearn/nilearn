@@ -147,8 +147,12 @@ class MultiNiftiMasker(NiftiMasker):
 
     Attributes
     ----------
-    mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
-        The mask of the data.
+    mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image`
+        The mask of the data, or the one computed from ``imgs`` passed to fit.
+        If a ``mask_img`` is passed at masker construction,
+        then ``mask_img_`` is the resulting binarized version of it
+        where each voxel is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0.
 
     affine_ : 4x4 :obj:`numpy.ndarray`
         Affine of the transformed image.

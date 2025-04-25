@@ -96,6 +96,14 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         The same as the input `maps_img`, kept solely for consistency
         across maskers.
 
+    mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage` or None.
+        The mask of the data.
+        If no ``mask_img`` was passed at masker construction,
+        then ``mask_img_`` is ``None``, otherwise
+        is the resulting binarized version of ``mask_img``
+        where each vertex is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0.
+
     n_elements_ : :obj:`int`
         The number of regions in the maps image.
 

@@ -73,10 +73,16 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage`
+        The mask of the data, or the one computed from ``imgs`` passed to fit.
+        If a ``mask_img`` is passed at masker construction,
+        then ``mask_img_`` is the resulting binarized version of it
+        where each vertex is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0.
+
     n_elements_ : :obj:`int` or None
         number of vertices included in mask
 
-    mask_img_ : :obj:`~nilearn.surface.SurfaceImage` or None
     """
 
     def __init__(
