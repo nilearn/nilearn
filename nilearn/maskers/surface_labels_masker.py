@@ -199,7 +199,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         return len(lut[lut["index"] != self.background_label])
 
     @property
-    def labels_(self) -> list[Union[int | float]]:
+    def labels_(self) -> list[Union[int, float]]:
         """Return list of labels of the regions."""
         check_is_fitted(self)
         lut = self.lut_
