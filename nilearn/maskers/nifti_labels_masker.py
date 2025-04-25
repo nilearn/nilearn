@@ -441,7 +441,7 @@ class NiftiLabelsMasker(BaseMasker):
         table = table[table["label value"] != self.background_label]
 
         self._report_content["summary"] = table
-        self._report_content["number_of_regions"] = (self.n_elements_,)
+        self._report_content["number_of_regions"] = self.n_elements_
 
         img = self._reporting_data["img"]
 
