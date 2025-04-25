@@ -484,11 +484,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         return [display]
 
-    def fit(
-        self,
-        imgs=None,
-        y=None,  # noqa: ARG002
-    ):
+    def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
         Parameters
@@ -501,6 +497,7 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        del y
         check_params(self.__dict__)
         check_reduction_strategy(self.strategy)
 
@@ -683,7 +680,7 @@ class NiftiLabelsMasker(BaseMasker):
         return sanitize_look_up_table(lut, atlas=self.labels_img_)
 
     @fill_doc
-    def fit_transform(self, imgs, confounds=None, sample_mask=None):
+    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
 
         Parameters
@@ -693,6 +690,10 @@ class NiftiLabelsMasker(BaseMasker):
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
+
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
 
         %(confounds)s
 
@@ -707,6 +708,7 @@ class NiftiLabelsMasker(BaseMasker):
             shape: (number of scans, number of labels)
 
         """
+        del y
         return self.fit(imgs).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
