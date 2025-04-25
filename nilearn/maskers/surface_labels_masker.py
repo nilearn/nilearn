@@ -171,6 +171,14 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage` or None.
+        The mask of the data.
+        If no ``mask_img`` was passed at masker construction,
+        then ``mask_img_`` is ``None``, otherwise
+        is the resulting binarized version of ``mask_img``
+        where each vertex is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0.
+
     n_elements_ : :obj:`int`
         The number of discrete values in the mask.
         This is equivalent to the number of unique values in the mask image,
@@ -396,7 +404,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         if self.mask_img_ is not None:
             mask_data = np.concatenate(
-                list(self.mask_img.data.parts.values()), axis=0
+                list(self.mask_img_.data.parts.values()), axis=0
             )
             labels_data, labels = _apply_surf_mask_on_labels(
                 mask_data,

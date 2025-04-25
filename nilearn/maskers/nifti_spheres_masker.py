@@ -284,6 +284,8 @@ class NiftiSpheresMasker(BaseMasker):
 
     Attributes
     ----------
+    %(nifti_mask_img_)s
+
     n_elements_ : :obj:`int`
         The number of seeds in the masker.
 
@@ -750,8 +752,8 @@ class NiftiSpheresMasker(BaseMasker):
 
         logger.log("computing image from signals", verbose=self.verbose)
 
-        if self.mask_img is not None:
-            mask = check_niimg_3d(self.mask_img)
+        if self.mask_img_ is not None:
+            mask = check_niimg_3d(self.mask_img_)
         else:
             raise ValueError(
                 "Please provide mask_img at initialization to "
@@ -769,4 +771,4 @@ class NiftiSpheresMasker(BaseMasker):
             adjacency = adjacency.dot(sparse.diags(scale))
 
         img = adjacency.T.dot(region_signals.T).T
-        return unmask(img, self.mask_img)
+        return unmask(img, self.mask_img_)

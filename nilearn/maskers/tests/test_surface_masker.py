@@ -36,7 +36,7 @@ def test_fit_list_surf_images(surf_img_2d):
     """
     masker = SurfaceMasker()
     masker.fit([surf_img_2d(3), surf_img_2d(5)])
-    assert masker.mask_img_.shape == (surf_img_2d(1).shape[0], 1)
+    assert masker.mask_img_.shape == (surf_img_2d(1).shape[0],)
 
 
 def test_fit_list_surf_images_with_mask(surf_mask_1d, surf_img_2d):
@@ -44,20 +44,6 @@ def test_fit_list_surf_images_with_mask(surf_mask_1d, surf_img_2d):
     masker = SurfaceMasker(mask_img=surf_mask_1d)
     masker.fit([surf_img_2d(3), surf_img_2d(5)])
     assert masker.mask_img_.shape == (surf_img_2d(1).shape[0],)
-
-
-def test_none_mask_img(surf_mask_1d):
-    """Check that masker can be instantiated with mask_img=None.
-
-    An error should then be raised with .fit(img=None).
-    """
-    masker = SurfaceMasker(None)
-    with pytest.raises(ValueError, match="provide either"):
-        masker.fit(None)
-    # no mask_img but fit argument is ok
-    masker.fit(surf_mask_1d)
-    # no fit argument but a mask_img is ok
-    SurfaceMasker(surf_mask_1d).fit(None)
 
 
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])

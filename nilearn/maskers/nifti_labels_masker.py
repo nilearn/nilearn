@@ -159,8 +159,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     Attributes
     ----------
-    mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
-        The mask of the data, or the computed one.
+    %(nifti_mask_img_)s
 
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
@@ -554,7 +553,7 @@ class NiftiLabelsMasker(BaseMasker):
                     raise ValueError(
                         _utils.compose_err_msg(
                             "Regions and mask do not have the same shape",
-                            mask_img=self.mask_img,
+                            mask_img=self.mask_img_,
                             labels_img=self.labels_img,
                         )
                     )
@@ -566,7 +565,7 @@ class NiftiLabelsMasker(BaseMasker):
                     raise ValueError(
                         _utils.compose_err_msg(
                             "Regions and mask do not have the same affine.",
-                            mask_img=self.mask_img,
+                            mask_img=self.mask_img_,
                             labels_img=self.labels_img,
                         ),
                     )
@@ -770,7 +769,7 @@ class NiftiLabelsMasker(BaseMasker):
             ):
                 self._resample_labels(imgs_)
 
-            if (self.mask_img is not None) and (
+            if (self.mask_img_ is not None) and (
                 not _utils.niimg_conversions.check_same_fov(
                     imgs_,
                     self._resampled_mask_img,

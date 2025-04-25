@@ -450,7 +450,7 @@ class RegionExtractor(NiftiMapsMasker):
         check_params(self.__dict__)
         maps_img = check_niimg_4d(self.maps_img)
 
-        self._load_mask(imgs)
+        self.mask_img_ = self._load_mask(imgs)
 
         list_of_strategies = ["ratio_n_voxels", "img_value", "percentile"]
         if self.thresholding_strategy not in list_of_strategies:
@@ -477,7 +477,7 @@ class RegionExtractor(NiftiMapsMasker):
                     self.threshold = f"{self.threshold}%"
                 threshold_maps = threshold_img(
                     maps_img,
-                    mask_img=self.mask_img,
+                    mask_img=self.mask_img_,
                     copy=True,
                     threshold=self.threshold,
                     two_sided=self.two_sided,
@@ -490,7 +490,7 @@ class RegionExtractor(NiftiMapsMasker):
             self.min_region_size,
             self.extractor,
             self.smoothing_fwhm,
-            mask_img=self.mask_img,
+            mask_img=self.mask_img_,
         )
 
         self.maps_img = self.regions_img_
