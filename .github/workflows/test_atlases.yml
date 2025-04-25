@@ -33,7 +33,7 @@ jobs:
                 python-version: 3.9
 
         -   name: Install dependencies for building Nilearn
-            run: python -m pip install --upgrade pip setuptools rich
+            run: python -m pip install --upgrade pip setuptools rich templateflow
 
         -   name: Install nilearn
             run: pip install .[plotting]

@@ -646,7 +646,7 @@ class NiftiLabelsMasker(BaseMasker):
         """
         if self.lut is not None:
             if isinstance(self.lut, (str, Path)):
-                lut = pd.read_table(self.lut, sep=None)
+                lut = pd.read_table(self.lut, sep=None, engine="python")
             else:
                 lut = self.lut
 
