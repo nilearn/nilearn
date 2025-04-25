@@ -413,11 +413,7 @@ class NiftiMasker(BaseMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "mask_img_")
 
-    def fit(
-        self,
-        imgs=None,
-        y=None,  # noqa: ARG002
-    ):
+    def fit(self, imgs=None, y=None):
         """Compute the mask corresponding to the data.
 
         Parameters
@@ -432,6 +428,7 @@ class NiftiMasker(BaseMasker):
             compatibility.
 
         """
+        del y
         check_params(self.__dict__)
 
         self._report_content = {

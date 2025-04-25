@@ -192,8 +192,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
         -------
         SurfaceMasker object
         """
-        check_params(self.__dict__)
         del y
+        check_params(self.__dict__)
         self._fit_mask_img(imgs)
         assert self.mask_img_ is not None
 

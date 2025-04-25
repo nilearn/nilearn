@@ -21,6 +21,7 @@ expected_failed_checks = {
     "check_estimators_overwrite_params": "TODO",
     "check_f_contiguous_array_estimator": "TODO",
     "check_fit_check_is_fitted": "handled by nilearn checks",
+    "check_fit_score_takes_y": "not applicable",
     "check_fit2d_1feature": "TODO",
     "check_fit2d_1sample": "TODO",
     "check_fit2d_predict1d": "TODO",

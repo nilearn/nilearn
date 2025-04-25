@@ -164,8 +164,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         -------
         SurfaceMapsMasker object
         """
-        check_params(self.__dict__)
         del y
+        check_params(self.__dict__)
 
         if self.maps_img is None:
             raise ValueError(

@@ -87,6 +87,7 @@ VALID_CHECKS = [
     "check_fit2d_1sample",
     "check_fit2d_predict1d",
     "check_fit_check_is_fitted",
+    "check_fit_score_takes_y",
     "check_get_params_invariance",
     "check_methods_sample_order_invariance",
     "check_methods_subset_invariance",
@@ -142,6 +143,7 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_transformer_preserve_dtypes": (
         "replaced by check_masker_transformer"
     ),
+    "check_fit_score_takes_y": {"replaced by check_masker_fit_score_takes_y"},
     # Those are skipped for now they fail
     # for unknown reasons
     #  most often because sklearn inputs expect a numpy array
@@ -155,7 +157,6 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_estimators_nan_inf": "TODO",
     "check_estimators_overwrite_params": "TODO",
     "check_estimators_pickle": "TODO",
-    "check_fit_score_takes_y": "TODO",
     "check_fit_idempotent": "TODO",
     "check_methods_sample_order_invariance": "TODO",
     "check_methods_subset_invariance": "TODO",
@@ -315,6 +316,8 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_generate_report)
         yield (clone(estimator), check_masker_generate_report_false)
         yield (clone(estimator), check_masker_refit)
+
+        yield (clone(estimator), check_masker_fit_score_takes_y)
 
         yield (clone(estimator), check_masker_transformer)
         yield (clone(estimator), check_masker_inverse_transform)
@@ -933,6 +936,28 @@ def check_masker_inverse_transform(estimator):
         ValueError, match="Input to 'inverse_transform' has wrong shape."
     ):
         imgs = estimator.inverse_transform(signals)
+
+
+def check_masker_fit_score_takes_y(estimator):
+    """Replace sklearn check_fit_score_takes_y for maskers.
+
+    Check that all estimators accept an optional y
+    in fit and score so they can be used in pipelines.
+    """
+    for attr in ["fit", "fit_transform"]:
+        tmp = {
+            k: v.default
+            for k, v in inspect.signature(
+                getattr(estimator, attr)
+            ).parameters.items()
+            if v.default is not inspect.Parameter.empty
+        }
+        if "y" not in tmp:
+            raise ValueError(
+                f"{estimator.__class__.__name__} "
+                f"is missing 'y=None' for the method '{attr}'."
+            )
+        assert tmp["y"] is None
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------

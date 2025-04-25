@@ -240,7 +240,7 @@ class MultiNiftiMasker(NiftiMasker):
     def fit(
         self,
         imgs=None,
-        y=None,  # noqa: ARG002
+        y=None,
     ):
         """Compute the mask corresponding to the data.
 
@@ -257,6 +257,7 @@ class MultiNiftiMasker(NiftiMasker):
             compatibility.
 
         """
+        del y
         check_params(self.__dict__)
         if getattr(self, "_shelving", None) is None:
             self._shelving = False

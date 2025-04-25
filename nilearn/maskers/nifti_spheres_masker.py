@@ -538,13 +538,14 @@ class NiftiSpheresMasker(BaseMasker):
     def fit(
         self,
         imgs=None,
-        y=None,  # noqa: ARG002
+        y=None,
     ):
         """Prepare signal extraction from regions.
 
         All parameters are unused; they are for scikit-learn compatibility.
 
         """
+        del y
         self._report_content = {
             "description": (
                 "This reports shows the regions defined "
@@ -621,7 +622,7 @@ class NiftiSpheresMasker(BaseMasker):
         return self
 
     @fill_doc
-    def fit_transform(self, imgs, confounds=None, sample_mask=None):
+    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction.
 
         Parameters
@@ -631,6 +632,10 @@ class NiftiSpheresMasker(BaseMasker):
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
+
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
 
         %(confounds)s
 
@@ -645,6 +650,7 @@ class NiftiSpheresMasker(BaseMasker):
             shape: (number of scans, number of spheres)
 
         """
+        del y
         return self.fit(imgs).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
