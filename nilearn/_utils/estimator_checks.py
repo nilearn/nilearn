@@ -411,6 +411,14 @@ def _not_fitted_error_message(estimator):
 # ------------------ GENERIC CHECKS ------------------
 
 
+def _check_mask_img_(estimator):
+    if accept_niimg_input(estimator):
+        assert isinstance(estimator.mask_img_, Nifti1Image)
+    else:
+        assert isinstance(estimator.mask_img_, SurfaceImage)
+    load_mask_img(estimator.mask_img_)
+
+
 def check_estimator_has_sklearn_is_fitted(estimator):
     """Check appropriate response to check_fitted from sklearn before fitting.
 
@@ -551,10 +559,7 @@ def check_masker_compatibility_mask_image(estimator):
     with pytest.raises(TypeError):
         estimator.transform(image_to_transform)
 
-    if accept_niimg_input(estimator):
-        assert isinstance(estimator.mask_img_, Nifti1Image)
-    else:
-        assert isinstance(estimator.mask_img_, SurfaceImage)
+    _check_mask_img_(estimator)
 
 
 def check_masker_no_mask_no_img(estimator):
@@ -600,11 +605,7 @@ def check_masker_mask_img_from_imgs(estimator):
     estimator.fit(input_img)
 
     if isinstance(estimator, (NiftiMasker, SurfaceMasker)):
-        if accept_niimg_input(estimator):
-            assert isinstance(estimator.mask_img_, Nifti1Image)
-        else:
-            assert isinstance(estimator.mask_img_, SurfaceImage)
-        load_mask_img(estimator.mask_img_)
+        _check_mask_img_(estimator)
     else:
         assert estimator.mask_img_ is None
 
@@ -648,11 +649,7 @@ def check_masker_mask_img(estimator):
 
     estimator.fit()
 
-    if accept_niimg_input(estimator):
-        assert isinstance(estimator.mask_img_, Nifti1Image)
-    else:
-        assert isinstance(estimator.mask_img_, SurfaceImage)
-    load_mask_img(estimator.mask_img_)
+    _check_mask_img_(estimator)
 
     # use non binary multi-sample image as mask
     estimator = clone(estimator)
@@ -661,11 +658,7 @@ def check_masker_mask_img(estimator):
 
     estimator.fit()
 
-    if accept_niimg_input(estimator):
-        assert isinstance(estimator.mask_img_, Nifti1Image)
-    else:
-        assert isinstance(estimator.mask_img_, SurfaceImage)
-    load_mask_img(estimator.mask_img_)
+    _check_mask_img_(estimator)
 
     # use mask at init and imgs at fit
     # mask at init should prevail
@@ -692,18 +685,16 @@ def check_masker_mask_img(estimator):
     else:
         estimator.fit(input_img)
 
+    _check_mask_img_(estimator)
     if accept_niimg_input(estimator):
-        assert isinstance(estimator.mask_img_, Nifti1Image)
         assert_array_equal(
             ref_mask_img_.get_fdata(), estimator.mask_img_.get_fdata()
         )
     else:
-        assert isinstance(estimator.mask_img_, SurfaceImage)
         assert_array_equal(
             get_surface_data(ref_mask_img_),
             get_surface_data(estimator.mask_img_),
         )
-    load_mask_img(estimator.mask_img_)
 
 
 def check_masker_clean(estimator):
