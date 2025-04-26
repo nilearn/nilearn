@@ -155,7 +155,6 @@ def test_masker_attributes_with_fit(canica_data, mask_img):
     dict_learning = DictLearning(n_components=3, mask=mask_img, random_state=0)
     dict_learning.fit(canica_data)
 
-    assert dict_learning.mask_img_ == mask_img
     assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
 
     # Passing masker

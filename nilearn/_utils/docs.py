@@ -583,6 +583,15 @@ lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
 """
 
+# masker_lut
+docdict["masker_lut"] = """lut : :obj:`pandas.DataFrame` or :obj:`str` \
+            or :obj:`pathlib.Path` to a TSV file or None, default=None
+        Mutually exclusive with ``labels``.
+        Act as a look up table (lut)
+        with at least columns 'index' and 'name'.
+        Formatted according to 'dseg.tsv' format from
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+
 
 # mask_strategy
 docdict["mask_strategy"] = """
@@ -1306,6 +1315,17 @@ docdict["fsaverage_options"] = """
 # atlas labels
 docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
         List of the names of the regions."""
+
+# mask_img_ for most nifti maskers
+docdict[
+    "nifti_mask_img_"
+] = """mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image` or None.
+        The mask of the data.
+        If no ``mask_img`` was passed at masker construction,
+        then ``mask_img_`` is ``None``, otherwise
+        is the resulting binarized version of ``mask_img``
+        where each voxel is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0."""
 
 # look up table
 docdict["lut"] = """'lut' : :obj:`pandas.DataFrame`

@@ -76,7 +76,7 @@ def test_fit_transform_warning(img_3d_rand_eye, mask_img_1):
     with pytest.warns(
         UserWarning,
         match="Generation of a mask has been requested .*"
-        "while a mask has been provided at masker creation.",
+        "while a mask was given at masker creation.",
     ):
         X = masker.fit_transform(X=img_3d_rand_eye, y=y)
         assert np.any(X != 0)
@@ -277,15 +277,6 @@ def test_joblib_cache(tmp_path, mask_img_1):
         # enables to delete "filename" on windows
         del masker
         shutil.rmtree(cachedir, ignore_errors=True)
-
-
-def test_fit_no_mask_no_img_error():
-    """Check error is raised when no mask and no img is provided."""
-    mask = NiftiMasker(mask_img=None)
-    with pytest.raises(
-        ValueError, match="Parameter 'imgs' must be provided to "
-    ):
-        mask.fit()
 
 
 def test_mask_strategy_errors_warnings(img_fmri):

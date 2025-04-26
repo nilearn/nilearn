@@ -425,12 +425,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         tags.input_tags = InputTags()
         return tags
 
-    def fit(
-        self,
-        imgs,
-        y=None,  # noqa: ARG002
-        confounds=None,
-    ):
+    def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the components across subjects.
 
         Parameters
@@ -455,6 +450,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             at the object level.
 
         """
+        del y
         # Base fit for decomposition estimators : compute the embedded masker
         check_params(self.__dict__)
 

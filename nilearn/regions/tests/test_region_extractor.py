@@ -8,7 +8,7 @@ from scipy.ndimage import label
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import _img_4d_zeros
+from nilearn.conftest import _affine_eye, _img_4d_zeros
 from nilearn.image import get_data
 from nilearn.regions import (
     RegionExtractor,
@@ -74,7 +74,10 @@ def maps_and_mask(n_regions):
         estimator=[
             RegionExtractor(
                 maps_img=generate_maps(
-                    shape=MAP_SHAPE, n_regions=2, random_state=42
+                    shape=MAP_SHAPE,
+                    n_regions=2,
+                    random_state=42,
+                    affine=_affine_eye(),
                 )[0]
             )
         ],
