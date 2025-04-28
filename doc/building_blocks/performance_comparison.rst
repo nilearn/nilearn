@@ -104,6 +104,16 @@ You can check if a proxy image is loaded into memory or not using the
     img_nilearn.in_memory
     # True
 
+You can also remove the data from memory by calling the ``.uncache()`` method
+on the proxy image:
+
+.. code-block:: python
+
+    img_nilearn.uncache()
+    img_nilearn.in_memory
+    # False
+
+
 Time taken to load an image
 ---------------------------
 
