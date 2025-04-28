@@ -123,9 +123,6 @@ into memory) compared to :func:`~nilearn.image.load_img`.
 
 .. code-block:: python
 
-    import nibabel as nib
-    from nilearn.image import load_img
-
     # load image via nibabel.load
     %time nib.load(example_fmri_path)
     # CPU times: user 2.77 ms, sys: 3.76 ms, total: 6.53 ms
@@ -294,8 +291,7 @@ Array images
 
 In practice, you would initially only use proxy images when you load an image
 from the disk. But once you perform an operation that modifies the image,
-you would get an array image; i.e., one that is loaded to disk as a numpy
-array.
+you would get an array image; i.e., one that only exists in memory completely.
 
 For example, if you smooth an image using :func:`nilearn.image.smooth_img`
 function, it will return an array image. We can check this using nibabel's
