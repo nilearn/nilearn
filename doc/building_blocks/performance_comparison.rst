@@ -30,12 +30,13 @@ A nifti image can be loaded as a proxy image or an array image. This page on
 :doc:`Nibabel documentation <nibabel:images_and_memory>` does a good job
 of explaining the difference between the two.
 
-But TL;DR: a proxy image (on the right in the figure below) is an object that
-only points to the actual numpy array data on disk. This means that the data
-is not loaded into memory until it is asked for, for example, by explicitly
-calling the ``.get_fdata()`` method or while performing an operation like
-:func:`nilearn.image.mean_img`. On the other hand, an array image (on the left)
-is an object that loads the data into memory as soon as it is created.
+But in summary: a proxy image (on right in the figure below) is an object
+that only points to the actual numpy array data on disk. This means that the
+data is not loaded into memory until it is asked for, for example, by
+explicitly calling the ``.get_fdata()`` method or while performing an operation
+like :func:`nilearn.image.mean_img`. On the other hand, an array image
+(on the left) is an object that loads the entire data into memory as soon
+as it is created.
 
 .. mermaid::
 
@@ -75,7 +76,7 @@ is an object that loads the data into memory as soon as it is created.
         style MemData fill:#ffdfd3,stroke:#e07a5f
 
 Proxy images
-============
+------------
 
 If you are reading an image from the disk, you can do so via nibabel's
 :func:`nibabel.loadsave.load` and nilearn's :func:`nilearn.image.load_img`
@@ -115,7 +116,7 @@ on the proxy image:
 
 
 Time taken to load an image
----------------------------
+...........................
 
 So we expect that when simply loading the image, :func:`nibabel.loadsave.load`
 would be faster and lower on memory usage (because it doesn't load the data
@@ -134,7 +135,7 @@ into memory) compared to :func:`~nilearn.image.load_img`.
     # Wall time: 9.07 s
 
 Memory usage while loading an image
------------------------------------
+...................................
 
 We can also measure the memory usage of each of these methods using the
 ``memory_profiler`` package. Once we have installed the package (via
@@ -153,10 +154,40 @@ measure the memory usage of a single line of code.
     %memit load_img(example_fmri_path)
     # peak memory: 6116.31 MiB, increment: 3936.18 MiB
 
+Array images
+------------
+
+In practice, you would initially only use proxy images when you load an image
+from the disk. But once you perform an operation that modifies the image,
+you would get an array image; i.e., one that exists in memory completely.
+
+For example, if you smooth an image using :func:`nilearn.image.smooth_img`
+function, it will return an array image. We can check this using nibabel's
+:func:`nibabel.arrayproxy.is_proxy` function on the image's ``dataobj``
+property.
+
+.. code-block:: python
+
+    from nilearn.image import smooth_img
+
+    # loaded a proxy image
+    img_nilearn = load_img(example_fmri_path)
+    nib.is_proxy(img_nilearn.dataobj)
+    # True
+
+    # smooth the image
+    img_smoothed = smooth_img(img_nilearn, fwhm=6)
+    # now we have an array image
+    nib.is_proxy(img_smoothed.dataobj)
+    # False
+
 Some use cases
 ==============
 
-Once we have loaded the image, we can perform various operations on it.
+Now let's look at some use cases where the two ways of loading an image
+(i.e., via :func:`nibabel.loadsave.load` vs. :func:`~nilearn.image.load_img`)
+can affect the performance of a workflow.
+
 We will consider two cases here:
 
 1. Taking the mean over the time axis, which requires all the data to be
@@ -290,39 +321,9 @@ We will see that with the memory usage as well:
     %memit slice_nibabel(example_fmri_path)
     # peak memory: 6120.99 MiB, increment: 0.00 MiB
 
-Array images
-============
-
-In practice, you would initially only use proxy images when you load an image
-from the disk. But once you perform an operation that modifies the image,
-you would get an array image; i.e., one that only exists in memory completely.
-
-For example, if you smooth an image using :func:`nilearn.image.smooth_img`
-function, it will return an array image. We can check this using nibabel's
-:func:`nibabel.arrayproxy.is_proxy` function on the image's ``dataobj``
-property.
-
-.. code-block:: python
-
-    from nilearn.image import smooth_img
-
-    img_nilearn = load_img(example_fmri_path)
-    img_smoothed = smooth_img(img_nilearn, fwhm=6)
-    nib.is_proxy(img_smoothed.dataobj)
-    # False
-
-But :func:`nibabel.arrayproxy.is_proxy` would return ``True`` for
-``img_nilearn.dataobj``:
-
-.. code-block:: python
-
-    nib.is_proxy(img_nilearn.dataobj)
-    # True
-
-So if you are performing subsequent operations that only require a chunk of
-data in the memory, it could be beneficial to first save the image to disk and
-then loading it again via :func:`nibabel.loadsave.load` function to get a
-proxy image.
+So, in conclusion, if you are performing subsequent operations that only
+require a chunk of data in the memory, it would be beneficial to make sure
+you're working with a proxy image.
 
 However, if you will need all the data in memory at once (i.e., as we saw with
 :func:`~nilearn.image.mean_img`), you can directly use the array image in
