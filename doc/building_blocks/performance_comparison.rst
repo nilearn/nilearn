@@ -30,13 +30,11 @@ A nifti image can be loaded as a proxy image or an array image. This page on
 :doc:`Nibabel documentation <nibabel:images_and_memory>` does a good job
 of explaining the difference between the two.
 
-But TL;DR: a proxy image is an object that only points to the actual numpy
-array data on disk. This means that the data is not loaded into memory until
-it is accessed, for example, while performing an operation like
-:func:`nilearn.image.mean_img`.
-
-On the other hand, an array image is an object that loads the
-data into memory as soon as it is created.
+But TL;DR: a proxy image (on the left in the figure below) is an object that
+only points to the actual numpy array data on disk. This means that the data
+is not loaded into memory until it is accessed, for example, while performing
+an operation like :func:`nilearn.image.mean_img`. On the other hand, an array
+image is an object that loads the data into memory as soon as it is created.
 
 .. mermaid::
 
@@ -64,7 +62,7 @@ data into memory as soon as it is created.
         ProxyRef --> OpFunction
         OpFunction --> LoadedData
 
-        NiftiFile -. "Immediate data loading" .-> ArrayObj
+        NiftiFile --> ArrayObj
         ArrayObj --> MemData
         MemData --> ArrayOp
 
