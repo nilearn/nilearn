@@ -32,9 +32,10 @@ of explaining the difference between the two.
 
 But TL;DR: a proxy image (on the left in the figure below) is an object that
 only points to the actual numpy array data on disk. This means that the data
-is not loaded into memory until it is accessed, for example, while performing
-an operation like :func:`nilearn.image.mean_img`. On the other hand, an array
-image is an object that loads the data into memory as soon as it is created.
+is not loaded into memory until it is accessed, for example, by explicitly
+calling the ``.get_fdata()`` method or while performing an operation like
+:func:`nilearn.image.mean_img`. On the other hand, an array image is an object
+that loads the data into memory as soon as it is created.
 
 .. mermaid::
 
@@ -53,7 +54,7 @@ image is an object that loads the data into memory as soon as it is created.
         subgraph "Memory"
             style Memory fill:#fff2e2,stroke:#000000
             MemData["Data already loaded"]
-            ArrayOp["Operation (e.g., mean_img)"]
+            ArrayOp[".get_fdata()"]
             LoadedData["Data loaded into memory"]
         end
 
