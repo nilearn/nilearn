@@ -193,13 +193,13 @@ memory, it should be faster than :func:`~nilearn.image.load_img`:
 
     # load image via nibabel.load
     %time nib.load(example_fmri_path)
-    # CPU times: user 2.77 ms, sys: 3.76 ms, total: 6.53 ms
-    # Wall time: 5.72 ms
+    # CPU times: user 730 μs, sys: 4.41 ms, total: 5.14 ms
+    # Wall time: 4.91 ms
 
     # load image via nilearn.image.load_img
     %time load_img(example_fmri_path)
-    # CPU times: user 6.19 s, sys: 2.89 s, total: 9.08 s
-    # Wall time: 9.07 s
+    # CPU times: user 5.92 s, sys: 3.31 s, total: 9.23 s
+    # Wall time: 9.22 s
 
 Memory usage while loading an image
 -----------------------------------
@@ -227,11 +227,11 @@ as the peak memory usage can be affected by other variables defined in the
 
     # load image via nibabel.load
     %memit nib.load(example_fmri_path)
-    # peak memory: 2180.11 MiB, increment: 0.25 MiB
+    # peak memory: 2185.50 MiB, increment: 0.36 MiB
 
     # load image via nilearn.image.load_img
     %memit load_img(example_fmri_path)
-    # peak memory: 6116.31 MiB, increment: 3936.18 MiB
+    # peak memory: 4149.81 MiB, increment: 3937.04 MiB
 
 Some practical use cases
 ========================
