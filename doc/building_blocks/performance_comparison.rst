@@ -26,11 +26,11 @@ where we can process the data in chunks.
 Proxy images vs. array images
 =============================
 
-A nifti image can be loaded as a proxy image or an array image. This page on
-:doc:`Nibabel documentation <nibabel:images_and_memory>` does a good job
-of explaining the difference between the two.
+A nifti image can be loaded as a proxy image or an array image.
+:doc:`This page <nibabel:images_and_memory>` on Nibabel's documentation does a
+good job of explaining the difference between the two.
 
-But in summary: a proxy image (on right in the figure below) is an object
+But in summary: a proxy image (on right in the schematic below) is an object
 that only points to the actual numpy array data on disk. This means that the
 data is not loaded into memory until it is asked for, for example, by
 explicitly calling the ``.get_fdata()`` method or while performing an operation
@@ -48,19 +48,19 @@ as it is created.
 
         ProxyObj["Proxy Object"]
         ProxyRef["Reference to data on disk"]
-        OpFunction["Operation (e.g., mean_img)"]
+        OpFunction[".get_fdata() or image operation (e.g., mean_img())"]
 
         ArrayObj["Array Object"]
 
         subgraph "Memory"
             style Memory fill:#fff2e2,stroke:#000000
             MemData["Data already loaded"]
-            ArrayOp[".get_fdata()"]
+            ArrayOp[".get_fdata() or image operation (e.g., mean_img())"]
             LoadedData["Data loaded into memory"]
         end
 
         NiftiFile --> ProxyObj
-        ProxyObj --> ProxyRef
+        ProxyObj -. ".dataobj" .-> ProxyRef
         ProxyRef --> OpFunction
         OpFunction --> LoadedData
 
@@ -74,6 +74,17 @@ as it is created.
         style ArrayOp fill:#d8f3dc,stroke:#2d6a4f
         style LoadedData fill:#ffdfd3,stroke:#e07a5f
         style MemData fill:#ffdfd3,stroke:#e07a5f
+
+
+.. note::
+
+    The "reference to actual data on disk" in proxy images is stored under
+    the ``dataobj`` property. According to Nibabel's documentation:
+
+        Proxy images are images that have a ``dataobj`` property that is not a
+        numpy array, but an *array proxy* that can fetch the array data from
+        disk.
+
 
 Proxy images
 ------------
@@ -271,14 +282,10 @@ Extracting a 3D volume
 Now let's say we want to extract a 3D volume at some time point from the
 4D image. Here we only need that 3D volume to be loaded into memory.
 
-Proxy images come with a property called ``.dataobj`` which is the "reference
-to the actual data on disk" that we discussed earlier. According to
-Nibabel's documentation:
-
-    Proxy images are images that have a ``dataobj`` property that is not a
-    numpy array, but an *array proxy* that can fetch the array data from disk.
-
-So with :func:`~nilearn.image.load_img`:
+We can do this by simply using the ``dataobj`` property of the proxy image.
+Let's define two functions that load the image and then extract a 3D volume at
+4th time point: one using :func:`~nilearn.image.load_img` and the other using
+:func:`nibabel.loadsave.load`:
 
 .. code-block:: python
 
@@ -290,13 +297,14 @@ So with :func:`~nilearn.image.load_img`:
         img_nibabel = nib.load(fmri)
         img_nibabel.dataobj[..., 3]
 
+Now timing the two functions we see that ``slice_nilearn`` takes much more
+time than ``slice_nibabel``:
+
 .. code-block:: python
 
     %time slice_nilearn(example_fmri_path)
     # CPU times: user 7.39 s, sys: 5.64 s, total: 13 s
     # Wall time: 13 s
-
-And with :func:`nibabel.loadsave.load`:
 
 .. code-block:: python
 
@@ -321,7 +329,7 @@ We will see that with the memory usage as well:
     %memit slice_nibabel(example_fmri_path)
     # peak memory: 6120.99 MiB, increment: 0.00 MiB
 
-So, in conclusion, if you are performing subsequent operations that only
+So, overall, if you are performing subsequent operations that only
 require a chunk of data in the memory, it would be beneficial to make sure
 you're working with a proxy image.
 
