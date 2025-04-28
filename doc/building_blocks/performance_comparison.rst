@@ -30,12 +30,12 @@ A nifti image can be loaded as a proxy image or an array image. This page on
 :doc:`Nibabel documentation <nibabel:images_and_memory>` does a good job
 of explaining the difference between the two.
 
-But TL;DR: a proxy image (on the left in the figure below) is an object that
+But TL;DR: a proxy image (on the right in the figure below) is an object that
 only points to the actual numpy array data on disk. This means that the data
-is not loaded into memory until it is accessed, for example, by explicitly
+is not loaded into memory until it is asked for, for example, by explicitly
 calling the ``.get_fdata()`` method or while performing an operation like
-:func:`nilearn.image.mean_img`. On the other hand, an array image is an object
-that loads the data into memory as soon as it is created.
+:func:`nilearn.image.mean_img`. On the other hand, an array image (on the left)
+is an object that loads the data into memory as soon as it is created.
 
 .. mermaid::
 
@@ -240,8 +240,12 @@ Extracting a 3D volume
 Now let's say we want to extract a 3D volume at some time point from the
 4D image. Here we only need that 3D volume to be loaded into memory.
 
-Proxy images come with an attribute called ``.dataobj`` that allows us to
-directly access the chunk of data we need.
+Proxy images come with a property called ``.dataobj`` which is the "reference
+to the actual data on disk" that we discussed earlier. According to
+Nibabel's documentation:
+
+    Proxy images are images that have a ``dataobj`` property that is not a
+    numpy array, but an *array proxy* that can fetch the array data from disk.
 
 So with :func:`~nilearn.image.load_img`:
 
