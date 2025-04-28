@@ -193,13 +193,13 @@ memory, it should be faster than :func:`~nilearn.image.load_img`:
 
     # load image via nibabel.load
     %time nib.load(example_fmri_path)
-    # CPU times: user 730 μs, sys: 4.41 ms, total: 5.14 ms
-    # Wall time: 4.91 ms
+    # CPU times: user 1.54 ms, sys: 0 ns, total: 1.54 ms
+    # Wall time: 1.22 ms
 
     # load image via nilearn.image.load_img
     %time load_img(example_fmri_path)
-    # CPU times: user 5.92 s, sys: 3.31 s, total: 9.23 s
-    # Wall time: 9.22 s
+    # CPU times: user 4.12 s, sys: 2.44 s, total: 6.56 s
+    # Wall time: 6.56 s
 
 Memory usage while loading an image
 -----------------------------------
@@ -227,11 +227,11 @@ as the peak memory usage can be affected by other variables defined in the
 
     # load image via nibabel.load
     %memit nib.load(example_fmri_path)
-    # peak memory: 2185.50 MiB, increment: 0.36 MiB
+    # peak memory: 207.63 MiB, increment: 0.25 MiB
 
     # load image via nilearn.image.load_img
     %memit load_img(example_fmri_path)
-    # peak memory: 4149.81 MiB, increment: 3937.04 MiB
+    # peak memory: 4143.26 MiB, increment: 3936.60 MiB
 
 Some practical use cases
 ========================
@@ -263,8 +263,8 @@ memory and the function can operate quickly.
     img_nilearn = load_img(example_fmri_path)
     # mean over image loaded via nilearn.image.load_img
     %time mean_img(img_nilearn, copy_header=True)
-    # CPU times: user 734 ms, sys: 309 ms, total: 1.04 s
-    # Wall time: 1.04 s
+    # CPU times: user 154 ms, sys: 3.09 ms, total: 157 ms
+    # Wall time: 167 ms
 
 But when compared to loading the image with :func:`nibabel.loadsave.load`:
 
@@ -273,8 +273,8 @@ But when compared to loading the image with :func:`nibabel.loadsave.load`:
     img_nibabel = nib.load(example_fmri_path)
     # mean over image loaded via nibabel.load
     %time mean_img(img_nibabel, copy_header=True)
-    # CPU times: user 7.35 s, sys: 5.74 s, total: 13.1 s
-    # Wall time: 13.1 s
+    # CPU times: user 4.14 s, sys: 1.36 s, total: 5.51 s
+    # Wall time: 5.5 s
 
 This takes more time because :func:`~nilearn.image.mean_img` will have to load
 the data before it can take the mean.
@@ -303,18 +303,18 @@ methods.
 .. code-block:: python
 
     %time mean_nilearn(example_fmri_path)
-    # CPU times: user 7.14 s, sys: 3.45 s, total: 10.6 s
-    # Wall time: 10.6 s
+    # CPU times: user 4.09 s, sys: 1.42 s, total: 5.5 s
+    # Wall time: 5.5 s
 
 The memory usage of the two would also be similar for the same reason.
 
 .. code-block:: python
 
     %memit mean_nilearn(example_fmri_path)
-    # peak memory: 10060.05 MiB, increment: 3935.48 MiB
+    # peak memory: 4144.13 MiB, increment: 3936.58 MiB
 
     %memit mean_nibabel(example_fmri_path)
-    # peak memory: 10060.05 MiB, increment: 3935.48 MiB
+    # peak memory: 4145.63 MiB, increment: 3936.86 MiB
 
 Extracting a 3D volume
 ----------------------
@@ -343,14 +343,14 @@ time than ``slice_nibabel``:
 .. code-block:: python
 
     %time slice_nilearn(example_fmri_path)
-    # CPU times: user 7.39 s, sys: 5.64 s, total: 13 s
-    # Wall time: 13 s
+    # CPU times: user 3.93 s, sys: 1.26 s, total: 5.19 s
+    # Wall time: 5.19 s
 
 .. code-block:: python
 
     %time slice_nibabel(example_fmri_path)
-    # CPU times: user 24.5 ms, sys: 4.24 ms, total: 28.7 ms
-    # Wall time: 27 ms
+    # CPU times: user 10.2 ms, sys: 1.87 ms, total: 12.1 ms
+    # Wall time: 11.7 ms
 
 What happens here with :func:`~nilearn.image.load_img` is that we load the
 entire image into memory even though we only need a chunk of it. This is why it
@@ -362,12 +362,12 @@ We will see that with the memory usage as well:
 .. code-block:: python
 
     %memit slice_nilearn(example_fmri_path)
-    # peak memory: 10060.75 MiB, increment: 3935.48 MiB
+    # peak memory: 4143.89 MiB, increment: 3936.76 MiB
 
 .. code-block:: python
 
     %memit slice_nibabel(example_fmri_path)
-    # peak memory: 6120.99 MiB, increment: 0.00 MiB
+    # peak memory: 209.62 MiB, increment: 2.12 MiB
 
 So, overall, if you are performing certain operations that only
 require a chunk of data in the memory, it would be beneficial to make sure
