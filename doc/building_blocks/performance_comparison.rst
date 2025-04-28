@@ -87,6 +87,23 @@ loading is already done for you. You can think of this as if
 :func:`~nilearn.image.load_img` is calling ``.get_fdata()`` internally before
 returning the proxy image.
 
+You can check if a proxy image is loaded into memory or not using the
+``in_memory`` attribute:
+
+.. code-block:: python
+
+    import nibabel as nib
+    from nilearn.image import load_img
+
+    img_nibabel = nib.load(example_fmri_path)
+    img_nilearn = load_img(example_fmri_path)
+
+    img_nibabel.in_memory
+    # False
+
+    img_nilearn.in_memory
+    # True
+
 Time taken to load an image
 ---------------------------
 
