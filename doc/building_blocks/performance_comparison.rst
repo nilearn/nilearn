@@ -32,8 +32,48 @@ of explaining the difference between the two.
 
 But TL;DR: a proxy image is an object that only points to the actual numpy
 array data on disk. This means that the data is not loaded into memory until
-it is accessed. On the other hand, an array image is an object that loads the
+it is accessed, for example, while performing an operation like
+:func:`nilearn.image.mean_img`.
+
+On the other hand, an array image is an object that loads the
 data into memory as soon as it is created.
+
+.. mermaid::
+
+    flowchart TD
+        subgraph "Disk"
+            style Disk fill:#e2eeff,stroke:#000000
+            NiftiFile["NIfTI File on Disk"]
+        end
+
+        ProxyObj["Proxy Object"]
+        ProxyRef["Reference to data on disk"]
+        OpFunction["Operation (e.g., mean_img)"]
+
+        ArrayObj["Array Object"]
+
+        subgraph "Memory"
+            style Memory fill:#fff2e2,stroke:#000000
+            MemData["Data already loaded"]
+            ArrayOp["Operation (e.g., mean_img)"]
+            LoadedData["Data loaded into memory"]
+        end
+
+        NiftiFile --> ProxyObj
+        ProxyObj --> ProxyRef
+        ProxyRef --> OpFunction
+        OpFunction --> LoadedData
+
+        NiftiFile -. "Immediate data loading" .-> ArrayObj
+        ArrayObj --> MemData
+        MemData --> ArrayOp
+
+        style ProxyObj fill:#d4f1f9,stroke:#0077b6
+        style ArrayObj fill:#ffdfd3,stroke:#e07a5f
+        style OpFunction fill:#d8f3dc,stroke:#2d6a4f
+        style ArrayOp fill:#d8f3dc,stroke:#2d6a4f
+        style LoadedData fill:#ffdfd3,stroke:#e07a5f
+        style MemData fill:#ffdfd3,stroke:#e07a5f
 
 Proxy images
 ============
@@ -60,13 +100,13 @@ into memory) compared to :func:`~nilearn.image.load_img`.
 
     # load image via nibabel.load
     %time nib.load(example_fmri_path)
-    # CPU times: user 2.09 ms, sys: 1.01 ms, total: 3.1 ms
-    # Wall time: 2.93 ms
+    # CPU times: user 2.77 ms, sys: 3.76 ms, total: 6.53 ms
+    # Wall time: 5.72 ms
 
     # load image via nilearn.image.load_img
     %time load_img(example_fmri_path)
-    # CPU times: user 3.93 s, sys: 1.24 s, total: 5.17 s
-    # Wall time: 5.17 s
+    # CPU times: user 6.19 s, sys: 2.89 s, total: 9.08 s
+    # Wall time: 9.07 s
 
 Memory usage while loading an image
 -----------------------------------
@@ -82,11 +122,11 @@ measure the memory usage of a single line of code.
 
     # load image via nibabel.load
     %memit nib.load(example_fmri_path)
-    # peak memory: 2179.85 MiB, increment: 0.00 MiB
+    # peak memory: 2180.11 MiB, increment: 0.25 MiB
 
     # load image via nilearn.image.load_img
     %memit load_img(example_fmri_path)
-    # peak memory: 6113.84 MiB, increment: 3933.99 MiB
+    # peak memory: 6116.31 MiB, increment: 3936.18 MiB
 
 Some use cases
 ==============
@@ -114,11 +154,10 @@ memory and the function can operate quickly.
     from nilearn.image import mean_img
 
     img_nilearn = load_img(example_fmri_path)
-
     # mean over image loaded via nilearn.image.load_img
     %time mean_img(img_nilearn, copy_header=True)
-    # CPU times: user 142 ms, sys: 12.8 ms, total: 155 ms
-    # Wall time: 176 ms
+    # CPU times: user 734 ms, sys: 309 ms, total: 1.04 s
+    # Wall time: 1.04 s
 
 But when compared to loading the image with :func:`nibabel.loadsave.load`:
 
@@ -127,8 +166,8 @@ But when compared to loading the image with :func:`nibabel.loadsave.load`:
     img_nibabel = nib.load(example_fmri_path)
     # mean over image loaded via nibabel.load
     %time mean_img(img_nibabel, copy_header=True)
-    # CPU times: user 4.11 s, sys: 1.22 s, total: 5.34 s
-    # Wall time: 5.34 s
+    # CPU times: user 7.35 s, sys: 5.74 s, total: 13.1 s
+    # Wall time: 13.1 s
 
 This takes more time because :func:`~nilearn.image.mean_img` will have to load
 the data before it can take the mean.
@@ -140,29 +179,35 @@ This is simply because the data has to be loaded at some point either before
 :func:`~nilearn.image.mean_img`.
 
 We can verify that by adding the timing of the loading and
-:func:`~nilearn.image.mean_img` calculation together:
+:func:`~nilearn.image.mean_img` calculation together. Let's define functions
+that load the image and then take the mean one for each of the two loading
+methods.
 
 .. code-block:: python
 
-    %%time
-    img_nilearn = load_img(example_fmri_path)
-    mean_img(img_nilearn, copy_header=True)
-    # CPU times: user 4.1 s, sys: 1.28 s, total: 5.38 s
-    # Wall time: 5.38 s
+    def mean_nilearn(fmri):
+        img_nilearn = load_img(fmri)
+        mean_img(img_nilearn, copy_header=True)
+
+    def mean_nibabel(fmri):
+        img_nibabel = nib.load(fmri)
+        mean_img(img_nibabel, copy_header=True)
+
+.. code-block:: python
+
+    %time mean_nilearn(example_fmri_path)
+    # CPU times: user 7.14 s, sys: 3.45 s, total: 10.6 s
+    # Wall time: 10.6 s
 
 The memory usage of the two would also be similar for the same reason.
 
 .. code-block:: python
 
-    %%memit
-    img_nilearn = load_img(example_fmri_path)
-    mean_img(img_nilearn, copy_header=True)
-    # peak memory: 10059.32 MiB, increment: 3936.28 MiB
+    %memit mean_nilearn(example_fmri_path)
+    # peak memory: 10060.05 MiB, increment: 3935.48 MiB
 
-    %%memit
-    img_nibabel = nib.load(example_fmri_path)
-    mean_img(img_nibabel, copy_header=True)
-    # peak memory: 8091.86 MiB, increment: 1967.71 MiB
+    %memit mean_nibabel(example_fmri_path)
+    # peak memory: 10060.05 MiB, increment: 3935.48 MiB
 
 Extracting a 3D volume
 ----------------------
@@ -177,21 +222,27 @@ So with :func:`~nilearn.image.load_img`:
 
 .. code-block:: python
 
-    %%time
-    img_nilearn = load_img(example_fmri_path)
-    img_nilearn.dataobj[..., 3]
-    # CPU times: user 4.04 s, sys: 1.53 s, total: 5.57 s
-    # Wall time: 5.57 s
+    def slice_nilearn(fmri):
+        img_nilearn = load_img(fmri)
+        img_nilearn.dataobj[..., 3]
+
+    def slice_nibabel(fmri):
+        img_nibabel = nib.load(fmri)
+        img_nibabel.dataobj[..., 3]
+
+.. code-block:: python
+
+    %time slice_nilearn(example_fmri_path)
+    # CPU times: user 7.39 s, sys: 5.64 s, total: 13 s
+    # Wall time: 13 s
 
 And with :func:`nibabel.loadsave.load`:
 
 .. code-block:: python
 
-    %%time
-    img_nibabel = nib.load(example_fmri_path)
-    img_nibabel.dataobj[..., 3]
-    # CPU times: user 11.8 ms, sys: 9.19 ms, total: 21 ms
-    # Wall time: 20.2 ms
+    %time slice_nibabel(example_fmri_path)
+    # CPU times: user 24.5 ms, sys: 4.24 ms, total: 28.7 ms
+    # Wall time: 27 ms
 
 What happens here with :func:`~nilearn.image.load_img` is that we load the
 entire image into memory even though we only need a chunk of it. This is why it
@@ -202,17 +253,13 @@ We will see that with the memory usage as well:
 
 .. code-block:: python
 
-    %%memit
-    img_nilearn = load_img(example_fmri_path)
-    img_nilearn.dataobj[..., 3]
-    # peak memory: 8093.21 MiB, increment: 3936.11 MiB
+    %memit slice_nilearn(example_fmri_path)
+    # peak memory: 10060.75 MiB, increment: 3935.48 MiB
 
 .. code-block:: python
 
-    %%memit
-    img_nibabel = nib.load(example_fmri_path)
-    img_nibabel.dataobj[..., 3]
-    # peak memory: 4158.06 MiB, increment: 0.00 MiB
+    %memit slice_nibabel(example_fmri_path)
+    # peak memory: 6120.99 MiB, increment: 0.00 MiB
 
 Array images
 ============
