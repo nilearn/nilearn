@@ -82,8 +82,10 @@ If you are reading an image from the disk, you can do so via nibabel's
 function. Both of these functions return a proxy image. The difference is
 that with :func:`nibabel.loadsave.load` you only get the proxy image and you
 have to call the ``.get_fdata()`` method to load the data into memory.
-On the other hand, with :func:`~nilearn.image.load_img` you get a proxy image
-that loads the data into memory as soon as it is created.
+With :func:`~nilearn.image.load_img` you still get a proxy image but data
+loading is already done for you. You can think of this as if
+:func:`~nilearn.image.load_img` is calling ``.get_fdata()`` internally before
+returning the proxy image.
 
 Time taken to load an image
 ---------------------------
