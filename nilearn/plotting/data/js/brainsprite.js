@@ -287,7 +287,7 @@ function brainsprite(d) {
                 if (typeof b.showLR !== "undefined" && b.showLR) {
                     var isRadiological = b.radiological || false;
                     var fontSize = Math.round(1 * b.sizeFontPixels);
-                    var centerY = Math.round(b.canvas.height / 2);
+                    var paddingTop = Math.round(0.05 * b.canvas.height);
                     var prevFont = b.context.font;
                     var prevAlign = b.context.textAlign;
                     var prevBaseline = b.context.textBaseline;
@@ -299,8 +299,8 @@ function brainsprite(d) {
             
                     var labelLeft = isRadiological ? "R" : "L";
                     var labelRight = isRadiological ? "L" : "R";
-                    b.context.fillText(labelLeft, b.widthCanvas.X + 40, centerY);
-                    b.context.fillText(labelRight, b.widthCanvas.X + b.widthCanvas.Y - 40, centerY);
+                    b.context.fillText(labelLeft, b.widthCanvas.X + 40, paddingTop);
+                    b.context.fillText(labelRight, b.widthCanvas.X + b.widthCanvas.Y - 40, paddingTop);
             
                     b.context.font = prevFont;
                     b.context.textAlign = prevAlign;
@@ -331,7 +331,7 @@ function brainsprite(d) {
                 if (typeof b.showLR !== "undefined" && b.showLR) {
                     var isRadiological = b.radiological || false;
                     var fontSize = Math.round(1 * b.sizeFontPixels);
-                    var centerY = Math.round(b.canvas.height / 2);
+                    var paddingTop = Math.round(0.05 * b.canvas.height);
                     var prevFont = b.context.font;
                     var prevAlign = b.context.textAlign;
                     var prevBaseline = b.context.textBaseline;
@@ -343,8 +343,8 @@ function brainsprite(d) {
             
                     var labelLeft = isRadiological ? "R" : "L";
                     var labelRight = isRadiological ? "L" : "R";
-                    b.context.fillText(labelLeft, b.widthCanvas.X + b.widthCanvas.Y + 35, centerY);
-                    b.context.fillText(labelRight, b.widthCanvas.X + b.widthCanvas.Y + b.widthCanvas.Z - 35, centerY);
+                    b.context.fillText(labelLeft, b.widthCanvas.X + b.widthCanvas.Y + 35, paddingTop);
+                    b.context.fillText(labelRight, b.widthCanvas.X + b.widthCanvas.Y + b.widthCanvas.Z - 35, paddingTop);
             
                     b.context.font = prevFont;
                     b.context.textAlign = prevAlign;
