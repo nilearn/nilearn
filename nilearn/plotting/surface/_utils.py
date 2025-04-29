@@ -94,15 +94,17 @@ def _check_bg_map(bg_map, hemi):
     return bg_map
 
 
-def _get_hemi(mesh, hemi):
+def _get_hemi(surf_mesh, hemi):
     """Check that a given hemisphere exists in a
-    :obj:`~nilearn.surface.PolyMesh` and return the corresponding mesh. If
-    "both" is requested, combine the left and right hemispheres.
+    :obj:`~nilearn.surface.PolyMesh` and return the corresponding
+    ``surf_mesh``. If "both" is requested, combine the left and right
+    hemispheres.
 
     Parameters
     ----------
-    mesh: :obj:`~nilearn.surface.PolyMesh`
-        The mesh object containing the left and/or right hemisphere meshes.
+    surf_mesh: :obj:`~nilearn.surface.PolyMesh`
+        The surface mesh object containing the left and/or right hemisphere
+        meshes.
     hemi: {'left', 'right', 'both'}
 
     Returns
@@ -114,10 +116,19 @@ def _get_hemi(mesh, hemi):
           :obj:`numpy.ndarray`.
         - If ``hemi='both'``, returns :obj:`~nilearn.surface.InMemoryMesh`
     """
+    if not isinstance(surf_mesh, PolyMesh):
+        raise ValueError("mesh should be of type PolyMesh.")
+
     if hemi == "both":
-        return combine_hemispheres_meshes(mesh)
-    elif hemi in mesh.parts:
-        return mesh.parts[hemi]
+        return combine_hemispheres_meshes(surf_mesh)
+    elif hemi in ["left", "right"]:
+        if hemi in surf_mesh.parts:
+            return surf_mesh.parts[hemi]
+        else:
+            raise ValueError(
+                f"{hemi=} does not exist in mesh. Available hemispheres are:"
+                f"{surf_mesh.parts.keys()}."
+            )
     else:
         raise ValueError("hemi must be one of 'left', 'right' or 'both'.")
 
