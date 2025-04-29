@@ -26,6 +26,7 @@ from nilearn.plotting.surface._matplotlib_backend import (
     _get_ticks,
 )
 from nilearn.plotting.surface._utils import (
+    DEFAULT_HEMI,
     check_surface_plotting_inputs,
     get_surface_backend,
 )
@@ -46,7 +47,7 @@ def plot_surf(
     surf_mesh=None,
     surf_map=None,
     bg_map=None,
-    hemi="left",
+    hemi=DEFAULT_HEMI,
     view=None,
     engine=DEFAULT_ENGINE,
     cmap=None,
@@ -413,7 +414,7 @@ def plot_surf_stat_map(
     surf_mesh=None,
     stat_map=None,
     bg_map=None,
-    hemi="left",
+    hemi=DEFAULT_HEMI,
     view=None,
     engine=DEFAULT_ENGINE,
     threshold=None,
@@ -883,7 +884,7 @@ def plot_surf_roi(
     surf_mesh=None,
     roi_map=None,
     bg_map=None,
-    hemi="left",
+    hemi=DEFAULT_HEMI,
     view=None,
     engine=DEFAULT_ENGINE,
     avg_method=None,
