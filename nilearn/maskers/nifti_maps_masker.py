@@ -128,6 +128,8 @@ class NiftiMapsMasker(BaseMasker):
     maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The maps mask of the data.
 
+    %(nifti_mask_img_)s
+
     n_elements_ : :obj:`int`
         The number of overlapping maps in the mask.
         This is equivalent to the number of volumes in the mask image.
@@ -413,7 +415,7 @@ class NiftiMapsMasker(BaseMasker):
         }
 
         # Load images
-        repr = _utils.repr_niimgs(self.mask_img, shorten=(not self.verbose))
+        repr = _utils.repr_niimgs(self.maps_img, shorten=(not self.verbose))
         msg = f"loading regions from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
         self.maps_img_ = _utils.check_niimg(

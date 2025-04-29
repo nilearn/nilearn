@@ -132,10 +132,30 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    <<<<<<< HEAD
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image after fitting.
         If a mask_img was used,
         then mask vertices will have the background value.
+    ||||||| 1d285275b
+    n_elements_ : :obj:`int`
+        The number of discrete values in the mask.
+        This is equivalent to the number of unique values in the mask image,
+        ignoring the background value.
+    =======
+    mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage` or None.
+        The mask of the data.
+        If no ``mask_img`` was passed at masker construction,
+        then ``mask_img_`` is ``None``, otherwise
+        is the resulting binarized version of ``mask_img``
+        where each vertex is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0.
+
+    n_elements_ : :obj:`int`
+        The number of discrete values in the mask.
+        This is equivalent to the number of unique values in the mask image,
+        ignoring the background value.
+    >>>>>>> upstream/main
 
     lut_ : :obj:`pandas.DataFrame`
         Look-up table derived from the ``labels`` or ``lut``

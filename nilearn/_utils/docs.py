@@ -1316,6 +1316,17 @@ docdict["fsaverage_options"] = """
 docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
         List of the names of the regions."""
 
+# mask_img_ for most nifti maskers
+docdict[
+    "nifti_mask_img_"
+] = """mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image` or None.
+        The mask of the data.
+        If no ``mask_img`` was passed at masker construction,
+        then ``mask_img_`` is ``None``, otherwise
+        is the resulting binarized version of ``mask_img``
+        where each voxel is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0."""
+
 # look up table
 docdict["lut"] = """lut : :obj:`pandas.DataFrame`
         Act as a look up table (lut)
