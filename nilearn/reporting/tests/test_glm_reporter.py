@@ -121,14 +121,15 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
     """Test second level reporting when inputs are first level models."""
     model = SecondLevelModel()
 
-    Y = [flm, flm, flm]
+    Y = [flm] * 3
     X = pd.DataFrame([[1]] * 3, columns=["intercept"])
+    first_level_contrast = contrasts
 
     model.fit(Y, design_matrix=X)
 
     c1 = np.eye(len(model.design_matrix_.columns))[0]
 
-    model.generate_report(c1, first_level_contrast=contrasts)
+    model.generate_report(c1, first_level_contrast=first_level_contrast)
 
 
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
