@@ -12,6 +12,8 @@ from nilearn.surface import (
 from nilearn.surface.surface import combine_hemispheres_meshes, get_data
 from nilearn.surface.utils import check_polymesh_equal
 
+DEFAULT_HEMI = "left"
+
 
 def get_surface_backend(engine="matplotlib"):
     """Instantiate and return the required backend engine.
@@ -106,7 +108,7 @@ def _get_hemi(mesh, hemi):
 def check_surface_plotting_inputs(
     surf_map,
     surf_mesh,
-    hemi="left",
+    hemi=DEFAULT_HEMI,
     bg_map=None,
     map_var_name="surf_map",
     mesh_var_name="surf_mesh",
@@ -207,7 +209,7 @@ def sanitize_hemi_for_surface_image(hemi, map, mesh):
     if hemi is None and (
         isinstance(map, SurfaceImage) or isinstance(mesh, PolyMesh)
     ):
-        return "left"
+        return DEFAULT_HEMI
 
     if (
         hemi is not None

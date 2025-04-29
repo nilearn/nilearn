@@ -23,7 +23,10 @@ from nilearn.plotting.surface._backend import (
     check_surf_map,
     check_views,
 )
-from nilearn.plotting.surface._utils import get_faces_on_edge
+from nilearn.plotting.surface._utils import (
+    DEFAULT_HEMI,
+    get_faces_on_edge,
+)
 from nilearn.surface import (
     load_surf_data,
     load_surf_mesh,
@@ -358,7 +361,7 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
         faces,
         surf_map=None,
         bg_map=None,
-        hemi="left",
+        hemi=DEFAULT_HEMI,
         view=None,
         cmap=None,
         symmetric_cmap=None,

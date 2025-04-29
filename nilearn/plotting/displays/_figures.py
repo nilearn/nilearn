@@ -5,7 +5,7 @@ from scipy import linalg
 from scipy.spatial import distance_matrix
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
-from nilearn.plotting.surface._utils import get_faces_on_edge
+from nilearn.plotting.surface._utils import DEFAULT_HEMI, get_faces_on_edge
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data, load_surf_data
 
@@ -25,7 +25,7 @@ class SurfaceFigure:
         Path to output file.
     """
 
-    def __init__(self, figure=None, output_file=None, hemi="left"):
+    def __init__(self, figure=None, output_file=None, hemi=DEFAULT_HEMI):
         self.figure = figure
         self.output_file = output_file
         self.hemi = hemi
@@ -91,7 +91,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             [self.figure._data[0].get(d) for d in ["x", "y", "z"]]
         ).T
 
-    def __init__(self, figure=None, output_file=None, hemi="left"):
+    def __init__(self, figure=None, output_file=None, hemi=DEFAULT_HEMI):
         if not is_plotly_installed():
             raise ImportError(
                 "Plotly is required to use `PlotlySurfaceFigure`."

@@ -23,6 +23,7 @@ import numpy as np
 
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting.surface._utils import (
+    DEFAULT_HEMI,
     check_surface_plotting_inputs,
     sanitize_hemi_for_surface_image,
 )
@@ -86,7 +87,7 @@ class BaseSurfaceBackend:
         surf_mesh=None,
         surf_map=None,
         bg_map=None,
-        hemi="left",
+        hemi=DEFAULT_HEMI,
         view=None,
         cmap=None,
         symmetric_cmap=None,

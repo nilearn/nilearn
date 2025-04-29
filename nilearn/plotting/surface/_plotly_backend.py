@@ -20,6 +20,7 @@ from nilearn.plotting.surface._backend import (
     check_surf_map,
     check_views,
 )
+from nilearn.plotting.surface._utils import DEFAULT_HEMI
 from nilearn.plotting.surface.html_surface import get_vertexcolor
 from nilearn.surface import load_surf_data
 
@@ -235,7 +236,7 @@ class PlotlySurfaceBackend(BaseSurfaceBackend):
         faces,
         surf_map=None,
         bg_map=None,
-        hemi="left",
+        hemi=DEFAULT_HEMI,
         view=None,
         cmap=None,
         symmetric_cmap=None,
