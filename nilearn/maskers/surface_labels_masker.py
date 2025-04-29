@@ -436,14 +436,16 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         labels_data = get_data(self.labels_img_)
 
         index = self.labels_
-        index.pop(self.background_label)
+        if self.background_label in index:
+            index.pop(index.index(self.background_label))
 
         reduction_function = getattr(ndimage, self.strategy)
 
         for n, sample in enumerate(np.rollaxis(img_data, -1)):
-            region_signals[n] = np.asarray(
+            tmp = np.asarray(
                 reduction_function(sample, labels=labels_data, index=index)
             )
+            region_signals[n] = tmp
 
         parameters = get_params(
             self.__class__,
