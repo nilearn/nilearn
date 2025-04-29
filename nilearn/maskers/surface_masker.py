@@ -182,7 +182,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         img = at_least_2d(img)
         mask_data = {}
         for part, v in img.data.parts.items():
-            mask_data[part] = v
+            mask_data[part] = v.astype("float32")
             non_finite_mask = np.logical_not(np.isfinite(mask_data[part]))
             mask_data[part][non_finite_mask] = 0
             mask_data[part] = mask_data[part].astype("bool").all(axis=1)
