@@ -493,7 +493,7 @@ def view_surf(
 
     Parameters
     ----------
-    %(surf_mesh)
+    %(surf_mesh)s
         If None is passed, then ``surf_map`` must be a
         :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
         :obj:`~nilearn.surface.SurfaceImage` instance will be used.

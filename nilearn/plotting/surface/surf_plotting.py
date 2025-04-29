@@ -420,7 +420,7 @@ def plot_surf_stat_map(
 
     Parameters
     ----------
-    %(surf_mesh)
+    %(surf_mesh)s
         If None is passed, then ``stat_map`` must be a
         :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from
         that :obj:`~nilearn.surface.SurfaceImage` instance will be used.
@@ -876,7 +876,7 @@ def plot_surf_roi(
 
     Parameters
     ----------
-    %(surf_mesh)
+    %(surf_mesh)s
         If None is passed, then ``roi_map`` must be a
         :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
         :obj:`~nilearn.surface.SurfaceImage` instance will be used.
