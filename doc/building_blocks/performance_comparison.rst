@@ -261,7 +261,6 @@ memory and the function can operate quickly.
     from nilearn.image import mean_img
 
     img_nilearn = load_img(example_fmri_path)
-    # mean over image loaded via nilearn.image.load_img
     %time mean_img(img_nilearn, copy_header=True)
     # CPU times: user 154 ms, sys: 3.09 ms, total: 157 ms
     # Wall time: 167 ms
@@ -271,7 +270,6 @@ But when compared to loading the image with :func:`nibabel.loadsave.load`:
 .. code-block:: python
 
     img_nibabel = nib.load(example_fmri_path)
-    # mean over image loaded via nibabel.load
     %time mean_img(img_nibabel, copy_header=True)
     # CPU times: user 4.14 s, sys: 1.36 s, total: 5.51 s
     # Wall time: 5.5 s
