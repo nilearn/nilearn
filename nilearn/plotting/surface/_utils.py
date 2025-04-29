@@ -4,7 +4,9 @@ from warnings import warn
 
 import numpy as np
 
+from nilearn._utils import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn.plotting._utils import DEFAULT_ENGINE
 from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
@@ -15,7 +17,7 @@ from nilearn.surface.utils import check_polymesh_equal
 DEFAULT_HEMI = "both"
 
 
-def get_surface_backend(engine="matplotlib"):
+def get_surface_backend(engine=DEFAULT_ENGINE):
     """Instantiate and return the required backend engine.
 
     Parameters
@@ -120,6 +122,7 @@ def _get_hemi(mesh, hemi):
         raise ValueError("hemi must be one of 'left', 'right' or 'both'.")
 
 
+@fill_doc
 def check_surface_plotting_inputs(
     surf_map,
     surf_mesh,
@@ -148,8 +151,10 @@ def check_surface_plotting_inputs(
     surf_map: :obj:`~nilearn.surface.SurfaceImage` | :obj:`numpy.ndarray`
               | None
     surf_mesh: :obj:`~nilearn.surface.PolyMesh` | :obj:`numpy.ndarray` | None
-    hemi: {'left', 'right', 'both'}
-    bg_map: :obj:`str` | :obj:`pathlib.Path` | :obj:`numpy.ndarray` | None
+
+    %(hemi)s
+
+    %(bg_map)s
 
     Returns
     -------
