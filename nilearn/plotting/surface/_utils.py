@@ -96,6 +96,21 @@ def _get_hemi(mesh, hemi):
     """Check that a given hemisphere exists in a
     :obj:`~nilearn.surface.PolyMesh` and return the corresponding mesh. If
     "both" is requested, combine the left and right hemispheres.
+
+    Parameters
+    ----------
+    mesh: :obj:`~nilearn.surface.PolyMesh`
+        The mesh object containing the left and/or right hemisphere meshes.
+    hemi: {'left', 'right', 'both'}
+
+    Returns
+    -------
+    surf_mesh : :obj:`numpy.ndarray`,  :obj:`~nilearn.surface.InMemoryMesh`
+        Surface mesh corresponding to the specified ``hemi``.
+
+        - If ``hemi='left'`` or ``hemi='right'``, returns
+          :obj:`numpy.ndarray`.
+        - If ``hemi='both'``, returns :obj:`~nilearn.surface.InMemoryMesh`
     """
     if hemi == "both":
         return combine_hemispheres_meshes(mesh)
@@ -120,11 +135,27 @@ def check_surface_plotting_inputs(
     objects are passed to be able to give them to the surface plotting
     functions.
 
+    - ``surf_mesh`` and ``surf_map`` cannot be `None` at the same time.
+    - If ``surf_mesh=None``, then ``surf_map`` should be of type
+    :obj:`~nilearn.surface.SurfaceImage`.
+    - ``surf_mesh`` cannot be of type :obj:`~nilearn.surface.SurfaceImage`.
+    - If ``surf_map`` and ``bg_map`` are of type
+    :obj:`~nilearn.surface.SurfaceImage`, ``bg_map.mesh`` should be equal to
+    ``surf_map.mesh``.
+
+    Parameters
+    ----------
+    surf_map: :obj:`~nilearn.surface.SurfaceImage` | :obj:`numpy.ndarray`
+              | None
+    surf_mesh: :obj:`~nilearn.surface.PolyMesh` | :obj:`numpy.ndarray` | None
+    hemi: {'left', 'right', 'both'}
+    bg_map: :obj:`str` | :obj:`pathlib.Path` | :obj:`numpy.ndarray` | None
+
     Returns
     -------
     surf_map : :obj:`numpy.ndarray`
 
-    surf_mesh : :obj:`numpy.ndarray`
+    surf_mesh : :obj:`numpy.ndarray`, :obj:`~nilearn.surface.InMemoryMesh`
 
     bg_map : :obj:`str` | :obj:`pathlib.Path` | :obj:`numpy.ndarray` | None
 
@@ -142,9 +173,6 @@ def check_surface_plotting_inputs(
             f"then {mesh_var_name} must be a SurfaceImage instance."
         )
 
-    if isinstance(surf_mesh, PolyMesh):
-        surf_mesh = _get_hemi(surf_mesh, hemi)
-
     if isinstance(surf_mesh, SurfaceImage):
         raise TypeError(
             "'surf_mesh' cannot be a SurfaceImage instance. ",
@@ -152,10 +180,10 @@ def check_surface_plotting_inputs(
             "InMemoryMesh, PolyMesh, or None.",
         )
 
-    if isinstance(surf_map, SurfaceImage):
-        if surf_mesh is None:
-            surf_mesh = _get_hemi(surf_map.mesh, hemi)
+    if isinstance(surf_mesh, PolyMesh):
+        surf_mesh = _get_hemi(surf_mesh, hemi)
 
+    if isinstance(surf_map, SurfaceImage):
         if len(surf_map.shape) > 1 and surf_map.shape[1] > 1:
             raise TypeError(
                 "Input data has incompatible dimensionality. "
@@ -166,6 +194,9 @@ def check_surface_plotting_inputs(
 
         if isinstance(bg_map, SurfaceImage):
             check_polymesh_equal(bg_map.mesh, surf_map.mesh)
+
+        if surf_mesh is None:
+            surf_mesh = _get_hemi(surf_map.mesh, hemi)
 
         # concatenate the left and right data if hemi is "both"
         if hemi == "both":
