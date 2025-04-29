@@ -73,7 +73,7 @@ of :obj:`float`: (xmin, ymin, width, height), default=None
     If `None`, the complete figure is used.
 """
 
-# bg_img
+# bg_map
 docdict["bg_map"] = """
 bg_map : :obj:`str` or :obj:`pathlib.Path` or \
          :class:`numpy.ndarray` \
