@@ -537,9 +537,6 @@ class NiftiLabelsMasker(BaseMasker):
 
         self._original_region_ids = self.lut_["index"].to_list()
 
-        assert "Background" in self.lut_["name"].to_list()
-        assert self.background_label in self._original_region_ids
-
         self.mask_img_ = self._load_mask(imgs)
 
         # Check shapes and affines or resample.
@@ -642,7 +639,7 @@ class NiftiLabelsMasker(BaseMasker):
         """
         if self.lut is not None:
             if isinstance(self.lut, (str, Path)):
-                lut = pd.read_table(self.lut, sep=None)
+                lut = pd.read_table(self.lut, sep=None, engine="python")
             else:
                 lut = self.lut
 

@@ -72,7 +72,7 @@ def generate_atlas_look_up_table(
     if fname in ["fetch_atlas_basc_multiscale_2015"]:
         index = []
         for x in name:
-            tmp = x if isinstance(x, str) else int(x)
+            tmp = 0.0 if x in ["background", "Background"] else float(x)
             index.append(tmp)
     elif fname in ["fetch_atlas_schaefer_2018", "fetch_atlas_pauli_2017"]:
         index = list(range(1, len(name) + 1))
@@ -110,6 +110,12 @@ def generate_atlas_look_up_table(
         lut = pd.concat(
             [pd.DataFrame([[0, "Background"]], columns=lut.columns), lut],
             ignore_index=True,
+        )
+
+    # enforce little endian of index column
+    if lut["index"].dtype.byteorder == ">":
+        lut["index"] = lut["index"].astype(
+            lut["index"].dtype.newbyteorder("=")
         )
 
     return lut
@@ -197,7 +203,6 @@ def sanitize_look_up_table(lut, atlas) -> pd.DataFrame:
     check_look_up_table(lut, atlas, strict=False, verbose=0)
     indices = _get_indices_from_image(atlas)
     lut = lut[lut["index"].isin(indices)]
-    check_look_up_table(lut, atlas, strict=True, verbose=1)
     return lut
 
 
