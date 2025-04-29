@@ -513,12 +513,11 @@ def view_surf(
 
     %(bg_map)s
 
-    hemi : {"left", "right", "both", None}, default=None
-        Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
-        is passed as ``surf_map``
-        and / or if :obj:`~nilearn.surface.PolyMesh`
-        is passed as ``surf_mesh``.
-        In these cases, if ``hemi`` is set to None, it will default to "left".
+    %(hemi)s
+        It is only used if ``surf_map`` is :obj:`~nilearn.surface.SurfaceImage`
+        and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
+        Otherwise a warning will be displayed and ``hemi`` will default to
+        'both'.
 
         .. versionadded:: 0.11.0
 

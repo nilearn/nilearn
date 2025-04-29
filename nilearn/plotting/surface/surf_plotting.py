@@ -283,7 +283,7 @@ def plot_surf(
 def plot_surf_contours(
     surf_mesh=None,
     roi_map=None,
-    hemi=None,
+    hemi="left",
     levels=None,
     labels=None,
     colors=None,
@@ -316,12 +316,11 @@ def plot_surf_contours(
         :obj:`~nilearn.surface.SurfaceImage` instance and its the mesh will be
         used for plotting.
 
-    hemi : {"left", "right", "both", None}, default=None
-        Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
-        is passed as ``roi_map`` and / or if :obj:`~nilearn.surface.PolyMesh`
-        is passed as ``surf_mesh``.
-        In these cases, if ``hemi`` is set to `None`, it will default to
-        `"left"`.
+    %(hemi)s
+        It is only used if ``roi_map`` is :obj:`~nilearn.surface.SurfaceImage`
+        and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
+        Otherwise a warning will be displayed and ``hemi`` will default to
+        'both'.
 
         .. versionadded:: 0.11.0
 
