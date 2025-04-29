@@ -4,12 +4,16 @@ This is done with ALL Nilearn deterministic atlases:
 - with no labels
 - with labels
 - with look up table
+
+Also checks some template flow atlases
+to ensure our maskers can work with external resources.
 """
 
 import sys
 from pathlib import Path
 
 import numpy as np
+from nibabel import Nifti1Image
 from rich import print
 from templateflow import api as tflow
 
@@ -41,14 +45,19 @@ functions = {
 
 
 def _check_atlas(
-    labels_img,
-    atlas_name,
-    dataset,
-    output_dir,
-    failing_atlas,
+    labels_img: str | Path | Nifti1Image,
+    atlas_name: str,
+    stat_map: str | Path,
+    output_dir: Path,
     background_label=0,
     **kwargs,
 ):
+    """Check atlas is usable by nilearn label masker.
+
+    - construct masker instance
+    - use fit_transform
+    - generate report and save it.
+    """
     print(kwargs.keys())
 
     masker = NiftiLabelsMasker(
@@ -56,30 +65,38 @@ def _check_atlas(
     )
 
     try:
-        masker.fit_transform(dataset)
+        masker.fit_transform(stat_map)
     except Exception as e:
         print("\n[red]" + "Could not fit atlas".upper() + f"\n{e!r}")
-        failing_atlas.append(atlas_name)
-        return failing_atlas
+        return False
 
     try:
         report = masker.generate_report()
-        suffix = f"_{next(iter(kwargs.keys()))}" if kwargs.keys() else ""
-        report.save_as_html(output_dir / f"report_{atlas_name}{suffix}.html")
+        report.save_as_html(
+            output_dir / f"report_{atlas_name}{_suffix(**kwargs)}.html"
+        )
     except Exception as e:
         print("\n[red]" + "Could not generate report".upper() + f"\n{e!r}")
-        failing_atlas.append(atlas_name)
-    return failing_atlas
+        return False
+
+    return True
+
+
+def _suffix(**kwargs):
+    """Return first key of kwargs if it has any."""
+    return f"_{next(iter(kwargs.keys()))}" if kwargs.keys() else ""
 
 
 def main():
     """Test atlases masking."""
-    dataset = datasets.load_sample_motor_activation_image()
+    stat_map = datasets.load_sample_motor_activation_image()
 
     output_dir = Path(__file__).parent / "tmp"
     output_dir.mkdir(exist_ok=True, parents=True)
 
     failing_atlas = []
+
+    # TEMPLATE FLOW ATLASES
 
     labels_img = tflow.get(
         "MNI152NLin2009cAsym",
@@ -97,22 +114,29 @@ def main():
         extension="tsv",
     )
 
+    # check that the datalad get returns something
+    assert labels_img
     assert lut
 
+    atlas_name = "tflow_Schaefer2018_100Parcels7Networks"
+
     for kwargs in [{}, {"lut": lut}]:
-        failing_atlas = _check_atlas(
+        if not _check_atlas(
             labels_img,
-            "tflow_Schaefer2018_100Parcels7Networks",
-            dataset,
+            atlas_name,
+            stat_map,
             output_dir,
-            failing_atlas,
             background_label=np.int16(0),
             **kwargs,
-        )
+        ):
+            failing_atlas.extend([f"{atlas_name}_{_suffix(**kwargs)}"])
+
+    # NILEARN ATLASES
 
     for fn, args in functions.items():
-        print()
-        print(fn.__name__)
+        atlas_name = fn.__name__
+
+        print(f"\n{atlas_name}")
 
         try:
             atlas = fn(*args) if args else fn()
@@ -125,16 +149,19 @@ def main():
         lut = atlas.lut
 
         for kwargs in [{}, {"labels": labels}, {"lut": lut}]:
-            failing_atlas = _check_atlas(
+            if not _check_atlas(
                 labels_img,
-                fn.__name__,
-                dataset,
+                atlas_name,
+                stat_map,
                 output_dir,
-                failing_atlas,
                 **kwargs,
-            )
+            ):
+                failing_atlas.extend([f"{atlas_name}_{_suffix(**kwargs)}"])
 
-    print(failing_atlas)
+    if failing_atlas:
+        raise RuntimeError(
+            f"The following atlases could not be used: {failing_atlas}."
+        )
 
 
 if __name__ == "__main__":
