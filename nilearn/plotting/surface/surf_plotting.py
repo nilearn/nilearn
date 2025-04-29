@@ -283,7 +283,7 @@ def plot_surf(
 def plot_surf_contours(
     surf_mesh=None,
     roi_map=None,
-    hemi="left",
+    hemi=DEFAULT_HEMI,
     levels=None,
     labels=None,
     colors=None,
