@@ -77,19 +77,21 @@ view = plotting.view_img(stat_img, threshold=3)
 # be displayed below the cell
 view
 
+# %%
+# uncomment this to open the plot in a web browser:
+# view.open_in_browser()
 
 # %%
 # It's also possible to visualize volumes in a LR-flipped "radiological" view
 # Just set radiological=True
-plotting.view_img(
+view_radio = plotting.view_img(
     stat_img, threshold=3, title="radiological view", radiological=True
 )
-
-view
+view_radio
 
 # %%
 # uncomment this to open the plot in a web browser:
-# view.open_in_browser()
+# view_radio.open_in_browser()
 
 # %%
 # Plotting statistical maps in a glass brain: `plot_glass_brain`
