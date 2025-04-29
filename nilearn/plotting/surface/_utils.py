@@ -150,7 +150,11 @@ def check_surface_plotting_inputs(
     ----------
     surf_map: :obj:`~nilearn.surface.SurfaceImage` | :obj:`numpy.ndarray`
               | None
-    surf_mesh: :obj:`~nilearn.surface.PolyMesh` | :obj:`numpy.ndarray` | None
+
+    %(surf_mesh)s
+        If `None` is passed, then ``surf_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
+        :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
     %(hemi)s
 
