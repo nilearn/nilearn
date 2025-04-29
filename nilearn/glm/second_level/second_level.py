@@ -637,8 +637,8 @@ class SecondLevelModel(BaseGLM):
 
         first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
                             shape (n_col) with respect to \
-                            :class:`~nilearn.glm.first_level.FirstLevelModel`,
-                            default=None
+                            :class:`~nilearn.glm.first_level.FirstLevelModel` \
+                            or None, default=None
 
             - In case a :obj:`list` of
               :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
