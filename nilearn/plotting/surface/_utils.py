@@ -12,7 +12,7 @@ from nilearn.surface import (
 from nilearn.surface.surface import combine_hemispheres_meshes, get_data
 from nilearn.surface.utils import check_polymesh_equal
 
-DEFAULT_HEMI = "left"
+DEFAULT_HEMI = "both"
 
 
 def get_surface_backend(engine="matplotlib"):
