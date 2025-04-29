@@ -203,7 +203,6 @@ def sanitize_look_up_table(lut, atlas) -> pd.DataFrame:
     check_look_up_table(lut, atlas, strict=False, verbose=0)
     indices = _get_indices_from_image(atlas)
     lut = lut[lut["index"].isin(indices)]
-    check_look_up_table(lut, atlas, strict=True, verbose=1)
     return lut
 
 

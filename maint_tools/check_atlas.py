@@ -64,6 +64,7 @@ def _check_atlas(
         labels_img=labels_img, background_label=background_label, **kwargs
     )
 
+    masker.fit_transform(stat_map)
     try:
         masker.fit_transform(stat_map)
     except Exception as e:
@@ -119,6 +120,8 @@ def main():
     assert lut
 
     atlas_name = "tflow_Schaefer2018_100Parcels7Networks"
+
+    print(f"\n{atlas_name}")
 
     for kwargs in [{}, {"lut": lut}]:
         if not _check_atlas(
