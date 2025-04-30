@@ -640,6 +640,10 @@ authors:
     family-names: Guidotti
     website: https://github.com/robbisg
     affiliation: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
+  - given-names: Rohan Thomas
+    family-names: Jepegnanam
+    website: https://github.com/rohan3412
+    affiliation: Cognitive Neuroscience & Clinical Phenomenology Lab, Christian Medical College, Vellore, India
   - given-names: Ronald
     family-names: Phlypo
     website: https://github.com/rphlypo
@@ -778,7 +782,3 @@ authors:
     family-names: Nájera
     website: https://github.com/Titan-C
     affiliation: Checkmk
-  - given-names: Rohan Thomas
-    family-names: Jepegnanam
-    website: https://github.com/rohan3412
-    affiliation: Cognitive Neuroscience & Clinical Phenomenology Lab, Christian Medical College, Vellore, India
