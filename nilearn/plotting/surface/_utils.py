@@ -175,11 +175,30 @@ def check_surface_plotting_inputs(
     -------
     surf_map : :obj:`numpy.ndarray`
 
-    surf_mesh : :obj:`numpy.ndarray`, :obj:`~nilearn.surface.InMemoryMesh`
+    surf_mesh : :obj:`numpy.ndarray`,  :obj:`~nilearn.surface.InMemoryMesh`
+        Surface mesh corresponding to the specified ``hemi``.
 
+        - If ``hemi='left'`` or ``hemi='right'``, returns
+          :obj:`numpy.ndarray`.
+        - If ``hemi='both'``, returns :obj:`~nilearn.surface.InMemoryMesh`
     bg_map : :obj:`str` | :obj:`pathlib.Path` | :obj:`numpy.ndarray` | None
 
     """
+    if not isinstance(surf_map, SurfaceImage) and not isinstance(
+        surf_mesh, PolyMesh
+    ):
+        warn(
+            category=UserWarning,
+            message=(
+                f"{hemi=} was passed with "
+                f"{type(surf_map)=} and {type(surf_mesh)=}.\n"
+                "This value will be ignored as it is only used when "
+                "'map' is a SurfaceImage instance and / or "
+                "'mesh' is a PolyMesh instance."
+            ),
+            stacklevel=3,
+        )
+
     if surf_mesh is None and surf_map is None:
         raise TypeError(
             f"{mesh_var_name} and {map_var_name} cannot both be None."
@@ -254,28 +273,3 @@ def get_faces_on_edge(faces, parc_idx):
     faces_outside_edge = np.isin(faces, vertices_on_edge).sum(axis=1)
 
     return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
-
-
-def sanitize_hemi_for_surface_image(hemi, map, mesh):
-    if hemi is None and (
-        isinstance(map, SurfaceImage) or isinstance(mesh, PolyMesh)
-    ):
-        return DEFAULT_HEMI
-
-    if (
-        hemi is not None
-        and not isinstance(map, SurfaceImage)
-        and not isinstance(mesh, PolyMesh)
-    ):
-        warn(
-            category=UserWarning,
-            message=(
-                f"{hemi=} was passed "
-                f"with {type(map)=} and {type(mesh)=}.\n"
-                "This value will be ignored as it is only used when "
-                "'roi_map' is a SurfaceImage instance "
-                "and / or 'surf_mesh' is a PolyMesh instance."
-            ),
-            stacklevel=3,
-        )
-    return hemi

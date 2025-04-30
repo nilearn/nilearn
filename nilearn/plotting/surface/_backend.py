@@ -25,7 +25,6 @@ from nilearn._utils.param_validation import check_params
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
     check_surface_plotting_inputs,
-    sanitize_hemi_for_surface_image,
 )
 from nilearn.surface import load_surf_data, load_surf_mesh
 from nilearn.surface.surface import (
@@ -163,7 +162,6 @@ class BaseSurfaceBackend:
         figure=None,
         **kwargs,
     ):
-        hemi = sanitize_hemi_for_surface_image(hemi, roi_map, surf_mesh)
         roi_map, surf_mesh, _ = check_surface_plotting_inputs(
             roi_map, surf_mesh, hemi, map_var_name="roi_map"
         )

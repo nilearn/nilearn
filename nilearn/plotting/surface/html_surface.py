@@ -19,10 +19,7 @@ from nilearn.plotting.js_plotting_utils import (
     mesh_to_plotly,
     to_color_strings,
 )
-from nilearn.plotting.surface._utils import (
-    check_surface_plotting_inputs,
-    sanitize_hemi_for_surface_image,
-)
+from nilearn.plotting.surface._utils import check_surface_plotting_inputs
 from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
@@ -586,7 +583,6 @@ def view_surf(
     nilearn.plotting.view_img_on_surf: Surface plot from a 3D statistical map.
     """
     check_params(locals())
-    hemi = sanitize_hemi_for_surface_image(hemi, surf_map, surf_mesh)
     surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map, map_var_name="surf_map"
     )
