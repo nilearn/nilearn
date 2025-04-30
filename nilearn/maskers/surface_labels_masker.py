@@ -41,7 +41,7 @@ def signals_to_surf_img_labels(
     labels: np.ndarray,
     labels_img: SurfaceImage,
     background_label=0,
-):
+) -> SurfaceImage:
     """Transform signals to surface image labels."""
     labels = labels[labels != background_label]
 
