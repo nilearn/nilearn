@@ -134,7 +134,8 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_fit2d_predict1d": "not applicable for image input",
     # the following are skipped because there is nilearn specific replacement
     "check_estimators_empty_data_messages": (
-        "replaced by check_masker_empty_data_messages"
+        "replaced by check_masker_empty_data_messages "
+        "and check_glm_empty_data_messages"
     ),
     "check_estimators_fit_returns_self": (
         "replaced by check_nifti_masker_fit_returns_self "
@@ -389,6 +390,7 @@ def nilearn_check_estimator(estimator):
     if is_glm:
         yield (clone(estimator), check_glm_fit_returns_self)
         yield (clone(estimator), check_glm_is_fitted)
+        yield (clone(estimator), check_glm_empty_data_messages)
 
 
 def is_multimasker(estimator):
@@ -1452,6 +1454,28 @@ def check_glm_fit_returns_self(estimator):
     # SecondLevel
     else:
         assert estimator.fit(data, design_matrix=design_matrices) is estimator
+
+
+def check_glm_empty_data_messages(estimator):
+    """Check that empty images are caught properly.
+
+    Replaces sklearn check_estimators_empty_data_messages.
+    """
+    imgs, design_matrices = _make_surface_img_and_design()
+
+    data = {
+        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
+        for part in imgs.data.parts
+    }
+    imgs = SurfaceImage(imgs.mesh, data)
+
+    with pytest.raises(ValueError, match="empty"):
+        # FirstLevel
+        if hasattr(estimator, "hrf_model"):
+            estimator.fit(imgs, design_matrices=design_matrices)
+        # SecondLevel
+        else:
+            estimator.fit(imgs, design_matrix=design_matrices)
 
 
 def check_glm_is_fitted(estimator):
