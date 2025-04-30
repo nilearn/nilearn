@@ -513,8 +513,7 @@ def view_surf(
     %(hemi)s
         It is only used if ``surf_map`` is :obj:`~nilearn.surface.SurfaceImage`
         and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
-        Otherwise a warning will be displayed and ``hemi`` will default to
-        'both'.
+        Otherwise a warning will be displayed.
 
         .. versionadded:: 0.11.0
 
