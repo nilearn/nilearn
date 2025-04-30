@@ -210,7 +210,6 @@ def test_nifti_maps_masker_io_shapes(
     transform(3D image) --> 2D output, DeprecationWarning
     inverse_transform(2D array) --> 4D image, no warning
     inverse_transform(1D array) --> 3D image, no warning
-    inverse_transform(2D array with wrong shape) --> ValueError
     """
     data_1d = rng.random(n_regions)
     data_2d = rng.random((length, n_regions))
@@ -260,9 +259,6 @@ def test_nifti_maps_masker_io_shapes(
         test_img = masker.inverse_transform(data_2d)
 
         assert test_img.shape == (*shape_3d_default, length)
-
-    with pytest.raises(ValueError, match="shapes .* and .* not aligned"):
-        masker.inverse_transform(data_2d.T)
 
 
 def test_nifti_maps_masker_with_nans_and_infs(length, n_regions, affine_eye):

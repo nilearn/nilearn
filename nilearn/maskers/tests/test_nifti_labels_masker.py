@@ -163,7 +163,6 @@ def test_nifti_labels_masker_io_shapes(
     transform(3D image) --> 2D output, DeprecationWarning
     inverse_transform(2D array) --> 4D image, no warning
     inverse_transform(1D array) --> 3D image, no warning
-    inverse_transform(2D array with wrong shape) --> IndexError
     """
     length = 5
     shape_4d = (*shape_3d_default, length)
@@ -217,11 +216,6 @@ def test_nifti_labels_masker_io_shapes(
         test_img = masker.inverse_transform(data_2d)
 
         assert test_img.shape == shape_4d
-
-    with pytest.raises(
-        IndexError, match="index 6 is out of bounds for axis 1 with size 5"
-    ):
-        masker.inverse_transform(data_2d.T)
 
 
 def test_nifti_labels_masker_with_nans_and_infs(
