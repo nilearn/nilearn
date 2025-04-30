@@ -149,11 +149,8 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_transformer_preserve_dtypes": (
         "replaced by check_masker_transformer"
     ),
-
     "check_dict_unchanged": "check_masker_dict_unchanged",
-
     "check_fit_score_takes_y": {"replaced by check_masker_fit_score_takes_y"},
-
     # Those are skipped for now they fail
     # for unknown reasons
     #  most often because sklearn inputs expect a numpy array
