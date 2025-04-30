@@ -21,6 +21,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import compare_version
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.niimg_conversions import check_imgs_equal
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
     _affine_eye,
@@ -148,6 +149,7 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_transformer_preserve_dtypes": (
         "replaced by check_masker_transformer"
     ),
+    "check_dict_unchanged": "check_masker_dict_unchanged",
     "check_fit_score_takes_y": {"replaced by check_masker_fit_score_takes_y"},
     # Those are skipped for now they fail
     # for unknown reasons
@@ -155,7 +157,6 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     #  that errors with maskers,
     # or because a suitable nilearn replacement has not yet been created.
     "check_dtype_object": "TODO",
-    "check_dict_unchanged": "TODO",
     "check_dont_overwrite_parameters": "TODO",
     "check_estimators_empty_data_messages": "TODO",
     "check_estimators_dtypes": "TODO",
@@ -328,6 +329,10 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_inverse_transform)
 
         yield (clone(estimator), check_masker_compatibility_mask_image)
+
+        yield (clone(estimator), check_masker_dict_unchanged)
+        yield (clone(estimator), check_masker_fit_with_mask_too_many_samples)
+
         yield (clone(estimator), check_masker_fit_with_empty_mask)
 
         yield (clone(estimator), check_masker_fit_returns_self)
@@ -448,6 +453,81 @@ def check_estimator_has_sklearn_is_fitted(estimator):
 
 
 # ------------------ MASKER CHECKS ------------------
+
+
+def check_masker_dict_unchanged(estimator):
+    """Replace check_dict_unchanged from sklearn.
+
+    transform() should not changed the dict of the object.
+    """
+    if accept_niimg_input(estimator):
+        imgs = _img_3d_rand()
+    else:
+        imgs = _make_surface_img(10)
+
+    estimator = estimator.fit(imgs)
+
+    dict_before = estimator.__dict__.copy()
+
+    if accept_niimg_input(estimator):
+        estimator.transform(_img_3d_rand())
+    else:
+        estimator.transform(_make_surface_img(10))
+
+    dict_after = estimator.__dict__
+
+    # The following try / except is mostly
+    # to give more informative error messages when this check fails.
+    try:
+        assert dict_after == dict_before
+    except AssertionError as e:
+        extra_keys = set(dict_after.keys()) - set(dict_before.keys())
+        if len(extra_keys) > 0:
+            raise ValueError(
+                "Estimator changes '__dict__' keys during transform.\n"
+                f"{extra_keys} \n"
+            )
+
+        difference = {}
+        for x in dict_before:
+            if type(dict_before[x]) is not type(dict_after[x]):
+                difference[x] = {
+                    "before": dict_before[x],
+                    "after": dict_after[x],
+                }
+                continue
+            if (
+                (
+                    isinstance(dict_before[x], np.ndarray)
+                    and (
+                        (dict_before[x].shape != dict_after[x].shape)
+                        or (dict_before[x] != dict_after[x]).any()
+                    )
+                )
+                or (
+                    isinstance(dict_before[x], Nifti1Image)
+                    and not check_imgs_equal(dict_before[x], dict_after[x])
+                )
+                or (
+                    not isinstance(dict_before[x], (np.ndarray, Nifti1Image))
+                    and dict_before[x] != dict_after[x]
+                )
+            ):
+                difference[x] = {
+                    "before": dict_before[x],
+                    "after": dict_after[x],
+                }
+                continue
+        if difference:
+            raise ValueError(
+                "Estimator changes the following '__dict__' keys \n"
+                "during transform.\n"
+                f"{difference}"
+            )
+        else:
+            raise e
+    except Exception as e:
+        raise e
 
 
 def check_masker_fitted(estimator):

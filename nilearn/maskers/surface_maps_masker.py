@@ -226,6 +226,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             "images": None,  # we will update image in transform
         }
 
+        if self.clean_args is None:
+            self.clean_args = {}
+
         return self
 
     def __sklearn_is_fitted__(self):
@@ -273,8 +276,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             self.__class__,
             self,
         )
-        if self.clean_args is None:
-            self.clean_args = {}
         parameters["clean_args"] = self.clean_args
 
         # apply mask if provided
