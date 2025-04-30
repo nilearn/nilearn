@@ -176,14 +176,20 @@ additional control over the memory usage.
 :func:`nibabel.loadsave.load` vs. :func:`~nilearn.image.load_img`
 =================================================================
 
-Now let's compare the two methods of loading an image in terms of time
-and memory usage. For this we will use ``%time`` and ``%memit`` ipython
-magic commands.
+In this section we will compare the two methods of loading the image as
+described above. The goal here is to understand the difference between
+in terms actual time and memory usage and also to provide some tools for you to
+dig deeper into the performance of your own workflows.
 
-The ``%time`` command measures the time taken to run given code and is
-available by default in ``ipython``. The ``%memit`` command is part of the
-``memory_profiler`` package and measures the memory usage. To use it, you
-need to install the package first:
+For this we will use ``%time`` and ``%memit`` ipython magic commands:
+
+    1. ``%time`` command measures the time taken to run given code and is
+    available by default in ``ipython``.
+
+
+    2. ``%memit`` command is part of the ``memory_profiler`` package and
+    measures the memory usage. To use it, you need to install the
+    package first:
 
 .. code-block:: bash
 
