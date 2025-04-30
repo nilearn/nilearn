@@ -157,7 +157,7 @@ vmin = -vmax
 # We only print every 3rd label
 # for a more legible figure.
 labels = []
-for i, label in enumerate(labels_masker.label_names_):
+for i, label in enumerate(labels_masker.region_names_.values()):
     if i % 3 == 1:
         labels.append(label)
     else:
