@@ -7,11 +7,11 @@ import itertools
 import warnings
 from functools import partial
 
+import numpy as np
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import (
-    check_niimg_3d,
     fill_doc,
     logger,
     repr_niimgs,
@@ -147,8 +147,12 @@ class MultiNiftiMasker(NiftiMasker):
 
     Attributes
     ----------
-    mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
-        The mask of the data.
+    mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image`
+        The mask of the data, or the one computed from ``imgs`` passed to fit.
+        If a ``mask_img`` is passed at masker construction,
+        then ``mask_img_`` is the resulting binarized version of it
+        where each voxel is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0.
 
     affine_ : 4x4 :obj:`numpy.ndarray`
         Affine of the transformed image.
@@ -239,7 +243,7 @@ class MultiNiftiMasker(NiftiMasker):
     def fit(
         self,
         imgs=None,
-        y=None,  # noqa: ARG002
+        y=None,
     ):
         """Compute the mask corresponding to the data.
 
@@ -256,6 +260,7 @@ class MultiNiftiMasker(NiftiMasker):
             compatibility.
 
         """
+        del y
         check_params(self.__dict__)
         if getattr(self, "_shelving", None) is None:
             self._shelving = False
@@ -268,6 +273,8 @@ class MultiNiftiMasker(NiftiMasker):
                 "between the mask and its input image. "
             ),
             "warning_message": None,
+            "n_elements": 0,
+            "coverage": 0,
         }
         self._overlay_text = (
             "\n To see the input Nifti image before resampling, "
@@ -276,14 +283,23 @@ class MultiNiftiMasker(NiftiMasker):
 
         self = sanitize_cleaning_parameters(self)
 
-        # Load data (if filenames are given, load them)
-        logger.log(
-            f"Loading data from {repr_niimgs(imgs, shorten=False)}.",
-            self.verbose,
-        )
+        self.mask_img_ = self._load_mask(imgs)
+
+        if imgs is not None:
+            logger.log(
+                f"Loading data from {repr_niimgs(imgs, shorten=False)}.",
+                self.verbose,
+            )
 
         # Compute the mask if not given by the user
-        if self.mask_img is None:
+        if self.mask_img_ is None:
+            if imgs is None:
+                raise ValueError(
+                    "Parameter 'imgs' must be provided to "
+                    f"{self.__class__.__name__}.fit() "
+                    "if no mask is passed to mask_img."
+                )
+
             logger.log("Computing mask", self.verbose)
 
             imgs = stringify_path(imgs)
@@ -306,20 +322,14 @@ class MultiNiftiMasker(NiftiMasker):
                 verbose=max(0, self.verbose - 1),
                 **mask_args,
             )
-        else:
-            if imgs is not None:
-                warnings.warn(
-                    f"[{self.__class__.__name__}.fit] "
-                    "Generation of a mask has been requested (imgs != None) "
-                    "while a mask has been provided at masker creation. "
-                    "Given mask will be used.",
-                    stacklevel=find_stack_level(),
-                )
-
-            self.mask_img_ = check_niimg_3d(self.mask_img)
-
-            # Just check that the mask is valid
-            load_mask_img(self.mask_img_)
+        elif imgs is not None:
+            warnings.warn(
+                f"[{self.__class__.__name__}.fit] "
+                "Generation of a mask has been requested (imgs != None) "
+                "while a mask was given at masker creation. "
+                "Given mask will be used.",
+                stacklevel=find_stack_level(),
+            )
 
         self._reporting_data = None
         if self.reports:  # save inputs for reporting
@@ -359,6 +369,10 @@ class MultiNiftiMasker(NiftiMasker):
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
+        self._report_content["n_elements"] = self.n_elements_
+        self._report_content["coverage"] = (
+            self.n_elements_ / np.prod(data.shape) * 100
+        )
 
         if (self.target_shape is not None) or (
             (self.target_affine is not None) and self.reports

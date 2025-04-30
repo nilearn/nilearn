@@ -2,14 +2,16 @@
 
 import abc
 import contextlib
+import copy
 import warnings
+from collections.abc import Iterable
 
 import numpy as np
 from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import repr_niimgs
+from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -20,16 +22,20 @@ from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     concat_imgs,
     high_variance_confounds,
+    new_img_like,
     resample_img,
     smooth_img,
 )
-from nilearn.masking import unmask
+from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
+from nilearn.surface.surface import at_least_2d
+from nilearn.surface.utils import check_polymesh_equal
 
 
 def filter_and_extract(
@@ -248,6 +254,36 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """Present only to comply with sklearn estimators checks."""
         ...
 
+    def _load_mask(self, imgs):
+        """Load and validate mask if one passed at init.
+
+        Returns
+        -------
+        mask_img_ : None or 3D binary nifti
+        """
+        if self.mask_img is None:
+            # in this case
+            # (Multi)Niftimasker will infer one from imaged to fit
+            # other nifti maskers are OK with None
+            return None
+
+        repr = repr_niimgs(self.mask_img, shorten=(not self.verbose))
+        msg = f"loading mask from {repr}"
+        log(msg=msg, verbose=self.verbose)
+
+        # ensure that the mask_img_ is a 3D binary image
+        tmp = check_niimg(self.mask_img, atleast_4d=True)
+        mask = safe_get_data(tmp, ensure_finite=True)
+        mask = mask.astype(bool).all(axis=3)
+        mask_img_ = new_img_like(self.mask_img, mask)
+
+        # Just check that the mask is valid
+        load_mask_img(mask_img_)
+        if imgs is not None:
+            check_compatibility_mask_and_images(self.mask_img, imgs)
+
+        return mask_img_
+
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
@@ -352,8 +388,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         warnings.warn(
             f"[{self.__class__.__name__}.fit] "
             "Generation of a mask has been"
-            " requested (y != None) while a mask has"
-            " been provided at masker creation. Given mask"
+            " requested (y != None) while a mask was"
+            " given at masker creation. Given mask"
             " will be used.",
             stacklevel=find_stack_level(),
         )
@@ -424,6 +460,50 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             surf_img=True, niimg_like=False, masker=True
         )
         return tags
+
+    def _load_mask(self, imgs):
+        """Load and validate mask if one passed at init.
+
+        Returns
+        -------
+        mask_img_ : None or 1D binary SurfaceImage
+        """
+        if self.mask_img is None:
+            return None
+
+        mask_img_ = copy.deepcopy(self.mask_img)
+
+        logger.log(
+            msg=f"loading mask from {mask_img_.__repr__()}",
+            verbose=self.verbose,
+        )
+
+        mask_img_ = at_least_2d(mask_img_)
+        mask = {}
+        for part, v in mask_img_.data.parts.items():
+            mask[part] = v
+            non_finite_mask = np.logical_not(np.isfinite(mask[part]))
+            if non_finite_mask.any():
+                warnings.warn(
+                    "Non-finite values detected. "
+                    "These values will be replaced with zeros.",
+                    stacklevel=find_stack_level(),
+                )
+                mask[part][non_finite_mask] = 0
+            mask[part] = mask[part].astype(bool).all(axis=1)
+
+        mask_img_ = new_img_like(self.mask_img, mask)
+
+        # Just check that the mask is valid
+        load_mask_img(mask_img_)
+        if imgs is not None:
+            check_compatibility_mask_and_images(mask_img_, imgs)
+            if not isinstance(imgs, Iterable):
+                imgs = [imgs]
+            for x in imgs:
+                check_polymesh_equal(mask_img_.mesh, x.mesh)
+
+        return mask_img_
 
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.2"

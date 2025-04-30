@@ -96,6 +96,14 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         The same as the input `maps_img`, kept solely for consistency
         across maskers.
 
+    mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage` or None.
+        The mask of the data.
+        If no ``mask_img`` was passed at masker construction,
+        then ``mask_img_`` is ``None``, otherwise
+        is the resulting binarized version of ``mask_img``
+        where each vertex is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0.
+
     n_elements_ : :obj:`int`
         The number of regions in the maps image.
 
@@ -164,8 +172,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         -------
         SurfaceMapsMasker object
         """
-        check_params(self.__dict__)
         del y
+        check_params(self.__dict__)
 
         if self.maps_img is None:
             raise ValueError(
@@ -183,30 +191,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         self.n_elements_ = self.maps_img.shape[1]
 
-        if self.mask_img is not None:
-            if imgs is not None:
-                check_compatibility_mask_and_images(self.mask_img, imgs)
-            logger.log(
-                msg=f"loading regions from {self.mask_img.__repr__()}",
-                verbose=self.verbose,
-            )
-            check_polymesh_equal(self.maps_img.mesh, self.mask_img.mesh)
-            self.mask_img_ = self.mask_img
-            # squeeze the mask data if it is 2D and has a single column
-            for part in self.mask_img_.data.parts:
-                if (
-                    self.mask_img_.data.parts[part].ndim == 2
-                    and self.mask_img_.data.parts[part].shape[1] == 1
-                ):
-                    self.mask_img_.data.parts[part] = np.squeeze(
-                        self.mask_img_.data.parts[part], axis=1
-                    )
-            self.mask_img_.data._check_ndims(1, "mask_img")
-        else:
-            # TODO
-            # self.mask_img_ should be a SurfaceImage instance
-            # after fit
-            self.mask_img_ = None
+        self.mask_img_ = self._load_mask(imgs)
+        if self.mask_img_ is not None:
+            check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
 
         self._shelving = False
 
@@ -279,7 +266,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
         mask_data = (
-            get_data(self.mask_img) if self.mask_img is not None else None
+            get_data(self.mask_img_) if self.mask_img_ is not None else None
         )
 
         parameters = get_params(

@@ -119,13 +119,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             excess labels will be dropped,
             and missing labels will be labeled ``'unknown'``.
 
-    'lut' : :obj:`pandas.DataFrame` or :obj:`str` \
-            or :obj:`pathlib.Path` to a TSV file or None, default=None
-        Mutually exclusive with ``labels``.
-        Act as a look up table (lut)
-        with at least columns 'index' and 'name'.
-        Formatted according to 'dseg.tsv' format from
-        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_.
+    %(masker_lut)s
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
@@ -177,6 +171,14 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage` or None.
+        The mask of the data.
+        If no ``mask_img`` was passed at masker construction,
+        then ``mask_img_`` is ``None``, otherwise
+        is the resulting binarized version of ``mask_img``
+        where each vertex is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0.
+
     n_elements_ : :obj:`int`
         The number of discrete values in the mask.
         This is equivalent to the number of unique values in the mask image,
@@ -256,8 +258,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         -------
         SurfaceLabelsMasker object
         """
-        check_params(self.__dict__)
         del y
+        check_params(self.__dict__)
 
         check_reduction_strategy(self.strategy)
 
@@ -302,12 +304,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         self.label_names_ = self.lut_.name.to_list()
 
-        if self.mask_img is not None:
-            if imgs is not None:
-                check_compatibility_mask_and_images(self.mask_img, imgs)
+        self.mask_img_ = self._load_mask(imgs)
+        if self.mask_img_ is not None:
             check_polymesh_equal(self.labels_img.mesh, self.mask_img.mesh)
-
-        self.mask_img_ = self.mask_img
 
         self._shelving = False
 
@@ -405,7 +404,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         if self.mask_img_ is not None:
             mask_data = np.concatenate(
-                list(self.mask_img.data.parts.values()), axis=0
+                list(self.mask_img_.data.parts.values()), axis=0
             )
             labels_data, labels = _apply_surf_mask_on_labels(
                 mask_data,

@@ -96,6 +96,8 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
     maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The maps mask of the data.
 
+    %(nifti_mask_img_)s
+
     n_elements_ : :obj:`int`
         The number of overlapping maps in the mask.
         This is equivalent to the number of volumes in the mask image.

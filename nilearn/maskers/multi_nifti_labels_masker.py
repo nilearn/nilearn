@@ -37,6 +37,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             The labels must be consistent with the label
             values provided through `labels_img`.
 
+    %(masker_lut)s
+
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
 
@@ -89,8 +91,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     Attributes
     ----------
-    mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
-        The mask of the data, or the computed one.
+    %(nifti_mask_img_)s
 
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
@@ -113,6 +114,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         self,
         labels_img=None,
         labels=None,
+        lut=None,
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
@@ -138,6 +140,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         super().__init__(
             labels_img,
             labels=labels,
+            lut=lut,
             background_label=background_label,
             mask_img=mask_img,
             smoothing_fwhm=smoothing_fwhm,
