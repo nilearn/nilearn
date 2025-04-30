@@ -258,8 +258,9 @@ as the peak memory usage can be affected by other variables defined in the
 Some practical use cases
 ========================
 
-Now let's look at some use cases where these two ways of loading an image could
-affect the performance of a workflow.
+Now let's use ``%time`` and ``%memit`` to look at some real-world (but still
+simple) examples where these two ways of loading an image could affect the
+performance of a workflow.
 
 We will consider two cases here:
 
