@@ -98,6 +98,8 @@ VALID_CHECKS = [
     "check_methods_sample_order_invariance",
     "check_methods_subset_invariance",
     "check_mixin_order",
+    "check_n_features_in",
+    "check_n_features_in_after_fitting",
     "check_no_attributes_set_in_init",
     "check_non_transformer_estimators_n_iter",
     "check_parameters_default_constructible",
@@ -134,6 +136,8 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_fit2d_1feature": "not applicable for image input",
     "check_fit2d_1sample": "not applicable for image input",
     "check_fit2d_predict1d": "not applicable for image input",
+    "check_n_features_in": "not applicable",
+    "check_n_features_in_after_fitting": "not applicable",
     # the following are skipped because there is nilearn specific replacement
     "check_estimators_dtypes": (
         "replaced by check_masker_dtypes andcheck_glm_dtypes"
@@ -168,8 +172,6 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_fit_idempotent": "TODO",
     "check_methods_sample_order_invariance": "TODO",
     "check_methods_subset_invariance": "TODO",
-    "check_n_features_in": "TODO",
-    "check_n_features_in_after_fitting": "TODO",
     "check_positive_only_tag_during_fit": "TODO",
     "check_pipeline_consistency": "TODO",
     "check_readonly_memmap_input": "TODO",
