@@ -287,7 +287,7 @@ function brainsprite(d) {
                 if (typeof b.showLR !== "undefined" && b.showLR) {
                     var isRadiological = b.radiological || false;
                     var fontSize = Math.round(1 * b.sizeFontPixels);
-                    var paddingTop = Math.round(0.05 * b.canvas.height);
+                    var paddingTop = Math.round(0.25 * b.canvas.height);
                     var prevFont = b.context.font;
                     var prevAlign = b.context.textAlign;
                     var prevBaseline = b.context.textBaseline;
@@ -331,7 +331,7 @@ function brainsprite(d) {
                 if (typeof b.showLR !== "undefined" && b.showLR) {
                     var isRadiological = b.radiological || false;
                     var fontSize = Math.round(1 * b.sizeFontPixels);
-                    var paddingTop = Math.round(0.05 * b.canvas.height);
+                    var paddingTop = Math.round(0.25 * b.canvas.height);
                     var prevFont = b.context.font;
                     var prevAlign = b.context.textAlign;
                     var prevBaseline = b.context.textBaseline;
