@@ -133,6 +133,9 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_fit2d_1sample": "not applicable for image input",
     "check_fit2d_predict1d": "not applicable for image input",
     # the following are skipped because there is nilearn specific replacement
+    "check_estimators_empty_data_messages": (
+        "replaced by check_masker_empty_data_messages"
+    ),
     "check_estimators_fit_returns_self": (
         "replaced by check_nifti_masker_fit_returns_self "
         "or check_surface_masker_fit_returns_self or "
@@ -157,7 +160,6 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_dtype_object": "TODO",
     "check_dict_unchanged": "TODO",
     "check_dont_overwrite_parameters": "TODO",
-    "check_estimators_empty_data_messages": "TODO",
     "check_estimators_dtypes": "TODO",
     "check_estimators_nan_inf": "TODO",
     "check_estimators_overwrite_params": "TODO",
