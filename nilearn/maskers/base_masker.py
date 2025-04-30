@@ -507,11 +507,11 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # Just check that the mask is valid
         load_mask_img(mask_img_)
         if imgs is not None:
-            check_surf_img(imgs)
             check_compatibility_mask_and_images(mask_img_, imgs)
             if not isinstance(imgs, Iterable):
                 imgs = [imgs]
             for x in imgs:
+                check_surf_img(x)
                 check_polymesh_equal(mask_img_.mesh, x.mesh)
 
         return mask_img_
@@ -541,11 +541,11 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         """
         check_is_fitted(self)
-        check_surf_img(imgs)
 
         if not isinstance(imgs, list):
             imgs = [imgs]
         imgs = concat_imgs(imgs)
+        check_surf_img(imgs)
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
 

@@ -178,8 +178,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
         if not isinstance(img, list):
             img = [img]
         img = concat_imgs(img)
-
         img = at_least_2d(img)
+        check_surf_img(img)
         mask_data = {}
         for part, v in img.data.parts.items():
             mask_data[part] = v.astype("float32")
@@ -213,8 +213,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
-        if imgs is not None:
-            check_surf_img(imgs)
 
         self._fit_mask_img(imgs)
         assert self.mask_img_ is not None
