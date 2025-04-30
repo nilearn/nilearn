@@ -22,6 +22,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.ndimage import replace_non_finite
 from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
@@ -258,6 +259,11 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         imgs.data._check_ndims(2, "imgs")
 
         check_polymesh_equal(self.maps_img.mesh, imgs.mesh)
+
+        for part in imgs.data.parts:
+            imgs.data.parts[part] = replace_non_finite(
+                imgs.data.parts[part], value=0
+            )
 
         img_data = np.concatenate(
             list(imgs.data.parts.values()), axis=0

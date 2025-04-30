@@ -284,7 +284,7 @@ def _resample_one_img(
             # We need to do a copy to avoid modifying the input
             # array
             data = data.copy()
-        # data[not_finite] = 0
+
         from ..masking import extrapolate_out_mask
 
         data = extrapolate_out_mask(

@@ -11,6 +11,8 @@ from nilearn import _utils
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.ndimage import replace_non_finite
+from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params
 from nilearn.image import crop_img, resample_img
 from nilearn.maskers._utils import (
@@ -120,6 +122,9 @@ def filter_and_mask(
         )
 
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
+
+    # warn for non finite values
+    replace_non_finite(safe_get_data(imgs))
 
     # Check whether resampling is truly necessary. If so, crop mask
     # as small as possible in order to speed up the process

@@ -26,6 +26,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.ndimage import replace_non_finite
 from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
@@ -418,12 +419,16 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         check_polymesh_equal(self.labels_img_.mesh, imgs.mesh)
 
         imgs = at_least_2d(imgs)
-        img_data = get_data(imgs)
 
+        for part in imgs.data.parts:
+            imgs.data.parts[part] = replace_non_finite(
+                imgs.data.parts[part], value=0
+            )
+
+        img_data = get_data(imgs)
         target_datatype = (
             np.float32 if img_data.dtype == np.float32 else np.float64
         )
-
         img_data = img_data.astype(target_datatype)
 
         n_samples = 1 if len(img_data.shape) == 1 else img_data.shape[1]

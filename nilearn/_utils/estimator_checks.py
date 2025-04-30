@@ -97,6 +97,7 @@ VALID_CHECKS = [
     "check_methods_sample_order_invariance",
     "check_methods_subset_invariance",
     "check_mixin_order",
+    "check_estimators_nan_inf",
     "check_no_attributes_set_in_init",
     "check_non_transformer_estimators_n_iter",
     "check_parameters_default_constructible",
@@ -138,6 +139,9 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
         "or check_surface_masker_fit_returns_self or "
         "check_glm_fit_returns_self"
     ),
+    "check_estimators_nan_inf": (
+        "replaced by check_masker_fit_with_non_finite_in_data"
+    ),
     "check_fit_check_is_fitted": (
         "replaced by check_masker_fitted or check_glm_is_fitted"
     ),
@@ -159,7 +163,6 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_dont_overwrite_parameters": "TODO",
     "check_estimators_empty_data_messages": "TODO",
     "check_estimators_dtypes": "TODO",
-    "check_estimators_nan_inf": "TODO",
     "check_estimators_overwrite_params": "TODO",
     "check_estimators_pickle": "TODO",
     "check_fit_idempotent": "TODO",
@@ -336,6 +339,8 @@ def nilearn_check_estimator(estimator):
             clone(estimator),
             check_masker_fit_with_non_finite_in_mask,
         )
+
+        yield (clone(estimator), check_masker_fit_with_non_finite_in_data)
         yield (clone(estimator), check_masker_mask_img)
         yield (clone(estimator), check_masker_no_mask_no_img)
         yield (clone(estimator), check_masker_mask_img_from_imgs)
@@ -984,6 +989,46 @@ def check_masker_fit_with_non_finite_in_mask(estimator):
         estimator.fit()
 
     signal = estimator.transform(imgs)
+    assert np.all(np.isfinite(signal))
+
+
+def check_masker_fit_with_non_finite_in_data(estimator):
+    """Check data with non finite values can be used with maskers.
+
+    - Warning is thrown
+
+    For some maskers:
+    - Replace NaNs and infs with zeros
+    - Output of transform must contain only finite values.
+
+    Replaces check_estimators_nan_inf from sklearn.
+    """
+    if accept_niimg_input(estimator):
+        # TODO
+        # (29, 30, 31) is used to match MAP_SHAPE in
+        # nilearn/regions/tests/test_region_extractor.py
+        # this test would fail for RegionExtractor otherwise
+        shape = (29, 30, 31, 2)
+
+        # Introduce nans with data type float
+        # See issues:
+        # - https://github.com/nilearn/nilearn/issues/2580 (why floats)
+        # - https://github.com/nilearn/nilearn/issues/2711 (why test)
+        imgs_data = _rng().random(shape).astype(np.float32)
+        imgs_data[:, :, 7, 1] = np.nan
+        imgs_data[:, :, 4, 1] = np.inf
+        imgs = Nifti1Image(imgs_data, _affine_eye())
+
+    else:
+        imgs = _make_surface_img(2)
+        imgs.data.parts["left"][0:3, 0] = [np.nan, np.inf, 1]
+        imgs.data.parts["right"][0:3, 0] = [np.nan, np.inf, 1]
+
+    estimator.fit(imgs)
+
+    with pytest.warns(UserWarning, match="Non-finite values detected."):
+        signal = estimator.transform(imgs)
+
     assert np.all(np.isfinite(signal))
 
 

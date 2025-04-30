@@ -19,6 +19,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.ndimage import replace_non_finite
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
@@ -183,8 +184,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         mask_data = {}
         for part, v in img.data.parts.items():
             mask_data[part] = v.astype("float32")
-            non_finite_mask = np.logical_not(np.isfinite(mask_data[part]))
-            mask_data[part][non_finite_mask] = 0
+            mask_data[part] = replace_non_finite(mask_data[part], value=0)
             mask_data[part] = mask_data[part].astype("bool").all(axis=1)
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
@@ -285,6 +285,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         if self.reports:
             self._reporting_data["images"] = imgs
+
+        for part in imgs.data.parts:
+            imgs.data.parts[part] = replace_non_finite(imgs.data.parts[part])
 
         output = np.empty((1, self.n_elements_))
         if len(imgs.shape) == 2:

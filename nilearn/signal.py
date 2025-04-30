@@ -18,6 +18,7 @@ from sklearn.utils import as_float_array, gen_even_slices
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.ndimage import replace_non_finite
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import (
     check_params,
@@ -1179,9 +1180,7 @@ def _sanitize_signals(signals, ensure_finite):
     if not isinstance(signals, np.ndarray):
         signals = as_ndarray(signals)
     if ensure_finite:
-        mask = np.logical_not(np.isfinite(signals))
-        if mask.any():
-            signals[mask] = 0
+        signals = replace_non_finite(signals, 0)
     return _ensure_float(signals)
 
 
