@@ -156,6 +156,22 @@ For example, let's smooth an image using :func:`nilearn.image.smooth_img`:
     nib.is_proxy(img_smoothed.dataobj)
     # False
 
+Practically, this means that ``uncache()`` method on this array image would not
+remove it from memory.
+
+.. code-block:: python
+
+    img_smoothed.in_memory
+    # True
+    img_smoothed.uncache()
+    # it would still be in memory
+    img_smoothed.in_memory
+    # True
+
+So overall, depending on your workflow, saving such array images to disk
+and then loading them again can be a good idea, because it can provide you
+additional control over the memory usage.
+
 
 :func:`nibabel.loadsave.load` vs. :func:`~nilearn.image.load_img`
 =================================================================
@@ -367,8 +383,9 @@ We will see that with the memory usage as well:
     %memit slice_nibabel(example_fmri_path)
     # peak memory: 209.62 MiB, increment: 2.12 MiB
 
-So, overall, if you are performing certain operations that only
-require a chunk of data in the memory, it would be beneficial to make sure
+
+So, in conclusion, if you are performing certain operations that only
+require a chunk of data in the memory, it could be beneficial to make sure
 you're working with a proxy image loaded via :func:`nibabel.loadsave.load`.
 
 However, if you will need all the data in memory at once (i.e., as we saw with
