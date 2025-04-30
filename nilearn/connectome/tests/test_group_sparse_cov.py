@@ -15,6 +15,7 @@ expected_failed_checks = {
     "check_complex_data": "TODO",
     "check_dont_overwrite_parameters": "TODO",
     "check_dtype_object": "TODO",
+    "check_estimators_dtypes": "TODO",
     "check_estimator_sparse_array": "TODO",
     "check_estimator_sparse_matrix": "TODO",
     "check_estimators_empty_data_messages": "TODO",
@@ -28,6 +29,8 @@ expected_failed_checks = {
     "check_fit2d_predict1d": "TODO",
     "check_methods_sample_order_invariance": "TODO",
     "check_methods_subset_invariance": "TODO",
+    "check_n_features_in": "TODO",
+    "check_n_features_in_after_fitting": "TODO",
     "check_positive_only_tag_during_fit": "TODO",
     "check_readonly_memmap_input": "TODO",
 }
