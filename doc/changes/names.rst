@@ -269,6 +269,8 @@
 
 .. _Roberto Guidotti: https://github.com/robbisg
 
+.. _Rohan Thomas Jepegnanam: https://github.com/rohan3412
+
 .. _Ronald Phlypo: https://github.com/rphlypo
 
 .. _Ryan Hammonds: https://github.com/ryanhammonds
