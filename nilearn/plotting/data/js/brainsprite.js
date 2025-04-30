@@ -1,5 +1,3 @@
-//now manually updated to maintain variable names to see the diff
-
 function brainsprite(d) {
     function a(f, e) {
         f.imageSmoothingEnabled = e;
@@ -291,23 +289,27 @@ function brainsprite(d) {
                     var prevFont = b.context.font;
                     var prevAlign = b.context.textAlign;
                     var prevBaseline = b.context.textBaseline;
-            
+
                     b.context.font = fontSize + "px Arial";
                     b.context.textAlign = "center";
                     b.context.textBaseline = "middle";
                     b.context.fillStyle = b.colorFont;
-            
+
                     var labelLeft = isRadiological ? "R" : "L";
                     var labelRight = isRadiological ? "L" : "R";
-                    b.context.fillText(labelLeft, b.widthCanvas.X + 40, paddingTop);
-                    b.context.fillText(labelRight, b.widthCanvas.X + b.widthCanvas.Y - 40, paddingTop);
-            
+
+                    const paddingRatio = 0.05; // 5% from each side
+                    const offsetX = b.widthCanvas.Y * paddingRatio;
+
+                    b.context.fillText(labelLeft, b.widthCanvas.X + offsetX, paddingTop);
+                    b.context.fillText(labelRight, b.widthCanvas.X + b.widthCanvas.Y - offsetX, paddingTop);
+
                     b.context.font = prevFont;
                     b.context.textAlign = prevAlign;
                     b.context.textBaseline = prevBaseline;
                 }
                 break;
-                
+
             case "Z":
                 b.context.fillStyle = b.colorBackground;
                 b.context.fillRect(b.widthCanvas.X + b.widthCanvas.Y, 0, b.widthCanvas.Z, b.canvas.height);
@@ -335,17 +337,21 @@ function brainsprite(d) {
                     var prevFont = b.context.font;
                     var prevAlign = b.context.textAlign;
                     var prevBaseline = b.context.textBaseline;
-            
+
                     b.context.font = fontSize + "px Arial";
                     b.context.textAlign = "center";
                     b.context.textBaseline = "middle";
                     b.context.fillStyle = b.colorFont;
-            
+
                     var labelLeft = isRadiological ? "R" : "L";
                     var labelRight = isRadiological ? "L" : "R";
-                    b.context.fillText(labelLeft, b.widthCanvas.X + b.widthCanvas.Y + 35, paddingTop);
-                    b.context.fillText(labelRight, b.widthCanvas.X + b.widthCanvas.Y + b.widthCanvas.Z - 35, paddingTop);
-            
+
+                    const paddingRatio = 0.05; // 5% from each side
+                    const offsetX = b.widthCanvas.Z * paddingRatio;
+
+                    b.context.fillText(labelLeft, b.widthCanvas.X + b.widthCanvas.Y + offsetX, paddingTop);
+                    b.context.fillText(labelRight, b.widthCanvas.X + b.widthCanvas.Y + b.widthCanvas.Z - offsetX, paddingTop);
+
                     b.context.font = prevFont;
                     b.context.textAlign = prevAlign;
                     b.context.textBaseline = prevBaseline;
