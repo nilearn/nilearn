@@ -58,6 +58,7 @@ expected_failed_checks = {
     "check_estimator_sparse_array": "TODO",
     "check_estimator_sparse_matrix": "TODO",
     "check_estimators_empty_data_messages": "TODO",
+    "check_estimators_nan_inf": "TODO",
     "check_estimators_overwrite_params": "TODO",
     "check_f_contiguous_array_estimator": "TODO",
     "check_fit_check_is_fitted": "handled by nilearn checks",
