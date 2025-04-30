@@ -129,6 +129,8 @@ class NiftiMapsMasker(BaseMasker):
     maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The maps mask of the data.
 
+    %(nifti_mask_img_)s
+
     n_elements_ : :obj:`int`
         The number of overlapping maps in the mask.
         This is equivalent to the number of volumes in the mask image.
@@ -376,11 +378,7 @@ class NiftiMapsMasker(BaseMasker):
             display.close()
         return embeded_images
 
-    def fit(
-        self,
-        imgs=None,
-        y=None,  # noqa: ARG002
-    ):
+    def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
         Parameters
@@ -393,6 +391,7 @@ class NiftiMapsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        del y
         check_params(self.__dict__)
         if self.resampling_target not in ("mask", "maps", "data", None):
             raise ValueError(
@@ -420,7 +419,7 @@ class NiftiMapsMasker(BaseMasker):
         }
 
         # Load images
-        repr = _utils.repr_niimgs(self.mask_img, shorten=(not self.verbose))
+        repr = _utils.repr_niimgs(self.maps_img, shorten=(not self.verbose))
         msg = f"loading regions from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
         self.maps_img_ = _utils.check_niimg(
@@ -504,8 +503,34 @@ class NiftiMapsMasker(BaseMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
 
-    def fit_transform(self, imgs, confounds=None, sample_mask=None):
-        """Prepare and perform signal extraction."""
+    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+        """Prepare and perform signal extraction.
+
+        Parameters
+        ----------
+        imgs : 3D/4D Niimg-like object
+            See :ref:`extracting_data`.
+            Images to process.
+            If a 3D niimg is provided, a singleton dimension will be added to
+            the output to represent the single scan in the niimg.
+
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
+
+        %(confounds)s
+
+        %(sample_mask)s
+
+                .. versionadded:: 0.8.0
+
+        Returns
+        -------
+        region_signals : 2D numpy.ndarray
+            Signal for each map.
+            shape: (number of scans, number of maps)
+        """
+        del y
         return self.fit(imgs).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
@@ -688,6 +713,8 @@ class NiftiMapsMasker(BaseMasker):
         from ..regions import signal_extraction
 
         check_is_fitted(self)
+
+        self._check_signal_shape(region_signals)
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_maps(

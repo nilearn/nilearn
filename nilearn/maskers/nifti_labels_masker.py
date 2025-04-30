@@ -159,8 +159,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     Attributes
     ----------
-    mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
-        The mask of the data, or the computed one.
+    %(nifti_mask_img_)s
 
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
@@ -168,13 +167,6 @@ class NiftiLabelsMasker(BaseMasker):
     lut_ : :obj:`pandas.DataFrame`
         Look-up table derived from the ``labels`` or ``lut``
         or from the values of the label image.
-
-    n_elements_ : :obj:`int`
-        The number of discrete values in the mask.
-        This is equivalent to the number of unique values in the mask image,
-        ignoring the background value.
-
-        .. versionadded:: 0.9.2
 
     region_atlas_ : Niimg-like object
         Regions definition as labels.
@@ -315,6 +307,22 @@ class NiftiLabelsMasker(BaseMasker):
             lut = self._lut_
         return lut["index"].to_dict()
 
+    @property
+    def n_elements_(self) -> int:
+        """Return number of regions.
+
+        This is equal to the number of unique values
+        in the fitted label image,
+        minus the background value.
+
+        .. versionadded:: 0.9.2
+        """
+        check_is_fitted(self)
+        lut = self.lut_
+        if hasattr(self, "_lut_"):
+            lut = self._lut_
+        return len(lut[lut["index"] != self.background_label])
+
     def _post_masking_atlas(self, visualize=False):
         """
         Find the masked atlas before transform and return it.
@@ -432,7 +440,7 @@ class NiftiLabelsMasker(BaseMasker):
         table = table[table["label value"] != self.background_label]
 
         self._report_content["summary"] = table
-        self._report_content["number_of_regions"] = len(table)
+        self._report_content["number_of_regions"] = self.n_elements_
 
         img = self._reporting_data["img"]
 
@@ -484,11 +492,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         return [display]
 
-    def fit(
-        self,
-        imgs=None,
-        y=None,  # noqa: ARG002
-    ):
+    def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
         Parameters
@@ -501,6 +505,7 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
         """
+        del y
         check_params(self.__dict__)
         check_reduction_strategy(self.strategy)
 
@@ -541,9 +546,6 @@ class NiftiLabelsMasker(BaseMasker):
 
         self._original_region_ids = self.lut_["index"].to_list()
 
-        assert "Background" in self.lut_["name"].to_list()
-        assert self.background_label in self._original_region_ids
-
         self.mask_img_ = self._load_mask(imgs)
 
         # Check shapes and affines or resample.
@@ -557,7 +559,7 @@ class NiftiLabelsMasker(BaseMasker):
                     raise ValueError(
                         _utils.compose_err_msg(
                             "Regions and mask do not have the same shape",
-                            mask_img=self.mask_img,
+                            mask_img=self.mask_img_,
                             labels_img=self.labels_img,
                         )
                     )
@@ -569,7 +571,7 @@ class NiftiLabelsMasker(BaseMasker):
                     raise ValueError(
                         _utils.compose_err_msg(
                             "Regions and mask do not have the same affine.",
-                            mask_img=self.mask_img,
+                            mask_img=self.mask_img_,
                             labels_img=self.labels_img,
                         ),
                     )
@@ -615,6 +617,7 @@ class NiftiLabelsMasker(BaseMasker):
         else:
             self._reporting_data = None
 
+
         # Infer the number of elements in the mask
         # This is equal to the number of unique values in the label image,
         # minus the background value.
@@ -648,7 +651,7 @@ class NiftiLabelsMasker(BaseMasker):
         """
         if self.lut is not None:
             if isinstance(self.lut, (str, Path)):
-                lut = pd.read_table(self.lut, sep=None)
+                lut = pd.read_table(self.lut, sep=None, engine="python")
             else:
                 lut = self.lut
 
@@ -685,7 +688,7 @@ class NiftiLabelsMasker(BaseMasker):
         return sanitize_look_up_table(lut, atlas=self.labels_img_)
 
     @fill_doc
-    def fit_transform(self, imgs, confounds=None, sample_mask=None):
+    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
 
         Parameters
@@ -695,6 +698,10 @@ class NiftiLabelsMasker(BaseMasker):
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
+
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
 
         %(confounds)s
 
@@ -709,16 +716,13 @@ class NiftiLabelsMasker(BaseMasker):
             shape: (number of scans, number of labels)
 
         """
+        del y
         return self.fit(imgs).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
     def __sklearn_is_fitted__(self):
-        return (
-            hasattr(self, "labels_img_")
-            and hasattr(self, "n_elements_")
-            and hasattr(self, "lut_")
-        )
+        return hasattr(self, "labels_img_") and hasattr(self, "lut_")
 
     @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
@@ -763,7 +767,7 @@ class NiftiLabelsMasker(BaseMasker):
             ):
                 self._resample_labels(imgs_)
 
-            if (self.mask_img is not None) and (
+            if (self.mask_img_ is not None) and (
                 not _utils.niimg_conversions.check_same_fov(
                     imgs_,
                     self._resampled_mask_img,
@@ -902,6 +906,8 @@ class NiftiLabelsMasker(BaseMasker):
         from ..regions import signal_extraction
 
         check_is_fitted(self)
+
+        self._check_signal_shape(signals)
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_labels(

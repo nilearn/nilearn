@@ -91,18 +91,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     Attributes
     ----------
-    mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
-        The mask of the data, or the computed one.
+    %(nifti_mask_img_)s
 
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
-
-    n_elements_ : :obj:`int`
-        The number of discrete values in the mask.
-        This is equivalent to the number of unique values in the mask image,
-        ignoring the background value.
-
-        .. versionadded:: 0.9.2
 
     See Also
     --------

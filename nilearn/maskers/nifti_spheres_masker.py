@@ -285,6 +285,8 @@ class NiftiSpheresMasker(BaseMasker):
 
     Attributes
     ----------
+    %(nifti_mask_img_)s
+
     n_elements_ : :obj:`int`
         The number of seeds in the masker.
 
@@ -539,13 +541,14 @@ class NiftiSpheresMasker(BaseMasker):
     def fit(
         self,
         imgs=None,
-        y=None,  # noqa: ARG002
+        y=None,
     ):
         """Prepare signal extraction from regions.
 
         All parameters are unused; they are for scikit-learn compatibility.
 
         """
+        del y
         self._report_content = {
             "description": (
                 "This reports shows the regions defined "
@@ -625,7 +628,7 @@ class NiftiSpheresMasker(BaseMasker):
         return self
 
     @fill_doc
-    def fit_transform(self, imgs, confounds=None, sample_mask=None):
+    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction.
 
         Parameters
@@ -635,6 +638,10 @@ class NiftiSpheresMasker(BaseMasker):
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
+
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
 
         %(confounds)s
 
@@ -649,6 +656,7 @@ class NiftiSpheresMasker(BaseMasker):
             shape: (number of scans, number of spheres)
 
         """
+        del y
         return self.fit(imgs).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
@@ -746,10 +754,12 @@ class NiftiSpheresMasker(BaseMasker):
         """
         check_is_fitted(self)
 
+        self._check_signal_shape(region_signals)
+
         logger.log("computing image from signals", verbose=self.verbose)
 
-        if self.mask_img is not None:
-            mask = check_niimg_3d(self.mask_img)
+        if self.mask_img_ is not None:
+            mask = check_niimg_3d(self.mask_img_)
         else:
             raise ValueError(
                 "Please provide mask_img at initialization to "
@@ -767,4 +777,4 @@ class NiftiSpheresMasker(BaseMasker):
             adjacency = adjacency.dot(sparse.diags(scale))
 
         img = adjacency.T.dot(region_signals.T).T
-        return unmask(img, self.mask_img)
+        return unmask(img, self.mask_img_)
