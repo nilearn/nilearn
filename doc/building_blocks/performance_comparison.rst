@@ -241,8 +241,8 @@ as the peak memory usage can be affected by other variables defined in the
 
 .. note::
 
-    In case you are running these commands yourself sequentially, you may
-    want to run them in a new ``ipython`` session to avoid any
+    In case you are running these commands yourself sequentially, we suggest
+    running each of them in a new ``ipython`` session to avoid any
     interference from other variables and get reliable readings.
 
 .. code-block:: python
