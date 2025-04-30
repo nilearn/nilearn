@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import copy
+from warnings import warn
+
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -12,15 +15,14 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import (
     rename_parameters,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface.surface import (
-    SurfaceImage,
-)
+from nilearn.surface.surface import SurfaceImage, at_least_2d
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -71,10 +73,16 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage`
+        The mask of the data, or the one computed from ``imgs`` passed to fit.
+        If a ``mask_img`` is passed at masker construction,
+        then ``mask_img_`` is the resulting binarized version of it
+        where each vertex is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0.
+
     n_elements_ : :obj:`int` or None
         number of vertices included in mask
 
-    mask_img_ : :obj:`~nilearn.surface.SurfaceImage` or None
     """
 
     def __init__(
@@ -148,25 +156,36 @@ class SurfaceMasker(_BaseSurfaceMasker):
         self.mask_img_ = self._load_mask(img)
 
         if self.mask_img_ is not None:
+            if img is not None:
+                warn(
+                    f"[{self.__class__.__name__}.fit] "
+                    "Generation of a mask has been"
+                    " requested (y != None) while a mask was"
+                    " given at masker creation. Given mask"
+                    " will be used.",
+                    stacklevel=find_stack_level(),
+                )
             return
 
         if img is None:
             raise ValueError(
-                "Please provide either a mask_img "
-                "when initializing the masker "
-                "or an img when calling fit()."
+                "Parameter 'imgs' must be provided to "
+                f"{self.__class__.__name__}.fit() "
+                "if no mask is passed to mask_img."
             )
 
+        img = copy.deepcopy(img)
         if not isinstance(img, list):
             img = [img]
         img = concat_imgs(img)
 
-        # TODO: don't store a full array of 1 to mean "no masking"; use some
-        # sentinel value
-        mask_data = {
-            part: np.ones((v.n_vertices, 1), dtype=bool)
-            for (part, v) in img.mesh.parts.items()
-        }
+        img = at_least_2d(img)
+        mask_data = {}
+        for part, v in img.data.parts.items():
+            mask_data[part] = v.astype("float32")
+            non_finite_mask = np.logical_not(np.isfinite(mask_data[part]))
+            mask_data[part][non_finite_mask] = 0
+            mask_data[part] = mask_data[part].astype("bool").all(axis=1)
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
     @rename_parameters(
@@ -192,8 +211,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
         -------
         SurfaceMasker object
         """
-        check_params(self.__dict__)
         del y
+        check_params(self.__dict__)
         self._fit_mask_img(imgs)
         assert self.mask_img_ is not None
 
@@ -314,12 +333,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         if signals.ndim == 1:
             signals = np.array([signals])
 
-        if signals.shape[1] != self.n_elements_:
-            raise ValueError(
-                "Input to 'inverse_transform' has wrong shape.\n"
-                f"Last dimension should be {self.n_elements_}.\n"
-                f"Got {signals.shape[1]}."
-            )
+        self._check_signal_shape(signals)
 
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():

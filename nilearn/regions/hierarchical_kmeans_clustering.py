@@ -255,11 +255,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         tags.input_tags = InputTags()
         return tags
 
-    def fit(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-    ):
+    def fit(self, X, y=None):
         """Compute clustering of the data.
 
         Parameters
@@ -272,6 +268,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         -------
         self
         """
+        del y
         X = check_array(
             X, ensure_min_features=2, ensure_min_samples=2, estimator=self
         )
