@@ -34,7 +34,7 @@ from nilearn.image import (
 )
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
-from nilearn.surface.surface import at_least_2d
+from nilearn.surface.surface import at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -507,6 +507,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # Just check that the mask is valid
         load_mask_img(mask_img_)
         if imgs is not None:
+            check_surf_img(imgs)
             check_compatibility_mask_and_images(mask_img_, imgs)
             if not isinstance(imgs, Iterable):
                 imgs = [imgs]
@@ -540,6 +541,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         """
         check_is_fitted(self)
+        check_surf_img(imgs)
 
         if not isinstance(imgs, list):
             imgs = [imgs]

@@ -324,6 +324,9 @@ def check_niimg(
     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:
         raise DimensionError(len(niimg.shape), ensure_ndim)
 
+    if safe_get_data(niimg).size == 0:
+        raise ValueError("The image is empty.")
+
     if return_iterator:
         return (_index_img(niimg, i) for i in range(niimg.shape[3]))
 

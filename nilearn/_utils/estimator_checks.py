@@ -939,22 +939,36 @@ def check_masker_refit(estimator):
 
 
 def check_masker_empty_data_messages(estimator):
+    """Check that empty images are caught properly.
+
+    Replaces sklearn check_estimators_empty_data_messages.
+    """
     if accept_niimg_input(estimator):
-        # using larger images to be compatible
-        # with regions extraction tests
-        # TODO refactor a common fixture for "large 3D shape"
-        shape = (29, 30, 31)
-        data = np.empty(shape)
+        data = np.empty(0).reshape(12, 0, 0)
         imgs = Nifti1Image(data, _affine_eye())
+
+        shape = (29, 30, 31)
+        mask = np.zeros(shape, dtype=np.int8)
+        mask[1:-1, 1:-1, 1:-1] = 1
+        mask_img = Nifti1Image(mask, _affine_eye())
+
     else:
         imgs = _make_surface_img()
         data = {
-            part: np.empty(imgs.data.parts[part].shape)
+            part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
             for part in imgs.data.parts
         }
         imgs = SurfaceImage(imgs.mesh, data)
 
-    estimator.fit(imgs)
+        mask_img = _make_surface_mask()
+
+    with pytest.raises(ValueError, match="empty"):
+        estimator.fit(imgs)
+
+    estimator.mask_img = mask_img
+    estimator.fit()
+    with pytest.raises(ValueError, match="empty"):
+        estimator.transform(imgs)
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------

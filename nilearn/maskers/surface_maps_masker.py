@@ -27,6 +27,7 @@ from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
 from nilearn.surface.surface import (
     SurfaceImage,
+    check_surf_img,
     get_data,
 )
 from nilearn.surface.utils import check_polymesh_equal
@@ -180,6 +181,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 "Please provide a maps_img during initialization. "
                 "For example, masker = SurfaceMapsMasker(maps_img=maps_img)"
             )
+
+        if imgs is not None:
+            check_surf_img(imgs)
 
         logger.log(
             msg=f"loading regions from {self.maps_img.__repr__()}",

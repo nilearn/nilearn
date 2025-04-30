@@ -22,7 +22,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface.surface import SurfaceImage, at_least_2d
+from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -213,6 +213,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+        if imgs is not None:
+            check_surf_img(imgs)
+
         self._fit_mask_img(imgs)
         assert self.mask_img_ is not None
 
