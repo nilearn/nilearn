@@ -150,7 +150,7 @@ class BaseSurfaceBackend:
         self,
         surf_mesh=None,
         roi_map=None,
-        hemi=None,
+        hemi=DEFAULT_HEMI,
         levels=None,
         labels=None,
         colors=None,

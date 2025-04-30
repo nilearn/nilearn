@@ -19,7 +19,10 @@ from nilearn.plotting.js_plotting_utils import (
     mesh_to_plotly,
     to_color_strings,
 )
-from nilearn.plotting.surface._utils import check_surface_plotting_inputs
+from nilearn.plotting.surface._utils import (
+    DEFAULT_HEMI,
+    check_surface_plotting_inputs,
+)
 from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
@@ -471,7 +474,7 @@ def view_surf(
     surf_mesh=None,
     surf_map=None,
     bg_map=None,
-    hemi=None,
+    hemi=DEFAULT_HEMI,
     threshold=None,
     cmap=DEFAULT_DIVERGING_CMAP,
     black_bg=False,
