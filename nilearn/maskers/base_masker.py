@@ -431,7 +431,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             img._header._structarr = np.array(img._header._structarr).copy()
         return img
 
-    def _check_signal_shape(self, signals):
+    def _check_signal_shape(self, signals: np.ndarray):
         if signals.shape[-1] != self.n_elements_:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
@@ -624,7 +624,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         del y
         return self.fit(imgs).transform(imgs, confounds, sample_mask)
 
-    def _check_signal_shape(self, signals):
+    def _check_signal_shape(self, signals: np.ndarray):
         if signals.shape[-1] != self.n_elements_:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
