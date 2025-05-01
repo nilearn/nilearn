@@ -573,7 +573,7 @@ function brainsprite (params) { // eslint-disable-line no-unused-vars
           const labelRight = isRadiological ? 'L' : 'R'
 
           const paddingRatio = 0.05 // 5% from each side
-          const offsetX = brain.widthCanvas.Y * paddingRatio
+          const offsetX = brain.widthCanvas.Z * paddingRatio
 
           brain.context.fillText(labelLeft, brain.widthCanvas.X + brain.widthCanvas.Y + offsetX, paddingTop)
           brain.context.fillText(labelRight, brain.widthCanvas.X + brain.widthCanvas.Y + brain.widthCanvas.Z - offsetX, paddingTop)
