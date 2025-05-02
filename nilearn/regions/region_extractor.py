@@ -17,7 +17,7 @@ from nilearn._utils import (
 from nilearn._utils.helpers import (
     rename_parameters,
 )
-from nilearn._utils.ndimage import peak_local_max, replace_non_finite
+from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_same_fov
 from nilearn._utils.param_validation import check_params
@@ -497,48 +497,6 @@ class RegionExtractor(NiftiMapsMasker):
         super().fit()
 
         return self
-
-    @fill_doc
-    def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
-        """Extract signals from a single 4D niimg.
-
-        Parameters
-        ----------
-        imgs : 3D/4D Niimg-like object
-            See :ref:`extracting_data`.
-            Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
-
-        confounds : CSV file or array-like, default=None
-            This parameter is passed to :func:`nilearn.signal.clean`.
-            Please see the related documentation for details.
-            shape: (number of scans, number of confounds)
-
-        %(sample_mask)s
-
-                .. versionadded:: 0.8.0
-
-        Returns
-        -------
-        region_signals : 2D numpy.ndarray
-            Signal for each map.
-            shape: (number of scans, number of maps)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
-
-        """
-        # warns in case of non finite data
-        replace_non_finite(imgs.get_fdata())
-        return super().transform_single_imgs(
-            imgs, confounds=confounds, sample_mask=sample_mask
-        )
 
 
 def connected_label_regions(
