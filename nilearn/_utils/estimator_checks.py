@@ -1038,7 +1038,7 @@ def check_masker_fit_with_non_finite_in_data(estimator):
 
     assert np.all(np.isfinite(signal))
 
-    
+
 def check_masker_dtypes(estimator):
     """Check masker can fit/transform with inputs of varying dtypes.
 
