@@ -56,7 +56,7 @@ print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 # extract a single 3D :term:`EPI` image from the :term:`fMRI` data.
 #
 from nilearn.image import mean_img
-from nilearn.plotting import plot_epi, plot_roi, show, view_img
+from nilearn.plotting import plot_epi, plot_roi, show
 
 plot_epi(mean_img(fmri_filename, copy_header=True))
 
@@ -321,6 +321,8 @@ decoder.coef_img_["face"].to_filename(output_dir / "haxby_svc_weights.nii.gz")
 # ................................
 #
 # We can plot the weights, using the subject's anatomical as a background
+from nilearn.plotting import view_img
+
 view_img(
     decoder.coef_img_["face"],
     bg_img=haxby_dataset.anat[0],
