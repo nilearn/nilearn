@@ -71,8 +71,9 @@ plotting.plot_stat_map(
 # :func:`~nilearn.plotting.view_img` that gives more interactive
 # visualizations in a web browser. See :ref:`interactive-stat-map-plotting`
 # for more details.
+from nilearn.plotting import view_img
 
-view = plotting.view_img(stat_img, threshold=3)
+view = view_img(stat_img, threshold=3)
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 view
@@ -84,7 +85,7 @@ view
 # %%
 # It's also possible to visualize volumes in a LR-flipped "radiological" view
 # Just set radiological=True
-view_radio = plotting.view_img(
+view_radio = view_img(
     stat_img, threshold=3, title="radiological view", radiological=True
 )
 view_radio
