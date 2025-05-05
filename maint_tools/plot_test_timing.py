@@ -23,7 +23,7 @@ def main():
     tests_data = pd.read_csv(input_file)
 
     tests_data["subpackage"] = tests_data["module"].apply(
-        lambda x: x.split(".")[1]
+        lambda x: str(x).split(".")[1]
     )
 
     # get name of test without any parametrization
@@ -32,7 +32,7 @@ def main():
     # to
     #   test_resampling_result_axis_permutation
     tests_data["id_no_param"] = tests_data["id"].apply(
-        lambda x: x.split("[")[0]
+        lambda x: str(x).split("[")[0]
     )
 
     for column, title in zip(
