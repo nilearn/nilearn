@@ -40,8 +40,8 @@ on:
         branches:
         -   main
     schedule:
-    # everday at 10pm UTC
-    -   cron: 0 22 * * 0
+    # every Monday at 9am UTC
+    -   cron: 0 9 * * MON
 
     workflow_dispatch:  # This enables manual triggering from GitHub UI
 
