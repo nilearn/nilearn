@@ -11,7 +11,7 @@ def test_surface_figure():
     s = SurfaceFigure()
     assert s.output_file is None
     assert s.figure is None
-    assert s.hemi == "both"
+    assert s.hemi == "left"
     s._check_output_file("foo.png")
     assert s.output_file == "foo.png"
     s = SurfaceFigure(output_file="bar.png")
