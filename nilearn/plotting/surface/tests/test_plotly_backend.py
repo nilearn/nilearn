@@ -11,10 +11,10 @@ from nilearn.plotting import (
     plot_surf_stat_map,
 )
 from nilearn.plotting.surface._plotly_backend import (
+    PlotlySurfaceBackend,
     _configure_title,
     _get_camera_view_from_elevation_and_azimut,
     _get_camera_view_from_string_view,
-    _get_view_plot_surf,
 )
 
 ENGINE = "plotly"
@@ -158,13 +158,18 @@ EXPECTED_CAMERAS_PLOTLY = [
 ]
 
 
+@pytest.fixture
+def plotly_backend():
+    return PlotlySurfaceBackend()
+
+
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
-def test_get_view_plot_surf(full_view):
+def test_get_view_plot_surf(plotly_backend, full_view):
     """Test if nilearn.plotting.surface._plotly_backend._get_view_plot_surf
     returns expected values.
     """
     hemi, view_name, (elev, azim), expected_camera_view = full_view
-    camera_view = _get_view_plot_surf(hemi, view_name)
+    camera_view = plotly_backend._get_view_plot_surf(hemi, view_name)
     camera_view_string = _get_camera_view_from_string_view(hemi, view_name)
     camera_view_elev_azim = _get_camera_view_from_elevation_and_azimut(
         (elev, azim)
@@ -189,12 +194,12 @@ def test_get_view_plot_surf(full_view):
 
 
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
-def test_get_view_plot_surf_hemisphere_errors(hemi, view):
+def test_get_view_plot_surf_hemisphere_errors(plotly_backend, hemi, view):
     """Test nilearn.plotting.surface._plotly_backend._get_view_plot_surf
     for invalid hemisphere values.
     """
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
-        _get_view_plot_surf(hemi, view)
+        plotly_backend._get_view_plot_surf(hemi, view)
 
 
 @pytest.mark.parametrize(
@@ -207,12 +212,12 @@ def test_get_view_plot_surf_hemisphere_errors(hemi, view):
         ("both", "foo"),
     ],
 )
-def test_get_view_plot_surf_view_errors(hemi, view):
+def test_get_view_plot_surf_view_errors(plotly_backend, hemi, view):
     """Test nilearn.plotting.surface._plotly_backend._get_view_plot_surf
     for invalid view values.
     """
     with pytest.raises(ValueError, match="Invalid view definition"):
-        _get_view_plot_surf(hemi, view)
+        plotly_backend._get_view_plot_surf(hemi, view)
 
 
 def test_configure_title():

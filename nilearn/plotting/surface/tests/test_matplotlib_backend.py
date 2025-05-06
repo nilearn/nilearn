@@ -18,10 +18,10 @@ from nilearn.plotting import (
 )
 from nilearn.plotting.surface._matplotlib_backend import (
     MATPLOTLIB_VIEWS,
+    MatplotlibSurfaceBackend,
     _compute_facecolors,
     _get_bounds,
     _get_ticks,
-    _get_view_plot_surf,
 )
 from nilearn.surface import (
     load_surf_data,
@@ -63,24 +63,30 @@ EXPECTED_VIEW_MATPLOTLIB = {
 }
 
 
+@pytest.fixture
+def matplotlib_backend():
+    return MatplotlibSurfaceBackend()
+
+
 @pytest.mark.parametrize("hemi, views", MATPLOTLIB_VIEWS.items())
-def test_get_view_plot_surf(hemi, views):
+def test_get_view_plot_surf(matplotlib_backend, hemi, views):
     """Test if nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
     returns expected values.
     """
     for v in views:
         assert (
-            _get_view_plot_surf(hemi, v) == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
+            matplotlib_backend._get_view_plot_surf(hemi, v)
+            == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
         )
 
 
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
-def test_get_view_plot_surf_hemisphere_errors(hemi, view):
+def test_get_view_plot_surf_hemisphere_errors(matplotlib_backend, hemi, view):
     """Test nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
     for invalid hemisphere values.
     """
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
-        _get_view_plot_surf(hemi, view)
+        matplotlib_backend._get_view_plot_surf(hemi, view)
 
 
 @pytest.mark.parametrize(
@@ -93,12 +99,12 @@ def test_get_view_plot_surf_hemisphere_errors(hemi, view):
         ("both", "foo"),
     ],
 )
-def test_get_view_plot_surf_view_errors(hemi, view):
+def test_get_view_plot_surf_view_errors(matplotlib_backend, hemi, view):
     """Test nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
     for invalid view values.
     """
     with pytest.raises(ValueError, match="Invalid view definition"):
-        _get_view_plot_surf(hemi, view)
+        matplotlib_backend._get_view_plot_surf(hemi, view)
 
 
 @pytest.mark.parametrize(
