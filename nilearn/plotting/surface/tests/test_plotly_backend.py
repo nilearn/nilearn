@@ -3,13 +3,6 @@
 import numpy as np
 import pytest
 
-from nilearn._utils.helpers import is_kaleido_installed
-from nilearn.plotting import (
-    plot_surf,
-    plot_surf_contours,
-    plot_surf_roi,
-    plot_surf_stat_map,
-)
 from nilearn.plotting.surface._plotly_backend import (
     PlotlySurfaceBackend,
     _configure_title,
@@ -268,81 +261,3 @@ def test_get_view_plot_surf_view_errors(plotly_backend, hemi, view):
 def test_plot_surf_contours(plotly_backend, in_memory_mesh):
     with pytest.raises(NotImplementedError):
         plotly_backend.plot_surf_contours(in_memory_mesh, np.ones((10,)))
-
-
-def test_plot_surf_contours_errors_with_plotly_figure(in_memory_mesh):
-    """Test that plot_surf_contours raises error when given plotly obj."""
-    figure = plot_surf(in_memory_mesh, engine=ENGINE)
-    with pytest.raises(ValueError):
-        plot_surf_contours(in_memory_mesh, np.ones((10,)), figure=figure)
-
-
-def test_plot_surf_contours_errors_with_plotly_axes(in_memory_mesh):
-    """Test that plot_surf_contours raises error when given plotly obj as
-    axis.
-    """
-    figure = plot_surf(in_memory_mesh, engine=ENGINE)
-    with pytest.raises(ValueError):
-        plot_surf_contours(in_memory_mesh, np.ones((10,)), axes=figure)
-
-
-@pytest.mark.skipif(
-    is_kaleido_installed(),
-    reason=("This test only runs if Plotly is installed, but not kaleido."),
-)
-def test_plot_surf_error_when_kaleido_missing(
-    tmp_path, in_memory_mesh, bg_map
-):
-    with pytest.raises(ImportError, match="Saving figures"):
-        # Plot with non None output file
-        plot_surf(
-            in_memory_mesh,
-            bg_map=bg_map,
-            engine=ENGINE,
-            output_file=tmp_path / "tmp.png",
-        )
-
-
-@pytest.mark.parametrize("kwargs", [{"avg_method": "mean"}, {"alpha": "auto"}])
-def test_plot_surf_warnings_not_implemented_in_plotly(
-    kwargs, in_memory_mesh, bg_map
-):
-    """Test if nilearn.plotting.surface.surf_plotting.plot_surf raises error
-    when a parameter that is not supported by plotly is specified with a
-    value other than None.
-    """
-    with pytest.warns(
-        UserWarning, match="is not implemented for the plotly engine"
-    ):
-        plot_surf(
-            in_memory_mesh,
-            surf_map=bg_map,
-            engine=ENGINE,
-            **kwargs,
-        )
-
-
-def test_plot_surf_stat_map_colorbar_tick(in_memory_mesh, bg_map):
-    """Change colorbar tick format."""
-    plot_surf_stat_map(
-        in_memory_mesh,
-        stat_map=bg_map,
-        cbar_tick_format="%.2g",
-        engine=ENGINE,
-    )
-
-
-@pytest.mark.parametrize("colorbar", [True, False])
-@pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
-def test_plot_surf_parcellation_plotly(
-    colorbar,
-    surface_image_parcellation,
-    cbar_tick_format,
-):
-    plot_surf_roi(
-        surface_image_parcellation.mesh,
-        roi_map=surface_image_parcellation,
-        engine=ENGINE,
-        colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format,
-    )
