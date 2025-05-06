@@ -268,6 +268,9 @@ We will consider two cases here:
    loaded into memory at once.
 2. Extracting a 3D volume at a given time point from the 4D image, which
    only requires a chunk of data to be loaded into memory.
+3. Applying a simple mathematical operation on an image twice **in parallel**.
+   This could potentially cause copying of the data in memory and affect the
+   performance.
 
 Mean over the time axis
 -----------------------
@@ -389,6 +392,92 @@ We will see that with the memory usage as well:
 
     %memit slice_nibabel(example_fmri_path)
     # peak memory: 209.62 MiB, increment: 2.12 MiB
+
+
+Applying a simple mathematical operation in parallel
+----------------------------------------------------
+
+So now let's say we want to apply a simple mathematical operation on the image
+twice in parallel. This could potentially cause copying of the data in memory
+and affect the performance.
+
+But first let's do it once to set a baseline:
+
+.. code-block:: python
+
+    from nilearn.image import math_img
+
+    def math_nilearn(fmri):
+        img_nilearn = load_img(fmri)
+        math_img('img/2', img=img_nilearn)
+
+    def math_nibabel(fmri):
+        img_nibabel = nib.load(fmri)
+        math_img('img/2', img=img_nibabel)
+
+.. code-block:: python
+
+    %time math_nilearn(example_fmri_path)
+    # CPU times: user 1.69 s, sys: 538 ms, total: 2.23 s
+    # Wall time: 2.23 s
+
+.. code-block:: python
+
+    %time math_nibabel(example_fmri_path)
+    # CPU times: user 1.69 s, sys: 559 ms, total: 2.24 s
+    # Wall time: 2.24 s
+
+.. code-block:: python
+
+    %memit math_nilearn(example_fmri_path)
+    # peak memory: 1803.99 MiB, increment: 1617.14 MiB
+
+.. code-block:: python
+
+    %memit math_nibabel(example_fmri_path)
+    # peak memory: 1785.51 MiB, increment: 1598.59 MiB
+
+As we can see, the time and memory usage is similar for both methods for single
+operation.
+
+Now let's run the same operation in parallel using the ``joblib`` library:
+
+.. code-block:: python
+
+    from joblib import Parallel, delayed
+
+    def math_parallel_nilearn(fmri):
+        img_nilearn = load_img(fmri)
+        Parallel(n_jobs=2)(delayed(math_img)('img/2', img=img_nilearn)
+                           for _ in range(2))
+
+    def math_parallel_nibabel(fmri):
+        img_nibabel = nib.load(fmri)
+        Parallel(n_jobs=2)(delayed(math_img)('img/2', img=img_nibabel)
+                           for _ in range(2))
+
+.. code-block:: python
+
+    %time math_parallel_nilearn(example_fmri_path)
+    # CPU times: user 1.99 s, sys: 7.1 s, total: 9.08 s
+    # Wall time: 11.7 s
+
+.. code-block:: python
+
+    %time math_parallel_nibabel(example_fmri_path)
+    # CPU times: user 325 ms, sys: 6.15 s, total: 6.47 s
+    # Wall time: 11.2 s
+
+.. code-block:: python
+
+    %memit -c math_parallel_nilearn(example_fmri_path)
+    # peak memory: 7425.32 MiB, increment: 7238.33 MiB
+
+.. code-block:: python
+
+    %memit -c math_parallel_nibabel(example_fmri_path)
+    # peak memory: 6926.13 MiB, increment: 6739.18 MiB
+
 
 
 So, in conclusion, if you are performing certain operations that only
