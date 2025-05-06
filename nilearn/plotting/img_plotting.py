@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import gridspec as mgs
 from matplotlib.colors import LinearSegmentedColormap
-from nibabel.spatialimages import SpatialImage
+from nibabel.spatialimages import SpatialHeader, SpatialImage
 from scipy.ndimage import binary_fill_holes
 
 from nilearn import DEFAULT_DIVERGING_CMAP
@@ -480,7 +480,7 @@ class _MNI152Template(SpatialImage):
     vmax = None
     _shape = None
     # Having a header is required by the load_niimg function
-    header = None  # type: ignore[assignment]
+    header = SpatialHeader()
 
     def __init__(self, data=None, affine=None, header=None):
         # Comply with spatial image requirements while allowing empty init
@@ -498,6 +498,7 @@ class _MNI152Template(SpatialImage):
             self.data = data
             self.vmax = data.max()
             self._shape = anat_img.shape
+            self.header = anat_img.header
 
     @property
     def _data_cache(self):
