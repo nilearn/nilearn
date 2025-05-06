@@ -188,10 +188,10 @@ def test_multi_nifti_maps_masker_errors_field_of_view(
 
 
 def test_multi_nifti_maps_masker_resampling_error(
-    affine_eye, n_regions, shape_maps
+    affine_eye, n_regions, shape_3d_large
 ):
     """Test MultiNiftiMapsMasker when using resampling."""
-    maps33_img, _ = generate_maps(shape_maps, n_regions, affine=affine_eye)
+    maps33_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
 
     # Test error checking
     masker = MultiNiftiMapsMasker(maps33_img, resampling_target="mask")
@@ -216,14 +216,14 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
     affine_eye,
     length,
     n_regions,
-    shape_maps,
+    shape_3d_large,
     img_fmri,
 ):
     """Test resampling to mask in MultiNiftiMapsMasker."""
     _, mask22_img = generate_fake_fmri(
         shape_mask, affine=affine_eye, length=length
     )
-    maps33_img, _ = generate_maps(shape_maps, n_regions, affine=affine_eye)
+    maps33_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
 
     masker = MultiNiftiMapsMasker(
         maps33_img, mask_img=mask22_img, resampling_target="mask"
@@ -251,14 +251,14 @@ def test_multi_nifti_maps_masker_resampling_to_maps(
     affine_eye,
     length,
     n_regions,
-    shape_maps,
+    shape_3d_large,
     img_fmri,
 ):
     """Test resampling to maps in MultiNiftiMapsMasker."""
     _, mask22_img = generate_fake_fmri(
         shape_mask, affine=affine_eye, length=length
     )
-    maps33_img, _ = generate_maps(shape_maps, n_regions, affine=affine_eye)
+    maps33_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
 
     masker = MultiNiftiMapsMasker(
         maps33_img, mask_img=mask22_img, resampling_target="maps"
