@@ -78,7 +78,7 @@ templates_path = ["templates"]
 autosummary_generate = True
 
 # The suffix of source filenames.
-source_suffix = [".rst", ".md"]
+source_suffix = {".rst": "restructuredtext", ".md": "restructuredtext"}
 
 # The encoding of source files.
 # source_encoding = 'utf-8'
