@@ -75,8 +75,8 @@ of :obj:`float`: (xmin, ymin, width, height), default=None
 
 # surf_mesh
 docdict["surf_mesh"] = """
-surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`
-            or a :obj:`~nilearn.surface.InMemoryMesh`, or a
+surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray` \
+            or a :obj:`~nilearn.surface.InMemoryMesh`, or a \
             :obj:`~nilearn.surface.PolyMesh`, or None, default=None
     Surface :term:`mesh` geometry, can be a file (valid formats are .gii or
     Freesurfer specific files such as .orig, .pial, .sphere, .white,
