@@ -265,6 +265,11 @@ def test_get_view_plot_surf_view_errors(plotly_backend, hemi, view):
         plotly_backend._get_view_plot_surf(hemi, view)
 
 
+def test_plot_surf_contours(plotly_backend, in_memory_mesh):
+    with pytest.raises(NotImplementedError):
+        plotly_backend.plot_surf_contours(in_memory_mesh, np.ones((10,)))
+
+
 def test_plot_surf_contours_errors_with_plotly_figure(in_memory_mesh):
     """Test that plot_surf_contours raises error when given plotly obj."""
     figure = plot_surf(in_memory_mesh, engine=ENGINE)
