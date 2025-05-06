@@ -110,12 +110,14 @@ from nilearn.plotting import plot_stat_map, show
 plot_stat_map(weight_img, bg_img=haxby_dataset.anat[0], title="SVM weights")
 
 show()
+
 # %%
 # Or we can plot the weights using :class:`~nilearn.plotting.view_img` as a
 # dynamic html viewer
 from nilearn.plotting import view_img
 
 view_img(weight_img, bg_img=haxby_dataset.anat[0], title="SVM weights", dim=-1)
+
 # %%
 # Saving the results as a Nifti file may also be important
 from pathlib import Path

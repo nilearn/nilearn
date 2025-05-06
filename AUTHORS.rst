@@ -181,6 +181,7 @@ Some other past or present contributors are:
 * `Robert Luke`_: @agencyenterprise, Melbourne, Australia
 * `Robert Williamson`_
 * `Roberto Guidotti`_: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
+* `Rohan Thomas Jepegnanam`_: Cognitive Neuroscience & Clinical Phenomenology Lab, Christian Medical College, Vellore, India
 * `Ronald Phlypo`_: Lyon area, France
 * `Ryan Hammonds`_: UC San Diego, San Diego, California, USA
 * `Rémi Gau`_: Origami lab, McGill University, Montréal, Canada
