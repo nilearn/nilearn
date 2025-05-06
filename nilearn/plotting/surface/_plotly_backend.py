@@ -16,9 +16,7 @@ from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.plotting.surface._backend import (
     VALID_HEMISPHERES,
     BaseSurfaceBackend,
-    check_hemispheres,
     check_surf_map,
-    check_views,
 )
 from nilearn.plotting.surface._utils import DEFAULT_HEMI
 from nilearn.plotting.surface.html_surface import get_vertexcolor
@@ -211,24 +209,19 @@ def _get_cbar(
     return dummy
 
 
-def _get_view_plot_surf(hemi, view):
-    """
-    Get camera parameters from hemi and view for the plotly engine.
-
-    This function checks the selected hemisphere and view, and
-    returns the cameras view.
-    """
-    check_views([view])
-    check_hemispheres([hemi])
-    if isinstance(view, str):
-        return _get_camera_view_from_string_view(hemi, view)
-    return _get_camera_view_from_elevation_and_azimut(view)
-
-
 class PlotlySurfaceBackend(BaseSurfaceBackend):
     @property
     def name(self):
         return "plotly"
+
+    def _get_view_plot_surf(self, hemi, view):
+        """Check ``hemi`` and ``view``, and return camera view for plotly
+        engine.
+        """
+        view = self._sanitize_hemi_view(hemi, view)
+        if isinstance(view, str):
+            return _get_camera_view_from_string_view(hemi, view)
+        return _get_camera_view_from_elevation_and_azimut(view)
 
     def _plot_surf(
         self,
@@ -332,7 +325,7 @@ class PlotlySurfaceBackend(BaseSurfaceBackend):
             fig_data.append(dummy)
 
         # instantiate plotly figure
-        camera_view = _get_view_plot_surf(hemi, view)
+        camera_view = self._get_view_plot_surf(hemi, view)
         fig = go.Figure(data=fig_data)
         fig.update_layout(
             scene_camera=camera_view,

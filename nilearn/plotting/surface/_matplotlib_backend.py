@@ -19,9 +19,7 @@ from nilearn.plotting._utils import (
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.surface._backend import (
     BaseSurfaceBackend,
-    check_hemispheres,
     check_surf_map,
-    check_views,
 )
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
@@ -285,25 +283,6 @@ def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
         return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
 
 
-def _get_view_plot_surf(hemi, view):
-    """Help function for plot_surf with matplotlib engine.
-
-    This function checks the selected hemisphere and view, and
-    returns elev and azim.
-    """
-    check_views([view])
-    check_hemispheres([hemi])
-    if isinstance(view, str):
-        if hemi == "both" and view in ["lateral", "medial"]:
-            raise ValueError(
-                "Invalid view definition: when hemi is 'both', "
-                "view cannot be 'lateral' or 'medial'.\n"
-                "Maybe you meant 'left' or 'right'?"
-            )
-        return MATPLOTLIB_VIEWS[hemi][view]
-    return view
-
-
 def _rescale(data, vmin=None, vmax=None):
     """Rescales the data."""
     data_copy = np.copy(data)
@@ -354,6 +333,21 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
                 "axes argument should be None or a 'matplotlib.pyplot.Axes'."
             )
 
+    def _get_view_plot_surf(self, hemi, view):
+        """Check ``hemi`` and ``view``, and return `elev` and `azim` for
+        matplotlib engine.
+        """
+        view = self._sanitize_hemi_view(hemi, view)
+        if isinstance(view, str):
+            if hemi == "both" and view in ["lateral", "medial"]:
+                raise ValueError(
+                    "Invalid view definition: when hemi is 'both', "
+                    "view cannot be 'lateral' or 'medial'.\n"
+                    "Maybe you meant 'left' or 'right'?"
+                )
+            return MATPLOTLIB_VIEWS[hemi][view]
+        return view
+
     def _plot_surf(
         self,
         surf_mesh,
@@ -401,7 +395,7 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
         limits = [coords.min(), coords.max()]
 
         # Get elevation and azimut from view
-        elev, azim = _get_view_plot_surf(hemi, view)
+        elev, azim = self._get_view_plot_surf(hemi, view)
 
         # if no cmap is given, set to matplotlib default
         if cmap is None:

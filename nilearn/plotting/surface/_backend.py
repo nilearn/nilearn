@@ -81,6 +81,13 @@ class BaseSurfaceBackend:
                     f"Use '{parameter} = None' to silence this warning."
                 )
 
+    def _sanitize_hemi_view(self, hemi, view):
+        check_hemispheres([hemi])
+        if view is None:
+            view = "dorsal" if hemi == "both" else "lateral"
+        check_views([view])
+        return view
+
     def load_surf_mesh(self, surf_mesh):
         return load_surf_mesh(surf_mesh)
 
@@ -111,13 +118,9 @@ class BaseSurfaceBackend:
         figure=None,
     ):
         check_params(locals())
-        if view is None:
-            view = "dorsal" if hemi == "both" else "lateral"
-
         surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
             surf_map, surf_mesh, hemi, bg_map
         )
-
         check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
         return self._plot_surf(
