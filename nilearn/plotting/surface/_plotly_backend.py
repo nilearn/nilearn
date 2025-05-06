@@ -20,7 +20,6 @@ from nilearn.plotting.surface._backend import (
 )
 from nilearn.plotting.surface._utils import DEFAULT_HEMI
 from nilearn.plotting.surface.html_surface import get_vertexcolor
-from nilearn.surface import load_surf_data
 
 try:
     import plotly.graph_objects as go
@@ -274,7 +273,7 @@ class PlotlySurfaceBackend(BaseSurfaceBackend):
 
         bg_data = None
         if bg_map is not None:
-            bg_data = load_surf_data(bg_map)
+            bg_data = self.load_surf_data(bg_map)
             if bg_data.shape[0] != coords.shape[0]:
                 raise ValueError(
                     "The bg_map does not have the same number "

@@ -91,6 +91,9 @@ class BaseSurfaceBackend:
     def load_surf_mesh(self, surf_mesh):
         return load_surf_mesh(surf_mesh)
 
+    def load_surf_data(self, surf_map):
+        return load_surf_data(surf_map)
+
     def plot_surf(
         self,
         surf_mesh=None,

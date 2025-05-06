@@ -25,9 +25,7 @@ from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
     get_faces_on_edge,
 )
-from nilearn.surface import (
-    load_surf_data,
-)
+from nilearn.surface import load_surf_data
 
 try:
     import matplotlib.pyplot as plt
@@ -574,7 +572,7 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
             )
 
         _, faces = self.load_surf_mesh(surf_mesh)
-        roi = load_surf_data(roi_map)
+        roi = self.load_surf_data(roi_map)
 
         patch_list = []
         for level, color, label in zip(levels, colors, labels):
