@@ -80,7 +80,7 @@ def plot_surf(
         :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
         :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
-    surf_map : :obj:`str` or :class:`numpy.ndarray` or
+    surf_map : :obj:`str` or :class:`numpy.ndarray` or \
                :obj:`~nilearn.surface.SurfaceImage` or None, default=None
         Data to be displayed on the surface :term:`mesh`.
         Can be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
@@ -304,7 +304,7 @@ def plot_surf_contours(
         :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
         :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
-    roi_map : :obj:`str` or :class:`numpy.ndarray` or
+    roi_map : :obj:`str` or :class:`numpy.ndarray` or \
               :obj:`~nilearn.surface.SurfaceImage` or None, default=None
         ROI map to be displayed on the surface mesh, can be a file (valid
         formats are .gii, .mgz, or Freesurfer specific files such as
