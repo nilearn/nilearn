@@ -164,26 +164,57 @@ def plotly_backend():
 
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
+def test_get_camera_view_from_string_view(full_view):
+    """Test if
+    nilearn.plotting.surface._plotly_backend._get_camera_view_from_string_view
+    returns expected values.
+    """
+    hemi, view_name, (elev, azim), expected_camera_view = full_view
+    camera_view_string = _get_camera_view_from_string_view(hemi, view_name)
+
+    # Check each camera view parameter
+    for k in ["center", "eye", "up"]:
+        # Check camera view obtained from string view
+        assert np.allclose(
+            list(camera_view_string[k].values()),
+            list(expected_camera_view[k].values()),
+        )
+
+
+@pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
+def test_get_camera_view_from_elev_azim(full_view):
+    """Test if
+    nilearn.plotting.surface._plotly_backend._get_camera_view_from_elevation_and_azimut
+    returns expected values.
+    """
+    hemi, view_name, (elev, azim), expected_camera_view = full_view
+    camera_view_elev_azim = _get_camera_view_from_elevation_and_azimut(
+        (elev, azim)
+    )
+    # Check each camera view parameter
+    for k in ["center", "eye", "up"]:
+        # Check camera view obtained from elevation & azimut
+        assert np.allclose(
+            list(camera_view_elev_azim[k].values()),
+            list(expected_camera_view[k].values()),
+        )
+
+
+@pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
 def test_get_view_plot_surf(plotly_backend, full_view):
     """Test if nilearn.plotting.surface._plotly_backend._get_view_plot_surf
     returns expected values.
     """
     hemi, view_name, (elev, azim), expected_camera_view = full_view
     camera_view = plotly_backend._get_view_plot_surf(hemi, view_name)
-    camera_view_string = _get_camera_view_from_string_view(hemi, view_name)
-    camera_view_elev_azim = _get_camera_view_from_elevation_and_azimut(
-        (elev, azim)
+    camera_view_elev_azim = plotly_backend._get_view_plot_surf(
+        hemi, (elev, azim)
     )
     # Check each camera view parameter
     for k in ["center", "eye", "up"]:
         # Check default camera view
         assert np.allclose(
             list(camera_view[k].values()),
-            list(expected_camera_view[k].values()),
-        )
-        # Check camera view obtained from string view
-        assert np.allclose(
-            list(camera_view_string[k].values()),
             list(expected_camera_view[k].values()),
         )
         # Check camera view obtained from elevation & azimut
