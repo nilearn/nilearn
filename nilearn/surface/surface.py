@@ -18,6 +18,7 @@ from sklearn.exceptions import EfficiencyWarning
 from nilearn import _utils
 from nilearn._utils import stringify_path
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.ndimage import replace_non_finite
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
 
@@ -2008,14 +2009,7 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
     data = np.concatenate(list(data.parts.values()), axis=0)
 
     if ensure_finite:
-        non_finite_mask = np.logical_not(np.isfinite(data))
-        if non_finite_mask.any():  # any non_finite_mask values?
-            warnings.warn(
-                "Non-finite values detected. "
-                "These values will be replaced with zeros.",
-                stacklevel=find_stack_level(),
-            )
-            data[non_finite_mask] = 0
+        data = replace_non_finite(data, value=0)
 
     return data
 

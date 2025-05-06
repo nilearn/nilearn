@@ -22,6 +22,7 @@ from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.ndimage import replace_non_finite
 from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -492,14 +493,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         mask = {}
         for part, v in mask_img_.data.parts.items():
             mask[part] = v
-            non_finite_mask = np.logical_not(np.isfinite(mask[part]))
-            if non_finite_mask.any():
-                warnings.warn(
-                    "Non-finite values detected. "
-                    "These values will be replaced with zeros.",
-                    stacklevel=find_stack_level(),
-                )
-                mask[part][non_finite_mask] = 0
+            mask[part] = replace_non_finite(mask[part], value=0)
             mask[part] = mask[part].astype(bool).all(axis=1)
 
         mask_img_ = new_img_like(self.mask_img, mask)
