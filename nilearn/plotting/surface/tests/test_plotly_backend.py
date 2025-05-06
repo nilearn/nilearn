@@ -163,6 +163,20 @@ def plotly_backend():
     return PlotlySurfaceBackend()
 
 
+def test_configure_title():
+    """Test nilearn.plotting.surface._plotly_backend._configure_title."""
+    assert _configure_title(None, None) == {}
+    assert _configure_title(None, 22) == {}
+    config = _configure_title("Test Title", 22, color="green")
+    assert config["text"] == "Test Title"
+    assert config["x"] == 0.5
+    assert config["y"] == 0.96
+    assert config["xanchor"] == "center"
+    assert config["yanchor"] == "top"
+    assert config["font"]["size"] == 22
+    assert config["font"]["color"] == "green"
+
+
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
 def test_get_camera_view_from_string_view(full_view):
     """Test if
@@ -249,20 +263,6 @@ def test_get_view_plot_surf_view_errors(plotly_backend, hemi, view):
     """
     with pytest.raises(ValueError, match="Invalid view definition"):
         plotly_backend._get_view_plot_surf(hemi, view)
-
-
-def test_configure_title():
-    """Test nilearn.plotting.surface._plotly_backend._configure_title."""
-    assert _configure_title(None, None) == {}
-    assert _configure_title(None, 22) == {}
-    config = _configure_title("Test Title", 22, color="green")
-    assert config["text"] == "Test Title"
-    assert config["x"] == 0.5
-    assert config["y"] == 0.96
-    assert config["xanchor"] == "center"
-    assert config["yanchor"] == "top"
-    assert config["font"]["size"] == 22
-    assert config["font"]["color"] == "green"
 
 
 def test_plot_surf_contours_errors_with_plotly_figure(in_memory_mesh):
