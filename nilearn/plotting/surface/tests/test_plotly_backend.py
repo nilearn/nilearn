@@ -10,10 +10,8 @@ from nilearn.plotting.surface._plotly_backend import (
     _get_camera_view_from_string_view,
 )
 
-ENGINE = "plotly"
-
 pytest.importorskip(
-    ENGINE,
+    "plotly",
     reason="Plotly is not installed; required to run the tests!",
 )
 

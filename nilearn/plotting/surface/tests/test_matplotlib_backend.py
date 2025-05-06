@@ -18,10 +18,8 @@ from nilearn.surface import (
     load_surf_mesh,
 )
 
-ENGINE = "matplotlib"
-
 pytest.importorskip(
-    ENGINE,
+    "matplotlib",
     reason="Matplotlib is not installed; required to run the tests!",
 )
 
