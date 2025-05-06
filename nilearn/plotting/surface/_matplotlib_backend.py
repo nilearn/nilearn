@@ -29,7 +29,6 @@ from nilearn.plotting.surface._utils import (
 )
 from nilearn.surface import (
     load_surf_data,
-    load_surf_mesh,
 )
 
 try:
@@ -357,8 +356,7 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
 
     def _plot_surf(
         self,
-        coords,
-        faces,
+        surf_mesh,
         surf_map=None,
         bg_map=None,
         hemi=DEFAULT_HEMI,
@@ -397,6 +395,8 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
         )
         # Leave space for colorbar
         figsize = [4.7, 5] if colorbar else [4, 5]
+
+        coords, faces = self.load_surf_mesh(surf_mesh)
 
         limits = [coords.min(), coords.max()]
 
@@ -536,7 +536,7 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
         self._check_figure_axes_inputs(figure, axes)
 
         if figure is None and axes is None:
-            figure = self.plot_surf(surf_mesh, hemi=hemi, **kwargs)
+            figure = self._plot_surf(surf_mesh, hemi=hemi, **kwargs)
             axes = figure.axes[0]
         elif figure is None:
             figure = axes.get_figure()
@@ -550,7 +550,7 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
         if not axes.collections or not isinstance(
             axes.collections[0], Poly3DCollection
         ):
-            _ = self.plot_surf(surf_mesh, hemi=hemi, axes=axes, **kwargs)
+            _ = self._plot_surf(surf_mesh, hemi=hemi, axes=axes, **kwargs)
 
         if levels is None:
             levels = np.unique(roi_map)
@@ -579,7 +579,7 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
                 "argument need to be either the same length or None."
             )
 
-        _, faces = load_surf_mesh(surf_mesh)
+        _, faces = self.load_surf_mesh(surf_mesh)
         roi = load_surf_data(roi_map)
 
         patch_list = []

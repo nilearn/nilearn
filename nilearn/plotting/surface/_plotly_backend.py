@@ -232,8 +232,7 @@ class PlotlySurfaceBackend(BaseSurfaceBackend):
 
     def _plot_surf(
         self,
-        coords,
-        faces,
+        surf_mesh,
         surf_map=None,
         bg_map=None,
         hemi=DEFAULT_HEMI,
@@ -274,6 +273,8 @@ class PlotlySurfaceBackend(BaseSurfaceBackend):
         cmap = DEFAULT_DIVERGING_CMAP if cmap is None else cmap
         symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
         title_font_size = 18 if title_font_size is None else title_font_size
+
+        coords, faces = self.load_surf_mesh(surf_mesh)
 
         x, y, z = coords.T
         i, j, k = faces.T

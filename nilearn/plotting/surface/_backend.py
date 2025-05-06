@@ -81,6 +81,9 @@ class BaseSurfaceBackend:
                     f"Use '{parameter} = None' to silence this warning."
                 )
 
+    def load_surf_mesh(self, surf_mesh):
+        return load_surf_mesh(surf_mesh)
+
     def plot_surf(
         self,
         surf_mesh=None,
@@ -117,11 +120,8 @@ class BaseSurfaceBackend:
 
         check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
-        coords, faces = load_surf_mesh(surf_mesh)
-
         return self._plot_surf(
-            coords,
-            faces,
+            surf_mesh,
             surf_map=surf_map,
             bg_map=bg_map,
             hemi=hemi,
