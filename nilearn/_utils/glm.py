@@ -134,7 +134,9 @@ def coerce_to_dict(input_arg):
     return input_arg
 
 
-def make_stat_maps(model, contrasts, output_type="z_score"):
+def make_stat_maps(
+    model, contrasts, output_type="z_score", first_level_contrast=None
+):
     """Given a model and contrasts, return the corresponding z-maps.
 
     Parameters
@@ -154,6 +156,22 @@ def make_stat_maps(model, contrasts, output_type="z_score"):
 
         .. versionadded:: 0.9.2
 
+    first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
+                        shape (n_col) with respect to \
+                        :class:`~nilearn.glm.first_level.FirstLevelModel` \
+                        or None, default=None
+        For :class:`~nilearn.glm.second_level.SecondLevelModel`,
+        in case a :obj:`list` of
+        :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
+        as ``second_level_input``,
+        we have to provide a :term:`contrast`
+        to apply to the first level models
+        to get the corresponding list of images desired,
+        that would be tested at the second level.
+        This parameter is ignore for all other cases.
+
+        .. versionadded:: 0.11.2dev
+
     Returns
     -------
     statistical_maps : Dict[str, niimg] or Dict[str, Dict[str, niimg]]
@@ -165,6 +183,18 @@ def make_stat_maps(model, contrasts, output_type="z_score"):
     nilearn.glm.second_level.SecondLevelModel.compute_contrast
 
     """
+    from nilearn.glm.second_level import SecondLevelModel
+
+    if isinstance(model, SecondLevelModel):
+        return {
+            contrast_name: model.compute_contrast(
+                contrast_data,
+                output_type=output_type,
+                first_level_contrast=first_level_contrast,
+            )
+            for contrast_name, contrast_data in contrasts.items()
+        }
+
     return {
         contrast_name: model.compute_contrast(
             contrast_data,
