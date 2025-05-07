@@ -57,14 +57,6 @@ def test_check_surface_plotting_inputs_errors():
         plot_surf_roi(roi_map=1, surf_mesh=None)
 
 
-def test_plot_surf_contours_warning_hemi(in_memory_mesh):
-    """Test warning that hemi will be ignored."""
-    parcellation = np.zeros((in_memory_mesh.n_vertices,))
-    parcellation[in_memory_mesh.faces[3]] = 1
-    with pytest.warns(UserWarning, match="This value will be ignored"):
-        plot_surf_contours(in_memory_mesh, parcellation, hemi="left")
-
-
 def test_plot_surf_engine_error(in_memory_mesh):
     """Test error if unknown engine is specified."""
     with pytest.raises(ValueError, match="Unknown plotting engine"):
@@ -381,6 +373,167 @@ def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
     figure, axes = matplotlib_pyplot.subplots()
     with pytest.raises(AttributeError, match="the projection must be '3d'"):
         plot_surf_stat_map(stat_map=surf_img_1d, axes=axes)
+
+
+def test_plot_surf_contours_warning_hemi(in_memory_mesh):
+    """Test warning that hemi will be ignored."""
+    parcellation = np.zeros((in_memory_mesh.n_vertices,))
+    parcellation[in_memory_mesh.faces[3]] = 1
+    with pytest.warns(UserWarning, match="This value will be ignored"):
+        plot_surf_contours(in_memory_mesh, parcellation, hemi="left")
+
+
+def test_plot_surf_contours(
+    matplotlib_pyplot, in_memory_mesh, parcellation, surf_mask_1d
+):
+    """Test nilearn.plotting.surface.plot_surf_contours for valid input
+    values.
+    """
+    plot_surf_contours(in_memory_mesh, parcellation)
+    plot_surf_contours(in_memory_mesh, parcellation, levels=[1, 2])
+    plot_surf_contours(
+        in_memory_mesh, parcellation, levels=[1, 2], cmap="gist_ncar"
+    )
+
+
+def test_plot_surf_contour_roi_map_as_surface_image(
+    matplotlib_pyplot, surf_mesh, surf_mask_1d
+):
+    """Check that mesh can be PolyMesh and roi_map can be a SurfaceImage."""
+    plot_surf_contours(surf_mesh, roi_map=surf_mask_1d, hemi="both")
+
+
+def test_plot_surf_contours_legend(
+    matplotlib_pyplot, in_memory_mesh, parcellation
+):
+    """Test nilearn.plotting.surface.plot_surf_contours creates figure legend
+    when `legend=True`.
+    """
+    fig = plot_surf_contours(
+        in_memory_mesh,
+        parcellation,
+        legend=True,
+    )
+    assert fig.legends is not None
+
+
+def test_plot_surf_contours_colors(
+    matplotlib_pyplot, in_memory_mesh, parcellation
+):
+    """Test nilearn.plotting.surface.plot_surf_contours for different inputs as
+    `colors`.
+    """
+    plot_surf_contours(
+        in_memory_mesh, parcellation, levels=[1, 2], colors=["r", "g"]
+    )
+    plot_surf_contours(
+        in_memory_mesh,
+        parcellation,
+        levels=[1, 2],
+        labels=["1", "2"],
+        colors=["r", "g"],
+    )
+    plot_surf_contours(
+        in_memory_mesh,
+        parcellation,
+        levels=[1, 2],
+        colors=[[0, 0, 0, 1], [1, 1, 1, 1]],
+    )
+
+
+def test_plot_surf_contours_axis_title(
+    matplotlib_pyplot, in_memory_mesh, parcellation
+):
+    """Test nilearn.plotting.surface.plot_surf_contours for axis title."""
+    fig = plot_surf(in_memory_mesh)
+    plot_surf_contours(in_memory_mesh, parcellation, figure=fig)
+    display = plot_surf_contours(
+        in_memory_mesh,
+        parcellation,
+        levels=[1, 2],
+        labels=["1", "2"],
+        colors=["r", "g"],
+        legend=True,
+        title="title",
+        figure=fig,
+    )
+    # Non-regression assertion: we switched from _suptitle to axis title
+    assert display._suptitle is None
+    assert display.axes[0].get_title() == "title"
+
+    fig = plot_surf(in_memory_mesh, title="title 2")
+    display = plot_surf_contours(
+        in_memory_mesh,
+        parcellation,
+        levels=[1, 2],
+        labels=["1", "2"],
+        colors=["r", "g"],
+        legend=True,
+        figure=fig,
+    )
+    # Non-regression assertion: we switched from _suptitle to axis title
+    assert display._suptitle is None
+    assert display.axes[0].get_title() == "title 2"
+    with tempfile.NamedTemporaryFile() as tmp_file:
+        plot_surf_contours(
+            in_memory_mesh, parcellation, output_file=tmp_file.name
+        )
+
+
+def test_plot_surf_contours_fig_axes(
+    matplotlib_pyplot, in_memory_mesh, parcellation
+):
+    """Test nilearn.plotting.surface.surf_plotting.plot_surf_contours with
+    matplotlib figure and axes.
+    """
+    fig, axes = matplotlib_pyplot.subplots(
+        1, 1, subplot_kw={"projection": "3d"}
+    )
+    plot_surf_contours(in_memory_mesh, parcellation, axes=axes)
+    plot_surf_contours(in_memory_mesh, parcellation, figure=fig)
+
+
+def test_plot_surf_contours_error(
+    matplotlib_pyplot, rng, in_memory_mesh, parcellation
+):
+    """Test nilearn.plotting.surface.surf_plotting.plot_surf_contours for
+    invalid parameters.
+    """
+    # we need an invalid parcellation for testing
+    invalid_parcellation = rng.uniform(size=(in_memory_mesh.n_vertices))
+    with pytest.raises(
+        ValueError, match="Vertices in parcellation do not form region."
+    ):
+        plot_surf_contours(in_memory_mesh, invalid_parcellation)
+
+    _, axes = matplotlib_pyplot.subplots(1, 1)
+    with pytest.raises(ValueError, match="Axes must be 3D."):
+        plot_surf_contours(in_memory_mesh, parcellation, axes=axes)
+
+    msg = "All elements of colors .* matplotlib .* RGBA"
+    with pytest.raises(ValueError, match=msg):
+        plot_surf_contours(
+            in_memory_mesh, parcellation, levels=[1, 2], colors=[[1, 2], 3]
+        )
+
+    msg = "Levels, labels, and colors argument .* same length or None."
+    with pytest.raises(ValueError, match=msg):
+        plot_surf_contours(
+            in_memory_mesh,
+            parcellation,
+            levels=[1, 2],
+            colors=["r"],
+            labels=["1", "2"],
+        )
+
+
+def test_plot_surf_contours_errors_with_plotly_figure(plotly, in_memory_mesh):
+    """Test that plot_surf_contours raises error when given plotly obj."""
+    figure = plot_surf(in_memory_mesh, engine="plotly")
+    with pytest.raises(ValueError):
+        plot_surf_contours(in_memory_mesh, np.ones((10,)), figure=figure)
+    with pytest.raises(ValueError):
+        plot_surf_contours(in_memory_mesh, np.ones((10,)), axes=figure)
 
 
 def test_plot_surf_stat_map(plt, engine, in_memory_mesh, bg_map):
@@ -875,159 +1028,6 @@ def test_plot_img_on_surf_input_as_file(matplotlib_pyplot, img_3d_mni_as_file):
     """Test nifti is supported when passed as string or path to a file."""
     plot_img_on_surf(stat_map=img_3d_mni_as_file)
     plot_img_on_surf(stat_map=str(img_3d_mni_as_file))
-
-
-def test_plot_surf_contours(
-    matplotlib_pyplot, in_memory_mesh, parcellation, surf_mask_1d
-):
-    """Test nilearn.plotting.surface.plot_surf_contours for valid input
-    values.
-    """
-    plot_surf_contours(in_memory_mesh, parcellation)
-    plot_surf_contours(in_memory_mesh, parcellation, levels=[1, 2])
-    plot_surf_contours(
-        in_memory_mesh, parcellation, levels=[1, 2], cmap="gist_ncar"
-    )
-
-
-def test_plot_surf_contour_roi_map_as_surface_image(
-    matplotlib_pyplot, surf_mesh, surf_mask_1d
-):
-    """Check that mesh can be PolyMesh and roi_map can be a SurfaceImage."""
-    plot_surf_contours(surf_mesh, roi_map=surf_mask_1d, hemi="both")
-
-
-def test_plot_surf_contours_legend(
-    matplotlib_pyplot, in_memory_mesh, parcellation
-):
-    """Test nilearn.plotting.surface.plot_surf_contours creates figure legend
-    when `legend=True`.
-    """
-    fig = plot_surf_contours(
-        in_memory_mesh,
-        parcellation,
-        legend=True,
-    )
-    assert fig.legends is not None
-
-
-def test_plot_surf_contours_colors(
-    matplotlib_pyplot, in_memory_mesh, parcellation
-):
-    """Test nilearn.plotting.surface.plot_surf_contours for different inputs as
-    `colors`.
-    """
-    plot_surf_contours(
-        in_memory_mesh, parcellation, levels=[1, 2], colors=["r", "g"]
-    )
-    plot_surf_contours(
-        in_memory_mesh,
-        parcellation,
-        levels=[1, 2],
-        labels=["1", "2"],
-        colors=["r", "g"],
-    )
-    plot_surf_contours(
-        in_memory_mesh,
-        parcellation,
-        levels=[1, 2],
-        colors=[[0, 0, 0, 1], [1, 1, 1, 1]],
-    )
-
-
-def test_plot_surf_contours_axis_title(
-    matplotlib_pyplot, in_memory_mesh, parcellation
-):
-    """Test nilearn.plotting.surface.plot_surf_contours for axis title."""
-    fig = plot_surf(in_memory_mesh)
-    plot_surf_contours(in_memory_mesh, parcellation, figure=fig)
-    display = plot_surf_contours(
-        in_memory_mesh,
-        parcellation,
-        levels=[1, 2],
-        labels=["1", "2"],
-        colors=["r", "g"],
-        legend=True,
-        title="title",
-        figure=fig,
-    )
-    # Non-regression assertion: we switched from _suptitle to axis title
-    assert display._suptitle is None
-    assert display.axes[0].get_title() == "title"
-
-    fig = plot_surf(in_memory_mesh, title="title 2")
-    display = plot_surf_contours(
-        in_memory_mesh,
-        parcellation,
-        levels=[1, 2],
-        labels=["1", "2"],
-        colors=["r", "g"],
-        legend=True,
-        figure=fig,
-    )
-    # Non-regression assertion: we switched from _suptitle to axis title
-    assert display._suptitle is None
-    assert display.axes[0].get_title() == "title 2"
-    with tempfile.NamedTemporaryFile() as tmp_file:
-        plot_surf_contours(
-            in_memory_mesh, parcellation, output_file=tmp_file.name
-        )
-
-
-def test_plot_surf_contours_fig_axes(
-    matplotlib_pyplot, in_memory_mesh, parcellation
-):
-    """Test nilearn.plotting.surface.surf_plotting.plot_surf_contours with
-    matplotlib figure and axes.
-    """
-    fig, axes = matplotlib_pyplot.subplots(
-        1, 1, subplot_kw={"projection": "3d"}
-    )
-    plot_surf_contours(in_memory_mesh, parcellation, axes=axes)
-    plot_surf_contours(in_memory_mesh, parcellation, figure=fig)
-
-
-def test_plot_surf_contours_error(
-    matplotlib_pyplot, rng, in_memory_mesh, parcellation
-):
-    """Test nilearn.plotting.surface.surf_plotting.plot_surf_contours for
-    invalid parameters.
-    """
-    # we need an invalid parcellation for testing
-    invalid_parcellation = rng.uniform(size=(in_memory_mesh.n_vertices))
-    with pytest.raises(
-        ValueError, match="Vertices in parcellation do not form region."
-    ):
-        plot_surf_contours(in_memory_mesh, invalid_parcellation)
-
-    _, axes = matplotlib_pyplot.subplots(1, 1)
-    with pytest.raises(ValueError, match="Axes must be 3D."):
-        plot_surf_contours(in_memory_mesh, parcellation, axes=axes)
-
-    msg = "All elements of colors .* matplotlib .* RGBA"
-    with pytest.raises(ValueError, match=msg):
-        plot_surf_contours(
-            in_memory_mesh, parcellation, levels=[1, 2], colors=[[1, 2], 3]
-        )
-
-    msg = "Levels, labels, and colors argument .* same length or None."
-    with pytest.raises(ValueError, match=msg):
-        plot_surf_contours(
-            in_memory_mesh,
-            parcellation,
-            levels=[1, 2],
-            colors=["r"],
-            labels=["1", "2"],
-        )
-
-
-def test_plot_surf_contours_errors_with_plotly_figure(plotly, in_memory_mesh):
-    """Test that plot_surf_contours raises error when given plotly obj."""
-    figure = plot_surf(in_memory_mesh, engine="plotly")
-    with pytest.raises(ValueError):
-        plot_surf_contours(in_memory_mesh, np.ones((10,)), figure=figure)
-    with pytest.raises(ValueError):
-        plot_surf_contours(in_memory_mesh, np.ones((10,)), axes=figure)
 
 
 @pytest.mark.parametrize("avg_method", ["mean", "median"])
