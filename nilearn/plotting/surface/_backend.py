@@ -82,6 +82,9 @@ class BaseSurfaceBackend:
                 )
 
     def _sanitize_hemi_view(self, hemi, view):
+        """Check ``hemi`` and ``view``, if ``view`` is `None`, set value for
+        ``view`` depending on the ``hemi`` value and return ``view``.
+        """
         check_hemispheres([hemi])
         if view is None:
             view = "dorsal" if hemi == "both" else "lateral"

@@ -233,6 +233,9 @@ def test_plot_surf_warnings_not_implemented_in_plotly(
 def test_plot_surf_error_when_kaleido_missing(
     plotly, tmp_path, in_memory_mesh, bg_map
 ):
+    """Test if nilearn.plotting.surface.surf_plotting.plot_surf raises
+    ImportError when engine is 'plotly' and kaleido is not installed.
+    """
     with pytest.raises(ImportError, match="Saving figures"):
         # Plot with non None output file
         plot_surf(
@@ -974,6 +977,9 @@ def test_plot_surf_contours_axis_title(
 def test_plot_surf_contours_fig_axes(
     matplotlib_pyplot, in_memory_mesh, parcellation
 ):
+    """Test nilearn.plotting.surface.surf_plotting.plot_surf_contours with
+    matplotlib figure and axes.
+    """
     fig, axes = matplotlib_pyplot.subplots(
         1, 1, subplot_kw={"projection": "3d"}
     )
@@ -984,6 +990,9 @@ def test_plot_surf_contours_fig_axes(
 def test_plot_surf_contours_error(
     matplotlib_pyplot, rng, in_memory_mesh, parcellation
 ):
+    """Test nilearn.plotting.surface.surf_plotting.plot_surf_contours for
+    invalid parameters.
+    """
     # we need an invalid parcellation for testing
     invalid_parcellation = rng.uniform(size=(in_memory_mesh.n_vertices))
     with pytest.raises(

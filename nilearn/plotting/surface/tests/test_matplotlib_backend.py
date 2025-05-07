@@ -58,7 +58,8 @@ def matplotlib_backend():
 
 @pytest.mark.parametrize("hemi, views", MATPLOTLIB_VIEWS.items())
 def test_get_view_plot_surf(matplotlib_backend, hemi, views):
-    """Test if nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
+    """Test if
+    nilearn.plotting.surface._matplotlib_backend.MatplotlibSurfaceBackend._get_view_plot_surf
     returns expected values.
     """
     for v in views:
@@ -70,7 +71,8 @@ def test_get_view_plot_surf(matplotlib_backend, hemi, views):
 
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
 def test_get_view_plot_surf_hemisphere_errors(matplotlib_backend, hemi, view):
-    """Test nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
+    """Test
+    nilearn.plotting.surface._matplotlib_backend.MatplotlibSurfaceBackend._get_view_plot_surf
     for invalid hemisphere values.
     """
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
@@ -88,7 +90,8 @@ def test_get_view_plot_surf_hemisphere_errors(matplotlib_backend, hemi, view):
     ],
 )
 def test_get_view_plot_surf_view_errors(matplotlib_backend, hemi, view):
-    """Test nilearn.plotting.surface._matplotlib_backend._get_view_plot_surf
+    """Test
+    nilearn.plotting.surface._matplotlib_backend.MatplotlibSurfaceBackend._get_view_plot_surf
     for invalid view values.
     """
     with pytest.raises(ValueError, match="Invalid view definition"):
