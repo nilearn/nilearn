@@ -6,6 +6,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 
+DEFAULT_ENGINE = "matplotlib"
+
 
 def engine_warning(engine):
     warning = (

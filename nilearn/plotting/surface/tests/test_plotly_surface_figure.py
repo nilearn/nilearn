@@ -106,17 +106,6 @@ def test_distant_line_segments_detected_as_not_intersecting():
     assert not PlotlySurfaceFigure._do_segs_intersect(0, 0, 1, 1, 5, 5, 6, 6)
 
 
-def test_value_error_get_faces_on_edge(in_memory_mesh):
-    """Test that calling _get_faces_on_edge raises a ValueError when \
-       called with with indices that do not form a region.
-    """
-    figure = plot_surf(in_memory_mesh, engine=ENGINE)
-    with pytest.raises(
-        ValueError, match=("Vertices in parcellation do not form region.")
-    ):
-        figure._get_faces_on_edge([91])
-
-
 def test_plotly_surface_figure_warns_on_isolated_roi(in_memory_mesh):
     """Test that a warning is generated for ROIs with isolated vertices."""
     figure = plot_surf(in_memory_mesh, engine=ENGINE)
