@@ -39,6 +39,7 @@ from nilearn.conftest import (
     _make_surface_mask,
     _rng,
     _shape_3d_default,
+    _shape_3d_large,
 )
 from nilearn.maskers import (
     NiftiMasker,
@@ -557,9 +558,7 @@ def check_masker_compatibility_mask_image(estimator):
     if accept_niimg_input(estimator):
         # using larger images to be compatible
         # with regions extraction tests
-        # TODO refactor a common fixture for "large 3D shape"
-        shape = (29, 30, 31)
-        mask = np.zeros(shape, dtype=np.int8)
+        mask = np.zeros(_shape_3d_large(), dtype=np.int8)
         mask[1:-1, 1:-1, 1:-1] = 1
         mask_img = Nifti1Image(mask, _affine_eye())
         image_to_transform = _make_surface_img()
@@ -604,8 +603,9 @@ def check_masker_mask_img_from_imgs(estimator):
     if accept_niimg_input(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
-        shape = (29, 30, 31)
-        input_img = Nifti1Image(_rng().random(shape), _affine_mni())
+        input_img = Nifti1Image(
+            _rng().random(_shape_3d_large()), _affine_mni()
+        )
 
     else:
         input_img = _make_surface_img(2)
@@ -638,16 +638,16 @@ def check_masker_mask_img(estimator):
     if accept_niimg_input(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
-        shape = (29, 30, 31)
-
-        mask_data = np.zeros(shape, dtype="int8")
+        mask_data = np.zeros(_shape_3d_large(), dtype="int8")
         mask_data[2:-2, 2:-2, 2:-2] = 1
         binary_mask_img = Nifti1Image(mask_data, _affine_eye())
 
-        input_img = Nifti1Image(_rng().random(shape), _affine_eye())
+        input_img = Nifti1Image(
+            _rng().random(_shape_3d_large()), _affine_eye()
+        )
 
         non_binary_mask_img = Nifti1Image(
-            _rng().random((*shape, 2)), _affine_eye()
+            _rng().random((*_shape_3d_large(), 2)), _affine_eye()
         )
 
     else:
@@ -905,13 +905,11 @@ def check_masker_refit(estimator):
     if accept_niimg_input(estimator):
         # using larger images to be compatible
         # with regions extraction tests
-        # TODO refactor a common fixture for "large 3D shape"
-        shape = (29, 30, 31)
-        mask = np.zeros(shape, dtype=np.int8)
+        mask = np.zeros(_shape_3d_large(), dtype=np.int8)
         mask[1:-1, 1:-1, 1:-1] = 1
         mask_img_1 = Nifti1Image(mask, _affine_eye())
 
-        mask = np.zeros(shape, dtype=np.int8)
+        mask = np.zeros(_shape_3d_large(), dtype=np.int8)
         mask[3:-3, 3:-3, 3:-3] = 1
         mask_img_2 = Nifti1Image(mask, _affine_eye())
     else:
@@ -966,11 +964,9 @@ def check_masker_fit_with_non_finite_in_mask(estimator):
     - Output of transform must contain only finite values.
     """
     if accept_niimg_input(estimator):
-        # TODO
-        # (29, 30, 31) is used to match MAP_SHAPE in
-        # nilearn/regions/tests/test_region_extractor.py
+        # _shape_3d_large() is used,
         # this test would fail for RegionExtractor otherwise
-        mask = np.ones((29, 30, 31))
+        mask = np.ones(_shape_3d_large())
         mask[:, :, 7] = np.nan
         mask[:, :, 4] = np.inf
         mask_img = Nifti1Image(mask, affine=_affine_eye())
@@ -1002,12 +998,11 @@ def check_masker_dtypes(estimator):
     np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
     length = 20
-    ni_shape = (29, 30, 31)
     for dtype in [np.float32, np.float64, np.int32]:
         estimator = clone(estimator)
 
         if accept_niimg_input(estimator):
-            data = np.zeros((*ni_shape, length))
+            data = np.zeros((*_shape_3d_large(), length))
             data[1:28, 1:28, 1:28, ...] = (
                 _rng().random((27, 27, 27, length)) + 2.0
             )
@@ -1348,11 +1343,9 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
 
     Mask can have different shape than fitted image.
     """
-    # TODO
-    # (29, 30, 31) is used to match MAP_SHAPE in
-    # nilearn/regions/tests/test_region_extractor.py
+    # _shape_3d_large() is used
     # this test would fail for RegionExtractor otherwise
-    mask = np.ones((29, 30, 31))
+    mask = np.ones(_shape_3d_large())
     mask_img = Nifti1Image(mask, affine=_affine_eye())
 
     estimator.mask_img = mask_img
@@ -1589,7 +1582,7 @@ def check_masker_generate_report(estimator):
 
 def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     """Check 3D mask is enough to run with fit and generate report."""
-    mask = np.ones((29, 30, 31))
+    mask = np.ones(_shape_3d_large())
     mask_img = Nifti1Image(mask, affine=_affine_eye())
 
     estimator.mask_img = mask_img
