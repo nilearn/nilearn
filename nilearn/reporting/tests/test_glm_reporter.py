@@ -5,6 +5,7 @@ import pytest
 from nilearn._utils.data_gen import (
     basic_paradigm,
     generate_fake_fmri_data_and_design,
+    write_fake_bold_img,
 )
 from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.datasets import load_fsaverage
@@ -130,6 +131,27 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
     c1 = np.eye(len(model.design_matrix_.columns))[0]
 
     model.generate_report(c1, first_level_contrast=first_level_contrast)
+
+
+def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
+    """Test second level reporting when input is a dataframe."""
+    file_path = write_fake_bold_img(
+        file_path=tmp_path / "img.nii.gz", shape=shape_3d_default
+    )
+
+    dfcols = ["subject_label", "map_name", "effects_map_path"]
+    dfrows = [
+        ["01", "a", file_path],
+        ["02", "a", file_path],
+        ["03", "a", file_path],
+    ]
+    niidf = pd.DataFrame(dfrows, columns=dfcols)
+
+    model = SecondLevelModel().fit(niidf)
+
+    c1 = np.eye(len(model.design_matrix_.columns))[0]
+
+    model.generate_report(c1, first_level_contrast="a")
 
 
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
