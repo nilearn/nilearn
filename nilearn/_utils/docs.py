@@ -393,6 +393,26 @@ figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
     If `None` is given, a new figure is created.
 """
 
+# figure
+docdict["first_level_contrast"] = """
+first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
+                            shape (n_col) with respect to \
+                            :class:`~nilearn.glm.first_level.FirstLevelModel` \
+                            or None, default=None
+
+            - In case a :obj:`list` of
+              :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
+              as ``second_level_input``,
+              we have to provide a :term:`contrast`
+              to apply to the first level models
+              to get the corresponding list of images desired,
+              that would be tested at the second level.
+            - In case a :class:`~pandas.DataFrame` was provided
+              as ``second_level_input`` this is the map name to extract
+              from the :class:`~pandas.DataFrame` ``map_name`` column.
+              It has to be a 't' contrast.
+"""
+
 # fwhm
 docdict["fwhm"] = """
 fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\

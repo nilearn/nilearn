@@ -635,22 +635,7 @@ class SecondLevelModel(BaseGLM):
         ----------
         %(second_level_contrast)s
 
-        first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
-                            shape (n_col) with respect to \
-                            :class:`~nilearn.glm.first_level.FirstLevelModel` \
-                            or None, default=None
-
-            - In case a :obj:`list` of
-              :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
-              as ``second_level_input``,
-              we have to provide a :term:`contrast`
-              to apply to the first level models
-              to get the corresponding list of images desired,
-              that would be tested at the second level.
-            - In case a :class:`~pandas.DataFrame` was provided
-              as ``second_level_input`` this is the map name to extract
-              from the :class:`~pandas.DataFrame` ``map_name`` column.
-              It has to be a 't' contrast.
+        %(first_level_contrast)s
 
         second_level_stat_type : {'t', 'F'} or None, default=None
             Type of the second level contrast.
@@ -852,10 +837,7 @@ def non_parametric_inference(
 
     %(second_level_contrast)s
 
-    first_level_contrast : :obj:`str` or None, default=None
-        In case a pandas DataFrame was provided as second_level_input this
-        is the map name to extract from the pandas dataframe map_name column.
-        It has to be a 't' contrast.
+    %(first_level_contrast)s
 
         .. versionadded:: 0.9.0
 
