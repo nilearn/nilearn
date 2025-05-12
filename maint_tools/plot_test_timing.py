@@ -15,25 +15,22 @@ def main():
         / "pytest_output"
         / "pytest_output.csv"
     )
-
     if not input_file.exists():
         warn(f"{input_file} not found.", stacklevel=2)
         return
 
     tests_data = pd.read_csv(input_file)
 
-    tests_data["subpackage"] = tests_data["module"].apply(
-        lambda x: x.split(".")[1]
-    )
+    tests_data["subpackage"] = tests_data["module"].str.split(
+        ".", expand=True
+    )[1]
 
     # get name of test without any parametrization
     # from
     #   test_resampling_result_axis_permutation[axis_permutation3-False]
     # to
     #   test_resampling_result_axis_permutation
-    tests_data["id_no_param"] = tests_data["id"].apply(
-        lambda x: x.split("[")[0]
-    )
+    tests_data["id_no_param"] = tests_data["id"].str.split("[", expand=True)[0]
 
     for column, title in zip(
         ["subpackage", "module", "id_no_param", "id"],
