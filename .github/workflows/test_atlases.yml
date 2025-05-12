@@ -8,9 +8,6 @@ on:
     push:
         branches:
         -   main
-    pull_request:
-        branches:
-        -   '*'
     workflow_dispatch:  # This enables manual triggering from GitHub UI
 
 concurrency:
