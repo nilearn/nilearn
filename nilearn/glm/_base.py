@@ -222,16 +222,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         %(first_level_contrast)s
 
-            For :class:`~nilearn.glm.second_level.SecondLevelModel`,
-            in case a :obj:`list` of
-        :class:`~nilearn.glm.first_level.FirstLevelModel`
-        or a dataframe was provided as ``second_level_input``,
-            we have to provide a :term:`contrast`
-            to apply to the first level models
-            to get the corresponding list of images desired,
-            that would be tested at the second level.
-            This parameter is ignored for all other cases.
-
             .. versionadded:: 0.11.2dev
 
         title : :obj:`str`, optional
