@@ -442,6 +442,7 @@ class BaseSlicer:
         if is_binary_niimg(img):
             resampling_interpolation = "nearest"
 
+        # Image reordering should be done before sanitizing transparency
         img = reorder_img(
             img, resample=resampling_interpolation, copy_header=True
         )
