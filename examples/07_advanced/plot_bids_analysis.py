@@ -180,8 +180,10 @@ plotting.show()
 #  %%
 # Generate and save the GLM report at the group level.
 report_slm = second_level_model.generate_report(
+    contrasts="intercept",
     first_level_contrast="language-string",
     threshold=p001_unc,
+    display_mode="x",
 )
 
 # %%
@@ -190,7 +192,7 @@ report_slm
 
 # %%
 # Or in a separate browser window
-# report_flm.open_in_browser()
+# report_slm.open_in_browser()
 
 # %%
 # Save the report to disk
