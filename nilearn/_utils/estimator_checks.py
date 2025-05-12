@@ -273,7 +273,7 @@ def check_estimator(
             for e, check in sklearn_check_estimator(
                 estimator=est, generate_only=True
             ):
-                tags = est._more_tags()
+                tags = est.__sklearn_tags__()
 
                 niimg_input = "niimg_like" in tags["X_types"]
                 surf_img = "surf_img" in tags["X_types"]
@@ -302,7 +302,7 @@ def check_estimator(
 
 
 def nilearn_check_estimator(estimator):
-    tags = estimator._more_tags()
+    tags = estimator.__sklearn_tags__()
 
     is_masker = False
     is_glm = False
@@ -394,7 +394,7 @@ def nilearn_check_estimator(estimator):
 
 
 def is_multimasker(estimator):
-    tags = estimator._more_tags()
+    tags = estimator.__sklearn_tags__()
 
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
@@ -405,7 +405,7 @@ def is_multimasker(estimator):
 
 
 def accept_niimg_input(estimator):
-    tags = estimator._more_tags()
+    tags = estimator.__sklearn_tags__()
 
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
