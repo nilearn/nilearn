@@ -310,7 +310,7 @@ def nilearn_check_estimator(estimator):
 
     if SKLEARN_GT_1_5:
         tags = estimator.__sklearn_tags__()
-    else:
+    else:  # pragma: no cover
         tags = estimator._more_tags()
 
     # TODO remove first if when dropping sklearn 1.5
