@@ -168,13 +168,6 @@ class NiftiLabelsMasker(BaseMasker):
         Look-up table derived from the ``labels`` or ``lut``
         or from the values of the label image.
 
-    n_elements_ : :obj:`int`
-        The number of discrete values in the mask.
-        This is equivalent to the number of unique values in the mask image,
-        ignoring the background value.
-
-        .. versionadded:: 0.9.2
-
     region_atlas_ : Niimg-like object
         Regions definition as labels.
         The labels correspond to the indices in ``region_ids_``.
@@ -314,6 +307,22 @@ class NiftiLabelsMasker(BaseMasker):
             lut = self._lut_
         return lut["index"].to_dict()
 
+    @property
+    def n_elements_(self) -> int:
+        """Return number of regions.
+
+        This is equal to the number of unique values
+        in the fitted label image,
+        minus the background value.
+
+        .. versionadded:: 0.9.2
+        """
+        check_is_fitted(self)
+        lut = self.lut_
+        if hasattr(self, "_lut_"):
+            lut = self._lut_
+        return len(lut[lut["index"] != self.background_label])
+
     def _post_masking_atlas(self, visualize=False):
         """
         Find the masked atlas before transform and return it.
@@ -431,7 +440,7 @@ class NiftiLabelsMasker(BaseMasker):
         table = table[table["label value"] != self.background_label]
 
         self._report_content["summary"] = table
-        self._report_content["number_of_regions"] = len(table)
+        self._report_content["number_of_regions"] = self.n_elements_
 
         img = self._reporting_data["img"]
 
@@ -608,11 +617,6 @@ class NiftiLabelsMasker(BaseMasker):
         else:
             self._reporting_data = None
 
-        # Infer the number of elements in the mask
-        # This is equal to the number of unique values in the label image,
-        # minus the background value.
-        self.n_elements_ = len(self.lut_) - 1
-
         return self
 
     def _check_labels(self):
@@ -710,11 +714,7 @@ class NiftiLabelsMasker(BaseMasker):
         )
 
     def __sklearn_is_fitted__(self):
-        return (
-            hasattr(self, "labels_img_")
-            and hasattr(self, "n_elements_")
-            and hasattr(self, "lut_")
-        )
+        return hasattr(self, "labels_img_") and hasattr(self, "lut_")
 
     @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
@@ -905,6 +905,8 @@ class NiftiLabelsMasker(BaseMasker):
         from ..regions import signal_extraction
 
         check_is_fitted(self)
+
+        self._check_signal_shape(signals)
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_labels(

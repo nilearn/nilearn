@@ -130,21 +130,6 @@ def test_surface_maps_masker_inverse_transform_actual_output(surf_mesh, rng):
     )
 
 
-def test_surface_maps_masker_inverse_transform_wrong_region_signals_shape(
-    surf_maps_img, surf_img_2d
-):
-    """Test that an error is raised when the region_signals shape is wrong."""
-    masker = SurfaceMapsMasker(surf_maps_img).fit()
-    region_signals = masker.fit_transform(surf_img_2d(50))
-    wrong_region_signals = region_signals[:, :-1]
-
-    with pytest.raises(
-        ValueError,
-        match="Expected 6 regions, but got 5",
-    ):
-        masker.inverse_transform(wrong_region_signals)
-
-
 def test_surface_maps_masker_1d_maps_img(surf_img_1d):
     """Test that an error is raised when maps_img has 1D data."""
     with pytest.raises(
