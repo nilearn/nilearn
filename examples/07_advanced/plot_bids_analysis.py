@@ -176,8 +176,7 @@ plotting.plot_glass_brain(
 )
 plotting.show()
 
-
-#  %%
+# %%
 # Generate and save the GLM report at the group level.
 report_slm = second_level_model.generate_report(
     contrasts="intercept",
