@@ -21,7 +21,7 @@ from nilearn.datasets import fetch_spm_multimodal_fmri
 subject_data = fetch_spm_multimodal_fmri()
 
 # %%
-# Lets inspect one fo the event files before using them.
+# Let's inspect one fo the event files before using them.
 import pandas as pd
 
 events = [subject_data.events1, subject_data.events2]
@@ -68,8 +68,6 @@ show()
 # %%
 # Fit the :term:`GLM` for the 2 runs
 # by specifying a FirstLevelModel and then fitting it.
-# %%
-# Specify timing and design matrix parameters.
 
 # Sample at the beginning of each acquisition.
 slice_time_ref = 0.0
