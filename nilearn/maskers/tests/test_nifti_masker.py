@@ -76,7 +76,7 @@ def test_fit_transform_warning(img_3d_rand_eye, mask_img_1):
     with pytest.warns(
         UserWarning,
         match="Generation of a mask has been requested .*"
-        "while a mask has been provided at masker creation.",
+        "while a mask was given at masker creation.",
     ):
         X = masker.fit_transform(X=img_3d_rand_eye, y=y)
         assert np.any(X != 0)
@@ -279,15 +279,6 @@ def test_joblib_cache(tmp_path, mask_img_1):
         shutil.rmtree(cachedir, ignore_errors=True)
 
 
-def test_fit_no_mask_no_img_error():
-    """Check error is raised when no mask and no img is provided."""
-    mask = NiftiMasker(mask_img=None)
-    with pytest.raises(
-        ValueError, match="Parameter 'imgs' must be provided to "
-    ):
-        mask.fit()
-
-
 def test_mask_strategy_errors_warnings(img_fmri):
     """Check that mask_strategy errors are raised."""
     # Error with unknown mask_strategy
@@ -474,7 +465,6 @@ def test_nifti_masker_io_shapes(rng, shape_3d_default, affine_eye):
     transform(3D image) --> 2D output, DeprecationWarning
     inverse_transform(2D array) --> 4D image, no warning
     inverse_transform(1D array) --> 3D image, no warning
-    inverse_transform(2D array with wrong shape) --> ValueError
     """
     n_volumes = 5
     shape_4d = (*shape_3d_default, n_volumes)
@@ -527,6 +517,3 @@ def test_nifti_masker_io_shapes(rng, shape_3d_default, affine_eye):
         )
         test_img = masker.inverse_transform(data_2d)
         assert test_img.shape == shape_4d
-
-    with pytest.raises(TypeError):
-        masker.inverse_transform(data_2d.T)

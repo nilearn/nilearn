@@ -1,5 +1,11 @@
+"""Functions specific to "plotly" backend for surface visualization
+functions in :obj:`~nilearn.plotting.surface.surf_plotting`.
+
+Any imports from "plotly" package, or "plotly" engine specific utility
+functions in :obj:`~nilearn.plotting.surface` should be in this file.
+"""
+
 import math
-from warnings import warn
 
 import numpy as np
 
@@ -10,9 +16,9 @@ from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.plotting.surface._backend import (
     VALID_HEMISPHERES,
     BaseSurfaceBackend,
-    _check_hemispheres,
-    _check_surf_map,
-    _check_views,
+    check_hemispheres,
+    check_surf_map,
+    check_views,
 )
 from nilearn.plotting.surface.html_surface import get_vertexcolor
 from nilearn.surface import load_surf_data
@@ -82,7 +88,7 @@ LAYOUT = {
 }
 
 
-def _configure_title_plotly(title, font_size, color="black"):
+def _configure_title(title, font_size, color="black"):
     """Help for plot_surf with plotly engine.
 
     This function configures the title if provided.
@@ -166,7 +172,7 @@ def _get_camera_view_from_string_view(hemi, view):
     return CAMERAS[view]
 
 
-def _get_cbar_plotly(
+def _get_cbar(
     colorscale,
     vmin,
     vmax,
@@ -204,39 +210,24 @@ def _get_cbar_plotly(
     return dummy
 
 
-def _get_view_plot_surf_plotly(hemi, view):
+def _get_view_plot_surf(hemi, view):
     """
     Get camera parameters from hemi and view for the plotly engine.
 
     This function checks the selected hemisphere and view, and
     returns the cameras view.
     """
-    _check_views([view])
-    _check_hemispheres([hemi])
+    check_views([view])
+    check_hemispheres([hemi])
     if isinstance(view, str):
         return _get_camera_view_from_string_view(hemi, view)
     return _get_camera_view_from_elevation_and_azimut(view)
 
 
-class PlotlyBackend(BaseSurfaceBackend):
-    def _check_backend_params(self, params):
-        parameters_not_implemented_in_plotly = {
-            "avg_method": params["avg_method"],
-            "figure": params["figure"],
-            "axes": params["axes"],
-            "cbar_vmin": params["cbar_vmin"],
-            "cbar_vmax": params["cbar_vmax"],
-            "alpha": params["alpha"],
-        }
-
-        for parameter, value in parameters_not_implemented_in_plotly.items():
-            if value is not None:
-                warn(
-                    f"'{parameter}' is not implemented "
-                    "for the plotly engine.\n"
-                    f"Got '{parameter} = {value}'.\n"
-                    f"Use '{parameter} = None' to silence this warning."
-                )
+class PlotlySurfaceBackend(BaseSurfaceBackend):
+    @property
+    def name(self):
+        return "plotly"
 
     def _plot_surf(
         self,
@@ -247,7 +238,7 @@ class PlotlyBackend(BaseSurfaceBackend):
         hemi="left",
         view=None,
         cmap=None,
-        symmetric_cmap=False,
+        symmetric_cmap=None,
         colorbar=True,
         avg_method=None,
         threshold=None,
@@ -260,20 +251,31 @@ class PlotlyBackend(BaseSurfaceBackend):
         cbar_vmax=None,
         cbar_tick_format="auto",
         title=None,
-        title_font_size=18,
+        title_font_size=None,
         output_file=None,
         axes=None,
         figure=None,
     ):
-        self._check_backend_params(locals())
+        parameters_not_implemented_in_plotly = {
+            "avg_method": avg_method,
+            "alpha": alpha,
+            "cbar_vmin": cbar_vmin,
+            "cbar_vmax": cbar_vmax,
+            "axes": axes,
+            "figure": figure,
+        }
+        self._check_engine_params(parameters_not_implemented_in_plotly)
 
-        if cbar_tick_format == "auto":
-            cbar_tick_format = ".1f"
+        # adjust values
+        cbar_tick_format = (
+            ".1f" if cbar_tick_format == "auto" else cbar_tick_format
+        )
+        cmap = DEFAULT_DIVERGING_CMAP if cmap is None else cmap
+        symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
+        title_font_size = 18 if title_font_size is None else title_font_size
+
         x, y, z = coords.T
         i, j, k = faces.T
-
-        if cmap is None:
-            cmap = DEFAULT_DIVERGING_CMAP
 
         bg_data = None
         if bg_map is not None:
@@ -285,7 +287,7 @@ class PlotlyBackend(BaseSurfaceBackend):
                 )
 
         if surf_map is not None:
-            _check_surf_map(surf_map, coords.shape[0])
+            check_surf_map(surf_map, coords.shape[0])
             colors = colorscale(
                 cmap,
                 surf_map,
@@ -319,7 +321,7 @@ class PlotlyBackend(BaseSurfaceBackend):
         )
         fig_data = [mesh_3d]
         if colorbar:
-            dummy = _get_cbar_plotly(
+            dummy = _get_cbar(
                 colors["colors"],
                 float(colors["vmin"]),
                 float(colors["vmax"]),
@@ -328,11 +330,11 @@ class PlotlyBackend(BaseSurfaceBackend):
             fig_data.append(dummy)
 
         # instantiate plotly figure
-        camera_view = _get_view_plot_surf_plotly(hemi, view)
+        camera_view = _get_view_plot_surf(hemi, view)
         fig = go.Figure(data=fig_data)
         fig.update_layout(
             scene_camera=camera_view,
-            title=_configure_title_plotly(title, title_font_size),
+            title=_configure_title(title, title_font_size),
             **LAYOUT,
         )
 

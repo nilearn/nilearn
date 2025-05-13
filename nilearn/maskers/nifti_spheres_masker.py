@@ -11,9 +11,13 @@ from scipy import sparse
 from sklearn import neighbors
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
 from nilearn._utils.class_inspect import get_params
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import (
+    is_matplotlib_installed,
+    rename_parameters,
+)
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import (
@@ -280,6 +284,8 @@ class NiftiSpheresMasker(BaseMasker):
 
     Attributes
     ----------
+    %(nifti_mask_img_)s
+
     n_elements_ : :obj:`int`
         The number of seeds in the masker.
 
@@ -530,16 +536,18 @@ class NiftiSpheresMasker(BaseMasker):
 
         return embeded_images
 
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     def fit(
         self,
-        X=None,
-        y=None,  # noqa: ARG002
+        imgs=None,
+        y=None,
     ):
         """Prepare signal extraction from regions.
 
         All parameters are unused; they are for scikit-learn compatibility.
 
         """
+        del y
         self._report_content = {
             "description": (
                 "This reports shows the regions defined "
@@ -555,21 +563,15 @@ class NiftiSpheresMasker(BaseMasker):
             "native space.\n"
         )
 
-        if self.mask_img is not None:
-            self.mask_img_ = check_niimg_3d(self.mask_img)
-            # Just check that the mask is valid
-            load_mask_img(self.mask_img_)
+        self.mask_img_ = self._load_mask(imgs)
 
-        else:
-            self.mask_img_ = None
-
-        if X is not None:
+        if imgs is not None:
             if self.reports:
                 if self.mask_img_ is not None:
                     # TODO switch to force_resample=True
                     # when bumping to version > 0.13
                     resampl_imgs = self._cache(resample_img)(
-                        X,
+                        imgs,
                         target_affine=self.mask_img_.affine,
                         copy=False,
                         interpolation="nearest",
@@ -577,7 +579,7 @@ class NiftiSpheresMasker(BaseMasker):
                         force_resample=False,
                     )
                 else:
-                    resampl_imgs = X
+                    resampl_imgs = imgs
                 # Store 1 timepoint to pass to reporter
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
         elif self.reports:  # imgs not provided to fit
@@ -621,7 +623,8 @@ class NiftiSpheresMasker(BaseMasker):
 
         return self
 
-    def fit_transform(self, imgs, confounds=None, sample_mask=None):
+    @fill_doc
+    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction.
 
         Parameters
@@ -631,6 +634,10 @@ class NiftiSpheresMasker(BaseMasker):
             Images to process.
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
+
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
 
         %(confounds)s
 
@@ -645,6 +652,7 @@ class NiftiSpheresMasker(BaseMasker):
             shape: (number of scans, number of spheres)
 
         """
+        del y
         return self.fit(imgs).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
@@ -652,6 +660,7 @@ class NiftiSpheresMasker(BaseMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "seeds_") and hasattr(self, "n_elements_")
 
+    @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from a single 4D niimg.
 
@@ -741,10 +750,12 @@ class NiftiSpheresMasker(BaseMasker):
         """
         check_is_fitted(self)
 
+        self._check_signal_shape(region_signals)
+
         logger.log("computing image from signals", verbose=self.verbose)
 
-        if self.mask_img is not None:
-            mask = check_niimg_3d(self.mask_img)
+        if self.mask_img_ is not None:
+            mask = check_niimg_3d(self.mask_img_)
         else:
             raise ValueError(
                 "Please provide mask_img at initialization to "
@@ -762,4 +773,4 @@ class NiftiSpheresMasker(BaseMasker):
             adjacency = adjacency.dot(sparse.diags(scale))
 
         img = adjacency.T.dot(region_signals.T).T
-        return unmask(img, self.mask_img)
+        return unmask(img, self.mask_img_)

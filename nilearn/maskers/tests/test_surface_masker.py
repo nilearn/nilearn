@@ -36,7 +36,7 @@ def test_fit_list_surf_images(surf_img_2d):
     """
     masker = SurfaceMasker()
     masker.fit([surf_img_2d(3), surf_img_2d(5)])
-    assert masker.mask_img_.shape == (surf_img_2d(1).shape[0], 1)
+    assert masker.mask_img_.shape == (surf_img_2d(1).shape[0],)
 
 
 def test_fit_list_surf_images_with_mask(surf_mask_1d, surf_img_2d):
@@ -44,43 +44,6 @@ def test_fit_list_surf_images_with_mask(surf_mask_1d, surf_img_2d):
     masker = SurfaceMasker(mask_img=surf_mask_1d)
     masker.fit([surf_img_2d(3), surf_img_2d(5)])
     assert masker.mask_img_.shape == (surf_img_2d(1).shape[0],)
-
-
-# test with only one surface image and with 2 surface images (surface time
-# series)
-@pytest.mark.parametrize("shape", [1, 2])
-def test_mask_img_fit_shape_mismatch(
-    flip_surf_img, surf_mask_1d, surf_img_2d, shape
-):
-    """Fit fails when mismatch between mesh of mask \
-        and that of image to fit.
-    """
-    masker = SurfaceMasker(surf_mask_1d)
-    with pytest.raises(ValueError, match="Number of vertices"):
-        masker.fit(flip_surf_img(surf_img_2d(shape)))
-    masker.fit(surf_img_2d(shape))
-    assert_polydata_equal(surf_mask_1d.data, masker.mask_img_.data)
-
-
-def test_mask_img_fit_keys_mismatch(surf_mask_1d, drop_surf_img_part):
-    """Check fit fails if one hemisphere is missing."""
-    masker = SurfaceMasker(surf_mask_1d)
-    with pytest.raises(ValueError, match="key"):
-        masker.fit(drop_surf_img_part(surf_mask_1d))
-
-
-def test_none_mask_img(surf_mask_1d):
-    """Check that masker can be instantiated with mask_img=None.
-
-    An error should then be raised with .fit(img=None).
-    """
-    masker = SurfaceMasker(None)
-    with pytest.raises(ValueError, match="provide either"):
-        masker.fit(None)
-    # no mask_img but fit argument is ok
-    masker.fit(surf_mask_1d)
-    # no fit argument but a mask_img is ok
-    SurfaceMasker(surf_mask_1d).fit(None)
 
 
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
@@ -95,9 +58,9 @@ def test_transform_list_surf_images(
     surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
     masker = SurfaceMasker(surf_mask).fit()
     signals = masker.transform([surf_img_1d, surf_img_1d, surf_img_1d])
-    assert signals.shape == (3, masker.output_dimension_)
+    assert signals.shape == (3, masker.n_elements_)
     signals = masker.transform([surf_img_2d(5), surf_img_2d(4)])
-    assert signals.shape == (9, masker.output_dimension_)
+    assert signals.shape == (9, masker.n_elements_)
 
 
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
@@ -110,56 +73,6 @@ def test_inverse_transform_list_surf_images(
     signals = masker.transform([surf_img_2d(3), surf_img_2d(4)])
     img = masker.inverse_transform(signals)
     assert img.shape == (surf_mask.mesh.n_vertices, 7)
-
-
-def test_unfitted_masker(surf_mask_1d):
-    """Check transform requires fit first."""
-    masker = SurfaceMasker(surf_mask_1d)
-    with pytest.raises(ValueError, match="fitted"):
-        masker.transform(surf_mask_1d)
-
-
-def test_check_is_fitted(surf_mask_1d):
-    """Check __sklearn_is_fitted__ method."""
-    masker = SurfaceMasker(surf_mask_1d)
-    assert not masker.__sklearn_is_fitted__()
-
-
-def test_mask_img_transform_shape_mismatch(
-    flip_surf_img, surf_img_1d, surf_mask_1d
-):
-    """Transform fails when mismatch between mesh of fitted mask \
-        and that of image to transform.
-    """
-    masker = SurfaceMasker(surf_mask_1d).fit()
-    with pytest.raises(ValueError, match="Number of vertices"):
-        masker.transform(flip_surf_img(surf_img_1d))
-    # non-flipped is ok
-    masker.transform(surf_img_1d)
-
-
-def test_mask_img_transform_keys_mismatch(
-    surf_mask_1d, surf_img_1d, drop_surf_img_part
-):
-    """Check transform fails if one hemisphere is missing."""
-    masker = SurfaceMasker(surf_mask_1d).fit()
-    with pytest.raises(ValueError, match="key"):
-        masker.transform(drop_surf_img_part(surf_img_1d))
-    # full img is ok
-    masker.transform(surf_img_1d)
-
-
-def test_error_inverse_transform_shape(surf_img_1d, surf_mask_1d, rng):
-    """Check input shape of inverse transform."""
-    masker = SurfaceMasker(surf_mask_1d).fit()
-    signals = masker.transform(surf_img_1d)
-    signals_wrong_shape = rng.random(
-        size=(signals.shape[0] + 1, signals.shape[1] + 1)
-    )
-    with pytest.raises(
-        ValueError, match="Input to 'inverse_transform' has wrong shape"
-    ):
-        masker.inverse_transform(signals_wrong_shape)
 
 
 @pytest.mark.parametrize("n_timepoints", [3])
@@ -212,7 +125,7 @@ def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
     signals = masker.transform(img)
 
     # check mask shape is as expected
-    assert signals.shape == (n_timepoints, masker.output_dimension_)
+    assert signals.shape == (n_timepoints, masker.n_elements_)
 
     # check the data for first seven vertices is as expected
     assert np.array_equal(signals.ravel()[:7], [2, 3, 4, 20, 30, 40, 50])

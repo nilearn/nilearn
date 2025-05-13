@@ -23,16 +23,16 @@ from nilearn.plotting._utils import (
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.surface._backend import (
     DATA_EXTENSIONS,
-    _check_hemispheres,
-    _check_views,
-    get_surface_backend,
+    check_hemispheres,
+    check_views,
 )
 from nilearn.plotting.surface._matplotlib_backend import (
     _colorbar_from_array,
-    _get_ticks_matplotlib,
+    _get_ticks,
 )
 from nilearn.plotting.surface._utils import (
     check_surface_plotting_inputs,
+    get_surface_backend,
     sanitize_hemi_for_surface_image,
 )
 from nilearn.surface import (
@@ -56,7 +56,7 @@ def plot_surf(
     view=None,
     engine="matplotlib",
     cmap=None,
-    symmetric_cmap=False,
+    symmetric_cmap=None,
     colorbar=True,
     avg_method=None,
     threshold=None,
@@ -69,7 +69,7 @@ def plot_surf(
     cbar_vmax=None,
     cbar_tick_format="auto",
     title=None,
-    title_font_size=18,
+    title_font_size=None,
     output_file=None,
     axes=None,
     figure=None,
@@ -143,12 +143,15 @@ def plot_surf(
     %(cmap)s
         If None, matplotlib default will be chosen.
 
-    symmetric_cmap : :obj:`bool`, default=False
+    symmetric_cmap : :obj:`bool`, default=None
         Whether to use a symmetric colormap or not.
 
         .. note::
             This option is currently only implemented for
             the ``plotly`` engine.
+
+        When using plotly as engine, `symmetric_cmap` will default to ``False``
+        if ``None`` is passed.
 
         .. versionadded:: 0.9.0
 
@@ -171,14 +174,16 @@ def plot_surf(
 
     alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
-        When using matplotlib as engine,
-        `alpha` will default to ``"auto"`` if ``None`` is passed.
+
         If 'auto' is chosen, alpha will default to 0.5 when no bg_map
         is passed and to 1 if a bg_map is passed.
 
         .. note::
             This option is currently only implemented for the
             ``matplotlib`` engine.
+
+        When using matplotlib as engine,
+        `alpha` will default to ``"auto"`` if ``None`` is passed.
 
     %(bg_on_data)s
 
@@ -192,6 +197,10 @@ def plot_surf(
     cbar_vmin : :obj:`float` or None, default=None
         Lower bound for the colorbar.
         If None, the value will be set from the data.
+
+        .. note::
+            This option is currently only implemented for the
+            ``matplotlib`` engine.
 
     cbar_vmax : :obj:`float` or None, default=None
         Upper bound for the colorbar.
@@ -211,8 +220,15 @@ def plot_surf(
 
     %(title)s
 
-    title_font_size : :obj:`int`, default=18
-        Size of the title font (only implemented for the plotly engine).
+    title_font_size : :obj:`int`, default=None
+        Size of the title font
+
+        .. note::
+            This option is currently only implemented for
+            the ``plotly`` engine.
+
+        When using plotly as engine, `title_font_size` will default to ``18``
+        if ``None`` is passed.
 
         .. versionadded:: 0.9.0
 
@@ -881,8 +897,8 @@ def plot_img_on_surf(
             )
 
     stat_map = check_niimg_3d(stat_map, dtype="auto")
-    modes = _check_views(views)
-    hemis = _check_hemispheres(hemispheres)
+    modes = check_views(views)
+    hemis = check_hemispheres(hemispheres)
     surf_mesh = check_mesh_is_fsaverage(surf_mesh)
 
     mesh_prefix = "infl" if inflate else "pial"
@@ -976,7 +992,7 @@ def plot_img_on_surf(
         cbar_ax = fig.add_subplot(cbar_grid[1])
         axes.append(cbar_ax)
         # Get custom ticks to set in colorbar
-        ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold)
+        ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold)
         fig.colorbar(
             sm,
             cax=cbar_ax,

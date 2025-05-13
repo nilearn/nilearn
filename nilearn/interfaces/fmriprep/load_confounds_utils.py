@@ -167,16 +167,13 @@ def _generate_confounds_file_candidates(nii_file):
     filenames : list of str
         List of potential confounds filenames.
     """
-    entities = parse_bids_filename(nii_file)
-    file_fields = entities["file_fields"]
-    entities = {k: v for k, v in entities.items() if k in file_fields}
+    parsed_file = parse_bids_filename(nii_file, legacy=False)
+    entities = parsed_file["entities"]
     entities["desc"] = "confounds"
-    if "desc" not in file_fields:
-        file_fields.append("desc")
 
     all_subsets = [
-        list(itertools.combinations(file_fields, n_entities))
-        for n_entities in range(1, len(file_fields) + 1)
+        list(itertools.combinations(entities.keys(), n_entities))
+        for n_entities in range(1, len(entities.keys()) + 1)
     ]
 
     # Flatten the list of lists

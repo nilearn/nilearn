@@ -9,6 +9,7 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import CacheMixin
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -156,6 +157,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             "r_square", result_as_time_series=False
         )
 
+    @fill_doc
     def generate_report(
         self,
         contrasts=None,
@@ -392,9 +394,9 @@ class BaseGLM(CacheMixin, BaseEstimator):
             # only keep entity label if unique across runs
             for k in entities:
                 label = [
-                    x.get(k)
+                    x["entities"].get(k)
                     for x in self._reporting_data["run_imgs"].values()
-                    if x.get(k) is not None
+                    if x["entities"].get(k) is not None
                 ]
 
                 label = set(label)
@@ -402,6 +404,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
                     continue
                 label = next(iter(label))
                 entities[k] = label
+
         elif not isinstance(prefix, str):
             prefix = ""
 
@@ -604,7 +607,7 @@ def _generate_model_level_mapping(
             fields["entities"]["run"] = i_run + 1
         if generate_bids_name:
             fields["entities"] = deepcopy(
-                model._reporting_data["run_imgs"][i_run]
+                model._reporting_data["run_imgs"][i_run]["entities"]
             )
 
         tmp = {}
@@ -642,7 +645,7 @@ def _generate_design_matrices_dict(
             fields["entities"] = {"run": i_run + 1}  # type: ignore[assignment]
         if generate_bids_name:
             fields["entities"] = deepcopy(
-                model._reporting_data["run_imgs"][i_run]
+                model._reporting_data["run_imgs"][i_run]["entities"]
             )
 
         tmp = {}
@@ -691,7 +694,7 @@ def _generate_contrasts_dict(
             fields["entities"]["run"] = i_run + 1
         if generate_bids_name:
             fields["entities"] = deepcopy(
-                model._reporting_data["run_imgs"][i_run]
+                model._reporting_data["run_imgs"][i_run]["entities"]
             )
 
         tmp = {}
