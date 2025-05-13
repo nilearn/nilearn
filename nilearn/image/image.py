@@ -827,18 +827,16 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     orig_ref_niimg = ref_niimg
     ref_niimg = stringify_path(ref_niimg)
     is_str = isinstance(ref_niimg, str)
-    has_get_data = hasattr(ref_niimg, "get_data")
     has_get_fdata = hasattr(ref_niimg, "get_fdata")
     has_iter = hasattr(ref_niimg, "__iter__")
     has_affine = hasattr(ref_niimg, "affine")
-    if has_iter and not any([is_str, has_get_data, has_get_fdata]):
+    if has_iter and not any([is_str, has_get_fdata]):
         ref_niimg = ref_niimg[0]
         ref_niimg = stringify_path(ref_niimg)
         is_str = isinstance(ref_niimg, str)
-        has_get_data = hasattr(ref_niimg, "get_data")
         has_get_fdata = hasattr(ref_niimg, "get_fdata")
         has_affine = hasattr(ref_niimg, "affine")
-    if not ((has_get_data or has_get_fdata) and has_affine):
+    if not (has_get_fdata and has_affine):
         if is_str:
             ref_niimg = load(ref_niimg)
         else:
