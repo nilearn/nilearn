@@ -14,11 +14,11 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal, assert_raises
+from packaging.version import parse
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import compare_version
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.niimg_conversions import check_imgs_equal
@@ -40,6 +40,7 @@ from nilearn.conftest import (
     _make_surface_mask,
     _rng,
     _shape_3d_default,
+    _shape_3d_large,
 )
 from nilearn.maskers import (
     NiftiMasker,
@@ -55,8 +56,10 @@ from nilearn.surface.utils import (
     assert_surface_image_equal,
 )
 
+SKLEARN_GT_1_5 = parse(sklearn_version).release[1] >= 6
+
 # TODO simplify when dropping sklearn 1.5,
-if compare_version(sklearn_version, ">", "1.5.2"):
+if SKLEARN_GT_1_5:
     from sklearn.utils.estimator_checks import _check_name
     from sklearn.utils.estimator_checks import (
         estimator_checks_generator as sklearn_check_generator,
@@ -77,6 +80,7 @@ VALID_CHECKS = [
     "check_dont_overwrite_parameters",
     "check_dtype_object",
     "check_estimator_cloneable",
+    "check_estimators_dtypes",
     "check_estimator_repr",
     "check_estimator_sparse_array",
     "check_estimator_sparse_data",
@@ -98,6 +102,8 @@ VALID_CHECKS = [
     "check_methods_sample_order_invariance",
     "check_methods_subset_invariance",
     "check_mixin_order",
+    "check_n_features_in",
+    "check_n_features_in_after_fitting",
     "check_no_attributes_set_in_init",
     "check_non_transformer_estimators_n_iter",
     "check_parameters_default_constructible",
@@ -111,7 +117,7 @@ VALID_CHECKS = [
     "check_transformers_unfitted",
 ]
 
-if compare_version(sklearn_version, ">", "1.5.2"):
+if SKLEARN_GT_1_5:
     VALID_CHECKS.append("check_valid_tag_types")
 else:
     VALID_CHECKS.append("check_estimator_get_tags_default_keys")
@@ -124,6 +130,7 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     # The following do not apply for nilearn maskers
     # as they do not take numpy arrays as input.
     "check_complex_data": "not applicable for image input",
+    "check_dtype_object": "not applicable for image input",
     "check_estimator_sparse_array": "not applicable for image input",
     "check_estimator_sparse_data": "not applicable for image input",
     "check_estimator_sparse_matrix": "not applicable for image input",
@@ -133,7 +140,12 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_fit2d_1feature": "not applicable for image input",
     "check_fit2d_1sample": "not applicable for image input",
     "check_fit2d_predict1d": "not applicable for image input",
+    "check_n_features_in": "not applicable",
+    "check_n_features_in_after_fitting": "not applicable",
     # the following are skipped because there is nilearn specific replacement
+    "check_estimators_dtypes": (
+        "replaced by check_masker_dtypes andcheck_glm_dtypes"
+    ),
     "check_estimators_fit_returns_self": (
         "replaced by check_nifti_masker_fit_returns_self "
         "or check_surface_masker_fit_returns_self or "
@@ -156,18 +168,14 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     #  most often because sklearn inputs expect a numpy array
     #  that errors with maskers,
     # or because a suitable nilearn replacement has not yet been created.
-    "check_dtype_object": "TODO",
     "check_dont_overwrite_parameters": "TODO",
     "check_estimators_empty_data_messages": "TODO",
-    "check_estimators_dtypes": "TODO",
     "check_estimators_nan_inf": "TODO",
     "check_estimators_overwrite_params": "TODO",
     "check_estimators_pickle": "TODO",
     "check_fit_idempotent": "TODO",
     "check_methods_sample_order_invariance": "TODO",
     "check_methods_subset_invariance": "TODO",
-    "check_n_features_in": "TODO",
-    "check_n_features_in_after_fitting": "TODO",
     "check_positive_only_tag_during_fit": "TODO",
     "check_pipeline_consistency": "TODO",
     "check_readonly_memmap_input": "TODO",
@@ -235,7 +243,7 @@ def check_estimator(
 
     for est in estimator:
         # TODO simplify when dropping sklearn 1.5
-        if compare_version(sklearn_version, ">", "1.5.2"):
+        if SKLEARN_GT_1_5:
             tags = est.__sklearn_tags__()
 
             niimg_input = getattr(tags.input_tags, "niimg_like", False)
@@ -298,11 +306,15 @@ def check_estimator(
 
 
 def nilearn_check_estimator(estimator):
-    tags = estimator._more_tags()
-
     is_masker = False
     is_glm = False
     surf_img_input = False
+
+    if SKLEARN_GT_1_5:
+        tags = estimator.__sklearn_tags__()
+    else:  # pragma: no cover
+        tags = estimator._more_tags()
+
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
@@ -371,6 +383,7 @@ def nilearn_check_estimator(estimator):
             yield (clone(estimator), check_nifti_masker_clean_warning)
             yield (clone(estimator), check_nifti_masker_dtype)
             yield (clone(estimator), check_nifti_masker_fit_transform_5d)
+            yield (clone(estimator), check_masker_dtypes)
 
             if is_multimasker(estimator):
                 yield (clone(estimator), check_multi_masker_with_confounds)
@@ -389,10 +402,11 @@ def nilearn_check_estimator(estimator):
     if is_glm:
         yield (clone(estimator), check_glm_fit_returns_self)
         yield (clone(estimator), check_glm_is_fitted)
+        yield (clone(estimator), check_glm_dtypes)
 
 
 def is_multimasker(estimator):
-    tags = estimator._more_tags()
+    tags = estimator.__sklearn_tags__()
 
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
@@ -403,7 +417,7 @@ def is_multimasker(estimator):
 
 
 def accept_niimg_input(estimator):
-    tags = estimator._more_tags()
+    tags = estimator.__sklearn_tags__()
 
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
@@ -630,9 +644,7 @@ def check_masker_compatibility_mask_image(estimator):
     if accept_niimg_input(estimator):
         # using larger images to be compatible
         # with regions extraction tests
-        # TODO refactor a common fixture for "large 3D shape"
-        shape = (29, 30, 31)
-        mask = np.zeros(shape, dtype=np.int8)
+        mask = np.zeros(_shape_3d_large(), dtype=np.int8)
         mask[1:-1, 1:-1, 1:-1] = 1
         mask_img = Nifti1Image(mask, _affine_eye())
         image_to_transform = _make_surface_img()
@@ -677,8 +689,9 @@ def check_masker_mask_img_from_imgs(estimator):
     if accept_niimg_input(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
-        shape = (29, 30, 31)
-        input_img = Nifti1Image(_rng().random(shape), _affine_mni())
+        input_img = Nifti1Image(
+            _rng().random(_shape_3d_large()), _affine_mni()
+        )
 
     else:
         input_img = _make_surface_img(2)
@@ -711,16 +724,16 @@ def check_masker_mask_img(estimator):
     if accept_niimg_input(estimator):
         # Small image with shape=(7, 8, 9) would fail with MultiNiftiMasker
         # giving mask_img_that mask all the data : do not know why!!!
-        shape = (29, 30, 31)
-
-        mask_data = np.zeros(shape, dtype="int8")
+        mask_data = np.zeros(_shape_3d_large(), dtype="int8")
         mask_data[2:-2, 2:-2, 2:-2] = 1
         binary_mask_img = Nifti1Image(mask_data, _affine_eye())
 
-        input_img = Nifti1Image(_rng().random(shape), _affine_eye())
+        input_img = Nifti1Image(
+            _rng().random(_shape_3d_large()), _affine_eye()
+        )
 
         non_binary_mask_img = Nifti1Image(
-            _rng().random((*shape, 2)), _affine_eye()
+            _rng().random((*_shape_3d_large(), 2)), _affine_eye()
         )
 
     else:
@@ -978,13 +991,11 @@ def check_masker_refit(estimator):
     if accept_niimg_input(estimator):
         # using larger images to be compatible
         # with regions extraction tests
-        # TODO refactor a common fixture for "large 3D shape"
-        shape = (29, 30, 31)
-        mask = np.zeros(shape, dtype=np.int8)
+        mask = np.zeros(_shape_3d_large(), dtype=np.int8)
         mask[1:-1, 1:-1, 1:-1] = 1
         mask_img_1 = Nifti1Image(mask, _affine_eye())
 
-        mask = np.zeros(shape, dtype=np.int8)
+        mask = np.zeros(_shape_3d_large(), dtype=np.int8)
         mask[3:-3, 3:-3, 3:-3] = 1
         mask_img_2 = Nifti1Image(mask, _affine_eye())
     else:
@@ -1039,11 +1050,9 @@ def check_masker_fit_with_non_finite_in_mask(estimator):
     - Output of transform must contain only finite values.
     """
     if accept_niimg_input(estimator):
-        # TODO
-        # (29, 30, 31) is used to match MAP_SHAPE in
-        # nilearn/regions/tests/test_region_extractor.py
+        # _shape_3d_large() is used,
         # this test would fail for RegionExtractor otherwise
-        mask = np.ones((29, 30, 31))
+        mask = np.ones(_shape_3d_large())
         mask[:, :, 7] = np.nan
         mask[:, :, 4] = np.inf
         mask_img = Nifti1Image(mask, affine=_affine_eye())
@@ -1065,6 +1074,33 @@ def check_masker_fit_with_non_finite_in_mask(estimator):
 
     signal = estimator.transform(imgs)
     assert np.all(np.isfinite(signal))
+
+
+def check_masker_dtypes(estimator):
+    """Check masker can fit/transform with inputs of varying dtypes.
+
+    Replacement for sklearn check_estimators_dtypes.
+
+    np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
+    """
+    length = 20
+    for dtype in [np.float32, np.float64, np.int32]:
+        estimator = clone(estimator)
+
+        if accept_niimg_input(estimator):
+            data = np.zeros((*_shape_3d_large(), length))
+            data[1:28, 1:28, 1:28, ...] = (
+                _rng().random((27, 27, 27, length)) + 2.0
+            )
+            imgs = Nifti1Image(data.astype(dtype), affine=_affine_eye())
+
+        else:
+            imgs = _make_surface_img(length)
+            for k, v in imgs.data.parts.items():
+                imgs.data.parts[k] = v.astype(dtype)
+
+        estimator.fit(imgs)
+        estimator.transform(imgs)
 
 
 def check_masker_smooth(estimator):
@@ -1393,11 +1429,9 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
 
     Mask can have different shape than fitted image.
     """
-    # TODO
-    # (29, 30, 31) is used to match MAP_SHAPE in
-    # nilearn/regions/tests/test_region_extractor.py
+    # _shape_3d_large() is used
     # this test would fail for RegionExtractor otherwise
-    mask = np.ones((29, 30, 31))
+    mask = np.ones(_shape_3d_large())
     mask_img = Nifti1Image(mask, affine=_affine_eye())
 
     estimator.mask_img = mask_img
@@ -1511,6 +1545,29 @@ def check_glm_is_fitted(estimator):
     check_is_fitted(estimator)
 
 
+def check_glm_dtypes(estimator):
+    """Check glm can fit with inputs of varying dtypes.
+
+    Replacement for sklearn check_estimators_dtypes.
+
+    np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
+    """
+    imgs, design_matrices = _make_surface_img_and_design()
+
+    for dtype in [np.float32, np.float64, np.int32]:
+        estimator = clone(estimator)
+
+        for k, v in imgs.data.parts.items():
+            imgs.data.parts[k] = v.astype(dtype)
+
+        # FirstLevel
+        if hasattr(estimator, "hrf_model"):
+            estimator.fit(imgs, design_matrices=design_matrices)
+        # SecondLevel
+        else:
+            estimator.fit(imgs, design_matrix=design_matrices)
+
+
 # ------------------ REPORT GENERATION CHECKS ------------------
 
 
@@ -1611,7 +1668,7 @@ def check_masker_generate_report(estimator):
 
 def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     """Check 3D mask is enough to run with fit and generate report."""
-    mask = np.ones((29, 30, 31))
+    mask = np.ones(_shape_3d_large())
     mask_img = Nifti1Image(mask, affine=_affine_eye())
 
     estimator.mask_img = mask_img
