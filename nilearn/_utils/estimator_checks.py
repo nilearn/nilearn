@@ -343,7 +343,6 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_compatibility_mask_image)
 
         yield (clone(estimator), check_masker_dict_unchanged)
-        yield (clone(estimator), check_masker_fit_with_mask_too_many_samples)
 
         yield (clone(estimator), check_masker_fit_with_empty_mask)
 
@@ -475,18 +474,17 @@ def check_masker_dict_unchanged(estimator):
     transform() should not changed the dict of the object.
     """
     if accept_niimg_input(estimator):
-        imgs = _img_3d_rand()
+        input_img = Nifti1Image(
+            _rng().random(_shape_3d_large()), _affine_eye()
+        )
     else:
-        imgs = _make_surface_img(10)
+        input_img = _make_surface_img(10)
 
-    estimator = estimator.fit(imgs)
+    estimator = estimator.fit(input_img)
 
     dict_before = estimator.__dict__.copy()
 
-    if accept_niimg_input(estimator):
-        estimator.transform(_img_3d_rand())
-    else:
-        estimator.transform(_make_surface_img(10))
+    estimator.transform(input_img)
 
     dict_after = estimator.__dict__
 

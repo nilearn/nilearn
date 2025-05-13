@@ -617,11 +617,6 @@ class NiftiLabelsMasker(BaseMasker):
         else:
             self._reporting_data = None
 
-        # Infer the number of elements in the mask
-        # This is equal to the number of unique values in the label image,
-        # minus the background value.
-        self.n_elements_ = len(self.lut_) - 1
-
         self._resampled_mask_img = self.mask_img_
 
         return self
