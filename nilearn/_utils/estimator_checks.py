@@ -43,6 +43,8 @@ from nilearn.conftest import (
     _shape_3d_large,
 )
 from nilearn.maskers import (
+    NiftiLabelsMasker,
+    NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
     SurfaceMasker,
@@ -474,9 +476,10 @@ def check_masker_dict_unchanged(estimator):
     transform() should not changed the dict of the object.
     """
     if accept_niimg_input(estimator):
-        input_img = Nifti1Image(
-            _rng().random(_shape_3d_large()), _affine_eye()
-        )
+        # We use a different shape here to force some maskers
+        # to perform a resampling.
+        shape = (30, 31, 32)
+        input_img = Nifti1Image(_rng().random(shape), _affine_eye())
     else:
         input_img = _make_surface_img(10)
 
@@ -488,58 +491,66 @@ def check_masker_dict_unchanged(estimator):
 
     dict_after = estimator.__dict__
 
-    # The following try / except is mostly
-    # to give more informative error messages when this check fails.
-    try:
-        assert dict_after == dict_before
-    except AssertionError as e:
-        extra_keys = set(dict_after.keys()) - set(dict_before.keys())
-        if len(extra_keys) > 0:
-            raise ValueError(
-                "Estimator changes '__dict__' keys during transform.\n"
-                f"{extra_keys} \n"
-            )
+    # TODO NiftiLabelsMasker, NiftiMapsMasker are modified at transform time
+    # see issue https://github.com/nilearn/nilearn/issues/2720
+    if isinstance(estimator, (NiftiLabelsMasker, NiftiMapsMasker)):
+        with pytest.raises(AssertionError):
+            assert dict_after == dict_before
+    else:
+        # The following try / except is mostly
+        # to give more informative error messages when this check fails.
+        try:
+            assert dict_after == dict_before
+        except AssertionError as e:
+            extra_keys = set(dict_after.keys()) - set(dict_before.keys())
+            if len(extra_keys) > 0:
+                raise ValueError(
+                    "Estimator changes '__dict__' keys during transform.\n"
+                    f"{extra_keys} \n"
+                )
 
-        difference = {}
-        for x in dict_before:
-            if type(dict_before[x]) is not type(dict_after[x]):
-                difference[x] = {
-                    "before": dict_before[x],
-                    "after": dict_after[x],
-                }
-                continue
-            if (
-                (
-                    isinstance(dict_before[x], np.ndarray)
-                    and (
-                        (dict_before[x].shape != dict_after[x].shape)
-                        or (dict_before[x] != dict_after[x]).any()
+            difference = {}
+            for x in dict_before:
+                if type(dict_before[x]) is not type(dict_after[x]):
+                    difference[x] = {
+                        "before": dict_before[x],
+                        "after": dict_after[x],
+                    }
+                    continue
+                if (
+                    (
+                        isinstance(dict_before[x], np.ndarray)
+                        and (
+                            (dict_before[x].shape != dict_after[x].shape)
+                            or (dict_before[x] != dict_after[x]).any()
+                        )
                     )
+                    or (
+                        isinstance(dict_before[x], Nifti1Image)
+                        and not check_imgs_equal(dict_before[x], dict_after[x])
+                    )
+                    or (
+                        not isinstance(
+                            dict_before[x], (np.ndarray, Nifti1Image)
+                        )
+                        and dict_before[x] != dict_after[x]
+                    )
+                ):
+                    difference[x] = {
+                        "before": dict_before[x],
+                        "after": dict_after[x],
+                    }
+                    continue
+            if difference:
+                raise ValueError(
+                    "Estimator changes the following '__dict__' keys \n"
+                    "during transform.\n"
+                    f"{difference}"
                 )
-                or (
-                    isinstance(dict_before[x], Nifti1Image)
-                    and not check_imgs_equal(dict_before[x], dict_after[x])
-                )
-                or (
-                    not isinstance(dict_before[x], (np.ndarray, Nifti1Image))
-                    and dict_before[x] != dict_after[x]
-                )
-            ):
-                difference[x] = {
-                    "before": dict_before[x],
-                    "after": dict_after[x],
-                }
-                continue
-        if difference:
-            raise ValueError(
-                "Estimator changes the following '__dict__' keys \n"
-                "during transform.\n"
-                f"{difference}"
-            )
-        else:
+            else:
+                raise e
+        except Exception as e:
             raise e
-    except Exception as e:
-        raise e
 
 
 def check_masker_fitted(estimator):
