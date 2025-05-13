@@ -257,7 +257,16 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         """
         check_is_fitted(self)
         if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
-            return self.transform_single_imgs(imgs)
+            confounds = (
+                confounds[0] if hasattr(confounds, "__iter__") else None
+            )
+            sample_mask = (
+                sample_mask[0] if hasattr(sample_mask, "__iter__") else None
+            )
+            return self.transform_single_imgs(
+                imgs, confounds=confounds, sample_mask=sample_mask
+            )
+
         return self.transform_imgs(
             imgs, confounds, n_jobs=self.n_jobs, sample_mask=sample_mask
         )

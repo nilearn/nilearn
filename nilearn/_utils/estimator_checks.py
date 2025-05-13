@@ -354,17 +354,17 @@ def nilearn_check_estimator(estimator):
 
         yield (clone(estimator), check_masker_smooth)
 
+        # TODO this should pass for multimasker
+        yield (
+            clone(estimator),
+            check_masker_transformer_high_variance_confounds,
+        )
+
         if not is_multimasker(estimator):
+            yield (clone(estimator), check_masker_with_confounds)
             yield (clone(estimator), check_masker_detrending)
             yield (clone(estimator), check_masker_clean)
             yield (clone(estimator), check_masker_transformer_sample_mask)
-            yield (clone(estimator), check_masker_with_confounds)
-
-            # TODO this should pass for multimasker
-            yield (
-                clone(estimator),
-                check_masker_transformer_high_variance_confounds,
-            )
 
         if accept_niimg_input(estimator):
             yield (clone(estimator), check_nifti_masker_fit_transform)
@@ -1372,7 +1372,10 @@ def check_multi_masker_with_confounds(estimator):
     Ensure results is different than when not using confounds.
 
     Check that error is raised if number of confounds
-    does not match number of images
+    does not match number of images.
+
+    Check that confounds are applied when passing a 4D image (not iterable)
+    to transform.
     """
     length = _img_4d_rand_eye_medium().shape[3]
 
@@ -1396,6 +1399,14 @@ def check_multi_masker_with_confounds(estimator):
             [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
             confounds=array,
         )
+
+    signals_list_1 = estimator.fit_transform(_img_4d_rand_eye_medium())
+    signals_list_2 = estimator.fit_transform(
+        _img_4d_rand_eye_medium(),
+        confounds=[array],
+    )
+    for signal_1, signal_2 in zip(signals_list_1, signals_list_2):
+        assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
 
 
 def check_multi_masker_transformer_sample_mask(estimator):
