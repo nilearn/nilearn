@@ -96,6 +96,14 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         The same as the input `maps_img`, kept solely for consistency
         across maskers.
 
+    mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage` or None.
+        The mask of the data.
+        If no ``mask_img`` was passed at masker construction,
+        then ``mask_img_`` is ``None``, otherwise
+        is the resulting binarized version of ``mask_img``
+        where each vertex is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0.
+
     n_elements_ : :obj:`int`
         The number of regions in the maps image.
 
@@ -164,8 +172,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         -------
         SurfaceMapsMasker object
         """
-        check_params(self.__dict__)
         del y
+        check_params(self.__dict__)
 
         if self.maps_img is None:
             raise ValueError(
@@ -258,7 +266,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
         mask_data = (
-            get_data(self.mask_img) if self.mask_img is not None else None
+            get_data(self.mask_img_) if self.mask_img_ is not None else None
         )
 
         parameters = get_params(
@@ -339,6 +347,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             (n_vertices_per_hemisphere, n_timepoints).
         """
         check_is_fitted(self)
+
+        self._check_signal_shape(region_signals)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)

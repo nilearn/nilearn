@@ -236,7 +236,6 @@ def test_masker_attributes_with_fit(canica_data, mask_img):
     canica = CanICA(n_components=3, mask=mask_img, random_state=0)
     canica.fit(canica_data)
 
-    assert canica.mask_img_ == mask_img
     assert canica.mask_img_ == canica.masker_.mask_img_
 
     # Passing masker

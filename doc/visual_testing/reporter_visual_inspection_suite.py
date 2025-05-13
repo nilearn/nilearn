@@ -380,7 +380,7 @@ def report_nifti_labels_masker(build_type):
 
     masker = NiftiLabelsMasker(
         atlas.maps,
-        labels=atlas.labels,
+        lut=atlas.lut,
         standardize="zscore_sample",
     )
     masker.fit()

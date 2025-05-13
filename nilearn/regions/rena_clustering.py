@@ -685,11 +685,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         tags.input_tags = InputTags()
         return tags
 
-    def fit(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-    ):
+    def fit(self, X, y=None):
         """Compute clustering of the data.
 
         Parameters
@@ -704,6 +700,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         self : `ReNA` object
 
         """
+        del y
         check_params(self.__dict__)
         X = check_array(
             X, ensure_min_features=2, ensure_min_samples=2, estimator=self

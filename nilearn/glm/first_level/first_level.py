@@ -900,7 +900,7 @@ class FirstLevelModel(BaseGLM):
             self._reporting_data["run_imgs"][run_idx] = {}
             if isinstance(run_img, (str, Path)):
                 self._reporting_data["run_imgs"][run_idx] = (
-                    parse_bids_filename(run_img)
+                    parse_bids_filename(run_img, legacy=False)
                 )
 
             self._fit_single_run(sample_masks, bins, run_img, run_idx)

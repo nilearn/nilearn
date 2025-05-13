@@ -4,6 +4,7 @@ import warnings
 from copy import copy as copy_object
 from functools import partial
 
+import numpy as np
 from joblib import Memory
 
 from nilearn import _utils
@@ -254,8 +255,12 @@ class NiftiMasker(BaseMasker):
 
     Attributes
     ----------
-    mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
-        The mask of the data, or the computed one.
+    mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image`
+        The mask of the data, or the one computed from ``imgs`` passed to fit.
+        If a ``mask_img`` is passed at masker construction,
+        then ``mask_img_`` is the resulting binarized version of it
+        where each voxel is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0.
 
     affine_ : 4x4 :obj:`numpy.ndarray`
         Affine of the transformed image.
@@ -412,11 +417,7 @@ class NiftiMasker(BaseMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "mask_img_")
 
-    def fit(
-        self,
-        imgs=None,
-        y=None,  # noqa: ARG002
-    ):
+    def fit(self, imgs=None, y=None):
         """Compute the mask corresponding to the data.
 
         Parameters
@@ -431,6 +432,7 @@ class NiftiMasker(BaseMasker):
             compatibility.
 
         """
+        del y
         check_params(self.__dict__)
 
         self._report_content = {
@@ -441,6 +443,8 @@ class NiftiMasker(BaseMasker):
                 "between the mask and its input image. "
             ),
             "warning_message": None,
+            "n_elements": 0,
+            "coverage": 0,
         }
         self._overlay_text = (
             "\n To see the input Nifti image before resampling, "
@@ -474,6 +478,14 @@ class NiftiMasker(BaseMasker):
             compute_mask = _get_mask_strategy(self.mask_strategy)
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs, verbose=max(0, self.verbose - 1), **mask_args
+            )
+        elif imgs is not None:
+            warnings.warn(
+                f"[{self.__class__.__name__}.fit] "
+                "Generation of a mask has been requested (imgs != None) "
+                "while a mask was given at masker creation. "
+                "Given mask will be used.",
+                stacklevel=find_stack_level(),
             )
 
         if self.reports:  # save inputs for reporting
@@ -515,6 +527,10 @@ class NiftiMasker(BaseMasker):
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
+        self._report_content["n_elements"] = self.n_elements_
+        self._report_content["coverage"] = (
+            self.n_elements_ / np.prod(data.shape) * 100
+        )
 
         logger.log("Finished fit", verbose=self.verbose)
 

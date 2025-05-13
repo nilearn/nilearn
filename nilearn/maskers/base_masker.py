@@ -2,6 +2,7 @@
 
 import abc
 import contextlib
+import copy
 import warnings
 from collections.abc import Iterable
 
@@ -21,17 +22,19 @@ from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import repr_niimgs
-from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
+from nilearn._utils.niimg import repr_niimgs, safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     concat_imgs,
     high_variance_confounds,
+    new_img_like,
     resample_img,
     smooth_img,
 )
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
+from nilearn.surface.surface import at_least_2d
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -256,20 +259,26 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        mask_img_ : None or 3D nifti
+        mask_img_ : None or 3D binary nifti
         """
         if self.mask_img is None:
+            # in this case
+            # (Multi)Niftimasker will infer one from imaged to fit
+            # other nifti maskers are OK with None
             return None
 
         repr = repr_niimgs(self.mask_img, shorten=(not self.verbose))
         msg = f"loading mask from {repr}"
         log(msg=msg, verbose=self.verbose)
 
-        mask_img_ = check_niimg_3d(self.mask_img)
+        # ensure that the mask_img_ is a 3D binary image
+        tmp = check_niimg(self.mask_img, atleast_4d=True)
+        mask = safe_get_data(tmp, ensure_finite=True)
+        mask = mask.astype(bool).all(axis=3)
+        mask_img_ = new_img_like(self.mask_img, mask)
 
         # Just check that the mask is valid
         load_mask_img(mask_img_)
-
         if imgs is not None:
             check_compatibility_mask_and_images(self.mask_img, imgs)
 
@@ -379,8 +388,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         warnings.warn(
             f"[{self.__class__.__name__}.fit] "
             "Generation of a mask has been"
-            " requested (y != None) while a mask has"
-            " been provided at masker creation. Given mask"
+            " requested (y != None) while a mask was"
+            " given at masker creation. Given mask"
             " will be used.",
             stacklevel=find_stack_level(),
         )
@@ -413,12 +422,22 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
+        self._check_signal_shape(X)
+
         img = self._cache(unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array
         with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
         return img
+
+    def _check_signal_shape(self, signals: np.ndarray):
+        if signals.shape[-1] != self.n_elements_:
+            raise ValueError(
+                "Input to 'inverse_transform' has wrong shape.\n"
+                f"Last dimension should be {self.n_elements_}.\n"
+                f"Got {signals.shape[-1]}."
+            )
 
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
@@ -457,31 +476,36 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        mask_img_ : None or SurfaceImage
+        mask_img_ : None or 1D binary SurfaceImage
         """
         if self.mask_img is None:
             return None
 
-        mask_img_ = self.mask_img
+        mask_img_ = copy.deepcopy(self.mask_img)
 
         logger.log(
             msg=f"loading mask from {mask_img_.__repr__()}",
             verbose=self.verbose,
         )
 
-        # squeeze the mask data if it is 2D and has a single column
-        for part in mask_img_.data.parts:
-            if (
-                mask_img_.data.parts[part].ndim == 2
-                and mask_img_.data.parts[part].shape[1] == 1
-            ):
-                mask_img_.data.parts[part] = np.squeeze(
-                    mask_img_.data.parts[part], axis=1
+        mask_img_ = at_least_2d(mask_img_)
+        mask = {}
+        for part, v in mask_img_.data.parts.items():
+            mask[part] = v
+            non_finite_mask = np.logical_not(np.isfinite(mask[part]))
+            if non_finite_mask.any():
+                warnings.warn(
+                    "Non-finite values detected. "
+                    "These values will be replaced with zeros.",
+                    stacklevel=find_stack_level(),
                 )
+                mask[part][non_finite_mask] = 0
+            mask[part] = mask[part].astype(bool).all(axis=1)
+
+        mask_img_ = new_img_like(self.mask_img, mask)
 
         # Just check that the mask is valid
         load_mask_img(mask_img_)
-
         if imgs is not None:
             check_compatibility_mask_and_images(mask_img_, imgs)
             if not isinstance(imgs, Iterable):
@@ -599,3 +623,11 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         del y
         return self.fit(imgs).transform(imgs, confounds, sample_mask)
+
+    def _check_signal_shape(self, signals: np.ndarray):
+        if signals.shape[-1] != self.n_elements_:
+            raise ValueError(
+                "Input to 'inverse_transform' has wrong shape.\n"
+                f"Last dimension should be {self.n_elements_}.\n"
+                f"Got {signals.shape[-1]}."
+            )

@@ -479,11 +479,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 f"You provided {confounds.__class__}"
             )
 
-    def fit(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-    ):
+    def fit(self, X, y=None):
         """Fit the covariance estimator to the given time series for each \
         subject.
 
@@ -500,6 +496,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             The object itself. Useful for chaining operations.
 
         """
+        del y
         self._fit_transform(X, do_fit=True)
         return self
 
@@ -598,12 +595,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         return connectivities
 
-    def fit_transform(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-        confounds=None,
-    ):
+    def fit_transform(self, X, y=None, confounds=None):
         """Fit the covariance estimator to the given time series \
         for each subject. \
         Then apply transform to covariance matrices for the chosen kind.
@@ -631,6 +623,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             Vectors are cleaned when vectorize=True and confounds are provided.
 
         """
+        del y
         if self.kind == "tangent" and len(X) <= 1:
             # Check that people are applying fit_transform to a group of
             # subject

@@ -60,17 +60,23 @@ from nilearn.image import concat_imgs
 N_SUBJECTS = 6
 N_REGIONS = 4
 
-fmri_data = fetch_adhd(n_subjects=N_SUBJECTS)
-fmri_img = concat_imgs(fmri_data.func)
-n_timepoints = fmri_img.shape[-1]
 
-output_dir = Path.cwd() / "results" / "plot_mask_large_fmri"
-output_dir.mkdir(parents=True, exist_ok=True)
-print(f"Large fmri file will be saved to:\n{output_dir}")
+def create_large_fmri(n_subjects):
+    fmri_data = fetch_adhd(n_subjects=n_subjects)
+    fmri_img = concat_imgs(fmri_data.func)
+    n_timepoints = fmri_img.shape[-1]
 
-fmri_path = output_dir / "large_fmri.nii.gz"
-fmri_img.to_filename(fmri_path)
+    output_dir = Path.cwd() / "results" / "plot_mask_large_fmri"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    print(f"Large fmri file will be saved to:\n{output_dir}")
 
+    fmri_path = output_dir / "large_fmri.nii.gz"
+    fmri_img.to_filename(fmri_path)
+
+    return fmri_path, n_timepoints
+
+
+fmri_path, n_timepoints = create_large_fmri(N_SUBJECTS)
 # %%
 # Create a set of binary masks
 # ----------------------------
@@ -79,43 +85,46 @@ fmri_img.to_filename(fmri_path)
 # :func:`~nilearn.datasets.fetch_atlas_basc_multiscale_2015` function.
 # We will fetch a 64-region version of this atlas and then create separate
 # binary masks for the first 4 regions.
-
-from nilearn.datasets import fetch_atlas_basc_multiscale_2015
-from nilearn.image import load_img, new_img_like, resample_to_img
-
-atlas_path = fetch_atlas_basc_multiscale_2015(resolution=64).maps
-
-atlas_img = load_img(atlas_path)
-
-# %%
+#
 # In this case, the atlas and the fMRI image have different resolutions.
 # So we will resample the atlas to the fMRI image. It is important to do that
 # because only :class:`~nilearn.maskers.NiftiMasker` can handle the resampling
 # of the mask to the fMRI image but other methods considered here will not.
 
-resampled_atlas = resample_to_img(
-    atlas_img,
-    fmri_img,
-    interpolation="nearest",
-    copy_header=True,
-    force_resample=True,
-)
+from nilearn.datasets import fetch_atlas_basc_multiscale_2015
+from nilearn.image import load_img, new_img_like, resample_to_img
 
-mask_paths = []
-for idx in range(1, N_REGIONS + 1):
-    mask = resampled_atlas.get_fdata() == idx
-    mask = new_img_like(
-        ref_niimg=fmri_img,
-        data=mask,
-        affine=resampled_atlas.affine,
+
+def create_masks(fmri_path, n_regions):
+    atlas_path = fetch_atlas_basc_multiscale_2015(resolution=64).maps
+    atlas_img = load_img(atlas_path)
+
+    resampled_atlas = resample_to_img(
+        atlas_img,
+        fmri_path,
+        interpolation="nearest",
         copy_header=True,
+        force_resample=True,
     )
-    path = output_dir / f"mask_{idx}.nii.gz"
-    mask.to_filename(path)
-    mask_paths.append(path)
 
-# remove images from memory
-del atlas_img, resampled_atlas, mask, fmri_img
+    mask_paths = []
+    output_dir = Path.cwd() / "results" / "plot_mask_large_fmri"
+    for idx in range(1, n_regions + 1):
+        mask = resampled_atlas.get_fdata() == idx
+        mask = new_img_like(
+            ref_niimg=fmri_path,
+            data=mask,
+            affine=resampled_atlas.affine,
+            copy_header=True,
+        )
+        path = output_dir / f"mask_{idx}.nii.gz"
+        mask.to_filename(path)
+        mask_paths.append(path)
+
+    return mask_paths
+
+
+mask_paths = create_masks(fmri_path, N_REGIONS)
 
 # %%
 # Mask the fMRI image using NiftiMasker
@@ -150,7 +159,6 @@ def nifti_masker_parallel_path(fmri_path, mask_paths):
         delayed(nifti_masker_single)(fmri_path, mask_path)
         for mask_path in mask_paths
     )
-    return 1
 
 
 def nifti_masker_parallel_inmemory(fmri_path, mask_paths):
@@ -159,7 +167,6 @@ def nifti_masker_parallel_inmemory(fmri_path, mask_paths):
     Parallel(n_jobs=N_REGIONS)(
         delayed(nifti_masker_single)(fmri_img, mask) for mask in mask_imgs
     )
-    return 1
 
 
 # %%
@@ -215,7 +222,6 @@ def numpy_masker_parallel(fmri_path, mask_paths):
     Parallel(n_jobs=N_REGIONS)(
         delayed(numpy_masker_single)(fmri_data, mask) for mask in masks
     )
-    return 1
 
 
 # %%
@@ -263,7 +269,6 @@ def numpy_masker_shared_parallel(fmri_path, mask_paths):
     # cleanup
     shm.close()
     shm.unlink()
-    return 1
 
 
 numpy_masker_shared = memory_usage(

@@ -601,11 +601,7 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         self.memory_level = memory_level
         self.verbose = verbose
 
-    def fit(
-        self,
-        subjects,
-        y=None,  # noqa: ARG002
-    ):
+    def fit(self, subjects, y=None):
         """Fits the group sparse precision model according \
         to the given training data and parameters.
 
@@ -623,6 +619,7 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
             the object itself. Useful for chaining operations.
 
         """
+        del y
         check_params(self.__dict__)
         for x in subjects:
             check_array(x, accept_sparse=False)
@@ -1080,11 +1077,7 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
         self.debug = debug
         self.early_stopping = early_stopping
 
-    def fit(
-        self,
-        subjects,
-        y=None,  # noqa: ARG002
-    ):
+    def fit(self, subjects, y=None):
         """Compute cross-validated group-sparse precisions.
 
         Parameters
@@ -1101,6 +1094,7 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
             the object instance itself.
 
         """
+        del y
         check_params(self.__dict__)
 
         for x in subjects:
