@@ -254,10 +254,20 @@ connected : :obj:`bool`, optional
 
 # confounds
 docdict["confounds"] = """
-confounds : CSV file or array-like, optional
+confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
+            :class:`pandas.DataFrame` \
+            or :obj:`list` of confounds timeseries, default=None
     This parameter is passed to :func:`nilearn.signal.clean`.
     Please see the related documentation for details.
-    shape: list of (number of scans, number of confounds)
+    shape: (number of scans, number of confounds)
+"""
+docdict["confounds_multi"] = """
+confounds : :obj:`list` of confounds, default=None
+    List of confounds (arrays, dataframes,
+    str or path of files loadable into an array).
+    As confounds are passed to :func:`nilearn.signal.clean`,
+    please see the related documentation for details about accepted types.
+    Must be of same length than imgs.
 """
 
 # cut_coords
@@ -573,6 +583,15 @@ lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
 """
 
+# masker_lut
+docdict["masker_lut"] = """lut : :obj:`pandas.DataFrame` or :obj:`str` \
+            or :obj:`pathlib.Path` to a TSV file or None, default=None
+        Mutually exclusive with ``labels``.
+        Act as a look up table (lut)
+        with at least columns 'index' and 'name'.
+        Formatted according to 'dseg.tsv' format from
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+
 
 # mask_strategy
 docdict["mask_strategy"] = """
@@ -807,10 +826,30 @@ resume : :obj:`bool`, default=True
 
 # sample_mask
 docdict["sample_mask"] = """
-sample_mask : Any type compatible with numpy-array indexing, optional
-    shape: (number of scans - number of volumes removed, )
-    Masks the niimgs along time/fourth dimension to perform scrubbing
-    (remove volumes with high motion) and/or non-steady-state volumes.
+sample_mask : Any type compatible with numpy-array indexing, default=None
+    ``shape = (total number of scans - number of scans removed)``
+    for explicit index (for example, ``sample_mask=np.asarray([1, 2, 4])``),
+    or ``shape = (number of scans)`` for binary mask
+    (for example,
+    ``sample_mask=np.asarray([False, True, True, False, True])``).
+    Masks the images along the last dimension to perform scrubbing:
+    for example to remove volumes with high motion
+    and/or non-steady-state volumes.
+    This parameter is passed to :func:`nilearn.signal.clean`.
+"""
+docdict["sample_mask_multi"] = """
+sample_mask : :obj:`list` of sample_mask, default=None
+    List of sample_mask (any type compatible with numpy-array indexing)
+    to use for scrubbing outliers.
+    Must be of same length as ``imgs``.
+    ``shape = (total number of scans - number of scans removed)``
+    for explicit index (for example, ``sample_mask=np.asarray([1, 2, 4])``),
+    or ``shape = (number of scans)`` for binary mask
+    (for example,
+    ``sample_mask=np.asarray([False, True, True, False, True])``).
+    Masks the images along the last dimension to perform scrubbing:
+    for example to remove volumes with high motion
+    and/or non-steady-state volumes.
     This parameter is passed to :func:`nilearn.signal.clean`.
 """
 
@@ -1277,8 +1316,19 @@ docdict["fsaverage_options"] = """
 docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
         List of the names of the regions."""
 
+# mask_img_ for most nifti maskers
+docdict[
+    "nifti_mask_img_"
+] = """mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image` or None.
+        The mask of the data.
+        If no ``mask_img`` was passed at masker construction,
+        then ``mask_img_`` is ``None``, otherwise
+        is the resulting binarized version of ``mask_img``
+        where each voxel is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0."""
+
 # look up table
-docdict["lut"] = """'lut' : :obj:`pandas.DataFrame`
+docdict["lut"] = """lut : :obj:`pandas.DataFrame`
         Act as a look up table (lut)
         with at least columns 'index' and 'name'.
         Formatted according to 'dseg.tsv' format from

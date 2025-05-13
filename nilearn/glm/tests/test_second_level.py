@@ -38,21 +38,12 @@ from nilearn.glm.second_level.second_level import (
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.reporting import get_clusters_table
-from nilearn.surface._testing import assert_surface_image_equal
-from nilearn.surface.surface import concat_imgs as surf_concat_imgs
-
-extra_valid_checks = [
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_no_attributes_set_in_init",
-]
+from nilearn.surface.utils import assert_surface_image_equal
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[SecondLevelModel()],
-        extra_valid_checks=extra_valid_checks,
-    ),
+    check_estimator(estimator=[SecondLevelModel()]),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
@@ -64,7 +55,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[SecondLevelModel()],
-        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
@@ -72,10 +62,6 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
-
-# This directory path
-BASEDIR = Path(__file__).resolve().parent
-FUNCFILE = BASEDIR / "functional.nii.gz"
 
 N_PERM = 5
 SHAPE = (*_shape_3d_default(), 1)
@@ -549,7 +535,11 @@ def test_high_level_glm_with_paths_errors():
     # Provide a masker as mask_img
     masker = NiftiMasker(mask).fit()
     with pytest.warns(
-        UserWarning, match="Parameter memory of the masker overridden"
+        UserWarning,
+        match=(
+            "Overriding provided-default estimator parameters "
+            "with provided masker parameters"
+        ),
     ):
         SecondLevelModel(mask_img=masker, verbose=1).fit(Y, design_matrix=X)
 
@@ -933,7 +923,7 @@ def test_second_level_voxelwise_attribute_errors(attribute):
     with pytest.raises(ValueError, match="The model has no results."):
         getattr(model, attribute)
     with pytest.raises(ValueError, match="attribute must be one of"):
-        model._get_voxelwise_model_attribute("foo", True)
+        model._get_element_wise_model_attribute("foo", True)
 
     model = SecondLevelModel(mask_img=mask, minimize_memory=True)
     model.fit(Y, design_matrix=X)
@@ -1426,7 +1416,7 @@ def test_second_level_input_as_surface_image_3d_same_as_list_2d(surf_img_1d):
     model.fit(second_level_input, design_matrix=design_matrix)
     result_2d = model.compute_contrast()
 
-    second_level_input_3d = surf_concat_imgs(second_level_input)
+    second_level_input_3d = concat_imgs(second_level_input)
     model.fit(second_level_input_3d, design_matrix=design_matrix)
     result_3d = model.compute_contrast()
 
@@ -1461,6 +1451,36 @@ def test_second_level_input_as_surface_image_with_mask(
 
     model = SecondLevelModel(mask_img=surf_mask)
     model = model.fit(second_level_input, design_matrix=design_matrix)
+
+
+def test_second_level_input_with_wrong_mask(
+    surf_img_1d, surf_mask_1d, img_mask_mni
+):
+    """Test slm with mask of the wrong type."""
+    n_subjects = 5
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
+
+    design_matrix = pd.DataFrame(
+        [1] * len(second_level_input), columns=["intercept"]
+    )
+
+    # volume mask with surface data
+    model = SecondLevelModel(mask_img=img_mask_mni)
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model = model.fit(second_level_input, design_matrix=design_matrix)
+
+    # surface mask with volume data
+    func_img, _ = fake_fmri_data()
+    second_level_input = [func_img] * 4
+    model = SecondLevelModel(mask_img=surf_mask_1d)
+
+    with pytest.raises(
+        TypeError, match="Mask and images to fit must be of compatible types."
+    ):
+        model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
 def test_second_level_input_as_surface_image_warning_smoothing(surf_img_1d):

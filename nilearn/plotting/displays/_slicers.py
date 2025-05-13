@@ -2,7 +2,6 @@ import collections
 import contextlib
 import numbers
 import warnings
-from pathlib import Path
 from typing import ClassVar
 
 import matplotlib.pyplot as plt
@@ -10,7 +9,6 @@ import numpy as np
 from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
-from nibabel import Nifti1Image
 
 from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
@@ -27,8 +25,9 @@ from nilearn.plotting.displays._utils import (
     coords_3d_to_2d,
     get_create_display_fun,
 )
-from nilearn.plotting.edge_detect import edge_map
+from nilearn.plotting.displays.edge_detect import edge_map
 from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
+from nilearn.typing import NiimgLike
 
 
 @fill_doc
@@ -562,7 +561,7 @@ class BaseSlicer:
         transparency_affine: None or np.ndarray
         """
         transparency_affine = None
-        if isinstance(transparency, (str, Path, Nifti1Image)):
+        if isinstance(transparency, NiimgLike):
             transparency = check_niimg_3d(transparency, dtype="auto")
             if is_binary_niimg(transparency):
                 resampling_interpolation = "nearest"

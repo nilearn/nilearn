@@ -5,6 +5,7 @@ This module implements plotting functions useful to report analysis results.
 
 from nilearn._utils.helpers import set_mpl_backend
 from nilearn.reporting.get_clusters_table import get_clusters_table
+from nilearn.reporting.html_report import HTMLReport
 
 try:
     warning = (
@@ -14,7 +15,6 @@ try:
     set_mpl_backend(warning)
 
     from nilearn.reporting.glm_reporter import make_glm_report
-    from nilearn.reporting.html_report import HTMLReport
 
     __all__ = [
         "HTMLReport",
@@ -23,4 +23,7 @@ try:
     ]
 
 except ImportError:
-    __all__ = ["get_clusters_table"]
+    __all__ = [
+        "HTMLReport",
+        "get_clusters_table",
+    ]

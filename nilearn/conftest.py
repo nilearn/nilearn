@@ -54,10 +54,9 @@ if is_matplotlib_installed():
 else:
     collect_ignore.extend(
         [
+            "_utils/plotting.py",
             "plotting",
-            "reporting/glm_reporter.py",
             "reporting/html_report.py",
-            "reporting/tests/test_glm_reporter.py",
             "reporting/tests/test_html_report.py",
         ]
     )
@@ -205,6 +204,16 @@ def _shape_3d_default():
     return (7, 8, 9)
 
 
+def _shape_3d_large():
+    """Shape usually used for maps images.
+
+    Mostly used for set up in other fixtures in other testing modules.
+    """
+    # avoid having identical shapes values,
+    # because this fails to detect if the code does not handle dimensions well.
+    return (29, 30, 31)
+
+
 def _shape_4d_default():
     """Return default shape for a 4D image.
 
@@ -233,6 +242,12 @@ def _shape_4d_long():
 def shape_3d_default():
     """Return default shape for a 3D image."""
     return _shape_3d_default()
+
+
+@pytest.fixture
+def shape_3d_large():
+    """Shape usually used for maps images."""
+    return _shape_3d_large()
 
 
 @pytest.fixture()
@@ -710,54 +725,57 @@ def surf_maps_img():
     return _surf_maps_img()
 
 
+def _flip_surf_img_parts(poly_obj):
+    """Flip hemispheres of a surface image data or mesh."""
+    keys = list(poly_obj.parts.keys())
+    keys = [keys[-1]] + keys[:-1]
+    return dict(zip(keys, poly_obj.parts.values()))
+
+
 @pytest.fixture
 def flip_surf_img_parts():
     """Flip hemispheres of a surface image data or mesh."""
+    return _flip_surf_img_parts
 
-    def f(poly_obj):
-        keys = list(poly_obj.parts.keys())
-        keys = [keys[-1]] + keys[:-1]
-        return dict(zip(keys, poly_obj.parts.values()))
 
-    return f
+def _flip_surf_img(img):
+    """Flip hemispheres of a surface image."""
+    return SurfaceImage(
+        _flip_surf_img_parts(img.mesh), _flip_surf_img_parts(img.data)
+    )
 
 
 @pytest.fixture
-def flip_surf_img(flip_surf_img_parts):
+def flip_surf_img():
     """Flip hemispheres of a surface image."""
+    return _flip_surf_img
 
-    def f(img):
-        return SurfaceImage(
-            flip_surf_img_parts(img.mesh), flip_surf_img_parts(img.data)
-        )
 
-    return f
+def _drop_surf_img_part(img, part_name="right"):
+    """Remove one hemisphere from a SurfaceImage."""
+    mesh_parts = img.mesh.parts.copy()
+    mesh_parts.pop(part_name)
+    data_parts = img.data.parts.copy()
+    data_parts.pop(part_name)
+    return SurfaceImage(mesh_parts, data_parts)
 
 
 @pytest.fixture
 def drop_surf_img_part():
     """Remove one hemisphere from a SurfaceImage."""
+    return _drop_surf_img_part
 
-    def f(img, part_name="right"):
-        mesh_parts = img.mesh.parts.copy()
-        mesh_parts.pop(part_name)
-        data_parts = img.data.parts.copy()
-        data_parts.pop(part_name)
-        return SurfaceImage(mesh_parts, data_parts)
 
-    return f
+def _make_surface_img_and_design(n_samples=5):
+    des = pd.DataFrame(
+        _rng().standard_normal((n_samples, 3)), columns=["", "", ""]
+    )
+    return _make_surface_img(n_samples), des
 
 
 @pytest.fixture()
-def surface_glm_data(rng, surf_img_2d):
+def surface_glm_data():
     """Create a surface image and design matrix for testing."""
-
-    def _make_surface_img_and_design(n_samples=5):
-        des = pd.DataFrame(
-            rng.standard_normal((n_samples, 3)), columns=["", "", ""]
-        )
-        return surf_img_2d(n_samples), des
-
     return _make_surface_img_and_design
 
 
@@ -794,7 +812,9 @@ def plotly():
     plotly : module
         The ``plotly`` module.
     """
-    yield pytest.importorskip("plotly")
+    yield pytest.importorskip(
+        "plotly", reason="Plotly is not installed; required to run the tests!"
+    )
 
 
 @pytest.fixture

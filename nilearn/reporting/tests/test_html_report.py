@@ -7,6 +7,7 @@ from numpy.testing import assert_almost_equal
 
 from nilearn._utils.data_gen import generate_random_img
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.html_document import WIDTH_DEFAULT, HTMLDocument
 from nilearn._utils.testing import on_windows_with_old_mpl_and_new_numpy
 from nilearn.conftest import _img_maps
 from nilearn.image import get_data
@@ -31,7 +32,22 @@ from nilearn.surface import SurfaceImage
 
 
 def _check_html(html_view, reports_requested=True, is_fit=True):
-    """Check the presence of some expected code in the html viewer."""
+    """Check the presence of some expected code in the html viewer.
+
+    Also ensure some common behavior to all reports.
+    """
+    assert isinstance(html_view, HTMLDocument)
+
+    # resize width and height
+    html_view.resize(1200, 800)
+    assert html_view.width == 1200
+    assert html_view.height == 800
+
+    # invalid values fall back on default dimensions
+    with pytest.warns(UserWarning, match="Using default instead"):
+        html_view.width = "foo"
+    assert html_view.width == WIDTH_DEFAULT
+
     if reports_requested and is_fit:
         assert "<th>Parameter</th>" in str(html_view)
     if "Surface" in str(html_view):
@@ -207,14 +223,25 @@ def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds():
         masker.generate_report(displayed_spheres=displayed_spheres)
 
 
-def test_nifti_spheres_masker_report_displayed_spheres_list():
-    """Tests that spheres_to_be_displayed is set correctly."""
-    displayed_spheres = [0, 1, 2]
+@pytest.mark.parametrize(
+    "displayed_spheres, expected_displayed_maps",
+    [("all", [0, 1, 2, 3]), ([1], [0, 2]), ([0, 2], [0, 1, 3])],
+)
+def test_nifti_spheres_masker_report_displayed_spheres_list(
+    displayed_spheres, expected_displayed_maps
+):
+    """Tests that spheres_to_be_displayed is set correctly.
+
+    report_content["displayed_maps"]
+    should have one more value than requested
+    as _report_content["displayed_maps"][0]
+    is a glass brain with all the spheres
+    """
     seeds = [(1, 1, 1), (2, 2, 2), (3, 3, 3)]
     masker = NiftiSpheresMasker(seeds=seeds)
     masker.fit()
     masker.generate_report(displayed_spheres=displayed_spheres)
-    assert masker._report_content["displayed_spheres"] == displayed_spheres
+    assert masker._report_content["displayed_maps"] == expected_displayed_maps
 
 
 def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
@@ -242,17 +269,6 @@ def test_nifti_spheres_masker_report_1_sphere():
                         style="display:none;" alt="image"/>"""
 
     assert empty_div not in report.body
-
-
-def test_nifti_labels_masker_report_incorrect_label_error(labels, img_labels):
-    """Check that providing incorrect labels raises an error."""
-    masker = NiftiLabelsMasker(img_labels, labels=labels[:-1])
-    masker.fit()
-
-    with pytest.raises(
-        ValueError, match="Mismatch between the number of provided labels"
-    ):
-        masker.generate_report()
 
 
 def test_nifti_labels_masker_report_no_image_for_fit(
@@ -291,7 +307,7 @@ def test_nifti_labels_masker_report(
     masker = NiftiLabelsMasker(
         img_labels, labels=labels, mask_img=img_mask_eye
     )
-    masker.fit(img_3d_rand_eye)
+    masker.fit_transform(img_3d_rand_eye)
     report = masker.generate_report()
 
     assert masker._reporting_data is not None
@@ -306,12 +322,15 @@ def test_nifti_labels_masker_report(
     assert masker._report_content["number_of_regions"] == n_regions
 
     # Check that all expected columns are present with the right size
+    assert (
+        masker._report_content["summary"]["region name"].to_list()
+        == labels[1:]
+    )
+    assert len(masker._report_content["summary"]) == n_regions
     for col in EXPECTED_COLUMNS:
-        assert col in masker._report_content["summary"]
-        assert len(masker._report_content["summary"][col]) == n_regions
+        assert col in masker._report_content["summary"].columns
 
     # Check that labels match
-    assert masker._report_content["summary"]["region name"] == labels[1:]
 
     # Relative sizes of regions should sum to 100%
     assert_almost_equal(
@@ -328,26 +347,12 @@ def test_nifti_labels_masker_report(
     expected_region_sizes = Counter(get_data(img_labels).ravel())
     for r in range(1, n_regions + 1):
         assert_almost_equal(
-            masker._report_content["summary"]["size (in mm^3)"][r - 1],
+            masker._report_content["summary"]["size (in mm^3)"].to_list()[
+                r - 1
+            ],
             expected_region_sizes[r]
             * np.abs(np.linalg.det(affine_eye[:3, :3])),
         )
-
-
-def test_nifti_labels_masker_report_not_displayed(n_regions, img_labels):
-    """Check that region labels are no displayed in the report \
-       when they were not provided by the user.
-    """
-    masker = NiftiLabelsMasker(img_labels)
-    masker.fit()
-    masker.generate_report()
-
-    for col in EXPECTED_COLUMNS:
-        if col == "region name":
-            assert col not in masker._report_content["summary"]
-        else:
-            assert col in masker._report_content["summary"]
-            assert len(masker._report_content["summary"][col]) == n_regions
 
 
 @pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
@@ -377,8 +382,11 @@ def test_4d_reports(img_mask_eye, affine_eye):
     masker = NiftiMasker(mask_strategy="epi")
     masker.fit(data_img_4d)
 
+    assert masker._report_content["coverage"] > 0
+
     html = masker.generate_report()
     _check_html(html)
+    assert "The mask includes" in str(html)
 
     # test .fit_transform method
     masker = NiftiMasker(mask_img=img_mask_eye, standardize=True)
@@ -439,7 +447,7 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
     masker.fit([img_fmri, img_fmri]).generate_report()
 
 
-def test_mask_img_generate_report(surf_img_1d, surf_mask_1d):
+def test_surface_masker_mask_img_generate_report(surf_img_1d, surf_mask_1d):
     """Smoke test generate report."""
     masker = SurfaceMasker(surf_mask_1d, reports=True).fit()
 
@@ -453,7 +461,7 @@ def test_mask_img_generate_report(surf_img_1d, surf_mask_1d):
     masker.generate_report()
 
 
-def test_mask_img_generate_no_report(surf_img_2d, surf_mask_1d):
+def test_surface_masker_mask_img_generate_no_report(surf_img_2d, surf_mask_1d):
     """Smoke test generate report."""
     masker = SurfaceMasker(surf_mask_1d, reports=False).fit()
 
@@ -493,6 +501,9 @@ def test_surface_masker_minimal_report_fit(
     assert '<div class="image">' in str(report)
     if not reports:
         assert 'src="data:image/svg+xml;base64,"' in str(report)
+    else:
+        assert masker._report_content["coverage"] > 0
+        assert "The mask includes" in str(report)
 
 
 def test_generate_report_engine_error(surf_maps_img, surf_img_2d):

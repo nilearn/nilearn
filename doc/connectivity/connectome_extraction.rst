@@ -198,13 +198,10 @@ together.
 Finally, we use the
 :class:`nilearn.connectome.GroupSparseCovarianceCV` [#]_.
 
-
-
 The results are the following:
 
 .. image:: ../auto_examples/03_connectivity/images/sphx_glr_plot_simulated_connectome_001.png
     :target: ../auto_examples/03_connectivity/plot_simulated_connectome.html
-    :scale: 60
 
 The group-sparse estimation outputs matrices with
 the same sparsity pattern, but different values for the non-zero

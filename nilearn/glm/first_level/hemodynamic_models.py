@@ -8,9 +8,12 @@ import warnings
 from collections.abc import Iterable
 
 import numpy as np
+from scipy.interpolate import interp1d
+from scipy.linalg import pinv
 from scipy.stats import gamma
 
 from nilearn._utils import fill_doc, rename_parameters
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 
 
@@ -448,6 +451,7 @@ def _sample_condition(
                 " experiment and are thus not considered in the model."
             ),
             UserWarning,
+            stacklevel=find_stack_level(),
         )
 
     # Set up the regressor timecourse
@@ -510,8 +514,6 @@ def _resample_regressor(hr_regressor, frame_times_high_res, frame_times):
          The resampled regressor.
 
     """
-    from scipy.interpolate import interp1d
-
     f = interp1d(frame_times_high_res, hr_regressor)
     return f(frame_times).T
 
@@ -536,8 +538,6 @@ def orthogonalize(X):
     """
     if X.size == X.shape[0]:
         return X
-
-    from scipy.linalg import pinv
 
     for i in range(1, X.shape[1]):
         X[:, i] -= np.dot(np.dot(X[:, i], X[:, :i]), pinv(X[:, :i]))

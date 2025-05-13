@@ -1,0 +1,129 @@
+---
+# TL;DR: this workflow runs the benchmarks on the latest commit on the main
+# and then deploys the updated benchmarks to
+# `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
+# You can trigger it manually via the GitHub UI. It will also run on a schedule
+# at regular interval.
+#
+# Step-wise details:
+#
+# - The benchmarks are set to run at regular intervals via cron.
+# - It can also be triggered manually by adding ``[bm]`` to the commit message.
+# - First it installs `asv <https://asv.readthedocs.io/en/latest/index.html>`_.
+# - Then it sets up the SSH key to access the
+#   `benchmarks <https://github.com/nilearn/benchmarks>`_ repo,
+#   pulls it, and copies the results dir into the current dir. We will append
+#   the new results to these results.
+# - ``asv machine --yes`` then fetches the machine info like CPU, RAM, OS,
+#   etc. and saves it in ``~/.asv-machine.json``, but it gives a unique name
+#   to the machine on every run even if the specs are the same. So we will set
+#   a fixed name for the machine so the legend isn't too overcrowded.
+# - To do this, we edit the ``~/.asv-machine.json`` file to change the machine
+#   name to a fixed name ``fv-az1113-357``. The name is arbitrary and has been
+#   chosen to match the first run. The script
+#   ``build_tools/github/set_machine_name.py`` does all this.
+# - Then we run the benchmarks (``asv run``) such that the results are
+#   appended to the old results (via ``--append-samples`` parameter).
+#   ``-ev`` makes sure any errors are printed in detail and all the output can
+#   be seen in the logs.
+# - Then we create the HTML with all the results via ``asv publish``.
+# - We upload the results as artifacts so that we can download them later.
+# - Then we push the new results back to the
+#   `benchmarks <https://github.com/nilearn/benchmarks>`_  repo. This will
+#   automatically deploy the new results to
+#   `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
+###
+name: Run and deploy Nilearn benchmarks
+
+on:
+    push:
+        branches:
+        -   main
+    schedule:
+    # every Monday at 9am UTC
+    -   cron: 0 9 * * MON
+
+    workflow_dispatch:  # This enables manual triggering from GitHub UI
+
+jobs:
+    benchmark:
+        if: >-
+            (github.event_name == 'workflow_dispatch' ||
+            github.event_name == 'schedule') &&
+            github.repository == 'nilearn/nilearn'
+        # TODO bump to 24.04 when bumping minimum python to 3.10
+        runs-on: ubuntu-22.04
+        defaults:
+            run:
+                working-directory: ./asv_benchmarks
+
+        steps:
+        -   uses: actions/checkout@v4
+            with:
+                # fetch all branches and tags
+                fetch-depth: 0
+        -   uses: actions/setup-python@v5
+            with:
+                # TODO bump to 3.10 when minimum python is 3.10
+                python-version: 3.9
+        -   name: Install asv and switch to asv_benchmarks directory
+            run: |
+                pip install --upgrade pip
+                pip install asv
+        -   name: Add SSH key for benchmarks repo
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+            run: |
+                mkdir -p ~/.ssh
+                ssh-keyscan github.com >> ~/.ssh/known_hosts
+                echo "${{ secrets.UPLOAD_BENCHMARK_RESULTS }}" > ~/.ssh/github_actions
+                chmod 600 ~/.ssh/github_actions
+                ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+                ssh-add ~/.ssh/github_actions
+        -   name: Pull previous results from benchmarks repo
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+            run: |
+                git clone git@github.com:nilearn/benchmarks.git benchmarks_repo
+                cp -r benchmarks_repo/results .
+        -   name: Get all the machine info
+            run: |
+                asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+        -   name: Edit asv-machine.json to a custom machine name
+            run: python ../build_tools/github/set_machine_name.py fv-az1113-357
+        -   name: Run all benchmarks on the latest commit
+            run: |
+                asv run -ev --append-samples --machine fv-az1113-357 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+        -   name: Create html with all results
+            run: |
+                asv publish
+        -   uses: actions/upload-artifact@v4
+            with:
+                name: Upload asv benchmark results as artifacts
+                path: |
+                    ./asv_benchmarks/env
+                    ./asv_benchmarks/html
+                    ./asv_benchmarks/results
+                compression-level: 9
+        -   name: Push new results and logs back to benchmarks repo
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+            run: |
+                cd benchmarks_repo
+                cp -r ../results .
+                cp -r ../log_${{ github.event.repository.updated_at }}_${{ github.run_number }} ./logs/log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                git config --global user.name "GitHub Actions"
+                git config --global user.email "actions@github.com"
+                git add .
+                git commit -m "Update benchmark results and logs (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+                git push origin main
+        -   name: Push html to gh-pages branch
+            env:
+                SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
+            run: |
+                cd benchmarks_repo
+                git checkout gh-pages
+                cp -r ../html/* .
+                git add .
+                git commit -m "Update benchmark HTML (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
+                git push origin gh-pages

@@ -14,6 +14,7 @@ from sklearn.utils import check_random_state
 
 from nilearn import image
 from nilearn._utils import fill_doc, logger
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
@@ -279,7 +280,6 @@ def _permuted_ols_on_chunk(
                     f"Job #{thread_id}, processed {i_perm}/{n_perm_chunk} "
                     f"permutations ({percent:0.2f}%, {remaining:0.2f} seconds "
                     f"remaining){crlf}",
-                    stack_level=2,
                 )
 
     return (
@@ -620,6 +620,7 @@ def permuted_ols(
                     '"target_vars" are constant. Only one will be used '
                     "as intercept."
                 ),
+                stacklevel=find_stack_level(),
             )
             model_intercept = True
 
@@ -647,7 +648,10 @@ def permuted_ols(
         covars_orthonormalized = orthonormalize_matrix(confounding_vars)
         if not covars_orthonormalized.flags["C_CONTIGUOUS"]:
             # useful to developer
-            warnings.warn("Confounding variates not C_CONTIGUOUS.")
+            warnings.warn(
+                "Confounding variates not C_CONTIGUOUS.",
+                stacklevel=find_stack_level(),
+            )
             covars_orthonormalized = np.ascontiguousarray(
                 covars_orthonormalized
             )
@@ -657,7 +661,10 @@ def permuted_ols(
         ).T  # faster with F-ordered target_vars_chunk
         if not targetvars_normalized.flags["C_CONTIGUOUS"]:
             # useful to developer
-            warnings.warn("Target variates not C_CONTIGUOUS.")
+            warnings.warn(
+                "Target variates not C_CONTIGUOUS.",
+                stacklevel=find_stack_level(),
+            )
             targetvars_normalized = np.ascontiguousarray(targetvars_normalized)
 
         beta_targetvars_covars = np.dot(
@@ -745,7 +752,7 @@ def permuted_ols(
             "You may want to perform more permutations "
             "in order to take the most of the available computing resources.",
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
         n_perm_chunks = np.ones(n_perm, dtype=int)
 
@@ -836,7 +843,9 @@ def _make_array_contiguous(array):
     """Make arrays contiguous for code efficiency."""
     if not array.flags["C_CONTIGUOUS"]:
         # useful to developer
-        warnings.warn("Target variates not C_CONTIGUOUS.")
+        warnings.warn(
+            "Target variates not C_CONTIGUOUS.", stacklevel=find_stack_level()
+        )
         array = np.ascontiguousarray(array)
     return array
 
@@ -899,7 +908,7 @@ def _sanitize_inputs_permuted_ols(
         warnings.warn(
             'If "tfce" is set to True, "output_type" must be set to "dict". '
             "Overriding.",
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
         output_type = "dict"
 
@@ -907,7 +916,7 @@ def _sanitize_inputs_permuted_ols(
         warnings.warn(
             'If "threshold" is not None, "output_type" must be set to "dict". '
             "Overriding.",
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
         output_type = "dict"
 
@@ -920,7 +929,7 @@ def _sanitize_inputs_permuted_ols(
                 'The default output structure will be changed to "dict" '
                 "in version 0.13."
             ),
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
 
     target_vars = np.asfortranarray(target_vars)  # efficient for chunking
@@ -930,7 +939,7 @@ def _sanitize_inputs_permuted_ols(
             "Some descriptors in 'target_vars' have zeros across all samples. "
             "These descriptors will be ignored "
             "during null distribution generation.",
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
 
     # check explanatory variates' dimensions

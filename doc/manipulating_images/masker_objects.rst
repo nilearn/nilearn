@@ -142,7 +142,6 @@ of the masker:
 .. figure:: ../auto_examples/06_manipulating_images/images/sphx_glr_plot_mask_computation_002.png
     :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
     :align: center
-    :scale: 40
 
 Alternatively, the mask can be visualized using the ``generate_report``
 method of the masker. The generated report can be viewed in a Jupyter notebook,
@@ -155,7 +154,6 @@ or saved as a portable HTML file ``report.save_as_html(output_filepath)``.
 
 .. figure:: /images/niftimasker_report.png
     :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
-    :scale: 50%
     :align: center
 
 Different masking strategies
@@ -180,7 +178,6 @@ functions documentation, or :doc:`the NiftiMasker example
 
 .. figure:: /images/niftimasker_report_params.png
     :target: ../auto_examples/06_manipulating_images/plot_mask_computation.html
-    :scale: 50%
     :align: center
 
 .. _masker_preprocessing_steps:

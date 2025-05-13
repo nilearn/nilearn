@@ -49,24 +49,12 @@ from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
-from nilearn.surface._testing import assert_polymesh_equal
-
-BASEDIR = Path(__file__).resolve().parent
-FUNCFILE = BASEDIR / "functional.nii.gz"
-
-
-extra_valid_checks = [
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_no_attributes_set_in_init",
-]
+from nilearn.surface.utils import assert_polymesh_equal
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[FirstLevelModel()],
-        extra_valid_checks=extra_valid_checks,
-    ),
+    check_estimator(estimator=[FirstLevelModel()]),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
@@ -78,7 +66,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[FirstLevelModel()],
-        extra_valid_checks=extra_valid_checks,
         valid=False,
     ),
 )
@@ -109,7 +96,11 @@ def test_glm_fit_invalid_mask_img(shape_4d_default):
     masker.fit()
     masker.mask_img_ = None
     with pytest.warns(
-        UserWarning, match="Parameter memory of the masker overridden"
+        UserWarning,
+        match=(
+            "Overriding provided-default estimator parameters "
+            "with provided masker parameters"
+        ),
     ):
         FirstLevelModel(mask_img=masker).fit(
             fmri_data[0], design_matrices=design_matrices[0]
@@ -1326,7 +1317,7 @@ def test_first_level_residuals_errors(shape_4d_default):
 
     # For coverage
     with pytest.raises(ValueError, match="attribute must be one of"):
-        model._get_voxelwise_model_attribute("foo", True)
+        model._get_element_wise_model_attribute("foo", True)
 
 
 @pytest.mark.parametrize(
@@ -1336,10 +1327,10 @@ def test_first_level_residuals_errors(shape_4d_default):
         [(10, 10, 10, 25), (10, 10, 10, 100)],
     ],
 )
-def test_get_voxelwise_attributes_should_return_as_many_as_design_matrices(
+def test_get_element_wise_attributes_should_return_as_many_as_design_matrices(
     shapes,
 ):
-    """Check outputs _get_voxelwise_model_attribute same shape as input."""
+    """Check outputs _get_element_wise_model_attribute same shape as input."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes
     )
@@ -1352,9 +1343,9 @@ def test_get_voxelwise_attributes_should_return_as_many_as_design_matrices(
     )
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    assert len(model._get_voxelwise_model_attribute("residuals", True)) == len(
-        shapes
-    )
+    assert len(
+        model._get_element_wise_model_attribute("residuals", True)
+    ) == len(shapes)
 
 
 def test_first_level_predictions_r_square(shape_4d_default):
@@ -2238,7 +2229,7 @@ def test_flm_fit_surface_image_default_mask_img(surface_glm_data):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9, 1)
+    assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
     sum_mask = (
         model.masker_.mask_img_.data.parts["left"].sum()
@@ -2294,10 +2285,7 @@ def test_flm_fit_surface_image_with_mask(
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    if surf_mask_dim == 1:
-        assert model.masker_.mask_img_.shape == (9,)
-    else:
-        assert model.masker_.mask_img_.shape == (9, 1)
+    assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2348,7 +2336,7 @@ def test_flm_with_surface_image_with_surface_masker(surface_glm_data):
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    assert model.masker_.mask_img_.shape == (9, 1)
+    assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2367,7 +2355,7 @@ def test_flm_with_surface_masker_with_mask(
     if surf_mask_dim == 1:
         assert model.masker_.mask_img_.shape == (9,)
     else:
-        assert model.masker_.mask_img_.shape == (9, 1)
+        assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2392,10 +2380,12 @@ def test_flm_compute_contrast_with_surface_data(surface_glm_data):
     assert_polymesh_equal(img.mesh, result.mesh)
 
 
-def test_flm_get_voxelwise_model_attribute_with_surface_data(surface_glm_data):
+def test_flm_get_element_wise_model_attribute_with_surface_data(
+    surface_glm_data,
+):
     """Smoke test 'voxel wise' attribute with surface data.
 
-    TODO: rename the private function _get_voxelwise_model_attribute
+    TODO: rename the private function _get_element_wise_model_attribute
     to work for both voxel and vertex
     """
     img, _ = surface_glm_data(5)
