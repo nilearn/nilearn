@@ -31,6 +31,8 @@ Fixes
 
 - :bdg-dark:`Code` New interpolation method (``method='nearest_most_frequent'``) for :func:`~nilearn.surface.vol_to_surf` to better handle deterministic atlases by assigning most frequent voxel value in the neighborhood of a vertex (:gh:`5169` by `Himanshu Aggarwal`_).
 
+- :bdg-dark:`Code` Prevent extra resampling when plotting with transparency (:gh:`5371` by `Hande Gözükan`_).
+
 Enhancements
 ------------
 

@@ -439,19 +439,20 @@ class BaseSlicer:
         # is called from `add_contours`, continuous interpolation
         # does not make sense and we turn to nearest interpolation instead.
 
+        if is_binary_niimg(img):
+            resampling_interpolation = "nearest"
+
+        # Image reordering should be done before sanitizing transparency
+        img = reorder_img(
+            img, resample=resampling_interpolation, copy_header=True
+        )
+
         transparency, transparency_affine = self._sanitize_transparency(
             img,
             transparency,
             transparency_range,
             resampling_interpolation,
         )
-
-        if is_binary_niimg(img):
-            img = reorder_img(img, resample="nearest", copy_header=True)
-        else:
-            img = reorder_img(
-                img, resample=resampling_interpolation, copy_header=True
-            )
 
         affine = img.affine
 
