@@ -283,5 +283,8 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             )
 
         return self.transform_imgs(
-            imgs, confounds, n_jobs=self.n_jobs, sample_mask=sample_mask
+            imgs,
+            confounds=confounds,
+            sample_mask=sample_mask,
+            n_jobs=self.n_jobs,
         )

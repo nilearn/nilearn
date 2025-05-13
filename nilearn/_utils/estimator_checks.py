@@ -1371,11 +1371,11 @@ def check_multi_masker_with_confounds(estimator):
 
     Ensure results is different than when not using confounds.
 
-    Check that error is raised if number of confounds
-    does not match number of images.
-
     Check that confounds are applied when passing a 4D image (not iterable)
     to transform.
+
+    Check that error is raised if number of confounds
+    does not match number of images.
     """
     length = _img_4d_rand_eye_medium().shape[3]
 
@@ -1392,14 +1392,7 @@ def check_multi_masker_with_confounds(estimator):
     for signal_1, signal_2 in zip(signals_list_1, signals_list_2):
         assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
 
-    with pytest.raises(
-        ValueError, match="number of confounds .* unequal to number of images"
-    ):
-        estimator.fit_transform(
-            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-            confounds=array,
-        )
-
+    # Same with single 4D image
     signals_list_1 = estimator.fit_transform(_img_4d_rand_eye_medium())
     signals_list_2 = estimator.fit_transform(
         _img_4d_rand_eye_medium(),
@@ -1407,6 +1400,15 @@ def check_multi_masker_with_confounds(estimator):
     )
     for signal_1, signal_2 in zip(signals_list_1, signals_list_2):
         assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
+
+    # Mismatch n imgs and n confounds
+    with pytest.raises(
+        ValueError, match="number of confounds .* unequal to number of images"
+    ):
+        estimator.fit_transform(
+            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
+            confounds=array,
+        )
 
 
 def check_multi_masker_transformer_sample_mask(estimator):
@@ -1431,6 +1433,14 @@ def check_multi_masker_transformer_sample_mask(estimator):
 
     for ts, n_scrub in zip(signals_list, [n_scrub1, n_scrub2]):
         assert ts.shape[0] == length - n_scrub
+
+    # should also work with 4D image (has no __iter__ )
+    signals_list = estimator.fit_transform(
+        _img_4d_rand_eye_medium(),
+        sample_mask=[sample_mask1],
+    )
+
+    assert signals_list.shape[0] == length - n_scrub1
 
     with pytest.raises(
         ValueError,

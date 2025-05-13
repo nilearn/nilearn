@@ -24,7 +24,9 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.image import resample_img
+from nilearn.image import (
+    resample_img,
+)
 from nilearn.maskers._utils import (
     compute_middle_image,
     sanitize_cleaning_parameters,
@@ -552,6 +554,17 @@ class MultiNiftiMasker(NiftiMasker):
             return self.transform_single_imgs(
                 imgs, confounds=confounds, sample_mask=sample_mask
             )
+
+        # # Compute high variance confounds if requested
+        # all_confounds = []
+        # if self.high_variance_confounds:
+        #     hv_confounds = self._cache(high_variance_confounds)(imgs)
+        #     all_confounds.append(hv_confounds)
+        # if confounds is not None:
+        #     if isinstance(confounds, list):
+        #         all_confounds += confounds
+        #     else:
+        #         all_confounds.append(confounds)
 
         return self.transform_imgs(
             imgs,
