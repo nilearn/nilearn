@@ -14,11 +14,11 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal, assert_raises
+from packaging.version import parse
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import compare_version
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.testing import write_imgs_to_path
@@ -55,8 +55,10 @@ from nilearn.surface.utils import (
     assert_surface_image_equal,
 )
 
+SKLEARN_GT_1_5 = parse(sklearn_version).release[1] >= 6
+
 # TODO simplify when dropping sklearn 1.5,
-if compare_version(sklearn_version, ">", "1.5.2"):
+if SKLEARN_GT_1_5:
     from sklearn.utils.estimator_checks import _check_name
     from sklearn.utils.estimator_checks import (
         estimator_checks_generator as sklearn_check_generator,
@@ -114,7 +116,7 @@ VALID_CHECKS = [
     "check_transformers_unfitted",
 ]
 
-if compare_version(sklearn_version, ">", "1.5.2"):
+if SKLEARN_GT_1_5:
     VALID_CHECKS.append("check_valid_tag_types")
 else:
     VALID_CHECKS.append("check_estimator_get_tags_default_keys")
@@ -240,7 +242,7 @@ def check_estimator(
 
     for est in estimator:
         # TODO simplify when dropping sklearn 1.5
-        if compare_version(sklearn_version, ">", "1.5.2"):
+        if SKLEARN_GT_1_5:
             tags = est.__sklearn_tags__()
 
             niimg_input = getattr(tags.input_tags, "niimg_like", False)
@@ -303,11 +305,15 @@ def check_estimator(
 
 
 def nilearn_check_estimator(estimator):
-    tags = estimator._more_tags()
-
     is_masker = False
     is_glm = False
     surf_img_input = False
+
+    if SKLEARN_GT_1_5:
+        tags = estimator.__sklearn_tags__()
+    else:  # pragma: no cover
+        tags = estimator._more_tags()
+
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
@@ -395,7 +401,7 @@ def nilearn_check_estimator(estimator):
 
 
 def is_multimasker(estimator):
-    tags = estimator._more_tags()
+    tags = estimator.__sklearn_tags__()
 
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
@@ -406,7 +412,7 @@ def is_multimasker(estimator):
 
 
 def accept_niimg_input(estimator):
-    tags = estimator._more_tags()
+    tags = estimator.__sklearn_tags__()
 
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
