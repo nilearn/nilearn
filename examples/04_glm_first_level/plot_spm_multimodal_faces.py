@@ -84,7 +84,7 @@ from nilearn.glm.first_level import FirstLevelModel
 
 print("Fitting a GLM")
 fmri_glm = FirstLevelModel(
-    smoothing_fwhm=0,
+    smoothing_fwhm=None,
     t_r=subject_data.t_r,
     hrf_model=hrf_model,
     drift_model=drift_model,
@@ -125,7 +125,7 @@ plot_param = {
     "black_bg": True,
     "bg_img": mean_image,
     "cmap": "inferno",
-    # "transparency_range": [0, 3],
+    "transparency_range": [0, 3],
 }
 
 # Iterate on contrasts to compute an plot them.
@@ -137,7 +137,7 @@ for contrast_id in contrasts:
     plot_stat_map(
         results["stat"],
         title=contrast_id,
-        # transparency=results["z_score"],
+        transparency=results["z_score"],
         **plot_param,
     )
 
@@ -154,26 +154,9 @@ results = fmri_glm.compute_contrast(contrasts, output_type="all")
 plot_stat_map(
     results["stat"],
     title="effects of interest",
-    # transparency=results["z_score"],
-    **plot_param,
-)
-
-plot_stat_map(
-    results["stat"],
-    title="effects of interest - with transparency stat",
-    transparency=results["stat"],
-    transparency_range=[0, 1],
-    **plot_param,
-)
-
-plot_stat_map(
-    results["stat"],
-    title="effects of interest - with transparency z_score",
     transparency=results["z_score"],
-    transparency_range=[0, 1],
     **plot_param,
 )
-
 
 show()
 
