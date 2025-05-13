@@ -204,6 +204,16 @@ def _shape_3d_default():
     return (7, 8, 9)
 
 
+def _shape_3d_large():
+    """Shape usually used for maps images.
+
+    Mostly used for set up in other fixtures in other testing modules.
+    """
+    # avoid having identical shapes values,
+    # because this fails to detect if the code does not handle dimensions well.
+    return (29, 30, 31)
+
+
 def _shape_4d_default():
     """Return default shape for a 4D image.
 
@@ -232,6 +242,12 @@ def _shape_4d_long():
 def shape_3d_default():
     """Return default shape for a 3D image."""
     return _shape_3d_default()
+
+
+@pytest.fixture
+def shape_3d_large():
+    """Shape usually used for maps images."""
+    return _shape_3d_large()
 
 
 @pytest.fixture()
