@@ -145,6 +145,7 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_estimators_empty_data_messages": (
         "replaced by check_masker_empty_data_messages "
         "and check_glm_empty_data_messages"
+    ),
     "check_estimators_dtypes": (
         "replaced by check_masker_dtypes andcheck_glm_dtypes"
     ),
@@ -404,7 +405,6 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_glm_is_fitted)
         yield (clone(estimator), check_glm_empty_data_messages)
         yield (clone(estimator), check_glm_dtypes)
-
 
 
 def is_multimasker(estimator):
