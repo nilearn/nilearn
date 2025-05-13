@@ -5,7 +5,6 @@ See also nilearn.signal.
 """
 
 import collections.abc
-import copy
 import itertools
 import warnings
 from copy import deepcopy
@@ -821,7 +820,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     if isinstance(ref_niimg, SurfaceImage):
         mesh = ref_niimg.mesh
         return SurfaceImage(
-            mesh=copy.deepcopy(mesh),
+            mesh=deepcopy(mesh),
             data=data,
         )
     # Hand-written loading code to avoid too much memory consumption
