@@ -25,12 +25,6 @@ def shape_mask():
     return (13, 14, 15)
 
 
-@pytest.fixture
-def shape_maps():
-    """Shape for maps."""
-    return (16, 17, 18)
-
-
 def expected_failed_checks_0pt13pt2():
     """List estimators check that fail.
 
