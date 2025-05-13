@@ -855,7 +855,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     data = _downcast_from_int64_if_possible(data)
     header = None
     if copy_header:
-        header = copy.deepcopy(ref_niimg.header)
+        header = ref_niimg.header.copy()
         try:
             "something" in header  # noqa: B015
         except TypeError:
