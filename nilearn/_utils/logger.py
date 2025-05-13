@@ -157,13 +157,12 @@ def find_stack_level() -> int:
         n = 0
         while frame:
             filename = inspect.getfile(frame)
-            if filename.startswith(str(pkg_dir)) and not Path(
+            if not filename.startswith(str(pkg_dir)) or Path(
                 filename
             ).name.startswith("test_"):
-                frame = frame.f_back
-                n += 1
-            else:
                 break
+            frame = frame.f_back
+            n += 1
     finally:
         # See note in
         # https://docs.python.org/3/library/inspect.html#inspect.Traceback
