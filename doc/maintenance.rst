@@ -264,7 +264,7 @@ Finally, make sure the documentation can be built correctly.
 Prepare the documentation for the release
 -----------------------------------------
 
-In several places the user guide rely on figure generated in the examples for illustration.
+In several places the user guide relies on figures generated in the examples for illustration.
 
 If the examples are modified and that an expected figure is not created anymore
 or the order of the generated figures is changed,
