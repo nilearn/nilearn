@@ -266,7 +266,7 @@ Prepare the documentation for the release
 
 In several places the user guide relies on figures generated in the examples for illustration.
 
-If the examples are modified and that an expected figure is not created anymore
+If the examples are modified, and an expected figure is not created anymore
 or the order of the generated figures is changed,
 this may silently (without causing warnings or errors) "break" the documentation.
 
