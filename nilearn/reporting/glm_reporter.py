@@ -273,7 +273,7 @@ def make_glm_report(
         }
         if "coverage" in mask_info:
             mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
-            
+
         clusters_tsvs = None
         statistical_maps = {}
         if output is not None:
