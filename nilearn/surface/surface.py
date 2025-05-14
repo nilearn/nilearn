@@ -1982,6 +1982,17 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
+def check_surf_img(img: SurfaceImage) -> SurfaceImage:
+    """Validate SurfaceImage.
+
+    Equivalent to check_niimg for volumes.
+    """
+    if get_data(img).size == 0:
+        raise ValueError("The image is empty.")
+
+    return img
+
+
 def get_data(img, ensure_finite=False) -> np.ndarray:
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
@@ -2004,6 +2015,10 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
         data = img.data
     elif isinstance(img, PolyData):
         data = img
+    else:
+        raise TypeError(
+            f"Expected PolyData or SurfaceImage. Got {img.__class__.__name__}."
+        )
 
     data = np.concatenate(list(data.parts.values()), axis=0)
 
