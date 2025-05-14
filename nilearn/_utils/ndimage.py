@@ -1,7 +1,11 @@
 """N-dimensional image manipulation."""
 
+from warnings import warn
+
 import numpy as np
 from scipy.ndimage import label, maximum_filter
+
+from nilearn._utils.logger import find_stack_level
 
 ###############################################################################
 # Operating on connected components
@@ -160,3 +164,18 @@ def peak_local_max(
     nd_indices = tuple(coordinates.T)
     out[nd_indices] = True
     return out
+
+
+def replace_non_finite(data, value=None):
+    """Warns if non-finite values in array and replace them if needed."""
+    non_finite_mask = np.logical_not(np.isfinite(data))
+    if non_finite_mask.sum() > 0 or non_finite_mask.any():
+        msg = "Non-finite values detected."
+        if value is not None:
+            msg += f" These values will be replaced with {value}."
+            data[non_finite_mask] = value
+        warn(
+            msg,
+            stacklevel=find_stack_level(),
+        )
+    return data

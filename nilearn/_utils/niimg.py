@@ -4,14 +4,12 @@ import collections.abc
 import copy
 import gc
 from pathlib import Path
-from warnings import warn
 
 import numpy as np
 from nibabel import is_proxy, load, spatialimages
 
-from nilearn._utils.logger import find_stack_level
-
-from .helpers import stringify_path
+from nilearn._utils.helpers import stringify_path
+from nilearn._utils.ndimage import replace_non_finite
 
 
 def _get_data(img):
@@ -56,15 +54,9 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
     gc.collect()
 
     data = _get_data(img)
+
     if ensure_finite:
-        non_finite_mask = np.logical_not(np.isfinite(data))
-        if non_finite_mask.sum() > 0:  # any non_finite_mask values?
-            warn(
-                "Non-finite values detected. "
-                "These values will be replaced with zeros.",
-                stacklevel=find_stack_level(),
-            )
-            data[non_finite_mask] = 0
+        data = replace_non_finite(data, value=0)
 
     return data
 
