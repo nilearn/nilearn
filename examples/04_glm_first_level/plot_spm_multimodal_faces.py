@@ -21,7 +21,7 @@ from nilearn.datasets import fetch_spm_multimodal_fmri
 subject_data = fetch_spm_multimodal_fmri()
 
 # %%
-# Let's inspect one fo the event files before using them.
+# Let's inspect one of the event files before using them.
 import pandas as pd
 
 events = [subject_data.events1, subject_data.events2]
@@ -110,7 +110,7 @@ contrasts = ["faces - scrambled", "scrambled - faces"]
 
 
 # %%
-# Let's store common parameters for all plots
+# Let's store common parameters for all plots.
 #
 # We plot the contrasts values overlaid on the mean fMRI image
 # and we will use the z-score values as transparency,
@@ -126,7 +126,7 @@ plot_param = {
     "transparency_range": [0, 3],
 }
 
-# Iterate on contrasts to compute an plot them.
+# Iterate on contrasts to compute and plot them.
 for contrast_id in contrasts:
     print(f"\tcontrast id: {contrast_id}")
 
