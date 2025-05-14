@@ -518,17 +518,12 @@ def check_masker_dict_unchanged(estimator):
                     }
                     continue
                 if (
-                    (
-                        isinstance(dict_before[x], np.ndarray)
-                        and not np.array_equal(dict_before[x], dict_after[x])
-                        and not check_imgs_equal(dict_before[x], dict_after[x])
-                    )
-                    or (
-                        not isinstance(
-                            dict_before[x], (np.ndarray, Nifti1Image)
-                        )
-                        and dict_before[x] != dict_after[x]
-                    )
+                    isinstance(dict_before[x], np.ndarray)
+                    and not np.array_equal(dict_before[x], dict_after[x])
+                    and not check_imgs_equal(dict_before[x], dict_after[x])
+                ) or (
+                    not isinstance(dict_before[x], (np.ndarray, Nifti1Image))
+                    and dict_before[x] != dict_after[x]
                 ):
                     difference[x] = {
                         "before": dict_before[x],
