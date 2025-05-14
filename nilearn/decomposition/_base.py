@@ -31,6 +31,8 @@ from nilearn.maskers import NiftiMapsMasker, SurfaceMapsMasker, SurfaceMasker
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
 
+SURFACE_DATA_EXTENSIONS = ("gii", "gii.gz", "mgz")
+
 
 def _fast_svd(X, n_components, random_state=None):
     """Automatically switch between randomized and lapack SVD (heuristic \
@@ -478,11 +480,18 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             )
 
         masker_type = "nii"
-        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
-            isinstance(x, SurfaceImage) for x in imgs
+        if (
+            isinstance(self.mask, (SurfaceMasker, SurfaceImage))
+            or any(isinstance(x, SurfaceImage) for x in imgs)
+            or any(
+                isinstance(x, str) and x.endswith(SURFACE_DATA_EXTENSIONS)
+                for x in imgs
+            )
         ):
             masker_type = "surface"
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
+
+        breakpoint()
 
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
