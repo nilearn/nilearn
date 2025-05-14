@@ -23,6 +23,7 @@ from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
+from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 
 
 @pytest.mark.parametrize(
@@ -31,6 +32,7 @@ from nilearn.maskers import NiftiMapsMasker
         # pass less than the default number of regions
         # to speed up the tests
         estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
+        expected_failed_checks=expected_failed_checks_0pt13pt2(),
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -175,10 +177,10 @@ def test_nifti_maps_masker_errors_field_of_view(
 
 
 def test_nifti_maps_masker_resampling_errors(
-    n_regions, affine_eye, shape_maps
+    n_regions, affine_eye, shape_3d_large
 ):
     """Test resampling errors."""
-    maps33_img, _ = generate_maps(shape_maps, n_regions, affine=affine_eye)
+    maps33_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
 
     masker = NiftiMapsMasker(maps33_img, resampling_target="mask")
 
@@ -208,7 +210,6 @@ def test_nifti_maps_masker_io_shapes(
     transform(3D image) --> 2D output, DeprecationWarning
     inverse_transform(2D array) --> 4D image, no warning
     inverse_transform(1D array) --> 3D image, no warning
-    inverse_transform(2D array with wrong shape) --> ValueError
     """
     data_1d = rng.random(n_regions)
     data_2d = rng.random((length, n_regions))
@@ -258,9 +259,6 @@ def test_nifti_maps_masker_io_shapes(
         test_img = masker.inverse_transform(data_2d)
 
         assert test_img.shape == (*shape_3d_default, length)
-
-    with pytest.raises(ValueError, match="shapes .* and .* not aligned"):
-        masker.inverse_transform(data_2d.T)
 
 
 def test_nifti_maps_masker_with_nans_and_infs(length, n_regions, affine_eye):
@@ -335,14 +333,14 @@ def test_nifti_maps_masker_resampling_to_mask(
     n_regions,
     affine_eye,
     shape_mask,
-    shape_maps,
+    shape_3d_large,
     img_fmri,
 ):
     """Test resampling to_mask in NiftiMapsMasker."""
     _, mask22_img = generate_fake_fmri(
         shape_mask, length=length, affine=affine_eye
     )
-    maps33_img, _ = generate_maps(shape_maps, n_regions, affine=affine_eye)
+    maps33_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
 
     # Target: mask
     masker = NiftiMapsMasker(
@@ -371,14 +369,14 @@ def test_nifti_maps_masker_resampling_to_maps(
     n_regions,
     affine_eye,
     shape_mask,
-    shape_maps,
+    shape_3d_large,
     img_fmri,
 ):
     """Test resampling to maps in NiftiMapsMasker."""
     _, mask22_img = generate_fake_fmri(
         shape_mask, length=length, affine=affine_eye
     )
-    maps33_img, _ = generate_maps(shape_maps, n_regions, affine=affine_eye)
+    maps33_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
 
     masker = NiftiMapsMasker(
         maps33_img, mask_img=mask22_img, resampling_target="maps"

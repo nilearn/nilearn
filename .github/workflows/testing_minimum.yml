@@ -88,7 +88,7 @@ jobs:
             if: ${{ !(contains(matrix.min_dep, 'matplotlib==3.8.0') && matrix.os == 'windows-latest') }}
             run: |
                 pip install pytest-mpl
-                pytest --pyargs nilearn --cov=nilearn --csv results/pytest_output/pytest_output.csv
+                pytest --pyargs nilearn --report=report.html -n auto --csv results/pytest_output/pytest_output.csv
 
         -   name: Generate plots tests timing
             if: success() || failure()

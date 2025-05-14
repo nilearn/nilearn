@@ -1,6 +1,7 @@
 import collections
 import contextlib
 import numbers
+import warnings
 from typing import ClassVar
 
 import matplotlib.pyplot as plt
@@ -11,20 +12,22 @@ from matplotlib.transforms import Bbox
 
 from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
+from nilearn._utils.niimg_conversions import _check_fov
 from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, new_img_like, reorder_img
-from nilearn.image.resampling import get_bounds, get_mask_bounds
+from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
     get_cbar_ticks,
 )
-from nilearn.plotting.displays._axes import CutAxes
+from nilearn.plotting.displays import CutAxes
 from nilearn.plotting.displays._utils import (
     coords_3d_to_2d,
     get_create_display_fun,
 )
-from nilearn.plotting.edge_detect import edge_map
+from nilearn.plotting.displays.edge_detect import edge_map
 from nilearn.plotting.find_cuts import find_cut_slices, find_xyz_cut_coords
+from nilearn.typing import NiimgLike
 
 
 @fill_doc
@@ -277,6 +280,8 @@ class BaseSlicer:
         cbar_tick_format="%.2g",
         cbar_vmin=None,
         cbar_vmax=None,
+        transparency=None,
+        transparency_range=None,
         **kwargs,
     ):
         """Plot a 3D map in all the views.
@@ -289,10 +294,10 @@ class BaseSlicer:
         threshold : :obj:`int` or :obj:`float` or ``None``, default=1e-6
             Threshold to apply:
 
-                - If ``None`` is given, the maps are not thresholded.
-                - If number is given, it must be non-negative. The specified
-                  value is used to threshold the image: values below the
-                  threshold (in absolute value) are plotted as transparent.
+            - If ``None`` is given, the maps are not thresholded.
+            - If number is given, it must be non-negative. The specified
+                value is used to threshold the image: values below the
+                threshold (in absolute value) are plotted as transparent.
 
         cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
@@ -301,10 +306,6 @@ class BaseSlicer:
         colorbar : :obj:`bool`, default=False
             If ``True``, display a colorbar on the right of the plots.
 
-        kwargs : :obj:`dict`
-            Extra keyword arguments are passed to function
-            :func:`~matplotlib.pyplot.imshow`.
-
         cbar_vmin : :obj:`float`, optional
             Minimal value for the colorbar. If None, the minimal value
             is computed based on the data.
@@ -312,6 +313,14 @@ class BaseSlicer:
         cbar_vmax : :obj:`float`, optional
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
+
+        %(transparency)s
+
+        %(transparency_range)s
+
+        kwargs : :obj:`dict`
+            Extra keyword arguments are passed to function
+            :func:`~matplotlib.pyplot.imshow`.
 
         Raises
         ------
@@ -324,6 +333,7 @@ class BaseSlicer:
             raise ValueError(
                 "This figure already has an overlay with a colorbar."
             )
+
         self._colorbar = colorbar
         self._cbar_tick_format = cbar_tick_format
 
@@ -332,7 +342,14 @@ class BaseSlicer:
         # Make sure that add_overlay shows consistent default behavior
         # with plot_stat_map
         kwargs.setdefault("interpolation", "nearest")
-        ims = self._map_show(img, type="imshow", threshold=threshold, **kwargs)
+        ims = self._map_show(
+            img,
+            type="imshow",
+            threshold=threshold,
+            transparency=transparency,
+            transparency_range=transparency_range,
+            **kwargs,
+        )
 
         # `ims` can be empty in some corner cases,
         # look at test_img_plotting.test_outlier_cut_coords.
@@ -410,6 +427,8 @@ class BaseSlicer:
         type="imshow",
         resampling_interpolation="continuous",
         threshold=None,
+        transparency=None,
+        transparency_range=None,
         **kwargs,
     ):
         # In the special case where the affine of img is not diagonal,
@@ -419,13 +438,24 @@ class BaseSlicer:
         # case where this image is binary, such as when this function
         # is called from `add_contours`, continuous interpolation
         # does not make sense and we turn to nearest interpolation instead.
+
         if is_binary_niimg(img):
-            img = reorder_img(img, resample="nearest", copy_header=True)
-        else:
-            img = reorder_img(
-                img, resample=resampling_interpolation, copy_header=True
-            )
+            resampling_interpolation = "nearest"
+
+        # Image reordering should be done before sanitizing transparency
+        img = reorder_img(
+            img, resample=resampling_interpolation, copy_header=True
+        )
+
+        transparency, transparency_affine = self._sanitize_transparency(
+            img,
+            transparency,
+            transparency_range,
+            resampling_interpolation,
+        )
+
         affine = img.affine
+
         if threshold is not None:
             threshold = float(threshold)
             data = safe_get_data(img, ensure_finite=True)
@@ -464,14 +494,24 @@ class BaseSlicer:
             )
 
         data_2d_list = []
+        transparency_list = []
         for display_ax in self.axes.values():
+            if transparency is None or isinstance(transparency, (float, int)):
+                transparency_2d = transparency
+
             try:
                 data_2d = display_ax.transform_to_2d(data, affine)
+                if isinstance(transparency, np.ndarray):
+                    transparency_2d = display_ax.transform_to_2d(
+                        transparency, transparency_affine
+                    )
             except IndexError:
                 # We are cutting outside the indices of the data
                 data_2d = None
+                transparency_2d = None
 
             data_2d_list.append(data_2d)
+            transparency_list.append(transparency_2d)
 
         if kwargs.get("vmin") is None:
             kwargs["vmin"] = np.ma.min(
@@ -484,8 +524,11 @@ class BaseSlicer:
 
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
         ims = []
-        to_iterate_over = zip(self.axes.values(), data_2d_list)
-        for display_ax, data_2d in to_iterate_over:
+        to_iterate_over = zip(
+            self.axes.values(), data_2d_list, transparency_list
+        )
+        threshold = float(threshold) if threshold else None
+        for display_ax, data_2d, transparency_2d in to_iterate_over:
             # If data_2d is completely masked, then there is nothing to
             # plot. Hence, no point to do imshow().
             if data_2d is not None:
@@ -497,10 +540,105 @@ class BaseSlicer:
                 )
 
                 im = display_ax.draw_2d(
-                    data_2d, data_bounds, bounding_box, type=type, **kwargs
+                    data_2d,
+                    data_bounds,
+                    bounding_box,
+                    type=type,
+                    transparency=transparency_2d,
+                    **kwargs,
                 )
                 ims.append(im)
         return ims
+
+    def _sanitize_transparency(
+        self, img, transparency, transparency_range, resampling_interpolation
+    ):
+        """Return transparency as None, float or an array.
+
+        Return
+        ------
+        transparency: None, float or np.ndarray
+
+        transparency_affine: None or np.ndarray
+        """
+        transparency_affine = None
+        if isinstance(transparency, NiimgLike):
+            transparency = check_niimg_3d(transparency, dtype="auto")
+            if is_binary_niimg(transparency):
+                resampling_interpolation = "nearest"
+            transparency = reorder_img(
+                transparency,
+                resample=resampling_interpolation,
+                copy_header=True,
+            )
+            if not _check_fov(transparency, img.affine, img.shape[:3]):
+                warnings.warn(
+                    "resampling transparency image to data image...",
+                    stacklevel=4,
+                )
+                transparency = resample_img(
+                    transparency,
+                    img.affine,
+                    img.shape,
+                    force_resample=True,
+                    copy_header=True,
+                    interpolation=resampling_interpolation,
+                )
+
+            transparency_affine = transparency.affine
+            transparency = safe_get_data(transparency, ensure_finite=True)
+
+        assert transparency is None or isinstance(
+            transparency, (int, float, np.ndarray)
+        )
+
+        if isinstance(transparency, (float, int)):
+            transparency = float(transparency)
+            base_warning_message = (
+                "'transparency' must be in the interval [0, 1]. "
+            )
+            if transparency > 1.0:
+                warnings.warn(f"{base_warning_message} Setting it to 1.0.")
+                transparency = 1.0
+            if transparency < 0:
+                warnings.warn(f"{base_warning_message} Setting it to 0.0.")
+                transparency = 0.0
+
+        elif isinstance(transparency, np.ndarray):
+            transparency = np.abs(transparency)
+
+            if transparency_range is None:
+                transparency_range = [0.0, np.max(transparency)]
+
+            error_msg = (
+                "'transparency_range' must be "
+                "a list or tuple of 2 non-negative numbers "
+                "with 'first value < second value'."
+            )
+
+            if len(transparency_range) != 2:
+                raise ValueError(f"{error_msg} Got '{transparency_range}'.")
+
+            transparency_range[1] = min(
+                transparency_range[1], np.max(transparency)
+            )
+            transparency_range[0] = max(
+                transparency_range[0], np.min(transparency)
+            )
+
+            if transparency_range[0] >= transparency_range[1]:
+                raise ValueError(f"{error_msg} Got '{transparency_range}'.")
+
+            # make sure that 0 <= transparency <= 1
+            # taking into account the requested transparency_range
+            transparency = np.clip(
+                transparency, transparency_range[0], transparency_range[1]
+            )
+            transparency = (transparency - transparency_range[0]) / (
+                transparency_range[1] - transparency_range[0]
+            )
+
+        return transparency, transparency_affine
 
     @classmethod
     def _threshold(cls, data, threshold=None, vmin=None, vmax=None):
@@ -531,10 +669,12 @@ class BaseSlicer:
                 data,
                 copy=False,
             )
+
             if (vmin is not None) and (vmin >= -threshold):
                 data = np.ma.masked_where(data < vmin, data, copy=False)
             if (vmax is not None) and (vmax <= threshold):
                 data = np.ma.masked_where(data > vmax, data, copy=False)
+
         return data
 
     @fill_doc
@@ -782,16 +922,16 @@ class BaseSlicer:
             The positioning for the scalebar.
             Valid location codes are:
 
-                - 1: "upper right"
-                - 2: "upper left"
-                - 3: "lower left"
-                - 4: "lower right"
-                - 5: "right"
-                - 6: "center left"
-                - 7: "center right"
-                - 8: "lower center"
-                - 9: "upper center"
-                - 10: "center"
+            - 1: "upper right"
+            - 2: "upper left"
+            - 3: "lower left"
+            - 4: "lower right"
+            - 5: "right"
+            - 6: "center left"
+            - 7: "center right"
+            - 8: "lower center"
+            - 9: "upper center"
+            - 10: "center"
 
         decimals : :obj:`int`, default=0
             Number of decimal places on slice position annotation. If zero,
@@ -2141,16 +2281,15 @@ def get_slicer(display_mode):
         The desired display mode.
         Possible options are:
 
-            - "ortho": Three cuts are performed in orthogonal directions.
-            - "tiled": Three cuts are performed and arranged in a 2x2 grid.
-            - "mosaic": Three cuts are performed along multiple rows and
-              columns.
-            - "x": Sagittal
-            - "y": Coronal
-            - "z": Axial
-            - "xz": Sagittal + Axial
-            - "yz": Coronal + Axial
-            - "yx": Coronal + Sagittal
+        - "ortho": Three cuts are performed in orthogonal directions.
+        - "tiled": Three cuts are performed and arranged in a 2x2 grid.
+        - "mosaic": Three cuts are performed along multiple rows and columns.
+        - "x": Sagittal
+        - "y": Coronal
+        - "z": Axial
+        - "xz": Sagittal + Axial
+        - "yz": Coronal + Axial
+        - "yx": Coronal + Sagittal
 
     Returns
     -------
@@ -2159,24 +2298,24 @@ def get_slicer(display_mode):
 
         The slicer corresponding to the requested display mode:
 
-            - "ortho": Returns an
-              :class:`~nilearn.plotting.displays.OrthoSlicer`.
-            - "tiled": Returns a
-              :class:`~nilearn.plotting.displays.TiledSlicer`.
-            - "mosaic": Returns a
-              :class:`~nilearn.plotting.displays.MosaicSlicer`.
-            - "xz": Returns a
-              :class:`~nilearn.plotting.displays.XZSlicer`.
-            - "yz": Returns a
-              :class:`~nilearn.plotting.displays.YZSlicer`.
-            - "yx": Returns a
-              :class:`~nilearn.plotting.displays.YZSlicer`.
-            - "x": Returns a
-              :class:`~nilearn.plotting.displays.XSlicer`.
-            - "y": Returns a
-              :class:`~nilearn.plotting.displays.YSlicer`.
-            - "z": Returns a
-              :class:`~nilearn.plotting.displays.ZSlicer`.
+        - "ortho": Returns an
+            :class:`~nilearn.plotting.displays.OrthoSlicer`.
+        - "tiled": Returns a
+            :class:`~nilearn.plotting.displays.TiledSlicer`.
+        - "mosaic": Returns a
+            :class:`~nilearn.plotting.displays.MosaicSlicer`.
+        - "xz": Returns a
+            :class:`~nilearn.plotting.displays.XZSlicer`.
+        - "yz": Returns a
+            :class:`~nilearn.plotting.displays.YZSlicer`.
+        - "yx": Returns a
+            :class:`~nilearn.plotting.displays.YZSlicer`.
+        - "x": Returns a
+            :class:`~nilearn.plotting.displays.XSlicer`.
+        - "y": Returns a
+            :class:`~nilearn.plotting.displays.YSlicer`.
+        - "z": Returns a
+            :class:`~nilearn.plotting.displays.ZSlicer`.
 
     """
     return get_create_display_fun(display_mode, SLICERS)

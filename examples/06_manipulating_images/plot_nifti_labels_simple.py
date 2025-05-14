@@ -16,18 +16,15 @@ from nilearn._utils.helpers import check_matplotlib
 
 check_matplotlib()
 
-import matplotlib.pyplot as plt
-
-from nilearn import datasets
 
 # %%
 # Retrieve the brain development functional dataset
 #
 # We start by fetching the brain development functional dataset
 # and we restrict the example to one subject only.
+from nilearn.datasets import fetch_atlas_harvard_oxford, fetch_development_fmri
 
-
-dataset = datasets.fetch_development_fmri(n_subjects=1)
+dataset = fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 
 # print basic information on the dataset
@@ -37,7 +34,7 @@ print(f"First functional nifti image (4D) is at: {func_filename}")
 # Load an atlas
 #
 # We then load the Harvard-Oxford atlas to define the brain regions
-atlas = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
+atlas = fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
 
 # The first label correspond to the background
 print(f"The atlas contains {len(atlas.labels) - 1} non-overlapping regions")
@@ -50,7 +47,7 @@ from nilearn.maskers import NiftiLabelsMasker
 # Instantiate the masker with label image and label values
 masker = NiftiLabelsMasker(
     atlas.maps,
-    labels=atlas.labels,
+    lut=atlas.lut,
     standardize="zscore_sample",
 )
 
@@ -86,6 +83,8 @@ signals.shape
 
 # %%
 # Plot the signals
+import matplotlib.pyplot as plt
+
 fig = plt.figure(figsize=(15, 5))
 ax = fig.add_subplot(111)
 for label_idx in range(3):

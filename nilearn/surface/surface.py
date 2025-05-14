@@ -1,7 +1,6 @@
 """Functions for surface manipulation."""
 
 import abc
-import copy
 import gzip
 import pathlib
 import warnings
@@ -18,6 +17,7 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils
 from nilearn._utils import stringify_path
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
 
@@ -46,7 +46,7 @@ def _load_uniform_ball_cloud(n_points=20):
         "have a big impact on the result, we strongly recommend using one "
         'of these values when using kind="ball" for much better performance.',
         EfficiencyWarning,
-        stacklevel=3,
+        stacklevel=find_stack_level(),
     )
     return _uniform_ball_cloud(n_points=n_points)
 
@@ -460,6 +460,60 @@ def _projection_matrix(
     return proj
 
 
+def _mask_sample_locations(sample_locations, img_shape, mesh_n_vertices, mask):
+    """Mask sample locations without changing to indices."""
+    sample_locations = np.asarray(np.round(sample_locations), dtype=int)
+    masks = _masked_indices(np.vstack(sample_locations), img_shape, mask=mask)
+    masks = np.split(masks, mesh_n_vertices)
+    # mask sample locations and make a list of masked indices because
+    # masked locations are not necessarily of the same length
+    masked_sample_locations = [
+        sample_locations[idx][~mask] for idx, mask in enumerate(masks)
+    ]
+    return masked_sample_locations
+
+
+def _nearest_most_frequent(
+    images,
+    mesh,
+    affine,
+    kind="auto",
+    radius=3.0,
+    n_points=None,
+    mask=None,
+    inner_mesh=None,
+    depth=None,
+):
+    """Use the most frequent value of 'n_samples' nearest voxels instead of
+    taking the mean value (as in the _nearest_voxel_sampling function).
+
+    This is useful when the image is a deterministic atlas.
+    """
+    data = np.asarray(images)
+    sample_locations = _sample_locations(
+        mesh,
+        affine,
+        kind=kind,
+        radius=radius,
+        n_points=n_points,
+        inner_mesh=inner_mesh,
+        depth=depth,
+    )
+    sample_locations = _mask_sample_locations(
+        sample_locations, images[0].shape, mesh.n_vertices, mask
+    )
+    texture = np.zeros((mesh.n_vertices, images.shape[0]))
+    for img in range(images.shape[0]):
+        for loc in range(len(sample_locations)):
+            possible_values = [
+                data[img][coords[0], coords[1], coords[2]]
+                for coords in sample_locations[loc]
+            ]
+            unique, counts = np.unique(possible_values, return_counts=True)
+            texture[loc, img] = unique[np.argmax(counts)]
+    return texture.T
+
+
 def _nearest_voxel_sampling(
     images,
     mesh,
@@ -479,6 +533,7 @@ def _nearest_voxel_sampling(
     See documentation of vol_to_surf for details.
 
     """
+    data = np.asarray(images).reshape(len(images), -1).T
     proj = _projection_matrix(
         mesh,
         affine,
@@ -490,7 +545,6 @@ def _nearest_voxel_sampling(
         inner_mesh=inner_mesh,
         depth=depth,
     )
-    data = np.asarray(images).reshape(len(images), -1).T
     texture = proj.dot(data)
     # if all samples around a mesh vertex are outside the image,
     # there is no reasonable value to assign to this vertex.
@@ -582,13 +636,31 @@ def vol_to_surf(
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node. Ignored if `inner_mesh` is provided.
 
-    interpolation : {'linear', 'nearest'}, default='linear'
+    interpolation : {'linear', 'nearest', 'nearest_most_frequent'}, \
+                    default='linear'
         How the image intensity is measured at a sample point.
 
         - 'linear':
             Use a trilinear interpolation of neighboring voxels.
         - 'nearest':
             Use the intensity of the nearest voxel.
+
+            .. versionchanged:: 0.11.2.dev
+
+                The 'nearest' interpolation method will be removed in
+                version 0.13.0. It is recommended to use 'linear' for
+                statistical maps and
+                :term:`probabilistic atlases<Probabilistic atlas>` and
+                'nearest_most_frequent' for
+                :term:`deterministic atlases<Deterministic atlas>`.
+
+        - 'nearest_most_frequent':
+            Use the most frequent value in the neighborhood (out of the
+            `n_samples` samples) instead of the mean value. This is useful
+            when the image is a
+            :term:`deterministic atlas<Deterministic atlas>`.
+
+            .. versionadded:: 0.11.2.dev
 
         For one image, the speed difference is small, 'linear' takes about x1.5
         more time. For many images, 'nearest' scales much better, up to x20
@@ -670,22 +742,22 @@ def vol_to_surf(
 
     Three strategies are available to select these positions.
 
-        - with 'depth', data is sampled at various cortical depths between
-          corresponding nodes of `surface_mesh` and `inner_mesh` (which can be,
-          for example, a pial surface and a white matter surface). This is the
-          recommended strategy when both the pial and white matter surfaces are
-          available, which is the case for the fsaverage :term:`meshes<mesh>`.
-        - 'ball' uses points regularly spaced in a ball centered
-          at the :term:`mesh` vertex.
-          The radius of the ball is controlled by the parameter `radius`.
-        - 'line' starts by drawing the normal to the :term:`mesh`
-          passing through this vertex.
-          It then selects a segment of this normal,
-          centered at the vertex, of length 2 * `radius`.
-          Image intensities are measured at points regularly spaced
-          on this normal segment, or at positions determined by `depth`.
-        - ('auto' chooses 'depth' if `inner_mesh` is provided and 'line'
-          otherwise)
+    - with 'depth', data is sampled at various cortical depths between
+        corresponding nodes of `surface_mesh` and `inner_mesh` (which can be,
+        for example, a pial surface and a white matter surface). This is the
+        recommended strategy when both the pial and white matter surfaces are
+        available, which is the case for the fsaverage :term:`meshes<mesh>`.
+    - 'ball' uses points regularly spaced in a ball centered
+        at the :term:`mesh` vertex.
+        The radius of the ball is controlled by the parameter `radius`.
+    - 'line' starts by drawing the normal to the :term:`mesh`
+        passing through this vertex.
+        It then selects a segment of this normal,
+        centered at the vertex, of length 2 * `radius`.
+        Image intensities are measured at points regularly spaced
+        on this normal segment, or at positions determined by `depth`.
+    - ('auto' chooses 'depth' if `inner_mesh` is provided and 'line'
+        otherwise)
 
     You can control how many samples are drawn by setting `n_samples`, or their
     position by setting `depth`.
@@ -708,6 +780,13 @@ def vol_to_surf(
     Once the 3d image has been interpolated at each sample point, the
     interpolated values are averaged to produce the value associated to this
     particular :term:`mesh` vertex.
+
+    .. important::
+
+        When using the 'nearest_most_frequent' interpolation, each vertex will
+        be assigned the most frequent value in the neighborhood (out of the
+        `n_samples` samples) instead of the mean value. This option works
+        better if `img` is a :term:`deterministic atlas<Deterministic atlas>`.
 
     Examples
     --------
@@ -733,13 +812,28 @@ def vol_to_surf(
     sampling_schemes = {
         "linear": _interpolation_sampling,
         "nearest": _nearest_voxel_sampling,
+        "nearest_most_frequent": _nearest_most_frequent,
     }
     if interpolation not in sampling_schemes:
         raise ValueError(
             "'interpolation' should be one of "
             f"{tuple(sampling_schemes.keys())}"
         )
+
+    # deprecate nearest interpolation in 0.13.0
+    if interpolation == "nearest":
+        warnings.warn(
+            "The 'nearest' interpolation method will be deprecated in 0.13.0. "
+            "To disable this warning, select either 'linear' or "
+            "'nearest_most_frequent'. If your image is a deterministic atlas "
+            "'nearest_most_frequent' is recommended. Otherwise, use 'linear'. "
+            "See the documentation for more information.",
+            FutureWarning,
+            stacklevel=find_stack_level(),
+        )
+
     img = load_img(img)
+
     if mask_img is not None:
         mask_img = _utils.check_niimg(mask_img)
         mask = get_vol_data(
@@ -754,13 +848,20 @@ def vol_to_surf(
         )
     else:
         mask = None
+
     original_dimension = len(img.shape)
+
     img = _utils.check_niimg(img, atleast_4d=True)
+
     frames = np.rollaxis(get_vol_data(img), -1)
+
     mesh = load_surf_mesh(surf_mesh)
+
     if inner_mesh is not None:
         inner_mesh = load_surf_mesh(inner_mesh)
+
     sampling = sampling_schemes[interpolation]
+
     texture = sampling(
         frames,
         mesh,
@@ -772,6 +873,7 @@ def vol_to_surf(
         inner_mesh=inner_mesh,
         depth=depth,
     )
+
     if original_dimension == 3:
         texture = texture[0]
     return texture.T
@@ -1025,9 +1127,6 @@ def check_mesh_is_fsaverage(mesh):
     """Check that :term:`mesh` data is either a :obj:`str`, or a :obj:`dict`
     with sufficient entries. Basically ensures that the mesh data is
     Freesurfer-like fsaverage data.
-
-    Used by plotting.surf_plotting.plot_img_on_surf and
-    plotting.html_surface._full_brain_info.
     """
     if isinstance(mesh, str):
         # avoid circular imports
@@ -1649,31 +1748,6 @@ def _check_data_and_mesh_compat(mesh, data):
             )
 
 
-def check_same_n_vertices(mesh_1, mesh_2):
-    """Check that 2 PolyMesh have the same keys and that n vertices match.
-
-    Parameters
-    ----------
-    mesh_1: PolyMesh
-
-    mesh_2: PolyMesh
-    """
-    keys_1, keys_2 = set(mesh_1.parts.keys()), set(mesh_2.parts.keys())
-    if keys_1 != keys_2:
-        diff = keys_1.symmetric_difference(keys_2)
-        raise ValueError(
-            f"Meshes do not have the same keys. Offending keys: {diff}"
-        )
-    for key in keys_1:
-        if mesh_1.parts[key].n_vertices != mesh_2.parts[key].n_vertices:
-            raise ValueError(
-                f"Number of vertices do not match for '{key}'."
-                "number of vertices in mesh_1: "
-                f"{mesh_1.parts[key].n_vertices}; "
-                f"in mesh_2: {mesh_2.parts[key].n_vertices}"
-            )
-
-
 def _mesh_to_gifti(coordinates, faces, gifti_file):
     """Write surface mesh to gifti file on disk.
 
@@ -1917,7 +1991,7 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
     img : :obj:`~surface.SurfaceImage` or :obj:`~surface.PolyData`
         SurfaceImage whose data to concatenate and extract.
 
-    ensure_finite : bool
+    ensure_finite : bool, Default=False
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
@@ -1939,114 +2013,14 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
             warnings.warn(
                 "Non-finite values detected. "
                 "These values will be replaced with zeros.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
             data[non_finite_mask] = 0
 
     return data
 
 
-def concat_imgs(imgs):
-    """Concatenate the data of a list or tuple of SurfaceImages.
-
-    Assumes all images have same meshes.
-
-    Parameters
-    ----------
-    imgs : :obj:`list` or :obj:`tuple` \
-           of :obj:`~nilearn.surface.SurfaceImage` object
-
-    Returns
-    -------
-    SurfaceImage object
-    """
-    if not isinstance(imgs, (tuple, list)) or any(
-        not isinstance(x, SurfaceImage) for x in imgs
-    ):
-        raise TypeError(
-            "'imgs' must be a list or a tuple of SurfaceImage instances."
-        )
-
-    if len(imgs) == 1:
-        return imgs[0]
-
-    for i, img in enumerate(imgs):
-        check_same_n_vertices(img.mesh, imgs[0].mesh)
-        imgs[i] = at_least_2d(img)
-
-    output_data = {}
-    for part in imgs[0].data.parts:
-        tmp = [img.data.parts[part] for img in imgs]
-        output_data[part] = np.concatenate(tmp, axis=1)
-
-    return new_img_like(imgs[0], data=output_data)
-
-
-def mean_img(img):
-    """Compute mean of SurfaceImage over time points (for 'time series').
-
-    Parameters
-    ----------
-    img : SurfaceImage
-
-    Returns
-    -------
-    SurfaceImage
-    """
-    if len(img.shape) < 2 or img.shape[1] < 2:
-        data = img.data
-    else:
-        data = {
-            part: np.mean(value, axis=1).astype(float)
-            for part, value in img.data.parts.items()
-        }
-    return new_img_like(img, data=data)
-
-
-def iter_img(img, return_iterator=True):
-    """Iterate over a SurfaceImage object in the 2nd dimension.
-
-    Parameters
-    ----------
-    imgs : SurfaceImage object
-
-    return_iterator : :obj:`bool`, default=True
-        Returns a list if set to False.
-
-    Returns
-    -------
-    Iterator or list of  SurfaceImage
-    """
-    if not isinstance(img, SurfaceImage):
-        raise TypeError("Input must a be SurfaceImage.")
-    output = (index_img(img, i) for i in range(at_least_2d(img).shape[1]))
-    return output if return_iterator else list(output)
-
-
-def index_img(img, index):
-    """Indexes into a 2D SurfaceImage in the second dimension.
-
-    Common use cases include extracting an image out of `img` or
-    creating a 2D image whose data is a subset of `img` data.
-
-    Parameters
-    ----------
-    img : SurfaceImage object
-
-    index : Any type compatible with numpy array indexing
-        Used for indexing the 2D data array in the 2nd dimension.
-
-    Returns
-    -------
-    a SurfaceImage object
-    """
-    if not isinstance(img, SurfaceImage):
-        raise TypeError("Input must a be SurfaceImage.")
-    img = at_least_2d(img)
-    return new_img_like(img, data=_extract_data(img, index))
-
-
-def _extract_data(img, index):
+def extract_data(img, index):
     """Extract data of a SurfaceImage a specified indices.
 
     Parameters
@@ -2074,14 +2048,3 @@ def _extract_data(img, index):
         .reshape(mesh.parts[hemi].n_vertices, last_dim)
         for hemi in data.parts
     }
-
-
-def new_img_like(ref_img, data):
-    """Create a new SurfaceImage instance with new data."""
-    if not isinstance(ref_img, SurfaceImage):
-        raise TypeError("Input must a be SurfaceImage.")
-    mesh = ref_img.mesh
-    return SurfaceImage(
-        mesh=copy.deepcopy(mesh),
-        data=data,
-    )

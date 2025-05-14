@@ -30,12 +30,13 @@ jobs:
 
     # check the links in the doc
     linkcheck:
+        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
             uses: actions/checkout@v4
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v5
+            uses: astral-sh/setup-uv@v6
         -   name: Setup python
             uses: actions/setup-python@v5
             with:

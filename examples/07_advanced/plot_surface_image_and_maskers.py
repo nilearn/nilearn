@@ -65,14 +65,6 @@ hemispheres = ["left", "right", "both"]
 # for our plots we will be using the fsaverage sulcal data as background map
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
 
-fig, axes = plt.subplots(
-    nrows=len(views),
-    ncols=len(hemispheres),
-    subplot_kw={"projection": "3d"},
-    figsize=(4 * len(hemispheres), 4),
-)
-axes = np.atleast_2d(axes)
-
 mean_img = threshold_img(mean_img, threshold=1e-08, copy=False, two_sided=True)
 
 # %%
@@ -80,6 +72,14 @@ mean_img = threshold_img(mean_img, threshold=1e-08, copy=False, two_sided=True)
 # centered on 0 for all subplots.
 vmax = max(np.absolute(hemi).max() for hemi in mean_img.data.parts.values())
 vmin = -vmax
+
+fig, axes = plt.subplots(
+    nrows=len(views),
+    ncols=len(hemispheres),
+    subplot_kw={"projection": "3d"},
+    figsize=(4 * len(hemispheres), 4),
+)
+axes = np.atleast_2d(axes)
 
 for view, ax_row in zip(views, axes):
     for ax, hemi in zip(ax_row, hemispheres):
@@ -157,7 +157,7 @@ vmin = -vmax
 # We only print every 3rd label
 # for a more legible figure.
 labels = []
-for i, label in enumerate(labels_masker.label_names_):
+for i, label in enumerate(labels_masker.region_names_.values()):
     if i % 3 == 1:
         labels.append(label)
     else:
@@ -236,11 +236,10 @@ decoder.fit(surf_img_nki, y)
 coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
 vmax = max(np.absolute(hemi).max() for hemi in coef_img.data.parts.values())
-vmin = -vmax
 plot_surf(
     surf_map=coef_img,
     cmap="RdBu_r",
-    vmin=vmin,
+    vmin=-vmax,
     vmax=vmax,
     threshold=1e-6,
     bg_map=fsaverage_sulcal,

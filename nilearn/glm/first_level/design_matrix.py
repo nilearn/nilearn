@@ -37,6 +37,7 @@ import pandas as pd
 
 from nilearn._utils import fill_doc
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.glm._utils import full_rank
 from nilearn.glm.first_level.experimental_paradigm import (
@@ -109,7 +110,8 @@ def create_cosine_drift(high_pass, frame_times):
             "High-pass filter will span all accessible frequencies "
             "and saturate the design matrix. "
             "You may want to reduce the high_pass value."
-            f"The provided value is {high_pass} Hz"
+            f"The provided value is {high_pass} Hz",
+            stacklevel=find_stack_level(),
         )
     order = np.minimum(
         n_frames - 1, int(np.floor(2 * n_frames * high_pass * dt))
@@ -527,6 +529,7 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
     if np.linalg.cond(design_matrix.values) > design_matrix.size:
         warn(
             "Attention: Design matrix is singular. Aberrant estimates "
-            "are expected."
+            "are expected.",
+            stacklevel=find_stack_level(),
         )
     return design_matrix

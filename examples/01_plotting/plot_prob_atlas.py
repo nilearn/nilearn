@@ -20,6 +20,9 @@ with each different color which are picked randomly from the colormap
 which is already defined.
 
 See :ref:`plotting` for more information to know how to tune the parameters.
+
+Check the :ref:`list of atlases <listing_probabilistic_atlases>`
+to know the ones that are shipped with Nilearn.
 """
 
 # %%

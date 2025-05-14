@@ -18,6 +18,7 @@ from nilearn._utils.bids import (
     check_look_up_table,
     generate_atlas_look_up_table,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
@@ -192,6 +193,7 @@ def fetch_atlas_difumo(
         labels=labels,
         description=get_dataset_descr(dataset_name),
         atlas_type=atlas_type,
+        template="MNI152NLin6Asym",
     )
 
 
@@ -342,6 +344,7 @@ def fetch_atlas_craddock_2012(
                 "to specify the exact atlas image you want."
             )
         ),
+        stacklevel=find_stack_level(),
     )
 
     params = dict(
@@ -444,6 +447,7 @@ def fetch_atlas_destrieux_2009(
         description=Path(files_[2]).read_text(),
         atlas_type=atlas_type,
         lut=pd.read_csv(files_[0]),
+        template="fsaverage",
     )
 
 
@@ -616,6 +620,7 @@ def fetch_atlas_harvard_oxford(
                 "fetch_atlas_harvard_oxford", name=names
             ),
             filename=atlas_filename,
+            template="MNI152NLin6Asym",
         )
 
     new_atlas_data, new_names = _compute_symmetric_split(
@@ -634,6 +639,7 @@ def fetch_atlas_harvard_oxford(
             "fetch_atlas_harvard_oxford", name=new_names
         ),
         filename=atlas_filename,
+        template="MNI152NLin6Asym",
     )
 
 
@@ -1237,6 +1243,7 @@ def fetch_atlas_smith_2009(
                 "to specify the exact atlas image you want."
             )
         ),
+        stacklevel=find_stack_level(),
     )
 
     keys = list(files.keys())
@@ -1401,6 +1408,7 @@ def fetch_atlas_yeo_2011(
                     "to specify the exact atlas image you want."
                 )
             ),
+            stacklevel=find_stack_level(),
         )
 
     if n_networks is not None:
@@ -1484,7 +1492,7 @@ def fetch_atlas_yeo_2011(
             maps=maps,
             labels=lut.name.to_list(),
             description=fdescr,
-            template="fsaverage",
+            template="MNI152NLin6Asym",
             lut=lut,
             atlas_type=atlas_type,
             anat=params["anat"],
@@ -1629,7 +1637,9 @@ def fetch_atlas_aal(
                 "Starting in version 0.13, the default fetched mask will be"
                 "AAL 3v2 instead."
             )
-            warnings.warn(message, DeprecationWarning)
+            warnings.warn(
+                message, DeprecationWarning, stacklevel=find_stack_level()
+            )
 
         elif version == "3v2":
             url = f"{base_url}wp-content/uploads/AAL3v2_for_SPM12.tar.gz"
@@ -1675,6 +1685,7 @@ def fetch_atlas_aal(
             name=labels,
         ),
         atlas_type=atlas_type,
+        template="MNIColin27",
         indices=indices,
     )
 
@@ -1830,6 +1841,7 @@ def fetch_atlas_basc_multiscale_2015(
                 "fetch_atlas_basc_multiscale_2015", name=labels
             ),
             atlas_type=atlas_type,
+            template=f"MNI152{version}",
         )
 
     warnings.warn(
@@ -1842,6 +1854,7 @@ def fetch_atlas_basc_multiscale_2015(
                 "to specify the exact atlas image you want."
             )
         ),
+        stacklevel=find_stack_level(),
     )
 
     basenames = [
@@ -2114,7 +2127,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         ("atlas_type", atlas_type),
         ("rsn_indices", labels),
         ("networks", networks),
-        ("template", "volume"),
+        ("template", "MNI152"),
         *list(zip(keys, sub_files)),
     ]
     return Bunch(**dict(params))
@@ -2245,12 +2258,11 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
     logger.log(
         f"Separating talairach atlas levels: {_TALAIRACH_LEVELS}",
         verbose=verbose,
-        stack_level=3,
     )
     for level_name, old_level_labels in zip(
         _TALAIRACH_LEVELS, np.asarray(labels).T
     ):
-        logger.log(level_name, verbose=verbose, stack_level=3)
+        logger.log(level_name, verbose=verbose)
         # level with most regions, ba, has 72 regions
         level_data = np.zeros(atlas_img.shape, dtype="uint8")
         level_labels = {"*": 0}
@@ -2440,7 +2452,7 @@ def fetch_atlas_pauli_2017(
         warnings.warn(
             category=DeprecationWarning,
             message=atlas_type_values,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
         atlas_type = (
             "probabilistic" if atlas_type == "prob" else "deterministic"
@@ -2622,6 +2634,7 @@ def fetch_atlas_schaefer_2018(
         description=get_dataset_descr(dataset_name),
         lut=lut,
         atlas_type=atlas_type,
+        template="MNI152NLin6Asym",
     )
 
 
@@ -2662,7 +2675,7 @@ class Atlas(Bunch):
 
         # TODO: improve
         if template is None:
-            template = "volume"
+            template = "MNI?"
 
         if atlas_type == "probabilistic":
             if labels is None:

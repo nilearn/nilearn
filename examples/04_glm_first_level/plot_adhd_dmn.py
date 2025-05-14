@@ -105,15 +105,21 @@ z_map = first_level_model.compute_contrast(
     contrasts["seed_based_glm"], output_type="z_score"
 )
 
+# %%
 # Saving snapshots of the contrasts
-filename = "dmn_z_map.png"
+from pathlib import Path
+
 display = plotting.plot_stat_map(
     z_map, threshold=3.0, title="Seed based GLM", cut_coords=pcc_coords
 )
 display.add_markers(
     marker_coords=[pcc_coords], marker_color="g", marker_size=300
 )
-display.savefig(filename)
+
+output_dir = Path.cwd() / "results" / "plot_adhd_dmn"
+output_dir.mkdir(exist_ok=True, parents=True)
+filename = "dmn_z_map.png"
+display.savefig(output_dir / filename)
 print(f"Save z-map in '{filename}'.")
 
 # %%
@@ -123,10 +129,8 @@ print(f"Save z-map in '{filename}'.")
 # portable, ready-to-view report with most of the pertinent information.
 # This is easy to do if you have a fitted model and the list of contrasts,
 # which we do here.
-from nilearn.reporting import make_glm_report
 
-report = make_glm_report(
-    first_level_model,
+report = first_level_model.generate_report(
     contrasts=contrasts,
     title="ADHD DMN Report",
     cluster_threshold=15,
@@ -136,12 +140,14 @@ report = make_glm_report(
 
 # %%
 # We have several ways to access the report:
+#
+# It can be viewed in a notebook
+report
 
-# report  # This report can be viewed in a notebook
+# %%
+# Or in a separate browser window
 # report.open_in_browser()
 
-# or we can save as an html file
-# from pathlib import Path
-# output_dir = Path.cwd() / "results" / "plot_adhd_dmn"
-# output_dir.mkdir(exist_ok=True, parents=True)
-# report.save_as_html(output_dir / 'report.html')
+# %%
+# Or we can save as an html file.
+report.save_as_html(output_dir / "report.html")

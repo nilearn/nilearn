@@ -254,10 +254,20 @@ connected : :obj:`bool`, optional
 
 # confounds
 docdict["confounds"] = """
-confounds : CSV file or array-like, optional
+confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
+            :class:`pandas.DataFrame` \
+            or :obj:`list` of confounds timeseries, default=None
     This parameter is passed to :func:`nilearn.signal.clean`.
     Please see the related documentation for details.
-    shape: list of (number of scans, number of confounds)
+    shape: (number of scans, number of confounds)
+"""
+docdict["confounds_multi"] = """
+confounds : :obj:`list` of confounds, default=None
+    List of confounds (arrays, dataframes,
+    str or path of files loadable into an array).
+    As confounds are passed to :func:`nilearn.signal.clean`,
+    please see the related documentation for details about accepted types.
+    Must be of same length than imgs.
 """
 
 # cut_coords
@@ -381,6 +391,30 @@ docdict["figure"] = """
 figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
     Matplotlib figure used or its number.
     If `None` is given, a new figure is created.
+"""
+
+# figure
+docdict["first_level_contrast"] = """
+first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
+                        shape (n_col) with respect to \
+                        :class:`~nilearn.glm.first_level.FirstLevelModel` \
+                        or None, default=None
+
+    When the model is a :class:`~nilearn.glm.second_level.SecondLevelModel`:
+
+    - in case a :obj:`list` of
+      :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
+      as ``second_level_input``,
+      we have to provide a :term:`contrast`
+      to apply to the first level models
+      to get the corresponding list of images desired,
+      that would be tested at the second level,
+    - in case a :class:`~pandas.DataFrame` was provided
+      as ``second_level_input`` this is the map name to extract
+      from the :class:`~pandas.DataFrame` ``map_name`` column.
+      (it has to be a 't' contrast).
+
+    This parameter is ignored for all other cases.
 """
 
 # fwhm
@@ -572,6 +606,15 @@ docdict["lower_cutoff"] = """
 lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
 """
+
+# masker_lut
+docdict["masker_lut"] = """lut : :obj:`pandas.DataFrame` or :obj:`str` \
+            or :obj:`pathlib.Path` to a TSV file or None, default=None
+        Mutually exclusive with ``labels``.
+        Act as a look up table (lut)
+        with at least columns 'index' and 'name'.
+        Formatted according to 'dseg.tsv' format from
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
 
 
 # mask_strategy
@@ -807,10 +850,30 @@ resume : :obj:`bool`, default=True
 
 # sample_mask
 docdict["sample_mask"] = """
-sample_mask : Any type compatible with numpy-array indexing, optional
-    shape: (number of scans - number of volumes removed, )
-    Masks the niimgs along time/fourth dimension to perform scrubbing
-    (remove volumes with high motion) and/or non-steady-state volumes.
+sample_mask : Any type compatible with numpy-array indexing, default=None
+    ``shape = (total number of scans - number of scans removed)``
+    for explicit index (for example, ``sample_mask=np.asarray([1, 2, 4])``),
+    or ``shape = (number of scans)`` for binary mask
+    (for example,
+    ``sample_mask=np.asarray([False, True, True, False, True])``).
+    Masks the images along the last dimension to perform scrubbing:
+    for example to remove volumes with high motion
+    and/or non-steady-state volumes.
+    This parameter is passed to :func:`nilearn.signal.clean`.
+"""
+docdict["sample_mask_multi"] = """
+sample_mask : :obj:`list` of sample_mask, default=None
+    List of sample_mask (any type compatible with numpy-array indexing)
+    to use for scrubbing outliers.
+    Must be of same length as ``imgs``.
+    ``shape = (total number of scans - number of scans removed)``
+    for explicit index (for example, ``sample_mask=np.asarray([1, 2, 4])``),
+    or ``shape = (number of scans)`` for binary mask
+    (for example,
+    ``sample_mask=np.asarray([False, True, True, False, True])``).
+    Masks the images along the last dimension to perform scrubbing:
+    for example to remove volumes with high motion
+    and/or non-steady-state volumes.
     This parameter is passed to :func:`nilearn.signal.clean`.
 """
 
@@ -1011,6 +1074,13 @@ tfce : :obj:`bool`, default=False
     The TFCE calculation is implemented
     as described in :footcite:t:`Smith2009a`.
 
+    .. note::
+
+       The number of thresholds used in the TFCE procedure
+       will set between 10 and 1000.
+
+       .. versionadded:: 0.11.2dev
+
     .. warning::
 
         Performing TFCE-based inference
@@ -1036,6 +1106,49 @@ threshold : :obj:`int` or :obj:`float`, None, or 'auto', optional
 docdict["title"] = """
 title : :obj:`str`, or None, default=None
     The title displayed on the figure.
+"""
+
+# transparency
+docdict["transparency"] = """
+transparency : :obj:`float` between 0 and 1, \
+                or a Niimg-Like object, \
+                or None, \
+                default = None
+    Value to be passed as alpha value to :func:`~matplotlib.pyplot.imshow`.
+    if ``None`` is passed, it will be set to 1.
+    If an image is passed, voxel-wise alpha blending will be applied,
+    by relying on the absolute value of ``transparency`` at each voxel.
+
+    .. versionadded:: 0.11.2
+"""
+
+# transparency
+docdict["transparency_range"] = """
+transparency_range : :obj:`tuple` or :obj:`list` of 2 non-negative numbers, \
+                or None, \
+                default = None
+    When an image is passed to ``transparency``,
+    this determines the range of values in the image
+    to use for transparency (alpha blending).
+    For example with ``transparency_range = [1.96, 3]``,
+    any voxel / vertex (:math:`v_i`):
+
+    - with a value between between -1.96 and 1.96,
+      would be fully transparent (alpha = 0),
+    - with a value less than -3 or greater than 3,
+      would be fully opaque (alpha = 1),
+    - with a value in the intervals ``[-3.0, -1.96]`` or ``[1.96, 3.0]``,
+      would have an alpha_i value
+      scaled linearly between 0 and 1 :
+      :math:`alpha_i = (\\lvert v_i \\lvert - 1.96) / (3.0 - 1.96)`.
+
+    This parameter will be ignored
+    unless an image is passed as ``transparency``.
+    The first number must be greater than 0 and less than the second one.
+    if ``None`` is passed,
+    this will be set to ``[0, max(abs(transparency))]``.
+
+    .. versionadded:: 0.11.2
 """
 
 # upper_cutoff
@@ -1227,8 +1340,19 @@ docdict["fsaverage_options"] = """
 docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
         List of the names of the regions."""
 
+# mask_img_ for most nifti maskers
+docdict[
+    "nifti_mask_img_"
+] = """mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image` or None.
+        The mask of the data.
+        If no ``mask_img`` was passed at masker construction,
+        then ``mask_img_`` is ``None``, otherwise
+        is the resulting binarized version of ``mask_img``
+        where each voxel is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0."""
+
 # look up table
-docdict["lut"] = """'lut' : :obj:`pandas.DataFrame`
+docdict["lut"] = """lut : :obj:`pandas.DataFrame`
         Act as a look up table (lut)
         with at least columns 'index' and 'name'.
         Formatted according to 'dseg.tsv' format from

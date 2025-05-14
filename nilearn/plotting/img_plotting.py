@@ -19,6 +19,7 @@ from matplotlib.colors import LinearSegmentedColormap
 from nibabel.spatialimages import SpatialImage
 from scipy.ndimage import binary_fill_holes
 
+from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import (
     as_ndarray,
     check_niimg_3d,
@@ -97,6 +98,8 @@ def _plot_img_with_bg(
     brain_color=(0.5, 0.5, 0.5),
     decimals=False,
     radiological=False,
+    transparency=None,
+    transparency_range=None,
     **kwargs,
 ):
     """Refer to the docstring of plot_img for parameters not listed below.
@@ -160,6 +163,10 @@ def _plot_img_with_bg(
         the slice position is integer without decimal point.
 
     %(radiological)s
+
+    %(transparency)s
+
+    %(transparency_range)s
 
     kwargs :  extra keyword arguments, optional
         Extra keyword arguments passed
@@ -256,6 +263,8 @@ def _plot_img_with_bg(
             cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax,
             cbar_tick_format=cbar_tick_format,
+            transparency=transparency,
+            transparency_range=transparency_range,
             **kwargs,
         )
     if radiological:
@@ -327,6 +336,8 @@ def plot_img(
     radiological=False,
     decimals=False,
     cmap="gray",
+    transparency=None,
+    transparency_range=None,
     **kwargs,
 ):
     """Plot cuts of a given image.
@@ -386,6 +397,10 @@ def plot_img(
     %(cmap)s
         default="gray"
 
+    %(transparency)s
+
+    %(transparency_range)s
+
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
         ultimately passed to `matplotlib.pyplot.imshow` via
@@ -444,6 +459,8 @@ def plot_img(
         radiological=radiological,
         decimals=decimals,
         cmap=cmap,
+        transparency=transparency,
+        transparency_range=transparency_range,
         **kwargs,
     )
 
@@ -641,8 +658,8 @@ def plot_anat(
     %(cmap)s
         Default=`gray`.
 
-    colorbar : :obj:`bool`, default=False
-        If True, display a colorbar on the right of the plots.
+    %(colorbar)s
+        Default=True
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -761,8 +778,8 @@ def plot_epi(
     %(black_bg)s
         Default=True.
 
-    colorbar : :obj:`bool`, default=False
-        If True, display a colorbar on the right of the plots.
+    %(colorbar)s
+        Default=True
 
     cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
@@ -860,7 +877,7 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
             img,
             levels=[0.5],
             colors=[color_list[idx - 1]],
-            alpha=alpha,
+            transparency=alpha,
             linewidths=linewidths,
             linestyles="solid",
         )
@@ -942,8 +959,8 @@ def plot_roi(
     %(dim)s
         Default='auto'.
 
-    colorbar : :obj:`bool`, default=False
-        If True, display a colorbar on the right of the plots.
+    %(colorbar)s
+        Default=True
 
     cbar_tick_format : :obj:`str`, default="%%i"
         Controls how to format the tick labels of the colorbar.
@@ -1017,6 +1034,8 @@ def plot_roi(
     if isinstance(cmap, pd.DataFrame):
         cmap = create_colormap_from_lut(cmap)
 
+    transparency = alpha
+
     display = _plot_img_with_bg(
         img=roi_img,
         bg_img=bg_img,
@@ -1035,7 +1054,7 @@ def plot_roi(
         resampling_interpolation=resampling_interpolation,
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
-        alpha=alpha,
+        transparency=transparency,
         cmap=cmap,
         vmin=vmin,
         vmax=vmax,
@@ -1102,8 +1121,9 @@ def plot_prob_atlas(
         If view_type == 'continuous', maps are overlaid as continuous
         colors irrespective of the number maps.
 
-    threshold : a :obj:`int` or :obj:`float` or :obj:`str` or :obj:`list` of
-        :obj:`int` or :obj:`float` or :obj:`str`, default='auto'
+    threshold : a :obj:`int` or :obj:`float` or :obj:`str` or \
+              :obj:`list` of :obj:`int` or :obj:`float` or \
+              :obj:`str`, default='auto'
         This parameter is optional and is used to threshold the maps image
         using the given value or automatically selected value. The values
         in the image (in absolute value) above the threshold level will be
@@ -1251,6 +1271,7 @@ def plot_prob_atlas(
         threshold = [threshold] * n_maps
 
     filled = view_type.startswith("filled")
+    transparency = alpha
     for map_img, color, thr in zip(iter_img(maps_img), color_list, threshold):
         data = get_data(map_img)
         # To threshold or choose the level of the contours
@@ -1262,7 +1283,10 @@ def plot_prob_atlas(
 
         if view_type == "continuous":
             display.add_overlay(
-                map_img, threshold=thr, cmap=cm.alpha_cmap(color), alpha=alpha
+                map_img,
+                threshold=thr,
+                cmap=cm.alpha_cmap(color),
+                transparency=transparency,
             )
         else:
             display.add_contours(
@@ -1271,7 +1295,7 @@ def plot_prob_atlas(
                 linewidths=linewidths,
                 colors=[color],
                 filled=filled,
-                alpha=alpha,
+                transparency=transparency,
                 linestyles="solid",
             )
     if colorbar:
@@ -1323,13 +1347,15 @@ def plot_stat_map(
     annotate=True,
     draw_cross=True,
     black_bg="auto",
-    cmap="RdBu_r",
+    cmap=DEFAULT_DIVERGING_CMAP,
     symmetric_cbar="auto",
     dim="auto",
     vmin=None,
     vmax=None,
     radiological=False,
     resampling_interpolation="continuous",
+    transparency=None,
+    transparency_range=None,
     **kwargs,
 ):
     """Plot cuts of an ROI/mask image.
@@ -1393,6 +1419,10 @@ def plot_stat_map(
         Default='continuous'.
 
     %(radiological)s
+
+    %(transparency)s
+
+    %(transparency_range)s
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
@@ -1464,6 +1494,8 @@ def plot_stat_map(
         cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation,
         radiological=radiological,
+        transparency=transparency,
+        transparency_range=transparency_range,
         **kwargs,
     )
 
@@ -1491,6 +1523,7 @@ def plot_glass_brain(
     symmetric_cbar="auto",
     resampling_interpolation="continuous",
     radiological=False,
+    transparency=None,
     **kwargs,
 ):
     """Plot 2d projections of an ROI/mask image (by default 3 projections:
@@ -1566,6 +1599,10 @@ def plot_glass_brain(
         Default='continuous'.
 
     %(radiological)s
+
+    %(transparency)s
+
+    %(transparency_range)s
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments
@@ -1650,6 +1687,7 @@ def plot_glass_brain(
         cbar_vmax=cbar_vmax,
         resampling_interpolation=resampling_interpolation,
         radiological=radiological,
+        transparency=transparency,
         **kwargs,
     )
 
@@ -1665,7 +1703,7 @@ def plot_connectome(
     node_coords,
     node_color="auto",
     node_size=50,
-    edge_cmap="RdBu_r",
+    edge_cmap=DEFAULT_DIVERGING_CMAP,
     edge_vmin=None,
     edge_vmax=None,
     edge_threshold=None,
@@ -1710,14 +1748,14 @@ def plot_connectome(
     edge_cmap : colormap, default="RdBu_r"
         Colormap used for representing the strength of the edges.
 
-    edge_vmin, edge_vmax : :obj:`float` or None, default=None
+    edge_vmin, edge_vmax : :obj:`float` or None, Default=None
         If not None, either or both of these values will be used to
         as the minimum and maximum values to color edges. If None are
         supplied the maximum absolute value within the given threshold
         will be used as minimum (multiplied by -1) and maximum
         coloring levels.
 
-    edge_threshold : :obj:`str`, number or None, default=None
+    edge_threshold : :obj:`str`, number or None, Default=None
         If it is a number only the edges with a value greater than
         edge_threshold will be shown.
         If it is a string it must finish with a percent sign,

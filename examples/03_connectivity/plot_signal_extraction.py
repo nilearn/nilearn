@@ -33,6 +33,7 @@ from nilearn import datasets
 dataset = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
 atlas_filename = dataset.maps
 labels = dataset.labels
+look_up_table = dataset.lut
 
 print(f"Atlas ROIs are located in nifti image (4D) at: {atlas_filename}")
 
@@ -49,6 +50,7 @@ from nilearn.maskers import NiftiLabelsMasker
 
 masker = NiftiLabelsMasker(
     labels_img=atlas_filename,
+    lut=look_up_table,
     standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",

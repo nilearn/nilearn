@@ -11,9 +11,14 @@ from scipy import sparse
 from sklearn import neighbors
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
 from nilearn._utils.class_inspect import get_params
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import (
+    is_matplotlib_installed,
+    rename_parameters,
+)
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import (
     check_niimg_3d,
@@ -105,7 +110,8 @@ def apply_mask_and_get_affinity(
         if np.isnan(np.sum(safe_get_data(niimg))):
             warnings.warn(
                 "The imgs you have fed into fit_transform() contains NaN "
-                "values which will be converted to zeroes."
+                "values which will be converted to zeroes.",
+                stacklevel=find_stack_level(),
             )
             X = safe_get_data(niimg, True).reshape([-1, niimg.shape[3]]).T
         else:
@@ -278,6 +284,8 @@ class NiftiSpheresMasker(BaseMasker):
 
     Attributes
     ----------
+    %(nifti_mask_img_)s
+
     n_elements_ : :obj:`int`
         The number of seeds in the masker.
 
@@ -393,16 +401,10 @@ class NiftiSpheresMasker(BaseMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        if not is_matplotlib_installed():
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
-                return [None]
-
         from nilearn.reporting.html_report import generate_report
+
+        if not is_matplotlib_installed():
+            return generate_report(self)
 
         if displayed_spheres != "all" and not isinstance(
             displayed_spheres, (list, np.ndarray, int)
@@ -443,7 +445,7 @@ class NiftiSpheresMasker(BaseMasker):
                 "No image provided to fit in NiftiSpheresMasker. "
                 "Spheres are plotted on top of the MNI152 template."
             )
-            warnings.warn(msg)
+            warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
         else:
             positions = [
@@ -454,6 +456,7 @@ class NiftiSpheresMasker(BaseMasker):
             ]
 
         self._report_content["number_of_seeds"] = len(seeds)
+
         spheres_to_be_displayed = range(len(seeds))
         if isinstance(self.displayed_spheres, int):
             if len(seeds) < self.displayed_spheres:
@@ -464,7 +467,11 @@ class NiftiSpheresMasker(BaseMasker):
                     "Setting number of displayed spheres "
                     f"to {len(seeds)}."
                 )
-                warnings.warn(category=UserWarning, message=msg)
+                warnings.warn(
+                    category=UserWarning,
+                    message=msg,
+                    stacklevel=find_stack_level(),
+                )
                 self.displayed_spheres = len(seeds)
             spheres_to_be_displayed = range(self.displayed_spheres)
         elif isinstance(self.displayed_spheres, (list, np.ndarray)):
@@ -476,9 +483,13 @@ class NiftiSpheresMasker(BaseMasker):
                     f"masker only has {len(seeds)} seeds."
                 )
             spheres_to_be_displayed = self.displayed_spheres
-        self._report_content["displayed_spheres"] = list(
-            spheres_to_be_displayed
-        )
+        # extend spheres_to_be_displayed by 1
+        # as the default image is a glass brain with all the spheres
+        tmp = [0]
+        spheres_to_be_displayed = np.asarray(spheres_to_be_displayed) + 1
+        tmp.extend(spheres_to_be_displayed.tolist())
+        self._report_content["displayed_maps"] = tmp
+
         columns = [
             "seed number",
             "coordinates",
@@ -489,6 +500,7 @@ class NiftiSpheresMasker(BaseMasker):
             "relative size (in %)",
         ]
         regions_summary = {c: [] for c in columns}
+
         radius = 1.0 if self.radius is None else self.radius
         display = plotting.plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
@@ -505,7 +517,8 @@ class NiftiSpheresMasker(BaseMasker):
                 round(4.0 / 3.0 * np.pi * radius**3, 2)
             )
             regions_summary["relative size (in %)"].append("not implemented")
-            if idx in spheres_to_be_displayed:
+
+            if idx + 1 in self._report_content["displayed_maps"]:
                 display = plotting.plot_img(img, cut_coords=seed, cmap="gray")
                 display.add_markers(
                     marker_coords=[seed],
@@ -514,23 +527,27 @@ class NiftiSpheresMasker(BaseMasker):
                 )
                 embeded_images.append(embed_img(display))
                 display.close()
+
+        assert len(embeded_images) == len(
+            self._report_content["displayed_maps"]
+        )
+
         self._report_content["summary"] = regions_summary
 
         return embeded_images
 
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     def fit(
         self,
-        X=None,
-        y=None,  # noqa: ARG002
+        imgs=None,
+        y=None,
     ):
         """Prepare signal extraction from regions.
 
         All parameters are unused; they are for scikit-learn compatibility.
 
         """
-        if hasattr(self, "seeds_"):
-            return self
-
+        del y
         self._report_content = {
             "description": (
                 "This reports shows the regions defined "
@@ -546,21 +563,15 @@ class NiftiSpheresMasker(BaseMasker):
             "native space.\n"
         )
 
-        if self.mask_img is not None:
-            self.mask_img_ = check_niimg_3d(self.mask_img)
-            # Just check that the mask is valid
-            load_mask_img(self.mask_img_)
+        self.mask_img_ = self._load_mask(imgs)
 
-        else:
-            self.mask_img_ = None
-
-        if X is not None:
+        if imgs is not None:
             if self.reports:
                 if self.mask_img_ is not None:
                     # TODO switch to force_resample=True
                     # when bumping to version > 0.13
                     resampl_imgs = self._cache(resample_img)(
-                        X,
+                        imgs,
                         target_affine=self.mask_img_.affine,
                         copy=False,
                         interpolation="nearest",
@@ -568,7 +579,7 @@ class NiftiSpheresMasker(BaseMasker):
                         force_resample=False,
                     )
                 else:
-                    resampl_imgs = X
+                    resampl_imgs = imgs
                 # Store 1 timepoint to pass to reporter
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
         elif self.reports:  # imgs not provided to fit
@@ -612,7 +623,8 @@ class NiftiSpheresMasker(BaseMasker):
 
         return self
 
-    def fit_transform(self, imgs, confounds=None, sample_mask=None):
+    @fill_doc
+    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction.
 
         Parameters
@@ -623,18 +635,13 @@ class NiftiSpheresMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
-            default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
-            shape: (number of scans, number of confounds)
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
-            shape: (number of scans - number of volumes removed, )
+        %(confounds)s
+
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 
@@ -645,6 +652,7 @@ class NiftiSpheresMasker(BaseMasker):
             shape: (number of scans, number of spheres)
 
         """
+        del y
         return self.fit(imgs).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
@@ -652,6 +660,7 @@ class NiftiSpheresMasker(BaseMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "seeds_") and hasattr(self, "n_elements_")
 
+    @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from a single 4D niimg.
 
@@ -663,18 +672,9 @@ class NiftiSpheresMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
-            default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details.
-            shape: (number of scans, number of confounds)
+        %(confounds)s
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
-            shape: (number of scans - number of volumes removed, )
+        %(sample_mask)s
 
                 .. versionadded:: 0.8.0
 
@@ -750,10 +750,12 @@ class NiftiSpheresMasker(BaseMasker):
         """
         check_is_fitted(self)
 
+        self._check_signal_shape(region_signals)
+
         logger.log("computing image from signals", verbose=self.verbose)
 
-        if self.mask_img is not None:
-            mask = check_niimg_3d(self.mask_img)
+        if self.mask_img_ is not None:
+            mask = check_niimg_3d(self.mask_img_)
         else:
             raise ValueError(
                 "Please provide mask_img at initialization to "
@@ -771,4 +773,4 @@ class NiftiSpheresMasker(BaseMasker):
             adjacency = adjacency.dot(sparse.diags(scale))
 
         img = adjacency.T.dot(region_signals.T).T
-        return unmask(img, self.mask_img)
+        return unmask(img, self.mask_img_)

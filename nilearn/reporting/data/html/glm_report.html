@@ -2,7 +2,7 @@
 <!--  -->
 {{def navbar}}
 <!-- Adapted from Pure CSS navbar : https://purecss.io/layouts/tucked-menu-vertical/ -->
-<nav class="navbar pure-g fw-bold" id="menu">
+<nav class="navbar pure-g fw-bold" id="menu" {{show_navbar|html}}>
   <script>
     var unique_id = "{{unique_id}}";
   </script>
@@ -102,136 +102,169 @@
 {{enddef}}
 <!--  -->
 {{def report}}
-<section id="model-details-{{unique_id}}">
-  <h2>Model details</h2>
-  {{ parameters|html }}
-</section>
 
-<section id="design-matrix-{{unique_id}}">
-  <h2>Design Matrix</h2>
-  <div class="d-flex flex-wrap justify-content-evenly">
+<div class="report">
+  <section>
+    <h2>Description</h2>
+    {{ method_section|html }}
+  </section>
+
+  <section id="model-details-{{unique_id}}">
+    <h2>Model details</h2>
+    <div class="table-container">{{ parameters|html }}</div>
+  </section>
+
+  <section id="design-matrix-{{unique_id}}">
+    <h2>Design Matrix</h2>
+
     {{if design_matrices_dict}}
     <!--  -->
     {{py: design_matrices = design_matrices_dict.items()}}
     <!--  -->
     {{for dmtx_title, dmtx in design_matrices}}
-    <div class="scroll-x">
-      <img
-        class="pure-img"
-        src="data:image/svg+xml,{{dmtx}}"
-        alt="Plot of Design Matrix used in {{dmtx_title}}."
-      />
+    <div class="d-flex flex-column">
+      <h3>run {{dmtx_title}}</h3>
+      <div class="scroll-y">
+        {{py: is_bytes = not dmtx.design_matrix_png.endswith('.png')}}
+        <img
+          class="pure-img"
+          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.design_matrix_png}}"
+          title="Plot of design matrix for {{dmtx_title}}."
+          alt="Plot of design matrix for {{dmtx_title}}."
+          style="min-width: 600px"
+        />
+      </div>
+
+      {{if dmtx.correlation_matrix_png }}
+      <h4>correlation matrix</h4>
+      <div class="scroll-y">
+        <!--  -->
+        {{py: is_bytes = is_bytes = not dmtx.correlation_matrix_png.endswith('.png')}}
+        <!--  -->
+        <img
+          class="pure-img"
+          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.correlation_matrix_png}}"
+          title="Plot of correlation of design matrix for run {{dmtx_title}}."
+          alt="Plot of correlation of design matrix for run {{dmtx_title}}."
+          style="min-width: 600px"
+        />
+      </div>
+      {{endif}}
     </div>
     {{endfor}}
     <!--  -->
     {{else}}
     <p>No design matrix was provided.</p>
     {{endif}}
-  </div>
-</section>
+  </section>
 
-<section id="mask-{{unique_id}}">
-  <h2>Mask</h2>
-  <div class="d-flex justify-content-evenly">
+  <section id="contrasts-{{unique_id}}">
+    <h2>Contrasts</h2>
+    <div class="d-flex flex-column">
+      {{if contrasts_dict}}
+      <!--  -->
+      {{py: runs = contrasts_dict.items()}} {{for i_run, all_contrasts in runs}}
+      <!--  -->
+      {{py: contrasts = all_contrasts.items()}} {{for contrast_name,
+      contrast_plot in contrasts}}
+      <div class="scroll-y">
+        {{py: is_bytes = not contrast_plot.endswith('.png')}}
+        <img
+          class="pure-img"
+          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{contrast_plot}}"
+          title="Plot of the contrast {{contrast_name}} (run {{ i_run }})."
+          alt="Plot of the contrast {{contrast_name}} (run {{ i_run }})."
+          style="min-width: 600px"
+        />
+      </div>
+      {{endfor}}
+      <!--  -->
+      {{endfor}}
+      <!--  -->
+      {{else}}
+      <p>No contrast was provided.</p>
+      {{endif}}
+    </div>
+  </section>
+
+  <section id="mask-{{unique_id}}">
+    <h2>Mask</h2>
     {{if mask_plot}}
-    <img
-      class="pure-img"
-      width="75%"
-      src="data:image/svg+xml;base64, {{mask_plot}}"
-      alt="Mask image."
-    />
+    <div class="scroll-y">
+      <img
+        class="pure-img"
+        src="data:image/png;base64,{{mask_plot}}"
+        alt="Mask image"
+        title="Mask image"
+        style="min-width: 600px"
+      />
+    </div>
     {{else}}
     <p>No mask was provided.</p>
     {{endif}}
-  </div>
-</section>
-
-<section id="contrasts-{{unique_id}}">
-  <h2>Contrasts</h2>
-  <div class="d-flex flex-wrap justify-content-evenly">
-    {{if contrasts_dict}}
-    <!--  -->
-    {{py: contrasts = contrasts_dict.items()}}
-    <!--  -->
-    {{for contrast_name, contrast_plot in contrasts}}
-    <div class="scroll-x" style="padding-top: 10px">
-      <img
-        class="pure-img"
-        src="data:image/svg+xml,{{contrast_plot}}"
-        alt="Plot of the contrast: {{contrast_name}}."
-      />
+    {{if n_elements }}
+    <div class="pure-u-1 pure-u-md-3-3">
+      <p>
+        The mask includes {{ n_elements }} voxels ({{ coverage }} %) of the image.
+      </p>
     </div>
-    {{endfor}}
-    <!--  -->
-    {{else}}
-    <p>No contrast was provided.</p>
     {{endif}}
-  </div>
-</section>
+  </section>
 
-<section id="statistical-maps-{{unique_id}}">
-  <h2>Statistical Maps</h2>
-  {{if statistical_maps}}
-  <div class="pure-g">
-    {{py: contrasts = statistical_maps.items()}}
-    <!--  -->
-    {{for contrast_name, maps in contrasts}}
-    <div class="pure-u-1 pure-u-md-1-2">
-      <h3>{{contrast_name}}</h3>
+  <section id="statistical-maps-{{unique_id}}">
+    <h2>Statistical Maps</h2>
+    <div class="pure-g">
+      {{if results}}
+      <!--  -->
+      {{py: results = results.items()}}
+      <!--  -->
+      {{for contrast_name, details in results}}
+      <!--  -->
 
-      {{py: images = maps.items()}}
-      <!--  -->
-      {{for key, value in images}}
-      <!--  -->
-      {{if key == "stat_map_img"}}
-      <div class="d-flex justify-content-evenly">
-        <img
-          class="pure-img"
-          src="data:image/svg+xml;base64,{{value}}"
-          alt="Stat map plot for the contrast: {{contrast_name}}"
-        />
+      <div class="pure-u-1">
+        <h3>{{contrast_name}}</h3>
+
+        <div class="d-flex flex-column">
+          <div class="scroll-y">
+            <img
+              class="pure-img"
+              src="data:image/png;base64,{{ details.stat_map_img }}"
+              alt="Stat map plot for the contrast: {{contrast_name}}"
+              title="Stat map plot for the contrast: {{contrast_name}}"
+              style="min-width: 600px"
+            />
+          </div>
+
+          <details>
+            <summary class="pure-button button-small contrast-button">
+              Cluster Table
+            </summary>
+            {{if details.cluster_table_details }}
+            <!--  -->
+            {{ details.cluster_table_details|html }}
+            <!--  -->
+            {{else}}
+            <p>No cluster table parameter provided</p>
+            {{endif}}
+            <!--  -->
+            {{ details.cluster_table|html }}
+          </details>
+        </div>
       </div>
-      {{elif key == "contrast_img"}}
-      <details>
-        <summary class="pure-button button-small contrast-button">
-          Contrast Plot
-        </summary>
-        <img
-          class="pure-img"
-          src="data:image/svg+xml,{{value}}"
-          alt="Stat map plot for the contrast: {{contrast_name}}"
-        />
-      </details>
+      {{endfor}} {{else}}
+      <div class="d-flex flex-wrap justify-content-evenly">
+        <p style="letter-spacing: normal">No statistical map was provided.</p>
+      </div>
+
       {{endif}}
-      <!--  -->
-      {{endfor}}
-
-      <details>
-        <summary class="pure-button button-small contrast-button">
-          Cluster Table
-        </summary>
-        {{if cluster_table_details}} {{ cluster_table_details|html }} {{else}}
-        <p>No cluster table parameter provided</p>
-        {{endif}}
-        <!--  -->
-        {{cluster_table}}
-      </details>
     </div>
-    {{endfor}}
-    <!--  -->
-  </div>
-  {{else}}
-  <div class="d-flex flex-wrap justify-content-evenly">
-    <p>No statistical map was provided.</p>
-  </div>
-  {{endif}}
-</section>
+  </section>
 
-<section id="about-{{unique_id}}" style="text-align: left">
-  <h2>About</h2>
-  <ul>
-    <li>Date preprocessed: <time>{{date}}</time></li>
-  </ul>
-</section>
-
+  <section id="about-{{unique_id}}" style="text-align: left">
+    <h2>About</h2>
+    <ul>
+      <li>Date preprocessed: <time>{{date}}</time></li>
+    </ul>
+  </section>
+</div>
 {{enddef}}

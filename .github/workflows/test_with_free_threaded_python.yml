@@ -1,0 +1,64 @@
+---
+# Runs tests suite with free threaded python.
+#
+###
+name: test free threaded python
+
+on:
+    schedule:
+    # Run every 1rst of the month
+    -   cron: 0 8 1 * *
+
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+# Force to use color
+env:
+    FORCE_COLOR: true
+
+jobs:
+
+    test_and_coverage:
+        if: github.repository == 'nilearn/nilearn'
+        name: 'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: true
+            matrix:
+                description: [latest dependencies]
+                py: [3.13t]
+                os: [ubuntu-latest, macos-latest, windows-latest]
+                env: [plotting]
+        steps:
+        -   uses: actions/checkout@v4
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v6
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: ${{ matrix.py }}
+                allow-prereleases: true
+        -   name: Install tox
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+        -   name: Show tox config
+            run: tox c
+        -   name: Run test suite
+            run: |
+                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
+                tox run -e plot_test_timing
+        -   name: Upload test report
+            if: success() || failure()
+            uses: actions/upload-artifact@v4
+            with:
+                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report.html
+                path: report.html
+        -   name: Upload test timings
+            if: success() || failure()
+            uses: actions/upload-artifact@v4
+            with:
+                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
+                path: results/pytest_output

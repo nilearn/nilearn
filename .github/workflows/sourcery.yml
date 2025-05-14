@@ -11,9 +11,9 @@
 name: Check codebase using Sourcery
 
 on:
-  # TODO Test once after merging PR and see how the action behaves
     push:
         branches: [main]
+
     schedule:
 
         # Uses the cron schedule for github actions
@@ -33,8 +33,16 @@ on:
             # Run first day of the month at midnight UTC
     -   cron: 0 0 1 * *
 
+    # Allows you to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 jobs:
     review-with-sourcery:
+        if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
         steps:
         -   uses: actions/checkout@v4
@@ -46,4 +54,4 @@ jobs:
         -   uses: sourcery-ai/action@v1
             with:
                 token: ${{ secrets.SOURCERY_TOKEN }}
-                fix: true
+                in_place: true

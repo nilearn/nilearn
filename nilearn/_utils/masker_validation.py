@@ -1,19 +1,18 @@
 import warnings
 from collections.abc import Iterable
-from pathlib import Path
 from string import Template
 
 import numpy as np
-from nibabel import Nifti1Image
 
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
+from nilearn._utils.logger import find_stack_level
 from nilearn.surface import SurfaceImage
+from nilearn.typing import NiimgLike
 
 from .cache_mixin import check_memory
 from .class_inspect import get_params
 
 
-def check_embedded_masker(estimator, masker_type="multi_nii"):
+def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     """Create a masker from instance parameters.
 
     Base function for using a masker within a BaseEstimator class
@@ -39,6 +38,10 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
         Indicates whether to return a MultiNiftiMasker, NiftiMasker, or a
         SurfaceMasker.
 
+    ignore : None or list of strings
+        Names of the parameters of the estimator that should not be
+        transferred to the new masker.
+
     Returns
     -------
     masker : MultiNiftiMasker, NiftiMasker, \
@@ -46,14 +49,22 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
         New masker
 
     """
+    from nilearn.glm.first_level import FirstLevelModel
+    from nilearn.glm.second_level import SecondLevelModel
+    from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
+
     if masker_type == "surface":
         masker_type = SurfaceMasker
     elif masker_type == "multi_nii":
         masker_type = MultiNiftiMasker
     else:
         masker_type = NiftiMasker
-    estimator_params = get_params(masker_type, estimator)
+
+    estimator_params = get_params(masker_type, estimator, ignore=ignore)
+
     mask = getattr(estimator, "mask", None)
+    if isinstance(estimator, (FirstLevelModel, SecondLevelModel)):
+        mask = getattr(estimator, "mask_img", None)
 
     if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
         # Creating masker from provided masker
@@ -83,7 +94,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
                 attribute="memory",
                 default_value="Memory(location=None)",
             ),
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         new_masker_params["memory"] = check_memory(None)
 
@@ -94,7 +105,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
             warning_msg.substitute(
                 attribute="memory_level", default_value="0"
             ),
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         new_masker_params["memory_level"] = 0
 
@@ -103,7 +114,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
     else:
         warnings.warn(
             warning_msg.substitute(attribute="verbose", default_value="0"),
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         new_masker_params["verbose"] = 0
 
@@ -125,7 +136,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii"):
             "Overriding provided-default estimator parameters with"
             f" provided masker parameters :\n{conflict_string}"
         )
-        warnings.warn(warn_str, stacklevel=3)
+        warnings.warn(warn_str, stacklevel=find_stack_level())
 
     masker = masker_type(**new_masker_params)
 
@@ -143,8 +154,10 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
     Images to fit should be a Niimg-Like
     if the mask is a NiftiImage, NiftiMasker or a path.
     Similarly, only SurfaceImages can be fitted
-    with a SurfaceImage or a SrufaceMasked as mask.
+    with a SurfaceImage or a SurfaceMasker as mask.
     """
+    from nilearn.maskers import NiftiMasker, SurfaceMasker
+
     if mask_img is None:
         return None
 
@@ -157,18 +170,26 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
         f"and images of type: {[type(x) for x in run_imgs]}"
     )
 
-    volumetric_type = (Nifti1Image, NiftiMasker, str, Path)
+    volumetric_type = (*NiimgLike, NiftiMasker)
+    surface_type = (SurfaceImage, SurfaceMasker)
+    all_allowed_types = (*volumetric_type, *surface_type)
+
+    if not isinstance(mask_img, all_allowed_types):
+        raise TypeError(
+            "\nMask should be of type: "
+            f"{[x.__name__ for x in all_allowed_types]}.\n"
+            f"Got : '{mask_img.__class__.__name__}'"
+        )
+
     if isinstance(mask_img, volumetric_type) and any(
-        not isinstance(x, (Nifti1Image, str, Path)) for x in run_imgs
+        not isinstance(x, NiimgLike) for x in run_imgs
     ):
         raise TypeError(
             f"{msg} "
             f"where images should be NiftiImage-like instances "
             f"(Nifti1Image or str or Path)."
         )
-
-    surface_type = (SurfaceImage, SurfaceMasker)
-    if isinstance(mask_img, surface_type) and any(
+    elif isinstance(mask_img, surface_type) and any(
         not isinstance(x, SurfaceImage) for x in run_imgs
     ):
         raise TypeError(

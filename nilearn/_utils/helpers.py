@@ -3,6 +3,10 @@ import operator
 import os
 import warnings
 
+from packaging.version import parse
+
+from nilearn._utils.logger import find_stack_level
+
 OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
 
 
@@ -35,7 +39,7 @@ def set_mpl_backend(message=None):
         )
         if message is not None:
             warning = f"{message}\n{warning}"
-        warnings.warn(warning)
+        warnings.warn(warning, stacklevel=find_stack_level())
         raise
     else:
         # When matplotlib was successfully imported we need to check
@@ -62,7 +66,10 @@ def set_mpl_backend(message=None):
 
         if new_backend != current_backend:
             # Matplotlib backend has been changed, let's warn the user
-            warnings.warn(f"Backend changed to {new_backend}...")
+            warnings.warn(
+                f"Backend changed to {new_backend}...",
+                stacklevel=find_stack_level(),
+            )
 
 
 def rename_parameters(
@@ -137,7 +144,7 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
         warnings.warn(
             category=DeprecationWarning,
             message=param_deprecation_msg,
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
 
 
@@ -200,7 +207,9 @@ def remove_parameters(removed_params, reason, end_version="future"):
                     f"{reason}"
                 )
                 warnings.warn(
-                    category=DeprecationWarning, message=message, stacklevel=2
+                    category=DeprecationWarning,
+                    message=message,
+                    stacklevel=find_stack_level(),
                 )
             return func(*args, **kwargs)
 
@@ -263,8 +272,6 @@ def compare_version(version_a, operator, version_b):
         The result of the version comparison.
 
     """
-    from packaging.version import parse
-
     if operator not in VERSION_OPERATORS:
         error_msg = "'compare_version' received an unexpected operator "
         raise ValueError(error_msg + operator + ".")
@@ -335,7 +342,9 @@ def check_copy_header(copy_header):
             "`copy_header=True`."
         )
         warnings.warn(
-            category=FutureWarning, message=copy_header_default, stacklevel=3
+            category=FutureWarning,
+            message=copy_header_default,
+            stacklevel=find_stack_level(),
         )
 
 

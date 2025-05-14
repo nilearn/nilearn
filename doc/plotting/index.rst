@@ -45,15 +45,15 @@ different heuristics to find cutting coordinates.
      :target: ../auto_examples/03_connectivity/plot_sphere_based_connectome.html
      :scale: 50
 
-.. |plot_anat| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_003.png
+.. |plot_anat| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_004.png
      :target: ../auto_examples/01_plotting/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_004.png
+.. |plot_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_005.png
      :target: ../auto_examples/01_plotting/plot_demo_plotting.html
      :scale: 50
 
-.. |plot_epi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_005.png
+.. |plot_epi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_plotting_006.png
      :target: ../auto_examples/01_plotting/plot_demo_plotting.html
      :scale: 50
 
@@ -170,27 +170,23 @@ Different display modes
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_z_small| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_005.png
+.. |plot_xz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_005.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_xz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_006.png
+.. |plot_yx| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_006.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_yx| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_007.png
+.. |plot_yz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_007.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_yz| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_008.png
+.. |plot_tiled| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_008.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_tiled| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_009.png
-     :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
-     :scale: 50
-
-.. |plot_mosaic| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_010.png
+.. |plot_mosaic| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_009.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 30
 
@@ -224,11 +220,6 @@ Different display modes
 |plot_y_small|     ``display_mode="y", cut_coords=1``
                    |hack|
                    Cutting in the y direction, with only 1 cut, that is
-                   automatically positioned
-
-|plot_z_small|     ``display_mode="z", cut_coords=1, colorbar=False``
-                   |hack|
-                   Cutting in the z direction, with only 1 cut, that is
                    automatically positioned
 
 |plot_xz|          ``display_mode="xz", cut_coords=[36, 60]``
@@ -279,13 +270,11 @@ image below
 
 .. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_colormaps_001.png
      :target: ../auto_examples/01_plotting/plot_colormaps.html
-     :scale: 50
 
 These colormaps can be used as any other matplotlib colormap.
 
 .. image:: ../auto_examples/01_plotting/images/sphx_glr_plot_colormaps_002.png
      :target: ../auto_examples/01_plotting/plot_colormaps.html
-     :scale: 50
 
 
 .. _display_modules:
@@ -302,19 +291,19 @@ plot, and has methods to add overlays, contours or edge maps:
 
         display = plotting.plot_epi(...)
 
-.. |plot_edges| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_013.png
+.. |plot_edges| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_012.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_contours| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_014.png
+.. |plot_contours| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_013.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_fill| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_015.png
+.. |plot_fill| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_014.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 
-.. |plot_markers| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_016.png
+.. |plot_markers| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_demo_more_plotting_015.png
      :target: ../auto_examples/01_plotting/plot_demo_more_plotting.html
      :scale: 50
 

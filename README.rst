@@ -40,7 +40,7 @@
 nilearn
 =======
 
-Nilearn enables approachable and versatile analyses of brain volumes.
+Nilearn enables approachable and versatile analyses of brain volumes and surfaces.
 It provides statistical and machine-learning tools, with instructive documentation & friendly community.
 
 It supports general linear model (GLM) based analysis
