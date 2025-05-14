@@ -502,11 +502,11 @@ def check_masker_dict_unchanged(estimator):
         try:
             assert dict_after == dict_before
         except AssertionError as e:
-            extra_keys = set(dict_after.keys()) - set(dict_before.keys())
-            if len(extra_keys) > 0:
+            unmatched_keys = set(dict_after.keys()) ^ set(dict_before.keys())
+            if len(unmatched_keys) > 0:
                 raise ValueError(
                     "Estimator changes '__dict__' keys during transform.\n"
-                    f"{extra_keys} \n"
+                    f"{unmatched_keys} \n"
                 )
 
             difference = {}
