@@ -52,6 +52,11 @@ Atlases
 Deterministic atlases
 ^^^^^^^^^^^^^^^^^^^^^
 
+.. _listing_deterministic_atlases:
+
+.. include:: deterministic_atlases.md
+   :parser: myst_parser.sphinx_
+
 .. currentmodule:: nilearn.datasets
 
 .. autosummary::
@@ -75,6 +80,11 @@ Deterministic atlases
 Probabilistic atlases
 ^^^^^^^^^^^^^^^^^^^^^
 
+.. _listing_probabilistic_atlases:
+
+.. include:: probabilistic_atlases.md
+   :parser: myst_parser.sphinx_
+
 .. currentmodule:: nilearn.datasets
 
 .. autosummary::
@@ -90,29 +100,28 @@ Probabilistic atlases
    fetch_atlas_pauli_2017
    fetch_atlas_smith_2009
 
-Atlases descriptions
-^^^^^^^^^^^^^^^^^^^^
-
+.. the following is here to avoid warning during the doc build
 .. toctree::
-    :titlesonly:
+    :hidden:
 
+    description/craddock_2012.rst
+    description/difumo_atlases.rst
+    description/msdl_atlas.rst
+    description/dosenbach_2010.rst
+    description/power_2011.rst
+    description/seitzman_2018.rst
     description/aal.rst
     description/allen_rsn_2011.rst
     description/basc_multiscale_2015.rst
-    description/craddock_2012.rst
     description/destrieux_surface.rst
-    description/difumo_atlases.rst
     description/harvard_oxford.rst
     description/juelich.rst
-    description/msdl_atlas.rst
     description/pauli_2017.rst
     description/schaefer_2018.rst
     description/smith_2009.rst
     description/talairach_atlas.rst
     description/yeo_2011.rst
-    description/dosenbach_2010.rst
-    description/power_2011.rst
-    description/seitzman_2018.rst
+
 
 Preprocessed datasets
 ---------------------

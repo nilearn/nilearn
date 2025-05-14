@@ -97,7 +97,10 @@ bibtex_footbibliography_header = ""
 
 # General information about the project.
 project = "Nilearn"
-copyright = "The nilearn developers"
+
+copyright = """The nilearn developers
+- Code and documentation distributed under BSD license."""
+
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -369,7 +372,7 @@ copybutton_prompt_text = ">>> "
 
 trim_doctests_flags = True
 
-_python_doc_base = "https://docs.python.org/3.9"
+_python_doc_base = "https://docs.python.org/3.10"
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {

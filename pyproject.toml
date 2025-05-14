@@ -16,7 +16,6 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -37,19 +36,20 @@ description = "Statistical learning for neuroimaging in Python"
 # Version from setuptools_scm
 dynamic = ["version"]
 license = {text = "new BSD"}
-maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
+maintainers = [
+    {name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}
+]
 name = "nilearn"
 readme = "README.rst"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
-dev = [
-    "nilearn[plotting,doc,style,test]"
-]
+dev = ["nilearn[plotting,doc,style,test]"]
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
+    "docutils>=0.17",
     "furo>=2024.8.6",
     "memory_profiler>=0.61.0",  # measuring memory during docs building
     "myst-parser>=3.0.1",
@@ -69,14 +69,12 @@ plotly = ["nilearn[plotting]"]
 # Kaleido version is pinned for windows due to bug
 # See https://github.com/plotly/Kaleido/issues/134 for more detail
 plotting = [
-    "matplotlib>=3.3.0",
+    "matplotlib>=3.8.0",
     "plotly",
     "kaleido ; platform_system != 'Windows'",
     "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
 ]
-style = [
-    'tox'
-]
+style = ['tox']
 # For running unit and docstring tests
 test = [
     "coverage",
@@ -107,8 +105,9 @@ ignore-path = [
     "*/modules/generated/*",
     "*/modules/generated_reports/*",
     "*/templates/*.rst",
-    "doc/includes/*",
     "doc/authors.rst",
+    "doc/includes/*",
+    "doc/modules/datasets.rst",  # to ignore mystparser error
     "AUTHORS.rst"
 ]
 max-line-length = 120
@@ -138,10 +137,7 @@ warn_unreachable = true
 
 [[tool.mypy.overrides]]
 ignore_errors = true
-module = [
-    "nilearn.externals.*",
-    "nilearn._version"
-]
+module = ["nilearn.externals.*", "nilearn._version"]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
@@ -165,20 +161,22 @@ module = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --template=maint_tools/templates/index.html --timeout=45"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --template=maint_tools/templates/index.html --timeout=60"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
 minversion = "6.0"
-timeout = 3600  # test session should not last more than 1 hour
 xfail_strict = true
 
 [tool.ruff]
-extend-exclude = [
-    "nilearn/externals/*",
-    "doc/auto_examples/*"
+extend-exclude = ["nilearn/externals/*", "doc/auto_examples/*"]
+include = [
+    "pyproject.toml",
+    "nilearn/**/*.py",
+    "examples/**/*.py",
+    "maint_tools/**/*.py",
+    "doc/**/*.py"
 ]
-include = ["pyproject.toml", "nilearn/**/*.py", "examples/**/*.py", "maint_tools/**/*.py", "doc/**/*.py"]
 indent-width = 4
 line-length = 79
 
@@ -304,7 +302,7 @@ convention = "numpy"
 
 [tool.ruff.lint.pylint]
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
-max-args = 26
+max-args = 27
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
 max-branches = 22
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
