@@ -1575,7 +1575,7 @@ def check_multi_masker_transformer_high_variance_confounds(estimator):
     Ensure that high_variance_confounds can be used with regular confounds,
     and that results are different than when just using the confounds alone.
     """
-    length = 100
+    length = 20
 
     data = _rng().random((*_shape_3d_default(), length))
     input_img = Nifti1Image(data, _affine_eye())
