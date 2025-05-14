@@ -16,6 +16,7 @@ from nilearn.image import (
     high_variance_confounds,
 )
 from nilearn.maskers.nifti_maps_masker import NiftiMapsMasker
+from nilearn.typing import NiimgLike
 
 
 @fill_doc
@@ -307,12 +308,24 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         """
         check_is_fitted(self)
 
-        if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
+        if not (confounds is None or isinstance(confounds, list)):
+            raise TypeError(
+                "'confounds' must be a None or a list. "
+                f"Got {confounds.__class__.__name__}."
+            )
+        if not (sample_mask is None or isinstance(sample_mask, list)):
+            raise TypeError(
+                "'confounds' must be a None or a list. "
+                f"Got {sample_mask.__class__.__name__}."
+            )
+        if isinstance(imgs, NiimgLike):
             confounds = (
-                confounds[0] if hasattr(confounds, "__iter__") else None
+                confounds[0] if isinstance(confounds, list) else confounds
             )
             sample_mask = (
-                sample_mask[0] if hasattr(sample_mask, "__iter__") else None
+                sample_mask[0]
+                if isinstance(sample_mask, list)
+                else sample_mask
             )
             return super().transform(
                 imgs, confounds=confounds, sample_mask=sample_mask

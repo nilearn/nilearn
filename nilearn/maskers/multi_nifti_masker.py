@@ -42,6 +42,7 @@ from nilearn.masking import (
     compute_multi_epi_mask,
     load_mask_img,
 )
+from nilearn.typing import NiimgLike
 
 
 def _get_mask_strategy(strategy):
@@ -576,14 +577,25 @@ class MultiNiftiMasker(NiftiMasker):
         """
         check_is_fitted(self)
 
-        assert confounds is None or isinstance(confounds, list)
-        assert sample_mask is None or isinstance(sample_mask, list)
-
-        if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
-            if isinstance(confounds, list):
-                confounds = confounds[0]
-            if isinstance(sample_mask, list):
-                sample_mask = sample_mask[0]
+        if not (confounds is None or isinstance(confounds, list)):
+            raise TypeError(
+                "'confounds' must be a None or a list. "
+                f"Got {confounds.__class__.__name__}."
+            )
+        if not (sample_mask is None or isinstance(sample_mask, list)):
+            raise TypeError(
+                "'confounds' must be a None or a list. "
+                f"Got {sample_mask.__class__.__name__}."
+            )
+        if isinstance(imgs, NiimgLike):
+            confounds = (
+                confounds[0] if isinstance(confounds, list) else confounds
+            )
+            sample_mask = (
+                sample_mask[0]
+                if isinstance(sample_mask, list)
+                else sample_mask
+            )
             return super().transform(
                 imgs, confounds=confounds, sample_mask=sample_mask
             )
