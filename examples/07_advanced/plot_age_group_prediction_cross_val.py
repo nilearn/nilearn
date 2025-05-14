@@ -51,7 +51,7 @@ masker = NiftiMapsMasker(
 masked_data = [
     masker.transform(func, confounds)
     for (func, confounds) in zip(
-        development_dataset.func, development_dataset.confounds
+        development_dataset.func, development_dataset.confounds, strict=False
     )
 ]
 

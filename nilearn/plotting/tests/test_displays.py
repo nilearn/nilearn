@@ -154,7 +154,9 @@ def cut_coords(name):
     return (0,) * 4 if name in ["lr", "l"] else (0,) * 3
 
 
-@pytest.mark.parametrize("display,name", zip(SLICERS, SLICER_KEYS))
+@pytest.mark.parametrize(
+    "display,name", zip(SLICERS, SLICER_KEYS, strict=False)
+)
 def test_display_basics_slicers(display, name, img, cut_coords):
     """Basic smoke tests for all displays (slicers).
 
@@ -170,7 +172,9 @@ def test_display_basics_slicers(display, name, img, cut_coords):
     display.close()
 
 
-@pytest.mark.parametrize("display,name", zip(PROJECTORS, PROJECTOR_KEYS))
+@pytest.mark.parametrize(
+    "display,name", zip(PROJECTORS, PROJECTOR_KEYS, strict=False)
+)
 def test_display_basics_projectors(display, name, img, cut_coords):
     """Basic smoke tests for all displays (projectors).
 
@@ -413,7 +417,9 @@ def test_threshold(threshold, vmin, vmax, expected_results):
 
 
 @pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
-@pytest.mark.parametrize("display,name", zip(SLICERS, SLICER_KEYS))
+@pytest.mark.parametrize(
+    "display,name", zip(SLICERS, SLICER_KEYS, strict=False)
+)
 def test_display_slicers_transparency(
     display, img, name, cut_coords, transparency
 ):
@@ -430,7 +436,9 @@ def test_display_slicers_transparency(
 
 
 @pytest.mark.parametrize("transparency", [-2, 10])
-@pytest.mark.parametrize("display,name", zip(SLICERS, SLICER_KEYS))
+@pytest.mark.parametrize(
+    "display,name", zip(SLICERS, SLICER_KEYS, strict=False)
+)
 def test_display_slicers_transparency_warning(
     display, img, name, cut_coords, transparency
 ):
@@ -442,7 +450,9 @@ def test_display_slicers_transparency_warning(
 
 
 @pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
-@pytest.mark.parametrize("display,name", zip(PROJECTORS, PROJECTOR_KEYS))
+@pytest.mark.parametrize(
+    "display,name", zip(PROJECTORS, PROJECTOR_KEYS, strict=False)
+)
 def test_display_projectors_transparency(
     display, img, name, cut_coords, transparency
 ):
@@ -459,7 +469,9 @@ def test_display_projectors_transparency(
 
 
 @pytest.mark.parametrize("transparency", [-2, 10])
-@pytest.mark.parametrize("display,name", zip(PROJECTORS, PROJECTOR_KEYS))
+@pytest.mark.parametrize(
+    "display,name", zip(PROJECTORS, PROJECTOR_KEYS, strict=False)
+)
 def test_display_projectors_transparency_warning(
     display, img, name, cut_coords, transparency
 ):

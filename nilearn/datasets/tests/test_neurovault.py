@@ -90,7 +90,9 @@ def _get_neurovault_data():
     ]
     images["file"] = [
         url.format(col_id, img_name)
-        for (col_id, img_name) in zip(images["collection_id"], image_names)
+        for (col_id, img_name) in zip(
+            images["collection_id"], image_names, strict=False
+        )
     ]
 
     collections = collections.set_index("id", drop=False)
@@ -577,7 +579,9 @@ def test_neurosynth_words_vectorized(tmp_path):
     for i, file_name in enumerate(words_files):
         word_weights = np.zeros(n_im)
         word_weights[i] = 1
-        words_dict = {"data": {"values": dict(zip(words, word_weights))}}
+        words_dict = {
+            "data": {"values": dict(zip(words, word_weights, strict=False))}
+        }
         with file_name.open("wb") as words_file:
             words_file.write(json.dumps(words_dict).encode("utf-8"))
 

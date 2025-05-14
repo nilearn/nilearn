@@ -1379,7 +1379,7 @@ class PolyData:
             )
 
         parts = {}
-        for hemi, param in zip(["left", "right"], [left, right]):
+        for hemi, param in zip(["left", "right"], [left, right], strict=False):
             if param is not None:
                 if not isinstance(param, np.ndarray):
                     param = load_surf_data(param)

@@ -1386,7 +1386,9 @@ def check_multi_masker_with_confounds(estimator):
         confounds=[array, array],
     )
 
-    for signal_1, signal_2 in zip(signals_list_1, signals_list_2):
+    for signal_1, signal_2 in zip(
+        signals_list_1, signals_list_2, strict=False
+    ):
         assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
 
     with pytest.raises(
@@ -1418,7 +1420,7 @@ def check_multi_masker_transformer_sample_mask(estimator):
         sample_mask=[sample_mask1, sample_mask2],
     )
 
-    for ts, n_scrub in zip(signals_list, [n_scrub1, n_scrub2]):
+    for ts, n_scrub in zip(signals_list, [n_scrub1, n_scrub2], strict=False):
         assert ts.shape[0] == length - n_scrub
 
     with pytest.raises(

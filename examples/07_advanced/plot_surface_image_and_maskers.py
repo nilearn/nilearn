@@ -81,8 +81,8 @@ fig, axes = plt.subplots(
 )
 axes = np.atleast_2d(axes)
 
-for view, ax_row in zip(views, axes):
-    for ax, hemi in zip(ax_row, hemispheres):
+for view, ax_row in zip(views, axes, strict=False):
+    for ax, hemi in zip(ax_row, hemispheres, strict=False):
         if hemi == "both" and view == "lateral":
             view = "left"
         elif hemi == "both" and view == "medial":
