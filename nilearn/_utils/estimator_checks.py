@@ -892,6 +892,9 @@ def check_masker_transformer_high_variance_confounds(estimator):
             estimator = clone(estimator)
             estimator.high_variance_confounds = True
 
+            if is_multimasker(estimator):
+                confounds = [confounds]
+
             signal_3 = estimator.fit_transform(input_img, confounds=confounds)
 
             assert_raises(
@@ -1302,22 +1305,20 @@ def check_nifti_masker_fit_transform(estimator):
     """
     estimator.fit(_img_3d_rand())
 
-    signal = estimator.transform(_img_3d_rand())
+    for imgs in [
+        _img_3d_rand(),
+        [_img_3d_rand(), _img_3d_rand()],
+        _img_4d_rand_eye(),
+    ]:
+        signal = estimator.transform(imgs)
 
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (1, estimator.n_elements_)
+        if is_multimasker(estimator) and isinstance(imgs, list):
+            signal = signal[0]
 
-    estimator.transform([_img_3d_rand(), _img_3d_rand()])
+        assert isinstance(signal, np.ndarray)
+        assert signal.shape[1] == estimator.n_elements_
 
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (1, estimator.n_elements_)
-
-    estimator.transform(_img_4d_rand_eye())
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (1, estimator.n_elements_)
-
-    estimator.fit_transform(_img_3d_rand())
+    signal = estimator.fit_transform(_img_3d_rand())
 
     assert isinstance(signal, np.ndarray)
     assert signal.shape == (1, estimator.n_elements_)

@@ -1,7 +1,6 @@
 """Transformer for computing ROI signals of multiple 4D images."""
 
 import itertools
-from pathlib import Path
 
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -198,7 +197,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         Parameters
         ----------
         %(imgs)s
-            Images to process. Each element of the list is a 4D image.
+            Images to process.
 
         %(confounds_multi)s
 
@@ -257,8 +256,10 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         Parameters
         ----------
-        %(imgs)s
-            Images to process. Each element of the list is a 4D image.
+        imgs : Niimg-like object, \
+               or a :obj:`list` of Niimg-like objects
+            See :ref:`extracting_data`.
+            Data to be preprocessed
 
         %(confounds_multi)s
 
@@ -266,20 +267,24 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         Returns
         -------
-        region_signals : list of 2D :obj:`numpy.ndarray`
-            List of signals for each map per subject.
-            shape: list of (number of scans, number of maps)
+        signals : :obj:`numpy.ndarray` if a Niimg-like object was passed,
+               a :obj:`list` of :obj:`numpy.ndarray` otherwise \
+               (one array for each subject)
+            Extracted signals.
+            All :obj:`numpy.ndarray`
+            have a shape (number of scans, number of maps)
 
         """
         check_is_fitted(self)
-        if not hasattr(imgs, "__iter__") or isinstance(imgs, (str, Path)):
+
+        if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
             confounds = (
                 confounds[0] if hasattr(confounds, "__iter__") else None
             )
             sample_mask = (
                 sample_mask[0] if hasattr(sample_mask, "__iter__") else None
             )
-            return self.transform_single_imgs(
+            return super().transform(
                 imgs, confounds=confounds, sample_mask=sample_mask
             )
 

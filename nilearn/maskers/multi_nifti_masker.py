@@ -405,9 +405,8 @@ class MultiNiftiMasker(NiftiMasker):
 
         Parameters
         ----------
-        imgs_list : :obj:`list` of Niimg-like objects
-            See :ref:`extracting_data`.
-            List of imgs file to prepare. One item per subject.
+        %(imgs)s
+            Images to process.
 
         %(confounds_multi)s
 
@@ -520,7 +519,8 @@ class MultiNiftiMasker(NiftiMasker):
 
         Parameters
         ----------
-        imgs : :obj:`list` of Niimg-like objects
+        imgs : Niimg-like object, \
+               or a :obj:`list` of Niimg-like objects
             See :ref:`extracting_data`.
             Data to be preprocessed
 
@@ -532,8 +532,12 @@ class MultiNiftiMasker(NiftiMasker):
 
         Returns
         -------
-        data : :obj:`list` of :obj:`numpy.ndarray`
-            preprocessed images
+        signals : :obj:`numpy.ndarray` if a Niimg-like object was passed,
+               a :obj:`list` of :obj:`numpy.ndarray` otherwise \
+               (one array for each subject)
+            Extracted signals.
+            All :obj:`numpy.ndarray`
+            have a shape (number of scans, number of elements in the mask)
 
         Warns
         -----
@@ -546,32 +550,18 @@ class MultiNiftiMasker(NiftiMasker):
         """
         check_is_fitted(self)
 
-        all_confounds = []
-
         if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
-            if self.high_variance_confounds:
-                hv_confounds = self._cache(high_variance_confounds)(imgs)
-                all_confounds.append(hv_confounds)
-
             confounds = (
                 confounds[0] if hasattr(confounds, "__iter__") else None
             )
-            if confounds is not None:
-                if isinstance(confounds, list):
-                    all_confounds += confounds
-                else:
-                    all_confounds.append(confounds)
-
             sample_mask = (
                 sample_mask[0] if hasattr(sample_mask, "__iter__") else None
             )
-
-            if not all_confounds:
-                all_confounds = None
-
-            return self.transform_single_imgs(
-                imgs, confounds=all_confounds, sample_mask=sample_mask
+            return super().transform(
+                imgs, confounds=confounds, sample_mask=sample_mask
             )
+
+        all_confounds = []
 
         if self.high_variance_confounds:
             for i in imgs:
