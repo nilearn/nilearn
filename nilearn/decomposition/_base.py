@@ -480,13 +480,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             )
 
         masker_type = "nii"
-        if (
-            isinstance(self.mask, (SurfaceMasker, SurfaceImage))
-            or any(isinstance(x, SurfaceImage) for x in imgs)
-            or any(
-                isinstance(x, str) and x.endswith(SURFACE_DATA_EXTENSIONS)
-                for x in imgs
-            )
+        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
+            isinstance(x, SurfaceImage) for x in imgs
         ):
             masker_type = "surface"
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
