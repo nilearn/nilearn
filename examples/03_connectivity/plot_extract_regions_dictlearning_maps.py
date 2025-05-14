@@ -134,7 +134,7 @@ connectome_measure = ConnectivityMeasure(
     kind="correlation",
     standardize="zscore_sample",
 )
-for filename, confound in zip(func_filenames, confounds):
+for filename, confound in zip(func_filenames, confounds, strict=False):
     # call transform from RegionExtractor object to extract timeseries signals
     timeseries_each_subject = extractor.transform(filename, confounds=confound)
     # call fit_transform from ConnectivityMeasure object
@@ -217,7 +217,9 @@ display = plot_anat(
 
 # Add as an overlay all the regions of index 4
 colors = "rgbcmyk"
-for each_index_of_map3, color in zip(regions_indices_of_map3[0], colors):
+for each_index_of_map3, color in zip(
+    regions_indices_of_map3[0], colors, strict=False
+):
     display.add_overlay(
         image.index_img(regions_extracted_img, each_index_of_map3),
         cmap=cm.alpha_cmap(color),

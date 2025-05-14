@@ -197,7 +197,7 @@ def _mask_and_reduce(
             memory_level=memory_level,
             random_state=random_state,
         )
-        for img, confound in zip(imgs, confounds)
+        for img, confound in zip(imgs, confounds, strict=False)
     )
 
     subject_n_samples = [subject_data.shape[0] for subject_data in data_list]
@@ -568,7 +568,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             confounds = [None] * len(imgs)
         return [
             self.maps_masker_.transform(img, confounds=confound)
-            for img, confound in zip(imgs, confounds)
+            for img, confound in zip(imgs, confounds, strict=False)
         ]
 
     def inverse_transform(self, loadings):

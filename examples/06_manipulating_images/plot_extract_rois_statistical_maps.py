@@ -82,7 +82,9 @@ regions_value_img, index = connected_regions(
 from nilearn.plotting import plot_prob_atlas
 
 images = [regions_percentile_img, regions_value_img]
-for image, strategy in zip(images, ["percentile", "image intensity"]):
+for image, strategy in zip(
+    images, ["percentile", "image intensity"], strict=False
+):
     title = (
         f"ROIs using {strategy} thresholding. "
         "Each ROI in same color is an extracted region"

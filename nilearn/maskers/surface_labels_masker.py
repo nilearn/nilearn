@@ -3,7 +3,6 @@
 import copy
 import warnings
 from pathlib import Path
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -207,7 +206,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         return len(lut[lut["index"] != self.background_label])
 
     @property
-    def labels_(self) -> list[Union[int, float]]:
+    def labels_(self) -> list[int | float]:
         """Return list of labels of the regions."""
         check_is_fitted(self)
         lut = self.lut_
@@ -230,7 +229,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         return lut.loc[lut["index"] != self.background_label, "name"].to_dict()
 
     @property
-    def region_ids_(self) -> dict[Union[str, int], int]:
+    def region_ids_(self) -> dict[str | int, int]:
         """Return dictionary containing the region ids corresponding \n
            to each column in the array \n
            returned by `transform`.
@@ -572,8 +571,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         )
         axes = np.atleast_2d(axes)
 
-        for ax_row, view in zip(axes, views):
-            for ax, hemi in zip(ax_row, hemispheres):
+        for ax_row, view in zip(axes, views, strict=False):
+            for ax, hemi in zip(ax_row, hemispheres, strict=False):
                 if img:
                     plot_surf(
                         surf_map=img,

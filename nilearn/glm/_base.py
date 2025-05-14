@@ -402,6 +402,7 @@ def _generate_statistical_maps(
                 "p_value",
             ],
             ["effect", stat_type, "variance", "z", "p"],
+            strict=False,
         ):
             fields["entities"]["stat"] = stat_label
             tmp[key] = create_bids_filename(fields, entities_to_include)
@@ -455,6 +456,7 @@ def _generate_model_level_mapping(
         for key, stat_label in zip(
             ["residuals", "r_square"],
             ["errorts", "rsquared"],
+            strict=False,
         ):
             fields["entities"]["stat"] = stat_label
             tmp[key] = create_bids_filename(fields, entities_to_include)
@@ -494,6 +496,7 @@ def _generate_design_matrices_dict(
             for key, suffix in zip(
                 ["design_matrix", "correlation_matrix"],
                 ["design", "corrdesign"],
+                strict=False,
             ):
                 fields["extension"] = extension
                 fields["suffix"] = suffix
