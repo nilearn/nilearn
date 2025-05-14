@@ -1,8 +1,8 @@
 """Neuroimaging file input and output."""
 
 import collections.abc
-import copy
 import gc
+from copy import deepcopy
 from pathlib import Path
 from warnings import warn
 
@@ -49,7 +49,7 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
         nilearn.image.get_data return from Nifti image.
     """
     if copy_data:
-        img = copy.deepcopy(img)
+        img = deepcopy(img)
 
     # typically the line below can double memory usage
     # that's why we invoke a forced call to the garbage collector

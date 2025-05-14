@@ -1,7 +1,7 @@
 """Extract data from a SurfaceImage, averaging over atlas regions."""
 
-import copy
 import warnings
+from copy import deepcopy
 from pathlib import Path
 from typing import Union
 
@@ -281,7 +281,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "but not both."
             )
 
-        self.labels_img_ = copy.deepcopy(self.labels_img)
+        self.labels_img_ = deepcopy(self.labels_img)
 
         self.mask_img_ = self._load_mask(imgs)
         if self.mask_img_ is not None:
