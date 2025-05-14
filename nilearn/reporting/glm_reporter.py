@@ -75,6 +75,7 @@ if is_matplotlib_installed():
 def make_glm_report(
     model,
     contrasts=None,
+    first_level_contrast=None,
     title=None,
     bg_img="MNI152TEMPLATE",
     threshold=3.09,
@@ -130,6 +131,10 @@ def make_glm_report(
         (:func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast`)
         & second_level_contrast for SecondLevelModel
         (:func:`nilearn.glm.second_level.SecondLevelModel.compute_contrast`)
+
+    %(first_level_contrast)s
+
+        .. versionadded:: 0.11.2dev
 
     title : :obj:`str`, default=None
         If string, represents the web page's title and primary heading,
@@ -286,11 +291,17 @@ def make_glm_report(
             except KeyError:  # pragma: no cover
                 if contrasts is not None:
                     statistical_maps = make_stat_maps(
-                        model, contrasts, output_type="z_score"
+                        model,
+                        contrasts,
+                        output_type="z_score",
+                        first_level_contrast=first_level_contrast,
                     )
         elif contrasts is not None:
             statistical_maps = make_stat_maps(
-                model, contrasts, output_type="z_score"
+                model,
+                contrasts,
+                output_type="z_score",
+                first_level_contrast=first_level_contrast,
             )
 
         logger.log(

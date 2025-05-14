@@ -1038,12 +1038,10 @@ def test_fetch_spm_multimodal_missing_data(tmp_path, request_mocker):
         _generate_spm_multimodal()
     )
 
-    subject_id = "sub002"
+    subject_id = "sub001"
     subject_dir = tmp_path / "spm_multimodal_fmri" / subject_id
 
-    dataset = func.fetch_spm_multimodal_fmri(
-        data_dir=tmp_path, verbose=1, subject_id=subject_id
-    )
+    dataset = func.fetch_spm_multimodal_fmri(data_dir=tmp_path, verbose=1)
     assert (subject_dir / "fMRI").exists()
     assert (subject_dir / "sMRI").exists()
     assert isinstance(dataset, Bunch)
