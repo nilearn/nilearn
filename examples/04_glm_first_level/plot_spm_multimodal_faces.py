@@ -15,6 +15,8 @@ sampled in different positions (encoded by different affine functions).
 """
 
 # %%
+# Fetch and inspect the data
+# --------------------------
 # Fetch the :term:`SPM` multimodal_faces data.
 from nilearn.datasets import fetch_spm_multimodal_fmri
 
@@ -29,11 +31,18 @@ events = [subject_data.events1, subject_data.events2]
 events_dataframe = pd.read_csv(events[0], sep="\t")
 events_dataframe["trial_type"].value_counts()
 
+# %%
+# We can confirm there are only 2 conditions in the dataset.
+#
+from nilearn.plotting import plot_event, show
+
+plot_event(events)
+
+show()
 
 # %%
-# Resample the images.
-#
-# This is achieved by the concat_imgs function of Nilearn.
+# Resample the images:
+# this is achieved by the ``concat_imgs`` function of Nilearn.
 import warnings
 
 from nilearn.image import concat_imgs, mean_img, resample_img
@@ -55,17 +64,9 @@ fmri_img[1] = resample_img(
 # Let's create mean image for display purposes.
 mean_image = mean_img(fmri_img, copy_header=True)
 
-
 # %%
-# We can confirm there are only 2 conditions in the dataset.
-#
-from nilearn.plotting import plot_event, show
-
-plot_event(events)
-
-show()
-
-# %%
+# Fit the model
+# -------------
 # Fit the :term:`GLM` for the 2 runs
 # by specifying a FirstLevelModel and then fitting it.
 
@@ -93,6 +94,8 @@ fmri_glm = FirstLevelModel(
 fmri_glm = fmri_glm.fit(fmri_img, events=events)
 
 # %%
+# View the results
+# ----------------
 # Now we can compute contrast-related statistical maps (in z-scale),
 # and plot them.
 from nilearn.plotting import plot_stat_map
@@ -107,7 +110,6 @@ print("Computing contrasts")
 #
 
 contrasts = ["faces - scrambled", "scrambled - faces"]
-
 
 # %%
 # Let's store common parameters for all plots.
@@ -169,4 +171,4 @@ show()
 # more anterior and lateral regions.
 # It also displays some responses in the frontal lobe.
 
-# sphinx_gallery_dummy_images=3
+# sphinx_gallery_dummy_images=4
