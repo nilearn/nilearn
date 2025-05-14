@@ -23,16 +23,19 @@ from nilearn._utils import check_niimg, fill_doc, logger
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (
-    clustering_params_to_dataframe,
     dataframe_to_html,
 )
-from nilearn.reporting.get_clusters_table import get_clusters_table
+from nilearn.reporting.get_clusters_table import (
+    clustering_params_to_dataframe,
+    get_clusters_table,
+)
 from nilearn.reporting.html_report import (
     HTMLReport,
     _render_warnings_partial,
@@ -72,6 +75,7 @@ if is_matplotlib_installed():
 def make_glm_report(
     model,
     contrasts=None,
+    first_level_contrast=None,
     title=None,
     bg_img="MNI152TEMPLATE",
     threshold=3.09,
@@ -107,7 +111,7 @@ def make_glm_report(
         or :obj:`str` \
         or :obj:`list` of :obj:`str` \
         or ndarray or \
-        :obj:`list` of ndarray
+        :obj:`list` of ndarray, Default=None
 
         Contrasts information for a first or second level model.
 
@@ -127,6 +131,10 @@ def make_glm_report(
         (:func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast`)
         & second_level_contrast for SecondLevelModel
         (:func:`nilearn.glm.second_level.SecondLevelModel.compute_contrast`)
+
+    %(first_level_contrast)s
+
+        .. versionadded:: 0.11.2dev
 
     title : :obj:`str`, default=None
         If string, represents the web page's title and primary heading,
@@ -197,7 +205,7 @@ def make_glm_report(
         warnings.warn(
             ("No plotting back-end detected. Output will be missing figures."),
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     unique_id = str(uuid.uuid4()).replace("-", "")
@@ -233,6 +241,7 @@ def make_glm_report(
 
     design_matrices = None
     mask_plot = None
+    mask_info = {"n_elements": 0, "coverage": 0}
     results = None
     warning_messages = ["The model has not been fit yet."]
     if model.__sklearn_is_fitted__():
@@ -256,6 +265,16 @@ def make_glm_report(
 
         mask_plot = _mask_to_plot(model, bg_img, cut_coords)
 
+        mask_info = {
+            k: v
+            for k, v in model.masker_._report_content.items()
+            if k in ["n_elements", "coverage"]
+        }
+        if "coverage" in mask_info:
+            mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
+
+        clusters_tsvs = None
+        statistical_maps = {}
         if output is not None:
             # we try to rely on the content of glm object only
             try:
@@ -264,13 +283,25 @@ def make_glm_report(
                     / output["statistical_maps"][contrast_name]["z_score"]
                     for contrast_name in output["statistical_maps"]
                 }
+                clusters_tsvs = {
+                    contrast_name: output["dir"]
+                    / output["statistical_maps"][contrast_name]["clusters_tsv"]
+                    for contrast_name in output["statistical_maps"]
+                }
             except KeyError:  # pragma: no cover
-                statistical_maps = make_stat_maps(
-                    model, contrasts, output_type="z_score"
-                )
-        else:
+                if contrasts is not None:
+                    statistical_maps = make_stat_maps(
+                        model,
+                        contrasts,
+                        output_type="z_score",
+                        first_level_contrast=first_level_contrast,
+                    )
+        elif contrasts is not None:
             statistical_maps = make_stat_maps(
-                model, contrasts, output_type="z_score"
+                model,
+                contrasts,
+                output_type="z_score",
+                first_level_contrast=first_level_contrast,
             )
 
         logger.log(
@@ -288,6 +319,7 @@ def make_glm_report(
             cut_coords=cut_coords,
             display_mode=display_mode,
             plot_type=plot_type,
+            clusters_tsvs=clusters_tsvs,
         )
 
     design_matrices_dict = tempita.bunch()
@@ -356,6 +388,7 @@ def make_glm_report(
         date=date,
         show_navbar="style='display: none;'" if is_notebook() else "",
         method_section=method_section,
+        **mask_info,
     )
 
     # revert HTML safe substitutions in CSS sections
@@ -495,6 +528,7 @@ def _make_stat_maps_contrast_clusters(
     cut_coords,
     display_mode,
     plot_type,
+    clusters_tsvs,
 ):
     """Populate a smaller HTML sub-template with the proper values, \
     make a list containing one or more of such components \
@@ -505,7 +539,7 @@ def _make_stat_maps_contrast_clusters(
 
     Parameters
     ----------
-    stat_img : Niimg-like object or None
+    stat_img : dictionary of Niimg-like object or None
        Statistical image (presumably in z scale)
        whenever height_control is 'fpr' or None,
        stat_img=None is acceptable.
@@ -564,6 +598,8 @@ def _make_stat_maps_contrast_clusters(
     plot_type : string {'slice', 'glass'}
         The type of plot to be drawn.
 
+    clusters_tsvs : dictionary of path of to tsv files
+
     Returns
     -------
     results : dict
@@ -606,13 +642,30 @@ def _make_stat_maps_contrast_clusters(
 
         cluster_table_html = None
         if not isinstance(thresholded_img, SurfaceImage):
-            cluster_table = get_clusters_table(
-                thresholded_img,
-                stat_threshold=threshold,
-                cluster_threshold=cluster_threshold,
-                min_distance=min_distance,
-                two_sided=two_sided,
-            )
+            if clusters_tsvs:
+                # try to reuse results saved to disk by
+                # save_glm_to_bids
+                try:
+                    cluster_table = pd.read_csv(
+                        clusters_tsvs[contrast_name], sep="\t"
+                    )
+                except Exception:
+                    cluster_table = get_clusters_table(
+                        thresholded_img,
+                        stat_threshold=threshold,
+                        cluster_threshold=cluster_threshold,
+                        min_distance=min_distance,
+                        two_sided=two_sided,
+                    )
+            else:
+                cluster_table = get_clusters_table(
+                    thresholded_img,
+                    stat_threshold=threshold,
+                    cluster_threshold=cluster_threshold,
+                    min_distance=min_distance,
+                    two_sided=two_sided,
+                )
+
             cluster_table_html = dataframe_to_html(
                 cluster_table,
                 precision=2,

@@ -1,12 +1,50 @@
+"""Test nilearn.plotting.surface._utils functions."""
+
 from pathlib import Path
 
 import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
-from nilearn.plotting.surface._utils import check_surface_plotting_inputs
+from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn.plotting.surface._utils import (
+    check_surface_plotting_inputs,
+    get_surface_backend,
+)
 from nilearn.surface import InMemoryMesh
-from nilearn.surface._testing import assert_surface_mesh_equal
+from nilearn.surface.utils import assert_surface_mesh_equal
+
+
+@pytest.mark.skipif(
+    is_matplotlib_installed(),
+    reason="This test is run only if matplotlib is not installed.",
+)
+def test_get_surface_backend_matplotlib_not_installed():
+    """Tests to see if get_surface_backend raises error when matplotlib is not
+    installed.
+    """
+    with pytest.raises(ImportError, match="Using engine"):
+        get_surface_backend("matplotlib")
+
+
+@pytest.mark.skipif(
+    is_plotly_installed(),
+    reason="This test is run only if plotly is not installed.",
+)
+def test_get_surface_backend_plotly_not_installed():
+    """Tests to see if get_surface_backend raises error when plotly is not
+    installed.
+    """
+    with pytest.raises(ImportError, match="Using engine"):
+        get_surface_backend("plotly")
+
+
+def test_get_surface_backend_unknown_error():
+    """Tests to see if get_surface_backend raises error when the specified
+    backend is not implemented.
+    """
+    with pytest.raises(ValueError, match="Unknown plotting engine"):
+        get_surface_backend("unknown")
 
 
 @pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])

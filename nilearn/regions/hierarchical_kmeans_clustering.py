@@ -9,6 +9,7 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils import fill_doc
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
@@ -254,11 +255,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         tags.input_tags = InputTags()
         return tags
 
-    def fit(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-    ):
+    def fit(self, X, y=None):
         """Compute clustering of the data.
 
         Parameters
@@ -271,6 +268,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         -------
         self
         """
+        del y
         X = check_array(
             X, ensure_min_features=2, ensure_min_samples=2, estimator=self
         )
@@ -294,7 +292,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
             warnings.warn(
                 "n_clusters should be at most the number of "
                 f"features. Taking n_clusters = {n_features} instead.",
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
         self.labels_ = hierarchical_k_means(
             X,

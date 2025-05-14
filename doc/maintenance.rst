@@ -261,6 +261,20 @@ make sure to implement and test these changes beforehand.
 Ideally, these would have been done before such as to update the code base if necessary.
 Finally, make sure the documentation can be built correctly.
 
+Prepare the documentation for the release
+-----------------------------------------
+
+In several places the user guide relies on figures generated in the examples for illustration.
+
+If the examples are modified, and an expected figure is not created anymore
+or the order of the generated figures is changed,
+this may silently (without causing warnings or errors) "break" the documentation.
+
+It is not possible to list all the places to check,
+but care should be taken that at least the following have not been affected:
+- the tables in the :ref:`plotting` section
+- ...
+
 Prepare the release
 -------------------
 

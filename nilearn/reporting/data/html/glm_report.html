@@ -202,6 +202,13 @@
     {{else}}
     <p>No mask was provided.</p>
     {{endif}}
+    {{if n_elements }}
+    <div class="pure-u-1 pure-u-md-3-3">
+      <p>
+        The mask includes {{ n_elements }} voxels ({{ coverage }} %) of the image.
+      </p>
+    </div>
+    {{endif}}
   </section>
 
   <section id="statistical-maps-{{unique_id}}">

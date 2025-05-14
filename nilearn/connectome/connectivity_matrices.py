@@ -9,10 +9,10 @@ from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn import signal
 from nilearn._utils.docs import fill_doc
-
-from .. import signal
-from .._utils.extmath import is_spd
+from nilearn._utils.extmath import is_spd
+from nilearn._utils.logger import find_stack_level
 
 
 def _check_square(matrix):
@@ -204,7 +204,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         warnings.warn(
             f"Maximum number of iterations {max_iter} reached without "
             f"getting to the requested tolerance level {tol}.",
-            stacklevel=5,
+            stacklevel=find_stack_level(),
         )
 
     return gmean
@@ -479,11 +479,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 f"You provided {confounds.__class__}"
             )
 
-    def fit(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-    ):
+    def fit(self, X, y=None):
         """Fit the covariance estimator to the given time series for each \
         subject.
 
@@ -500,6 +496,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             The object itself. Useful for chaining operations.
 
         """
+        del y
         self._fit_transform(X, do_fit=True)
         return self
 
@@ -598,12 +595,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         return connectivities
 
-    def fit_transform(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-        confounds=None,
-    ):
+    def fit_transform(self, X, y=None, confounds=None):
         """Fit the covariance estimator to the given time series \
         for each subject. \
         Then apply transform to covariance matrices for the chosen kind.
@@ -631,6 +623,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             Vectors are cleaned when vectorize=True and confounds are provided.
 
         """
+        del y
         if self.kind == "tangent" and len(X) <= 1:
             # Check that people are applying fit_transform to a group of
             # subject

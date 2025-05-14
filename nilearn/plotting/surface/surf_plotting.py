@@ -8,48 +8,33 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from matplotlib import gridspec
-from matplotlib.cm import ScalarMappable
-from matplotlib.colorbar import make_axes
 from matplotlib.colors import Normalize, to_rgba
 from matplotlib.patches import Patch
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from nilearn import DEFAULT_DIVERGING_CMAP, image, surface
 from nilearn._utils import check_niimg_3d, compare_version, fill_doc
-from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
     create_colormap_from_lut,
     get_colorbar_and_data_ranges,
     save_figure_if_needed,
 )
-from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays import PlotlySurfaceFigure
-from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.plotting.surface._backend import (
-    _check_hemispheres,
-    _check_surf_map,
-    _check_views,
+    DATA_EXTENSIONS,
+    check_hemispheres,
+    check_views,
 )
 from nilearn.plotting.surface._matplotlib_backend import (
     _colorbar_from_array,
-    _compute_facecolors_matplotlib,
-    _compute_surf_map_faces_matplotlib,
-    _get_cmap_matplotlib,
-    _get_ticks_matplotlib,
-    _get_view_plot_surf_matplotlib,
-    _threshold_and_rescale,
-)
-from nilearn.plotting.surface._plotly_backend import (
-    _configure_title_plotly,
-    _get_cbar_plotly,
-    _get_view_plot_surf_plotly,
+    _get_ticks,
 )
 from nilearn.plotting.surface._utils import (
     check_surface_plotting_inputs,
+    get_surface_backend,
     sanitize_hemi_for_surface_image,
 )
-from nilearn.plotting.surface.html_surface import get_vertexcolor
 from nilearn.surface import (
     load_surf_data,
     load_surf_mesh,
@@ -61,315 +46,6 @@ from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
 )
 
-# subset of data format extensions supported
-DATA_EXTENSIONS = (
-    "gii",
-    "gii.gz",
-    "mgz",
-)
-
-
-AXIS_CONFIG = {
-    "showgrid": False,
-    "showline": False,
-    "ticks": "",
-    "title": "",
-    "showticklabels": False,
-    "zeroline": False,
-    "showspikes": False,
-    "spikesides": False,
-    "showbackground": False,
-}
-
-
-LAYOUT = {
-    "scene": {
-        "dragmode": "orbit",
-        **{f"{dim}axis": AXIS_CONFIG for dim in ("x", "y", "z")},
-    },
-    "paper_bgcolor": "#fff",
-    "hovermode": False,
-    "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
-}
-
-
-def _plot_surf_plotly(
-    coords,
-    faces,
-    surf_map=None,
-    bg_map=None,
-    hemi="left",
-    view="lateral",
-    cmap=None,
-    symmetric_cmap=True,
-    colorbar=False,
-    threshold=None,
-    bg_on_data=False,
-    darkness=0.7,
-    vmin=None,
-    vmax=None,
-    cbar_tick_format=".1f",
-    title=None,
-    title_font_size=18,
-    output_file=None,
-):
-    """Help for plot_surf.
-
-    .. versionadded:: 0.9.0
-
-    This function handles surface plotting when the selected
-    engine is plotly.
-
-    .. note::
-        This function assumes that plotly and kaleido are
-        installed.
-
-    .. warning::
-        This function is new and experimental. Please report
-        bugs that you may encounter.
-
-    """
-    if is_plotly_installed():
-        import plotly.graph_objects as go
-    else:
-        msg = "Using engine='plotly' requires that ``plotly`` is installed."
-        raise ImportError(msg)
-
-    x, y, z = coords.T
-    i, j, k = faces.T
-
-    if cmap is None:
-        cmap = DEFAULT_DIVERGING_CMAP
-
-    bg_data = None
-    if bg_map is not None:
-        bg_data = load_surf_data(bg_map)
-        if bg_data.shape[0] != coords.shape[0]:
-            raise ValueError(
-                "The bg_map does not have the same number "
-                "of vertices as the mesh."
-            )
-
-    if surf_map is not None:
-        _check_surf_map(surf_map, coords.shape[0])
-        colors = colorscale(
-            cmap,
-            surf_map,
-            threshold,
-            vmax=vmax,
-            vmin=vmin,
-            symmetric_cmap=symmetric_cmap,
-        )
-        vertexcolor = get_vertexcolor(
-            surf_map,
-            colors["cmap"],
-            colors["norm"],
-            absolute_threshold=colors["abs_threshold"],
-            bg_map=bg_data,
-            bg_on_data=bg_on_data,
-            darkness=darkness,
-        )
-    else:
-        if bg_data is None:
-            bg_data = np.zeros(coords.shape[0])
-        colors = colorscale("Greys", bg_data, symmetric_cmap=False)
-        vertexcolor = get_vertexcolor(
-            bg_data,
-            colors["cmap"],
-            colors["norm"],
-            absolute_threshold=colors["abs_threshold"],
-        )
-
-    mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, vertexcolor=vertexcolor)
-    fig_data = [mesh_3d]
-    if colorbar:
-        dummy = _get_cbar_plotly(
-            colors["colors"],
-            float(colors["vmin"]),
-            float(colors["vmax"]),
-            cbar_tick_format,
-        )
-        fig_data.append(dummy)
-
-    # instantiate plotly figure
-    camera_view = _get_view_plot_surf_plotly(hemi, view)
-    fig = go.Figure(data=fig_data)
-    fig.update_layout(
-        scene_camera=camera_view,
-        title=_configure_title_plotly(title, title_font_size),
-        **LAYOUT,
-    )
-
-    # save figure
-    plotly_figure = PlotlySurfaceFigure(
-        figure=fig, output_file=output_file, hemi=hemi
-    )
-
-    if output_file is not None:
-        if not is_kaleido_installed():
-            msg = (
-                "Saving figures to file with engine='plotly' requires "
-                "that ``kaleido`` is installed."
-            )
-            raise ImportError(msg)
-        plotly_figure.savefig()
-
-    return plotly_figure
-
-
-def _plot_surf_matplotlib(
-    coords,
-    faces,
-    surf_map=None,
-    bg_map=None,
-    hemi="left",
-    view="lateral",
-    cmap=None,
-    colorbar=False,
-    avg_method="mean",
-    threshold=None,
-    alpha="auto",
-    bg_on_data=False,
-    darkness=0.7,
-    vmin=None,
-    vmax=None,
-    cbar_vmin=None,
-    cbar_vmax=None,
-    cbar_tick_format="%.2g",
-    title=None,
-    output_file=None,
-    axes=None,
-    figure=None,
-):
-    """Help for plot_surf.
-
-    This function handles surface plotting when the selected
-    engine is matplotlib.
-    """
-    _default_figsize = [4, 5]
-    limits = [coords.min(), coords.max()]
-
-    # Get elevation and azimut from view
-    elev, azim = _get_view_plot_surf_matplotlib(hemi, view)
-
-    # if no cmap is given, set to matplotlib default
-    if cmap is None:
-        cmap = plt.get_cmap(plt.rcParamsDefault["image.cmap"])
-    # if cmap is given as string, translate to matplotlib cmap
-    elif isinstance(cmap, str):
-        cmap = plt.get_cmap(cmap)
-
-    figsize = _default_figsize
-    # Leave space for colorbar
-    if colorbar:
-        figsize[0] += 0.7
-    # initiate figure and 3d axes
-    if axes is None:
-        if figure is None:
-            figure = plt.figure(figsize=figsize)
-        axes = figure.add_axes((0, 0, 1, 1), projection="3d")
-    elif figure is None:
-        figure = axes.get_figure()
-    axes.set_xlim(*limits)
-    axes.set_ylim(*limits)
-
-    try:
-        axes.view_init(elev=elev, azim=azim)
-    except AttributeError:
-        raise AttributeError(
-            "'Axes' object has no attribute 'view_init'.\n"
-            "Remember that the projection must be '3d'.\n"
-            "For example:\n"
-            "\t plt.subplots(subplot_kw={'projection': '3d'})"
-        )
-    except Exception as e:  # pragma: no cover
-        raise e
-
-    axes.set_axis_off()
-
-    # plot mesh without data
-    p3dcollec = axes.plot_trisurf(
-        coords[:, 0],
-        coords[:, 1],
-        coords[:, 2],
-        triangles=faces,
-        linewidth=0.1,
-        antialiased=False,
-        color="white",
-    )
-
-    # reduce viewing distance to remove space around mesh
-    axes.set_box_aspect(None, zoom=1.3)
-
-    bg_face_colors = _compute_facecolors_matplotlib(
-        bg_map, faces, coords.shape[0], darkness, alpha
-    )
-    if surf_map is not None:
-        surf_map_faces = _compute_surf_map_faces_matplotlib(
-            surf_map,
-            faces,
-            avg_method,
-            coords.shape[0],
-            bg_face_colors.shape[0],
-        )
-        surf_map_faces, kept_indices, vmin, vmax = _threshold_and_rescale(
-            surf_map_faces, threshold, vmin, vmax
-        )
-
-        surf_map_face_colors = cmap(surf_map_faces)
-        # set transparency of voxels under threshold to 0
-        surf_map_face_colors[~kept_indices, 3] = 0
-        if bg_on_data:
-            # if need be, set transparency of voxels above threshold to 0.7
-            # so that background map becomes visible
-            surf_map_face_colors[kept_indices, 3] = 0.7
-
-        face_colors = mix_colormaps(surf_map_face_colors, bg_face_colors)
-
-        if colorbar:
-            cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
-            cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
-            ticks = _get_ticks_matplotlib(
-                cbar_vmin, cbar_vmax, cbar_tick_format, threshold
-            )
-            our_cmap, norm = _get_cmap_matplotlib(
-                cmap, vmin, vmax, cbar_tick_format, threshold
-            )
-            bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
-
-            # we need to create a proxy mappable
-            proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
-            proxy_mappable.set_array(surf_map_faces)
-            figure._colorbar_ax, _ = make_axes(
-                axes,
-                location="right",
-                fraction=0.15,
-                shrink=0.5,
-                pad=0.0,
-                aspect=10.0,
-            )
-            figure._cbar = figure.colorbar(
-                proxy_mappable,
-                cax=figure._colorbar_ax,
-                ticks=ticks,
-                boundaries=bounds,
-                spacing="proportional",
-                format=cbar_tick_format,
-                orientation="vertical",
-            )
-
-        # fix floating point bug causing highest to sometimes surpass 1
-        # (for example 1.0000000000000002)
-        face_colors[face_colors > 1] = 1
-
-        p3dcollec.set_facecolors(face_colors)
-        p3dcollec.set_edgecolors(face_colors)
-
-    if title is not None:
-        axes.set_title(title)
-
-    return save_figure_if_needed(figure, output_file)
-
 
 @fill_doc
 def plot_surf(
@@ -380,7 +56,7 @@ def plot_surf(
     view=None,
     engine="matplotlib",
     cmap=None,
-    symmetric_cmap=False,
+    symmetric_cmap=None,
     colorbar=True,
     avg_method=None,
     threshold=None,
@@ -393,7 +69,7 @@ def plot_surf(
     cbar_vmax=None,
     cbar_tick_format="auto",
     title=None,
-    title_font_size=18,
+    title_font_size=None,
     output_file=None,
     axes=None,
     figure=None,
@@ -467,12 +143,15 @@ def plot_surf(
     %(cmap)s
         If None, matplotlib default will be chosen.
 
-    symmetric_cmap : :obj:`bool`, default=False
+    symmetric_cmap : :obj:`bool`, default=None
         Whether to use a symmetric colormap or not.
 
         .. note::
             This option is currently only implemented for
             the ``plotly`` engine.
+
+        When using plotly as engine, `symmetric_cmap` will default to ``False``
+        if ``None`` is passed.
 
         .. versionadded:: 0.9.0
 
@@ -495,14 +174,16 @@ def plot_surf(
 
     alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
-        When using matplotlib as engine,
-        `alpha` will default to ``"auto"`` if ``None`` is passed.
+
         If 'auto' is chosen, alpha will default to 0.5 when no bg_map
         is passed and to 1 if a bg_map is passed.
 
         .. note::
             This option is currently only implemented for the
             ``matplotlib`` engine.
+
+        When using matplotlib as engine,
+        `alpha` will default to ``"auto"`` if ``None`` is passed.
 
     %(bg_on_data)s
 
@@ -516,6 +197,10 @@ def plot_surf(
     cbar_vmin : :obj:`float` or None, default=None
         Lower bound for the colorbar.
         If None, the value will be set from the data.
+
+        .. note::
+            This option is currently only implemented for the
+            ``matplotlib`` engine.
 
     cbar_vmax : :obj:`float` or None, default=None
         Upper bound for the colorbar.
@@ -535,8 +220,15 @@ def plot_surf(
 
     %(title)s
 
-    title_font_size : :obj:`int`, default=18
-        Size of the title font (only implemented for the plotly engine).
+    title_font_size : :obj:`int`, default=None
+        Size of the title font
+
+        .. note::
+            This option is currently only implemented for
+            the ``plotly`` engine.
+
+        When using plotly as engine, `title_font_size` will default to ``18``
+        if ``None`` is passed.
 
         .. versionadded:: 0.9.0
 
@@ -581,101 +273,31 @@ def plot_surf(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    check_params(locals())
-    if view is None:
-        view = "dorsal" if hemi == "both" else "lateral"
-
-    parameters_not_implemented_in_plotly = {
-        "avg_method": avg_method,
-        "figure": figure,
-        "axes": axes,
-        "cbar_vmin": cbar_vmin,
-        "cbar_vmax": cbar_vmax,
-        "alpha": alpha,
-    }
-
-    surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
-        surf_map, surf_mesh, hemi, bg_map
+    fig = get_surface_backend(engine).plot_surf(
+        surf_mesh=surf_mesh,
+        surf_map=surf_map,
+        bg_map=bg_map,
+        hemi=hemi,
+        view=view,
+        cmap=cmap,
+        symmetric_cmap=symmetric_cmap,
+        colorbar=colorbar,
+        avg_method=avg_method,
+        threshold=threshold,
+        alpha=alpha,
+        bg_on_data=bg_on_data,
+        darkness=darkness,
+        vmin=vmin,
+        vmax=vmax,
+        cbar_vmin=cbar_vmin,
+        cbar_vmax=cbar_vmax,
+        cbar_tick_format=cbar_tick_format,
+        title=title,
+        title_font_size=title_font_size,
+        output_file=output_file,
+        axes=axes,
+        figure=figure,
     )
-
-    check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
-
-    if engine == "plotly":
-        for parameter, value in parameters_not_implemented_in_plotly.items():
-            if value is not None:
-                warn(
-                    f"'{parameter}' is not implemented "
-                    "for the plotly engine.\n"
-                    f"Got '{parameter} = {value}'.\n"
-                    f"Use '{parameter} = None' to silence this warning."
-                )
-
-    coords, faces = load_surf_mesh(surf_mesh)
-
-    if engine == "matplotlib":
-        # setting defaults
-        if avg_method is None:
-            avg_method = "mean"
-        if alpha is None:
-            alpha = "auto"
-
-        if cbar_tick_format == "auto":
-            cbar_tick_format = "%.2g"
-        fig = _plot_surf_matplotlib(
-            coords,
-            faces,
-            surf_map=surf_map,
-            bg_map=bg_map,
-            hemi=hemi,
-            view=view,
-            cmap=cmap,
-            colorbar=colorbar,
-            avg_method=avg_method,
-            threshold=threshold,
-            alpha=alpha,
-            bg_on_data=bg_on_data,
-            darkness=darkness,
-            vmin=vmin,
-            vmax=vmax,
-            cbar_vmin=cbar_vmin,
-            cbar_vmax=cbar_vmax,
-            cbar_tick_format=cbar_tick_format,
-            title=title,
-            output_file=output_file,
-            axes=axes,
-            figure=figure,
-        )
-
-    elif engine == "plotly":
-        if cbar_tick_format == "auto":
-            cbar_tick_format = ".1f"
-        fig = _plot_surf_plotly(
-            coords,
-            faces,
-            surf_map=surf_map,
-            bg_map=bg_map,
-            view=view,
-            hemi=hemi,
-            cmap=cmap,
-            symmetric_cmap=symmetric_cmap,
-            colorbar=colorbar,
-            threshold=threshold,
-            bg_on_data=bg_on_data,
-            darkness=darkness,
-            vmin=vmin,
-            vmax=vmax,
-            cbar_tick_format=cbar_tick_format,
-            title=title,
-            title_font_size=title_font_size,
-            output_file=output_file,
-        )
-
-    else:
-        raise ValueError(
-            f"Unknown plotting engine {engine}. "
-            "Please use either 'matplotlib' or "
-            "'plotly'."
-        )
 
     return fig
 
@@ -1275,8 +897,8 @@ def plot_img_on_surf(
             )
 
     stat_map = check_niimg_3d(stat_map, dtype="auto")
-    modes = _check_views(views)
-    hemis = _check_hemispheres(hemispheres)
+    modes = check_views(views)
+    hemis = check_hemispheres(hemispheres)
     surf_mesh = check_mesh_is_fsaverage(surf_mesh)
 
     mesh_prefix = "infl" if inflate else "pial"
@@ -1370,7 +992,7 @@ def plot_img_on_surf(
         cbar_ax = fig.add_subplot(cbar_grid[1])
         axes.append(cbar_ax)
         # Get custom ticks to set in colorbar
-        ticks = _get_ticks_matplotlib(vmin, vmax, cbar_tick_format, threshold)
+        ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold)
         fig.colorbar(
             sm,
             cax=cbar_ax,

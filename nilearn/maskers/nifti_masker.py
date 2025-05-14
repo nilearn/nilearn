@@ -4,10 +4,13 @@ import warnings
 from copy import copy as copy_object
 from functools import partial
 
+import numpy as np
 from joblib import Memory
 
 from nilearn import _utils
 from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import crop_img, resample_img
 from nilearn.maskers._utils import (
@@ -56,7 +59,8 @@ def _get_mask_strategy(strategy):
     elif strategy == "template":
         warnings.warn(
             "Masking strategy 'template' is deprecated."
-            "Please use 'whole-brain-template' instead."
+            "Please use 'whole-brain-template' instead.",
+            stacklevel=find_stack_level(),
         )
         return partial(compute_brain_mask, mask_type="whole-brain")
     else:
@@ -112,6 +116,7 @@ def filter_and_mask(
             "Until then, 3D images will be coerced to 2D arrays, with a "
             "singleton first dimension representing time.",
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
 
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
@@ -127,6 +132,7 @@ def filter_and_mask(
             "or resample the mask beforehand "
             "to save memory and computation time.",
             UserWarning,
+            stacklevel=find_stack_level(),
         )
         parameters = copy_object(parameters)
         # now we can crop
@@ -154,7 +160,7 @@ def filter_and_mask(
     return data
 
 
-@_utils.fill_doc
+@fill_doc
 class NiftiMasker(BaseMasker):
     """Applying a mask to extract time-series from Niimg-like objects.
 
@@ -249,8 +255,12 @@ class NiftiMasker(BaseMasker):
 
     Attributes
     ----------
-    mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
-        The mask of the data, or the computed one.
+    mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image`
+        The mask of the data, or the one computed from ``imgs`` passed to fit.
+        If a ``mask_img`` is passed at masker construction,
+        then ``mask_img_`` is the resulting binarized version of it
+        where each voxel is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0.
 
     affine_ : 4x4 :obj:`numpy.ndarray`
         Affine of the transformed image.
@@ -352,7 +362,7 @@ class NiftiMasker(BaseMasker):
                 "No image provided to fit in NiftiMasker. "
                 "Setting image to mask for reporting."
             )
-            warnings.warn(msg, stacklevel=6)
+            warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
             img = mask
         if self._reporting_data["dim"] == 5:
@@ -360,7 +370,7 @@ class NiftiMasker(BaseMasker):
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            warnings.warn(msg, stacklevel=6)
+            warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
         # create display of retained input mask, image
         # for visual comparison
@@ -407,11 +417,7 @@ class NiftiMasker(BaseMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "mask_img_")
 
-    def fit(
-        self,
-        imgs=None,
-        y=None,  # noqa: ARG002
-    ):
+    def fit(self, imgs=None, y=None):
         """Compute the mask corresponding to the data.
 
         Parameters
@@ -426,6 +432,7 @@ class NiftiMasker(BaseMasker):
             compatibility.
 
         """
+        del y
         check_params(self.__dict__)
 
         self._report_content = {
@@ -436,6 +443,8 @@ class NiftiMasker(BaseMasker):
                 "between the mask and its input image. "
             ),
             "warning_message": None,
+            "n_elements": 0,
+            "coverage": 0,
         }
         self._overlay_text = (
             "\n To see the input Nifti image before resampling, "
@@ -453,8 +462,10 @@ class NiftiMasker(BaseMasker):
             verbose=self.verbose,
         )
 
+        self.mask_img_ = self._load_mask(imgs)
+
         # Compute the mask if not given by the user
-        if self.mask_img is None:
+        if self.mask_img_ is None:
             if imgs is None:
                 raise ValueError(
                     "Parameter 'imgs' must be provided to "
@@ -468,11 +479,14 @@ class NiftiMasker(BaseMasker):
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs, verbose=max(0, self.verbose - 1), **mask_args
             )
-        else:
-            self.mask_img_ = _utils.check_niimg_3d(self.mask_img)
-
-            # Just check that the mask is valid
-            load_mask_img(self.mask_img_)
+        elif imgs is not None:
+            warnings.warn(
+                f"[{self.__class__.__name__}.fit] "
+                "Generation of a mask has been requested (imgs != None) "
+                "while a mask was given at masker creation. "
+                "Given mask will be used.",
+                stacklevel=find_stack_level(),
+            )
 
         if self.reports:  # save inputs for reporting
             self._reporting_data = {
@@ -513,6 +527,10 @@ class NiftiMasker(BaseMasker):
 
         # Infer the number of elements (voxels) in the mask
         self.n_elements_ = int(data.sum())
+        self._report_content["n_elements"] = self.n_elements_
+        self._report_content["coverage"] = (
+            self.n_elements_ / np.prod(data.shape) * 100
+        )
 
         logger.log("Finished fit", verbose=self.verbose)
 
@@ -538,6 +556,7 @@ class NiftiMasker(BaseMasker):
 
         return self
 
+    @fill_doc
     def transform_single_imgs(
         self,
         imgs,
@@ -555,18 +574,9 @@ class NiftiMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        confounds : CSV file or array-like or :obj:`pandas.DataFrame`, \
-            default=None
-            This parameter is passed to signal.clean. Please see the related
-            documentation for details: :func:`nilearn.signal.clean`.
-            shape: (number of scans, number of confounds)
+        %(confounds)s
 
-        sample_mask : Any type compatible with numpy-array indexing, \
-            default=None
-            shape: (number of scans - number of volumes removed, )
-            Masks the niimgs along time/fourth dimension to perform scrubbing
-            (remove volumes with high motion) and/or non-steady-state volumes.
-            This parameter is passed to signal.clean.
+        %(sample_mask)s
 
         copy : :obj:`bool`, default=True
             Indicates whether a copy is returned or not.

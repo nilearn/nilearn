@@ -37,6 +37,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             The labels must be consistent with the label
             values provided through `labels_img`.
 
+    %(masker_lut)s
+
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
 
@@ -89,18 +91,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     Attributes
     ----------
-    mask_img_ : :obj:`nibabel.nifti1.Nifti1Image`
-        The mask of the data, or the computed one.
+    %(nifti_mask_img_)s
 
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
-
-    n_elements_ : :obj:`int`
-        The number of discrete values in the mask.
-        This is equivalent to the number of unique values in the mask image,
-        ignoring the background value.
-
-        .. versionadded:: 0.9.2
 
     See Also
     --------
@@ -113,6 +107,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         self,
         labels_img=None,
         labels=None,
+        lut=None,
         background_label=0,
         mask_img=None,
         smoothing_fwhm=None,
@@ -138,6 +133,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         super().__init__(
             labels_img,
             labels=labels,
+            lut=lut,
             background_label=background_label,
             mask_img=mask_img,
             smoothing_fwhm=smoothing_fwhm,
@@ -190,11 +186,11 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         %(imgs)s
             Images to process. Each element of the list is a 4D image.
 
-        %(confounds)s
+        %(confounds_multi)s
 
         %(n_jobs)s
 
-        %(sample_mask)s
+        %(sample_mask_multi)s
 
         Returns
         -------
@@ -217,9 +213,19 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
         if confounds is None:
             confounds = itertools.repeat(None, len(imgs_list))
+        elif len(confounds) != len(imgs_list):
+            raise ValueError(
+                f"number of confounds ({len(confounds)}) unequal to "
+                f"number of images ({len(imgs_list)})."
+            )
 
         if sample_mask is None:
             sample_mask = itertools.repeat(None, len(imgs_list))
+        elif len(sample_mask) != len(imgs_list):
+            raise ValueError(
+                f"number of sample_mask ({len(sample_mask)}) unequal to "
+                f"number of images ({len(imgs_list)})."
+            )
 
         func = self._cache(self.transform_single_imgs)
 
@@ -237,8 +243,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         ----------
         %(imgs)s
             Images to process. Each element of the list is a 4D image.
-        %(confounds)s
-        %(sample_mask)s
+
+        %(confounds_multi)s
+
+        %(sample_mask_multi)s
 
         Returns
         -------

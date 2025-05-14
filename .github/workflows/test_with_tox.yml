@@ -9,6 +9,16 @@
 #
 #    - ``[skip test]`` skip this workflow.
 #
+# Uploads as artifacts:
+#
+# - ``report.html`` that gives a browsable overview of the tests results
+#
+# - ``pytest_output`` that contains a .csv of the tests results and figures showing the run time of all the tests
+#   See ``maint_tools/plot_test_timing.py``.
+#
+# - ``htmlcov`` containing the html version of the code coverage.
+#
+#
 ###
 name: test
 
@@ -48,9 +58,13 @@ jobs:
 
     test_and_coverage:
         needs: check_skip_flags
+
         if: github.repository == 'nilearn/nilearn'
+
         name: 'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
+
         runs-on: ${{ matrix.os }}
+
         strategy:
             # reset to true before merging
             fail-fast: false
@@ -74,10 +88,12 @@ jobs:
                     py: '3.9'
                     os: macos-latest
                     env: plot_min
+
         steps:
+
         -   uses: actions/checkout@v4
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v5
+            uses: astral-sh/setup-uv@v6
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
@@ -87,22 +103,32 @@ jobs:
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions
         -   name: Show tox config
             run: tox c
+
         -   name: Run test suite
             run: |
                 tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
                 tox run -e plot_test_timing
+
         -   name: Upload test report
             if: success() || failure()
             uses: actions/upload-artifact@v4
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report.html
                 path: report.html
+
         -   name: Upload test timings
             if: success() || failure()
             uses: actions/upload-artifact@v4
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
+
+        -   name: Upload html coverage
+            if: success() || failure()
+            uses: actions/upload-artifact@v4
+            with:
+                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_htmlcov
+                path: htmlcov
         -   name: Upload coverage to CodeCov
             uses: codecov/codecov-action@v5
             with:

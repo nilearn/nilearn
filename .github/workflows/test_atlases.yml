@@ -1,0 +1,52 @@
+---
+# Test label maskers on atlases (from nilearn, templateFlow...)
+#
+###
+name: test atlases
+
+on:
+    push:
+        branches:
+        -   main
+    workflow_dispatch:  # This enables manual triggering from GitHub UI
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+# Force to use color
+env:
+    FORCE_COLOR: true
+
+jobs:
+    test_atlases:
+
+        if: github.repository == 'nilearn/nilearn'
+
+        runs-on: ubuntu-latest
+
+        steps:
+
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+
+        -   name: Setup python
+            uses: actions/setup-python@v5
+            with:
+                python-version: 3.13
+
+        -   name: Install dependencies for building Nilearn
+            run: python -m pip install --upgrade pip setuptools rich templateflow
+
+        -   name: Install nilearn
+            run: pip install .[plotting]
+
+        -   name: Test atlases
+            run: python maint_tools/check_atlas.py
+
+        -   name: Upload masker reports
+            if: success() || failure()
+            uses: actions/upload-artifact@v4
+            with:
+                name: label_masker_reports
+                path: maint_tools/tmp

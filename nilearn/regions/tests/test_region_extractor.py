@@ -8,7 +8,7 @@ from scipy.ndimage import label
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import _img_4d_zeros
+from nilearn.conftest import _affine_eye, _img_4d_zeros, _shape_3d_large
 from nilearn.image import get_data
 from nilearn.regions import (
     RegionExtractor,
@@ -45,14 +45,11 @@ def map_img_3d(rng, affine_eye, shape_3d_default):
 
 N_REGIONS = 3
 
-# some tests require larger images
-MAP_SHAPE = (29, 30, 31)
-
 
 @pytest.fixture
-def maps(negative_regions, n_regions):
+def maps(negative_regions, n_regions, shape_3d_large):
     return generate_maps(
-        shape=MAP_SHAPE,
+        shape=shape_3d_large,
         n_regions=n_regions,
         random_state=42,
         negative_regions=negative_regions,
@@ -60,8 +57,10 @@ def maps(negative_regions, n_regions):
 
 
 @pytest.fixture
-def maps_and_mask(n_regions):
-    return generate_maps(shape=MAP_SHAPE, n_regions=n_regions, random_state=42)
+def maps_and_mask(n_regions, shape_3d_large):
+    return generate_maps(
+        shape=shape_3d_large, n_regions=n_regions, random_state=42
+    )
 
 
 # Note: some report genetation tests take too long
@@ -74,7 +73,10 @@ def maps_and_mask(n_regions):
         estimator=[
             RegionExtractor(
                 maps_img=generate_maps(
-                    shape=MAP_SHAPE, n_regions=2, random_state=42
+                    shape=_shape_3d_large(),
+                    n_regions=2,
+                    random_state=42,
+                    affine=_affine_eye(),
                 )[0]
             )
         ],
@@ -98,7 +100,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
         estimator=[
             RegionExtractor(
                 maps_img=generate_maps(
-                    shape=MAP_SHAPE, n_regions=2, random_state=42
+                    shape=_shape_3d_large(), n_regions=2, random_state=42
                 )[0]
             )
         ],
@@ -339,9 +341,11 @@ def test_region_extractor_strategy_percentile(maps_and_mask):
         assert expected_signal_shape == signal.shape
 
 
-def test_region_extractor_high_resolution_image(affine_eye, n_regions):
+def test_region_extractor_high_resolution_image(
+    affine_eye, n_regions, shape_3d_large
+):
     maps, _ = generate_maps(
-        shape=MAP_SHAPE, n_regions=n_regions, affine=0.2 * affine_eye
+        shape=shape_3d_large, n_regions=n_regions, affine=0.2 * affine_eye
     )
 
     extract_ratio = RegionExtractor(

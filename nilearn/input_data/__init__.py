@@ -15,15 +15,18 @@ a simple warning at least until release 0.13.0.
 
 import warnings
 
+from nilearn._utils.logger import find_stack_level
+
 message = (
     "The import path 'nilearn.input_data' is deprecated in version 0.9. "
     "Importing from 'nilearn.input_data' will be possible at least until "
     "release 0.13.0. Please import from 'nilearn.maskers' instead."
 )
-warnings.warn(message, DeprecationWarning, stacklevel=1)
+warnings.warn(message, DeprecationWarning, stacklevel=find_stack_level())
 
 
-from .base_masker import BaseMasker
+from nilearn.input_data.base_masker import BaseMasker
+
 from .multi_nifti_masker import MultiNiftiMasker
 from .nifti_labels_masker import NiftiLabelsMasker
 from .nifti_maps_masker import NiftiMapsMasker

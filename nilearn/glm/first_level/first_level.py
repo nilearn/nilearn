@@ -24,6 +24,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
@@ -89,7 +90,7 @@ def mean_scaling(Y, axis=0):
             "The data have probably been centered."
             "Scaling might not work as expected",
             UserWarning,
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
     mean = np.maximum(mean, 1)
     Y = 100 * (Y / mean - 1)
@@ -284,7 +285,7 @@ def _check_trial_type(events):
             "If there is a column in the dataframe "
             "corresponding to trial information, "
             "consider renaming it to 'trial_type'.",
-            stacklevel=6,
+            stacklevel=find_stack_level(),
         )
 
 
@@ -489,7 +490,7 @@ class FirstLevelModel(BaseGLM):
             warn(
                 "If design matrices are supplied, "
                 "confounds and events will be ignored.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
         if events is not None:
@@ -550,7 +551,10 @@ class FirstLevelModel(BaseGLM):
                 f"in {int(time_in_second)} seconds."
             )
 
-        logger.log(msg, verbose=self.verbose, stack_level=2)
+        logger.log(
+            msg,
+            verbose=self.verbose,
+        )
 
     def _report_progress(self, run_idx, n_runs, t0):
         remaining = "go take a coffee, a big one"
@@ -676,7 +680,9 @@ class FirstLevelModel(BaseGLM):
 
         tmp = check_and_load_tables(events[run_idx], "events")[0]
         if "trial_type" in tmp.columns:
-            self._reporting_data["trial_types"].extend(tmp["trial_type"])
+            self._reporting_data["trial_types"].extend(
+                x for x in tmp["trial_type"] if x
+            )
 
         start_time = self.slice_time_ref * self.t_r
         end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
@@ -894,7 +900,7 @@ class FirstLevelModel(BaseGLM):
             self._reporting_data["run_imgs"][run_idx] = {}
             if isinstance(run_img, (str, Path)):
                 self._reporting_data["run_imgs"][run_idx] = (
-                    parse_bids_filename(run_img)
+                    parse_bids_filename(run_img, legacy=False)
                 )
 
             self._fit_single_run(sample_masks, bins, run_img, run_idx)
@@ -966,7 +972,7 @@ class FirstLevelModel(BaseGLM):
             warn(
                 f"One contrast given, assuming it for all {n_runs} runs",
                 category=UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
@@ -1124,7 +1130,7 @@ class FirstLevelModel(BaseGLM):
                 "Parameter smoothing_fwhm is not "
                 "yet supported for surface data",
                 UserWarning,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = 0
 
@@ -1154,6 +1160,72 @@ class FirstLevelModel(BaseGLM):
             check_is_fitted(self.mask_img)
 
             self.masker_ = self.mask_img
+
+    @fill_doc
+    def generate_report(
+        self,
+        contrasts=None,
+        title=None,
+        bg_img="MNI152TEMPLATE",
+        threshold=3.09,
+        alpha=0.001,
+        cluster_threshold=0,
+        height_control="fpr",
+        two_sided=False,
+        min_distance=8.0,
+        plot_type="slice",
+        cut_coords=None,
+        display_mode=None,
+        report_dims=(1600, 800),
+    ):
+        """Return a :class:`~nilearn.reporting.HTMLReport` \
+        which shows all important aspects of a fitted :term:`GLM`.
+
+        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
+        browser, displayed in a notebook, or saved to disk as a standalone
+        HTML file.
+
+        The :term:`GLM` must be fitted and have the computed design
+        matrix(ces).
+
+        .. note::
+
+            Refer to the documentation of
+            :func:`~nilearn.reporting.make_glm_report`
+            for details about the parameters
+
+        Returns
+        -------
+        report_text : :class:`~nilearn.reporting.HTMLReport`
+            Contains the HTML code for the :term:`GLM` report.
+
+        """
+        from nilearn.reporting.glm_reporter import make_glm_report
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = {
+                "trial_types": [],
+                "noise_model": getattr(self, "noise_model", None),
+                "hrf_model": getattr(self, "hrf_model", None),
+                "drift_model": None,
+            }
+
+        return make_glm_report(
+            self,
+            contrasts,
+            title=title,
+            bg_img=bg_img,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            plot_type=plot_type,
+            cut_coords=cut_coords,
+            display_mode=display_mode,
+            report_dims=report_dims,
+        )
 
 
 def _check_events_file_uses_tab_separators(events_files):
@@ -1461,7 +1533,7 @@ def first_level_from_bids(
         warn(
             "Starting in version 0.12, slice_time_ref will default to None.",
             DeprecationWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     if space_label is None:
         space_label = "MNI152NLin2009cAsym"
@@ -1506,7 +1578,7 @@ def first_level_from_bids(
  Remember to visualize your design matrix before fitting your model
  to check that your model is not overspecified.""",
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
@@ -1553,7 +1625,7 @@ def first_level_from_bids(
             f"\n't_r' provided ({t_r}) is different "
             f"from the value found in the BIDS dataset ({inferred_t_r}).\n"
             "Note this may lead to the wrong model specification.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     if t_r is not None:
         _check_repetition_time(t_r)
@@ -1562,7 +1634,7 @@ def first_level_from_bids(
             "\n't_r' not provided and cannot be inferred from BIDS metadata.\n"
             "It will need to be set manually in the list of models, "
             "otherwise their fit will throw an exception.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     # Slice time correction reference time
@@ -1595,7 +1667,7 @@ def first_level_from_bids(
                 "is 0.0 percent of the repetition time.\n"
                 "If it is not the case it will need to "
                 "be set manually in the generated list of models.",
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
         inferred_slice_time_ref = 0.0
 
@@ -1610,7 +1682,7 @@ def first_level_from_bids(
             f"from the value found in the BIDS dataset "
             f"({inferred_slice_time_ref}).\n"
             "Note this may lead to the wrong model specification.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     if slice_time_ref is not None:
         _check_slice_time_ref(slice_time_ref)
@@ -1726,7 +1798,7 @@ def _list_valid_subjects(derivatives_path, sub_labels):
                 f"\nSubject label '{sub_label_}' is not present "
                 "in the following dataset and cannot be processed:\n"
                 f" {derivatives_path}",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
     return sorted(set(sub_labels_exist))
@@ -1758,7 +1830,6 @@ def _report_found_files(files, text, sub_label, filters, verbose):
         f"- for filter: {filters}:\n\t"
         f"- {unordered_list_string}\n",
         verbose=verbose,
-        stack_level=3,
     )
 
 
@@ -2239,7 +2310,7 @@ def _make_bids_files_filter(
                         f"The filter {filter_} will be skipped. "
                         f"'{filter_[0]}' is not among the supported filters. "
                         f"Allowed filters include: {supported_filters}",
-                        stacklevel=3,
+                        stacklevel=find_stack_level(),
                     )
                 continue
 
@@ -2293,9 +2364,9 @@ def _check_bids_image_list(imgs, sub_label, filters):
     run_check_list = []
 
     for img_ in imgs:
-        parsed_filename = parse_bids_filename(img_)
-        session = parsed_filename.get("ses")
-        run = parsed_filename.get("run")
+        parsed_filename = parse_bids_filename(img_, legacy=False)
+        session = parsed_filename["entities"].get("ses")
+        run = parsed_filename["entities"].get("run")
 
         if session and run:
             if (session, run) in set(run_check_list):
@@ -2379,11 +2450,11 @@ def _check_bids_events_list(
         *bids_entities()["raw"],
     ]
     for this_img in imgs:
-        parsed_filename = parse_bids_filename(this_img)
+        parsed_filename = parse_bids_filename(this_img, legacy=False)
         extra_filter = [
-            (key, parsed_filename[key])
-            for key in parsed_filename
-            if key in supported_filters
+            (entity, parsed_filename["entities"][entity])
+            for entity in parsed_filename["entities"]
+            if entity in supported_filters
         ]
         filters = _make_bids_files_filter(
             task_label=task_label,

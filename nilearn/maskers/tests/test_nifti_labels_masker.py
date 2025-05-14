@@ -8,6 +8,7 @@ test_masking.py and test_signal.py for details.
 import warnings
 
 import numpy as np
+import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
@@ -162,7 +163,6 @@ def test_nifti_labels_masker_io_shapes(
     transform(3D image) --> 2D output, DeprecationWarning
     inverse_transform(2D array) --> 4D image, no warning
     inverse_transform(1D array) --> 3D image, no warning
-    inverse_transform(2D array with wrong shape) --> IndexError
     """
     length = 5
     shape_4d = (*shape_3d_default, length)
@@ -216,11 +216,6 @@ def test_nifti_labels_masker_io_shapes(
         test_img = masker.inverse_transform(data_2d)
 
         assert test_img.shape == shape_4d
-
-    with pytest.raises(
-        IndexError, match="index 6 is out of bounds for axis 1 with size 5"
-    ):
-        masker.inverse_transform(data_2d.T)
 
 
 def test_nifti_labels_masker_with_nans_and_infs(
@@ -665,7 +660,8 @@ def test_warning_n_labels_not_equal_n_regions(
     )
     region_names = generate_labels(n_regions + 2, background=background)
     with pytest.warns(
-        UserWarning, match="Mismatch between the number of provided labels"
+        UserWarning,
+        match="Too many names for the indices. Dropping excess names values.",
     ):
         masker = NiftiLabelsMasker(
             labels_img,
@@ -735,22 +731,48 @@ def test_region_names(
         dtype=dtype,
     )
 
-    region_names = generate_labels(n_regions, background=background)
-
     masker = NiftiLabelsMasker(
         labels_img,
-        labels=region_names,
+        labels=generate_labels(n_regions, background=background),
         resampling_target="data",
     )
-    signals = masker.fit().transform(fmri_img)
+    masker.fit()
 
+    tmp = generate_labels(n_regions, background=background)
+    if background is None:
+        expected_lut = generate_expected_lut(["Background", *tmp])
+    else:
+        expected_lut = generate_expected_lut(tmp)
+    check_lut(masker, expected_lut)
+
+    signals = masker.transform(fmri_img)
+
+    region_names = generate_labels(n_regions, background=background)
     check_region_names_after_fit(
-        masker, signals, region_names, background, resampling
+        masker,
+        signals,
+        region_names,
+        background,
+        resampling,
+    )
+
+
+def generate_expected_lut(region_names):
+    """Generate a look up table based on a list of regions names."""
+    if "background" in region_names:
+        idx = region_names.index("background")
+        region_names[idx] = "Background"
+    return pd.DataFrame(
+        {"name": region_names, "index": list(range(len(region_names)))}
     )
 
 
 def check_region_names_after_fit(
-    masker, signals, region_names, background, resampling=False
+    masker,
+    signals,
+    region_names,
+    background,
+    resampling=False,
 ):
     """Perform several checks on the expected attributes of the masker.
 
@@ -763,6 +785,10 @@ def check_region_names_after_fit(
     assert len(masker.region_names_) == signals.shape[1]
     assert len(list(masker.region_ids_.items())) == signals.shape[1] + 1
 
+    # for coverage
+    masker.labels_  # noqa: B018
+    masker._region_id_name  # noqa: B018
+
     # resampling may drop some labels so we do not check the region names
     # in this case
     if not resampling:
@@ -774,6 +800,14 @@ def check_region_names_after_fit(
         if background:
             region_names.pop(region_names.index(background))
         assert region_names_after_fit == region_names
+
+
+def check_lut(masker, expected_lut):
+    """Check content of the look up table."""
+    assert masker.background_label in masker.lut_["index"].to_list()
+    assert "Background" in masker.lut_["name"].to_list()
+    assert masker.lut_["name"].to_list() == expected_lut["name"].to_list()
+    assert masker.lut_["index"].to_list() == expected_lut["index"].to_list()
 
 
 @pytest.mark.parametrize(
@@ -844,7 +878,16 @@ def test_region_names_ids_match_after_fit(
         keep_masked_labels=keep_masked_labels,
     )
 
-    _ = masker.fit().transform(fmri_img)
+    masker.fit()
+
+    tmp = generate_labels(n_regions, background=background)
+    if background is None:
+        expected_lut = generate_expected_lut(["Background", *tmp])
+    else:
+        expected_lut = generate_expected_lut(tmp)
+    check_lut(masker, expected_lut)
+
+    _ = masker.transform(fmri_img)
 
     check_region_names_ids_match_after_fit(
         masker, region_names, region_ids, background
@@ -873,7 +916,7 @@ def check_region_names_ids_match_after_fit(
             assert region_id_names[masker.region_ids_[key]] == region_name
 
 
-def generate_labels(n_regions, background=True):
+def generate_labels(n_regions, background=""):
     """Create list of strings to use as labels."""
     labels = []
     if background:
@@ -896,17 +939,28 @@ def test_region_names_with_non_sequential_labels(
         shape_3d_default[:3],
         affine=affine_eye,
         n_regions=len(labels),
-        labels=labels,
+        labels=[0, *labels],
     )
-
-    region_names = generate_labels(len(labels), background=background)
 
     masker = NiftiLabelsMasker(
         labels_img,
-        labels=region_names,
+        labels=generate_labels(len(labels), background=background),
         resampling_target=None,
     )
-    signals = masker.fit().transform(fmri_img)
+    masker.fit()
+
+    expected_lut = pd.DataFrame(
+        {
+            "index": [0, *labels],
+            "name": ["Background"]
+            + [f"region_{i}" for i in range(1, len(labels) + 1)],
+        }
+    )
+    check_lut(masker, expected_lut)
+
+    signals = masker.transform(fmri_img)
+
+    region_names = generate_labels(len(labels), background=background)
 
     check_region_names_after_fit(masker, signals, region_names, background)
 
@@ -915,7 +969,7 @@ def test_region_names_with_non_sequential_labels(
 def test_more_labels_than_actual_region_in_atlas(
     shape_3d_default, affine_eye, background, n_regions, img_labels
 ):
-    """Test region_names_ attribute in NiftiLabelsMasker.
+    """Test region_names_ property in NiftiLabelsMasker.
 
     See fetch_atlas_destrieux_2009 for example.
     Some labels have no associated voxels.
@@ -932,7 +986,8 @@ def test_more_labels_than_actual_region_in_atlas(
 
     fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
     with pytest.warns(
-        UserWarning, match="Mismatch between the number of provided labels"
+        UserWarning,
+        match="Too many names for the indices. Dropping excess names values.",
     ):
         masker.fit().transform(fmri_img)
 
@@ -955,3 +1010,61 @@ def test_3d_images(affine_eye, shape_3d_default, n_regions, img_labels):
     epis = masker.fit_transform([epi_img1, epi_img2])
 
     assert epis.shape == (2, n_regions)
+
+
+@pytest.mark.parametrize("background", [None, "Background"])
+def test_pass_lut(
+    shape_3d_default, affine_eye, n_regions, img_labels, tmp_path, background
+):
+    """Smoke test to pass LUT directly or as file."""
+    region_names = generate_labels(n_regions, background=background)
+    if background:
+        lut = pd.DataFrame(
+            {"name": region_names, "index": list(range(n_regions + 1))}
+        )
+    else:
+        lut = pd.DataFrame(
+            {
+                "name": ["Background", *region_names],
+                "index": list(range(n_regions + 1)),
+            }
+        )
+
+    fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
+
+    masker = NiftiLabelsMasker(
+        img_labels,
+        lut=lut,
+    )
+
+    masker.fit_transform(fmri_img)
+
+    assert masker.lut_["index"].to_list() == lut["index"].to_list()
+    assert masker.lut_["name"].to_list() == lut["name"].to_list()
+
+    lut_file = tmp_path / "lut.csv"
+    lut.to_csv(lut_file, index=False)
+    masker = NiftiLabelsMasker(
+        img_labels,
+        lut=lut_file,
+    )
+
+    masker.fit_transform(fmri_img)
+
+
+def test_pass_lut_error(shape_3d_default, affine_eye, n_regions, img_labels):
+    """Cannot pass both LUT and labels."""
+    region_names = generate_labels(n_regions, background=None)
+    lut = pd.DataFrame(
+        {
+            "name": ["Background", *region_names],
+            "index": list(range(n_regions + 1)),
+        }
+    )
+
+    fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
+
+    with pytest.raises(
+        ValueError, match="Pass either labels or a lookup table"
+    ):
+        NiftiLabelsMasker(img_labels, lut=lut, labels=region_names).fit()

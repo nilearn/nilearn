@@ -1,3 +1,5 @@
+"""Test nilearn.plotting.surface._backend functions."""
+
 import pytest
 
 from nilearn.plotting.surface._backend import (

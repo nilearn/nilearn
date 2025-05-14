@@ -269,6 +269,8 @@
 
 .. _Roberto Guidotti: https://github.com/robbisg
 
+.. _Rohan Thomas Jepegnanam: https://github.com/rohan3412
+
 .. _Ronald Phlypo: https://github.com/rphlypo
 
 .. _Ryan Hammonds: https://github.com/ryanhammonds
@@ -277,7 +279,7 @@
 
 .. _Sachin Patalasingh: https://github.com/sachin-bsai
 
-.. _Sage Hahn: https://sagehahn.com/
+.. _Sage Hahn: https://github.com/sahahn
 
 .. _Salma Bougacha: https://github.com/salma1601
 

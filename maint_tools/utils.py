@@ -90,27 +90,15 @@ def list_nodes(
     return [c for c in node_definitions if not c.name.startswith("_")]
 
 
-def update_api(api, mod):
-    """Add function and class names of a module to user facing API listing."""
-    for x in mod.__all__:
-        if x.startswith("_"):
-            continue
-        if inspect.isfunction(mod.__dict__[x]) or inspect.isclass(
-            mod.__dict__[x]
-        ):
-            api.append(x)
-    return api
-
-
-public_api = []
+public_api = ["nilearn"]
 for subpackage in nilearn.__all__:
+    public_api.append(subpackage)
     if subpackage.startswith("_"):
         continue
     mod = importlib.import_module(f"nilearn.{subpackage}")
-    public_api = update_api(public_api, mod)
+    public_api.extend(mod.__all__)
     for x in mod.__all__:
-        if x.startswith("_"):
-            continue
         if inspect.ismodule(mod.__dict__[x]):
             submod = importlib.import_module(f"nilearn.{subpackage}.{x}")
-            public_api = update_api(public_api, submod)
+            if hasattr(submod, "__all__"):
+                public_api.extend(submod.__all__)

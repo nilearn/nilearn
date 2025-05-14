@@ -13,6 +13,7 @@ exclude: |
         | nilearn/externals/.*
         | nilearn/plotting/data/js/.*js
         | nilearn/_version.py
+        | asv_benchmarks/asv.conf.json
     )$
 
 repos:
@@ -75,7 +76,7 @@ repos:
             )$
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.2
+    rev: v0.11.9
     hooks:
     # Run the linter.
     -   id: ruff
