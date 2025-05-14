@@ -3036,15 +3036,15 @@ def fetch_spm_multimodal_fmri(
 
         - 'func2': string list. Paths to functional images for run 2
 
-        - 'events1': Path to onsets TSV file for run 1
+        - 'events1': :obj:`str`. Path to onsets TSV file for run 1
 
-        - 'events2': Path to onsets TSV file for run 2
+        - 'events2': :obj:`str`. Path to onsets TSV file for run 2
 
-        - 'trials_ses1': Path to .mat file containing onsets for run 1
+        - 'trials_ses1': :obj:`str`. Path to .mat file containing onsets for run 1
 
-        - 'trials_ses1': Path to .mat file containing onsets for run 2
+        - 'trials_ses1': :obj:`str`. Path to .mat file containing onsets for run 2
 
-        - 'anat': string. Path to anat file
+        - 'anat': :obj:`str`. Path to anat file
 
         - 'description': :obj:`str`. Description of the data
 
