@@ -393,6 +393,10 @@ def nilearn_check_estimator(estimator):
                 yield (clone(estimator), check_multi_masker_with_confounds)
                 yield (
                     clone(estimator),
+                    check_multi_masker_transformer_high_variance_confounds,
+                )
+                yield (
+                    clone(estimator),
                     check_multi_masker_transformer_sample_mask,
                 )
                 yield (
@@ -860,9 +864,7 @@ def check_masker_transformer_high_variance_confounds(estimator):
     Ensure that high_variance_confounds can be used with regular confounds,
     and that results are different than when just using the confounds alone.
     """
-    estimator.high_variance_confounds = False
-
-    length = 20
+    length = 10
 
     if accept_niimg_input(estimator):
         data = _rng().random((*_shape_3d_default(), length))
@@ -870,14 +872,16 @@ def check_masker_transformer_high_variance_confounds(estimator):
     else:
         input_img = _make_surface_img(length)
 
-    signal_1 = estimator.fit_transform(input_img)
+    estimator.high_variance_confounds = False
+
+    signal = estimator.fit_transform(input_img)
 
     estimator = clone(estimator)
     estimator.high_variance_confounds = True
 
-    signal_2 = estimator.fit_transform(input_img)
+    signal_hvc = estimator.fit_transform(input_img)
 
-    assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
+    assert_raises(AssertionError, assert_array_equal, signal, signal_hvc)
 
     with TemporaryDirectory() as tmp_dir:
         array = _rng().random((length, 3))
@@ -887,18 +891,21 @@ def check_masker_transformer_high_variance_confounds(estimator):
         tmp_dir = Path(tmp_dir)
         dataframe.to_csv(tmp_dir / "confounds.csv")
 
-        # for confounds in [array, dataframe, tmp_dir / "confounds.csv"]:
-        for confounds in [array]:
+        for c in [array, dataframe, tmp_dir / "confounds.csv"]:
+            confounds = [c] if is_multimasker(estimator) else c
+
+            estimator = clone(estimator)
+            estimator.high_variance_confounds = False
+            signal_c = estimator.fit_transform(input_img, confounds=confounds)
+
             estimator = clone(estimator)
             estimator.high_variance_confounds = True
-
-            if is_multimasker(estimator):
-                confounds = [confounds]
-
-            signal_3 = estimator.fit_transform(input_img, confounds=confounds)
+            signal_c_hvc = estimator.fit_transform(
+                input_img, confounds=confounds
+            )
 
             assert_raises(
-                AssertionError, assert_array_equal, signal_2, signal_3
+                AssertionError, assert_array_equal, signal_c, signal_c_hvc
             )
 
 
@@ -1515,7 +1522,7 @@ def check_multi_masker_with_confounds(estimator):
     ):
         estimator.fit_transform(
             [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-            confounds=array,
+            confounds=[array],
         )
 
 
@@ -1556,8 +1563,60 @@ def check_multi_masker_transformer_sample_mask(estimator):
     ):
         estimator.fit_transform(
             [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-            sample_mask=sample_mask1,
+            sample_mask=[sample_mask1],
         )
+
+
+def check_multi_masker_transformer_high_variance_confounds(estimator):
+    """Check high_variance_confounds use in multi maskers with 5D data.
+
+    Make sure that using high_variance_confounds returns different result.
+
+    Ensure that high_variance_confounds can be used with regular confounds,
+    and that results are different than when just using the confounds alone.
+    """
+    length = 100
+
+    data = _rng().random((*_shape_3d_default(), length))
+    input_img = Nifti1Image(data, _affine_eye())
+
+    estimator.high_variance_confounds = False
+
+    signal = estimator.fit_transform([input_img, input_img])
+
+    estimator = clone(estimator)
+    estimator.high_variance_confounds = True
+
+    signal_hvc = estimator.fit_transform([input_img, input_img])
+
+    for s1, s2 in zip(signal, signal_hvc):
+        assert_raises(AssertionError, assert_array_equal, s1, s2)
+
+    with TemporaryDirectory() as tmp_dir:
+        array = _rng().random((length, 3))
+
+        dataframe = pd.DataFrame(array)
+
+        tmp_dir = Path(tmp_dir)
+        dataframe.to_csv(tmp_dir / "confounds.csv")
+
+        for c in [array, dataframe, tmp_dir / "confounds.csv"]:
+            confounds = [c, c]
+
+            estimator = clone(estimator)
+            estimator.high_variance_confounds = False
+            signal_c = estimator.fit_transform(
+                [input_img, input_img], confounds=confounds
+            )
+
+            estimator = clone(estimator)
+            estimator.high_variance_confounds = True
+            signal_c_hvc = estimator.fit_transform(
+                [input_img, input_img], confounds=confounds
+            )
+
+            for s1, s2 in zip(signal_c, signal_c_hvc):
+                assert_raises(AssertionError, assert_array_equal, s1, s2)
 
 
 # ------------------ GLM CHECKS ------------------

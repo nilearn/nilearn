@@ -1,13 +1,20 @@
 """Transformer for computing ROI signals of multiple 4D images."""
 
 import itertools
+from pathlib import Path
 
+import numpy as np
+import pandas as pd
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import iter_check_niimg
+from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.image import (
+    high_variance_confounds,
+)
 from nilearn.maskers.nifti_maps_masker import NiftiMapsMasker
 
 
@@ -227,12 +234,35 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         )
 
         if confounds is None:
-            confounds = itertools.repeat(None, len(imgs_list))
+            confounds = list(itertools.repeat(None, len(imgs_list)))
         elif len(confounds) != len(imgs_list):
             raise ValueError(
                 f"number of confounds ({len(confounds)}) unequal to "
                 f"number of images ({len(imgs_list)})."
             )
+
+        if self.high_variance_confounds:
+            for i, img in enumerate(imgs_list):
+                hv_confounds = self._cache(high_variance_confounds)(img)
+
+                if confounds[i] is None:
+                    confounds[i] = hv_confounds
+                elif isinstance(confounds[i], list):
+                    confounds[i] += hv_confounds
+                elif isinstance(confounds[i], np.ndarray):
+                    confounds[i] = np.hstack([confounds[i], hv_confounds])
+                elif isinstance(confounds[i], pd.DataFrame):
+                    confounds[i] = np.hstack(
+                        [confounds[i].to_numpy(), hv_confounds]
+                    )
+                elif isinstance(confounds[i], (str, Path)):
+                    c = csv_to_array(confounds[i])
+                    if np.isnan(c.flat[0]):
+                        # There may be a header
+                        c = csv_to_array(confounds[i], skip_header=1)
+                    confounds[i] = np.hstack([c, hv_confounds])
+                else:
+                    confounds[i].append(hv_confounds)
 
         if sample_mask is None:
             sample_mask = itertools.repeat(None, len(imgs_list))

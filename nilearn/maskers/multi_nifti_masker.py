@@ -6,8 +6,10 @@ import collections.abc
 import itertools
 import warnings
 from functools import partial
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -22,6 +24,7 @@ from nilearn._utils.class_inspect import (
 )
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import iter_check_niimg
+from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
@@ -453,12 +456,35 @@ class MultiNiftiMasker(NiftiMasker):
         )
 
         if confounds is None:
-            confounds = itertools.repeat(None, len(imgs_list))
+            confounds = list(itertools.repeat(None, len(imgs_list)))
         elif len(confounds) != len(imgs_list):
             raise ValueError(
                 f"number of confounds ({len(confounds)}) unequal to "
                 f"number of images ({len(imgs_list)})."
             )
+
+        if self.high_variance_confounds:
+            for i, img in enumerate(imgs_list):
+                hv_confounds = self._cache(high_variance_confounds)(img)
+
+                if confounds[i] is None:
+                    confounds[i] = hv_confounds
+                elif isinstance(confounds[i], list):
+                    confounds[i] += hv_confounds
+                elif isinstance(confounds[i], np.ndarray):
+                    confounds[i] = np.hstack([confounds[i], hv_confounds])
+                elif isinstance(confounds[i], pd.DataFrame):
+                    confounds[i] = np.hstack(
+                        [confounds[i].to_numpy(), hv_confounds]
+                    )
+                elif isinstance(confounds[i], (str, Path)):
+                    c = csv_to_array(confounds[i])
+                    if np.isnan(c.flat[0]):
+                        # There may be a header
+                        c = csv_to_array(confounds[i], skip_header=1)
+                    confounds[i] = np.hstack([c, hv_confounds])
+                else:
+                    confounds[i].append(hv_confounds)
 
         if sample_mask is None:
             sample_mask = itertools.repeat(None, len(imgs_list))
@@ -550,37 +576,21 @@ class MultiNiftiMasker(NiftiMasker):
         """
         check_is_fitted(self)
 
+        assert confounds is None or isinstance(confounds, list)
+        assert sample_mask is None or isinstance(sample_mask, list)
+
         if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
-            confounds = (
-                confounds[0] if hasattr(confounds, "__iter__") else None
-            )
-            sample_mask = (
-                sample_mask[0] if hasattr(sample_mask, "__iter__") else None
-            )
+            if isinstance(confounds, list):
+                confounds = confounds[0]
+            if isinstance(sample_mask, list):
+                sample_mask = sample_mask[0]
             return super().transform(
                 imgs, confounds=confounds, sample_mask=sample_mask
             )
 
-        all_confounds = []
-
-        if self.high_variance_confounds:
-            for i in imgs:
-                hv_confounds = self._cache(high_variance_confounds)(i)
-                all_confounds.append(hv_confounds)
-
-        if confounds is not None:
-            for c in confounds:
-                if isinstance(c, list):
-                    all_confounds += c
-                else:
-                    all_confounds.append(c)
-
-        if not all_confounds:
-            all_confounds = None
-
         return self.transform_imgs(
             imgs,
-            confounds=all_confounds,
+            confounds=confounds,
             sample_mask=sample_mask,
             n_jobs=self.n_jobs,
         )
