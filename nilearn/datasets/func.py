@@ -2946,7 +2946,7 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
     return Bunch(**_subject_data) if _subject_data else None
 
 
-def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
+def _download_data_spm_multimodal(data_dir, subject_dir):
     logger.log("Data absent, downloading...")
     urls = [
         # fmri
@@ -2968,9 +2968,7 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
             uncompress_file(archive_path)
         except Exception:
             logger.log("Archive corrupted, trying to download it again.")
-            return fetch_spm_multimodal_fmri(
-                data_dir=data_dir, data_name="", subject_id=subject_id
-            )
+            return fetch_spm_multimodal_fmri(data_dir=data_dir, data_name="")
 
     return _glob_spm_multimodal_fmri_data(subject_dir)
 
@@ -3005,10 +3003,16 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
 
 
 @fill_doc
+@remove_parameters(
+    removed_params=["subject_id"],
+    reason="The spm_multimodal_fmri dataset contains only one subject.",
+    end_version="0.13.0",
+)
+@fill_doc
 def fetch_spm_multimodal_fmri(
     data_dir=None,
     data_name="spm_multimodal_fmri",
-    subject_id="sub001",
+    subject_id=None,
     verbose=1,
 ):
     """Fetcher for Multi-modal Face Dataset.
@@ -3019,11 +3023,15 @@ def fetch_spm_multimodal_fmri(
     Parameters
     ----------
     %(data_dir)s
+
     data_name : :obj:`str`, default='spm_multimodal_fmri'
         Name of the dataset.
 
-    subject_id : :obj:`str`, default='sub001'
-        Indicates which subject to retrieve.
+    subject_id : :obj:`str`, default=None
+
+        .. deprecated:: 0.11.2
+
+            Will be removed in version ``0.13.0``.
 
     %(verbose)s
 
@@ -3032,29 +3040,32 @@ def fetch_spm_multimodal_fmri(
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are:
 
-        - 'func1': list of :obj:`str`. Paths to functional images for run 1
+        - 'func1' : list of :obj:`str`. Paths to functional images for run 1
 
-        - 'func2': list of :obj:`str`. Paths to functional images for run 2
+        - 'func2' : list of :obj:`str`. Paths to functional images for run 2
 
-        - 'events1': :obj:`str`. Path to onsets TSV file for run 1
+        - 'events1' : :obj:`str`. Path to onsets TSV file for run 1
 
-        - 'events2': :obj:`str`. Path to onsets TSV file for run 2
+        - 'events2' : :obj:`str`. Path to onsets TSV file for run 2
 
-        - 'trials_ses1': :obj:`str`. Path to .mat file containing onsets for run 1
+        - 'trials_ses1' : :obj:`str`.
+          Path to .mat file containing onsets for run 1
 
-        - 'trials_ses1': :obj:`str`. Path to .mat file containing onsets for run 2
+        - 'trials_ses1' : :obj:`str`.
+          Path to .mat file containing onsets for run 2
 
-        - 'anat': :obj:`str`. Path to anat file
+        - 'anat' : :obj:`str`. Path to anat file
 
-        - 'description': :obj:`str`. Description of the data
+        - 'description' : :obj:`str`. Description of the data
 
-        - 't_r': :obj:`float`. Repetition time in seconds
+        - 't_r' : :obj:`float`. Repetition time in seconds
            of the functional images.
 
     """
     check_params(locals())
 
     data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
+    subject_id = "sub001"
     subject_dir = data_dir / subject_id
 
     description = get_dataset_descr("spm_multimodal")
@@ -3063,7 +3074,7 @@ def fetch_spm_multimodal_fmri(
     data = _glob_spm_multimodal_fmri_data(subject_dir)
     if data is None:
         # No. Download the data
-        data = _download_data_spm_multimodal(data_dir, subject_dir, subject_id)
+        data = _download_data_spm_multimodal(data_dir, subject_dir)
 
     data.description = description
     data.t_r = 2
