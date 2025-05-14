@@ -551,7 +551,7 @@ class MultiNiftiMasker(NiftiMasker):
             )
         if not (sample_mask is None or isinstance(sample_mask, list)):
             raise TypeError(
-                "'confounds' must be a None or a list. "
+                "'sample_mask' must be a None or a list. "
                 f"Got {sample_mask.__class__.__name__}."
             )
         if isinstance(imgs, NiimgLike):

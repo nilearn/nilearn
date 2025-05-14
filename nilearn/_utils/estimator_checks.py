@@ -1525,6 +1525,14 @@ def check_multi_masker_with_confounds(estimator):
             confounds=[array],
         )
 
+    with pytest.raises(
+        TypeError, match="'confounds' must be a None or a list."
+    ):
+        estimator.fit_transform(
+            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
+            confounds=1,
+        )
+
 
 def check_multi_masker_transformer_sample_mask(estimator):
     """Test multi maskers with a list of "sample_mask".
@@ -1564,6 +1572,14 @@ def check_multi_masker_transformer_sample_mask(estimator):
         estimator.fit_transform(
             [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
             sample_mask=[sample_mask1],
+        )
+
+    with pytest.raises(
+        TypeError, match="'sample_mask' must be a None or a list."
+    ):
+        estimator.fit_transform(
+            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
+            sample_mask=1,
         )
 
 
