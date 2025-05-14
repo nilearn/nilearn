@@ -192,6 +192,10 @@ except ImportError:
     ...
 
 
+def nilearn_dir() -> Path:
+    return Path(__file__).parents[1]
+
+
 def check_estimator(
     estimator=None,
     valid: bool = True,
@@ -775,21 +779,47 @@ def check_masker_transformer_high_variance_confounds(estimator):
     """Check high_variance_confounds use in maskers.
 
     Make sure that using high_variance_confounds returns different result.
+
+    Ensure that high_variance_confounds can be used with regular confounds,
+    and that results are different than when just using the confounds alone.
     """
     estimator.high_variance_confounds = False
 
+    length = 100
+
     if accept_niimg_input(estimator):
-        input_img = _img_4d_rand_eye_medium()
+        data = _rng().random((*_shape_3d_default(), length))
+        input_img = Nifti1Image(data, _affine_eye())
     else:
-        input_img = _make_surface_img(100)
+        input_img = _make_surface_img(length)
 
     signal_1 = estimator.fit_transform(input_img)
 
     estimator = clone(estimator)
     estimator.high_variance_confounds = True
+
     signal_2 = estimator.fit_transform(input_img)
 
     assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
+
+    with TemporaryDirectory() as tmp_dir:
+        array = _rng().random((length, 3))
+
+        dataframe = pd.DataFrame(array)
+
+        tmp_dir = Path(tmp_dir)
+        dataframe.to_csv(tmp_dir / "confounds.csv")
+
+        # for confounds in [array, dataframe, tmp_dir / "confounds.csv"]:
+        for confounds in [array]:
+            estimator = clone(estimator)
+            estimator.high_variance_confounds = True
+
+            signal_3 = estimator.fit_transform(input_img, confounds=confounds)
+
+            assert_raises(
+                AssertionError, assert_array_equal, signal_2, signal_3
+            )
 
 
 def check_masker_transformer_sample_mask(estimator):
@@ -869,10 +899,10 @@ def check_masker_with_confounds(estimator):
     signal_1 = estimator.fit_transform(input_img, confounds=None)
 
     array = _rng().random((length, 3))
+
     dataframe = pd.DataFrame(array)
 
-    nilearn_dir = Path(__file__).parents[1]
-    confounds_path = nilearn_dir / "tests" / "data" / "spm_confounds.txt"
+    confounds_path = nilearn_dir() / "tests" / "data" / "spm_confounds.txt"
 
     for confounds in [array, dataframe, confounds_path, str(confounds_path)]:
         signal_2 = estimator.fit_transform(input_img, confounds=confounds)
@@ -1392,7 +1422,7 @@ def check_multi_masker_with_confounds(estimator):
     for signal_1, signal_2 in zip(signals_list_1, signals_list_2):
         assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
 
-    # Same with single 4D image
+    # should also work with a single 4D image (has no __iter__ )
     signals_list_1 = estimator.fit_transform(_img_4d_rand_eye_medium())
     signals_list_2 = estimator.fit_transform(
         _img_4d_rand_eye_medium(),
@@ -1434,7 +1464,7 @@ def check_multi_masker_transformer_sample_mask(estimator):
     for ts, n_scrub in zip(signals_list, [n_scrub1, n_scrub2]):
         assert ts.shape[0] == length - n_scrub
 
-    # should also work with 4D image (has no __iter__ )
+    # should also work with a single 4D image (has no __iter__ )
     signals_list = estimator.fit_transform(
         _img_4d_rand_eye_medium(),
         sample_mask=[sample_mask1],

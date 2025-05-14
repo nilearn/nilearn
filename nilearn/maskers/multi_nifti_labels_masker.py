@@ -8,6 +8,9 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import fill_doc
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.image import (
+    high_variance_confounds,
+)
 from nilearn.maskers.nifti_labels_masker import NiftiLabelsMasker
 
 
@@ -256,20 +259,44 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
         """
         check_is_fitted(self)
+
         if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
+            all_confounds = []
+            if self.high_variance_confounds:
+                hv_confounds = self._cache(high_variance_confounds)(imgs)
+                all_confounds.append(hv_confounds)
+
             confounds = (
                 confounds[0] if hasattr(confounds, "__iter__") else None
             )
+            if confounds is not None:
+                if isinstance(confounds, list):
+                    all_confounds += confounds
+                else:
+                    all_confounds.append(confounds)
+
             sample_mask = (
                 sample_mask[0] if hasattr(sample_mask, "__iter__") else None
             )
             return self.transform_single_imgs(
-                imgs, confounds=confounds, sample_mask=sample_mask
+                imgs, confounds=all_confounds, sample_mask=sample_mask
             )
+
+        if self.high_variance_confounds:
+            for i in imgs:
+                hv_confounds = self._cache(high_variance_confounds)(i)
+                all_confounds.append(hv_confounds)
+
+        if confounds is not None:
+            for c in confounds:
+                if isinstance(c, list):
+                    all_confounds += c
+                else:
+                    all_confounds.append(c)
 
         return self.transform_imgs(
             imgs,
-            confounds=confounds,
+            confounds=all_confounds,
             sample_mask=sample_mask,
             n_jobs=self.n_jobs,
         )

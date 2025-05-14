@@ -1,6 +1,7 @@
 """Transformer for computing ROI signals of multiple 4D images."""
 
 import itertools
+from pathlib import Path
 
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -271,7 +272,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         """
         check_is_fitted(self)
-        if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
+        if not hasattr(imgs, "__iter__") or isinstance(imgs, (str, Path)):
             confounds = (
                 confounds[0] if hasattr(confounds, "__iter__") else None
             )
