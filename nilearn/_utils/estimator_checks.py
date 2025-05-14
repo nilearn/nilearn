@@ -521,9 +521,6 @@ def check_masker_dict_unchanged(estimator):
                     (
                         isinstance(dict_before[x], np.ndarray)
                         and not np.array_equal(dict_before[x], dict_after[x])
-                    )
-                    or (
-                        isinstance(dict_before[x], Nifti1Image)
                         and not check_imgs_equal(dict_before[x], dict_after[x])
                     )
                     or (
