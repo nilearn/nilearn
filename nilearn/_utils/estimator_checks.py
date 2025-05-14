@@ -364,7 +364,6 @@ def nilearn_check_estimator(estimator):
 
         yield (clone(estimator), check_masker_smooth)
 
-        # TODO this should pass for multimasker
         yield (
             clone(estimator),
             check_masker_transformer_high_variance_confounds,
@@ -863,7 +862,7 @@ def check_masker_transformer_high_variance_confounds(estimator):
     """
     estimator.high_variance_confounds = False
 
-    length = 100
+    length = 20
 
     if accept_niimg_input(estimator):
         data = _rng().random((*_shape_3d_default(), length))
