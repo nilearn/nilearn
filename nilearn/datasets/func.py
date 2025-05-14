@@ -3061,13 +3061,10 @@ def fetch_spm_multimodal_fmri(
 
     # maybe data_dir already contains the data ?
     data = _glob_spm_multimodal_fmri_data(subject_dir)
-    if data is not None:
-        data.description = description
-        data.t_r = 2
-        return data
+    if data is None:
+        # No. Download the data
+        data = _download_data_spm_multimodal(data_dir, subject_dir, subject_id)
 
-    # No. Download the data
-    data = _download_data_spm_multimodal(data_dir, subject_dir, subject_id)
     data.description = description
     data.t_r = 2
     return data
