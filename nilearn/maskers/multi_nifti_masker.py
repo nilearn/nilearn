@@ -256,8 +256,8 @@ class MultiNiftiMasker(NiftiMasker):
         imgs : Niimg-like objects, :obj:`list` of Niimg-like objects or None, \
             default=None
             See :ref:`extracting_data`.
-            Data on which the mask must be calculated. If this is a list,
-            the affine is considered the same for all.
+            Data on which the mask must be calculated.
+            If this is a list, the affine is considered the same for all.
 
         y : None
             This parameter is unused. It is solely included for scikit-learn
@@ -514,8 +514,7 @@ class MultiNiftiMasker(NiftiMasker):
 
         Parameters
         ----------
-        imgs : Niimg-like object, \
-               or a :obj:`list` of Niimg-like objects
+        imgs : Niimg-like object, or a :obj:`list` of Niimg-like objects
             See :ref:`extracting_data`.
             Data to be preprocessed
 
@@ -523,13 +522,13 @@ class MultiNiftiMasker(NiftiMasker):
 
         %(sample_mask_multi)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------
-        signals : :obj:`numpy.ndarray` if a Niimg-like object was passed,
-               a :obj:`list` of :obj:`numpy.ndarray` otherwise \
-               (one array for each subject)
+        signals : :obj:`numpy.ndarray` if a Niimg-like object was passed, \
+                  a :obj:`list` of :obj:`numpy.ndarray` otherwise \
+                  (one array for each subject)
             Extracted signals.
             All :obj:`numpy.ndarray`
             have a shape (number of scans, number of elements in the mask)
@@ -573,4 +572,46 @@ class MultiNiftiMasker(NiftiMasker):
             confounds=confounds,
             sample_mask=sample_mask,
             n_jobs=self.n_jobs,
+        )
+
+    @fill_doc
+    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+        """
+        Fit to data, then transform it.
+
+        Parameters
+        ----------
+        imgs : Niimg-like object, or a :obj:`list` of Niimg-like objects
+            See :ref:`extracting_data`.
+            Data to be preprocessed
+
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
+
+        %(confounds_multi)s
+
+        %(sample_mask_multi)s
+
+            .. versionadded:: 0.8.0
+
+        Returns
+        -------
+        signals : :obj:`numpy.ndarray` if a Niimg-like object was passed, \
+                  a :obj:`list` of :obj:`numpy.ndarray` otherwise \
+                  (one array for each subject)
+            Extracted signals.
+            All :obj:`numpy.ndarray`
+            have a shape (number of scans, number of elements in the mask)
+
+        Warns
+        -----
+        DeprecationWarning
+            If 3D niimg inputs are provided, the current behavior
+            (adding a singleton dimension to produce 2D arrays) is deprecated.
+            Starting in version 0.12, 1D arrays will be returned for 3D
+            inputs.
+        """
+        return self.fit(imgs, y=y).transform(
+            imgs, confounds=confounds, sample_mask=sample_mask
         )

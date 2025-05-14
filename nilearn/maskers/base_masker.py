@@ -379,8 +379,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     @fill_doc
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     def fit_transform(
         self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
     ):
