@@ -486,8 +486,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             masker_type = "surface"
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
 
-        breakpoint()
-
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
         if self.masker_.mask_img is None:
