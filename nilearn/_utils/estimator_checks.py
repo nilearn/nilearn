@@ -1340,14 +1340,14 @@ def check_nifti_masker_fit_transform_5d(estimator):
         assert isinstance(signal, list)
         assert all(isinstance(x, np.ndarray) for x in signal)
         assert len(signal) == n_subject
-        assert all(x.dim == 2 for x in signal)
+        assert all(x.ndim == 2 for x in signal)
 
         signal = estimator.fit_transform(input_5d_img)
 
         assert isinstance(signal, list)
         assert all(isinstance(x, np.ndarray) for x in signal)
         assert len(signal) == n_subject
-        assert all(x.dim == 2 for x in signal)
+        assert all(x.ndim == 2 for x in signal)
 
 
 def check_nifti_masker_clean_error(estimator):
