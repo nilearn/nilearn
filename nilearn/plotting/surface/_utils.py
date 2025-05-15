@@ -32,17 +32,16 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
         The backend for the specified engine.
     """
     if engine == "matplotlib":
-        if is_matplotlib_installed():
-            from nilearn.plotting.surface._matplotlib_backend import (
-                MatplotlibSurfaceBackend,
-            )
-
-            return MatplotlibSurfaceBackend()
-        else:
+        if not is_matplotlib_installed():
             raise ImportError(
                 "Using engine='matplotlib' requires that ``matplotlib`` is "
                 "installed."
             )
+        from nilearn.plotting.surface._matplotlib_backend import (
+            MatplotlibSurfaceBackend,
+        )
+
+        return MatplotlibSurfaceBackend()
     elif engine == "plotly":
         if is_plotly_installed():
             from nilearn.plotting.surface._plotly_backend import (
