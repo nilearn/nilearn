@@ -1122,9 +1122,6 @@ def check_masker_smooth(estimator):
 
     signal = estimator.fit_transform(imgs)
 
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (estimator.n_elements_,)
-
     estimator.smoothing_fwhm = 3
     estimator.fit(imgs)
 
@@ -1140,9 +1137,6 @@ def check_masker_smooth(estimator):
             smoothed_signal = estimator.transform(imgs)
 
         assert_array_equal(smoothed_signal, signal)
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (estimator.n_elements_,)
 
 
 def check_masker_inverse_transform(estimator):

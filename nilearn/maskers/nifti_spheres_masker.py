@@ -22,6 +22,7 @@ from nilearn._utils.helpers import (
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import (
+    check_niimg,
     check_niimg_3d,
     check_niimg_4d,
     safe_get_data,
@@ -70,7 +71,7 @@ def apply_mask_and_get_affinity(
 
     Returns
     -------
-    X : 2D numpy.ndarray
+    X : numpy.ndarray
         Signal for each brain voxel in the (masked) niimgs.
         shape: (number of scans, number of voxels)
 
@@ -214,6 +215,8 @@ class _ExtractionFunctor:
 
     def __call__(self, imgs):
         n_seeds = len(self.seeds_)
+        temp_imgs = check_niimg(imgs)
+
         imgs = check_niimg_4d(imgs, dtype=self.dtype)
 
         signals = np.empty(
@@ -229,6 +232,10 @@ class _ExtractionFunctor:
             )
         ):
             signals[:, i] = np.mean(sphere, axis=1)
+
+        if temp_imgs.ndim == 3:
+            signals = signals.squeeze()
+
         return signals, None
 
 
@@ -687,14 +694,6 @@ class NiftiSpheresMasker(BaseMasker):
         region_signals : 2D :obj:`numpy.ndarray`
             Signal for each sphere.
             shape: (number of scans, number of spheres)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
 
         """
         check_is_fitted(self)
