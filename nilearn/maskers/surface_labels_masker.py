@@ -336,6 +336,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         self._shelving = False
 
+        if self.clean_args is None:
+            self.clean_args = {}
+
         if not self.reports:
             self._reporting_data = None
             return self
@@ -454,8 +457,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "mask_img",
             ],
         )
-        if self.clean_args is None:
-            self.clean_args = {}
         parameters["clean_args"] = self.clean_args
 
         # signal cleaning here

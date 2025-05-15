@@ -20,8 +20,8 @@ from nilearn.plotting.js_plotting_utils import (
     to_color_strings,
 )
 from nilearn.plotting.surface._utils import (
+    DEFAULT_HEMI,
     check_surface_plotting_inputs,
-    sanitize_hemi_for_surface_image,
 )
 from nilearn.surface import (
     PolyMesh,
@@ -474,7 +474,7 @@ def view_surf(
     surf_mesh=None,
     surf_map=None,
     bg_map=None,
-    hemi=None,
+    hemi=DEFAULT_HEMI,
     threshold=None,
     cmap=DEFAULT_DIVERGING_CMAP,
     black_bg=False,
@@ -493,23 +493,10 @@ def view_surf(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`, \
-                or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
-        Surface :term:`mesh` geometry, can be a file
-        (valid formats are .gii or Freesurfer specific files
-        such as .orig, .pial, .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the :term:`mesh` vertices, the second containing the indices
-        (into coords) of the :term:`mesh` :term:`faces`.
-        or a :obj:`~nilearn.surface.InMemoryMesh` object with
-        "coordinates" and "faces" attributes,
-        or a :obj:`~nilearn.surface.PolyMesh` object,
-        or None.
-        If None is passed, then ``surf_map``
-        must be a :obj:`~nilearn.surface.SurfaceImage` instance
-        and the mesh from that :obj:`~nilearn.surface.SurfaceImage` instance
-        will be used.
+    %(surf_mesh)s
+        If None is passed, then ``surf_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
+        :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
     surf_map : :obj:`str` or :class:`numpy.ndarray`, \
                or :obj:`~nilearn.surface.SurfaceImage` or None, \
@@ -526,12 +513,10 @@ def view_surf(
 
     %(bg_map)s
 
-    hemi : {"left", "right", "both", None}, default=None
-        Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
-        is passed as ``surf_map``
-        and / or if :obj:`~nilearn.surface.PolyMesh`
-        is passed as ``surf_mesh``.
-        In these cases, if ``hemi`` is set to None, it will default to "left".
+    %(hemi)s
+        It is only used if ``surf_map`` is :obj:`~nilearn.surface.SurfaceImage`
+        and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
+        Otherwise a warning will be displayed.
 
         .. versionadded:: 0.11.0
 
@@ -600,7 +585,6 @@ def view_surf(
     nilearn.plotting.view_img_on_surf: Surface plot from a 3D statistical map.
     """
     check_params(locals())
-    hemi = sanitize_hemi_for_surface_image(hemi, surf_map, surf_mesh)
     surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map, map_var_name="surf_map"
     )

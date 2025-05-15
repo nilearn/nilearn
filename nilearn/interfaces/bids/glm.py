@@ -79,7 +79,13 @@ def _generate_dataset_description(out_file, model_level):
 
 
 def save_glm_to_bids(
-    model, contrasts, contrast_types=None, out_dir=".", prefix=None, **kwargs
+    model,
+    contrasts,
+    first_level_contrast=None,
+    contrast_types=None,
+    out_dir=".",
+    prefix=None,
+    **kwargs,
 ):
     """Save :term:`GLM` results to :term:`BIDS`-like files.
 
@@ -101,6 +107,10 @@ def save_glm_to_bids(
 
         Arrays may be 1D or 2D, with 1D arrays typically being
         t-contrasts and 2D arrays typically being F-contrasts.
+
+    %(first_level_contrast)s
+
+        .. versionadded:: 0.11.2dev
 
     contrast_types : None or :obj:`dict` of :obj:`str`, default=None
         An optional dictionary mapping some
@@ -278,7 +288,12 @@ def save_glm_to_bids(
     _generate_model_metadata(metadata_file, model)
 
     logger.log("Saving contrast-level statistical maps...", verbose=verbose)
-    statistical_maps = make_stat_maps(model, contrasts, output_type="all")
+    statistical_maps = make_stat_maps(
+        model,
+        contrasts,
+        output_type="all",
+        first_level_contrast=first_level_contrast,
+    )
     for contrast_name, contrast_maps in statistical_maps.items():
         for output_type in contrast_maps:
             if output_type in ["metadata", "results"]:

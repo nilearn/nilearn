@@ -13,6 +13,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Allow to generate report for :class:`~nilearn.glm.second_level.SecondLevelModel` when its inputs is a list of :class:`~nilearn.glm.first_level.FirstLevelModel` (:gh:`5357` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Prevent range overrun in TFCE (:gh:`5179` by `Lee Newberg`_).
 
 - :bdg-dark:`Code` Bound the number of thresholds in TFCE calculation (:gh:`5179` by `Lee Newberg`_).
