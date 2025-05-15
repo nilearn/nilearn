@@ -557,7 +557,7 @@ class NiftiMapsMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
+        region_signals : numpy.ndarray
             Signal for each map.
             shape for 4D images : (number of scans, number of maps)
             shape for 3D images : (number of maps,)

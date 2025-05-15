@@ -179,15 +179,14 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def transform_single_imgs(
         self, imgs, confounds=None, sample_mask=None, copy=True
     ):
-        """Extract signals from a single 4D niimg.
+        """Extract signals from a single niimg.
 
         Parameters
         ----------
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
+            If a 3D niimg is provided, a 1D array is returned.
 
         %(confounds)s
 
@@ -200,17 +199,10 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
+        signals : numpy.ndarray
             Signal for each element.
-            shape: (number of scans, number of elements)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
+            shape for 4D images : (number of scans, number of elements)
+            shape for 3D images : (number of elements,)
 
         """
         raise NotImplementedError()
