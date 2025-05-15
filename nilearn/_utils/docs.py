@@ -1214,6 +1214,13 @@ vmin : :obj:`float`  or obj:`int` or None, optional
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
 
+# y
+docdict["y_dummy"] = """
+y : None
+    This parameter is unused.
+    It is solely included for scikit-learn compatibility.
+"""
+
 
 ##############################################################################
 #

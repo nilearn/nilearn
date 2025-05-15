@@ -203,9 +203,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
               default = None
             Mesh and data for both hemispheres.
 
-        y : None
-            This parameter is unused.
-            It is solely included for scikit-learn compatibility.
+        %(y_dummy)s
 
         Returns
         -------
