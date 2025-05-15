@@ -90,6 +90,7 @@ glm = FirstLevelModel(
     t_r=t_r,
     slice_time_ref=slice_time_ref,
     hrf_model="glover + derivative",
+    minimize_memory=False,
 ).fit(run_imgs=surface_image, events=data.events)
 
 # %%
@@ -194,11 +195,29 @@ for contrast_id, contrast_val in contrasts.items():
 
 show()
 
+# %%
+# Or we can save as an html file.
+from pathlib import Path
+
+from nilearn.interfaces.bids import save_glm_to_bids
+
+output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
+output_dir.mkdir(exist_ok=True, parents=True)
+
+save_glm_to_bids(
+    glm,
+    contrasts=contrasts,
+    threshold=3.0,
+    bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+    height_control=None,
+    prefix="sub-01",
+    out_dir=output_dir,
+)
 
 report = glm.generate_report(
     contrasts,
     threshold=3.0,
-    bg_img=fsaverage_data,
+    bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=None,
 )
 
@@ -210,10 +229,4 @@ report
 # Or in a separate browser window
 # report.open_in_browser()
 
-# %%
-# Or we can save as an html file.
-from pathlib import Path
-
-output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
-output_dir.mkdir(exist_ok=True, parents=True)
 report.save_as_html(output_dir / "report.html")
