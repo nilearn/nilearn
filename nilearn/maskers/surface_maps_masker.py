@@ -153,6 +153,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
+    @fill_doc
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.2"
     )
