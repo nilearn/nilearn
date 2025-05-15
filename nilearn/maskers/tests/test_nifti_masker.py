@@ -458,7 +458,7 @@ def test_standardization(rng, shape_3d_default, affine_eye):
 
 
 def test_nifti_masker_io_shapes(rng, shape_3d_default, affine_eye):
-    """Ensure that NiftiMasker.inverse_transform handles 1D/2D data.
+    """Ensure that NiftiMasker.inverse_transform 1D/2D data.
 
     inverse_transform(2D array) --> 4D image
     inverse_transform(1D array) --> 3D image

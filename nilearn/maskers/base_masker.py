@@ -92,17 +92,6 @@ def filter_and_extract(
     # coerce 5D data to 4D, which we don't want.
     temp_imgs = check_niimg(imgs)
 
-    # Raise warning if a 3D niimg is provided.
-    if temp_imgs.ndim == 3:
-        warnings.warn(
-            "Starting in version 0.12, 3D images will be transformed to "
-            "1D arrays. "
-            "Until then, 3D images will be coerced to 2D arrays, with a "
-            "singleton first dimension representing time.",
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
-
     imgs = check_niimg(imgs, atleast_4d=True, ensure_ndim=4, dtype=dtype)
 
     target_shape = parameters.get("target_shape")
@@ -174,6 +163,9 @@ def filter_and_extract(
         runs=runs,
         **parameters["clean_kwargs"],
     )
+
+    if temp_imgs.ndim == 3:
+        region_signals = region_signals.squeeze()
 
     return region_signals, aux
 
@@ -307,14 +299,6 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         region_signals : 2D numpy.ndarray
             Signal for each element.
             shape: (number of scans, number of elements)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
 
         """
         check_is_fitted(self)
