@@ -438,7 +438,7 @@ groups : None, default=None
 
 # hemi
 docdict["hemi"] = """
-hemi : {"left", "right", "both"}, default="both"
+hemi : {"left", "right", "both"}, default="left"
     Hemisphere to display.
 """
 
