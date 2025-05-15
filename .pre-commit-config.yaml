@@ -21,6 +21,7 @@ repos:
     rev: v5.0.0
     hooks:
     -   id: check-ast
+        exclude: ^examples/07_advanced/plot_performance_comparison.py$
     -   id: check-case-conflict
     -   id: check-json
     -   id: check-merge-conflict
