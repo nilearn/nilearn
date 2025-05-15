@@ -1,5 +1,7 @@
 """N-dimensional image manipulation."""
 
+from pathlib import Path
+
 import numpy as np
 from scipy.ndimage import label, maximum_filter
 
@@ -34,11 +36,7 @@ def largest_connected_component(volume):
     is done inplace to avoid big-endian issues with scipy ndimage module.
 
     """
-    if (
-        hasattr(volume, "get_data")
-        or hasattr(volume, "get_fdata")
-        or isinstance(volume, str)
-    ):
+    if hasattr(volume, "get_fdata") or isinstance(volume, (str, Path)):
         raise ValueError(
             "Please enter a valid numpy array. For images use "
             "largest_connected_component_img."
