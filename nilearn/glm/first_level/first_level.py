@@ -1340,7 +1340,7 @@ def first_level_from_bids(
     sub_labels=None,
     img_filters=None,
     t_r=None,
-    slice_time_ref=0.0,
+    slice_time_ref=None,
     hrf_model="glover",
     drift_model="cosine",
     high_pass=0.01,
@@ -1410,16 +1410,12 @@ def first_level_from_bids(
         Filter examples would be ``('desc', 'preproc')``, ``('dir', 'pa')``
         and ``('run', '10')``.
 
-    slice_time_ref : :obj:`float` between ``0.0`` and ``1.0``, default= ``0.0``
+    slice_time_ref : :obj:`float` between ``0.0`` and ``1.0``, or None, \
+                     default= None
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
         expressed as a fraction of the ``t_r`` (time repetition), so it can
         have values between ``0.`` and ``1.``
-
-        .. deprecated:: 0.10.1
-
-            The default= ``0`` for ``slice_time_ref`` will be deprecated.
-            The default value will change to ``None`` in 0.12.
 
     derivatives_folder : :obj:`str`, default= ``"derivatives"``.
         derivatives and app folder path containing preprocessed files.
@@ -1529,12 +1525,6 @@ def first_level_from_bids(
     """
     if memory is None:
         memory = Memory(None)
-    if slice_time_ref == 0:
-        warn(
-            "Starting in version 0.12, slice_time_ref will default to None.",
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
     if space_label is None:
         space_label = "MNI152NLin2009cAsym"
 
