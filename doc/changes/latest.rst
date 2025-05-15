@@ -13,6 +13,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Ensure that for all multimaskers, confounds and sample_mask are used if a nifti-like object is passed to ``transform()``, or that when a list of nifti-like object is passed, they can handle properly the expected diversity of inputs (array, dataframe, csv file...) (:gh:`5379` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Allow to generate report for :class:`~nilearn.glm.second_level.SecondLevelModel` when its inputs is a list of :class:`~nilearn.glm.first_level.FirstLevelModel` (:gh:`5357` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Prevent range overrun in TFCE (:gh:`5179` by `Lee Newberg`_).
