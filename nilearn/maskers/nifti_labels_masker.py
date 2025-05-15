@@ -690,8 +690,7 @@ class NiftiLabelsMasker(BaseMasker):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
+            If a 3D niimg is provided, a 1D array is returned.
 
         y : None
             This parameter is unused. It is solely included for scikit-learn
@@ -705,9 +704,10 @@ class NiftiLabelsMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : 2D :obj:`numpy.ndarray`
+        region_signals : :obj:`numpy.ndarray`
             Signal for each label.
-            shape: (number of scans, number of labels)
+            shape for 4D images : (number of scans, number of labels)
+            shape for 3D images : (number of labels,)
 
         """
         del y
@@ -737,7 +737,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
+        region_signals : numpy.ndarray
             Signal for each label.
             shape for 4D images : (number of scans, number of labels)
             shape for 3D images : (number of labels,)

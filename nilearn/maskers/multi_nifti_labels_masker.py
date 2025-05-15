@@ -194,9 +194,11 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
         Returns
         -------
-        region_signals: list of 2D :obj:`numpy.ndarray`
+        region_signals: list of :obj:`numpy.ndarray`
             List of signals for each label per subject.
-            shape: list of (number of scans, number of labels)
+            Arrays from 4D images
+            have shape (number of scans, number of labels)
+            while those from 3D images have shape (number of labels,).
 
         """
         # We handle the resampling of labels separately because the affine of
@@ -250,9 +252,11 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
         Returns
         -------
-        region_signals : list of 2D :obj:`numpy.ndarray`
+        signals : list of :obj:`numpy.ndarray`
             List of signals for each label per subject.
-            shape: list of (number of scans, number of labels)
+            Arrays from 4D images
+            have shape (number of scans, number of labels)
+            while those from 3D images have shape (number of labels,).
 
         """
         check_is_fitted(self)

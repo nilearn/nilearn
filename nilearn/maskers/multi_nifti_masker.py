@@ -420,9 +420,11 @@ class MultiNiftiMasker(NiftiMasker):
 
         Returns
         -------
-        region_signals : :obj:`list` of 2D :obj:`numpy.ndarray`
+        signals : :obj:`list` of :obj:`numpy.ndarray`
             List of signal for each element per subject.
-            shape: list of (number of scans, number of elements)
+            Arrays from 4D images
+            have shape (number of scans, number of elements)
+            while those from 3D images have shape (number of elements,).
 
         """
         if not hasattr(self, "mask_img_"):
@@ -521,8 +523,11 @@ class MultiNiftiMasker(NiftiMasker):
 
         Returns
         -------
-        data : :obj:`list` of :obj:`numpy.ndarray`
-            preprocessed images
+        signals : :obj:`list` of :obj:`numpy.ndarray`
+            List of signals per subject.
+            Arrays from 4D images
+            have shape (number of scans, number of elements)
+            while those from 3D images have shape (number of elements,).
 
         """
         check_is_fitted(self)
