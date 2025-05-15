@@ -544,8 +544,7 @@ class NiftiMapsMasker(BaseMasker):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
+            If a 3D niimg is provided, a 1D array is returned.
 
         confounds : CSV file or array-like, default=None
             This parameter is passed to :func:`nilearn.signal.clean`.
@@ -560,15 +559,8 @@ class NiftiMapsMasker(BaseMasker):
         -------
         region_signals : 2D numpy.ndarray
             Signal for each map.
-            shape: (number of scans, number of maps)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
+            shape for 4D images : (number of scans, number of maps)
+            shape for 3D images : (number of maps,)
 
         """
         # We handle the resampling of maps and mask separately because the

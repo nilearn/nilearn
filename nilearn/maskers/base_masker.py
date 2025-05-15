@@ -285,8 +285,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
+            If a 3D niimg is provided, a 1D array is returned.
 
         %(confounds)s
 
@@ -296,10 +295,10 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
+        region_signals : numpy.ndarray
             Signal for each element.
-            shape: (number of scans, number of elements)
-
+            shape for 4D images : (number of scans, number of elements)
+            shape for 3D images : (number of elements,)
         """
         check_is_fitted(self)
 
@@ -346,7 +345,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        X_new : numpy array of shape [n_samples, n_features_new]
+        X_new : numpy array
             Transformed array.
 
         """
