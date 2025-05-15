@@ -116,3 +116,5 @@ Changes
 - :bdg-dark:`Code` Move ``nilearn.plotting.matrix_plotting`` under ``nilearn.plotting.matrix`` (:gh:`5240` by `Hande Gözükan`_).
 
 - :bdg-danger:`Deprecation` For version >=0.13.2 :func:`~nilearn.interfaces.bids.parse_bids_filename` will return a dictionary whose keys correspond to valid BIDS terms. (:gh:`5320` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The default for ``slice_time_ref`` in :func:`~nilearn.glm.first_level.first_level_from_bids` was changed to ``None`` (:gh:`5382` by `Rémi Gau`_).
