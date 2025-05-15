@@ -25,9 +25,8 @@ relevant for the research questions at hand.
 
 .. tip::
     Masker objects can transform both 3D and 4D image objects.
-    Transforming a 4D image produces a 2D (samples x features) matrix.
-    Currently, transforming a 3D image also produces a 2D (1 x features) matrix,
-    but starting in version 0.12, it will produce a 1D (features) array.
+    Transforming a 4D image produces a 2D (samples, features) array.
+    Transforming a 3D image produces a 1D (features,) array.
 
 
 .. |niimgs| image:: ../images/niimgs.jpg

@@ -1,7 +1,5 @@
 """Test nilearn.maskers.nifti_spheres_masker."""
 
-import warnings
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -379,12 +377,9 @@ def test_nifti_spheres_masker_io_shapes(rng, shape_3d_default, affine_eye):
     n_regions, n_volumes = 2, 5
     shape_4d = (*shape_3d_default, n_volumes)
 
-    img_4d, mask_img = data_gen.generate_random_img(
+    _, mask_img = data_gen.generate_random_img(
         shape_4d,
         affine=affine_eye,
-    )
-    img_3d, _ = data_gen.generate_random_img(
-        shape_3d_default, affine=affine_eye
     )
 
     masker = NiftiSpheresMasker(
@@ -394,39 +389,11 @@ def test_nifti_spheres_masker_io_shapes(rng, shape_3d_default, affine_eye):
     )
     masker.fit()
 
-    # DeprecationWarning *should* be raised for 3D inputs
-    with pytest.deprecated_call(match="Starting in version 0.12"):
-        test_data = masker.transform(img_3d)
-        assert test_data.shape == (1, n_regions)
-
-    # DeprecationWarning should *not* be raised for 4D inputs
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "error",
-            message="Starting in version 0.12",
-            category=DeprecationWarning,
-        )
-        test_data = masker.transform(img_4d)
-        assert test_data.shape == (n_volumes, n_regions)
-
     data_1d = rng.random(n_regions)
     data_2d = rng.random((n_volumes, n_regions))
-    # DeprecationWarning should *not* be raised for 1D inputs
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "error",
-            message="Starting in version 0.12",
-            category=DeprecationWarning,
-        )
-        test_img = masker.inverse_transform(data_1d)
-        assert test_img.shape == shape_3d_default
 
-    # DeprecationWarning should *not* be raised for 2D inputs
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "error",
-            message="Starting in version 0.12",
-            category=DeprecationWarning,
-        )
-        test_img = masker.inverse_transform(data_2d)
-        assert test_img.shape == shape_4d
+    test_img = masker.inverse_transform(data_1d)
+    assert test_img.shape == shape_3d_default
+
+    test_img = masker.inverse_transform(data_2d)
+    assert test_img.shape == shape_4d

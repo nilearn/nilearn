@@ -234,6 +234,7 @@ def _mask_and_reduce_single(
 ):
     """Implement multiprocessing from MaskReducer."""
     this_data = masker.transform(img, confound)
+    this_data = np.atleast_2d(this_data)
     # Now get rid of the img as fast as possible, to free a
     # reference count on it, and possibly free the corresponding
     # data

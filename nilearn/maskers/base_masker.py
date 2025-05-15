@@ -92,17 +92,6 @@ def filter_and_extract(
     # coerce 5D data to 4D, which we don't want.
     temp_imgs = check_niimg(imgs)
 
-    # Raise warning if a 3D niimg is provided.
-    if temp_imgs.ndim == 3:
-        warnings.warn(
-            "Starting in version 0.12, 3D images will be transformed to "
-            "1D arrays. "
-            "Until then, 3D images will be coerced to 2D arrays, with a "
-            "singleton first dimension representing time.",
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
-
     imgs = check_niimg(imgs, atleast_4d=True, ensure_ndim=4, dtype=dtype)
 
     target_shape = parameters.get("target_shape")
@@ -175,6 +164,9 @@ def filter_and_extract(
         **parameters["clean_kwargs"],
     )
 
+    if temp_imgs.ndim == 3:
+        region_signals = region_signals.squeeze()
+
     return region_signals, aux
 
 
@@ -187,15 +179,14 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def transform_single_imgs(
         self, imgs, confounds=None, sample_mask=None, copy=True
     ):
-        """Extract signals from a single 4D niimg.
+        """Extract signals from a single niimg.
 
         Parameters
         ----------
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
+            If a 3D niimg is provided, a 1D array is returned.
 
         %(confounds)s
 
@@ -208,17 +199,10 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
+        signals : numpy.ndarray
             Signal for each element.
-            shape: (number of scans, number of elements)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
+            shape for 4D images : (number of scans, number of elements)
+            shape for 3D images : (number of elements,)
 
         """
         raise NotImplementedError()
@@ -293,8 +277,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
+            If a 3D niimg is provided, a 1D array is returned.
 
         %(confounds)s
 
@@ -304,18 +287,10 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
+        region_signals : numpy.ndarray
             Signal for each element.
-            shape: (number of scans, number of elements)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
-
+            shape for 4D images : (number of scans, number of elements)
+            shape for 3D images : (number of elements,)
         """
         check_is_fitted(self)
 
@@ -362,7 +337,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        X_new : numpy array of shape [n_samples, n_features_new]
+        X_new : numpy array
             Transformed array.
 
         """
@@ -432,11 +407,17 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         return img
 
     def _check_signal_shape(self, signals: np.ndarray):
-        if signals.shape[-1] != self.n_elements_:
+        if signals.ndim == 2:
+            expected_shape = (signals.shape[0], self.n_elements_)
+        elif signals.ndim == 1:
+            expected_shape = (self.n_elements_,)
+        elif signals.ndim == 0:
+            expected_shape = ()
+        if signals.shape != expected_shape:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
-                f"Last dimension should be {self.n_elements_}.\n"
-                f"Got {signals.shape[-1]}."
+                f"Expected {expected_shape}.\n"
+                f"Got {signals.shape}."
             )
 
 

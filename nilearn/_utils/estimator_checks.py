@@ -1114,18 +1114,13 @@ def check_masker_smooth(estimator):
     """
     assert hasattr(estimator, "smoothing_fwhm")
 
+    n_sample = 1
     if accept_niimg_input(estimator):
-        n_sample = 1
         imgs = _img_3d_rand()
     else:
-        n_sample = 10
         imgs = _make_surface_img(n_sample)
 
     signal = estimator.fit_transform(imgs)
-
-    assert isinstance(signal, np.ndarray)
-    n_elements = estimator.n_elements_
-    assert signal.shape == (n_sample, n_elements)
 
     estimator.smoothing_fwhm = 3
     estimator.fit(imgs)
@@ -1142,9 +1137,6 @@ def check_masker_smooth(estimator):
             smoothed_signal = estimator.transform(imgs)
 
         assert_array_equal(smoothed_signal, signal)
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (n_sample, estimator.n_elements_)
 
 
 def check_masker_inverse_transform(estimator):
@@ -1270,28 +1262,46 @@ def check_nifti_masker_fit_transform(estimator):
       - 3D image
       - list of 3D images with same affine
     - can fit transform 3D image
+    - array from transformed 3D images should have 1D
+    - array from transformed 4D images should have 2D
     """
     estimator.fit(_img_3d_rand())
 
+    # 3D images
     signal = estimator.transform(_img_3d_rand())
 
     assert isinstance(signal, np.ndarray)
-    assert signal.shape == (1, estimator.n_elements_)
+    assert signal.shape == (estimator.n_elements_,)
 
-    estimator.transform([_img_3d_rand(), _img_3d_rand()])
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (1, estimator.n_elements_)
-
-    estimator.transform(_img_4d_rand_eye())
+    signal = estimator.fit_transform(_img_3d_rand())
 
     assert isinstance(signal, np.ndarray)
-    assert signal.shape == (1, estimator.n_elements_)
+    assert signal.shape == (estimator.n_elements_,)
 
-    estimator.fit_transform(_img_3d_rand())
+    # 4D images
+    signal = estimator.transform([_img_3d_rand(), _img_3d_rand()])
 
+    if is_multimasker(estimator):
+        signal = signal[0]
     assert isinstance(signal, np.ndarray)
-    assert signal.shape == (1, estimator.n_elements_)
+    if is_multimasker(estimator):
+        assert signal.ndim == 1
+        assert signal.shape == (estimator.n_elements_,)
+    else:
+        assert signal.ndim == 2
+        assert signal.shape[1] == estimator.n_elements_
+
+    signal = estimator.transform(_img_4d_rand_eye())
+
+    if is_multimasker(estimator):
+        signal = signal[0]
+    assert isinstance(signal, np.ndarray)
+    if is_multimasker(estimator):
+        assert signal.ndim == 1
+        assert signal.shape == (estimator.n_elements_,)
+    else:
+        assert signal.ndim == 2
+        assert signal.shape[1] == estimator.n_elements_
 
 
 def check_nifti_masker_fit_transform_5d(estimator):
@@ -1330,12 +1340,14 @@ def check_nifti_masker_fit_transform_5d(estimator):
         assert isinstance(signal, list)
         assert all(isinstance(x, np.ndarray) for x in signal)
         assert len(signal) == n_subject
+        assert all(x.ndim == 2 for x in signal)
 
         signal = estimator.fit_transform(input_5d_img)
 
         assert isinstance(signal, list)
         assert all(isinstance(x, np.ndarray) for x in signal)
         assert len(signal) == n_subject
+        assert all(x.ndim == 2 for x in signal)
 
 
 def check_nifti_masker_clean_error(estimator):
