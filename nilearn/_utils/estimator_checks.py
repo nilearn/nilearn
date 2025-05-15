@@ -329,6 +329,7 @@ def nilearn_check_estimator(estimator):
         surf_img_input = getattr(tags.input_tags, "surf_img", False)
 
     yield (clone(estimator), check_estimator_has_sklearn_is_fitted)
+    yield (clone(estimator), check_transformer_set_output)
 
     if is_masker:
         yield (clone(estimator), check_masker_fitted)
@@ -465,6 +466,13 @@ def check_estimator_has_sklearn_is_fitted(estimator):
 
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         check_is_fitted(estimator)
+
+
+def check_transformer_set_output(estimator):
+    """Check that set_ouput throws a not implemented error."""
+    if hasattr(estimator, "transform"):
+        with pytest.raises(NotImplementedError):
+            estimator.set_output(transform="default")
 
 
 # ------------------ MASKER CHECKS ------------------

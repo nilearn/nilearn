@@ -727,3 +727,12 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             connectivities = np.array(connectivities)
 
         return connectivities
+
+    def set_output(self, *, transform=None):
+        """Set the output container when ``"transform"`` is called.
+
+        .. warning::
+
+            This has not been implemented yet.
+        """
+        raise NotImplementedError()
