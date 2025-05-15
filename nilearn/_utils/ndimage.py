@@ -1,5 +1,7 @@
 """N-dimensional image manipulation."""
 
+from pathlib import Path
+
 import numpy as np
 from scipy.ndimage import label, maximum_filter
 
