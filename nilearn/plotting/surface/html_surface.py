@@ -10,6 +10,7 @@ import numpy as np
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting import cm
 from nilearn.plotting.js_plotting_utils import (
@@ -71,6 +72,7 @@ def get_vertexcolor(
                 "We recommend setting `darkness` to None"
             ),
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
 
     bg_colors = plt.get_cmap("Greys")(bg_data)
@@ -158,6 +160,7 @@ def one_mesh_info(
         message="one_mesh_info is a private function and is renamed "
         "to _one_mesh_info. Using the deprecated name will "
         "raise an error in release 0.13",
+        stacklevel=find_stack_level(),
     )
 
     return _one_mesh_info(
@@ -308,6 +311,7 @@ def full_brain_info(
         message="full_brain_info is a private function and is renamed to "
         "_full_brain_info. Using the deprecated name will raise an error "
         "in release 0.13",
+        stacklevel=find_stack_level(),
     )
 
     return _full_brain_info(

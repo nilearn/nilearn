@@ -6,16 +6,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 
+from nilearn._utils.logger import find_stack_level
+
 DEFAULT_ENGINE = "matplotlib"
 
 
 def engine_warning(engine):
-    warning = (
-        f"'{engine}' is not installed. To be able to use '{engine}' as "
-        "plotting engine for 'nilearn.plotting' package:\n"
-        " pip install 'nilearn[plotting]'"
+    message = (
+        (
+            f"'{engine}' is not installed. To be able to use '{engine}' as "
+            "plotting engine for 'nilearn.plotting' package:\n"
+            " pip install 'nilearn[plotting]'"
+        ),
     )
-    warn(warning)
+    warn(message, stacklevel=find_stack_level())
 
 
 def save_figure_if_needed(fig, output_file):
@@ -200,7 +204,7 @@ def create_colormap_from_lut(cmap, default_cmap="gist_ncar"):
         warn(
             "No 'color' column found in the look-up table. "
             "Will use the default colormap instead.",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         return default_cmap
 

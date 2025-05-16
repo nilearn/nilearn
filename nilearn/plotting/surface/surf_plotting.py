@@ -10,6 +10,7 @@ from matplotlib import gridspec
 
 from nilearn import DEFAULT_DIVERGING_CMAP, image, surface
 from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
@@ -1057,6 +1058,7 @@ def plot_surf_roi(
                 " Nilearn version 0.13"
             ),
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
     if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
         # TODO raise ValueError in release 0.13
@@ -1066,6 +1068,7 @@ def plot_surf_roi(
                 " Nilearn version 0.13"
             ),
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
 
     if cbar_tick_format == "auto":

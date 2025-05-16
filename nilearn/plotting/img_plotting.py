@@ -29,6 +29,7 @@ from nilearn._utils import (
     logger,
 )
 from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import get_border_data
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params, check_threshold
@@ -202,7 +203,7 @@ def _plot_img_with_bg(
             "NaN is not permitted for the vmax and vmin arguments.\n"
             "Tip: Use np.nanmax() instead of np.max()."
         )
-        warnings.warn(nan_msg)
+        warnings.warn(nan_msg, stacklevel=find_stack_level())
 
     if isinstance(cut_coords, numbers.Number) and display_mode in (
         "ortho",
@@ -1647,6 +1648,7 @@ def plot_glass_brain(
                 warnings.warn(
                     "vmin is negative but plot_abs is True",
                     category=UserWarning,
+                    stacklevel=find_stack_level(),
                 )
             force_min_stat_map_value = 0
         else:
@@ -2279,7 +2281,7 @@ def plot_img_comparison(
             "to silence this warning."
         ),
         DeprecationWarning,
-        stacklevel=2,
+        stacklevel=find_stack_level(),
     )
 
     plot_img_comparison(

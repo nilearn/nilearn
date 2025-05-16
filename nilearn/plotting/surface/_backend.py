@@ -21,6 +21,7 @@ from warnings import warn
 
 import numpy as np
 
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
@@ -78,7 +79,8 @@ class BaseSurfaceBackend:
                     f"'{parameter}' is not implemented "
                     f"for the {self.name} engine.\n"
                     f"Got '{parameter} = {value}'.\n"
-                    f"Use '{parameter} = None' to silence this warning."
+                    f"Use '{parameter} = None' to silence this warning.",
+                    stacklevel=find_stack_level(),
                 )
 
     def _sanitize_hemi_view(self, hemi, view):

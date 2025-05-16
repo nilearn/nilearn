@@ -5,6 +5,7 @@ from scipy import linalg
 from scipy.spatial import distance_matrix
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn._utils.logger import find_stack_level
 from nilearn.plotting.surface._utils import DEFAULT_HEMI, get_faces_on_edge
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data, load_surf_data
@@ -230,7 +231,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                     f"""{label=} contains isolated vertices:
                     {isolated_v.tolist()}. These will not be included in ROI
                     boundary line.""",
-                    stacklevel=2,
+                    stacklevel=find_stack_level(),
                 )
 
             sorted_vertices = self._get_sorted_edge_centroids(

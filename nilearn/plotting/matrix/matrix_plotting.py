@@ -15,6 +15,7 @@ from nilearn._utils import (
     rename_parameters,
 )
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.logger import find_stack_level
 from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
@@ -263,7 +264,7 @@ def pad_contrast_matrix(contrast_def, design_matrix):
             "column(s) of zeros."
         ),
         category=UserWarning,
-        stacklevel=4,
+        stacklevel=find_stack_level(),
     )
     contrast_def = np.pad(
         contrast_def,
