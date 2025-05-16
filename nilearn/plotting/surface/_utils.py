@@ -6,6 +6,7 @@ import numpy as np
 
 from nilearn._utils import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+from nilearn._utils.logger import find_stack_level
 from nilearn.plotting._utils import DEFAULT_ENGINE
 from nilearn.surface import (
     PolyMesh,
@@ -196,7 +197,7 @@ def check_surface_plotting_inputs(
                 "'map' is a SurfaceImage instance and / or "
                 "'mesh' is a PolyMesh instance."
             ),
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
 
     if surf_mesh is None and surf_map is None:

@@ -11,6 +11,7 @@ import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import compare_version
+from nilearn._utils.logger import find_stack_level
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
@@ -159,6 +160,7 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
                 "We recommend setting `darkness` to None"
             ),
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
 
     face_colors = plt.cm.gray_r(bg_faces)
@@ -253,7 +255,8 @@ def _get_cmap(cmap, vmin, vmax, cbar_tick_format, threshold=None):
         if cbar_tick_format == "%i" and int(threshold) != threshold:
             warn(
                 "You provided a non integer threshold "
-                "but configured the colorbar to use integer formatting."
+                "but configured the colorbar to use integer formatting.",
+                stacklevel=find_stack_level(),
             )
         # set colors to gray for absolute values < threshold
         istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
