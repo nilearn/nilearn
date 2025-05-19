@@ -45,6 +45,9 @@ def signals_to_surf_img_labels(
     """Transform signals to surface image labels."""
     labels = labels[labels != background_label]
 
+    if signals.ndim == 1:
+        signals = signals[None, :]
+
     data = {}
     for part_name, labels_part in labels_img.data.parts.items():
         data[part_name] = np.zeros(
@@ -500,7 +503,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        self._check_signal_shape(signals)
+        signals = self._check_array(signals)
 
         return signals_to_surf_img_labels(
             signals,

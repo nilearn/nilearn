@@ -431,15 +431,6 @@ def test_surface_label_masker_fit_transform(surf_label_img, surf_img_1d):
     assert signal.shape == (1, masker.n_elements_)
 
 
-def test_surface_label_masker_inverse_transform(surf_label_img, surf_img_1d):
-    """Test transform extract signals."""
-    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
-    masker = masker.fit()
-    signal = masker.transform(surf_img_1d)
-    img = masker.inverse_transform(signal)
-    assert img.shape == (surf_img_1d.shape[0], 1)
-
-
 def test_surface_label_masker_inverse_transform_with_mask(
     surf_mesh, surf_img_2d
 ):

@@ -613,10 +613,13 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         del y
         return self.fit(imgs).transform(imgs, confounds, sample_mask)
 
-    def _check_signal_shape(self, signals: np.ndarray):
+    def _check_array(self, signals: np.ndarray):
+        signals = np.atleast_2d(signals)
+        signals = check_array(signals, ensure_2d=True)
         if signals.shape[-1] != self.n_elements_:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
                 f"Last dimension should be {self.n_elements_}.\n"
                 f"Got {signals.shape[-1]}."
             )
+        return signals

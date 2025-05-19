@@ -330,10 +330,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        if signals.ndim == 1:
-            signals = np.array([signals])
-
-        self._check_signal_shape(signals)
+        signals = self._check_array(signals)
 
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
