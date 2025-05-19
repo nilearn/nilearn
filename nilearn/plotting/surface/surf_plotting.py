@@ -853,21 +853,21 @@ def plot_surf_roi(
     hemi=DEFAULT_HEMI,
     view=None,
     engine=DEFAULT_ENGINE,
+    cmap="gist_ncar",
+    colorbar=True,
     avg_method=None,
     threshold=1e-14,
     alpha=None,
-    vmin=None,
-    vmax=None,
-    cmap="gist_ncar",
-    cbar_tick_format="auto",
     bg_on_data=False,
     darkness=0.7,
+    vmin=None,
+    vmax=None,
+    cbar_tick_format="auto",
     title=None,
     title_font_size=18,
     output_file=None,
     axes=None,
     figure=None,
-    colorbar=True,
     **kwargs,
 ):
     """Plot ROI on a surface :term:`mesh` with optional background.
@@ -924,6 +924,12 @@ def plot_surf_roi(
             The ``plotly`` engine is new and experimental.
             Please report bugs that you may encounter.
 
+    %(cmap_lut)s
+        Default='gist_ncar'.
+
+    %(colorbar)s
+        Default=True
+
     %(avg_method)s
 
         .. note::
@@ -937,17 +943,6 @@ def plot_surf_roi(
         Threshold regions that are labeled 0.
         If you want to use 0 as a label, set threshold to None.
 
-    %(cmap_lut)s
-        Default='gist_ncar'.
-
-    %(cbar_tick_format)s
-        Default="auto" which defaults to integers format:
-
-            - "%%i" for ``matplotlib`` engine.
-            - "." for ``plotly`` engine.
-
-        .. versionadded:: 0.7.1
-
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
         When using matplotlib as engine,
@@ -959,10 +954,6 @@ def plot_surf_roi(
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-    %(vmin)s
-
-    %(vmax)s
-
     %(bg_on_data)s
 
     %(darkness)s
@@ -971,6 +962,18 @@ def plot_surf_roi(
         .. note::
             This option is currently only implemented for the
             ``matplotlib`` engine.
+
+    %(vmin)s
+
+    %(vmax)s
+
+    %(cbar_tick_format)s
+        Default="auto" which defaults to integers format:
+
+            - "%%i" for ``matplotlib`` engine.
+            - "." for ``plotly`` engine.
+
+        .. versionadded:: 0.7.1
 
     %(title)s
 
@@ -995,9 +998,6 @@ def plot_surf_roi(
         .. note::
             This option is currently only implemented for the
             ``matplotlib`` engine.
-
-    %(colorbar)s
-        Default=True
 
     kwargs : :obj:`dict`, optional
         Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
