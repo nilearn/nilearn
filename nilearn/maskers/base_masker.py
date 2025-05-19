@@ -5,8 +5,8 @@ import contextlib
 import itertools
 import warnings
 from collections.abc import Iterable
-from pathlib import Path
 from copy import deepcopy
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
