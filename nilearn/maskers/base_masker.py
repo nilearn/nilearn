@@ -398,7 +398,9 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
-        X = self._check_array(X)
+        # do not run sklearn_check as they may cause some failure
+        # with some GLM inputs
+        X = self._check_array(X, sklearn_check=False)
 
         img = self._cache(unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
@@ -407,10 +409,21 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             img._header._structarr = np.array(img._header._structarr).copy()
         return img
 
-    def _check_array(self, signals: np.ndarray):
-        """Check array to inverse transform."""
+    def _check_array(self, signals: np.ndarray, sklearn_check: bool = True):
+        """Check array to inverse transform.
+
+        Parameters
+        ----------
+        signals : :obj:`numpy.ndarray`
+
+        sklearn_check : :obj:`bool`
+            Run scikit learn check on input
+        """
         signals = np.atleast_1d(signals)
-        signals = check_array(signals, ensure_2d=False)
+
+        if sklearn_check:
+            signals = check_array(signals, ensure_2d=False)
+
         assert signals.ndim <= 2
 
         expected_shape = (
@@ -613,9 +626,21 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         del y
         return self.fit(imgs).transform(imgs, confounds, sample_mask)
 
-    def _check_array(self, signals: np.ndarray):
+    def _check_array(self, signals: np.ndarray, sklearn_check: bool = True):
+        """Check array to inverse transform.
+
+        Parameters
+        ----------
+        signals : :obj:`numpy.ndarray`
+
+        sklearn_check : :obj:`bool`
+            Run scikit learn check on input
+        """
         signals = np.atleast_2d(signals)
-        signals = check_array(signals, ensure_2d=True)
+
+        if sklearn_check:
+            signals = check_array(signals, ensure_2d=False)
+
         if signals.shape[-1] != self.n_elements_:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"

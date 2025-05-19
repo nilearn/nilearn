@@ -330,7 +330,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        signals = self._check_array(signals)
+        # do not run sklearn_check as they may cause some failure
+        # with some GLM inputs
+        signals = self._check_array(signals, sklearn_check=False)
 
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():

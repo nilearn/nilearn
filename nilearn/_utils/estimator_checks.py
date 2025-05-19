@@ -1157,8 +1157,8 @@ def check_masker_inverse_transform(estimator):
     """
     n_sample = 1
     if accept_niimg_input(estimator):
-        imgs = _img_3d_rand()
-        mask_img = _img_3d_ones()
+        imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_mni())
+        mask_img = Nifti1Image(np.ones(_shape_3d_large()), _affine_mni())
         input_shape = imgs.get_fdata().shape
         expected_shapes = [input_shape, (*input_shape, 1), (*input_shape, 10)]
     else:
@@ -1170,25 +1170,28 @@ def check_masker_inverse_transform(estimator):
             (imgs.shape[0], 10),
         ]
 
-    if isinstance(estimator, NiftiSpheresMasker):
-        estimator.mask_img = mask_img
-
-    estimator.fit(imgs)
-
-    signals_1d = _rng().random((estimator.n_elements_,))
-    signals_2d = _rng().random((1, estimator.n_elements_))
-    signals_2d_multisample = _rng().random((10, estimator.n_elements_))
-
-    for signal, expected_shape in zip(
-        [signals_1d, signals_2d, signals_2d_multisample],
+    for i, expected_shape in enumerate(
         expected_shapes,
     ):
-        new_imgs = estimator.inverse_transform(signal)
+        estimator = clone(estimator)
+        if isinstance(estimator, NiftiSpheresMasker):
+            estimator.mask_img = mask_img
+        estimator.fit(imgs)
+
+        if i == 0:
+            signals = _rng().random((estimator.n_elements_,))
+        elif i == 1:
+            signals = _rng().random((1, estimator.n_elements_))
+        elif i == 2:
+            signals = _rng().random((10, estimator.n_elements_))
+
+        new_imgs = estimator.inverse_transform(signals)
 
         if accept_niimg_input(estimator):
-            assert new_imgs.get_fdata().shape == expected_shape
+            actual_shape = new_imgs.get_fdata().shape
         else:
-            assert new_imgs.data.shape == expected_shape
+            actual_shape = new_imgs.data.shape
+        assert actual_shape == expected_shape
 
     signals = _rng().random((1, estimator.n_elements_ + 1))
 
