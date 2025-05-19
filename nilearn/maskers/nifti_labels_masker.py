@@ -1,7 +1,7 @@
 """Transformer for computing ROI signals."""
 
-import copy
 import warnings
+from copy import deepcopy
 from pathlib import Path
 from typing import Union
 
@@ -492,6 +492,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         return [display]
 
+    @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -501,9 +502,7 @@ class NiftiLabelsMasker(BaseMasker):
             See :ref:`extracting_data`.
             Image data passed to the reporter.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
+        %(y_dummy)s
         """
         del y
         check_params(self.__dict__)
@@ -652,7 +651,7 @@ class NiftiLabelsMasker(BaseMasker):
         elif self.labels:
             lut = generate_atlas_look_up_table(
                 function=None,
-                name=copy.deepcopy(self.labels),
+                name=deepcopy(self.labels),
                 index=self.labels_img_,
             )
 

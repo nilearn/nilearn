@@ -8,6 +8,7 @@ from pathlib import Path
 
 from nilearn import __version__
 from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
@@ -78,6 +79,7 @@ def _generate_dataset_description(out_file, model_level):
         json.dump(dataset_description, f_obj, indent=4, sort_keys=True)
 
 
+@fill_doc
 def save_glm_to_bids(
     model,
     contrasts,

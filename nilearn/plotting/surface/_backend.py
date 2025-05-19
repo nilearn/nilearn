@@ -21,8 +21,12 @@ from warnings import warn
 
 import numpy as np
 
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
-from nilearn.plotting.surface._utils import check_surface_plotting_inputs
+from nilearn.plotting.surface._utils import (
+    DEFAULT_HEMI,
+    check_surface_plotting_inputs,
+)
 from nilearn.surface import load_surf_data, load_surf_mesh
 from nilearn.surface.surface import (
     FREESURFER_DATA_EXTENSIONS,
@@ -75,15 +79,32 @@ class BaseSurfaceBackend:
                     f"'{parameter}' is not implemented "
                     f"for the {self.name} engine.\n"
                     f"Got '{parameter} = {value}'.\n"
-                    f"Use '{parameter} = None' to silence this warning."
+                    f"Use '{parameter} = None' to silence this warning.",
+                    stacklevel=find_stack_level(),
                 )
+
+    def _sanitize_hemi_view(self, hemi, view):
+        """Check ``hemi`` and ``view``, if ``view`` is `None`, set value for
+        ``view`` depending on the ``hemi`` value and return ``view``.
+        """
+        check_hemispheres([hemi])
+        if view is None:
+            view = "dorsal" if hemi == "both" else "lateral"
+        check_views([view])
+        return view
+
+    def load_surf_mesh(self, surf_mesh):
+        return load_surf_mesh(surf_mesh)
+
+    def load_surf_data(self, surf_map):
+        return load_surf_data(surf_map)
 
     def plot_surf(
         self,
         surf_mesh=None,
         surf_map=None,
         bg_map=None,
-        hemi="left",
+        hemi=DEFAULT_HEMI,
         view=None,
         cmap=None,
         symmetric_cmap=None,
@@ -105,20 +126,13 @@ class BaseSurfaceBackend:
         figure=None,
     ):
         check_params(locals())
-        if view is None:
-            view = "dorsal" if hemi == "both" else "lateral"
-
         surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
             surf_map, surf_mesh, hemi, bg_map
         )
-
         check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
-        coords, faces = load_surf_mesh(surf_mesh)
-
         return self._plot_surf(
-            coords,
-            faces,
+            surf_mesh,
             surf_map=surf_map,
             bg_map=bg_map,
             hemi=hemi,
@@ -141,6 +155,43 @@ class BaseSurfaceBackend:
             output_file=output_file,
             axes=axes,
             figure=figure,
+        )
+
+    def plot_surf_contours(
+        self,
+        surf_mesh=None,
+        roi_map=None,
+        hemi=DEFAULT_HEMI,
+        levels=None,
+        labels=None,
+        colors=None,
+        legend=False,
+        cmap="tab20",
+        title=None,
+        output_file=None,
+        axes=None,
+        figure=None,
+        **kwargs,
+    ):
+        roi_map, surf_mesh, _ = check_surface_plotting_inputs(
+            roi_map, surf_mesh, hemi, map_var_name="roi_map"
+        )
+        check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
+        return self._plot_surf_contours(
+            surf_mesh=surf_mesh,
+            roi_map=roi_map,
+            hemi=hemi,
+            levels=levels,
+            labels=labels,
+            colors=colors,
+            legend=legend,
+            cmap=cmap,
+            title=title,
+            output_file=output_file,
+            axes=axes,
+            figure=figure,
+            **kwargs,
         )
 
 

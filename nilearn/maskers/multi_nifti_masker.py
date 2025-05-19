@@ -244,6 +244,7 @@ class MultiNiftiMasker(NiftiMasker):
         tags.input_tags = InputTags(masker=True, multi_masker=True)
         return tags
 
+    @fill_doc
     def fit(
         self,
         imgs=None,
@@ -259,9 +260,7 @@ class MultiNiftiMasker(NiftiMasker):
             Data on which the mask must be calculated.
             If this is a list, the affine is considered the same for all.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
+        %(y_dummy)s
 
         """
         del y

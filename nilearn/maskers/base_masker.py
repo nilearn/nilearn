@@ -2,11 +2,11 @@
 
 import abc
 import contextlib
-import copy
 import itertools
 import warnings
 from collections.abc import Iterable
 from pathlib import Path
+from copy import deepcopy
 
 import numpy as np
 import pandas as pd
@@ -521,7 +521,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if self.mask_img is None:
             return None
 
-        mask_img_ = copy.deepcopy(self.mask_img)
+        mask_img_ = deepcopy(self.mask_img)
 
         logger.log(
             msg=f"loading mask from {mask_img_.__repr__()}",

@@ -16,6 +16,7 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_threshold
 from nilearn.datasets import load_mni152_template
@@ -113,7 +114,8 @@ def _threshold_data(data, threshold=None):
     if not np.any(mask):
         warnings.warn(
             f"Threshold given was {threshold}, "
-            f"but the data has no values below {data.min()}. "
+            f"but the data has no values below {data.min()}. ",
+            stacklevel=find_stack_level(),
         )
     return data, mask, threshold
 
