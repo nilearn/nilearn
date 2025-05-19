@@ -407,12 +407,13 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         return img
 
     def _check_signal_shape(self, signals: np.ndarray):
-        if signals.ndim == 2:
-            expected_shape = (signals.shape[0], self.n_elements_)
-        elif signals.ndim == 1:
-            expected_shape = (self.n_elements_,)
-        elif signals.ndim == 0:
-            expected_shape = ()
+        assert signals.ndim in [1, 2]
+        expected_shape = (
+            (self.n_elements_,)
+            if signals.ndim == 1
+            else (signals.shape[0], self.n_elements_)
+        )
+
         if signals.shape != expected_shape:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"

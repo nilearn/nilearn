@@ -11,6 +11,7 @@ from joblib import Memory
 from scipy import sparse
 from sklearn import neighbors
 from sklearn.utils.estimator_checks import check_is_fitted
+from sklearn.utils.validation import check_array
 
 from nilearn._utils import logger
 from nilearn._utils.class_inspect import get_params
@@ -691,7 +692,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : 2D :obj:`numpy.ndarray`
+        region_signals : :obj:`numpy.ndarray`
             Signal for each sphere.
             shape: (number of scans, number of spheres)
 
@@ -726,7 +727,7 @@ class NiftiSpheresMasker(BaseMasker):
             # kwargs
             verbose=self.verbose,
         )
-        return signals
+        return np.atleast_1d(signals)
 
     def inverse_transform(self, region_signals):
         """Compute :term:`voxel` signals from spheres signals.
@@ -753,6 +754,8 @@ class NiftiSpheresMasker(BaseMasker):
         """
         check_is_fitted(self)
 
+        region_signals = np.atleast_1d(region_signals)
+        region_signals = check_array(region_signals, ensure_2d=False)
         self._check_signal_shape(region_signals)
 
         logger.log("computing image from signals", verbose=self.verbose)
