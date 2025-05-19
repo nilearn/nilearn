@@ -479,6 +479,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 f"You provided {confounds.__class__}"
             )
 
+    @fill_doc
     def fit(self, X, y=None):
         """Fit the covariance estimator to the given time series for each \
         subject.
@@ -489,6 +490,8 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             shape for each (n_samples, n_features)
             The input subjects time series. The number of samples may differ
             from one subject to another.
+
+        %(y_dummy)s
 
         Returns
         -------
@@ -595,6 +598,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         return connectivities
 
+    @fill_doc
     def fit_transform(self, X, y=None, confounds=None):
         """Fit the covariance estimator to the given time series \
         for each subject. \
@@ -605,7 +609,8 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         X : :obj:`list` of n_subjects numpy.ndarray with shapes \
             (n_samples, n_features)
             The input subjects time series. The number of samples may differ
-            from one subject to another.
+
+        %(y_dummy)s
 
         confounds : np.ndarray with shape (n_samples) or \
                     (n_samples, n_confounds), or pandas DataFrame, default=None

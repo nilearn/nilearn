@@ -255,6 +255,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         tags.input_tags = InputTags()
         return tags
 
+    @fill_doc
     def fit(self, X, y=None):
         """Compute clustering of the data.
 
@@ -262,7 +263,8 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         ----------
         X : ndarray, shape = [n_samples, n_features]
             Training data.
-        y : Ignored
+
+        %(y_dummy)s
 
         Returns
         -------
@@ -313,6 +315,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "labels_")
 
+    @fill_doc
     def transform(
         self,
         X,
@@ -324,6 +327,8 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         ----------
         X : ndarray, shape = [n_samples, n_features]
             Data to transform with the fitted clustering.
+
+        %(y_dummy)s
 
         Returns
         -------

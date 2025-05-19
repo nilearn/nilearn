@@ -16,12 +16,10 @@ from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.plotting.surface._backend import (
     VALID_HEMISPHERES,
     BaseSurfaceBackend,
-    check_hemispheres,
     check_surf_map,
-    check_views,
 )
+from nilearn.plotting.surface._utils import DEFAULT_HEMI
 from nilearn.plotting.surface.html_surface import get_vertexcolor
-from nilearn.surface import load_surf_data
 
 try:
     import plotly.graph_objects as go
@@ -210,32 +208,26 @@ def _get_cbar(
     return dummy
 
 
-def _get_view_plot_surf(hemi, view):
-    """
-    Get camera parameters from hemi and view for the plotly engine.
-
-    This function checks the selected hemisphere and view, and
-    returns the cameras view.
-    """
-    check_views([view])
-    check_hemispheres([hemi])
-    if isinstance(view, str):
-        return _get_camera_view_from_string_view(hemi, view)
-    return _get_camera_view_from_elevation_and_azimut(view)
-
-
 class PlotlySurfaceBackend(BaseSurfaceBackend):
     @property
     def name(self):
         return "plotly"
 
+    def _get_view_plot_surf(self, hemi, view):
+        """Check ``hemi`` and ``view``, and return camera view for plotly
+        engine.
+        """
+        view = self._sanitize_hemi_view(hemi, view)
+        if isinstance(view, str):
+            return _get_camera_view_from_string_view(hemi, view)
+        return _get_camera_view_from_elevation_and_azimut(view)
+
     def _plot_surf(
         self,
-        coords,
-        faces,
+        surf_mesh,
         surf_map=None,
         bg_map=None,
-        hemi="left",
+        hemi=DEFAULT_HEMI,
         view=None,
         cmap=None,
         symmetric_cmap=None,
@@ -274,12 +266,14 @@ class PlotlySurfaceBackend(BaseSurfaceBackend):
         symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
         title_font_size = 18 if title_font_size is None else title_font_size
 
+        coords, faces = self.load_surf_mesh(surf_mesh)
+
         x, y, z = coords.T
         i, j, k = faces.T
 
         bg_data = None
         if bg_map is not None:
-            bg_data = load_surf_data(bg_map)
+            bg_data = self.load_surf_data(bg_map)
             if bg_data.shape[0] != coords.shape[0]:
                 raise ValueError(
                     "The bg_map does not have the same number "
@@ -330,7 +324,7 @@ class PlotlySurfaceBackend(BaseSurfaceBackend):
             fig_data.append(dummy)
 
         # instantiate plotly figure
-        camera_view = _get_view_plot_surf(hemi, view)
+        camera_view = self._get_view_plot_surf(hemi, view)
         fig = go.Figure(data=fig_data)
         fig.update_layout(
             scene_camera=camera_view,
@@ -353,3 +347,21 @@ class PlotlySurfaceBackend(BaseSurfaceBackend):
             plotly_figure.savefig()
 
         return plotly_figure
+
+    def _plot_surf_contours(
+        self,
+        surf_mesh=None,
+        roi_map=None,
+        hemi=DEFAULT_HEMI,
+        levels=None,
+        labels=None,
+        colors=None,
+        legend=False,
+        cmap="tab20",
+        title=None,
+        output_file=None,
+        axes=None,
+        figure=None,
+        **kwargs,
+    ):
+        raise NotImplementedError()

@@ -408,6 +408,7 @@ class NiftiMasker(BaseMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "mask_img_")
 
+    @fill_doc
     def fit(self, imgs=None, y=None):
         """Compute the mask corresponding to the data.
 
@@ -418,10 +419,7 @@ class NiftiMasker(BaseMasker):
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
-
+        %(y_dummy)s
         """
         del y
         check_params(self.__dict__)

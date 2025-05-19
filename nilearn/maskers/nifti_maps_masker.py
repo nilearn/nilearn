@@ -378,6 +378,7 @@ class NiftiMapsMasker(BaseMasker):
             display.close()
         return embeded_images
 
+    @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -387,9 +388,7 @@ class NiftiMapsMasker(BaseMasker):
             See :ref:`extracting_data`.
             Image data passed to the reporter.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
+        %(y_dummy)s
         """
         del y
         check_params(self.__dict__)
@@ -503,6 +502,7 @@ class NiftiMapsMasker(BaseMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
 
+    @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction.
 
@@ -513,9 +513,7 @@ class NiftiMapsMasker(BaseMasker):
             Images to process.
             If a 3D niimg is provided, a 1D array is returned.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
+        %(y_dummy)s
 
         %(confounds)s
 
