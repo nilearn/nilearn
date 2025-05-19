@@ -11,7 +11,6 @@ from joblib import Memory
 from scipy import sparse
 from sklearn import neighbors
 from sklearn.utils.estimator_checks import check_is_fitted
-from sklearn.utils.validation import check_array
 
 from nilearn._utils import logger
 from nilearn._utils.class_inspect import get_params
@@ -754,9 +753,7 @@ class NiftiSpheresMasker(BaseMasker):
         """
         check_is_fitted(self)
 
-        region_signals = np.atleast_1d(region_signals)
-        region_signals = check_array(region_signals, ensure_2d=False)
-        self._check_signal_shape(region_signals)
+        region_signals = self._check_array(region_signals)
 
         logger.log("computing image from signals", verbose=self.verbose)
 

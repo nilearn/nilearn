@@ -704,7 +704,7 @@ class NiftiMapsMasker(BaseMasker):
 
         check_is_fitted(self)
 
-        self._check_signal_shape(region_signals)
+        region_signals = self._check_array(region_signals)
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_maps(

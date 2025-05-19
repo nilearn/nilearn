@@ -10,6 +10,7 @@ import numpy as np
 from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
+from sklearn.utils.validation import check_array
 
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin, cache
@@ -397,7 +398,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
-        self._check_signal_shape(X)
+        X = self._check_array(X)
 
         img = self._cache(unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
@@ -406,8 +407,12 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             img._header._structarr = np.array(img._header._structarr).copy()
         return img
 
-    def _check_signal_shape(self, signals: np.ndarray):
-        assert signals.ndim in [1, 2]
+    def _check_array(self, signals: np.ndarray):
+        """Check array to inverse transform."""
+        signals = np.atleast_1d(signals)
+        signals = check_array(signals, ensure_2d=False)
+        assert signals.ndim <= 2
+
         expected_shape = (
             (self.n_elements_,)
             if signals.ndim == 1
@@ -420,6 +425,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 f"Expected {expected_shape}.\n"
                 f"Got {signals.shape}."
             )
+
+        return signals
 
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):

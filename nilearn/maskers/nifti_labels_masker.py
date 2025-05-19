@@ -892,7 +892,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         check_is_fitted(self)
 
-        self._check_signal_shape(signals)
+        signals = self._check_array(signals)
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_labels(
