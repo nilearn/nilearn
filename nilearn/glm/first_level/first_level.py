@@ -1416,6 +1416,9 @@ def first_level_from_bids(
         slice timing preprocessing step of the experimental runs. It is
         expressed as a fraction of the ``t_r`` (time repetition), so it can
         have values between ``0.`` and ``1.``
+        If ``slice_time_ref`` is  ``None``, this function will attempt
+        to infer it from the metadata found in a ``bold.json``.
+        If it cannot be inferred from metadata, it will be set to 0.
 
     derivatives_folder : :obj:`str`, default= ``"derivatives"``.
         derivatives and app folder path containing preprocessed files.
