@@ -610,3 +610,13 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
             axes.set_title(title)
 
         return save_figure_if_needed(figure, output_file)
+
+    def _adjust_colorbar_and_data_ranges(
+        self, stat_map, vmin=None, vmax=None, symmetric_cbar=None
+    ):
+        return get_colorbar_and_data_ranges(
+            stat_map,
+            vmin=vmin,
+            vmax=vmax,
+            symmetric_cbar=symmetric_cbar,
+        )

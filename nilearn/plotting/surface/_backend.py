@@ -21,6 +21,7 @@ from warnings import warn
 
 import numpy as np
 
+from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting.surface._utils import (
@@ -191,6 +192,77 @@ class BaseSurfaceBackend:
             output_file=output_file,
             axes=axes,
             figure=figure,
+            **kwargs,
+        )
+
+    def plot_surf_stat_map(
+        self,
+        surf_mesh=None,
+        stat_map=None,
+        bg_map=None,
+        hemi=DEFAULT_HEMI,
+        view=None,
+        cmap=DEFAULT_DIVERGING_CMAP,
+        colorbar=True,
+        avg_method=None,
+        threshold=None,
+        alpha=None,
+        bg_on_data=False,
+        darkness=0.7,
+        vmin=None,
+        vmax=None,
+        symmetric_cbar="auto",
+        cbar_tick_format="auto",
+        title=None,
+        title_font_size=None,
+        output_file=None,
+        axes=None,
+        figure=None,
+        **kwargs,
+    ):
+        check_params(locals())
+
+        stat_map, surf_mesh, bg_map = check_surface_plotting_inputs(
+            stat_map, surf_mesh, hemi, bg_map, map_var_name="stat_map"
+        )
+        check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+        loaded_stat_map = load_surf_data(stat_map)
+
+        # derive symmetric vmin, vmax and colorbar limits depending on
+        # symmetric_cbar settings
+        cbar_vmin, cbar_vmax, vmin, vmax = (
+            self._adjust_colorbar_and_data_ranges(
+                stat_map,
+                vmin=vmin,
+                vmax=vmax,
+                symmetric_cbar=symmetric_cbar,
+            )
+        )
+
+        return self._plot_surf(
+            surf_mesh,
+            surf_map=stat_map,
+            bg_map=bg_map,
+            hemi=hemi,
+            view=view,
+            avg_method=avg_method,
+            threshold=threshold,
+            cmap=cmap,
+            symmetric_cmap=True,
+            colorbar=colorbar,
+            cbar_tick_format=cbar_tick_format,
+            alpha=alpha,
+            bg_on_data=bg_on_data,
+            darkness=darkness,
+            vmax=vmax,
+            vmin=vmin,
+            title=title,
+            title_font_size=title_font_size,
+            output_file=output_file,
+            axes=axes,
+            figure=figure,
+            cbar_vmin=cbar_vmin,
+            cbar_vmax=cbar_vmax,
             **kwargs,
         )
 
