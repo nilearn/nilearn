@@ -283,14 +283,10 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
                 f"Got {sample_mask.__class__.__name__}."
             )
         if isinstance(imgs, NiimgLike):
-            confounds = (
-                confounds[0] if isinstance(confounds, list) else confounds
-            )
-            sample_mask = (
-                sample_mask[0]
-                if isinstance(sample_mask, list)
-                else sample_mask
-            )
+            if isinstance(confounds, list):
+                confounds = confounds[0]
+            if isinstance(sample_mask, list):
+                sample_mask = sample_mask[0]
             return super().transform(
                 imgs, confounds=confounds, sample_mask=sample_mask
             )
