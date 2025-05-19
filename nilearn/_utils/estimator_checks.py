@@ -1144,34 +1144,51 @@ def check_masker_inverse_transform(estimator):
 
     For signal with 1 or more samples.
 
+    For nifti maskers:
+        - 1D arrays give 3D images
+        - 2D arrays give 4D images
+
     Check that the proper error is thrown,
     if signal has the wrong shape.
     """
+    n_sample = 1
     if accept_niimg_input(estimator):
-        n_sample = 1
         imgs = _img_3d_rand()
         mask_img = _img_3d_ones()
+        input_shape = imgs.get_fdata().shape
     else:
-        n_sample = 10
         imgs = _make_surface_img(n_sample)
         mask_img = _make_surface_mask()
+        input_shape = imgs.shape
 
     if isinstance(estimator, NiftiSpheresMasker):
         estimator.mask_img = mask_img
 
     estimator.fit(imgs)
 
-    signals = _rng().random((1, estimator.n_elements_))
-    imgs = estimator.inverse_transform(signals)
+    signals_1d = _rng().random((estimator.n_elements_,))
+    signals_2d = _rng().random((1, estimator.n_elements_))
+    signals_2d_multisample = _rng().random((10, estimator.n_elements_))
 
-    signals = _rng().random((10, estimator.n_elements_))
-    imgs = estimator.inverse_transform(signals)
+    for signal, expected_shape in zip(
+        [signals_1d, signals_2d, signals_2d_multisample],
+        [input_shape, (*input_shape, 1), (*input_shape, 10)],
+    ):
+        new_imgs = estimator.inverse_transform(signal)
+
+        if accept_niimg_input(estimator):
+            assert new_imgs.get_fdata().shape == expected_shape
+        else:
+            # TODO for surface maskers
+            # assert new_imgs.data.shape == expected_shape
+            ...
 
     signals = _rng().random((1, estimator.n_elements_ + 1))
+
     with pytest.raises(
         ValueError, match="Input to 'inverse_transform' has wrong shape."
     ):
-        imgs = estimator.inverse_transform(signals)
+        estimator.inverse_transform(signals)
 
 
 def check_masker_fit_score_takes_y(estimator):

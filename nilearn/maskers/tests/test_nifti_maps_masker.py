@@ -199,32 +199,6 @@ def test_nifti_maps_masker_resampling_errors(
         masker.fit()
 
 
-def test_nifti_maps_masker_io_shapes(
-    rng, affine_eye, length, n_regions, shape_3d_default, img_maps
-):
-    """Ensure that NiftiMapsMasker.inverse_transform handles 1D/2D data.
-
-    inverse_transform(2D array) --> 4D image
-    inverse_transform(1D array) --> 3D image
-    """
-    data_1d = rng.random(n_regions)
-    data_2d = rng.random((length, n_regions))
-    _, mask_img = generate_fake_fmri(
-        shape_3d_default, length=length, affine=affine_eye
-    )
-
-    masker = NiftiMapsMasker(img_maps, mask_img=mask_img)
-    masker.fit()
-
-    test_img = masker.inverse_transform(data_1d)
-
-    assert test_img.shape == shape_3d_default
-
-    test_img = masker.inverse_transform(data_2d)
-
-    assert test_img.shape == (*shape_3d_default, length)
-
-
 def test_nifti_maps_masker_with_nans_and_infs(length, n_regions, affine_eye):
     """Apply a NiftiMapsMasker containing NaNs and infs.
 

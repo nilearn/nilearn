@@ -152,37 +152,6 @@ def test_nifti_labels_masker_errors(
         masker11.fit()
 
 
-def test_nifti_labels_masker_io_shapes(
-    rng, affine_eye, shape_3d_default, n_regions, img_labels
-):
-    """Ensure that NiftiLabelsMasker inverse_transforms 1D/2D data.
-
-    inverse_transform(2D array) --> 4D image
-    inverse_transform(1D array) --> 3D image
-    """
-    length = 5
-    shape_4d = (*shape_3d_default, length)
-    data_1d = rng.random(n_regions)
-    data_2d = rng.random((length, n_regions))
-
-    _, mask_img = generate_random_img(
-        shape_4d,
-        affine=affine_eye,
-    )
-
-    masker = NiftiLabelsMasker(img_labels, mask_img=mask_img)
-
-    masker.fit()
-
-    test_img = masker.inverse_transform(data_1d)
-
-    assert test_img.shape == shape_3d_default
-
-    test_img = masker.inverse_transform(data_2d)
-
-    assert test_img.shape == shape_4d
-
-
 def test_nifti_labels_masker_with_nans_and_infs(
     affine_eye, shape_3d_default, n_regions, length, img_labels
 ):

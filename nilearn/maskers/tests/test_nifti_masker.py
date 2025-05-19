@@ -455,31 +455,3 @@ def test_standardization(rng, shape_3d_default, affine_eye):
         trans_signals,
         (signals / signals.mean(1)[:, np.newaxis] * 100 - 100).T,
     )
-
-
-def test_nifti_masker_io_shapes(rng, shape_3d_default, affine_eye):
-    """Ensure that NiftiMasker.inverse_transform 1D/2D data.
-
-    inverse_transform(2D array) --> 4D image
-    inverse_transform(1D array) --> 3D image
-    """
-    n_volumes = 5
-    shape_4d = (*shape_3d_default, n_volumes)
-
-    _, mask_img = data_gen.generate_random_img(
-        shape_4d,
-        affine=affine_eye,
-    )
-
-    n_regions = np.sum(mask_img.get_fdata().astype(bool))
-    data_1d = rng.random(n_regions)
-    data_2d = rng.random((n_volumes, n_regions))
-
-    masker = NiftiMasker(mask_img)
-    masker.fit()
-
-    test_img = masker.inverse_transform(data_1d)
-    assert test_img.shape == shape_3d_default
-
-    test_img = masker.inverse_transform(data_2d)
-    assert test_img.shape == shape_4d
