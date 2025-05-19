@@ -11,6 +11,7 @@ from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
 
 from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import _check_fov
 from nilearn._utils.param_validation import check_params
@@ -574,7 +575,7 @@ class BaseSlicer:
             if not _check_fov(transparency, img.affine, img.shape[:3]):
                 warnings.warn(
                     "resampling transparency image to data image...",
-                    stacklevel=4,
+                    stacklevel=find_stack_level(),
                 )
                 transparency = resample_img(
                     transparency,
@@ -598,10 +599,16 @@ class BaseSlicer:
                 "'transparency' must be in the interval [0, 1]. "
             )
             if transparency > 1.0:
-                warnings.warn(f"{base_warning_message} Setting it to 1.0.")
+                warnings.warn(
+                    f"{base_warning_message} Setting it to 1.0.",
+                    stacklevel=find_stack_level(),
+                )
                 transparency = 1.0
             if transparency < 0:
-                warnings.warn(f"{base_warning_message} Setting it to 0.0.")
+                warnings.warn(
+                    f"{base_warning_message} Setting it to 0.0.",
+                    stacklevel=find_stack_level(),
+                )
                 transparency = 0.0
 
         elif isinstance(transparency, np.ndarray):

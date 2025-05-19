@@ -5,7 +5,6 @@ See also nilearn.signal.
 """
 
 import collections.abc
-import copy
 import itertools
 import warnings
 from copy import deepcopy
@@ -821,25 +820,23 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     if isinstance(ref_niimg, SurfaceImage):
         mesh = ref_niimg.mesh
         return SurfaceImage(
-            mesh=copy.deepcopy(mesh),
+            mesh=deepcopy(mesh),
             data=data,
         )
     # Hand-written loading code to avoid too much memory consumption
     orig_ref_niimg = ref_niimg
     ref_niimg = stringify_path(ref_niimg)
     is_str = isinstance(ref_niimg, str)
-    has_get_data = hasattr(ref_niimg, "get_data")
     has_get_fdata = hasattr(ref_niimg, "get_fdata")
     has_iter = hasattr(ref_niimg, "__iter__")
     has_affine = hasattr(ref_niimg, "affine")
-    if has_iter and not any([is_str, has_get_data, has_get_fdata]):
+    if has_iter and not any([is_str, has_get_fdata]):
         ref_niimg = ref_niimg[0]
         ref_niimg = stringify_path(ref_niimg)
         is_str = isinstance(ref_niimg, str)
-        has_get_data = hasattr(ref_niimg, "get_data")
         has_get_fdata = hasattr(ref_niimg, "get_fdata")
         has_affine = hasattr(ref_niimg, "affine")
-    if not ((has_get_data or has_get_fdata) and has_affine):
+    if not (has_get_fdata and has_affine):
         if is_str:
             ref_niimg = load(ref_niimg)
         else:
@@ -854,8 +851,8 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         data = as_ndarray(data, dtype=np.uint8)
     data = _downcast_from_int64_if_possible(data)
     header = None
-    if copy_header:
-        header = copy.deepcopy(ref_niimg.header)
+    if copy_header and ref_niimg.header is not None:
+        header = ref_niimg.header.copy()
         try:
             "something" in header  # noqa: B015
         except TypeError:

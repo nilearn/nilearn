@@ -13,6 +13,7 @@ from nilearn._utils import (
     constrained_layout_kwargs,
     fill_doc,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -147,7 +148,10 @@ def plot_img_comparison(
         )
 
         if ref_data.shape != src_data.shape:
-            warnings.warn("Images are not shape-compatible")
+            warnings.warn(
+                "Images are not shape-compatible",
+                stacklevel=find_stack_level(),
+            )
             return
 
         corr = stats.pearsonr(ref_data, src_data)[0]

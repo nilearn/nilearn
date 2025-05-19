@@ -153,6 +153,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
+    @fill_doc
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.2"
     )
@@ -164,9 +165,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         imgs : :obj:`~nilearn.surface.SurfaceImage` object or None, \
                default=None
 
-        y : None
-            This parameter is unused.
-            It is solely included for scikit-learn compatibility.
+        %(y_dummy)s
 
         Returns
         -------
