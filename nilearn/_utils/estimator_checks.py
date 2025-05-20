@@ -1344,11 +1344,10 @@ def check_surface_masker_fit_with_mask(estimator):
 def check_nifti_masker_fit_transform(estimator):
     """Run several checks on maskers.
 
-    - can fit 3D image
+    - can fit 3D / 4D image
     - fitted maskers can transform:
       - 3D image
       - list of 3D images with same affine
-    - can fit transform 3D image
     - array from transformed 3D images should have 1D
     - array from transformed 4D images should have 2D
     """
@@ -1365,11 +1364,14 @@ def check_nifti_masker_fit_transform(estimator):
     assert isinstance(signal, np.ndarray)
     assert signal.shape == (estimator.n_elements_,)
 
-    # 4D images
+    # list of 3D images
     signal = estimator.transform([_img_3d_rand(), _img_3d_rand()])
 
     if is_multimasker(estimator):
+        assert isinstance(signal, list)
+        assert len(signal) == 2
         signal = signal[0]
+
     assert isinstance(signal, np.ndarray)
     if is_multimasker(estimator):
         assert signal.ndim == 1
@@ -1378,10 +1380,13 @@ def check_nifti_masker_fit_transform(estimator):
         assert signal.ndim == 2
         assert signal.shape[1] == estimator.n_elements_
 
+    # 4D images
     signal = estimator.transform(_img_4d_rand_eye())
 
     if is_multimasker(estimator):
+        assert len(signal) == _img_4d_rand_eye().shape[3]
         signal = signal[0]
+
     assert isinstance(signal, np.ndarray)
     if is_multimasker(estimator):
         assert signal.ndim == 1
@@ -1395,7 +1400,7 @@ def check_nifti_masker_fit_transform_5d(estimator):
     """Run checks on nifti maskers for transforming 5D images.
 
     - multi masker should be fine
-      and return a list of numpy arrays
+      and return a list of 2D numpy arrays
     - non multimasker should fail
     """
     n_subject = 3
