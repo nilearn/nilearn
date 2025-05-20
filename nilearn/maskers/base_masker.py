@@ -35,7 +35,7 @@ from nilearn.image import (
 )
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
-from nilearn.surface.surface import at_least_2d
+from nilearn.surface.surface import SurfaceImage, at_least_2d
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -552,6 +552,8 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
+        return_1D = isinstance(imgs, SurfaceImage) and len(imgs.shape) < 2
+
         if not isinstance(imgs, list):
             imgs = [imgs]
         imgs = concat_imgs(imgs)
@@ -571,9 +573,10 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             self._reporting_data["images"] = imgs
 
         if confounds is None and not self.high_variance_confounds:
-            return self.transform_single_imgs(
+            signals = self.transform_single_imgs(
                 imgs, confounds=confounds, sample_mask=sample_mask
             )
+            return signals.squeeze() if return_1D else signals
 
         # Compute high variance confounds if requested
         all_confounds = []
@@ -588,9 +591,11 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             else:
                 all_confounds.append(confounds)
 
-        return self.transform_single_imgs(
+        signals = self.transform_single_imgs(
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
+
+        return signals.squeeze() if return_1D else signals
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):

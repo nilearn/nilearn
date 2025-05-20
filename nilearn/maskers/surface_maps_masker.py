@@ -25,10 +25,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface.surface import (
-    SurfaceImage,
-    get_data,
-)
+from nilearn.surface.surface import SurfaceImage, at_least_2d, get_data
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -257,9 +254,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         check_compatibility_mask_and_images(self.maps_img, imgs)
 
-        imgs.data._check_ndims(2, "imgs")
-
         check_polymesh_equal(self.maps_img.mesh, imgs.mesh)
+
+        imgs = at_least_2d(imgs)
 
         img_data = np.concatenate(
             list(imgs.data.parts.values()), axis=0

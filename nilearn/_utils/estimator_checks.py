@@ -39,6 +39,7 @@ from nilearn.conftest import (
     _img_4d_rand_eye,
     _img_4d_rand_eye_medium,
     _img_mask_mni,
+    _make_mesh,
     _make_surface_img,
     _make_surface_img_and_design,
     _make_surface_mask,
@@ -1293,7 +1294,7 @@ def check_surface_masker_fit_with_mask(estimator):
 
     Check with 2D and 1D images.
 
-    1D image -> 2D array
+    1D image -> 1D array
     2D image -> 2D array
 
     Also check 'shape' errors between images to fit and mask.
@@ -1301,6 +1302,21 @@ def check_surface_masker_fit_with_mask(estimator):
     mask_img = _make_surface_mask()
 
     # 1D image
+    mesh = _make_mesh()
+    data = {}
+    for k, v in mesh.parts.items():
+        data_shape = (v.n_vertices,)
+        data[k] = _rng().random(data_shape)
+    imgs = SurfaceImage(mesh, data)
+    assert imgs.shape == (9,)
+    estimator.fit(imgs)
+
+    signal = estimator.transform(imgs)
+
+    assert isinstance(signal, np.ndarray)
+    assert signal.shape == (estimator.n_elements_,)
+
+    # 2D image with 1 sample
     imgs = _make_surface_img(1)
     estimator.mask_img = mask_img
     estimator.fit(imgs)
@@ -1310,7 +1326,7 @@ def check_surface_masker_fit_with_mask(estimator):
     assert isinstance(signal, np.ndarray)
     assert signal.shape == (1, estimator.n_elements_)
 
-    # 2D image
+    # 2D image with several samples
     imgs = _make_surface_img(5)
     estimator = clone(estimator)
     estimator.mask_img = mask_img

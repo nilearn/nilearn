@@ -108,16 +108,6 @@ def test_surface_maps_masker_1d_maps_img(surf_img_1d):
         SurfaceMapsMasker(maps_img=surf_img_1d).fit()
 
 
-def test_surface_maps_masker_1d_img(surf_maps_img, surf_img_1d):
-    """Test that an error is raised when img has 1D data."""
-    with pytest.raises(
-        ValueError,
-        match="should be 2D",
-    ):
-        masker = SurfaceMapsMasker(maps_img=surf_maps_img).fit()
-        masker.transform(surf_img_1d)
-
-
 def test_surface_maps_masker_labels_img_none():
     """Test that an error is raised when maps_img is None."""
     with pytest.raises(
