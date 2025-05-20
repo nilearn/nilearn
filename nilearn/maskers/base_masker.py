@@ -545,10 +545,10 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
+        region_signals : numpy.ndarray
             Signal for each element.
-            shape: (number of scans, number of elements)
-
+            shape for 2D images : (number of scans, number of elements)
+            shape for 1D images : (number of elements,)
         """
         check_is_fitted(self)
 

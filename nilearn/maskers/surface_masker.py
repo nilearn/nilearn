@@ -255,8 +255,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         imgs : imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
               iterable of :obj:`~nilearn.surface.SurfaceImage`
             Images to process.
-            Mesh and data for both hemispheres/parts. The data for each \
-            hemisphere is of shape (n_vertices_per_hemisphere, n_timepoints).
+            Mesh and data for both hemispheres/parts.
 
         %(confounds)s
 
@@ -264,9 +263,10 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         Returns
         -------
-        2D :class:`numpy.ndarray`
+        :class:`numpy.ndarray`
             Signal for each element.
-            shape: (n samples, total number of vertices)
+            shape for 2D images : (number of scans, number of elements)
+            shape for 1D images : (number of elements,)
 
         """
         parameters = get_params(
