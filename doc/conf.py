@@ -62,8 +62,6 @@ autodoc_default_options = {
     "inherited-members": True,
     "undoc-members": True,
     "member-order": "bysource",
-    #  We cannot have __init__: it causes duplicated entries
-    #  'special-members': '__init__',
 }
 
 # Get rid of spurious warnings due to some interaction between

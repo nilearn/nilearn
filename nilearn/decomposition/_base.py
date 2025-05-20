@@ -654,6 +654,15 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         )
         return self._raw_score(data, per_component=per_component)
 
+    def set_output(self, *, transform=None):
+        """Set the output container when ``"transform"`` is called.
+
+        .. warning::
+
+            This has not been implemented yet.
+        """
+        raise NotImplementedError()
+
 
 def _explained_variance(X, components, per_component=True):
     """Score function based on explained variance.

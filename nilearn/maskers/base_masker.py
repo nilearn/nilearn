@@ -441,6 +441,16 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return signals
 
+    def set_output(self, *, transform=None):
+        """Set the output container when ``"transform"`` is called.
+
+        .. warning::
+
+            This has not been implemented yet.
+        """
+        raise NotImplementedError()
+
+
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Class from which all surface maskers should inherit."""
@@ -647,4 +657,15 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 f"Last dimension should be {self.n_elements_}.\n"
                 f"Got {signals.shape[-1]}."
             )
+
         return signals
+
+
+    def set_output(self, *, transform=None):
+        """Set the output container when ``"transform"`` is called.
+
+        .. warning::
+
+            This has not been implemented yet.
+        """
+        raise NotImplementedError()
