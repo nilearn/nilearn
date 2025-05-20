@@ -350,9 +350,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         region_signals = self._check_array(region_signals)
 
-        if region_signals.ndim == 1:
-            region_signals = region_signals[None, :]
-
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
         mask_data = (

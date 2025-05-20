@@ -45,9 +45,6 @@ def signals_to_surf_img_labels(
     """Transform signals to surface image labels."""
     labels = labels[labels != background_label]
 
-    if signals.ndim == 1:
-        signals = signals[None, :]
-
     data = {}
     for part_name, labels_part in labels_img.data.parts.items():
         data[part_name] = np.zeros(

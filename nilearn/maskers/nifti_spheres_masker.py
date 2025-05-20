@@ -22,7 +22,6 @@ from nilearn._utils.helpers import (
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import (
-    check_niimg,
     check_niimg_3d,
     check_niimg_4d,
     safe_get_data,
@@ -215,7 +214,6 @@ class _ExtractionFunctor:
 
     def __call__(self, imgs):
         n_seeds = len(self.seeds_)
-        temp_imgs = check_niimg(imgs)
 
         imgs = check_niimg_4d(imgs, dtype=self.dtype)
 
@@ -232,9 +230,6 @@ class _ExtractionFunctor:
             )
         ):
             signals[:, i] = np.mean(sphere, axis=1)
-
-        if temp_imgs.ndim == 3:
-            signals = signals.squeeze()
 
         return signals, None
 
