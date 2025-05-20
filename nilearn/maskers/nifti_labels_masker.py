@@ -131,7 +131,7 @@ class NiftiLabelsMasker(BaseMasker):
         For example, if ``resampling_target`` is ``"data"``,
         the atlas is resampled to the shape of the data if needed.
         If it is ``"labels"`` then mask_img and images provided to fit()
-        are resampled to the shape and affine of maps_img.
+        are resampled to the shape and affine of labels_img.
         ``"None"`` means no resampling:
         if shapes and affines do not match, a ValueError is raised.
 
@@ -750,7 +750,7 @@ class NiftiLabelsMasker(BaseMasker):
                 imgs_,
                 self._resampled_labels_img_,
             ):
-                self._resample_labels(imgs_)
+                self._resampled_labels_img_ = self._resample_labels(imgs_)
 
             if (self.mask_img_ is not None) and (
                 not _utils.niimg_conversions.check_same_fov(
@@ -835,9 +835,7 @@ class NiftiLabelsMasker(BaseMasker):
         labels_before_resampling = set(
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
         )
-        self._resampled_labels_img_ = self._cache(
-            resample_img, func_memory_level=2
-        )(
+        resampled_labels_img = self._cache(resample_img, func_memory_level=2)(
             self.labels_img_,
             interpolation="nearest",
             target_shape=imgs_.shape[:3],
@@ -846,7 +844,7 @@ class NiftiLabelsMasker(BaseMasker):
             force_resample=False,
         )
         labels_after_resampling = set(
-            np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
+            np.unique(_utils.niimg.safe_get_data(resampled_labels_img))
         )
         if labels_diff := labels_before_resampling.difference(
             labels_after_resampling
@@ -860,7 +858,7 @@ class NiftiLabelsMasker(BaseMasker):
                 stacklevel=find_stack_level(),
             )
 
-        return self
+        return resampled_labels_img
 
     def inverse_transform(self, signals):
         """Compute :term:`voxel` signals from region signals.

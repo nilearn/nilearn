@@ -13,7 +13,11 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
-from numpy.testing import assert_array_equal, assert_raises
+from numpy.testing import (
+    assert_array_almost_equal,
+    assert_array_equal,
+    assert_raises,
+)
 from packaging.version import parse
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
@@ -1153,24 +1157,29 @@ def check_masker_inverse_transform(estimator):
     For signal with 1 or more samples.
 
     For nifti maskers:
-        - 1D arrays give 3D images
-        - 2D arrays give 4D images
+        - 1D arrays -> 3D images
+        - 2D arrays -> 4D images
 
     For surface maskers:
-        - 1D arrays give 2D images
-        - 2D arrays give 2D images
+        - 1D arrays -> 2D images (Should we return 1D?)
+        - 2D arrays -> 2D images
 
-    Check that the proper error is thrown,
-    if signal has the wrong shape.
+    Check that running transform() is not required to run inverse_transform().
+
+    Check that running inverse_transform() before and after running transform()
+    give same result.
+
+    Check that the proper error is thrown, if signal has the wrong shape.
     """
-    n_sample = 1
     if accept_niimg_input(estimator):
-        imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_mni())
-        mask_img = Nifti1Image(np.ones(_shape_3d_large()), _affine_mni())
-        input_shape = imgs.get_fdata().shape
+        # using different shape for imgs, mask
+        # to force resampling
+        input_shape = (28, 29, 30)
+        imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
+        mask_img = Nifti1Image(np.ones(_shape_3d_large()), _affine_eye())
         expected_shapes = [input_shape, (*input_shape, 1), (*input_shape, 10)]
     else:
-        imgs = _make_surface_img(n_sample)
+        imgs = _make_surface_img(1)
         mask_img = _make_surface_mask()
         expected_shapes = [
             (imgs.shape[0], 1),
@@ -1182,8 +1191,12 @@ def check_masker_inverse_transform(estimator):
         expected_shapes,
     ):
         estimator = clone(estimator)
+
+        if hasattr(estimator, "resampling_target"):
+            estimator.resampling_target = "data"
         if isinstance(estimator, NiftiSpheresMasker):
             estimator.mask_img = mask_img
+
         estimator.fit(imgs)
 
         if i == 0:
@@ -1196,13 +1209,22 @@ def check_masker_inverse_transform(estimator):
         new_imgs = estimator.inverse_transform(signals)
 
         if accept_niimg_input(estimator):
-            actual_shape = new_imgs.get_fdata().shape
+            actual_shape = new_imgs.shape
+            assert_array_almost_equal(imgs.affine, new_imgs.affine)
         else:
             actual_shape = new_imgs.data.shape
         assert actual_shape == expected_shape
 
-    signals = _rng().random((1, estimator.n_elements_ + 1))
+        estimator.transform(imgs)
 
+        new_imgs_2 = estimator.inverse_transform(signals)
+
+        if accept_niimg_input(estimator):
+            assert check_imgs_equal(new_imgs, new_imgs_2)
+        else:
+            assert_surface_image_equal(new_imgs, new_imgs_2)
+
+    signals = _rng().random((1, estimator.n_elements_ + 1))
     with pytest.raises(
         ValueError, match="Input to 'inverse_transform' has wrong shape."
     ):
