@@ -2371,11 +2371,7 @@ def test_flm_compute_contrast_with_surface_data(surface_glm_data):
 def test_flm_get_element_wise_model_attribute_with_surface_data(
     surface_glm_data,
 ):
-    """Smoke test 'voxel wise' attribute with surface data.
-
-    TODO: rename the private function _get_element_wise_model_attribute
-    to work for both voxel and vertex
-    """
+    """Smoke test 'voxel wise' attribute with surface data."""
     img, _ = surface_glm_data(5)
     masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0, minimize_memory=False)
