@@ -2,11 +2,14 @@
 
 import abc
 import contextlib
+import itertools
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -24,6 +27,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     concat_imgs,
@@ -176,6 +180,42 @@ def filter_and_extract(
     )
 
     return region_signals, aux
+
+
+def prepare_confounds_multimaskers(masker, imgs_list, confounds):
+    """Check and prepare confounds for multimaskers."""
+    if confounds is None:
+        confounds = list(itertools.repeat(None, len(imgs_list)))
+    elif len(confounds) != len(imgs_list):
+        raise ValueError(
+            f"number of confounds ({len(confounds)}) unequal to "
+            f"number of images ({len(imgs_list)})."
+        )
+
+    if masker.high_variance_confounds:
+        for i, img in enumerate(imgs_list):
+            hv_confounds = masker._cache(high_variance_confounds)(img)
+
+            if confounds[i] is None:
+                confounds[i] = hv_confounds
+            elif isinstance(confounds[i], list):
+                confounds[i] += hv_confounds
+            elif isinstance(confounds[i], np.ndarray):
+                confounds[i] = np.hstack([confounds[i], hv_confounds])
+            elif isinstance(confounds[i], pd.DataFrame):
+                confounds[i] = np.hstack(
+                    [confounds[i].to_numpy(), hv_confounds]
+                )
+            elif isinstance(confounds[i], (str, Path)):
+                c = csv_to_array(confounds[i])
+                if np.isnan(c.flat[0]):
+                    # There may be a header
+                    c = csv_to_array(confounds[i], skip_header=1)
+                confounds[i] = np.hstack([c, hv_confounds])
+            else:
+                confounds[i].append(hv_confounds)
+
+    return confounds
 
 
 @fill_doc
@@ -339,8 +379,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     @fill_doc
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     def fit_transform(
         self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
     ):
