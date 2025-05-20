@@ -5,10 +5,14 @@ import itertools
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc
+from nilearn._utils import (
+    fill_doc,
+)
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.maskers.base_masker import prepare_confounds_multimaskers
 from nilearn.maskers.nifti_labels_masker import NiftiLabelsMasker
+from nilearn.typing import NiimgLike
 
 
 @fill_doc
@@ -184,7 +188,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         Parameters
         ----------
         %(imgs)s
-            Images to process. Each element of the list is a 4D image.
+            Images to process.
 
         %(confounds_multi)s
 
@@ -213,13 +217,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             memory_level=self.memory_level,
         )
 
-        if confounds is None:
-            confounds = itertools.repeat(None, len(imgs_list))
-        elif len(confounds) != len(imgs_list):
-            raise ValueError(
-                f"number of confounds ({len(confounds)}) unequal to "
-                f"number of images ({len(imgs_list)})."
-            )
+        confounds = prepare_confounds_multimaskers(self, imgs_list, confounds)
 
         if sample_mask is None:
             sample_mask = itertools.repeat(None, len(imgs_list))
@@ -243,8 +241,9 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
         Parameters
         ----------
-        %(imgs)s
-            Images to process. Each element of the list is a 4D image.
+        imgs : Niimg-like object, or a :obj:`list` of Niimg-like objects
+            See :ref:`extracting_data`.
+            Data to be preprocessed
 
         %(confounds_multi)s
 
@@ -260,8 +259,71 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
         """
         check_is_fitted(self)
-        if not hasattr(imgs, "__iter__") or isinstance(imgs, str):
-            return self.transform_single_imgs(imgs)
+
+        if not (confounds is None or isinstance(confounds, list)):
+            raise TypeError(
+                "'confounds' must be a None or a list. "
+                f"Got {confounds.__class__.__name__}."
+            )
+        if not (sample_mask is None or isinstance(sample_mask, list)):
+            raise TypeError(
+                "'sample_mask' must be a None or a list. "
+                f"Got {sample_mask.__class__.__name__}."
+            )
+        if isinstance(imgs, NiimgLike):
+            if isinstance(confounds, list):
+                confounds = confounds[0]
+            if isinstance(sample_mask, list):
+                sample_mask = sample_mask[0]
+            return super().transform(
+                imgs, confounds=confounds, sample_mask=sample_mask
+            )
+
         return self.transform_imgs(
-            imgs, confounds, n_jobs=self.n_jobs, sample_mask=sample_mask
+            imgs,
+            confounds=confounds,
+            sample_mask=sample_mask,
+            n_jobs=self.n_jobs,
+        )
+
+    @fill_doc
+    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
+        """
+        Fit to data, then transform it.
+
+        Parameters
+        ----------
+        imgs : Niimg-like object, or a :obj:`list` of Niimg-like objects
+            See :ref:`extracting_data`.
+            Data to be preprocessed
+
+        y : None
+            This parameter is unused. It is solely included for scikit-learn
+            compatibility.
+
+        %(confounds_multi)s
+
+        %(sample_mask_multi)s
+
+            .. versionadded:: 0.8.0
+
+        Returns
+        -------
+        signals : :obj:`numpy.ndarray` if a Niimg-like object was passed, \
+                  a :obj:`list` of :obj:`numpy.ndarray` otherwise \
+                  (one array for each subject)
+            Extracted signals.
+            All :obj:`numpy.ndarray`
+            have a shape (number of scans, number of elements in the mask)
+
+        Warns
+        -----
+        DeprecationWarning
+            If 3D niimg inputs are provided, the current behavior
+            (adding a singleton dimension to produce 2D arrays) is deprecated.
+            Starting in version 0.12, 1D arrays will be returned for 3D
+            inputs.
+        """
+        return self.fit(imgs, y=y).transform(
+            imgs, confounds=confounds, sample_mask=sample_mask
         )

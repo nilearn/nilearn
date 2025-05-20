@@ -121,13 +121,16 @@ def test_different_affines():
         masker.inverse_transform(this_epi)
 
 
-def test_3d_images():
-    """Test that the MultiNiftiMasker works with 3D images."""
+def test_3d_images(rng):
+    """Test that the MultiNiftiMasker works with 3D images.
+
+    Note that fit() requires all images in list to have the same affine.
+    """
     mask_img = Nifti1Image(
-        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
+        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((2, 2, 2, 1))
     )
-    epi_img1 = Nifti1Image(np.ones((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
-    epi_img2 = Nifti1Image(np.ones((2, 2, 2)), affine=np.diag((2, 2, 2, 1)))
+    epi_img1 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
+    epi_img2 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
     masker = MultiNiftiMasker(mask_img=mask_img)
 
     masker.fit_transform([epi_img1, epi_img2])
@@ -146,13 +149,13 @@ def test_joblib_cache(mask_img_1, tmp_path):
     assert mask_hash == hash(masker.mask_img_)
 
 
-def test_shelving():
+def test_shelving(rng):
     """Check behavior when shelving masker."""
     mask_img = Nifti1Image(
-        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
+        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((2, 2, 2, 1))
     )
-    epi_img1 = Nifti1Image(np.ones((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
-    epi_img2 = Nifti1Image(np.ones((2, 2, 2)), affine=np.diag((2, 2, 2, 1)))
+    epi_img1 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
+    epi_img2 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
     cachedir = mkdtemp()
     try:
         masker_shelved = MultiNiftiMasker(
