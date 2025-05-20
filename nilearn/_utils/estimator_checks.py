@@ -1383,16 +1383,14 @@ def check_nifti_masker_fit_transform(estimator):
     # 4D images
     signal = estimator.transform(_img_4d_rand_eye())
 
-    if is_multimasker(estimator):
-        assert len(signal) == _img_4d_rand_eye().shape[3]
-        signal = signal[0]
-
     assert isinstance(signal, np.ndarray)
+    assert signal.ndim == 2
     if is_multimasker(estimator):
-        assert signal.ndim == 1
-        assert signal.shape == (estimator.n_elements_,)
+        assert signal.shape == (
+            _img_4d_rand_eye().shape[3],
+            estimator.n_elements_,
+        )
     else:
-        assert signal.ndim == 2
         assert signal.shape[1] == estimator.n_elements_
 
 
