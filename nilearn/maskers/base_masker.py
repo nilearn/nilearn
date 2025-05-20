@@ -409,7 +409,9 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             img._header._structarr = np.array(img._header._structarr).copy()
         return img
 
-    def _check_array(self, signals: np.ndarray, sklearn_check: bool = True):
+    def _check_array(
+        self, signals: np.ndarray, sklearn_check: bool = True
+    ) -> np.ndarray:
         """Check array to inverse transform.
 
         Parameters
@@ -640,7 +642,9 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         del y
         return self.fit(imgs).transform(imgs, confounds, sample_mask)
 
-    def _check_array(self, signals: np.ndarray, sklearn_check: bool = True):
+    def _check_array(
+        self, signals: np.ndarray, sklearn_check: bool = True
+    ) -> np.ndarray:
         """Check array to inverse transform.
 
         Parameters
