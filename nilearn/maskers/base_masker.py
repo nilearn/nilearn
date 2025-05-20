@@ -451,7 +451,6 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         raise NotImplementedError()
 
 
-
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Class from which all surface maskers should inherit."""
 
@@ -659,7 +658,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             )
 
         return signals
-
 
     def set_output(self, *, transform=None):
         """Set the output container when ``"transform"`` is called.
