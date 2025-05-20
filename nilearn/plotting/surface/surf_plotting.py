@@ -14,7 +14,6 @@ from nilearn.plotting._utils import (
     get_colorbar_and_data_ranges,
 )
 from nilearn.plotting.surface._backend import (
-    DATA_EXTENSIONS,
     check_hemispheres,
     check_views,
 )
@@ -24,16 +23,12 @@ from nilearn.plotting.surface._matplotlib_backend import (
 )
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
-    check_surface_plotting_inputs,
     get_surface_backend,
 )
 from nilearn.surface import (
-    load_surf_data,
     vol_to_surf,
 )
 from nilearn.surface.surface import (
-    FREESURFER_DATA_EXTENSIONS,
-    check_extensions,
     check_mesh_is_fsaverage,
 )
 
