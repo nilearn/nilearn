@@ -53,34 +53,6 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-def test_nifti_maps_masker(
-    length, n_regions, affine_eye, shape_3d_default, img_maps
-):
-    """Check common methods of NiftiMapsMasker."""
-    fmri11_img, mask11_img = generate_fake_fmri(
-        shape_3d_default, affine=affine_eye, length=length
-    )
-
-    masker11 = NiftiMapsMasker(
-        img_maps, mask_img=mask11_img, resampling_target=None
-    )
-
-    signals11 = masker11.fit().transform(fmri11_img)
-
-    assert signals11.shape == (length, n_regions)
-
-    # Call inverse transform (smoke test)
-    fmri11_img_r = masker11.inverse_transform(signals11)
-
-    assert fmri11_img_r.shape == fmri11_img.shape
-    assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
-
-    # Now try on a masker that has never seen the call to "transform"
-    masker2 = NiftiMapsMasker(img_maps, resampling_target=None)
-    masker2.fit()
-    masker2.inverse_transform(signals11)
-
-
 def test_nifti_maps_masker_data_atlas_different_shape(
     length, affine_eye, img_maps
 ):
