@@ -150,7 +150,6 @@ def test_surface_label_masker_transform(surf_label_img, surf_img_1d, strategy):
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, strategy=strategy)
     masker = masker.fit()
 
-    # only one 'timepoint'
     signal = masker.transform(surf_img_1d)
 
     assert isinstance(signal, np.ndarray)
