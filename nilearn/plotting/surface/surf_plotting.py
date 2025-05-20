@@ -396,22 +396,22 @@ def plot_surf_stat_map(
     hemi=DEFAULT_HEMI,
     view=None,
     engine=DEFAULT_ENGINE,
-    threshold=None,
-    alpha=None,
-    vmin=None,
-    vmax=None,
     cmap=DEFAULT_DIVERGING_CMAP,
     colorbar=True,
-    symmetric_cbar="auto",
-    cbar_tick_format="auto",
+    avg_method=None,
+    threshold=None,
+    alpha=None,
     bg_on_data=False,
     darkness=0.7,
+    vmin=None,
+    vmax=None,
+    symmetric_cbar="auto",
+    cbar_tick_format="auto",
     title=None,
-    title_font_size=18,
+    title_font_size=None,
     output_file=None,
     axes=None,
     figure=None,
-    avg_method=None,
     **kwargs,
 ):
     """Plot a stats map on a surface :term:`mesh` with optional background.
@@ -463,22 +463,8 @@ def plot_surf_stat_map(
             Please report bugs that you may encounter.
 
 
-    threshold : a number or None, default=None
-        If None is given, the image is not thresholded.
-        If a number is given, it is used to threshold the image,
-        values below the threshold (in absolute value) are plotted
-        as transparent.
-
     %(cmap)s
         default="RdBu_r"
-
-    %(cbar_tick_format)s
-        Default="auto" which will select:
-
-            - '%%.2g' (scientific notation) with ``matplotlib`` engine.
-            - '.1f' (rounded floats) with ``plotly`` engine.
-
-        .. versionadded:: 0.7.1
 
     %(colorbar)s
 
@@ -486,6 +472,23 @@ def plot_surf_stat_map(
             This function uses a symmetric colorbar for the statistical map.
 
         Default=True.
+
+    %(avg_method)s
+
+        .. note::
+            This option is currently only implemented for the
+            ``matplotlib`` engine.
+
+        When using matplotlib as engine,
+        `avg_method` will default to ``"mean"`` if ``None`` is passed.
+
+        .. versionadded:: 0.10.3dev
+
+    threshold : a number or None, default=None
+        If None is given, the image is not thresholded.
+        If a number is given, it is used to threshold the image,
+        values below the threshold (in absolute value) are plotted
+        as transparent.
 
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not the stat_map).
@@ -497,12 +500,6 @@ def plot_surf_stat_map(
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-    %(vmin)s
-
-    %(vmax)s
-
-    %(symmetric_cbar)s
-
     %(bg_on_data)s
 
     %(darkness)s
@@ -512,9 +509,23 @@ def plot_surf_stat_map(
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
+    %(vmin)s
+
+    %(vmax)s
+
+    %(symmetric_cbar)s
+
+    %(cbar_tick_format)s
+        Default="auto" which will select:
+
+            - '%%.2g' (scientific notation) with ``matplotlib`` engine.
+            - '.1f' (rounded floats) with ``plotly`` engine.
+
+        .. versionadded:: 0.7.1
+
     %(title)s
 
-    title_font_size : :obj:`int`, default=18
+    title_font_size : :obj:`int`, default=None
         Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
@@ -537,17 +548,6 @@ def plot_surf_stat_map(
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-    %(avg_method)s
-
-        .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
-
-        When using matplotlib as engine,
-        `avg_method` will default to ``"mean"`` if ``None`` is passed.
-
-        .. versionadded:: 0.10.3dev
-
     kwargs : :obj:`dict`, optional
         Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
 
@@ -560,59 +560,31 @@ def plot_surf_stat_map(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    # set default view to dorsal if hemi is both and view is not set
-    check_params(locals())
-    if view is None:
-        view = "dorsal" if hemi == "both" else "lateral"
-
-    stat_map, surf_mesh, bg_map = check_surface_plotting_inputs(
-        stat_map, surf_mesh, hemi, bg_map, map_var_name="stat_map"
-    )
-
-    check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
-    loaded_stat_map = load_surf_data(stat_map)
-
-    # Call get_colorbar_and_data_ranges to derive symmetric vmin, vmax
-    # And colorbar limits depending on symmetric_cbar settings
-    cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
-        loaded_stat_map,
-        vmin=vmin,
-        vmax=vmax,
-        symmetric_cbar=symmetric_cbar,
-    )
-    # Set to None the values that are not used by plotly
-    # to avoid warnings thrown by plot_surf
-    if engine == "plotly":
-        cbar_vmin = None
-        cbar_vmax = None
-
-    display = plot_surf(
-        surf_mesh,
-        surf_map=loaded_stat_map,
+    display = get_surface_backend(engine).plot_surf_stat_map(
+        surf_mesh=surf_mesh,
+        stat_map=stat_map,
         bg_map=bg_map,
         hemi=hemi,
         view=view,
-        engine=engine,
+        cmap=cmap,
+        colorbar=colorbar,
         avg_method=avg_method,
         threshold=threshold,
-        cmap=cmap,
-        symmetric_cmap=True,
-        colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format,
         alpha=alpha,
         bg_on_data=bg_on_data,
         darkness=darkness,
-        vmax=vmax,
         vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar,
+        cbar_tick_format=cbar_tick_format,
         title=title,
         title_font_size=title_font_size,
         output_file=output_file,
         axes=axes,
         figure=figure,
-        cbar_vmin=cbar_vmin,
-        cbar_vmax=cbar_vmax,
         **kwargs,
     )
+
     return display
 
 

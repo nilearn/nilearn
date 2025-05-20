@@ -230,3 +230,23 @@ def test_compute_facecolors_deprecation():
             0.5,
             alpha,
         )
+
+
+def test_plot_surf_contours(
+    matplotlib_backend,
+    matplotlib_pyplot,
+    in_memory_mesh,
+    parcellation,
+    surf_mask_1d,
+):
+    """Test
+    nilearn.plotting.surface._backend.MatplotlibBackend.plot_surf_contours
+    for valid input values.
+    """
+    matplotlib_backend.plot_surf_contours(in_memory_mesh, parcellation)
+    matplotlib_backend.plot_surf_contours(
+        in_memory_mesh, parcellation, levels=[1, 2]
+    )
+    matplotlib_backend.plot_surf_contours(
+        in_memory_mesh, parcellation, levels=[1, 2], cmap="gist_ncar"
+    )
