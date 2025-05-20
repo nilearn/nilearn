@@ -13,11 +13,9 @@ DEFAULT_ENGINE = "matplotlib"
 
 def engine_warning(engine):
     message = (
-        (
-            f"'{engine}' is not installed. To be able to use '{engine}' as "
-            "plotting engine for 'nilearn.plotting' package:\n"
-            " pip install 'nilearn[plotting]'"
-        ),
+        f"'{engine}' is not installed. To be able to use '{engine}' as "
+        "plotting engine for 'nilearn.plotting' package:\n"
+        " pip install 'nilearn[plotting]'"
     )
     warn(message, stacklevel=find_stack_level())
 

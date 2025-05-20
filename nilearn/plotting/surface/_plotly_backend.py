@@ -11,6 +11,7 @@ import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.helpers import is_kaleido_installed
+from nilearn.plotting._utils import get_colorbar_and_data_ranges
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.plotting.surface._backend import (
@@ -365,3 +366,15 @@ class PlotlySurfaceBackend(BaseSurfaceBackend):
         **kwargs,
     ):
         raise NotImplementedError()
+
+    def _adjust_colorbar_and_data_ranges(
+        self, stat_map, vmin=None, vmax=None, symmetric_cbar=None
+    ):
+        _, _, vmin, vmax = get_colorbar_and_data_ranges(
+            stat_map,
+            vmin=vmin,
+            vmax=vmax,
+            symmetric_cbar=symmetric_cbar,
+        )
+
+        return None, None, vmin, vmax
