@@ -45,6 +45,7 @@ from nilearn.conftest import (
     _rng,
     _shape_3d_default,
     _shape_3d_large,
+    _surf_mask_1d,
 )
 from nilearn.maskers import (
     NiftiLabelsMasker,
@@ -404,6 +405,7 @@ def nilearn_check_estimator(estimator):
 
         if surf_img_input:
             yield (clone(estimator), check_surface_masker_fit_with_mask)
+            yield (clone(estimator), check_surface_masker_list_surf_images)
 
     if is_glm:
         yield (clone(estimator), check_glm_fit_returns_self)
@@ -1291,6 +1293,9 @@ def check_surface_masker_fit_with_mask(estimator):
 
     Check with 2D and 1D images.
 
+    1D image -> 2D array
+    2D image -> 2D array
+
     Also check 'shape' errors between images to fit and mask.
     """
     mask_img = _make_surface_mask()
@@ -1336,6 +1341,35 @@ def check_surface_masker_fit_with_mask(estimator):
         MeshDimensionError, match="PolyMeshes do not have the same keys."
     ):
         estimator.transform(_drop_surf_img_part(imgs))
+
+
+def check_surface_masker_list_surf_images(estimator):
+    """Test transform / inverse_transform on list of surface images.
+
+    Check that 1D or 2D mask work.
+
+    transform
+    - list of 1D -> 2D array
+    - list of 2D -> 2D array
+    """
+    n_sample = 5
+    images_to_transform = [
+        [_make_surface_img()] * 5,
+        [_make_surface_img(2), _make_surface_img(3)],
+    ]
+    for imgs in images_to_transform:
+        for mask_img in [None, _surf_mask_1d(), _make_surface_mask()]:
+            estimator.mask_img = mask_img
+
+            estimator = estimator.fit(imgs)
+
+            signals = estimator.transform(imgs)
+
+            assert signals.shape == (n_sample, estimator.n_elements_)
+
+            img = estimator.inverse_transform(signals)
+
+            assert img.shape == (_make_surface_img().mesh.n_vertices, n_sample)
 
 
 # ------------------ NIFTI MASKER CHECKS ------------------
