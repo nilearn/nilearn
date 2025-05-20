@@ -1203,7 +1203,7 @@ def check_masker_inverse_transform(estimator):
         mask_img = _make_surface_mask()
 
         expected_shapes = [
-            (imgs.shape[0], 1),
+            (imgs.shape[0],),
             (imgs.shape[0], 1),
             (imgs.shape[0], 10),
         ]

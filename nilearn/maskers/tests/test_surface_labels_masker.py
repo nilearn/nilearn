@@ -315,8 +315,8 @@ def test_surface_label_masker_check_output_1d(
     # expected inverse data is the same as the input data
     # but with the random value replaced by zeros
     expected_inverse_data = {
-        "left": np.asarray([inverse_data_left_1d_with_expected_mean]).T,
-        "right": np.asarray([inverse_data_right_1d_with_expected_mean]).T,
+        "left": np.asarray(inverse_data_left_1d_with_expected_mean).T,
+        "right": np.asarray(inverse_data_right_1d_with_expected_mean).T,
     }
 
     assert_array_equal(img.data.parts["left"], expected_inverse_data["left"])

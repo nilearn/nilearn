@@ -330,6 +330,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
+        return_1D = signals.ndim < 2
+
         # do not run sklearn_check as they may cause some failure
         # with some GLM inputs
         signals = self._check_array(signals, sklearn_check=False)
@@ -342,6 +344,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
             )
             start, stop = self._slices[part_name]
             data[part_name][mask.ravel()] = signals[:, start:stop].T
+            if return_1D:
+                data[part_name] = data[part_name].squeeze()
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 

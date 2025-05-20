@@ -501,14 +501,22 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
+        return_1D = signals.ndim < 2
+
         signals = self._check_array(signals)
 
-        return signals_to_surf_img_labels(
+        imgs = signals_to_surf_img_labels(
             signals,
             np.asarray(self.labels_),
             self.labels_img_,
             self.background_label,
         )
+
+        if return_1D:
+            for k, v in imgs.data.parts.items():
+                imgs.data.parts[k] = v.squeeze()
+
+        return imgs
 
     def generate_report(self):
         """Generate a report."""

@@ -345,6 +345,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
+        return_1D = region_signals.ndim < 2
+
         region_signals = self._check_array(region_signals)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
@@ -389,7 +391,13 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             ],
         }
 
-        return SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
+        imgs = SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
+
+        if return_1D:
+            for k, v in imgs.data.parts.items():
+                imgs.data.parts[k] = v.squeeze()
+
+        return imgs
 
     def generate_report(self, displayed_maps=10, engine="matplotlib"):
         """Generate an HTML report for the current ``SurfaceMapsMasker``
