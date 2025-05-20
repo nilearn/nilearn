@@ -25,8 +25,8 @@ relevant for the research questions at hand.
 
 .. tip::
     Masker objects can transform both 3D and 4D image objects.
-    Transforming a 4D image produces a 2D (samples, features) array.
     Transforming a 3D image produces a 1D (features,) array.
+    Transforming a 4D image produces a 2D (samples, features) array.
 
 
 .. |niimgs| image:: ../images/niimgs.jpg
@@ -293,8 +293,6 @@ properties, before conversion to :term:`voxel` signals.
    :func:`nilearn.signal.clean`
 
 
-
-
 Resampling: resizing and changing resolutions of images
 .......................................................
 
@@ -444,8 +442,16 @@ as to facilitate the computation of :term:`voxel` signals in multi-subjects sett
 While :class:`NiftiMasker`, :class:`NiftiLabelsMasker` and
 :class:`NiftiMapsMasker` work with 3D inputs (single brain volume) or 4D inputs
 (sequence of brain volumes in time for one subject), :class:`MultiNiftiMasker`,
-:class:`MultiNiftiLabelsMasker` and :class:`MultiNiftiMapsMasker` expect 5D
-inputs (list of sequences of brain volumes).
+:class:`MultiNiftiLabelsMasker` and :class:`MultiNiftiMapsMasker`
+can also handle list of 3D or 4D image objects.
+
+.. tip::
+    MultiMasker objects can transform both 3D, 4D,
+    as well as list of 3D or 4D image objects.
+    Transforming a 3D image produces a 1D (features,) array.
+    Transforming a 4D image produces a 2D (samples, features) array.
+    Transforming a list of 3D image produces a list of 1D (features,) array.
+    Transforming a list of 4D image produces a list of 2D (samples, features) array.
 
 :class:`MultiNiftiMasker` Usage
 -------------------------------
@@ -503,3 +509,22 @@ seed position is used.
 .. topic:: **Examples**
 
   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py`
+
+
+Extraction of signals from surface images\  :class:`SurfaceMasker`, :class:`SurfaceLabelsMasker`, :class:`SurfaceMapsMasker`
+============================================================================================================================
+
+The purpose of :class:`SurfaceMasker`, :class:`SurfaceLabelsMasker`, :class:`SurfaceMapsMasker`
+is to mirror the capabilities of
+:class:`NiftiMasker`, :class:`NiftiLabelsMasker` and :class:`NiftiMapsMasker`
+but to extract data from :class:`~nilearn.surface.SurfaceImage`.
+
+They can perform data extraction from 1D surface data (n_vertices),
+2D surface data (n_vertices x samples)
+as well as list of 1D or 2D surface data with the same underlying mesh.
+
+.. tip::
+    Surface objects can transform both 1D, 2D,
+    as well as list of 1D or 2D surface image objects.
+    Transforming a 1D image produces a 1D (features,) array.
+    All other input will produce a 1D (samples, features) array..

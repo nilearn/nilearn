@@ -1420,13 +1420,12 @@ def check_nifti_masker_fit_transform(estimator):
     if is_multimasker(estimator):
         assert isinstance(signal, list)
         assert len(signal) == 2
-        signal = signal[0]
-
-    assert isinstance(signal, np.ndarray)
-    if is_multimasker(estimator):
-        assert signal.ndim == 1
-        assert signal.shape == (estimator.n_elements_,)
+        for x in signal:
+            assert isinstance(x, np.ndarray)
+            assert x.ndim == 1
+            assert x.shape == (estimator.n_elements_,)
     else:
+        assert isinstance(signal, np.ndarray)
         assert signal.ndim == 2
         assert signal.shape[1] == estimator.n_elements_
 
