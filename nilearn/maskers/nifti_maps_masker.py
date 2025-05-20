@@ -3,6 +3,7 @@
 import warnings
 
 import numpy as np
+from joblib import Memory
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
@@ -377,6 +378,7 @@ class NiftiMapsMasker(BaseMasker):
             display.close()
         return embeded_images
 
+    @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -386,9 +388,7 @@ class NiftiMapsMasker(BaseMasker):
             See :ref:`extracting_data`.
             Image data passed to the reporter.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
+        %(y_dummy)s
         """
         del y
         check_params(self.__dict__)
@@ -406,6 +406,9 @@ class NiftiMapsMasker(BaseMasker):
             )
 
         self = sanitize_cleaning_parameters(self)
+
+        if self.memory is None:
+            self.memory = Memory(location=None)
 
         self._report_content = {
             "description": (
@@ -489,11 +492,17 @@ class NiftiMapsMasker(BaseMasker):
         # The number of elements is equal to the number of volumes
         self.n_elements_ = self.maps_img_.shape[3]
 
+        if not hasattr(self, "_resampled_maps_img_"):
+            self._resampled_maps_img_ = self.maps_img_
+        if not hasattr(self, "_resampled_mask_img_"):
+            self._resampled_mask_img_ = self.mask_img_
+
         return self
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
 
+    @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction.
 
@@ -505,9 +514,7 @@ class NiftiMapsMasker(BaseMasker):
             If a 3D niimg is provided, a singleton dimension will be added to
             the output to represent the single scan in the niimg.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
+        %(y_dummy)s
 
         %(confounds)s
 
@@ -565,11 +572,6 @@ class NiftiMapsMasker(BaseMasker):
         # We handle the resampling of maps and mask separately because the
         # affine of the maps and mask images should not impact the extraction
         # of the signal.
-
-        if not hasattr(self, "_resampled_maps_img_"):
-            self._resampled_maps_img_ = self.maps_img_
-        if not hasattr(self, "_resampled_mask_img_"):
-            self._resampled_mask_img_ = self.mask_img_
 
         if self.resampling_target is None:
             imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
@@ -683,7 +685,6 @@ class NiftiMapsMasker(BaseMasker):
             # kwargs
             verbose=self.verbose,
         )
-        self.labels_ = labels_
         return region_signals
 
     def inverse_transform(self, region_signals):

@@ -1,7 +1,7 @@
 """Transformer for computing ROI signals."""
 
-import copy
 import warnings
+from copy import deepcopy
 from pathlib import Path
 from typing import Union
 
@@ -492,6 +492,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         return [display]
 
+    @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -501,9 +502,7 @@ class NiftiLabelsMasker(BaseMasker):
             See :ref:`extracting_data`.
             Image data passed to the reporter.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
+        %(y_dummy)s
         """
         del y
         check_params(self.__dict__)
@@ -617,6 +616,8 @@ class NiftiLabelsMasker(BaseMasker):
         else:
             self._reporting_data = None
 
+        self._resampled_mask_img = self.mask_img_
+
         return self
 
     def _check_labels(self):
@@ -650,7 +651,7 @@ class NiftiLabelsMasker(BaseMasker):
         elif self.labels:
             lut = generate_atlas_look_up_table(
                 function=None,
-                name=copy.deepcopy(self.labels),
+                name=deepcopy(self.labels),
                 index=self.labels_img_,
             )
 
@@ -751,13 +752,6 @@ class NiftiLabelsMasker(BaseMasker):
         """
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
-
-        if not hasattr(self, "_resampled_labels_img_"):
-            self._resampled_labels_img_ = self.labels_img_
-
-        if not hasattr(self, "_resampled_mask_img"):
-            self._resampled_mask_img = self.mask_img_
-
         if self.resampling_target == "data":
             imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
             if not _utils.niimg_conversions.check_same_fov(

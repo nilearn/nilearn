@@ -1,7 +1,7 @@
 """Extract data from a SurfaceImage, averaging over atlas regions."""
 
-import copy
 import warnings
+from copy import deepcopy
 from pathlib import Path
 from typing import Union
 
@@ -250,6 +250,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         lut = self.lut_
         return lut["index"].to_dict()
 
+    @fill_doc
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.2"
     )
@@ -261,9 +262,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         imgs : :obj:`~nilearn.surface.SurfaceImage` object or None, \
                default=None
 
-        y : None
-            This parameter is unused.
-            It is solely included for scikit-learn compatibility.
+        %(y_dummy)s
 
         Returns
         -------
@@ -289,7 +288,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "but not both."
             )
 
-        self.labels_img_ = copy.deepcopy(self.labels_img)
+        self.labels_img_ = deepcopy(self.labels_img)
 
         self.mask_img_ = self._load_mask(imgs)
         if self.mask_img_ is not None:
@@ -343,6 +342,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img_)
 
         self._shelving = False
+
+        if self.clean_args is None:
+            self.clean_args = {}
 
         if not self.reports:
             self._reporting_data = None
@@ -462,8 +464,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "mask_img",
             ],
         )
-        if self.clean_args is None:
-            self.clean_args = {}
         parameters["clean_args"] = self.clean_args
 
         # signal cleaning here

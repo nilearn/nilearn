@@ -73,7 +73,7 @@ of :obj:`float`: (xmin, ymin, width, height), default=None
     If `None`, the complete figure is used.
 """
 
-# bg_img
+# bg_map
 docdict["bg_map"] = """
 bg_map : :obj:`str` or :obj:`pathlib.Path` or \
          :class:`numpy.ndarray` \
@@ -391,6 +391,30 @@ docdict["figure"] = """
 figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
     Matplotlib figure used or its number.
     If `None` is given, a new figure is created.
+"""
+
+# figure
+docdict["first_level_contrast"] = """
+first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
+                        shape (n_col) with respect to \
+                        :class:`~nilearn.glm.first_level.FirstLevelModel` \
+                        or None, default=None
+
+    When the model is a :class:`~nilearn.glm.second_level.SecondLevelModel`:
+
+    - in case a :obj:`list` of
+      :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
+      as ``second_level_input``,
+      we have to provide a :term:`contrast`
+      to apply to the first level models
+      to get the corresponding list of images desired,
+      that would be tested at the second level,
+    - in case a :class:`~pandas.DataFrame` was provided
+      as ``second_level_input`` this is the map name to extract
+      from the :class:`~pandas.DataFrame` ``map_name`` column.
+      (it has to be a 't' contrast).
+
+    This parameter is ignored for all other cases.
 """
 
 # fwhm
@@ -1004,6 +1028,21 @@ strategy : :obj:`str`, default="mean"
     standard_deviation.
 """
 
+# surf_mesh
+docdict["surf_mesh"] = """
+surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray` \
+            or a :obj:`~nilearn.surface.InMemoryMesh`, or a \
+            :obj:`~nilearn.surface.PolyMesh`, or None, default=None
+    Surface :term:`mesh` geometry, can be a file (valid formats are .gii or
+    Freesurfer specific files such as .orig, .pial, .sphere, .white,
+    .inflated) or a list of two Numpy arrays, the first containing the
+    x-y-z coordinates of the :term:`mesh` :term:`vertices<vertex>`, the
+    second containing the indices (into coords) of the :term:`mesh`
+    :term:`faces`, or a :obj:`~nilearn.surface.InMemoryMesh` object with
+    "coordinates" and "faces" attributes, or a
+    :obj:`~nilearn.surface.PolyMesh` object, or None.
+"""
+
 # symmetric_cbar
 docdict["symmetric_cbar"] = """
 symmetric_cbar : :obj:`bool`, or "auto", default="auto"
@@ -1188,6 +1227,13 @@ vmin : :obj:`float`  or obj:`int` or None, optional
     Lower bound of the colormap. The values below vmin are masked.
     If `None`, the min of the image is used.
     Passed to :func:`matplotlib.pyplot.imshow`.
+"""
+
+# y
+docdict["y_dummy"] = """
+y : None
+    This parameter is unused.
+    It is solely included for scikit-learn compatibility.
 """
 
 

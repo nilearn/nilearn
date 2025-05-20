@@ -154,6 +154,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
+    @fill_doc
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.2"
     )
@@ -165,9 +166,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         imgs : :obj:`~nilearn.surface.SurfaceImage` object or None, \
                default=None
 
-        y : None
-            This parameter is unused.
-            It is solely included for scikit-learn compatibility.
+        %(y_dummy)s
 
         Returns
         -------
@@ -230,6 +229,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             "images": None,  # we will update image in transform
         }
 
+        if self.clean_args is None:
+            self.clean_args = {}
+
         return self
 
     def __sklearn_is_fitted__(self):
@@ -277,8 +279,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             self.__class__,
             self,
         )
-        if self.clean_args is None:
-            self.clean_args = {}
         parameters["clean_args"] = self.clean_args
 
         # apply mask if provided

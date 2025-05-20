@@ -62,8 +62,6 @@ autodoc_default_options = {
     "inherited-members": True,
     "undoc-members": True,
     "member-order": "bysource",
-    #  We cannot have __init__: it causes duplicated entries
-    #  'special-members': '__init__',
 }
 
 # Get rid of spurious warnings due to some interaction between
@@ -78,7 +76,7 @@ templates_path = ["templates"]
 autosummary_generate = True
 
 # The suffix of source filenames.
-source_suffix = [".rst", ".md"]
+source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 
 # The encoding of source files.
 # source_encoding = 'utf-8'
