@@ -1,8 +1,8 @@
 .. _masker_objects:
 
-=====================================================================
+================================================================
 From neuroimaging volumes to data matrices: the masker objects
-=====================================================================
+================================================================
 
 This chapter introduces the maskers: objects that go from
 neuroimaging volumes, on the disk or in memory, to data matrices, eg of
@@ -24,9 +24,10 @@ the raw neuroimaging data in 3D space into the units of observation
 relevant for the research questions at hand.
 
 .. tip::
-    Masker objects can transform both 3D and 4D image objects.
-    Transforming a 3D image produces a 1D (features,) array.
-    Transforming a 4D image produces a 2D (samples, features) array.
+    Masker objects can transform both 3D and 4D image objects :
+
+    - transforming a 3D image produces a 1D (features,) array,
+    - transforming a 4D image produces a 2D (samples, features) array.
 
 
 .. |niimgs| image:: ../images/niimgs.jpg
@@ -340,9 +341,10 @@ an excerpt of :ref:`the example performing Anova-SVM on the Haxby data
 |
 
 .. tip::
-    Masker objects can inverse-transform both 1D and 2D arrays.
-    Inverse-transforming a 2D array produces a 4D (X x Y x Z x samples) image,
-    while inverse-transforming a 1D array produces a 3D (X x Y x Z) image.
+    Masker objects can inverse-transform both 1D and 2D arrays :
+
+    - inverse-transforming a 2D array produces a 4D (X x Y x Z x samples) image,
+    - inverse-transforming a 1D array produces a 3D (X x Y x Z) image.
 
 .. topic:: **Examples to better understand the NiftiMasker**
 
@@ -447,11 +449,12 @@ can also handle list of 3D or 4D image objects.
 
 .. tip::
     MultiMasker objects can transform both 3D, 4D,
-    as well as list of 3D or 4D image objects.
-    Transforming a 3D image produces a 1D (features,) array.
-    Transforming a 4D image produces a 2D (samples, features) array.
-    Transforming a list of 3D image produces a list of 1D (features,) array.
-    Transforming a list of 4D image produces a list of 2D (samples, features) array.
+    as well as list of 3D or 4D image objects :
+
+    - transforming a 3D image produces a 1D (features,) array,
+    - transforming a 4D image produces a 2D (samples, features) array,
+    - transforming a list of 3D image produces a list of 1D (features,) array,
+    - transforming a list of 4D image produces a list of 2D (samples, features) array.
 
 :class:`MultiNiftiMasker` Usage
 -------------------------------
@@ -475,7 +478,7 @@ for each subject.
     * :ref:`sphx_glr_auto_examples_03_connectivity_plot_atlas_comparison.py`
 
 :class:`MultiNiftiMapsMasker` Usage
--------------------------------------
+-----------------------------------
 
 :class:`MultiNiftiMapsMasker` extracts signals regions defined by maps
 for each subject.
@@ -524,7 +527,12 @@ They can perform data extraction from 1D surface data (n_vertices),
 as well as list of 1D or 2D surface data with the same underlying mesh.
 
 .. tip::
-    Surface objects can transform both 1D, 2D,
+    Surface masker objects can transform both 1D, 2D,
     as well as list of 1D or 2D surface image objects.
     Transforming a 1D image produces a 1D (features,) array.
     All other input will produce a 1D (samples, features) array..
+
+    Surface masker objects can inverse-transform both 1D and 2D arrays :
+
+    - inverse-transforming a 1D array produces a 1D (n_vertices,) image,
+    - inverse-transforming a 2D array produces a 2D (n_vertices, samples) image.
