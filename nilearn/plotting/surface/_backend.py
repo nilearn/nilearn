@@ -159,43 +159,6 @@ class BaseSurfaceBackend:
             figure=figure,
         )
 
-    def plot_surf_contours(
-        self,
-        surf_mesh=None,
-        roi_map=None,
-        hemi=DEFAULT_HEMI,
-        levels=None,
-        labels=None,
-        colors=None,
-        legend=False,
-        cmap="tab20",
-        title=None,
-        output_file=None,
-        axes=None,
-        figure=None,
-        **kwargs,
-    ):
-        roi_map, surf_mesh, _ = check_surface_plotting_inputs(
-            roi_map, surf_mesh, hemi, map_var_name="roi_map"
-        )
-        check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
-
-        return self._plot_surf_contours(
-            surf_mesh=surf_mesh,
-            roi_map=roi_map,
-            hemi=hemi,
-            levels=levels,
-            labels=labels,
-            colors=colors,
-            legend=legend,
-            cmap=cmap,
-            title=title,
-            output_file=output_file,
-            axes=axes,
-            figure=figure,
-            **kwargs,
-        )
-
     def plot_surf_roi(
         self,
         surf_mesh=None,
@@ -293,6 +256,43 @@ class BaseSurfaceBackend:
             cbar_tick_format=cbar_tick_format,
             title=title,
             title_font_size=title_font_size,
+            output_file=output_file,
+            axes=axes,
+            figure=figure,
+            **kwargs,
+        )
+
+    def plot_surf_contours(
+        self,
+        surf_mesh=None,
+        roi_map=None,
+        hemi=DEFAULT_HEMI,
+        levels=None,
+        labels=None,
+        colors=None,
+        legend=False,
+        cmap="tab20",
+        title=None,
+        output_file=None,
+        axes=None,
+        figure=None,
+        **kwargs,
+    ):
+        roi_map, surf_mesh, _ = check_surface_plotting_inputs(
+            roi_map, surf_mesh, hemi, map_var_name="roi_map"
+        )
+        check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
+        return self._plot_surf_contours(
+            surf_mesh=surf_mesh,
+            roi_map=roi_map,
+            hemi=hemi,
+            levels=levels,
+            labels=labels,
+            colors=colors,
+            legend=legend,
+            cmap=cmap,
+            title=title,
             output_file=output_file,
             axes=axes,
             figure=figure,
