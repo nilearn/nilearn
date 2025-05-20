@@ -635,22 +635,7 @@ class SecondLevelModel(BaseGLM):
         ----------
         %(second_level_contrast)s
 
-        first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
-                            shape (n_col) with respect to \
-                            :class:`~nilearn.glm.first_level.FirstLevelModel`,
-                            default=None
-
-            - In case a :obj:`list` of
-              :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
-              as ``second_level_input``,
-              we have to provide a :term:`contrast`
-              to apply to the first level models
-              to get the corresponding list of images desired,
-              that would be tested at the second level.
-            - In case a :class:`~pandas.DataFrame` was provided
-              as ``second_level_input`` this is the map name to extract
-              from the :class:`~pandas.DataFrame` ``map_name`` column.
-              It has to be a 't' contrast.
+        %(first_level_contrast)s
 
         second_level_stat_type : {'t', 'F'} or None, default=None
             Type of the second level contrast.
@@ -816,6 +801,73 @@ class SecondLevelModel(BaseGLM):
             )
         return self.masker_.inverse_transform(voxelwise_attribute)
 
+    def generate_report(
+        self,
+        contrasts=None,
+        first_level_contrast=None,
+        title=None,
+        bg_img="MNI152TEMPLATE",
+        threshold=3.09,
+        alpha=0.001,
+        cluster_threshold=0,
+        height_control="fpr",
+        two_sided=False,
+        min_distance=8.0,
+        plot_type="slice",
+        cut_coords=None,
+        display_mode=None,
+        report_dims=(1600, 800),
+    ):
+        """Return a :class:`~nilearn.reporting.HTMLReport` \
+        which shows all important aspects of a fitted :term:`GLM`.
+
+        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
+        browser, displayed in a notebook, or saved to disk as a standalone
+        HTML file.
+
+        The :term:`GLM` must be fitted and have the computed design
+        matrix(ces).
+
+        .. note::
+
+            Refer to the documentation of
+            :func:`~nilearn.reporting.make_glm_report`
+            for details about the parameters
+
+        Returns
+        -------
+        report_text : :class:`~nilearn.reporting.HTMLReport`
+            Contains the HTML code for the :term:`GLM` report.
+
+        """
+        from nilearn.reporting.glm_reporter import make_glm_report
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = {
+                "trial_types": [],
+                "noise_model": getattr(self, "noise_model", None),
+                "hrf_model": getattr(self, "hrf_model", None),
+                "drift_model": None,
+            }
+
+        return make_glm_report(
+            self,
+            contrasts,
+            first_level_contrast=first_level_contrast,
+            title=title,
+            bg_img=bg_img,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            plot_type=plot_type,
+            cut_coords=cut_coords,
+            display_mode=display_mode,
+            report_dims=report_dims,
+        )
+
 
 @fill_doc
 def non_parametric_inference(
@@ -852,10 +904,7 @@ def non_parametric_inference(
 
     %(second_level_contrast)s
 
-    first_level_contrast : :obj:`str` or None, default=None
-        In case a pandas DataFrame was provided as second_level_input this
-        is the map name to extract from the pandas dataframe map_name column.
-        It has to be a 't' contrast.
+    %(first_level_contrast)s
 
         .. versionadded:: 0.9.0
 

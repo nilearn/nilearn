@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import copy
+from copy import deepcopy
 from warnings import warn
 
 import numpy as np
@@ -175,7 +175,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 "if no mask is passed to mask_img."
             )
 
-        img = copy.deepcopy(img)
+        img = deepcopy(img)
         if not isinstance(img, list):
             img = [img]
         img = concat_imgs(img)
@@ -203,9 +203,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
               default = None
             Mesh and data for both hemispheres.
 
-        y : None
-            This parameter is unused.
-            It is solely included for scikit-learn compatibility.
+        %(y_dummy)s
 
         Returns
         -------
@@ -237,6 +235,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 "mask": self.mask_img_,
                 "images": imgs,
             }
+
+        if self.clean_args is None:
+            self.clean_args = {}
 
         return self
 
@@ -275,8 +276,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 "mask_img",
             ],
         )
-        if self.clean_args is None:
-            self.clean_args = {}
+
         parameters["clean_args"] = self.clean_args
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)

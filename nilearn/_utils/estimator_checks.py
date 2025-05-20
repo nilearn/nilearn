@@ -21,6 +21,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.niimg_conversions import check_imgs_equal
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
     _affine_eye,
@@ -42,6 +43,8 @@ from nilearn.conftest import (
     _shape_3d_large,
 )
 from nilearn.maskers import (
+    NiftiLabelsMasker,
+    NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
     SurfaceMasker,
@@ -164,13 +167,13 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_transformer_preserve_dtypes": (
         "replaced by check_masker_transformer"
     ),
+    "check_dict_unchanged": "check_masker_dict_unchanged",
     "check_fit_score_takes_y": {"replaced by check_masker_fit_score_takes_y"},
     # Those are skipped for now they fail
     # for unknown reasons
     #  most often because sklearn inputs expect a numpy array
     #  that errors with maskers,
     # or because a suitable nilearn replacement has not yet been created.
-    "check_dict_unchanged": "TODO",
     "check_dont_overwrite_parameters": "TODO",
     "check_estimators_empty_data_messages": "TODO",
     "check_estimators_overwrite_params": "TODO",
@@ -329,6 +332,7 @@ def nilearn_check_estimator(estimator):
         surf_img_input = getattr(tags.input_tags, "surf_img", False)
 
     yield (clone(estimator), check_estimator_has_sklearn_is_fitted)
+    yield (clone(estimator), check_transformer_set_output)
 
     if is_masker:
         yield (clone(estimator), check_masker_fitted)
@@ -343,6 +347,9 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_inverse_transform)
 
         yield (clone(estimator), check_masker_compatibility_mask_image)
+
+        yield (clone(estimator), check_masker_dict_unchanged)
+
         yield (clone(estimator), check_masker_fit_with_empty_mask)
 
         yield (clone(estimator), check_masker_fit_returns_self)
@@ -466,7 +473,86 @@ def check_estimator_has_sklearn_is_fitted(estimator):
         check_is_fitted(estimator)
 
 
+def check_transformer_set_output(estimator):
+    """Check that set_ouput throws a not implemented error."""
+    if hasattr(estimator, "transform"):
+        with pytest.raises(NotImplementedError):
+            estimator.set_output(transform="default")
+
+
 # ------------------ MASKER CHECKS ------------------
+
+
+def check_masker_dict_unchanged(estimator):
+    """Replace check_dict_unchanged from sklearn.
+
+    transform() should not changed the dict of the object.
+    """
+    if accept_niimg_input(estimator):
+        # We use a different shape here to force some maskers
+        # to perform a resampling.
+        shape = (30, 31, 32)
+        input_img = Nifti1Image(_rng().random(shape), _affine_eye())
+    else:
+        input_img = _make_surface_img(10)
+
+    estimator = estimator.fit(input_img)
+
+    dict_before = estimator.__dict__.copy()
+
+    estimator.transform(input_img)
+
+    dict_after = estimator.__dict__
+
+    # TODO NiftiLabelsMasker, NiftiMapsMasker are modified at transform time
+    # see issue https://github.com/nilearn/nilearn/issues/2720
+    if isinstance(estimator, (NiftiLabelsMasker, NiftiMapsMasker)):
+        with pytest.raises(AssertionError):
+            assert dict_after == dict_before
+    else:
+        # The following try / except is mostly
+        # to give more informative error messages when this check fails.
+        try:
+            assert dict_after == dict_before
+        except AssertionError as e:
+            unmatched_keys = set(dict_after.keys()) ^ set(dict_before.keys())
+            if len(unmatched_keys) > 0:
+                raise ValueError(
+                    "Estimator changes '__dict__' keys during transform.\n"
+                    f"{unmatched_keys} \n"
+                )
+
+            difference = {}
+            for x in dict_before:
+                if type(dict_before[x]) is not type(dict_after[x]):
+                    difference[x] = {
+                        "before": dict_before[x],
+                        "after": dict_after[x],
+                    }
+                    continue
+                if (
+                    isinstance(dict_before[x], np.ndarray)
+                    and not np.array_equal(dict_before[x], dict_after[x])
+                    and not check_imgs_equal(dict_before[x], dict_after[x])
+                ) or (
+                    not isinstance(dict_before[x], (np.ndarray, Nifti1Image))
+                    and dict_before[x] != dict_after[x]
+                ):
+                    difference[x] = {
+                        "before": dict_before[x],
+                        "after": dict_after[x],
+                    }
+                    continue
+            if difference:
+                raise ValueError(
+                    "Estimator changes the following '__dict__' keys \n"
+                    "during transform.\n"
+                    f"{difference}"
+                )
+            else:
+                raise e
+        except Exception as e:
+            raise e
 
 
 def check_masker_fitted(estimator):

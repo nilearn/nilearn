@@ -13,6 +13,8 @@ HIGHLIGHTS
 Fixes
 -----
 
+- :bdg-dark:`Code` Allow to generate report for :class:`~nilearn.glm.second_level.SecondLevelModel` when its inputs is a list of :class:`~nilearn.glm.first_level.FirstLevelModel` (:gh:`5357` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Prevent range overrun in TFCE (:gh:`5179` by `Lee Newberg`_).
 
 - :bdg-dark:`Code` Bound the number of thresholds in TFCE calculation (:gh:`5179` by `Lee Newberg`_).
@@ -30,6 +32,8 @@ Fixes
 - :bdg-dark:`Code` Do not set score to zero if all coefficients are zero in :class:`nilearn.decoding.Decoder` and ensure average scores are comparable to a pure scikit-learn implementation (:gh:`5097` by `Himanshu Aggarwal`_).
 
 - :bdg-dark:`Code` New interpolation method (``method='nearest_most_frequent'``) for :func:`~nilearn.surface.vol_to_surf` to better handle deterministic atlases by assigning most frequent voxel value in the neighborhood of a vertex (:gh:`5169` by `Himanshu Aggarwal`_).
+
+- :bdg-dark:`Code` Prevent extra resampling when plotting with transparency (:gh:`5371` by `Hande Gözükan`_).
 
 Enhancements
 ------------

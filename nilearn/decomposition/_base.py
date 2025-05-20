@@ -425,17 +425,20 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         tags.input_tags = InputTags()
         return tags
 
+    @fill_doc
     def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the components across subjects.
 
         Parameters
         ----------
-        imgs : list of Niimg-like objects or
-        list of :obj:`~nilearn.surface.SurfaceImage`
+        imgs : list of Niimg-like objects or \
+               list of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data on which the mask is calculated. If this is a list,
             the affine (for Niimg-like objects) and mesh (for SurfaceImages)
             is considered the same for all
+
+        %(y_dummy)s
 
         confounds : list of CSV file paths, numpy.ndarrays
             or pandas DataFrames, optional.
@@ -649,6 +652,15 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             random_state=self.random_state,
         )
         return self._raw_score(data, per_component=per_component)
+
+    def set_output(self, *, transform=None):
+        """Set the output container when ``"transform"`` is called.
+
+        .. warning::
+
+            This has not been implemented yet.
+        """
+        raise NotImplementedError()
 
 
 def _explained_variance(X, components, per_component=True):
