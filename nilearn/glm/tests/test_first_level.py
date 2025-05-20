@@ -1999,18 +1999,6 @@ def test_first_level_from_bids_mismatch_run_index(tmp_path_factory):
         )
 
 
-def test_first_level_from_bids_deprecated_slice_time_default(bids_dataset):
-    """Catch deprecation warning slice_time_ref defaults to None."""
-    with pytest.deprecated_call(match="slice_time_ref will default to None."):
-        first_level_from_bids(
-            dataset_path=bids_dataset,
-            task_label="main",
-            space_label="MNI",
-            img_filters=[("desc", "preproc")],
-            slice_time_ref=0,
-        )
-
-
 def test_slice_time_ref_warning_only_when_not_provided(bids_dataset):
     """Catch warning when slice_time_ref is not provided."""
     with pytest.warns() as record:
