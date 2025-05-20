@@ -771,6 +771,8 @@ def test_plot_surf_roi_matplotlib_specific(
     img = plot_surf_roi(
         surface_image_roi.mesh,
         roi_map=surface_image_roi,
+        avg_method="median",
+        cbar_tick_format="%i",
         vmin=1.2,
         vmax=8.9,
         colorbar=True,
