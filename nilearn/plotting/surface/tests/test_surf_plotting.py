@@ -537,8 +537,12 @@ def test_plot_surf_contours_errors_with_plotly_figure(plotly, in_memory_mesh):
 
 
 def test_plot_surf_stat_map(plt, engine, in_memory_mesh, bg_map):
+    """Smoke test when stat_map is specified to
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map together with
+    mesh.
+    """
     alpha = 1 if engine == "matplotlib" else None
-    # Plot mesh with stat map
+
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, engine=engine)
     plot_surf_stat_map(
         in_memory_mesh, stat_map=bg_map, alpha=alpha, engine=engine
@@ -548,7 +552,9 @@ def test_plot_surf_stat_map(plt, engine, in_memory_mesh, bg_map):
 def test_plot_surf_stat_map_with_background(
     plt, engine, in_memory_mesh, bg_map
 ):
-    """Plot mesh with background and stat map."""
+    """Smoke test when background map is specified also as stat_map to
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
+    """
     plot_surf_stat_map(
         in_memory_mesh, stat_map=bg_map, bg_map=bg_map, engine=engine
     )
@@ -563,7 +569,9 @@ def test_plot_surf_stat_map_with_background(
 
 
 def test_plot_surf_stat_map_with_title(plt, engine, in_memory_mesh, bg_map):
-    """Check title is added."""
+    """Test if nilearn.plotting.surface.surf_plotting.plot_surf_stat_map adds
+    title when specified.
+    """
     display = plot_surf_stat_map(
         in_memory_mesh, stat_map=bg_map, title="Stat map title"
     )
@@ -573,7 +581,9 @@ def test_plot_surf_stat_map_with_title(plt, engine, in_memory_mesh, bg_map):
 def test_plot_surf_stat_map_with_threshold(
     plt, engine, in_memory_mesh, bg_map
 ):
-    """Check title is added."""
+    """Smoke test when threshold is specified to
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
+    """
     plot_surf_stat_map(
         in_memory_mesh,
         stat_map=bg_map,
@@ -583,18 +593,25 @@ def test_plot_surf_stat_map_with_threshold(
 
 
 def test_plot_surf_stat_map_vmax(plt, engine, in_memory_mesh, bg_map):
-    """Change vmax."""
+    """Smoke test when vmax is specified to
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
+    """
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, vmax=5, engine=engine)
 
 
 def test_plot_surf_stat_map_colormap(plt, engine, in_memory_mesh, bg_map):
-    """Change colormap."""
+    """Smoke test when colormap is specified to
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
+    """
     plot_surf_stat_map(
         in_memory_mesh, stat_map=bg_map, cmap="cubehelix", engine=engine
     )
 
 
 def test_plot_surf_stat_map_error(in_memory_mesh, bg_map):
+    """Test if nilearn.plotting.surface.surf_plotting.plot_surf_stat_map
+    raises error with wrong size of stat map data.
+    """
     # Wrong size of stat map data
     with pytest.raises(
         ValueError, match="surf_map does not have the same number of vertices"
@@ -612,7 +629,9 @@ def test_plot_surf_stat_map_error(in_memory_mesh, bg_map):
 
 
 def test_plot_surf_stat_map_colorbar_tick(plotly, in_memory_mesh, bg_map):
-    """Change colorbar tick format."""
+    """Smoke test when colorbar tick format with plotly engine is specified to
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
+    """
     plot_surf_stat_map(
         in_memory_mesh,
         stat_map=bg_map,
@@ -624,6 +643,9 @@ def test_plot_surf_stat_map_colorbar_tick(plotly, in_memory_mesh, bg_map):
 def test_plot_surf_stat_map_matplotlib_specific(
     matplotlib_pyplot, in_memory_mesh, bg_map
 ):
+    """Test nilearn.plotting.surface.surf_plotting.plot_surf_stat_map for
+    matplotlib engine specific parameters.
+    """
     # Plot to axes
     axes = matplotlib_pyplot.subplots(
         ncols=2, subplot_kw={"projection": "3d"}
