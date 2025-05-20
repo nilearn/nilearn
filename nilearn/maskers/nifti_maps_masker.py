@@ -573,7 +573,7 @@ class NiftiMapsMasker(BaseMasker):
         # We handle the resampling of maps and mask separately because the
         # affine of the maps and mask images should not impact the extraction
         # of the signal.
-        
+
         imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
         replace_non_finite(imgs_.get_fdata())
 
