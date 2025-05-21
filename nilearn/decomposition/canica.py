@@ -30,6 +30,7 @@ class CanICA(_MultiPCA):
 
     n_components : :obj:`int`, default=20
         Number of components to extract.
+
     %(smoothing_fwhm)s
         Default=6mm.
 
@@ -89,7 +90,6 @@ class CanICA(_MultiPCA):
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(mask_strategy)s
-
         Default='epi'.
 
     mask_args : :obj:`dict`, optional
@@ -132,10 +132,8 @@ class CanICA(_MultiPCA):
     mask_img_ : Niimg-like object
         See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation:
-
         - for Nifti images, this contains automatically computed mask via the
         selected ``mask_strategy``.
-
         - for SurfaceImage objects, this mask encompasses all vertices of
         the input images.
 

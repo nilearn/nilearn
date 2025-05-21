@@ -655,10 +655,10 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
 
       .. versionadded:: 0.8.1
 
-    .. note::
+      .. note::
 
-        These strategies are only relevant for Nifti images and the parameter
-        is ignored for SurfaceImage objects.
+          These strategies are only relevant for Nifti images and the parameter
+          is ignored for SurfaceImage objects.
 
 """
 

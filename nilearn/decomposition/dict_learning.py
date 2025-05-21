@@ -41,12 +41,12 @@ class DictLearning(_BaseDecomposition):
 
     See :footcite:t:`Mensch2016`.
 
-     .. versionadded:: 0.2
+    .. versionadded:: 0.2
 
     Parameters
     ----------
-    mask : Niimg-like object or MultiNiftiMasker instance or
-           :obj:`~nilearn.surface.SurfaceImage` or
+    mask : Niimg-like object or MultiNiftiMasker instance or \
+           :obj:`~nilearn.surface.SurfaceImage` or \
            :obj:`~nilearn.maskers.SurfaceMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given, for Nifti images,
@@ -65,7 +65,7 @@ class DictLearning(_BaseDecomposition):
     alpha : :obj:`float`, default=10
         Sparsity controlling parameter.
 
-    dict_init : Niimg-like object or
+    dict_init : Niimg-like object or \
            :obj:`~nilearn.surface.SurfaceImage`, optional
         Initial estimation of dictionary maps. Would be computed from CanICA if
         not provided.
@@ -157,7 +157,7 @@ class DictLearning(_BaseDecomposition):
 
         .. versionadded:: 0.4.1
 
-    masker_ : instance of MultiNiftiMasker or
+    masker_ : instance of MultiNiftiMasker or \
             :obj:`~nilearn.maskers.SurfaceMasker`
         Masker used to filter and mask data as first step. If an instance of
         MultiNiftiMasker or :obj:`~nilearn.maskers.SurfaceMasker` is given in
@@ -168,10 +168,8 @@ class DictLearning(_BaseDecomposition):
     mask_img_ : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation:
-
         - for Nifti images, this contains automatically computed mask via the
         selected ``mask_strategy``.
-
         - for SurfaceImage objects, this mask encompasses all vertices of
         the input images.
 
