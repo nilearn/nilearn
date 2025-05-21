@@ -183,9 +183,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
         img = at_least_2d(img)
         mask_data = {}
         for part, v in img.data.parts.items():
-            mask_data[part] = v.astype("float32")
-            mask_data[part] = replace_non_finite(mask_data[part], value=0)
-            mask_data[part] = mask_data[part].astype("bool").all(axis=1)
+            # mask out vertices with NaN or infinite values
+            replace_non_finite(v.astype("float32"))
+            mask_data[part] = np.isfinite(v.astype("float32")).all(axis=1)
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
     @rename_parameters(
