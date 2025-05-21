@@ -927,6 +927,6 @@ class NiftiLabelsMasker(BaseMasker):
         return signal_extraction.signals_to_img_labels(
             signals,
             self._resampled_labels_img_,
-            self.mask_img_,
+            self._resampled_mask_img,
             background_label=self.background_label,
         )

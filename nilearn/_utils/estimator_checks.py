@@ -357,6 +357,7 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_generate_report)
         yield (clone(estimator), check_masker_generate_report_false)
         yield (clone(estimator), check_masker_inverse_transform)
+        yield (clone(estimator), check_masker_inverse_transform_resampling)
         yield (clone(estimator), check_masker_mask_img)
         yield (clone(estimator), check_masker_mask_img_from_imgs)
         yield (clone(estimator), check_masker_no_mask_no_img)
@@ -1212,15 +1213,10 @@ def check_masker_inverse_transform(estimator):
 
         mask_img = Nifti1Image(np.ones(_shape_3d_large()), _affine_eye())
 
-        if isinstance(estimator, NiftiMapsMasker):
-            # TODO BUG to fix
-            # https://github.com/nilearn/nilearn/issues/5395
-            tmp = estimator.maps_img.shape[:3]
-        elif isinstance(estimator, NiftiSpheresMasker):
+        if isinstance(estimator, NiftiSpheresMasker):
             tmp = mask_img.shape
         else:
             tmp = input_shape
-
         expected_shapes = [tmp, (*tmp, 1), (*tmp, 10)]
 
     else:
@@ -1239,16 +1235,7 @@ def check_masker_inverse_transform(estimator):
     ):
         estimator = clone(estimator)
 
-        if hasattr(estimator, "resampling_target"):
-            # TODO
-            # check label and maps masker output when resampling
-            # to labels or maps
-            estimator.resampling_target = "data"
-
-        if not isinstance(
-            estimator, (NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker)
-        ):
-            # TODO check for NiftiLabelsMasker, NiftiMapsMasker without mask
+        if isinstance(estimator, (NiftiSpheresMasker)):
             estimator.mask_img = mask_img
 
         estimator.fit(imgs)
@@ -1283,6 +1270,63 @@ def check_masker_inverse_transform(estimator):
         ValueError, match="Input to 'inverse_transform' has wrong shape."
     ):
         estimator.inverse_transform(signals)
+
+
+def check_masker_inverse_transform_resampling(estimator):
+    """Check output of inverse_transform.
+
+    Similar to check_masker_inverse_transform
+    but for nifti masker that can do some resampling
+    (labels and maps maskers).
+
+    Check that output has the shape of the data or the labels/maps image
+    depending on what was requested at init.
+
+    Check that using a mask does not affect shape of output.
+
+    Check that running transform() is not required to run inverse_transform().
+
+    Check that running inverse_transform() before and after running transform()
+    give same result.
+    """
+    if not hasattr(estimator, "resampling_target"):
+        return None
+
+    # using different shape for imgs, mask
+    # to force resampling
+    n_sample = 10
+    input_shape = (28, 29, 30, n_sample)
+    imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
+
+    mask_img = Nifti1Image(np.ones(_shape_3d_large()), _affine_eye())
+
+    for resampling_target in ["data", "labels"]:
+        expected_shape = input_shape
+        if resampling_target == "labels":
+            if isinstance(estimator, NiftiMapsMasker):
+                expected_shape = (*estimator.maps_img.shape, n_sample)
+                resampling_target = "maps"
+            else:
+                expected_shape = (*estimator.labels_img.shape, n_sample)
+
+        for mask in [None, mask_img]:
+            estimator = clone(estimator)
+            estimator.resampling_target = resampling_target
+            estimator.mask_img = mask
+            estimator.fit(imgs)
+
+            signals = _rng().random((n_sample, estimator.n_elements_))
+
+            new_imgs = estimator.inverse_transform(signals)
+
+            assert_array_almost_equal(imgs.affine, new_imgs.affine)
+            assert new_imgs.shape == expected_shape
+
+            estimator.transform(imgs)
+
+            new_imgs_2 = estimator.inverse_transform(signals)
+
+            assert check_imgs_equal(new_imgs, new_imgs_2)
 
 
 def check_masker_fit_score_takes_y(estimator):
