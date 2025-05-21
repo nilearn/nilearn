@@ -128,7 +128,7 @@ class CanICA(_MultiPCA):
     masker_ : instance of MultiNiftiMasker or \
             :obj:`~nilearn.maskers.SurfaceMasker`
         Masker used to filter and mask data as first step. If an instance of
-        MultiNiftiMasker :obj:`~nilearn.maskers.SurfaceMasker` is given in
+        MultiNiftiMasker or :obj:`~nilearn.maskers.SurfaceMasker` is given in
         ``mask`` parameter, this is a copy of it.
         Otherwise, a masker is created using the value of `mask` and
         other NiftiMasker/SurfaceMasker related parameters as initialization.
