@@ -1245,8 +1245,8 @@ def math_img(formula, copy_header_from=None, **imgs):
         Result of the formula as an image.
         Note that the dimension of the result image
         can be smaller than the input image.
-        For volume image input, the affine is the same as the input image.
-        For surface image input, the mesh is the same as the input image.
+        For volume image input, the affine is the same as the input images.
+        For surface image input, the mesh is the same as the input images.
 
     See Also
     --------
@@ -1302,7 +1302,7 @@ def math_img(formula, copy_header_from=None, **imgs):
                 data_dict[k][key] = v
 
         # Add a reference to numpy in the kwargs of eval
-        # so that numpy functionscan be called from there.
+        # so that numpy functions can be called from there.
         result = {}
         try:
             for k in data_dict:
@@ -1410,7 +1410,7 @@ def binarize_img(
     -------
     :class:`~nibabel.nifti1.Nifti1Image`
     or :obj:`~nilearn.surface.SurfaceImage`
-        Binarized version of the given input image. Output dtype is int.
+        Binarized version of the given input image. Output dtype is int8.
 
     See Also
     --------
