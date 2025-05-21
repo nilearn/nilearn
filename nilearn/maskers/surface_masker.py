@@ -312,17 +312,13 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         return output
 
+    @fill_doc
     def inverse_transform(self, signals):
         """Transform extracted signal back to surface object.
 
         Parameters
         ----------
-        signals : 1D/2D :class:`numpy.ndarray`
-            Extracted signal.
-            If a 1D array is provided,
-            then the shape should be (number of elements,).
-            If a 2D array is provided,
-            then the shape should be (number of scans, number of elements).
+        %(signals_inv_transform)s
 
         Returns
         -------

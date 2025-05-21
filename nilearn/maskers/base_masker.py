@@ -405,8 +405,9 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
+    @fill_doc
     def inverse_transform(self, X):
-        """Transform the 2D data matrix back to an image in brain space.
+        """Transform the data matrix back to an image in brain space.
 
         This step only performs spatial unmasking,
         without inverting any additional processing performed by ``transform``,
@@ -414,9 +415,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : 1D/2D :obj:`numpy.ndarray`
-            Signal for each element in the mask.
-
+        %(x_inv_transform)s
 
         Returns
         -------

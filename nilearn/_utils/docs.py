@@ -973,6 +973,19 @@ docdict["second_level_mask"] = docdict["second_level_mask_img"].replace(
     "mask_img :", "mask :"
 )
 
+# signals for inverse transform
+docdict["signals_inv_transform"] = """
+signals : 1D/2D :obj:`numpy.ndarray`
+    Extracted signal.
+    If a 1D array is provided,
+    then the shape should be (number of elements,).
+    If a 2D array is provided,
+    then the shape should be (number of scans, number of elements).
+"""
+docdict["region_signals_inv_transform"] = docdict["signals_inv_transform"]
+docdict["x_inv_transform"] = docdict["signals_inv_transform"]
+
+
 # smoothing_fwhm
 docdict["smoothing_fwhm"] = """
 smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.

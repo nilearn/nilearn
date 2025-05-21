@@ -715,6 +715,7 @@ class NiftiSpheresMasker(BaseMasker):
         )
         return np.atleast_1d(signals)
 
+    @fill_doc
     def inverse_transform(self, region_signals):
         """Compute :term:`voxel` signals from spheres signals.
 
@@ -723,12 +724,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         Parameters
         ----------
-        region_signals : 1D/2D :obj:`numpy.ndarray`
-            Signal for each region.
-            If a 1D array is provided, then the shape should be
-            (number of elements,).
-            If a 2D array is provided, then the shape should be
-            (number of scans, number of elements).
+        %(region_signals_inv_transform)s
 
         Returns
         -------

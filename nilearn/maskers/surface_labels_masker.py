@@ -478,17 +478,13 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         return region_signals
 
+    @fill_doc
     def inverse_transform(self, signals):
         """Transform extracted signal back to surface image.
 
         Parameters
         ----------
-        signals : 1D/2D :obj:`numpy.ndarray`
-            Extracted signal for each region.
-            If a 1D array is provided,
-            then the shape should be (number of labels,).
-            If a 2D array is provided,
-            then the shape should be (number of scans, number of labels).
+        %(signals_inv_transform)s
 
         Returns
         -------

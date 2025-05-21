@@ -324,17 +324,13 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         return region_signals
 
+    @fill_doc
     def inverse_transform(self, region_signals):
         """Compute :term:`vertex` signals from region signals.
 
         Parameters
         ----------
-        region_signals: 1D/2D :obj:`numpy.ndarray`
-            Signal for each region as provided in the maps (via `maps_img`).
-            If a 1D array is provided,
-            then the shape should be (number of maps,).
-            If a 2D array is provided,
-            then the shape should be (number of scans, number of maps).
+        %(region_signals_inv_transform)s
 
         Returns
         -------
