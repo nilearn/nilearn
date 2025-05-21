@@ -32,11 +32,14 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 def test_fit_list_surf_images(surf_img_2d):
     """Test fit on list of surface images.
 
-    resulting mask should have a single 'timepoint'.
+    - resulting mask should have a single 'timepoint'
+    - all vertices should be included in the mask, because no mask is provided
+
     """
     masker = SurfaceMasker()
     masker.fit([surf_img_2d(3), surf_img_2d(5)])
     assert masker.mask_img_.shape == (surf_img_2d(1).shape[0],)
+    assert masker.mask_img_.shape == (masker.n_elements_,)
 
 
 def test_fit_list_surf_images_with_mask(surf_mask_1d, surf_img_2d):

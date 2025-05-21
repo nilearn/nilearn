@@ -595,7 +595,7 @@ def _make_surface_img(n_samples=1):
     for i, (key, val) in enumerate(mesh.parts.items()):
         data_shape = (val.n_vertices, n_samples)
         data_part = (
-            np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
+            np.arange(np.prod(data_shape)).reshape(data_shape[::-1])
         ) * 10**i
         data[key] = data_part.T
     return SurfaceImage(mesh, data)
