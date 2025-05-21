@@ -523,10 +523,7 @@ class NiftiMapsMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : numpy.ndarray
-            Signal for each map.
-            shape for 4D images : (number of scans, number of maps)
-            shape for 3D images : (number of maps,)
+        %(signals_transform_nifti)s
         """
         del y
         return self.fit(imgs).transform(
@@ -555,10 +552,7 @@ class NiftiMapsMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : numpy.ndarray
-            Signal for each map.
-            shape for 4D images : (number of scans, number of maps)
-            shape for 3D images : (number of maps,)
+        %(signals_transform_nifti)s
 
         """
         # We handle the resampling of maps and mask separately because the

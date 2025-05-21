@@ -638,8 +638,6 @@ class NiftiSpheresMasker(BaseMasker):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
 
         y : None
             This parameter is unused. It is solely included for scikit-learn
@@ -653,9 +651,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : 2D :obj:`numpy.ndarray`
-            Signal for each sphere.
-            shape: (number of scans, number of spheres)
+        %(signals_transform_nifti)s
 
         """
         del y
@@ -675,8 +671,6 @@ class NiftiSpheresMasker(BaseMasker):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
 
         %(confounds)s
 
@@ -686,9 +680,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : :obj:`numpy.ndarray`
-            Signal for each sphere.
-            shape: (number of scans, number of spheres)
+        %(signals_transform_nifti)s
 
         """
         check_is_fitted(self)

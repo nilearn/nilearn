@@ -571,10 +571,7 @@ class NiftiMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : :obj:`numpy.ndarray`
-            Signal for each :term:`voxel` inside the mask.
-            shape for 4D images : (number of scans, number of voxels)
-            shape for 3D images : (number of voxels,)
+        %(signals_transform_nifti)s
 
         """
         # Ignore the mask-computing params: they are not useful and will

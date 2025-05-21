@@ -240,10 +240,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        signals : numpy.ndarray
-            Signal for each element.
-            shape for 4D images : (number of scans, number of elements)
-            shape for 3D images : (number of elements,)
+        %(signals_transform_nifti)s
 
         """
         raise NotImplementedError()
@@ -328,10 +325,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        region_signals : numpy.ndarray
-            Signal for each element.
-            shape for 4D images : (number of scans, number of elements)
-            shape for 3D images : (number of elements,)
+        %(signals_transform_nifti)s
         """
         check_is_fitted(self)
 
@@ -378,8 +372,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        X_new : numpy array
-            Transformed array.
+        %(signals_transform_nifti)s
 
         """
         # non-optimized default implementation; override when a better
@@ -587,10 +580,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        region_signals : numpy.ndarray
-            Signal for each element.
-            shape for 2D images : (number of scans, number of elements)
-            shape for 1D images : (number of elements,)
+        %(signals_transform_surface)s
         """
         check_is_fitted(self)
 
@@ -671,13 +661,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        signals: :obj:`numpy.ndarray`
-            Signal for each region as provided
-            in the mask, label or maps image.
-            The shape will vary depending on the masker type:
-            - SurfaceMasker: (n_timepoints, n_vertices_in_mask)
-            - SurfaceLabelsMasker: (n_timepoints, n_regions)
-            - SurfaceMapssMasker: (n_timepoints, n_maps)
+        %(signals_transform_surface)s
         """
         del y
         return self.fit(imgs).transform(imgs, confounds, sample_mask)

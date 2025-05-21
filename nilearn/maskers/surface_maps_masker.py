@@ -247,10 +247,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         Returns
         -------
-        region_signals: :obj:`numpy.ndarray`
-            Signal for each region as provided in the maps (via `maps_img`).
-            shape for 2D images : (number of scans, number of n_regions)
-            shape for 1D images : (n_regions,)
+        %(signals_transform_surface)s
         """
         check_compatibility_mask_and_images(self.maps_img, imgs)
 

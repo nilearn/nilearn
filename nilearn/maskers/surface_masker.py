@@ -263,10 +263,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         Returns
         -------
-        :class:`numpy.ndarray`
-            Signal for each element.
-            shape for 2D images : (number of scans, number of elements)
-            shape for 1D images : (number of elements,)
+        %(signals_transform_surface)s
 
         """
         parameters = get_params(

@@ -412,10 +412,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         Returns
         -------
-        region_signals : 2D :obj:`numpy.ndarray`
-            Signal for each element.
-            shape for 2D images : (number of scans, number of n_labels)
-            shape for 1D images : (n_labels,)
+        %(signals_transform_surface)s
         """
         check_compatibility_mask_and_images(self.labels_img_, imgs)
         check_polymesh_equal(self.labels_img_.mesh, imgs.mesh)

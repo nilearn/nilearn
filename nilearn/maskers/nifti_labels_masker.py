@@ -703,10 +703,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : :obj:`numpy.ndarray`
-            Signal for each label.
-            shape for 4D images : (number of scans, number of labels)
-            shape for 3D images : (number of labels,)
+        %(signals_transform_nifti)s
 
         """
         del y
@@ -736,10 +733,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : numpy.ndarray
-            Signal for each label.
-            shape for 4D images : (number of scans, number of labels)
-            shape for 3D images : (number of labels,)
+        %(signals_transform_nifti)s
 
         """
         # We handle the resampling of labels separately because the affine of

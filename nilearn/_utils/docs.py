@@ -1239,7 +1239,7 @@ y : None
 
 ##############################################################################
 #
-# Other values definitions
+# Other values definitions: return values, attributes...
 #
 
 # atlas_type
@@ -1379,6 +1379,17 @@ docdict["lut"] = """lut : :obj:`pandas.DataFrame`
         with at least columns 'index' and 'name'.
         Formatted according to 'dseg.tsv' format from
         `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+
+# signals returned Nifti maskers by transform, fit_transform...
+docdict["signals_transform_nifti"] = """signals : :obj:`numpy.ndarray`
+        Signal for each :term:`voxel`.
+        shape for 4D images : (number of scans, number of elements)
+        shape for 3D images : (number of elements,)"""
+# signals returned surface maskers by transform, fit_transform...
+docdict["signals_transform_surface"] = """signals : :obj:`numpy.ndarray`
+        Signal for each element.
+        shape for 2D images : (number of scans, number of elements)
+        shape for 1D images : (number of elements,)"""
 
 # template
 docdict["template"] = """'template' : :obj:`str`
