@@ -1431,6 +1431,18 @@ def test_binarize_img(img_4d_rand_eye):
     assert_array_equal(img2.dataobj, img3.dataobj)
 
 
+def test_binarize_img_surface(surf_img_1d):
+    """Test binarize_img on surface data."""
+    # Test that all output values are 1.
+    img1 = binarize_img(surf_img_1d)
+
+    assert_array_equal(np.unique(get_surface_data(img1)), np.array([1]))
+
+    # Test that it works with threshold
+    img2 = binarize_img(surf_img_1d, threshold=9)
+    assert_array_equal(np.unique(get_surface_data(img2)), np.array([0, 1]))
+
+
 def test_binarize_negative_img(img_4d_rand_eye, rng):
     # Test option to use original or absolute values
     img_data = img_4d_rand_eye.dataobj

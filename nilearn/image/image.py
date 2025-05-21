@@ -1369,7 +1369,7 @@ def binarize_img(
 
     Parameters
     ----------
-    img : a 3D/4D Niimg-like object
+    img : a 3D/4D Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Image which should be binarized.
 
     threshold : :obj:`float` or :obj:`str`, default=0.0
@@ -1383,7 +1383,8 @@ def binarize_img(
         this score will be kept. The given string should be
         within the range of "0%" to "100%".
 
-    mask_img : Niimg-like object, default=None
+    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`, \
+               default=None
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
@@ -1396,6 +1397,8 @@ def binarize_img(
     copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
 
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
+
         .. versionadded:: 0.11.0
 
         This parameter will be set to True by default in 0.13.0.
@@ -1403,6 +1406,7 @@ def binarize_img(
     Returns
     -------
     :class:`~nibabel.nifti1.Nifti1Image`
+    or :obj:`~nilearn.surface.SurfaceImage`
         Binarized version of the given input image. Output dtype is int.
 
     See Also
