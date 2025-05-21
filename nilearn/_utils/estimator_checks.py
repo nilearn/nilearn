@@ -1307,7 +1307,7 @@ def check_masker_transform_resampling(estimator) -> None:
         expected_shape = input_shape
         if resampling_target == "labels":
             if isinstance(estimator, NiftiMapsMasker):
-                expected_shape = (*estimator.maps_img.shape, n_sample)
+                expected_shape = (*estimator.maps_img.shape[:3], n_sample)
                 resampling_target = "maps"
             else:
                 expected_shape = (*estimator.labels_img.shape, n_sample)
@@ -1323,7 +1323,8 @@ def check_masker_transform_resampling(estimator) -> None:
             new_imgs = estimator.inverse_transform(signals)
 
             assert_array_almost_equal(imgs.affine, new_imgs.affine)
-            assert new_imgs.shape == expected_shape
+            actual_shape = new_imgs.shape
+            assert actual_shape == expected_shape
 
             estimator.transform(imgs)
 
