@@ -1203,7 +1203,7 @@ def check_masker_inverse_transform(estimator):
         - 2D arrays -> 4D images
 
     For surface maskers:
-        - 1D arrays -> 1D
+        - 1D arrays -> 1D images
         - 2D arrays -> 2D images
 
     Check that running transform() is not required to run inverse_transform().
