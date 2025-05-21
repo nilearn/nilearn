@@ -108,17 +108,6 @@ def filter_and_mask(
     # coerce 5D data to 4D, which we don't want.
     temp_imgs = _utils.check_niimg(imgs)
 
-    # Raise warning if a 3D niimg is provided.
-    if temp_imgs.ndim == 3:
-        warnings.warn(
-            "Starting in version 0.12, 3D images will be transformed to "
-            "1D arrays. "
-            "Until then, 3D images will be coerced to 2D arrays, with a "
-            "singleton first dimension representing time.",
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
-
     imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
     # Check whether resampling is truly necessary. If so, crop mask
@@ -157,6 +146,8 @@ def filter_and_mask(
     # earlier)
     # Optionally: 'doctor_nan', remove voxels with NaNs, other option
     # for later: some form of imputation
+    if temp_imgs.ndim == 3:
+        data = data.squeeze()
     return data
 
 
@@ -417,6 +408,7 @@ class NiftiMasker(BaseMasker):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "mask_img_")
 
+    @fill_doc
     def fit(self, imgs=None, y=None):
         """Compute the mask corresponding to the data.
 
@@ -427,10 +419,7 @@ class NiftiMasker(BaseMasker):
             Data on which the mask must be calculated. If this is a list,
             the affine is considered the same for all.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
-
+        %(y_dummy)s
         """
         del y
         check_params(self.__dict__)
@@ -571,8 +560,6 @@ class NiftiMasker(BaseMasker):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
 
         %(confounds)s
 
@@ -583,17 +570,7 @@ class NiftiMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : 2D :obj:`numpy.ndarray`
-            Signal for each :term:`voxel` inside the mask.
-            shape: (number of scans, number of voxels)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
+        %(signals_transform_nifti)s
 
         """
         # Ignore the mask-computing params: they are not useful and will

@@ -685,6 +685,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         tags.input_tags = InputTags()
         return tags
 
+    @fill_doc
     def fit(self, X, y=None):
         """Compute clustering of the data.
 
@@ -693,7 +694,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         X : :class:`numpy.ndarray`, shape = [n_samples, n_features]
             Training data.
 
-        y : Ignored
+        %(y_dummy)s
 
         Returns
         -------
@@ -770,6 +771,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "labels_")
 
+    @fill_doc
     def transform(
         self,
         X,
@@ -781,6 +783,8 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         ----------
         X : :class:`numpy.ndarray`, shape = [n_samples, n_features]
             Data to transform with the fitted clustering.
+
+        %(y_dummy)s
 
         Returns
         -------
@@ -827,3 +831,12 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         X_inv = X_red[..., inverse]
 
         return X_inv
+
+    def set_output(self, *, transform=None):
+        """Set the output container when ``"transform"`` is called.
+
+        .. warning::
+
+            This has not been implemented yet.
+        """
+        raise NotImplementedError()

@@ -1,7 +1,7 @@
 """Transformer for computing ROI signals."""
 
-import copy
 import warnings
+from copy import deepcopy
 from pathlib import Path
 from typing import Union
 
@@ -131,7 +131,7 @@ class NiftiLabelsMasker(BaseMasker):
         For example, if ``resampling_target`` is ``"data"``,
         the atlas is resampled to the shape of the data if needed.
         If it is ``"labels"`` then mask_img and images provided to fit()
-        are resampled to the shape and affine of maps_img.
+        are resampled to the shape and affine of labels_img.
         ``"None"`` means no resampling:
         if shapes and affines do not match, a ValueError is raised.
 
@@ -492,6 +492,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         return [display]
 
+    @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -501,9 +502,7 @@ class NiftiLabelsMasker(BaseMasker):
             See :ref:`extracting_data`.
             Image data passed to the reporter.
 
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
+        %(y_dummy)s
         """
         del y
         check_params(self.__dict__)
@@ -617,6 +616,8 @@ class NiftiLabelsMasker(BaseMasker):
         else:
             self._reporting_data = None
 
+        self._resampled_mask_img = self.mask_img_
+
         return self
 
     def _check_labels(self):
@@ -650,7 +651,7 @@ class NiftiLabelsMasker(BaseMasker):
         elif self.labels:
             lut = generate_atlas_look_up_table(
                 function=None,
-                name=copy.deepcopy(self.labels),
+                name=deepcopy(self.labels),
                 index=self.labels_img_,
             )
 
@@ -688,8 +689,7 @@ class NiftiLabelsMasker(BaseMasker):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
+            If a 3D niimg is provided, a 1D array is returned.
 
         y : None
             This parameter is unused. It is solely included for scikit-learn
@@ -703,9 +703,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : 2D :obj:`numpy.ndarray`
-            Signal for each label.
-            shape: (number of scans, number of labels)
+        %(signals_transform_nifti)s
 
         """
         del y
@@ -725,8 +723,6 @@ class NiftiLabelsMasker(BaseMasker):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
 
         %(confounds)s
 
@@ -736,35 +732,18 @@ class NiftiLabelsMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
-            Signal for each label.
-            shape: (number of scans, number of labels)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
+        %(signals_transform_nifti)s
 
         """
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
-
-        if not hasattr(self, "_resampled_labels_img_"):
-            self._resampled_labels_img_ = self.labels_img_
-
-        if not hasattr(self, "_resampled_mask_img"):
-            self._resampled_mask_img = self.mask_img_
-
         if self.resampling_target == "data":
             imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
             if not _utils.niimg_conversions.check_same_fov(
                 imgs_,
                 self._resampled_labels_img_,
             ):
-                self._resample_labels(imgs_)
+                self._resampled_labels_img_ = self._resample_labels(imgs_)
 
             if (self.mask_img_ is not None) and (
                 not _utils.niimg_conversions.check_same_fov(
@@ -849,9 +828,7 @@ class NiftiLabelsMasker(BaseMasker):
         labels_before_resampling = set(
             np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
         )
-        self._resampled_labels_img_ = self._cache(
-            resample_img, func_memory_level=2
-        )(
+        resampled_labels_img = self._cache(resample_img, func_memory_level=2)(
             self.labels_img_,
             interpolation="nearest",
             target_shape=imgs_.shape[:3],
@@ -860,7 +837,7 @@ class NiftiLabelsMasker(BaseMasker):
             force_resample=False,
         )
         labels_after_resampling = set(
-            np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
+            np.unique(_utils.niimg.safe_get_data(resampled_labels_img))
         )
         if labels_diff := labels_before_resampling.difference(
             labels_after_resampling
@@ -874,8 +851,9 @@ class NiftiLabelsMasker(BaseMasker):
                 stacklevel=find_stack_level(),
             )
 
-        return self
+        return resampled_labels_img
 
+    @fill_doc
     def inverse_transform(self, signals):
         """Compute :term:`voxel` signals from region signals.
 
@@ -887,26 +865,18 @@ class NiftiLabelsMasker(BaseMasker):
 
         Parameters
         ----------
-        signals : 1D/2D :obj:`numpy.ndarray`
-            Signal for each region.
-            If a 1D array is provided, then the shape should be
-            (number of elements,), and a 3D img will be returned.
-            If a 2D array is provided, then the shape should be
-            (number of scans, number of elements), and a 4D img will be
-            returned.
+        %(signals_inv_transform)s
 
         Returns
         -------
-        img : :obj:`nibabel.nifti1.Nifti1Image`
-            Signal for each voxel
-            shape: (X, Y, Z, number of scans)
+        %(img_inv_transform_nifti)s
 
         """
         from ..regions import signal_extraction
 
         check_is_fitted(self)
 
-        self._check_signal_shape(signals)
+        signals = self._check_array(signals)
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_labels(
