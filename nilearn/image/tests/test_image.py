@@ -1049,8 +1049,8 @@ def test_threshold_img(affine_eye):
 @pytest.mark.parametrize(
     "threshold, expected_n_non_zero",
     [
-        (0.9, {"left": 4, "right": 5}),
-        (9, {"left": 0, "right": 5}),
+        (1, {"left": 2, "right": 4}),
+        (10, {"left": 0, "right": 3}),
         (50, {"left": 0, "right": 0}),
         ("50%", {"left": 0, "right": 4}),
     ],
@@ -1058,8 +1058,8 @@ def test_threshold_img(affine_eye):
 def test_threshold_surf_img_1d(surf_img_1d, threshold, expected_n_non_zero):
     """Check number of elements surviving thresholding 1D surface image.
 
-    For left hemisphere: 1 <= values < 10
-    For right hemisphere: 10 <= values < 50
+    For left hemisphere: 1 < values < 10
+    For right hemisphere: 10 < values < 50
     """
     thr_img = threshold_img(surf_img_1d, threshold=threshold)
     for hemi in thr_img.data.parts:
@@ -1097,12 +1097,12 @@ def test_threshold_surf_img_1d_with_mask(
 @pytest.mark.parametrize(
     "threshold, expected_n_non_zero, two_sided",
     [
-        (1, {"left": 0, "right": 5}, False),
-        (39, {"left": 0, "right": 2}, False),
+        (1, {"left": 0, "right": 4}, False),
+        (29, {"left": 0, "right": 2}, False),
         (50, {"left": 0, "right": 0}, False),
-        ("50%", {"left": 0, "right": 2}, False),
-        (1, {"left": 4, "right": 5}, True),
-        (39, {"left": 1, "right": 2}, True),
+        ("50%", {"left": 0, "right": 3}, False),
+        (1, {"left": 3, "right": 4}, True),
+        (29, {"left": 1, "right": 2}, True),
         (50, {"left": 0, "right": 0}, True),
         ("50%", {"left": 1, "right": 2}, True),
     ],

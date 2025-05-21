@@ -597,7 +597,7 @@ def _make_surface_img(n_samples=1):
         data_part = (
             np.arange(np.prod(data_shape)).reshape(data_shape[::-1])
         ) * 10**i
-        data[key] = data_part.T
+        data[key] = data_part.astype(float).T
     return SurfaceImage(mesh, data)
 
 
