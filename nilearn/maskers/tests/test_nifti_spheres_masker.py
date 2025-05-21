@@ -1,13 +1,10 @@
 """Test nilearn.maskers.nifti_spheres_masker."""
 
-import warnings
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
-from nilearn._utils import data_gen
 from nilearn._utils.estimator_checks import check_estimator
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
@@ -366,67 +363,3 @@ def test_nifti_spheres_masker_inverse_overlap(rng, affine_eye):
 
     with pytest.raises(ValueError, match="Overlap detected"):
         noverlapping_masker.inverse_transform(inv_data)
-
-
-def test_nifti_spheres_masker_io_shapes(rng, shape_3d_default, affine_eye):
-    """Ensure that NiftiSpheresMasker handles 1D/2D/3D/4D data appropriately.
-
-    transform(4D image) --> 2D output, no warning
-    transform(3D image) --> 2D output, DeprecationWarning
-    inverse_transform(2D array) --> 4D image, no warning
-    inverse_transform(1D array) --> 3D image, no warning
-    """
-    n_regions, n_volumes = 2, 5
-    shape_4d = (*shape_3d_default, n_volumes)
-
-    img_4d, mask_img = data_gen.generate_random_img(
-        shape_4d,
-        affine=affine_eye,
-    )
-    img_3d, _ = data_gen.generate_random_img(
-        shape_3d_default, affine=affine_eye
-    )
-
-    masker = NiftiSpheresMasker(
-        [(1, 1, 1), (4, 4, 4)],  # number of tuples equal to n_regions
-        radius=1,
-        mask_img=mask_img,
-    )
-    masker.fit()
-
-    # DeprecationWarning *should* be raised for 3D inputs
-    with pytest.deprecated_call(match="Starting in version 0.12"):
-        test_data = masker.transform(img_3d)
-        assert test_data.shape == (1, n_regions)
-
-    # DeprecationWarning should *not* be raised for 4D inputs
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "error",
-            message="Starting in version 0.12",
-            category=DeprecationWarning,
-        )
-        test_data = masker.transform(img_4d)
-        assert test_data.shape == (n_volumes, n_regions)
-
-    data_1d = rng.random(n_regions)
-    data_2d = rng.random((n_volumes, n_regions))
-    # DeprecationWarning should *not* be raised for 1D inputs
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "error",
-            message="Starting in version 0.12",
-            category=DeprecationWarning,
-        )
-        test_img = masker.inverse_transform(data_1d)
-        assert test_img.shape == shape_3d_default
-
-    # DeprecationWarning should *not* be raised for 2D inputs
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "error",
-            message="Starting in version 0.12",
-            category=DeprecationWarning,
-        )
-        test_img = masker.inverse_transform(data_2d)
-        assert test_img.shape == shape_4d

@@ -209,9 +209,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         Returns
         -------
-        region_signals : list of 2D :obj:`numpy.ndarray`
-            List of signals for each map per subject.
-            shape: list of (number of scans, number of maps)
+        %(signals_transform_imgs_multi_nifti)s
 
         """
         # We handle the resampling of maps and mask separately because the
@@ -262,12 +260,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         Returns
         -------
-        signals : :obj:`numpy.ndarray` if a Niimg-like object was passed, \
-                  a :obj:`list` of :obj:`numpy.ndarray` otherwise \
-                  (one array for each subject)
-            Extracted signals.
-            All :obj:`numpy.ndarray`
-            have a shape (number of scans, number of maps)
+        %(signals_transform_multi_nifti)s
 
         """
         check_is_fitted(self)
@@ -321,20 +314,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         Returns
         -------
-        signals : :obj:`numpy.ndarray` if a Niimg-like object was passed, \
-                  a :obj:`list` of :obj:`numpy.ndarray` otherwise \
-                  (one array for each subject)
-            Extracted signals.
-            All :obj:`numpy.ndarray`
-            have a shape (number of scans, number of elements in the mask)
-
-        Warns
-        -----
-        DeprecationWarning
-            If 3D niimg inputs are provided, the current behavior
-            (adding a singleton dimension to produce 2D arrays) is deprecated.
-            Starting in version 0.12, 1D arrays will be returned for 3D
-            inputs.
+        %(signals_transform_multi_nifti)s
         """
         return self.fit(imgs, y=y).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
