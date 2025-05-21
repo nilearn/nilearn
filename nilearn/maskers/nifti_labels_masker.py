@@ -10,14 +10,20 @@ import pandas as pd
 from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import _utils
-from nilearn._utils import logger
+from nilearn._utils import compose_err_msg, logger, repr_niimgs
 from nilearn._utils.bids import (
     generate_atlas_look_up_table,
     sanitize_look_up_table,
 )
+from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import (
+    check_niimg,
+    check_niimg_3d,
+    check_same_fov,
+)
 from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
@@ -330,13 +336,11 @@ class NiftiLabelsMasker(BaseMasker):
         Also return the removed region ids and names.
         if visualize is True, plot the masked atlas.
         """
-        labels_data = _utils.niimg.safe_get_data(
+        labels_data = safe_get_data(
             self._resampled_labels_img_, ensure_finite=True
         )
         labels_data = labels_data.copy()
-        mask_data = _utils.niimg.safe_get_data(
-            self.mask_img_, ensure_finite=True
-        )
+        mask_data = safe_get_data(self.mask_img_, ensure_finite=True)
         mask_data = mask_data.copy()
         region_ids_before_masking = np.unique(labels_data).tolist()
         # apply the mask to the atlas
@@ -524,10 +528,10 @@ class NiftiLabelsMasker(BaseMasker):
             "warning_message": None,
         }
 
-        repr = _utils.repr_niimgs(self.labels_img, shorten=(not self.verbose))
+        repr = repr_niimgs(self.labels_img, shorten=(not self.verbose))
         msg = f"loading data from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
-        self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
+        self.labels_img_ = check_niimg_3d(self.labels_img)
 
         if self.labels:
             if self.lut is not None:
@@ -546,13 +550,13 @@ class NiftiLabelsMasker(BaseMasker):
         self._original_region_ids = self.lut_["index"].to_list()
 
         if imgs is not None:
-            imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
+            imgs_ = check_niimg(imgs, atleast_4d=True)
 
         self._resampled_labels_img_ = self.labels_img_
         if (
             self.resampling_target == "data"
             and imgs is not None
-            and not _utils.niimg_conversions.check_same_fov(
+            and not check_same_fov(
                 imgs_,
                 self._resampled_labels_img_,
             )
@@ -563,12 +567,9 @@ class NiftiLabelsMasker(BaseMasker):
         self._resampled_mask_img = self.mask_img_
         if self.mask_img_ is not None:
             if self.resampling_target == "data":
-                if (
-                    imgs is not None
-                    and not _utils.niimg_conversions.check_same_fov(
-                        imgs_,
-                        self._resampled_mask_img,
-                    )
+                if imgs is not None and not check_same_fov(
+                    imgs_,
+                    self._resampled_mask_img,
                 ):
                     logger.log("Resampling mask", self.verbose)
                     self._resampled_mask_img = self._cache(
@@ -585,7 +586,7 @@ class NiftiLabelsMasker(BaseMasker):
             elif self.resampling_target is None:
                 if self.mask_img_.shape != self.labels_img_.shape[:3]:
                     raise ValueError(
-                        _utils.compose_err_msg(
+                        compose_err_msg(
                             "Regions and mask do not have the same shape",
                             mask_img=self.mask_img_,
                             labels_img=self.labels_img,
@@ -597,7 +598,7 @@ class NiftiLabelsMasker(BaseMasker):
                     self.labels_img_.affine,
                 ):
                     raise ValueError(
-                        _utils.compose_err_msg(
+                        compose_err_msg(
                             "Regions and mask do not have the same affine.",
                             mask_img=self.mask_img_,
                             labels_img=self.labels_img,
@@ -765,15 +766,15 @@ class NiftiLabelsMasker(BaseMasker):
         resampled_labels_img = self._resampled_labels_img_
         resampled_mask_img = self._resampled_mask_img
         if self.resampling_target == "data":
-            imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
-            if not _utils.niimg_conversions.check_same_fov(
+            imgs_ = check_niimg(imgs, atleast_4d=True)
+            if not check_same_fov(
                 imgs_,
                 resampled_labels_img,
             ):
                 resampled_labels_img = self._resample_labels(imgs_)
 
             if (self.mask_img_ is not None) and (
-                not _utils.niimg_conversions.check_same_fov(
+                not check_same_fov(
                     imgs_,
                     resampled_mask_img,
                 )
@@ -800,7 +801,7 @@ class NiftiLabelsMasker(BaseMasker):
             target_shape = resampled_labels_img.shape[:3]
             target_affine = resampled_labels_img.affine
 
-        params = _utils.class_inspect.get_params(
+        params = get_params(
             NiftiLabelsMasker,
             self,
             ignore=["resampling_target"],
@@ -853,7 +854,7 @@ class NiftiLabelsMasker(BaseMasker):
             self.verbose,
         )
         labels_before_resampling = set(
-            np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
+            np.unique(safe_get_data(self._resampled_labels_img_))
         )
         resampled_labels_img = self._cache(resample_img, func_memory_level=2)(
             self.labels_img_,
@@ -864,7 +865,7 @@ class NiftiLabelsMasker(BaseMasker):
             force_resample=False,
         )
         labels_after_resampling = set(
-            np.unique(_utils.niimg.safe_get_data(resampled_labels_img))
+            np.unique(safe_get_data(resampled_labels_img))
         )
         if labels_diff := labels_before_resampling.difference(
             labels_after_resampling
