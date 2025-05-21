@@ -227,7 +227,6 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a 1D array is returned.
 
         %(confounds)s
 
