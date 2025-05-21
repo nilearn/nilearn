@@ -771,6 +771,15 @@ class NiftiLabelsMasker(BaseMasker):
                 imgs_,
                 resampled_labels_img,
             ):
+                warnings.warn(
+                    (
+                        "Resampling labels at transform time...\n"
+                        "To avoid this warning, make sure to pass the images "
+                        "you want to transform to fit() first, "
+                        "or directly use fit_transform()."
+                    ),
+                    stacklevel=find_stack_level(),
+                )
                 resampled_labels_img = self._resample_labels(imgs_)
 
             if (self.mask_img_ is not None) and (
@@ -779,7 +788,15 @@ class NiftiLabelsMasker(BaseMasker):
                     resampled_mask_img,
                 )
             ):
-                logger.log("Resampling mask", self.verbose)
+                warnings.warn(
+                    (
+                        "Resampling mask at transform time...\n"
+                        "To avoid this warning, make sure to pass the images "
+                        "you want to transform to fit() first, "
+                        "or directly use fit_transform()."
+                    ),
+                    stacklevel=find_stack_level(),
+                )
                 resampled_mask_img = self._cache(
                     resample_img, func_memory_level=2
                 )(
