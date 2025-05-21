@@ -1283,12 +1283,7 @@ def check_masker_inverse_transform(estimator):
         new_imgs_2 = estimator.inverse_transform(signals)
 
         if accept_niimg_input(estimator):
-            if isinstance(estimator, (NiftiLabelsMasker)):
-                # BUG to fix
-                # https://github.com/nilearn/nilearn/issues/5395
-                assert not check_imgs_equal(new_imgs, new_imgs_2)
-            else:
-                assert check_imgs_equal(new_imgs, new_imgs_2)
+            assert check_imgs_equal(new_imgs, new_imgs_2)
         else:
             assert_surface_image_equal(new_imgs, new_imgs_2)
 
