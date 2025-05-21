@@ -883,7 +883,6 @@ class NiftiLabelsMasker(BaseMasker):
         -------
         img : :obj:`nibabel.nifti1.Nifti1Image`
             Signal for each voxel
-            shape: (X, Y, Z, number of scans)
 
         """
         from ..regions import signal_extraction

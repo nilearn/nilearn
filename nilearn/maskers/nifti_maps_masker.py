@@ -697,7 +697,7 @@ class NiftiMapsMasker(BaseMasker):
         Returns
         -------
         voxel_signals : nibabel.Nifti1Image
-            Signal for each voxel. shape: that of maps.
+            Signal for each voxel
 
         """
         from ..regions import signal_extraction

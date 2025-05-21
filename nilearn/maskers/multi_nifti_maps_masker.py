@@ -328,14 +328,6 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             Extracted signals.
             All :obj:`numpy.ndarray`
             have a shape (number of scans, number of elements in the mask)
-
-        Warns
-        -----
-        DeprecationWarning
-            If 3D niimg inputs are provided, the current behavior
-            (adding a singleton dimension to produce 2D arrays) is deprecated.
-            Starting in version 0.12, 1D arrays will be returned for 3D
-            inputs.
         """
         return self.fit(imgs, y=y).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
