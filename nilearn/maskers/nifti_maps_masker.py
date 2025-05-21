@@ -11,6 +11,7 @@ from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.ndimage import replace_non_finite
 from nilearn._utils.param_validation import check_params
 from nilearn.image import clean_img, get_data, index_img, resample_img
 from nilearn.maskers._utils import (
@@ -558,8 +559,10 @@ class NiftiMapsMasker(BaseMasker):
         # affine of the maps and mask images should not impact the extraction
         # of the signal.
 
+        imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
+        replace_non_finite(imgs_.get_fdata())
+
         if self.resampling_target is None:
-            imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
             images = {"maps": self.maps_img_, "data": imgs_}
             if self.mask_img_ is not None:
                 images["mask"] = self.mask_img_
@@ -569,7 +572,6 @@ class NiftiMapsMasker(BaseMasker):
             )
         else:
             if self.resampling_target == "data":
-                imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
                 ref_img = imgs_
             elif self.resampling_target == "mask":
                 self._resampled_mask_img_ = self.mask_img_
@@ -653,7 +655,7 @@ class NiftiMapsMasker(BaseMasker):
             ignore=["verbose", "memory", "memory_level"],
         )(
             # Images
-            imgs,
+            imgs_,
             _ExtractionFunctor(
                 self._resampled_maps_img_,
                 self._resampled_mask_img_,
