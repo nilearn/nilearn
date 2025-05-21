@@ -1383,13 +1383,43 @@ docdict["lut"] = """lut : :obj:`pandas.DataFrame`
 # signals returned Nifti maskers by transform, fit_transform...
 docdict["signals_transform_nifti"] = """signals : :obj:`numpy.ndarray`
         Signal for each :term:`voxel`.
-        shape for 4D images : (number of scans, number of elements)
-        shape for 3D images : (number of elements,)"""
+        Output shape for :
+
+        - 3D images: (number of elements,) array
+        - 4D images: (number of scans, number of elements) array
+        """
+# signals returned Mulit Nifti maskers by transform, fit_transform...
+docdict[
+    "signals_transform_multi_nifti"
+] = """signals : :obj:`list` of :obj:`numpy.ndarray` or :obj:`numpy.ndarray`
+        Signal for each :term:`voxel`.
+        Output shape for :
+
+        - 3D images: (number of elements,) array
+        - 4D images: (number of scans, number of elements) array
+        - list of 3D images: list of (number of elements,) array
+        - list of 4D images: list of (number of scans, number of elements)
+          array
+        """
+# signals returned Mulit Nifti maskers by transform, fit_transform...
+docdict[
+    "signals_transform_imgs_multi_nifti"
+] = """signals : :obj:`list` of :obj:`numpy.ndarray`
+        Signal for each :term:`voxel`.
+        Output shape for :
+
+        - list of 3D images: list of (number of elements,) array
+        - list of 4D images: list of (number of scans, number of elements)
+          array
+        """
 # signals returned surface maskers by transform, fit_transform...
 docdict["signals_transform_surface"] = """signals : :obj:`numpy.ndarray`
         Signal for each element.
-        shape for 2D images : (number of scans, number of elements)
-        shape for 1D images : (number of elements,)"""
+        Output shape for :
+
+        - 1D images: (number of elements,) array
+        - 2D images: (number of scans, number of elements) array
+        """
 
 # template
 docdict["template"] = """'template' : :obj:`str`
