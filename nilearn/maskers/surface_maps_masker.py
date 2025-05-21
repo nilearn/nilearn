@@ -329,19 +329,16 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         Parameters
         ----------
-        region_signals: :obj:`numpy.ndarray`
+        region_signals: 1D/2D :obj:`numpy.ndarray`
             Signal for each region as provided in the maps (via `maps_img`).
             If a 1D array is provided,
-            then the shape should be (number of maps,),
-            and a 1D image will be returned.
+            then the shape should be (number of maps,).
             If a 2D array is provided,
-            then the shape should be (number of scans, number of maps),
-            and a 2D image will be returned.
+            then the shape should be (number of scans, number of maps).
 
         Returns
         -------
-        vertex_signals: :obj:`~nilearn.surface.SurfaceImage`
-            Signal for each vertex projected on the mesh of the `maps_img`.
+        %(img_inv_transform_surface)s
         """
         check_is_fitted(self)
 

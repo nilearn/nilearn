@@ -417,16 +417,11 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         ----------
         X : 1D/2D :obj:`numpy.ndarray`
             Signal for each element in the mask.
-            If a 1D array is provided, then the shape should be
-            (number of elements,), and a 3D img will be returned.
-            If a 2D array is provided, then the shape should be
-            (number of scans, number of elements), and a 4D img will be
-            returned.
-            See :ref:`extracting_data`.
+
 
         Returns
         -------
-        img : Transformed image in brain space.
+        %(img_inv_transform_nifti)s
 
         """
         check_is_fitted(self)

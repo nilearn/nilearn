@@ -1358,6 +1358,29 @@ docdict["fsaverage_options"] = """
 
 """
 
+# image returned Nifti maskers by inverse_transform
+docdict["img_inv_transform_nifti"] = """img : :obj:`nibabel.nifti1.Nifti1Image`
+        Transformed image in brain space.
+        Output shape for :
+
+        - 1D array : 3D :obj:`nibabel.nifti1.Nifti1Image` will be returned.
+        - 2D array : 4D :obj:`nibabel.nifti1.Nifti1Image` will be returned.
+
+        See :ref:`extracting_data`.
+        """
+# image returned surface maskers by inverse_transform
+docdict[
+    "img_inv_transform_surface"
+] = """img : :obj:`~nilearn.surface.SurfaceImage`
+        Signal for each vertex projected on the mesh.
+        Output shape for :
+
+        - 1D array : 1D :obj:`~nilearn.surface.SurfaceImage` will be returned.
+        - 2D array : 2D :obj:`~nilearn.surface.SurfaceImage` will be returned.
+
+        See :ref:`extracting_data`.
+        """
+
 # atlas labels
 docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
         List of the names of the regions."""

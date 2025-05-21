@@ -317,19 +317,16 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         Parameters
         ----------
-        signals : :class:`numpy.ndarray`
+        signals : 1D/2D :class:`numpy.ndarray`
             Extracted signal.
             If a 1D array is provided,
-            then the shape should be (number of elements,),
-            and a 1D image will be returned.
+            then the shape should be (number of elements,).
             If a 2D array is provided,
-            then the shape should be (number of scans, number of elements),
-            and a 2D image will be returned.
+            then the shape should be (number of scans, number of elements).
 
         Returns
         -------
-        :obj:`~nilearn.surface.SurfaceImage`
-            Mesh and data for both hemispheres.
+        %(img_inv_transform_surface)s
         """
         check_is_fitted(self)
 

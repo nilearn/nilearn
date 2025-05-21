@@ -680,18 +680,16 @@ class NiftiMapsMasker(BaseMasker):
 
         Parameters
         ----------
-        region_signals : :class:`numpy.ndarray`
+        region_signals : 1D/2D :class:`numpy.ndarray`
             Signal for each region.
             If a 1D array is provided, then the shape should be
-            (number of elements,), and a 3D img will be returned.
+            (number of elements,).
             If a 2D array is provided, then the shape should be
-            (number of scans, number of elements), and a 4D img will be
-            returned.
+            (number of scans, number of elements).
 
         Returns
         -------
-        voxel_signals : nibabel.Nifti1Image
-            Signal for each voxel
+        %(img_inv_transform_nifti)s
 
         """
         from ..regions import signal_extraction
