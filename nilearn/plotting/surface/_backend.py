@@ -347,6 +347,13 @@ class BaseSurfaceBackend:
         if isinstance(cmap, pd.DataFrame):
             cmap = create_colormap_from_lut(cmap)
 
+        params = {
+            "avg_method": avg_method,
+            "cbar_tick_format": cbar_tick_format,
+        }
+
+        self._adjust_plot_roi_params(params)
+
         return self._plot_surf(
             mesh,
             surf_map=roi,
@@ -355,14 +362,14 @@ class BaseSurfaceBackend:
             view=view,
             cmap=cmap,
             colorbar=colorbar,
-            avg_method=avg_method,
+            avg_method=params["avg_method"],
             threshold=threshold,
             alpha=alpha,
             bg_on_data=bg_on_data,
             darkness=darkness,
             vmin=vmin,
             vmax=vmax,
-            cbar_tick_format=cbar_tick_format,
+            cbar_tick_format=params["cbar_tick_format"],
             title=title,
             title_font_size=title_font_size,
             output_file=output_file,
