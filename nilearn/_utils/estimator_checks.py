@@ -1194,7 +1194,7 @@ def check_masker_smooth(estimator):
 
 
 def check_masker_inverse_transform(estimator):
-    """Check output of inverse transform.
+    """Check output of inverse_transform.
 
     For signal with 1 or more samples.
 

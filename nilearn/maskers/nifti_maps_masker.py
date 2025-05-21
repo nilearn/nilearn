@@ -686,7 +686,7 @@ class NiftiMapsMasker(BaseMasker):
 
         Parameters
         ----------
-        region_signals : 1D/2D numpy.ndarray
+        region_signals : :class:`numpy.ndarray`
             Signal for each region.
             If a 1D array is provided, then the shape should be
             (number of elements,), and a 3D img will be returned.

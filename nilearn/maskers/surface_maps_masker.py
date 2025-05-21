@@ -334,14 +334,17 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         ----------
         region_signals: :obj:`numpy.ndarray`
             Signal for each region as provided in the maps (via `maps_img`).
-            shape: (n_timepoints, n_regions)
+            If a 1D array is provided,
+            then the shape should be (number of maps,),
+            and a 1D image will be returned.
+            If a 2D array is provided,
+            then the shape should be (number of scans, number of maps),
+            and a 2D image will be returned.
 
         Returns
         -------
         vertex_signals: :obj:`~nilearn.surface.SurfaceImage`
             Signal for each vertex projected on the mesh of the `maps_img`.
-            The data for each hemisphere is of shape
-            (n_vertices_per_hemisphere, n_timepoints).
         """
         check_is_fitted(self)
 

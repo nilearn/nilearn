@@ -322,6 +322,12 @@ class SurfaceMasker(_BaseSurfaceMasker):
         ----------
         signals : :class:`numpy.ndarray`
             Extracted signal.
+            If a 1D array is provided,
+            then the shape should be (number of elements,),
+            and a 1D image will be returned.
+            If a 2D array is provided,
+            then the shape should be (number of scans, number of elements),
+            and a 2D image will be returned.
 
         Returns
         -------

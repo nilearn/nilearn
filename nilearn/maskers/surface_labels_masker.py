@@ -488,11 +488,12 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         ----------
         signals : :obj:`numpy.ndarray`
             Extracted signal for each region.
-            If a 1D array is provided, then the shape of each hemisphere's data
-            should be (number of elements,) in the returned surface image.
-            If a 2D array is provided, then it would be
-            (number of scans, number of elements).
-
+            If a 1D array is provided,
+            then the shape should be (number of labels,),
+            and a 1D image will be returned.
+            If a 2D array is provided,
+            then the shape should be (number of scans, number of labels),
+            and a 2D image will be returned.
 
         Returns
         -------
