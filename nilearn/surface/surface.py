@@ -4,8 +4,9 @@ import abc
 import gzip
 import pathlib
 import warnings
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 import sklearn.cluster
@@ -1982,15 +1983,19 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
-def check_surf_img(img: SurfaceImage) -> SurfaceImage:
+def check_surf_img(img: Union[SurfaceImage, Iterable[SurfaceImage]]) -> None:
     """Validate SurfaceImage.
 
     Equivalent to check_niimg for volumes.
     """
-    if get_data(img).size == 0:
-        raise ValueError("The image is empty.")
+    if isinstance(img, SurfaceImage):
+        if get_data(img).size == 0:
+            raise ValueError("The image is empty.")
+        return None
 
-    return img
+    if hasattr(img, "__iter__"):
+        for x in img:
+            check_surf_img(x)
 
 
 def get_data(img, ensure_finite=False) -> np.ndarray:
