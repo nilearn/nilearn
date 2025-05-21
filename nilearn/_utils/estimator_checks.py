@@ -507,7 +507,7 @@ def check_masker_dict_unchanged(estimator):
 
     # TODO NiftiLabelsMasker, NiftiMapsMasker are modified at transform time
     # see issue https://github.com/nilearn/nilearn/issues/2720
-    if isinstance(estimator, (NiftiLabelsMasker, NiftiMapsMasker)):
+    if isinstance(estimator, (NiftiLabelsMasker)):
         with pytest.raises(AssertionError):
             assert dict_after == dict_before
     else:
@@ -1185,7 +1185,7 @@ def check_masker_smooth(estimator):
         assert_array_equal(smoothed_signal, signal)
 
 
-def check_masker_inverse_transform(estimator):
+def check_masker_inverse_transform(estimator) -> None:
     """Check output of inverse_transform.
 
     For signal with 1 or more samples.
@@ -1272,7 +1272,7 @@ def check_masker_inverse_transform(estimator):
         estimator.inverse_transform(signals)
 
 
-def check_masker_inverse_transform_resampling(estimator):
+def check_masker_inverse_transform_resampling(estimator) -> None:
     """Check output of inverse_transform.
 
     Similar to check_masker_inverse_transform
@@ -1280,7 +1280,7 @@ def check_masker_inverse_transform_resampling(estimator):
     (labels and maps maskers).
 
     Check that output has the shape of the data or the labels/maps image
-    depending on what was requested at init.
+    depending on which resampling_target was requested at init.
 
     Check that using a mask does not affect shape of output.
 
@@ -1288,6 +1288,8 @@ def check_masker_inverse_transform_resampling(estimator):
 
     Check that running inverse_transform() before and after running transform()
     give same result.
+
+    Check that running transform on
     """
     if not hasattr(estimator, "resampling_target"):
         return None
