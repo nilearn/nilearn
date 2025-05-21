@@ -20,10 +20,12 @@ from collections.abc import Sequence
 from warnings import warn
 
 import numpy as np
+import pandas as pd
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
+from nilearn.plotting._utils import create_colormap_from_lut
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
     check_surface_plotting_inputs,
@@ -263,6 +265,116 @@ class BaseSurfaceBackend:
             figure=figure,
             cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax,
+            **kwargs,
+        )
+
+    def plot_surf_roi(
+        self,
+        surf_mesh=None,
+        roi_map=None,
+        bg_map=None,
+        hemi=DEFAULT_HEMI,
+        view=None,
+        cmap="gist_ncar",
+        colorbar=True,
+        avg_method=None,
+        threshold=1e-14,
+        alpha=None,
+        bg_on_data=False,
+        darkness=0.7,
+        vmin=None,
+        vmax=None,
+        cbar_tick_format="auto",
+        title=None,
+        title_font_size=None,
+        output_file=None,
+        axes=None,
+        figure=None,
+        **kwargs,
+    ):
+        check_params(locals())
+        roi_map, surf_mesh, bg_map = check_surface_plotting_inputs(
+            roi_map, surf_mesh, hemi, bg_map
+        )
+        check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
+        # preload roi and mesh to determine vmin, vmax and give more useful
+        # error messages in case of wrong inputs
+        roi = load_surf_data(roi_map)
+
+        if roi.ndim != 1:
+            raise ValueError(
+                "roi_map can only have one dimension but has "
+                f"{roi.ndim} dimensions"
+            )
+        if (roi < 0).any():
+            # TODO raise ValueError in release 0.13
+            warn(
+                (
+                    "Negative values in roi_map will no longer be allowed in"
+                    " Nilearn version 0.13"
+                ),
+                DeprecationWarning,
+                stacklevel=find_stack_level(),
+            )
+
+        mesh = load_surf_mesh(surf_mesh)
+        if roi.shape[0] != mesh.n_vertices:
+            raise ValueError(
+                "roi_map does not have the same number of vertices "
+                "as the mesh. If you have a list of indices for the "
+                "ROI you can convert them into a ROI map like this:\n"
+                "roi_map = np.zeros(n_vertices)\n"
+                "roi_map[roi_idx] = 1"
+            )
+
+        idx_not_na = ~np.isnan(roi)
+        if vmin is None:
+            vmin = float(np.nanmin(roi))
+        if vmax is None:
+            vmax = float(1 + np.nanmax(roi))
+
+        if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
+            # TODO raise ValueError in release 0.13
+            warn(
+                (
+                    "Non-integer values in roi_map will no longer be allowed "
+                    "in Nilearn version 0.13"
+                ),
+                DeprecationWarning,
+                stacklevel=find_stack_level(),
+            )
+        if isinstance(cmap, pd.DataFrame):
+            cmap = create_colormap_from_lut(cmap)
+
+        params = {
+            "avg_method": avg_method,
+            "cbar_tick_format": cbar_tick_format,
+        }
+
+        self._adjust_plot_roi_params(params)
+
+        return self._plot_surf(
+            mesh,
+            surf_map=roi,
+            bg_map=bg_map,
+            hemi=hemi,
+            view=view,
+            cmap=cmap,
+            colorbar=colorbar,
+            avg_method=params["avg_method"],
+            threshold=threshold,
+            alpha=alpha,
+            bg_on_data=bg_on_data,
+            darkness=darkness,
+            vmin=vmin,
+            vmax=vmax,
+            cbar_tick_format=params["cbar_tick_format"],
+            title=title,
+            title_font_size=title_font_size,
+            output_file=output_file,
+            axes=axes,
+            figure=figure,
             **kwargs,
         )
 

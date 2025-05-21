@@ -345,63 +345,57 @@ def nilearn_check_estimator(estimator):
     yield (clone(estimator), check_transformer_set_output)
 
     if is_masker:
-        yield (clone(estimator), check_masker_fitted)
         yield (clone(estimator), check_masker_clean_kwargs)
-        yield (clone(estimator), check_masker_generate_report)
-        yield (clone(estimator), check_masker_generate_report_false)
-        yield (clone(estimator), check_masker_refit)
-
-        yield (clone(estimator), check_masker_fit_score_takes_y)
-
-        yield (clone(estimator), check_masker_transformer)
-        yield (clone(estimator), check_masker_inverse_transform)
-
         yield (clone(estimator), check_masker_compatibility_mask_image)
-
-        yield (clone(estimator), check_masker_empty_data_messages)
         yield (clone(estimator), check_masker_dict_unchanged)
-
-        yield (clone(estimator), check_masker_fit_with_empty_mask)
-
+        yield (clone(estimator), check_masker_dtypes)
+        yield (clone(estimator), check_masker_empty_data_messages)
         yield (clone(estimator), check_masker_fit_returns_self)
-
+        yield (clone(estimator), check_masker_fit_score_takes_y)
+        yield (clone(estimator), check_masker_fit_with_empty_mask)
         yield (
             clone(estimator),
             check_masker_fit_with_non_finite_in_mask,
         )
+        yield (clone(estimator), check_masker_fitted)
+        yield (clone(estimator), check_masker_generate_report)
+        yield (clone(estimator), check_masker_generate_report_false)
+        yield (clone(estimator), check_masker_inverse_transform)
         yield (clone(estimator), check_masker_mask_img)
-        yield (clone(estimator), check_masker_no_mask_no_img)
         yield (clone(estimator), check_masker_mask_img_from_imgs)
-
+        yield (clone(estimator), check_masker_no_mask_no_img)
+        yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_smooth)
-
+        yield (clone(estimator), check_masker_transformer)
         yield (
             clone(estimator),
             check_masker_transformer_high_variance_confounds,
         )
 
         if not is_multimasker(estimator):
-            yield (clone(estimator), check_masker_with_confounds)
-            yield (clone(estimator), check_masker_detrending)
             yield (clone(estimator), check_masker_clean)
+            yield (clone(estimator), check_masker_detrending)
             yield (clone(estimator), check_masker_transformer_sample_mask)
+            yield (clone(estimator), check_masker_with_confounds)
 
         if accept_niimg_input(estimator):
+            yield (clone(estimator), check_nifti_masker_clean_error)
+            yield (clone(estimator), check_nifti_masker_clean_warning)
+            yield (clone(estimator), check_nifti_masker_dtype)
             yield (clone(estimator), check_nifti_masker_fit_transform)
+            yield (clone(estimator), check_nifti_masker_fit_transform_5d)
             yield (clone(estimator), check_nifti_masker_fit_transform_files)
             yield (clone(estimator), check_nifti_masker_fit_with_3d_mask)
             yield (
                 clone(estimator),
                 check_nifti_masker_generate_report_after_fit_with_only_mask,
             )
-            yield (clone(estimator), check_nifti_masker_clean_error)
-            yield (clone(estimator), check_nifti_masker_clean_warning)
-            yield (clone(estimator), check_nifti_masker_dtype)
-            yield (clone(estimator), check_nifti_masker_fit_transform_5d)
-            yield (clone(estimator), check_masker_dtypes)
 
             if is_multimasker(estimator):
-                yield (clone(estimator), check_multi_masker_with_confounds)
+                yield (
+                    clone(estimator),
+                    check_multi_nifti_masker_generate_report_4d_fit,
+                )
                 yield (
                     clone(estimator),
                     check_multi_masker_transformer_high_variance_confounds,
@@ -410,20 +404,17 @@ def nilearn_check_estimator(estimator):
                     clone(estimator),
                     check_multi_masker_transformer_sample_mask,
                 )
-                yield (
-                    clone(estimator),
-                    check_multi_nifti_masker_generate_report_4d_fit,
-                )
+                yield (clone(estimator), check_multi_masker_with_confounds)
 
         if surf_img_input:
             yield (clone(estimator), check_surface_masker_fit_with_mask)
             yield (clone(estimator), check_surface_masker_list_surf_images)
 
     if is_glm:
+        yield (clone(estimator), check_glm_dtypes)
+        yield (clone(estimator), check_glm_empty_data_messages)
         yield (clone(estimator), check_glm_fit_returns_self)
         yield (clone(estimator), check_glm_is_fitted)
-        yield (clone(estimator), check_glm_empty_data_messages)
-        yield (clone(estimator), check_glm_dtypes)
 
 
 def is_multimasker(estimator):

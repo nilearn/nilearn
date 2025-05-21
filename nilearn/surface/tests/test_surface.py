@@ -1206,8 +1206,8 @@ def test_get_data(surf_img_1d):
 @pytest.mark.parametrize("ensure_finite", [True, False])
 def test_get_data_ensure_finite(surf_img_1d, ensure_finite):
     """Check get data can deal with non finite values."""
-    surf_img_1d.data.parts["left"][0] = np.nan
-    surf_img_1d.data.parts["left"][1] = np.inf
+    surf_img_1d.data.parts["left"][1] = np.nan
+    surf_img_1d.data.parts["left"][2] = np.inf
 
     if ensure_finite is True:
         with pytest.warns(UserWarning, match="Non-finite values detected."):
