@@ -1221,11 +1221,7 @@ def check_masker_inverse_transform(estimator):
 
         mask_img = Nifti1Image(np.ones(_shape_3d_large()), _affine_eye())
 
-        if isinstance(estimator, (NiftiLabelsMasker)):
-            # TODO BUG to fix
-            # https://github.com/nilearn/nilearn/issues/5395
-            tmp = estimator.labels_img.shape
-        elif isinstance(estimator, NiftiMapsMasker):
+        if isinstance(estimator, NiftiMapsMasker):
             # TODO BUG to fix
             # https://github.com/nilearn/nilearn/issues/5395
             tmp = estimator.maps_img.shape[:3]

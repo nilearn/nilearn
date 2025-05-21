@@ -545,13 +545,34 @@ class NiftiLabelsMasker(BaseMasker):
 
         self._original_region_ids = self.lut_["index"].to_list()
 
-        self.mask_img_ = self._load_mask(imgs)
+        self._resampled_labels_img_ = self.labels_img_
+        if self.resampling_target == "data":
+            imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
+            if not _utils.niimg_conversions.check_same_fov(
+                imgs_,
+                self._resampled_labels_img_,
+            ):
+                self._resampled_labels_img_ = self._resample_labels(imgs_)
 
-        # Check shapes and affines or resample.
+        self.mask_img_ = self._load_mask(imgs)
+        self._resampled_mask_img = self.mask_img_
         if self.mask_img_ is not None:
             if self.resampling_target == "data":
-                # resampling will be done at transform time
-                pass
+                if not _utils.niimg_conversions.check_same_fov(
+                    imgs_,
+                    self._resampled_mask_img,
+                ):
+                    logger.log("Resampling mask", self.verbose)
+                    self._resampled_mask_img = self._cache(
+                        resample_img, func_memory_level=2
+                    )(
+                        self.mask_img_,
+                        interpolation="nearest",
+                        target_shape=imgs_.shape[:3],
+                        target_affine=imgs_.affine,
+                        copy_header=True,
+                        force_resample=False,
+                    )
 
             elif self.resampling_target is None:
                 if self.mask_img_.shape != self.labels_img_.shape[:3]:
@@ -592,20 +613,18 @@ class NiftiLabelsMasker(BaseMasker):
                 # Just check that the mask is valid
                 load_mask_img(self.mask_img_)
 
+                self._resampled_mask_img = self.mask_img_
+
             else:
                 raise ValueError(
                     "Invalid value for "
                     f"resampling_target: {self.resampling_target}"
                 )
 
-        if not hasattr(self, "_resampled_labels_img_"):
-            # obviates need to run .transform() before .inverse_transform()
-            self._resampled_labels_img_ = self.labels_img_
-
         if self.reports:
             self._reporting_data = {
                 "labels_image": self._resampled_labels_img_,
-                "mask": self.mask_img_,
+                "mask": self._resampled_mask_img,
                 "dim": None,
                 "img": imgs,
             }
@@ -615,8 +634,6 @@ class NiftiLabelsMasker(BaseMasker):
                 self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
-
-        self._resampled_mask_img = self.mask_img_
 
         return self
 
