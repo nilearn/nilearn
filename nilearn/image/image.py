@@ -48,7 +48,7 @@ from nilearn.surface.surface import (
     extract_data,
 )
 from nilearn.surface.surface import get_data as get_surface_data
-from nilearn.surface.utils import check_polymesh_equal
+from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
 from nilearn.typing import NiimgLike
 
 
@@ -1232,8 +1232,11 @@ def math_img(formula, copy_header_from=None, **imgs):
     imgs : images (:class:`~nibabel.nifti1.Nifti1Image` or file names \
            or :obj:`~nilearn.surface.SurfaceImage` object)
         Keyword arguments corresponding to the variables in the formula as
-        images. All input images should have the same 'geometry' (shape,
-        and affine for volume data, and mesh for surface data).
+        images.
+        All input images should have the same 'geometry':
+
+        - shape and affine for volume data
+        - mesh (coordinates and faces) for surface data
 
     Returns
     -------
@@ -1290,7 +1293,7 @@ def math_img(formula, copy_header_from=None, **imgs):
     if is_surface:
         first_img = next(iter(imgs.values()))
         for image in imgs.values():
-            check_polymesh_equal(first_img.mesh, image.mesh)
+            assert_polymesh_equal(first_img.mesh, image.mesh)
 
         # Computing input data as a dictionary of numpy arrays.
         data_dict = {k: {} for k in first_img.data.parts}
