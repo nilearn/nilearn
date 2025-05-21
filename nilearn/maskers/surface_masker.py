@@ -185,7 +185,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
             # mask out vertices with NaN or infinite values
             mask_data[part] = np.isfinite(v.astype("float32")).all(axis=1)
             warn(
-                "Non-finite values detected. "
+                "Non-finite values detected in the input image. "
                 "The computed mask will mask out these vertices.",
                 stacklevel=find_stack_level(),
             )
