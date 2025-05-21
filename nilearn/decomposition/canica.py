@@ -22,7 +22,9 @@ class CanICA(_MultiPCA):
 
     Parameters
     ----------
-    mask : Niimg-like object or MultiNiftiMasker instance, optional
+    mask : Niimg-like object or MultiNiftiMasker instance or \
+           :obj:`~nilearn.surface.SurfaceImage` or \
+           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given, for Nifti images,
         it will be computed automatically by a MultiNiftiMasker with default
@@ -109,7 +111,7 @@ class CanICA(_MultiPCA):
 
     Attributes
     ----------
-    components_ : 2D numpy array (n_components x n-voxels)
+    components_ : 2D numpy array (n_components x n-voxels or n-vertices)
         Masked ICA components extracted from the input images.
 
         .. note::
@@ -117,19 +119,21 @@ class CanICA(_MultiPCA):
             Use attribute ``components_img_`` rather than manually unmasking
             ``components_`` with ``masker_`` attribute.
 
-    components_img_ : 4D Nifti image
-        4D image giving the extracted ICA components. Each 3D image is a
-        component.
+    components_img_ : 4D Nifti image or 2D :obj:`~nilearn.surface.SurfaceImage`
+        The image giving the extracted components. Each 3D Nifti image or 1D
+        SurfaceImage is a component.
 
         .. versionadded:: 0.4.1
 
-    masker_ : instance of MultiNiftiMasker
+    masker_ : instance of MultiNiftiMasker or \
+            :obj:`~nilearn.maskers.SurfaceMasker`
         Masker used to filter and mask data as first step. If an instance of
-        MultiNiftiMasker is given in ``mask`` parameter, this is a copy of it.
+        MultiNiftiMasker :obj:`~nilearn.maskers.SurfaceMasker` is given in
+        ``mask`` parameter, this is a copy of it.
         Otherwise, a masker is created using the value of `mask` and
         other NiftiMasker/SurfaceMasker related parameters as initialization.
 
-    mask_img_ : Niimg-like object
+    mask_img_ : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
         The mask of the data. If no mask was given at masker creation:
         - for Nifti images, this contains automatically computed mask via the

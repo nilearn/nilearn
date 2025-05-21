@@ -123,7 +123,6 @@ class DictLearning(_BaseDecomposition):
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(mask_strategy)s
-
         Default='epi'.
 
     mask_args : :obj:`dict`, optional
