@@ -412,9 +412,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         Returns
         -------
-        region_signals : 2D :obj:`numpy.ndarray`
-            Signal for each element.
-            shape: (img data shape, total number of vertices)
+        %(signals_transform_surface)s
         """
         check_compatibility_mask_and_images(self.labels_img_, imgs)
         check_polymesh_equal(self.labels_img_.mesh, imgs.mesh)
@@ -480,34 +478,36 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         return region_signals
 
+    @fill_doc
     def inverse_transform(self, signals):
         """Transform extracted signal back to surface image.
 
         Parameters
         ----------
-        signals : :obj:`numpy.ndarray`
-            Extracted signal for each region.
-            If a 1D array is provided, then the shape of each hemisphere's data
-            should be (number of elements,) in the returned surface image.
-            If a 2D array is provided, then it would be
-            (number of scans, number of elements).
-
+        %(signals_inv_transform)s
 
         Returns
         -------
-        :obj:`~nilearn.surface.SurfaceImage` object
-            Mesh and data for both hemispheres.
+        %(img_inv_transform_surface)s
         """
         check_is_fitted(self)
 
-        self._check_signal_shape(signals)
+        return_1D = signals.ndim < 2
 
-        return signals_to_surf_img_labels(
+        signals = self._check_array(signals)
+
+        imgs = signals_to_surf_img_labels(
             signals,
             np.asarray(self.labels_),
             self.labels_img_,
             self.background_label,
         )
+
+        if return_1D:
+            for k, v in imgs.data.parts.items():
+                imgs.data.parts[k] = v.squeeze()
+
+        return imgs
 
     def generate_report(self):
         """Generate a report."""
