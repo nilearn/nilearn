@@ -620,3 +620,12 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
             vmax=vmax,
             symmetric_cbar=symmetric_cbar,
         )
+
+    def _adjust_plot_roi_params(self, params):
+        avg_method = params.get("avg_method", None)
+        if avg_method is None:
+            params["avg_method"] = "median"
+
+        cbar_tick_format = params.get("cbar_tick_format", "auto")
+        if cbar_tick_format == "auto":
+            params["cbar_tick_format"] = "%i"

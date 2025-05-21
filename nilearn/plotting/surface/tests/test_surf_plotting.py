@@ -704,6 +704,9 @@ def test_plot_surf_stat_map_matplotlib_specific(
 
 @pytest.mark.parametrize("colorbar", [True, False])
 def test_plot_surf_roi(plt, engine, surface_image_roi, colorbar):
+    """Smoke test for nilearn.plotting.surface.surf_plotting.plot_surf_roi
+    for colorbar parameter.
+    """
     plot_surf_roi(
         surface_image_roi.mesh,
         roi_map=surface_image_roi,
@@ -729,6 +732,9 @@ def test_plot_surf_roi_cmap_as_lookup_table(surface_image_roi):
 
 
 def test_plot_surf_roi_error(engine, rng, in_memory_mesh, surf_roi_data):
+    """Test for nilearn.plotting.surface.surf_plotting.plot_surf_roi
+    for invalid parameter values.
+    """
     # too many axes
     with pytest.raises(
         ValueError, match="roi_map can only have one dimension but has"
@@ -766,11 +772,16 @@ def test_plot_surf_roi_error(engine, rng, in_memory_mesh, surf_roi_data):
 def test_plot_surf_roi_matplotlib_specific(
     matplotlib_pyplot, surface_image_roi
 ):
+    """Test for nilearn.plotting.surface.surf_plotting.plot_surf_roi
+    for matplotlib engine specific parameters.
+    """
     ENGINE = "matplotlib"
     # change vmin, vmax
     img = plot_surf_roi(
         surface_image_roi.mesh,
         roi_map=surface_image_roi,
+        avg_method="median",
+        cbar_tick_format="%i",
         vmin=1.2,
         vmax=8.9,
         colorbar=True,
@@ -806,6 +817,9 @@ def test_plot_surf_roi_matplotlib_specific_nan_handling(
     matplotlib_pyplot,
     surface_image_parcellation,
 ):
+    """Test for nilearn.plotting.surface.surf_plotting.plot_surf_roi
+    for NAN handling with matplotlib engine.
+    """
     # Test nans handling
     surface_image_parcellation.data.parts["left"][::2] = np.nan
     img = plot_surf_roi(
@@ -862,18 +876,70 @@ def test_plot_surf_roi_matplotlib_specific_plot_to_axes(
 
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
-def test_plot_surf_parcellation_plotly(
+def test_plot_surf_roi_parcellation_plotly(
     plotly,
     colorbar,
     surface_image_parcellation,
     cbar_tick_format,
 ):
+    """Smoke test for nilearn.plotting.surface.surf_plotting.plot_surf_roi
+    for plotly parameters.
+    """
     plot_surf_roi(
         surface_image_parcellation.mesh,
         roi_map=surface_image_parcellation,
         engine="plotly",
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
+    )
+
+
+@pytest.mark.parametrize("avg_method", ["mean", "median"])
+@pytest.mark.parametrize("symmetric_cmap", [True, False, None])
+def test_plot_surf_roi_default_arguments(
+    plt, engine, symmetric_cmap, avg_method, surface_image_roi
+):
+    """Regression test for https://github.com/nilearn/nilearn/issues/3941."""
+    # To avoid extra warnings
+    if engine == "plotly":
+        avg_method = None
+
+    plot_surf_roi(
+        surface_image_roi.mesh,
+        roi_map=surface_image_roi,
+        engine=engine,
+        symmetric_cmap=symmetric_cmap,
+        darkness=None,  # to avoid deprecation warning
+        cmap="RdYlBu_r",
+        avg_method=avg_method,
+    )
+
+
+@pytest.mark.parametrize(
+    "kwargs", [{"vmin": 2}, {"vmin": 2, "threshold": 5}, {"threshold": 5}]
+)
+def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
+    matplotlib_pyplot, plotly, kwargs, in_memory_mesh
+):
+    """Regression test for https://github.com/nilearn/nilearn/issues/3944."""
+    roi_map = np.arange(0, len(in_memory_mesh.coordinates))
+
+    mpl_plot = plot_surf_roi(
+        in_memory_mesh,
+        roi_map=roi_map,
+        colorbar=True,
+        engine="matplotlib",
+        **kwargs,
+    )
+    plotly_plot = plot_surf_roi(
+        in_memory_mesh,
+        roi_map=roi_map,
+        colorbar=True,
+        engine="plotly",
+        **kwargs,
+    )
+    assert (
+        mpl_plot.axes[-1].get_ylim()[0] == plotly_plot.figure.data[1]["cmin"]
     )
 
 
@@ -1050,55 +1116,6 @@ def test_plot_img_on_surf_input_as_file(matplotlib_pyplot, img_3d_mni_as_file):
     """Test nifti is supported when passed as string or path to a file."""
     plot_img_on_surf(stat_map=img_3d_mni_as_file)
     plot_img_on_surf(stat_map=str(img_3d_mni_as_file))
-
-
-@pytest.mark.parametrize("avg_method", ["mean", "median"])
-@pytest.mark.parametrize("symmetric_cmap", [True, False, None])
-def test_plot_surf_roi_default_arguments(
-    plt, engine, symmetric_cmap, avg_method, surface_image_roi
-):
-    """Regression test for https://github.com/nilearn/nilearn/issues/3941."""
-    # To avoid extra warnings
-    if engine == "plotly":
-        avg_method = None
-
-    plot_surf_roi(
-        surface_image_roi.mesh,
-        roi_map=surface_image_roi,
-        engine=engine,
-        symmetric_cmap=symmetric_cmap,
-        darkness=None,  # to avoid deprecation warning
-        cmap="RdYlBu_r",
-        avg_method=avg_method,
-    )
-
-
-@pytest.mark.parametrize(
-    "kwargs", [{"vmin": 2}, {"vmin": 2, "threshold": 5}, {"threshold": 5}]
-)
-def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
-    matplotlib_pyplot, plotly, kwargs, in_memory_mesh
-):
-    """See issue https://github.com/nilearn/nilearn/issues/3944."""
-    roi_map = np.arange(0, len(in_memory_mesh.coordinates))
-
-    mpl_plot = plot_surf_roi(
-        in_memory_mesh,
-        roi_map=roi_map,
-        colorbar=True,
-        engine="matplotlib",
-        **kwargs,
-    )
-    plotly_plot = plot_surf_roi(
-        in_memory_mesh,
-        roi_map=roi_map,
-        colorbar=True,
-        engine="plotly",
-        **kwargs,
-    )
-    assert (
-        mpl_plot.axes[-1].get_ylim()[0] == plotly_plot.figure.data[1]["cmin"]
-    )
 
 
 @pytest.mark.parametrize(
