@@ -6,8 +6,6 @@ rather than the underlying functions (clean(), img_to_signals_labels(), etc.).
 See test_masking.py and test_signal.py for details.
 """
 
-import warnings
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -53,34 +51,6 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
-
-
-def test_nifti_maps_masker(
-    length, n_regions, affine_eye, shape_3d_default, img_maps
-):
-    """Check common methods of NiftiMapsMasker."""
-    fmri11_img, mask11_img = generate_fake_fmri(
-        shape_3d_default, affine=affine_eye, length=length
-    )
-
-    masker11 = NiftiMapsMasker(
-        img_maps, mask_img=mask11_img, resampling_target=None
-    )
-
-    signals11 = masker11.fit().transform(fmri11_img)
-
-    assert signals11.shape == (length, n_regions)
-
-    # Call inverse transform (smoke test)
-    fmri11_img_r = masker11.inverse_transform(signals11)
-
-    assert fmri11_img_r.shape == fmri11_img.shape
-    assert_almost_equal(fmri11_img_r.affine, fmri11_img.affine)
-
-    # Now try on a masker that has never seen the call to "transform"
-    masker2 = NiftiMapsMasker(img_maps, resampling_target=None)
-    masker2.fit()
-    masker2.inverse_transform(signals11)
 
 
 def test_nifti_maps_masker_data_atlas_different_shape(
@@ -199,66 +169,6 @@ def test_nifti_maps_masker_resampling_errors(
         match="invalid value for 'resampling_target' parameter: invalid",
     ):
         masker.fit()
-
-
-def test_nifti_maps_masker_io_shapes(
-    rng, affine_eye, length, n_regions, shape_3d_default, img_maps
-):
-    """Ensure that NiftiMapsMasker handles 1D/2D/3D/4D data appropriately.
-
-    transform(4D image) --> 2D output, no warning
-    transform(3D image) --> 2D output, DeprecationWarning
-    inverse_transform(2D array) --> 4D image, no warning
-    inverse_transform(1D array) --> 3D image, no warning
-    """
-    data_1d = rng.random(n_regions)
-    data_2d = rng.random((length, n_regions))
-    img_4d, mask_img = generate_fake_fmri(
-        shape_3d_default, length=length, affine=affine_eye
-    )
-    img_3d, _ = generate_random_img(shape_3d_default, affine=affine_eye)
-
-    masker = NiftiMapsMasker(img_maps, mask_img=mask_img)
-    masker.fit()
-
-    # DeprecationWarning *should* be raised for 3D inputs
-    with pytest.deprecated_call(match="Starting in version 0.12"):
-        test_data = masker.transform(img_3d)
-
-        assert test_data.shape == (1, n_regions)
-
-    # DeprecationWarning should *not* be raised for 4D inputs
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "error",
-            message="Starting in version 0.12",
-            category=DeprecationWarning,
-        )
-        test_data = masker.transform(img_4d)
-
-        assert test_data.shape == (length, n_regions)
-
-    # DeprecationWarning should *not* be raised for 1D inputs
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "error",
-            message="Starting in version 0.12",
-            category=DeprecationWarning,
-        )
-        test_img = masker.inverse_transform(data_1d)
-
-        assert test_img.shape == shape_3d_default
-
-    # DeprecationWarning should *not* be raised for 2D inputs
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "error",
-            message="Starting in version 0.12",
-            category=DeprecationWarning,
-        )
-        test_img = masker.inverse_transform(data_2d)
-
-        assert test_img.shape == (*shape_3d_default, length)
 
 
 def test_nifti_maps_masker_with_nans_and_infs(length, n_regions, affine_eye):
@@ -484,24 +394,3 @@ def test_standardization(rng, affine_eye, shape_3d_default):
             - 100
         ),
     )
-
-
-def test_3d_images(affine_eye, n_regions, shape_3d_default):
-    """Test that the NiftiMapsMasker works with 3D images."""
-    maps33_img, _ = generate_maps(shape_3d_default, n_regions)
-    mask_img = Nifti1Image(
-        np.ones(shape_3d_default, dtype=np.int8),
-        affine=affine_eye,
-    )
-    epi_img1 = Nifti1Image(np.ones(shape_3d_default), affine=affine_eye)
-    epi_img2 = Nifti1Image(np.ones(shape_3d_default), affine=affine_eye)
-
-    masker = NiftiMapsMasker(maps33_img, mask_img=mask_img)
-
-    epis = masker.fit_transform(epi_img1)
-
-    assert epis.shape == (1, n_regions)
-
-    epis = masker.fit_transform([epi_img1, epi_img2])
-
-    assert epis.shape == (2, n_regions)

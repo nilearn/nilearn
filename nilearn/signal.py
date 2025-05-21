@@ -1116,8 +1116,8 @@ def _sanitize_confound_dtype(n_signal, confound):
             )
         if confound.shape[0] != n_signal:
             raise ValueError(
-                "Confound signal has an incorrect "
-                f"lengthSignal length: {n_signal}; "
+                "Confound signal has an incorrect length. "
+                f"Signal length: {n_signal}; "
                 f"confound length: {confound.shape[0]}."
             )
 

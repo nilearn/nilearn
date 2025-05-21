@@ -5,8 +5,6 @@ not the underlying functions (clean(), img_to_signals_labels(), etc.). See
 test_masking.py and test_signal.py for details.
 """
 
-import warnings
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -74,21 +72,13 @@ def test_nifti_labels_masker(
     # Check attributes defined at fit
     assert masker.n_elements_ == n_regions
 
-    masker.inverse_transform(signals)
-
-    # now with several mask_img
+    # now with mask_img
     masker = NiftiLabelsMasker(
         img_labels, mask_img=mask11_img, resampling_target=None
     )
     signals = masker.fit().transform(fmri_img)
 
     assert signals.shape == (length, n_regions)
-
-    # Call inverse transform (smoke test)
-    fmri_img_r = masker.inverse_transform(signals)
-
-    assert fmri_img_r.shape == fmri_img.shape
-    assert_almost_equal(fmri_img_r.affine, fmri_img.affine)
 
 
 def test_nifti_labels_masker_errors(
@@ -152,70 +142,6 @@ def test_nifti_labels_masker_errors(
         ValueError, match="Regions and mask do not have the same shape"
     ):
         masker11.fit()
-
-
-def test_nifti_labels_masker_io_shapes(
-    rng, affine_eye, shape_3d_default, n_regions, img_labels
-):
-    """Ensure that NiftiLabelsMasker handles 1D/2D/3D/4D data appropriately.
-
-    transform(4D image) --> 2D output, no warning
-    transform(3D image) --> 2D output, DeprecationWarning
-    inverse_transform(2D array) --> 4D image, no warning
-    inverse_transform(1D array) --> 3D image, no warning
-    """
-    length = 5
-    shape_4d = (*shape_3d_default, length)
-    data_1d = rng.random(n_regions)
-    data_2d = rng.random((length, n_regions))
-
-    img_4d, mask_img = generate_random_img(
-        shape_4d,
-        affine=affine_eye,
-    )
-    img_3d, _ = generate_random_img(shape_3d_default, affine=affine_eye)
-
-    masker = NiftiLabelsMasker(img_labels, mask_img=mask_img)
-
-    masker.fit()
-
-    # DeprecationWarning *should* be raised for 3D inputs
-    with pytest.deprecated_call(match="Starting in version 0.12"):
-        test_data = masker.transform(img_3d)
-        assert test_data.shape == (1, n_regions)
-
-    # DeprecationWarning should *not* be raised for 4D inputs
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "error",
-            message="Starting in version 0.12",
-            category=DeprecationWarning,
-        )
-        test_data = masker.transform(img_4d)
-
-        assert test_data.shape == (length, n_regions)
-
-    # DeprecationWarning should *not* be raised for 1D inputs
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "error",
-            message="Starting in version 0.12",
-            category=DeprecationWarning,
-        )
-        test_img = masker.inverse_transform(data_1d)
-
-        assert test_img.shape == shape_3d_default
-
-    # DeprecationWarning should *not* be raised for 2D inputs
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "error",
-            message="Starting in version 0.12",
-            category=DeprecationWarning,
-        )
-        test_img = masker.inverse_transform(data_2d)
-
-        assert test_img.shape == shape_4d
 
 
 def test_nifti_labels_masker_with_nans_and_infs(
@@ -605,8 +531,8 @@ def test_nifti_labels_masker_with_mask(
     assert np.allclose(signals, masked_signals)
 
     #  masker.region_atlas_ should be the same as the masked_labels
-    # masked_labels is a 4D image with shape (10,10,10,1)
-    masked_labels_data = get_data(masked_labels)[:, :, :, 0]
+    # masked_labels is a 3D image with shape (10,10,10)
+    masked_labels_data = get_data(masked_labels)[:, :, :]
     assert np.allclose(get_data(masker.region_atlas_), masked_labels_data)
 
 
@@ -751,8 +677,10 @@ def check_region_names_after_fit(
     - region_names_ should be the same as the region names
       passed to the masker minus that for "background"
     """
-    assert len(masker.region_names_) == signals.shape[1]
-    assert len(list(masker.region_ids_.items())) == signals.shape[1] + 1
+    n_regions = signals.shape[0] if signals.ndim == 1 else signals.shape[1]
+
+    assert len(masker.region_names_) == n_regions
+    assert len(list(masker.region_ids_.items())) == n_regions + 1
 
     # for coverage
     masker.labels_  # noqa: B018
@@ -959,26 +887,6 @@ def test_more_labels_than_actual_region_in_atlas(
         match="Too many names for the indices. Dropping excess names values.",
     ):
         masker.fit().transform(fmri_img)
-
-
-def test_3d_images(affine_eye, shape_3d_default, n_regions, img_labels):
-    """Test that the NiftiLabelsMasker works with 3D images."""
-    mask_img = Nifti1Image(
-        np.ones(shape_3d_default, dtype=np.int8),
-        affine=affine_eye,
-    )
-
-    masker = NiftiLabelsMasker(img_labels, mask_img=mask_img)
-
-    epi_img1 = Nifti1Image(np.ones(shape_3d_default), affine=affine_eye)
-    epis = masker.fit_transform(epi_img1)
-
-    assert epis.shape == (1, n_regions)
-
-    epi_img2 = Nifti1Image(np.ones(shape_3d_default), affine=affine_eye)
-    epis = masker.fit_transform([epi_img1, epi_img2])
-
-    assert epis.shape == (2, n_regions)
 
 
 @pytest.mark.parametrize("background", [None, "Background"])

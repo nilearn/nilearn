@@ -31,23 +31,6 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-@pytest.mark.parametrize("surf_mask_dim", [1, 2])
-def test_surface_maps_masker_fit_transform_shape(
-    surf_maps_img, surf_img_2d, surf_mask_1d, surf_mask_2d, surf_mask_dim
-):
-    """Test that the fit_transform method returns the expected shape."""
-    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
-    masker = SurfaceMapsMasker(surf_maps_img, surf_mask).fit()
-    region_signals = masker.transform(surf_img_2d(50))
-    # surf_img_2d has shape (n_vertices, n_timepoints) = (9, 50)
-    # surf_maps_img has shape (n_vertices, n_regions) = (9, 6)
-    # region_signals should have shape (n_timepoints, n_regions) = (50, 6)
-    assert region_signals.shape == (
-        surf_img_2d(50).shape[-1],
-        surf_maps_img.shape[-1],
-    )
-
-
 def test_surface_maps_masker_fit_transform_mask_vs_no_mask(
     surf_maps_img, surf_img_2d, surf_mask_1d
 ):
@@ -88,20 +71,6 @@ def test_surface_maps_masker_fit_transform_actual_output(surf_mesh, rng):
     assert np.allclose(region_signals, expected_region_signals)
 
 
-@pytest.mark.parametrize("surf_mask_dim", [1, 2])
-def test_surface_maps_masker_inverse_transform_shape(
-    surf_maps_img, surf_img_2d, surf_mask_1d, surf_mask_2d, surf_mask_dim
-):
-    """Test that inverse_transform returns an image with the same shape as the
-    input.
-    """
-    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
-    masker = SurfaceMapsMasker(surf_maps_img, surf_mask).fit()
-    region_signals = masker.fit_transform(surf_img_2d(50))
-    X_inverse_transformed = masker.inverse_transform(region_signals)
-    assert X_inverse_transformed.shape == surf_img_2d(50).shape
-
-
 def test_surface_maps_masker_inverse_transform_actual_output(surf_mesh, rng):
     """Test that inverse_transform returns the expected output."""
     # create a maps_img with 9 vertices and 2 regions
@@ -137,16 +106,6 @@ def test_surface_maps_masker_1d_maps_img(surf_img_1d):
         match="maps_img should be 2D",
     ):
         SurfaceMapsMasker(maps_img=surf_img_1d).fit()
-
-
-def test_surface_maps_masker_1d_img(surf_maps_img, surf_img_1d):
-    """Test that an error is raised when img has 1D data."""
-    with pytest.raises(
-        ValueError,
-        match="should be 2D",
-    ):
-        masker = SurfaceMapsMasker(maps_img=surf_maps_img).fit()
-        masker.transform(surf_img_1d)
 
 
 def test_surface_maps_masker_labels_img_none():

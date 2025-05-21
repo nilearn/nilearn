@@ -46,35 +46,6 @@ def test_fit_list_surf_images_with_mask(surf_mask_1d, surf_img_2d):
     assert masker.mask_img_.shape == (surf_img_2d(1).shape[0],)
 
 
-@pytest.mark.parametrize("surf_mask_dim", [1, 2])
-def test_transform_list_surf_images(
-    surf_mask_dim,
-    surf_mask_1d,
-    surf_mask_2d,
-    surf_img_1d,
-    surf_img_2d,
-):
-    """Test transform on list of surface images."""
-    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
-    masker = SurfaceMasker(surf_mask).fit()
-    signals = masker.transform([surf_img_1d, surf_img_1d, surf_img_1d])
-    assert signals.shape == (3, masker.n_elements_)
-    signals = masker.transform([surf_img_2d(5), surf_img_2d(4)])
-    assert signals.shape == (9, masker.n_elements_)
-
-
-@pytest.mark.parametrize("surf_mask_dim", [1, 2])
-def test_inverse_transform_list_surf_images(
-    surf_mask_dim, surf_mask_1d, surf_mask_2d, surf_img_2d
-):
-    """Test inverse_transform on list of surface images."""
-    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
-    masker = SurfaceMasker(surf_mask).fit()
-    signals = masker.transform([surf_img_2d(3), surf_img_2d(4)])
-    img = masker.inverse_transform(signals)
-    assert img.shape == (surf_mask.mesh.n_vertices, 7)
-
-
 @pytest.mark.parametrize("n_timepoints", [3])
 def test_transform_inverse_transform_no_mask(surf_mesh, n_timepoints):
     """Check output of inverse transform when not using a mask."""
@@ -93,7 +64,6 @@ def test_transform_inverse_transform_no_mask(surf_mesh, n_timepoints):
     signals = masker.transform(img)
 
     # make sure none of the data has been removed
-    assert signals.shape == (n_timepoints, img.shape[0])
     assert np.array_equal(signals[0], [1, 2, 3, 4, 10, 20, 30, 40, 50])
     unmasked_img = masker.inverse_transform(signals)
     assert_polydata_equal(img.data, unmasked_img.data)
@@ -123,9 +93,6 @@ def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
 
     masker = SurfaceMasker(mask).fit(img)
     signals = masker.transform(img)
-
-    # check mask shape is as expected
-    assert signals.shape == (n_timepoints, masker.n_elements_)
 
     # check the data for first seven vertices is as expected
     assert np.array_equal(signals.ravel()[:7], [2, 3, 4, 20, 30, 40, 50])

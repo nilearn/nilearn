@@ -26,10 +26,7 @@ from nilearn._utils.ndimage import replace_non_finite
 from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface.surface import (
-    SurfaceImage,
-    get_data,
-)
+from nilearn.surface.surface import SurfaceImage, at_least_2d, get_data
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -243,8 +240,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         imgs : imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
               iterable of :obj:`~nilearn.surface.SurfaceImage`
             Images to process.
-            Mesh and data for both hemispheres/parts. The data for each \
-            hemisphere is of shape (n_vertices_per_hemisphere, n_timepoints).
+            Mesh and data for both hemispheres/parts.
 
         %(confounds)s
 
@@ -252,13 +248,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         Returns
         -------
-        region_signals: :obj:`numpy.ndarray`
-            Signal for each region as provided in the maps (via `maps_img`).
-            shape: (n_timepoints, n_regions)
+        %(signals_transform_surface)s
         """
         check_compatibility_mask_and_images(self.maps_img, imgs)
-
-        imgs.data._check_ndims(2, "imgs")
 
         check_polymesh_equal(self.maps_img.mesh, imgs.mesh)
 
@@ -266,6 +258,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             imgs.data.parts[part] = replace_non_finite(
                 imgs.data.parts[part], value=0
             )
+
+        imgs = at_least_2d(imgs)
 
         img_data = np.concatenate(
             list(imgs.data.parts.values()), axis=0
@@ -336,25 +330,23 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         return region_signals
 
+    @fill_doc
     def inverse_transform(self, region_signals):
         """Compute :term:`vertex` signals from region signals.
 
         Parameters
         ----------
-        region_signals: :obj:`numpy.ndarray`
-            Signal for each region as provided in the maps (via `maps_img`).
-            shape: (n_timepoints, n_regions)
+        %(region_signals_inv_transform)s
 
         Returns
         -------
-        vertex_signals: :obj:`~nilearn.surface.SurfaceImage`
-            Signal for each vertex projected on the mesh of the `maps_img`.
-            The data for each hemisphere is of shape
-            (n_vertices_per_hemisphere, n_timepoints).
+        %(img_inv_transform_surface)s
         """
         check_is_fitted(self)
 
-        self._check_signal_shape(region_signals)
+        return_1D = region_signals.ndim < 2
+
+        region_signals = self._check_array(region_signals)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
@@ -398,7 +390,13 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             ],
         }
 
-        return SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
+        imgs = SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
+
+        if return_1D:
+            for k, v in imgs.data.parts.items():
+                imgs.data.parts[k] = v.squeeze()
+
+        return imgs
 
     def generate_report(self, displayed_maps=10, engine="matplotlib"):
         """Generate an HTML report for the current ``SurfaceMapsMasker``

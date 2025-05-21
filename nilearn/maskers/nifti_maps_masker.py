@@ -512,8 +512,7 @@ class NiftiMapsMasker(BaseMasker):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
+            If a 3D niimg is provided, a 1D array is returned.
 
         %(y_dummy)s
 
@@ -525,9 +524,7 @@ class NiftiMapsMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
-            Signal for each map.
-            shape: (number of scans, number of maps)
+        %(signals_transform_nifti)s
         """
         del y
         return self.fit(imgs).transform(
@@ -543,8 +540,6 @@ class NiftiMapsMasker(BaseMasker):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
 
         confounds : CSV file or array-like, default=None
             This parameter is passed to :func:`nilearn.signal.clean`.
@@ -557,17 +552,7 @@ class NiftiMapsMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
-            Signal for each map.
-            shape: (number of scans, number of maps)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
+        %(signals_transform_nifti)s
 
         """
         # We handle the resampling of maps and mask separately because the
@@ -689,6 +674,7 @@ class NiftiMapsMasker(BaseMasker):
         )
         return region_signals
 
+    @fill_doc
     def inverse_transform(self, region_signals):
         """Compute :term:`voxel` signals from region signals.
 
@@ -696,25 +682,18 @@ class NiftiMapsMasker(BaseMasker):
 
         Parameters
         ----------
-        region_signals : 1D/2D numpy.ndarray
-            Signal for each region.
-            If a 1D array is provided, then the shape should be
-            (number of elements,), and a 3D img will be returned.
-            If a 2D array is provided, then the shape should be
-            (number of scans, number of elements), and a 4D img will be
-            returned.
+        %(region_signals_inv_transform)s
 
         Returns
         -------
-        voxel_signals : nibabel.Nifti1Image
-            Signal for each voxel. shape: that of maps.
+        %(img_inv_transform_nifti)s
 
         """
         from ..regions import signal_extraction
 
         check_is_fitted(self)
 
-        self._check_signal_shape(region_signals)
+        region_signals = self._check_array(region_signals)
 
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_maps(

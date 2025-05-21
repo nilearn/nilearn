@@ -2,14 +2,18 @@
 
 import abc
 import contextlib
+import itertools
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
+from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from joblib import Memory
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
+from sklearn.utils.validation import check_array
 
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin, cache
@@ -25,6 +29,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.ndimage import replace_non_finite
 from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     concat_imgs,
@@ -35,7 +40,7 @@ from nilearn.image import (
 )
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
-from nilearn.surface.surface import at_least_2d
+from nilearn.surface.surface import SurfaceImage, at_least_2d
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -92,17 +97,6 @@ def filter_and_extract(
     # This must be repeated after the shape check because check_niimg will
     # coerce 5D data to 4D, which we don't want.
     temp_imgs = check_niimg(imgs)
-
-    # Raise warning if a 3D niimg is provided.
-    if temp_imgs.ndim == 3:
-        warnings.warn(
-            "Starting in version 0.12, 3D images will be transformed to "
-            "1D arrays. "
-            "Until then, 3D images will be coerced to 2D arrays, with a "
-            "singleton first dimension representing time.",
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
 
     imgs = check_niimg(imgs, atleast_4d=True, ensure_ndim=4, dtype=dtype)
 
@@ -176,7 +170,46 @@ def filter_and_extract(
         **parameters["clean_kwargs"],
     )
 
+    if temp_imgs.ndim == 3:
+        region_signals = region_signals.squeeze()
+
     return region_signals, aux
+
+
+def prepare_confounds_multimaskers(masker, imgs_list, confounds):
+    """Check and prepare confounds for multimaskers."""
+    if confounds is None:
+        confounds = list(itertools.repeat(None, len(imgs_list)))
+    elif len(confounds) != len(imgs_list):
+        raise ValueError(
+            f"number of confounds ({len(confounds)}) unequal to "
+            f"number of images ({len(imgs_list)})."
+        )
+
+    if masker.high_variance_confounds:
+        for i, img in enumerate(imgs_list):
+            hv_confounds = masker._cache(high_variance_confounds)(img)
+
+            if confounds[i] is None:
+                confounds[i] = hv_confounds
+            elif isinstance(confounds[i], list):
+                confounds[i] += hv_confounds
+            elif isinstance(confounds[i], np.ndarray):
+                confounds[i] = np.hstack([confounds[i], hv_confounds])
+            elif isinstance(confounds[i], pd.DataFrame):
+                confounds[i] = np.hstack(
+                    [confounds[i].to_numpy(), hv_confounds]
+                )
+            elif isinstance(confounds[i], (str, Path)):
+                c = csv_to_array(confounds[i])
+                if np.isnan(c.flat[0]):
+                    # There may be a header
+                    c = csv_to_array(confounds[i], skip_header=1)
+                confounds[i] = np.hstack([c, hv_confounds])
+            else:
+                confounds[i].append(hv_confounds)
+
+    return confounds
 
 
 @fill_doc
@@ -188,15 +221,13 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def transform_single_imgs(
         self, imgs, confounds=None, sample_mask=None, copy=True
     ):
-        """Extract signals from a single 4D niimg.
+        """Extract signals from a single niimg.
 
         Parameters
         ----------
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
 
         %(confounds)s
 
@@ -209,17 +240,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
-            Signal for each element.
-            shape: (number of scans, number of elements)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
+        %(signals_transform_nifti)s
 
         """
         raise NotImplementedError()
@@ -294,8 +315,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
+            If a 3D niimg is provided, a 1D array is returned.
 
         %(confounds)s
 
@@ -305,18 +325,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
-            Signal for each element.
-            shape: (number of scans, number of elements)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
-
+        %(signals_transform_nifti)s
         """
         check_is_fitted(self)
 
@@ -340,8 +349,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     @fill_doc
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     def fit_transform(
         self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
     ):
@@ -363,8 +372,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        X_new : numpy array of shape [n_samples, n_features_new]
-            Transformed array.
+        %(signals_transform_nifti)s
 
         """
         # non-optimized default implementation; override when a better
@@ -398,8 +406,9 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
+    @fill_doc
     def inverse_transform(self, X):
-        """Transform the 2D data matrix back to an image in brain space.
+        """Transform the data matrix back to an image in brain space.
 
         This step only performs spatial unmasking,
         without inverting any additional processing performed by ``transform``,
@@ -407,23 +416,18 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : 1D/2D :obj:`numpy.ndarray`
-            Signal for each element in the mask.
-            If a 1D array is provided, then the shape should be
-            (number of elements,), and a 3D img will be returned.
-            If a 2D array is provided, then the shape should be
-            (number of scans, number of elements), and a 4D img will be
-            returned.
-            See :ref:`extracting_data`.
+        %(x_inv_transform)s
 
         Returns
         -------
-        img : Transformed image in brain space.
+        %(img_inv_transform_nifti)s
 
         """
         check_is_fitted(self)
 
-        self._check_signal_shape(X)
+        # do not run sklearn_check as they may cause some failure
+        # with some GLM inputs
+        X = self._check_array(X, sklearn_check=False)
 
         img = self._cache(unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
@@ -432,13 +436,39 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             img._header._structarr = np.array(img._header._structarr).copy()
         return img
 
-    def _check_signal_shape(self, signals: np.ndarray):
-        if signals.shape[-1] != self.n_elements_:
+    def _check_array(
+        self, signals: np.ndarray, sklearn_check: bool = True
+    ) -> np.ndarray:
+        """Check array to inverse transform.
+
+        Parameters
+        ----------
+        signals : :obj:`numpy.ndarray`
+
+        sklearn_check : :obj:`bool`
+            Run scikit learn check on input
+        """
+        signals = np.atleast_1d(signals)
+
+        if sklearn_check:
+            signals = check_array(signals, ensure_2d=False)
+
+        assert signals.ndim <= 2
+
+        expected_shape = (
+            (self.n_elements_,)
+            if signals.ndim == 1
+            else (signals.shape[0], self.n_elements_)
+        )
+
+        if signals.shape != expected_shape:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
-                f"Last dimension should be {self.n_elements_}.\n"
-                f"Got {signals.shape[-1]}."
+                f"Expected {expected_shape}.\n"
+                f"Got {signals.shape}."
             )
+
+        return signals
 
     def set_output(self, *, transform=None):
         """Set the output container when ``"transform"`` is called.
@@ -537,12 +567,11 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
-            Signal for each element.
-            shape: (number of scans, number of elements)
-
+        %(signals_transform_surface)s
         """
         check_is_fitted(self)
+
+        return_1D = isinstance(imgs, SurfaceImage) and len(imgs.shape) < 2
 
         if not isinstance(imgs, list):
             imgs = [imgs]
@@ -563,9 +592,10 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             self._reporting_data["images"] = imgs
 
         if confounds is None and not self.high_variance_confounds:
-            return self.transform_single_imgs(
+            signals = self.transform_single_imgs(
                 imgs, confounds=confounds, sample_mask=sample_mask
             )
+            return signals.squeeze() if return_1D else signals
 
         # Compute high variance confounds if requested
         all_confounds = []
@@ -580,9 +610,11 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             else:
                 all_confounds.append(confounds)
 
-        return self.transform_single_imgs(
+        signals = self.transform_single_imgs(
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
+
+        return signals.squeeze() if return_1D else signals
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
@@ -616,24 +648,36 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        signals: :obj:`numpy.ndarray`
-            Signal for each region as provided
-            in the mask, label or maps image.
-            The shape will vary depending on the masker type:
-            - SurfaceMasker: (n_timepoints, n_vertices_in_mask)
-            - SurfaceLabelsMasker: (n_timepoints, n_regions)
-            - SurfaceMapssMasker: (n_timepoints, n_maps)
+        %(signals_transform_surface)s
         """
         del y
         return self.fit(imgs).transform(imgs, confounds, sample_mask)
 
-    def _check_signal_shape(self, signals: np.ndarray):
+    def _check_array(
+        self, signals: np.ndarray, sklearn_check: bool = True
+    ) -> np.ndarray:
+        """Check array to inverse transform.
+
+        Parameters
+        ----------
+        signals : :obj:`numpy.ndarray`
+
+        sklearn_check : :obj:`bool`
+            Run scikit learn check on input
+        """
+        signals = np.atleast_2d(signals)
+
+        if sklearn_check:
+            signals = check_array(signals, ensure_2d=False)
+
         if signals.shape[-1] != self.n_elements_:
             raise ValueError(
                 "Input to 'inverse_transform' has wrong shape.\n"
                 f"Last dimension should be {self.n_elements_}.\n"
                 f"Got {signals.shape[-1]}."
             )
+
+        return signals
 
     def set_output(self, *, transform=None):
         """Set the output container when ``"transform"`` is called.
