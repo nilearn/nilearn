@@ -25,15 +25,12 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-
 from nilearn.surface.surface import (
     SurfaceImage,
+    at_least_2d,
     check_surf_img,
     get_data,
 )
-
-from nilearn.surface.surface import at_least_2d
-
 from nilearn.surface.utils import check_polymesh_equal
 
 
