@@ -382,4 +382,4 @@ class PlotlySurfaceBackend(BaseSurfaceBackend):
     def _adjust_plot_roi_params(self, params):
         cbar_tick_format = params.get("cbar_tick_format", "auto")
         if cbar_tick_format == "auto":
-            cbar_tick_format = "."
+            params["cbar_tick_format"] = "."

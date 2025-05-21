@@ -628,4 +628,4 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
 
         cbar_tick_format = params.get("cbar_tick_format", "auto")
         if cbar_tick_format == "auto":
-            cbar_tick_format = "%i"
+            params["cbar_tick_format"] = "%i"
