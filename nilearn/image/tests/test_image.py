@@ -1438,6 +1438,9 @@ def test_binarize_img(img_4d_rand_eye):
 
 def test_binarize_img_surface(surf_img_1d):
     """Test binarize_img on surface data."""
+    img = surf_img_1d
+    for k, v in img.data.parts.items():
+        img.data.parts[k] = v + 1
     # Test that all output values are 1.
     img1 = binarize_img(surf_img_1d)
 
