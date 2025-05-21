@@ -1341,6 +1341,26 @@ def test_math_img(
         assert result.shape == expected_result.shape
 
 
+def test_math_img_surface(surf_img_2d):
+    """Test math_img on surface data."""
+    img1 = surf_img_2d(1)
+    img2 = surf_img_2d(3)
+
+    tmp = {}
+    for part in img1.data.parts:
+        tmp[part] = np.mean(img1.data.parts[part], axis=-1) - np.mean(
+            img2.data.parts[part], axis=-1
+        )
+
+    expected_result = SurfaceImage(mesh=img1.mesh, data=tmp)
+
+    formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
+    result = math_img(formula, img1=img1, img2=img2)
+
+    assert isinstance(result, SurfaceImage)
+    assert_surface_image_equal(result, expected_result)
+
+
 def test_math_img_copy_default_header(
     img_4d_ones_eye_default_header, img_4d_ones_eye_tr2
 ):

@@ -1225,19 +1225,25 @@ def math_img(formula, copy_header_from=None, **imgs):
         should have the same number of dimensions. If None, the default
         :class:`~nibabel.nifti1.Nifti1Header` is used.
 
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
+
         .. versionadded:: 0.10.4
 
-    imgs : images (:class:`~nibabel.nifti1.Nifti1Image` or file names)
+    imgs : images (:class:`~nibabel.nifti1.Nifti1Image` or file names \
+           or :obj:`~nilearn.surface.SurfaceImage` object)
         Keyword arguments corresponding to the variables in the formula as
-        Nifti images. All input images should have the same geometry (shape,
-        affine).
+        images. All input images should have the same 'geometry' (shape,
+        and affine for volume data, and mesh for surface data).
 
     Returns
     -------
-    :class:`~nibabel.nifti1.Nifti1Image`
-        Result of the formula as a Nifti image. Note that the dimension of the
-        result image can be smaller than the input image. The affine is the
-        same as the input image.
+    :class:`~nibabel.nifti1.Nifti1Image` \
+    or :obj:`~nilearn.surface.SurfaceImage` object
+        Result of the formula as an image.
+        Note that the dimension of the result image
+        can be smaller than the input image.
+        For volume image input, the affine is the same as the input image.
+        For surface image input, the mesh is the same as the input image.
 
     See Also
     --------
@@ -1279,6 +1285,36 @@ def math_img(formula, copy_header_from=None, **imgs):
     in FSL.
 
     """
+    is_surface = all(isinstance(x, SurfaceImage) for x in imgs.values())
+
+    if is_surface:
+        first_img = next(iter(imgs.values()))
+        for image in imgs.values():
+            check_polymesh_equal(first_img.mesh, image.mesh)
+
+        # Computing input data as a dictionary of numpy arrays.
+        data_dict = {k: {} for k in first_img.data.parts}
+        for key, img in imgs.items():
+            for k, v in img.data.parts.items():
+                data_dict[k][key] = v
+
+        # Add a reference to numpy in the kwargs of eval
+        # so that numpy functionscan be called from there.
+        result = {}
+        try:
+            for k in data_dict:
+                data_dict[k]["np"] = np
+                result[k] = eval(formula, data_dict[k])
+        except Exception as exc:
+            exc.args = (
+                "Input formula couldn't be processed, "
+                f"you provided '{formula}',",
+                *exc.args,
+            )
+            raise
+
+        return new_img_like(first_img, result)
+
     try:
         niimgs = [check_niimg(image) for image in imgs.values()]
         check_same_fov(*niimgs, raise_error=True)
@@ -1655,15 +1691,19 @@ def concat_imgs(
     ensure_ndim : :obj:`int`, default=None
         Indicate the dimensionality of the expected niimg. An
         error is raised if the niimg is of another dimensionality.
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     auto_resample : :obj:`bool`, default=False
         Converts all images to the space of the first one.
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     %(verbose0)s
 
     %(memory)s
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     %(memory_level)s
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
     Returns
     -------
