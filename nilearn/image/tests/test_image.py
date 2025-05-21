@@ -1289,7 +1289,7 @@ def test_threshold_img_copied_header(img_4d_mni_tr2):
     assert thr_img.header["cal_min"] == 0
 
 
-def test_math_img_exceptions(affine_eye, img_4d_ones_eye):
+def test_math_img_exceptions(affine_eye, img_4d_ones_eye, surf_img_2d):
     img1 = img_4d_ones_eye
     img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), affine_eye)
     img3 = img_4d_ones_eye
@@ -1309,6 +1309,11 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye):
         AttributeError, match="Input formula couldn't be processed"
     ):
         math_img(bad_formula, img1=img1, img3=img3)
+    # Same but for surface data
+    with pytest.raises(
+        AttributeError, match="Input formula couldn't be processed"
+    ):
+        math_img(bad_formula, img1=surf_img_2d(2), img3=surf_img_2d(3))
 
     # Test copy_header_from parameter
     # Copying header from 4d image to a result that is 3d should raise a
