@@ -357,7 +357,7 @@ def nilearn_check_estimator(estimator):
         yield (clone(estimator), check_masker_generate_report)
         yield (clone(estimator), check_masker_generate_report_false)
         yield (clone(estimator), check_masker_inverse_transform)
-        yield (clone(estimator), check_masker_inverse_transform_resampling)
+        yield (clone(estimator), check_masker_transform_resampling)
         yield (clone(estimator), check_masker_mask_img)
         yield (clone(estimator), check_masker_mask_img_from_imgs)
         yield (clone(estimator), check_masker_no_mask_no_img)
@@ -1272,8 +1272,8 @@ def check_masker_inverse_transform(estimator) -> None:
         estimator.inverse_transform(signals)
 
 
-def check_masker_inverse_transform_resampling(estimator) -> None:
-    """Check output of inverse_transform.
+def check_masker_transform_resampling(estimator) -> None:
+    """Check transform / inverse_transform for maskers with resampling.
 
     Similar to check_masker_inverse_transform
     but for nifti masker that can do some resampling
@@ -1289,7 +1289,8 @@ def check_masker_inverse_transform_resampling(estimator) -> None:
     Check that running inverse_transform() before and after running transform()
     give same result.
 
-    Check that running transform on
+    Check that running transform on images with different fov
+    than those used at fit is possible.
     """
     if not hasattr(estimator, "resampling_target"):
         return None

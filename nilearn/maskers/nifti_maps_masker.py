@@ -434,37 +434,67 @@ class NiftiMapsMasker(BaseMasker):
 
         self.mask_img_ = self._load_mask(imgs)
 
-        if self.mask_img_ is not None:
-            # Check shapes and affines or resample.
-            if self.resampling_target is None:
-                check_same_fov(
-                    mask=self.mask_img_, maps=self.maps_img_, raise_error=True
-                )
+        if imgs is not None:
+            imgs_ = check_niimg(imgs)
 
-            elif self.resampling_target == "mask":
-                log("Resampling maps", self.verbose)
+        # Check shapes and affines for resample.
+        if self.resampling_target is None:
+            images = {"maps": self.maps_img_}
+            if self.mask_img_ is not None:
+                images["mask"] = self.mask_img_
+            if imgs is not None:
+                images["data"] = imgs_
+            check_same_fov(raise_error=True, **images)
 
+        ref_img = None
+        if self.resampling_target == "data" and imgs is not None:
+            ref_img = imgs_
+        elif self.resampling_target == "mask":
+            ref_img = self.mask_img_
+        elif self.resampling_target == "maps":
+            ref_img = self.maps_img_
+
+        if self.resampling_target == "mask":
+            log("Resampling maps", self.verbose)
+            # TODO switch to force_resample=True
+            # when bumping to version > 0.13
+            self.maps_img_ = resample_img(
+                self.maps_img_,
+                target_affine=ref_img.affine,
+                target_shape=ref_img.shape,
+                interpolation="continuous",
+                copy=True,
+                copy_header=True,
+                force_resample=False,
+            )
+
+        self._resampled_maps_img_ = self.maps_img_
+        self._resampled_mask_img_ = self.mask_img_
+        if ref_img is not None:
+            if self.resampling_target != "maps" and not check_same_fov(
+                ref_img, self.maps_img_
+            ):
+                log("Resampling maps...", self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
-                self.maps_img_ = resample_img(
+                self._resampled_maps_img_ = self._cache(resample_img)(
                     self.maps_img_,
-                    target_affine=self.mask_img_.affine,
-                    target_shape=self.mask_img_.shape,
                     interpolation="continuous",
-                    copy=True,
+                    target_shape=ref_img.shape[:3],
+                    target_affine=ref_img.affine,
                     copy_header=True,
                     force_resample=False,
                 )
-
-            elif self.resampling_target == "maps":
-                log("Resampling mask", self.verbose)
-
+            if self.mask_img_ is not None and not check_same_fov(
+                ref_img, self.mask_img_
+            ):
+                log("Resampling mask...", self.verbose)
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
-                self.mask_img_ = resample_img(
+                self._resampled_mask_img_ = resample_img(
                     self.mask_img_,
-                    target_affine=self.maps_img_.affine,
-                    target_shape=self.maps_img_.shape[:3],
+                    target_affine=ref_img.affine,
+                    target_shape=ref_img.shape[:3],
                     interpolation="nearest",
                     copy=True,
                     copy_header=True,
@@ -472,7 +502,7 @@ class NiftiMapsMasker(BaseMasker):
                 )
 
                 # Just check that the mask is valid
-                load_mask_img(self.mask_img_)
+                load_mask_img(self._resampled_mask_img_)
 
         if self.reports:
             self._reporting_data = {
@@ -482,19 +512,14 @@ class NiftiMapsMasker(BaseMasker):
                 "img": imgs,
             }
             if imgs is not None:
-                imgs, dims = compute_middle_image(imgs)
+                imgs, dims = compute_middle_image(imgs_)
                 self._reporting_data["img"] = imgs
                 self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
 
         # The number of elements is equal to the number of volumes
-        self.n_elements_ = self.maps_img_.shape[3]
-
-        if not hasattr(self, "_resampled_maps_img_"):
-            self._resampled_maps_img_ = self.maps_img_
-        if not hasattr(self, "_resampled_mask_img_"):
-            self._resampled_mask_img_ = self.mask_img_
+        self.n_elements_ = self._resampled_maps_img_.shape[3]
 
         return self
 
@@ -560,15 +585,15 @@ class NiftiMapsMasker(BaseMasker):
         resampled_mask_img = self._resampled_mask_img_
         resampled_maps_img = self._resampled_maps_img_
 
+        imgs_ = check_niimg(imgs, atleast_4d=True)
+
         if self.resampling_target is None:
-            imgs_ = check_niimg(imgs, atleast_4d=True)
-            images = {"maps": self.maps_img_, "data": imgs_}
-            if self.mask_img_ is not None:
-                images["mask"] = self.mask_img_
+            images = {"maps": resampled_maps_img, "data": imgs_}
+            if resampled_mask_img is not None:
+                images["mask"] = resampled_mask_img
             check_same_fov(raise_error=True, **images)
         else:
             if self.resampling_target == "data":
-                imgs_ = check_niimg(imgs, atleast_4d=True)
                 ref_img = imgs_
             elif self.resampling_target == "mask":
                 ref_img = self.mask_img_
@@ -576,7 +601,6 @@ class NiftiMapsMasker(BaseMasker):
                 ref_img = self.maps_img_
 
             if not check_same_fov(ref_img, resampled_maps_img):
-                # log("Resampling maps", self.verbose)
                 warnings.warn(
                     (
                         "Resampling maps at transform time...\n"
@@ -601,7 +625,6 @@ class NiftiMapsMasker(BaseMasker):
                 ref_img,
                 self.mask_img_,
             ):
-                # log("Resampling mask", self.verbose)
                 warnings.warn(
                     (
                         "Resampling mask at transform time...\n"
