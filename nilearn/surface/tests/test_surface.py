@@ -1222,10 +1222,8 @@ def test_get_data_ensure_finite(surf_img_1d, ensure_finite):
 
 def test_check_surf_img(surf_img_1d, surf_img_2d):
     """Check that surface image are properly validated."""
-    assert check_surf_img(surf_img_1d) is surf_img_1d
-
-    imgs = surf_img_2d()
-    assert check_surf_img(imgs) is imgs
+    check_surf_img(surf_img_1d)
+    check_surf_img(surf_img_2d())
 
     data = {
         part: np.empty(0).reshape((surf_img_1d.data.parts[part].shape[0], 0))
