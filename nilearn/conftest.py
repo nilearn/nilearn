@@ -595,9 +595,9 @@ def _make_surface_img(n_samples=1):
     for i, (key, val) in enumerate(mesh.parts.items()):
         data_shape = (val.n_vertices, n_samples)
         data_part = (
-            np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
+            np.arange(np.prod(data_shape)).reshape(data_shape[::-1])
         ) * 10**i
-        data[key] = data_part.T
+        data[key] = data_part.astype(float).T
     return SurfaceImage(mesh, data)
 
 
@@ -636,8 +636,7 @@ def _make_surface_mask(n_zeros=4):
     return SurfaceImage(mesh, data)
 
 
-@pytest.fixture
-def surf_mask_1d():
+def _surf_mask_1d():
     """Create a sample surface mask using the sample mesh.
     This will create a mask with n_zeros zeros (default is 4) and the
     rest ones.
@@ -649,6 +648,17 @@ def surf_mask_1d():
     mask.data.parts["right"] = np.squeeze(mask.data.parts["right"])
 
     return mask
+
+
+@pytest.fixture
+def surf_mask_1d():
+    """Create a sample surface mask using the sample mesh.
+    This will create a mask with n_zeros zeros (default is 4) and the
+    rest ones.
+
+    The shape of the data will be (n_vertices,).
+    """
+    return _surf_mask_1d()
 
 
 @pytest.fixture

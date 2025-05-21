@@ -1,8 +1,8 @@
 .. _data_manipulation:
 
-=====================================================================
+=============================================================
 Manipulating images: resampling, smoothing, masking, ROIs...
-=====================================================================
+=============================================================
 
 This chapter discusses how nilearn can be used to do simple operations on
 brain images.
@@ -11,7 +11,7 @@ brain images.
 .. _preprocessing_functions:
 
 Functions for data preparation and image transformation
-=========================================================
+=======================================================
 
 Nilearn comes with many simple functions for simple data preparation and
 transformation. Note that if you want to perform these operations while
@@ -106,7 +106,7 @@ of the transformation matrix (i.e., affine).
   :ref:`An example illustrating affine transforms on data and bounding boxes <sphx_glr_auto_examples_06_manipulating_images_plot_affine_transformation.py>`
 
 Accessing individual volumes in 4D images
-===========================================
+=========================================
 
 * :func:`nilearn.image.index_img`: selects one or more volumes in a 4D
   image.
@@ -139,7 +139,7 @@ Accessing individual volumes in 4D images
 .. _computing_and_applying_mask:
 
 Computing and applying spatial masks
-=====================================
+====================================
 
 Relevant functions:
 
@@ -157,7 +157,7 @@ Relevant functions:
 
 
 Extracting a brain mask
-------------------------
+-----------------------
 
 If we do not have a spatial mask of the target regions, a brain mask
 can be computed from the data:
@@ -183,7 +183,7 @@ can be computed from the data:
 .. _mask_4d_2_3d:
 
 Masking data: from 4D Nifti images to 2D data arrays
----------------------------------------------------------------
+----------------------------------------------------
 
 :term:`fMRI` data is usually represented as a 4D block of data: 3 spatial
 dimensions and one time dimension. In practice, we are usually
@@ -211,7 +211,7 @@ do it manually below:
 
 
 Image operations: creating a ROI mask manually
-===============================================
+==============================================
 
 A region of interest (ROI) mask can be computed for instance with a
 statistical test. This requires a chain of image

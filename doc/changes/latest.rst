@@ -119,4 +119,8 @@ Changes
 
 - :bdg-danger:`Deprecation` For version >=0.13.2 :func:`~nilearn.interfaces.bids.parse_bids_filename` will return a dictionary whose keys correspond to valid BIDS terms. (:gh:`5320` by `Rémi Gau`_).
 
+- :bdg-danger:`Deprecation` Using the transform method of nifti maskers on 3D images now returns 1D arrays. Similarly, using the transform method of surface maskers on 1D surface images now returns 1D arrays.  (:gh:`5381` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` Using the inverse_transform method of surface maskers on 1D arrays now returns surface images  (:gh:`5381` by `Rémi Gau`_).
+
 - :bdg-danger:`Deprecation` The default for ``slice_time_ref`` in :func:`~nilearn.glm.first_level.first_level_from_bids` was changed to ``None`` (:gh:`5382` by `Rémi Gau`_).

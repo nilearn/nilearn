@@ -74,7 +74,7 @@ def assert_surface_mesh_equal(mesh_1, mesh_2) -> None:
         raise MeshDimensionError("Meshes do not have the same faces.")
 
 
-def assert_surface_image_equal(img_1, img_2):
+def assert_surface_image_equal(img_1, img_2) -> None:
     """Check that 2 SurfaceImages are equal."""
     assert_polymesh_equal(img_1.mesh, img_2.mesh)
     assert_polydata_equal(img_1.data, img_2.data)

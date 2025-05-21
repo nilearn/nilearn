@@ -13,7 +13,11 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
-from numpy.testing import assert_array_equal, assert_raises
+from numpy.testing import (
+    assert_array_almost_equal,
+    assert_array_equal,
+    assert_raises,
+)
 from packaging.version import parse
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
@@ -35,12 +39,14 @@ from nilearn.conftest import (
     _img_4d_rand_eye,
     _img_4d_rand_eye_medium,
     _img_mask_mni,
+    _make_mesh,
     _make_surface_img,
     _make_surface_img_and_design,
     _make_surface_mask,
     _rng,
     _shape_3d_default,
     _shape_3d_large,
+    _surf_mask_1d,
 )
 from nilearn.maskers import (
     NiftiLabelsMasker,
@@ -407,6 +413,7 @@ def nilearn_check_estimator(estimator):
 
         if surf_img_input:
             yield (clone(estimator), check_surface_masker_fit_with_mask)
+            yield (clone(estimator), check_surface_masker_list_surf_images)
 
     if is_glm:
         yield (clone(estimator), check_glm_fit_returns_self)
@@ -1161,18 +1168,13 @@ def check_masker_smooth(estimator):
     """
     assert hasattr(estimator, "smoothing_fwhm")
 
+    n_sample = 1
     if accept_niimg_input(estimator):
-        n_sample = 1
         imgs = _img_3d_rand()
     else:
-        n_sample = 10
         imgs = _make_surface_img(n_sample)
 
     signal = estimator.fit_transform(imgs)
-
-    assert isinstance(signal, np.ndarray)
-    n_elements = estimator.n_elements_
-    assert signal.shape == (n_sample, n_elements)
 
     estimator.smoothing_fwhm = 3
     estimator.fit(imgs)
@@ -1190,43 +1192,115 @@ def check_masker_smooth(estimator):
 
         assert_array_equal(smoothed_signal, signal)
 
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (n_sample, estimator.n_elements_)
-
 
 def check_masker_inverse_transform(estimator):
-    """Check output of inverse transform.
+    """Check output of inverse_transform.
 
     For signal with 1 or more samples.
 
-    Check that the proper error is thrown,
-    if signal has the wrong shape.
+    For nifti maskers:
+        - 1D arrays -> 3D images
+        - 2D arrays -> 4D images
+
+    For surface maskers:
+        - 1D arrays -> 1D images
+        - 2D arrays -> 2D images
+
+    Check that running transform() is not required to run inverse_transform().
+
+    Check that running inverse_transform() before and after running transform()
+    give same result.
+
+    Check that the proper error is thrown, if signal has the wrong shape.
     """
     if accept_niimg_input(estimator):
-        n_sample = 1
-        imgs = _img_3d_rand()
-        mask_img = _img_3d_ones()
+        # using different shape for imgs, mask
+        # to force resampling
+        input_shape = (28, 29, 30)
+        imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
+
+        mask_img = Nifti1Image(np.ones(_shape_3d_large()), _affine_eye())
+
+        if isinstance(estimator, (NiftiLabelsMasker)):
+            # TODO BUG to fix
+            # https://github.com/nilearn/nilearn/issues/5395
+            tmp = estimator.labels_img.shape
+        elif isinstance(estimator, NiftiMapsMasker):
+            # TODO BUG to fix
+            # https://github.com/nilearn/nilearn/issues/5395
+            tmp = estimator.maps_img.shape[:3]
+        elif isinstance(estimator, NiftiSpheresMasker):
+            tmp = mask_img.shape
+        else:
+            tmp = input_shape
+
+        expected_shapes = [tmp, (*tmp, 1), (*tmp, 10)]
+
     else:
-        n_sample = 10
-        imgs = _make_surface_img(n_sample)
+        imgs = _make_surface_img(1)
+
         mask_img = _make_surface_mask()
 
-    if isinstance(estimator, NiftiSpheresMasker):
-        estimator.mask_img = mask_img
+        expected_shapes = [
+            (imgs.shape[0],),
+            (imgs.shape[0], 1),
+            (imgs.shape[0], 10),
+        ]
 
-    estimator.fit(imgs)
+    for i, expected_shape in enumerate(
+        expected_shapes,
+    ):
+        estimator = clone(estimator)
 
-    signals = _rng().random((1, estimator.n_elements_))
-    imgs = estimator.inverse_transform(signals)
+        if hasattr(estimator, "resampling_target"):
+            # TODO
+            # check label and maps masker output when resampling
+            # to labels or maps
+            estimator.resampling_target = "data"
 
-    signals = _rng().random((10, estimator.n_elements_))
-    imgs = estimator.inverse_transform(signals)
+        if not isinstance(
+            estimator, (NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker)
+        ):
+            # TODO check for NiftiLabelsMasker, NiftiMapsMasker without mask
+            estimator.mask_img = mask_img
+
+        estimator.fit(imgs)
+
+        if i == 0:
+            signals = _rng().random((estimator.n_elements_,))
+        elif i == 1:
+            signals = _rng().random((1, estimator.n_elements_))
+        elif i == 2:
+            signals = _rng().random((10, estimator.n_elements_))
+
+        new_imgs = estimator.inverse_transform(signals)
+
+        if accept_niimg_input(estimator):
+            actual_shape = new_imgs.shape
+            assert_array_almost_equal(imgs.affine, new_imgs.affine)
+        else:
+            actual_shape = new_imgs.data.shape
+        assert actual_shape == expected_shape
+
+        estimator.transform(imgs)
+
+        new_imgs_2 = estimator.inverse_transform(signals)
+
+        if accept_niimg_input(estimator):
+            if isinstance(estimator, (NiftiLabelsMasker)):
+                # BUG to fix
+                # https://github.com/nilearn/nilearn/issues/5395
+                assert not check_imgs_equal(new_imgs, new_imgs_2)
+            else:
+                assert check_imgs_equal(new_imgs, new_imgs_2)
+        else:
+            assert_surface_image_equal(new_imgs, new_imgs_2)
 
     signals = _rng().random((1, estimator.n_elements_ + 1))
     with pytest.raises(
         ValueError, match="Input to 'inverse_transform' has wrong shape."
     ):
-        imgs = estimator.inverse_transform(signals)
+        estimator.inverse_transform(signals)
 
 
 def check_masker_fit_score_takes_y(estimator):
@@ -1259,11 +1333,29 @@ def check_surface_masker_fit_with_mask(estimator):
 
     Check with 2D and 1D images.
 
+    1D image -> 1D array
+    2D image -> 2D array
+
     Also check 'shape' errors between images to fit and mask.
     """
     mask_img = _make_surface_mask()
 
     # 1D image
+    mesh = _make_mesh()
+    data = {}
+    for k, v in mesh.parts.items():
+        data_shape = (v.n_vertices,)
+        data[k] = _rng().random(data_shape)
+    imgs = SurfaceImage(mesh, data)
+    assert imgs.shape == (9,)
+    estimator.fit(imgs)
+
+    signal = estimator.transform(imgs)
+
+    assert isinstance(signal, np.ndarray)
+    assert signal.shape == (estimator.n_elements_,)
+
+    # 2D image with 1 sample
     imgs = _make_surface_img(1)
     estimator.mask_img = mask_img
     estimator.fit(imgs)
@@ -1273,7 +1365,7 @@ def check_surface_masker_fit_with_mask(estimator):
     assert isinstance(signal, np.ndarray)
     assert signal.shape == (1, estimator.n_elements_)
 
-    # 2D image
+    # 2D image with several samples
     imgs = _make_surface_img(5)
     estimator = clone(estimator)
     estimator.mask_img = mask_img
@@ -1306,44 +1398,88 @@ def check_surface_masker_fit_with_mask(estimator):
         estimator.transform(_drop_surf_img_part(imgs))
 
 
+def check_surface_masker_list_surf_images(estimator):
+    """Test transform / inverse_transform on list of surface images.
+
+    Check that 1D or 2D mask work.
+
+    transform
+    - list of 1D -> 2D array
+    - list of 2D -> 2D array
+    """
+    n_sample = 5
+    images_to_transform = [
+        [_make_surface_img()] * 5,
+        [_make_surface_img(2), _make_surface_img(3)],
+    ]
+    for imgs in images_to_transform:
+        for mask_img in [None, _surf_mask_1d(), _make_surface_mask()]:
+            estimator.mask_img = mask_img
+
+            estimator = estimator.fit(imgs)
+
+            signals = estimator.transform(imgs)
+
+            assert signals.shape == (n_sample, estimator.n_elements_)
+
+            img = estimator.inverse_transform(signals)
+
+            assert img.shape == (_make_surface_img().mesh.n_vertices, n_sample)
+
+
 # ------------------ NIFTI MASKER CHECKS ------------------
 
 
 def check_nifti_masker_fit_transform(estimator):
     """Run several checks on maskers.
 
-    - can fit 3D image
+    - can fit 3D / 4D image
     - fitted maskers can transform:
       - 3D image
       - list of 3D images with same affine
-    - can fit transform 3D image
+    - array from transformed 3D images should have 1D
+    - array from transformed 4D images should have 2D
     """
     estimator.fit(_img_3d_rand())
 
-    for imgs in [
-        _img_3d_rand(),
-        [_img_3d_rand(), _img_3d_rand()],
-        _img_4d_rand_eye(),
-    ]:
-        signal = estimator.transform(imgs)
-
-        if is_multimasker(estimator) and isinstance(imgs, list):
-            signal = signal[0]
-
-        assert isinstance(signal, np.ndarray)
-        assert signal.shape[1] == estimator.n_elements_
-
-    signal = estimator.fit_transform(_img_3d_rand())
+    # 3D images
+    signal = estimator.transform(_img_3d_rand())
 
     assert isinstance(signal, np.ndarray)
-    assert signal.shape == (1, estimator.n_elements_)
+    assert signal.shape == (estimator.n_elements_,)
+
+    signal_2 = estimator.fit_transform(_img_3d_rand())
+
+    assert_array_equal(signal, signal_2)
+
+    # list of 3D images
+    signal = estimator.transform([_img_3d_rand(), _img_3d_rand()])
+
+    if is_multimasker(estimator):
+        assert isinstance(signal, list)
+        assert len(signal) == 2
+        for x in signal:
+            assert isinstance(x, np.ndarray)
+            assert x.ndim == 1
+            assert x.shape == (estimator.n_elements_,)
+    else:
+        assert isinstance(signal, np.ndarray)
+        assert signal.ndim == 2
+        assert signal.shape[1] == estimator.n_elements_
+
+    # 4D images
+    signal = estimator.transform(_img_4d_rand_eye())
+
+    assert isinstance(signal, np.ndarray)
+    assert signal.ndim == 2
+    assert signal.shape == (_img_4d_rand_eye().shape[3], estimator.n_elements_)
 
 
 def check_nifti_masker_fit_transform_5d(estimator):
     """Run checks on nifti maskers for transforming 5D images.
 
     - multi masker should be fine
-      and return a list of numpy arrays
+      and return a list of 2D numpy arrays
     - non multimasker should fail
     """
     n_subject = 3
@@ -1375,12 +1511,14 @@ def check_nifti_masker_fit_transform_5d(estimator):
         assert isinstance(signal, list)
         assert all(isinstance(x, np.ndarray) for x in signal)
         assert len(signal) == n_subject
+        assert all(x.ndim == 2 for x in signal)
 
         signal = estimator.fit_transform(input_5d_img)
 
         assert isinstance(signal, list)
         assert all(isinstance(x, np.ndarray) for x in signal)
         assert len(signal) == n_subject
+        assert all(x.ndim == 2 for x in signal)
 
 
 def check_nifti_masker_clean_error(estimator):
