@@ -1089,11 +1089,11 @@ def test_plot_img_on_surf_with_engine_kwarg(img_3d_mni):
 
 def test_plot_img_on_surf_title(matplotlib_pyplot, img_3d_mni):
     title = "Title"
-    fig, _ = plot_img_on_surf(
+    fig = plot_img_on_surf(
         img_3d_mni, hemispheres=["right"], views=["lateral"]
     )
     assert fig._suptitle is None, "Created title without title kwarg."
-    fig, _ = plot_img_on_surf(
+    fig = plot_img_on_surf(
         img_3d_mni, hemispheres=["right"], views=["lateral"], title=title
     )
     assert fig._suptitle is not None, "Title not created."
