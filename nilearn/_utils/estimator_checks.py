@@ -1301,6 +1301,8 @@ def check_masker_transform_resampling(estimator) -> None:
     input_shape = (28, 29, 30, n_sample)
     imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
 
+    imgs2 = Nifti1Image(_rng().random((31, 32, 33)), _affine_eye())
+
     mask_img = Nifti1Image(np.ones(_shape_3d_large()), _affine_eye())
 
     for resampling_target in ["data", "labels"]:
@@ -1331,6 +1333,8 @@ def check_masker_transform_resampling(estimator) -> None:
             new_imgs_2 = estimator.inverse_transform(signals)
 
             assert check_imgs_equal(new_imgs, new_imgs_2)
+
+            estimator.transform(imgs2)
 
 
 def check_masker_fit_score_takes_y(estimator):

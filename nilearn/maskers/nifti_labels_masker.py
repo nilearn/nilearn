@@ -564,15 +564,14 @@ class NiftiLabelsMasker(BaseMasker):
             self._resampled_labels_img_ = self._resample_labels(imgs_)
 
         self.mask_img_ = self._load_mask(imgs)
-        self._resampled_mask_img = self.mask_img_
         if self.mask_img_ is not None:
             if self.resampling_target == "data":
                 if imgs is not None and not check_same_fov(
                     imgs_,
-                    self._resampled_mask_img,
+                    self.mask_img_,
                 ):
                     logger.log("Resampling mask", self.verbose)
-                    self._resampled_mask_img = self._cache(
+                    self.mask_img_ = self._cache(
                         resample_img, func_memory_level=2
                     )(
                         self.mask_img_,
@@ -622,7 +621,7 @@ class NiftiLabelsMasker(BaseMasker):
                 # Just check that the mask is valid
                 load_mask_img(self.mask_img_)
 
-                self._resampled_mask_img = self.mask_img_
+                self.mask_img_ = self.mask_img_
 
             else:
                 raise ValueError(
@@ -633,7 +632,7 @@ class NiftiLabelsMasker(BaseMasker):
         if self.reports:
             self._reporting_data = {
                 "labels_image": self._resampled_labels_img_,
-                "mask": self._resampled_mask_img,
+                "mask": self.mask_img_,
                 "dim": None,
                 "img": imgs,
             }
@@ -764,7 +763,7 @@ class NiftiLabelsMasker(BaseMasker):
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
         resampled_labels_img = self._resampled_labels_img_
-        resampled_mask_img = self._resampled_mask_img
+        mask_img_ = self.mask_img_
         if self.resampling_target == "data":
             imgs_ = check_niimg(imgs, atleast_4d=True)
             if not check_same_fov(
@@ -782,10 +781,10 @@ class NiftiLabelsMasker(BaseMasker):
                 )
                 resampled_labels_img = self._resample_labels(imgs_)
 
-            if (self.mask_img_ is not None) and (
+            if (mask_img_ is not None) and (
                 not check_same_fov(
                     imgs_,
-                    resampled_mask_img,
+                    mask_img_,
                 )
             ):
                 warnings.warn(
@@ -797,10 +796,8 @@ class NiftiLabelsMasker(BaseMasker):
                     ),
                     stacklevel=find_stack_level(),
                 )
-                resampled_mask_img = self._cache(
-                    resample_img, func_memory_level=2
-                )(
-                    self.mask_img_,
+                mask_img_ = self._cache(resample_img, func_memory_level=2)(
+                    mask_img_,
                     interpolation="nearest",
                     target_shape=imgs_.shape[:3],
                     target_affine=imgs_.affine,
@@ -841,7 +838,7 @@ class NiftiLabelsMasker(BaseMasker):
                 self.background_label,
                 self.strategy,
                 self.keep_masked_labels,
-                resampled_mask_img,
+                mask_img_,
             ),
             # Pre-processing
             params,
@@ -927,6 +924,6 @@ class NiftiLabelsMasker(BaseMasker):
         return signal_extraction.signals_to_img_labels(
             signals,
             self._resampled_labels_img_,
-            self._resampled_mask_img,
+            self.mask_img_,
             background_label=self.background_label,
         )
