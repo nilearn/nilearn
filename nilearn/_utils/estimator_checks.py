@@ -152,7 +152,7 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_n_features_in_after_fitting": "not applicable",
     # the following are skipped because there is nilearn specific replacement
     "check_estimators_dtypes": (
-        "replaced by check_masker_dtypes andcheck_glm_dtypes"
+        "replaced by check_masker_dtypes and check_glm_dtypes"
     ),
     "check_estimators_fit_returns_self": (
         "replaced by check_nifti_masker_fit_returns_self "
@@ -165,12 +165,12 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_transformer_data_not_an_array": (
         "replaced by check_masker_transformer"
     ),
-    "check_transformer_general": ("replaced by check_masker_transformer"),
+    "check_transformer_general": "replaced by check_masker_transformer",
     "check_transformer_preserve_dtypes": (
         "replaced by check_masker_transformer"
     ),
-    "check_dict_unchanged": "check_masker_dict_unchanged",
-    "check_fit_score_takes_y": {"replaced by check_masker_fit_score_takes_y"},
+    "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
+    "check_fit_score_takes_y": "replaced by check_masker_fit_score_takes_y",
     # Those are skipped for now they fail
     # for unknown reasons
     #  most often because sklearn inputs expect a numpy array
@@ -254,19 +254,11 @@ def check_estimator(
         estimator = [estimator]
 
     for est in estimator:
+        expected_failed_checks = return_expected_failed_checks(
+            est, expected_failed_checks=expected_failed_checks
+        )
         # TODO simplify when dropping sklearn 1.5
         if SKLEARN_GT_1_5:
-            tags = est.__sklearn_tags__()
-
-            niimg_input = getattr(tags.input_tags, "niimg_like", False)
-            surf_img = getattr(tags.input_tags, "surf_img", False)
-
-            if niimg_input or surf_img:
-                if expected_failed_checks is None:
-                    expected_failed_checks = CHECKS_TO_SKIP_IF_IMG_INPUT
-                else:
-                    expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
-
             for e, check in sklearn_check_generator(
                 estimator=est,
                 expected_failed_checks=expected_failed_checks,
@@ -289,17 +281,6 @@ def check_estimator(
             for e, check in sklearn_check_estimator(
                 estimator=est, generate_only=True
             ):
-                tags = est._more_tags()
-
-                niimg_input = "niimg_like" in tags["X_types"]
-                surf_img = "surf_img" in tags["X_types"]
-
-                if niimg_input or surf_img:
-                    if expected_failed_checks is None:
-                        expected_failed_checks = CHECKS_TO_SKIP_IF_IMG_INPUT
-                    else:
-                        expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
-
                 if (
                     isinstance(expected_failed_checks, dict)
                     and check.func.__name__ in expected_failed_checks
@@ -310,6 +291,33 @@ def check_estimator(
                     yield e, check, check.func.__name__
                 if not valid and check.func.__name__ not in valid_checks:
                     yield e, check, check.func.__name__
+
+
+def return_expected_failed_checks(estimator, expected_failed_checks=None):
+    if SKLEARN_GT_1_5:
+        tags = estimator.__sklearn_tags__()
+
+        niimg_input = getattr(tags.input_tags, "niimg_like", False)
+        surf_img = getattr(tags.input_tags, "surf_img", False)
+
+        if niimg_input or surf_img:
+            if expected_failed_checks is None:
+                expected_failed_checks = CHECKS_TO_SKIP_IF_IMG_INPUT
+            else:
+                expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
+    else:
+        tags = estimator._more_tags()
+
+        niimg_input = "niimg_like" in tags["X_types"]
+        surf_img = "surf_img" in tags["X_types"]
+
+        if niimg_input or surf_img:
+            if expected_failed_checks is None:
+                expected_failed_checks = CHECKS_TO_SKIP_IF_IMG_INPUT
+            else:
+                expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
+
+    return expected_failed_checks
 
 
 def nilearn_check_estimator(estimator):

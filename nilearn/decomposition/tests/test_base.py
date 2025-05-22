@@ -43,7 +43,7 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     nilearn_check_estimator(estimator=_BaseDecomposition()),
 )
-def test_nilearn_check_estimator(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
     check(estimator)
 

@@ -91,7 +91,7 @@ ESTIMATORS_TO_CHECK = [
     "estimator, check, name",
     check_estimator(estimator=ESTIMATORS_TO_CHECK),
 )
-def test_check_estimator_decoder_regressor(estimator, check, name):
+def test_check_estimator(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -101,7 +101,7 @@ def test_check_estimator_decoder_regressor(estimator, check, name):
     "estimator, check, name",
     check_estimator(estimator=ESTIMATORS_TO_CHECK, valid=False),
 )
-def test_check_estimator_invalid_decoder_regressor(estimator, check, name):
+def test_check_estimator_invalid(estimator, check, name):
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -110,7 +110,7 @@ def test_check_estimator_invalid_decoder_regressor(estimator, check, name):
     "estimator, check, name",
     nilearn_check_estimator(estimator=ESTIMATORS_TO_CHECK),
 )
-def test_nilearn_check_estimator(estimator, check, name):
+def test_check_estimator_nilearn(estimator, check, name):
     """Check compliance with nilearn estimators rules."""
     check(estimator)
 

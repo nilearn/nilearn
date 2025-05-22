@@ -62,7 +62,7 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
         estimator=NiftiMapsMasker(maps_img=_img_maps(n_regions=2))
     ),
 )
-def test_nilearn_check_estimator(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
