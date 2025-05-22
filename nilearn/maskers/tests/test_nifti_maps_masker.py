@@ -299,10 +299,8 @@ def test_nifti_maps_masker_resampling_to_maps(
     assert_array_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
 
-    assert_array_equal(
-        masker._resampled_mask_img_.affine, masker.maps_img_.affine
-    )
-    assert masker._resampled_mask_img_.shape == masker.maps_img_.shape[:3]
+    assert_array_equal(masker.mask_img_.affine, masker.maps_img_.affine)
+    assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
     assert signals.shape == (length, n_regions)
 
@@ -335,10 +333,8 @@ def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
 
-    assert_almost_equal(
-        masker._resampled_mask_img_.affine, masker.maps_img_.affine
-    )
-    assert masker._resampled_mask_img_.shape == masker.maps_img_.shape[:3]
+    assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
+    assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
     assert signals.shape == (length, n_regions)
     # Some regions have been clipped. Resulting signal must be zero

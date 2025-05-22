@@ -760,8 +760,22 @@ class NiftiLabelsMasker(BaseMasker):
         %(signals_transform_nifti)s
 
         """
-        # We handle the resampling of labels separately because the affine of
-        # the labels image should not impact the extraction of the signal.
+        # imgs passed at transform time may be different
+        # from those passed at fit time.
+        # So it may be needed to resample mask and labels,
+        # if 'data' is the resampling target.
+        # We handle the resampling of labels and mask separately because the
+        # affine of the labels and mask images should not impact the extraction
+        # of the signal.
+        #
+        # Any resampling of the mask or labels is not 'kept' after transform,
+        # to avoid modifying the masker after fit.
+        #
+        # If the resampling target is different,
+        # then resampling was already done at fit time
+        # (e.g resampling of the mask image to the labels image
+        # if the target was 'labels'),
+        # or resampling of the data will be done at extract time.
         resampled_labels_img = self._resampled_labels_img_
         mask_img_ = self.mask_img_
         if self.resampling_target == "data":
