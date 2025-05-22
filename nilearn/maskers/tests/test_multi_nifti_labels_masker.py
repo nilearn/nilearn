@@ -303,7 +303,7 @@ def test_multi_nifti_labels_masker_atlas_data_different_fov(
 
     masker.fit_transform(fmri22_img)
 
-    assert_array_equal(masker._resampled_labels_img_.affine, affine2)
+    assert_array_equal(masker.labels_img_.affine, affine2)
 
 
 def test_multi_nifti_labels_masker_resampling_target():
@@ -338,7 +338,7 @@ def test_multi_nifti_labels_masker_resampling_target():
         else:
             signals = masker.fit_transform(fmri_img)
 
-        resampled_labels_img = masker._resampled_labels_img_
+        resampled_labels_img = masker.labels_img_
         n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
         assert n_resampled_labels - 1 == signals.shape[1]
 

@@ -42,13 +42,13 @@ class _ExtractionFunctor:
 
     def __init__(
         self,
-        _resampled_labels_img_,
+        labels_img,
         background_label,
         strategy,
         keep_masked_labels,
         mask_img,
     ):
-        self._resampled_labels_img_ = _resampled_labels_img_
+        self.labels_img = labels_img
         self.background_label = background_label
         self.strategy = strategy
         self.keep_masked_labels = keep_masked_labels
@@ -59,7 +59,7 @@ class _ExtractionFunctor:
 
         signals, labels, masked_labels_img = img_to_signals_labels(
             imgs,
-            self._resampled_labels_img_,
+            self.labels_img,
             background_label=self.background_label,
             strategy=self.strategy,
             keep_masked_labels=self.keep_masked_labels,
@@ -336,9 +336,7 @@ class NiftiLabelsMasker(BaseMasker):
         Also return the removed region ids and names.
         if visualize is True, plot the masked atlas.
         """
-        labels_data = safe_get_data(
-            self._resampled_labels_img_, ensure_finite=True
-        )
+        labels_data = safe_get_data(self.labels_img_, ensure_finite=True)
         labels_data = labels_data.copy()
         mask_data = safe_get_data(self.mask_img_, ensure_finite=True)
         mask_data = mask_data.copy()
@@ -347,7 +345,7 @@ class NiftiLabelsMasker(BaseMasker):
         labels_data[np.logical_not(mask_data)] = self.background_label
         region_ids_after_masking = np.unique(labels_data).tolist()
         masked_atlas = Nifti1Image(
-            labels_data.astype(np.int8), self._resampled_labels_img_.affine
+            labels_data.astype(np.int8), self.labels_img_.affine
         )
         removed_region_ids = [
             region_id
@@ -552,16 +550,15 @@ class NiftiLabelsMasker(BaseMasker):
         if imgs is not None:
             imgs_ = check_niimg(imgs, atleast_4d=True)
 
-        self._resampled_labels_img_ = self.labels_img_
         if (
             self.resampling_target == "data"
             and imgs is not None
             and not check_same_fov(
                 imgs_,
-                self._resampled_labels_img_,
+                self.labels_img_,
             )
         ):
-            self._resampled_labels_img_ = self._resample_labels(imgs_)
+            self.labels_img_ = self._resample_labels(imgs_)
 
         self.mask_img_ = self._load_mask(imgs)
         if self.mask_img_ is not None:
@@ -631,7 +628,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         if self.reports:
             self._reporting_data = {
-                "labels_image": self._resampled_labels_img_,
+                "labels_image": self.labels_img_,
                 "mask": self.mask_img_,
                 "dim": None,
                 "img": imgs,
@@ -776,13 +773,13 @@ class NiftiLabelsMasker(BaseMasker):
         # (e.g resampling of the mask image to the labels image
         # if the target was 'labels'),
         # or resampling of the data will be done at extract time.
-        resampled_labels_img = self._resampled_labels_img_
+        labels_img_ = self.labels_img_
         mask_img_ = self.mask_img_
         if self.resampling_target == "data":
             imgs_ = check_niimg(imgs, atleast_4d=True)
             if not check_same_fov(
                 imgs_,
-                resampled_labels_img,
+                labels_img_,
             ):
                 warnings.warn(
                     (
@@ -793,7 +790,7 @@ class NiftiLabelsMasker(BaseMasker):
                     ),
                     stacklevel=find_stack_level(),
                 )
-                resampled_labels_img = self._resample_labels(imgs_)
+                labels_img_ = self._resample_labels(imgs_)
 
             if (mask_img_ is not None) and (
                 not check_same_fov(
@@ -826,8 +823,8 @@ class NiftiLabelsMasker(BaseMasker):
         target_shape = None
         target_affine = None
         if self.resampling_target == "labels":
-            target_shape = resampled_labels_img.shape[:3]
-            target_affine = resampled_labels_img.affine
+            target_shape = labels_img_.shape[:3]
+            target_affine = labels_img_.affine
 
         params = get_params(
             NiftiLabelsMasker,
@@ -848,7 +845,7 @@ class NiftiLabelsMasker(BaseMasker):
             # Images
             imgs,
             _ExtractionFunctor(
-                resampled_labels_img,
+                labels_img_,
                 self.background_label,
                 self.strategy,
                 self.keep_masked_labels,
@@ -882,9 +879,9 @@ class NiftiLabelsMasker(BaseMasker):
             self.verbose,
         )
         labels_before_resampling = set(
-            np.unique(safe_get_data(self._resampled_labels_img_))
+            np.unique(safe_get_data(self.labels_img_))
         )
-        resampled_labels_img = self._cache(resample_img, func_memory_level=2)(
+        labels_img_ = self._cache(resample_img, func_memory_level=2)(
             self.labels_img_,
             interpolation="nearest",
             target_shape=imgs_.shape[:3],
@@ -892,9 +889,7 @@ class NiftiLabelsMasker(BaseMasker):
             copy_header=True,
             force_resample=False,
         )
-        labels_after_resampling = set(
-            np.unique(safe_get_data(resampled_labels_img))
-        )
+        labels_after_resampling = set(np.unique(safe_get_data(labels_img_)))
         if labels_diff := labels_before_resampling.difference(
             labels_after_resampling
         ):
@@ -907,7 +902,7 @@ class NiftiLabelsMasker(BaseMasker):
                 stacklevel=find_stack_level(),
             )
 
-        return resampled_labels_img
+        return labels_img_
 
     @fill_doc
     def inverse_transform(self, signals):
@@ -937,7 +932,7 @@ class NiftiLabelsMasker(BaseMasker):
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_labels(
             signals,
-            self._resampled_labels_img_,
+            self.labels_img_,
             self.mask_img_,
             background_label=self.background_label,
         )
