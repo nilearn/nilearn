@@ -18,14 +18,13 @@ from numpy.testing import (
     assert_array_equal,
     assert_raises,
 )
-from packaging.version import parse
-from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.niimg_conversions import check_imgs_equal
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
     _affine_eye,
@@ -64,10 +63,8 @@ from nilearn.surface.utils import (
     assert_surface_image_equal,
 )
 
-SKLEARN_GT_1_5 = parse(sklearn_version).release[1] >= 6
-
 # TODO simplify when dropping sklearn 1.5,
-if SKLEARN_GT_1_5:
+if not SKLEARN_LT_1_6:
     from sklearn.utils.estimator_checks import _check_name
     from sklearn.utils.estimator_checks import (
         estimator_checks_generator as sklearn_check_generator,
@@ -125,7 +122,7 @@ VALID_CHECKS = [
     "check_transformers_unfitted",
 ]
 
-if SKLEARN_GT_1_5:
+if not SKLEARN_LT_1_6:
     VALID_CHECKS.append("check_valid_tag_types")
 else:
     VALID_CHECKS.append("check_estimator_get_tags_default_keys")
@@ -134,7 +131,7 @@ else:
 # https://github.com/nilearn/nilearn/issues/4538
 
 
-CHECKS_TO_SKIP_IF_IMG_INPUT = {
+CHECKS_TO_SKIP_IF_IMG_INPUT: dict[str, str] = {
     # The following do not apply for nilearn maskers
     # as they do not take numpy arrays as input.
     "check_complex_data": "not applicable for image input",
@@ -170,7 +167,7 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
         "replaced by check_masker_transformer"
     ),
     "check_dict_unchanged": "check_masker_dict_unchanged",
-    "check_fit_score_takes_y": {"replaced by check_masker_fit_score_takes_y"},
+    "check_fit_score_takes_y": "replaced by check_masker_fit_score_takes_y",
     # Those are skipped for now they fail
     # for unknown reasons
     #  most often because sklearn inputs expect a numpy array
@@ -255,7 +252,7 @@ def check_estimator(
 
     for est in estimator:
         # TODO simplify when dropping sklearn 1.5
-        if SKLEARN_GT_1_5:
+        if not SKLEARN_LT_1_6:
             tags = est.__sklearn_tags__()
 
             niimg_input = getattr(tags.input_tags, "niimg_like", False)
@@ -322,7 +319,7 @@ def nilearn_check_estimator(estimator):
     is_glm = False
     surf_img_input = False
 
-    if SKLEARN_GT_1_5:
+    if not SKLEARN_LT_1_6:
         tags = estimator.__sklearn_tags__()
     else:  # pragma: no cover
         tags = estimator._more_tags()

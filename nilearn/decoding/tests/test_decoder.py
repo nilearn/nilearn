@@ -46,6 +46,7 @@ from sklearn.model_selection import (
 )
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.param_validation import (
@@ -74,6 +75,16 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 N_SAMPLES = 80
 
 ESTIMATOR_REGRESSION = ("ridge", "svr")
+
+
+@pytest.mark.skipif(not SKLEARN_LT_1_6, reason="only run with sklearn>=1.6")
+@parametrize_with_checks(
+    estimators=ESTIMATORS_TO_CHECK,
+    expected_failed_checks=return_expected_failed_checks,
+)
+def test_check_estimator_sklearn(estimator, check):
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 @pytest.mark.parametrize(
