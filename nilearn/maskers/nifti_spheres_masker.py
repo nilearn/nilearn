@@ -7,7 +7,6 @@ import contextlib
 import warnings
 
 import numpy as np
-from joblib import Memory
 from scipy import sparse
 from sklearn import neighbors
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -567,9 +566,6 @@ class NiftiSpheresMasker(BaseMasker):
         )
 
         self.mask_img_ = self._load_mask(imgs)
-
-        if self.memory is None:
-            self.memory = Memory(location=None)
 
         if imgs is not None:
             if self.reports:

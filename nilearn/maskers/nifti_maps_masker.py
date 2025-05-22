@@ -3,7 +3,6 @@
 import warnings
 
 import numpy as np
-from joblib import Memory
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import repr_niimgs
@@ -405,9 +404,6 @@ class NiftiMapsMasker(BaseMasker):
             )
 
         self = sanitize_cleaning_parameters(self)
-
-        if self.memory is None:
-            self.memory = Memory(location=None)
 
         self._report_content = {
             "description": (

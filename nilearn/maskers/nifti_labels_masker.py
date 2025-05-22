@@ -7,7 +7,6 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
-from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -518,9 +517,6 @@ class NiftiLabelsMasker(BaseMasker):
             )
 
         self = sanitize_cleaning_parameters(self)
-
-        if self.memory is None:
-            self.memory = Memory(location=None)
 
         self._report_content = {
             "description": (
