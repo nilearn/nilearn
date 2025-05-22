@@ -430,10 +430,10 @@ class NiftiMapsMasker(BaseMasker):
             ensure_finite=True,
         )
 
-        self.mask_img_ = self._load_mask(imgs)
-
         if imgs is not None:
             imgs_ = check_niimg(imgs)
+
+        self.mask_img_ = self._load_mask(imgs)
 
         # Check shapes and affines for resample.
         if self.resampling_target is None:
@@ -451,20 +451,6 @@ class NiftiMapsMasker(BaseMasker):
             ref_img = self.mask_img_
         elif self.resampling_target == "maps":
             ref_img = self.maps_img_
-
-        if self.resampling_target == "mask":
-            log("Resampling maps", self.verbose)
-            # TODO switch to force_resample=True
-            # when bumping to version > 0.13
-            self.maps_img_ = resample_img(
-                self.maps_img_,
-                target_affine=ref_img.affine,
-                target_shape=ref_img.shape,
-                interpolation="continuous",
-                copy=True,
-                copy_header=True,
-                force_resample=False,
-            )
 
         if ref_img is not None:
             if self.resampling_target != "maps" and not check_same_fov(
