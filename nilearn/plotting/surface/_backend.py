@@ -24,16 +24,19 @@ import pandas as pd
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
+from nilearn.image import get_data
 from nilearn.plotting._utils import create_colormap_from_lut
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
     check_surface_plotting_inputs,
 )
-from nilearn.surface import load_surf_data, load_surf_mesh
+from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
 from nilearn.surface.surface import (
     FREESURFER_DATA_EXTENSIONS,
     check_extensions,
+    check_mesh_is_fsaverage,
 )
 
 # subset of data format extensions supported
@@ -101,6 +104,9 @@ class BaseSurfaceBackend:
 
     def load_surf_data(self, surf_map):
         return load_surf_data(surf_map)
+
+    def get_image_data(self, img):
+        return get_data(img)
 
     def plot_surf(
         self,
@@ -265,6 +271,91 @@ class BaseSurfaceBackend:
             figure=figure,
             cbar_vmin=cbar_vmin,
             cbar_vmax=cbar_vmax,
+            **kwargs,
+        )
+
+    def plot_img_on_surf(
+        self,
+        stat_map,
+        surf_mesh="fsaverage5",
+        mask_img=None,
+        hemispheres=None,
+        bg_on_data=False,
+        inflate=False,
+        views=None,
+        output_file=None,
+        title=None,
+        colorbar=True,
+        vmin=None,
+        vmax=None,
+        threshold=None,
+        symmetric_cbar=None,
+        cmap=DEFAULT_DIVERGING_CMAP,
+        cbar_tick_format=None,
+        **kwargs,
+    ):
+        check_params(locals())
+
+        for arg in ("figure", "axes", "engine"):
+            if arg in kwargs:
+                raise ValueError(
+                    f"plot_img_on_surf does not accept {arg} as an argument"
+                )
+
+        # TODO shouldn't we check a list for hemispheres
+        if hemispheres in (None, "both"):
+            hemispheres = ["left", "right"]
+        hemis = check_hemispheres(hemispheres)
+
+        # TODO Shouldn't we check type of views to be a list, or convert to
+        # list
+        if views is None:
+            views = ["lateral", "medial"]
+        modes = check_views(views)
+
+        stat_map = check_niimg_3d(stat_map, dtype="auto")
+        surf_mesh = check_mesh_is_fsaverage(surf_mesh)
+
+        mesh_prefix = "infl" if inflate else "pial"
+        surf = {
+            "left": surf_mesh[f"{mesh_prefix}_left"],
+            "right": surf_mesh[f"{mesh_prefix}_right"],
+        }
+        texture = {
+            "left": vol_to_surf(
+                stat_map, surf_mesh["pial_left"], mask_img=mask_img
+            ),
+            "right": vol_to_surf(
+                stat_map, surf_mesh["pial_right"], mask_img=mask_img
+            ),
+        }
+
+        # get vmin and vmax for entire data (all hemis)
+        _, _, vmin, vmax = self._adjust_colorbar_and_data_ranges(
+            self.get_image_data(stat_map),
+            vmin=vmin,
+            vmax=vmax,
+            symmetric_cbar=symmetric_cbar,
+        )
+
+        return self._plot_img_on_surf(
+            surf,
+            surf_mesh=surf_mesh,
+            stat_map=stat_map,
+            texture=texture,
+            hemis=hemis,
+            modes=modes,
+            bg_on_data=bg_on_data,
+            inflate=inflate,
+            output_file=output_file,
+            title=title,
+            colorbar=colorbar,
+            vmin=vmin,
+            vmax=vmax,
+            threshold=threshold,
+            symmetric_cbar=symmetric_cbar,
+            cmap=cmap,
+            cbar_tick_format=cbar_tick_format,
             **kwargs,
         )
 
