@@ -5,7 +5,10 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+)
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _rng
 from nilearn.decomposition.canica import CanICA
@@ -112,7 +115,7 @@ def canica_data():
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(estimator=[CanICA()]),
+    check_estimator(estimator=CanICA()),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
@@ -122,10 +125,18 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.xfail(reason="invalid checks should fail")
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(estimator=[CanICA()], valid=False),
+    check_estimator(estimator=CanICA(), valid=False),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name", nilearn_check_estimator(estimator=CanICA())
+)
+def test_nilearn_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
     check(estimator)
 
 

@@ -321,6 +321,10 @@ def nilearn_check_estimator(estimator):
 
 
 def nilearn_check_generator(estimator):
+    """Yield (estimator, check) tuples.
+
+    Each nilearn check can be run on an initialized estimator.
+    """
     is_masker = False
     is_glm = False
     surf_img_input = False

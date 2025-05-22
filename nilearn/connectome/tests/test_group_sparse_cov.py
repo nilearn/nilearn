@@ -4,7 +4,10 @@ from sklearn import __version__ as sklearn_version
 
 from nilearn._utils import compare_version
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+)
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.group_sparse_cov import (
     group_sparse_covariance,
@@ -68,6 +71,17 @@ def test_check_estimator_invalid_group_sparse_covariance(
     name,  # noqa: ARG001
 ):
     """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    nilearn_check_estimator(
+        estimator=[GroupSparseCovarianceCV(), GroupSparseCovariance()]
+    ),
+)
+def test_nilearn_check_estimator(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
     check(estimator)
 
 
