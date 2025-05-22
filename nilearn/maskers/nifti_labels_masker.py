@@ -10,7 +10,7 @@ import pandas as pd
 from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import compose_err_msg, logger, repr_niimgs
+from nilearn._utils import logger, repr_niimgs
 from nilearn._utils.bids import (
     generate_atlas_look_up_table,
     sanitize_look_up_table,
@@ -550,6 +550,18 @@ class NiftiLabelsMasker(BaseMasker):
         if imgs is not None:
             imgs_ = check_niimg(imgs, atleast_4d=True)
 
+        self.mask_img_ = self._load_mask(imgs)
+
+        # Check shapes and affines for resample.
+        if self.resampling_target is None:
+            images = {"labels": self.labels_img_}
+            if self.mask_img_ is not None:
+                images["mask"] = self.mask_img_
+            if imgs is not None:
+                images["data"] = imgs_
+            check_same_fov(raise_error=True, **images)
+
+        # resample labels
         if (
             self.resampling_target == "data"
             and imgs is not None
@@ -560,71 +572,34 @@ class NiftiLabelsMasker(BaseMasker):
         ):
             self.labels_img_ = self._resample_labels(imgs_)
 
-        self.mask_img_ = self._load_mask(imgs)
-        if self.mask_img_ is not None:
-            if self.resampling_target == "data":
-                if imgs is not None and not check_same_fov(
-                    imgs_,
-                    self.mask_img_,
-                ):
-                    logger.log("Resampling mask", self.verbose)
-                    self.mask_img_ = self._cache(
-                        resample_img, func_memory_level=2
-                    )(
-                        self.mask_img_,
-                        interpolation="nearest",
-                        target_shape=imgs_.shape[:3],
-                        target_affine=imgs_.affine,
-                        copy_header=True,
-                        force_resample=False,
-                    )
+        # resample mask
+        ref_img = None
+        if self.resampling_target == "data" and imgs is not None:
+            ref_img = imgs_
+        elif self.resampling_target == "labels":
+            ref_img = self.labels_img_
+        if (
+            self.mask_img_ is not None
+            and ref_img is not None
+            and not check_same_fov(
+                ref_img,
+                self.mask_img_,
+            )
+        ):
+            logger.log("Resampling mask...", self.verbose)
+            # TODO switch to force_resample=True
+            # when bumping to version > 0.13
+            self.mask_img_ = self._cache(resample_img, func_memory_level=2)(
+                self.mask_img_,
+                interpolation="nearest",
+                target_shape=ref_img.shape[:3],
+                target_affine=ref_img.affine,
+                copy_header=True,
+                force_resample=False,
+            )
 
-            elif self.resampling_target is None:
-                if self.mask_img_.shape != self.labels_img_.shape[:3]:
-                    raise ValueError(
-                        compose_err_msg(
-                            "Regions and mask do not have the same shape",
-                            mask_img=self.mask_img_,
-                            labels_img=self.labels_img,
-                        )
-                    )
-
-                if not np.allclose(
-                    self.mask_img_.affine,
-                    self.labels_img_.affine,
-                ):
-                    raise ValueError(
-                        compose_err_msg(
-                            "Regions and mask do not have the same affine.",
-                            mask_img=self.mask_img_,
-                            labels_img=self.labels_img,
-                        ),
-                    )
-
-            elif self.resampling_target == "labels":
-                logger.log("resampling the mask", verbose=self.verbose)
-                # TODO switch to force_resample=True
-                # when bumping to version > 0.13
-                self.mask_img_ = resample_img(
-                    self.mask_img_,
-                    target_affine=self.labels_img_.affine,
-                    target_shape=self.labels_img_.shape[:3],
-                    interpolation="nearest",
-                    copy=True,
-                    copy_header=True,
-                    force_resample=False,
-                )
-
-                # Just check that the mask is valid
-                load_mask_img(self.mask_img_)
-
-                self.mask_img_ = self.mask_img_
-
-            else:
-                raise ValueError(
-                    "Invalid value for "
-                    f"resampling_target: {self.resampling_target}"
-                )
+            # Just check that the mask is valid
+            load_mask_img(self.mask_img_)
 
         if self.reports:
             self._reporting_data = {

@@ -1303,7 +1303,7 @@ def check_masker_transform_resampling(estimator) -> None:
     input_shape = (28, 29, 30, n_sample)
     imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
 
-    imgs2 = Nifti1Image(_rng().random((31, 32, 33)), _affine_eye())
+    imgs2 = Nifti1Image(_rng().random((20, 21, 22)), _affine_eye())
 
     mask_shape = (15, 16, 17)
     mask_img = Nifti1Image(np.ones(mask_shape), _affine_eye())
@@ -1321,7 +1321,13 @@ def check_masker_transform_resampling(estimator) -> None:
             estimator = clone(estimator)
             estimator.resampling_target = resampling_target
             estimator.mask_img = mask
-            estimator.fit(imgs)
+
+            # no resampling warning at fit time
+            with warnings.catch_warnings(record=True) as warning_list:
+                estimator.fit(imgs)
+            assert not any(
+                "at transform time" in str(x.message) for x in warning_list
+            )
 
             signals = _rng().random((n_sample, estimator.n_elements_))
 
@@ -1331,16 +1337,32 @@ def check_masker_transform_resampling(estimator) -> None:
             actual_shape = new_imgs.shape
             assert actual_shape == expected_shape
 
-            # same result before and after running transform()
-            estimator.transform(imgs)
+            # no resampling warning when using same imgs as for fit()
+            with warnings.catch_warnings(record=True) as warning_list:
+                estimator.transform(imgs)
+            assert not any(
+                "at transform time" in str(x.message) for x in warning_list
+            )
 
+            # same result before and after running transform()
             new_imgs_2 = estimator.inverse_transform(signals)
 
             assert check_imgs_equal(new_imgs, new_imgs_2)
 
             # no error transforming an image with different fov
-            # than the one used at fit time
-            estimator.transform(imgs2)
+            # than the one used at fit time,
+            # but there should be a resampling warning
+            # we are resampling to data
+            with warnings.catch_warnings(record=True) as warning_list:
+                estimator.transform(imgs2)
+            if resampling_target == "data":
+                assert any(
+                    "at transform time" in str(x.message) for x in warning_list
+                )
+            else:
+                assert not any(
+                    "at transform time" in str(x.message) for x in warning_list
+                )
 
 
 def check_masker_fit_score_takes_y(estimator):

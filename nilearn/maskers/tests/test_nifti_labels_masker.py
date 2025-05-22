@@ -25,7 +25,11 @@ from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiLabelsMasker(labels_img=_img_labels())],
+        estimator=[
+            NiftiLabelsMasker(
+                labels_img=_img_labels(), keep_masked_labels=False
+            )
+        ],
         expected_failed_checks=expected_failed_checks_0pt13pt2(),
     ),
 )
@@ -38,7 +42,11 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[NiftiLabelsMasker(labels_img=_img_labels())],
+        estimator=[
+            NiftiLabelsMasker(
+                labels_img=_img_labels(), keep_masked_labels=False
+            )
+        ],
         valid=False,
     ),
 )

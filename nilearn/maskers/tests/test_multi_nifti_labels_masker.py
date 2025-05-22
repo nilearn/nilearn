@@ -20,7 +20,9 @@ from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
     "estimator, check, name",
     check_estimator(
         estimator=[
-            MultiNiftiLabelsMasker(labels_img=_img_labels()),
+            MultiNiftiLabelsMasker(
+                labels_img=_img_labels(), keep_masked_labels=False
+            ),
         ],
         expected_failed_checks=expected_failed_checks_0pt13pt2(),
     ),
@@ -35,7 +37,7 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
     "estimator, check, name",
     check_estimator(
         estimator=[
-            MultiNiftiLabelsMasker(_img_labels()),
+            MultiNiftiLabelsMasker(_img_labels(), keep_masked_labels=False),
         ],
         valid=False,
     ),
