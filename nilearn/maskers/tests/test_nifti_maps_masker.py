@@ -76,7 +76,7 @@ def test_nifti_maps_masker_data_atlas_different_shape(
 
     masker.fit(fmri22_img)
 
-    assert_array_equal(masker._resampled_maps_img_.affine, affine2)
+    assert_array_equal(masker.maps_img_.affine, affine2)
 
 
 def test_nifti_maps_masker_fit(n_regions, img_maps):
@@ -263,10 +263,8 @@ def test_nifti_maps_masker_resampling_to_mask(
     assert_almost_equal(masker.mask_img_.affine, mask22_img.affine)
     assert masker.mask_img_.shape == mask22_img.shape
 
-    assert_almost_equal(
-        masker._resampled_maps_img_.affine, masker.mask_img_.affine
-    )
-    assert masker._resampled_maps_img_.shape[:3] == masker.mask_img_.shape
+    assert_almost_equal(masker.maps_img_.affine, masker.mask_img_.affine)
+    assert masker.maps_img_.shape[:3] == masker.mask_img_.shape
 
     assert signals.shape == (length, n_regions)
 

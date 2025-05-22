@@ -112,7 +112,7 @@ def test_multi_nifti_maps_masker_data_atlas_different_shape(
 
     masker.fit_transform(fmri22_img)
 
-    assert_array_equal(masker._resampled_maps_img_.affine, affine2)
+    assert_array_equal(masker.maps_img_.affine, affine2)
 
 
 def test_multi_nifti_maps_masker_errors(
@@ -234,22 +234,16 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
     assert_almost_equal(masker.mask_img_.affine, mask22_img.affine)
     assert masker.mask_img_.shape == mask22_img.shape
 
-    assert_almost_equal(
-        masker.mask_img_.affine, masker._resampled_maps_img_.affine
-    )
-    assert masker.mask_img_.shape == masker._resampled_maps_img_.shape[:3]
+    assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
+    assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
     for t in signals:
         assert t.shape == (length, n_regions)
 
         fmri11_img_r = masker.inverse_transform(t)
 
-        assert_almost_equal(
-            fmri11_img_r.affine, masker._resampled_maps_img_.affine
-        )
-        assert fmri11_img_r.shape == (
-            masker._resampled_maps_img_.shape[:3] + (length,)
-        )
+        assert_almost_equal(fmri11_img_r.affine, masker.maps_img_.affine)
+        assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
 
 
 def test_multi_nifti_maps_masker_resampling_to_maps(
