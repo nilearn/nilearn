@@ -490,7 +490,7 @@ class NiftiMapsMasker(BaseMasker):
                 "img": imgs,
             }
             if imgs is not None:
-                imgs, dims = compute_middle_image(imgs_)
+                imgs, dims = compute_middle_image(imgs)
                 self._reporting_data["img"] = imgs
                 self._reporting_data["dim"] = dims
         else:
