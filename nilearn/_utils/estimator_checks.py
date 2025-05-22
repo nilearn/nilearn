@@ -505,7 +505,7 @@ def check_masker_dict_unchanged(estimator):
 
     dict_after = estimator.__dict__
 
-    # TODO NiftiLabelsMasker, NiftiMapsMasker are modified at transform time
+    # TODO NiftiLabelsMasker is modified at transform time
     # see issue https://github.com/nilearn/nilearn/issues/2720
     if isinstance(estimator, (NiftiLabelsMasker)):
         with pytest.raises(AssertionError):
@@ -1615,10 +1615,6 @@ def check_nifti_masker_clean_warning(estimator):
     input_img = _img_4d_rand_eye_medium()
 
     signal = estimator.fit_transform(input_img)
-
-    # TODO remove this cloning once nifti sphere masker can be refitted
-    # See https://github.com/nilearn/nilearn/issues/5091
-    estimator = clone(estimator)
 
     estimator.t_r = 2.0
     estimator.high_pass = 1 / 128

@@ -139,7 +139,7 @@ def test_nifti_labels_masker_errors(
         labels11_img, mask_img=mask12_img, resampling_target=None
     )
     with pytest.raises(
-        ValueError, match="Regions and mask do not have the same affine."
+        ValueError, match="Following field of view errors were detected"
     ):
         masker11.fit()
 
@@ -147,7 +147,7 @@ def test_nifti_labels_masker_errors(
         labels11_img, mask_img=mask21_img, resampling_target=None
     )
     with pytest.raises(
-        ValueError, match="Regions and mask do not have the same shape"
+        ValueError, match="Following field of view errors were detected"
     ):
         masker11.fit()
 
@@ -496,7 +496,7 @@ def test_nifti_labels_masker_resampling_to_none(
         img_labels, mask_img=mask_img, resampling_target=None
     )
     with pytest.raises(
-        ValueError, match="Images have different affine matrices."
+        ValueError, match="Following field of view errors were detected"
     ):
         masker.fit_transform(fmri_img)
 

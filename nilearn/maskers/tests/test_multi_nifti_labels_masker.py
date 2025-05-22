@@ -126,7 +126,7 @@ def test_multi_nifti_labels_masker_errors(
     )
 
     with pytest.raises(
-        ValueError, match="Regions and mask do not have the same affine."
+        ValueError, match="Following field of view errors were detected"
     ):
         masker11.fit()
 
@@ -135,7 +135,7 @@ def test_multi_nifti_labels_masker_errors(
     )
 
     with pytest.raises(
-        ValueError, match="Regions and mask do not have the same shape"
+        ValueError, match="Following field of view errors were detected"
     ):
         masker11.fit()
 
