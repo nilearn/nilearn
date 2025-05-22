@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+)
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import (
@@ -12,7 +15,7 @@ from nilearn.surface.utils import (
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(estimator=[SurfaceMasker()]),
+    check_estimator(estimator=SurfaceMasker()),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
@@ -22,9 +25,18 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.xfail(reason="invalid checks should fail")
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(estimator=[SurfaceMasker()], valid=False),
+    check_estimator(estimator=SurfaceMasker(), valid=False),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    nilearn_check_estimator(estimator=SurfaceMasker()),
+)
+def test_nilearn_check_estimator(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 

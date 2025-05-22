@@ -311,13 +311,16 @@ def check_estimator(
                 if not valid and check.func.__name__ not in valid_checks:
                     yield e, check, check.func.__name__
 
-    if valid:
-        for est in estimator:
-            for e, check in nilearn_check_estimator(estimator=est):
-                yield e, check, check.__name__
-
 
 def nilearn_check_estimator(estimator):
+    if not isinstance(estimator, list):
+        estimator = [estimator]
+    for est in estimator:
+        for e, check in nilearn_check_generator(estimator=est):
+            yield e, check, check.__name__
+
+
+def nilearn_check_generator(estimator):
     is_masker = False
     is_glm = False
     surf_img_input = False
