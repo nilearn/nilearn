@@ -957,11 +957,17 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
 def test_plot_img_on_surf_hemispheres_and_orientations(
     matplotlib_pyplot, img_3d_mni, hemispheres, views
 ):
+    """Smoke test for nilearn.plotting.surface.plot_img_on_surf for
+    combinations of 1D or 2D hemis and orientations.
+    """
     # Check that all combinations of 1D or 2D hemis and orientations work.
     plot_img_on_surf(img_3d_mni, hemispheres=hemispheres, views=views)
 
 
 def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni):
+    """Smoke test for nilearn.plotting.surface.plot_img_on_surf colorbar
+    parameter.
+    """
     plot_img_on_surf(
         img_3d_mni,
         hemispheres=["right"],
@@ -1002,6 +1008,9 @@ def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni):
 
 
 def test_plot_img_on_surf_inflate(matplotlib_pyplot, img_3d_mni):
+    """Smoke test for nilearn.plotting.surface.plot_img_on_surf inflate
+    parameter.
+    """
     plot_img_on_surf(
         img_3d_mni, hemispheres=["right"], views=["lateral"], inflate=True
     )
@@ -1009,6 +1018,9 @@ def test_plot_img_on_surf_inflate(matplotlib_pyplot, img_3d_mni):
 
 @pytest.mark.parametrize("surf_mesh", ["fsaverage5", fetch_surf_fsaverage()])
 def test_plot_img_on_surf_surf_mesh(matplotlib_pyplot, img_3d_mni, surf_mesh):
+    """Smoke test for nilearn.plotting.surface.plot_img_on_surf for surf_mesh
+    parameter.
+    """
     plot_img_on_surf(
         img_3d_mni,
         hemispheres=["right", "left"],
@@ -1026,6 +1038,9 @@ def test_plot_img_on_surf_surf_mesh_low_alpha(matplotlib_pyplot, img_3d_mni):
 
 
 def test_plot_img_on_surf_with_invalid_orientation(img_3d_mni):
+    """Test if nilearn.plotting.surface.plot_img_on_surf raises error when
+    invalid views parameter is specified.
+    """
     kwargs = {"hemisphere": ["right"], "inflate": True}
     with pytest.raises(ValueError):
         plot_img_on_surf(img_3d_mni, views=["latral"], **kwargs)
@@ -1038,6 +1053,9 @@ def test_plot_img_on_surf_with_invalid_orientation(img_3d_mni):
 
 
 def test_plot_img_on_surf_with_invalid_hemisphere(img_3d_mni):
+    """Test if nilearn.plotting.surface.plot_img_on_surf raises error when
+    invalid hemispheres parameter is specified.
+    """
     with pytest.raises(ValueError):
         plot_img_on_surf(
             img_3d_mni, views=["lateral"], inflate=True, hemispheres=["lft]"]
@@ -1056,6 +1074,9 @@ def test_plot_img_on_surf_with_invalid_hemisphere(img_3d_mni):
 
 
 def test_plot_img_on_surf_with_figure_kwarg(img_3d_mni):
+    """Test if nilearn.plotting.surface.plot_img_on_surf raises error when
+    figure parameter is specified.
+    """
     with pytest.raises(ValueError):
         plot_img_on_surf(
             img_3d_mni,
@@ -1066,6 +1087,9 @@ def test_plot_img_on_surf_with_figure_kwarg(img_3d_mni):
 
 
 def test_plot_img_on_surf_with_axes_kwarg(img_3d_mni):
+    """Test if nilearn.plotting.surface.plot_img_on_surf raises error when axes
+    parameter is specified.
+    """
     with pytest.raises(ValueError):
         plot_img_on_surf(
             img_3d_mni,
@@ -1077,6 +1101,9 @@ def test_plot_img_on_surf_with_axes_kwarg(img_3d_mni):
 
 
 def test_plot_img_on_surf_with_engine_kwarg(img_3d_mni):
+    """Test if nilearn.plotting.surface.plot_img_on_surf raises error when
+    engine parameter is specified.
+    """
     with pytest.raises(ValueError):
         plot_img_on_surf(
             img_3d_mni,
@@ -1088,6 +1115,10 @@ def test_plot_img_on_surf_with_engine_kwarg(img_3d_mni):
 
 
 def test_plot_img_on_surf_title(matplotlib_pyplot, img_3d_mni):
+    """Test nilearn.plotting.surface.plot_img_on_surf with and without title
+    specified.
+    .
+    """
     title = "Title"
     fig = plot_img_on_surf(
         img_3d_mni, hemispheres=["right"], views=["lateral"]
@@ -1101,6 +1132,7 @@ def test_plot_img_on_surf_title(matplotlib_pyplot, img_3d_mni):
 
 
 def test_plot_img_on_surf_output_file(matplotlib_pyplot, tmp_path, img_3d_mni):
+    """Test nilearn.plotting.surface.plot_img_on_surf for output_file."""
     fname = tmp_path / "tmp.png"
     return_value = plot_img_on_surf(
         img_3d_mni,
