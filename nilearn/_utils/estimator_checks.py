@@ -1211,7 +1211,8 @@ def check_masker_inverse_transform(estimator) -> None:
         input_shape = (28, 29, 30)
         imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
 
-        mask_img = Nifti1Image(np.ones(_shape_3d_large()), _affine_eye())
+        mask_shape = (15, 16, 17)
+        mask_img = Nifti1Image(np.ones(mask_shape), _affine_eye())
 
         if isinstance(estimator, NiftiSpheresMasker):
             tmp = mask_img.shape
@@ -1256,6 +1257,7 @@ def check_masker_inverse_transform(estimator) -> None:
             actual_shape = new_imgs.data.shape
         assert actual_shape == expected_shape
 
+        # same result before and after running transform()
         estimator.transform(imgs)
 
         new_imgs_2 = estimator.inverse_transform(signals)
@@ -1303,7 +1305,8 @@ def check_masker_transform_resampling(estimator) -> None:
 
     imgs2 = Nifti1Image(_rng().random((31, 32, 33)), _affine_eye())
 
-    mask_img = Nifti1Image(np.ones(_shape_3d_large()), _affine_eye())
+    mask_shape = (15, 16, 17)
+    mask_img = Nifti1Image(np.ones(mask_shape), _affine_eye())
 
     for resampling_target in ["data", "labels"]:
         expected_shape = input_shape
@@ -1328,12 +1331,15 @@ def check_masker_transform_resampling(estimator) -> None:
             actual_shape = new_imgs.shape
             assert actual_shape == expected_shape
 
+            # same result before and after running transform()
             estimator.transform(imgs)
 
             new_imgs_2 = estimator.inverse_transform(signals)
 
             assert check_imgs_equal(new_imgs, new_imgs_2)
 
+            # no error transforming an image with different fov
+            # than the one used at fit time
             estimator.transform(imgs2)
 
 
