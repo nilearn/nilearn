@@ -17,40 +17,41 @@ from nilearn._utils.data_gen import (
     generate_random_img,
 )
 from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
 from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 
+if SKLEARN_LT_1_6:
 
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        # pass less than the default number of regions
-        # to speed up the tests
-        estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
-        expected_failed_checks=expected_failed_checks_0pt13pt2(),
-    ),
-)
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(
+            # pass less than the default number of regions
+            # to speed up the tests
+            estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
+            expected_failed_checks=expected_failed_checks_0pt13pt2(),
+        ),
+    )
+    def test_check_estimator(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        # pass less than the default number of regions
-        # to speed up the tests
-        estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(
+            # pass less than the default number of regions
+            # to speed up the tests
+            estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
+            valid=False,
+        ),
+    )
+    def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
 def test_nifti_maps_masker_data_atlas_different_shape(

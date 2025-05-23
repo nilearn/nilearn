@@ -10,39 +10,40 @@ from nilearn._utils.data_gen import (
     generate_labeled_regions,
 )
 from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker
 from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 
+if SKLEARN_LT_1_6:
 
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[
-            MultiNiftiLabelsMasker(labels_img=_img_labels()),
-        ],
-        expected_failed_checks=expected_failed_checks_0pt13pt2(),
-    ),
-)
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(
+            estimator=[
+                MultiNiftiLabelsMasker(labels_img=_img_labels()),
+            ],
+            expected_failed_checks=expected_failed_checks_0pt13pt2(),
+        ),
+    )
+    def test_check_estimator(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[
-            MultiNiftiLabelsMasker(_img_labels()),
-        ],
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(
+            estimator=[
+                MultiNiftiLabelsMasker(_img_labels()),
+            ],
+            valid=False,
+        ),
+    )
+    def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
 def test_multi_nifti_labels_masker(

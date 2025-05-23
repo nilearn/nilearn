@@ -9,9 +9,7 @@ from pandas import DataFrame
 from scipy import linalg
 from sklearn import __version__ as sklearn_version
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
-from sklearn.utils.estimator_checks import (
-    check_estimator as sklearn_check_estimator,
-)
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils import compare_version
 from nilearn._utils.estimator_checks import check_estimator
@@ -42,13 +40,10 @@ N_FEATURES = 49
 N_SUBJECTS = 5
 
 
-@pytest.mark.parametrize(
-    "estimator",
-    [EmpiricalCovariance(), LedoitWolf()],
-)
-def test_check_estimator_cov_estimator(estimator):
+@parametrize_with_checks(estimators=[EmpiricalCovariance(), LedoitWolf()])
+def test_check_estimator_sklearn(estimator, check):
     """Check compliance with sklearn estimators."""
-    sklearn_check_estimator(estimator)
+    check(estimator)
 
 
 expected_failed_checks = {

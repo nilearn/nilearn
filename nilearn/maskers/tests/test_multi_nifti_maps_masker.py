@@ -7,43 +7,44 @@ from numpy.testing import assert_almost_equal, assert_array_equal
 from nilearn._utils.data_gen import generate_fake_fmri, generate_maps
 from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _img_maps
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 
+if SKLEARN_LT_1_6:
 
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[
-            # pass less than the default number of regions
-            # to speed up the tests
-            MultiNiftiMapsMasker(_img_maps(n_regions=2)),
-        ],
-        expected_failed_checks=expected_failed_checks_0pt13pt2(),
-    ),
-)
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(
+            estimator=[
+                # pass less than the default number of regions
+                # to speed up the tests
+                MultiNiftiMapsMasker(_img_maps(n_regions=2)),
+            ],
+            expected_failed_checks=expected_failed_checks_0pt13pt2(),
+        ),
+    )
+    def test_check_estimator(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[
-            # pass less than the default number of regions
-            # to speed up the tests
-            MultiNiftiMapsMasker(_img_maps(n_regions=2)),
-        ],
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(
+            estimator=[
+                # pass less than the default number of regions
+                # to speed up the tests
+                MultiNiftiMapsMasker(_img_maps(n_regions=2)),
+            ],
+            valid=False,
+        ),
+    )
+    def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
 def test_multi_nifti_maps_masker(

@@ -6,46 +6,47 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 
 from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 
+if SKLEARN_LT_1_6:
 
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[
-            NiftiSpheresMasker(
-                seeds=[
-                    (1, 1, 1),
-                ]
-            )
-        ],
-        expected_failed_checks=expected_failed_checks_0pt13pt2(),
-    ),
-)
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(
+            estimator=[
+                NiftiSpheresMasker(
+                    seeds=[
+                        (1, 1, 1),
+                    ]
+                )
+            ],
+            expected_failed_checks=expected_failed_checks_0pt13pt2(),
+        ),
+    )
+    def test_check_estimator(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[
-            NiftiSpheresMasker(
-                seeds=[
-                    (1, 1, 1),
-                ]
-            )
-        ],
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(
+            estimator=[
+                NiftiSpheresMasker(
+                    seeds=[
+                        (1, 1, 1),
+                    ]
+                )
+            ],
+            valid=False,
+        ),
+    )
+    def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
 def test_seed_extraction(rng, affine_eye):

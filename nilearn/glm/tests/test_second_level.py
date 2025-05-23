@@ -20,6 +20,7 @@ from nilearn._utils.data_gen import (
     write_fake_fmri_data_and_design,
 )
 from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _shape_3d_default
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
@@ -40,27 +41,27 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.reporting import get_clusters_table
 from nilearn.surface.utils import assert_surface_image_equal
 
+if SKLEARN_LT_1_6:
 
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(estimator=[SecondLevelModel()]),
-)
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimator=[SecondLevelModel()]),
+    )
+    def test_check_estimator(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[SecondLevelModel()],
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(
+            estimator=[SecondLevelModel()],
+            valid=False,
+        ),
+    )
+    def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
 N_PERM = 5
