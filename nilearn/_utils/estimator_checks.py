@@ -20,6 +20,10 @@ from numpy.testing import (
     assert_raises,
 )
 from sklearn import clone
+from sklearn.base import BaseEstimator
+from sklearn.utils.estimator_checks import (
+    check_estimator as sklearn_check_estimator,
+)
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
@@ -63,17 +67,6 @@ from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import (
     assert_surface_image_equal,
 )
-
-# TODO simplify when dropping sklearn 1.5,
-if SKLEARN_LT_1_6:
-    from sklearn.utils.estimator_checks import (
-        check_estimator as sklearn_check_estimator,
-    )
-else:
-    from sklearn.utils.estimator_checks import _check_name
-    from sklearn.utils.estimator_checks import (
-        estimator_checks_generator as sklearn_check_generator,
-    )
 
 # keeping track of some of those in
 # https://github.com/nilearn/nilearn/issues/4538
@@ -151,9 +144,9 @@ def nilearn_dir() -> Path:
 
 
 def check_estimator(
-    estimator=None,
+    estimators: list[BaseEstimator],
     valid: bool = True,
-    expected_failed_checks=None,
+    expected_failed_checks: Optional[dict[str, str]] = None,
 ):
     """Yield a valid or invalid scikit-learn estimators check.
 
@@ -177,7 +170,7 @@ def check_estimator(
 
     Parameters
     ----------
-    estimator : estimator object or list of estimator object
+    estimators : list of estimator object
         Estimator instance to check.
 
     valid : bool, default=True
@@ -193,45 +186,35 @@ def check_estimator(
         Where `"check_name"` is the name of the check, and `"my reason"` is why
         the check fails.
     """
-    if not isinstance(estimator, list):
-        estimator = [estimator]
+    # TODO remove this function when dropping sklearn 1.5
+    if not SKLEARN_LT_1_6:
+        raise RuntimeError(
+            "Use dedicated sklearn utilities to test estimators."
+        )
 
-    for est in estimator:
+    if not isinstance(estimators, list):
+        raise TypeError(
+            "'estimators' should be a list. "
+            f"Got {estimators.__class__.__name__}."
+        )
+
+    for est in estimators:
         expected_failed_checks = return_expected_failed_checks(
             est, expected_failed_checks=expected_failed_checks
         )
-        # TODO simplify when dropping sklearn 1.5
-        if SKLEARN_LT_1_6:
-            for e, check in sklearn_check_estimator(
-                estimator=est, generate_only=True
-            ):
-                if not valid and check.func.__name__ in expected_failed_checks:
-                    yield e, check, check.func.__name__
-                if valid and check.func.__name__ not in expected_failed_checks:
-                    yield e, check, check.func.__name__
 
-        else:
-            for e, check in sklearn_check_generator(
-                estimator=est,
-                expected_failed_checks=expected_failed_checks,
-                # TODO use  mark="xfail"
-                # once using only expected_failed_checks and no valid_checks
-                mark="skip",
-            ):
-                # DANGER
-                # must rely on sklearn private function _check_name
-                # to get name of the check:
-                # things may break with no deprecation warning
-                name = _check_name(check)
-
-                if valid and name not in expected_failed_checks:
-                    yield e, check, name
-                if not valid and name in expected_failed_checks:
-                    yield e, check, name
+        for e, check in sklearn_check_estimator(
+            estimator=est, generate_only=True
+        ):
+            if not valid and check.func.__name__ in expected_failed_checks:
+                yield e, check, check.func.__name__
+            if valid and check.func.__name__ not in expected_failed_checks:
+                yield e, check, check.func.__name__
 
 
 def return_expected_failed_checks(
-    estimator, expected_failed_checks: Optional[dict[str, str]] = None
+    estimator: BaseEstimator,
+    expected_failed_checks: Optional[dict[str, str]] = None,
 ) -> dict[str, str]:
     if expected_failed_checks is None:
         expected_failed_checks = {}
@@ -264,15 +247,18 @@ def return_expected_failed_checks(
     return expected_failed_checks
 
 
-def nilearn_check_estimator(estimator):
-    if not isinstance(estimator, list):
-        estimator = [estimator]
-    for est in estimator:
+def nilearn_check_estimator(estimators: list[BaseEstimator]):
+    if not isinstance(estimators, list):
+        raise TypeError(
+            "'estimators' should be a list. "
+            f"Got {estimators.__class__.__name__}."
+        )
+    for est in estimators:
         for e, check in nilearn_check_generator(estimator=est):
             yield e, check, check.__name__
 
 
-def nilearn_check_generator(estimator):
+def nilearn_check_generator(estimator: BaseEstimator):
     """Yield (estimator, check) tuples.
 
     Each nilearn check can be run on an initialized estimator.

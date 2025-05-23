@@ -33,7 +33,7 @@ if SKLEARN_LT_1_6:
         check_estimator(
             # pass less than the default number of regions
             # to speed up the tests
-            estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
+            estimators=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
         ),
     )
     def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
@@ -46,7 +46,7 @@ if SKLEARN_LT_1_6:
         check_estimator(
             # pass less than the default number of regions
             # to speed up the tests
-            estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
+            estimators=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
             valid=False,
         ),
     )
@@ -58,7 +58,7 @@ if SKLEARN_LT_1_6:
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
-        estimator=NiftiMapsMasker(maps_img=_img_maps(n_regions=2))
+        estimators=NiftiMapsMasker(maps_img=_img_maps(n_regions=2))
     ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001

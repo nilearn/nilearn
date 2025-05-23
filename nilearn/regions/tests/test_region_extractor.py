@@ -72,7 +72,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[
+            estimators=[
                 RegionExtractor(
                     maps_img=generate_maps(
                         shape=_shape_3d_large(),
@@ -92,7 +92,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[
+            estimators=[
                 RegionExtractor(
                     maps_img=generate_maps(
                         shape=_shape_3d_large(), n_regions=2, random_state=42
@@ -110,7 +110,7 @@ if SKLEARN_LT_1_6:
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
-        estimator=RegionExtractor(
+        estimators=RegionExtractor(
             maps_img=generate_maps(
                 shape=_shape_3d_large(), n_regions=2, random_state=42
             )[0]

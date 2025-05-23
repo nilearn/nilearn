@@ -88,7 +88,7 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         (
             check_estimator(
-                estimator=[
+                estimators=[
                     ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
                 ],
                 expected_failed_checks=expected_failed_checks,
@@ -107,7 +107,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[
+            estimators=[
                 ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
             ],
             valid=False,
@@ -125,7 +125,7 @@ if SKLEARN_LT_1_6:
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
-        estimator=[ConnectivityMeasure(cov_estimator=EmpiricalCovariance())]
+        estimators=[ConnectivityMeasure(cov_estimator=EmpiricalCovariance())]
     ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001

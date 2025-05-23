@@ -50,7 +50,10 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         (
             check_estimator(
-                estimator=[GroupSparseCovarianceCV(), GroupSparseCovariance()],
+                estimators=[
+                    GroupSparseCovarianceCV(),
+                    GroupSparseCovariance(),
+                ],
                 expected_failed_checks=expected_failed_checks,
             )
         ),
@@ -63,7 +66,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[GroupSparseCovarianceCV(), GroupSparseCovariance()],
+            estimators=[GroupSparseCovarianceCV(), GroupSparseCovariance()],
             valid=False,
         ),
     )
@@ -79,7 +82,7 @@ if SKLEARN_LT_1_6:
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
-        estimator=[GroupSparseCovarianceCV(), GroupSparseCovariance()]
+        estimators=[GroupSparseCovarianceCV(), GroupSparseCovariance()]
     ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001

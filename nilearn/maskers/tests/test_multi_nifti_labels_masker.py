@@ -23,7 +23,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[
+            estimators=[
                 MultiNiftiLabelsMasker(labels_img=_img_labels()),
             ],
         ),
@@ -36,7 +36,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[
+            estimators=[
                 MultiNiftiLabelsMasker(_img_labels()),
             ],
             valid=False,
@@ -49,7 +49,7 @@ if SKLEARN_LT_1_6:
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimator=MultiNiftiLabelsMasker(_img_labels())),
+    nilearn_check_estimator(estimators=MultiNiftiLabelsMasker(_img_labels())),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""

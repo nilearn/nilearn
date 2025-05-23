@@ -19,7 +19,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[searchlight.SearchLight(mask_img=_img_3d_ones())],
+            estimators=[searchlight.SearchLight(mask_img=_img_3d_ones())],
         ),
     )
     def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
@@ -30,7 +30,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[searchlight.SearchLight(mask_img=_img_3d_ones())],
+            estimators=[searchlight.SearchLight(mask_img=_img_3d_ones())],
             valid=False,
         ),
     )

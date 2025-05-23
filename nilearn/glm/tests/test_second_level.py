@@ -48,7 +48,7 @@ if SKLEARN_LT_1_6:
 
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(estimator=[SecondLevelModel()]),
+        check_estimator(estimators=[SecondLevelModel()]),
     )
     def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -58,7 +58,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[SecondLevelModel()],
+            estimators=[SecondLevelModel()],
             valid=False,
         ),
     )
@@ -69,7 +69,7 @@ if SKLEARN_LT_1_6:
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimator=SecondLevelModel()),
+    nilearn_check_estimator(estimators=SecondLevelModel()),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""

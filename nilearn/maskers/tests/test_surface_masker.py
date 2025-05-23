@@ -17,7 +17,7 @@ if SKLEARN_LT_1_6:
 
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(estimator=[SurfaceMasker()]),
+        check_estimator(estimators=[SurfaceMasker()]),
     )
     def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -26,7 +26,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.xfail(reason="invalid checks should fail")
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(estimator=[SurfaceMasker()], valid=False),
+        check_estimator(estimators=[SurfaceMasker()], valid=False),
     )
     def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -35,7 +35,7 @@ if SKLEARN_LT_1_6:
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimator=SurfaceMasker()),
+    nilearn_check_estimator(estimators=SurfaceMasker()),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""

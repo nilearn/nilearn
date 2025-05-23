@@ -29,7 +29,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[NiftiLabelsMasker(labels_img=_img_labels())],
+            estimators=[NiftiLabelsMasker(labels_img=_img_labels())],
         ),
     )
     def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
@@ -40,7 +40,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[NiftiLabelsMasker(labels_img=_img_labels())],
+            estimators=[NiftiLabelsMasker(labels_img=_img_labels())],
             valid=False,
         ),
     )
@@ -52,7 +52,7 @@ if SKLEARN_LT_1_6:
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
-        estimator=NiftiLabelsMasker(labels_img=_img_labels())
+        estimators=NiftiLabelsMasker(labels_img=_img_labels())
     ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001

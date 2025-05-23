@@ -18,7 +18,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[
+            estimators=[
                 NiftiSpheresMasker(
                     seeds=[
                         (1, 1, 1),
@@ -35,7 +35,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[
+            estimators=[
                 NiftiSpheresMasker(
                     seeds=[
                         (1, 1, 1),
@@ -52,7 +52,7 @@ if SKLEARN_LT_1_6:
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimator=NiftiSpheresMasker(seeds=[(1, 1, 1)])),
+    nilearn_check_estimator(estimators=NiftiSpheresMasker(seeds=[(1, 1, 1)])),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""

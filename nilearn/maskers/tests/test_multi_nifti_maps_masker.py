@@ -20,7 +20,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[
+            estimators=[
                 # pass less than the default number of regions
                 # to speed up the tests
                 MultiNiftiMapsMasker(_img_maps(n_regions=2)),
@@ -35,7 +35,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimator=[
+            estimators=[
                 # pass less than the default number of regions
                 # to speed up the tests
                 MultiNiftiMapsMasker(_img_maps(n_regions=2)),
@@ -51,7 +51,7 @@ if SKLEARN_LT_1_6:
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
-        estimator=MultiNiftiMapsMasker(_img_maps(n_regions=2))
+        estimators=MultiNiftiMapsMasker(_img_maps(n_regions=2))
     ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
