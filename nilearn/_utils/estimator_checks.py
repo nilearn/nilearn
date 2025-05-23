@@ -8,6 +8,7 @@ import inspect
 import warnings
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -229,7 +230,9 @@ def check_estimator(
                     yield e, check, name
 
 
-def return_expected_failed_checks(estimator, expected_failed_checks=None):
+def return_expected_failed_checks(
+    estimator, expected_failed_checks: Optional[dict[str, str]] = None
+) -> dict[str, str]:
     if expected_failed_checks is None:
         expected_failed_checks = {}
 
