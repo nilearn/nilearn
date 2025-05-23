@@ -18,6 +18,8 @@ from numpy.testing import (
     assert_array_equal,
     assert_raises,
 )
+from packaging.version import parse
+from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import BaseEstimator
 from sklearn.utils.estimator_checks import (
@@ -55,6 +57,7 @@ from nilearn.conftest import (
 )
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
+from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers import (
     NiftiLabelsMasker,
     NiftiMapsMasker,
@@ -138,8 +141,26 @@ def return_expected_failed_checks(
 ) -> dict[str, str]:
     """Return the expected failures for a given estimator.
 
-    This is where all the expected_failed_checks for all Nilearn estimators
+    This is where all the "expected_failed_checks" for all Nilearn estimators
     are centralized.
+
+    "expected_failed_checks" is first created to make sure that all checks
+    with the oldest supported sklearn versions.
+
+    After the function may tweaks the "expected_failed_checks" depending
+    on the estimator and sklearn version.
+
+    Returns
+    -------
+    expected_failed_checks : dict[str, str]
+        A dictionary of the form::
+
+            {
+                "check_name": "this check is expected to fail because ...",
+            }
+
+        Where `"check_name"` is the name of the check, and `"my reason"` is why
+        the check fails.
     """
     expected_failed_checks: dict[str, str] = {}
 
@@ -210,12 +231,10 @@ def return_expected_failed_checks(
                 "check_methods_subset_invariance": "TODO",
             }
 
-        return expected_failed_checks
-
     elif isinstance(
         estimator, (GroupSparseCovariance, GroupSparseCovarianceCV)
     ):
-        return {
+        expected_failed_checks = {
             "check_dict_unchanged": "TODO",
             "check_dont_overwrite_parameters": "TODO",
             "check_dtype_object": "TODO",
@@ -336,6 +355,8 @@ def return_expected_failed_checks(
             "check_supervised_y_2d": "TODO",
         }
 
+    # Adapt some checks for some estimators
+
     if is_masker and niimg_input:
         # TODO remove when bumping to nilearn 0.13.2
         expected_failed_checks |= {
@@ -347,9 +368,7 @@ def return_expected_failed_checks(
             ),
         }
 
-    # remove some checks for some estimators
-
-    # not entirely sure why they pass
+    # not entirely sure why some of them pass
     # e.g check_estimator_sparse_data passes for SurfaceLabelsMasker
     # but not SurfaceMasker ????
     if is_glm:
@@ -363,6 +382,43 @@ def return_expected_failed_checks(
         expected_failed_checks.pop("check_fit_check_is_fitted")
         expected_failed_checks.pop("check_fit2d_1feature")
         expected_failed_checks.pop("check_fit2d_1sample")
+
+    # Adapt some checks for some estimators depending on sklearn version
+
+    if parse(sklearn_version).release[1] >= 5:
+        if is_glm or isinstance(
+            estimator,
+            (
+                SurfaceLabelsMasker,
+                SurfaceMapsMasker,
+                ReNA,
+                HierarchicalKMeans,
+                RegionExtractor,
+            ),
+        ):
+            expected_failed_checks.pop("check_estimator_sparse_matrix")
+            expected_failed_checks.pop("check_estimator_sparse_array")
+
+        if isinstance(estimator, (NiftiMasker, _BaseDecomposition)):
+            expected_failed_checks.pop("check_estimator_sparse_array")
+
+        if isinstance(estimator, (ReNA, HierarchicalKMeans)):
+            expected_failed_checks.pop("check_complex_data")
+            expected_failed_checks.pop("check_fit2d_1feature")
+            expected_failed_checks.pop("check_fit1d")
+            expected_failed_checks.pop("check_fit2d_1sample")
+            expected_failed_checks.pop("check_estimators_empty_data_messages")
+
+            expected_failed_checks |= {"check_clustering": "TODO"}
+
+        # if isinstance(estimator, (ReNA)):
+
+        if isinstance(estimator, (HierarchicalKMeans)):
+            expected_failed_checks.pop("check_methods_subset_invariance")
+            expected_failed_checks.pop("check_methods_sample_order_invariance")
+            expected_failed_checks.pop("check_dont_overwrite_parameters")
+            expected_failed_checks.pop("check_dtype_object")
+            expected_failed_checks.pop("check_dict_unchanged")
 
     return expected_failed_checks
 
