@@ -8,7 +8,6 @@ import inspect
 import warnings
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -24,7 +23,9 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
-from sklearn.utils.estimator_checks import check_is_fitted
+from sklearn.utils.estimator_checks import (
+    check_is_fitted,
+)
 
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -52,15 +53,21 @@ from nilearn.conftest import (
     _shape_3d_large,
     _surf_mask_1d,
 )
+from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
+from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
 from nilearn.maskers import (
     NiftiLabelsMasker,
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceLabelsMasker,
+    SurfaceMapsMasker,
     SurfaceMasker,
 )
 from nilearn.masking import load_mask_img
 from nilearn.regions import RegionExtractor
+from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
+from nilearn.regions.rena_clustering import ReNA
 from nilearn.reporting.tests.test_html_report import _check_html
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
@@ -68,86 +75,12 @@ from nilearn.surface.utils import (
     assert_surface_image_equal,
 )
 
-# keeping track of some of those in
-# https://github.com/nilearn/nilearn/issues/4538
-CHECKS_TO_SKIP_IF_IMG_INPUT: dict[str, str] = {
-    # The following do not apply for nilearn maskers
-    # as they do not take numpy arrays as input.
-    "check_complex_data": "not applicable for image input",
-    "check_dtype_object": "not applicable for image input",
-    "check_estimator_sparse_array": "not applicable for image input",
-    "check_estimator_sparse_data": "not applicable for image input",
-    "check_estimator_sparse_matrix": "not applicable for image input",
-    "check_estimator_sparse_tag": "not applicable for image input",
-    "check_f_contiguous_array_estimator": "not applicable for image input",
-    "check_fit1d": "not applicable for image input",
-    "check_fit2d_1feature": "not applicable for image input",
-    "check_fit2d_1sample": "not applicable for image input",
-    "check_fit2d_predict1d": "not applicable for image input",
-    "check_n_features_in": "not applicable",
-    "check_n_features_in_after_fitting": "not applicable",
-    # the following are skipped because there is nilearn specific replacement
-    "check_estimators_dtypes": (
-        "replaced by check_masker_dtypes and check_glm_dtypes"
-    ),
-    "check_estimators_fit_returns_self": (
-        "replaced by check_nifti_masker_fit_returns_self "
-        "or check_surface_masker_fit_returns_self or "
-        "check_glm_fit_returns_self"
-    ),
-    "check_fit_check_is_fitted": (
-        "replaced by check_masker_fitted or check_glm_is_fitted"
-    ),
-    "check_transformer_data_not_an_array": (
-        "replaced by check_masker_transformer"
-    ),
-    "check_transformer_general": "replaced by check_masker_transformer",
-    "check_transformer_preserve_dtypes": (
-        "replaced by check_masker_transformer"
-    ),
-    "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
-    "check_fit_score_takes_y": "replaced by check_masker_fit_score_takes_y",
-    # Those are skipped for now they fail
-    # for unknown reasons
-    #  most often because sklearn inputs expect a numpy array
-    #  that errors with maskers,
-    # or because a suitable nilearn replacement has not yet been created.
-    "check_classifier_data_not_an_array": "TODO",
-    "check_classifiers_classes": "TODO",
-    "check_classifiers_one_label": "TODO",
-    "check_classifiers_regression_target": "TODO",
-    "check_classifiers_train": "TODO",
-    "check_dont_overwrite_parameters": "TODO",
-    "check_estimators_empty_data_messages": "TODO",
-    "check_estimators_pickle": "TODO",
-    "check_estimators_nan_inf": "TODO",
-    "check_estimators_overwrite_params": "TODO",
-    "check_fit_idempotent": "TODO",
-    "check_methods_sample_order_invariance": "TODO",
-    "check_methods_subset_invariance": "TODO",
-    "check_positive_only_tag_during_fit": "TODO",
-    "check_pipeline_consistency": "TODO",
-    "check_readonly_memmap_input": "TODO",
-    "check_regressor_data_not_an_array": "TODO",
-    "check_regressor_multioutput": "TODO",
-    "check_regressors_int": "TODO",
-    "check_regressors_train": "TODO",
-    "check_regressors_no_decision_function": "TODO",
-    "check_requires_y_none": "TODO",
-    "check_supervised_y_no_nan": "TODO",
-    "check_supervised_y_2d": "TODO",
-}
-
 
 def nilearn_dir() -> Path:
     return Path(__file__).parents[1]
 
 
-def check_estimator(
-    estimators: list[BaseEstimator],
-    valid: bool = True,
-    expected_failed_checks: Optional[dict[str, str]] = None,
-):
+def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
     """Yield a valid or invalid scikit-learn estimators check.
 
     As some of Nilearn estimators do not comply
@@ -175,16 +108,6 @@ def check_estimator(
 
     valid : bool, default=True
         Whether to return only the valid checks or not.
-
-    expected_failed_checks: dict or None, default=None
-        A dictionary of the form::
-
-            {
-                "check_name": "this check is expected to fail because ...",
-            }
-
-        Where `"check_name"` is the name of the check, and `"my reason"` is why
-        the check fails.
     """
     # TODO remove this function when dropping sklearn 1.5
     if not SKLEARN_LT_1_6:
@@ -199,9 +122,7 @@ def check_estimator(
         )
 
     for est in estimators:
-        expected_failed_checks = return_expected_failed_checks(
-            est, expected_failed_checks=expected_failed_checks
-        )
+        expected_failed_checks = return_expected_failed_checks(est)
 
         for e, check in sklearn_check_estimator(
             estimator=est, generate_only=True
@@ -214,24 +135,206 @@ def check_estimator(
 
 def return_expected_failed_checks(
     estimator: BaseEstimator,
-    expected_failed_checks: Optional[dict[str, str]] = None,
 ) -> dict[str, str]:
-    if expected_failed_checks is None:
-        expected_failed_checks = {}
+    """Return the expected failures for a given estimator.
+
+    This is where all the expected_failed_checks for all Nilearn estimators
+    are centralized.
+    """
+    expected_failed_checks: dict[str, str] = {}
+
+    if isinstance(estimator, ConnectivityMeasure):
+        return {
+            "check_complex_data": "TODO",
+            "check_dict_unchanged": "TODO",
+            "check_dont_overwrite_parameters": "TODO",
+            "check_dtype_object": "TODO",
+            "check_estimators_dtypes": "TODO",
+            "check_estimator_sparse_data": "TODO",
+            "check_estimator_sparse_array": "TODO",
+            "check_estimator_sparse_matrix": "TODO",
+            "check_estimators_empty_data_messages": "TODO",
+            "check_estimators_fit_returns_self": "TODO",
+            "check_estimators_nan_inf": "TODO",
+            "check_estimators_overwrite_params": "TODO",
+            "check_estimators_pickle": "TODO",
+            "check_f_contiguous_array_estimator": "TODO",
+            "check_fit_check_is_fitted": "TODO",
+            "check_fit_idempotent": "TODO",
+            "check_fit_score_takes_y": "TODO",
+            "check_fit2d_1feature": "TODO",
+            "check_fit2d_1sample": "TODO",
+            "check_fit2d_predict1d": "TODO",
+            "check_methods_sample_order_invariance": "TODO",
+            "check_methods_subset_invariance": "TODO",
+            "check_pipeline_consistency": "TODO",
+            "check_positive_only_tag_during_fit": "TODO",
+            "check_n_features_in": "TODO",
+            "check_n_features_in_after_fitting": "TODO",
+            "check_readonly_memmap_input": "TODO",
+            "check_transformer_data_not_an_array": "TODO",
+            "check_transformer_general": "TODO",
+            "check_transformer_preserve_dtypes": "TODO",
+        }
+
+    elif isinstance(estimator, (ReNA, HierarchicalKMeans)):
+        expected_failed_checks = {
+            "check_clustering": "TODO",
+            "check_estimators_dtypes": "TODO",
+            "check_estimator_sparse_array": "TODO",
+            "check_estimator_sparse_matrix": "TODO",
+            "check_estimators_fit_returns_self": "TODO",
+            "check_estimators_nan_inf": "TODO",
+            "check_estimators_overwrite_params": "TODO",
+            "check_estimators_pickle": "TODO",
+            "check_f_contiguous_array_estimator": "TODO",
+            "check_fit_idempotent": "TODO",
+            "check_fit_check_is_fitted": "TODO",
+            "check_fit_score_takes_y": "TODO",
+            "check_fit2d_predict1d": "TODO",
+            "check_pipeline_consistency": "TODO",
+            "check_positive_only_tag_during_fit": "TODO",
+            "check_n_features_in": "TODO",
+            "check_n_features_in_after_fitting": "TODO",
+            "check_readonly_memmap_input": "TODO",
+            "check_transformer_data_not_an_array": "TODO",
+            "check_transformer_general": "TODO",
+            "check_transformer_preserve_dtypes": "TODO",
+        }
+        if isinstance(estimator, (ReNA)):
+            expected_failed_checks |= {
+                "check_dict_unchanged": "TODO",
+                "check_dont_overwrite_parameters": "TODO",
+                "check_dtype_object": "TODO",
+                "check_methods_sample_order_invariance": "TODO",
+                "check_methods_subset_invariance": "TODO",
+            }
+
+        return expected_failed_checks
+
+    elif isinstance(
+        estimator, (GroupSparseCovariance, GroupSparseCovarianceCV)
+    ):
+        return {
+            "check_dict_unchanged": "TODO",
+            "check_dont_overwrite_parameters": "TODO",
+            "check_dtype_object": "TODO",
+            "check_estimator_sparse_array": "TODO",
+            "check_estimator_sparse_data": "TODO",
+            "check_estimator_sparse_matrix": "TODO",
+            "check_estimators_dtypes": "TODO",
+            "check_estimators_empty_data_messages": "TODO",
+            "check_estimators_fit_returns_self": "TODO",
+            "check_estimators_nan_inf": "TODO",
+            "check_estimators_overwrite_params": "TODO",
+            "check_estimators_pickle": "TODO",
+            "check_f_contiguous_array_estimator": "TODO",
+            "check_fit_check_is_fitted": "handled by nilearn checks",
+            "check_fit_idempotent": "TODO",
+            "check_fit_score_takes_y": "not applicable",
+            "check_fit2d_1feature": "TODO",
+            "check_fit2d_1sample": "TODO",
+            "check_fit2d_predict1d": "TODO",
+            "check_methods_sample_order_invariance": "TODO",
+            "check_methods_subset_invariance": "TODO",
+            "check_n_features_in": "TODO",
+            "check_n_features_in_after_fitting": "TODO",
+            "check_pipeline_consistency": "TODO",
+            "check_positive_only_tag_during_fit": "TODO",
+            "check_readonly_memmap_input": "TODO",
+        }
 
     if SKLEARN_LT_1_6:
         tags = estimator._more_tags()
         niimg_input = "niimg_like" in tags["X_types"]
         surf_img = "surf_img" in tags["X_types"]
         is_masker = "masker" in tags["X_types"]
+        is_glm = "glm" in tags["X_types"]
     else:
         tags = estimator.__sklearn_tags__()
         niimg_input = getattr(tags.input_tags, "niimg_like", False)
         surf_img = getattr(tags.input_tags, "surf_img", False)
         is_masker = getattr(tags.input_tags, "masker", False)
+        is_glm = getattr(tags.input_tags, "glm", False)
 
     if niimg_input or surf_img:
-        expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
+        # keeping track of some of those in
+        # https://github.com/nilearn/nilearn/issues/4538
+        expected_failed_checks = {
+            # The following do not apply for nilearn maskers
+            # as they do not take numpy arrays as input.
+            "check_complex_data": "not applicable for image input",
+            "check_dtype_object": "not applicable for image input",
+            "check_estimator_sparse_array": "not applicable for image input",
+            "check_estimator_sparse_data": "not applicable for image input",
+            "check_estimator_sparse_matrix": "not applicable for image input",
+            "check_estimator_sparse_tag": "not applicable for image input",
+            "check_f_contiguous_array_estimator": (
+                "not applicable for image input"
+            ),
+            "check_fit1d": "not applicable for image input",
+            "check_fit2d_1feature": "not applicable for image input",
+            "check_fit2d_1sample": "not applicable for image input",
+            "check_fit2d_predict1d": "not applicable for image input",
+            "check_n_features_in": "not applicable",
+            "check_n_features_in_after_fitting": "not applicable",
+            # the following are skipped
+            # because there is nilearn specific replacement
+            "check_estimators_dtypes": (
+                "replaced by check_masker_dtypes and check_glm_dtypes"
+            ),
+            "check_estimators_fit_returns_self": (
+                "replaced by check_nifti_masker_fit_returns_self "
+                "or check_surface_masker_fit_returns_self or "
+                "check_glm_fit_returns_self"
+            ),
+            "check_fit_check_is_fitted": (
+                "replaced by check_masker_fitted or check_glm_is_fitted"
+            ),
+            "check_transformer_data_not_an_array": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_transformer_general": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_transformer_preserve_dtypes": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
+            "check_fit_score_takes_y": (
+                "replaced by check_masker_fit_score_takes_y"
+            ),
+            # Those are skipped for now they fail
+            # for unknown reasons
+            # most often because sklearn inputs expect a numpy array
+            # that errors with maskers,
+            # or because a suitable nilearn replacement
+            # has not yet been created.
+            "check_classifier_data_not_an_array": "TODO",
+            "check_classifiers_classes": "TODO",
+            "check_classifiers_one_label": "TODO",
+            "check_classifiers_regression_target": "TODO",
+            "check_classifiers_train": "TODO",
+            "check_dont_overwrite_parameters": "TODO",
+            "check_estimators_empty_data_messages": "TODO",
+            "check_estimators_pickle": "TODO",
+            "check_estimators_nan_inf": "TODO",
+            "check_estimators_overwrite_params": "TODO",
+            "check_fit_idempotent": "TODO",
+            "check_methods_sample_order_invariance": "TODO",
+            "check_methods_subset_invariance": "TODO",
+            "check_positive_only_tag_during_fit": "TODO",
+            "check_pipeline_consistency": "TODO",
+            "check_readonly_memmap_input": "TODO",
+            "check_regressor_data_not_an_array": "TODO",
+            "check_regressor_multioutput": "TODO",
+            "check_regressors_int": "TODO",
+            "check_regressors_train": "TODO",
+            "check_regressors_no_decision_function": "TODO",
+            "check_requires_y_none": "TODO",
+            "check_supervised_y_no_nan": "TODO",
+            "check_supervised_y_2d": "TODO",
+        }
 
     if is_masker and niimg_input:
         # TODO remove when bumping to nilearn 0.13.2
@@ -243,6 +346,23 @@ def return_expected_failed_checks(
                 "Deprecation cycle started to fix."
             ),
         }
+
+    # remove some checks for some estimators
+
+    # not entirely sure why they pass
+    # e.g check_estimator_sparse_data passes for SurfaceLabelsMasker
+    # but not SurfaceMasker ????
+    if is_glm:
+        expected_failed_checks.pop("check_estimator_sparse_data")
+
+    if isinstance(
+        estimator, (SurfaceLabelsMasker, SurfaceMapsMasker, RegionExtractor)
+    ):
+        expected_failed_checks.pop("check_estimator_sparse_data")
+        expected_failed_checks.pop("check_estimators_fit_returns_self")
+        expected_failed_checks.pop("check_fit_check_is_fitted")
+        expected_failed_checks.pop("check_fit2d_1feature")
+        expected_failed_checks.pop("check_fit2d_1sample")
 
     return expected_failed_checks
 

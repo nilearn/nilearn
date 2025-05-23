@@ -15,17 +15,17 @@ from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _img_maps
 from nilearn.maskers import MultiNiftiMapsMasker, NiftiMapsMasker
 
+ESTIMATORS_TO_CHECK = [
+    # pass less than the default number of regions
+    # to speed up the tests
+    MultiNiftiMapsMasker(_img_maps(n_regions=2)),
+]
+
 if SKLEARN_LT_1_6:
 
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(
-            estimators=[
-                # pass less than the default number of regions
-                # to speed up the tests
-                MultiNiftiMapsMasker(_img_maps(n_regions=2)),
-            ],
-        ),
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
     )
     def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -35,11 +35,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(
-            estimators=[
-                # pass less than the default number of regions
-                # to speed up the tests
-                MultiNiftiMapsMasker(_img_maps(n_regions=2)),
-            ],
+            estimators=ESTIMATORS_TO_CHECK,
             valid=False,
         ),
     )
@@ -50,9 +46,7 @@ if SKLEARN_LT_1_6:
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=MultiNiftiMapsMasker(_img_maps(n_regions=2))
-    ),
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""

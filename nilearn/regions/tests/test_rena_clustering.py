@@ -19,19 +19,13 @@ from nilearn.regions.rena_clustering import (
 )
 from nilearn.surface import SurfaceImage
 
-expected_failed_checks = {
-    "check_clusterer_compute_labels_predict": "TODO",
-}
-
 ESTIMATORS_TO_CHECK = [ReNA(mask_img=_img_3d_mni(), n_clusters=2)]
 
 if SKLEARN_LT_1_6:
 
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(
-            estimators=ESTIMATORS_TO_CHECK,
-        ),
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
     )
     def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -40,11 +34,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.xfail(reason="invalid checks should fail")
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(
-            estimators=ESTIMATORS_TO_CHECK,
-            valid=False,
-            expected_failed_checks=expected_failed_checks,
-        ),
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
     )
     def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""

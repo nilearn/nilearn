@@ -67,22 +67,22 @@ def maps_and_mask(n_regions, shape_3d_large):
     )
 
 
+ESTIMATORS_TO_CHECK = [
+    RegionExtractor(
+        maps_img=generate_maps(
+            shape=_shape_3d_large(),
+            n_regions=2,
+            random_state=42,
+            affine=_affine_eye(),
+        )[0]
+    )
+]
+
 if SKLEARN_LT_1_6:
 
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(
-            estimators=[
-                RegionExtractor(
-                    maps_img=generate_maps(
-                        shape=_shape_3d_large(),
-                        n_regions=2,
-                        random_state=42,
-                        affine=_affine_eye(),
-                    )[0]
-                )
-            ],
-        ),
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
     )
     def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -91,16 +91,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.xfail(reason="invalid checks should fail")
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(
-            estimators=[
-                RegionExtractor(
-                    maps_img=generate_maps(
-                        shape=_shape_3d_large(), n_regions=2, random_state=42
-                    )[0]
-                )
-            ],
-            valid=False,
-        ),
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
     )
     def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -109,13 +100,7 @@ if SKLEARN_LT_1_6:
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=RegionExtractor(
-            maps_img=generate_maps(
-                shape=_shape_3d_large(), n_regions=2, random_state=42
-            )[0]
-        )
-    ),
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""

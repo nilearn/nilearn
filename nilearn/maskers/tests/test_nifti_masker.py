@@ -25,13 +25,13 @@ from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask
 
+ESTIMATORS_TO_CHECK = [NiftiMasker()]
+
 if SKLEARN_LT_1_6:
 
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(
-            estimators=[NiftiMasker()],
-        ),
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
     )
     def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -40,10 +40,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.xfail(reason="invalid checks should fail")
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(
-            estimators=[NiftiMasker()],
-            valid=False,
-        ),
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
     )
     def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -51,7 +48,8 @@ if SKLEARN_LT_1_6:
 
 
 @pytest.mark.parametrize(
-    "estimator, check, name", nilearn_check_estimator(estimators=NiftiMasker())
+    "estimator, check, name",
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""

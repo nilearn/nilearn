@@ -53,11 +53,13 @@ def multi_pca_data():
     return _make_multi_pca_test_data()[0]
 
 
+ESTIMATORS_TO_CHECK = [_MultiPCA()]
+
 if SKLEARN_LT_1_6:
 
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(estimators=[_MultiPCA()]),
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
     )
     def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -66,10 +68,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.xfail(reason="invalid checks should fail")
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(
-            estimators=[_MultiPCA()],
-            valid=False,
-        ),
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
     )
     def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -77,7 +76,8 @@ if SKLEARN_LT_1_6:
 
 
 @pytest.mark.parametrize(
-    "estimator, check, name", nilearn_check_estimator(estimators=_MultiPCA())
+    "estimator, check, name",
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""

@@ -18,15 +18,13 @@ from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker
 
+ESTIMATORS_TO_CHECK = [MultiNiftiLabelsMasker(labels_img=_img_labels())]
+
 if SKLEARN_LT_1_6:
 
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(
-            estimators=[
-                MultiNiftiLabelsMasker(labels_img=_img_labels()),
-            ],
-        ),
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
     )
     def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -35,12 +33,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.xfail(reason="invalid checks should fail")
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(
-            estimators=[
-                MultiNiftiLabelsMasker(_img_labels()),
-            ],
-            valid=False,
-        ),
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
     )
     def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -49,7 +42,7 @@ if SKLEARN_LT_1_6:
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimators=MultiNiftiLabelsMasker(_img_labels())),
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""

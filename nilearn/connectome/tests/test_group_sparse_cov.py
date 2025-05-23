@@ -1,8 +1,6 @@
 import numpy as np
 import pytest
-from sklearn import __version__ as sklearn_version
 
-from nilearn._utils import compare_version
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
 from nilearn._utils.estimator_checks import (
     check_estimator,
@@ -15,48 +13,13 @@ from nilearn.connectome.group_sparse_cov import (
     group_sparse_scores,
 )
 
-expected_failed_checks = {
-    "check_complex_data": "TODO",
-    "check_dont_overwrite_parameters": "TODO",
-    "check_dtype_object": "TODO",
-    "check_estimators_dtypes": "TODO",
-    "check_estimator_sparse_array": "TODO",
-    "check_estimator_sparse_matrix": "TODO",
-    "check_estimators_empty_data_messages": "TODO",
-    "check_estimators_overwrite_params": "TODO",
-    "check_f_contiguous_array_estimator": "TODO",
-    "check_fit_check_is_fitted": "handled by nilearn checks",
-    "check_fit_score_takes_y": "not applicable",
-    "check_fit2d_1feature": "TODO",
-    "check_fit2d_1sample": "TODO",
-    "check_fit2d_predict1d": "TODO",
-    "check_methods_sample_order_invariance": "TODO",
-    "check_methods_subset_invariance": "TODO",
-    "check_n_features_in": "TODO",
-    "check_n_features_in_after_fitting": "TODO",
-    "check_positive_only_tag_during_fit": "TODO",
-    "check_readonly_memmap_input": "TODO",
-}
-
-if compare_version(sklearn_version, "<", "1.5.0"):
-    expected_failed_checks |= {
-        "check_estimator_sparse_data": "TODO",
-    }
-
+ESTIMATORS_TO_CHECK = [GroupSparseCovarianceCV(), GroupSparseCovariance()]
 
 if SKLEARN_LT_1_6:
 
     @pytest.mark.parametrize(
         "estimator, check, name",
-        (
-            check_estimator(
-                estimators=[
-                    GroupSparseCovarianceCV(),
-                    GroupSparseCovariance(),
-                ],
-                expected_failed_checks=expected_failed_checks,
-            )
-        ),
+        (check_estimator(estimators=ESTIMATORS_TO_CHECK)),
     )
     def test_check_estimator_group_sparse_covariance(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
@@ -65,10 +28,7 @@ if SKLEARN_LT_1_6:
     @pytest.mark.xfail(reason="invalid checks should fail")
     @pytest.mark.parametrize(
         "estimator, check, name",
-        check_estimator(
-            estimators=[GroupSparseCovarianceCV(), GroupSparseCovariance()],
-            valid=False,
-        ),
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
     )
     def test_check_estimator_invalid_group_sparse_covariance(
         estimator,
@@ -81,9 +41,7 @@ if SKLEARN_LT_1_6:
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(
-        estimators=[GroupSparseCovarianceCV(), GroupSparseCovariance()]
-    ),
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
