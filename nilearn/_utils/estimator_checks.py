@@ -240,13 +240,26 @@ def return_expected_failed_checks(
         tags = estimator._more_tags()
         niimg_input = "niimg_like" in tags["X_types"]
         surf_img = "surf_img" in tags["X_types"]
+        is_masker = "masker" in tags["X_types"]
     else:
         tags = estimator.__sklearn_tags__()
         niimg_input = getattr(tags.input_tags, "niimg_like", False)
         surf_img = getattr(tags.input_tags, "surf_img", False)
+        is_masker = getattr(tags.input_tags, "masker", False)
 
     if niimg_input or surf_img:
         expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
+
+    if is_masker and niimg_input:
+        # TODO remove when bumping to nilearn 0.13.2
+        expected_failed_checks |= {
+            "check_do_not_raise_errors_in_init_or_set_params": (
+                "Deprecation cycle started to fix."
+            ),
+            "check_no_attributes_set_in_init": (
+                "Deprecation cycle started to fix."
+            ),
+        }
 
     return expected_failed_checks
 

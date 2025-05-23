@@ -23,7 +23,6 @@ from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
-from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 
 if SKLEARN_LT_1_6:
 
@@ -31,7 +30,6 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         check_estimator(
             estimator=[NiftiLabelsMasker(labels_img=_img_labels())],
-            expected_failed_checks=expected_failed_checks_0pt13pt2(),
         ),
     )
     def test_check_estimator(estimator, check, name):  # noqa: ARG001
