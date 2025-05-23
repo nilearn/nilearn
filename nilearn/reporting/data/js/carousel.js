@@ -36,8 +36,12 @@ class MapCarousel {
         let prevButton = document.querySelector(`#prev-btn-${this.uid}`);
         let nextButton = document.querySelector(`#next-btn-${this.uid}`);
 
-        if (prevButton) prevButton.addEventListener("click", () => this.displayPreviousMap());
-        if (nextButton) nextButton.addEventListener("click", () => this.displayNextMap());
+        if (prevButton) {
+          prevButton.addEventListener("click", () => this.displayPreviousMap());
+        }
+        if (nextButton) {
+          nextButton.addEventListener("click", () => this.displayNextMap());
+        }
     }
 
     /**
