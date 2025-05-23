@@ -302,15 +302,12 @@ class BaseSurfaceBackend:
                     f"plot_img_on_surf does not accept {arg} as an argument"
                 )
 
-        # TODO shouldn't we check a list for hemispheres
         if hemispheres in (None, "both", ["both"]):
             hemispheres = ["left", "right"]
         if not isinstance(hemispheres, list):
             hemispheres = [hemispheres]
         hemis = check_hemispheres(hemispheres)
 
-        # TODO Shouldn't we check type of views to be a list, or convert to
-        # list
         if views is None:
             views = ["lateral", "medial"]
         modes = check_views(views)
