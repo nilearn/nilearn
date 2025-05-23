@@ -947,6 +947,7 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
     "hemispheres, views",
     [
         (["right"], ["lateral"]),
+        ("left", ["lateral"]),
         (["both"], ["lateral"]),
         (["left", "right"], ["anterior"]),
         (["right"], ["medial", "lateral"]),
@@ -1060,6 +1061,10 @@ def test_plot_img_on_surf_with_invalid_hemisphere(img_3d_mni):
     with pytest.raises(ValueError):
         plot_img_on_surf(
             img_3d_mni, views=["lateral"], inflate=True, hemispheres=["lft]"]
+        )
+    with pytest.raises(ValueError):
+        plot_img_on_surf(
+            img_3d_mni, views=["lateral"], inflate=True, hemispheres="lft"
         )
     with pytest.raises(ValueError):
         plot_img_on_surf(
