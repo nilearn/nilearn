@@ -57,6 +57,7 @@ from nilearn.conftest import (
 )
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
+from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers import (
     NiftiLabelsMasker,
     NiftiMapsMasker,
@@ -234,6 +235,11 @@ def return_expected_failed_checks(
             expected_failed_checks.pop("check_estimator_sparse_matrix")
             expected_failed_checks.pop("check_estimator_sparse_array")
 
+        if parse(sklearn_version).release[1] >= 6 and isinstance(
+            estimator, (HierarchicalKMeans)
+        ):
+            expected_failed_checks.pop("check_dict_unchanged")
+
         return expected_failed_checks
 
     elif isinstance(
@@ -388,16 +394,34 @@ def return_expected_failed_checks(
         expected_failed_checks.pop("check_fit2d_1feature")
         expected_failed_checks.pop("check_fit2d_1sample")
 
-    if (parse(sklearn_version).release[1] >= 5 and is_glm) or isinstance(
-        estimator,
-        (
-            SurfaceLabelsMasker,
-            SurfaceMapsMasker,
-            RegionExtractor,
-        ),
+    if parse(sklearn_version).release[1] >= 5 and (
+        is_glm
+        or isinstance(
+            estimator,
+            (
+                SurfaceLabelsMasker,
+                SurfaceMapsMasker,
+                RegionExtractor,
+            ),
+        )
     ):
         expected_failed_checks.pop("check_estimator_sparse_matrix")
         expected_failed_checks.pop("check_estimator_sparse_array")
+
+    if parse(sklearn_version).release[1] >= 6:
+        if is_glm or isinstance(
+            estimator,
+            (
+                SurfaceLabelsMasker,
+                SurfaceMapsMasker,
+                _BaseDecomposition,
+                NiftiMasker,
+            ),
+        ):
+            expected_failed_checks.pop("check_estimator_sparse_tag")
+        if isinstance(estimator, (SurfaceLabelsMasker, SurfaceMapsMasker)):
+            expected_failed_checks.pop("check_readonly_memmap_input")
+            expected_failed_checks.pop("check_positive_only_tag_during_fit")
 
     return expected_failed_checks
 
