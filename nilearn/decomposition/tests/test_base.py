@@ -23,7 +23,7 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         check_estimator(estimator=[_BaseDecomposition()]),
     )
-    def test_check_estimator(estimator, check, name):  # noqa: ARG001
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
         check(estimator)
 
@@ -35,7 +35,7 @@ if SKLEARN_LT_1_6:
             valid=False,
         ),
     )
-    def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
         check(estimator)
 
