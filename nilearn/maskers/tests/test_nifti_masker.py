@@ -13,12 +13,14 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils import data_gen, exceptions, testing
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
+    return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data, index_img
@@ -47,11 +49,6 @@ if SKLEARN_LT_1_6:
         check(estimator)
 
 else:
-    from sklearn.utils.estimator_checks import parametrize_with_checks
-
-    from nilearn._utils.estimator_checks import (
-        return_expected_failed_checks,
-    )
 
     @parametrize_with_checks(
         estimators=ESTIMATORS_TO_CHECK,
