@@ -64,73 +64,18 @@ from nilearn.surface.utils import (
 )
 
 # TODO simplify when dropping sklearn 1.5,
-if not SKLEARN_LT_1_6:
+if SKLEARN_LT_1_6:
+    from sklearn.utils.estimator_checks import (
+        check_estimator as sklearn_check_estimator,
+    )
+else:
     from sklearn.utils.estimator_checks import _check_name
     from sklearn.utils.estimator_checks import (
         estimator_checks_generator as sklearn_check_generator,
     )
-else:
-    from sklearn.utils.estimator_checks import (
-        check_estimator as sklearn_check_estimator,
-    )
-
-# List of sklearn estimators checks that are 'valid'
-# for all nilearn estimators.
-# Some may be explicitly skipped : see CHECKS_TO_SKIP_IF_IMG_INPUT below
-VALID_CHECKS = [
-    "check_complex_data",
-    "check_decision_proba_consistency",
-    "check_dict_unchangedcheck_clusterer_compute_labels_predict",
-    "check_do_not_raise_errors_in_init_or_set_params",
-    "check_dont_overwrite_parameters",
-    "check_dtype_object",
-    "check_estimator_cloneable",
-    "check_estimators_dtypes",
-    "check_estimator_repr",
-    "check_estimator_sparse_array",
-    "check_estimator_sparse_data",
-    "check_estimator_sparse_matrix",
-    "check_estimator_sparse_tag",
-    "check_estimator_tags_renamed",
-    "check_estimators_empty_data_messages",
-    "check_estimators_overwrite_params",
-    "check_estimators_partial_fit_n_features",
-    "check_estimators_unfitted",
-    "check_f_contiguous_array_estimator",
-    "check_fit1d",
-    "check_fit2d_1feature",
-    "check_fit2d_1sample",
-    "check_fit2d_predict1d",
-    "check_fit_check_is_fitted",
-    "check_fit_score_takes_y",
-    "check_get_params_invariance",
-    "check_methods_sample_order_invariance",
-    "check_methods_subset_invariance",
-    "check_mixin_order",
-    "check_n_features_in",
-    "check_n_features_in_after_fitting",
-    "check_no_attributes_set_in_init",
-    "check_non_transformer_estimators_n_iter",
-    "check_parameters_default_constructible",
-    "check_positive_only_tag_during_fit",
-    "check_readonly_memmap_input",
-    "check_set_params",
-    "check_transformer_data_not_an_array",
-    "check_transformer_general",
-    "check_transformer_n_iter",
-    "check_transformer_preserve_dtypes",
-    "check_transformers_unfitted",
-]
-
-if not SKLEARN_LT_1_6:
-    VALID_CHECKS.append("check_valid_tag_types")
-else:
-    VALID_CHECKS.append("check_estimator_get_tags_default_keys")
 
 # keeping track of some of those in
 # https://github.com/nilearn/nilearn/issues/4538
-
-
 CHECKS_TO_SKIP_IF_IMG_INPUT: dict[str, str] = {
     # The following do not apply for nilearn maskers
     # as they do not take numpy arrays as input.
@@ -199,17 +144,6 @@ CHECKS_TO_SKIP_IF_IMG_INPUT: dict[str, str] = {
     "check_supervised_y_2d": "TODO",
 }
 
-# TODO
-# remove when bumping to sklearn >= 1.3
-try:
-    from sklearn.utils.estimator_checks import (
-        check_classifiers_one_label_sample_weights,
-    )
-
-    VALID_CHECKS.append(check_classifiers_one_label_sample_weights.__name__)
-except ImportError:
-    ...
-
 
 def nilearn_dir() -> Path:
     return Path(__file__).parents[1]
@@ -258,8 +192,6 @@ def check_estimator(
         Where `"check_name"` is the name of the check, and `"my reason"` is why
         the check fails.
     """
-    valid_checks = VALID_CHECKS
-
     if not isinstance(estimator, list):
         estimator = [estimator]
 
@@ -268,7 +200,16 @@ def check_estimator(
             est, expected_failed_checks=expected_failed_checks
         )
         # TODO simplify when dropping sklearn 1.5
-        if not SKLEARN_LT_1_6:
+        if SKLEARN_LT_1_6:
+            for e, check in sklearn_check_estimator(
+                estimator=est, generate_only=True
+            ):
+                if not valid and check.func.__name__ in expected_failed_checks:
+                    yield e, check, check.func.__name__
+                if valid and check.func.__name__ not in expected_failed_checks:
+                    yield e, check, check.func.__name__
+
+        else:
             for e, check in sklearn_check_generator(
                 estimator=est,
                 expected_failed_checks=expected_failed_checks,
@@ -282,50 +223,27 @@ def check_estimator(
                 # things may break with no deprecation warning
                 name = _check_name(check)
 
-                if valid and name in valid_checks:
+                if valid and name not in expected_failed_checks:
                     yield e, check, name
-                if not valid and name not in valid_checks:
+                if not valid and name in expected_failed_checks:
                     yield e, check, name
-
-        else:
-            for e, check in sklearn_check_estimator(
-                estimator=est, generate_only=True
-            ):
-                if (
-                    isinstance(expected_failed_checks, dict)
-                    and check.func.__name__ in expected_failed_checks
-                ):
-                    continue
-
-                if valid and check.func.__name__ in valid_checks:
-                    yield e, check, check.func.__name__
-                if not valid and check.func.__name__ not in valid_checks:
-                    yield e, check, check.func.__name__
 
 
 def return_expected_failed_checks(estimator, expected_failed_checks=None):
-    if not SKLEARN_LT_1_6:
-        tags = estimator.__sklearn_tags__()
+    if expected_failed_checks is None:
+        expected_failed_checks = {}
 
+    if SKLEARN_LT_1_6:
+        tags = estimator._more_tags()
+        niimg_input = "niimg_like" in tags["X_types"]
+        surf_img = "surf_img" in tags["X_types"]
+    else:
+        tags = estimator.__sklearn_tags__()
         niimg_input = getattr(tags.input_tags, "niimg_like", False)
         surf_img = getattr(tags.input_tags, "surf_img", False)
 
-        if niimg_input or surf_img:
-            if expected_failed_checks is None:
-                expected_failed_checks = CHECKS_TO_SKIP_IF_IMG_INPUT
-            else:
-                expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
-    else:
-        tags = estimator._more_tags()
-
-        niimg_input = "niimg_like" in tags["X_types"]
-        surf_img = "surf_img" in tags["X_types"]
-
-        if niimg_input or surf_img:
-            if expected_failed_checks is None:
-                expected_failed_checks = CHECKS_TO_SKIP_IF_IMG_INPUT
-            else:
-                expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
+    if niimg_input or surf_img:
+        expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
 
     return expected_failed_checks
 
@@ -347,10 +265,10 @@ def nilearn_check_generator(estimator):
     is_glm = False
     surf_img_input = False
 
-    if not SKLEARN_LT_1_6:
-        tags = estimator.__sklearn_tags__()
-    else:  # pragma: no cover
+    if SKLEARN_LT_1_6:
         tags = estimator._more_tags()
+    else:  # pragma: no cover
+        tags = estimator.__sklearn_tags__()
 
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass

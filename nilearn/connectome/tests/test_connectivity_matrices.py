@@ -14,6 +14,7 @@ from sklearn.utils.estimator_checks import parametrize_with_checks
 from nilearn._utils import compare_version
 from nilearn._utils.estimator_checks import check_estimator
 from nilearn._utils.extmath import is_spd
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
     _check_spd,
@@ -78,41 +79,44 @@ if compare_version(sklearn_version, "<", "1.5.0"):
     }
 
 
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    (
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        (
+            check_estimator(
+                estimator=[
+                    ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
+                ],
+                expected_failed_checks=expected_failed_checks,
+            )
+        ),
+    )
+    def test_check_estimator_group_sparse_covariance(
+        estimator,
+        check,
+        name,  # noqa: ARG001
+    ):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
         check_estimator(
             estimator=[
                 ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
             ],
-            expected_failed_checks=expected_failed_checks,
-        )
-    ),
-)
-def test_check_estimator_group_sparse_covariance(
-    estimator,
-    check,
-    name,  # noqa: ARG001
-):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[ConnectivityMeasure(cov_estimator=EmpiricalCovariance())],
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid_group_sparse_covariance(
-    estimator,
-    check,
-    name,  # noqa: ARG001
-):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+            valid=False,
+        ),
+    )
+    def test_check_estimator_invalid_group_sparse_covariance(
+        estimator,
+        check,
+        name,  # noqa: ARG001
+    ):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
 def random_diagonal(p, v_min=1.0, v_max=2.0, random_state=0):
