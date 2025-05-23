@@ -24,12 +24,13 @@ class CanICA(_MultiPCA):
     ----------
     mask : Niimg-like object or MultiNiftiMasker instance, optional
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
+        then its mask will be used. If no mask is given, for Nifti images,
         it will be computed automatically by a MultiNiftiMasker with default
-        parameters.
+        parameters; for surface images, all the vertices will be used.
 
     n_components : :obj:`int`, default=20
         Number of components to extract.
+
     %(smoothing_fwhm)s
         Default=6mm.
 
@@ -89,13 +90,6 @@ class CanICA(_MultiPCA):
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(mask_strategy)s
-
-        .. note::
-             Depending on this value, the mask will be computed from
-             :func:`nilearn.masking.compute_background_mask`,
-             :func:`nilearn.masking.compute_epi_mask`, or
-             :func:`nilearn.masking.compute_brain_mask`.
-
         Default='epi'.
 
     mask_args : :obj:`dict`, optional
@@ -131,14 +125,17 @@ class CanICA(_MultiPCA):
 
     masker_ : instance of MultiNiftiMasker
         Masker used to filter and mask data as first step. If an instance of
-        MultiNiftiMasker is given in ``mask`` parameter,
-        this is a copy of it. Otherwise, a masker is created using the value
-        of ``mask`` and other NiftiMasker related parameters as initialization.
+        MultiNiftiMasker is given in ``mask`` parameter, this is a copy of it.
+        Otherwise, a masker is created using the value of `mask` and
+        other NiftiMasker/SurfaceMasker related parameters as initialization.
 
     mask_img_ : Niimg-like object
         See :ref:`extracting_data`.
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
+        The mask of the data. If no mask was given at masker creation:
+        - for Nifti images, this contains automatically computed mask via the
+        selected ``mask_strategy``.
+        - for SurfaceImage objects, this mask encompasses all vertices of
+        the input images.
 
     References
     ----------
