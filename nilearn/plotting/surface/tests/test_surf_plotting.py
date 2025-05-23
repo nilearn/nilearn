@@ -1120,11 +1120,11 @@ def test_plot_img_on_surf_title(matplotlib_pyplot, img_3d_mni):
     .
     """
     title = "Title"
-    fig = plot_img_on_surf(
+    fig, _ = plot_img_on_surf(
         img_3d_mni, hemispheres=["right"], views=["lateral"]
     )
     assert fig._suptitle is None, "Created title without title kwarg."
-    fig = plot_img_on_surf(
+    fig, _ = plot_img_on_surf(
         img_3d_mni, hemispheres=["right"], views=["lateral"], title=title
     )
     assert fig._suptitle is not None, "Title not created."
