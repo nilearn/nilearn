@@ -231,10 +231,43 @@ def return_expected_failed_checks(
                 "check_methods_subset_invariance": "TODO",
             }
 
+        if parse(sklearn_version).release[1] >= 5:
+            if isinstance(
+                estimator,
+                (
+                    ReNA,
+                    HierarchicalKMeans,
+                ),
+            ):
+                expected_failed_checks.pop("check_estimator_sparse_matrix")
+                expected_failed_checks.pop("check_estimator_sparse_array")
+
+            if isinstance(estimator, (ReNA, HierarchicalKMeans)):
+                expected_failed_checks.pop("check_complex_data")
+                expected_failed_checks.pop("check_fit2d_1feature")
+                expected_failed_checks.pop("check_fit1d")
+                expected_failed_checks.pop("check_fit2d_1sample")
+                expected_failed_checks.pop(
+                    "check_estimators_empty_data_messages"
+                )
+
+                expected_failed_checks |= {"check_clustering": "TODO"}
+
+            if isinstance(estimator, (HierarchicalKMeans)):
+                expected_failed_checks.pop("check_methods_subset_invariance")
+                expected_failed_checks.pop(
+                    "check_methods_sample_order_invariance"
+                )
+                expected_failed_checks.pop("check_dont_overwrite_parameters")
+                expected_failed_checks.pop("check_dtype_object")
+                expected_failed_checks.pop("check_dict_unchanged")
+
+        return expected_failed_checks
+
     elif isinstance(
         estimator, (GroupSparseCovariance, GroupSparseCovarianceCV)
     ):
-        expected_failed_checks = {
+        return {
             "check_dict_unchanged": "TODO",
             "check_dont_overwrite_parameters": "TODO",
             "check_dtype_object": "TODO",
@@ -383,16 +416,12 @@ def return_expected_failed_checks(
         expected_failed_checks.pop("check_fit2d_1feature")
         expected_failed_checks.pop("check_fit2d_1sample")
 
-    # Adapt some checks for some estimators depending on sklearn version
-
     if parse(sklearn_version).release[1] >= 5:
         if is_glm or isinstance(
             estimator,
             (
                 SurfaceLabelsMasker,
                 SurfaceMapsMasker,
-                ReNA,
-                HierarchicalKMeans,
                 RegionExtractor,
             ),
         ):
@@ -401,24 +430,6 @@ def return_expected_failed_checks(
 
         if isinstance(estimator, (NiftiMasker, _BaseDecomposition)):
             expected_failed_checks.pop("check_estimator_sparse_array")
-
-        if isinstance(estimator, (ReNA, HierarchicalKMeans)):
-            expected_failed_checks.pop("check_complex_data")
-            expected_failed_checks.pop("check_fit2d_1feature")
-            expected_failed_checks.pop("check_fit1d")
-            expected_failed_checks.pop("check_fit2d_1sample")
-            expected_failed_checks.pop("check_estimators_empty_data_messages")
-
-            expected_failed_checks |= {"check_clustering": "TODO"}
-
-        # if isinstance(estimator, (ReNA)):
-
-        if isinstance(estimator, (HierarchicalKMeans)):
-            expected_failed_checks.pop("check_methods_subset_invariance")
-            expected_failed_checks.pop("check_methods_sample_order_invariance")
-            expected_failed_checks.pop("check_dont_overwrite_parameters")
-            expected_failed_checks.pop("check_dtype_object")
-            expected_failed_checks.pop("check_dict_unchanged")
 
     return expected_failed_checks
 
