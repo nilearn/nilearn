@@ -5,6 +5,7 @@ Any imports from "matplotlib" package, or "matplotlib" engine specific utility
 functions in :obj:`~nilearn.plotting.surface` should be in this file.
 """
 
+import itertools
 from warnings import warn
 
 import numpy as np
@@ -34,6 +35,7 @@ try:
     from matplotlib.cm import ScalarMappable
     from matplotlib.colorbar import make_axes
     from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
+    from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
     from matplotlib.patches import Patch
     from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 except ImportError:
@@ -610,6 +612,120 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
             axes.set_title(title)
 
         return save_figure_if_needed(figure, output_file)
+
+    def _plot_img_on_surf(
+        self,
+        surf,
+        surf_mesh,
+        stat_map,
+        texture,
+        hemis,
+        modes,
+        bg_on_data=False,
+        inflate=False,
+        output_file=None,
+        title=None,
+        colorbar=True,
+        vmin=None,
+        vmax=None,
+        threshold=None,
+        symmetric_cbar=None,
+        cmap=DEFAULT_DIVERGING_CMAP,
+        cbar_tick_format=None,
+        **kwargs,
+    ):
+        if symmetric_cbar is None:
+            symmetric_cbar = "auto"
+        if cbar_tick_format is None:
+            cbar_tick_format = "%i"
+
+        cbar_h = 0.25
+        title_h = 0.25 * (title is not None)
+        w, h = plt.figaspect((len(modes) + cbar_h + title_h) / len(hemis))
+        fig = plt.figure(figsize=(w, h), constrained_layout=False)
+        height_ratios = [title_h] + [1.0] * len(modes) + [cbar_h]
+        grid = GridSpec(
+            len(modes) + 2,
+            len(hemis),
+            left=0.0,
+            right=1.0,
+            bottom=0.0,
+            top=1.0,
+            height_ratios=height_ratios,
+            hspace=0.0,
+            wspace=0.0,
+        )
+        axes = []
+
+        for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
+            bg_map = None
+            # By default, add curv sign background map if mesh is inflated,
+            # sulc depth background map otherwise
+            if inflate:
+                curv_map = self.load_surf_data(surf_mesh[f"curv_{hemi}"])
+                curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
+                bg_map = curv_sign_map
+            else:
+                sulc_map = surf_mesh[f"sulc_{hemi}"]
+                bg_map = sulc_map
+
+            ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
+            axes.append(ax)
+
+            self.plot_surf_stat_map(
+                surf[hemi],
+                texture[hemi],
+                view=mode,
+                hemi=hemi,
+                bg_map=bg_map,
+                bg_on_data=bg_on_data,
+                axes=ax,
+                colorbar=False,  # Colorbar created externally.
+                vmin=vmin,
+                vmax=vmax,
+                threshold=threshold,
+                cmap=cmap,
+                symmetric_cbar=symmetric_cbar,
+                **kwargs,
+            )
+
+            # We increase this value to better position the camera of the
+            # 3D projection plot. The default value makes meshes look too
+            # small.
+            ax.set_box_aspect(None, zoom=1.3)
+
+        if colorbar:
+            sm = _colorbar_from_array(
+                self.get_image_data(stat_map),
+                vmin,
+                vmax,
+                threshold,
+                symmetric_cbar=symmetric_cbar,
+                cmap=plt.get_cmap(cmap),
+            )
+
+            cbar_grid = GridSpecFromSubplotSpec(3, 3, grid[-1, :])
+            cbar_ax = fig.add_subplot(cbar_grid[1])
+            axes.append(cbar_ax)
+            # Get custom ticks to set in colorbar
+            ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold)
+            fig.colorbar(
+                sm,
+                cax=cbar_ax,
+                orientation="horizontal",
+                ticks=ticks,
+                format=cbar_tick_format,
+            )
+
+        if title is not None:
+            fig.suptitle(
+                title, y=1.0 - title_h / sum(height_ratios), va="bottom"
+            )
+
+        if output_file is None:
+            return fig, axes
+        fig.savefig(output_file, bbox_inches="tight")
+        plt.close(fig)
 
     def _adjust_colorbar_and_data_ranges(
         self, stat_map, vmin=None, vmax=None, symmetric_cbar=None

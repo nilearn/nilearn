@@ -1,35 +1,11 @@
 """Functions for surface visualization."""
 
-import itertools
-
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib import gridspec
-
-from nilearn import DEFAULT_DIVERGING_CMAP, image, surface
-from nilearn._utils import check_niimg_3d, fill_doc
-from nilearn._utils.param_validation import check_params
-from nilearn.plotting._utils import (
-    DEFAULT_ENGINE,
-    get_colorbar_and_data_ranges,
-)
-from nilearn.plotting.surface._backend import (
-    check_hemispheres,
-    check_views,
-)
-from nilearn.plotting.surface._matplotlib_backend import (
-    _colorbar_from_array,
-    _get_ticks,
-)
+from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils import fill_doc
+from nilearn.plotting._utils import DEFAULT_ENGINE
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
     get_surface_backend,
-)
-from nilearn.surface import (
-    vol_to_surf,
-)
-from nilearn.surface.surface import (
-    check_mesh_is_fsaverage,
 )
 
 
@@ -671,6 +647,10 @@ def plot_img_on_surf(
     kwargs : :obj:`dict`, optional
         keyword arguments passed to plot_surf_stat_map.
 
+        .. note::
+            Parameters "figure", "axes", and "engine" which are valid for
+            ``plot_surf_stat_map`` are not valid for ``plot_img_on_surf``.
+
     See Also
     --------
     nilearn.datasets.fetch_surf_fsaverage : For surface data object to be
@@ -682,129 +662,27 @@ def plot_img_on_surf(
         accepted by plot_img_on_surf.
 
     """
-    check_params(locals())
-    if hemispheres in (None, "both"):
-        hemispheres = ["left", "right"]
-    if views is None:
-        views = ["lateral", "medial"]
-    for arg in ("figure", "axes", "engine"):
-        if arg in kwargs:
-            raise ValueError(
-                f"plot_img_on_surf does not accept {arg} as an argument"
-            )
-
-    stat_map = check_niimg_3d(stat_map, dtype="auto")
-    modes = check_views(views)
-    hemis = check_hemispheres(hemispheres)
-    surf_mesh = check_mesh_is_fsaverage(surf_mesh)
-
-    mesh_prefix = "infl" if inflate else "pial"
-    surf = {
-        "left": surf_mesh[f"{mesh_prefix}_left"],
-        "right": surf_mesh[f"{mesh_prefix}_right"],
-    }
-
-    texture = {
-        "left": vol_to_surf(
-            stat_map, surf_mesh["pial_left"], mask_img=mask_img
-        ),
-        "right": vol_to_surf(
-            stat_map, surf_mesh["pial_right"], mask_img=mask_img
-        ),
-    }
-
-    cbar_h = 0.25
-    title_h = 0.25 * (title is not None)
-    w, h = plt.figaspect((len(modes) + cbar_h + title_h) / len(hemispheres))
-    fig = plt.figure(figsize=(w, h), constrained_layout=False)
-    height_ratios = [title_h] + [1.0] * len(modes) + [cbar_h]
-    grid = gridspec.GridSpec(
-        len(modes) + 2,
-        len(hemis),
-        left=0.0,
-        right=1.0,
-        bottom=0.0,
-        top=1.0,
-        height_ratios=height_ratios,
-        hspace=0.0,
-        wspace=0.0,
-    )
-    axes = []
-
-    # get vmin and vmax for entire data (all hemis)
-    _, _, vmin, vmax = get_colorbar_and_data_ranges(
-        image.get_data(stat_map),
+    fig = get_surface_backend(DEFAULT_ENGINE).plot_img_on_surf(
+        stat_map,
+        surf_mesh=surf_mesh,
+        mask_img=mask_img,
+        hemispheres=hemispheres,
+        bg_on_data=bg_on_data,
+        inflate=inflate,
+        views=views,
+        output_file=output_file,
+        title=title,
+        colorbar=colorbar,
         vmin=vmin,
         vmax=vmax,
+        threshold=threshold,
         symmetric_cbar=symmetric_cbar,
+        cmap=cmap,
+        cbar_tick_format=cbar_tick_format,
+        **kwargs,
     )
 
-    for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
-        bg_map = None
-        # By default, add curv sign background map if mesh is inflated,
-        # sulc depth background map otherwise
-        if inflate:
-            curv_map = surface.load_surf_data(surf_mesh[f"curv_{hemi}"])
-            curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
-            bg_map = curv_sign_map
-        else:
-            sulc_map = surf_mesh[f"sulc_{hemi}"]
-            bg_map = sulc_map
-
-        ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
-        axes.append(ax)
-
-        plot_surf_stat_map(
-            surf[hemi],
-            texture[hemi],
-            view=mode,
-            hemi=hemi,
-            bg_map=bg_map,
-            bg_on_data=bg_on_data,
-            axes=ax,
-            colorbar=False,  # Colorbar created externally.
-            vmin=vmin,
-            vmax=vmax,
-            threshold=threshold,
-            cmap=cmap,
-            symmetric_cbar=symmetric_cbar,
-            **kwargs,
-        )
-
-        # We increase this value to better position the camera of the
-        # 3D projection plot. The default value makes meshes look too small.
-        ax.set_box_aspect(None, zoom=1.3)
-
-    if colorbar:
-        sm = _colorbar_from_array(
-            image.get_data(stat_map),
-            vmin,
-            vmax,
-            threshold,
-            symmetric_cbar=symmetric_cbar,
-            cmap=plt.get_cmap(cmap),
-        )
-
-        cbar_grid = gridspec.GridSpecFromSubplotSpec(3, 3, grid[-1, :])
-        cbar_ax = fig.add_subplot(cbar_grid[1])
-        axes.append(cbar_ax)
-        # Get custom ticks to set in colorbar
-        ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold)
-        fig.colorbar(
-            sm,
-            cax=cbar_ax,
-            orientation="horizontal",
-            ticks=ticks,
-            format=cbar_tick_format,
-        )
-
-    if title is not None:
-        fig.suptitle(title, y=1.0 - title_h / sum(height_ratios), va="bottom")
-
-    if output_file is None:
-        return fig, axes
-    fig.savefig(output_file, bbox_inches="tight")
-    plt.close(fig)
+    return fig
 
 
 @fill_doc

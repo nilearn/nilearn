@@ -367,6 +367,29 @@ class PlotlySurfaceBackend(BaseSurfaceBackend):
     ):
         raise NotImplementedError()
 
+    def _plot_img_on_surf(
+        self,
+        surf,
+        surf_mesh,
+        stat_map,
+        texture,
+        hemis,
+        modes,
+        bg_on_data=False,
+        inflate=False,
+        output_file=None,
+        title=None,
+        colorbar=True,
+        vmin=None,
+        vmax=None,
+        threshold=None,
+        symmetric_cbar=None,
+        cmap=DEFAULT_DIVERGING_CMAP,
+        cbar_tick_format=None,
+        **kwargs,
+    ):
+        raise NotImplementedError()
+
     def _adjust_colorbar_and_data_ranges(
         self, stat_map, vmin=None, vmax=None, symmetric_cbar=None
     ):

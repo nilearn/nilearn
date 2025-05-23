@@ -266,3 +266,12 @@ def test_plot_surf_contours(plotly_backend, in_memory_mesh):
     """
     with pytest.raises(NotImplementedError):
         plotly_backend.plot_surf_contours(in_memory_mesh, np.ones((10,)))
+
+
+def test_plot_img_on_surf(plotly_backend, img_3d_mni):
+    """Test if
+    nilearn.plotting.surface._plot_surf_plotly.PlotlySurfaceBackend.plot_surf_contours
+    raise NotImplementedError.
+    """
+    with pytest.raises(NotImplementedError):
+        plotly_backend.plot_img_on_surf(img_3d_mni)

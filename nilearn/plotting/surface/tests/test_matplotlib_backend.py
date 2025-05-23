@@ -250,3 +250,14 @@ def test_plot_surf_contours(
     matplotlib_backend.plot_surf_contours(
         in_memory_mesh, parcellation, levels=[1, 2], cmap="gist_ncar"
     )
+
+
+def test_plot_img_on_surf(
+    matplotlib_backend,
+    matplotlib_pyplot,
+    img_3d_mni,
+):
+    """Smoke test for
+    nilearn.plotting.surface._backend.MatplotlibBackend.plot_img_on_surf.
+    """
+    matplotlib_backend.plot_img_on_surf(img_3d_mni)
