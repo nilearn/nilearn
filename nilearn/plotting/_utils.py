@@ -20,7 +20,7 @@ def engine_warning(engine):
     warn(message, stacklevel=find_stack_level())
 
 
-def save_figure_if_needed(fig, output_file, bbox_inches=None):
+def save_figure_if_needed(fig, output_file):
     """Save figure if an output file value is given.
 
     Create output path if required.
@@ -47,7 +47,7 @@ def save_figure_if_needed(fig, output_file, bbox_inches=None):
     if not isinstance(fig, (plt.Figure, BaseSlicer)):
         fig = fig.figure
 
-    fig.savefig(output_file, bbox_inches=bbox_inches)
+    fig.savefig(output_file)
     if isinstance(fig, plt.Figure):
         plt.close(fig)
     else:

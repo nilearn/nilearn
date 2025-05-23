@@ -722,7 +722,10 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
                 title, y=1.0 - title_h / sum(height_ratios), va="bottom"
             )
 
-        return save_figure_if_needed(fig, output_file, bbox_inches="tight")
+        if output_file is None:
+            return fig, axes
+        fig.savefig(output_file, bbox_inches="tight")
+        plt.close(fig)
 
     def _adjust_colorbar_and_data_ranges(
         self, stat_map, vmin=None, vmax=None, symmetric_cbar=None
