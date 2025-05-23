@@ -303,7 +303,7 @@ class BaseSurfaceBackend:
                 )
 
         # TODO shouldn't we check a list for hemispheres
-        if hemispheres in (None, "both"):
+        if hemispheres in (None, "both", ["both"]):
             hemispheres = ["left", "right"]
         hemis = check_hemispheres(hemispheres)
 

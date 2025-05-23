@@ -947,6 +947,7 @@ def test_plot_surf_roi_colorbar_vmin_equal_across_engines(
     "hemispheres, views",
     [
         (["right"], ["lateral"]),
+        (["both"], ["lateral"]),
         (["left", "right"], ["anterior"]),
         (["right"], ["medial", "lateral"]),
         (["left", "right"], ["dorsal", "ventral"]),
