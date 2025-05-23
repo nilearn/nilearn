@@ -6,7 +6,10 @@ from nibabel import Nifti1Image
 from scipy.ndimage import label
 
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+)
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _affine_eye, _img_4d_zeros, _shape_3d_large
@@ -108,6 +111,21 @@ if SKLEARN_LT_1_6:
     def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
         check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    nilearn_check_estimator(
+        estimator=RegionExtractor(
+            maps_img=generate_maps(
+                shape=_shape_3d_large(), n_regions=2, random_state=42
+            )[0]
+        )
+    ),
+)
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
+    check(estimator)
 
 
 @pytest.mark.parametrize("invalid_threshold", ["80%", "auto", -1.0])

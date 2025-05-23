@@ -16,7 +16,10 @@ from numpy.testing import assert_array_equal
 
 from nilearn._utils import data_gen, exceptions, testing
 from nilearn._utils.class_inspect import get_params
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
@@ -47,6 +50,14 @@ if SKLEARN_LT_1_6:
     def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
         check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name", nilearn_check_estimator(estimator=NiftiMasker())
+)
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
+    check(estimator)
 
 
 def test_detrend(img_3d_rand_eye, mask_img_1):

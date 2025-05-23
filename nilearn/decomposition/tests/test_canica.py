@@ -5,7 +5,10 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _rng
@@ -129,6 +132,14 @@ if SKLEARN_LT_1_6:
     def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
         check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name", nilearn_check_estimator(estimator=CanICA())
+)
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
+    check(estimator)
 
 
 def test_threshold_bound_error(canica_data):

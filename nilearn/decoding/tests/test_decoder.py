@@ -50,6 +50,7 @@ from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
     check_estimator,
+    nilearn_check_estimator,
     return_expected_failed_checks,
 )
 from nilearn._utils.param_validation import (
@@ -88,6 +89,7 @@ ESTIMATORS_TO_CHECK = [
     FREMClassifier(),
 ]
 
+
 if SKLEARN_LT_1_6:
 
     @pytest.mark.parametrize(
@@ -115,6 +117,15 @@ else:
     def test_check_estimator_sklearn(estimator, check):
         """Check compliance with sklearn estimators."""
         check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    nilearn_check_estimator(estimator=ESTIMATORS_TO_CHECK),
+)
+def test_check_estimator_nilearn(estimator, check, name):
+    """Check compliance with nilearn estimators rules."""
+    check(estimator)
 
 
 def _make_binary_classification_test_data(n_samples=N_SAMPLES, dim=5):

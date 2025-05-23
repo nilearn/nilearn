@@ -3,7 +3,10 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _make_mesh
 from nilearn.maskers import SurfaceLabelsMasker
@@ -44,6 +47,17 @@ if SKLEARN_LT_1_6:
     def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
         check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    nilearn_check_estimator(
+        estimator=SurfaceLabelsMasker(_sklearn_surf_label_img())
+    ),
+)
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with sklearn estimators."""
+    check(estimator)
 
 
 def test_surface_label_masker_fit(surf_label_img):

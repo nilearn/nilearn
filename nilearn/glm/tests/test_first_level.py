@@ -25,7 +25,10 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_fmri_data_and_design,
 )
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
@@ -73,6 +76,15 @@ if SKLEARN_LT_1_6:
     def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
         check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    nilearn_check_estimator(estimator=FirstLevelModel()),
+)
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
+    check(estimator)
 
 
 def test_glm_fit_invalid_mask_img(shape_4d_default):

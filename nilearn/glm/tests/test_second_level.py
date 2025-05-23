@@ -19,7 +19,10 @@ from nilearn._utils.data_gen import (
     write_fake_bold_img,
     write_fake_fmri_data_and_design,
 )
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _shape_3d_default
 from nilearn.glm.first_level import FirstLevelModel, run_glm
@@ -62,6 +65,15 @@ if SKLEARN_LT_1_6:
     def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
         check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    nilearn_check_estimator(estimator=SecondLevelModel()),
+)
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
+    check(estimator)
 
 
 N_PERM = 5
