@@ -57,7 +57,6 @@ from nilearn.conftest import (
 )
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
-from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers import (
     NiftiLabelsMasker,
     NiftiMapsMasker,
@@ -232,35 +231,8 @@ def return_expected_failed_checks(
             }
 
         if parse(sklearn_version).release[1] >= 5:
-            if isinstance(
-                estimator,
-                (
-                    ReNA,
-                    HierarchicalKMeans,
-                ),
-            ):
-                expected_failed_checks.pop("check_estimator_sparse_matrix")
-                expected_failed_checks.pop("check_estimator_sparse_array")
-
-            if isinstance(estimator, (ReNA, HierarchicalKMeans)):
-                expected_failed_checks.pop("check_complex_data")
-                expected_failed_checks.pop("check_fit2d_1feature")
-                expected_failed_checks.pop("check_fit1d")
-                expected_failed_checks.pop("check_fit2d_1sample")
-                expected_failed_checks.pop(
-                    "check_estimators_empty_data_messages"
-                )
-
-                expected_failed_checks |= {"check_clustering": "TODO"}
-
-            if isinstance(estimator, (HierarchicalKMeans)):
-                expected_failed_checks.pop("check_methods_subset_invariance")
-                expected_failed_checks.pop(
-                    "check_methods_sample_order_invariance"
-                )
-                expected_failed_checks.pop("check_dont_overwrite_parameters")
-                expected_failed_checks.pop("check_dtype_object")
-                expected_failed_checks.pop("check_dict_unchanged")
+            expected_failed_checks.pop("check_estimator_sparse_matrix")
+            expected_failed_checks.pop("check_estimator_sparse_array")
 
         return expected_failed_checks
 
@@ -416,20 +388,16 @@ def return_expected_failed_checks(
         expected_failed_checks.pop("check_fit2d_1feature")
         expected_failed_checks.pop("check_fit2d_1sample")
 
-    if parse(sklearn_version).release[1] >= 5:
-        if is_glm or isinstance(
-            estimator,
-            (
-                SurfaceLabelsMasker,
-                SurfaceMapsMasker,
-                RegionExtractor,
-            ),
-        ):
-            expected_failed_checks.pop("check_estimator_sparse_matrix")
-            expected_failed_checks.pop("check_estimator_sparse_array")
-
-        if isinstance(estimator, (NiftiMasker, _BaseDecomposition)):
-            expected_failed_checks.pop("check_estimator_sparse_array")
+    if (parse(sklearn_version).release[1] >= 5 and is_glm) or isinstance(
+        estimator,
+        (
+            SurfaceLabelsMasker,
+            SurfaceMapsMasker,
+            RegionExtractor,
+        ),
+    ):
+        expected_failed_checks.pop("check_estimator_sparse_matrix")
+        expected_failed_checks.pop("check_estimator_sparse_array")
 
     return expected_failed_checks
 
