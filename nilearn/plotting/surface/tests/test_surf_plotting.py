@@ -1054,28 +1054,19 @@ def test_plot_img_on_surf_with_invalid_orientation(img_3d_mni):
         plot_img_on_surf(img_3d_mni, views=["medial", {"a": "a"}], **kwargs)
 
 
-def test_plot_img_on_surf_with_invalid_hemisphere(img_3d_mni):
+@pytest.mark.parametrize(
+    "hemispheres", [["lft]"], "lft", 0, ["left", "right", "middle"]]
+)
+def test_plot_img_on_surf_with_invalid_hemisphere(img_3d_mni, hemispheres):
     """Test if nilearn.plotting.surface.plot_img_on_surf raises error when
     invalid hemispheres parameter is specified.
     """
     with pytest.raises(ValueError):
         plot_img_on_surf(
-            img_3d_mni, views=["lateral"], inflate=True, hemispheres=["lft]"]
-        )
-    with pytest.raises(ValueError):
-        plot_img_on_surf(
-            img_3d_mni, views=["lateral"], inflate=True, hemispheres="lft"
-        )
-    with pytest.raises(ValueError):
-        plot_img_on_surf(
-            img_3d_mni, views=["medial"], inflate=True, hemispheres=["lef"]
-        )
-    with pytest.raises(ValueError):
-        plot_img_on_surf(
             img_3d_mni,
-            views=["anterior", "posterior"],
+            views=["lateral"],
             inflate=True,
-            hemispheres=["left", "right", "middle"],
+            hemispheres=hemispheres,
         )
 
 
