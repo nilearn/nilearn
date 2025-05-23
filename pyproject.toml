@@ -81,6 +81,7 @@ style = [
 # For running unit and docstring tests
 test = [
     "coverage",
+    "nbmake",
     "pytest>=6.0.0",
     "pytest-cov",
     "pytest-randomly",
