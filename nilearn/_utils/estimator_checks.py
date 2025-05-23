@@ -235,11 +235,6 @@ def return_expected_failed_checks(
             expected_failed_checks.pop("check_estimator_sparse_matrix")
             expected_failed_checks.pop("check_estimator_sparse_array")
 
-        if parse(sklearn_version).release[1] >= 6 and isinstance(
-            estimator, (HierarchicalKMeans)
-        ):
-            expected_failed_checks.pop("check_dict_unchanged")
-
         return expected_failed_checks
 
     elif isinstance(
