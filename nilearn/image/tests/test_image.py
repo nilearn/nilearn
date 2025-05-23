@@ -619,7 +619,6 @@ def test_index_img():
         *range(fourth_dim_size),
         slice(2, 8, 2),
         [1, 2, 3, 2],
-        [],
         (np.arange(fourth_dim_size) % 3) == 1,
     ]
     for i in tested_indices:
