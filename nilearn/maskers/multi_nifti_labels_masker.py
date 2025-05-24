@@ -214,10 +214,11 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         %(signals_transform_imgs_multi_nifti)s
 
         """
+        check_is_fitted(self)
+
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
 
-        check_is_fitted(self)
         niimg_iter = iter_check_niimg(
             imgs_list,
             ensure_ndim=None,

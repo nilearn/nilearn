@@ -556,6 +556,8 @@ class NiftiMapsMasker(BaseMasker):
         %(signals_transform_nifti)s
 
         """
+        check_is_fitted(self)
+
         # imgs passed at transform time may be different
         # from those passed at fit time.
         # So it may be needed to resample mask and maps,
