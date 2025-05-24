@@ -213,12 +213,12 @@ def return_expected_failed_checks(
 
     elif isinstance(estimator, (ReNA, HierarchicalKMeans)):
         expected_failed_checks = {
-            "check_clustering": "TODO",
-            "check_estimators_dtypes": "TODO",
             "check_estimator_sparse_array": "remove when dropping sklearn 1.4",
             "check_estimator_sparse_matrix": (
                 "remove when dropping sklearn 1.4"
             ),
+            "check_clustering": "TODO",
+            "check_estimators_dtypes": "TODO",
             "check_estimators_fit_returns_self": "TODO",
             "check_estimators_nan_inf": "TODO",
             "check_estimators_overwrite_params": "TODO",
@@ -262,6 +262,8 @@ def return_expected_failed_checks(
         estimator, (GroupSparseCovariance, GroupSparseCovarianceCV)
     ):
         return {
+            "check_fit_score_takes_y": "not applicable",
+            "check_fit_check_is_fitted": "handled by nilearn checks",
             "check_dict_unchanged": "TODO",
             "check_dont_overwrite_parameters": "TODO",
             "check_dtype_object": "TODO",
@@ -275,9 +277,7 @@ def return_expected_failed_checks(
             "check_estimators_overwrite_params": "TODO",
             "check_estimators_pickle": "TODO",
             "check_f_contiguous_array_estimator": "TODO",
-            "check_fit_check_is_fitted": "handled by nilearn checks",
             "check_fit_idempotent": "TODO",
-            "check_fit_score_takes_y": "not applicable",
             "check_fit2d_1feature": "TODO",
             "check_fit2d_1sample": "TODO",
             "check_fit2d_predict1d": "TODO",
@@ -344,11 +344,6 @@ def return_expected_failed_checks(
         # that errors with maskers,
         # or because a suitable nilearn replacement
         # has not yet been created.
-        "check_classifier_data_not_an_array": "TODO",
-        "check_classifiers_classes": "TODO",
-        "check_classifiers_one_label": "TODO",
-        "check_classifiers_regression_target": "TODO",
-        "check_classifiers_train": "TODO",
         "check_dont_overwrite_parameters": "TODO",
         "check_estimators_empty_data_messages": "TODO",
         "check_estimators_pickle": "TODO",
@@ -360,14 +355,6 @@ def return_expected_failed_checks(
         "check_positive_only_tag_during_fit": "TODO",
         "check_pipeline_consistency": "TODO",
         "check_readonly_memmap_input": "TODO",
-        "check_regressor_data_not_an_array": "TODO",
-        "check_regressor_multioutput": "TODO",
-        "check_regressors_int": "TODO",
-        "check_regressors_train": "TODO",
-        "check_regressors_no_decision_function": "TODO",
-        "check_requires_y_none": "TODO",
-        "check_supervised_y_no_nan": "TODO",
-        "check_supervised_y_2d": "TODO",
     }
 
     # Adapt some checks for some estimators
@@ -386,6 +373,25 @@ def return_expected_failed_checks(
 
     if isinstance(estimator, _BaseDecoder):
         expected_failed_checks.pop("check_estimator_sparse_tag")
+        expected_failed_checks |= {
+            "check_classifier_data_not_an_array": (
+                "not applicable for image input"
+            ),
+            "check_regressor_data_not_an_array": (
+                "not applicable for image input"
+            ),
+            "check_classifiers_classes": "TODO",
+            "check_classifiers_one_label": "TODO",
+            "check_classifiers_regression_target": "TODO",
+            "check_classifiers_train": "TODO",
+            "check_regressor_multioutput": "TODO",
+            "check_regressors_int": "TODO",
+            "check_regressors_train": "TODO",
+            "check_regressors_no_decision_function": "TODO",
+            "check_requires_y_none": "TODO",
+            "check_supervised_y_no_nan": "TODO",
+            "check_supervised_y_2d": "TODO",
+        }
 
     if isinstance(estimator, (_BaseDecomposition,)):
         if parse(sklearn_version).release[1] >= 5:
