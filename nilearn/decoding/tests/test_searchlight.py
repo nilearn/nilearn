@@ -3,16 +3,22 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
-from sklearn.model_selection import KFold, LeaveOneGroupOut
+from sklearn.model_selection import (
+    KFold,
+    LeaveOneGroupOut,
+)
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
     check_estimator,
+    nilearn_check_estimator,
+    return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _img_3d_ones, _rng
 from nilearn.decoding import searchlight
 
-ESTIMATOR_TO_CHECK = [searchlight.SearchLight(mask_img=_img_3d_ones())]
+ESTIMATOR_TO_CHECK = [searchlight.SearchLight()]
 
 if SKLEARN_LT_1_6:
 
@@ -33,15 +39,26 @@ if SKLEARN_LT_1_6:
         """Check compliance with sklearn estimators."""
         check(estimator)
 
-# else:
+else:
 
-#     @parametrize_with_checks(
-#         estimators=ESTIMATOR_TO_CHECK,
-#         expected_failed_checks=return_expected_failed_checks,
-#     )
-#     def test_check_estimator_sklearn(estimator, check):
-#         """Check compliance with sklearn estimators."""
-#         check(estimator)
+    @parametrize_with_checks(
+        estimators=ESTIMATOR_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    nilearn_check_estimator(
+        estimators=[searchlight.SearchLight(mask_img=_img_3d_ones())]
+    ),
+)
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
+    check(estimator)
 
 
 def _make_searchlight_test_data(frames):

@@ -2,11 +2,13 @@ import numpy as np
 import pytest
 from joblib import Memory
 from numpy.testing import assert_array_equal
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
+    return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _img_3d_mni, _shape_3d_default
@@ -19,7 +21,7 @@ from nilearn.regions.rena_clustering import (
 )
 from nilearn.surface import SurfaceImage
 
-ESTIMATORS_TO_CHECK = [ReNA(mask_img=_img_3d_mni(), n_clusters=2)]
+ESTIMATORS_TO_CHECK = [ReNA()]
 
 if SKLEARN_LT_1_6:
 
@@ -40,26 +42,22 @@ if SKLEARN_LT_1_6:
         """Check compliance with sklearn estimators."""
         check(estimator)
 
-# else:
+else:
 
-#     from sklearn.utils.estimator_checks import parametrize_with_checks
-
-#     from nilearn._utils.estimator_checks import (
-#         return_expected_failed_checks,
-#     )
-
-#     @parametrize_with_checks(
-#         estimators=ESTIMATORS_TO_CHECK,
-#         expected_failed_checks=return_expected_failed_checks,
-#     )
-#     def test_check_estimator_sklearn(estimator, check):
-#         """Check compliance with sklearn estimators."""
-#         check(estimator)
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    nilearn_check_estimator(
+        estimators=[ReNA(mask_img=_img_3d_mni(), n_clusters=2)]
+    ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""

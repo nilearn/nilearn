@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
@@ -12,13 +13,14 @@ from nilearn._utils.data_gen import (
 from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
+    return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker
 
-ESTIMATORS_TO_CHECK = [MultiNiftiLabelsMasker(labels_img=_img_labels())]
+ESTIMATORS_TO_CHECK = [MultiNiftiLabelsMasker()]
 
 if SKLEARN_LT_1_6:
 
@@ -39,26 +41,22 @@ if SKLEARN_LT_1_6:
         """Check compliance with sklearn estimators."""
         check(estimator)
 
-# else:
+else:
 
-#     from sklearn.utils.estimator_checks import parametrize_with_checks
-
-#     from nilearn._utils.estimator_checks import (
-#         return_expected_failed_checks,
-#     )
-
-#     @parametrize_with_checks(
-#         estimators=ESTIMATORS_TO_CHECK,
-#         expected_failed_checks=return_expected_failed_checks,
-#     )
-#     def test_check_estimator_sklearn(estimator, check):
-#         """Check compliance with sklearn estimators."""
-#         check(estimator)
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    nilearn_check_estimator(
+        estimators=[MultiNiftiLabelsMasker(labels_img=_img_labels())]
+    ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
