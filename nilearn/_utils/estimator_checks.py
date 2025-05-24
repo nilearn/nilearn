@@ -113,12 +113,12 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
         Whether to return only the valid checks or not.
     """
     # TODO remove this function when dropping sklearn 1.5
-    if not SKLEARN_LT_1_6:
+    if not SKLEARN_LT_1_6:  # pragma: no cover
         raise RuntimeError(
             "Use dedicated sklearn utilities to test estimators."
         )
 
-    if not isinstance(estimators, list):
+    if not isinstance(estimators, list):  # pragma: no cover
         raise TypeError(
             "'estimators' should be a list. "
             f"Got {estimators.__class__.__name__}."
@@ -466,9 +466,9 @@ def nilearn_check_generator(estimator: BaseEstimator):
     is_glm = False
     surf_img_input = False
 
-    if SKLEARN_LT_1_6:
+    if SKLEARN_LT_1_6:  # pragma: no cover
         tags = estimator._more_tags()
-    else:  # pragma: no cover
+    else:
         tags = estimator.__sklearn_tags__()
 
     # TODO remove first if when dropping sklearn 1.5
