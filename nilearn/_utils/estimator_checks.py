@@ -376,9 +376,6 @@ def return_expected_failed_checks(
     # e.g check_estimator_sparse_data passes for SurfaceLabelsMasker
     # but not SurfaceMasker ????
 
-    if isinstance(estimator, _BaseDecoder):
-        expected_failed_checks.pop("check_estimator_sparse_tag")
-
     if is_glm:
         expected_failed_checks.pop("check_estimator_sparse_data")
         if parse(sklearn_version).release[1] >= 5:
@@ -386,6 +383,9 @@ def return_expected_failed_checks(
             expected_failed_checks.pop("check_estimator_sparse_array")
         if parse(sklearn_version).release[1] >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
+
+    if isinstance(estimator, _BaseDecoder):
+        expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if isinstance(estimator, (_BaseDecomposition,)):
         if parse(sklearn_version).release[1] >= 5:
