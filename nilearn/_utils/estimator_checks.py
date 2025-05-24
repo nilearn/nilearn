@@ -575,6 +575,13 @@ def check_masker_fitted(estimator):
     # so we can pass nifti image to surface maskers.
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         estimator.transform(_img_3d_rand())
+    with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
+        estimator.transform_single_imgs(_img_3d_rand())
+    if is_multimasker(estimator):
+        with pytest.raises(
+            ValueError, match=_not_fitted_error_message(estimator)
+        ):
+            estimator.transform_imgs([_img_3d_rand()])
 
     # Failure should happen before the size of the input type is determined
     # so we can pass any array here.
