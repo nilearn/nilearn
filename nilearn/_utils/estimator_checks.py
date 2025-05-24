@@ -215,8 +215,10 @@ def return_expected_failed_checks(
         expected_failed_checks = {
             "check_clustering": "TODO",
             "check_estimators_dtypes": "TODO",
-            "check_estimator_sparse_array": "TODO",
-            "check_estimator_sparse_matrix": "TODO",
+            "check_estimator_sparse_array": "remove when dropping sklearn 1.4",
+            "check_estimator_sparse_matrix": (
+                "remove when dropping sklearn 1.4"
+            ),
             "check_estimators_fit_returns_self": "TODO",
             "check_estimators_nan_inf": "TODO",
             "check_estimators_overwrite_params": "TODO",
@@ -429,7 +431,7 @@ def return_expected_failed_checks(
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
         if isinstance(estimator, (RegionExtractor)):
-            if parse(sklearn_version).release[1] < 6:
+            if parse(sklearn_version).release[1] == 5:
                 expected_failed_checks.pop("check_estimator_sparse_data")
                 expected_failed_checks.pop("check_estimators_fit_returns_self")
                 expected_failed_checks.pop("check_fit_check_is_fitted")
