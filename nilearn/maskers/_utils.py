@@ -11,8 +11,10 @@ def sanitize_cleaning_parameters(masker):
     """
     if hasattr(masker, "clean_kwargs"):
         if masker.clean_kwargs:
+            tmp = [", ".join(list(masker.clean_kwargs))]
             warnings.warn(
-                f"You passed some kwargs to {type(masker)}"
+                f"You passed some kwargs to {masker.__class__.__name__}: "
+                f"{tmp}. "
                 "This behavior is deprecated "
                 "and will be removed in version 0.13.2.",
                 DeprecationWarning,

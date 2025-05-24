@@ -249,6 +249,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         -------
         %(signals_transform_surface)s
         """
+        check_is_fitted(self)
+
         check_compatibility_mask_and_images(self.maps_img, imgs)
 
         check_polymesh_equal(self.maps_img.mesh, imgs.mesh)

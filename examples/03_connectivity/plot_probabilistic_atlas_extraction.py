@@ -53,8 +53,7 @@ masker = NiftiMapsMasker(
     memory="nilearn_cache",
     verbose=5,
 )
-masker.fit(data.func[0])
-time_series = masker.transform(data.func[0], confounds=data.confounds)
+time_series = masker.fit_transform(data.func[0], confounds=data.confounds)
 
 # %%
 # We can generate an HTML report and visualize the components of the

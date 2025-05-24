@@ -6,6 +6,7 @@ from functools import partial
 
 import numpy as np
 from joblib import Memory
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
 from nilearn._utils import logger
@@ -573,6 +574,8 @@ class NiftiMasker(BaseMasker):
         %(signals_transform_nifti)s
 
         """
+        check_is_fitted(self)
+
         # Ignore the mask-computing params: they are not useful and will
         # just invalid the cache for no good reason
         # target_shape and target_affine are conveyed implicitly in mask_img

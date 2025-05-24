@@ -425,12 +425,7 @@ class MultiNiftiMasker(NiftiMasker):
         %(signals_transform_imgs_multi_nifti)s
 
         """
-        if not hasattr(self, "mask_img_"):
-            raise ValueError(
-                f"It seems that {self.__class__.__name__} has not been "
-                "fitted. "
-                "You must call fit() before calling transform()."
-            )
+        check_is_fitted(self)
 
         target_fov = "first" if self.target_affine is None else None
         niimg_iter = iter_check_niimg(

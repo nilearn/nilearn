@@ -53,16 +53,24 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     mask_img : Niimg-like object, optional
         See :ref:`extracting_data`.
         Mask to apply to regions before extracting signals.
+
     %(smoothing_fwhm)s
+
     %(standardize_maskers)s
+
     %(standardize_confounds)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
+
     %(detrend)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
     %(dtype)s
@@ -78,13 +86,16 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
               ValueError is raised
 
     %(memory)s
+
     %(memory_level1)s
+
     %(n_jobs)s
+
     %(verbose0)s
-    strategy : :obj:`str`, default='mean'
-        The name of a valid function to reduce the region with.
-        Must be one of: sum, mean, median, minimum, maximum, variance,
-        standard_deviation.
+
+    %(strategy)s
+
+    %(keep_masked_labels)s
 
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
@@ -128,6 +139,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         memory_level=1,
         verbose=0,
         strategy="mean",
+        keep_masked_labels=True,
         reports=True,
         n_jobs=1,
         clean_args=None,
@@ -156,6 +168,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             strategy=strategy,
             reports=reports,
             clean_args=clean_args,
+            keep_masked_labels=keep_masked_labels,
             **kwargs,
         )
 
@@ -201,10 +214,11 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         %(signals_transform_imgs_multi_nifti)s
 
         """
+        check_is_fitted(self)
+
         # We handle the resampling of labels separately because the affine of
         # the labels image should not impact the extraction of the signal.
 
-        check_is_fitted(self)
         niimg_iter = iter_check_niimg(
             imgs_list,
             ensure_ndim=None,

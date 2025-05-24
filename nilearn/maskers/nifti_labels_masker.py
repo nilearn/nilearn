@@ -10,14 +10,20 @@ import pandas as pd
 from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import _utils
-from nilearn._utils import logger
+from nilearn._utils import logger, repr_niimgs
 from nilearn._utils.bids import (
     generate_atlas_look_up_table,
     sanitize_look_up_table,
 )
+from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import (
+    check_niimg,
+    check_niimg_3d,
+    check_same_fov,
+)
 from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
@@ -36,13 +42,13 @@ class _ExtractionFunctor:
 
     def __init__(
         self,
-        _resampled_labels_img_,
+        labels_img,
         background_label,
         strategy,
         keep_masked_labels,
         mask_img,
     ):
-        self._resampled_labels_img_ = _resampled_labels_img_
+        self.labels_img = labels_img
         self.background_label = background_label
         self.strategy = strategy
         self.keep_masked_labels = keep_masked_labels
@@ -53,7 +59,7 @@ class _ExtractionFunctor:
 
         signals, labels, masked_labels_img = img_to_signals_labels(
             imgs,
-            self._resampled_labels_img_,
+            self.labels_img,
             background_label=self.background_label,
             strategy=self.strategy,
             keep_masked_labels=self.keep_masked_labels,
@@ -330,20 +336,16 @@ class NiftiLabelsMasker(BaseMasker):
         Also return the removed region ids and names.
         if visualize is True, plot the masked atlas.
         """
-        labels_data = _utils.niimg.safe_get_data(
-            self._resampled_labels_img_, ensure_finite=True
-        )
+        labels_data = safe_get_data(self.labels_img_, ensure_finite=True)
         labels_data = labels_data.copy()
-        mask_data = _utils.niimg.safe_get_data(
-            self.mask_img_, ensure_finite=True
-        )
+        mask_data = safe_get_data(self.mask_img_, ensure_finite=True)
         mask_data = mask_data.copy()
         region_ids_before_masking = np.unique(labels_data).tolist()
         # apply the mask to the atlas
         labels_data[np.logical_not(mask_data)] = self.background_label
         region_ids_after_masking = np.unique(labels_data).tolist()
         masked_atlas = Nifti1Image(
-            labels_data.astype(np.int8), self._resampled_labels_img_.affine
+            labels_data.astype(np.int8), self.labels_img_.affine
         )
         removed_region_ids = [
             region_id
@@ -524,10 +526,10 @@ class NiftiLabelsMasker(BaseMasker):
             "warning_message": None,
         }
 
-        repr = _utils.repr_niimgs(self.labels_img, shorten=(not self.verbose))
+        repr = repr_niimgs(self.labels_img, shorten=(not self.verbose))
         msg = f"loading data from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
-        self.labels_img_ = _utils.check_niimg_3d(self.labels_img)
+        self.labels_img_ = check_niimg_3d(self.labels_img)
 
         if self.labels:
             if self.lut is not None:
@@ -545,66 +547,63 @@ class NiftiLabelsMasker(BaseMasker):
 
         self._original_region_ids = self.lut_["index"].to_list()
 
+        if imgs is not None:
+            imgs_ = check_niimg(imgs, atleast_4d=True)
+
         self.mask_img_ = self._load_mask(imgs)
 
-        # Check shapes and affines or resample.
-        if self.mask_img_ is not None:
-            if self.resampling_target == "data":
-                # resampling will be done at transform time
-                pass
+        # Check shapes and affines for resample.
+        if self.resampling_target is None:
+            images = {"labels": self.labels_img_}
+            if self.mask_img_ is not None:
+                images["mask"] = self.mask_img_
+            if imgs is not None:
+                images["data"] = imgs_
+            check_same_fov(raise_error=True, **images)
 
-            elif self.resampling_target is None:
-                if self.mask_img_.shape != self.labels_img_.shape[:3]:
-                    raise ValueError(
-                        _utils.compose_err_msg(
-                            "Regions and mask do not have the same shape",
-                            mask_img=self.mask_img_,
-                            labels_img=self.labels_img,
-                        )
-                    )
+        # resample labels
+        if (
+            self.resampling_target == "data"
+            and imgs is not None
+            and not check_same_fov(
+                imgs_,
+                self.labels_img_,
+            )
+        ):
+            self.labels_img_ = self._resample_labels(imgs_)
 
-                if not np.allclose(
-                    self.mask_img_.affine,
-                    self.labels_img_.affine,
-                ):
-                    raise ValueError(
-                        _utils.compose_err_msg(
-                            "Regions and mask do not have the same affine.",
-                            mask_img=self.mask_img_,
-                            labels_img=self.labels_img,
-                        ),
-                    )
+        # resample mask
+        ref_img = None
+        if self.resampling_target == "data" and imgs is not None:
+            ref_img = imgs_
+        elif self.resampling_target == "labels":
+            ref_img = self.labels_img_
+        if (
+            self.mask_img_ is not None
+            and ref_img is not None
+            and not check_same_fov(
+                ref_img,
+                self.mask_img_,
+            )
+        ):
+            logger.log("Resampling mask...", self.verbose)
+            # TODO switch to force_resample=True
+            # when bumping to version > 0.13
+            self.mask_img_ = self._cache(resample_img, func_memory_level=2)(
+                self.mask_img_,
+                interpolation="nearest",
+                target_shape=ref_img.shape[:3],
+                target_affine=ref_img.affine,
+                copy_header=True,
+                force_resample=False,
+            )
 
-            elif self.resampling_target == "labels":
-                logger.log("resampling the mask", verbose=self.verbose)
-                # TODO switch to force_resample=True
-                # when bumping to version > 0.13
-                self.mask_img_ = resample_img(
-                    self.mask_img_,
-                    target_affine=self.labels_img_.affine,
-                    target_shape=self.labels_img_.shape[:3],
-                    interpolation="nearest",
-                    copy=True,
-                    copy_header=True,
-                    force_resample=False,
-                )
-
-                # Just check that the mask is valid
-                load_mask_img(self.mask_img_)
-
-            else:
-                raise ValueError(
-                    "Invalid value for "
-                    f"resampling_target: {self.resampling_target}"
-                )
-
-        if not hasattr(self, "_resampled_labels_img_"):
-            # obviates need to run .transform() before .inverse_transform()
-            self._resampled_labels_img_ = self.labels_img_
+            # Just check that the mask is valid
+            load_mask_img(self.mask_img_)
 
         if self.reports:
             self._reporting_data = {
-                "labels_image": self._resampled_labels_img_,
+                "labels_image": self.labels_img_,
                 "mask": self.mask_img_,
                 "dim": None,
                 "img": imgs,
@@ -615,8 +614,6 @@ class NiftiLabelsMasker(BaseMasker):
                 self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
-
-        self._resampled_mask_img = self.mask_img_
 
         return self
 
@@ -735,27 +732,60 @@ class NiftiLabelsMasker(BaseMasker):
         %(signals_transform_nifti)s
 
         """
-        # We handle the resampling of labels separately because the affine of
-        # the labels image should not impact the extraction of the signal.
-        if self.resampling_target == "data":
-            imgs_ = _utils.check_niimg(imgs, atleast_4d=True)
-            if not _utils.niimg_conversions.check_same_fov(
-                imgs_,
-                self._resampled_labels_img_,
-            ):
-                self._resampled_labels_img_ = self._resample_labels(imgs_)
+        check_is_fitted(self)
 
-            if (self.mask_img_ is not None) and (
-                not _utils.niimg_conversions.check_same_fov(
+        # imgs passed at transform time may be different
+        # from those passed at fit time.
+        # So it may be needed to resample mask and labels,
+        # if 'data' is the resampling target.
+        # We handle the resampling of labels and mask separately because the
+        # affine of the labels and mask images should not impact the extraction
+        # of the signal.
+        #
+        # Any resampling of the mask or labels is not 'kept' after transform,
+        # to avoid modifying the masker after fit.
+        #
+        # If the resampling target is different,
+        # then resampling was already done at fit time
+        # (e.g resampling of the mask image to the labels image
+        # if the target was 'labels'),
+        # or resampling of the data will be done at extract time.
+        labels_img_ = self.labels_img_
+        mask_img_ = self.mask_img_
+        if self.resampling_target == "data":
+            imgs_ = check_niimg(imgs, atleast_4d=True)
+            if not check_same_fov(
+                imgs_,
+                labels_img_,
+            ):
+                warnings.warn(
+                    (
+                        "Resampling labels at transform time...\n"
+                        "To avoid this warning, make sure to pass the images "
+                        "you want to transform to fit() first, "
+                        "or directly use fit_transform()."
+                    ),
+                    stacklevel=find_stack_level(),
+                )
+                labels_img_ = self._resample_labels(imgs_)
+
+            if (mask_img_ is not None) and (
+                not check_same_fov(
                     imgs_,
-                    self._resampled_mask_img,
+                    mask_img_,
                 )
             ):
-                logger.log("Resampling mask", self.verbose)
-                self._resampled_mask_img = self._cache(
-                    resample_img, func_memory_level=2
-                )(
-                    self.mask_img_,
+                warnings.warn(
+                    (
+                        "Resampling mask at transform time...\n"
+                        "To avoid this warning, make sure to pass the images "
+                        "you want to transform to fit() first, "
+                        "or directly use fit_transform()."
+                    ),
+                    stacklevel=find_stack_level(),
+                )
+                mask_img_ = self._cache(resample_img, func_memory_level=2)(
+                    mask_img_,
                     interpolation="nearest",
                     target_shape=imgs_.shape[:3],
                     target_affine=imgs_.affine,
@@ -770,10 +800,10 @@ class NiftiLabelsMasker(BaseMasker):
         target_shape = None
         target_affine = None
         if self.resampling_target == "labels":
-            target_shape = self._resampled_labels_img_.shape[:3]
-            target_affine = self._resampled_labels_img_.affine
+            target_shape = labels_img_.shape[:3]
+            target_affine = labels_img_.affine
 
-        params = _utils.class_inspect.get_params(
+        params = get_params(
             NiftiLabelsMasker,
             self,
             ignore=["resampling_target"],
@@ -792,11 +822,11 @@ class NiftiLabelsMasker(BaseMasker):
             # Images
             imgs,
             _ExtractionFunctor(
-                self._resampled_labels_img_,
+                labels_img_,
                 self.background_label,
                 self.strategy,
                 self.keep_masked_labels,
-                self._resampled_mask_img,
+                mask_img_,
             ),
             # Pre-processing
             params,
@@ -826,9 +856,9 @@ class NiftiLabelsMasker(BaseMasker):
             self.verbose,
         )
         labels_before_resampling = set(
-            np.unique(_utils.niimg.safe_get_data(self._resampled_labels_img_))
+            np.unique(safe_get_data(self.labels_img_))
         )
-        resampled_labels_img = self._cache(resample_img, func_memory_level=2)(
+        labels_img_ = self._cache(resample_img, func_memory_level=2)(
             self.labels_img_,
             interpolation="nearest",
             target_shape=imgs_.shape[:3],
@@ -836,9 +866,7 @@ class NiftiLabelsMasker(BaseMasker):
             copy_header=True,
             force_resample=False,
         )
-        labels_after_resampling = set(
-            np.unique(_utils.niimg.safe_get_data(resampled_labels_img))
-        )
+        labels_after_resampling = set(np.unique(safe_get_data(labels_img_)))
         if labels_diff := labels_before_resampling.difference(
             labels_after_resampling
         ):
@@ -851,7 +879,7 @@ class NiftiLabelsMasker(BaseMasker):
                 stacklevel=find_stack_level(),
             )
 
-        return resampled_labels_img
+        return labels_img_
 
     @fill_doc
     def inverse_transform(self, signals):
@@ -881,7 +909,7 @@ class NiftiLabelsMasker(BaseMasker):
         logger.log("computing image from signals", verbose=self.verbose)
         return signal_extraction.signals_to_img_labels(
             signals,
-            self._resampled_labels_img_,
+            self.labels_img_,
             self.mask_img_,
             background_label=self.background_label,
         )

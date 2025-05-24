@@ -391,7 +391,11 @@ def signals_to_img_labels(
     labels_img = _utils.check_niimg_3d(labels_img)
 
     labels, labels_data = _get_labels_data(
-        labels_img, labels_img, mask_img, background_label
+        labels_img,
+        labels_img,
+        mask_img,
+        background_label,
+        keep_masked_labels=False,
     )
 
     signals = np.asarray(signals)
