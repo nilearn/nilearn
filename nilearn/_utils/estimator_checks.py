@@ -387,12 +387,11 @@ def return_expected_failed_checks(
         if parse(sklearn_version).release[1] >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
-    if (
-        isinstance(estimator, (_BaseDecomposition,))
-        and parse(sklearn_version).release[1] >= 6
-    ):
-        expected_failed_checks.pop("check_estimator_sparse_array")
-        expected_failed_checks.pop("check_estimator_sparse_tag")
+    if isinstance(estimator, (_BaseDecomposition,)):
+        if parse(sklearn_version).release[1] >= 5:
+            expected_failed_checks.pop("check_estimator_sparse_array")
+        if parse(sklearn_version).release[1] >= 6:
+            expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if is_masker:
         if niimg_input:
@@ -425,24 +424,18 @@ def return_expected_failed_checks(
 
         if (
             isinstance(estimator, (NiftiMasker))
-            and parse(sklearn_version).release[1] >= 6
+            and parse(sklearn_version).release[1] >= 5
         ):
             expected_failed_checks.pop("check_estimator_sparse_array")
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
-        if isinstance(estimator, (RegionExtractor)):
-            if parse(sklearn_version).release[1] == 5:
-                expected_failed_checks.pop("check_estimator_sparse_data")
-                expected_failed_checks.pop("check_estimators_fit_returns_self")
-                expected_failed_checks.pop("check_fit_check_is_fitted")
-                expected_failed_checks.pop("check_fit2d_1feature")
-                expected_failed_checks.pop("check_fit2d_1sample")
-                expected_failed_checks.pop("check_estimator_sparse_matrix")
-                expected_failed_checks.pop("check_estimator_sparse_array")
-            if parse(sklearn_version).release[1] >= 6:
-                expected_failed_checks.pop(
-                    "check_do_not_raise_errors_in_init_or_set_params"
-                )
+        if (
+            isinstance(estimator, (RegionExtractor))
+            and parse(sklearn_version).release[1] >= 6
+        ):
+            expected_failed_checks.pop(
+                "check_do_not_raise_errors_in_init_or_set_params"
+            )
 
     return expected_failed_checks
 
