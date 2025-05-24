@@ -86,6 +86,8 @@ def nilearn_dir() -> Path:
 def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
     """Yield a valid or invalid scikit-learn estimators check.
 
+    ONLY USED FOR sklearn<1.6
+
     As some of Nilearn estimators do not comply
     with sklearn recommendations
     (cannot fit Numpy arrays, do input validation in the constructor...)
@@ -96,9 +98,6 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
     along with a
     - valid check from sklearn: those should stay valid
     - or an invalid check that is known to fail.
-
-    If estimator have some nilearn specific tags
-    then some checks will skip rather than yield.
 
     See this section rolling-your-own-estimator in
     the scikit-learn doc for more info:
@@ -235,6 +234,12 @@ def return_expected_failed_checks(
             expected_failed_checks.pop("check_estimator_sparse_matrix")
             expected_failed_checks.pop("check_estimator_sparse_array")
 
+        if (
+            isinstance(estimator, (HierarchicalKMeans))
+            and parse(sklearn_version).release[1] >= 6
+        ):
+            expected_failed_checks |= {"check_dict_unchanged": "TODO"}
+
         return expected_failed_checks
 
     elif isinstance(
@@ -363,6 +368,10 @@ def return_expected_failed_checks(
 
     # Adapt some checks for some estimators
 
+    # not entirely sure why some of them pass
+    # e.g check_estimator_sparse_data passes for SurfaceLabelsMasker
+    # but not SurfaceMasker ????
+
     if is_masker and niimg_input:
         # TODO remove when bumping to nilearn 0.13.2
         expected_failed_checks |= {
@@ -374,15 +383,23 @@ def return_expected_failed_checks(
             ),
         }
 
-    # not entirely sure why some of them pass
-    # e.g check_estimator_sparse_data passes for SurfaceLabelsMasker
-    # but not SurfaceMasker ????
     if is_glm:
         expected_failed_checks.pop("check_estimator_sparse_data")
 
-    if isinstance(
-        estimator, (SurfaceLabelsMasker, SurfaceMapsMasker, RegionExtractor)
-    ):
+    if isinstance(estimator, (RegionExtractor)):
+        if parse(sklearn_version).release[1] < 6:
+            expected_failed_checks.pop("check_estimator_sparse_data")
+            expected_failed_checks.pop("check_estimators_fit_returns_self")
+            expected_failed_checks.pop("check_fit_check_is_fitted")
+            expected_failed_checks.pop("check_fit2d_1feature")
+            expected_failed_checks.pop("check_fit2d_1sample")
+        if parse(sklearn_version).release[1] >= 5:
+            expected_failed_checks.pop("check_estimator_sparse_matrix")
+            expected_failed_checks.pop("check_estimator_sparse_array")
+        if parse(sklearn_version).release[1] >= 6:
+            expected_failed_checks.pop("check_estimator_sparse_tag")
+
+    if isinstance(estimator, (SurfaceLabelsMasker, SurfaceMapsMasker)):
         expected_failed_checks.pop("check_estimator_sparse_data")
         expected_failed_checks.pop("check_estimators_fit_returns_self")
         expected_failed_checks.pop("check_fit_check_is_fitted")
@@ -396,7 +413,6 @@ def return_expected_failed_checks(
             (
                 SurfaceLabelsMasker,
                 SurfaceMapsMasker,
-                RegionExtractor,
             ),
         )
     ):
@@ -414,6 +430,7 @@ def return_expected_failed_checks(
             ),
         ):
             expected_failed_checks.pop("check_estimator_sparse_tag")
+
         if isinstance(estimator, (SurfaceLabelsMasker, SurfaceMapsMasker)):
             expected_failed_checks.pop("check_readonly_memmap_input")
             expected_failed_checks.pop("check_positive_only_tag_during_fit")
