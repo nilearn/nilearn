@@ -387,6 +387,7 @@ def return_expected_failed_checks(
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
         expected_failed_checks |= {
+            # have nilearn replacements
             "check_estimators_dtypes": ("replaced by check_glm_dtypes"),
             "check_estimators_fit_returns_self": (
                 "replaced by check_glm_fit_returns_self"
@@ -401,6 +402,7 @@ def return_expected_failed_checks(
             "check_transformer_preserve_dtypes": (
                 "replaced by check_masker_transformer"
             ),
+            # nilearn replacements required
             "check_dict_unchanged": "TODO",
             "check_fit_score_takes_y": "TODO",
         }
