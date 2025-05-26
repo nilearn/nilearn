@@ -643,10 +643,10 @@ class NiftiMapsMasker(BaseMasker):
         )
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
-        params["clean_kwargs"] = self.clean_args
+        params["clean_kwargs"] = self.clean_args_
         # TODO remove in 0.13.2
         if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs
+            params["clean_kwargs"] = self.clean_kwargs_
 
         region_signals, labels_ = self._cache(
             filter_and_extract,

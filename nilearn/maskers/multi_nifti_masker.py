@@ -465,10 +465,10 @@ class MultiNiftiMasker(NiftiMasker):
                 "copy",
             ],
         )
-        params["clean_kwargs"] = self.clean_args
+        params["clean_kwargs"] = self.clean_args_
         # TODO remove in 0.13.2
         if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs
+            params["clean_kwargs"] = self.clean_kwargs_
 
         func = self._cache(
             filter_and_mask,

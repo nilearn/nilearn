@@ -241,7 +241,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
             }
 
         if self.clean_args is None:
-            self.clean_args = {}
+            self.clean_args_ = {}
+        else:
+            self.clean_args_ = self.clean_args
 
         return self
 
@@ -278,7 +280,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
             ],
         )
 
-        parameters["clean_args"] = self.clean_args
+        parameters["clean_args"] = self.clean_args_
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
 

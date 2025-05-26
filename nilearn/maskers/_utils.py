@@ -23,13 +23,15 @@ def sanitize_cleaning_parameters(masker):
                     "Passing arguments via 'kwargs' "
                     "is mutually exclusive with using 'clean_args'"
                 )
-        masker.clean_kwargs = {
+        masker.clean_kwargs_ = {
             k[7:]: v
             for k, v in masker.clean_kwargs.items()
             if k.startswith("clean__")
         }
     if masker.clean_args is None:
-        masker.clean_args = {}
+        masker.clean_args_ = {}
+    else:
+        masker.clean_args_ = masker.clean_args
 
     return masker
 

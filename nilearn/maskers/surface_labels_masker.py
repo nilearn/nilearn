@@ -336,7 +336,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self._shelving = False
 
         if self.clean_args is None:
-            self.clean_args = {}
+            self.clean_args_ = {}
+        else:
+            self.clean_args_ = self.clean_args
 
         if not self.reports:
             self._reporting_data = None
@@ -454,7 +456,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "mask_img",
             ],
         )
-        parameters["clean_args"] = self.clean_args
+        parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
         region_signals = cache(
