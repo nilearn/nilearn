@@ -435,6 +435,7 @@ def nilearn_check_generator(estimator):
             yield (clone(estimator), check_surface_masker_list_surf_images)
 
     if is_glm:
+        yield (clone(estimator), check_glm_estimators_overwrite_params)
         yield (clone(estimator), check_glm_dont_overwrite_parameters)
         yield (clone(estimator), check_glm_dtypes)
         yield (clone(estimator), check_glm_fit_returns_self)
@@ -2023,6 +2024,52 @@ def check_glm_dont_overwrite_parameters(estimator) -> None:
         " or ended with _, but"
         f" {', '.join(attrs_changed_by_fit)} changed"
     )
+
+
+def check_glm_estimators_overwrite_params(estimator) -> None:
+    """Check that we do not change or mutate the internal state of input.
+
+    Replaces sklearn check_estimators_overwrite_params
+    """
+    estimator = clone(estimator)
+
+    # Make a physical copy of the original estimator parameters before fitting.
+    params = estimator.get_params()
+    original_params = deepcopy(params)
+
+    data, design_matrices = _make_surface_img_and_design()
+    # FirstLevel
+    if hasattr(estimator, "hrf_model"):
+        estimator.fit(data, design_matrices=design_matrices)
+    # SecondLevel
+    else:
+        estimator.fit(data, design_matrix=design_matrices)
+
+    # Compare the state of the model parameters with the original parameters
+    new_params = estimator.get_params()
+
+    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
+    # change memory parameters on fit if it's None
+    param_to_ignore = ["memory"]
+
+    for param_name, original_value in original_params.items():
+        if param_name in param_to_ignore:
+            continue
+
+        new_value = new_params[param_name]
+
+        # We should never change or mutate the internal state of input
+        # parameters by default. To check this we use the joblib.hash function
+        # that introspects recursively any subobjects to compute a checksum.
+        # The only exception to this rule of immutable constructor parameters
+        # is possible RandomState instance but in this check we explicitly
+        # fixed the random_state params recursively to be integer seeds.
+        assert joblib.hash(new_value) == joblib.hash(original_value), (
+            f"Estimator {estimator.__class__.__name__} "
+            "should not change or mutate "
+            f" the parameter {param_name} from {original_value} "
+            f"to {new_value} during fit."
+        )
 
 
 # ------------------ REPORT GENERATION CHECKS ------------------
