@@ -359,6 +359,13 @@ def return_expected_failed_checks(
 
     # Adapt some checks for some estimators
 
+    # some checks would fail on sklearn 1.6.1
+    # see https://github.com/scikit-learn-contrib/imbalanced-learn/issues/1131
+    is_sklearn_1_6_1 = (
+        parse(sklearn_version).release[1] == 6
+        and parse(sklearn_version).release[2] == 1
+    )
+
     # not entirely sure why some of them pass
     # e.g check_estimator_sparse_data passes for SurfaceLabelsMasker
     # but not SurfaceMasker ????
@@ -372,7 +379,6 @@ def return_expected_failed_checks(
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if isinstance(estimator, _BaseDecoder):
-        expected_failed_checks.pop("check_estimator_sparse_tag")
         expected_failed_checks |= {
             "check_classifier_data_not_an_array": (
                 "not applicable for image input"
@@ -392,12 +398,14 @@ def return_expected_failed_checks(
             "check_supervised_y_no_nan": "TODO",
             "check_supervised_y_2d": "TODO",
         }
+        if not is_sklearn_1_6_1:
+            expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if isinstance(estimator, (_BaseDecomposition,)):
-        if parse(sklearn_version).release[1] >= 5:
-            expected_failed_checks.pop("check_estimator_sparse_array")
         if parse(sklearn_version).release[1] >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
+        if not is_sklearn_1_6_1 and parse(sklearn_version).release[1] >= 5:
+            expected_failed_checks.pop("check_estimator_sparse_array")
 
     if is_masker:
         if niimg_input:
@@ -432,7 +440,9 @@ def return_expected_failed_checks(
             isinstance(estimator, (NiftiMasker))
             and parse(sklearn_version).release[1] >= 5
         ):
-            expected_failed_checks.pop("check_estimator_sparse_array")
+            if not is_sklearn_1_6_1:
+                expected_failed_checks.pop("check_estimator_sparse_array")
+
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
         if (
