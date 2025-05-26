@@ -270,6 +270,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
         %(signals_transform_surface)s
 
         """
+        check_is_fitted(self)
+
         parameters = get_params(
             self.__class__,
             self,
