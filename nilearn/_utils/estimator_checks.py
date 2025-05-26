@@ -386,6 +386,9 @@ def return_expected_failed_checks(
             "check_regressor_data_not_an_array": (
                 "not applicable for image input"
             ),
+            "check_requires_y_none": (
+                "replaced by check_image_estimator_requires_y_none"
+            ),
             "check_classifiers_classes": "TODO",
             "check_classifiers_one_label": "TODO",
             "check_classifiers_regression_target": "TODO",
@@ -394,7 +397,6 @@ def return_expected_failed_checks(
             "check_regressors_int": "TODO",
             "check_regressors_train": "TODO",
             "check_regressors_no_decision_function": "TODO",
-            # "check_requires_y_none": "TODO",
             # "check_supervised_y_no_nan": "TODO",
             # "check_supervised_y_2d": "TODO",
         }
@@ -654,6 +656,9 @@ def check_image_estimator_requires_y_none(estimator):
     except ValueError as ve:
         if not any(msg in str(ve) for msg in expected_err_msgs):
             raise ve
+
+
+def check_image_supervised_estimator_y_no_nan(estimator): ...
 
 
 # ------------------ MASKER CHECKS ------------------
