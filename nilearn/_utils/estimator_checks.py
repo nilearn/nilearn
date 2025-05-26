@@ -394,9 +394,9 @@ def return_expected_failed_checks(
             "check_regressors_int": "TODO",
             "check_regressors_train": "TODO",
             "check_regressors_no_decision_function": "TODO",
-            "check_requires_y_none": "TODO",
-            "check_supervised_y_no_nan": "TODO",
-            "check_supervised_y_2d": "TODO",
+            # "check_requires_y_none": "TODO",
+            # "check_supervised_y_no_nan": "TODO",
+            # "check_supervised_y_2d": "TODO",
         }
         if not is_sklearn_1_6_1:
             expected_failed_checks.pop("check_estimator_sparse_tag")
@@ -486,14 +486,21 @@ def nilearn_check_generator(estimator: BaseEstimator):
     if isinstance(tags, dict) and "X_types" in tags:
         is_masker = "masker" in tags["X_types"]
         is_glm = "glm" in tags["X_types"]
+        niimg_input = "niimg_like" in tags["X_types"]
         surf_img_input = "surf_img" in tags["X_types"]
+        requires_y = isinstance(estimator, _BaseDecoder)
     else:
         is_masker = getattr(tags.input_tags, "masker", False)
         is_glm = getattr(tags.input_tags, "glm", False)
+        niimg_input = getattr(tags.input_tags, "niimg_like", False)
         surf_img_input = getattr(tags.input_tags, "surf_img", False)
+        requires_y = getattr(tags.target_tags, "required", False)
 
     yield (clone(estimator), check_estimator_has_sklearn_is_fitted)
     yield (clone(estimator), check_transformer_set_output)
+
+    if (niimg_input or surf_img_input) and requires_y:
+        yield (clone(estimator), check_image_estimator_requires_y_none)
 
     if is_masker:
         yield (clone(estimator), check_masker_clean_kwargs)
@@ -632,6 +639,21 @@ def check_transformer_set_output(estimator):
     if hasattr(estimator, "transform"):
         with pytest.raises(NotImplementedError):
             estimator.set_output(transform="default")
+
+
+def check_image_estimator_requires_y_none(estimator):
+    """Check estimator with requires_y=True fails gracefully for y=None.
+
+    Replaces sklearn check_requires_y_none
+    """
+    expected_err_msgs = "requires y to be passed, but the target y is None"
+    shape = (30, 31, 32)
+    input_img = Nifti1Image(_rng().random(shape), _affine_eye())
+    try:
+        estimator.fit(input_img, None)
+    except ValueError as ve:
+        if not any(msg in str(ve) for msg in expected_err_msgs):
+            raise ve
 
 
 # ------------------ MASKER CHECKS ------------------
