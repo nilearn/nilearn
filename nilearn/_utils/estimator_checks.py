@@ -328,13 +328,6 @@ def return_expected_failed_checks(
         "check_fit_check_is_fitted": (
             "replaced by check_masker_fitted or check_glm_is_fitted"
         ),
-        "check_transformer_data_not_an_array": (
-            "replaced by check_masker_transformer"
-        ),
-        "check_transformer_general": ("replaced by check_masker_transformer"),
-        "check_transformer_preserve_dtypes": (
-            "replaced by check_masker_transformer"
-        ),
         "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
         "check_fit_score_takes_y": (
             "replaced by check_masker_fit_score_takes_y"
@@ -358,6 +351,19 @@ def return_expected_failed_checks(
         "check_readonly_memmap_input": "TODO",
     }
 
+    if hasattr(estimator, "transform"):
+        expected_failed_checks |= {
+            "check_transformer_data_not_an_array": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_transformer_general": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_transformer_preserve_dtypes": (
+                "replaced by check_masker_transformer"
+            ),
+        }
+
     # Adapt some checks for some estimators
 
     # some checks would fail on sklearn 1.6.1 on older python
@@ -380,6 +386,25 @@ def return_expected_failed_checks(
         if parse(sklearn_version).release[1] >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
+        expected_failed_checks |= {
+            "check_estimators_dtypes": ("replaced by check_glm_dtypes"),
+            "check_estimators_fit_returns_self": (
+                "replaced by check_glm_fit_returns_self"
+            ),
+            "check_fit_check_is_fitted": ("replaced by check_glm_is_fitted"),
+            "check_transformer_data_not_an_array": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_transformer_general": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_transformer_preserve_dtypes": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_dict_unchanged": "TODO",
+            "check_fit_score_takes_y": "TODO",
+        }
+
     if isinstance(estimator, _BaseDecoder):
         expected_failed_checks |= {
             "check_classifier_data_not_an_array": (
@@ -388,6 +413,22 @@ def return_expected_failed_checks(
             "check_regressor_data_not_an_array": (
                 "not applicable for image input"
             ),
+            # the following are have nilearn replacement for masker and/or glm
+            # but not for decoders
+            "check_estimators_dtypes": "TODO",
+            "check_estimators_fit_returns_self": "TODO",
+            "check_fit_check_is_fitted": "TODO",
+            "check_transformer_data_not_an_array": "TODO",
+            "check_transformer_general": "TODO",
+            "check_transformer_preserve_dtypes": "TODO",
+            "check_dict_unchanged": "TODO",
+            "check_fit_score_takes_y": "TODO",
+            # Those are skipped for now they fail
+            # for unknown reasons
+            # most often because sklearn inputs expect a numpy array
+            # that errors with maskers,
+            # or because a suitable nilearn replacement
+            # has not yet been created.
             "check_classifiers_classes": "TODO",
             "check_classifiers_one_label": "TODO",
             "check_classifiers_regression_target": "TODO",
