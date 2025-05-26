@@ -22,7 +22,8 @@ from numpy.testing import (
 from packaging.version import parse
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, is_classifier, is_regressor
+from sklearn.datasets import make_classification
 from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
@@ -59,6 +60,7 @@ from nilearn.conftest import (
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
 from nilearn.decoding.decoder import _BaseDecoder
+from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers import (
     NiftiLabelsMasker,
@@ -391,6 +393,9 @@ def return_expected_failed_checks(
             "check_requires_y_none": (
                 "replaced by check_image_estimator_requires_y_none"
             ),
+            "check_supervised_y_no_nan": (
+                "replaced by check_image_supervised_estimator_y_no_nan"
+            ),
             "check_classifiers_classes": "TODO",
             "check_classifiers_one_label": "TODO",
             "check_classifiers_regression_target": "TODO",
@@ -399,8 +404,7 @@ def return_expected_failed_checks(
             "check_regressors_int": "TODO",
             "check_regressors_train": "TODO",
             "check_regressors_no_decision_function": "TODO",
-            # "check_supervised_y_no_nan": "TODO",
-            # "check_supervised_y_2d": "TODO",
+            "check_supervised_y_2d": "TODO",
         }
         if not is_sklearn_1_6_1_on_py_3_9:
             expected_failed_checks.pop("check_estimator_sparse_tag")
@@ -506,8 +510,12 @@ def nilearn_check_generator(estimator: BaseEstimator):
     yield (clone(estimator), check_estimator_has_sklearn_is_fitted)
     yield (clone(estimator), check_transformer_set_output)
 
-    if (niimg_input or surf_img_input) and requires_y:
-        yield (clone(estimator), check_image_estimator_requires_y_none)
+    if niimg_input or surf_img_input:
+        if requires_y:
+            yield (clone(estimator), check_image_estimator_requires_y_none)
+
+        if is_classifier(estimator) or is_regressor(estimator):
+            yield (clone(estimator), check_image_supervised_estimator_y_no_nan)
 
     if is_masker:
         yield (clone(estimator), check_masker_clean_kwargs)
@@ -648,7 +656,7 @@ def check_transformer_set_output(estimator):
             estimator.set_output(transform="default")
 
 
-def check_image_estimator_requires_y_none(estimator):
+def check_image_estimator_requires_y_none(estimator) -> None:
     """Check estimator with requires_y=True fails gracefully for y=None.
 
     Replaces sklearn check_requires_y_none
@@ -663,7 +671,28 @@ def check_image_estimator_requires_y_none(estimator):
             raise ve
 
 
-def check_image_supervised_estimator_y_no_nan(estimator): ...
+def check_image_supervised_estimator_y_no_nan(estimator) -> None:
+    """Check estimator fails if y contains nan or inf.
+
+    Replaces sklearn check_supervised_y_no_nan
+    """
+    # we can use classification data even for regressors
+    # because fit should fail early
+    dim = 5
+    X, y = make_classification(
+        n_samples=20,
+        n_features=dim**3,
+        scale=3.0,
+        n_informative=5,
+        n_classes=2,
+        random_state=42,
+    )
+    X, _ = to_niimgs(X, [dim, dim, dim])
+    y = _rng().random(y.shape)
+    for value in [np.inf, np.nan]:
+        y[5,] = value
+        with pytest.raises(ValueError, match="Input y contains "):
+            estimator.fit(X, y)
 
 
 # ------------------ MASKER CHECKS ------------------
