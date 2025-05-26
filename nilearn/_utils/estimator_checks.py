@@ -171,6 +171,10 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
         "or check_surface_masker_fit_returns_self or "
         "check_glm_fit_returns_self"
     ),
+    "check_estimators_overwrite_params": (
+        "replaced by check_masker_estimators_overwrite_params and"
+        "check_glm_estimators_overwrite_params"
+    ),
     "check_fit_check_is_fitted": (
         "replaced by check_masker_fitted or check_glm_is_fitted"
     ),
@@ -190,7 +194,6 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     # or because a suitable nilearn replacement has not yet been created.
     "check_estimators_empty_data_messages": "TODO",
     "check_estimators_nan_inf": "TODO",
-    "check_estimators_overwrite_params": "TODO",
     "check_estimators_pickle": "TODO",
     "check_fit_idempotent": "TODO",
     "check_methods_sample_order_invariance": "TODO",
