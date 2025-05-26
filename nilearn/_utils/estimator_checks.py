@@ -152,7 +152,7 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_n_features_in_after_fitting": "not applicable",
     # the following are skipped because there is nilearn specific replacement
     "check_estimators_dtypes": (
-        "replaced by check_masker_dtypes andcheck_glm_dtypes"
+        "replaced by check_masker_dtypes and check_glm_dtypes"
     ),
     "check_estimators_fit_returns_self": (
         "replaced by check_nifti_masker_fit_returns_self "
@@ -165,12 +165,12 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_transformer_data_not_an_array": (
         "replaced by check_masker_transformer"
     ),
-    "check_transformer_general": ("replaced by check_masker_transformer"),
+    "check_transformer_general": "replaced by check_masker_transformer",
     "check_transformer_preserve_dtypes": (
         "replaced by check_masker_transformer"
     ),
-    "check_dict_unchanged": "check_masker_dict_unchanged",
-    "check_fit_score_takes_y": {"replaced by check_masker_fit_score_takes_y"},
+    "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
+    "check_fit_score_takes_y": "replaced by check_masker_fit_score_takes_y",
     # Those are skipped for now they fail
     # for unknown reasons
     #  most often because sklearn inputs expect a numpy array
@@ -254,19 +254,11 @@ def check_estimator(
         estimator = [estimator]
 
     for est in estimator:
+        expected_failed_checks = return_expected_failed_checks(
+            est, expected_failed_checks=expected_failed_checks
+        )
         # TODO simplify when dropping sklearn 1.5
         if SKLEARN_GT_1_5:
-            tags = est.__sklearn_tags__()
-
-            niimg_input = getattr(tags.input_tags, "niimg_like", False)
-            surf_img = getattr(tags.input_tags, "surf_img", False)
-
-            if niimg_input or surf_img:
-                if expected_failed_checks is None:
-                    expected_failed_checks = CHECKS_TO_SKIP_IF_IMG_INPUT
-                else:
-                    expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
-
             for e, check in sklearn_check_generator(
                 estimator=est,
                 expected_failed_checks=expected_failed_checks,
@@ -289,17 +281,6 @@ def check_estimator(
             for e, check in sklearn_check_estimator(
                 estimator=est, generate_only=True
             ):
-                tags = est._more_tags()
-
-                niimg_input = "niimg_like" in tags["X_types"]
-                surf_img = "surf_img" in tags["X_types"]
-
-                if niimg_input or surf_img:
-                    if expected_failed_checks is None:
-                        expected_failed_checks = CHECKS_TO_SKIP_IF_IMG_INPUT
-                    else:
-                        expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
-
                 if (
                     isinstance(expected_failed_checks, dict)
                     and check.func.__name__ in expected_failed_checks
@@ -311,13 +292,47 @@ def check_estimator(
                 if not valid and check.func.__name__ not in valid_checks:
                     yield e, check, check.func.__name__
 
-    if valid:
-        for est in estimator:
-            for e, check in nilearn_check_estimator(estimator=est):
-                yield e, check, check.__name__
+
+def return_expected_failed_checks(estimator, expected_failed_checks=None):
+    if SKLEARN_GT_1_5:
+        tags = estimator.__sklearn_tags__()
+
+        niimg_input = getattr(tags.input_tags, "niimg_like", False)
+        surf_img = getattr(tags.input_tags, "surf_img", False)
+
+        if niimg_input or surf_img:
+            if expected_failed_checks is None:
+                expected_failed_checks = CHECKS_TO_SKIP_IF_IMG_INPUT
+            else:
+                expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
+    else:
+        tags = estimator._more_tags()
+
+        niimg_input = "niimg_like" in tags["X_types"]
+        surf_img = "surf_img" in tags["X_types"]
+
+        if niimg_input or surf_img:
+            if expected_failed_checks is None:
+                expected_failed_checks = CHECKS_TO_SKIP_IF_IMG_INPUT
+            else:
+                expected_failed_checks |= CHECKS_TO_SKIP_IF_IMG_INPUT
+
+    return expected_failed_checks
 
 
 def nilearn_check_estimator(estimator):
+    if not isinstance(estimator, list):
+        estimator = [estimator]
+    for est in estimator:
+        for e, check in nilearn_check_generator(estimator=est):
+            yield e, check, check.__name__
+
+
+def nilearn_check_generator(estimator):
+    """Yield (estimator, check) tuples.
+
+    Each nilearn check can be run on an initialized estimator.
+    """
     is_masker = False
     is_glm = False
     surf_img_input = False
@@ -342,62 +357,56 @@ def nilearn_check_estimator(estimator):
     yield (clone(estimator), check_transformer_set_output)
 
     if is_masker:
-        yield (clone(estimator), check_masker_fitted)
         yield (clone(estimator), check_masker_clean_kwargs)
-        yield (clone(estimator), check_masker_generate_report)
-        yield (clone(estimator), check_masker_generate_report_false)
-        yield (clone(estimator), check_masker_refit)
-
-        yield (clone(estimator), check_masker_fit_score_takes_y)
-
-        yield (clone(estimator), check_masker_transformer)
-        yield (clone(estimator), check_masker_inverse_transform)
-
         yield (clone(estimator), check_masker_compatibility_mask_image)
-
         yield (clone(estimator), check_masker_dict_unchanged)
-
-        yield (clone(estimator), check_masker_fit_with_empty_mask)
-
+        yield (clone(estimator), check_masker_dtypes)
         yield (clone(estimator), check_masker_fit_returns_self)
-
+        yield (clone(estimator), check_masker_fit_score_takes_y)
+        yield (clone(estimator), check_masker_fit_with_empty_mask)
         yield (
             clone(estimator),
             check_masker_fit_with_non_finite_in_mask,
         )
+        yield (clone(estimator), check_masker_fitted)
+        yield (clone(estimator), check_masker_generate_report)
+        yield (clone(estimator), check_masker_generate_report_false)
+        yield (clone(estimator), check_masker_inverse_transform)
         yield (clone(estimator), check_masker_mask_img)
-        yield (clone(estimator), check_masker_no_mask_no_img)
         yield (clone(estimator), check_masker_mask_img_from_imgs)
-
+        yield (clone(estimator), check_masker_no_mask_no_img)
+        yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_smooth)
-
+        yield (clone(estimator), check_masker_transformer)
         yield (
             clone(estimator),
             check_masker_transformer_high_variance_confounds,
         )
 
         if not is_multimasker(estimator):
-            yield (clone(estimator), check_masker_with_confounds)
-            yield (clone(estimator), check_masker_detrending)
             yield (clone(estimator), check_masker_clean)
+            yield (clone(estimator), check_masker_detrending)
             yield (clone(estimator), check_masker_transformer_sample_mask)
+            yield (clone(estimator), check_masker_with_confounds)
 
         if accept_niimg_input(estimator):
+            yield (clone(estimator), check_nifti_masker_clean_error)
+            yield (clone(estimator), check_nifti_masker_clean_warning)
+            yield (clone(estimator), check_nifti_masker_dtype)
             yield (clone(estimator), check_nifti_masker_fit_transform)
+            yield (clone(estimator), check_nifti_masker_fit_transform_5d)
             yield (clone(estimator), check_nifti_masker_fit_transform_files)
             yield (clone(estimator), check_nifti_masker_fit_with_3d_mask)
             yield (
                 clone(estimator),
                 check_nifti_masker_generate_report_after_fit_with_only_mask,
             )
-            yield (clone(estimator), check_nifti_masker_clean_error)
-            yield (clone(estimator), check_nifti_masker_clean_warning)
-            yield (clone(estimator), check_nifti_masker_dtype)
-            yield (clone(estimator), check_nifti_masker_fit_transform_5d)
-            yield (clone(estimator), check_masker_dtypes)
 
             if is_multimasker(estimator):
-                yield (clone(estimator), check_multi_masker_with_confounds)
+                yield (
+                    clone(estimator),
+                    check_multi_nifti_masker_generate_report_4d_fit,
+                )
                 yield (
                     clone(estimator),
                     check_multi_masker_transformer_high_variance_confounds,
@@ -406,19 +415,16 @@ def nilearn_check_estimator(estimator):
                     clone(estimator),
                     check_multi_masker_transformer_sample_mask,
                 )
-                yield (
-                    clone(estimator),
-                    check_multi_nifti_masker_generate_report_4d_fit,
-                )
+                yield (clone(estimator), check_multi_masker_with_confounds)
 
         if surf_img_input:
             yield (clone(estimator), check_surface_masker_fit_with_mask)
             yield (clone(estimator), check_surface_masker_list_surf_images)
 
     if is_glm:
+        yield (clone(estimator), check_glm_dtypes)
         yield (clone(estimator), check_glm_fit_returns_self)
         yield (clone(estimator), check_glm_is_fitted)
-        yield (clone(estimator), check_glm_dtypes)
 
 
 def is_multimasker(estimator):

@@ -1289,7 +1289,7 @@ def test_threshold_img_copied_header(img_4d_mni_tr2):
     assert thr_img.header["cal_min"] == 0
 
 
-def test_math_img_exceptions(affine_eye, img_4d_ones_eye):
+def test_math_img_exceptions(affine_eye, img_4d_ones_eye, surf_img_2d):
     img1 = img_4d_ones_eye
     img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), affine_eye)
     img3 = img_4d_ones_eye
@@ -1309,6 +1309,11 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye):
         AttributeError, match="Input formula couldn't be processed"
     ):
         math_img(bad_formula, img1=img1, img3=img3)
+    # Same but for surface data
+    with pytest.raises(
+        AttributeError, match="Input formula couldn't be processed"
+    ):
+        math_img(bad_formula, img1=surf_img_2d(2), img3=surf_img_2d(3))
 
     # Test copy_header_from parameter
     # Copying header from 4d image to a result that is 3d should raise a
@@ -1339,6 +1344,26 @@ def test_math_img(
         assert_array_equal(get_data(result), get_data(expected_result))
         assert_array_equal(result.affine, expected_result.affine)
         assert result.shape == expected_result.shape
+
+
+def test_math_img_surface(surf_img_2d):
+    """Test math_img on surface data."""
+    img1 = surf_img_2d(1)
+    img2 = surf_img_2d(3)
+
+    tmp = {}
+    for part in img1.data.parts:
+        tmp[part] = np.mean(img1.data.parts[part], axis=-1) - np.mean(
+            img2.data.parts[part], axis=-1
+        )
+
+    expected_result = SurfaceImage(mesh=img1.mesh, data=tmp)
+
+    formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
+    result = math_img(formula, img1=img1, img2=img2)
+
+    assert isinstance(result, SurfaceImage)
+    assert_surface_image_equal(result, expected_result)
 
 
 def test_math_img_copy_default_header(
@@ -1409,6 +1434,21 @@ def test_binarize_img(img_4d_rand_eye):
     img3.dataobj[img_4d_rand_eye.dataobj >= 0.5] = 1
 
     assert_array_equal(img2.dataobj, img3.dataobj)
+
+
+def test_binarize_img_surface(surf_img_1d):
+    """Test binarize_img on surface data."""
+    img = surf_img_1d
+    for k, v in img.data.parts.items():
+        img.data.parts[k] = v + 1
+    # Test that all output values are 1.
+    img1 = binarize_img(surf_img_1d)
+
+    assert_array_equal(np.unique(get_surface_data(img1)), np.array([1]))
+
+    # Test that it works with threshold
+    img2 = binarize_img(surf_img_1d, threshold=9)
+    assert_array_equal(np.unique(get_surface_data(img2)), np.array([0, 1]))
 
 
 def test_binarize_negative_img(img_4d_rand_eye, rng):

@@ -3,7 +3,10 @@ import pytest
 from numpy.testing import assert_array_almost_equal
 
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+)
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
     HierarchicalKMeans,
@@ -21,7 +24,7 @@ expected_failed_checks = {
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[HierarchicalKMeans(n_clusters=8)],
+        estimator=HierarchicalKMeans(n_clusters=8),
     ),
 )
 def test_check_estimator(estimator, check, name):  # noqa: ARG001
@@ -33,13 +36,22 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=[HierarchicalKMeans(n_clusters=8)],
+        estimator=HierarchicalKMeans(n_clusters=8),
         valid=False,
         expected_failed_checks=expected_failed_checks,
     ),
 )
 def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
+    check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    nilearn_check_estimator(estimator=HierarchicalKMeans(n_clusters=8)),
+)
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
     check(estimator)
 
 
