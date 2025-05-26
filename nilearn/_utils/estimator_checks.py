@@ -158,7 +158,8 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_n_features_in_after_fitting": "not applicable",
     # the following are skipped because there is nilearn specific replacement
     "check_dont_overwrite_parameters": (
-        "replaced by check_masker_dont_overwrite_parameters"
+        "replaced by check_masker_dont_overwrite_parameters or "
+        "check_glm_dont_overwrite_parameters"
     ),
     "check_estimators_dtypes": (
         "replaced by check_masker_dtypes and check_glm_dtypes"
@@ -431,6 +432,7 @@ def nilearn_check_generator(estimator):
             yield (clone(estimator), check_surface_masker_list_surf_images)
 
     if is_glm:
+        yield (clone(estimator), check_glm_dont_overwrite_parameters)
         yield (clone(estimator), check_glm_dtypes)
         yield (clone(estimator), check_glm_fit_returns_self)
         yield (clone(estimator), check_glm_is_fitted)
@@ -1920,17 +1922,17 @@ def check_glm_dont_overwrite_parameters(estimator) -> None:
     """
     estimator = clone(estimator)
 
-    n_sample = 1
-    if accept_niimg_input(estimator):
-        imgs = _img_3d_rand()
-    else:
-        imgs = _make_surface_img(n_sample)
-
     set_random_state(estimator, 1)
 
     dict_before_fit = estimator.__dict__.copy()
 
-    estimator.fit(imgs)
+    data, design_matrices = _make_surface_img_and_design()
+    # FirstLevel
+    if hasattr(estimator, "hrf_model"):
+        estimator.fit(data, design_matrices=design_matrices)
+    # SecondLevel
+    else:
+        estimator.fit(data, design_matrix=design_matrices)
 
     dict_after_fit = estimator.__dict__
 

@@ -694,7 +694,7 @@ class FirstLevelModel(BaseGLM):
             self.drift_model,
             self.high_pass,
             self.drift_order,
-            self.fir_delays,
+            self.fir_delays_,
             confounds_matrix,
             confounds_names,
             self.min_onset,
@@ -810,7 +810,9 @@ class FirstLevelModel(BaseGLM):
             _check_slice_time_ref(self.slice_time_ref)
 
         if self.fir_delays is None:
-            self.fir_delays = [0]
+            self.fir_delays_ = [0]
+        else:
+            self.fir_delays_ = self.fir_delays
 
         self.memory = check_memory(self.memory)
 
