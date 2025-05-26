@@ -42,6 +42,10 @@ class _MultiPCA(_BaseDecomposition):
 
     %(mask_strategy)s
         Default='epi'.
+        .. note::
+
+          These strategies are only relevant for Nifti images and the parameter
+          is ignored for SurfaceImage objects.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to

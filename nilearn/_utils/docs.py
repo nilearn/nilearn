@@ -654,12 +654,6 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
       :func:`nilearn.masking.compute_brain_mask` with ``mask_type="wm"``.
 
       .. versionadded:: 0.8.1
-
-      .. note::
-
-          These strategies are only relevant for Nifti images and the parameter
-          is ignored for SurfaceImage objects.
-
 """
 
 # mask_type
