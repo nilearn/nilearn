@@ -28,7 +28,11 @@ from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=NiftiLabelsMasker(labels_img=_img_labels()),
+        estimator=[
+            NiftiLabelsMasker(
+                labels_img=_img_labels(), keep_masked_labels=False
+            )
+        ],
         expected_failed_checks=expected_failed_checks_0pt13pt2(),
     ),
 )
@@ -41,7 +45,11 @@ def test_check_estimator(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize(
     "estimator, check, name",
     check_estimator(
-        estimator=NiftiLabelsMasker(labels_img=_img_labels()),
+        estimator=[
+            NiftiLabelsMasker(
+                labels_img=_img_labels(), keep_masked_labels=False
+            )
+        ],
         valid=False,
     ),
 )
@@ -74,7 +82,7 @@ def test_nifti_labels_masker(
 
     # No exception raised here
     masker = NiftiLabelsMasker(img_labels, resampling_target=None)
-    signals = masker.fit().transform(fmri_img)
+    signals = masker.fit_transform(fmri_img)
 
     assert signals.shape == (length, n_regions)
 
@@ -90,7 +98,7 @@ def test_nifti_labels_masker(
     masker = NiftiLabelsMasker(
         img_labels, mask_img=mask11_img, resampling_target=None
     )
-    signals = masker.fit().transform(fmri_img)
+    signals = masker.fit_transform(fmri_img)
 
     assert signals.shape == (length, n_regions)
 
@@ -145,7 +153,7 @@ def test_nifti_labels_masker_errors(
         labels11_img, mask_img=mask12_img, resampling_target=None
     )
     with pytest.raises(
-        ValueError, match="Regions and mask do not have the same affine."
+        ValueError, match="Following field of view errors were detected"
     ):
         masker11.fit()
 
@@ -153,7 +161,7 @@ def test_nifti_labels_masker_errors(
         labels11_img, mask_img=mask21_img, resampling_target=None
     )
     with pytest.raises(
-        ValueError, match="Regions and mask do not have the same shape"
+        ValueError, match="Following field of view errors were detected"
     ):
         masker11.fit()
 
@@ -323,7 +331,7 @@ def test_nifti_labels_masker_resampling_to_data(affine_eye, n_regions, length):
     )
     masker.fit_transform(fmri_img)
 
-    assert_array_equal(masker._resampled_labels_img_.affine, affine2)
+    assert_array_equal(masker.labels_img_.affine, affine2)
 
 
 @pytest.mark.parametrize("resampling_target", ["data", "labels"])
@@ -354,23 +362,23 @@ def test_nifti_labels_masker_resampling(
             "to the data image, the following "
             "labels were removed",
         ):
-            transformed = masker.fit_transform(fmri_img)
+            signals = masker.fit_transform(fmri_img)
     else:
-        transformed = masker.fit_transform(fmri_img)
+        signals = masker.fit_transform(fmri_img)
 
-    resampled_labels_img = masker._resampled_labels_img_
+    resampled_labels_img = masker.labels_img_
     n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
 
-    assert n_resampled_labels - 1 == transformed.shape[1]
+    assert n_resampled_labels - 1 == signals.shape[1]
 
     # inverse transform
-    compressed_img = masker.inverse_transform(transformed)
+    compressed_img = masker.inverse_transform(signals)
 
     # Test that compressing the image a second time should yield an image
     # with the same data as compressed_img.
-    transformed2 = masker.fit_transform(fmri_img)
+    signals2 = masker.fit_transform(fmri_img)
     # inverse transform again
-    compressed_img2 = masker.inverse_transform(transformed2)
+    compressed_img2 = masker.inverse_transform(signals2)
 
     assert_array_equal(get_data(compressed_img), get_data(compressed_img2))
 
@@ -406,18 +414,16 @@ def test_nifti_labels_masker_resampling_to_labels(
         labels_img, mask_img=mask_img, resampling_target="labels"
     )
 
-    masker.fit()
+    signals = masker.fit_transform(fmri_img)
 
     assert_almost_equal(masker.labels_img_.affine, labels_img.affine)
     assert masker.labels_img_.shape == labels_img.shape
     assert_almost_equal(masker.mask_img_.affine, masker.labels_img_.affine)
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
-    transformed = masker.transform(fmri_img)
+    assert signals.shape == (length, n_regions)
 
-    assert transformed.shape == (length, n_regions)
-
-    fmri11_img_r = masker.inverse_transform(transformed)
+    fmri11_img_r = masker.inverse_transform(signals)
 
     assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
     assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
@@ -457,7 +463,8 @@ def test_nifti_labels_masker_resampling_to_clipped_labels(
         labels33_img, mask_img=mask22_img, resampling_target="labels"
     )
 
-    masker.fit()
+    signals = masker.fit_transform(fmri11_img)
+
     assert_almost_equal(masker.labels_img_.affine, labels33_img.affine)
 
     assert masker.labels_img_.shape == labels33_img.shape
@@ -468,13 +475,11 @@ def test_nifti_labels_masker_resampling_to_clipped_labels(
     assert uniq_labels[0] == 0
     assert len(uniq_labels) - 1 == n_regions
 
-    transformed = masker.transform(fmri11_img)
-
-    assert transformed.shape == (length, n_regions)
+    assert signals.shape == (length, n_regions)
     # Some regions have been clipped. Resulting signal must be zero
-    assert (transformed.var(axis=0) == 0).sum() < n_regions
+    assert (signals.var(axis=0) == 0).sum() < n_regions
 
-    fmri11_img_r = masker.inverse_transform(transformed)
+    fmri11_img_r = masker.inverse_transform(signals)
 
     assert_almost_equal(fmri11_img_r.affine, masker.labels_img_.affine)
     assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
@@ -505,7 +510,7 @@ def test_nifti_labels_masker_resampling_to_none(
         img_labels, mask_img=mask_img, resampling_target=None
     )
     with pytest.raises(
-        ValueError, match="Images have different affine matrices."
+        ValueError, match="Following field of view errors were detected"
     ):
         masker.fit_transform(fmri_img)
 
@@ -561,17 +566,16 @@ def test_nifti_labels_masker_with_mask(
     masker = NiftiLabelsMasker(
         img_labels, resampling_target=None, mask_img=mask_img
     )
-    signals = masker.fit().transform(fmri_img)
+    signals = masker.fit_transform(fmri_img)
 
-    bg_masker = NiftiMasker(mask_img).fit()
-    masked_labels = bg_masker.inverse_transform(
-        bg_masker.transform(img_labels),
-    )
+    bg_masker = NiftiMasker(mask_img)
+    tmp = bg_masker.fit_transform(img_labels)
+    masked_labels = bg_masker.inverse_transform(tmp)
 
     masked_masker = NiftiLabelsMasker(
         masked_labels, resampling_target=None, mask_img=mask_img
     )
-    masked_signals = masked_masker.fit().transform(fmri_img)
+    masked_signals = masked_masker.fit_transform(fmri_img)
 
     assert np.allclose(signals, masked_signals)
 
@@ -676,7 +680,8 @@ def test_region_names(
         labels=generate_labels(n_regions, background=background),
         resampling_target="data",
     )
-    masker.fit()
+
+    signals = masker.fit_transform(fmri_img)
 
     tmp = generate_labels(n_regions, background=background)
     if background is None:
@@ -684,8 +689,6 @@ def test_region_names(
     else:
         expected_lut = generate_expected_lut(tmp)
     check_lut(masker, expected_lut)
-
-    signals = masker.transform(fmri_img)
 
     region_names = generate_labels(n_regions, background=background)
     check_region_names_after_fit(
@@ -820,7 +823,7 @@ def test_region_names_ids_match_after_fit(
         keep_masked_labels=keep_masked_labels,
     )
 
-    masker.fit()
+    masker.fit_transform(fmri_img)
 
     tmp = generate_labels(n_regions, background=background)
     if background is None:
@@ -828,8 +831,6 @@ def test_region_names_ids_match_after_fit(
     else:
         expected_lut = generate_expected_lut(tmp)
     check_lut(masker, expected_lut)
-
-    _ = masker.transform(fmri_img)
 
     check_region_names_ids_match_after_fit(
         masker, region_names, region_ids, background
@@ -889,7 +890,8 @@ def test_region_names_with_non_sequential_labels(
         labels=generate_labels(len(labels), background=background),
         resampling_target=None,
     )
-    masker.fit()
+
+    signals = masker.fit_transform(fmri_img)
 
     expected_lut = pd.DataFrame(
         {
@@ -899,8 +901,6 @@ def test_region_names_with_non_sequential_labels(
         }
     )
     check_lut(masker, expected_lut)
-
-    signals = masker.transform(fmri_img)
 
     region_names = generate_labels(len(labels), background=background)
 
@@ -931,7 +931,7 @@ def test_more_labels_than_actual_region_in_atlas(
         UserWarning,
         match="Too many names for the indices. Dropping excess names values.",
     ):
-        masker.fit().transform(fmri_img)
+        masker.fit_transform(fmri_img)
 
 
 @pytest.mark.parametrize("background", [None, "Background"])
