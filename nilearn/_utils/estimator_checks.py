@@ -5,6 +5,7 @@ and importing them will fail if pytest is not installed.
 """
 
 import inspect
+import sys
 import warnings
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -359,10 +360,11 @@ def return_expected_failed_checks(
 
     # Adapt some checks for some estimators
 
-    # some checks would fail on sklearn 1.6.1
+    # some checks would fail on sklearn 1.6.1 on older python
     # see https://github.com/scikit-learn-contrib/imbalanced-learn/issues/1131
-    is_sklearn_1_6_1 = (
-        parse(sklearn_version).release[1] == 6
+    is_sklearn_1_6_1_on_py_3_9 = (
+        sys.version_info[1] < 10
+        and parse(sklearn_version).release[1] == 6
         and parse(sklearn_version).release[2] == 1
     )
 
@@ -398,13 +400,16 @@ def return_expected_failed_checks(
             "check_supervised_y_no_nan": "TODO",
             "check_supervised_y_2d": "TODO",
         }
-        if not is_sklearn_1_6_1:
+        if not is_sklearn_1_6_1_on_py_3_9:
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if isinstance(estimator, (_BaseDecomposition,)):
         if parse(sklearn_version).release[1] >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
-        if not is_sklearn_1_6_1 and parse(sklearn_version).release[1] >= 5:
+        if (
+            not is_sklearn_1_6_1_on_py_3_9
+            and parse(sklearn_version).release[1] >= 5
+        ):
             expected_failed_checks.pop("check_estimator_sparse_array")
 
     if is_masker:
@@ -440,7 +445,7 @@ def return_expected_failed_checks(
             isinstance(estimator, (NiftiMasker))
             and parse(sklearn_version).release[1] >= 5
         ):
-            if not is_sklearn_1_6_1:
+            if not is_sklearn_1_6_1_on_py_3_9:
                 expected_failed_checks.pop("check_estimator_sparse_array")
 
             expected_failed_checks.pop("check_estimator_sparse_tag")
