@@ -72,7 +72,7 @@ def test_multi_nifti_maps_masker(
         img_maps, mask_img=mask11_img, resampling_target=None
     )
 
-    signals11 = masker.fit().transform(fmri11_img)
+    signals11 = masker.fit_transform(fmri11_img)
 
     assert signals11.shape == (length, n_regions)
 
@@ -122,7 +122,7 @@ def test_multi_nifti_maps_masker_data_atlas_different_shape(
 
     masker.fit_transform(fmri22_img)
 
-    assert_array_equal(masker._resampled_maps_img_.affine, affine2)
+    assert_array_equal(masker.maps_img_.affine, affine2)
 
 
 def test_multi_nifti_maps_masker_errors(
@@ -239,15 +239,15 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
         maps33_img, mask_img=mask22_img, resampling_target="mask"
     )
 
-    masker.fit()
+    signals = masker.fit_transform([img_fmri, img_fmri])
 
     assert_almost_equal(masker.mask_img_.affine, mask22_img.affine)
     assert masker.mask_img_.shape == mask22_img.shape
+
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
-    transformed = masker.transform([img_fmri, img_fmri])
-    for t in transformed:
+    for t in signals:
         assert t.shape == (length, n_regions)
 
         fmri11_img_r = masker.inverse_transform(t)
@@ -274,15 +274,15 @@ def test_multi_nifti_maps_masker_resampling_to_maps(
         maps33_img, mask_img=mask22_img, resampling_target="maps"
     )
 
-    masker.fit()
+    signals = masker.fit_transform([img_fmri, img_fmri])
 
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
+
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
-    transformed = masker.transform([img_fmri, img_fmri])
-    for t in transformed:
+    for t in signals:
         assert t.shape == (length, n_regions)
 
         fmri11_img_r = masker.inverse_transform(t)
@@ -307,15 +307,15 @@ def test_multi_nifti_maps_masker_resampling_clipped_mask(
         maps33_img, mask_img=mask22_img, resampling_target="maps"
     )
 
-    masker.fit()
+    signals = masker.fit_transform([img_fmri, img_fmri])
 
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
+
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
-    transformed = masker.transform([img_fmri, img_fmri])
-    for t in transformed:
+    for t in signals:
         assert t.shape == (length, n_regions)
         # Some regions have been clipped. Resulting signal must be zero
         assert (t.var(axis=0) == 0).sum() < n_regions
