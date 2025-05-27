@@ -22,20 +22,12 @@ from numpy.testing import (
 from packaging.version import parse
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
-
 from sklearn.base import BaseEstimator, is_classifier, is_regressor
 from sklearn.datasets import make_classification
-
-from sklearn.utils.estimator_checks import check_is_fitted
-
-from sklearn.base import BaseEstimator
-
 from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
-from sklearn.utils.estimator_checks import (
-    check_is_fitted,
-)
+from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -66,9 +58,7 @@ from nilearn.conftest import (
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
 from nilearn.decoding.decoder import _BaseDecoder
-
 from nilearn.decoding.tests.test_same_api import to_niimgs
-
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers import (
     NiftiLabelsMasker,
@@ -449,14 +439,12 @@ def return_expected_failed_checks(
             "check_regressors_int": "TODO",
             "check_regressors_train": "TODO",
             "check_regressors_no_decision_function": "TODO",
-            "check_requires_y_none": "TODO",
-            "check_supervised_y_no_nan": "TODO",
             "check_requires_y_none": (
                 "replaced by check_image_estimator_requires_y_none"
             ),
             "check_supervised_y_no_nan": (
                 "replaced by check_image_supervised_estimator_y_no_nan"
-            ),            
+            ),
             "check_supervised_y_2d": "TODO",
         }
         if not is_sklearn_1_6_1_on_py_3_9:
