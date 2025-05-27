@@ -445,7 +445,6 @@ def unapplicable_checks() -> dict[str, str]:
     """
     return dict.fromkeys(
         [
-            "check_classifier_data_not_an_array",
             "check_complex_data",
             "check_dtype_object",
             "check_estimator_sparse_array",
@@ -459,7 +458,6 @@ def unapplicable_checks() -> dict[str, str]:
             "check_fit2d_predict1d",
             "check_n_features_in",
             "check_n_features_in_after_fitting",
-            "check_regressor_data_not_an_array",
         ],
         "not applicable for image input",
     )
@@ -509,6 +507,13 @@ def expected_failed_checks_decoders() -> dict[str, str]:
         "check_supervised_y_2d": "TODO",
     }
     expected_failed_checks |= unapplicable_checks()
+    expected_failed_checks |= dict.fromkeys(
+        [
+            "check_classifier_data_not_an_array",
+            "check_regressor_data_not_an_array",
+        ],
+        "not applicable for image input",
+    )
 
     if not IS_SKLEARN_1_6_1_on_py_3_9:
         expected_failed_checks.pop("check_estimator_sparse_tag")
