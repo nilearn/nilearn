@@ -737,7 +737,7 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
             random_state=42,
         )
         X, _ = to_niimgs(X, [dim, dim, dim])
-        y = _rng().random(y.shape)
+        # y = _rng().random(y.shape)
         return estimator.fit(X, y)
 
     elif is_regressor(estimator):
@@ -754,7 +754,7 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
         X, _ = to_niimgs(X, [dim, dim, dim])
         return estimator.fit(X, y)
 
-    if is_masker(estimator):
+    elif is_masker(estimator):
         if accept_niimg_input(estimator):
             imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_eye())
         else:
@@ -810,7 +810,7 @@ def check_fit_returns_self(estimator) -> None:
 
     Replace sklearn check_estimators_fit_returns_self
     """
-    # TODO make sure that decomposition estimator pass this check
+    # TODO make sure the following estimator pass this check
     if isinstance(
         estimator,
         (
@@ -823,7 +823,10 @@ def check_fit_returns_self(estimator) -> None:
         ),
     ):
         return None
-    assert fit_estimator(estimator) is estimator
+
+    fitted_estimator = fit_estimator(estimator)
+
+    assert fitted_estimator is estimator
 
 
 # ------------------ DECODERS CHECKS ------------------

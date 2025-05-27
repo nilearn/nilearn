@@ -363,7 +363,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
                 tags["multioutput"] = True
                 return tags
             tags.estimator_type = "regressor"
-            tags.classifier_tags = RegressorTags()
+            tags.regressor_tags = RegressorTags()
 
         elif self.estimator == "svc":
             if SKLEARN_LT_1_6:
