@@ -354,7 +354,25 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags()
+
+        if self.estimator == "svr":
+            if SKLEARN_LT_1_6:
+                tags["multioutput"] = True
+                return tags
+            tags.estimator_type = "regressor"
+        elif self.estimator == "svc":
+            tags.estimator_type = "classifier"
+
         return tags
+
+    @property
+    def _estimator_type(self):
+        # TODO rm sklearn>=1.6
+        if self.estimator == "svr":
+            return "regressor"
+        elif self.estimator == "svc":
+            return "classifier"
+        return ""
 
     def fit(self, imgs, y, groups=None):
         """Fit the searchlight.

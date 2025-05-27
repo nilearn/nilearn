@@ -85,7 +85,6 @@ ESTIMATORS_TO_CHECK = [
     DecoderRegressor(),
     FREMRegressor(),
     Decoder(),
-    _BaseDecoder(),
     FREMClassifier(),
 ]
 

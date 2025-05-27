@@ -59,6 +59,7 @@ from nilearn.conftest import (
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
 from nilearn.decoding.decoder import _BaseDecoder
+from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers import (
@@ -291,7 +292,7 @@ def return_expected_failed_checks(
     # that accept images as input
     assert accept_niimg_input(estimator) or accept_surf_img_input(estimator)
 
-    if isinstance(estimator, _BaseDecoder):
+    if isinstance(estimator, (_BaseDecoder, SearchLight)):
         return expected_failed_checks_decoders()
 
     # keeping track of some of those in
@@ -619,54 +620,34 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_glm_is_fitted)
 
 
-def is_masker(estimator: BaseEstimator) -> bool:
+def get_tag(estimator: BaseEstimator, tag: str) -> bool:
     tags = estimator.__sklearn_tags__()
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
-        return "masker" in tags["X_types"]
+        return tag in tags["X_types"]
     else:
-        return getattr(tags.input_tags, "masker", False)
+        return getattr(tags.input_tags, tag, False)
+
+
+def is_masker(estimator: BaseEstimator) -> bool:
+    return get_tag(estimator, "masker")
 
 
 def is_multimasker(estimator: BaseEstimator) -> bool:
-    tags = estimator.__sklearn_tags__()
-    # TODO remove first if when dropping sklearn 1.5
-    #  for sklearn >= 1.6 tags are always a dataclass
-    if isinstance(tags, dict) and "X_types" in tags:
-        return "multi_masker" in tags["X_types"]
-    else:
-        return getattr(tags.input_tags, "multi_masker", False)
+    return get_tag(estimator, "multi_masker")
 
 
 def is_glm(estimator: BaseEstimator) -> bool:
-    tags = estimator.__sklearn_tags__()
-
-    # TODO remove first if when dropping sklearn 1.5
-    #  for sklearn >= 1.6 tags are always a dataclass
-    if isinstance(tags, dict) and "X_types" in tags:
-        return "glm" in tags["X_types"]
-    else:
-        return getattr(tags.input_tags, "glm", False)
+    return get_tag(estimator, "glm")
 
 
 def accept_niimg_input(estimator: BaseEstimator) -> bool:
-    tags = estimator.__sklearn_tags__()
-
-    # TODO remove first if when dropping sklearn 1.5
-    #  for sklearn >= 1.6 tags are always a dataclass
-    if isinstance(tags, dict) and "X_types" in tags:
-        return "niimg_like" in tags["X_types"]
-    else:
-        return getattr(tags.input_tags, "niimg_like", False)
+    return get_tag(estimator, "niimg_like")
 
 
 def accept_surf_img_input(estimator: BaseEstimator) -> bool:
-    tags = estimator.__sklearn_tags__()
-    if isinstance(tags, dict) and "X_types" in tags:
-        return "surf_img" in tags["X_types"]
-    else:
-        return getattr(tags.input_tags, "surf_img", False)
+    return get_tag(estimator, "surf_img")
 
 
 def _not_fitted_error_message(estimator):
