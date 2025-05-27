@@ -686,10 +686,10 @@ class NiftiSpheresMasker(BaseMasker):
         check_is_fitted(self)
 
         params = get_params(NiftiSpheresMasker, self)
-        params["clean_kwargs"] = self.clean_args
+        params["clean_kwargs"] = self.clean_args_
         # TODO remove in 0.13.2
         if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs
+            params["clean_kwargs"] = self.clean_kwargs_
 
         signals, _ = self._cache(
             filter_and_extract, ignore=["verbose", "memory", "memory_level"]

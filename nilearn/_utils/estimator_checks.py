@@ -6,9 +6,11 @@ and importing them will fail if pytest is not installed.
 
 import inspect
 import warnings
+from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import joblib
 import numpy as np
 import pandas as pd
 import pytest
@@ -21,7 +23,13 @@ from numpy.testing import (
 from packaging.version import parse
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
-from sklearn.utils.estimator_checks import check_is_fitted
+from sklearn.utils._testing import (
+    set_random_state,
+)
+from sklearn.utils.estimator_checks import (
+    _is_public_parameter,
+    check_is_fitted,
+)
 
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -151,6 +159,10 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     "check_n_features_in": "not applicable",
     "check_n_features_in_after_fitting": "not applicable",
     # the following are skipped because there is nilearn specific replacement
+    "check_dont_overwrite_parameters": (
+        "replaced by check_masker_dont_overwrite_parameters or "
+        "check_glm_dont_overwrite_parameters"
+    ),
     "check_estimators_dtypes": (
         "replaced by check_masker_dtypes and check_glm_dtypes"
     ),
@@ -158,6 +170,10 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
         "replaced by check_nifti_masker_fit_returns_self "
         "or check_surface_masker_fit_returns_self or "
         "check_glm_fit_returns_self"
+    ),
+    "check_estimators_overwrite_params": (
+        "replaced by check_masker_estimators_overwrite_params and"
+        "check_glm_estimators_overwrite_params"
     ),
     "check_fit_check_is_fitted": (
         "replaced by check_masker_fitted or check_glm_is_fitted"
@@ -176,10 +192,8 @@ CHECKS_TO_SKIP_IF_IMG_INPUT = {
     #  most often because sklearn inputs expect a numpy array
     #  that errors with maskers,
     # or because a suitable nilearn replacement has not yet been created.
-    "check_dont_overwrite_parameters": "TODO",
     "check_estimators_empty_data_messages": "TODO",
     "check_estimators_nan_inf": "TODO",
-    "check_estimators_overwrite_params": "TODO",
     "check_estimators_pickle": "TODO",
     "check_fit_idempotent": "TODO",
     "check_methods_sample_order_invariance": "TODO",
@@ -360,7 +374,9 @@ def nilearn_check_generator(estimator):
         yield (clone(estimator), check_masker_clean_kwargs)
         yield (clone(estimator), check_masker_compatibility_mask_image)
         yield (clone(estimator), check_masker_dict_unchanged)
+        yield (clone(estimator), check_masker_dont_overwrite_parameters)
         yield (clone(estimator), check_masker_dtypes)
+        yield (clone(estimator), check_masker_estimators_overwrite_params)
         yield (clone(estimator), check_masker_fit_returns_self)
         yield (clone(estimator), check_masker_fit_score_takes_y)
         yield (clone(estimator), check_masker_fit_with_empty_mask)
@@ -423,6 +439,8 @@ def nilearn_check_generator(estimator):
             yield (clone(estimator), check_surface_masker_list_surf_images)
 
     if is_glm:
+        yield (clone(estimator), check_glm_estimators_overwrite_params)
+        yield (clone(estimator), check_glm_dont_overwrite_parameters)
         yield (clone(estimator), check_glm_dtypes)
         yield (clone(estimator), check_glm_fit_returns_self)
         yield (clone(estimator), check_glm_is_fitted)
@@ -1409,6 +1427,113 @@ def check_masker_fit_score_takes_y(estimator):
         assert tmp["y"] is None
 
 
+def check_masker_dont_overwrite_parameters(estimator) -> None:
+    """Check that fit method only changes or sets private attributes.
+
+    Replaces check_dont_overwrite_parameters from sklearn.
+    """
+    estimator = clone(estimator)
+
+    n_sample = 1
+    if accept_niimg_input(estimator):
+        imgs = _img_3d_rand()
+    else:
+        imgs = _make_surface_img(n_sample)
+
+    set_random_state(estimator, 1)
+
+    dict_before_fit = estimator.__dict__.copy()
+
+    estimator.fit(imgs)
+
+    dict_after_fit = estimator.__dict__
+
+    public_keys_after_fit = [
+        key for key in dict_after_fit if _is_public_parameter(key)
+    ]
+
+    attrs_added_by_fit = [
+        key for key in public_keys_after_fit if key not in dict_before_fit
+    ]
+
+    # check that fit doesn't add any public attribute
+    assert not attrs_added_by_fit, (
+        "Estimator adds public attribute(s) during"
+        " the fit method."
+        " Estimators are only allowed to add private attributes"
+        " either started with _ or ended"
+        f" with _ but {', '.join(attrs_added_by_fit)} added"
+    )
+
+    # check that fit doesn't change any public attribute
+
+    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
+    # change memory parameters on fit if it's None
+    keys_to_ignore = ["memory"]
+
+    attrs_changed_by_fit = [
+        key
+        for key in public_keys_after_fit
+        if (dict_before_fit[key] is not dict_after_fit[key])
+        and key not in keys_to_ignore
+    ]
+
+    assert not attrs_changed_by_fit, (
+        "Estimator changes public attribute(s) during"
+        " the fit method. Estimators are only allowed"
+        " to change attributes started"
+        " or ended with _, but"
+        f" {', '.join(attrs_changed_by_fit)} changed"
+    )
+
+
+def check_masker_estimators_overwrite_params(estimator) -> None:
+    """Check that we do not change or mutate the internal state of input..
+
+    Replaces sklearn check_estimators_overwrite_params
+    """
+    estimator = clone(estimator)
+
+    # Make a physical copy of the original estimator parameters before fitting.
+    params = estimator.get_params()
+    original_params = deepcopy(params)
+
+    n_sample = 1
+    if accept_niimg_input(estimator):
+        imgs = _img_3d_rand()
+    else:
+        imgs = _make_surface_img(n_sample)
+
+    # Fit the model
+    estimator.fit(imgs)
+
+    # Compare the state of the model parameters with the original parameters
+    new_params = estimator.get_params()
+
+    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
+    # change memory parameters on fit if it's None
+    param_to_ignore = ["memory"]
+
+    for param_name, original_value in original_params.items():
+        if param_name in param_to_ignore:
+            continue
+
+        new_value = new_params[param_name]
+
+        # We should never change or mutate the internal state of input
+        # parameters by default. To check this we use the joblib.hash function
+        # that introspects recursively any subobjects to compute a checksum.
+        # The only exception to this rule of immutable constructor parameters
+        # is possible RandomState instance but in this check we explicitly
+        # fixed the random_state params recursively to be integer seeds.
+        assert joblib.hash(new_value) == joblib.hash(original_value), (
+            f"Estimator {estimator.__class__.__name__} "
+            "should not change or mutate "
+            f" the parameter {param_name} from {original_value} "
+            f"to {new_value} during fit."
+        )
+
+
 # ------------------ SURFACE MASKER CHECKS ------------------
 
 
@@ -1916,6 +2041,112 @@ def check_glm_dtypes(estimator):
         # SecondLevel
         else:
             estimator.fit(imgs, design_matrix=design_matrices)
+
+
+def check_glm_dont_overwrite_parameters(estimator) -> None:
+    """Check that fit method only changes or sets private attributes.
+
+    Replaces check_dont_overwrite_parameters from sklearn.
+    """
+    estimator = clone(estimator)
+
+    set_random_state(estimator, 1)
+
+    dict_before_fit = estimator.__dict__.copy()
+
+    data, design_matrices = _make_surface_img_and_design()
+    # FirstLevel
+    if hasattr(estimator, "hrf_model"):
+        estimator.fit(data, design_matrices=design_matrices)
+    # SecondLevel
+    else:
+        estimator.fit(data, design_matrix=design_matrices)
+
+    dict_after_fit = estimator.__dict__
+
+    public_keys_after_fit = [
+        key for key in dict_after_fit if _is_public_parameter(key)
+    ]
+
+    attrs_added_by_fit = [
+        key for key in public_keys_after_fit if key not in dict_before_fit
+    ]
+
+    # check that fit doesn't add any public attribute
+    assert not attrs_added_by_fit, (
+        "Estimator adds public attribute(s) during"
+        " the fit method."
+        " Estimators are only allowed to add private attributes"
+        " either started with _ or ended"
+        f" with _ but {', '.join(attrs_added_by_fit)} added"
+    )
+
+    # check that fit doesn't change any public attribute
+
+    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
+    # change memory parameters on fit if it's None
+    keys_to_ignore = ["memory"]
+
+    attrs_changed_by_fit = [
+        key
+        for key in public_keys_after_fit
+        if (dict_before_fit[key] is not dict_after_fit[key])
+        and key not in keys_to_ignore
+    ]
+
+    assert not attrs_changed_by_fit, (
+        "Estimator changes public attribute(s) during"
+        " the fit method. Estimators are only allowed"
+        " to change attributes started"
+        " or ended with _, but"
+        f" {', '.join(attrs_changed_by_fit)} changed"
+    )
+
+
+def check_glm_estimators_overwrite_params(estimator) -> None:
+    """Check that we do not change or mutate the internal state of input.
+
+    Replaces sklearn check_estimators_overwrite_params
+    """
+    estimator = clone(estimator)
+
+    # Make a physical copy of the original estimator parameters before fitting.
+    params = estimator.get_params()
+    original_params = deepcopy(params)
+
+    data, design_matrices = _make_surface_img_and_design()
+    # FirstLevel
+    if hasattr(estimator, "hrf_model"):
+        estimator.fit(data, design_matrices=design_matrices)
+    # SecondLevel
+    else:
+        estimator.fit(data, design_matrix=design_matrices)
+
+    # Compare the state of the model parameters with the original parameters
+    new_params = estimator.get_params()
+
+    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
+    # change memory parameters on fit if it's None
+    param_to_ignore = ["memory"]
+
+    for param_name, original_value in original_params.items():
+        if param_name in param_to_ignore:
+            continue
+
+        new_value = new_params[param_name]
+
+        # We should never change or mutate the internal state of input
+        # parameters by default. To check this we use the joblib.hash function
+        # that introspects recursively any subobjects to compute a checksum.
+        # The only exception to this rule of immutable constructor parameters
+        # is possible RandomState instance but in this check we explicitly
+        # fixed the random_state params recursively to be integer seeds.
+        assert joblib.hash(new_value) == joblib.hash(original_value), (
+            f"Estimator {estimator.__class__.__name__} "
+            "should not change or mutate "
+            f" the parameter {param_name} from {original_value} "
+            f"to {new_value} during fit."
+        )
 
 
 # ------------------ REPORT GENERATION CHECKS ------------------
