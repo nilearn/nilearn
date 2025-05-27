@@ -83,9 +83,9 @@ ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 ESTIMATORS_TO_CHECK = [
     Decoder(),
-    # DecoderRegressor(),
-    # FREMClassifier(),
-    # FREMRegressor(),
+    DecoderRegressor(),
+    FREMClassifier(),
+    FREMRegressor(),
 ]
 
 
