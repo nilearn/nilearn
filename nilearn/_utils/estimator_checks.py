@@ -472,14 +472,41 @@ def return_expected_failed_checks(
 def expected_failed_checks_decoders():
     """Return expected failed sklearn checks for nilearn decoders."""
     expected_failed_checks = {
-        "check_classifier_data_not_an_array": (
+        # The following do not apply for nilearn decoders
+        # as they do not take numpy arrays as input.
+        "check_classifier_data_not_an_array": "not applicable for image input",
+        "check_complex_data": "not applicable for image input",
+        "check_dtype_object": "not applicable for image input",
+        "check_estimator_sparse_array": "not applicable for image input",
+        "check_estimator_sparse_data": "not applicable for image input",
+        "check_estimator_sparse_matrix": "not applicable for image input",
+        "check_estimator_sparse_tag": "not applicable for image input",
+        "check_f_contiguous_array_estimator": (
             "not applicable for image input"
         ),
+        "check_fit1d": "not applicable for image input",
+        "check_fit2d_1feature": "not applicable for image input",
+        "check_fit2d_1sample": "not applicable for image input",
+        "check_fit2d_predict1d": "not applicable for image input",
+        "check_n_features_in": "not applicable",
+        "check_n_features_in_after_fitting": "not applicable",
         "check_regressor_data_not_an_array": (
             "not applicable for image input"
         ),
         # the following are have nilearn replacement for masker and/or glm
         # but not for decoders
+        "check_requires_y_none": (
+            "replaced by check_image_estimator_requires_y_none"
+        ),
+        "check_supervised_y_no_nan": (
+            "replaced by check_image_supervised_estimator_y_no_nan"
+        ),
+        # Those are skipped for now they fail
+        # for unknown reasons
+        # most often because sklearn inputs expect a numpy array
+        # that errors with maskers,
+        # or because a suitable nilearn replacement
+        # has not yet been created.
         "check_estimators_dtypes": "TODO",
         "check_estimators_fit_returns_self": "TODO",
         "check_fit_check_is_fitted": "TODO",
@@ -488,26 +515,25 @@ def expected_failed_checks_decoders():
         "check_transformer_preserve_dtypes": "TODO",
         "check_dict_unchanged": "TODO",
         "check_fit_score_takes_y": "TODO",
-        # Those are skipped for now they fail
-        # for unknown reasons
-        # most often because sklearn inputs expect a numpy array
-        # that errors with maskers,
-        # or because a suitable nilearn replacement
-        # has not yet been created.
         "check_classifiers_classes": "TODO",
         "check_classifiers_one_label": "TODO",
         "check_classifiers_regression_target": "TODO",
         "check_classifiers_train": "TODO",
+        "check_dont_overwrite_parameters": "TODO",
+        "check_estimators_empty_data_messages": "TODO",
+        "check_estimators_pickle": "TODO",
+        "check_estimators_nan_inf": "TODO",
+        "check_estimators_overwrite_params": "TODO",
+        "check_fit_idempotent": "TODO",
+        "check_methods_sample_order_invariance": "TODO",
+        "check_methods_subset_invariance": "TODO",
+        "check_positive_only_tag_during_fit": "TODO",
+        "check_pipeline_consistency": "TODO",
+        "check_readonly_memmap_input": "TODO",
         "check_regressor_multioutput": "TODO",
         "check_regressors_int": "TODO",
         "check_regressors_train": "TODO",
         "check_regressors_no_decision_function": "TODO",
-        "check_requires_y_none": (
-            "replaced by check_image_estimator_requires_y_none"
-        ),
-        "check_supervised_y_no_nan": (
-            "replaced by check_image_supervised_estimator_y_no_nan"
-        ),
         "check_supervised_y_2d": "TODO",
     }
     if not IS_SKLEARN_1_6_1_on_py_3_9:
