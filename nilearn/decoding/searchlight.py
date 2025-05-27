@@ -353,7 +353,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags()
+        tags.input_tags = InputTags(surf_img=True)
 
         if self.estimator == "svr":
             if SKLEARN_LT_1_6:

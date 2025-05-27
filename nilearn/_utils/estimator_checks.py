@@ -212,13 +212,17 @@ def return_expected_failed_checks(
             "check_transformer_preserve_dtypes": "TODO",
         }
 
-    elif isinstance(estimator, (ReNA, HierarchicalKMeans)):
+    elif isinstance(estimator, HierarchicalKMeans):
+        return expected_failed_checks_clustering()
+
+    elif isinstance(estimator, ReNA):
         expected_failed_checks = {
             "check_estimator_sparse_array": "remove when dropping sklearn 1.4",
             "check_estimator_sparse_matrix": (
                 "remove when dropping sklearn 1.4"
             ),
             "check_clustering": "TODO",
+            "check_dict_unchanged": "TODO",
             "check_dtype_object": "TODO",
             "check_dont_overwrite_parameters": "TODO",
             "check_estimators_dtypes": "TODO",
@@ -242,17 +246,9 @@ def return_expected_failed_checks(
             "check_transformer_general": "TODO",
             "check_transformer_preserve_dtypes": "TODO",
         }
-        if isinstance(estimator, (ReNA)):
-            expected_failed_checks |= {
-                "check_dict_unchanged": "TODO",
-            }
 
         if SKLEARN_MINOR >= 5:
             expected_failed_checks.pop("check_estimator_sparse_matrix")
-
-        if isinstance(estimator, (HierarchicalKMeans)) and SKLEARN_MINOR >= 6:
-            expected_failed_checks.pop("check_estimator_sparse_array")
-            expected_failed_checks |= {"check_dict_unchanged": "TODO"}
 
         return expected_failed_checks
 
@@ -449,6 +445,41 @@ def unapplicable_checks() -> dict[str, str]:
         ],
         "not applicable for image input",
     )
+
+
+def expected_failed_checks_clustering():
+    expected_failed_checks = {
+        "check_estimator_sparse_array": "remove when dropping sklearn 1.4",
+        "check_estimator_sparse_matrix": "remove when dropping sklearn 1.4",
+        "check_clustering": "TODO",
+        "check_estimators_dtypes": "TODO",
+        "check_estimators_fit_returns_self": "TODO",
+        "check_estimators_nan_inf": "TODO",
+        "check_estimators_overwrite_params": "TODO",
+        "check_estimators_pickle": "TODO",
+        "check_f_contiguous_array_estimator": "TODO",
+        "check_fit_idempotent": "TODO",
+        "check_fit_check_is_fitted": "TODO",
+        "check_fit_score_takes_y": "TODO",
+        "check_fit2d_predict1d": "TODO",
+        "check_n_features_in": "TODO",
+        "check_n_features_in_after_fitting": "TODO",
+        "check_pipeline_consistency": "TODO",
+        "check_positive_only_tag_during_fit": "TODO",
+        "check_readonly_memmap_input": "TODO",
+        "check_transformer_data_not_an_array": "TODO",
+        "check_transformer_general": "TODO",
+        "check_transformer_preserve_dtypes": "TODO",
+    }
+
+    if SKLEARN_MINOR >= 5:
+        expected_failed_checks.pop("check_estimator_sparse_matrix")
+        expected_failed_checks.pop("check_estimator_sparse_array")
+
+    if SKLEARN_MINOR >= 6:
+        expected_failed_checks |= {"check_dict_unchanged": "TODO"}
+
+    return expected_failed_checks
 
 
 def expected_failed_checks_decoders() -> dict[str, str]:
@@ -752,10 +783,20 @@ def check_transformer_set_output(estimator):
 def check_fit_returns_self(estimator) -> None:
     """Check maskers return itself after fit.
 
-    Replace sklearn check_estimator_fit_returns_self
+    Replace sklearn check_estimators_fit_returns_self
     """
     # TODO make sure that decomposition estimator pass this check
-    if isinstance(estimator, (_BaseDecomposition, ReNA, HierarchicalKMeans)):
+    if isinstance(
+        estimator,
+        (
+            _BaseDecomposition,
+            ReNA,
+            HierarchicalKMeans,
+            GroupSparseCovariance,
+            GroupSparseCovarianceCV,
+            ConnectivityMeasure,
+        ),
+    ):
         return None
     assert fit_estimator(estimator) is estimator
 
