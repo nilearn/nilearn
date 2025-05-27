@@ -249,6 +249,7 @@ def return_expected_failed_checks(
 
         if SKLEARN_MINOR >= 5:
             expected_failed_checks.pop("check_estimator_sparse_matrix")
+            expected_failed_checks.pop("check_estimator_sparse_array")
 
         return expected_failed_checks
 
