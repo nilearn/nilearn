@@ -22,8 +22,14 @@ from numpy.testing import (
 from packaging.version import parse
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
+
 from sklearn.base import BaseEstimator, is_classifier, is_regressor
 from sklearn.datasets import make_classification
+
+from sklearn.utils.estimator_checks import check_is_fitted
+
+from sklearn.base import BaseEstimator
+
 from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
@@ -60,7 +66,9 @@ from nilearn.conftest import (
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
 from nilearn.decoding.decoder import _BaseDecoder
+
 from nilearn.decoding.tests.test_same_api import to_niimgs
+
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers import (
     NiftiLabelsMasker,
@@ -330,13 +338,6 @@ def return_expected_failed_checks(
         "check_fit_check_is_fitted": (
             "replaced by check_masker_fitted or check_glm_is_fitted"
         ),
-        "check_transformer_data_not_an_array": (
-            "replaced by check_masker_transformer"
-        ),
-        "check_transformer_general": ("replaced by check_masker_transformer"),
-        "check_transformer_preserve_dtypes": (
-            "replaced by check_masker_transformer"
-        ),
         "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
         "check_fit_score_takes_y": (
             "replaced by check_masker_fit_score_takes_y"
@@ -360,6 +361,19 @@ def return_expected_failed_checks(
         "check_readonly_memmap_input": "TODO",
     }
 
+    if hasattr(estimator, "transform"):
+        expected_failed_checks |= {
+            "check_transformer_data_not_an_array": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_transformer_general": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_transformer_preserve_dtypes": (
+                "replaced by check_masker_transformer"
+            ),
+        }
+
     # Adapt some checks for some estimators
 
     # some checks would fail on sklearn 1.6.1 on older python
@@ -382,6 +396,27 @@ def return_expected_failed_checks(
         if parse(sklearn_version).release[1] >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
+        expected_failed_checks |= {
+            # have nilearn replacements
+            "check_estimators_dtypes": ("replaced by check_glm_dtypes"),
+            "check_estimators_fit_returns_self": (
+                "replaced by check_glm_fit_returns_self"
+            ),
+            "check_fit_check_is_fitted": ("replaced by check_glm_is_fitted"),
+            "check_transformer_data_not_an_array": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_transformer_general": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_transformer_preserve_dtypes": (
+                "replaced by check_masker_transformer"
+            ),
+            # nilearn replacements required
+            "check_dict_unchanged": "TODO",
+            "check_fit_score_takes_y": "TODO",
+        }
+
     if isinstance(estimator, _BaseDecoder):
         expected_failed_checks |= {
             "check_classifier_data_not_an_array": (
@@ -390,12 +425,22 @@ def return_expected_failed_checks(
             "check_regressor_data_not_an_array": (
                 "not applicable for image input"
             ),
-            "check_requires_y_none": (
-                "replaced by check_image_estimator_requires_y_none"
-            ),
-            "check_supervised_y_no_nan": (
-                "replaced by check_image_supervised_estimator_y_no_nan"
-            ),
+            # the following are have nilearn replacement for masker and/or glm
+            # but not for decoders
+            "check_estimators_dtypes": "TODO",
+            "check_estimators_fit_returns_self": "TODO",
+            "check_fit_check_is_fitted": "TODO",
+            "check_transformer_data_not_an_array": "TODO",
+            "check_transformer_general": "TODO",
+            "check_transformer_preserve_dtypes": "TODO",
+            "check_dict_unchanged": "TODO",
+            "check_fit_score_takes_y": "TODO",
+            # Those are skipped for now they fail
+            # for unknown reasons
+            # most often because sklearn inputs expect a numpy array
+            # that errors with maskers,
+            # or because a suitable nilearn replacement
+            # has not yet been created.
             "check_classifiers_classes": "TODO",
             "check_classifiers_one_label": "TODO",
             "check_classifiers_regression_target": "TODO",
@@ -404,6 +449,14 @@ def return_expected_failed_checks(
             "check_regressors_int": "TODO",
             "check_regressors_train": "TODO",
             "check_regressors_no_decision_function": "TODO",
+            "check_requires_y_none": "TODO",
+            "check_supervised_y_no_nan": "TODO",
+            "check_requires_y_none": (
+                "replaced by check_image_estimator_requires_y_none"
+            ),
+            "check_supervised_y_no_nan": (
+                "replaced by check_image_supervised_estimator_y_no_nan"
+            ),            
             "check_supervised_y_2d": "TODO",
         }
         if not is_sklearn_1_6_1_on_py_3_9:
@@ -533,6 +586,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_masker_generate_report)
         yield (clone(estimator), check_masker_generate_report_false)
         yield (clone(estimator), check_masker_inverse_transform)
+        yield (clone(estimator), check_masker_transform_resampling)
         yield (clone(estimator), check_masker_mask_img)
         yield (clone(estimator), check_masker_mask_img_from_imgs)
         yield (clone(estimator), check_masker_no_mask_no_img)
@@ -719,9 +773,9 @@ def check_masker_dict_unchanged(estimator):
 
     dict_after = estimator.__dict__
 
-    # TODO NiftiLabelsMasker, NiftiMapsMasker are modified at transform time
+    # TODO NiftiLabelsMasker is modified at transform time
     # see issue https://github.com/nilearn/nilearn/issues/2720
-    if isinstance(estimator, (NiftiLabelsMasker, NiftiMapsMasker)):
+    if isinstance(estimator, (NiftiLabelsMasker)):
         with pytest.raises(AssertionError):
             assert dict_after == dict_before
     else:
@@ -789,6 +843,13 @@ def check_masker_fitted(estimator):
     # so we can pass nifti image to surface maskers.
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         estimator.transform(_img_3d_rand())
+    with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
+        estimator.transform_single_imgs(_img_3d_rand())
+    if is_multimasker(estimator):
+        with pytest.raises(
+            ValueError, match=_not_fitted_error_message(estimator)
+        ):
+            estimator.transform_imgs([_img_3d_rand()])
 
     # Failure should happen before the size of the input type is determined
     # so we can pass any array here.
@@ -1399,7 +1460,7 @@ def check_masker_smooth(estimator):
         assert_array_equal(smoothed_signal, signal)
 
 
-def check_masker_inverse_transform(estimator):
+def check_masker_inverse_transform(estimator) -> None:
     """Check output of inverse_transform.
 
     For signal with 1 or more samples.
@@ -1425,21 +1486,13 @@ def check_masker_inverse_transform(estimator):
         input_shape = (28, 29, 30)
         imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
 
-        mask_img = Nifti1Image(np.ones(_shape_3d_large()), _affine_eye())
+        mask_shape = (15, 16, 17)
+        mask_img = Nifti1Image(np.ones(mask_shape), _affine_eye())
 
-        if isinstance(estimator, (NiftiLabelsMasker)):
-            # TODO BUG to fix
-            # https://github.com/nilearn/nilearn/issues/5395
-            tmp = estimator.labels_img.shape
-        elif isinstance(estimator, NiftiMapsMasker):
-            # TODO BUG to fix
-            # https://github.com/nilearn/nilearn/issues/5395
-            tmp = estimator.maps_img.shape[:3]
-        elif isinstance(estimator, NiftiSpheresMasker):
+        if isinstance(estimator, NiftiSpheresMasker):
             tmp = mask_img.shape
         else:
             tmp = input_shape
-
         expected_shapes = [tmp, (*tmp, 1), (*tmp, 10)]
 
     else:
@@ -1458,16 +1511,7 @@ def check_masker_inverse_transform(estimator):
     ):
         estimator = clone(estimator)
 
-        if hasattr(estimator, "resampling_target"):
-            # TODO
-            # check label and maps masker output when resampling
-            # to labels or maps
-            estimator.resampling_target = "data"
-
-        if not isinstance(
-            estimator, (NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker)
-        ):
-            # TODO check for NiftiLabelsMasker, NiftiMapsMasker without mask
+        if isinstance(estimator, (NiftiSpheresMasker)):
             estimator.mask_img = mask_img
 
         estimator.fit(imgs)
@@ -1488,17 +1532,13 @@ def check_masker_inverse_transform(estimator):
             actual_shape = new_imgs.data.shape
         assert actual_shape == expected_shape
 
+        # same result before and after running transform()
         estimator.transform(imgs)
 
         new_imgs_2 = estimator.inverse_transform(signals)
 
         if accept_niimg_input(estimator):
-            if isinstance(estimator, (NiftiLabelsMasker)):
-                # BUG to fix
-                # https://github.com/nilearn/nilearn/issues/5395
-                assert not check_imgs_equal(new_imgs, new_imgs_2)
-            else:
-                assert check_imgs_equal(new_imgs, new_imgs_2)
+            assert check_imgs_equal(new_imgs, new_imgs_2)
         else:
             assert_surface_image_equal(new_imgs, new_imgs_2)
 
@@ -1507,6 +1547,97 @@ def check_masker_inverse_transform(estimator):
         ValueError, match="Input to 'inverse_transform' has wrong shape."
     ):
         estimator.inverse_transform(signals)
+
+
+def check_masker_transform_resampling(estimator) -> None:
+    """Check transform / inverse_transform for maskers with resampling.
+
+    Similar to check_masker_inverse_transform
+    but for nifti masker that can do some resampling
+    (labels and maps maskers).
+
+    Check that output has the shape of the data or the labels/maps image
+    depending on which resampling_target was requested at init.
+
+    Check that using a mask does not affect shape of output.
+
+    Check that running transform() is not required to run inverse_transform().
+
+    Check that running inverse_transform() before and after running transform()
+    give same result.
+
+    Check that running transform on images with different fov
+    than those used at fit is possible.
+    """
+    if not hasattr(estimator, "resampling_target"):
+        return None
+
+    # using different shape for imgs, mask
+    # to force resampling
+    n_sample = 10
+    input_shape = (28, 29, 30, n_sample)
+    imgs = Nifti1Image(_rng().random(input_shape), _affine_eye())
+
+    imgs2 = Nifti1Image(_rng().random((20, 21, 22)), _affine_eye())
+
+    mask_shape = (15, 16, 17)
+    mask_img = Nifti1Image(np.ones(mask_shape), _affine_eye())
+
+    for resampling_target in ["data", "labels"]:
+        expected_shape = input_shape
+        if resampling_target == "labels":
+            if isinstance(estimator, NiftiMapsMasker):
+                expected_shape = (*estimator.maps_img.shape[:3], n_sample)
+                resampling_target = "maps"
+            else:
+                expected_shape = (*estimator.labels_img.shape, n_sample)
+
+        for mask in [None, mask_img]:
+            estimator = clone(estimator)
+            estimator.resampling_target = resampling_target
+            estimator.mask_img = mask
+
+            # no resampling warning at fit time
+            with warnings.catch_warnings(record=True) as warning_list:
+                estimator.fit(imgs)
+            assert not any(
+                "at transform time" in str(x.message) for x in warning_list
+            )
+
+            signals = _rng().random((n_sample, estimator.n_elements_))
+
+            new_imgs = estimator.inverse_transform(signals)
+
+            assert_array_almost_equal(imgs.affine, new_imgs.affine)
+            actual_shape = new_imgs.shape
+            assert actual_shape == expected_shape
+
+            # no resampling warning when using same imgs as for fit()
+            with warnings.catch_warnings(record=True) as warning_list:
+                estimator.transform(imgs)
+            assert not any(
+                "at transform time" in str(x.message) for x in warning_list
+            )
+
+            # same result before and after running transform()
+            new_imgs_2 = estimator.inverse_transform(signals)
+
+            assert check_imgs_equal(new_imgs, new_imgs_2)
+
+            # no error transforming an image with different fov
+            # than the one used at fit time,
+            # but there should be a resampling warning
+            # we are resampling to data
+            with warnings.catch_warnings(record=True) as warning_list:
+                estimator.transform(imgs2)
+            if resampling_target == "data":
+                assert any(
+                    "at transform time" in str(x.message) for x in warning_list
+                )
+            else:
+                assert not any(
+                    "at transform time" in str(x.message) for x in warning_list
+                )
 
 
 def check_masker_fit_score_takes_y(estimator):
@@ -1759,10 +1890,6 @@ def check_nifti_masker_clean_warning(estimator):
     input_img = _img_4d_rand_eye_medium()
 
     signal = estimator.fit_transform(input_img)
-
-    # TODO remove this cloning once nifti sphere masker can be refitted
-    # See https://github.com/nilearn/nilearn/issues/5091
-    estimator = clone(estimator)
 
     estimator.t_r = 2.0
     estimator.high_pass = 1 / 128
