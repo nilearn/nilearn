@@ -144,9 +144,9 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
 # some checks would fail on sklearn 1.6.1 on older python
 # see https://github.com/scikit-learn-contrib/imbalanced-learn/issues/1131
 IS_SKLEARN_1_6_1_on_py_3_9 = (
-    sys.version_info[1] < 10
-    and SKLEARN_MINOR == 6
+    SKLEARN_MINOR == 6
     and parse(sklearn_version).release[2] == 1
+    and sys.version_info[1] < 10
 )
 
 
@@ -503,32 +503,46 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         # that errors with maskers,
         # or because a suitable nilearn replacement
         # has not yet been created.
-        "check_estimators_dtypes": "TODO",
-        "check_fit_check_is_fitted": "TODO",
         "check_dict_unchanged": "TODO",
-        "check_fit_score_takes_y": "TODO",
-        "check_classifiers_classes": "TODO",
-        "check_classifiers_one_label": "TODO",
-        "check_classifiers_regression_target": "TODO",
-        "check_classifiers_train": "TODO",
         "check_dont_overwrite_parameters": "TODO",
+        "check_estimators_dtypes": "TODO",
         "check_estimators_empty_data_messages": "TODO",
         "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
+        "check_fit_check_is_fitted": "TODO",
         "check_fit_idempotent": "TODO",
+        "check_fit_score_takes_y": "TODO",
         "check_methods_sample_order_invariance": "TODO",
         "check_methods_subset_invariance": "TODO",
         "check_positive_only_tag_during_fit": "TODO",
         "check_pipeline_consistency": "TODO",
         "check_readonly_memmap_input": "TODO",
-        "check_regressor_multioutput": "TODO",
-        "check_regressors_int": "TODO",
-        "check_regressors_train": "TODO",
-        "check_regressors_no_decision_function": "TODO",
         "check_supervised_y_2d": "TODO",
     }
-    expected_failed_checks |= unapplicable_checks()
+
+    if is_classifier(estimator):
+        expected_failed_checks |= {
+            "check_classifier_data_not_an_array": (
+                "not applicable for image input"
+            ),
+            "check_classifiers_classes": "TODO",
+            "check_classifiers_one_label": "TODO",
+            "check_classifiers_regression_target": "TODO",
+            "check_classifiers_train": "TODO",
+        }
+
+    if is_regressor(estimator):
+        expected_failed_checks |= {
+            "check_regressor_data_not_an_array": (
+                "not applicable for image input"
+            ),
+            "check_regressor_multioutput": "TODO",
+            "check_regressors_int": "TODO",
+            "check_regressors_train": "TODO",
+            "check_regressors_no_decision_function": "TODO",
+        }
+
     if hasattr(estimator, "transform"):
         expected_failed_checks |= {
             "check_transformer_data_not_an_array": (
@@ -541,13 +555,11 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
                 "replaced by check_masker_transformer"
             ),
         }
-    expected_failed_checks |= dict.fromkeys(
-        [
-            "check_classifier_data_not_an_array",
-            "check_regressor_data_not_an_array",
-        ],
-        "not applicable for image input",
-    )
+
+    expected_failed_checks |= unapplicable_checks()
+
+    if isinstance(estimator, SearchLight):
+        return expected_failed_checks
 
     if not IS_SKLEARN_1_6_1_on_py_3_9:
         expected_failed_checks.pop("check_estimator_sparse_tag")
