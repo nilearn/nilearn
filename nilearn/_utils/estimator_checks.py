@@ -176,19 +176,6 @@ def return_expected_failed_checks(
     """
     expected_failed_checks: dict[str, str] = {}
 
-    if SKLEARN_LT_1_6:
-        tags = estimator._more_tags()
-        niimg_input = "niimg_like" in tags["X_types"]
-        surf_img = "surf_img" in tags["X_types"]
-        is_masker = "masker" in tags["X_types"]
-        is_glm = "glm" in tags["X_types"]
-    else:
-        tags = estimator.__sklearn_tags__()
-        niimg_input = getattr(tags.input_tags, "niimg_like", False)
-        surf_img = getattr(tags.input_tags, "surf_img", False)
-        is_masker = getattr(tags.input_tags, "masker", False)
-        is_glm = getattr(tags.input_tags, "glm", False)
-
     if isinstance(estimator, ConnectivityMeasure):
         return {
             "check_complex_data": "TODO",
@@ -299,6 +286,19 @@ def return_expected_failed_checks(
             "check_readonly_memmap_input": "TODO",
         }
 
+    if SKLEARN_LT_1_6:
+        tags = estimator._more_tags()
+        niimg_input = "niimg_like" in tags["X_types"]
+        surf_img = "surf_img" in tags["X_types"]
+        is_masker = "masker" in tags["X_types"]
+        is_glm = "glm" in tags["X_types"]
+    else:
+        tags = estimator.__sklearn_tags__()
+        niimg_input = getattr(tags.input_tags, "niimg_like", False)
+        surf_img = getattr(tags.input_tags, "surf_img", False)
+        is_masker = getattr(tags.input_tags, "masker", False)
+        is_glm = getattr(tags.input_tags, "glm", False)
+
     # below this point we should only deal with estimators
     # that accept images as input
     assert niimg_input or surf_img
@@ -311,17 +311,12 @@ def return_expected_failed_checks(
     expected_failed_checks = {
         # the following are skipped
         # because there is nilearn specific replacement
-        "check_estimators_dtypes": (
-            "replaced by check_masker_dtypes and check_glm_dtypes"
-        ),
+        "check_estimators_dtypes": ("replaced by check_masker_dtypes"),
         "check_estimators_fit_returns_self": (
             "replaced by check_nifti_masker_fit_returns_self "
             "or check_surface_masker_fit_returns_self or "
-            "check_glm_fit_returns_self"
         ),
-        "check_fit_check_is_fitted": (
-            "replaced by check_masker_fitted or check_glm_is_fitted"
-        ),
+        "check_fit_check_is_fitted": ("replaced by check_masker_fitted"),
         "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
         "check_fit_score_takes_y": (
             "replaced by check_masker_fit_score_takes_y"
@@ -522,7 +517,7 @@ def expected_failed_checks_decoders() -> dict[str, str]:
 
 
 def nilearn_check_estimator(estimators: list[BaseEstimator]):
-    if not isinstance(estimators, list):
+    if not isinstance(estimators, list):  # pragma: no cover
         raise TypeError(
             "'estimators' should be a list. "
             f"Got {estimators.__class__.__name__}."
@@ -709,6 +704,9 @@ def check_transformer_set_output(estimator):
     if hasattr(estimator, "transform"):
         with pytest.raises(NotImplementedError):
             estimator.set_output(transform="default")
+
+
+# ------------------ DECODERS CHECKS ------------------
 
 
 def check_image_estimator_requires_y_none(estimator) -> None:
