@@ -80,6 +80,8 @@ from nilearn.surface.utils import (
     assert_surface_image_equal,
 )
 
+SKLEARN_MINOR = parse(sklearn_version).release[1]
+
 
 def nilearn_dir() -> Path:
     return Path(__file__).parents[1]
@@ -141,7 +143,7 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
 # see https://github.com/scikit-learn-contrib/imbalanced-learn/issues/1131
 IS_SKLEARN_1_6_1_on_py_3_9 = (
     sys.version_info[1] < 10
-    and parse(sklearn_version).release[1] == 6
+    and SKLEARN_MINOR == 6
     and parse(sklearn_version).release[2] == 1
 )
 
@@ -155,9 +157,9 @@ def return_expected_failed_checks(
     are centralized.
 
     "expected_failed_checks" is first created to make sure that all checks
-    with the oldest supported sklearn versions.
+    with the oldest supported sklearn versions pass.
 
-    After the function may tweaks the "expected_failed_checks" depending
+    After the function may tweak the "expected_failed_checks" depending
     on the estimator and sklearn version.
 
     Returns
@@ -256,14 +258,11 @@ def return_expected_failed_checks(
                 "check_methods_subset_invariance": "TODO",
             }
 
-        if parse(sklearn_version).release[1] >= 5:
+        if SKLEARN_MINOR >= 5:
             expected_failed_checks.pop("check_estimator_sparse_matrix")
             expected_failed_checks.pop("check_estimator_sparse_array")
 
-        if (
-            isinstance(estimator, (HierarchicalKMeans))
-            and parse(sklearn_version).release[1] >= 6
-        ):
+        if isinstance(estimator, (HierarchicalKMeans)) and SKLEARN_MINOR >= 6:
             expected_failed_checks |= {"check_dict_unchanged": "TODO"}
 
         return expected_failed_checks
@@ -310,23 +309,6 @@ def return_expected_failed_checks(
     # keeping track of some of those in
     # https://github.com/nilearn/nilearn/issues/4538
     expected_failed_checks = {
-        # The following do not apply for nilearn maskers
-        # as they do not take numpy arrays as input.
-        "check_complex_data": "not applicable for image input",
-        "check_dtype_object": "not applicable for image input",
-        "check_estimator_sparse_array": "not applicable for image input",
-        "check_estimator_sparse_data": "not applicable for image input",
-        "check_estimator_sparse_matrix": "not applicable for image input",
-        "check_estimator_sparse_tag": "not applicable for image input",
-        "check_f_contiguous_array_estimator": (
-            "not applicable for image input"
-        ),
-        "check_fit1d": "not applicable for image input",
-        "check_fit2d_1feature": "not applicable for image input",
-        "check_fit2d_1sample": "not applicable for image input",
-        "check_fit2d_predict1d": "not applicable for image input",
-        "check_n_features_in": "not applicable",
-        "check_n_features_in_after_fitting": "not applicable",
         # the following are skipped
         # because there is nilearn specific replacement
         "check_estimators_dtypes": (
@@ -363,6 +345,8 @@ def return_expected_failed_checks(
         "check_readonly_memmap_input": "TODO",
     }
 
+    expected_failed_checks |= unapplicable_checks()
+
     if hasattr(estimator, "transform"):
         expected_failed_checks |= {
             "check_transformer_data_not_an_array": (
@@ -384,10 +368,10 @@ def return_expected_failed_checks(
 
     if is_glm:
         expected_failed_checks.pop("check_estimator_sparse_data")
-        if parse(sklearn_version).release[1] >= 5:
+        if SKLEARN_MINOR >= 5:
             expected_failed_checks.pop("check_estimator_sparse_matrix")
             expected_failed_checks.pop("check_estimator_sparse_array")
-        if parse(sklearn_version).release[1] >= 6:
+        if SKLEARN_MINOR >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
         expected_failed_checks |= {
@@ -412,12 +396,9 @@ def return_expected_failed_checks(
         }
 
     if isinstance(estimator, (_BaseDecomposition,)):
-        if parse(sklearn_version).release[1] >= 6:
+        if SKLEARN_MINOR >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
-        if (
-            not IS_SKLEARN_1_6_1_on_py_3_9
-            and parse(sklearn_version).release[1] >= 5
-        ):
+        if not IS_SKLEARN_1_6_1_on_py_3_9 and SKLEARN_MINOR >= 5:
             expected_failed_checks.pop("check_estimator_sparse_array")
 
     if is_masker:
@@ -439,29 +420,23 @@ def return_expected_failed_checks(
             expected_failed_checks.pop("check_fit2d_1feature")
             expected_failed_checks.pop("check_fit2d_1sample")
 
-            if parse(sklearn_version).release[1] >= 5:
+            if SKLEARN_MINOR >= 5:
                 expected_failed_checks.pop("check_estimator_sparse_matrix")
                 expected_failed_checks.pop("check_estimator_sparse_array")
 
-            if parse(sklearn_version).release[1] >= 6:
+            if SKLEARN_MINOR >= 6:
                 expected_failed_checks.pop("check_readonly_memmap_input")
                 expected_failed_checks.pop(
                     "check_positive_only_tag_during_fit"
                 )
 
-        if (
-            isinstance(estimator, (NiftiMasker))
-            and parse(sklearn_version).release[1] >= 5
-        ):
+        if isinstance(estimator, (NiftiMasker)) and SKLEARN_MINOR >= 5:
             if not IS_SKLEARN_1_6_1_on_py_3_9:
                 expected_failed_checks.pop("check_estimator_sparse_array")
 
             expected_failed_checks.pop("check_estimator_sparse_tag")
 
-        if (
-            isinstance(estimator, (RegionExtractor))
-            and parse(sklearn_version).release[1] >= 6
-        ):
+        if isinstance(estimator, (RegionExtractor)) and SKLEARN_MINOR >= 6:
             expected_failed_checks.pop(
                 "check_do_not_raise_errors_in_init_or_set_params"
             )
@@ -469,30 +444,35 @@ def return_expected_failed_checks(
     return expected_failed_checks
 
 
-def expected_failed_checks_decoders():
+def unapplicable_checks() -> dict[str, str]:
+    """Return sklearn checks that do not apply for nilearn estimators \
+       when they takes images as input.
+    """
+    return dict.fromkeys(
+        [
+            "check_classifier_data_not_an_array",
+            "check_complex_data",
+            "check_dtype_object",
+            "check_estimator_sparse_array",
+            "check_estimator_sparse_data",
+            "check_estimator_sparse_matrix",
+            "check_estimator_sparse_tag",
+            "check_f_contiguous_array_estimator",
+            "check_fit1d",
+            "check_fit2d_1feature",
+            "check_fit2d_1sample",
+            "check_fit2d_predict1d",
+            "check_n_features_in",
+            "check_n_features_in_after_fitting",
+            "check_regressor_data_not_an_array",
+        ],
+        "not applicable for image input",
+    )
+
+
+def expected_failed_checks_decoders() -> dict[str, str]:
     """Return expected failed sklearn checks for nilearn decoders."""
     expected_failed_checks = {
-        # The following do not apply for nilearn decoders
-        # as they do not take numpy arrays as input.
-        "check_classifier_data_not_an_array": "not applicable for image input",
-        "check_complex_data": "not applicable for image input",
-        "check_dtype_object": "not applicable for image input",
-        "check_estimator_sparse_array": "not applicable for image input",
-        "check_estimator_sparse_data": "not applicable for image input",
-        "check_estimator_sparse_matrix": "not applicable for image input",
-        "check_estimator_sparse_tag": "not applicable for image input",
-        "check_f_contiguous_array_estimator": (
-            "not applicable for image input"
-        ),
-        "check_fit1d": "not applicable for image input",
-        "check_fit2d_1feature": "not applicable for image input",
-        "check_fit2d_1sample": "not applicable for image input",
-        "check_fit2d_predict1d": "not applicable for image input",
-        "check_n_features_in": "not applicable",
-        "check_n_features_in_after_fitting": "not applicable",
-        "check_regressor_data_not_an_array": (
-            "not applicable for image input"
-        ),
         # the following are have nilearn replacement for masker and/or glm
         # but not for decoders
         "check_requires_y_none": (
@@ -510,9 +490,6 @@ def expected_failed_checks_decoders():
         "check_estimators_dtypes": "TODO",
         "check_estimators_fit_returns_self": "TODO",
         "check_fit_check_is_fitted": "TODO",
-        "check_transformer_data_not_an_array": "TODO",
-        "check_transformer_general": "TODO",
-        "check_transformer_preserve_dtypes": "TODO",
         "check_dict_unchanged": "TODO",
         "check_fit_score_takes_y": "TODO",
         "check_classifiers_classes": "TODO",
@@ -536,6 +513,8 @@ def expected_failed_checks_decoders():
         "check_regressors_no_decision_function": "TODO",
         "check_supervised_y_2d": "TODO",
     }
+    expected_failed_checks |= unapplicable_checks()
+
     if not IS_SKLEARN_1_6_1_on_py_3_9:
         expected_failed_checks.pop("check_estimator_sparse_tag")
 
