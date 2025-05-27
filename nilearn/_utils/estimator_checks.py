@@ -290,7 +290,7 @@ def return_expected_failed_checks(
     assert accept_niimg_input(estimator) or accept_surf_img_input(estimator)
 
     if isinstance(estimator, (_BaseDecoder, SearchLight)):
-        return expected_failed_checks_decoders()
+        return expected_failed_checks_decoders(estimator)
 
     # keeping track of some of those in
     # https://github.com/nilearn/nilearn/issues/4538
@@ -483,7 +483,7 @@ def expected_failed_checks_clustering():
     return expected_failed_checks
 
 
-def expected_failed_checks_decoders() -> dict[str, str]:
+def expected_failed_checks_decoders(estimator) -> dict[str, str]:
     """Return expected failed sklearn checks for nilearn decoders."""
     expected_failed_checks = {
         # the following are have nilearn replacement for masker and/or glm
@@ -529,6 +529,18 @@ def expected_failed_checks_decoders() -> dict[str, str]:
         "check_supervised_y_2d": "TODO",
     }
     expected_failed_checks |= unapplicable_checks()
+    if hasattr(estimator, "transform"):
+        expected_failed_checks |= {
+            "check_transformer_data_not_an_array": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_transformer_general": (
+                "replaced by check_masker_transformer"
+            ),
+            "check_transformer_preserve_dtypes": (
+                "replaced by check_masker_transformer"
+            ),
+        }
     expected_failed_checks |= dict.fromkeys(
         [
             "check_classifier_data_not_an_array",
@@ -702,6 +714,18 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
         else:
             return estimator.fit(data, design_matrix=design_matrices)
 
+    elif isinstance(estimator, SearchLight):
+        n_samples = 30
+        data = _rng().random((5, 5, 5, n_samples))
+        # Create a condition array, with balanced classes
+        y = np.arange(n_samples, dtype=int) >= (n_samples // 2)
+
+        data[2, 2, 2, :] = 0
+        data[2, 2, 2, y] = 2
+        X = Nifti1Image(data, np.eye(4))
+
+        return estimator.fit(X, y)
+
     elif is_classifier(estimator):
         dim = 5
         X, y = make_classification(
@@ -811,7 +835,7 @@ def check_image_estimator_requires_y_none(estimator) -> None:
     Replaces sklearn check_requires_y_none
     """
     expected_err_msgs = "requires y to be passed, but the target y is None"
-    shape = (30, 31, 32)
+    shape = (5, 5, 5) if isinstance(estimator, SearchLight) else (30, 31, 32)
     input_img = Nifti1Image(_rng().random(shape), _affine_eye())
     try:
         estimator.fit(input_img, None)
@@ -825,22 +849,35 @@ def check_image_supervised_estimator_y_no_nan(estimator) -> None:
 
     Replaces sklearn check_supervised_y_no_nan
     """
-    # we can use classification data even for regressors
-    # because fit should fail early
     dim = 5
-    X, y = make_classification(
-        n_samples=20,
-        n_features=dim**3,
-        scale=3.0,
-        n_informative=5,
-        n_classes=2,
-        random_state=42,
-    )
-    X, _ = to_niimgs(X, [dim, dim, dim])
+    if isinstance(estimator, SearchLight):
+        n_samples = 30
+        data = _rng().random((dim, dim, dim, n_samples))
+        # Create a condition array, with balanced classes
+        y = np.arange(n_samples, dtype=int) >= (n_samples // 2)
+
+        data[2, 2, 2, :] = 0
+        data[2, 2, 2, y] = 2
+        X = Nifti1Image(data, np.eye(4))
+
+    else:
+        # we can use classification data even for regressors
+        # because fit should fail early
+        X, y = make_classification(
+            n_samples=20,
+            n_features=dim**3,
+            scale=3.0,
+            n_informative=5,
+            n_classes=2,
+            random_state=42,
+        )
+        X, _ = to_niimgs(X, [dim, dim, dim])
+
     y = _rng().random(y.shape)
+
     for value in [np.inf, np.nan]:
         y[5,] = value
-        with pytest.raises(ValueError, match="Input y contains "):
+        with pytest.raises(ValueError, match="Input .*contains"):
             estimator.fit(X, y)
 
 
