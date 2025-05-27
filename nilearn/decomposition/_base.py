@@ -31,6 +31,8 @@ from nilearn.maskers import NiftiMapsMasker, SurfaceMapsMasker, SurfaceMasker
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
 
+SURFACE_DATA_EXTENSIONS = ("gii", "gii.gz", "mgz")
+
 
 def _fast_svd(X, n_components, random_state=None):
     """Automatically switch between randomized and lapack SVD (heuristic \
@@ -275,10 +277,12 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
            :obj:`~nilearn.surface.SurfaceImage` or
            :obj:`~nilearn.maskers.SurfaceMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given, it will be computed
-        automatically by a MultiNiftiMasker for Niimg-like objects with default
-        parameters and no mask will be used for SurfaceImage objects.
+        then its mask will be used. If no mask is given, for Nifti images,
+        it will be computed automatically by a MultiNiftiMasker with default
+        parameters; for surface images, all the vertices will be used.
+
     %(smoothing_fwhm)s
+
     standardize : boolean, default=True
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
@@ -318,13 +322,11 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     %(mask_strategy)s
 
-        .. note::
-             Depending on this value, the mask will be computed from
-             :func:`nilearn.masking.compute_background_mask`,
-             :func:`nilearn.masking.compute_epi_mask`, or
-             :func:`nilearn.masking.compute_brain_mask`.
-
         Default='epi'.
+        .. note::
+
+          These strategies are only relevant for Nifti images and the parameter
+          is ignored for SurfaceImage objects.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -353,9 +355,13 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     ----------
     mask_img_ : Niimg-like object :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
+        The mask of the data. If no mask was given at masker creation:
 
+        - for Nifti images, this contains automatically computed mask via the
+        selected ``mask_strategy``.
+
+        - for SurfaceImage objects, this mask encompasses all vertices of
+        the input images.
     """
 
     def __init__(

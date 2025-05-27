@@ -624,13 +624,17 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
     The strategy used to compute the mask:
 
     - ``"background"``: Use this option if your images present
-      a clear homogeneous background.
+      a clear homogeneous background. Uses
+      :func:`nilearn.masking.compute_background_mask` under the hood.
 
-    - ``"epi"``: Use this option if your images are raw EPI images
+    - ``"epi"``: Use this option if your images are raw EPI images. Uses
+      :func:`nilearn.masking.compute_epi_mask`.
 
     - ``"whole-brain-template"``: This will extract the whole-brain
       part of your data by resampling the MNI152 brain mask for
-      your data's field of view.
+      your data's field of view. Uses
+      :func:`nilearn.masking.compute_brain_mask` with
+      ``mask_type="whole-brain"``.
 
       .. note::
 
@@ -639,16 +643,17 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
 
     - ``"gm-template"``: This will extract the gray matter part of your
       data by resampling the corresponding MNI152 template for your
-      data's field of view.
+      data's field of view. Uses
+      :func:`nilearn.masking.compute_brain_mask` with ``mask_type="gm"``.
 
       .. versionadded:: 0.8.1
 
     - ``"wm-template"``: This will extract the white matter part of your
       data by resampling the corresponding MNI152 template for your
-      data's field of view.
+      data's field of view. Uses
+      :func:`nilearn.masking.compute_brain_mask` with ``mask_type="wm"``.
 
       .. versionadded:: 0.8.1
-
 """
 
 # mask_type
