@@ -471,7 +471,6 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.target_tags.required = True
         tags.input_tags = InputTags(niimg_like=False)
         return tags
 
