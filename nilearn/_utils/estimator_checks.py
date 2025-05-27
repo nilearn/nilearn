@@ -137,6 +137,15 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
                 yield e, check, check.func.__name__
 
 
+# some checks would fail on sklearn 1.6.1 on older python
+# see https://github.com/scikit-learn-contrib/imbalanced-learn/issues/1131
+IS_SKLEARN_1_6_1_on_py_3_9 = (
+    sys.version_info[1] < 10
+    and parse(sklearn_version).release[1] == 6
+    and parse(sklearn_version).release[2] == 1
+)
+
+
 def return_expected_failed_checks(
     estimator: BaseEstimator,
 ) -> dict[str, str]:
@@ -295,6 +304,9 @@ def return_expected_failed_checks(
     # that accept images as input
     assert niimg_input or surf_img
 
+    if isinstance(estimator, _BaseDecoder):
+        return expected_failed_checks_decoders()
+
     # keeping track of some of those in
     # https://github.com/nilearn/nilearn/issues/4538
     expected_failed_checks = {
@@ -366,14 +378,6 @@ def return_expected_failed_checks(
 
     # Adapt some checks for some estimators
 
-    # some checks would fail on sklearn 1.6.1 on older python
-    # see https://github.com/scikit-learn-contrib/imbalanced-learn/issues/1131
-    is_sklearn_1_6_1_on_py_3_9 = (
-        sys.version_info[1] < 10
-        and parse(sklearn_version).release[1] == 6
-        and parse(sklearn_version).release[2] == 1
-    )
-
     # not entirely sure why some of them pass
     # e.g check_estimator_sparse_data passes for SurfaceLabelsMasker
     # but not SurfaceMasker ????
@@ -407,54 +411,11 @@ def return_expected_failed_checks(
             "check_fit_score_takes_y": "TODO",
         }
 
-    if isinstance(estimator, _BaseDecoder):
-        expected_failed_checks |= {
-            "check_classifier_data_not_an_array": (
-                "not applicable for image input"
-            ),
-            "check_regressor_data_not_an_array": (
-                "not applicable for image input"
-            ),
-            # the following are have nilearn replacement for masker and/or glm
-            # but not for decoders
-            "check_estimators_dtypes": "TODO",
-            "check_estimators_fit_returns_self": "TODO",
-            "check_fit_check_is_fitted": "TODO",
-            "check_transformer_data_not_an_array": "TODO",
-            "check_transformer_general": "TODO",
-            "check_transformer_preserve_dtypes": "TODO",
-            "check_dict_unchanged": "TODO",
-            "check_fit_score_takes_y": "TODO",
-            # Those are skipped for now they fail
-            # for unknown reasons
-            # most often because sklearn inputs expect a numpy array
-            # that errors with maskers,
-            # or because a suitable nilearn replacement
-            # has not yet been created.
-            "check_classifiers_classes": "TODO",
-            "check_classifiers_one_label": "TODO",
-            "check_classifiers_regression_target": "TODO",
-            "check_classifiers_train": "TODO",
-            "check_regressor_multioutput": "TODO",
-            "check_regressors_int": "TODO",
-            "check_regressors_train": "TODO",
-            "check_regressors_no_decision_function": "TODO",
-            "check_requires_y_none": (
-                "replaced by check_image_estimator_requires_y_none"
-            ),
-            "check_supervised_y_no_nan": (
-                "replaced by check_image_supervised_estimator_y_no_nan"
-            ),
-            "check_supervised_y_2d": "TODO",
-        }
-        if not is_sklearn_1_6_1_on_py_3_9:
-            expected_failed_checks.pop("check_estimator_sparse_tag")
-
     if isinstance(estimator, (_BaseDecomposition,)):
         if parse(sklearn_version).release[1] >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
         if (
-            not is_sklearn_1_6_1_on_py_3_9
+            not IS_SKLEARN_1_6_1_on_py_3_9
             and parse(sklearn_version).release[1] >= 5
         ):
             expected_failed_checks.pop("check_estimator_sparse_array")
@@ -492,7 +453,7 @@ def return_expected_failed_checks(
             isinstance(estimator, (NiftiMasker))
             and parse(sklearn_version).release[1] >= 5
         ):
-            if not is_sklearn_1_6_1_on_py_3_9:
+            if not IS_SKLEARN_1_6_1_on_py_3_9:
                 expected_failed_checks.pop("check_estimator_sparse_array")
 
             expected_failed_checks.pop("check_estimator_sparse_tag")
@@ -504,6 +465,53 @@ def return_expected_failed_checks(
             expected_failed_checks.pop(
                 "check_do_not_raise_errors_in_init_or_set_params"
             )
+
+    return expected_failed_checks
+
+
+def expected_failed_checks_decoders():
+    """Return expected failed sklearn checks for nilearn decoders."""
+    expected_failed_checks = {
+        "check_classifier_data_not_an_array": (
+            "not applicable for image input"
+        ),
+        "check_regressor_data_not_an_array": (
+            "not applicable for image input"
+        ),
+        # the following are have nilearn replacement for masker and/or glm
+        # but not for decoders
+        "check_estimators_dtypes": "TODO",
+        "check_estimators_fit_returns_self": "TODO",
+        "check_fit_check_is_fitted": "TODO",
+        "check_transformer_data_not_an_array": "TODO",
+        "check_transformer_general": "TODO",
+        "check_transformer_preserve_dtypes": "TODO",
+        "check_dict_unchanged": "TODO",
+        "check_fit_score_takes_y": "TODO",
+        # Those are skipped for now they fail
+        # for unknown reasons
+        # most often because sklearn inputs expect a numpy array
+        # that errors with maskers,
+        # or because a suitable nilearn replacement
+        # has not yet been created.
+        "check_classifiers_classes": "TODO",
+        "check_classifiers_one_label": "TODO",
+        "check_classifiers_regression_target": "TODO",
+        "check_classifiers_train": "TODO",
+        "check_regressor_multioutput": "TODO",
+        "check_regressors_int": "TODO",
+        "check_regressors_train": "TODO",
+        "check_regressors_no_decision_function": "TODO",
+        "check_requires_y_none": (
+            "replaced by check_image_estimator_requires_y_none"
+        ),
+        "check_supervised_y_no_nan": (
+            "replaced by check_image_supervised_estimator_y_no_nan"
+        ),
+        "check_supervised_y_2d": "TODO",
+    }
+    if not IS_SKLEARN_1_6_1_on_py_3_9:
+        expected_failed_checks.pop("check_estimator_sparse_tag")
 
     return expected_failed_checks
 
