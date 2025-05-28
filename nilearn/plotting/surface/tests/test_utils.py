@@ -9,9 +9,10 @@ from numpy.testing import assert_array_equal
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn.plotting.surface._utils import (
     check_surface_plotting_inputs,
+    get_faces_on_edge,
     get_surface_backend,
 )
-from nilearn.surface import InMemoryMesh
+from nilearn.surface import InMemoryMesh, load_surf_mesh
 from nilearn.surface.utils import assert_surface_mesh_equal
 
 
@@ -197,8 +198,16 @@ def test_check_surface_plotting_hemi_both_mesh_none(surf_img_1d):
 def test_check_surface_plotting_hemi_error(surf_img_1d, surf_mesh):
     """Test that an error is raised when hemi is not valid."""
     with pytest.raises(
-        ValueError, match="hemi must be one of left, right or both"
+        ValueError, match="hemi must be one of 'left', 'right' or 'both'"
     ):
         check_surface_plotting_inputs(
             surf_map=surf_img_1d, surf_mesh=surf_mesh, hemi="foo"
         )
+
+
+def test_get_faces_on_edge_matplotlib(in_memory_mesh):
+    _, faces = load_surf_mesh(in_memory_mesh)
+    with pytest.raises(
+        ValueError, match=("Vertices in parcellation do not form region.")
+    ):
+        get_faces_on_edge(faces, [91])

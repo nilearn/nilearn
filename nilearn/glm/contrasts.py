@@ -569,8 +569,8 @@ def compute_fixed_effects(
     warn(
         category=DeprecationWarning,
         message="The behavior of this function will be "
-        "changed in release 0.13 to have an additional"
-        "return value 'fixed_fx_z_score_img'  by default. "
+        "changed in release 0.13 to have an additional "
+        "return value 'fixed_fx_z_score_img' by default. "
         "Please set return_z_score to True.",
         stacklevel=find_stack_level(),
     )

@@ -218,4 +218,4 @@ plotting.plot_stat_map(
     title="no colorbar",
 )
 
-# sphinx_gallery_dummy_images=5
+# sphinx_gallery_dummy_images=11

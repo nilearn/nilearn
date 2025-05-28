@@ -9,39 +9,45 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_labeled_regions,
 )
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+)
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiLabelsMasker
-from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
+
+ESTIMATORS_TO_CHECK = [MultiNiftiLabelsMasker()]
+
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[
-            MultiNiftiLabelsMasker(labels_img=_img_labels()),
-        ],
-        expected_failed_checks=expected_failed_checks_0pt13pt2(),
+    nilearn_check_estimator(
+        estimators=[MultiNiftiLabelsMasker(labels_img=_img_labels())]
     ),
 )
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[
-            MultiNiftiLabelsMasker(_img_labels()),
-        ],
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
     check(estimator)
 
 
@@ -56,7 +62,7 @@ def test_multi_nifti_labels_masker(
     masker11 = MultiNiftiLabelsMasker(img_labels, resampling_target=None)
 
     # No exception raised here
-    signals11 = masker11.fit().transform(fmri11_img)
+    signals11 = masker11.fit_transform(fmri11_img)
 
     assert signals11.shape == (length, n_regions)
 
@@ -68,7 +74,7 @@ def test_multi_nifti_labels_masker(
     masker11 = MultiNiftiLabelsMasker(
         img_labels, mask_img=mask11_img, resampling_target=None
     )
-    signals11 = masker11.fit().transform(fmri11_img)
+    signals11 = masker11.fit_transform(fmri11_img)
 
     assert signals11.shape == (length, n_regions)
 
@@ -124,7 +130,7 @@ def test_multi_nifti_labels_masker_errors(
     )
 
     with pytest.raises(
-        ValueError, match="Regions and mask do not have the same affine."
+        ValueError, match="Following field of view errors were detected"
     ):
         masker11.fit()
 
@@ -133,7 +139,7 @@ def test_multi_nifti_labels_masker_errors(
     )
 
     with pytest.raises(
-        ValueError, match="Regions and mask do not have the same shape"
+        ValueError, match="Following field of view errors were detected"
     ):
         masker11.fit()
 
@@ -221,18 +227,17 @@ def test_multi_nifti_labels_masker_resampling(
         img_labels, mask_img=mask22_img, resampling_target="labels"
     )
 
-    masker.fit()
+    fmri11_img = [fmri11_img, fmri11_img]
+
+    signals = masker.fit_transform(fmri11_img)
+
     assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
     assert masker.labels_img_.shape == img_labels.shape
 
     assert_almost_equal(masker.mask_img_.affine, masker.labels_img_.affine)
     assert masker.mask_img_.shape == masker.labels_img_.shape[:3]
 
-    # Multi-subject example
-    fmri11_img = [fmri11_img, fmri11_img]
-
-    transformed = masker.transform(fmri11_img)
-    for t in transformed:
+    for t in signals:
         assert t.shape == (length, n_regions)
 
         fmri11_img_r = masker.inverse_transform(t)
@@ -262,7 +267,7 @@ def test_multi_nifti_labels_masker_resampling_clipped_labels(
         img_labels, mask_img=mask22_img, resampling_target="labels"
     )
 
-    masker.fit()
+    signals = masker.fit_transform(fmri11_img)
 
     assert_almost_equal(masker.labels_img_.affine, img_labels.affine)
     assert masker.labels_img_.shape == img_labels.shape
@@ -272,9 +277,7 @@ def test_multi_nifti_labels_masker_resampling_clipped_labels(
     assert uniq_labels[0] == 0
     assert len(uniq_labels) - 1 == n_regions
 
-    transformed = masker.transform(fmri11_img)
-
-    for t in transformed:
+    for t in signals:
         assert t.shape == (length, n_regions)
         # Some regions have been clipped. Resulting signal must be zero
         assert (t.var(axis=0) == 0).sum() < n_regions
@@ -306,7 +309,7 @@ def test_multi_nifti_labels_masker_atlas_data_different_fov(
 
     masker.fit_transform(fmri22_img)
 
-    assert_array_equal(masker._resampled_labels_img_.affine, affine2)
+    assert_array_equal(masker.labels_img_.affine, affine2)
 
 
 def test_multi_nifti_labels_masker_resampling_target():
@@ -337,22 +340,22 @@ def test_multi_nifti_labels_masker_resampling_target():
                     "labels were removed"
                 ),
             ):
-                transformed = masker.fit_transform(fmri_img)
+                signals = masker.fit_transform(fmri_img)
         else:
-            transformed = masker.fit_transform(fmri_img)
+            signals = masker.fit_transform(fmri_img)
 
-        resampled_labels_img = masker._resampled_labels_img_
+        resampled_labels_img = masker.labels_img_
         n_resampled_labels = len(np.unique(get_data(resampled_labels_img)))
-        assert n_resampled_labels - 1 == transformed.shape[1]
+        assert n_resampled_labels - 1 == signals.shape[1]
 
         # inverse transform
-        compressed_img = masker.inverse_transform(transformed)
+        compressed_img = masker.inverse_transform(signals)
 
         # Test that compressing the image a second time should yield an image
         # with the same data as compressed_img.
-        transformed2 = masker.fit_transform(fmri_img)
+        signals2 = masker.fit_transform(fmri_img)
 
         # inverse transform again
-        compressed_img2 = masker.inverse_transform(transformed2)
+        compressed_img2 = masker.inverse_transform(signals2)
 
         assert_array_equal(get_data(compressed_img), get_data(compressed_img2))

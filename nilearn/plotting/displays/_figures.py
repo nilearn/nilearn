@@ -5,6 +5,8 @@ from scipy import linalg
 from scipy.spatial import distance_matrix
 
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn._utils.logger import find_stack_level
+from nilearn.plotting.surface._utils import DEFAULT_HEMI, get_faces_on_edge
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data, load_surf_data
 
@@ -24,7 +26,7 @@ class SurfaceFigure:
         Path to output file.
     """
 
-    def __init__(self, figure=None, output_file=None, hemi="left"):
+    def __init__(self, figure=None, output_file=None, hemi=DEFAULT_HEMI):
         self.figure = figure
         self.output_file = output_file
         self.hemi = hemi
@@ -90,7 +92,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             [self.figure._data[0].get(d) for d in ["x", "y", "z"]]
         ).T
 
-    def __init__(self, figure=None, output_file=None, hemi="left"):
+    def __init__(self, figure=None, output_file=None, hemi=DEFAULT_HEMI):
         if not is_plotly_installed():
             raise ImportError(
                 "Plotly is required to use `PlotlySurfaceFigure`."
@@ -229,7 +231,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
                     f"""{label=} contains isolated vertices:
                     {isolated_v.tolist()}. These will not be included in ROI
                     boundary line.""",
-                    stacklevel=2,
+                    stacklevel=find_stack_level(),
                 )
 
             sorted_vertices = self._get_sorted_edge_centroids(
@@ -277,7 +279,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
             3. Arrange the centroids such in a good order for plotting
         """
         # Mask indicating faces whose centroids will compose the boundary.
-        edge_faces = self._get_faces_on_edge(parc_idx=parc_idx)
+        edge_faces = get_faces_on_edge(faces=self._faces, parc_idx=parc_idx)
 
         # gather the centroids of each face
         centroids = []
@@ -424,29 +426,6 @@ class PlotlySurfaceFigure(SurfaceFigure):
         sorted_vertices.append(centroids[prev_first])
 
         return np.asarray(sorted_vertices)
-
-    def _get_faces_on_edge(self, parc_idx):
-        """Identify which faces lie on the outeredge of the parcellation \
-        defined by the indices in parc_idx.
-
-        Parameters
-        ----------
-        parc_idx : numpy.ndarray, indices of the vertices
-            of the region to be plotted
-        """
-        # count how many vertices belong to the given parcellation in each face
-        verts_per_face = np.isin(self._faces, parc_idx).sum(axis=1)
-
-        # test if parcellation forms regions
-        if np.all(verts_per_face < 2):
-            raise ValueError("Vertices in parcellation do not form region.")
-
-        vertices_on_edge = np.intersect1d(
-            np.unique(self._faces[verts_per_face == 2]), parc_idx
-        )
-        faces_outside_edge = np.isin(self._faces, vertices_on_edge).sum(axis=1)
-
-        return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
 
     @staticmethod
     def _project_above_face(point, t0, t1, t2, elevation=0.1):

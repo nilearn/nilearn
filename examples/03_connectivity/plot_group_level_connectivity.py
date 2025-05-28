@@ -52,7 +52,7 @@ masker = NiftiMapsMasker(
     memory_level=1,
     standardize="zscore_sample",
     standardize_confounds=True,
-).fit()
+)
 
 # %%
 # Then we compute region signals and extract useful phenotypic information.
@@ -64,7 +64,7 @@ for func_file, confound_file, phenotype in zip(
     development_dataset.confounds,
     development_dataset.phenotypic["Child_Adult"],
 ):
-    time_series = masker.transform(func_file, confounds=confound_file)
+    time_series = masker.fit_transform(func_file, confounds=confound_file)
     pooled_subjects.append(time_series)
     if phenotype == "child":
         children.append(time_series)

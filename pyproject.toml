@@ -71,7 +71,7 @@ plotly = ["nilearn[plotting]"]
 # See https://github.com/plotly/Kaleido/issues/134 for more detail
 plotting = [
     "matplotlib>=3.3.0",
-    "plotly",
+    "plotly>=5.0.0,!=6.1.0",
     "kaleido ; platform_system != 'Windows'",
     "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
 ]
@@ -256,7 +256,7 @@ select = [
 unfixable = []
 
 [tool.ruff.lint.mccabe]
-max-complexity = 21
+max-complexity = 25
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]
@@ -284,7 +284,6 @@ max-complexity = 21
 "nilearn/glm/tests/test_thresholding.py" = ["D103"]
 "nilearn/glm/tests/test_utils.py" = ["D103"]
 "nilearn/image/**/{tests}/*" = ["D103"]  # 75 errors to fix
-"nilearn/plotting/*" = ["B028"]  # 18 errors to fix
 "nilearn/plotting/**/{tests}/*" = ["D103"]  # 123 errors to fix
 "nilearn/regions/**/{tests}/*" = ["D103"]  # 64 errors to fix
 "nilearn/reporting/tests/test_glm_reporter.py" = ["D103"]
@@ -299,7 +298,7 @@ convention = "numpy"
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
 max-args = 27
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
-max-branches = 22
+max-branches = 25
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 7
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
