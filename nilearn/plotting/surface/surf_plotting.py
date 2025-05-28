@@ -37,7 +37,7 @@ DATA_EXTENSIONS = (
 )
 
 
-def get_surface_backend(engine=DEFAULT_ENGINE):
+def _get_surface_backend(engine=DEFAULT_ENGINE):
     """Instantiate and return the required backend engine.
 
     Parameters
@@ -290,7 +290,7 @@ def plot_surf(
     )
     check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
-    backend = get_surface_backend(engine)
+    backend = _get_surface_backend(engine)
     fig = backend._plot_surf(
         surf_mesh,
         surf_map=surf_map,
@@ -414,7 +414,7 @@ def plot_surf_contours(
     )
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
-    backend = get_surface_backend(DEFAULT_ENGINE)
+    backend = _get_surface_backend(DEFAULT_ENGINE)
     fig = backend._plot_surf_contours(
         surf_mesh=surf_mesh,
         roi_map=roi_map,
@@ -613,7 +613,7 @@ def plot_surf_stat_map(
     check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     loaded_stat_map = load_surf_data(stat_map)
 
-    backend = get_surface_backend(engine)
+    backend = _get_surface_backend(engine)
     # derive symmetric vmin, vmax and colorbar limits depending on
     # symmetric_cbar settings
     cbar_vmin, cbar_vmax, vmin, vmax = (
@@ -797,7 +797,7 @@ def plot_img_on_surf(
         ),
     }
 
-    backend = get_surface_backend(DEFAULT_ENGINE)
+    backend = _get_surface_backend(DEFAULT_ENGINE)
     # get vmin and vmax for entire data (all hemis)
     _, _, vmin, vmax = backend._adjust_colorbar_and_data_ranges(
         get_data(stat_map),
@@ -1055,7 +1055,7 @@ def plot_surf_roi(
         "cbar_tick_format": cbar_tick_format,
     }
 
-    backend = get_surface_backend(engine)
+    backend = _get_surface_backend(engine)
     backend._adjust_plot_roi_params(params)
 
     fig = backend._plot_surf(

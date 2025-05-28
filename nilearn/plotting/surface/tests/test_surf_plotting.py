@@ -24,7 +24,7 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting.surface.surf_plotting import get_surface_backend
+from nilearn.plotting.surface.surf_plotting import _get_surface_backend
 
 
 @pytest.fixture
@@ -44,7 +44,7 @@ def test_get_surface_backend_matplotlib_not_installed():
     installed.
     """
     with pytest.raises(ImportError, match="Using engine"):
-        get_surface_backend("matplotlib")
+        _get_surface_backend("matplotlib")
 
 
 @pytest.mark.skipif(
@@ -56,7 +56,7 @@ def test_get_surface_backend_plotly_not_installed():
     installed.
     """
     with pytest.raises(ImportError, match="Using engine"):
-        get_surface_backend("plotly")
+        _get_surface_backend("plotly")
 
 
 def test_get_surface_backend_unknown_error():
@@ -64,7 +64,7 @@ def test_get_surface_backend_unknown_error():
     backend is not implemented.
     """
     with pytest.raises(ValueError, match="Unknown plotting engine"):
-        get_surface_backend("unknown")
+        _get_surface_backend("unknown")
 
 
 @pytest.mark.parametrize(
