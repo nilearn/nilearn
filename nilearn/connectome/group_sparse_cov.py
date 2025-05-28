@@ -601,6 +601,7 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         self.memory_level = memory_level
         self.verbose = verbose
 
+    @fill_doc
     def fit(self, subjects, y=None):
         """Fits the group sparse precision model according \
         to the given training data and parameters.
@@ -612,6 +613,8 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
             input subjects. Each subject is a 2D array, whose columns contain
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns).
+
+        %(y_dummy)s
 
         Returns
         -------
@@ -1077,6 +1080,7 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
         self.debug = debug
         self.early_stopping = early_stopping
 
+    @fill_doc
     def fit(self, subjects, y=None):
         """Compute cross-validated group-sparse precisions.
 
@@ -1087,6 +1091,8 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
             input subjects. Each subject is a 2D array, whose columns contain
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns.)
+
+        %(y_dummy)s
 
         Returns
         -------

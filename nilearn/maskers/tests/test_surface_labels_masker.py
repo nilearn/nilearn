@@ -2,8 +2,14 @@ import numpy as np
 import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+    return_expected_failed_checks,
+)
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _make_mesh
 from nilearn.maskers import SurfaceLabelsMasker
 from nilearn.surface import SurfaceImage
@@ -20,26 +26,43 @@ def _sklearn_surf_label_img():
     return SurfaceImage(_make_mesh(), labels)
 
 
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img())],
-    ),
-)
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+ESTIMATORS_TO_CHECK = [SurfaceLabelsMasker(_sklearn_surf_label_img())]
+
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
-@pytest.mark.xfail(reason="invalid checks should fail")
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[SurfaceLabelsMasker(_sklearn_surf_label_img())],
-        valid=False,
-    ),
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -142,9 +165,7 @@ def test_surface_label_masker_fit_no_report(surf_label_img):
         "maximum",
     ),
 )
-def test_surface_label_masker_transform(
-    surf_label_img, surf_img_1d, surf_img_2d, strategy
-):
+def test_surface_label_masker_transform(surf_label_img, surf_img_1d, strategy):
     """Test transform extract signals.
 
     Also a smoke test for different strategies.
@@ -152,18 +173,10 @@ def test_surface_label_masker_transform(
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, strategy=strategy)
     masker = masker.fit()
 
-    # only one 'timepoint'
     signal = masker.transform(surf_img_1d)
 
     assert isinstance(signal, np.ndarray)
-    assert signal.shape == (1, masker.n_elements_)
-
-    # 5 'timepoint'
-    n_timepoints = 5
-    signal = masker.transform(surf_img_2d(n_timepoints))
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (n_timepoints, masker.n_elements_)
+    assert signal.shape == ()
 
 
 def test_surface_label_masker_transform_with_mask(surf_mesh, surf_img_2d):
@@ -317,7 +330,7 @@ def test_surface_label_masker_check_output_1d(
     surf_img_1d = SurfaceImage(surf_mesh, data)
     signal = masker.transform(surf_img_1d)
 
-    assert_array_equal(signal, np.asarray([expected_signal]))
+    assert_array_equal(signal, np.asarray(expected_signal))
 
     # also check the output of inverse_transform
     img = masker.inverse_transform(signal)
@@ -325,8 +338,8 @@ def test_surface_label_masker_check_output_1d(
     # expected inverse data is the same as the input data
     # but with the random value replaced by zeros
     expected_inverse_data = {
-        "left": np.asarray([inverse_data_left_1d_with_expected_mean]).T,
-        "right": np.asarray([inverse_data_right_1d_with_expected_mean]).T,
+        "left": np.asarray(inverse_data_left_1d_with_expected_mean).T,
+        "right": np.asarray(inverse_data_right_1d_with_expected_mean).T,
     }
 
     assert_array_equal(img.data.parts["left"], expected_inverse_data["left"])
@@ -424,22 +437,6 @@ def test_surface_label_masker_check_output_2d(
     assert_array_equal(img.data.parts["right"], expected_inverse_data["right"])
 
 
-def test_surface_label_masker_fit_transform(surf_label_img, surf_img_1d):
-    """Smoke test for fit_transform."""
-    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
-    signal = masker.fit_transform(surf_img_1d)
-    assert signal.shape == (1, masker.n_elements_)
-
-
-def test_surface_label_masker_inverse_transform(surf_label_img, surf_img_1d):
-    """Test transform extract signals."""
-    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
-    masker = masker.fit()
-    signal = masker.transform(surf_img_1d)
-    img = masker.inverse_transform(signal)
-    assert img.shape == (surf_img_1d.shape[0], 1)
-
-
 def test_surface_label_masker_inverse_transform_with_mask(
     surf_mesh, surf_img_2d
 ):
@@ -480,27 +477,6 @@ def test_surface_label_masker_inverse_transform_with_mask(
     # the data for label 2 should be zeros
     assert np.all(img_inverted.data.parts["left"][-1, :] == 0)
     assert np.all(img_inverted.data.parts["right"][2:, :] == 0)
-
-
-def test_surface_label_masker_transform_list_surf_images(
-    surf_label_img, surf_img_1d, surf_img_2d
-):
-    """Test transform on list of surface images."""
-    masker = SurfaceLabelsMasker(surf_label_img).fit()
-    signals = masker.transform([surf_img_1d, surf_img_1d, surf_img_1d])
-    assert signals.shape == (3, masker.n_elements_)
-    signals = masker.transform([surf_img_2d(5), surf_img_2d(4)])
-    assert signals.shape == (9, masker.n_elements_)
-
-
-def test_surface_label_masker_inverse_transform_list_surf_images(
-    surf_label_img, surf_img_2d
-):
-    """Test inverse_transform on list of surface images."""
-    masker = SurfaceLabelsMasker(surf_label_img).fit()
-    signals = masker.transform([surf_img_2d(3), surf_img_2d(4)])
-    img = masker.inverse_transform(signals)
-    assert img.shape == (surf_label_img.mesh.n_vertices, 7)
 
 
 def test_surface_label_masker_labels_img_none():

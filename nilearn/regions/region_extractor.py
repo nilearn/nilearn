@@ -443,9 +443,19 @@ class RegionExtractor(NiftiMapsMasker):
         self.extractor = extractor
         self.smoothing_fwhm = smoothing_fwhm
 
+    @fill_doc
     @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     def fit(self, imgs=None, y=None):
-        """Prepare the data and setup for the region extraction."""
+        """Prepare signal extraction from regions.
+
+        Parameters
+        ----------
+        imgs : :obj:`list` of Niimg-like objects or None, default=None
+            See :ref:`extracting_data`.
+            Image data passed to the reporter.
+
+        %(y_dummy)s
+        """
         del y
         check_params(self.__dict__)
         maps_img = check_niimg_4d(self.maps_img)
@@ -494,7 +504,7 @@ class RegionExtractor(NiftiMapsMasker):
         )
 
         self.maps_img = self.regions_img_
-        super().fit()
+        super().fit(imgs)
 
         return self
 

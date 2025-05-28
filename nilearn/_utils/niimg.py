@@ -1,8 +1,8 @@
 """Neuroimaging file input and output."""
 
 import collections.abc
-import copy
 import gc
+from copy import deepcopy
 from pathlib import Path
 from typing import Union
 from warnings import warn
@@ -52,7 +52,7 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
         nilearn.image.get_data return from Nifti image.
     """
     if copy_data:
-        img = copy.deepcopy(img)
+        img = deepcopy(img)
 
     # typically the line below can double memory usage
     # that's why we invoke a forced call to the garbage collector
@@ -131,22 +131,22 @@ def load_niimg(
             " not compatible with nibabel format:\n"
             + repr_niimgs(tmp, shorten=True)
         )
-
+        
     assert isinstance(loaded_niimg, spatialimages.SpatialImage)
+    
+    img_data = _get_data(loaded_niimg)
+    target_dtype = _get_target_dtype(img_data.dtype, dtype)    
 
-    dtype = _get_target_dtype(_get_data(loaded_niimg).dtype, dtype)
-
-    if dtype is None:
-        return loaded_niimg
-
-    # Copyheader and set dtype in header
-    new_niimg = new_img_like(
-        loaded_niimg,
-        _get_data(loaded_niimg).astype(dtype),
-        loaded_niimg.affine,
-        copy_header=True,
-    )
-    new_niimg.header.set_data_dtype(dtype)
+    if target_dtype is not None:
+        copy_header = loaded_niimg.header is not None
+        niimg = new_img_like(
+            loaded_niimg,
+            img_data.astype(target_dtype),
+            loaded_niimg.affine,
+            copy_header=copy_header,
+        )
+        if copy_header:
+            loaded_niimg.header.set_data_dtype(target_dtype)
 
     return new_niimg
 

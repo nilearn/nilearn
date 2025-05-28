@@ -12,6 +12,8 @@ import numpy as np
 from joblib import Memory
 from nibabel.spatialimages import SpatialImage
 from numpy.typing import DTypeLike
+from numpy.testing import assert_array_equal
+
 
 import nilearn as ni
 from nilearn._utils.logger import find_stack_level
@@ -32,7 +34,7 @@ def _check_fov(img, affine, shape):
     return img.shape[:3] == shape and np.allclose(img.affine, affine)
 
 
-def check_same_fov(*args, **kwargs):
+def check_same_fov(*args, **kwargs) -> bool:
     """Return True if provided images have the same field of view (shape and \
     affine) and return False or raise an error elsewhere, depending on the \
     `raise_error` argument.
@@ -77,6 +79,23 @@ def check_same_fov(*args, **kwargs):
             )
         )
     return not errors
+
+
+def check_imgs_equal(img1, img2) -> bool:
+    """Check if 2 NiftiImages have same fov and data."""
+    if not check_same_fov(img1, img2, raise_error=False):
+        return False
+
+    data_img1 = safe_get_data(img1)
+    data_img2 = safe_get_data(img2)
+
+    try:
+        assert_array_equal(data_img1, data_img2)
+        return True
+    except AssertionError:
+        return False
+    except Exception as e:
+        raise e
 
 
 def _index_img(img, index):

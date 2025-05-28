@@ -863,7 +863,7 @@ An even quicker option is:
 
             PATTERN='examples/04_glm_first_level/plot_bids_features.py'
             export PATTERN
-            make make -C doc html-modified-examples-only
+            make -C doc html-modified-examples-only
 
 
 Additional cases
