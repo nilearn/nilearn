@@ -670,19 +670,19 @@ def _plot_img_on_surf(
         axes.append(ax)
 
         plot_surf_stat_map(
-            surf[hemi],
-            texture[hemi],
-            view=mode,
-            hemi=hemi,
+            surf_mesh=surf[hemi],
+            stat_map=texture[hemi],
             bg_map=bg_map,
-            bg_on_data=bg_on_data,
-            axes=ax,
+            hemi=hemi,
+            view=mode,
+            cmap=cmap,
             colorbar=False,  # Colorbar created externally.
+            threshold=threshold,
+            bg_on_data=bg_on_data,
             vmin=vmin,
             vmax=vmax,
-            threshold=threshold,
-            cmap=cmap,
             symmetric_cbar=symmetric_cbar,
+            axes=ax,
             **kwargs,
         )
 
