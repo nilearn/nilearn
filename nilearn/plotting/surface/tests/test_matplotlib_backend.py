@@ -8,10 +8,10 @@ import pytest
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.surface._matplotlib_backend import (
     MATPLOTLIB_VIEWS,
-    MatplotlibSurfaceBackend,
     _compute_facecolors,
     _get_bounds,
     _get_ticks,
+    _get_view_plot_surf,
 )
 from nilearn.surface import (
     load_surf_data,
@@ -51,32 +51,26 @@ EXPECTED_VIEW_MATPLOTLIB = {
 }
 
 
-@pytest.fixture
-def matplotlib_backend():
-    return MatplotlibSurfaceBackend()
-
-
 @pytest.mark.parametrize("hemi, views", MATPLOTLIB_VIEWS.items())
-def test_get_view_plot_surf(matplotlib_backend, hemi, views):
+def test_get_view_plot_surf(hemi, views):
     """Test if
     nilearn.plotting.surface._matplotlib_backend.MatplotlibSurfaceBackend._get_view_plot_surf
     returns expected values.
     """
     for v in views:
         assert (
-            matplotlib_backend._get_view_plot_surf(hemi, v)
-            == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
+            _get_view_plot_surf(hemi, v) == EXPECTED_VIEW_MATPLOTLIB[hemi][v]
         )
 
 
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
-def test_get_view_plot_surf_hemisphere_errors(matplotlib_backend, hemi, view):
+def test_get_view_plot_surf_hemisphere_errors(hemi, view):
     """Test
     nilearn.plotting.surface._matplotlib_backend.MatplotlibSurfaceBackend._get_view_plot_surf
     for invalid hemisphere values.
     """
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
-        matplotlib_backend._get_view_plot_surf(hemi, view)
+        _get_view_plot_surf(hemi, view)
 
 
 @pytest.mark.parametrize(
@@ -89,13 +83,13 @@ def test_get_view_plot_surf_hemisphere_errors(matplotlib_backend, hemi, view):
         ("both", "foo"),
     ],
 )
-def test_get_view_plot_surf_view_errors(matplotlib_backend, hemi, view):
+def test_get_view_plot_surf_view_errors(hemi, view):
     """Test
     nilearn.plotting.surface._matplotlib_backend.MatplotlibSurfaceBackend._get_view_plot_surf
     for invalid view values.
     """
     with pytest.raises(ValueError, match="Invalid view definition"):
-        matplotlib_backend._get_view_plot_surf(hemi, view)
+        _get_view_plot_surf(hemi, view)
 
 
 @pytest.mark.parametrize(
@@ -230,34 +224,3 @@ def test_compute_facecolors_deprecation():
             0.5,
             alpha,
         )
-
-
-def test_plot_surf_contours(
-    matplotlib_backend,
-    matplotlib_pyplot,
-    in_memory_mesh,
-    parcellation,
-    surf_mask_1d,
-):
-    """Test
-    nilearn.plotting.surface._backend.MatplotlibBackend.plot_surf_contours
-    for valid input values.
-    """
-    matplotlib_backend.plot_surf_contours(in_memory_mesh, parcellation)
-    matplotlib_backend.plot_surf_contours(
-        in_memory_mesh, parcellation, levels=[1, 2]
-    )
-    matplotlib_backend.plot_surf_contours(
-        in_memory_mesh, parcellation, levels=[1, 2], cmap="gist_ncar"
-    )
-
-
-def test_plot_img_on_surf(
-    matplotlib_backend,
-    matplotlib_pyplot,
-    img_3d_mni,
-):
-    """Smoke test for
-    nilearn.plotting.surface._backend.MatplotlibBackend.plot_img_on_surf.
-    """
-    matplotlib_backend.plot_img_on_surf(img_3d_mni)

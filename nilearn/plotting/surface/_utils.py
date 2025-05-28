@@ -1,66 +1,149 @@
 """Utility functions used in nilearn.plotting.surface module."""
 
+from collections.abc import Sequence
 from warnings import warn
 
 import numpy as np
 
 from nilearn._utils import fill_doc
-from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn.plotting._utils import DEFAULT_ENGINE
 from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
+    load_surf_data,
 )
 from nilearn.surface.surface import combine_hemispheres_meshes, get_data
 from nilearn.surface.utils import check_polymesh_equal
 
 DEFAULT_HEMI = "left"
 
+VALID_VIEWS = (
+    "anterior",
+    "posterior",
+    "medial",
+    "lateral",
+    "dorsal",
+    "ventral",
+    "left",
+    "right",
+)
 
-def get_surface_backend(engine=DEFAULT_ENGINE):
-    """Instantiate and return the required backend engine.
+VALID_HEMISPHERES = "left", "right", "both"
+
+
+def check_engine_params(params, engine):
+    """Check default values of the parameters that are not implemented for
+    current engine and warn the user if the parameter has other value then
+    None.
 
     Parameters
     ----------
-    engine: :obj:`str`, default='matplotlib'
-        Name of the required backend engine. Can be ``matplotlib`` or
-    ``plotly``.
+    params: :obj:`dict`
+        A dictionary where keys are the unimplemented parameter names for a
+    specific engine and values are the assigned value for corresponding
+    parameter.
+    """
+    for parameter, value in params.items():
+        if value is not None:
+            warn(
+                f"'{parameter}' is not implemented "
+                f"for the {engine} engine.\n"
+                f"Got '{parameter} = {value}'.\n"
+                f"Use '{parameter} = None' to silence this warning.",
+                stacklevel=find_stack_level(),
+            )
+
+
+def _check_hemisphere_is_valid(hemi):
+    return hemi in VALID_HEMISPHERES
+
+
+def check_hemispheres(hemispheres):
+    """Check whether the hemispheres passed to in plot_img_on_surf are \
+    correct.
+
+    hemispheres : :obj:`list`
+        Any combination of 'left' and 'right'.
+
+    """
+    invalid_hemis = [
+        not _check_hemisphere_is_valid(hemi) for hemi in hemispheres
+    ]
+    if any(invalid_hemis):
+        raise ValueError(
+            "Invalid hemispheres definition!\n"
+            f"Got: {np.array(hemispheres)[invalid_hemis]!s}\n"
+            f"Supported values are: {VALID_HEMISPHERES!s}"
+        )
+    return hemispheres
+
+
+def check_surf_map(surf_map, n_vertices):
+    """Help for plot_surf.
+
+    This function checks the dimensions of provided surf_map.
+    """
+    surf_map_data = load_surf_data(surf_map)
+    if surf_map_data.ndim != 1:
+        raise ValueError(
+            "'surf_map' can only have one dimension "
+            f"but has '{surf_map_data.ndim}' dimensions"
+        )
+    if surf_map_data.shape[0] != n_vertices:
+        raise ValueError(
+            "The surf_map does not have the same number "
+            "of vertices as the mesh."
+        )
+    return surf_map_data
+
+
+def _check_view_is_valid(view) -> bool:
+    """Check whether a single view is one of two valid input types.
+
+    Parameters
+    ----------
+    view : :obj:`str` in {"anterior", "posterior", "medial", "lateral",
+        "dorsal", "ventral" or pair of floats (elev, azim).
 
     Returns
     -------
-    backend : :class:`~nilearn.plotting.surface._backend.BaseSurfaceBackend`
-        The backend for the specified engine.
+    valid : True if view is valid, False otherwise.
     """
-    if engine == "matplotlib":
-        if is_matplotlib_installed():
-            from nilearn.plotting.surface._matplotlib_backend import (
-                MatplotlibSurfaceBackend,
-            )
+    if isinstance(view, str) and (view in VALID_VIEWS):
+        return True
+    return (
+        isinstance(view, Sequence)
+        and len(view) == 2
+        and all(isinstance(x, (int, float)) for x in view)
+    )
 
-            return MatplotlibSurfaceBackend()
-        else:
-            raise ImportError(
-                "Using engine='matplotlib' requires that ``matplotlib`` is "
-                "installed."
-            )
-    elif engine == "plotly":
-        if is_plotly_installed():
-            from nilearn.plotting.surface._plotly_backend import (
-                PlotlySurfaceBackend,
-            )
 
-            return PlotlySurfaceBackend()
-        else:
-            raise ImportError(
-                "Using engine='plotly' requires that ``plotly`` is installed."
-            )
-    else:
+def check_views(views) -> list:
+    """Check whether the views passed to in plot_img_on_surf are correct.
+
+    Parameters
+    ----------
+    views : :obj:`list`
+        Any combination of strings in {"anterior", "posterior", "medial",
+        "lateral", "dorsal", "ventral"} and / or pair of floats (elev, azim).
+
+    Returns
+    -------
+    views : :obj:`list`
+        Views given as inputs.
+    """
+    invalid_views = [not _check_view_is_valid(view) for view in views]
+
+    if any(invalid_views):
         raise ValueError(
-            f"Unknown plotting engine {engine}. "
-            "Please use either 'matplotlib' or "
-            "'plotly'."
+            "Invalid view definition!\n"
+            f"Got: {np.array(views)[invalid_views]!s}\n"
+            f"Supported values are: {VALID_VIEWS!s}"
+            " or a sequence of length 2"
+            " setting the elevation and azimut of the camera."
         )
+
+    return views
 
 
 def _check_bg_map(bg_map, hemi):
@@ -274,3 +357,14 @@ def get_faces_on_edge(faces, parc_idx):
     faces_outside_edge = np.isin(faces, vertices_on_edge).sum(axis=1)
 
     return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
+
+
+def sanitize_hemi_view(hemi, view):
+    """Check ``hemi`` and ``view``, if ``view`` is `None`, set value for
+    ``view`` depending on the ``hemi`` value and return ``view``.
+    """
+    check_hemispheres([hemi])
+    if view is None:
+        view = "dorsal" if hemi == "both" else "lateral"
+    check_views([view])
+    return view
