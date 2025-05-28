@@ -426,7 +426,7 @@ def return_expected_failed_checks(
 
 def unapplicable_checks() -> dict[str, str]:
     """Return sklearn checks that do not apply for nilearn estimators \
-       when they takes images as input.
+       when they take images as input.
     """
     return dict.fromkeys(
         [
