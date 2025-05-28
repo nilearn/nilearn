@@ -14,11 +14,9 @@ from nilearn._utils.helpers import is_kaleido_installed
 from nilearn.plotting._utils import get_colorbar_and_data_ranges
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.js_plotting_utils import colorscale
-from nilearn.plotting.surface._backend import (
-    VALID_HEMISPHERES,
-)
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
+    VALID_HEMISPHERES,
     check_engine_params,
     check_surf_map,
     sanitize_hemi_view,
