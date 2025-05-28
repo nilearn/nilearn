@@ -1,7 +1,13 @@
 import numpy as np
 import pytest
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+    return_expected_failed_checks,
+)
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import (
@@ -9,22 +15,43 @@ from nilearn.surface.utils import (
     assert_surface_image_equal,
 )
 
+ESTIMATORS_TO_CHECK = [SurfaceMasker()]
+
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(estimator=[SurfaceMasker()]),
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(estimator=[SurfaceMasker()], valid=False),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -32,11 +59,14 @@ def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
 def test_fit_list_surf_images(surf_img_2d):
     """Test fit on list of surface images.
 
-    resulting mask should have a single 'timepoint'.
+    - resulting mask should have a single 'timepoint'
+    - all vertices should be included in the mask, because no mask is provided
+
     """
     masker = SurfaceMasker()
     masker.fit([surf_img_2d(3), surf_img_2d(5)])
     assert masker.mask_img_.shape == (surf_img_2d(1).shape[0],)
+    assert masker.mask_img_.shape == (masker.n_elements_,)
 
 
 def test_fit_list_surf_images_with_mask(surf_mask_1d, surf_img_2d):
@@ -44,35 +74,6 @@ def test_fit_list_surf_images_with_mask(surf_mask_1d, surf_img_2d):
     masker = SurfaceMasker(mask_img=surf_mask_1d)
     masker.fit([surf_img_2d(3), surf_img_2d(5)])
     assert masker.mask_img_.shape == (surf_img_2d(1).shape[0],)
-
-
-@pytest.mark.parametrize("surf_mask_dim", [1, 2])
-def test_transform_list_surf_images(
-    surf_mask_dim,
-    surf_mask_1d,
-    surf_mask_2d,
-    surf_img_1d,
-    surf_img_2d,
-):
-    """Test transform on list of surface images."""
-    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
-    masker = SurfaceMasker(surf_mask).fit()
-    signals = masker.transform([surf_img_1d, surf_img_1d, surf_img_1d])
-    assert signals.shape == (3, masker.n_elements_)
-    signals = masker.transform([surf_img_2d(5), surf_img_2d(4)])
-    assert signals.shape == (9, masker.n_elements_)
-
-
-@pytest.mark.parametrize("surf_mask_dim", [1, 2])
-def test_inverse_transform_list_surf_images(
-    surf_mask_dim, surf_mask_1d, surf_mask_2d, surf_img_2d
-):
-    """Test inverse_transform on list of surface images."""
-    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
-    masker = SurfaceMasker(surf_mask).fit()
-    signals = masker.transform([surf_img_2d(3), surf_img_2d(4)])
-    img = masker.inverse_transform(signals)
-    assert img.shape == (surf_mask.mesh.n_vertices, 7)
 
 
 @pytest.mark.parametrize("n_timepoints", [3])
@@ -93,7 +94,6 @@ def test_transform_inverse_transform_no_mask(surf_mesh, n_timepoints):
     signals = masker.transform(img)
 
     # make sure none of the data has been removed
-    assert signals.shape == (n_timepoints, img.shape[0])
     assert np.array_equal(signals[0], [1, 2, 3, 4, 10, 20, 30, 40, 50])
     unmasked_img = masker.inverse_transform(signals)
     assert_polydata_equal(img.data, unmasked_img.data)
@@ -123,9 +123,6 @@ def test_transform_inverse_transform_with_mask(surf_mesh, n_timepoints):
 
     masker = SurfaceMasker(mask).fit(img)
     signals = masker.transform(img)
-
-    # check mask shape is as expected
-    assert signals.shape == (n_timepoints, masker.n_elements_)
 
     # check the data for first seven vertices is as expected
     assert np.array_equal(signals.ravel()[:7], [2, 3, 4, 20, 30, 40, 50])

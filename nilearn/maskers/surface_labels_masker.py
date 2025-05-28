@@ -1,7 +1,7 @@
 """Extract data from a SurfaceImage, averaging over atlas regions."""
 
-import copy
 import warnings
+from copy import deepcopy
 from pathlib import Path
 from typing import Union
 
@@ -245,6 +245,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         lut = self.lut_
         return lut["index"].to_dict()
 
+    @fill_doc
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.2"
     )
@@ -256,9 +257,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         imgs : :obj:`~nilearn.surface.SurfaceImage` object or None, \
                default=None
 
-        y : None
-            This parameter is unused.
-            It is solely included for scikit-learn compatibility.
+        %(y_dummy)s
 
         Returns
         -------
@@ -281,7 +280,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "but not both."
             )
 
-        self.labels_img_ = copy.deepcopy(self.labels_img)
+        self.labels_img_ = deepcopy(self.labels_img)
 
         self.mask_img_ = self._load_mask(imgs)
         if self.mask_img_ is not None:
@@ -335,6 +334,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img_)
 
         self._shelving = False
+
+        if self.clean_args is None:
+            self.clean_args = {}
 
         if not self.reports:
             self._reporting_data = None
@@ -410,10 +412,10 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         Returns
         -------
-        region_signals : 2D :obj:`numpy.ndarray`
-            Signal for each element.
-            shape: (img data shape, total number of vertices)
+        %(signals_transform_surface)s
         """
+        check_is_fitted(self)
+
         check_compatibility_mask_and_images(self.labels_img_, imgs)
         check_polymesh_equal(self.labels_img_.mesh, imgs.mesh)
 
@@ -454,8 +456,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "mask_img",
             ],
         )
-        if self.clean_args is None:
-            self.clean_args = {}
         parameters["clean_args"] = self.clean_args
 
         # signal cleaning here
@@ -480,34 +480,36 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         return region_signals
 
+    @fill_doc
     def inverse_transform(self, signals):
         """Transform extracted signal back to surface image.
 
         Parameters
         ----------
-        signals : :obj:`numpy.ndarray`
-            Extracted signal for each region.
-            If a 1D array is provided, then the shape of each hemisphere's data
-            should be (number of elements,) in the returned surface image.
-            If a 2D array is provided, then it would be
-            (number of scans, number of elements).
-
+        %(signals_inv_transform)s
 
         Returns
         -------
-        :obj:`~nilearn.surface.SurfaceImage` object
-            Mesh and data for both hemispheres.
+        %(img_inv_transform_surface)s
         """
         check_is_fitted(self)
 
-        self._check_signal_shape(signals)
+        return_1D = signals.ndim < 2
 
-        return signals_to_surf_img_labels(
+        signals = self._check_array(signals)
+
+        imgs = signals_to_surf_img_labels(
             signals,
             np.asarray(self.labels_),
             self.labels_img_,
             self.background_label,
         )
+
+        if return_1D:
+            for k, v in imgs.data.parts.items():
+                imgs.data.parts[k] = v.squeeze()
+
+        return imgs
 
     def generate_report(self):
         """Generate a report."""

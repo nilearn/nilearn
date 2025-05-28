@@ -5,11 +5,14 @@ Any imports from "matplotlib" package, or "matplotlib" engine specific utility
 functions in :obj:`~nilearn.plotting.surface` should be in this file.
 """
 
+import itertools
 from warnings import warn
 
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils import compare_version
+from nilearn._utils.logger import find_stack_level
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
@@ -18,18 +21,23 @@ from nilearn.plotting._utils import (
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.surface._backend import (
     BaseSurfaceBackend,
-    check_hemispheres,
     check_surf_map,
-    check_views,
+)
+from nilearn.plotting.surface._utils import (
+    DEFAULT_HEMI,
+    get_faces_on_edge,
 )
 from nilearn.surface import load_surf_data
 
 try:
-    import matplotlib as mpl
     import matplotlib.pyplot as plt
+    from matplotlib import __version__ as mpl_version
     from matplotlib.cm import ScalarMappable
     from matplotlib.colorbar import make_axes
-    from matplotlib.colors import LinearSegmentedColormap, Normalize
+    from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
+    from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
+    from matplotlib.patches import Patch
+    from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 except ImportError:
     from nilearn.plotting._utils import engine_warning
 
@@ -143,7 +151,7 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
     # scale background map if need be
     bg_vmin, bg_vmax = np.min(bg_faces), np.max(bg_faces)
     if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
+        bg_norm = Normalize(vmin=bg_vmin, vmax=bg_vmax)
         bg_faces = bg_norm(bg_faces)
 
     if darkness is not None:
@@ -154,6 +162,7 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
                 "We recommend setting `darkness` to None"
             ),
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
 
     face_colors = plt.cm.gray_r(bg_faces)
@@ -248,7 +257,8 @@ def _get_cmap(cmap, vmin, vmax, cbar_tick_format, threshold=None):
         if cbar_tick_format == "%i" and int(threshold) != threshold:
             warn(
                 "You provided a non integer threshold "
-                "but configured the colorbar to use integer formatting."
+                "but configured the colorbar to use integer formatting.",
+                stacklevel=find_stack_level(),
             )
         # set colors to gray for absolute values < threshold
         istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
@@ -274,25 +284,6 @@ def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
         return np.arange(vmin, vmax + 1)
     else:
         return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
-
-
-def _get_view_plot_surf(hemi, view):
-    """Help function for plot_surf with matplotlib engine.
-
-    This function checks the selected hemisphere and view, and
-    returns elev and azim.
-    """
-    check_views([view])
-    check_hemispheres([hemi])
-    if isinstance(view, str):
-        if hemi == "both" and view in ["lateral", "medial"]:
-            raise ValueError(
-                "Invalid view definition: when hemi is 'both', "
-                "view cannot be 'lateral' or 'medial'.\n"
-                "Maybe you meant 'left' or 'right'?"
-            )
-        return MATPLOTLIB_VIEWS[hemi][view]
-    return view
 
 
 def _rescale(data, vmin=None, vmax=None):
@@ -333,13 +324,39 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
     def name(self):
         return "matplotlib"
 
+    def _check_figure_axes_inputs(self, figure, axes):
+        """Check if the specified figure and axes are matplotlib objects."""
+        if figure is not None and not isinstance(figure, plt.Figure):
+            raise ValueError(
+                "figure argument should be None or a "
+                "'matplotlib.pyplot.Figure'."
+            )
+        if axes is not None and not isinstance(axes, plt.Axes):
+            raise ValueError(
+                "axes argument should be None or a 'matplotlib.pyplot.Axes'."
+            )
+
+    def _get_view_plot_surf(self, hemi, view):
+        """Check ``hemi`` and ``view``, and return `elev` and `azim` for
+        matplotlib engine.
+        """
+        view = self._sanitize_hemi_view(hemi, view)
+        if isinstance(view, str):
+            if hemi == "both" and view in ["lateral", "medial"]:
+                raise ValueError(
+                    "Invalid view definition: when hemi is 'both', "
+                    "view cannot be 'lateral' or 'medial'.\n"
+                    "Maybe you meant 'left' or 'right'?"
+                )
+            return MATPLOTLIB_VIEWS[hemi][view]
+        return view
+
     def _plot_surf(
         self,
-        coords,
-        faces,
+        surf_mesh,
         surf_map=None,
         bg_map=None,
-        hemi="left",
+        hemi=DEFAULT_HEMI,
         view=None,
         cmap=None,
         symmetric_cmap=None,
@@ -376,10 +393,12 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
         # Leave space for colorbar
         figsize = [4.7, 5] if colorbar else [4, 5]
 
+        coords, faces = self.load_surf_mesh(surf_mesh)
+
         limits = [coords.min(), coords.max()]
 
         # Get elevation and azimut from view
-        elev, azim = _get_view_plot_surf(hemi, view)
+        elev, azim = self._get_view_plot_surf(hemi, view)
 
         # if no cmap is given, set to matplotlib default
         if cmap is None:
@@ -494,3 +513,235 @@ class MatplotlibSurfaceBackend(BaseSurfaceBackend):
             axes.set_title(title)
 
         return save_figure_if_needed(figure, output_file)
+
+    def _plot_surf_contours(
+        self,
+        surf_mesh=None,
+        roi_map=None,
+        hemi=DEFAULT_HEMI,
+        levels=None,
+        labels=None,
+        colors=None,
+        legend=False,
+        cmap="tab20",
+        title=None,
+        output_file=None,
+        axes=None,
+        figure=None,
+        **kwargs,
+    ):
+        self._check_figure_axes_inputs(figure, axes)
+
+        if figure is None and axes is None:
+            figure = self._plot_surf(surf_mesh, hemi=hemi, **kwargs)
+            axes = figure.axes[0]
+        elif figure is None:
+            figure = axes.get_figure()
+        elif axes is None:
+            axes = figure.axes[0]
+
+        if axes.name != "3d":
+            raise ValueError("Axes must be 3D.")
+
+        # test if axes contains Poly3DCollection, if not initialize surface
+        if not axes.collections or not isinstance(
+            axes.collections[0], Poly3DCollection
+        ):
+            _ = self._plot_surf(surf_mesh, hemi=hemi, axes=axes, **kwargs)
+
+        if levels is None:
+            levels = np.unique(roi_map)
+
+        if labels is None:
+            labels = [None] * len(levels)
+
+        if colors is None:
+            n_levels = len(levels)
+            vmax = n_levels
+            cmap = plt.get_cmap(cmap)
+            norm = Normalize(vmin=0, vmax=vmax)
+            colors = [cmap(norm(color_i)) for color_i in range(vmax)]
+        else:
+            try:
+                colors = [to_rgba(color, alpha=1.0) for color in colors]
+            except ValueError:
+                raise ValueError(
+                    "All elements of colors need to be either a"
+                    " matplotlib color string or RGBA values."
+                )
+
+        if not (len(levels) == len(labels) == len(colors)):
+            raise ValueError(
+                "Levels, labels, and colors "
+                "argument need to be either the same length or None."
+            )
+
+        _, faces = self.load_surf_mesh(surf_mesh)
+        roi = self.load_surf_data(roi_map)
+
+        patch_list = []
+        for level, color, label in zip(levels, colors, labels):
+            roi_indices = np.where(roi == level)[0]
+            faces_outside = get_faces_on_edge(faces, roi_indices)
+            # Fix: Matplotlib version 3.3.2 to 3.3.3
+            # Attribute _facecolors3d changed to _facecolor3d in
+            # matplotlib version 3.3.3
+            if compare_version(mpl_version, "<", "3.3.3"):
+                axes.collections[0]._facecolors3d[faces_outside] = color
+                if axes.collections[0]._edgecolors3d.size == 0:
+                    axes.collections[0].set_edgecolor(
+                        axes.collections[0]._facecolors3d
+                    )
+                axes.collections[0]._edgecolors3d[faces_outside] = color
+            else:
+                axes.collections[0]._facecolor3d[faces_outside] = color
+                if axes.collections[0]._edgecolor3d.size == 0:
+                    axes.collections[0].set_edgecolor(
+                        axes.collections[0]._facecolor3d
+                    )
+                axes.collections[0]._edgecolor3d[faces_outside] = color
+            if label and legend:
+                patch_list.append(Patch(color=color, label=label))
+        # plot legend only if indicated and labels provided
+        if legend and np.any([lbl is not None for lbl in labels]):
+            figure.legend(handles=patch_list)
+            # if legends, then move title to the left
+        if title is None and hasattr(figure._suptitle, "_text"):
+            title = figure._suptitle._text
+        if title:
+            axes.set_title(title)
+
+        return save_figure_if_needed(figure, output_file)
+
+    def _plot_img_on_surf(
+        self,
+        surf,
+        surf_mesh,
+        stat_map,
+        texture,
+        hemis,
+        modes,
+        bg_on_data=False,
+        inflate=False,
+        output_file=None,
+        title=None,
+        colorbar=True,
+        vmin=None,
+        vmax=None,
+        threshold=None,
+        symmetric_cbar=None,
+        cmap=DEFAULT_DIVERGING_CMAP,
+        cbar_tick_format=None,
+        **kwargs,
+    ):
+        if symmetric_cbar is None:
+            symmetric_cbar = "auto"
+        if cbar_tick_format is None:
+            cbar_tick_format = "%i"
+
+        cbar_h = 0.25
+        title_h = 0.25 * (title is not None)
+        w, h = plt.figaspect((len(modes) + cbar_h + title_h) / len(hemis))
+        fig = plt.figure(figsize=(w, h), constrained_layout=False)
+        height_ratios = [title_h] + [1.0] * len(modes) + [cbar_h]
+        grid = GridSpec(
+            len(modes) + 2,
+            len(hemis),
+            left=0.0,
+            right=1.0,
+            bottom=0.0,
+            top=1.0,
+            height_ratios=height_ratios,
+            hspace=0.0,
+            wspace=0.0,
+        )
+        axes = []
+
+        for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
+            bg_map = None
+            # By default, add curv sign background map if mesh is inflated,
+            # sulc depth background map otherwise
+            if inflate:
+                curv_map = self.load_surf_data(surf_mesh[f"curv_{hemi}"])
+                curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
+                bg_map = curv_sign_map
+            else:
+                sulc_map = surf_mesh[f"sulc_{hemi}"]
+                bg_map = sulc_map
+
+            ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
+            axes.append(ax)
+
+            self.plot_surf_stat_map(
+                surf[hemi],
+                texture[hemi],
+                view=mode,
+                hemi=hemi,
+                bg_map=bg_map,
+                bg_on_data=bg_on_data,
+                axes=ax,
+                colorbar=False,  # Colorbar created externally.
+                vmin=vmin,
+                vmax=vmax,
+                threshold=threshold,
+                cmap=cmap,
+                symmetric_cbar=symmetric_cbar,
+                **kwargs,
+            )
+
+            # We increase this value to better position the camera of the
+            # 3D projection plot. The default value makes meshes look too
+            # small.
+            ax.set_box_aspect(None, zoom=1.3)
+
+        if colorbar:
+            sm = _colorbar_from_array(
+                self.get_image_data(stat_map),
+                vmin,
+                vmax,
+                threshold,
+                symmetric_cbar=symmetric_cbar,
+                cmap=plt.get_cmap(cmap),
+            )
+
+            cbar_grid = GridSpecFromSubplotSpec(3, 3, grid[-1, :])
+            cbar_ax = fig.add_subplot(cbar_grid[1])
+            axes.append(cbar_ax)
+            # Get custom ticks to set in colorbar
+            ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold)
+            fig.colorbar(
+                sm,
+                cax=cbar_ax,
+                orientation="horizontal",
+                ticks=ticks,
+                format=cbar_tick_format,
+            )
+
+        if title is not None:
+            fig.suptitle(
+                title, y=1.0 - title_h / sum(height_ratios), va="bottom"
+            )
+
+        if output_file is None:
+            return fig, axes
+        fig.savefig(output_file, bbox_inches="tight")
+        plt.close(fig)
+
+    def _adjust_colorbar_and_data_ranges(
+        self, stat_map, vmin=None, vmax=None, symmetric_cbar=None
+    ):
+        return get_colorbar_and_data_ranges(
+            stat_map,
+            vmin=vmin,
+            vmax=vmax,
+            symmetric_cbar=symmetric_cbar,
+        )
+
+    def _adjust_plot_roi_params(self, params):
+        avg_method = params.get("avg_method", None)
+        if avg_method is None:
+            params["avg_method"] = "median"
+
+        cbar_tick_format = params.get("cbar_tick_format", "auto")
+        if cbar_tick_format == "auto":
+            params["cbar_tick_format"] = "%i"

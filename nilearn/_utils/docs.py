@@ -73,7 +73,7 @@ of :obj:`float`: (xmin, ymin, width, height), default=None
     If `None`, the complete figure is used.
 """
 
-# bg_img
+# bg_map
 docdict["bg_map"] = """
 bg_map : :obj:`str` or :obj:`pathlib.Path` or \
          :class:`numpy.ndarray` \
@@ -973,6 +973,19 @@ docdict["second_level_mask"] = docdict["second_level_mask_img"].replace(
     "mask_img :", "mask :"
 )
 
+# signals for inverse transform
+docdict["signals_inv_transform"] = """
+signals : 1D/2D :obj:`numpy.ndarray`
+    Extracted signal.
+    If a 1D array is provided,
+    then the shape should be (number of elements,).
+    If a 2D array is provided,
+    then the shape should be (number of scans, number of elements).
+"""
+docdict["region_signals_inv_transform"] = docdict["signals_inv_transform"]
+docdict["x_inv_transform"] = docdict["signals_inv_transform"]
+
+
 # smoothing_fwhm
 docdict["smoothing_fwhm"] = """
 smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
@@ -1026,6 +1039,21 @@ strategy : :obj:`str`, default="mean"
     The name of a valid function to reduce the region with.
     Must be one of: sum, mean, median, minimum, maximum, variance,
     standard_deviation.
+"""
+
+# surf_mesh
+docdict["surf_mesh"] = """
+surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray` \
+            or a :obj:`~nilearn.surface.InMemoryMesh`, or a \
+            :obj:`~nilearn.surface.PolyMesh`, or None, default=None
+    Surface :term:`mesh` geometry, can be a file (valid formats are .gii or
+    Freesurfer specific files such as .orig, .pial, .sphere, .white,
+    .inflated) or a list of two Numpy arrays, the first containing the
+    x-y-z coordinates of the :term:`mesh` :term:`vertices<vertex>`, the
+    second containing the indices (into coords) of the :term:`mesh`
+    :term:`faces`, or a :obj:`~nilearn.surface.InMemoryMesh` object with
+    "coordinates" and "faces" attributes, or a
+    :obj:`~nilearn.surface.PolyMesh` object, or None.
 """
 
 # symmetric_cbar
@@ -1214,10 +1242,17 @@ vmin : :obj:`float`  or obj:`int` or None, optional
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
 
+# y
+docdict["y_dummy"] = """
+y : None
+    This parameter is unused.
+    It is solely included for scikit-learn compatibility.
+"""
+
 
 ##############################################################################
 #
-# Other values definitions
+# Other values definitions: return values, attributes...
 #
 
 # atlas_type
@@ -1336,6 +1371,29 @@ docdict["fsaverage_options"] = """
 
 """
 
+# image returned Nifti maskers by inverse_transform
+docdict["img_inv_transform_nifti"] = """img : :obj:`nibabel.nifti1.Nifti1Image`
+        Transformed image in brain space.
+        Output shape for :
+
+        - 1D array : 3D :obj:`nibabel.nifti1.Nifti1Image` will be returned.
+        - 2D array : 4D :obj:`nibabel.nifti1.Nifti1Image` will be returned.
+
+        See :ref:`extracting_data`.
+        """
+# image returned surface maskers by inverse_transform
+docdict[
+    "img_inv_transform_surface"
+] = """img : :obj:`~nilearn.surface.SurfaceImage`
+        Signal for each vertex projected on the mesh.
+        Output shape for :
+
+        - 1D array : 1D :obj:`~nilearn.surface.SurfaceImage` will be returned.
+        - 2D array : 2D :obj:`~nilearn.surface.SurfaceImage` will be returned.
+
+        See :ref:`extracting_data`.
+        """
+
 # atlas labels
 docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
         List of the names of the regions."""
@@ -1357,6 +1415,47 @@ docdict["lut"] = """lut : :obj:`pandas.DataFrame`
         with at least columns 'index' and 'name'.
         Formatted according to 'dseg.tsv' format from
         `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+
+# signals returned Nifti maskers by transform, fit_transform...
+docdict["signals_transform_nifti"] = """signals : :obj:`numpy.ndarray`
+        Signal for each :term:`voxel`.
+        Output shape for :
+
+        - 3D images: (number of elements,) array
+        - 4D images: (number of scans, number of elements) array
+        """
+# signals returned Mulit Nifti maskers by transform, fit_transform...
+docdict[
+    "signals_transform_multi_nifti"
+] = """signals : :obj:`list` of :obj:`numpy.ndarray` or :obj:`numpy.ndarray`
+        Signal for each :term:`voxel`.
+        Output shape for :
+
+        - 3D images: (number of elements,) array
+        - 4D images: (number of scans, number of elements) array
+        - list of 3D images: list of (number of elements,) array
+        - list of 4D images: list of (number of scans, number of elements)
+          array
+        """
+# signals returned Mulit Nifti maskers by transform, fit_transform...
+docdict[
+    "signals_transform_imgs_multi_nifti"
+] = """signals : :obj:`list` of :obj:`numpy.ndarray`
+        Signal for each :term:`voxel`.
+        Output shape for :
+
+        - list of 3D images: list of (number of elements,) array
+        - list of 4D images: list of (number of scans, number of elements)
+          array
+        """
+# signals returned surface maskers by transform, fit_transform...
+docdict["signals_transform_surface"] = """signals : :obj:`numpy.ndarray`
+        Signal for each element.
+        Output shape for :
+
+        - 1D images: (number of elements,) array
+        - 2D images: (number of scans, number of elements) array
+        """
 
 # template
 docdict["template"] = """'template' : :obj:`str`
