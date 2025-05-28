@@ -4,10 +4,10 @@ import numpy as np
 import pytest
 
 from nilearn.plotting.surface._plotly_backend import (
-    PlotlySurfaceBackend,
     _configure_title,
     _get_camera_view_from_elevation_and_azimut,
     _get_camera_view_from_string_view,
+    _get_view_plot_surf,
 )
 
 pytest.importorskip(
@@ -149,11 +149,6 @@ EXPECTED_CAMERAS_PLOTLY = [
 ]
 
 
-@pytest.fixture
-def plotly_backend():
-    return PlotlySurfaceBackend()
-
-
 def test_configure_title():
     """Test nilearn.plotting.surface._plotly_backend._configure_title."""
     assert _configure_title(None, None) == {}
@@ -206,16 +201,14 @@ def test_get_camera_view_from_elev_azim(full_view):
 
 
 @pytest.mark.parametrize("full_view", EXPECTED_CAMERAS_PLOTLY)
-def test_get_view_plot_surf(plotly_backend, full_view):
+def test_get_view_plot_surf(full_view):
     """Test if
     nilearn.plotting.surface._plotly_backend.PlotlySurfaceBackend._get_view_plot_surf
     returns expected values.
     """
     hemi, view_name, (elev, azim), expected_camera_view = full_view
-    camera_view = plotly_backend._get_view_plot_surf(hemi, view_name)
-    camera_view_elev_azim = plotly_backend._get_view_plot_surf(
-        hemi, (elev, azim)
-    )
+    camera_view = _get_view_plot_surf(hemi, view_name)
+    camera_view_elev_azim = _get_view_plot_surf(hemi, (elev, azim))
     # Check each camera view parameter
     for k in ["center", "eye", "up"]:
         # Check default camera view
@@ -231,13 +224,13 @@ def test_get_view_plot_surf(plotly_backend, full_view):
 
 
 @pytest.mark.parametrize("hemi,view", [("foo", "medial"), ("bar", "anterior")])
-def test_get_view_plot_surf_hemisphere_errors(plotly_backend, hemi, view):
+def test_get_view_plot_surf_hemisphere_errors(hemi, view):
     """Test
     nilearn.plotting.surface._plotly_backend.PlotlySurfaceBackend._get_view_plot_surf
     for invalid hemisphere values.
     """
     with pytest.raises(ValueError, match="Invalid hemispheres definition"):
-        plotly_backend._get_view_plot_surf(hemi, view)
+        _get_view_plot_surf(hemi, view)
 
 
 @pytest.mark.parametrize(
@@ -250,28 +243,10 @@ def test_get_view_plot_surf_hemisphere_errors(plotly_backend, hemi, view):
         ("both", "foo"),
     ],
 )
-def test_get_view_plot_surf_view_errors(plotly_backend, hemi, view):
+def test_get_view_plot_surf_view_errors(hemi, view):
     """Test
     nilearn.plotting.surface._plotly_backend.PlotlySurfaceBackend._get_view_plot_surf
     for invalid view values.
     """
     with pytest.raises(ValueError, match="Invalid view definition"):
-        plotly_backend._get_view_plot_surf(hemi, view)
-
-
-def test_plot_surf_contours(plotly_backend, in_memory_mesh):
-    """Test if
-    nilearn.plotting.surface._plot_surf_plotly.PlotlySurfaceBackend.plot_surf_contours
-    raise NotImplementedError.
-    """
-    with pytest.raises(NotImplementedError):
-        plotly_backend.plot_surf_contours(in_memory_mesh, np.ones((10,)))
-
-
-def test_plot_img_on_surf(plotly_backend, img_3d_mni):
-    """Test if
-    nilearn.plotting.surface._plot_surf_plotly.PlotlySurfaceBackend.plot_surf_contours
-    raise NotImplementedError.
-    """
-    with pytest.raises(NotImplementedError):
-        plotly_backend.plot_img_on_surf(img_3d_mni)
+        _get_view_plot_surf(hemi, view)
