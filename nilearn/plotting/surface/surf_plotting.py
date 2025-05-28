@@ -669,9 +669,9 @@ def plot_img_on_surf(
     vmin=None,
     vmax=None,
     threshold=None,
-    symmetric_cbar=None,
+    symmetric_cbar="auto",
     cmap=DEFAULT_DIVERGING_CMAP,
-    cbar_tick_format=None,
+    cbar_tick_format="%i",
     **kwargs,
 ):
     """Plot multiple views of plot_surf_stat_map \
