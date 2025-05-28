@@ -24,6 +24,7 @@ from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
     check_engine_params,
     check_surf_map,
+    check_surface_plotting_inputs,
     get_faces_on_edge,
     sanitize_hemi_view,
 )
@@ -652,8 +653,6 @@ def _plot_img_on_surf(
     )
     axes = []
 
-    from nilearn.plotting.surface.surf_plotting import plot_surf_stat_map
-
     for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
         bg_map = None
         # By default, add curv sign background map if mesh is inflated,
@@ -669,19 +668,42 @@ def _plot_img_on_surf(
         ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
         axes.append(ax)
 
-        plot_surf_stat_map(
-            surf_mesh=surf[hemi],
-            stat_map=texture[hemi],
+        # Starting from this line until _plot_surf included is actually
+        # plot_surf_stat_map, but to avoid cyclic import
+        # the code is duplicated here
+        stat_map_iter = texture[hemi]
+        surf_mesh_iter = surf[hemi]
+
+        stat_map_iter, surf_mesh_iter, bg_map = check_surface_plotting_inputs(
+            stat_map_iter,
+            surf_mesh_iter,
+            hemi,
+            bg_map,
+            map_var_name="img_on_surf",
+        )
+        loaded_stat_map = load_surf_data(stat_map_iter)
+
+        # derive symmetric vmin, vmax and colorbar limits depending on
+        # symmetric_cbar settings
+        cbar_vmin, cbar_vmax, vmin, vmax = _adjust_colorbar_and_data_ranges(
+            loaded_stat_map,
+            vmin=vmin,
+            vmax=vmax,
+            symmetric_cbar=symmetric_cbar,
+        )
+        _plot_surf(
+            surf_mesh=surf_mesh_iter,
+            surf_map=loaded_stat_map,
             bg_map=bg_map,
             hemi=hemi,
             view=mode,
             cmap=cmap,
+            symmetric_cmap=True,
             colorbar=False,  # Colorbar created externally.
             threshold=threshold,
             bg_on_data=bg_on_data,
             vmin=vmin,
             vmax=vmax,
-            symmetric_cbar=symmetric_cbar,
             axes=ax,
             **kwargs,
         )
