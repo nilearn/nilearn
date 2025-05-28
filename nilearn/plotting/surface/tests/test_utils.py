@@ -7,11 +7,43 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from nilearn.plotting.surface._utils import (
+    _check_hemisphere_is_valid,
+    _check_view_is_valid,
     check_surface_plotting_inputs,
     get_faces_on_edge,
 )
 from nilearn.surface import InMemoryMesh, load_surf_mesh
 from nilearn.surface.utils import assert_surface_mesh_equal
+
+
+@pytest.mark.parametrize(
+    "view,is_valid",
+    [
+        ("lateral", True),
+        ("medial", True),
+        ("latreal", False),
+        ((100, 100), True),
+        ([100.0, 100.0], True),
+        ((100, 100, 1), False),
+        (("lateral", "medial"), False),
+        ([100, "bar"], False),
+    ],
+)
+def test_check_view_is_valid(view, is_valid):
+    assert _check_view_is_valid(view) is is_valid
+
+
+@pytest.mark.parametrize(
+    "hemi,is_valid",
+    [
+        ("left", True),
+        ("right", True),
+        ("both", True),
+        ("lft", False),
+    ],
+)
+def test_check_hemisphere_is_valid(hemi, is_valid):
+    assert _check_hemisphere_is_valid(hemi) is is_valid
 
 
 @pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
