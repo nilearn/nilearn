@@ -136,6 +136,9 @@ exclude = [
     'nilearn_cache/.*',
     'nilearn/_version.py'
 ]
+plugins = [
+    'numpy.typing.mypy_plugin'
+]
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
