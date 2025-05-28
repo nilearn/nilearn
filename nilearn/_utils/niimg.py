@@ -131,15 +131,15 @@ def load_niimg(
             " not compatible with nibabel format:\n"
             + repr_niimgs(tmp, shorten=True)
         )
-        
+
     assert isinstance(loaded_niimg, spatialimages.SpatialImage)
-    
+
     img_data = _get_data(loaded_niimg)
-    target_dtype = _get_target_dtype(img_data.dtype, dtype)    
+    target_dtype = _get_target_dtype(img_data.dtype, dtype)
 
     if target_dtype is not None:
         copy_header = loaded_niimg.header is not None
-        niimg = new_img_like(
+        new_niimg = new_img_like(
             loaded_niimg,
             img_data.astype(target_dtype),
             loaded_niimg.affine,

@@ -11,9 +11,8 @@ from typing import Literal, Optional, Union, overload
 import numpy as np
 from joblib import Memory
 from nibabel.spatialimages import SpatialImage
-from numpy.typing import DTypeLike
 from numpy.testing import assert_array_equal
-
+from numpy.typing import DTypeLike
 
 import nilearn as ni
 from nilearn._utils.logger import find_stack_level
