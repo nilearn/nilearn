@@ -682,7 +682,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags()
+        tags.input_tags = InputTags(niimg_like=False)
         return tags
 
     @fill_doc

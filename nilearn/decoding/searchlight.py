@@ -13,6 +13,7 @@ from sklearn import svm
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
+from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import check_niimg_3d, check_niimg_4d, fill_doc, logger
@@ -350,11 +351,36 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
             return tags()
 
+        from sklearn.utils import ClassifierTags, RegressorTags
+
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags()
+        tags.input_tags = InputTags(surf_img=True)
+
+        if self.estimator == "svr":
+            if SKLEARN_LT_1_6:
+                tags["multioutput"] = True
+                return tags
+            tags.estimator_type = "regressor"
+            tags.regressor_tags = RegressorTags()
+
+        elif self.estimator == "svc":
+            if SKLEARN_LT_1_6:
+                return tags
+            tags.estimator_type = "classifier"
+            tags.classifier_tags = ClassifierTags()
+
         return tags
+
+    @property
+    def _estimator_type(self):
+        # TODO rm sklearn>=1.6
+        if self.estimator == "svr":
+            return "regressor"
+        elif self.estimator == "svc":
+            return "classifier"
+        return ""
 
     def fit(self, imgs, y, groups=None):
         """Fit the searchlight.
@@ -377,6 +403,8 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
         # check if image is 4D
         imgs = check_niimg_4d(imgs)
+
+        check_array(y, ensure_2d=False)
 
         # Get the seeds
         if self.mask_img is not None:
