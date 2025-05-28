@@ -345,7 +345,7 @@ def _plot_surf(
     return plotly_figure
 
 
-def _adjust_colorbar_and_data_ranges(
+def adjust_colorbar_and_data_ranges(
     stat_map, vmin=None, vmax=None, symmetric_cbar=None
 ):
     _, _, vmin, vmax = get_colorbar_and_data_ranges(
@@ -358,7 +358,7 @@ def _adjust_colorbar_and_data_ranges(
     return None, None, vmin, vmax
 
 
-def _adjust_plot_roi_params(params):
+def adjust_plot_roi_params(params):
     cbar_tick_format = params.get("cbar_tick_format", "auto")
     if cbar_tick_format == "auto":
         params["cbar_tick_format"] = "."

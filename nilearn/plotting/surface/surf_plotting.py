@@ -616,13 +616,11 @@ def plot_surf_stat_map(
     backend = _get_surface_backend(engine)
     # derive symmetric vmin, vmax and colorbar limits depending on
     # symmetric_cbar settings
-    cbar_vmin, cbar_vmax, vmin, vmax = (
-        backend._adjust_colorbar_and_data_ranges(
-            loaded_stat_map,
-            vmin=vmin,
-            vmax=vmax,
-            symmetric_cbar=symmetric_cbar,
-        )
+    cbar_vmin, cbar_vmax, vmin, vmax = backend.adjust_colorbar_and_data_ranges(
+        loaded_stat_map,
+        vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar,
     )
 
     fig = backend._plot_surf(
@@ -799,7 +797,7 @@ def plot_img_on_surf(
 
     backend = _get_surface_backend(DEFAULT_ENGINE)
     # get vmin and vmax for entire data (all hemis)
-    _, _, vmin, vmax = backend._adjust_colorbar_and_data_ranges(
+    _, _, vmin, vmax = backend.adjust_colorbar_and_data_ranges(
         get_data(stat_map),
         vmin=vmin,
         vmax=vmax,
@@ -1056,7 +1054,7 @@ def plot_surf_roi(
     }
 
     backend = _get_surface_backend(engine)
-    backend._adjust_plot_roi_params(params)
+    backend.adjust_plot_roi_params(params)
 
     fig = backend._plot_surf(
         mesh,

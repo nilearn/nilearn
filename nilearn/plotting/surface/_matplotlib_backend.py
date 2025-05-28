@@ -685,7 +685,7 @@ def _plot_img_on_surf(
 
         # derive symmetric vmin, vmax and colorbar limits depending on
         # symmetric_cbar settings
-        cbar_vmin, cbar_vmax, vmin, vmax = _adjust_colorbar_and_data_ranges(
+        cbar_vmin, cbar_vmax, vmin, vmax = adjust_colorbar_and_data_ranges(
             loaded_stat_map,
             vmin=vmin,
             vmax=vmax,
@@ -745,7 +745,7 @@ def _plot_img_on_surf(
     plt.close(fig)
 
 
-def _adjust_colorbar_and_data_ranges(
+def adjust_colorbar_and_data_ranges(
     stat_map, vmin=None, vmax=None, symmetric_cbar=None
 ):
     return get_colorbar_and_data_ranges(
@@ -756,7 +756,7 @@ def _adjust_colorbar_and_data_ranges(
     )
 
 
-def _adjust_plot_roi_params(params):
+def adjust_plot_roi_params(params):
     avg_method = params.get("avg_method", None)
     if avg_method is None:
         params["avg_method"] = "median"
