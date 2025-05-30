@@ -3,6 +3,7 @@
 import warnings
 
 import pandas as pd
+import re
 
 from nilearn._utils.logger import find_stack_level
 from nilearn.interfaces.fmriprep import load_confounds_components as components
@@ -24,6 +25,7 @@ all_confounds = [
     "global_signal",
     "compcor",
     "ica_aroma",
+    "tedana",
     "scrub",
     "non_steady_state",
 ]
@@ -35,6 +37,7 @@ component_parameters = {
     "global_signal": ["global_signal"],
     "compcor": ["meta_json", "compcor", "n_compcor"],
     "ica_aroma": ["ica_aroma"],
+    "tedana": ["rejected"],
     "scrub": ["scrub", "fd_threshold", "std_dvars_threshold"],
 }
 
@@ -109,6 +112,7 @@ def load_confounds(
     compcor="anat_combined",
     n_compcor="all",
     ica_aroma="full",
+    tedana="rejected",
     demean=True,
 ):
     """
@@ -155,6 +159,7 @@ def load_confounds(
         - "ica_aroma" confounds derived
           from ICA-AROMA (:footcite:t:`Pruim2015`).
           Associated parameter: `ica_aroma`
+        - "tedana" confounds derived from TEDANA (:footcite:t:`Kundu2013`).
         - "scrub" regressors for :footcite:t:`Power2014` scrubbing approach.
           Associated parameter: `scrub`, `fd_threshold`, `std_dvars_threshold`
 
@@ -259,6 +264,9 @@ def load_confounds(
         - "full": use :term:`fMRIPrep` output
           `~desc-smoothAROMAnonaggr_bold.nii.gz`.
         - "basic": use noise independent components only.
+    
+    tedana : :obj:`str`, default="rejected"
+        - "rejected": use TEDANA rejected ICA components.
 
     demean : :obj:`bool`, default=True
         If True, the confounds are standardized to a zero mean (over time).
@@ -352,6 +360,7 @@ def load_confounds(
             compcor=compcor,
             n_compcor=n_compcor,
             ica_aroma=ica_aroma,
+            tedana=tedana,
         )
         confounds_out.append(conf)
         sample_mask_out.append(sample_mask)
@@ -403,19 +412,98 @@ def _load_confounds_for_single_image_file(
     flag_full_aroma = ("ica_aroma" in strategy) and (
         kwargs.get("ica_aroma") == "full"
     )
-
+    # Check for tedana
+    flag_tedana = ("tedana" in strategy) and (kwargs.get("tedana") == "rejected")
     confounds_file = get_confounds_file(
-        image_file, flag_full_aroma=flag_full_aroma
+        image_file, flag_full_aroma=flag_full_aroma, flag_tedana=flag_tedana
     )
-    confounds_json_file = get_json(confounds_file)
+    confounds_json_file = get_json(confounds_file, flag_tedana=flag_tedana)
 
-    return _load_single_confounds_file(
-        confounds_file=confounds_file,
-        strategy=strategy,
-        demean=demean,
-        confounds_json_file=confounds_json_file,
-        **kwargs,
+    if flag_tedana:
+        # If tedana is in the strategy, we need to load the tedana confounds and apply the tedana strategy.
+        # file instead of the fmriprep confounds file
+        return _load_tedana_confounds_file(
+            confounds_file=confounds_file,
+            strategy=strategy,
+            demean=demean,
+            confounds_json_file=confounds_json_file,
+            **kwargs,
+        )
+    else:
+        return _load_single_confounds_file(
+            confounds_file=confounds_file,
+            strategy=strategy,
+            demean=demean,
+            confounds_json_file=confounds_json_file,
+            **kwargs,
+        )
+
+def _load_tedana_confounds_file(
+    confounds_file, strategy, demean=True, **kwargs
+):
+    """Load and extract specified confounds from the confounds file.
+
+    Parameters
+    ----------
+    confounds_file : :obj:`str`
+        Path to confounds file.
+
+    strategy : :obj:`tuple` or :obj:`list` of :obj:`str`.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    demean : :obj:`bool`, default=True
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    confounds_json_file : :obj:`str`, default=None
+        Path to confounds json file.
+
+    kwargs : :obj:`dict`
+        Extra relevant parameters for the given `strategy`.
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    Returns
+    -------
+    confounds : :class:`pandas.DataFrame`
+        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
+
+    Raises
+    ------
+    ValueError
+        If any of the confounds specified in the strategy are not found in the
+        confounds file or confounds json file.
+    """
+    flag_tedana = ("tedana" in strategy) and (
+        kwargs.get("tedana") == "rejected"
     )
+    all_t_c = {}
+    for tedana_conf in ["mixing", "status_table"]:
+        all_t_c[tedana_conf] = load_confounds_file_as_dataframe(
+            [file for file in confounds_file if tedana_conf in file][0],
+            flag_tedana=flag_tedana
+        )
+
+    rejected = all_t_c['status_table'][
+        all_t_c['status_table'].iloc[:, -1] == "rejected"
+    ]
+
+    # normalize rejected component names: ICA_04 -> ICA_4
+    rejected_components = rejected["Component"].apply(
+        lambda x: re.sub(r"ICA_0*(\d+)$", lambda m: f"ICA_{int(m.group(1))}", x)
+    ).tolist()
+
+    # normalize column names in the mixing file
+    mixing = all_t_c['mixing']
+    mixing.columns = [
+        re.sub(r"ICA_0*(\d+)$", lambda m: f"ICA_{int(m.group(1))}", col)
+        for col in mixing.columns
+    ]
+
+    # select matched columns
+    matched_components = [c for c in rejected_components if c in mixing.columns]
+    confounds_all = mixing[sorted(matched_components)]
+
+    return prepare_output(confounds_all, demean)
+
 
 
 def _load_single_confounds_file(
