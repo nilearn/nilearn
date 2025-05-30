@@ -126,25 +126,27 @@ def _regression(confounds, tmp_path):
 @pytest.mark.parametrize("fmriprep_version", ["1.4.x", "21.x.x"])
 @pytest.mark.filterwarnings("ignore")
 @pytest.mark.parametrize(
-    "test_strategy,param",
+    "test_strategy,param,image_type",
     [
-        (("motion",), {}),
-        (("high_pass",), {}),
-        (("wm_csf",), {"wm_csf": "full"}),
-        (("global_signal",), {"global_signal": "full"}),
-        (("high_pass", "compcor"), {}),
-        (("high_pass", "compcor"), {"compcor": "anat_separated"}),
-        (("high_pass", "compcor"), {"compcor": "temporal"}),
-        (("ica_aroma",), {"ica_aroma": "basic"}),
+        (("motion",), {}, "regular"),
+        (("high_pass",), {}, "regular"),
+        (("wm_csf",), {"wm_csf": "full"}, "regular"),
+        (("global_signal",), {"global_signal": "full"}, "regular"),
+        (("high_pass", "compcor"), {}, "regular"),
+        (("high_pass", "compcor"), {"compcor": "anat_separated"}, "regular"),
+        (("high_pass", "compcor"), {"compcor": "temporal"}, "regular"),
+        (("ica_aroma",), {"ica_aroma": "basic"}, "regular"),
+        (("tedana",), {"tedana": "rejected"}, "tedana"),
     ],
 )
-def test_nilearn_regress(tmp_path, test_strategy, param, fmriprep_version):
+def test_nilearn_regress(tmp_path, test_strategy, param, image_type, fmriprep_version):
     """Try regressing out all motion types without sample mask."""
     img_nii, _ = create_tmp_filepath(
         tmp_path,
         copy_confounds=True,
         copy_json=True,
         fmriprep_version=fmriprep_version,
+        image_type=image_type,
     )
     if fmriprep_version == "21.x.x" and test_strategy == ("ica_aroma",):
         return
