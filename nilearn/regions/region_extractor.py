@@ -504,7 +504,7 @@ class RegionExtractor(NiftiMapsMasker):
         )
 
         self.maps_img = self.regions_img_
-        super().fit()
+        super().fit(imgs)
 
         return self
 

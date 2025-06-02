@@ -77,7 +77,6 @@ masker = NiftiMapsMasker(
     memory_level=1,
     verbose=2,
 )
-masker.fit()
 
 subject_time_series = []
 func_filenames = rest_dataset.func
@@ -87,7 +86,9 @@ for func_filename, confound_filename in zip(
 ):
     print(f"Processing file {func_filename}")
 
-    region_ts = masker.transform(func_filename, confounds=confound_filename)
+    region_ts = masker.fit_transform(
+        func_filename, confounds=confound_filename
+    )
     subject_time_series.append(region_ts)
 
 

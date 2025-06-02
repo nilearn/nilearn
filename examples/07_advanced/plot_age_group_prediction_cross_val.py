@@ -46,10 +46,10 @@ masker = NiftiMapsMasker(
     memory_level=1,
     standardize="zscore_sample",
     standardize_confounds=True,
-).fit()
+)
 
 masked_data = [
-    masker.transform(func, confounds)
+    masker.fit_transform(func, confounds)
     for (func, confounds) in zip(
         development_dataset.func, development_dataset.confounds
     )
