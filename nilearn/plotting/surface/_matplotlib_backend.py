@@ -72,6 +72,52 @@ MATPLOTLIB_VIEWS = {
 }
 
 
+def adjust_colorbar_and_data_ranges(
+    stat_map, vmin=None, vmax=None, symmetric_cbar=None
+):
+    """Adjust colorbar and data ranges for 'matplotlib' engine.
+
+    Parameters
+    ----------
+    stat_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
+
+    %(vmin)s
+
+    %(vmax)s
+
+    %(symmetric_cbar)s
+
+    Returns
+    -------
+        cbar_vmin, cbar_vmax, vmin, vmax
+    """
+    return get_colorbar_and_data_ranges(
+        stat_map,
+        vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar,
+    )
+
+
+def adjust_plot_roi_params(params):
+    """Adjust avg_method and cbar_tick_format values for 'matplotlib' engine.
+
+    Sets the values in params dict.
+
+    Parameters
+    ----------
+    params : dict
+        dictionary to set the adjusted parameters
+    """
+    avg_method = params.get("avg_method", None)
+    if avg_method is None:
+        params["avg_method"] = "median"
+
+    cbar_tick_format = params.get("cbar_tick_format", "auto")
+    if cbar_tick_format == "auto":
+        params["cbar_tick_format"] = "%i"
+
+
 def _colorbar_from_array(
     array,
     vmin,
@@ -373,6 +419,9 @@ def _plot_surf(
     axes=None,
     figure=None,
 ):
+    """Implement 'matplotlib' backend code for
+    `~nilearn.plotting.surface.surf_plotting.plot_surf` function.
+    """
     parameters_not_implemented_in_matplotlib = {
         "symmetric_cmap": symmetric_cmap,
         "title_font_size": title_font_size,
@@ -526,6 +575,9 @@ def _plot_surf_contours(
     figure=None,
     **kwargs,
 ):
+    """Implement 'matplotlib' backend code for
+    `~nilearn.plotting.surface.surf_plotting.plot_surf_contours` function.
+    """
     _check_figure_axes_inputs(figure, axes)
 
     if figure is None and axes is None:
@@ -630,6 +682,9 @@ def _plot_img_on_surf(
     cbar_tick_format=None,
     **kwargs,
 ):
+    """Implement 'matplotlib' backend code for
+    `~nilearn.plotting.surface.surf_plotting.plot_img_on_surf` function.
+    """
     if symmetric_cbar is None:
         symmetric_cbar = "auto"
     if cbar_tick_format is None:
@@ -743,24 +798,3 @@ def _plot_img_on_surf(
         return fig, axes
     fig.savefig(output_file, bbox_inches="tight")
     plt.close(fig)
-
-
-def adjust_colorbar_and_data_ranges(
-    stat_map, vmin=None, vmax=None, symmetric_cbar=None
-):
-    return get_colorbar_and_data_ranges(
-        stat_map,
-        vmin=vmin,
-        vmax=vmax,
-        symmetric_cbar=symmetric_cbar,
-    )
-
-
-def adjust_plot_roi_params(params):
-    avg_method = params.get("avg_method", None)
-    if avg_method is None:
-        params["avg_method"] = "median"
-
-    cbar_tick_format = params.get("cbar_tick_format", "auto")
-    if cbar_tick_format == "auto":
-        params["cbar_tick_format"] = "%i"
