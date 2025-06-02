@@ -40,7 +40,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-dark:`Code` Add testing for tedana load_confounds support (:gh:`5409` by `Milton Camacho`_).
+- :bdg-dark:`Code` Add tedana support for load_confounds and testing for tedana load_confounds support (:gh:`5410` by `Milton Camacho`_).
 
 - :bdg-info:`Plotting` Add radiological view and left right labels to :func:`~nilearn.plotting.view_img` (:gh:`5346` by `Rohan Thomas Jepegnanam`_).
 
