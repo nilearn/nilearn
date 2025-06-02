@@ -13,6 +13,7 @@ from nilearn import signal
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 def _check_square(matrix):
@@ -444,6 +445,34 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         self.vectorize = vectorize
         self.discard_diagonal = discard_diagonal
         self.standardize = standardize
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(niimg_like=False)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(niimg_like=False)
+        return tags
 
     def _check_input(self, X, confounds=None):
         if not hasattr(X, "__iter__"):

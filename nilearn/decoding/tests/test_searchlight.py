@@ -15,7 +15,7 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.conftest import _img_3d_ones, _rng
+from nilearn.conftest import _rng
 from nilearn.decoding import searchlight
 
 ESTIMATOR_TO_CHECK = [searchlight.SearchLight()]
@@ -53,7 +53,13 @@ else:
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
-        estimators=[searchlight.SearchLight(mask_img=_img_3d_ones())]
+        estimators=[
+            searchlight.SearchLight(
+                mask_img=Nifti1Image(
+                    np.ones((5, 5, 5), dtype=bool).astype("uint8"), np.eye(4)
+                )
+            )
+        ]
     ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
