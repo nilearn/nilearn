@@ -1558,6 +1558,31 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     assert_almost_equal(get_data(data_img_), get_data(data_img_mask_))
 
 
+def test_clean_img_surface(surf_img_2d, surf_img_1d) -> None:
+    """Test clean on surface image.
+
+    - check that clean returns image of same shape, geometry
+      but different data
+    - with mask should only clean the included vertices
+    - 1D image should raise error.
+
+    """
+    imgs = surf_img_2d(50)
+
+    cleaned_img = clean_img(
+        surf_img_2d(50), detrend=True, standardize=False, low_pass=0.1, t_r=1.0
+    )
+
+    assert cleaned_img.shape == imgs.shape
+    assert_polymesh_equal(cleaned_img.mesh, imgs.mesh)
+    with pytest.raises(ValueError, match="not equal"):
+        assert_surface_image_equal(cleaned_img, imgs)
+
+    # 1D fails
+    with pytest.raises(ValueError, match="should be 2D"):
+        clean_img(surf_img_1d, detrend=True)
+
+
 @pytest.mark.parametrize("create_files", [True, False])
 def test_largest_cc_img(create_files, tmp_path):
     """Check the extraction of the largest connected component, for niftis.
