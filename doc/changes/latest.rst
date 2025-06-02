@@ -40,6 +40,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Add testing for tedana load_confounds support (:gh:`5409` by `Milton Camacho`_).
+
 - :bdg-info:`Plotting` Add radiological view and left right labels to :func:`~nilearn.plotting.view_img` (:gh:`5346` by `Rohan Thomas Jepegnanam`_).
 
 - :bdg-dark:`Code` Add surface support for :func:`~nilearn.image.new_img_like`, :func:`~nilearn.image.index_img`, :func:`~nilearn.image.mean_img`, :func:`~nilearn.image.concat_imgs`, :func:`~nilearn.image.iter_img` (:gh:`5224`, :gh:`5301` by `Rémi Gau`_).
