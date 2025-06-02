@@ -749,7 +749,6 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
             random_state=42,
         )
         X, _ = to_niimgs(X, [dim, dim, dim])
-        # y = _rng().random(y.shape)
         return estimator.fit(X, y)
 
     elif is_regressor(estimator):
