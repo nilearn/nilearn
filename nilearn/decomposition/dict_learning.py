@@ -123,11 +123,12 @@ class DictLearning(_BaseDecomposition):
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(mask_strategy)s
-        Default='epi'.
-        .. note::
 
-          These strategies are only relevant for Nifti images and the parameter
-          is ignored for SurfaceImage objects.
+        Default='epi'.
+
+        .. note::
+            These strategies are only relevant for Nifti images and the
+            parameterm is ignored for SurfaceImage objects.
 
     mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
