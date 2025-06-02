@@ -146,7 +146,7 @@ class DictLearning(_BaseDecomposition):
 
     Attributes
     ----------
-    components_ : 2D numpy array (n_components x n-voxels or n-vertices)
+    components_ : 2D numpy array (n_components x (n-voxels or n-vertices))
         Masked dictionary components extracted from the input images.
 
         .. note::
