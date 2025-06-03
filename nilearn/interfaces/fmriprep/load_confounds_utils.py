@@ -265,11 +265,10 @@ def _get_file_name(nii_file, flag_tedana=False):
             f"Found more or less than two confound files:\n\t{found_str}"
             "TEDANA should have two confound files mixing.tsv and table_status.tsv."
         )
-    else:
-        if flag_tedana:
-            return found_files
-        else:
-            return found_files[0]
+    elif flag_tedana:
+        return found_files
+
+    return found_files[0]
 
 
 def get_confounds_file(image_file, flag_full_aroma, flag_tedana):
