@@ -300,9 +300,8 @@ def get_json(confounds_raw_path, flag_tedana=False):
     if flag_tedana:
         # TEDANA does not have a json confound companion file
         return None
-    else:
-        # Load JSON file
-        return str(confounds_raw_path).replace("tsv", "json")
+    # Load JSON file
+    return str(confounds_raw_path).replace("tsv", "json")
 
 
 def load_confounds_json(confounds_json, flag_acompcor):
