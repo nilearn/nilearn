@@ -362,8 +362,17 @@ def load_confounds_file_as_dataframe(confounds_raw_path, flag_tedana=False):
     confounds_raw = pd.read_csv(
         confounds_raw_path, delimiter="\t", encoding="utf-8"
     )
-
-    if not flag_tedana:
+    if flag_tedana:
+        # TEDANA outputs are not camel case, but they have a different
+        # header format.
+        if any(col.startswith("ICA_") for col in confounds_raw.columns) or "Component" in confounds_raw.columns:
+            return confounds_raw
+        else:
+            raise ValueError(
+                "The confound file does not contain the expected columns for "
+                "TEDANA output. Expected 'ICA_xx' for mixing.tsv and 'Component' for the status_table.tsv columns."
+            )
+    else:
         # check if the version of fMRIprep (>=1.2.0) is supported based on
         # header format. 1.0.x and 1.1.x series uses camel case
         if any(is_camel_case(col_name) for col_name in confounds_raw.columns):
@@ -391,17 +400,6 @@ def load_confounds_file_as_dataframe(confounds_raw_path, flag_tedana=False):
             )
         
         return confounds_raw
-    else:
-        # TEDANA outputs are not camel case, but they have a different
-        # header format.
-        if any(col.startswith("ICA_") for col in confounds_raw.columns) or "Component" in confounds_raw.columns:
-            return confounds_raw
-        else:
-            raise ValueError(
-                "The confound file does not contain the expected columns for "
-                "TEDANA output. Expected 'ICA_xx' for mixing.tsv and 'Component' for the status_table.tsv columns."
-            )
-
 
 def _ext_validator(image_file, ext):
     """Check image is valid based on extension.
