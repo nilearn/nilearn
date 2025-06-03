@@ -632,7 +632,7 @@ def plot_surf_stat_map(
         avg_method=avg_method,
         threshold=threshold,
         cmap=cmap,
-        symmetric_cmap=True,
+        symmetric_cmap=None,
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
         alpha=alpha,
