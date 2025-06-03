@@ -113,55 +113,7 @@ def create_tmp_filepath(
     # create test files in temporary directory
     derivative = "regressors" if fmriprep_version == "1.2.x" else "timeseries"
 
-    if "tedana" not in image_type:
-        # confound files
-        bids_fields["entities"]["desc"] = "confounds"
-        bids_fields["suffix"] = derivative
-        bids_fields["extension"] = "tsv"
-        confounds_filename = create_bids_filename(
-            fields=bids_fields, entities_to_include=entities_to_include
-        )
-        tmp_conf = base_path / confounds_filename
-
-        if copy_confounds:
-            conf, meta = get_legal_confound(fmriprep_version=fmriprep_version)
-            conf.to_csv(tmp_conf, sep="\t", index=False)
-        else:
-            tmp_conf.touch()
-
-        if copy_json:
-            bids_fields["extension"] = "json"
-            confounds_sidecar = create_bids_filename(
-                fields=bids_fields, entities_to_include=entities_to_include
-            )
-            tmp_meta = base_path / confounds_sidecar
-            conf, meta = get_legal_confound(fmriprep_version=fmriprep_version)
-            with tmp_meta.open("w") as file:
-                json.dump(meta, file, indent=2)
-
-        # image data
-        # convert path object to string as nibabel do strings
-        img_file_patterns_type = img_file_patterns[image_type]
-        if type(img_file_patterns_type) is dict:
-            bids_fields = update_bids_fields(bids_fields, img_file_patterns_type)
-            tmp_img = create_bids_filename(
-                fields=bids_fields, entities_to_include=entities_to_include
-            )
-            tmp_img = base_path / tmp_img
-            tmp_img.touch()
-            tmp_img = str(tmp_img)
-        else:
-            tmp_img = []
-            for root in img_file_patterns_type:
-                bids_fields = update_bids_fields(bids_fields, root)
-                tmp_gii = create_bids_filename(
-                    fields=bids_fields, entities_to_include=entities_to_include
-                )
-                tmp_gii = base_path / tmp_gii
-                tmp_gii.touch()
-                tmp_img.append(str(tmp_gii))
-        return tmp_img, tmp_conf
-    else:
+    if "tedana" in image_type:
         # confound files
         for suf in ["mixing","status_table"]:
 
@@ -196,7 +148,7 @@ def create_tmp_filepath(
                 conf, meta = get_legal_confound(fmriprep_version=fmriprep_version)
                 with tmp_meta.open("w") as file:
                     json.dump(meta, file, indent=2)
-
+            
         # image data
         # convert path object to string as nibabel do strings
         img_file_patterns_type = img_file_patterns[image_type]
@@ -219,6 +171,54 @@ def create_tmp_filepath(
                 tmp_gii.touch()
                 tmp_img.append(str(tmp_gii))
         return tmp_img, tmp_conf
+    
+    # confound files
+    bids_fields["entities"]["desc"] = "confounds"
+    bids_fields["suffix"] = derivative
+    bids_fields["extension"] = "tsv"
+    confounds_filename = create_bids_filename(
+        fields=bids_fields, entities_to_include=entities_to_include
+    )
+    tmp_conf = base_path / confounds_filename
+
+    if copy_confounds:
+        conf, meta = get_legal_confound(fmriprep_version=fmriprep_version)
+        conf.to_csv(tmp_conf, sep="\t", index=False)
+    else:
+        tmp_conf.touch()
+
+    if copy_json:
+        bids_fields["extension"] = "json"
+        confounds_sidecar = create_bids_filename(
+            fields=bids_fields, entities_to_include=entities_to_include
+        )
+        tmp_meta = base_path / confounds_sidecar
+        conf, meta = get_legal_confound(fmriprep_version=fmriprep_version)
+        with tmp_meta.open("w") as file:
+            json.dump(meta, file, indent=2)
+
+    # image data
+    # convert path object to string as nibabel do strings
+    img_file_patterns_type = img_file_patterns[image_type]
+    if type(img_file_patterns_type) is dict:
+        bids_fields = update_bids_fields(bids_fields, img_file_patterns_type)
+        tmp_img = create_bids_filename(
+            fields=bids_fields, entities_to_include=entities_to_include
+        )
+        tmp_img = base_path / tmp_img
+        tmp_img.touch()
+        tmp_img = str(tmp_img)
+    else:
+        tmp_img = []
+        for root in img_file_patterns_type:
+            bids_fields = update_bids_fields(bids_fields, root)
+            tmp_gii = create_bids_filename(
+                fields=bids_fields, entities_to_include=entities_to_include
+            )
+            tmp_gii = base_path / tmp_gii
+            tmp_gii.touch()
+            tmp_img.append(str(tmp_gii))
+    return tmp_img, tmp_conf
 
 def get_legal_confound(non_steady_state=True, tedana=False, fmriprep_version="1.4.x"):
     """Load the valid confound files for manipulation."""
