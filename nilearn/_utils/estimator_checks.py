@@ -305,12 +305,15 @@ def return_expected_failed_checks(
     expected_failed_checks = {
         # the following are skipped
         # because there is nilearn specific replacement
+        "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
+        "check_dont_overwrite_parameters": (
+            "replaced by check_img_estimator_dont_overwrite_parameters"
+        ),
         "check_estimators_dtypes": ("replaced by check_masker_dtypes"),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
         "check_fit_check_is_fitted": ("replaced by check_masker_fitted"),
-        "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
         "check_fit_score_takes_y": (
             "replaced by check_masker_fit_score_takes_y"
         ),
@@ -320,7 +323,6 @@ def return_expected_failed_checks(
         # that errors with maskers,
         # or because a suitable nilearn replacement
         # has not yet been created.
-        "check_dont_overwrite_parameters": "TODO",
         "check_estimators_empty_data_messages": "TODO",
         "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
@@ -496,6 +498,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
     expected_failed_checks = {
         # the following are have nilearn replacement for masker and/or glm
         # but not for decoders
+        "check_dont_overwrite_parameters": (
+            "replaced by check_img_estimator_dont_overwrite_parameters"
+        ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
@@ -512,7 +517,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         # or because a suitable nilearn replacement
         # has not yet been created.
         "check_dict_unchanged": "TODO",
-        "check_dont_overwrite_parameters": "TODO",
         "check_estimators_dtypes": "TODO",
         "check_estimators_empty_data_messages": "TODO",
         "check_estimators_pickle": "TODO",
@@ -608,6 +612,8 @@ def nilearn_check_generator(estimator: BaseEstimator):
     yield (clone(estimator), check_transformer_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
+        yield (clone(estimator), check_img_estimator_dont_overwrite_parameters)
+
         if requires_y:
             yield (clone(estimator), check_image_estimator_requires_y_none)
 
@@ -618,7 +624,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_masker_clean_kwargs)
         yield (clone(estimator), check_masker_compatibility_mask_image)
         yield (clone(estimator), check_masker_dict_unchanged)
-        yield (clone(estimator), check_masker_dont_overwrite_parameters)
         yield (clone(estimator), check_masker_dtypes)
         yield (clone(estimator), check_masker_estimators_overwrite_params)
         yield (clone(estimator), check_masker_fit_score_takes_y)
@@ -683,7 +688,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
 
     if is_glm(estimator):
         yield (clone(estimator), check_glm_estimators_overwrite_params)
-        yield (clone(estimator), check_glm_dont_overwrite_parameters)
         yield (clone(estimator), check_glm_dtypes)
         yield (clone(estimator), check_glm_is_fitted)
 
@@ -850,6 +854,62 @@ def check_fit_returns_self(estimator) -> None:
     fitted_estimator = fit_estimator(estimator)
 
     assert fitted_estimator is estimator
+
+
+def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
+    """Check that fit method only changes or sets private attributes.
+
+    Only for estimator that work with images.
+
+    Replaces check_dont_overwrite_parameters from sklearn.
+    """
+    estimator = clone(estimator)
+
+    set_random_state(estimator, 1)
+
+    dict_before_fit = estimator.__dict__.copy()
+
+    fitted_estimator = fit_estimator(estimator)
+
+    dict_after_fit = fitted_estimator.__dict__
+
+    public_keys_after_fit = [
+        key for key in dict_after_fit if _is_public_parameter(key)
+    ]
+
+    attrs_added_by_fit = [
+        key for key in public_keys_after_fit if key not in dict_before_fit
+    ]
+
+    # check that fit doesn't add any public attribute
+    assert not attrs_added_by_fit, (
+        "Estimator adds public attribute(s) during"
+        " the fit method."
+        " Estimators are only allowed to add private attributes"
+        " either started with _ or ended"
+        f" with _ but {', '.join(attrs_added_by_fit)} added"
+    )
+
+    # check that fit doesn't change any public attribute
+
+    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
+    # change memory parameters on fit if it's None
+    keys_to_ignore = ["memory"]
+
+    attrs_changed_by_fit = [
+        key
+        for key in public_keys_after_fit
+        if (dict_before_fit[key] is not dict_after_fit[key])
+        and key not in keys_to_ignore
+    ]
+
+    assert not attrs_changed_by_fit, (
+        "Estimator changes public attribute(s) during"
+        " the fit method. Estimators are only allowed"
+        " to change attributes started"
+        " or ended with _, but"
+        f" {', '.join(attrs_changed_by_fit)} changed"
+    )
 
 
 # ------------------ DECODERS CHECKS ------------------
@@ -1810,68 +1870,8 @@ def check_masker_fit_score_takes_y(estimator):
         assert tmp["y"] is None
 
 
-def check_masker_dont_overwrite_parameters(estimator) -> None:
-    """Check that fit method only changes or sets private attributes.
-
-    Replaces check_dont_overwrite_parameters from sklearn.
-    """
-    estimator = clone(estimator)
-
-    n_sample = 1
-    if accept_niimg_input(estimator):
-        imgs = _img_3d_rand()
-    else:
-        imgs = _make_surface_img(n_sample)
-
-    set_random_state(estimator, 1)
-
-    dict_before_fit = estimator.__dict__.copy()
-
-    estimator.fit(imgs)
-
-    dict_after_fit = estimator.__dict__
-
-    public_keys_after_fit = [
-        key for key in dict_after_fit if _is_public_parameter(key)
-    ]
-
-    attrs_added_by_fit = [
-        key for key in public_keys_after_fit if key not in dict_before_fit
-    ]
-
-    # check that fit doesn't add any public attribute
-    assert not attrs_added_by_fit, (
-        "Estimator adds public attribute(s) during"
-        " the fit method."
-        " Estimators are only allowed to add private attributes"
-        " either started with _ or ended"
-        f" with _ but {', '.join(attrs_added_by_fit)} added"
-    )
-
-    # check that fit doesn't change any public attribute
-
-    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
-    # change memory parameters on fit if it's None
-    keys_to_ignore = ["memory"]
-
-    attrs_changed_by_fit = [
-        key
-        for key in public_keys_after_fit
-        if (dict_before_fit[key] is not dict_after_fit[key])
-        and key not in keys_to_ignore
-    ]
-
-    assert not attrs_changed_by_fit, (
-        "Estimator changes public attribute(s) during"
-        " the fit method. Estimators are only allowed"
-        " to change attributes started"
-        " or ended with _, but"
-        f" {', '.join(attrs_changed_by_fit)} changed"
-    )
-
-
 def check_masker_estimators_overwrite_params(estimator) -> None:
-    """Check that we do not change or mutate the internal state of input..
+    """Check that we do not change or mutate the internal state of input.
 
     Replaces sklearn check_estimators_overwrite_params
     """
@@ -2411,66 +2411,6 @@ def check_glm_dtypes(estimator):
         # SecondLevel
         else:
             estimator.fit(imgs, design_matrix=design_matrices)
-
-
-def check_glm_dont_overwrite_parameters(estimator) -> None:
-    """Check that fit method only changes or sets private attributes.
-
-    Replaces check_dont_overwrite_parameters from sklearn.
-    """
-    estimator = clone(estimator)
-
-    set_random_state(estimator, 1)
-
-    dict_before_fit = estimator.__dict__.copy()
-
-    data, design_matrices = _make_surface_img_and_design()
-    # FirstLevel
-    if hasattr(estimator, "hrf_model"):
-        estimator.fit(data, design_matrices=design_matrices)
-    # SecondLevel
-    else:
-        estimator.fit(data, design_matrix=design_matrices)
-
-    dict_after_fit = estimator.__dict__
-
-    public_keys_after_fit = [
-        key for key in dict_after_fit if _is_public_parameter(key)
-    ]
-
-    attrs_added_by_fit = [
-        key for key in public_keys_after_fit if key not in dict_before_fit
-    ]
-
-    # check that fit doesn't add any public attribute
-    assert not attrs_added_by_fit, (
-        "Estimator adds public attribute(s) during"
-        " the fit method."
-        " Estimators are only allowed to add private attributes"
-        " either started with _ or ended"
-        f" with _ but {', '.join(attrs_added_by_fit)} added"
-    )
-
-    # check that fit doesn't change any public attribute
-
-    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
-    # change memory parameters on fit if it's None
-    keys_to_ignore = ["memory"]
-
-    attrs_changed_by_fit = [
-        key
-        for key in public_keys_after_fit
-        if (dict_before_fit[key] is not dict_after_fit[key])
-        and key not in keys_to_ignore
-    ]
-
-    assert not attrs_changed_by_fit, (
-        "Estimator changes public attribute(s) during"
-        " the fit method. Estimators are only allowed"
-        " to change attributes started"
-        " or ended with _, but"
-        f" {', '.join(attrs_changed_by_fit)} changed"
-    )
 
 
 def check_glm_estimators_overwrite_params(estimator) -> None:
