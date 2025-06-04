@@ -629,6 +629,7 @@ def plot_surf_stat_map(
         bg_map=bg_map,
         hemi=hemi,
         view=view,
+        engine=engine,
         cmap=cmap,
         symmetric_cmap=None,
         colorbar=colorbar,
