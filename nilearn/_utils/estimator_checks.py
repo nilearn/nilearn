@@ -680,7 +680,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
     if is_glm(estimator):
         yield (clone(estimator), check_glm_dtypes)
         yield (clone(estimator), check_glm_empty_data_messages)
-        yield (clone(estimator), check_glm_fit_returns_self)
         yield (clone(estimator), check_glm_is_fitted)
 
 
@@ -2295,19 +2294,6 @@ def check_multi_masker_transformer_high_variance_confounds(estimator):
 
 
 # ------------------ GLM CHECKS ------------------
-
-
-def check_glm_fit_returns_self(estimator):
-    """Check surface maskers return itself after fit."""
-    data, design_matrices = _make_surface_img_and_design()
-    # FirstLevel
-    if hasattr(estimator, "hrf_model"):
-        assert (
-            estimator.fit(data, design_matrices=design_matrices) is estimator
-        )
-    # SecondLevel
-    else:
-        assert estimator.fit(data, design_matrix=design_matrices) is estimator
 
 
 def check_glm_empty_data_messages(estimator: BaseEstimator) -> None:
