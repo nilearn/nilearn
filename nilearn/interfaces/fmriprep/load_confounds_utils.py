@@ -164,8 +164,9 @@ def _generate_confounds_file_candidates(nii_file, flag_tedana=False):
     ----------
     nii_file : str
         Path to the functional image file.
-    include_ica : bool, optional
-        If True, also generate candidates with desc=ICA.
+    flag_tedana : bool, optional
+        If True, also generate candidates with desc=ICA for TEDANA
+        optimally combined output. Defaults to False.
 
     Returns
     -------
