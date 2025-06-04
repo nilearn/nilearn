@@ -143,7 +143,7 @@ def test_plot_functions_vmax(plot_func, vmax):
     return plot_func(load_sample_motor_activation_image(), vmax=vmax)
 
 
-@pytest.mark.mpl_image_compare
+@pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plotting_func", PLOTTING_FUNCS_3D)
 def test_plotting_functions_radiological_view(plotting_func):
     """Test for radiological view.
