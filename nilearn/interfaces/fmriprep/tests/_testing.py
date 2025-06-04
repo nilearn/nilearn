@@ -126,7 +126,6 @@ def create_tmp_filepath(
             )
             tmp_conf = base_path / confounds_filename
 
-            print(f"tmp conf is this {tmp_conf}")
             if copy_confounds:
                 conf, _ = get_legal_confound(tedana=True, fmriprep_version=fmriprep_version)
                 for n, i_conf in enumerate(conf):
@@ -145,7 +144,7 @@ def create_tmp_filepath(
                     fields=bids_fields, entities_to_include=entities_to_include
                 )
                 tmp_meta = base_path / confounds_sidecar
-                conf, meta = get_legal_confound(fmriprep_version=fmriprep_version)
+                conf, meta = get_legal_confound(tedana=True, fmriprep_version=fmriprep_version)
                 with tmp_meta.open("w") as file:
                     json.dump(meta, file, indent=2)
             
@@ -182,7 +181,7 @@ def create_tmp_filepath(
     tmp_conf = base_path / confounds_filename
 
     if copy_confounds:
-        conf, meta = get_legal_confound(fmriprep_version=fmriprep_version)
+        conf, meta = get_legal_confound(tedana=False, fmriprep_version=fmriprep_version)
         conf.to_csv(tmp_conf, sep="\t", index=False)
     else:
         tmp_conf.touch()
@@ -193,7 +192,7 @@ def create_tmp_filepath(
             fields=bids_fields, entities_to_include=entities_to_include
         )
         tmp_meta = base_path / confounds_sidecar
-        conf, meta = get_legal_confound(fmriprep_version=fmriprep_version)
+        conf, meta = get_legal_confound(tedana=False, fmriprep_version=fmriprep_version)
         with tmp_meta.open("w") as file:
             json.dump(meta, file, indent=2)
 
@@ -225,7 +224,7 @@ def get_legal_confound(non_steady_state=True, tedana=False, fmriprep_version="1.
     conf, meta = get_testdata_path(
         non_steady_state=non_steady_state, tedana=tedana, fmriprep_version=fmriprep_version
     )
-    if tedana:
+    if tedana: # tedana has two confounds files
         conf_list = []
         conf_list.append(conf)
         conf_list.append(meta)
@@ -234,10 +233,11 @@ def get_legal_confound(non_steady_state=True, tedana=False, fmriprep_version="1.
             tmp_conf.append(pd.read_csv(confounds, delimiter="\t", encoding="utf-8"))
         meta = None
         conf = tmp_conf
-    else:
-        conf = pd.read_csv(conf, delimiter="\t", encoding="utf-8")
-        with meta.open() as file:
-            meta = json.load(file)
+        return conf, meta
+
+    conf = pd.read_csv(conf, delimiter="\t", encoding="utf-8")
+    with meta.open() as file:
+        meta = json.load(file)
     return conf, meta
 
 
