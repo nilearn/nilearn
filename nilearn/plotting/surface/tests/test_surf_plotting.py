@@ -677,6 +677,52 @@ def test_plot_surf_stat_map_colorbar_tick(plotly, in_memory_mesh, bg_map):
     )
 
 
+@pytest.mark.parametrize("symmetric_cmap", [True, False, None])
+def test_plot_surf_stat_map_symmetric_cmap_plotly(
+    plotly, in_memory_mesh, bg_map, symmetric_cmap
+):
+    """Smoke test when symmetric_cmap with plotly engine is specified to
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
+    """
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=bg_map,
+        symmetric_cmap=symmetric_cmap,
+        engine="plotly",
+    )
+
+
+def test_plot_surf_stat_map_symmetric_cmap_matplotlib(
+    matplotlib_pyplot, in_memory_mesh, bg_map
+):
+    """Smoke test when symmetric_cmap is specified as None for matplotlib
+    engine to nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
+    """
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=bg_map,
+        symmetric_cmap=None,
+        engine="matplotlib",
+    )
+
+
+@pytest.mark.parametrize("symmetric_cmap", [True, False])
+def test_plot_surf_stat_map_symmetric_cmap_matplotlib_error(
+    matplotlib_pyplot, in_memory_mesh, bg_map, symmetric_cmap
+):
+    """Test if
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map raises error when
+    True or False is specified as symmetric_cmap for matplotlib engine.
+    """
+    with pytest.warns(UserWarning, match="'symmetric_cmap' is not implement"):
+        plot_surf_stat_map(
+            in_memory_mesh,
+            stat_map=bg_map,
+            symmetric_cmap=symmetric_cmap,
+            engine="matplotlib",
+        )
+
+
 def test_plot_surf_stat_map_matplotlib_specific(
     matplotlib_pyplot, in_memory_mesh, bg_map
 ):
