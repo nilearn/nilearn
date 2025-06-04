@@ -217,6 +217,9 @@ def _get_file_name(nii_file, flag_tedana=False):
     nii_file : str
         Path to the functional image file.
 
+    flag_tedana : bool, optional
+        If True, look for TEDANA confounds files. Defaults to False.
+
     Returns
     -------
     confound_file : str
