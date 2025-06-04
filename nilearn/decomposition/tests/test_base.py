@@ -68,7 +68,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 def make_data_to_reduce(data_type="nifti", with_activation=True):
     """Create "multi-subject" dataset with fake activation."""
     n_samples = 5
-    n_subjects = 8
+    n_subjects = 4
     imgs = []
 
     if data_type == "surface":
@@ -107,11 +107,10 @@ def make_data_to_reduce(data_type="nifti", with_activation=True):
 
 
 def make_masker(data_type="nifti"):
-    if data_type == "nifti":
-        return MultiNiftiMasker(mask_img=_img_3d_ones()).fit()
-    elif data_type == "surface":
+    if data_type == "surface":
         mask_img = make_data_to_reduce(data_type=data_type)[1]
         return SurfaceMasker(mask_img=mask_img).fit()
+    return MultiNiftiMasker(mask_img=_img_3d_ones()).fit()
 
 
 # We need to use n_features > 500 to trigger the randomized_svd
