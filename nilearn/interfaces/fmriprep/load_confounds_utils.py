@@ -376,34 +376,34 @@ def load_confounds_file_as_dataframe(confounds_raw_path, flag_tedana=False):
                 "The confound file does not contain the expected columns for "
                 "TEDANA output. Expected 'ICA_xx' for mixing.tsv and 'Component' for the status_table.tsv columns."
             )
-    else:
-        # check if the version of fMRIprep (>=1.2.0) is supported based on
-        # header format. 1.0.x and 1.1.x series uses camel case
-        if any(is_camel_case(col_name) for col_name in confounds_raw.columns):
-            raise ValueError(
-                "The confound file contains header in camel case. "
-                "This is likely the output from 1.0.x and 1.1.x series. "
-                "We only support fmriprep outputs >= 1.2.0."
-                f"{confounds_raw.columns}"
-            )
 
-        # even old version with no header will have the first row as header
-        try:
-            too_old = float(confounds_raw.columns[0])
-        except ValueError:
-            too_old = False
+    # check if the version of fMRIprep (>=1.2.0) is supported based on
+    # header format. 1.0.x and 1.1.x series uses camel case
+    if any(is_camel_case(col_name) for col_name in confounds_raw.columns):
+        raise ValueError(
+            "The confound file contains header in camel case. "
+            "This is likely the output from 1.0.x and 1.1.x series. "
+            "We only support fmriprep outputs >= 1.2.0."
+            f"{confounds_raw.columns}"
+        )
 
-        if too_old:
-            bad_file = pd.read_csv(
-                confounds_raw_path, delimiter="\t", encoding="utf-8", header=None
-            )
-            raise ValueError(
-                "The confound file contains no header."
-                "Is this an old version fMRIprep output?"
-                f"{bad_file.head()}"
-            )
-        
-        return confounds_raw
+    # even old version with no header will have the first row as header
+    try:
+        too_old = float(confounds_raw.columns[0])
+    except ValueError:
+        too_old = False
+
+    if too_old:
+        bad_file = pd.read_csv(
+            confounds_raw_path, delimiter="\t", encoding="utf-8", header=None
+        )
+        raise ValueError(
+            "The confound file contains no header."
+            "Is this an old version fMRIprep output?"
+            f"{bad_file.head()}"
+        )
+    
+    return confounds_raw
 
 def _ext_validator(image_file, ext):
     """Check image is valid based on extension.
