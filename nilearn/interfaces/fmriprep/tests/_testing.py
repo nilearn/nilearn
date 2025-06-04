@@ -72,10 +72,9 @@ def get_testdata_path(non_steady_state=True, tedana=False, fmriprep_version="1.4
                     "test_desc-ICA_status_table.tsv",
                 ]
             ]
-        else:
-            return [
-                path_data / filename
-                for filename in [
+        return [
+            path_data / filename
+            for filename in [
                     f"{suffix}_desc-confounds_{derivative}.tsv",
                     f"{suffix}_desc-confounds_{derivative}.json",
                 ]

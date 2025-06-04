@@ -28,9 +28,9 @@ img_file_error = {
         "Input must be desc-smoothAROMAnonaggr_bold for full ICA-AROMA"
         " strategy."
     ),
-    "nii.gz": "Invalid file type for the selected method.",
-    "dtseries.nii": "Invalid file type for the selected method.",
-    "tedana": "Invalid file type for the selected method",
+    "nii.gz": "Invalid file type for the selected 'nii.gz' method.",
+    "dtseries.nii": "Invalid file type for the selected 'dtseries.nii' method",
+    "tedana": "Invalid file type for the selected tedana method",
     "func.gii": "need fMRIprep output with extension func.gii",
 }
 
@@ -294,6 +294,7 @@ def get_confounds_file(image_file, flag_full_aroma, flag_tedana):
     confounds_raw_path : :obj:`str`
         Path to the associated confounds file.
     """
+
     _check_images(image_file, flag_full_aroma, flag_tedana)
     confounds_raw_path = _get_file_name(image_file, flag_tedana=flag_tedana)
     return confounds_raw_path
@@ -424,7 +425,6 @@ def _ext_validator(image_file, ext):
     error_message : str
         Error message to raise if the image is invalid.
     """
-    print(f"Image file: {image_file}")
     try:
         valid_img = all(
             bool(re.search(img_file_patterns[ext], img)) for img in image_file

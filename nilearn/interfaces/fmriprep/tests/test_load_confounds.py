@@ -24,11 +24,11 @@ from nilearn.maskers import NiftiMasker
 from nilearn.tests.test_signal import generate_trends
 
 
-def _simu_img(tmp_path, trend, demean):
+def _simu_img(tmp_path, trend, demean, image_type="regular"):
     """Simulate an nifti image based on confound file \
     with some parts confounds and some parts noise.
     """
-    file_nii, _ = create_tmp_filepath(tmp_path, copy_confounds=True)
+    file_nii, _ = create_tmp_filepath(tmp_path, image_type=image_type, copy_confounds=True)
     # set the size of the image matrix
     nx = 5
     ny = 5
@@ -38,9 +38,14 @@ def _simu_img(tmp_path, trend, demean):
     # Load a simple 6 parameters motion models as confounds
     # demean set to False just for simulating signal based on the original
     # state
-    confounds, _ = load_confounds(
-        file_nii, strategy=("motion",), motion="basic", demean=False
-    )
+    if image_type == "tedana":
+        confounds, _ = load_confounds(
+            file_nii, strategy=("tedana",), tedana="rejected"
+        )
+    else:
+        confounds, _ = load_confounds(
+            file_nii, strategy=("motion",), motion="basic", demean=False
+        )
 
     X = _handle_non_steady(confounds)
     X = X.to_numpy()
@@ -80,10 +85,16 @@ def _simu_img(tmp_path, trend, demean):
     mask_conf = Nifti1Image(vol_conf, np.eye(4))
     mask_rand = Nifti1Image(vol_rand, np.eye(4))
 
-    # generate the associated confounds for testing
-    test_confounds, _ = load_confounds(
-        file_nii, strategy=("motion",), motion="basic", demean=demean
-    )
+    if image_type == "tedana":
+        test_confounds, _ = load_confounds(
+            file_nii, strategy=("tedana",), tedana="rejected"
+        )
+    else:
+        # generate the associated confounds for testing
+        test_confounds, _ = load_confounds(
+            file_nii, strategy=("motion",), motion="basic", demean=False
+        )
+
     # match how we extend the length to increase the degree of freedom
     test_confounds = _handle_non_steady(test_confounds)
     sample_mask = np.arange(test_confounds.shape[0])[1:]
@@ -110,10 +121,10 @@ def _handle_non_steady(confounds):
     )
 
 
-def _regression(confounds, tmp_path):
+def _regression(confounds, image_type, tmp_path):
     """Perform simple regression with NiftiMasker."""
     # Simulate data
-    img, mask_conf, _, _, _ = _simu_img(tmp_path, trend=False, demean=False)
+    img, mask_conf, _, _, _ = _simu_img(tmp_path, trend=False, demean=False, image_type=image_type)
     confounds = _handle_non_steady(confounds)
     # Do the regression
     masker = NiftiMasker(mask_img=mask_conf, standardize=True)
@@ -151,7 +162,7 @@ def test_nilearn_regress(tmp_path, test_strategy, param, image_type, fmriprep_ve
     if fmriprep_version == "21.x.x" and test_strategy == ("ica_aroma",):
         return
     confounds, _ = load_confounds(img_nii, strategy=test_strategy, **param)
-    _regression(confounds, tmp_path)
+    _regression(confounds, image_type=image_type, tmp_path=tmp_path)
 
 
 def _tseries_std(
@@ -257,7 +268,7 @@ def test_nilearn_standardize(
     """Test confounds removal with logical parameters for processing signal."""
     # demean is set to False to let signal.clean handle everything
     (img, mask_conf, mask_rand, confounds, mask) = _simu_img(
-        tmp_path, trend=True, demean=False
+        tmp_path, trend=True, demean=False, image_type="regular"
     )
     # We now load the time series with vs without confounds
     # in voxels composed of pure confounds

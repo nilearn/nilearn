@@ -414,6 +414,7 @@ def _load_confounds_for_single_image_file(
     )
     # Check for tedana
     flag_tedana = ("tedana" in strategy) and (kwargs.get("tedana") == "rejected")
+
     confounds_file = get_confounds_file(
         image_file, flag_full_aroma=flag_full_aroma, flag_tedana=flag_tedana
     )
