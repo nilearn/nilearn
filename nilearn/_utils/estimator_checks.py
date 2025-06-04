@@ -297,12 +297,15 @@ def return_expected_failed_checks(
     expected_failed_checks = {
         # the following are skipped
         # because there is nilearn specific replacement
+        "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
         "check_estimators_dtypes": ("replaced by check_masker_dtypes"),
+        "check_estimators_empty_data_messages": (
+            "replaced by check_masker_empty_data_messages"
+        ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
         "check_fit_check_is_fitted": ("replaced by check_masker_fitted"),
-        "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
         "check_fit_score_takes_y": (
             "replaced by check_masker_fit_score_takes_y"
         ),
@@ -313,7 +316,6 @@ def return_expected_failed_checks(
         # or because a suitable nilearn replacement
         # has not yet been created.
         "check_dont_overwrite_parameters": "TODO",
-        "check_estimators_empty_data_messages": "TODO",
         "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
@@ -357,6 +359,9 @@ def return_expected_failed_checks(
         expected_failed_checks |= {
             # have nilearn replacements
             "check_estimators_dtypes": ("replaced by check_glm_dtypes"),
+            "check_estimators_empty_data_messages": (
+                "replaced by check_glm_empty_data_messages"
+            ),
             "check_estimators_fit_returns_self": (
                 "replaced by check_glm_fit_returns_self"
             ),
