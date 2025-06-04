@@ -10,6 +10,7 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import (
     generate_labeled_regions,
@@ -18,50 +19,49 @@ from nilearn._utils.data_gen import (
 from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
+    return_expected_failed_checks,
 )
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _img_labels
 from nilearn.image import get_data
 from nilearn.maskers import NiftiLabelsMasker, NiftiMasker
-from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
 
+ESTIMATORS_TO_CHECK = [NiftiLabelsMasker()]
 
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[
-            NiftiLabelsMasker(
-                labels_img=_img_labels(), keep_masked_labels=False
-            )
-        ],
-        expected_failed_checks=expected_failed_checks_0pt13pt2(),
-    ),
-)
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+if SKLEARN_LT_1_6:
 
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[
-            NiftiLabelsMasker(
-                labels_img=_img_labels(), keep_masked_labels=False
-            )
-        ],
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
-        estimator=NiftiLabelsMasker(labels_img=_img_labels())
+        estimators=[NiftiLabelsMasker(labels_img=_img_labels())]
     ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001

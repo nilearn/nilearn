@@ -1,11 +1,14 @@
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
+    return_expected_failed_checks,
 )
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye
 from nilearn.decomposition.dict_learning import DictLearning
@@ -34,30 +37,44 @@ def canica_data():
     return _make_canica_test_data()[0]
 
 
+ESTIMATORS_TO_CHECK = [DictLearning()]
+
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(
+            estimators=ESTIMATORS_TO_CHECK,
+            valid=False,
+        ),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(estimator=DictLearning()),
-)
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=DictLearning(),
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name", nilearn_check_estimator(estimator=DictLearning())
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with nilearn estimators rules."""
