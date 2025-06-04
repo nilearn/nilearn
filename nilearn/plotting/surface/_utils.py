@@ -293,7 +293,7 @@ def check_surface_plotting_inputs(
     if surf_mesh is None and not isinstance(surf_map, SurfaceImage):
         raise TypeError(
             f"If you want to pass {mesh_var_name}=None, "
-            f"then {mesh_var_name} must be a SurfaceImage instance."
+            f"then {map_var_name} must be a SurfaceImage instance."
         )
 
     if isinstance(surf_mesh, SurfaceImage):
