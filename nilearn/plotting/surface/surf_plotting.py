@@ -623,7 +623,7 @@ def plot_surf_stat_map(
         symmetric_cbar=symmetric_cbar,
     )
 
-    fig = backend._plot_surf(
+    fig = plot_surf(
         surf_mesh,
         surf_map=loaded_stat_map,
         bg_map=bg_map,
