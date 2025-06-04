@@ -179,15 +179,15 @@ def _generate_confounds_file_candidates(nii_file, flag_tedana=False):
     variants = []
 
     # Standard confounds
-    ent1 = deepcopy(entities)
-    ent1["desc"] = "confounds"
-    variants.append(ent1)
+    entities_fmriprep = deepcopy(entities)
+    entities_fmriprep["desc"] = "confounds"
+    variants.append(entities_fmriprep)
 
     if flag_tedana:
         # ICA - mixing
-        ent2 = deepcopy(entities)
-        ent2["desc"] = "ICA"
-        variants.append(ent2)
+        entities_tedana = deepcopy(entities)
+        entities_tedana["desc"] = "ICA"
+        variants.append(entities_tedana)
 
     filenames = []
 
