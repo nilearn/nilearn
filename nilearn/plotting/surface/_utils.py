@@ -276,9 +276,7 @@ def check_surface_plotting_inputs(
             message=(
                 f"{hemi=} was passed with "
                 f"{type(surf_map)=} and {type(surf_mesh)=}.\n"
-                "This value will be ignored as it is only used when "
-                "'map' is a SurfaceImage instance and / or "
-                "'mesh' is a PolyMesh instance."
+                "Please make sure that the specified hemi corresponds to data."
             ),
             stacklevel=find_stack_level(),
         )
