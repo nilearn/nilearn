@@ -177,8 +177,13 @@ def create_tmp_filepath(
             print(f"tmp conf is this {tmp_conf}")
             if copy_confounds:
                 conf, _ = get_legal_confound(tedana=True, fmriprep_version=fmriprep_version)
-                for i_conf in conf:
-                    i_conf.to_csv(tmp_conf, sep="\t", index=False)
+                for n, i_conf in enumerate(conf):
+                    if n == 0 and suf == "mixing":
+                        # mixing file
+                        i_conf.to_csv(tmp_conf, sep="\t", index=False)
+                    if n == 1 and suf == "status_table":
+                        # status_table file
+                        i_conf.to_csv(tmp_conf, sep="\t", index=False)
             else:
                 tmp_conf.touch()
 
