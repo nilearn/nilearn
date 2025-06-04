@@ -422,6 +422,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         -------
         %(signals_transform_surface)s
         """
+        check_is_fitted(self)
+
         check_compatibility_mask_and_images(self.labels_img_, imgs)
         check_polymesh_equal(self.labels_img_.mesh, imgs.mesh)
 
