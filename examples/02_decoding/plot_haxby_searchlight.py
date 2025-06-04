@@ -40,6 +40,7 @@ condition_mask = y.isin(["face", "house"])
 
 fmri_img = index_img(fmri_filename, condition_mask)
 y, run = y[condition_mask], run[condition_mask]
+y = y.to_numpy()
 
 # %%
 # Prepare masks
