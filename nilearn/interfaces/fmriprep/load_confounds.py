@@ -419,92 +419,13 @@ def _load_confounds_for_single_image_file(
     )
     confounds_json_file = get_json(confounds_file, flag_tedana=flag_tedana)
 
-    if flag_tedana:
-        # If tedana is in the strategy, we need to load the tedana confounds and apply the tedana strategy.
-        # file instead of the fmriprep confounds file
-        return _load_tedana_confounds_file(
-            confounds_file=confounds_file,
-            strategy=strategy,
-            demean=demean,
-            confounds_json_file=confounds_json_file,
-            **kwargs,
-        )
-    else:
-        return _load_single_confounds_file(
-            confounds_file=confounds_file,
-            strategy=strategy,
-            demean=demean,
-            confounds_json_file=confounds_json_file,
-            **kwargs,
-        )
-
-def _load_tedana_confounds_file(
-    confounds_file, strategy, demean=True, **kwargs
-):
-    """Load and extract specified confounds from the confounds file.
-
-    Parameters
-    ----------
-    confounds_file : :obj:`str`
-        Path to confounds file.
-
-    strategy : :obj:`tuple` or :obj:`list` of :obj:`str`.
-        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
-
-    demean : :obj:`bool`, default=True
-        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
-
-    confounds_json_file : :obj:`str`, default=None
-        Path to confounds json file.
-
-    kwargs : :obj:`dict`
-        Extra relevant parameters for the given `strategy`.
-        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
-
-    Returns
-    -------
-    confounds : :class:`pandas.DataFrame`
-        See :func:`nilearn.interfaces.fmriprep.load_confounds` for details.
-
-    Raises
-    ------
-    ValueError
-        If any of the confounds specified in the strategy are not found in the
-        confounds file or confounds json file.
-    """
-    flag_tedana = ("tedana" in strategy) and (
-        kwargs.get("tedana") == "rejected"
+    return _load_single_confounds_file(
+        confounds_file=confounds_file,
+        strategy=strategy,
+        demean=demean,
+        confounds_json_file=confounds_json_file,
+        **kwargs,
     )
-    all_t_c = {}
-    for tedana_conf in ["mixing", "status_table"]:
-        all_t_c[tedana_conf] = load_confounds_file_as_dataframe(
-            [file for file in confounds_file if tedana_conf in file][0],
-            flag_tedana=flag_tedana
-        )
-
-    rejected = all_t_c['status_table'][
-        all_t_c['status_table'].iloc[:, -1] == "rejected"
-    ]
-
-    # normalize rejected component names: ICA_04 -> ICA_4
-    rejected_components = rejected["Component"].apply(
-        lambda x: re.sub(r"ICA_0*(\d+)$", lambda m: f"ICA_{int(m.group(1))}", x)
-    ).tolist()
-
-    # normalize column names in the mixing file
-    mixing = all_t_c['mixing']
-    mixing.columns = [
-        re.sub(r"ICA_0*(\d+)$", lambda m: f"ICA_{int(m.group(1))}", col)
-        for col in mixing.columns
-    ]
-
-    # select matched columns
-    matched_components = [c for c in rejected_components if c in mixing.columns]
-    confounds_all = mixing[sorted(matched_components)]
-
-    return prepare_output(confounds_all, demean)
-
-
 
 def _load_single_confounds_file(
     confounds_file, strategy, demean=True, confounds_json_file=None, **kwargs
@@ -543,6 +464,40 @@ def _load_single_confounds_file(
     flag_acompcor = ("compcor" in strategy) and (
         "anat" in kwargs.get("compcor")
     )
+    flag_tedana = ("tedana" in strategy) and (
+        kwargs.get("tedana") == "rejected"
+    )
+
+    if flag_tedana:
+        all_t_c = {}
+        for tedana_conf in ["mixing", "status_table"]:
+            all_t_c[tedana_conf] = load_confounds_file_as_dataframe(
+                [file for file in confounds_file if tedana_conf in file][0],
+                flag_tedana=flag_tedana
+            )
+
+        rejected = all_t_c['status_table'][
+            all_t_c['status_table'].iloc[:, -1] == "rejected"
+        ]
+
+        # normalize rejected component names: ICA_04 -> ICA_4
+        rejected_components = rejected["Component"].apply(
+            lambda x: re.sub(r"ICA_0*(\d+)$", lambda m: f"ICA_{int(m.group(1))}", x)
+        ).tolist()
+
+        # normalize column names in the mixing file
+        mixing = all_t_c['mixing']
+        mixing.columns = [
+            re.sub(r"ICA_0*(\d+)$", lambda m: f"ICA_{int(m.group(1))}", col)
+            for col in mixing.columns
+        ]
+
+        # select matched columns
+        matched_components = [c for c in rejected_components if c in mixing.columns]
+        confounds_all = mixing[sorted(matched_components)]
+
+        return prepare_output(confounds_all, demean)
+
     # Convert tsv file to pandas dataframe
     confounds_all = load_confounds_file_as_dataframe(confounds_file)
 
