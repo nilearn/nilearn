@@ -15,7 +15,6 @@ from nilearn.connectome.group_sparse_cov import (
     group_sparse_scores,
 )
 
-
 ESTIMATORS_TO_CHECK = [GroupSparseCovarianceCV(), GroupSparseCovariance()]
 
 if SKLEARN_LT_1_6:

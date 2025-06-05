@@ -9,9 +9,8 @@ from nilearn._utils import repr_niimgs
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.logger import find_stack_level
-from nilearn._utils.ndimage import replace_non_finite
 from nilearn._utils.logger import find_stack_level, log
+from nilearn._utils.ndimage import replace_non_finite
 from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
 from nilearn._utils.param_validation import check_params
 from nilearn.image import clean_img, get_data, index_img, resample_img

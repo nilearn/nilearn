@@ -49,7 +49,6 @@ def test_check_estimator_sklearn(estimator, check):
     check(estimator)
 
 
-
 ESTIMATORS_TO_CHECK = [
     ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
 ]
