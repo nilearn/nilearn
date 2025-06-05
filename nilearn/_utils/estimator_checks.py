@@ -179,7 +179,8 @@ def return_expected_failed_checks(
     expected_failed_checks: dict[str, str] = {}
 
     if isinstance(estimator, ConnectivityMeasure):
-        return {
+        expected_failed_checks = {
+            "check_estimators_fit_returns_self": "TODO",
             "check_fit2d_predict1d": "TODO",
             "check_methods_sample_order_invariance": "TODO",
             "check_methods_subset_invariance": "TODO",
@@ -188,8 +189,14 @@ def return_expected_failed_checks(
             "check_readonly_memmap_input": "TODO",
             "check_transformer_data_not_an_array": "TODO",
             "check_transformer_general": "TODO",
-            "check_transformer_preserve_dtypes": "TODO",
         }
+        if SKLEARN_MINOR >= 4:
+            expected_failed_checks.pop("check_estimators_fit_returns_self")
+            expected_failed_checks |= {
+                "check_transformer_preserve_dtypes": "TODO",
+            }
+
+        return expected_failed_checks
 
     elif isinstance(estimator, HierarchicalKMeans):
         return expected_failed_checks_clustering()
