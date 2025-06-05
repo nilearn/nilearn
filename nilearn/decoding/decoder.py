@@ -779,6 +779,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             if self.is_classification and (self.n_classes_ == 2):
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
+        return self
+
     def __sklearn_is_fitted__(self):
         return hasattr(self, "coef_") and hasattr(self, "masker_")
 
@@ -1223,6 +1225,8 @@ class Decoder(ClassifierMixin, _BaseDecoder):
             verbose=verbose,
             n_jobs=n_jobs,
         )
+        # TODO remove for sklearn>=1.6
+        self._estimator_type = "classifier"
 
     def _more_tags(self):
         """Return estimator tags.
@@ -1244,7 +1248,12 @@ class Decoder(ClassifierMixin, _BaseDecoder):
         tags = super().__sklearn_tags__()
         if SKLEARN_LT_1_6:
             return tags
+
+        from sklearn.utils import ClassifierTags
+
         tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+
         return tags
 
 
@@ -1402,6 +1411,9 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
             n_jobs=n_jobs,
         )
 
+        # TODO remove for sklearn>=1.6
+        self._estimator_type = "regressor"
+
     def _more_tags(self):
         """Return estimator tags.
 
@@ -1423,7 +1435,11 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         if SKLEARN_LT_1_6:
             tags["multioutput"] = True
             return tags
+        from sklearn.utils import RegressorTags
+
         tags.estimator_type = "regressor"
+        tags.regressor_tags = RegressorTags()
+
         return tags
 
     @fill_doc
@@ -1449,7 +1465,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         """
         check_params(self.__dict__)
         self.classes_ = ["beta"]
-        super().fit(X, y, groups=groups)
+        return super().fit(X, y, groups=groups)
 
 
 @fill_doc
@@ -1605,6 +1621,38 @@ class FREMRegressor(_BaseDecoder):
             n_jobs=n_jobs,
         )
 
+        # TODO remove after sklearn>=1.6
+        self._estimator_type = "regressor"
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        tags = super().__sklearn_tags__()
+        if SKLEARN_LT_1_6:
+            tags["multioutput"] = True
+            return tags
+
+        from sklearn.utils import RegressorTags
+
+        tags.estimator_type = "regressor"
+        tags.regressor_tags = RegressorTags()
+
+        return tags
+
     @fill_doc
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
@@ -1630,7 +1678,7 @@ class FREMRegressor(_BaseDecoder):
         self.classes_ = ["beta"]
         if isinstance(self.cv, int):
             self.cv = ShuffleSplit(self.cv, random_state=0)
-        super().fit(X, y, groups=groups)
+        return super().fit(X, y, groups=groups)
 
 
 @fill_doc
@@ -1785,6 +1833,37 @@ class FREMClassifier(_BaseDecoder):
             t_r=t_r,
         )
 
+        # TODO remove after sklearn>=1.6
+        self._estimator_type = "classifier"
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        tags = super().__sklearn_tags__()
+        if SKLEARN_LT_1_6:
+            return tags
+
+        from sklearn.utils import ClassifierTags
+
+        tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+
+        return tags
+
     @fill_doc
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
@@ -1812,4 +1891,4 @@ class FREMClassifier(_BaseDecoder):
         check_params(self.__dict__)
         if isinstance(self.cv, int):
             self.cv = StratifiedShuffleSplit(self.cv, random_state=0)
-        super().fit(X, y, groups=groups)
+        return super().fit(X, y, groups=groups)

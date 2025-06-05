@@ -150,10 +150,8 @@ variance_imgs = [
     summary_statistics_run_2["effect_variance"],
 ]
 
-fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat = compute_fixed_effects(
-    contrast_imgs,
-    variance_imgs,
-    data["mask"],
+fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _ = compute_fixed_effects(
+    contrast_imgs, variance_imgs, data["mask"], return_z_score=True
 )
 plot_stat_map(
     fixed_fx_stat,

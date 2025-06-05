@@ -27,7 +27,7 @@ def _check_fov(img, affine, shape):
     return img.shape[:3] == shape and np.allclose(img.affine, affine)
 
 
-def check_same_fov(*args, **kwargs):
+def check_same_fov(*args, **kwargs) -> bool:
     """Return True if provided images have the same field of view (shape and \
     affine) and return False or raise an error elsewhere, depending on the \
     `raise_error` argument.
