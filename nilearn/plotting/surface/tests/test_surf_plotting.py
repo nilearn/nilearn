@@ -416,7 +416,7 @@ def test_plot_surf_contours_warning_hemi(in_memory_mesh):
     """Test warning that hemi will be ignored."""
     parcellation = np.zeros((in_memory_mesh.n_vertices,))
     parcellation[in_memory_mesh.faces[3]] = 1
-    with pytest.warns(UserWarning, match="This value will be ignored"):
+    with pytest.warns(UserWarning, match="Please make sure that the"):
         plot_surf_contours(in_memory_mesh, parcellation, hemi="left")
 
 
