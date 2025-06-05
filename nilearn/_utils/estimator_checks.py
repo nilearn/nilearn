@@ -313,7 +313,9 @@ def return_expected_failed_checks(
         # or because a suitable nilearn replacement
         # has not yet been created.
         "check_dont_overwrite_parameters": "TODO",
-        "check_estimators_empty_data_messages": "TODO",
+        "check_estimators_empty_data_messages": (
+            "replaced by check_fit_with_non_finite_in_data"
+        ),
         "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
@@ -488,6 +490,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
     expected_failed_checks = {
         # the following are have nilearn replacement for masker and/or glm
         # but not for decoders
+        "check_estimators_empty_data_messages": (
+            "replaced by check_fit_with_non_finite_in_data"
+        ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
@@ -506,7 +511,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_dict_unchanged": "TODO",
         "check_dont_overwrite_parameters": "TODO",
         "check_estimators_dtypes": "TODO",
-        "check_estimators_empty_data_messages": "TODO",
         "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
@@ -606,6 +610,14 @@ def nilearn_check_generator(estimator: BaseEstimator):
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_image_supervised_estimator_y_no_nan)
 
+        if (
+            is_classifier(estimator)
+            or is_regressor(estimator)
+            or is_masker(estimator)
+            or is_glm(estimator)
+        ):
+            yield (clone(estimator), check_fit_with_non_finite_in_data)
+
     if is_masker(estimator):
         yield (clone(estimator), check_masker_clean_kwargs)
         yield (clone(estimator), check_masker_compatibility_mask_image)
@@ -617,7 +629,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
             clone(estimator),
             check_masker_fit_with_non_finite_in_mask,
         )
-        yield (clone(estimator), check_masker_fit_with_non_finite_in_data)
         yield (clone(estimator), check_masker_fitted)
         yield (clone(estimator), check_masker_generate_report)
         yield (clone(estimator), check_masker_generate_report_false)
@@ -839,6 +850,100 @@ def check_fit_returns_self(estimator) -> None:
     fitted_estimator = fit_estimator(estimator)
 
     assert fitted_estimator is estimator
+
+
+def check_fit_with_non_finite_in_data(estimator: BaseEstimator) -> None:
+    """Check images with non finite values can be used.
+
+    Replaces check_estimators_nan_inf from sklearn.
+
+    - Warning is thrown
+    - Replace NaNs and infs with zeros
+
+    For maskers:
+    - Output of transform must contain only finite values.
+
+    """
+    if is_glm(estimator):
+        # only testing with
+        imgs_data, design_matrices = _make_surface_img_and_design()
+        imgs_data.data.parts["left"][0] = np.nan
+        imgs_data.data.parts["left"][1] = np.inf
+        # FirstLevel
+        if hasattr(estimator, "hrf_model"):
+            with pytest.warns(
+                UserWarning, match="Non-finite values detected."
+            ):
+                estimator.fit(imgs_data, design_matrices=design_matrices)
+
+        # SecondLevel
+        else:
+            with pytest.warns(
+                UserWarning, match="Non-finite values detected."
+            ):
+                estimator.fit(imgs_data, design_matrix=design_matrices)
+
+    elif is_masker(estimator):
+        if accept_niimg_input(estimator):
+            # TODO
+            # (29, 30, 31) is used to match MAP_SHAPE in
+            # nilearn/regions/tests/test_region_extractor.py
+            # this test would fail for RegionExtractor otherwise
+            shape = (29, 30, 31, 2)
+
+            # Introduce nans with data type float
+            # See issues:
+            # - https://github.com/nilearn/nilearn/issues/2580 (why floats)
+            # - https://github.com/nilearn/nilearn/issues/2711 (why test)
+            imgs_data = _rng().random(shape).astype(np.float32)
+            imgs_data[:, :, 7, 1] = np.nan
+            imgs_data[:, :, 4, 1] = np.inf
+            imgs = Nifti1Image(imgs_data, _affine_eye())
+
+        else:
+            imgs = _make_surface_img(2)
+            imgs.data.parts["left"][0:3, 0] = [np.nan, np.inf, 1]
+            imgs.data.parts["right"][0:3, 0] = [np.nan, np.inf, 1]
+
+        estimator.fit(imgs)
+
+        with pytest.warns(UserWarning, match="Non-finite values detected."):
+            signal = estimator.transform(imgs)
+
+        assert np.all(np.isfinite(signal))
+
+    elif is_classifier(estimator):
+        dim = 5
+        X, y = make_classification(
+            n_samples=30,
+            n_features=dim**3,
+            scale=3.0,
+            n_informative=5,
+            n_classes=2,
+            random_state=42,
+        )
+        X[0] = np.nan
+        X[1] = np.inf
+        X, _ = to_niimgs(X, [dim, dim, dim])
+        with pytest.warns(UserWarning, match="Non-finite values detected."):
+            estimator.fit(X, y)
+
+    elif is_regressor(estimator):
+        dim = 5
+        X, y = make_regression(
+            n_samples=30,
+            n_features=dim**3,
+            n_informative=dim,
+            noise=1.5,
+            bias=1.0,
+            random_state=42,
+        )
+        X = StandardScaler().fit_transform(X)
+        X[0] = np.nan
+        X[1] = np.inf
+        X, _ = to_niimgs(X, [dim, dim, dim])
+        with pytest.warns(UserWarning, match="Non-finite values detected."):
+            estimator.fit(X, y)
 
 
 # ------------------ DECODERS CHECKS ------------------
@@ -1529,46 +1634,6 @@ def check_masker_fit_with_non_finite_in_mask(estimator):
         estimator.fit()
 
     signal = estimator.transform(imgs)
-    assert np.all(np.isfinite(signal))
-
-
-def check_masker_fit_with_non_finite_in_data(estimator):
-    """Check data with non finite values can be used with maskers.
-
-    - Warning is thrown
-
-    For some maskers:
-    - Replace NaNs and infs with zeros
-    - Output of transform must contain only finite values.
-
-    Replaces check_estimators_nan_inf from sklearn.
-    """
-    if accept_niimg_input(estimator):
-        # TODO
-        # (29, 30, 31) is used to match MAP_SHAPE in
-        # nilearn/regions/tests/test_region_extractor.py
-        # this test would fail for RegionExtractor otherwise
-        shape = (29, 30, 31, 2)
-
-        # Introduce nans with data type float
-        # See issues:
-        # - https://github.com/nilearn/nilearn/issues/2580 (why floats)
-        # - https://github.com/nilearn/nilearn/issues/2711 (why test)
-        imgs_data = _rng().random(shape).astype(np.float32)
-        imgs_data[:, :, 7, 1] = np.nan
-        imgs_data[:, :, 4, 1] = np.inf
-        imgs = Nifti1Image(imgs_data, _affine_eye())
-
-    else:
-        imgs = _make_surface_img(2)
-        imgs.data.parts["left"][0:3, 0] = [np.nan, np.inf, 1]
-        imgs.data.parts["right"][0:3, 0] = [np.nan, np.inf, 1]
-
-    estimator.fit(imgs)
-
-    with pytest.warns(UserWarning, match="Non-finite values detected."):
-        signal = estimator.transform(imgs)
-
     assert np.all(np.isfinite(signal))
 
 
