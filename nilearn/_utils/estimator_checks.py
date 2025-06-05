@@ -912,36 +912,34 @@ def check_fit_with_non_finite_in_data(estimator: BaseEstimator) -> None:
 
         assert np.all(np.isfinite(signal))
 
-    elif is_classifier(estimator):
+    elif is_classifier(estimator) or is_regressor(estimator):
         dim = 5
-        X, y = make_classification(
-            n_samples=30,
-            n_features=dim**3,
-            scale=3.0,
-            n_informative=5,
-            n_classes=2,
-            random_state=42,
-        )
-        X[0] = np.nan
-        X[1] = np.inf
-        X, _ = to_niimgs(X, [dim, dim, dim])
-        with pytest.warns(UserWarning, match="Non-finite values detected."):
-            estimator.fit(X, y)
+        n_samples = 30
+        random_state = 42
 
-    elif is_regressor(estimator):
-        dim = 5
-        X, y = make_regression(
-            n_samples=30,
-            n_features=dim**3,
-            n_informative=dim,
-            noise=1.5,
-            bias=1.0,
-            random_state=42,
-        )
-        X = StandardScaler().fit_transform(X)
+        if is_classifier(estimator):
+            X, y = make_classification(
+                n_samples=n_samples,
+                n_features=dim**3,
+                scale=3.0,
+                n_informative=5,
+                n_classes=2,
+                random_state=random_state,
+            )
+        else:
+            X, y = make_regression(
+                n_samples=n_samples,
+                n_features=dim**3,
+                n_informative=dim,
+                noise=1.5,
+                bias=1.0,
+                random_state=random_state,
+            )
+
         X[0] = np.nan
         X[1] = np.inf
-        X, _ = to_niimgs(X, [dim, dim, dim])
+        X = Nifti1Image(X.reshape((dim, dim, dim, n_samples)), _affine_eye())
+
         with pytest.warns(UserWarning, match="Non-finite values detected."):
             estimator.fit(X, y)
 

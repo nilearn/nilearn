@@ -13,8 +13,7 @@ from sklearn import svm
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
-from sklearn.utils import check_array
-from sklearn.utils.estimator_checks import check_is_fitted
+from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import check_niimg_3d, check_niimg_4d, fill_doc, logger
 from nilearn._utils.param_validation import check_params
@@ -404,8 +403,6 @@ class SearchLight(TransformerMixin, BaseEstimator):
         # check if image is 4D
         imgs = check_niimg_4d(imgs)
 
-        check_array(y, ensure_2d=False, dtype=None)
-
         # Get the seeds
         if self.mask_img is not None:
             self.mask_img = check_niimg_3d(self.mask_img)
@@ -433,6 +430,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
             True,
             mask_img=self.mask_img,
         )
+        X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
 
         estimator = self.estimator
         if estimator == "svc":

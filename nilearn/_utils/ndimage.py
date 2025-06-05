@@ -163,7 +163,7 @@ def peak_local_max(
     return out
 
 
-def replace_non_finite(data, value=None):
+def replace_non_finite(data: np.ndarray, value=None):
     """Warns if non-finite values in array and replace them if needed."""
     non_finite_mask = np.logical_not(np.isfinite(data))
     if non_finite_mask.sum() > 0 or non_finite_mask.any():
