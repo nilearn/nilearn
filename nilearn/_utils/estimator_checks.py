@@ -399,15 +399,10 @@ def return_expected_failed_checks(
             }
 
         if isinstance(estimator, (SurfaceLabelsMasker, SurfaceMapsMasker)):
-            expected_failed_checks.pop("check_estimator_sparse_data")
             expected_failed_checks.pop("check_estimators_fit_returns_self")
             expected_failed_checks.pop("check_fit_check_is_fitted")
             expected_failed_checks.pop("check_fit2d_1feature")
             expected_failed_checks.pop("check_fit2d_1sample")
-
-            if SKLEARN_MINOR >= 5:
-                expected_failed_checks.pop("check_estimator_sparse_matrix")
-                expected_failed_checks.pop("check_estimator_sparse_array")
 
             if SKLEARN_MINOR >= 6:
                 expected_failed_checks.pop("check_readonly_memmap_input")
@@ -930,7 +925,8 @@ def check_decoder_empty_data_messages(estimator):
             n_classes=2,
             random_state=42,
         )
-        X = np.empty(0).reshape((dim, 0, 0))
+        data = np.empty(0).reshape((dim, 0, 0))
+        X = Nifti1Image(data, _affine_eye())
 
     y = _rng().random(y.shape)
 
