@@ -19,22 +19,13 @@ from nilearn.decomposition.tests.test_base import (
     make_masker,
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.surface import SurfaceImage
 
 
 def img_4d():
     data_4d = np.zeros((40, 40, 40, 3))
     data_4d[20, 20, 20] = 1
     return Nifti1Image(data_4d, affine=np.eye(4))
-
-
-@pytest.fixture(scope="module")
-def mask_img():
-    return make_data_to_reduce()[1]
-
-
-@pytest.fixture(scope="module")
-def multi_pca_data():
-    return make_data_to_reduce()[0]
 
 
 ESTIMATORS_TO_CHECK = [_MultiPCA()]
@@ -273,21 +264,27 @@ def test_multi_pca_score_single_subject_n_components(data_type):
     assert np.all(s >= 0)
 
 
-def test_components_img(multi_pca_data, mask_img):
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_components_img(data_type):
     n_components = 3
+    data, mask_img = make_data_to_reduce(data_type=data_type)
 
     multi_pca = _MultiPCA(
         mask=mask_img, n_components=n_components, random_state=0
     )
-    multi_pca.fit(multi_pca_data)
+    multi_pca.fit(data)
     components_img = multi_pca.components_img_
 
-    assert isinstance(components_img, Nifti1Image)
-
-    check_shape = multi_pca_data[0].shape[:3] + (n_components,)
-
-    assert components_img.shape == check_shape
-    assert len(components_img.shape) == 4
+    if data_type == "nifti":
+        assert isinstance(components_img, Nifti1Image)
+        check_shape = data[0].shape[:3] + (n_components,)
+        assert components_img.shape == check_shape
+        assert len(components_img.shape) == 4
+    elif data_type == "surface":
+        assert isinstance(components_img, SurfaceImage)
+        check_shape = (data[0].mesh.n_vertices, n_components)
+        assert components_img.shape == check_shape
+        assert len(components_img.shape) == 2
 
 
 @pytest.mark.parametrize("imgs", [[img_4d()], [img_4d(), img_4d()]])
