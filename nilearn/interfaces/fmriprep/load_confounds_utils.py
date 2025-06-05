@@ -3,8 +3,8 @@
 import itertools
 import json
 import re
-from pathlib import Path
 from copy import deepcopy
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -201,7 +201,9 @@ def _generate_confounds_file_candidates(nii_file, flag_tedana=False):
         # https://stackoverflow.com/a/3724558/2589328
         unique_subsets = [list(x) for x in {tuple(x) for x in all_subsets}]
         # Require "desc"
-        subset_with_desc = [subset for subset in unique_subsets if "desc" in subset]
+        subset_with_desc = [
+            subset for subset in unique_subsets if "desc" in subset
+        ]
 
         for subset in subset_with_desc:
             filenames.append("_".join([f"{k}-{entities[k]}" for k in subset]))
@@ -230,7 +232,9 @@ def _get_file_name(nii_file, flag_tedana=False):
 
     base_dir = Path(nii_file).parent
 
-    filenames = _generate_confounds_file_candidates(nii_file, flag_tedana=flag_tedana)
+    filenames = _generate_confounds_file_candidates(
+        nii_file, flag_tedana=flag_tedana
+    )
 
     # fmriprep has changed the file suffix between v20.1.1 and v20.2.0 with
     # respect to BEP 012.
@@ -238,7 +242,7 @@ def _get_file_name(nii_file, flag_tedana=False):
     # Check file with new naming scheme exists or replace,
     # for backward compatibility.
     suffixes = ["_timeseries.tsv", "_regressors.tsv"]
-    if flag_tedana: # tedana has different suffixes
+    if flag_tedana:  # tedana has different suffixes
         suffixes = ["_mixing.tsv", "_status_table.tsv"]
 
     confound_file_candidates = []
@@ -294,10 +298,10 @@ def get_confounds_file(image_file, flag_full_aroma, flag_tedana):
     confounds_raw_path : :obj:`str`
         Path to the associated confounds file.
     """
-
     _check_images(image_file, flag_full_aroma, flag_tedana)
     confounds_raw_path = _get_file_name(image_file, flag_tedana=flag_tedana)
     return confounds_raw_path
+
 
 def get_json(confounds_raw_path, flag_tedana=False):
     """Return json data companion file to the confounds tsv file."""
@@ -370,7 +374,10 @@ def load_confounds_file_as_dataframe(confounds_raw_path, flag_tedana=False):
     if flag_tedana:
         # TEDANA outputs are not camel case, but they have a different
         # header format.
-        if any(col.startswith("ICA_") for col in confounds_raw.columns) or "Component" in confounds_raw.columns:
+        if (
+            any(col.startswith("ICA_") for col in confounds_raw.columns)
+            or "Component" in confounds_raw.columns
+        ):
             return confounds_raw
         else:
             raise ValueError(
@@ -403,8 +410,9 @@ def load_confounds_file_as_dataframe(confounds_raw_path, flag_tedana=False):
             "Is this an old version fMRIprep output?"
             f"{bad_file.head()}"
         )
-    
+
     return confounds_raw
+
 
 def _ext_validator(image_file, ext):
     """Check image is valid based on extension.

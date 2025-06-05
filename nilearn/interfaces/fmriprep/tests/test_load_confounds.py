@@ -28,7 +28,9 @@ def _simu_img(tmp_path, trend, demean, image_type="regular"):
     """Simulate an nifti image based on confound file \
     with some parts confounds and some parts noise.
     """
-    file_nii, _ = create_tmp_filepath(tmp_path, image_type=image_type, copy_confounds=True)
+    file_nii, _ = create_tmp_filepath(
+        tmp_path, image_type=image_type, copy_confounds=True
+    )
     # set the size of the image matrix
     nx = 5
     ny = 5
@@ -124,7 +126,9 @@ def _handle_non_steady(confounds):
 def _regression(confounds, image_type, tmp_path):
     """Perform simple regression with NiftiMasker."""
     # Simulate data
-    img, mask_conf, _, _, _ = _simu_img(tmp_path, trend=False, demean=False, image_type=image_type)
+    img, mask_conf, _, _, _ = _simu_img(
+        tmp_path, trend=False, demean=False, image_type=image_type
+    )
     confounds = _handle_non_steady(confounds)
     # Do the regression
     masker = NiftiMasker(mask_img=mask_conf, standardize=True)
@@ -150,7 +154,9 @@ def _regression(confounds, image_type, tmp_path):
         (("tedana",), {"tedana": "rejected"}, "tedana"),
     ],
 )
-def test_nilearn_regress(tmp_path, test_strategy, param, image_type, fmriprep_version):
+def test_nilearn_regress(
+    tmp_path, test_strategy, param, image_type, fmriprep_version
+):
     """Try regressing out all motion types without sample mask."""
     img_nii, _ = create_tmp_filepath(
         tmp_path,
