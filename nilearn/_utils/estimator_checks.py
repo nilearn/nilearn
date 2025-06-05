@@ -612,14 +612,23 @@ def nilearn_check_generator(estimator: BaseEstimator):
     yield (clone(estimator), check_transformer_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
-        yield (clone(estimator), check_img_estimator_dont_overwrite_parameters)
-        yield (clone(estimator), check_img_estimators_overwrite_params)
-
         if requires_y:
             yield (clone(estimator), check_image_estimator_requires_y_none)
 
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_image_supervised_estimator_y_no_nan)
+
+        if (
+            is_classifier(estimator)
+            or is_regressor(estimator)
+            or is_masker(estimator)
+            or is_glm(estimator)
+        ):
+            yield (
+                clone(estimator),
+                check_img_estimator_dont_overwrite_parameters,
+            )
+            yield (clone(estimator), check_img_estimators_overwrite_params)
 
     if is_masker(estimator):
         yield (clone(estimator), check_masker_clean_kwargs)
@@ -788,7 +797,7 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
         return estimator.fit(imgs)
 
     else:
-        imgs = _img_3d_rand()
+        imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_eye())
         return estimator.fit(imgs)
 
 
