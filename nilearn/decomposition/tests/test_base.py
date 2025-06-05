@@ -69,6 +69,7 @@ def make_data_to_reduce(data_type="nifti", with_activation=True):
     """Create "multi-subject" dataset with fake activation."""
     n_samples = 5
     n_subjects = 4
+    rng = _rng()
     imgs = []
 
     if data_type == "surface":
@@ -78,10 +79,10 @@ def make_data_to_reduce(data_type="nifti", with_activation=True):
         }
         for _ in range(n_subjects):
             data = {
-                "left": _rng().standard_normal(
+                "left": rng.standard_normal(
                     size=(mesh["left"].coordinates.shape[0], n_samples)
                 ),
-                "right": _rng().standard_normal(
+                "right": rng.standard_normal(
                     size=(mesh["right"].coordinates.shape[0], n_samples)
                 ),
             }
@@ -98,7 +99,7 @@ def make_data_to_reduce(data_type="nifti", with_activation=True):
 
     shape = (*SHAPE_NIFTI, n_samples)
     for _ in range(n_subjects):
-        this_img = _rng().normal(size=shape)
+        this_img = rng.normal(size=shape)
         if with_activation:
             this_img[2:4, 2:4, 2:4, :] += 10
         imgs.append(Nifti1Image(this_img, _affine_eye()))
