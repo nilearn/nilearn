@@ -918,7 +918,7 @@ def plot_surf_roi(
         When using matplotlib as engine,
         `avg_method` will default to ``"median"`` if ``None`` is passed.
 
-    threshold : :obj:`int` or :obj:`float`, None, default=1e-14
+    threshold : :obj:`int` or :obj:`float`, None, default=None
         Threshold regions that are labeled 0.
         If you want to use 0 as a label, set threshold to None.
 
