@@ -180,6 +180,7 @@ def plot_surf(
         ``"mean"`` if `None` is passed.
 
     %(threshold)s
+        Default=None
 
     alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
@@ -529,6 +530,7 @@ def plot_surf_stat_map(
         .. versionadded:: 0.10.3dev
 
     %(threshold)s
+        Default=None
 
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not the stat_map).
@@ -730,6 +732,7 @@ def plot_img_on_surf(
     %(vmax)s
 
     %(threshold)s
+        Default=None
 
     %(symmetric_cbar)s
 
@@ -919,7 +922,7 @@ def plot_surf_roi(
         `avg_method` will default to ``"median"`` if ``None`` is passed.
 
     %(threshold)s
-        default=None
+        Default=None
 
         .. note::
             By default, the regions that are labeled 0 are not thresholded.
