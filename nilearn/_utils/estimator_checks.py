@@ -180,7 +180,6 @@ def return_expected_failed_checks(
 
     if isinstance(estimator, ConnectivityMeasure):
         expected_failed_checks = {
-            "check_estimators_fit_returns_self": "TODO",
             "check_fit2d_predict1d": "TODO",
             "check_methods_sample_order_invariance": "TODO",
             "check_methods_subset_invariance": "TODO",
@@ -190,8 +189,7 @@ def return_expected_failed_checks(
             "check_transformer_data_not_an_array": "TODO",
             "check_transformer_general": "TODO",
         }
-        if SKLEARN_MINOR >= 4:
-            expected_failed_checks.pop("check_estimators_fit_returns_self")
+        if SKLEARN_MINOR > 4:
             expected_failed_checks |= {
                 "check_transformer_preserve_dtypes": "TODO",
             }
