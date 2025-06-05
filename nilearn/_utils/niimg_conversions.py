@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 from joblib import Memory
+from nibabel.spatialimages import SpatialImage
 from numpy.testing import assert_array_equal
 
 import nilearn as ni
@@ -284,16 +285,27 @@ def check_niimg(
     """
     from ..image import new_img_like  # avoid circular imports
 
-    is_niimg_like = isinstance(niimg, NiimgLike) or (
-        isinstance(niimg, list)
-        and all(isinstance(x, NiimgLike) for x in niimg)
-    )
-
-    if not is_niimg_like:
+    if not (
+        isinstance(niimg, (NiimgLike, SpatialImage))
+        or (hasattr(niimg, "__iter__"))
+    ):
         raise TypeError(
-            "input should be a NiftiLike object. "
+            "input should be a NiftiLike object "
+            "or an iterable of NiftiLike object. "
             f"Got: {niimg.__class__.__name__}"
         )
+
+    if hasattr(niimg, "__iter__"):
+        for x in niimg:
+            if not (
+                isinstance(x, (NiimgLike, SpatialImage))
+                or hasattr(x, "__iter__")
+            ):
+                raise TypeError(
+                    "iterable inputs should contain "
+                    "NiftiLike objects or iterables. "
+                    f"Got: {x.__class__.__name__}"
+                )
 
     niimg = stringify_path(niimg)
 

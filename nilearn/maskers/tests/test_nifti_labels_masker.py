@@ -108,13 +108,7 @@ def test_nifti_labels_masker_errors(
 ):
     """Check working of shape/affine checks."""
     masker = NiftiLabelsMasker()
-    with pytest.raises(
-        TypeError,
-        match=(
-            "Data given cannot be loaded "
-            "because it is not compatible with nibabel format"
-        ),
-    ):
+    with pytest.raises(TypeError, match="input should be a NiftiLike object"):
         masker.fit()
 
     shape1 = (*shape_3d_default, length)
