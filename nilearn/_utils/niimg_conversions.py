@@ -7,7 +7,6 @@ from pathlib import Path
 
 import numpy as np
 from joblib import Memory
-from nibabel.spatialimages import SpatialImage
 from numpy.testing import assert_array_equal
 
 import nilearn as ni
@@ -17,6 +16,7 @@ from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data, load_niimg, safe_get_data
 from nilearn._utils.path_finding import resolve_globbing
+from nilearn.typing import NiimgLike
 
 
 def _check_fov(img, affine, shape):
@@ -284,7 +284,12 @@ def check_niimg(
     """
     from ..image import new_img_like  # avoid circular imports
 
-    if not isinstance(niimg, (str, Path, SpatialImage)):
+    is_niimg_like = isinstance(niimg, NiimgLike) or (
+        isinstance(niimg, list)
+        and all(isinstance(x, NiimgLike) for x in niimg)
+    )
+
+    if not is_niimg_like:
         raise TypeError(
             "input should be a NiftiLike object. "
             f"Got: {niimg.__class__.__name__}"
