@@ -1572,6 +1572,9 @@ def clean_img(
         nilearn.signal.clean
 
     """
+    # Avoid circular import
+    from .. import masking
+
     # Check if t_r is set, otherwise propose t_r from imgs header
     if (low_pass is not None or high_pass is not None) and t_r is None:
         # We raise an error, instead of using the header's t_r as this
@@ -1606,11 +1609,13 @@ def clean_img(
             )
             data[p] = data[p].T
 
-        if mask_img is None:
-            return new_img_like(imgs, data)
+        if mask_img is not None:
+            mask_img = masking.load_mask_img(mask_img)[0]
+            for hemi in mask_img.data.parts:
+                mask = mask_img.data.parts[hemi]
+                data[hemi][mask == 0.0, ...] = 0.0
 
-    # Avoid circular import
-    from .. import masking
+        return new_img_like(imgs, data)
 
     imgs_ = check_niimg_4d(imgs)
 
