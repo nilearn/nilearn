@@ -268,7 +268,7 @@ def test_explicit_fixed_effects_without_mask(shape_3d_default):
 
 def test_high_level_glm_with_data(shape_3d_default):
     """High level test of GLM."""
-    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
+    shapes, rk = [(*shape_3d_default, 5)], 3
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
     )
@@ -283,9 +283,38 @@ def test_high_level_glm_with_data(shape_3d_default):
     assert get_data(z_image).std() < 3.0
 
 
+def test_glm_target_shape_affine(shape_3d_default, affine_eye):
+    """Check that target shape and affine are applied."""
+    shapes, rk = [(*shape_3d_default, 5)], 3
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk=rk
+    )
+
+    model_1 = FirstLevelModel(mask_img=None).fit(
+        fmri_data, design_matrices=design_matrices
+    )
+
+    assert model_1.masker_.mask_img_.shape == shape_3d_default
+
+    z_image = model_1.compute_contrast(np.eye(rk)[1])
+
+    assert z_image.shape == shape_3d_default
+
+    model_2 = FirstLevelModel(
+        mask_img=None, target_shape=(10, 11, 12), target_affine=affine_eye
+    ).fit(fmri_data, design_matrices=design_matrices)
+    assert model_2.masker_.mask_img_.shape != shape_3d_default
+    assert model_2.masker_.mask_img_.shape == (10, 11, 12)
+
+    z_image = model_2.compute_contrast(np.eye(rk)[1])
+
+    assert z_image.shape != shape_3d_default
+    assert z_image.shape == (10, 11, 12)
+
+
 def test_high_level_glm_with_data_with_mask(shape_3d_default):
     """Test GLM can be run with mask."""
-    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
+    shapes, rk = [(*shape_3d_default, 5)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
     )
@@ -362,7 +391,7 @@ def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
 
 def test_high_level_glm_with_paths(tmp_path, shape_3d_default):
     """Test GLM can be run with files."""
-    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
+    shapes, rk = [(*shape_3d_default, 5)], 3
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
