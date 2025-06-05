@@ -765,7 +765,7 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
     elif is_classifier(estimator):
         dim = 5
         X, y = make_classification(
-            n_samples=20,
+            n_samples=30,
             n_features=dim**3,
             scale=3.0,
             n_informative=5,
@@ -778,7 +778,7 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
     elif is_regressor(estimator):
         dim = 5
         X, y = make_regression(
-            n_samples=20,
+            n_samples=30,
             n_features=dim**3,
             n_informative=dim,
             noise=1.5,
@@ -891,11 +891,12 @@ def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
 
     # check that fit doesn't add any public attribute
     assert not attrs_added_by_fit, (
-        "Estimator adds public attribute(s) during"
+        f"Estimator {estimator.__class__.__name__} "
+        "adds public attribute(s) during"
         " the fit method."
         " Estimators are only allowed to add private attributes"
         " either started with _ or ended"
-        f" with _ but {', '.join(attrs_added_by_fit)} added"
+        f" with _ but [{', '.join(attrs_added_by_fit)}] added"
     )
 
     # check that fit doesn't change any public attribute
@@ -912,11 +913,12 @@ def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
     ]
 
     assert not attrs_changed_by_fit, (
-        "Estimator changes public attribute(s) during"
+        f"Estimator {estimator.__class__.__name__} "
+        "changes public attribute(s) during"
         " the fit method. Estimators are only allowed"
         " to change attributes started"
         " or ended with _, but"
-        f" {', '.join(attrs_changed_by_fit)} changed"
+        f" [{', '.join(attrs_changed_by_fit)}] changed"
     )
 
 
