@@ -406,7 +406,7 @@ def test_high_level_glm_with_paths(tmp_path, shape_3d_default):
 
 def test_high_level_glm_null_contrasts(shape_3d_default):
     """Test contrast computation is resilient to 0 values."""
-    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 5)], 3
+    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk
     )
