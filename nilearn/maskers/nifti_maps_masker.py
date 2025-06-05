@@ -1,6 +1,7 @@
 """Transformer for computing ROI signals."""
 
 import warnings
+from copy import deepcopy
 
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -416,8 +417,9 @@ class NiftiMapsMasker(BaseMasker):
         repr = repr_niimgs(self.maps_img, shorten=(not self.verbose))
         msg = f"loading regions from {repr}"
         log(msg=msg, verbose=self.verbose)
+        self.maps_img_ = deepcopy(self.maps_img)
         self.maps_img_ = check_niimg(
-            self.maps_img, dtype=self.dtype, atleast_4d=True
+            self.maps_img_, dtype=self.dtype, atleast_4d=True
         )
         self.maps_img_ = clean_img(
             self.maps_img_,

@@ -956,7 +956,7 @@ def check_img_estimators_overwrite_params(estimator) -> None:
         assert joblib.hash(new_value) == joblib.hash(original_value), (
             f"Estimator {estimator.__class__.__name__} "
             "should not change or mutate "
-            f" the parameter {param_name} from {original_value} "
+            f"the parameter {param_name} from {original_value} "
             f"to {new_value} during fit."
         )
 

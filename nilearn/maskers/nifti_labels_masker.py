@@ -529,7 +529,8 @@ class NiftiLabelsMasker(BaseMasker):
         repr = repr_niimgs(self.labels_img, shorten=(not self.verbose))
         msg = f"loading data from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
-        self.labels_img_ = check_niimg_3d(self.labels_img)
+        self.labels_img_ = deepcopy(self.labels_img)
+        self.labels_img_ = check_niimg_3d(self.labels_img_)
 
         if self.labels:
             if self.lut is not None:
