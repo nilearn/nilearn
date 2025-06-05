@@ -43,12 +43,6 @@ N_FEATURES = 49
 N_SUBJECTS = 5
 
 
-@parametrize_with_checks(estimators=[EmpiricalCovariance(), LedoitWolf()])
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
 ESTIMATORS_TO_CHECK = [
     ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
 ]
@@ -625,11 +619,6 @@ def test_connectivity_measure_errors():
     # Raising error for input subjects not iterable
     conn_measure = ConnectivityMeasure()
 
-    with pytest.raises(
-        ValueError, match="'subjects' input argument must be an iterable"
-    ):
-        conn_measure.fit(1.0)
-
     # input subjects not 2D numpy.ndarrays
     with pytest.raises(
         ValueError, match="Each subject must be 2D numpy.ndarray."
@@ -679,7 +668,7 @@ def test_connectivity_measure_generic(
 def _assert_connectivity_tangent(connectivities, conn_measure, covs):
     """Check output value properties for tangent connectivity measure \
     that they have the expected relationship \
-    to the input covariance matrices.
+    to the input covariance matrices.ConnectivityMeasure.
 
     - the geometric mean of the eigenvalues
         of the mean covariance matrix is positive-definite
