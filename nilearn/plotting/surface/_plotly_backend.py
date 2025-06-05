@@ -14,13 +14,15 @@ from nilearn._utils.helpers import is_kaleido_installed
 from nilearn.plotting._utils import get_colorbar_and_data_ranges
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.js_plotting_utils import colorscale
-from nilearn.plotting.surface._backend import (
+from nilearn.plotting.surface._utils import (
+    DEFAULT_HEMI,
     VALID_HEMISPHERES,
-    BaseSurfaceBackend,
+    check_engine_params,
     check_surf_map,
+    sanitize_hemi_view,
 )
-from nilearn.plotting.surface._utils import DEFAULT_HEMI
 from nilearn.plotting.surface.html_surface import get_vertexcolor
+from nilearn.surface import load_surf_data, load_surf_mesh
 
 try:
     import plotly.graph_objects as go
@@ -85,6 +87,53 @@ LAYOUT = {
     "hovermode": False,
     "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
 }
+
+
+def adjust_colorbar_and_data_ranges(
+    stat_map, vmin=None, vmax=None, symmetric_cbar=None
+):
+    """Adjust colorbar and data ranges for 'plotly' engine.
+
+    .. note::
+        colorbar ranges are not used for 'plotly' engine.
+
+    Parameters
+    ----------
+    stat_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
+
+    %(vmin)s
+
+    %(vmax)s
+
+    %(symmetric_cbar)s
+
+    Returns
+    -------
+        cbar_vmin, cbar_vmax, vmin, vmax
+    """
+    _, _, vmin, vmax = get_colorbar_and_data_ranges(
+        stat_map,
+        vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar,
+    )
+
+    return None, None, vmin, vmax
+
+
+def adjust_plot_roi_params(params):
+    """Adjust cbar_tick_format value for 'plotly' engine.
+
+    Sets the values in params dict.
+
+    Parameters
+    ----------
+    params : dict
+        dictionary to set the adjusted parameters
+    """
+    cbar_tick_format = params.get("cbar_tick_format", "auto")
+    if cbar_tick_format == "auto":
+        params["cbar_tick_format"] = "."
 
 
 def _configure_title(title, font_size, color="black"):
@@ -209,172 +258,138 @@ def _get_cbar(
     return dummy
 
 
-class PlotlySurfaceBackend(BaseSurfaceBackend):
-    @property
-    def name(self):
-        return "plotly"
+def _get_view_plot_surf(hemi, view):
+    """Check ``hemi`` and ``view``, and return camera view for plotly
+    engine.
+    """
+    view = sanitize_hemi_view(hemi, view)
+    if isinstance(view, str):
+        return _get_camera_view_from_string_view(hemi, view)
+    return _get_camera_view_from_elevation_and_azimut(view)
 
-    def _get_view_plot_surf(self, hemi, view):
-        """Check ``hemi`` and ``view``, and return camera view for plotly
-        engine.
-        """
-        view = self._sanitize_hemi_view(hemi, view)
-        if isinstance(view, str):
-            return _get_camera_view_from_string_view(hemi, view)
-        return _get_camera_view_from_elevation_and_azimut(view)
 
-    def _plot_surf(
-        self,
-        surf_mesh,
-        surf_map=None,
-        bg_map=None,
-        hemi=DEFAULT_HEMI,
-        view=None,
-        cmap=None,
-        symmetric_cmap=None,
-        colorbar=True,
-        avg_method=None,
-        threshold=None,
-        alpha=None,
-        bg_on_data=False,
-        darkness=0.7,
-        vmin=None,
-        vmax=None,
-        cbar_vmin=None,
-        cbar_vmax=None,
-        cbar_tick_format="auto",
-        title=None,
-        title_font_size=None,
-        output_file=None,
-        axes=None,
-        figure=None,
-    ):
-        parameters_not_implemented_in_plotly = {
-            "avg_method": avg_method,
-            "alpha": alpha,
-            "cbar_vmin": cbar_vmin,
-            "cbar_vmax": cbar_vmax,
-            "axes": axes,
-            "figure": figure,
-        }
-        self._check_engine_params(parameters_not_implemented_in_plotly)
+def _plot_surf(
+    surf_mesh,
+    surf_map=None,
+    bg_map=None,
+    hemi=DEFAULT_HEMI,
+    view=None,
+    cmap=None,
+    symmetric_cmap=None,
+    colorbar=True,
+    avg_method=None,
+    threshold=None,
+    alpha=None,
+    bg_on_data=False,
+    darkness=0.7,
+    vmin=None,
+    vmax=None,
+    cbar_vmin=None,
+    cbar_vmax=None,
+    cbar_tick_format="auto",
+    title=None,
+    title_font_size=None,
+    output_file=None,
+    axes=None,
+    figure=None,
+):
+    """Implement 'plotly' backend code for
+    `~nilearn.plotting.surface.surf_plotting.plot_surf` function.
+    """
+    parameters_not_implemented_in_plotly = {
+        "avg_method": avg_method,
+        "alpha": alpha,
+        "cbar_vmin": cbar_vmin,
+        "cbar_vmax": cbar_vmax,
+        "axes": axes,
+        "figure": figure,
+    }
+    check_engine_params(parameters_not_implemented_in_plotly, "plotly")
 
-        # adjust values
-        cbar_tick_format = (
-            ".1f" if cbar_tick_format == "auto" else cbar_tick_format
-        )
-        cmap = DEFAULT_DIVERGING_CMAP if cmap is None else cmap
-        symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
-        title_font_size = 18 if title_font_size is None else title_font_size
+    # adjust values
+    cbar_tick_format = (
+        ".1f" if cbar_tick_format == "auto" else cbar_tick_format
+    )
+    cmap = DEFAULT_DIVERGING_CMAP if cmap is None else cmap
+    symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
+    title_font_size = 18 if title_font_size is None else title_font_size
 
-        coords, faces = self.load_surf_mesh(surf_mesh)
+    coords, faces = load_surf_mesh(surf_mesh)
 
-        x, y, z = coords.T
-        i, j, k = faces.T
+    x, y, z = coords.T
+    i, j, k = faces.T
 
-        bg_data = None
-        if bg_map is not None:
-            bg_data = self.load_surf_data(bg_map)
-            if bg_data.shape[0] != coords.shape[0]:
-                raise ValueError(
-                    "The bg_map does not have the same number "
-                    "of vertices as the mesh."
-                )
-
-        if surf_map is not None:
-            check_surf_map(surf_map, coords.shape[0])
-            colors = colorscale(
-                cmap,
-                surf_map,
-                threshold,
-                vmax=vmax,
-                vmin=vmin,
-                symmetric_cmap=symmetric_cmap,
-            )
-            vertexcolor = get_vertexcolor(
-                surf_map,
-                colors["cmap"],
-                colors["norm"],
-                absolute_threshold=colors["abs_threshold"],
-                bg_map=bg_data,
-                bg_on_data=bg_on_data,
-                darkness=darkness,
-            )
-        else:
-            if bg_data is None:
-                bg_data = np.zeros(coords.shape[0])
-            colors = colorscale("Greys", bg_data, symmetric_cmap=False)
-            vertexcolor = get_vertexcolor(
-                bg_data,
-                colors["cmap"],
-                colors["norm"],
-                absolute_threshold=colors["abs_threshold"],
+    bg_data = None
+    if bg_map is not None:
+        bg_data = load_surf_data(bg_map)
+        if bg_data.shape[0] != coords.shape[0]:
+            raise ValueError(
+                "The bg_map does not have the same number "
+                "of vertices as the mesh."
             )
 
-        mesh_3d = go.Mesh3d(
-            x=x, y=y, z=z, i=i, j=j, k=k, vertexcolor=vertexcolor
-        )
-        fig_data = [mesh_3d]
-        if colorbar:
-            dummy = _get_cbar(
-                colors["colors"],
-                float(colors["vmin"]),
-                float(colors["vmax"]),
-                cbar_tick_format,
-            )
-            fig_data.append(dummy)
-
-        # instantiate plotly figure
-        camera_view = self._get_view_plot_surf(hemi, view)
-        fig = go.Figure(data=fig_data)
-        fig.update_layout(
-            scene_camera=camera_view,
-            title=_configure_title(title, title_font_size),
-            **LAYOUT,
-        )
-
-        # save figure
-        plotly_figure = PlotlySurfaceFigure(
-            figure=fig, output_file=output_file, hemi=hemi
-        )
-
-        if output_file is not None:
-            if not is_kaleido_installed():
-                msg = (
-                    "Saving figures to file with engine='plotly' requires "
-                    "that ``kaleido`` is installed."
-                )
-                raise ImportError(msg)
-            plotly_figure.savefig()
-
-        return plotly_figure
-
-    def _plot_surf_contours(
-        self,
-        surf_mesh=None,
-        roi_map=None,
-        hemi=DEFAULT_HEMI,
-        levels=None,
-        labels=None,
-        colors=None,
-        legend=False,
-        cmap="tab20",
-        title=None,
-        output_file=None,
-        axes=None,
-        figure=None,
-        **kwargs,
-    ):
-        raise NotImplementedError()
-
-    def _adjust_colorbar_and_data_ranges(
-        self, stat_map, vmin=None, vmax=None, symmetric_cbar=None
-    ):
-        _, _, vmin, vmax = get_colorbar_and_data_ranges(
-            stat_map,
-            vmin=vmin,
+    if surf_map is not None:
+        check_surf_map(surf_map, coords.shape[0])
+        colors = colorscale(
+            cmap,
+            surf_map,
+            threshold,
             vmax=vmax,
-            symmetric_cbar=symmetric_cbar,
+            vmin=vmin,
+            symmetric_cmap=symmetric_cmap,
+        )
+        vertexcolor = get_vertexcolor(
+            surf_map,
+            colors["cmap"],
+            colors["norm"],
+            absolute_threshold=colors["abs_threshold"],
+            bg_map=bg_data,
+            bg_on_data=bg_on_data,
+            darkness=darkness,
+        )
+    else:
+        if bg_data is None:
+            bg_data = np.zeros(coords.shape[0])
+        colors = colorscale("Greys", bg_data, symmetric_cmap=False)
+        vertexcolor = get_vertexcolor(
+            bg_data,
+            colors["cmap"],
+            colors["norm"],
+            absolute_threshold=colors["abs_threshold"],
         )
 
-        return None, None, vmin, vmax
+    mesh_3d = go.Mesh3d(x=x, y=y, z=z, i=i, j=j, k=k, vertexcolor=vertexcolor)
+    fig_data = [mesh_3d]
+    if colorbar:
+        dummy = _get_cbar(
+            colors["colors"],
+            float(colors["vmin"]),
+            float(colors["vmax"]),
+            cbar_tick_format,
+        )
+        fig_data.append(dummy)
+
+    # instantiate plotly figure
+    camera_view = _get_view_plot_surf(hemi, view)
+    fig = go.Figure(data=fig_data)
+    fig.update_layout(
+        scene_camera=camera_view,
+        title=_configure_title(title, title_font_size),
+        **LAYOUT,
+    )
+
+    # save figure
+    plotly_figure = PlotlySurfaceFigure(
+        figure=fig, output_file=output_file, hemi=hemi
+    )
+
+    if output_file is not None:
+        if not is_kaleido_installed():
+            msg = (
+                "Saving figures to file with engine='plotly' requires "
+                "that ``kaleido`` is installed."
+            )
+            raise ImportError(msg)
+        plotly_figure.savefig()
+
+    return plotly_figure

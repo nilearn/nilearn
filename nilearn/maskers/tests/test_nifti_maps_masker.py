@@ -10,45 +10,66 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_maps,
     generate_random_img,
 )
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+    return_expected_failed_checks,
+)
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _img_maps, _shape_3d_default
 from nilearn.image import get_data
 from nilearn.maskers import NiftiMapsMasker
-from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
+
+ESTIMATORS_TO_CHECK = [NiftiMapsMasker()]
+
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        # pass less than the default number of regions
-        # to speed up the tests
-        estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
-        expected_failed_checks=expected_failed_checks_0pt13pt2(),
+    nilearn_check_estimator(
+        estimators=[  # pass less than the default number of regions
+            # to speed up the tests
+            NiftiMapsMasker(maps_img=_img_maps(n_regions=2))
+        ]
     ),
 )
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        # pass less than the default number of regions
-        # to speed up the tests
-        estimator=[NiftiMapsMasker(maps_img=_img_maps(n_regions=2))],
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -61,8 +82,9 @@ def test_nifti_maps_masker_data_atlas_different_shape(
     The atlas should be resampled to the data.
     """
     shape2 = (12, 10, 14)
+
     shape22 = (5, 5, 6)
-    affine2 = np.diag((1, 2, 3, 1))
+
     affine2 = 2 * affine_eye
     affine2[-1, -1] = 1
 
@@ -73,8 +95,9 @@ def test_nifti_maps_masker_data_atlas_different_shape(
 
     masker = NiftiMapsMasker(img_maps, mask_img=mask21_img)
 
-    masker.fit_transform(fmri22_img)
-    assert_array_equal(masker._resampled_maps_img_.affine, affine2)
+    masker.fit(fmri22_img)
+
+    assert_array_equal(masker.maps_img_.affine, affine2)
 
 
 def test_nifti_maps_masker_fit(n_regions, img_maps):
@@ -133,13 +156,12 @@ def test_nifti_maps_masker_errors_field_of_view(
     labels11, mask12 = images
 
     masker = NiftiMapsMasker(labels11, resampling_target=None)
-    masker.fit()
 
     with pytest.raises(ValueError, match=error_msg):
-        masker.transform(fmri12_img)
+        masker.fit_transform(fmri12_img)
 
     with pytest.raises(ValueError, match=error_msg):
-        masker.transform(fmri21_img)
+        masker.fit_transform(fmri21_img)
 
     masker = NiftiMapsMasker(labels11, mask_img=mask12, resampling_target=None)
     with pytest.raises(ValueError, match=error_msg):
@@ -202,10 +224,10 @@ def test_nifti_maps_masker_with_nans_and_infs(length, n_regions, affine_eye):
     # *before* safe_get_data.
     masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
 
-    sig = masker.fit_transform(fmri_img)
+    signals = masker.fit_transform(fmri_img)
 
-    assert sig.shape == (length, n_regions)
-    assert np.all(np.isfinite(sig))
+    assert signals.shape == (length, n_regions)
+    assert np.all(np.isfinite(signals))
 
 
 def test_nifti_maps_masker_resampling_to_mask(
@@ -227,21 +249,20 @@ def test_nifti_maps_masker_resampling_to_mask(
         maps33_img, mask_img=mask22_img, resampling_target="mask"
     )
 
-    masker.fit()
+    signals = masker.fit_transform(img_fmri)
 
     assert_almost_equal(masker.mask_img_.affine, mask22_img.affine)
     assert masker.mask_img_.shape == mask22_img.shape
-    assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
-    assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
-    transformed = masker.transform(img_fmri)
+    assert_almost_equal(masker.maps_img_.affine, masker.mask_img_.affine)
+    assert masker.maps_img_.shape[:3] == masker.mask_img_.shape
 
-    assert transformed.shape == (length, n_regions)
+    assert signals.shape == (length, n_regions)
 
-    fmri11_img_r = masker.inverse_transform(transformed)
+    fmri11_img_r = masker.inverse_transform(signals)
 
-    assert_almost_equal(fmri11_img_r.affine, masker.maps_img_.affine)
-    assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
+    assert_almost_equal(fmri11_img_r.affine, masker.mask_img_.affine)
+    assert fmri11_img_r.shape == (masker.mask_img_.shape[:3] + (length,))
 
 
 def test_nifti_maps_masker_resampling_to_maps(
@@ -262,20 +283,19 @@ def test_nifti_maps_masker_resampling_to_maps(
         maps33_img, mask_img=mask22_img, resampling_target="maps"
     )
 
-    masker.fit()
+    signals = masker.fit_transform(img_fmri)
 
-    assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
+    assert_array_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
-    assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
+
+    assert_array_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
-    transformed = masker.transform(img_fmri)
+    assert signals.shape == (length, n_regions)
 
-    assert transformed.shape == (length, n_regions)
+    fmri11_img_r = masker.inverse_transform(signals)
 
-    fmri11_img_r = masker.inverse_transform(transformed)
-
-    assert_almost_equal(fmri11_img_r.affine, masker.maps_img_.affine)
+    assert_array_equal(fmri11_img_r.affine, masker.maps_img_.affine)
     assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))
 
 
@@ -297,20 +317,19 @@ def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
         maps33_img, mask_img=mask22_img, resampling_target="maps"
     )
 
-    masker.fit()
+    signals = masker.fit_transform(fmri11_img)
 
     assert_almost_equal(masker.maps_img_.affine, maps33_img.affine)
     assert masker.maps_img_.shape == maps33_img.shape
+
     assert_almost_equal(masker.mask_img_.affine, masker.maps_img_.affine)
     assert masker.mask_img_.shape == masker.maps_img_.shape[:3]
 
-    transformed = masker.transform(fmri11_img)
-
-    assert transformed.shape == (length, n_regions)
+    assert signals.shape == (length, n_regions)
     # Some regions have been clipped. Resulting signal must be zero
-    assert (transformed.var(axis=0) == 0).sum() < n_regions
+    assert (signals.var(axis=0) == 0).sum() < n_regions
 
-    fmri11_img_r = masker.inverse_transform(transformed)
+    fmri11_img_r = masker.inverse_transform(signals)
 
     assert_almost_equal(fmri11_img_r.affine, masker.maps_img_.affine)
     assert fmri11_img_r.shape == (masker.maps_img_.shape[:3] + (length,))

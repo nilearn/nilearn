@@ -17,6 +17,7 @@ from numpy.testing import (
     assert_array_less,
 )
 from sklearn.cluster import KMeans
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
@@ -25,7 +26,12 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_fmri_data_and_design,
 )
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+    return_expected_failed_checks,
+)
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
     FirstLevelModel,
@@ -51,26 +57,44 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_polymesh_equal
 
+ESTIMATORS_TO_CHECK = [FirstLevelModel()]
+
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(estimator=[FirstLevelModel()]),
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[FirstLevelModel()],
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
     check(estimator)
 
 
@@ -161,11 +185,9 @@ def test_explicit_fixed_effects(shape_3d_default):
     contrasts = [dic1["effect_size"], dic2["effect_size"]]
     variance = [dic1["effect_variance"], dic2["effect_variance"]]
 
-    (
-        fixed_fx_contrast,
-        fixed_fx_variance,
-        fixed_fx_stat,
-    ) = compute_fixed_effects(contrasts, variance, mask)
+    (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _) = (
+        compute_fixed_effects(contrasts, variance, mask, return_z_score=True)
+    )
 
     assert_almost_equal(
         get_data(fixed_fx_contrast), get_data(fixed_fx_dic["effect_size"])
@@ -186,13 +208,17 @@ def test_explicit_fixed_effects(shape_3d_default):
             "from the number of variance images"
         ),
     ):
-        compute_fixed_effects(contrasts * 2, variance, mask)
+        compute_fixed_effects(
+            contrasts * 2, variance, mask, return_z_score=True
+        )
 
     # ensure that not providing the right number of dofs
     with pytest.raises(
         ValueError, match="degrees of freedom .* differs .* contrast images"
     ):
-        compute_fixed_effects(contrasts, variance, mask, dofs=[100])
+        compute_fixed_effects(
+            contrasts, variance, mask, dofs=[100], return_z_score=True
+        )
 
 
 def test_explicit_fixed_effects_without_mask(shape_3d_default):
@@ -2455,9 +2481,12 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
     surf_mask_ = masker.mask_img_
     for mask in [SurfaceMasker(mask_img=masker.mask_img_), surf_mask_, None]:
         outputs = compute_fixed_effects(
-            [effect, effect], [variance, variance], mask=mask
+            [effect, effect],
+            [variance, variance],
+            mask=mask,
+            return_z_score=True,
         )
-        assert len(outputs) == 3
+        assert len(outputs) == 4
         for output in outputs:
             assert isinstance(output, SurfaceImage)
 
