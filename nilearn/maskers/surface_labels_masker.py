@@ -265,6 +265,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+        if imgs is not None:
+            self._check_imgs(imgs)
 
         check_reduction_strategy(self.strategy)
 

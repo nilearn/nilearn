@@ -75,7 +75,6 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
-    SurfaceLabelsMasker,
     SurfaceMapsMasker,
     SurfaceMasker,
 )
@@ -402,23 +401,6 @@ def return_expected_failed_checks(
                     "Deprecation cycle started to fix."
                 ),
             }
-
-        if isinstance(estimator, (SurfaceLabelsMasker, SurfaceMapsMasker)):
-            expected_failed_checks.pop("check_estimator_sparse_data")
-            expected_failed_checks.pop("check_estimators_fit_returns_self")
-            expected_failed_checks.pop("check_fit_check_is_fitted")
-            expected_failed_checks.pop("check_fit2d_1feature")
-            expected_failed_checks.pop("check_fit2d_1sample")
-
-            if SKLEARN_MINOR >= 5:
-                expected_failed_checks.pop("check_estimator_sparse_matrix")
-                expected_failed_checks.pop("check_estimator_sparse_array")
-
-            if SKLEARN_MINOR >= 6:
-                expected_failed_checks.pop("check_readonly_memmap_input")
-                expected_failed_checks.pop(
-                    "check_positive_only_tag_during_fit"
-                )
 
         if isinstance(estimator, (NiftiMasker)) and SKLEARN_MINOR >= 5:
             if not IS_SKLEARN_1_6_1_on_py_3_9:
@@ -2422,10 +2404,6 @@ def check_glm_dtypes(estimator):
 
 def _generate_report_with_no_warning(estimator):
     """Check that report generation throws no warning."""
-    from nilearn.maskers import (
-        SurfaceMapsMasker,
-    )
-
     with warnings.catch_warnings(record=True) as warning_list:
         report = _generate_report(estimator)
 
@@ -2457,7 +2435,6 @@ def _generate_report(estimator):
     from nilearn.maskers import (
         MultiNiftiMapsMasker,
         NiftiMapsMasker,
-        SurfaceMapsMasker,
     )
 
     if isinstance(
