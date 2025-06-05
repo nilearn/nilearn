@@ -8,6 +8,7 @@ import itertools
 import warnings
 from math import ceil
 from pathlib import Path
+from string import Template
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -31,7 +32,31 @@ from nilearn.maskers import NiftiMapsMasker, SurfaceMapsMasker, SurfaceMasker
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
 
-SURFACE_DATA_EXTENSIONS = ("gii", "gii.gz", "mgz")
+
+def _warn_ignored_surface_masker_params(estimator):
+    """Warn about parameters that are ignored by SurfaceMasker.
+
+    Parameters
+    ----------
+    estimator : _BaseDecomposition
+        The estimator to check for ignored parameters.
+    """
+    params_to_ignore = ["mask_strategy", "target_affine", "target_shape"]
+    ignored_params = [
+        param
+        for param in params_to_ignore
+        if getattr(estimator, param, None) is not None
+    ]
+    if ignored_params:
+        warnings.warn(
+            Template(
+                "The following parameters are not relevant when the input "
+                "images and mask are SurfaceImages: "
+                "${params}. They will be ignored."
+            ).substitute(params=", ".join(ignored_params)),
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
 
 
 def _fast_svd(X, n_components, random_state=None):
@@ -420,16 +445,15 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         """
         # TODO
         # get rid of if block
-        # bumping sklearn_version > 1.5
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags()
+            return tags(surf_img=True, niimg_like=True)
 
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags()
+        tags.input_tags = InputTags(surf_img=True, niimg_like=True)
         return tags
 
     @fill_doc
@@ -492,6 +516,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             isinstance(x, SurfaceImage) for x in imgs
         ):
             masker_type = "surface"
+            _warn_ignored_surface_masker_params(self)
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
 
         # Avoid warning with imgs != None
