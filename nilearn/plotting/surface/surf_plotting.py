@@ -835,7 +835,7 @@ def plot_surf_roi(
     cmap="gist_ncar",
     colorbar=True,
     avg_method=None,
-    threshold=1e-14,
+    threshold=None,
     alpha=None,
     bg_on_data=False,
     darkness=0.7,
