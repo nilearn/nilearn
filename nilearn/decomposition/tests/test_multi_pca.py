@@ -185,7 +185,9 @@ def test_multi_pca_pass_masker_arg_to_estimator_smoke(data_type, affine_eye):
     """Masker arguments are passed to the estimator without fail."""
     data, _ = make_data_to_reduce(data_type=data_type)
     shape = (
-        data[0].shape[:3] if data_type == "nifti" else data[0].mesh.n_vertices
+        data[0].shape[:3]
+        if data_type == "nifti"
+        else (data[0].mesh.n_vertices,)
     )
     multi_pca = _MultiPCA(
         target_affine=affine_eye,
@@ -193,7 +195,16 @@ def test_multi_pca_pass_masker_arg_to_estimator_smoke(data_type, affine_eye):
         n_components=3,
         mask_strategy="background",
     )
-    multi_pca.fit(data)
+
+    # for surface we should get a warning about target_affine, target_shape
+    # and mask_strategy being ignored
+    if data_type == "surface":
+        with pytest.warns(
+            UserWarning, match="The following parameters are not relevant"
+        ):
+            multi_pca.fit(data)
+    elif data_type == "nifti":
+        multi_pca.fit(data)
 
 
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
