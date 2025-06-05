@@ -15,13 +15,14 @@ from nilearn.plotting._utils import get_colorbar_and_data_ranges
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.plotting.surface._utils import (
+    DEFAULT_ENGINE,
     DEFAULT_HEMI,
     VALID_HEMISPHERES,
     check_engine_params,
     check_surf_map,
+    get_surface_backend,
     sanitize_hemi_view,
 )
-from nilearn.plotting.surface.html_surface import get_vertexcolor
 from nilearn.surface import load_surf_data, load_surf_mesh
 
 try:
@@ -328,6 +329,7 @@ def _plot_surf(
                 "of vertices as the mesh."
             )
 
+    backend = get_surface_backend(DEFAULT_ENGINE)
     if surf_map is not None:
         check_surf_map(surf_map, coords.shape[0])
         colors = colorscale(
@@ -338,7 +340,7 @@ def _plot_surf(
             vmin=vmin,
             symmetric_cmap=symmetric_cmap,
         )
-        vertexcolor = get_vertexcolor(
+        vertexcolor = backend.get_vertexcolor(
             surf_map,
             colors["cmap"],
             colors["norm"],
@@ -351,7 +353,7 @@ def _plot_surf(
         if bg_data is None:
             bg_data = np.zeros(coords.shape[0])
         colors = colorscale("Greys", bg_data, symmetric_cmap=False)
-        vertexcolor = get_vertexcolor(
+        vertexcolor = backend.get_vertexcolor(
             bg_data,
             colors["cmap"],
             colors["norm"],
