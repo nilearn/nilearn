@@ -23,6 +23,8 @@ from nilearn.surface.tests.test_surface import flat_mesh
 
 SHAPE_NIFTI = (6, 8, 10)
 SHAPE_SURF = {"left": (10, 8), "right": (9, 7)}
+N_SUBJECTS = 4
+N_SAMPLES = 5
 
 ESTIMATORS_TO_CHECK = [_BaseDecomposition()]
 
@@ -67,8 +69,6 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 
 def make_data_to_reduce(data_type="nifti", with_activation=True):
     """Create "multi-subject" dataset with fake activation."""
-    n_samples = 5
-    n_subjects = 4
     rng = _rng()
     imgs = []
 
@@ -77,13 +77,13 @@ def make_data_to_reduce(data_type="nifti", with_activation=True):
             "left": flat_mesh(*SHAPE_SURF["left"]),
             "right": flat_mesh(*SHAPE_SURF["right"]),
         }
-        for _ in range(n_subjects):
+        for _ in range(N_SUBJECTS):
             data = {
                 "left": rng.standard_normal(
-                    size=(mesh["left"].coordinates.shape[0], n_samples)
+                    size=(mesh["left"].coordinates.shape[0], N_SAMPLES)
                 ),
                 "right": rng.standard_normal(
-                    size=(mesh["right"].coordinates.shape[0], n_samples)
+                    size=(mesh["right"].coordinates.shape[0], N_SAMPLES)
                 ),
             }
             if with_activation:
@@ -97,8 +97,8 @@ def make_data_to_reduce(data_type="nifti", with_activation=True):
         mask_img = SurfaceImage(mesh=mesh, data=mask_data)
         return imgs, mask_img
 
-    shape = (*SHAPE_NIFTI, n_samples)
-    for _ in range(n_subjects):
+    shape = (*SHAPE_NIFTI, N_SAMPLES)
+    for _ in range(N_SUBJECTS):
         this_img = rng.normal(size=shape)
         if with_activation:
             this_img[2:4, 2:4, 2:4, :] += 10
@@ -145,9 +145,9 @@ def test_fast_svd(n_features):
 @pytest.mark.parametrize(
     "n_components,reduction_ratio,expected_shape_0",
     [
-        (None, "auto", 8 * 5),
-        (3, "auto", 8 * 3),
-        (None, 0.4, 8 * 2),
+        (None, "auto", 4 * 5),
+        (3, "auto", 4 * 3),
+        (None, 0.4, 4 * 2),
     ],
 )
 def test_mask_reducer_multiple_image(
