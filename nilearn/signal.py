@@ -542,7 +542,7 @@ def high_variance_confounds(
 def _ensure_float(data):
     """Make sure that data is a float type."""
     if data.dtype.kind != "f":
-        if data.dtype.itemsize == "8":
+        if data.dtype.itemsize == 8:
             data = data.astype(np.float64)
         else:
             data = data.astype(np.float32)

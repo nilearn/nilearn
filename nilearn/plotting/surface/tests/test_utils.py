@@ -6,46 +6,44 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_equal
 
-from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn.plotting.surface._utils import (
+    _check_hemisphere_is_valid,
+    _check_view_is_valid,
     check_surface_plotting_inputs,
     get_faces_on_edge,
-    get_surface_backend,
 )
 from nilearn.surface import InMemoryMesh, load_surf_mesh
 from nilearn.surface.utils import assert_surface_mesh_equal
 
 
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="This test is run only if matplotlib is not installed.",
+@pytest.mark.parametrize(
+    "view,is_valid",
+    [
+        ("lateral", True),
+        ("medial", True),
+        ("latreal", False),
+        ((100, 100), True),
+        ([100.0, 100.0], True),
+        ((100, 100, 1), False),
+        (("lateral", "medial"), False),
+        ([100, "bar"], False),
+    ],
 )
-def test_get_surface_backend_matplotlib_not_installed():
-    """Tests to see if get_surface_backend raises error when matplotlib is not
-    installed.
-    """
-    with pytest.raises(ImportError, match="Using engine"):
-        get_surface_backend("matplotlib")
+def test_check_view_is_valid(view, is_valid):
+    assert _check_view_is_valid(view) is is_valid
 
 
-@pytest.mark.skipif(
-    is_plotly_installed(),
-    reason="This test is run only if plotly is not installed.",
+@pytest.mark.parametrize(
+    "hemi,is_valid",
+    [
+        ("left", True),
+        ("right", True),
+        ("both", True),
+        ("lft", False),
+    ],
 )
-def test_get_surface_backend_plotly_not_installed():
-    """Tests to see if get_surface_backend raises error when plotly is not
-    installed.
-    """
-    with pytest.raises(ImportError, match="Using engine"):
-        get_surface_backend("plotly")
-
-
-def test_get_surface_backend_unknown_error():
-    """Tests to see if get_surface_backend raises error when the specified
-    backend is not implemented.
-    """
-    with pytest.raises(ValueError, match="Unknown plotting engine"):
-        get_surface_backend("unknown")
+def test_check_hemisphere_is_valid(hemi, is_valid):
+    assert _check_hemisphere_is_valid(hemi) is is_valid
 
 
 @pytest.mark.parametrize("bg_map", ["some_path", Path("some_path"), None])
