@@ -414,10 +414,15 @@ class NiftiMapsMasker(BaseMasker):
         }
 
         # Load images
-        repr = repr_niimgs(self.maps_img, shorten=(not self.verbose))
+        maps_img = self.maps_img
+        if hasattr(self, "_maps_img"):
+            # This is for RegionExtractor that first modifies
+            # maps_img before passing to its parent fit method.
+            maps_img = self._maps_img
+        repr = repr_niimgs(maps_img, shorten=(not self.verbose))
         msg = f"loading regions from {repr}"
         log(msg=msg, verbose=self.verbose)
-        self.maps_img_ = deepcopy(self.maps_img)
+        self.maps_img_ = deepcopy(maps_img)
         self.maps_img_ = check_niimg(
             self.maps_img_, dtype=self.dtype, atleast_4d=True
         )
