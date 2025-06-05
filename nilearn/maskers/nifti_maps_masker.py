@@ -679,7 +679,7 @@ class NiftiMapsMasker(BaseMasker):
             ignore=["verbose", "memory", "memory_level"],
         )(
             # Images
-            imgs_,
+            imgs,
             _ExtractionFunctor(
                 maps_img_,
                 mask_img_,
