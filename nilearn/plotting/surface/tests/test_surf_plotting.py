@@ -433,7 +433,7 @@ def test_plot_surf_contours_warning_hemi(in_memory_mesh):
     """Test warning that hemi will be ignored."""
     parcellation = np.zeros((in_memory_mesh.n_vertices,))
     parcellation[in_memory_mesh.faces[3]] = 1
-    with pytest.warns(UserWarning, match="This value will be ignored"):
+    with pytest.warns(UserWarning, match="Please make sure that the"):
         plot_surf_contours(in_memory_mesh, parcellation, hemi="left")
 
 
@@ -692,6 +692,52 @@ def test_plot_surf_stat_map_colorbar_tick(plotly, in_memory_mesh, bg_map):
         cbar_tick_format="%.2g",
         engine="plotly",
     )
+
+
+@pytest.mark.parametrize("symmetric_cmap", [True, False, None])
+def test_plot_surf_stat_map_symmetric_cmap_plotly(
+    plotly, in_memory_mesh, bg_map, symmetric_cmap
+):
+    """Smoke test when symmetric_cmap with plotly engine is specified to
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
+    """
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=bg_map,
+        symmetric_cmap=symmetric_cmap,
+        engine="plotly",
+    )
+
+
+def test_plot_surf_stat_map_symmetric_cmap_matplotlib(
+    matplotlib_pyplot, in_memory_mesh, bg_map
+):
+    """Smoke test when symmetric_cmap is specified as None for matplotlib
+    engine to nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
+    """
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=bg_map,
+        symmetric_cmap=None,
+        engine="matplotlib",
+    )
+
+
+@pytest.mark.parametrize("symmetric_cmap", [True, False])
+def test_plot_surf_stat_map_symmetric_cmap_matplotlib_error(
+    matplotlib_pyplot, in_memory_mesh, bg_map, symmetric_cmap
+):
+    """Test if
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map raises error when
+    True or False is specified as symmetric_cmap for matplotlib engine.
+    """
+    with pytest.warns(UserWarning, match="'symmetric_cmap' is not implement"):
+        plot_surf_stat_map(
+            in_memory_mesh,
+            stat_map=bg_map,
+            symmetric_cmap=symmetric_cmap,
+            engine="matplotlib",
+        )
 
 
 def test_plot_surf_stat_map_matplotlib_specific(

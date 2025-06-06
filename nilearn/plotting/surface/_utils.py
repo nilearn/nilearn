@@ -276,9 +276,7 @@ def check_surface_plotting_inputs(
             message=(
                 f"{hemi=} was passed with "
                 f"{type(surf_map)=} and {type(surf_mesh)=}.\n"
-                "This value will be ignored as it is only used when "
-                "'map' is a SurfaceImage instance and / or "
-                "'mesh' is a PolyMesh instance."
+                "Please make sure that the specified hemi corresponds to data."
             ),
             stacklevel=find_stack_level(),
         )
@@ -293,7 +291,7 @@ def check_surface_plotting_inputs(
     if surf_mesh is None and not isinstance(surf_map, SurfaceImage):
         raise TypeError(
             f"If you want to pass {mesh_var_name}=None, "
-            f"then {mesh_var_name} must be a SurfaceImage instance."
+            f"then {map_var_name} must be a SurfaceImage instance."
         )
 
     if isinstance(surf_mesh, SurfaceImage):

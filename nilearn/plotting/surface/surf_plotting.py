@@ -127,6 +127,10 @@ def plot_surf(
         :obj:`~nilearn.surface.SurfaceImage` instance and its mesh will be
         used for plotting.
 
+        When specified `surf_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `surf_map`
+        data.
+
     %(bg_map)s
 
     %(hemi)s
@@ -357,6 +361,10 @@ def plot_surf_contours(
         :obj:`~nilearn.surface.SurfaceImage` instance and its the mesh will be
         used for plotting.
 
+        When specified `roi_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `roi_map`
+        data.
+
     %(hemi)s
         It is only used if ``roi_map`` is :obj:`~nilearn.surface.SurfaceImage`
         and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
@@ -442,6 +450,7 @@ def plot_surf_stat_map(
     view=None,
     engine=DEFAULT_ENGINE,
     cmap=DEFAULT_DIVERGING_CMAP,
+    symmetric_cmap=None,
     colorbar=True,
     avg_method=None,
     threshold=None,
@@ -482,6 +491,10 @@ def plot_surf_stat_map(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
+        When specified `surf_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `surf_map`
+        data.
+
     %(bg_map)s
 
     %(hemi)s
@@ -510,6 +523,18 @@ def plot_surf_stat_map(
 
     %(cmap)s
         default="RdBu_r"
+
+    symmetric_cmap : :obj:`bool`, default=None
+        Whether to use a symmetric colormap or not.
+
+        .. note::
+            This option is currently only implemented for the ``plotly``
+            engine.
+
+        When using ``plotly`` as engine, ``symmetric_cmap`` will default to
+        `False` if `None` is passed.
+
+        .. versionadded:: 0.12.0
 
     %(colorbar)s
 
@@ -621,30 +646,31 @@ def plot_surf_stat_map(
         symmetric_cbar=symmetric_cbar,
     )
 
-    fig = backend._plot_surf(
+    fig = plot_surf(
         surf_mesh,
         surf_map=loaded_stat_map,
         bg_map=bg_map,
         hemi=hemi,
         view=view,
+        engine=engine,
+        cmap=cmap,
+        symmetric_cmap=symmetric_cmap,
+        colorbar=colorbar,
         avg_method=avg_method,
         threshold=threshold,
-        cmap=cmap,
-        symmetric_cmap=True,
-        colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format,
         alpha=alpha,
         bg_on_data=bg_on_data,
         darkness=darkness,
-        vmax=vmax,
         vmin=vmin,
+        vmax=vmax,
+        cbar_vmin=cbar_vmin,
+        cbar_vmax=cbar_vmax,
+        cbar_tick_format=cbar_tick_format,
         title=title,
         title_font_size=title_font_size,
         output_file=output_file,
         axes=axes,
         figure=figure,
-        cbar_vmin=cbar_vmin,
-        cbar_vmax=cbar_vmax,
         **kwargs,
     )
     return fig
@@ -880,6 +906,10 @@ def plot_surf_roi(
         then ``roi_map``
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
+
+        When specified `roi_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `roi_map`
+        data.
 
     %(bg_map)s
 
