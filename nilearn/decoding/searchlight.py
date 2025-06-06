@@ -408,8 +408,8 @@ class SearchLight(TransformerMixin, BaseEstimator):
         check_array(y, ensure_2d=False, dtype=None)
 
         # Get the seeds
-        if self.mask_img is not None:
-            self.mask_img_ = deepcopy(self.mask_img)
+        self.mask_img_ = deepcopy(self.mask_img)
+        if self.mask_img_ is not None:
             self.mask_img_ = check_niimg_3d(self.mask_img_)
         process_mask_img = self.process_mask_img or self.mask_img_
 
@@ -462,6 +462,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         return (
             hasattr(self, "scores_")
             and hasattr(self, "process_mask_")
+            and hasattr(self, "mask_img_")
             and self.scores_ is not None
             and self.process_mask_ is not None
         )

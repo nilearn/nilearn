@@ -706,6 +706,7 @@ class FirstLevelModel(BaseGLM):
         return (
             hasattr(self, "labels_")
             and hasattr(self, "results_")
+            and hasattr(self, "fir_delays_")
             and self.labels_ is not None
             and self.results_ is not None
         )
