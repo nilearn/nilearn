@@ -205,7 +205,10 @@ def _generate_confounds_file_candidates(nii_file, flag_tedana=False):
             subset for subset in unique_subsets if "desc" in subset
         ]
 
-        filenames = ["_".join(f"{k}-{entities[k]}" for k in subset) for subset in subset_with_desc]
+        filenames = [
+            "_".join(f"{k}-{entities[k]}" for k in subset)
+            for subset in subset_with_desc
+        ]
 
     return filenames
 
@@ -269,7 +272,8 @@ def _get_file_name(nii_file, flag_tedana=False):
     elif len(found_files) != 2 and flag_tedana:
         found_str = "\n\t".join(found_files)
         raise ValueError(
-            f"Found {len(found_files)} confound files (expected 2 for TEDANA):\n\t{found_str}\n\n"
+            f"Found {len(found_files)} confound files "
+            f"(expected 2 for TEDANA):\n\t{found_str}\n\n"
             "TEDANA should produce exactly two confound files:\n"
             "- mixing.tsv\n"
             "- table_status.tsv"
@@ -459,7 +463,8 @@ def _check_images(image_file, flag_full_aroma, flag_tedana):
         True if the input is a full ICA-AROMA output, False otherwise.
 
     flag_tedata : :obj:`bool`
-        True if the input is a TEDANA optimally combined output, False otherwise.
+        True if the input is a TEDANA optimally combined output, 
+        False otherwise.
 
     Raises
     ------
