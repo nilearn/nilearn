@@ -41,15 +41,17 @@ class DictLearning(_BaseDecomposition):
 
     See :footcite:t:`Mensch2016`.
 
-     .. versionadded:: 0.2
+    .. versionadded:: 0.2
 
     Parameters
     ----------
-    mask : Niimg-like object or MultiNiftiMasker instance, optional
+    mask : Niimg-like object or MultiNiftiMasker instance or \
+           :obj:`~nilearn.surface.SurfaceImage` or \
+           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
+        then its mask will be used. If no mask is given, for Nifti images,
         it will be computed automatically by a MultiNiftiMasker with default
-        parameters.
+        parameters; for surface images, all the vertices will be used.
 
     n_components : :obj:`int`, default=20
         Number of components to extract.
@@ -63,7 +65,8 @@ class DictLearning(_BaseDecomposition):
     alpha : :obj:`float`, default=10
         Sparsity controlling parameter.
 
-    dict_init : Niimg-like object, optional
+    dict_init : Niimg-like object or \
+           :obj:`~nilearn.surface.SurfaceImage`, optional
         Initial estimation of dictionary maps. Would be computed from CanICA if
         not provided.
 
@@ -121,13 +124,11 @@ class DictLearning(_BaseDecomposition):
 
     %(mask_strategy)s
 
-        .. note::
-             Depending on this value, the mask will be computed from
-             :func:`nilearn.masking.compute_background_mask`,
-             :func:`nilearn.masking.compute_epi_mask`, or
-             :func:`nilearn.masking.compute_brain_mask`.
-
         Default='epi'.
+
+        .. note::
+            These strategies are only relevant for Nifti images and the
+            parameterm is ignored for SurfaceImage objects.
 
     mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
@@ -146,7 +147,7 @@ class DictLearning(_BaseDecomposition):
 
     Attributes
     ----------
-    components_ : 2D numpy array (n_components x n-voxels)
+    components_ : 2D numpy array (n_components x (n-voxels or n-vertices))
         Masked dictionary components extracted from the input images.
 
         .. note::
@@ -154,21 +155,27 @@ class DictLearning(_BaseDecomposition):
             Use attribute `components_img_` rather than manually unmasking
             `components_` with `masker_` attribute.
 
-    components_img_ : 4D Nifti image
-        4D image giving the extracted components. Each 3D image is a component.
+    components_img_ : 4D Nifti image or 2D :obj:`~nilearn.surface.SurfaceImage`
+        The image giving the extracted components. Each 3D Nifti image or 1D
+        SurfaceImage is a component.
 
         .. versionadded:: 0.4.1
 
-    masker_ : instance of MultiNiftiMasker
+    masker_ : instance of MultiNiftiMasker or \
+            :obj:`~nilearn.maskers.SurfaceMasker`
         Masker used to filter and mask data as first step. If an instance of
-        MultiNiftiMasker is given in `mask` parameter,
-        this is a copy of it. Otherwise, a masker is created using the value
-        of `mask` and other NiftiMasker related parameters as initialization.
+        MultiNiftiMasker or :obj:`~nilearn.maskers.SurfaceMasker` is given in
+        `mask` parameter, this is a copy of it.
+        Otherwise, a masker is created using the value of `mask` and
+        other NiftiMasker/SurfaceMasker related parameters as initialization.
 
-    mask_img_ : Niimg-like object
+    mask_img_ : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
+        The mask of the data. If no mask was given at masker creation:
+        - for Nifti images, this contains automatically computed mask via the
+        selected ``mask_strategy``.
+        - for SurfaceImage objects, this mask encompasses all vertices of
+        the input images.
 
     References
     ----------

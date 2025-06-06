@@ -13,46 +13,19 @@ from nilearn._utils.estimator_checks import (
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
-from nilearn.conftest import _affine_eye, _rng
 from nilearn.decomposition._multi_pca import _MultiPCA
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker
-
-SHAPE = (6, 8, 10)
+from nilearn.decomposition.tests.test_base import (
+    make_data_to_reduce,
+    make_masker,
+)
+from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.surface import SurfaceImage
 
 
 def img_4d():
     data_4d = np.zeros((40, 40, 40, 3))
     data_4d[20, 20, 20] = 1
     return Nifti1Image(data_4d, affine=np.eye(4))
-
-
-def _make_multi_pca_test_data(with_activation=True):
-    """Create a multi-subject dataset with or without activation."""
-    shape = (6, 8, 10, 5)
-    affine = _affine_eye()
-    rng = _rng()
-    n_sub = 4
-
-    data = []
-    for _ in range(n_sub):
-        this_data = rng.normal(size=shape)
-        if with_activation:
-            this_data[2:4, 2:4, 2:4, :] += 10
-        data.append(Nifti1Image(this_data, affine))
-
-    mask_img = Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
-
-    return data, mask_img, shape, affine
-
-
-@pytest.fixture(scope="module")
-def mask_img():
-    return Nifti1Image(np.ones(SHAPE, dtype=np.int8), _affine_eye())
-
-
-@pytest.fixture(scope="module")
-def multi_pca_data():
-    return _make_multi_pca_test_data()[0]
 
 
 ESTIMATORS_TO_CHECK = [_MultiPCA()]
@@ -96,23 +69,27 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-def test_multi_pca_check_masker_attributes(multi_pca_data, mask_img):
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_multi_pca_check_masker_attributes(data_type):
+    imgs, mask_img = make_data_to_reduce(data_type=data_type)
     multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
-    multi_pca.fit(multi_pca_data)
+    multi_pca.fit(imgs)
 
     assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
 
 
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
 @pytest.mark.parametrize("length", [1, 2])
-def test_multi_pca(multi_pca_data, mask_img, length):
+def test_multi_pca(length, data_type):
     """Components are the same if we put twice the same data, \
        and that fit output is deterministic.
     """
+    imgs, mask_img = make_data_to_reduce(data_type=data_type)
     multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
-    multi_pca.fit(multi_pca_data)
+    multi_pca.fit(imgs)
 
     components1 = multi_pca.components_
-    components2 = multi_pca.fit(length * multi_pca_data).components_
+    components2 = multi_pca.fit(length * imgs).components_
 
     if length == 1:
         np.testing.assert_array_equal(components1, components2)
@@ -120,15 +97,19 @@ def test_multi_pca(multi_pca_data, mask_img, length):
         np.testing.assert_array_almost_equal(components1, components2)
 
 
-def test_multi_pca_with_confounds_smoke(multi_pca_data, mask_img):
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_multi_pca_with_confounds_smoke(data_type):
+    imgs, mask_img = make_data_to_reduce(data_type=data_type)
     confounds = [np.arange(10).reshape(5, 2)] * 8
 
     multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
-    multi_pca.fit(multi_pca_data, confounds=confounds)
+    multi_pca.fit(imgs, confounds=confounds)
 
 
-def test_multi_pca_errors(multi_pca_data, mask_img):
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_multi_pca_errors(data_type):
     """Fit and transform fail without the proper arguments."""
+    imgs, mask_img = make_data_to_reduce(data_type=data_type)
     multi_pca = _MultiPCA(mask=mask_img)
 
     # Smoke test to fit with no img
@@ -145,53 +126,84 @@ def test_multi_pca_errors(multi_pca_data, mask_img):
 
     # No mask provided
     multi_pca = _MultiPCA()
-    with pytest.raises(ValueError, match="The mask is invalid as it is empty"):
-        multi_pca.fit(multi_pca_data)
+    # the default mask computation strategy 'epi' will result in an empty mask
+    if data_type == "nifti":
+        with pytest.raises(
+            ValueError, match="The mask is invalid as it is empty"
+        ):
+            multi_pca.fit(imgs)
+    # but with surface images, the mask encompasses all vertices
+    # so it should have the same number of True vertices as the vertices
+    # in input images
+    elif data_type == "surface":
+        multi_pca.fit(imgs)
+        assert multi_pca.masker_.n_elements_ == imgs[0].mesh.n_vertices
 
 
-def test_multi_pca_with_masker(multi_pca_data):
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_multi_pca_with_masker(data_type):
     """Multi-pca can run with a masker."""
-    masker = MultiNiftiMasker()
+    imgs, _ = make_data_to_reduce(data_type=data_type)
+    masker = make_masker(data_type=data_type)
 
     multi_pca = _MultiPCA(mask=masker, n_components=3)
-    multi_pca.fit(multi_pca_data)
+    multi_pca.fit(imgs)
 
     assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
 
 
-def test_multi_pca_with_masker_without_cca_smoke(multi_pca_data):
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_multi_pca_with_masker_without_cca_smoke(data_type):
     """Multi-pca can run with a masker \
         and without canonical correlation analysis.
     """
-    masker = MultiNiftiMasker(mask_args={"opening": 0})
+    masker = make_masker(data_type=data_type)
+    data, _ = make_data_to_reduce(data_type=data_type)
 
     multi_pca = _MultiPCA(
         mask=masker,
         do_cca=False,
         n_components=3,
     )
-    multi_pca.fit(multi_pca_data[:2])
+    multi_pca.fit(data[:2])
 
     # Smoke test the transform and inverse_transform
-    multi_pca.inverse_transform(multi_pca.transform(multi_pca_data[-2:]))
+    multi_pca.inverse_transform(multi_pca.transform(data[-2:]))
 
 
-def test_multi_pca_pass_masker_arg_to_estimator_smoke():
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_multi_pca_pass_masker_arg_to_estimator_smoke(data_type, affine_eye):
     """Masker arguments are passed to the estimator without fail."""
-    data, _, shape, affine = _make_multi_pca_test_data()
-
+    data, _ = make_data_to_reduce(data_type=data_type)
+    shape = (
+        data[0].shape[:3]
+        if data_type == "nifti"
+        else (data[0].mesh.n_vertices,)
+    )
     multi_pca = _MultiPCA(
-        target_affine=affine,
-        target_shape=shape[:3],
+        target_affine=affine_eye,
+        target_shape=shape,
         n_components=3,
         mask_strategy="background",
     )
-    multi_pca.fit(data)
+
+    # for surface we should get a warning about target_affine, target_shape
+    # and mask_strategy being ignored
+    if data_type == "surface":
+        with pytest.warns(
+            UserWarning, match="The following parameters are not relevant"
+        ):
+            multi_pca.fit(data)
+    elif data_type == "nifti":
+        multi_pca.fit(data)
 
 
-def test_multi_pca_score_gt_0_lt_1(mask_img):
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_multi_pca_score_gt_0_lt_1(data_type):
     """Test that MultiPCA score is between zero and one."""
-    data, _, _, _ = _make_multi_pca_test_data(with_activation=False)
+    data, mask_img = make_data_to_reduce(
+        with_activation=False, data_type=data_type
+    )
 
     multi_pca = _MultiPCA(
         mask=mask_img, random_state=0, memory_level=0, n_components=3
@@ -203,9 +215,12 @@ def test_multi_pca_score_gt_0_lt_1(mask_img):
     assert np.all(s >= 0)
 
 
-def test_multi_pca_score_single_subject(mask_img):
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_multi_pca_score_single_subject(data_type):
     """Multi-pca can run on single subject data."""
-    data, _, _, _ = _make_multi_pca_test_data(with_activation=False)
+    data, mask_img = make_data_to_reduce(
+        with_activation=False, data_type=data_type
+    )
 
     multi_pca = _MultiPCA(
         mask=mask_img, random_state=0, memory_level=0, n_components=3
@@ -217,11 +232,14 @@ def test_multi_pca_score_single_subject(mask_img):
     assert 0.0 <= s <= 1.0
 
 
-def test_multi_pca_score_single_subject_n_components(mask_img):
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_multi_pca_score_single_subject_n_components(data_type):
     """Score is one for n_components == n_sample \
        in single subject configuration.
     """
-    data, _, _, _ = _make_multi_pca_test_data(with_activation=False)
+    data, mask_img = make_data_to_reduce(
+        with_activation=False, data_type=data_type
+    )
     multi_pca = _MultiPCA(
         mask=mask_img, random_state=0, memory_level=0, n_components=5
     )
@@ -235,7 +253,10 @@ def test_multi_pca_score_single_subject_n_components(mask_img):
         mask=mask_img, random_state=0, memory_level=0, n_components=5
     )
     multi_pca.fit(data[0])
-    masker = NiftiMasker(mask_img).fit()
+    if data_type == "nifti":
+        masker = NiftiMasker(mask_img).fit()
+    elif data_type == "surface":
+        masker = SurfaceMasker(mask_img).fit()
     s = multi_pca._raw_score(masker.transform(data[0]), per_component=True)
 
     assert s.shape == (5,)
@@ -243,21 +264,27 @@ def test_multi_pca_score_single_subject_n_components(mask_img):
     assert np.all(s >= 0)
 
 
-def test_components_img(multi_pca_data, mask_img):
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_components_img(data_type):
     n_components = 3
+    data, mask_img = make_data_to_reduce(data_type=data_type)
 
     multi_pca = _MultiPCA(
         mask=mask_img, n_components=n_components, random_state=0
     )
-    multi_pca.fit(multi_pca_data)
+    multi_pca.fit(data)
     components_img = multi_pca.components_img_
 
-    assert isinstance(components_img, Nifti1Image)
-
-    check_shape = multi_pca_data[0].shape[:3] + (n_components,)
-
-    assert components_img.shape == check_shape
-    assert len(components_img.shape) == 4
+    if data_type == "nifti":
+        assert isinstance(components_img, Nifti1Image)
+        check_shape = data[0].shape[:3] + (n_components,)
+        assert components_img.shape == check_shape
+        assert len(components_img.shape) == 4
+    elif data_type == "surface":
+        assert isinstance(components_img, SurfaceImage)
+        check_shape = (data[0].mesh.n_vertices, n_components)
+        assert components_img.shape == check_shape
+        assert len(components_img.shape) == 2
 
 
 @pytest.mark.parametrize("imgs", [[img_4d()], [img_4d(), img_4d()]])
