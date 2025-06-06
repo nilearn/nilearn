@@ -113,13 +113,7 @@ def test_nifti_maps_masker_fit(n_regions, img_maps):
 def test_nifti_maps_masker_errors():
     """Check fitting errors."""
     masker = NiftiMapsMasker()
-    with pytest.raises(
-        TypeError,
-        match=(
-            "Data given cannot be loaded "
-            "because it is not compatible with nibabel format"
-        ),
-    ):
+    with pytest.raises(TypeError, match="input should be a NiftiLike object"):
         masker.fit()
 
 

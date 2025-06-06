@@ -96,10 +96,7 @@ def test_searchlight_no_mask():
     data_img, cond, _ = _make_searchlight_test_data(frames)
     with pytest.raises(
         TypeError,
-        match=(
-            "Data given cannot be loaded "
-            "because it is not compatible with nibabel format"
-        ),
+        match="input should be a NiftiLike object",
     ):
         sl.fit(data_img, y=cond)
 

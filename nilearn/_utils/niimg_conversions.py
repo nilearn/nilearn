@@ -7,16 +7,17 @@ from pathlib import Path
 
 import numpy as np
 from joblib import Memory
+from nibabel.spatialimages import SpatialImage
 from numpy.testing import assert_array_equal
 
 import nilearn as ni
+from nilearn._utils.cache_mixin import cache
+from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-
-from .cache_mixin import cache
-from .exceptions import DimensionError
-from .helpers import stringify_path
-from .niimg import _get_data, load_niimg, safe_get_data
-from .path_finding import resolve_globbing
+from nilearn._utils.niimg import _get_data, load_niimg, safe_get_data
+from nilearn._utils.path_finding import resolve_globbing
+from nilearn.typing import NiimgLike
 
 
 def _check_fov(img, affine, shape):
@@ -284,6 +285,28 @@ def check_niimg(
     """
     from ..image import new_img_like  # avoid circular imports
 
+    if not (
+        isinstance(niimg, (NiimgLike, SpatialImage))
+        or (hasattr(niimg, "__iter__"))
+    ):
+        raise TypeError(
+            "input should be a NiftiLike object "
+            "or an iterable of NiftiLike object. "
+            f"Got: {niimg.__class__.__name__}"
+        )
+
+    if hasattr(niimg, "__iter__"):
+        for x in niimg:
+            if not (
+                isinstance(x, (NiimgLike, SpatialImage))
+                or hasattr(x, "__iter__")
+            ):
+                raise TypeError(
+                    "iterable inputs should contain "
+                    "NiftiLike objects or iterables. "
+                    f"Got: {x.__class__.__name__}"
+                )
+
     niimg = stringify_path(niimg)
 
     if isinstance(niimg, str):
@@ -328,6 +351,9 @@ def check_niimg(
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
     niimg = load_niimg(niimg, dtype=dtype)
+
+    if safe_get_data(niimg).size == 0:
+        raise ValueError("The image is empty.")
 
     if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.

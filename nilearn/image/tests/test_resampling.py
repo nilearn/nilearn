@@ -1281,7 +1281,7 @@ def test_get_mask_bounds(data, affine_eye):
 
 
 def test_get_mask_bounds_error(data, affine_eye):
-    with pytest.raises(TypeError, match="Data given cannot be loaded because"):
+    with pytest.raises(TypeError, match="input should be a NiftiLike object"):
         get_mask_bounds(None)
 
     with pytest.raises(
