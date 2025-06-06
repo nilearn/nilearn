@@ -82,6 +82,23 @@ def test_check_surface_plotting_inputs_error_mesh_and_data_none(fn):
         fn(None, None)
 
 
+@pytest.mark.parametrize(
+    "fn",
+    [
+        plot_surf,
+        plot_surf_stat_map,
+        plot_img_on_surf,
+        plot_surf_roi,
+    ],
+)
+def test_check_surface_plotting_inputs_error_negative_threshold(
+    fn, in_memory_mesh
+):
+    """Fail if negative threshold is passed."""
+    with pytest.raises(ValueError, match="Threshold should be a"):
+        fn(in_memory_mesh, threshold=-1)
+
+
 def test_check_surface_plotting_inputs_errors():
     """Fail if mesh is None and data is not a SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
