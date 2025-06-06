@@ -6,6 +6,7 @@ in the neighborhood of each location of a domain.
 
 import time
 import warnings
+from copy import deepcopy
 
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
@@ -407,9 +408,10 @@ class SearchLight(TransformerMixin, BaseEstimator):
         check_array(y, ensure_2d=False, dtype=None)
 
         # Get the seeds
-        if self.mask_img is not None:
-            self.mask_img = check_niimg_3d(self.mask_img)
-        process_mask_img = self.process_mask_img or self.mask_img
+        self.mask_img_ = deepcopy(self.mask_img)
+        if self.mask_img_ is not None:
+            self.mask_img_ = check_niimg_3d(self.mask_img_)
+        process_mask_img = self.process_mask_img or self.mask_img_
 
         # Compute world coordinates of the seeds
         process_mask, process_mask_affine = masking.load_mask_img(
@@ -431,7 +433,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
             imgs,
             self.radius,
             True,
-            mask_img=self.mask_img,
+            mask_img=self.mask_img_,
         )
 
         estimator = self.estimator
@@ -460,6 +462,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         return (
             hasattr(self, "scores_")
             and hasattr(self, "process_mask_")
+            and hasattr(self, "mask_img_")
             and self.scores_ is not None
             and self.process_mask_ is not None
         )
@@ -468,7 +471,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
     def scores_img_(self):
         """Convert the 3D scores array into a NIfTI image."""
         check_is_fitted(self)
-        return new_img_like(self.mask_img, self.scores_)
+        return new_img_like(self.mask_img_, self.scores_)
 
     def transform(self, imgs):
         """Apply the fitted searchlight on new images."""
@@ -481,7 +484,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
             imgs,
             self.radius,
             True,
-            mask_img=self.mask_img,
+            mask_img=self.mask_img_,
         )
 
         estimator = self.estimator

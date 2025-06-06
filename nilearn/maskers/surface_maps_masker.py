@@ -170,6 +170,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+        if imgs is not None:
+            self._check_imgs(imgs)
 
         if self.maps_img is None:
             raise ValueError(
@@ -223,7 +225,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         }
 
         if self.clean_args is None:
-            self.clean_args = {}
+            self.clean_args_ = {}
+        else:
+            self.clean_args_ = self.clean_args
 
         return self
 
@@ -271,7 +275,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             self.__class__,
             self,
         )
-        parameters["clean_args"] = self.clean_args
+        parameters["clean_args"] = self.clean_args_
 
         # apply mask if provided
         # and then extract signal via least square regression
@@ -300,9 +304,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             self.__class__,
             self,
         )
-        if self.clean_args is None:
-            self.clean_args = {}
-        parameters["clean_args"] = self.clean_args
+
+        parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
         region_signals = cache(

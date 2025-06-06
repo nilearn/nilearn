@@ -7,9 +7,11 @@ and importing them will fail if pytest is not installed.
 import inspect
 import sys
 import warnings
+from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+import joblib
 import numpy as np
 import pandas as pd
 import pytest
@@ -25,10 +27,16 @@ from sklearn import clone
 from sklearn.base import BaseEstimator, is_classifier, is_regressor
 from sklearn.datasets import make_classification, make_regression
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils._testing import (
+    set_random_state,
+)
+from sklearn.utils.estimator_checks import (
+    _is_public_parameter,
+    check_is_fitted,
+)
 from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
-from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -67,7 +75,6 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
-    SurfaceLabelsMasker,
     SurfaceMapsMasker,
     SurfaceMasker,
 )
@@ -297,12 +304,15 @@ def return_expected_failed_checks(
     expected_failed_checks = {
         # the following are skipped
         # because there is nilearn specific replacement
+        "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
+        "check_dont_overwrite_parameters": (
+            "replaced by check_img_estimator_dont_overwrite_parameters"
+        ),
         "check_estimators_dtypes": ("replaced by check_masker_dtypes"),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
         "check_fit_check_is_fitted": ("replaced by check_masker_fitted"),
-        "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
         "check_fit_score_takes_y": (
             "replaced by check_masker_fit_score_takes_y"
         ),
@@ -312,7 +322,6 @@ def return_expected_failed_checks(
         # that errors with maskers,
         # or because a suitable nilearn replacement
         # has not yet been created.
-        "check_dont_overwrite_parameters": "TODO",
         "check_estimators_empty_data_messages": "TODO",
         "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
@@ -393,23 +402,6 @@ def return_expected_failed_checks(
                 ),
             }
 
-        if isinstance(estimator, (SurfaceLabelsMasker, SurfaceMapsMasker)):
-            expected_failed_checks.pop("check_estimator_sparse_data")
-            expected_failed_checks.pop("check_estimators_fit_returns_self")
-            expected_failed_checks.pop("check_fit_check_is_fitted")
-            expected_failed_checks.pop("check_fit2d_1feature")
-            expected_failed_checks.pop("check_fit2d_1sample")
-
-            if SKLEARN_MINOR >= 5:
-                expected_failed_checks.pop("check_estimator_sparse_matrix")
-                expected_failed_checks.pop("check_estimator_sparse_array")
-
-            if SKLEARN_MINOR >= 6:
-                expected_failed_checks.pop("check_readonly_memmap_input")
-                expected_failed_checks.pop(
-                    "check_positive_only_tag_during_fit"
-                )
-
         if isinstance(estimator, (NiftiMasker)) and SKLEARN_MINOR >= 5:
             if not IS_SKLEARN_1_6_1_on_py_3_9:
                 expected_failed_checks.pop("check_estimator_sparse_array")
@@ -488,6 +480,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
     expected_failed_checks = {
         # the following are have nilearn replacement for masker and/or glm
         # but not for decoders
+        "check_dont_overwrite_parameters": (
+            "replaced by check_img_estimator_dont_overwrite_parameters"
+        ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
@@ -504,7 +499,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         # or because a suitable nilearn replacement
         # has not yet been created.
         "check_dict_unchanged": "TODO",
-        "check_dont_overwrite_parameters": "TODO",
         "check_estimators_dtypes": "TODO",
         "check_estimators_empty_data_messages": "TODO",
         "check_estimators_pickle": "TODO",
@@ -605,6 +599,18 @@ def nilearn_check_generator(estimator: BaseEstimator):
 
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_image_supervised_estimator_y_no_nan)
+
+        if (
+            is_classifier(estimator)
+            or is_regressor(estimator)
+            or is_masker(estimator)
+            or is_glm(estimator)
+        ):
+            yield (
+                clone(estimator),
+                check_img_estimator_dont_overwrite_parameters,
+            )
+            yield (clone(estimator), check_img_estimators_overwrite_params)
 
     if is_masker(estimator):
         yield (clone(estimator), check_masker_clean_kwargs)
@@ -741,7 +747,7 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
     elif is_classifier(estimator):
         dim = 5
         X, y = make_classification(
-            n_samples=20,
+            n_samples=30,
             n_features=dim**3,
             scale=3.0,
             n_informative=5,
@@ -754,7 +760,7 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
     elif is_regressor(estimator):
         dim = 5
         X, y = make_regression(
-            n_samples=20,
+            n_samples=30,
             n_features=dim**3,
             n_informative=dim,
             noise=1.5,
@@ -773,7 +779,7 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
         return estimator.fit(imgs)
 
     else:
-        imgs = _img_3d_rand()
+        imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_eye())
         return estimator.fit(imgs)
 
 
@@ -838,6 +844,105 @@ def check_fit_returns_self(estimator) -> None:
     fitted_estimator = fit_estimator(estimator)
 
     assert fitted_estimator is estimator
+
+
+def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
+    """Check that fit method only changes or sets private attributes.
+
+    Only for estimator that work with images.
+
+    Replaces check_dont_overwrite_parameters from sklearn.
+    """
+    estimator = clone(estimator)
+
+    set_random_state(estimator, 1)
+
+    dict_before_fit = estimator.__dict__.copy()
+
+    fitted_estimator = fit_estimator(estimator)
+
+    dict_after_fit = fitted_estimator.__dict__
+
+    public_keys_after_fit = [
+        key for key in dict_after_fit if _is_public_parameter(key)
+    ]
+
+    attrs_added_by_fit = [
+        key for key in public_keys_after_fit if key not in dict_before_fit
+    ]
+
+    # check that fit doesn't add any public attribute
+    assert not attrs_added_by_fit, (
+        f"Estimator {estimator.__class__.__name__} "
+        "adds public attribute(s) during"
+        " the fit method."
+        " Estimators are only allowed to add private attributes"
+        " either started with _ or ended"
+        f" with _ but [{', '.join(attrs_added_by_fit)}] added"
+    )
+
+    # check that fit doesn't change any public attribute
+
+    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
+    # change memory parameters on fit if it's None
+    keys_to_ignore = ["memory"]
+
+    attrs_changed_by_fit = [
+        key
+        for key in public_keys_after_fit
+        if (dict_before_fit[key] is not dict_after_fit[key])
+        and key not in keys_to_ignore
+    ]
+
+    assert not attrs_changed_by_fit, (
+        f"Estimator {estimator.__class__.__name__} "
+        "changes public attribute(s) during"
+        " the fit method. Estimators are only allowed"
+        " to change attributes started"
+        " or ended with _, but"
+        f" [{', '.join(attrs_changed_by_fit)}] changed"
+    )
+
+
+def check_img_estimators_overwrite_params(estimator) -> None:
+    """Check that we do not change or mutate the internal state of input.
+
+    Replaces sklearn check_estimators_overwrite_params
+    """
+    estimator = clone(estimator)
+
+    # Make a physical copy of the original estimator parameters before fitting.
+    params = estimator.get_params()
+    original_params = deepcopy(params)
+
+    # Fit the model
+    fitted_estimator = fit_estimator(estimator)
+
+    # Compare the state of the model parameters with the original parameters
+    new_params = fitted_estimator.get_params()
+
+    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
+    # change memory parameters on fit if it's None
+    param_to_ignore = ["memory"]
+
+    for param_name, original_value in original_params.items():
+        if param_name in param_to_ignore:
+            continue
+
+        new_value = new_params[param_name]
+
+        # We should never change or mutate the internal state of input
+        # parameters by default. To check this we use the joblib.hash function
+        # that introspects recursively any subobjects to compute a checksum.
+        # The only exception to this rule of immutable constructor parameters
+        # is possible RandomState instance but in this check we explicitly
+        # fixed the random_state params recursively to be integer seeds.
+        assert joblib.hash(new_value) == joblib.hash(original_value), (
+            f"Estimator {estimator.__class__.__name__} "
+            "should not change or mutate "
+            f"the parameter {param_name} from {original_value} "
+            f"to {new_value} during fit."
+        )
 
 
 # ------------------ DECODERS CHECKS ------------------
@@ -2299,10 +2404,6 @@ def check_glm_dtypes(estimator):
 
 def _generate_report_with_no_warning(estimator):
     """Check that report generation throws no warning."""
-    from nilearn.maskers import (
-        SurfaceMapsMasker,
-    )
-
     with warnings.catch_warnings(record=True) as warning_list:
         report = _generate_report(estimator)
 
@@ -2334,7 +2435,6 @@ def _generate_report(estimator):
     from nilearn.maskers import (
         MultiNiftiMapsMasker,
         NiftiMapsMasker,
-        SurfaceMapsMasker,
     )
 
     if isinstance(
