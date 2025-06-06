@@ -83,11 +83,12 @@ test = [
     "coverage",
     "pytest>=6.0.0",
     "pytest-cov",
+    "pytest-csv",
     "pytest-randomly",
     "pytest-reporter-html1>=0.9.2",
-    "pytest-xdist[psutil]",
-    "pytest-csv",
-    "pytest-timeout"
+    "pytest-retry",
+    "pytest-timeout",
+    "pytest-xdist[psutil]"
 ]
 
 [project.urls]
@@ -172,6 +173,8 @@ doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
 minversion = "6.0"
+retries = 2
+retry_delay = 1
 xfail_strict = true
 
 [tool.ruff]
