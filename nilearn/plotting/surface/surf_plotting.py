@@ -128,7 +128,8 @@ def plot_surf(
         used for plotting.
 
         When specified `surf_map` is of type :class:`numpy.ndarray`, to have a
-        correct view, `hemi` should have a value corresponding to `surf_map`.
+        correct view, `hemi` should have a value corresponding to `surf_map`
+        data.
 
     %(bg_map)s
 
@@ -361,7 +362,8 @@ def plot_surf_contours(
         used for plotting.
 
         When specified `roi_map` is of type :class:`numpy.ndarray`, to have a
-        correct view, `hemi` should have a value corresponding to `roi_map`.
+        correct view, `hemi` should have a value corresponding to `roi_map`
+        data.
 
     %(hemi)s
         It is only used if ``roi_map`` is :obj:`~nilearn.surface.SurfaceImage`
@@ -490,7 +492,8 @@ def plot_surf_stat_map(
         and its the mesh will be used for plotting.
 
         When specified `surf_map` is of type :class:`numpy.ndarray`, to have a
-        correct view, `hemi` should have a value corresponding to `surf_map`.
+        correct view, `hemi` should have a value corresponding to `surf_map`
+        data.
 
     %(bg_map)s
 
@@ -905,7 +908,8 @@ def plot_surf_roi(
         and its the mesh will be used for plotting.
 
         When specified `roi_map` is of type :class:`numpy.ndarray`, to have a
-        correct view, `hemi` should have a value corresponding to `roi_map`.
+        correct view, `hemi` should have a value corresponding to `roi_map`
+        data.
 
     %(bg_map)s
 
