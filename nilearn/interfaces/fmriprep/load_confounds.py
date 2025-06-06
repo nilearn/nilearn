@@ -159,7 +159,7 @@ def load_confounds(
         - "ica_aroma" confounds derived
           from ICA-AROMA (:footcite:t:`Pruim2015`).
           Associated parameter: `ica_aroma`
-        - "tedana" confounds derived from TEDANA (:footcite:t:`Kundu2013`).
+        - "tedana" confounds derived from TEDANA (:footcite:t:`DuPre2021`).
         - "scrub" regressors for :footcite:t:`Power2014` scrubbing approach.
           Associated parameter: `scrub`, `fd_threshold`, `std_dvars_threshold`
 
