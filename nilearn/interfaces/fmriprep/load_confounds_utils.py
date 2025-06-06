@@ -205,8 +205,7 @@ def _generate_confounds_file_candidates(nii_file, flag_tedana=False):
             subset for subset in unique_subsets if "desc" in subset
         ]
 
-        for subset in subset_with_desc:
-            filenames.append("_".join([f"{k}-{entities[k]}" for k in subset]))
+        filenames = ["_".join(f"{k}-{entities[k]}" for k in subset) for subset in subset_with_desc]
 
     return filenames
 
@@ -270,8 +269,10 @@ def _get_file_name(nii_file, flag_tedana=False):
     elif len(found_files) != 2 and flag_tedana:
         found_str = "\n\t".join(found_files)
         raise ValueError(
-            f"Found more or less than two confound files:\n\t{found_str}"
-            "TEDANA should have two confound files mixing.tsv and table_status.tsv."
+            f"Found {len(found_files)} confound files (expected 2 for TEDANA):\n\t{found_str}\n\n"
+            "TEDANA should produce exactly two confound files:\n"
+            "- mixing.tsv\n"
+            "- table_status.tsv"
         )
     elif flag_tedana:
         return found_files
@@ -291,7 +292,8 @@ def get_confounds_file(image_file, flag_full_aroma, flag_tedana):
         True if the input is a full ICA-AROMA output, False otherwise.
 
     flag_tedata : :obj:`bool`
-        True if the input is a TEDANA optimally combined output, False otherwise.
+        True if the input is a TEDANA optimally combined output, 
+        False otherwise.
 
     Returns
     -------
@@ -382,7 +384,8 @@ def load_confounds_file_as_dataframe(confounds_raw_path, flag_tedana=False):
         else:
             raise ValueError(
                 "The confound file does not contain the expected columns for "
-                "TEDANA output. Expected 'ICA_xx' for mixing.tsv and 'Component' for the status_table.tsv columns."
+                "TEDANA output. Expected 'ICA_xx' for mixing.tsv and"
+                "'Component' for the status_table.tsv columns."
             )
 
     # check if the version of fMRIprep (>=1.2.0) is supported based on

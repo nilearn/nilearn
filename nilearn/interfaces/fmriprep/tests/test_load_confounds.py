@@ -46,7 +46,7 @@ def _simu_img(tmp_path, trend, demean, image_type="regular"):
         )
     else:
         confounds, _ = load_confounds(
-            file_nii, strategy=("motion",), motion="basic", demean=False
+            file_nii, strategy=("motion",), motion="basic", demean=demean
         )
 
     X = _handle_non_steady(confounds)
@@ -94,7 +94,7 @@ def _simu_img(tmp_path, trend, demean, image_type="regular"):
     else:
         # generate the associated confounds for testing
         test_confounds, _ = load_confounds(
-            file_nii, strategy=("motion",), motion="basic", demean=False
+            file_nii, strategy=("motion",), motion="basic", demean=demean
         )
 
     # match how we extend the length to increase the degree of freedom

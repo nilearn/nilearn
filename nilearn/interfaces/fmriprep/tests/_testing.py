@@ -243,11 +243,10 @@ def get_legal_confound(
         conf_list = []
         conf_list.append(conf)
         conf_list.append(meta)
-        tmp_conf = []
-        for confounds in conf_list:
-            tmp_conf.append(
-                pd.read_csv(confounds, delimiter="\t", encoding="utf-8")
-            )
+        tmp_conf = [
+            pd.read_csv(confounds, delimiter="\t", encoding="utf-8")
+            for confounds in conf_list
+        ]
         meta = None
         conf = tmp_conf
         return conf, meta

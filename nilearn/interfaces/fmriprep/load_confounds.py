@@ -476,7 +476,7 @@ def _load_single_confounds_file(
         all_t_c = {}
         for tedana_conf in ["mixing", "status_table"]:
             all_t_c[tedana_conf] = load_confounds_file_as_dataframe(
-                [file for file in confounds_file if tedana_conf in file][0],
+                next(file for file in confounds_file if tedana_conf in file),
                 flag_tedana=flag_tedana,
             )
 
