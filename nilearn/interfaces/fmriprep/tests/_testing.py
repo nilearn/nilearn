@@ -165,16 +165,6 @@ def create_tmp_filepath(
             tmp_img = base_path / tmp_img
             tmp_img.touch()
             tmp_img = str(tmp_img)
-        else:
-            tmp_img = []
-            for root in img_file_patterns_type:
-                bids_fields = update_bids_fields(bids_fields, root)
-                tmp_gii = create_bids_filename(
-                    fields=bids_fields, entities_to_include=entities_to_include
-                )
-                tmp_gii = base_path / tmp_gii
-                tmp_gii.touch()
-                tmp_img.append(str(tmp_gii))
         return tmp_img, tmp_conf
 
     # confound files
