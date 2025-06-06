@@ -34,6 +34,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.ndimage import replace_non_finite
 from nilearn._utils.niimg import _get_data, safe_get_data
 from nilearn._utils.niimg_conversions import (
     _index_img,
@@ -252,7 +253,7 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         arr = arr.copy()
     if ensure_finite:
         # SPM tends to put NaNs in the data outside the brain
-        arr[np.logical_not(np.isfinite(arr))] = 0
+        arr = replace_non_finite(arr, value=0)
     if isinstance(fwhm, str) and (fwhm == "fast"):
         arr = _fast_smooth_array(arr)
     elif fwhm is not None:
