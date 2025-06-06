@@ -256,7 +256,7 @@ select = [
 unfixable = []
 
 [tool.ruff.lint.mccabe]
-max-complexity = 22
+max-complexity = 23
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]

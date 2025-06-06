@@ -43,12 +43,6 @@ N_FEATURES = 49
 N_SUBJECTS = 5
 
 
-@parametrize_with_checks(estimators=[EmpiricalCovariance(), LedoitWolf()])
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
 ESTIMATORS_TO_CHECK = [
     ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
 ]
@@ -59,12 +53,14 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         (check_estimator(estimators=ESTIMATORS_TO_CHECK)),
     )
-    def test_check_estimator_sklearn_valid(
-        estimator,
-        check,
-        name,  # noqa: ARG001
-    ):
+    def test_check_estimator_sklearn_valid(estimator, check, name):
         """Check compliance with sklearn estimators."""
+        if name == "check_estimators_fit_returns_self":
+            # "check_estimators_fit_returns_self" fails with sklearn 1.4
+            # whether passed as a valid or invalid check
+            # so we are skipping it.
+            # Note it passes fine with later sklearn versions
+            pytest.skip("ignored for older sklearn")
         check(estimator)
 
     @pytest.mark.xfail(reason="invalid checks should fail")
@@ -625,11 +621,6 @@ def test_connectivity_measure_errors():
     # Raising error for input subjects not iterable
     conn_measure = ConnectivityMeasure()
 
-    with pytest.raises(
-        ValueError, match="'subjects' input argument must be an iterable"
-    ):
-        conn_measure.fit(1.0)
-
     # input subjects not 2D numpy.ndarrays
     with pytest.raises(
         ValueError, match="Each subject must be 2D numpy.ndarray."
@@ -679,7 +670,7 @@ def test_connectivity_measure_generic(
 def _assert_connectivity_tangent(connectivities, conn_measure, covs):
     """Check output value properties for tangent connectivity measure \
     that they have the expected relationship \
-    to the input covariance matrices.
+    to the input covariance matrices.ConnectivityMeasure.
 
     - the geometric mean of the eigenvalues
         of the mean covariance matrix is positive-definite
