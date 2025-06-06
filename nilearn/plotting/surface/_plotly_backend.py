@@ -90,7 +90,7 @@ LAYOUT = {
 }
 
 
-def adjust_colorbar_and_data_ranges(
+def _adjust_colorbar_and_data_ranges(
     stat_map, vmin=None, vmax=None, symmetric_cbar=None
 ):
     """Adjust colorbar and data ranges for 'plotly' engine.
@@ -122,7 +122,7 @@ def adjust_colorbar_and_data_ranges(
     return None, None, vmin, vmax
 
 
-def adjust_plot_roi_params(params):
+def _adjust_plot_roi_params(params):
     """Adjust cbar_tick_format value for 'plotly' engine.
 
     Sets the values in params dict.
@@ -340,7 +340,7 @@ def _plot_surf(
             vmin=vmin,
             symmetric_cmap=symmetric_cmap,
         )
-        vertexcolor = backend.get_vertexcolor(
+        vertexcolor = backend._get_vertexcolor(
             surf_map,
             colors["cmap"],
             colors["norm"],
@@ -353,7 +353,7 @@ def _plot_surf(
         if bg_data is None:
             bg_data = np.zeros(coords.shape[0])
         colors = colorscale("Greys", bg_data, symmetric_cmap=False)
-        vertexcolor = backend.get_vertexcolor(
+        vertexcolor = backend._get_vertexcolor(
             bg_data,
             colors["cmap"],
             colors["norm"],

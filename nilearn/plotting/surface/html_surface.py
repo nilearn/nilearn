@@ -71,7 +71,7 @@ def _one_mesh_info(
     )
     info = {"inflated_both": mesh_to_plotly(surf_mesh)}
     backend = get_surface_backend(DEFAULT_ENGINE)
-    info["vertexcolor_both"] = backend.get_vertexcolor(
+    info["vertexcolor_both"] = backend._get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
@@ -191,7 +191,7 @@ def _full_brain_info(
         info[f"inflated_{hemi}"] = mesh_to_plotly(mesh[f"infl_{hemi}"])
 
         backend = get_surface_backend(DEFAULT_ENGINE)
-        info[f"vertexcolor_{hemi}"] = backend.get_vertexcolor(
+        info[f"vertexcolor_{hemi}"] = backend._get_vertexcolor(
             surf_map,
             colors["cmap"],
             colors["norm"],
@@ -222,7 +222,7 @@ def _full_brain_info(
                 )
             )
     backend = get_surface_backend(DEFAULT_ENGINE)
-    info["vertexcolor_both"] = backend.get_vertexcolor(
+    info["vertexcolor_both"] = backend._get_vertexcolor(
         get_data(surface_maps),
         colors["cmap"],
         colors["norm"],

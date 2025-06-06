@@ -74,7 +74,7 @@ MATPLOTLIB_VIEWS = {
 }
 
 
-def adjust_colorbar_and_data_ranges(
+def _adjust_colorbar_and_data_ranges(
     stat_map, vmin=None, vmax=None, symmetric_cbar=None
 ):
     """Adjust colorbar and data ranges for 'matplotlib' engine.
@@ -101,7 +101,7 @@ def adjust_colorbar_and_data_ranges(
     )
 
 
-def adjust_plot_roi_params(params):
+def _adjust_plot_roi_params(params):
     """Adjust avg_method and cbar_tick_format values for 'matplotlib' engine.
 
     Sets the values in params dict.
@@ -120,7 +120,7 @@ def adjust_plot_roi_params(params):
         params["cbar_tick_format"] = "%i"
 
 
-def get_vertexcolor(
+def _get_vertexcolor(
     surf_map,
     cmap,
     norm,
@@ -796,7 +796,7 @@ def _plot_img_on_surf(
 
         # derive symmetric vmin, vmax and colorbar limits depending on
         # symmetric_cbar settings
-        cbar_vmin, cbar_vmax, vmin, vmax = adjust_colorbar_and_data_ranges(
+        cbar_vmin, cbar_vmax, vmin, vmax = _adjust_colorbar_and_data_ranges(
             loaded_stat_map,
             vmin=vmin,
             vmax=vmax,

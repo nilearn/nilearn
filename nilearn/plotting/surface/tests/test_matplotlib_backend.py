@@ -12,8 +12,8 @@ from nilearn.plotting.surface._matplotlib_backend import (
     _compute_facecolors,
     _get_bounds,
     _get_ticks,
+    _get_vertexcolor,
     _get_view_plot_surf,
-    get_vertexcolor,
 )
 from nilearn.surface import (
     load_surf_data,
@@ -235,7 +235,7 @@ def test_get_vertexcolor():
     surf_map = np.arange(len(mesh.coordinates))
     colors = colorscale("jet", surf_map, 10)
 
-    vertexcolors = get_vertexcolor(
+    vertexcolors = _get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
@@ -245,7 +245,7 @@ def test_get_vertexcolor():
 
     assert len(vertexcolors) == len(mesh.coordinates)
 
-    vertexcolors = get_vertexcolor(
+    vertexcolors = _get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
@@ -270,7 +270,7 @@ def test_get_vertexcolor_bg_map():
     bg_min, bg_max = np.min(bg_map), np.max(bg_map)
     assert bg_min < 0 or bg_max > 1
 
-    vertexcolors_auto_normalized = get_vertexcolor(
+    vertexcolors_auto_normalized = _get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
@@ -284,7 +284,7 @@ def test_get_vertexcolor_bg_map():
     bg_map_normalized = (bg_map - bg_min) / (bg_max - bg_min)
     assert np.min(bg_map_normalized) == 0 and np.max(bg_map_normalized) == 1
 
-    vertexcolors_manually_normalized = get_vertexcolor(
+    vertexcolors_manually_normalized = _get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
@@ -299,7 +299,7 @@ def test_get_vertexcolor_bg_map():
     bg_map_scaled = bg_map_normalized / 2 + 0.25
     assert np.min(bg_map_scaled) == 0.25 and np.max(bg_map_scaled) == 0.75
 
-    vertexcolors_manually_rescaled = get_vertexcolor(
+    vertexcolors_manually_rescaled = _get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
@@ -325,7 +325,7 @@ def test_get_vertexcolor_deprecation():
             "We recommend setting `darkness` to None"
         ),
     ):
-        get_vertexcolor(
+        _get_vertexcolor(
             surf_map,
             colors["cmap"],
             colors["norm"],
