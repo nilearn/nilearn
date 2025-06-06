@@ -53,12 +53,14 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         (check_estimator(estimators=ESTIMATORS_TO_CHECK)),
     )
-    def test_check_estimator_sklearn_valid(
-        estimator,
-        check,
-        name,  # noqa: ARG001
-    ):
+    def test_check_estimator_sklearn_valid(estimator, check, name):
         """Check compliance with sklearn estimators."""
+        if name == "check_estimators_fit_returns_self":
+            # "check_estimators_fit_returns_self" fails with sklearn 1.4
+            # whether passed as a valid or invalid check
+            # so we are skipping it.
+            # Note it passes fine with later sklearn versions
+            pytest.skip("ignored for older sklearn")
         check(estimator)
 
     @pytest.mark.xfail(reason="invalid checks should fail")

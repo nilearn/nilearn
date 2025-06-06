@@ -180,7 +180,7 @@ def return_expected_failed_checks(
 
     if isinstance(estimator, ConnectivityMeasure):
         expected_failed_checks = {
-            "check_fit2d_predict1d": "TODO",
+            "check_fit2d_predict1d": "not applicable",
             "check_methods_sample_order_invariance": "TODO",
             "check_methods_subset_invariance": "TODO",
             "check_n_features_in": "TODO",
