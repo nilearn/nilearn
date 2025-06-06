@@ -404,7 +404,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         # check if image is 4D
         imgs = check_niimg_4d(imgs)
 
-        check_array(y, ensure_2d=False)
+        check_array(y, ensure_2d=False, dtype=None)
 
         # Get the seeds
         if self.mask_img is not None:

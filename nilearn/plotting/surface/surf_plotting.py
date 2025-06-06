@@ -14,6 +14,7 @@ from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
+    check_threshold_not_negative,
     create_colormap_from_lut,
 )
 from nilearn.plotting.surface._utils import (
@@ -178,10 +179,8 @@ def plot_surf(
         When using ``matplotlib`` as engine, ``avg_method`` will default to
         ``"mean"`` if `None` is passed.
 
-    threshold : a number or None, default=None.
-        If `None` is given, the image is not thresholded.
-        If a number is given, it is used to threshold the image, values
-        below the threshold (in absolute value) are plotted as transparent.
+    %(threshold)s
+        Default=None
 
     alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
@@ -285,6 +284,7 @@ def plot_surf(
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
     check_params(locals())
+    check_threshold_not_negative(threshold)
     surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map
     )
@@ -542,11 +542,8 @@ def plot_surf_stat_map(
 
         .. versionadded:: 0.10.3dev
 
-    threshold : a number or None, default=None
-        If None is given, the image is not thresholded.
-        If a number is given, it is used to threshold the image,
-        values below the threshold (in absolute value) are plotted
-        as transparent.
+    %(threshold)s
+        Default=None
 
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not the stat_map).
@@ -619,6 +616,7 @@ def plot_surf_stat_map(
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
     check_params(locals())
+    check_threshold_not_negative(threshold)
 
     stat_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         stat_map, surf_mesh, hemi, bg_map, map_var_name="stat_map"
@@ -748,6 +746,7 @@ def plot_img_on_surf(
     %(vmax)s
 
     %(threshold)s
+        Default=None
 
     %(symmetric_cbar)s
 
@@ -775,6 +774,7 @@ def plot_img_on_surf(
 
     """
     check_params(locals())
+    check_threshold_not_negative(threshold)
 
     for arg in ("figure", "axes", "engine"):
         if arg in kwargs:
@@ -852,7 +852,7 @@ def plot_surf_roi(
     cmap="gist_ncar",
     colorbar=True,
     avg_method=None,
-    threshold=1e-14,
+    threshold=None,
     alpha=None,
     bg_on_data=False,
     darkness=0.7,
@@ -935,9 +935,13 @@ def plot_surf_roi(
         When using matplotlib as engine,
         `avg_method` will default to ``"median"`` if ``None`` is passed.
 
-    threshold : a number or None, default=1e-14
-        Threshold regions that are labeled 0.
-        If you want to use 0 as a label, set threshold to None.
+    %(threshold)s
+        Default=None
+
+        .. note::
+            By default, the regions that are labeled 0 are not thresholded.
+            Threshold should be set to a very small number, ex. 1e-14 to
+            threshold the those 0 labeled regions.
 
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
@@ -1008,6 +1012,7 @@ def plot_surf_roi(
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
     check_params(locals())
+    check_threshold_not_negative(threshold)
     roi_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, bg_map
     )
