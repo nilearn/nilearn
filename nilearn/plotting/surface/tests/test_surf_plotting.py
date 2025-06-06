@@ -13,7 +13,6 @@ from numpy.testing import assert_array_equal
 from nilearn._utils.exceptions import MeshDimensionError
 from nilearn._utils.helpers import (
     is_kaleido_installed,
-    is_matplotlib_installed,
     is_plotly_installed,
 )
 from nilearn.datasets import fetch_surf_fsaverage
@@ -24,7 +23,6 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting.surface.surf_plotting import _get_surface_backend
 
 
 @pytest.fixture
@@ -33,38 +31,6 @@ def surf_roi_data(rng, in_memory_mesh):
     roi_idx = rng.integers(0, in_memory_mesh.n_vertices, size=10)
     roi_map[roi_idx] = 1
     return roi_map
-
-
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="This test is run only if matplotlib is not installed.",
-)
-def test_get_surface_backend_matplotlib_not_installed():
-    """Tests to see if get_surface_backend raises error when matplotlib is not
-    installed.
-    """
-    with pytest.raises(ImportError, match="Using engine"):
-        _get_surface_backend("matplotlib")
-
-
-@pytest.mark.skipif(
-    is_plotly_installed(),
-    reason="This test is run only if plotly is not installed.",
-)
-def test_get_surface_backend_plotly_not_installed():
-    """Tests to see if get_surface_backend raises error when plotly is not
-    installed.
-    """
-    with pytest.raises(ImportError, match="Using engine"):
-        _get_surface_backend("plotly")
-
-
-def test_get_surface_backend_unknown_error():
-    """Tests to see if get_surface_backend raises error when the specified
-    backend is not implemented.
-    """
-    with pytest.raises(ValueError, match="Unknown plotting engine"):
-        _get_surface_backend("unknown")
 
 
 @pytest.mark.parametrize(
