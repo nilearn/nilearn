@@ -1,11 +1,10 @@
-import pytest
 import pandas as pd
-from pathlib import Path
+import pytest
 
 from nilearn.interfaces.fmriprep.load_confounds_utils import (
     _get_file_name,
-    sanitize_confounds,
     load_confounds_file_as_dataframe,
+    sanitize_confounds,
 )
 from nilearn.interfaces.fmriprep.tests._testing import create_tmp_filepath
 
@@ -72,7 +71,10 @@ def test_get_file_name(tmp_path, flag, keyword, image_type):
 
 
 def test_get_file_name_raises_on_invalid_tedana_confounds(tmp_path):
-    """Test that _get_file_name raises when TEDANA confound file count is not 2."""
+    """
+    Test that _get_file_name raises
+    when TEDANA confound file count is not 2.
+    """
     func_file = tmp_path / "sub-01_task-rest_desc-optcom_bold.nii.gz"
     func_file.write_text("dummy")
 
@@ -85,14 +87,24 @@ def test_get_file_name_raises_on_invalid_tedana_confounds(tmp_path):
 
 
 def test_load_confounds_file_as_dataframe_tedana_invalid_columns(tmp_path):
+    """
+    Test that loading TEDANA confounds raises ValueError
+    when the required columns are not present in the confound file.
+    """
     # create a fake confound file with invalid TEDANA headers
-    fake_confounds = pd.DataFrame({
-        "junk_col1": [0.1, 0.2],
-        "junk_col2": [1, 0],
-    })
+    fake_confounds = pd.DataFrame(
+        {
+            "junk_col1": [0.1, 0.2],
+            "junk_col2": [1, 0],
+        }
+    )
     conf_file = tmp_path / "fake_tedana.tsv"
     fake_confounds.to_csv(conf_file, sep="\t", index=False)
 
-    # this should raise a ValueError because required TEDANA headers are missing
-    with pytest.raises(ValueError, match="The confound file does not contain the expected columns for TEDANA"):
+    # this should raise a ValueError because required TEDANA
+    # headers are missing
+    with pytest.raises(
+        ValueError,
+        match="The confound file does not contain the expected columns",
+    ):
         load_confounds_file_as_dataframe(str(conf_file), flag_tedana=True)
