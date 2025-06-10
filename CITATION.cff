@@ -605,6 +605,10 @@ authors:
     family-names: Glaser
     website: https://pierreglaser.github.io/
     affiliation: Gatsby Computational Neuroscience Unit, University College London, London, UK
+  - given-names: Pierre-Louis
+    family-names: Barbarant
+    website: https://github.com/pbarbarant
+    affiliation: Inria, Saclay, France
   - given-names: Pierre-Olivier
     family-names: Quirion
     website: https://github.com/poquirion
