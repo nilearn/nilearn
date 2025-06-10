@@ -487,6 +487,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         # but not for decoders
         "check_estimators_empty_data_messages": (
             "replaced by check_decoder_empty_data_messages"
+        ),
         "check_dont_overwrite_parameters": (
             "replaced by check_img_estimator_dont_overwrite_parameters"
         ),
