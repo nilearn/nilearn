@@ -1,6 +1,7 @@
 """Transformer for computing ROI signals."""
 
 import warnings
+from copy import deepcopy
 
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -413,11 +414,17 @@ class NiftiMapsMasker(BaseMasker):
         }
 
         # Load images
-        repr = repr_niimgs(self.maps_img, shorten=(not self.verbose))
+        maps_img = self.maps_img
+        if hasattr(self, "_maps_img"):
+            # This is for RegionExtractor that first modifies
+            # maps_img before passing to its parent fit method.
+            maps_img = self._maps_img
+        repr = repr_niimgs(maps_img, shorten=(not self.verbose))
         msg = f"loading regions from {repr}"
         log(msg=msg, verbose=self.verbose)
+        self.maps_img_ = deepcopy(maps_img)
         self.maps_img_ = check_niimg(
-            self.maps_img, dtype=self.dtype, atleast_4d=True
+            self.maps_img_, dtype=self.dtype, atleast_4d=True
         )
         self.maps_img_ = clean_img(
             self.maps_img_,
@@ -667,10 +674,10 @@ class NiftiMapsMasker(BaseMasker):
         )
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
-        params["clean_kwargs"] = self.clean_args
+        params["clean_kwargs"] = self.clean_args_
         # TODO remove in 0.13.2
         if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs
+            params["clean_kwargs"] = self.clean_kwargs_
 
         region_signals, _ = self._cache(
             filter_and_extract,

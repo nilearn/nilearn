@@ -1488,8 +1488,9 @@ def clean_img(
 
     Parameters
     ----------
-    imgs : Niimg-like object
-        4D image. The signals in the last dimension are filtered (see
+    imgs : 4D image Niimg-like object or \
+           2D :obj:`~nilearn.surface.SurfaceImage`
+        The signals in the last dimension are filtered (see
         :ref:`extracting_data` for a detailed description of the valid input
         types).
 
@@ -1533,10 +1534,11 @@ def clean_img(
         If True, the non-finite values (NaNs and infs) found in the images
         will be replaced by zeros.
 
-    mask_img : Niimg-like object, default=None
-        If provided, signal is only cleaned from voxels inside the mask. If
-        mask is provided, it should have same shape and affine as imgs.
-        If not provided, all voxels are used.
+    mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`,\
+               default=None
+        If provided, signal is only cleaned from voxels inside the mask.
+        If mask is provided, it should have same shape and affine as imgs.
+        If not provided, all voxels / verrices are used.
         See :ref:`extracting_data`.
 
     kwargs : :obj:`dict`
@@ -1550,7 +1552,7 @@ def clean_img(
 
     Returns
     -------
-    Niimg-like object
+    Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Input images, cleaned. Same shape as `imgs`.
 
     Notes
@@ -1573,8 +1575,6 @@ def clean_img(
     # Avoid circular import
     from .. import masking
 
-    imgs_ = check_niimg_4d(imgs)
-
     # Check if t_r is set, otherwise propose t_r from imgs header
     if (low_pass is not None or high_pass is not None) and t_r is None:
         # We raise an error, instead of using the header's t_r as this
@@ -1585,6 +1585,40 @@ def clean_img(
             f"imgs header suggest it to be {imgs.header.get_zooms()[3]}"
         )
 
+    clean_kwargs = {
+        k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
+    }
+
+    if isinstance(imgs, SurfaceImage):
+        imgs.data._check_ndims(2, "imgs")
+
+        data = {}
+        # Clean signal
+        for p, v in imgs.data.parts.items():
+            data[p] = signal.clean(
+                v.T,
+                runs=runs,
+                detrend=detrend,
+                standardize=standardize,
+                confounds=confounds,
+                low_pass=low_pass,
+                high_pass=high_pass,
+                t_r=t_r,
+                ensure_finite=ensure_finite,
+                **clean_kwargs,
+            )
+            data[p] = data[p].T
+
+        if mask_img is not None:
+            mask_img = masking.load_mask_img(mask_img)[0]
+            for hemi in mask_img.data.parts:
+                mask = mask_img.data.parts[hemi]
+                data[hemi][mask == 0.0, ...] = 0.0
+
+        return new_img_like(imgs, data)
+
+    imgs_ = check_niimg_4d(imgs)
+
     # Prepare signal for cleaning
     if mask_img is not None:
         signals = masking.apply_mask(imgs_, mask_img)
@@ -1592,9 +1626,6 @@ def clean_img(
         signals = get_data(imgs_).reshape(-1, imgs_.shape[-1]).T
 
     # Clean signal
-    clean_kwargs = {
-        k[7:]: v for k, v in kwargs.items() if k.startswith("clean__")
-    }
     data = signal.clean(
         signals,
         runs=runs,

@@ -7,13 +7,13 @@ import pandas as pd
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import fill_doc
-from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
+    check_threshold_not_negative,
     create_colormap_from_lut,
 )
 from nilearn.plotting.surface._utils import (
@@ -21,6 +21,7 @@ from nilearn.plotting.surface._utils import (
     check_hemispheres,
     check_surface_plotting_inputs,
     check_views,
+    get_surface_backend,
 )
 from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
 from nilearn.surface.surface import (
@@ -35,45 +36,6 @@ DATA_EXTENSIONS = (
     "gii.gz",
     "mgz",
 )
-
-
-def _get_surface_backend(engine=DEFAULT_ENGINE):
-    """Instantiate and return the required backend engine.
-
-    Parameters
-    ----------
-    engine: :obj:`str`, default='matplotlib'
-        Name of the required backend engine. Can be ``matplotlib`` or
-    ``plotly``.
-
-    Returns
-    -------
-    backend : :class:`~nilearn.plotting.surface._matplotlib_backend` or
-    :class:`~nilearn.plotting.surface._plotly_backend`.
-        The backend module for the specified engine.
-    """
-    if engine == "matplotlib":
-        if is_matplotlib_installed():
-            import nilearn.plotting.surface._matplotlib_backend as backend
-        else:
-            raise ImportError(
-                "Using engine='matplotlib' requires that ``matplotlib`` is "
-                "installed."
-            )
-    elif engine == "plotly":
-        if is_plotly_installed():
-            import nilearn.plotting.surface._plotly_backend as backend
-        else:
-            raise ImportError(
-                "Using engine='plotly' requires that ``plotly`` is installed."
-            )
-    else:
-        raise ValueError(
-            f"Unknown plotting engine {engine}. "
-            "Please use either 'matplotlib' or "
-            "'plotly'."
-        )
-    return backend
 
 
 @fill_doc
@@ -178,10 +140,8 @@ def plot_surf(
         When using ``matplotlib`` as engine, ``avg_method`` will default to
         ``"mean"`` if `None` is passed.
 
-    threshold : a number or None, default=None.
-        If `None` is given, the image is not thresholded.
-        If a number is given, it is used to threshold the image, values
-        below the threshold (in absolute value) are plotted as transparent.
+    %(threshold)s
+        Default=None
 
     alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
@@ -285,12 +245,13 @@ def plot_surf(
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
     check_params(locals())
+    check_threshold_not_negative(threshold)
     surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map
     )
     check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
-    backend = _get_surface_backend(engine)
+    backend = get_surface_backend(engine)
     fig = backend._plot_surf(
         surf_mesh,
         surf_map=surf_map,
@@ -414,7 +375,7 @@ def plot_surf_contours(
     )
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
-    backend = _get_surface_backend(DEFAULT_ENGINE)
+    backend = get_surface_backend(DEFAULT_ENGINE)
     fig = backend._plot_surf_contours(
         surf_mesh=surf_mesh,
         roi_map=roi_map,
@@ -529,11 +490,8 @@ def plot_surf_stat_map(
 
         .. versionadded:: 0.10.3dev
 
-    threshold : a number or None, default=None
-        If None is given, the image is not thresholded.
-        If a number is given, it is used to threshold the image,
-        values below the threshold (in absolute value) are plotted
-        as transparent.
+    %(threshold)s
+        Default=None
 
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not the stat_map).
@@ -606,6 +564,7 @@ def plot_surf_stat_map(
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
     check_params(locals())
+    check_threshold_not_negative(threshold)
 
     stat_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         stat_map, surf_mesh, hemi, bg_map, map_var_name="stat_map"
@@ -613,14 +572,16 @@ def plot_surf_stat_map(
     check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     loaded_stat_map = load_surf_data(stat_map)
 
-    backend = _get_surface_backend(engine)
+    backend = get_surface_backend(engine)
     # derive symmetric vmin, vmax and colorbar limits depending on
     # symmetric_cbar settings
-    cbar_vmin, cbar_vmax, vmin, vmax = backend.adjust_colorbar_and_data_ranges(
-        loaded_stat_map,
-        vmin=vmin,
-        vmax=vmax,
-        symmetric_cbar=symmetric_cbar,
+    cbar_vmin, cbar_vmax, vmin, vmax = (
+        backend._adjust_colorbar_and_data_ranges(
+            loaded_stat_map,
+            vmin=vmin,
+            vmax=vmax,
+            symmetric_cbar=symmetric_cbar,
+        )
     )
 
     fig = backend._plot_surf(
@@ -734,6 +695,7 @@ def plot_img_on_surf(
     %(vmax)s
 
     %(threshold)s
+        Default=None
 
     %(symmetric_cbar)s
 
@@ -761,6 +723,7 @@ def plot_img_on_surf(
 
     """
     check_params(locals())
+    check_threshold_not_negative(threshold)
 
     for arg in ("figure", "axes", "engine"):
         if arg in kwargs:
@@ -795,9 +758,9 @@ def plot_img_on_surf(
         ),
     }
 
-    backend = _get_surface_backend(DEFAULT_ENGINE)
+    backend = get_surface_backend(DEFAULT_ENGINE)
     # get vmin and vmax for entire data (all hemis)
-    _, _, vmin, vmax = backend.adjust_colorbar_and_data_ranges(
+    _, _, vmin, vmax = backend._adjust_colorbar_and_data_ranges(
         get_data(stat_map),
         vmin=vmin,
         vmax=vmax,
@@ -838,7 +801,7 @@ def plot_surf_roi(
     cmap="gist_ncar",
     colorbar=True,
     avg_method=None,
-    threshold=1e-14,
+    threshold=None,
     alpha=None,
     bg_on_data=False,
     darkness=0.7,
@@ -921,9 +884,13 @@ def plot_surf_roi(
         When using matplotlib as engine,
         `avg_method` will default to ``"median"`` if ``None`` is passed.
 
-    threshold : a number or None, default=1e-14
-        Threshold regions that are labeled 0.
-        If you want to use 0 as a label, set threshold to None.
+    %(threshold)s
+        Default=None
+
+        .. note::
+            By default, the regions that are labeled 0 are not thresholded.
+            Threshold should be set to a very small number, ex. 1e-14 to
+            threshold the those 0 labeled regions.
 
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
@@ -994,6 +961,7 @@ def plot_surf_roi(
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
     check_params(locals())
+    check_threshold_not_negative(threshold)
     roi_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, bg_map
     )
@@ -1053,8 +1021,8 @@ def plot_surf_roi(
         "cbar_tick_format": cbar_tick_format,
     }
 
-    backend = _get_surface_backend(engine)
-    backend.adjust_plot_roi_params(params)
+    backend = get_surface_backend(engine)
+    backend._adjust_plot_roi_params(params)
 
     fig = backend._plot_surf(
         mesh,

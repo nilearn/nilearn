@@ -510,6 +510,20 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         )
         return tags
 
+    def _check_imgs(self, imgs) -> None:
+        if not (
+            isinstance(imgs, SurfaceImage)
+            or (
+                hasattr(imgs, "__iter__")
+                and all(isinstance(x, SurfaceImage) for x in imgs)
+            )
+        ):
+            raise TypeError(
+                "'imgs' should be a SurfaceImage or "
+                "an iterable of SurfaceImage."
+                f"Got: {imgs.__class__.__name__}"
+            )
+
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
 
@@ -577,6 +591,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         %(signals_transform_surface)s
         """
         check_is_fitted(self)
+        self._check_imgs(imgs)
 
         return_1D = isinstance(imgs, SurfaceImage) and len(imgs.shape) < 2
 

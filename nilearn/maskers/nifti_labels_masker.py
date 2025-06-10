@@ -529,7 +529,8 @@ class NiftiLabelsMasker(BaseMasker):
         repr = repr_niimgs(self.labels_img, shorten=(not self.verbose))
         msg = f"loading data from {repr}"
         logger.log(msg=msg, verbose=self.verbose)
-        self.labels_img_ = check_niimg_3d(self.labels_img)
+        self.labels_img_ = deepcopy(self.labels_img)
+        self.labels_img_ = check_niimg_3d(self.labels_img_)
 
         if self.labels:
             if self.lut is not None:
@@ -810,10 +811,10 @@ class NiftiLabelsMasker(BaseMasker):
         )
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
-        params["clean_kwargs"] = self.clean_args
+        params["clean_kwargs"] = self.clean_args_
         # TODO remove in 0.13.2
         if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs
+            params["clean_kwargs"] = self.clean_kwargs_
 
         region_signals, (ids, masked_atlas) = self._cache(
             filter_and_extract,
