@@ -1347,6 +1347,7 @@ def test_frem_decoder_fit_surface(
 # ------------------------ test decoder vs sklearn -------------------------- #
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "classifier_penalty",
     ["svc_l1", "svc_l2", "logistic_l1", "logistic_l2", "ridge_classifier"],
