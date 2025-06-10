@@ -2,6 +2,7 @@
 
 import collections.abc
 import numbers
+from copy import deepcopy
 
 import numpy as np
 from scipy.ndimage import label
@@ -458,7 +459,8 @@ class RegionExtractor(NiftiMapsMasker):
         """
         del y
         check_params(self.__dict__)
-        maps_img = check_niimg_4d(self.maps_img)
+        maps_img = deepcopy(self.maps_img)
+        maps_img = check_niimg_4d(maps_img)
 
         self.mask_img_ = self._load_mask(imgs)
 
@@ -503,7 +505,7 @@ class RegionExtractor(NiftiMapsMasker):
             mask_img=self.mask_img_,
         )
 
-        self.maps_img = self.regions_img_
+        self._maps_img = self.regions_img_
         super().fit(imgs)
 
         return self

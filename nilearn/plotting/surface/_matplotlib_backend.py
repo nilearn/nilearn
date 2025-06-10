@@ -14,12 +14,14 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn.image import get_data
+from nilearn.plotting import cm
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
     save_figure_if_needed,
 )
 from nilearn.plotting.cm import mix_colormaps
+from nilearn.plotting.js_plotting_utils import to_color_strings
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
     check_engine_params,
@@ -72,7 +74,7 @@ MATPLOTLIB_VIEWS = {
 }
 
 
-def adjust_colorbar_and_data_ranges(
+def _adjust_colorbar_and_data_ranges(
     stat_map, vmin=None, vmax=None, symmetric_cbar=None
 ):
     """Adjust colorbar and data ranges for 'matplotlib' engine.
@@ -99,7 +101,7 @@ def adjust_colorbar_and_data_ranges(
     )
 
 
-def adjust_plot_roi_params(params):
+def _adjust_plot_roi_params(params):
     """Adjust avg_method and cbar_tick_format values for 'matplotlib' engine.
 
     Sets the values in params dict.
@@ -116,6 +118,60 @@ def adjust_plot_roi_params(params):
     cbar_tick_format = params.get("cbar_tick_format", "auto")
     if cbar_tick_format == "auto":
         params["cbar_tick_format"] = "%i"
+
+
+def _get_vertexcolor(
+    surf_map,
+    cmap,
+    norm,
+    absolute_threshold=None,
+    bg_map=None,
+    bg_on_data=None,
+    darkness=None,
+):
+    """Get the color of the vertices."""
+    if bg_map is None:
+        bg_data = np.ones(len(surf_map)) * 0.5
+        bg_vmin, bg_vmax = 0, 1
+    else:
+        bg_data = np.copy(load_surf_data(bg_map))
+
+    # scale background map if need be
+    bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
+    if bg_vmin < 0 or bg_vmax > 1:
+        bg_norm = Normalize(vmin=bg_vmin, vmax=bg_vmax)
+        bg_data = bg_norm(bg_data)
+
+    if darkness is not None:
+        bg_data *= darkness
+        warn(
+            (
+                "The `darkness` parameter will be deprecated in release 0.13. "
+                "We recommend setting `darkness` to None"
+            ),
+            DeprecationWarning,
+            stacklevel=find_stack_level(),
+        )
+
+    bg_colors = plt.get_cmap("Greys")(bg_data)
+
+    # select vertices which are filtered out by the threshold
+    if absolute_threshold is None:
+        under_threshold = np.zeros_like(surf_map, dtype=bool)
+    else:
+        under_threshold = np.abs(surf_map) < absolute_threshold
+
+    surf_colors = cmap(norm(surf_map).data)
+    # set transparency of voxels under threshold to 0
+    surf_colors[under_threshold, 3] = 0
+    if bg_on_data:
+        # if need be, set transparency of voxels above threshold to 0.7
+        # so that background map becomes visible
+        surf_colors[~under_threshold, 3] = 0.7
+
+    vertex_colors = cm.mix_colormaps(surf_colors, bg_colors)
+
+    return to_color_strings(vertex_colors)
 
 
 def _colorbar_from_array(
@@ -740,7 +796,7 @@ def _plot_img_on_surf(
 
         # derive symmetric vmin, vmax and colorbar limits depending on
         # symmetric_cbar settings
-        cbar_vmin, cbar_vmax, vmin, vmax = adjust_colorbar_and_data_ranges(
+        cbar_vmin, cbar_vmax, vmin, vmax = _adjust_colorbar_and_data_ranges(
             loaded_stat_map,
             vmin=vmin,
             vmax=vmax,
