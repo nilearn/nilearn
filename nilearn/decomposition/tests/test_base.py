@@ -17,11 +17,6 @@ from nilearn.decomposition._base import (
     _mask_and_reduce,
 )
 
-SHAPE_NIFTI = (6, 8, 10)
-SHAPE_SURF = {"left": (10, 8), "right": (9, 7)}
-N_SUBJECTS = 4
-N_SAMPLES = 5
-
 ESTIMATORS_TO_CHECK = [_BaseDecomposition()]
 
 if SKLEARN_LT_1_6:
