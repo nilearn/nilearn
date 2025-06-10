@@ -1459,39 +1459,6 @@
 @article{DuPre2021,
 	title = {TE-dependent analysis of multi-echo fMRI with tedana},
 	author = {DuPre, E. M. and Salo, T. and Ahmed, Z. and Bandettini, P. A. and Bottenhorn, K. L. and Caballero-Gaudes, C. and Dowdle, L. T. and Gonzalez-Castillo, J. and Heunis, S. and Kundu, P. and Laird, A. R. and Markello, R. and Markiewicz, C. J. and Moia, S. and Staden, I. and Teves, J. B. and Uruñuela, E. and Vaziri-Pashkam, M. and Whitaker, K. and Handwerker, D. A.},
-	abstract = {Functional magnetic resonance imaging (fMRI) is a popular method for in vivo neuroimaging.
-	Modern fMRI sequences are often weighted towards the blood oxygen level dependent (BOLD)
-	signal, which is closely linked to neuronal activity (Logothetis, 2002). This weighting is
-	achieved by tuning several parameters to increase the BOLD-weighted signal contrast. One
-	such parameter is “TE,” or echo time. TE is the amount of time elapsed between when
-	protons are excited (the MRI signal source) and measured. Although the total measured signal
-	magnitude decays with echo time, BOLD sensitivity increases (Silvennoinen et al., 2003). The
-	optimal TE maximizes the BOLD signal weighting based on a number of factors, including
-	several MRI scanner parameters (e.g., field strength), imaged tissue composition (e.g., grey
-	vs. white matter), and proximity to air-tissue boundaries.
-	Even as optimal TE values vary by brain region, most whole-brain fMRI scans are “single-
-	echo,” where signal is collected at a fixed TE everywhere in the brain. This TE value is often
-	based on either a value that is best on average across all brain regions or an optimised value
-	for a specific region of interest (Peters et al., 2007; Stöcker et al., 2006). Generally, these
-	choices reflect a tradeoff between BOLD weighting, overall signal-to-noise ratio (SNR), and
-	signal loss due to magnetic susceptibility artifacts. Further, for any TE with BOLD signal there
-	is also susceptibility to contamination from noise sources including head motion, respiration,
-	and cardiac pulsation (Caballero-Gaudes & Reynolds, 2017; Chang & Glover, 2009; Murphy
-	et al., 2013; Power et al., 2018).
-	Rather than collect data at a single TE, an alternative approach is to collect multiple TEs (that
-	is, multiple echos) for each time point. This approach, also known as multi-echo fMRI, has
-	several benefits, including allowing researchers to estimate each voxel’s T2* value, combining
-	echos (Posse et al., 1999), recovering signal in regions typically not sampled at longer echo
-	times (Kundu et al., 2013), and improving activation and connectivity mapping (Caballero-
-	Gaudes et al., 2019; Gonzalez-Castillo et al., 2016; Lynch et al., 2020) even in real time fMRI
-	(Heunis et al., 2020). In addition, artifactual non-T2* changes (known as S0 in this context)
-	may be identified and removed by leveraging the relationship between BOLD contrast and T2*
-	obtained with multi-echo fMRI (Kundu et al., 2012). Strategies to perform this efficiently and
-	robustly are in active development. Continuing these efforts, we present tedana (TE-Dependent ANAlysis) as an open-source
-	Python package for processing and denoising multi-echo fMRI data. tedana implements two
-	approaches to multi-echo preprocessing: (1) estimating a T2* map and using these values to
-	generate a weighted sum of individual echos, and (2) using echo-time dependent information
-	in analysis and denoising (Kundu et al., 2012).},
 	journal={Journal of Open Source Software},
 	doi={doi:10.21105/joss.03669},
 	volume={66},
