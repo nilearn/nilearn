@@ -145,37 +145,9 @@ class DictLearning(_BaseDecomposition):
 
     %(verbose0)s
 
-    Attributes
-    ----------
-    components_ : 2D numpy array (n_components x (n-voxels or n-vertices))
-        Masked dictionary components extracted from the input images.
+    %(base_decomposition_attributes)s
 
-        .. note::
-
-            Use attribute `components_img_` rather than manually unmasking
-            `components_` with `masker_` attribute.
-
-    components_img_ : 4D Nifti image or 2D :obj:`~nilearn.surface.SurfaceImage`
-        The image giving the extracted components. Each 3D Nifti image or 1D
-        SurfaceImage is a component.
-
-        .. versionadded:: 0.4.1
-
-    masker_ : instance of MultiNiftiMasker or \
-            :obj:`~nilearn.maskers.SurfaceMasker`
-        Masker used to filter and mask data as first step. If an instance of
-        MultiNiftiMasker or :obj:`~nilearn.maskers.SurfaceMasker` is given in
-        `mask` parameter, this is a copy of it.
-        Otherwise, a masker is created using the value of `mask` and
-        other NiftiMasker/SurfaceMasker related parameters as initialization.
-
-    mask_img_ : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
-        See :ref:`extracting_data`.
-        The mask of the data. If no mask was given at masker creation:
-        - for Nifti images, this contains automatically computed mask via the
-        selected ``mask_strategy``.
-        - for SurfaceImage objects, this mask encompasses all vertices of
-        the input images.
+    %(multi_pca_attributes)s
 
     References
     ----------

@@ -376,17 +376,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     %(verbose0)s
 
-    Attributes
-    ----------
-    mask_img_ : Niimg-like object :obj:`~nilearn.surface.SurfaceImage`
-        See :ref:`extracting_data`.
-        The mask of the data. If no mask was given at masker creation:
-
-        - for Nifti images, this contains automatically computed mask via the
-        selected ``mask_strategy``.
-
-        - for SurfaceImage objects, this mask encompasses all vertices of
-        the input images.
+    %(base_decomposition_attributes)s
     """
 
     def __init__(
