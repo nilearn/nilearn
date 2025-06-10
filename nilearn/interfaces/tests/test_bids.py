@@ -408,6 +408,7 @@ def test_parse_bids_filename():
     assert file_dict["entities"] == entities
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback", "task-nback"]
 )
@@ -577,6 +578,7 @@ def test_save_glm_to_bids_errors(
         )
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback_", 1]
 )
