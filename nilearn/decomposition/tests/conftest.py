@@ -44,14 +44,16 @@ def decomposition_mask_img(
         }
         return SurfaceImage(mesh=decomposition_mesh, data=mask_data)
 
+    # TODO
     # setting the shape of the mask to be a bit different
     # shape_3d_large that is used for the data
     # to force resampling
-    shape = (
-        shape_3d_large[0] - 1,
-        shape_3d_large[1] - 1,
-        shape_3d_large[2] - 1,
-    )
+    # shape = (
+    #     shape_3d_large[0] - 1,
+    #     shape_3d_large[1] - 1,
+    #     shape_3d_large[2] - 1,
+    # )
+    shape = shape_3d_large
     mask = np.ones(shape, dtype=np.int8)
     mask[:5] = 0
     mask[-5:] = 0
