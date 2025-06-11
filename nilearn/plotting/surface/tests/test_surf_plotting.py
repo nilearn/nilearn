@@ -65,6 +65,25 @@ def test_check_surface_plotting_inputs_error_negative_threshold(
         fn(in_memory_mesh, threshold=-1)
 
 
+@pytest.mark.parametrize(
+    "fn",
+    [
+        plot_surf,
+        plot_surf_contours,
+        plot_surf_stat_map,
+        plot_surf_roi,
+    ],
+)
+@pytest.mark.parametrize("hemi", ["left", "right", "both"])
+def test_check_surface_plotting_inputs_single_hemi_data(
+    in_memory_mesh, fn, hemi
+):
+    """Smoke test when single hemi data is passed."""
+    parcellation = np.zeros((in_memory_mesh.n_vertices,))
+    parcellation[in_memory_mesh.faces[3]] = 1
+    fn(in_memory_mesh, parcellation, hemi=hemi)
+
+
 def test_check_surface_plotting_inputs_errors():
     """Fail if mesh is None and data is not a SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
@@ -393,14 +412,6 @@ def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
     figure, axes = matplotlib_pyplot.subplots()
     with pytest.raises(AttributeError, match="the projection must be '3d'"):
         plot_surf_stat_map(stat_map=surf_img_1d, axes=axes)
-
-
-def test_plot_surf_contours_warning_hemi(in_memory_mesh):
-    """Test warning that hemi will be ignored."""
-    parcellation = np.zeros((in_memory_mesh.n_vertices,))
-    parcellation[in_memory_mesh.faces[3]] = 1
-    with pytest.warns(UserWarning, match="Please make sure that the"):
-        plot_surf_contours(in_memory_mesh, parcellation, hemi="left")
 
 
 def test_plot_surf_contours(
