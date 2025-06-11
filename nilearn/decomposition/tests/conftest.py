@@ -6,14 +6,104 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
+from nilearn.conftest import _affine_eye, _rng
 from nilearn.maskers import MultiNiftiMasker, SurfaceMasker
 from nilearn.surface import PolyMesh, SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
 
-SHAPE_NIFTI = (6, 8, 10)
+SHAPE_NIFTI = (30, 30, 5)
 SHAPE_SURF = {"left": (10, 8), "right": (9, 7)}
 N_SUBJECTS = 4
 N_SAMPLES = 5
+
+
+def _make_data_from_components(
+    components,
+    affine=None,
+    shape=SHAPE_NIFTI,
+    rng=None,
+    n_subjects=N_SUBJECTS,
+):
+    if affine is None:
+        affine = _affine_eye()
+
+    if rng is None:
+        rng = _rng()
+
+    background = -0.01 * rng.normal(size=shape) - 2
+    background = background[..., np.newaxis]
+
+    data = []
+    for _ in range(n_subjects):
+        this_data = np.dot(rng.normal(size=(40, 4)), components)
+        this_data += 0.01 * rng.normal(size=this_data.shape)
+
+        # Get back into 3D for CanICA
+        this_data = np.reshape(this_data, (40, *shape))
+        this_data = np.rollaxis(this_data, 0, 4)
+
+        # Put the border of the image to zero, to mimic a brain image
+        this_data[:5] = background[:5]
+        this_data[-5:] = background[-5:]
+        this_data[:, :5] = background[:, :5]
+        this_data[:, -5:] = background[:, -5:]
+
+        data.append(Nifti1Image(this_data, affine))
+    return data
+
+
+def _make_canica_components(shape: tuple) -> np.ndarray:
+    # Create two images with "activated regions"
+    component1 = np.zeros(shape)
+    component1[:5, :10] = 1
+    component1[5:10, :10] = -1
+
+    component2 = np.zeros(shape)
+    component2[:5, -10:] = 1
+    component2[5:10, -10:] = -1
+
+    component3 = np.zeros(shape)
+    component3[-5:, -10:] = 1
+    component3[-10:-5, -10:] = -1
+
+    component4 = np.zeros(shape)
+    component4[-5:, :10] = 1
+    component4[-10:-5, :10] = -1
+
+    return np.vstack(
+        (
+            component1.ravel(),
+            component2.ravel(),
+            component3.ravel(),
+            component4.ravel(),
+        )
+    )
+
+
+@pytest.fixture
+def canica_components(rng) -> np.ndarray:
+    components = _make_canica_components(SHAPE_NIFTI)
+    # Creating noisy non positive data
+    components[rng.standard_normal(components.shape) > 0.8] *= -2.0
+    for mp in components:
+        assert mp.max() <= -mp.min()  # Goal met ?
+    return components
+
+
+def _make_canica_test_data(n_subjects=N_SUBJECTS):
+    # Use legacy generator for sklearn compatibility
+    rng = np.random.RandomState(42)
+    components = _make_canica_components(SHAPE_NIFTI)
+    # Create a "multi-subject" dataset
+    data = _make_data_from_components(
+        components, _affine_eye(), SHAPE_NIFTI, rng=rng, n_subjects=n_subjects
+    )
+    return data
+
+
+def canica_data():
+    """Create a canonical ICA data for testing purposes."""
+    return _make_canica_test_data()[0]
 
 
 @pytest.fixture
@@ -36,6 +126,13 @@ def mask_img(
         return SurfaceImage(mesh=_mesh, data=mask_data)
 
     shape = (*SHAPE_NIFTI, N_SAMPLES)
+    mask = np.ones(SHAPE_NIFTI)
+    mask[:5] = 0
+    mask[-5:] = 0
+    mask[:, :5] = 0
+    mask[:, -5:] = 0
+    mask[..., -2:] = 0
+    mask[..., :2] = 0
     return Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine_eye)
 
 

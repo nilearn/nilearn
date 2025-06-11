@@ -10,32 +10,10 @@ from nilearn._utils.estimator_checks import (
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
-from nilearn.conftest import _affine_eye
 from nilearn.decomposition.dict_learning import DictLearning
-from nilearn.decomposition.tests.test_canica import _make_canica_test_data
+from nilearn.decomposition.tests.conftest import _make_canica_test_data
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker
-
-SHAPE = (30, 30, 5)
-
-
-@pytest.fixture(scope="module")
-def mask_img():
-    mask = np.ones(SHAPE)
-    mask[:5] = 0
-    mask[-5:] = 0
-    mask[:, :5] = 0
-    mask[:, -5:] = 0
-    mask[..., -2:] = 0
-    mask[..., :2] = 0
-    return Nifti1Image(mask, _affine_eye())
-
-
-@pytest.fixture(scope="module")
-def canica_data():
-    """Create a canonical ICA data for testing purposes."""
-    return _make_canica_test_data()[0]
-
 
 ESTIMATORS_TO_CHECK = [DictLearning()]
 
@@ -81,15 +59,18 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+@pytest.mark.parametrize("data_type", ["nifti"])
 @pytest.mark.parametrize("n_epochs", [1, 2, 10])
-def test_dict_learning_check_values_epoch_argument_smoke(mask_img, n_epochs):
+def test_dict_learning_check_values_epoch_argument_smoke(
+    data_type, mask_img, n_epochs, canica_components
+):
     """Smoke test to check different values of the epoch argument."""
-    data, components, _ = _make_canica_test_data()
+    data = _make_canica_test_data()
 
     masker = NiftiMasker(mask_img=mask_img).fit()
     mask = get_data(mask_img) != 0
     flat_mask = mask.ravel()
-    dict_init = masker.inverse_transform(components[:, flat_mask])
+    dict_init = masker.inverse_transform(canica_components[:, flat_mask])
 
     dict_learning = DictLearning(
         n_components=4,
@@ -103,13 +84,14 @@ def test_dict_learning_check_values_epoch_argument_smoke(mask_img, n_epochs):
     dict_learning.fit(data)
 
 
-def test_dict_learning(mask_img):
-    data, components, _ = _make_canica_test_data()
+@pytest.mark.parametrize("data_type", ["nifti"])
+def test_dict_learning(data_type, mask_img, canica_components):
+    data = _make_canica_test_data()
 
     masker = NiftiMasker(mask_img=mask_img).fit()
     mask = get_data(mask_img) != 0
     flat_mask = mask.ravel()
-    masked_components = components[:, flat_mask]
+    masked_components = canica_components[:, flat_mask]
     dict_init = masker.inverse_transform(masked_components)
 
     dict_learning = DictLearning(
@@ -153,21 +135,20 @@ def test_dict_learning(mask_img):
         assert recovered_maps >= 2
 
 
-def test_component_sign(mask_img):
+@pytest.mark.parametrize("data_type", ["nifti"])
+def test_component_sign(data_type, mask_img) -> None:
     # Regression test
     # We should have a heuristic that flips the sign of components in
     # DictLearning to have more positive values than negative values, for
     # instance by making sure that the largest value is positive.
 
-    data, components, rng = _make_canica_test_data(n_subjects=2, noisy=True)
-    for mp in components:
-        assert -mp.min() <= mp.max()
+    data = _make_canica_test_data(n_subjects=2)
 
     dict_learning = DictLearning(
         n_components=4,
-        random_state=rng,
+        random_state=42,
         mask=mask_img,
-        smoothing_fwhm=0.0,
+        smoothing_fwhm=0,
         alpha=1,
     )
     dict_learning.fit(data)
@@ -176,7 +157,8 @@ def test_component_sign(mask_img):
         assert np.sum(mp[mp <= 0]) <= np.sum(mp[mp > 0])
 
 
-def test_masker_attributes_with_fit(canica_data, mask_img):
+@pytest.mark.parametrize("data_type", ["nifti"])
+def test_masker_attributes_with_fit(canica_data, mask_img, data_type):
     # Test base module at sub-class
 
     # Passing mask_img
@@ -193,7 +175,8 @@ def test_masker_attributes_with_fit(canica_data, mask_img):
     assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
 
 
-def test_empty_data_to_fit_error(mask_img):
+@pytest.mark.parametrize("data_type", ["nifti"])
+def test_empty_data_to_fit_error(mask_img, data_type):
     """Test if raises an error when empty list of provided."""
     dict_learning = DictLearning(mask=mask_img, n_components=3)
 
@@ -215,7 +198,8 @@ def test_passing_masker_arguments_to_estimator(affine_eye, canica_data):
     dict_learning.fit(canica_data)
 
 
-def test_components_img(canica_data, mask_img):
+@pytest.mark.parametrize("data_type", ["nifti"])
+def test_components_img(canica_data, mask_img, data_type):
     n_components = 3
     dict_learning = DictLearning(n_components=n_components, mask=mask_img)
 
@@ -229,9 +213,10 @@ def test_components_img(canica_data, mask_img):
     assert components_img.shape, check_shape
 
 
+@pytest.mark.parametrize("data_type", ["nifti"])
 @pytest.mark.parametrize("n_subjects", [1, 3])
-def test_with_globbing_patterns(mask_img, n_subjects, tmp_path):
-    data, *_ = _make_canica_test_data(n_subjects=n_subjects)
+def test_with_globbing_patterns(mask_img, n_subjects, tmp_path, data_type):
+    data = _make_canica_test_data(n_subjects=n_subjects)
 
     n_components = 3
     dict_learning = DictLearning(n_components=n_components, mask=mask_img)
@@ -256,7 +241,8 @@ def test_with_globbing_patterns(mask_img, n_subjects, tmp_path):
     assert components_img.shape, check_shape
 
 
-def test_dictlearning_score(canica_data, mask_img):
+@pytest.mark.parametrize("data_type", ["nifti"])
+def test_dictlearning_score(canica_data, mask_img, data_type):
     # Multi subjects
     n_components = 10
     dict_learning = DictLearning(
