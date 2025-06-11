@@ -670,7 +670,7 @@ def test_connectivity_measure_generic(
 def _assert_connectivity_tangent(connectivities, conn_measure, covs):
     """Check output value properties for tangent connectivity measure \
     that they have the expected relationship \
-    to the input covariance matrices.ConnectivityMeasure.
+    to the input covariance matrices.
 
     - the geometric mean of the eigenvalues
         of the mean covariance matrix is positive-definite
