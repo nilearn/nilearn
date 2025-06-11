@@ -69,11 +69,11 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize("data_type", ["nifti"])
 @pytest.mark.parametrize("n_epochs", [1, 2, 10])
 def test_dict_learning_check_values_epoch_argument_smoke(
-    data_type,  # noqa: ARG001
     decomposition_mask_img,
     n_epochs,
     canica_components,
     canica_data,
+    data_type,  # noqa: ARG001
 ):
     """Smoke test to check different values of the epoch argument."""
     masker = NiftiMasker(mask_img=decomposition_mask_img).fit()
@@ -95,10 +95,10 @@ def test_dict_learning_check_values_epoch_argument_smoke(
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_dict_learning(
-    data_type,  # noqa: ARG001
     decomposition_mask_img,
     canica_components,
     canica_data,
+    data_type,  # noqa: ARG001
 ):
     """Check content of components_img_."""
     masker = NiftiMasker(mask_img=decomposition_mask_img).fit()
@@ -150,9 +150,9 @@ def test_dict_learning(
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_component_sign(
-    data_type,  # noqa: ARG001
     decomposition_mask_img,
     canica_data,
+    data_type,  # noqa: ARG001
 ) -> None:
     """Check sign of extracted components.
 
@@ -252,10 +252,10 @@ def test_components_img(
 @pytest.mark.parametrize("n_subjects", [1, 3])
 def test_with_globbing_patterns(
     decomposition_mask_img,
-    n_subjects,  # noqa: ARG001
     tmp_path,
-    data_type,  # noqa: ARG001
     canica_data,
+    n_subjects,  # noqa: ARG001
+    data_type,  # noqa: ARG001
 ):
     """Check DictLearning can work with files on disk."""
     n_components = 3

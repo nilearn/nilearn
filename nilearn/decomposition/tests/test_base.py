@@ -205,7 +205,7 @@ def test_mask_reducer_reduced_data_is_orthogonal(
 
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_mask_reducer_reduced_reproducible(
-    data_type,  # noqa: ARG001
+    data_type,
     decomposition_masker,
     decomposition_data_single_img,
 ):
@@ -223,5 +223,16 @@ def test_mask_reducer_reduced_reproducible(
         n_components=n_components,
         random_state=0,
     )
+
+    if data_type == "nifti":
+        assert data1.shape == (
+            n_components,
+            np.prod(decomposition_masker.mask_img_.shape),
+        )
+    elif data_type == "surface":
+        assert data1.shape == (
+            n_components,
+            decomposition_masker.mask_img_.shape[-1],
+        )
 
     assert_array_almost_equal(np.tile(data1, (2, 1)), data2)
