@@ -517,6 +517,7 @@ class NiftiLabelsMasker(BaseMasker):
             )
 
         sanitize_cleaning_parameters(self)
+        self.clean_args_ = {}  if self.clean_args is None else  self.clean_args
 
         self._report_content = {
             "description": (

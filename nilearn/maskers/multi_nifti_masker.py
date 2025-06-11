@@ -285,6 +285,7 @@ class MultiNiftiMasker(NiftiMasker):
         )
 
         sanitize_cleaning_parameters(self)
+        self.clean_args_ = {}  if self.clean_args is None else  self.clean_args
 
         self.mask_img_ = self._load_mask(imgs)
 

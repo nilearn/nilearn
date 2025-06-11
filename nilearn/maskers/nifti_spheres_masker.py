@@ -560,6 +560,7 @@ class NiftiSpheresMasker(BaseMasker):
         }
 
         sanitize_cleaning_parameters(self)
+        self.clean_args_ = {}  if self.clean_args is None else  self.clean_args
 
         error = (
             "Seeds must be a list of triplets of coordinates in "

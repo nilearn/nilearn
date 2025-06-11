@@ -30,10 +30,7 @@ def sanitize_cleaning_parameters(masker):
             for k, v in masker.clean_kwargs.items()
             if k.startswith("clean__")
         }
-    if masker.clean_args is None:
-        masker.clean_args_ = {}
-    else:
-        masker.clean_args_ = masker.clean_args
+
 
 
 def _check_dims(imgs):
