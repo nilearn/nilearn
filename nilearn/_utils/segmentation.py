@@ -366,7 +366,7 @@ def _solve_cg(lap_sparse, B, tol):
         # when support scipy to >= 1.12
         # See https://github.com/nilearn/nilearn/pull/4394
         if compare_version(__version__, ">=", "1.12")
-        else cg(lap_sparse, -b_i.todense(), tol=tol, atol="legacy")[0]
+        else cg(lap_sparse, -b_i.todense(), rtol=tol, atol="legacy")[0]
         for b_i in B
     ]
 
