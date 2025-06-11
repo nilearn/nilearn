@@ -2416,10 +2416,7 @@ def _generate_report(estimator):
     For example by only passing the number of displayed maps
     that a map masker contains.
     """
-    from nilearn.maskers import (
-        MultiNiftiMapsMasker,
-        NiftiMapsMasker,
-    )
+    from nilearn.maskers import MultiNiftiMapsMasker
 
     if isinstance(
         estimator,
