@@ -272,7 +272,6 @@ max-complexity = 22
 "nilearn/datasets/tests/test_testing.py" = ["D103"]
 "nilearn/datasets/tests/test_utils.py" = ["D103"]
 "nilearn/decoding/**/{tests}/*" = ["D103"]  # 81 errors to fix
-"nilearn/decomposition/**/{tests}/*" = ["D103"]  # 32 errors to fix
 "nilearn/glm/tests/test_check_events_file_uses_tab_separators.py" = ["D103"]
 "nilearn/glm/tests/test_contrasts.py" = ["D103"]
 "nilearn/glm/tests/test_design_matrix.py" = ["D103"]

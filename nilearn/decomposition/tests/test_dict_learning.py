@@ -70,14 +70,14 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize("n_epochs", [1, 2, 10])
 def test_dict_learning_check_values_epoch_argument_smoke(
     data_type,  # noqa: ARG001
-    mask_img,
+    decomposition_mask_img,
     n_epochs,
     canica_components,
     canica_data,
 ):
     """Smoke test to check different values of the epoch argument."""
-    masker = NiftiMasker(mask_img=mask_img).fit()
-    mask = get_data(mask_img) != 0
+    masker = NiftiMasker(mask_img=decomposition_mask_img).fit()
+    mask = get_data(decomposition_mask_img) != 0
     flat_mask = mask.ravel()
     dict_init = masker.inverse_transform(canica_components[:, flat_mask])
 
@@ -85,7 +85,7 @@ def test_dict_learning_check_values_epoch_argument_smoke(
         n_components=4,
         random_state=0,
         dict_init=dict_init,
-        mask=mask_img,
+        mask=decomposition_mask_img,
         smoothing_fwhm=0.0,
         n_epochs=n_epochs,
         alpha=1,
@@ -96,12 +96,12 @@ def test_dict_learning_check_values_epoch_argument_smoke(
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_dict_learning(
     data_type,  # noqa: ARG001
-    mask_img,
+    decomposition_mask_img,
     canica_components,
     canica_data,
 ):
-    masker = NiftiMasker(mask_img=mask_img).fit()
-    mask = get_data(mask_img) != 0
+    masker = NiftiMasker(mask_img=decomposition_mask_img).fit()
+    mask = get_data(decomposition_mask_img) != 0
     flat_mask = mask.ravel()
     masked_components = canica_components[:, flat_mask]
     dict_init = masker.inverse_transform(masked_components)
@@ -110,7 +110,7 @@ def test_dict_learning(
         n_components=4,
         random_state=0,
         dict_init=dict_init,
-        mask=mask_img,
+        mask=decomposition_mask_img,
         smoothing_fwhm=0.0,
         alpha=1,
     )
@@ -118,7 +118,7 @@ def test_dict_learning(
     dict_learning_auto_init = DictLearning(
         n_components=4,
         random_state=0,
-        mask=mask_img,
+        mask=decomposition_mask_img,
         smoothing_fwhm=0.0,
         n_epochs=10,
         alpha=1,
@@ -150,17 +150,20 @@ def test_dict_learning(
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_component_sign(
     data_type,  # noqa: ARG001
-    mask_img,
+    decomposition_mask_img,
     canica_data,
 ) -> None:
-    # Regression test
-    # We should have a heuristic that flips the sign of components in
-    # DictLearning to have more positive values than negative values, for
-    # instance by making sure that the largest value is positive.
+    """Check sign of extracted components.
+
+    Regression test:
+    We should have a heuristic that flips the sign of components in
+    DictLearning to have more positive values than negative values, for
+    instance by making sure that the largest value is positive.
+    """
     dict_learning = DictLearning(
         n_components=4,
         random_state=42,
-        mask=mask_img,
+        mask=decomposition_mask_img,
         smoothing_fwhm=0,
         alpha=1,
     )
@@ -173,19 +176,20 @@ def test_component_sign(
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_masker_attributes_with_fit(
     canica_data_single_img,
-    mask_img,
+    decomposition_mask_img,
     data_type,  # noqa: ARG001
 ):
-    # Test base module at sub-class
-
+    """Test base module at sub-class."""
     # Passing mask_img
-    dict_learning = DictLearning(n_components=3, mask=mask_img, random_state=0)
+    dict_learning = DictLearning(
+        n_components=3, mask=decomposition_mask_img, random_state=0
+    )
     dict_learning.fit(canica_data_single_img)
 
     assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
 
     # Passing masker
-    masker = NiftiMasker(mask_img=mask_img)
+    masker = NiftiMasker(mask_img=decomposition_mask_img)
     dict_learning = DictLearning(n_components=3, mask=masker, random_state=0)
     dict_learning.fit(canica_data_single_img)
 
@@ -194,11 +198,11 @@ def test_masker_attributes_with_fit(
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_empty_data_to_fit_error(
-    mask_img,
+    decomposition_mask_img,
     data_type,  # noqa: ARG001
 ):
     """Test if raises an error when empty list of provided."""
-    dict_learning = DictLearning(mask=mask_img, n_components=3)
+    dict_learning = DictLearning(mask=decomposition_mask_img, n_components=3)
 
     with pytest.raises(
         ValueError,
@@ -223,11 +227,13 @@ def test_passing_masker_arguments_to_estimator(
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_components_img(
     canica_data_single_img,
-    mask_img,
+    decomposition_mask_img,
     data_type,  # noqa: ARG001
 ):
     n_components = 3
-    dict_learning = DictLearning(n_components=n_components, mask=mask_img)
+    dict_learning = DictLearning(
+        n_components=n_components, mask=decomposition_mask_img
+    )
 
     dict_learning.fit(canica_data_single_img)
     components_img = dict_learning.components_img_
@@ -242,14 +248,16 @@ def test_components_img(
 @pytest.mark.parametrize("data_type", ["nifti"])
 @pytest.mark.parametrize("n_subjects", [1, 3])
 def test_with_globbing_patterns(
-    mask_img,
+    decomposition_mask_img,
     n_subjects,  # noqa: ARG001
     tmp_path,
     data_type,  # noqa: ARG001
     canica_data,
 ):
     n_components = 3
-    dict_learning = DictLearning(n_components=n_components, mask=mask_img)
+    dict_learning = DictLearning(
+        n_components=n_components, mask=decomposition_mask_img
+    )
 
     img = write_imgs_to_path(
         *canica_data, file_path=tmp_path, create_files=True, use_wildcards=True
@@ -268,13 +276,13 @@ def test_with_globbing_patterns(
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_dictlearning_score(
     canica_data_single_img,
-    mask_img,
+    decomposition_mask_img,
     data_type,  # noqa: ARG001
 ):
     # Multi subjects
     n_components = 10
     dict_learning = DictLearning(
-        n_components=n_components, mask=mask_img, random_state=0
+        n_components=n_components, mask=decomposition_mask_img, random_state=0
     )
 
     dict_learning.fit(canica_data_single_img)

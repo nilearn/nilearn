@@ -1,6 +1,6 @@
 """Fixtures for decomposition tests."""
 
-from typing import Optional, Union
+from typing import Union
 
 import numpy as np
 import pytest
@@ -18,7 +18,8 @@ N_SAMPLES = 5
 
 
 @pytest.fixture
-def _mesh() -> PolyMesh:
+def decomposition_mesh() -> PolyMesh:
+    """Return a mesh to use for decomposition tests."""
     return PolyMesh(
         left=flat_mesh(*SHAPE_SURF["left"]),
         right=flat_mesh(*SHAPE_SURF["right"]),
@@ -26,34 +27,40 @@ def _mesh() -> PolyMesh:
 
 
 @pytest.fixture
-def mask_img(
-    data_type: str, _mesh: PolyMesh, affine_eye: np.ndarray
+def decomposition_mask_img(
+    data_type: str, decomposition_mesh: PolyMesh, affine_eye: np.ndarray
 ) -> Union[SurfaceImage, Nifti1Image]:
+    """Return a mask for decomposition."""
     if data_type == "surface":
         mask_data = {
-            "left": np.ones((_mesh.parts["left"].coordinates.shape[0],)),
-            "right": np.ones((_mesh.parts["right"].coordinates.shape[0],)),
+            "left": np.ones(
+                (decomposition_mesh.parts["left"].coordinates.shape[0],)
+            ),
+            "right": np.ones(
+                (decomposition_mesh.parts["right"].coordinates.shape[0],)
+            ),
         }
-        return SurfaceImage(mesh=_mesh, data=mask_data)
+        return SurfaceImage(mesh=decomposition_mesh, data=mask_data)
 
-    shape = (*SHAPE_NIFTI, N_SAMPLES)
-    mask = np.ones(SHAPE_NIFTI)
+    mask = np.ones(SHAPE_NIFTI, dtype=np.int8)
     mask[:5] = 0
     mask[-5:] = 0
     mask[:, :5] = 0
     mask[:, -5:] = 0
     mask[..., -2:] = 0
     mask[..., :2] = 0
-    return Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine_eye)
+    return Nifti1Image(mask, affine_eye)
 
 
 @pytest.fixture
-def masker(
-    mask_img: SurfaceImage, img_3d_ones_eye: Nifti1Image, data_type: str
+def decomposition_masker(
+    decomposition_mask_img: Union[SurfaceImage, Nifti1Image],
+    img_3d_ones_eye: Nifti1Image,
+    data_type: str,
 ) -> Union[SurfaceMasker, MultiNiftiMasker]:
     """Return the proper masker for test with volume of surface."""
     if data_type == "surface":
-        return SurfaceMasker(mask_img=mask_img).fit()
+        return SurfaceMasker(mask_img=decomposition_mask_img).fit()
     return MultiNiftiMasker(mask_img=img_3d_ones_eye).fit()
 
 
@@ -104,16 +111,11 @@ def decomposition_data_single_img(
 
 def _make_data_from_components(
     components: np.ndarray,
-    affine: Optional[np.ndarray] = None,
     shape: tuple[int, int, int] = SHAPE_NIFTI,
-    rng=None,
     n_subjects=N_SUBJECTS,
 ) -> list[Nifti1Image]:
-    if affine is None:
-        affine = _affine_eye()
-
-    if rng is None:
-        rng = _rng()
+    affine = _affine_eye()
+    rng = _rng()
 
     background = -0.01 * rng.normal(size=shape) - 2
     background = background[..., np.newaxis]
@@ -176,11 +178,11 @@ def canica_components(rng) -> np.ndarray:
 
 
 @pytest.fixture
-def canica_data(rng, n_subjects=N_SUBJECTS) -> list[Nifti1Image]:
+def canica_data(n_subjects=N_SUBJECTS) -> list[Nifti1Image]:
     """Create a "multi-subject" dataset."""
     components = _make_canica_components(SHAPE_NIFTI)
     data = _make_data_from_components(
-        components, _affine_eye(), SHAPE_NIFTI, rng=rng, n_subjects=n_subjects
+        components, SHAPE_NIFTI, n_subjects=n_subjects
     )
     return data
 

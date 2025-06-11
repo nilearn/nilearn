@@ -6,6 +6,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
+from nilearn._utils.data_gen import generate_fake_fmri
 from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
@@ -16,13 +17,6 @@ from nilearn._utils.testing import write_imgs_to_path
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
-
-
-def img_4d():
-    data_4d = np.zeros((40, 40, 40, 3))
-    data_4d[20, 20, 20] = 1
-    return Nifti1Image(data_4d, affine=np.eye(4))
-
 
 ESTIMATORS_TO_CHECK = [_MultiPCA()]
 
@@ -68,10 +62,12 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_multi_pca_check_masker_attributes(
     data_type,  # noqa: ARG001
-    mask_img,
+    decomposition_mask_img,
     decomposition_data,
 ):
-    multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
+    multi_pca = _MultiPCA(
+        mask=decomposition_mask_img, n_components=3, random_state=0
+    )
     multi_pca.fit(decomposition_data)
 
     assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
@@ -82,13 +78,15 @@ def test_multi_pca_check_masker_attributes(
 def test_multi_pca(
     length,
     data_type,  # noqa: ARG001
-    mask_img,
+    decomposition_mask_img,
     decomposition_data,
 ):
     """Components are the same if we put twice the same data, \
        and that fit output is deterministic.
     """
-    multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
+    multi_pca = _MultiPCA(
+        mask=decomposition_mask_img, n_components=3, random_state=0
+    )
     multi_pca.fit(decomposition_data)
 
     components1 = multi_pca.components_
@@ -103,19 +101,23 @@ def test_multi_pca(
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_multi_pca_with_confounds_smoke(
     data_type,  # noqa: ARG001
-    mask_img,
+    decomposition_mask_img,
     decomposition_data,
 ):
     confounds = [np.arange(10).reshape(5, 2)] * 8
 
-    multi_pca = _MultiPCA(mask=mask_img, n_components=3, random_state=0)
+    multi_pca = _MultiPCA(
+        mask=decomposition_mask_img, n_components=3, random_state=0
+    )
     multi_pca.fit(decomposition_data, confounds=confounds)
 
 
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
-def test_multi_pca_errors(data_type, mask_img, decomposition_data):
+def test_multi_pca_errors(
+    data_type, decomposition_mask_img, decomposition_data
+):
     """Fit and transform fail without the proper arguments."""
-    multi_pca = _MultiPCA(mask=mask_img)
+    multi_pca = _MultiPCA(mask=decomposition_mask_img)
 
     # Smoke test to fit with no img
     with pytest.raises(TypeError, match="missing 1 required positional"):
@@ -151,11 +153,11 @@ def test_multi_pca_errors(data_type, mask_img, decomposition_data):
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_multi_pca_with_masker(
     data_type,  # noqa: ARG001
-    masker,
+    decomposition_masker,
     decomposition_data,
 ):
     """Multi-pca can run with a masker."""
-    multi_pca = _MultiPCA(mask=masker, n_components=3)
+    multi_pca = _MultiPCA(mask=decomposition_masker, n_components=3)
     multi_pca.fit(decomposition_data)
 
     assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
@@ -164,14 +166,14 @@ def test_multi_pca_with_masker(
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_multi_pca_with_masker_without_cca_smoke(
     data_type,  # noqa: ARG001
-    masker,
+    decomposition_masker,
     decomposition_data,
 ):
     """Multi-pca can run with a masker \
         and without canonical correlation analysis.
     """
     multi_pca = _MultiPCA(
-        mask=masker,
+        mask=decomposition_masker,
         do_cca=False,
         n_components=3,
     )
@@ -213,13 +215,16 @@ def test_multi_pca_pass_masker_arg_to_estimator_smoke(
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_multi_pca_score_gt_0_lt_1(
     data_type,  # noqa: ARG001
-    mask_img,
+    decomposition_mask_img,
     decomposition_data,
     with_activation,  # noqa: ARG001
 ):
     """Test that MultiPCA score is between zero and one."""
     multi_pca = _MultiPCA(
-        mask=mask_img, random_state=0, memory_level=0, n_components=3
+        mask=decomposition_mask_img,
+        random_state=0,
+        memory_level=0,
+        n_components=3,
     )
     multi_pca.fit(decomposition_data)
     s = multi_pca.score(decomposition_data)
@@ -232,13 +237,16 @@ def test_multi_pca_score_gt_0_lt_1(
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_multi_pca_score_single_subject(
     data_type,  # noqa: ARG001
-    mask_img,
+    decomposition_mask_img,
     decomposition_data_single_img,
     with_activation,  # noqa: ARG001
 ):
     """Multi-pca can run on single subject data."""
     multi_pca = _MultiPCA(
-        mask=mask_img, random_state=0, memory_level=0, n_components=3
+        mask=decomposition_mask_img,
+        random_state=0,
+        memory_level=0,
+        n_components=3,
     )
     multi_pca.fit(decomposition_data_single_img)
     s = multi_pca.score(decomposition_data_single_img)
@@ -251,7 +259,7 @@ def test_multi_pca_score_single_subject(
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_multi_pca_score_single_subject_n_components(
     data_type,
-    mask_img,
+    decomposition_mask_img,
     decomposition_data_single_img,
     with_activation,  # noqa: ARG001
 ):
@@ -259,7 +267,10 @@ def test_multi_pca_score_single_subject_n_components(
        in single subject configuration.
     """
     multi_pca = _MultiPCA(
-        mask=mask_img, random_state=0, memory_level=0, n_components=5
+        mask=decomposition_mask_img,
+        random_state=0,
+        memory_level=0,
+        n_components=5,
     )
     multi_pca.fit(decomposition_data_single_img)
     s = multi_pca.score(decomposition_data_single_img)
@@ -268,13 +279,16 @@ def test_multi_pca_score_single_subject_n_components(
 
     # Per component score
     multi_pca = _MultiPCA(
-        mask=mask_img, random_state=0, memory_level=0, n_components=5
+        mask=decomposition_mask_img,
+        random_state=0,
+        memory_level=0,
+        n_components=5,
     )
     multi_pca.fit(decomposition_data_single_img)
     if data_type == "nifti":
-        masker = NiftiMasker(mask_img).fit()
+        masker = NiftiMasker(decomposition_mask_img).fit()
     elif data_type == "surface":
-        masker = SurfaceMasker(mask_img).fit()
+        masker = SurfaceMasker(decomposition_mask_img).fit()
     s = multi_pca._raw_score(
         masker.transform(decomposition_data_single_img), per_component=True
     )
@@ -285,28 +299,34 @@ def test_multi_pca_score_single_subject_n_components(
 
 
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
-def test_components_img(data_type, mask_img, decomposition_data):
+def test_components_img(data_type, decomposition_mask_img, decomposition_data):
     n_components = 3
 
     multi_pca = _MultiPCA(
-        mask=mask_img, n_components=n_components, random_state=0
+        mask=decomposition_mask_img, n_components=n_components, random_state=0
     )
     multi_pca.fit(decomposition_data)
     components_img = multi_pca.components_img_
 
     if data_type == "nifti":
         assert isinstance(components_img, Nifti1Image)
-        check_shape = decomposition_data[0].shape[:3] + (n_components,)
+        check_shape = (*multi_pca.masker_.mask_img_.shape, n_components)
         assert components_img.shape == check_shape
         assert len(components_img.shape) == 4
     elif data_type == "surface":
         assert isinstance(components_img, SurfaceImage)
-        check_shape = (decomposition_data[0].mesh.n_vertices, n_components)
+        check_shape = (multi_pca.masker_.mask_img_.shape[-1], n_components)
         assert components_img.shape == check_shape
         assert len(components_img.shape) == 2
 
 
-@pytest.mark.parametrize("imgs", [[img_4d()], [img_4d(), img_4d()]])
+@pytest.mark.parametrize(
+    "imgs",
+    [
+        [generate_fake_fmri()[0]],
+        [generate_fake_fmri()[0], generate_fake_fmri()[0]],
+    ],
+)
 def test_with_globbing_patterns_on_one_or_several_images(imgs, tmp_path):
     multi_pca = _MultiPCA(n_components=3)
 
@@ -319,7 +339,7 @@ def test_with_globbing_patterns_on_one_or_several_images(imgs, tmp_path):
     components_img = multi_pca.components_img_
     assert isinstance(components_img, Nifti1Image)
 
-    # n_components = 3
-    check_shape = img_4d().shape[:3] + (3,)
+    n_components = 3
+    check_shape = (*imgs[0].shape[:3], n_components)
     assert components_img.shape == check_shape
     assert len(components_img.shape) == 4

@@ -16,6 +16,7 @@ from nilearn.decomposition._base import (
     _fast_svd,
     _mask_and_reduce,
 )
+from nilearn.decomposition.tests.conftest import N_SUBJECTS
 
 ESTIMATORS_TO_CHECK = [_BaseDecomposition()]
 
@@ -61,6 +62,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 # We need to use n_features > 500 to trigger the randomized_svd
 @pytest.mark.parametrize("n_features", [30, 100, 550])
 def test_fast_svd(n_features):
+    """Test fast singular value decomposition."""
     n_samples = 100
     k = 10
 
@@ -89,9 +91,9 @@ def test_fast_svd(n_features):
 @pytest.mark.parametrize(
     "n_components,reduction_ratio,expected_shape_0",
     [
-        (None, "auto", 4 * 5),
-        (3, "auto", 4 * 3),
-        (None, 0.4, 4 * 2),
+        (None, "auto", N_SUBJECTS * 5),
+        (3, "auto", N_SUBJECTS * 3),
+        (None, 0.4, N_SUBJECTS * 2),
     ],
 )
 def test_mask_reducer_multiple_image(
@@ -99,12 +101,12 @@ def test_mask_reducer_multiple_image(
     n_components,
     reduction_ratio,
     expected_shape_0,
-    masker,
+    decomposition_masker,
     decomposition_data,
 ):
     """Mask and reduce 4D images with several values of input arguments."""
     data = _mask_and_reduce(
-        masker=masker,
+        masker=decomposition_masker,
         imgs=decomposition_data,
         n_components=n_components,
         reduction_ratio=reduction_ratio,
@@ -112,7 +114,7 @@ def test_mask_reducer_multiple_image(
     if data_type == "nifti":
         expected_shape = (
             expected_shape_0,
-            np.prod(decomposition_data[0].shape),
+            np.prod(decomposition_masker.mask_img_.shape),
         )
     elif data_type == "surface":
         expected_shape = (
@@ -125,51 +127,73 @@ def test_mask_reducer_multiple_image(
 
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_mask_reducer_single_image_same_with_multiple_jobs(
-    data_type, masker, decomposition_data
+    data_type, decomposition_masker, decomposition_data_single_img
 ):
     """Mask and reduce a 3D image and check results is the same \
     when split over several CPUs.
     """
+    n_components = 3
     data_single = _mask_and_reduce(
-        masker=masker, imgs=decomposition_data, n_components=3, n_jobs=1
+        masker=decomposition_masker,
+        imgs=decomposition_data_single_img,
+        n_components=3,
     )
     if data_type == "nifti":
-        assert data_single.shape == (3, np.prod(decomposition_data[0].shape))
+        assert data_single.shape == (
+            n_components,
+            np.prod(decomposition_masker.mask_img_.shape),
+        )
     elif data_type == "surface":
         # For surface images, the shape is (n_components, n_vertices)
-        assert data_single.shape == (3, decomposition_data[0].mesh.n_vertices)
+        assert data_single.shape == (
+            n_components,
+            decomposition_masker.mask_img_.shape[0],
+        )
 
     # Test n_jobs > 1
     data = _mask_and_reduce(
-        masker=masker,
-        imgs=decomposition_data,
-        n_components=3,
+        masker=decomposition_masker,
+        imgs=decomposition_data_single_img,
+        n_components=n_components,
         n_jobs=2,
         random_state=0,
     )
     if data_type == "nifti":
-        assert data.shape == (3, np.prod(decomposition_data[0].shape))
+        assert data.shape == (
+            n_components,
+            np.prod(decomposition_masker.mask_img_.shape),
+        )
     elif data_type == "surface":
-        assert data.shape == (3, decomposition_data[0].mesh.n_vertices)
+        assert data.shape == (
+            n_components,
+            decomposition_masker.mask_img_.shape[0],
+        )
     assert_array_almost_equal(data_single, data)
 
 
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_mask_reducer_reduced_data_is_orthogonal(
-    data_type, masker, decomposition_data_single_img
+    data_type, decomposition_masker, decomposition_data_single_img
 ):
     """Test that the reduced data is orthogonal."""
+    n_components = 3
     data = _mask_and_reduce(
-        masker=masker,
+        masker=decomposition_masker,
         imgs=decomposition_data_single_img,
-        n_components=3,
+        n_components=n_components,
         random_state=0,
     )
 
     if data_type == "nifti":
-        assert data.shape == (3, np.prod(decomposition_data_single_img.shape))
+        assert data.shape == (
+            n_components,
+            np.prod(decomposition_masker.mask_img_.shape),
+        )
     elif data_type == "surface":
-        assert data.shape == (3, decomposition_data_single_img.mesh.n_vertices)
+        assert data.shape == (
+            n_components,
+            decomposition_masker.mask_img_.shape[-1],
+        )
 
     cov = data.dot(data.T)
     cov_diag = np.zeros((3, 3))
@@ -182,19 +206,20 @@ def test_mask_reducer_reduced_data_is_orthogonal(
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_mask_reducer_reduced_reproducible(
     data_type,  # noqa: ARG001
-    masker,
+    decomposition_masker,
     decomposition_data_single_img,
 ):
+    n_components = 3
     data1 = _mask_and_reduce(
-        masker=masker,
+        masker=decomposition_masker,
         imgs=decomposition_data_single_img,
-        n_components=3,
+        n_components=n_components,
         random_state=0,
     )
     data2 = _mask_and_reduce(
-        masker=masker,
+        masker=decomposition_masker,
         imgs=[decomposition_data_single_img] * 2,
-        n_components=3,
+        n_components=n_components,
         random_state=0,
     )
 

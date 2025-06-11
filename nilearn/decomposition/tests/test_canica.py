@@ -15,7 +15,6 @@ from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.decomposition.canica import CanICA
 from nilearn.image import get_data, iter_img
-from nilearn.maskers import MultiNiftiMasker
 
 ESTIMATORS_TO_CHECK = [CanICA()]
 
@@ -69,8 +68,8 @@ def test_threshold_bound_error(canica_data_single_img):
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_transform_and_fit_errors(mask_img):
-    canica = CanICA(mask=mask_img, n_components=3)
+def test_transform_and_fit_errors(decomposition_mask_img):
+    canica = CanICA(mask=decomposition_mask_img, n_components=3)
 
     # error when empty list of provided.
     with pytest.raises(
@@ -101,12 +100,14 @@ def test_percentile_range(rng, canica_data_single_img):
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_canica_square_img(mask_img, canica_components, canica_data):
+def test_canica_square_img(
+    decomposition_mask_img, canica_components, canica_data
+):
     # We do a large number of inits to be sure to find the good match
     canica = CanICA(
         n_components=4,
         random_state=42,
-        mask=mask_img,
+        mask=decomposition_mask_img,
         smoothing_fwhm=0.0,
         n_init=50,
     )
@@ -117,7 +118,7 @@ def test_canica_square_img(mask_img, canica_components, canica_data):
     # FIXME: This could be done more efficiently, e.g. thanks to hungarian
     # Find pairs of matching components
     # compute the cross-correlation matrix between components
-    mask = get_data(mask_img) != 0
+    mask = get_data(decomposition_mask_img) != 0
     K = np.corrcoef(canica_components[:, mask.ravel()], maps[:, mask])[4:, :4]
 
     # K should be a permutation matrix, hence its coefficients
@@ -140,13 +141,15 @@ def test_canica_single_subject_smoke(canica_data_single_img):
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_component_sign(mask_img, canica_data):
+def test_component_sign(decomposition_mask_img, canica_data):
     # We should have a heuristic that flips the sign of components in
     # CanICA to have more positive values than negative values, for
     # instance by making sure that the largest value is positive.
 
     # run CanICA many times (this is known to produce different results)
-    canica = CanICA(n_components=4, random_state=42, mask=mask_img)
+    canica = CanICA(
+        n_components=4, random_state=42, mask=decomposition_mask_img
+    )
 
     for _ in range(3):
         canica.fit(canica_data)
@@ -157,18 +160,21 @@ def test_component_sign(mask_img, canica_data):
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_masker_attributes_with_fit(canica_data_single_img, mask_img):
+def test_masker_attributes_with_fit(
+    canica_data_single_img, decomposition_mask_img, decomposition_masker
+):
     # Test base module at sub-class
 
     # Passing mask_img
-    canica = CanICA(n_components=3, mask=mask_img, random_state=0)
+    canica = CanICA(
+        n_components=3, mask=decomposition_mask_img, random_state=0
+    )
     canica.fit(canica_data_single_img)
 
     assert canica.mask_img_ == canica.masker_.mask_img_
 
     # Passing masker
-    masker = MultiNiftiMasker(mask_img=mask_img)
-    canica = CanICA(n_components=3, mask=masker, random_state=0)
+    canica = CanICA(n_components=3, mask=decomposition_masker, random_state=0)
     canica.fit(canica_data_single_img)
 
     assert canica.mask_img_ == canica.masker_.mask_img_
@@ -188,10 +194,10 @@ def test_masker_attributes_passing_masker_arguments_to_estimator(
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_components_img(canica_data_single_img, mask_img):
+def test_components_img(canica_data_single_img, decomposition_mask_img):
     n_components = 3
 
-    canica = CanICA(n_components=n_components, mask=mask_img)
+    canica = CanICA(n_components=n_components, mask=decomposition_mask_img)
     canica.fit(canica_data_single_img)
     components_img = canica.components_img_
 
@@ -204,12 +210,12 @@ def test_components_img(canica_data_single_img, mask_img):
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_with_globbing_patterns_with_single_subject(
-    mask_img, canica_data_single_img, tmp_path
+    decomposition_mask_img, canica_data_single_img, tmp_path
 ):
     # single subject
     n_components = 3
 
-    canica = CanICA(n_components=n_components, mask=mask_img)
+    canica = CanICA(n_components=n_components, mask=decomposition_mask_img)
 
     img = write_imgs_to_path(
         canica_data_single_img,
@@ -230,12 +236,12 @@ def test_with_globbing_patterns_with_single_subject(
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_with_globbing_patterns_with_single_subject_path(
-    mask_img, canica_data_single_img, tmp_path
+    decomposition_mask_img, canica_data_single_img, tmp_path
 ):
     # single subject but as a Path object
     n_components = 3
 
-    canica = CanICA(n_components=n_components, mask=mask_img)
+    canica = CanICA(n_components=n_components, mask=decomposition_mask_img)
 
     tmp_file = tmp_path / "tmp.nii.gz"
     canica_data_single_img.to_filename(tmp_file)
@@ -245,11 +251,11 @@ def test_with_globbing_patterns_with_single_subject_path(
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_with_globbing_patterns_with_multi_subjects(
-    canica_data, mask_img, tmp_path
+    canica_data, decomposition_mask_img, tmp_path
 ):
     # Multi subjects
     n_components = 3
-    canica = CanICA(n_components=n_components, mask=mask_img)
+    canica = CanICA(n_components=n_components, mask=decomposition_mask_img)
 
     img = write_imgs_to_path(
         *canica_data,
@@ -269,11 +275,13 @@ def test_with_globbing_patterns_with_multi_subjects(
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_canica_score(canica_data_single_img, mask_img):
+def test_canica_score(canica_data_single_img, decomposition_mask_img):
     # Multi subjects
     n_components = 10
 
-    canica = CanICA(n_components=n_components, mask=mask_img, random_state=0)
+    canica = CanICA(
+        n_components=n_components, mask=decomposition_mask_img, random_state=0
+    )
     canica.fit(canica_data_single_img)
 
     # One score for all components
@@ -291,11 +299,13 @@ def test_canica_score(canica_data_single_img, mask_img):
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_nifti_maps_masker_(canica_data_single_img, mask_img):
+def test_nifti_maps_masker_(canica_data_single_img, decomposition_mask_img):
     """Check depreacation of nifti_maps_masker_."""
     n_components = 10
 
-    canica = CanICA(n_components=n_components, mask=mask_img, random_state=0)
+    canica = CanICA(
+        n_components=n_components, mask=decomposition_mask_img, random_state=0
+    )
     canica.fit(canica_data_single_img)
 
     with pytest.deprecated_call(
