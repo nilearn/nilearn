@@ -475,12 +475,6 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         return tags
 
     def _check_input(self, X, confounds=None):
-        if not hasattr(X, "__iter__"):
-            raise ValueError(
-                "'subjects' input argument must be an iterable. "
-                f"You provided {X.__class__}"
-            )
-
         subjects_types = [type(s) for s in X]
         if set(subjects_types) != {np.ndarray}:
             raise ValueError(
@@ -517,8 +511,8 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         ----------
         X : :obj:`list` of numpy.ndarray, \
             shape for each (n_samples, n_features)
-            The input subjects time series. The number of samples may differ
-            from one subject to another.
+            The input subjects time series.
+            The number of samples may differ from one subject to another.
 
         %(y_dummy)s
 
@@ -539,6 +533,10 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         if self.cov_estimator is None:
             self.cov_estimator = LedoitWolf(store_precision=False)
 
+        # casting to a list
+        # to make it easier to check with sklearn estimator compliance
+        if not isinstance(X, list):
+            X = [X]
         self._check_input(X, confounds=confounds)
 
         if do_fit:
@@ -658,6 +656,10 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         """
         del y
+        # casting to a list
+        # to make it easier to check with sklearn estimator compliance
+        if not isinstance(X, list):
+            X = [X]
         if self.kind == "tangent" and len(X) <= 1:
             # Check that people are applying fit_transform to a group of
             # subject
