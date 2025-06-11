@@ -11,7 +11,6 @@ from nilearn._utils.estimator_checks import (
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.decomposition.dict_learning import DictLearning
-from nilearn.decomposition.tests.conftest import canica_data
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker
 
@@ -74,10 +73,9 @@ def test_dict_learning_check_values_epoch_argument_smoke(
     mask_img,
     n_epochs,
     canica_components,
+    canica_data,
 ):
     """Smoke test to check different values of the epoch argument."""
-    data = canica_data()
-
     masker = NiftiMasker(mask_img=mask_img).fit()
     mask = get_data(mask_img) != 0
     flat_mask = mask.ravel()
@@ -92,7 +90,7 @@ def test_dict_learning_check_values_epoch_argument_smoke(
         n_epochs=n_epochs,
         alpha=1,
     )
-    dict_learning.fit(data)
+    dict_learning.fit(canica_data)
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
@@ -100,9 +98,8 @@ def test_dict_learning(
     data_type,  # noqa: ARG001
     mask_img,
     canica_components,
+    canica_data,
 ):
-    data = canica_data()
-
     masker = NiftiMasker(mask_img=mask_img).fit()
     mask = get_data(mask_img) != 0
     flat_mask = mask.ravel()
@@ -128,7 +125,7 @@ def test_dict_learning(
     )
     maps = {}
     for estimator in [dict_learning, dict_learning_auto_init]:
-        estimator.fit(data)
+        estimator.fit(canica_data)
         maps[estimator] = get_data(estimator.components_img_)
         maps[estimator] = np.reshape(
             np.rollaxis(maps[estimator], 3, 0)[:, mask], (4, flat_mask.sum())
@@ -154,14 +151,12 @@ def test_dict_learning(
 def test_component_sign(
     data_type,  # noqa: ARG001
     mask_img,
+    canica_data,
 ) -> None:
     # Regression test
     # We should have a heuristic that flips the sign of components in
     # DictLearning to have more positive values than negative values, for
     # instance by making sure that the largest value is positive.
-
-    data = canica_data()
-
     dict_learning = DictLearning(
         n_components=4,
         random_state=42,
@@ -169,7 +164,7 @@ def test_component_sign(
         smoothing_fwhm=0,
         alpha=1,
     )
-    dict_learning.fit(data)
+    dict_learning.fit(canica_data)
     for mp in iter_img(dict_learning.components_img_):
         mp = get_data(mp)
         assert np.sum(mp[mp <= 0]) <= np.sum(mp[mp > 0])

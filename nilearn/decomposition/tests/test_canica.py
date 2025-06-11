@@ -245,14 +245,14 @@ def test_with_globbing_patterns_with_single_subject_path(
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_with_globbing_patterns_with_multi_subjects(
-    canica_data_single_img, mask_img, tmp_path
+    canica_data, mask_img, tmp_path
 ):
     # Multi subjects
     n_components = 3
     canica = CanICA(n_components=n_components, mask=mask_img)
 
     img = write_imgs_to_path(
-        *canica_data_single_img,
+        *canica_data,
         file_path=tmp_path,
         create_files=True,
         use_wildcards=True,
@@ -263,7 +263,7 @@ def test_with_globbing_patterns_with_multi_subjects(
     assert isinstance(components_img, Nifti1Image)
 
     # n_components = 3
-    check_shape = canica_data_single_img.shape[:3] + (3,)
+    check_shape = canica_data[0].shape[:3] + (3,)
 
     assert components_img.shape, check_shape
 

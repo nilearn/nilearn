@@ -53,7 +53,7 @@ def _make_data_from_components(
 
 
 def _make_canica_components(shape: tuple[int, int, int]) -> np.ndarray:
-    # Create two images with "activated regions"
+    """Create two images with 'activated regions'."""
     component1 = np.zeros(shape)
     component1[:5, :10] = 1
     component1[5:10, :10] = -1
@@ -82,19 +82,18 @@ def _make_canica_components(shape: tuple[int, int, int]) -> np.ndarray:
 
 @pytest.fixture
 def canica_components(rng) -> np.ndarray:
+    """Create noisy non positive data."""
     components = _make_canica_components(SHAPE_NIFTI)
-    # Creating noisy non positive data
     components[rng.standard_normal(components.shape) > 0.8] *= -2.0
     for mp in components:
         assert mp.max() <= -mp.min()  # Goal met ?
     return components
 
 
-def canica_data(n_subjects=N_SUBJECTS) -> list[Nifti1Image]:
-    # Use legacy generator for sklearn compatibility
-    rng = np.random.RandomState(42)
+@pytest.fixture
+def canica_data(rng, n_subjects=N_SUBJECTS) -> list[Nifti1Image]:
+    """Create a "multi-subject" dataset."""
     components = _make_canica_components(SHAPE_NIFTI)
-    # Create a "multi-subject" dataset
     data = _make_data_from_components(
         components, _affine_eye(), SHAPE_NIFTI, rng=rng, n_subjects=n_subjects
     )
@@ -102,9 +101,9 @@ def canica_data(n_subjects=N_SUBJECTS) -> list[Nifti1Image]:
 
 
 @pytest.fixture
-def canica_data_single_img() -> Nifti1Image:
+def canica_data_single_img(canica_data) -> Nifti1Image:
     """Create a canonical ICA data for testing purposes."""
-    return canica_data()[0]
+    return canica_data[0]
 
 
 @pytest.fixture
