@@ -1,6 +1,6 @@
 """Fixtures for decomposition tests."""
 
-from typing import Union
+from typing import Optional, Union
 
 import numpy as np
 import pytest
@@ -18,12 +18,12 @@ N_SAMPLES = 5
 
 
 def _make_data_from_components(
-    components,
-    affine=None,
-    shape=SHAPE_NIFTI,
+    components: np.ndarray,
+    affine: Optional[np.ndarray] = None,
+    shape: tuple[int, int, int] = SHAPE_NIFTI,
     rng=None,
     n_subjects=N_SUBJECTS,
-):
+) -> list[Nifti1Image]:
     if affine is None:
         affine = _affine_eye()
 
@@ -52,7 +52,7 @@ def _make_data_from_components(
     return data
 
 
-def _make_canica_components(shape: tuple) -> np.ndarray:
+def _make_canica_components(shape: tuple[int, int, int]) -> np.ndarray:
     # Create two images with "activated regions"
     component1 = np.zeros(shape)
     component1[:5, :10] = 1
@@ -90,7 +90,7 @@ def canica_components(rng) -> np.ndarray:
     return components
 
 
-def _make_canica_test_data(n_subjects=N_SUBJECTS):
+def _make_canica_test_data(n_subjects=N_SUBJECTS) -> list[Nifti1Image]:
     # Use legacy generator for sklearn compatibility
     rng = np.random.RandomState(42)
     components = _make_canica_components(SHAPE_NIFTI)
@@ -101,7 +101,8 @@ def _make_canica_test_data(n_subjects=N_SUBJECTS):
     return data
 
 
-def canica_data():
+@pytest.fixture
+def canica_data() -> Nifti1Image:
     """Create a canonical ICA data for testing purposes."""
     return _make_canica_test_data()[0]
 

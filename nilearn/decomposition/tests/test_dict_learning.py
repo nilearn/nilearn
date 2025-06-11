@@ -160,7 +160,7 @@ def test_component_sign(
     # DictLearning to have more positive values than negative values, for
     # instance by making sure that the largest value is positive.
 
-    data = _make_canica_test_data(n_subjects=2)
+    data = _make_canica_test_data()
 
     dict_learning = DictLearning(
         n_components=4,
@@ -237,7 +237,7 @@ def test_components_img(
 
     assert isinstance(components_img, Nifti1Image)
 
-    check_shape = canica_data[0].shape[:3] + (n_components,)
+    check_shape = canica_data.shape[:3] + (n_components,)
 
     assert components_img.shape, check_shape
 

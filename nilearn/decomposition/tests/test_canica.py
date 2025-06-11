@@ -59,6 +59,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+# @pytest.mark.parametrize("data_type", ["nifti"])
 def test_threshold_bound_error(canica_data):
     """Test that an error is raised when the threshold is higher \
     than the number of components.
@@ -68,6 +69,7 @@ def test_threshold_bound_error(canica_data):
         canica.fit(canica_data)
 
 
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_transform_and_fit_errors(mask_img):
     canica = CanICA(mask=mask_img, n_components=3)
 
@@ -87,6 +89,7 @@ def test_transform_and_fit_errors(mask_img):
         canica.fit()
 
 
+# @pytest.mark.parametrize("data_type", ["nifti"])
 def test_percentile_range(rng, canica_data):
     """Test that a warning is given when thresholds are stressed."""
     edge_case = rng.integers(low=1, high=10)
@@ -98,13 +101,14 @@ def test_percentile_range(rng, canica_data):
         canica.fit(canica_data)
 
 
-def test_canica_square_img(mask_img, rng, canica_components):
-    data = _make_canica_test_data(n_subjects=8)
+@pytest.mark.parametrize("data_type", ["nifti"])
+def test_canica_square_img(mask_img, canica_components):
+    data = _make_canica_test_data()
 
     # We do a large number of inits to be sure to find the good match
     canica = CanICA(
         n_components=4,
-        random_state=rng,
+        random_state=42,
         mask=mask_img,
         smoothing_fwhm=0.0,
         n_init=50,
@@ -141,7 +145,8 @@ def test_canica_single_subject_smoke():
     canica.fit(data[0])
 
 
-def test_component_sign(mask_img, rng):
+@pytest.mark.parametrize("data_type", ["nifti"])
+def test_component_sign(mask_img):
     # We should have a heuristic that flips the sign of components in
     # CanICA to have more positive values than negative values, for
     # instance by making sure that the largest value is positive.
@@ -149,7 +154,7 @@ def test_component_sign(mask_img, rng):
     data = _make_canica_test_data()
 
     # run CanICA many times (this is known to produce different results)
-    canica = CanICA(n_components=4, random_state=rng, mask=mask_img)
+    canica = CanICA(n_components=4, random_state=42, mask=mask_img)
 
     for _ in range(3):
         canica.fit(data)
@@ -159,6 +164,7 @@ def test_component_sign(mask_img, rng):
             assert -mp.min() <= mp.max()
 
 
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_masker_attributes_with_fit(canica_data, mask_img):
     # Test base module at sub-class
 
@@ -176,6 +182,7 @@ def test_masker_attributes_with_fit(canica_data, mask_img):
     assert canica.mask_img_ == canica.masker_.mask_img_
 
 
+# @pytest.mark.parametrize("data_type", ["nifti"])
 def test_masker_attributes_passing_masker_arguments_to_estimator(
     affine_eye, canica_data
 ):
@@ -188,6 +195,7 @@ def test_masker_attributes_passing_masker_arguments_to_estimator(
     canica.fit(canica_data)
 
 
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_components_img(canica_data, mask_img):
     n_components = 3
 
@@ -202,6 +210,7 @@ def test_components_img(canica_data, mask_img):
     assert components_img.shape, check_shape
 
 
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_with_globbing_patterns_with_single_subject(mask_img, tmp_path):
     # single subject
     data = _make_canica_test_data(n_subjects=1)
@@ -223,6 +232,7 @@ def test_with_globbing_patterns_with_single_subject(mask_img, tmp_path):
     assert components_img.shape, check_shape
 
 
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_with_globbing_patterns_with_single_subject_path(mask_img, tmp_path):
     # single subject but as a Path object
     data = _make_canica_test_data(n_subjects=1)
@@ -236,6 +246,7 @@ def test_with_globbing_patterns_with_single_subject_path(mask_img, tmp_path):
     canica.fit(tmp_file)
 
 
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_with_globbing_patterns_with_multi_subjects(
     canica_data, mask_img, tmp_path
 ):
@@ -257,6 +268,7 @@ def test_with_globbing_patterns_with_multi_subjects(
     assert components_img.shape, check_shape
 
 
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_canica_score(canica_data, mask_img):
     # Multi subjects
     n_components = 10
@@ -278,6 +290,7 @@ def test_canica_score(canica_data, mask_img):
     assert np.all(scores >= 0)
 
 
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_nifti_maps_masker_(canica_data, mask_img):
     """Check depreacation of nifti_maps_masker_."""
     n_components = 10
