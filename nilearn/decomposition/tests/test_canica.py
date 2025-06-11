@@ -57,7 +57,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-# @pytest.mark.parametrize("data_type", ["nifti"])
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_threshold_bound_error(canica_data_single_img):
     """Test that an error is raised when the threshold is higher \
     than the number of components.
@@ -88,7 +88,7 @@ def test_transform_and_fit_errors(decomposition_mask_img):
         canica.fit()
 
 
-# @pytest.mark.parametrize("data_type", ["nifti"])
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_percentile_range(rng, canica_data_single_img):
     """Test that a warning is given when thresholds are stressed."""
     edge_case = rng.integers(low=1, high=10)
@@ -134,6 +134,7 @@ def test_canica_square_img(
     assert_array_almost_equal(K_abs, 0, 1)
 
 
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_canica_single_subject_smoke(canica_data_single_img):
     """Check that canica runs on a single-subject dataset."""
     canica = CanICA(
@@ -184,7 +185,7 @@ def test_masker_attributes_with_fit(
     assert canica.mask_img_ == canica.masker_.mask_img_
 
 
-# @pytest.mark.parametrize("data_type", ["nifti"])
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_masker_attributes_passing_masker_arguments_to_estimator(
     affine_eye, canica_data_single_img
 ):

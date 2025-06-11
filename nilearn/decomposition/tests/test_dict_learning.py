@@ -213,6 +213,7 @@ def test_empty_data_to_fit_error(
         dict_learning.fit([])
 
 
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_passing_masker_arguments_to_estimator(
     affine_eye, canica_data_single_img
 ):
