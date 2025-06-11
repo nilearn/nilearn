@@ -209,6 +209,7 @@ def test_mask_reducer_reduced_reproducible(
     decomposition_masker,
     decomposition_data_single_img,
 ):
+    """Check that same input image give same results."""
     n_components = 3
     data1 = _mask_and_reduce(
         masker=decomposition_masker,

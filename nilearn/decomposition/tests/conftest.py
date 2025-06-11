@@ -106,6 +106,7 @@ def decomposition_data(
 def decomposition_data_single_img(
     decomposition_data,
 ) -> Union[SurfaceImage, Nifti1Image]:
+    """Return a single image for decomposition."""
     return decomposition_data[0]
 
 

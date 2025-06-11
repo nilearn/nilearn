@@ -69,6 +69,7 @@ def test_threshold_bound_error(canica_data_single_img):
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_transform_and_fit_errors(decomposition_mask_img):
+    """Test some errors of CanICA."""
     canica = CanICA(mask=decomposition_mask_img, n_components=3)
 
     # error when empty list of provided.
@@ -103,6 +104,7 @@ def test_percentile_range(rng, canica_data_single_img):
 def test_canica_square_img(
     decomposition_mask_img, canica_components, canica_data
 ):
+    """Check ???."""
     # We do a large number of inits to be sure to find the good match
     canica = CanICA(
         n_components=4,
@@ -142,10 +144,13 @@ def test_canica_single_subject_smoke(canica_data_single_img):
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_component_sign(decomposition_mask_img, canica_data):
-    # We should have a heuristic that flips the sign of components in
-    # CanICA to have more positive values than negative values, for
-    # instance by making sure that the largest value is positive.
+    """Check sign of extracted components.
 
+    Regression test:
+    We should have a heuristic that flips the sign of components in
+    DictLearning to have more positive values than negative values, for
+    instance by making sure that the largest value is positive.
+    """
     # run CanICA many times (this is known to produce different results)
     canica = CanICA(
         n_components=4, random_state=42, mask=decomposition_mask_img
@@ -163,8 +168,7 @@ def test_component_sign(decomposition_mask_img, canica_data):
 def test_masker_attributes_with_fit(
     canica_data_single_img, decomposition_mask_img, decomposition_masker
 ):
-    # Test base module at sub-class
-
+    """Test mask_img_ properly set when passing mask_img or masker."""
     # Passing mask_img
     canica = CanICA(
         n_components=3, mask=decomposition_mask_img, random_state=0
@@ -184,6 +188,7 @@ def test_masker_attributes_with_fit(
 def test_masker_attributes_passing_masker_arguments_to_estimator(
     affine_eye, canica_data_single_img
 ):
+    """Smoke test that arguments for masker are passed along properly."""
     canica = CanICA(
         n_components=3,
         target_affine=affine_eye,
@@ -195,6 +200,7 @@ def test_masker_attributes_passing_masker_arguments_to_estimator(
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_components_img(canica_data_single_img, decomposition_mask_img):
+    """Check content components_img_ after fitting."""
     n_components = 3
 
     canica = CanICA(n_components=n_components, mask=decomposition_mask_img)
@@ -212,7 +218,7 @@ def test_components_img(canica_data_single_img, decomposition_mask_img):
 def test_with_globbing_patterns_with_single_subject(
     decomposition_mask_img, canica_data_single_img, tmp_path
 ):
-    # single subject
+    """Test CanICA with data on disk from a single subject with globbing."""
     n_components = 3
 
     canica = CanICA(n_components=n_components, mask=decomposition_mask_img)
@@ -238,7 +244,7 @@ def test_with_globbing_patterns_with_single_subject(
 def test_with_globbing_patterns_with_single_subject_path(
     decomposition_mask_img, canica_data_single_img, tmp_path
 ):
-    # single subject but as a Path object
+    """Test CanICA with data on disk from a single subject as path."""
     n_components = 3
 
     canica = CanICA(n_components=n_components, mask=decomposition_mask_img)
@@ -253,7 +259,7 @@ def test_with_globbing_patterns_with_single_subject_path(
 def test_with_globbing_patterns_with_multi_subjects(
     canica_data, decomposition_mask_img, tmp_path
 ):
-    # Multi subjects
+    """Test CanICA with data on disk from multiple subject."""
     n_components = 3
     canica = CanICA(n_components=n_components, mask=decomposition_mask_img)
 
@@ -276,6 +282,7 @@ def test_with_globbing_patterns_with_multi_subjects(
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_canica_score(canica_data_single_img, decomposition_mask_img):
+    """Check score of canonical ica."""
     # Multi subjects
     n_components = 10
 

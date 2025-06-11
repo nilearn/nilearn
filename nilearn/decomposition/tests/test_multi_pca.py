@@ -65,6 +65,7 @@ def test_multi_pca_check_masker_attributes(
     decomposition_mask_img,
     decomposition_data,
 ):
+    """Check fit creates proper mask_img_ attributes."""
     multi_pca = _MultiPCA(
         mask=decomposition_mask_img, n_components=3, random_state=0
     )
@@ -104,6 +105,7 @@ def test_multi_pca_with_confounds_smoke(
     decomposition_mask_img,
     decomposition_data,
 ):
+    """Smoke test of _MultiPCA with confounds."""
     confounds = [np.arange(10).reshape(5, 2)] * 8
 
     multi_pca = _MultiPCA(
@@ -300,6 +302,7 @@ def test_multi_pca_score_single_subject_n_components(
 
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_components_img(data_type, decomposition_mask_img, decomposition_data):
+    """Check content of components_img_ after fit."""
     n_components = 3
 
     multi_pca = _MultiPCA(
@@ -311,13 +314,13 @@ def test_components_img(data_type, decomposition_mask_img, decomposition_data):
     if data_type == "nifti":
         assert isinstance(components_img, Nifti1Image)
         check_shape = (*multi_pca.masker_.mask_img_.shape, n_components)
-        assert components_img.shape == check_shape
         assert len(components_img.shape) == 4
     elif data_type == "surface":
         assert isinstance(components_img, SurfaceImage)
         check_shape = (multi_pca.masker_.mask_img_.shape[-1], n_components)
-        assert components_img.shape == check_shape
         assert len(components_img.shape) == 2
+
+    assert components_img.shape == check_shape
 
 
 @pytest.mark.parametrize(
@@ -328,6 +331,7 @@ def test_components_img(data_type, decomposition_mask_img, decomposition_data):
     ],
 )
 def test_with_globbing_patterns_on_one_or_several_images(imgs, tmp_path):
+    """Check that _MultiPCA can work with one or more 4D images from disk."""
     multi_pca = _MultiPCA(n_components=3)
 
     filenames = write_imgs_to_path(

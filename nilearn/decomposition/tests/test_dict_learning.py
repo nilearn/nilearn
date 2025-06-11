@@ -100,6 +100,7 @@ def test_dict_learning(
     canica_components,
     canica_data,
 ):
+    """Check content of components_img_."""
     masker = NiftiMasker(mask_img=decomposition_mask_img).fit()
     mask = get_data(decomposition_mask_img) != 0
     flat_mask = mask.ravel()
@@ -215,6 +216,7 @@ def test_empty_data_to_fit_error(
 def test_passing_masker_arguments_to_estimator(
     affine_eye, canica_data_single_img
 ):
+    """Smoke test that arguments for masker are properly passed."""
     dict_learning = DictLearning(
         n_components=3,
         target_affine=affine_eye,
@@ -230,6 +232,7 @@ def test_components_img(
     decomposition_mask_img,
     data_type,  # noqa: ARG001
 ):
+    """Check content of components_img_ after fitting."""
     n_components = 3
     dict_learning = DictLearning(
         n_components=n_components, mask=decomposition_mask_img
@@ -240,7 +243,7 @@ def test_components_img(
 
     assert isinstance(components_img, Nifti1Image)
 
-    check_shape = canica_data_single_img.shape[:3] + (n_components,)
+    check_shape = (*canica_data_single_img.shape[:3], n_components)
 
     assert components_img.shape, check_shape
 
@@ -254,6 +257,7 @@ def test_with_globbing_patterns(
     data_type,  # noqa: ARG001
     canica_data,
 ):
+    """Check DictLearning can work with files on disk."""
     n_components = 3
     dict_learning = DictLearning(
         n_components=n_components, mask=decomposition_mask_img
@@ -268,7 +272,7 @@ def test_with_globbing_patterns(
 
     assert isinstance(components_img, Nifti1Image)
 
-    check_shape = canica_data[0].shape[:3] + (n_components,)
+    check_shape = (*canica_data[0].shape[:3], n_components)
 
     assert components_img.shape, check_shape
 
@@ -279,6 +283,7 @@ def test_dictlearning_score(
     decomposition_mask_img,
     data_type,  # noqa: ARG001
 ):
+    """Check content of scores after fitting."""
     # Multi subjects
     n_components = 10
     dict_learning = DictLearning(
