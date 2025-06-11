@@ -637,7 +637,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         """
         check_params(self.__dict__)
-        self.estimator = _check_estimator(self.estimator)
+        self.estimator_ = _check_estimator(self.estimator)
         self.memory_ = check_memory(self.memory, self.verbose)
 
         X = self._apply_mask(X)
@@ -652,7 +652,14 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         # splitter, default is LeaveOneGroupOut. If self.cv is manually set to
         # a CV splitter object do check_cv regardless of groups parameter.
         cv = self.cv
-        if (isinstance(cv, int) or cv is None) and groups is not None:
+
+        if isinstance(cv, int) and isinstance(self, FREMClassifier):
+            cv_object = StratifiedShuffleSplit(cv, random_state=0)
+
+        elif isinstance(cv, int) and isinstance(self, FREMRegressor):
+            cv_object = ShuffleSplit(cv, random_state=0)
+
+        elif (isinstance(cv, int) or cv is None) and groups is not None:
             warnings.warn(
                 "groups parameter is specified but "
                 "cv parameter is not set to custom CV splitter. "
@@ -660,6 +667,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 stacklevel=find_stack_level(),
             )
             cv_object = LeaveOneGroupOut()
+
         else:
             cv_object = check_cv(cv, y=y, classifier=self.is_classification)
 
@@ -718,7 +726,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         parallel_fit_outputs = parallel(
             delayed(self._cache(_parallel_fit))(
-                estimator=self.estimator,
+                estimator=self.estimator_,
                 X=X,
                 y=y[:, c],
                 train=train,
@@ -740,7 +748,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         )
 
         # Build the final model (the aggregated one)
-        if not isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
+        if not isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
             self.coef_ = np.vstack(
                 [
                     np.mean(coefs[class_index], axis=0)
@@ -868,7 +876,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         # Prediction for dummy estimator is different from others as there is
         # no fitted coefficient
-        if isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
+        if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
             scores = self._predict_dummy(n_samples)
         else:
             scores = self.decision_function(X)
@@ -946,7 +954,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             cv_scores.setdefault(classes[class_index], []).append(scores)
 
             self.cv_params_.setdefault(classes[class_index], {})
-            if isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
+            if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
                 self.dummy_output_.setdefault(classes[class_index], []).append(
                     dummy_output
                 )
@@ -974,7 +982,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                     classes[class_index]
                 ]
                 if isinstance(
-                    self.estimator, (DummyClassifier, DummyRegressor)
+                    self.estimator_, (DummyClassifier, DummyRegressor)
                 ):
                     self.dummy_output_.setdefault(other_class, []).append(
                         dummy_output
@@ -988,7 +996,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     def _set_scorer(self):
         if self.scoring is not None:
-            self.scorer_ = check_scoring(self.estimator, self.scoring)
+            self.scorer_ = check_scoring(self.estimator_, self.scoring)
         elif self.is_classification:
             self.scorer_ = get_scorer("accuracy")
         else:
@@ -1024,15 +1032,15 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             dummy_output = self.dummy_output_[0]
         else:
             dummy_output = self.dummy_output_[:, 1]
-        if isinstance(self.estimator, DummyClassifier):
-            strategy = self.estimator.get_params()["strategy"]
+        if isinstance(self.estimator_, DummyClassifier):
+            strategy = self.estimator_.get_params()["strategy"]
             if strategy in ["most_frequent", "prior"]:
                 scores = np.tile(dummy_output, reps=(n_samples, 1))
             elif strategy == "stratified":
                 rs = np.random.default_rng(0)
                 scores = rs.multinomial(1, dummy_output, size=n_samples)
 
-        elif isinstance(self.estimator, DummyRegressor):
+        elif isinstance(self.estimator_, DummyRegressor):
             scores = np.full(
                 (n_samples, self.n_outputs_),
                 self.dummy_output_,
@@ -1676,9 +1684,8 @@ class FREMRegressor(_BaseDecoder):
         """
         check_params(self.__dict__)
         self.classes_ = ["beta"]
-        if isinstance(self.cv, int):
-            self.cv = ShuffleSplit(self.cv, random_state=0)
-        return super().fit(X, y, groups=groups)
+        super().fit(X, y, groups=groups)
+        return self
 
 
 @fill_doc
@@ -1863,32 +1870,3 @@ class FREMClassifier(_BaseDecoder):
         tags.classifier_tags = ClassifierTags()
 
         return tags
-
-    @fill_doc
-    def fit(self, X, y, groups=None):
-        """Fit the decoder (learner).
-
-        Parameters
-        ----------
-        X : :obj:`list` of Niimg-like \
-            or :obj:`~nilearn.surface.SurfaceImage` objects
-            See :ref:`extracting_data`.
-            Data on which model is to be fitted.
-            If this is a list,
-            the affine is considered the same for all.
-
-        y : numpy.ndarray of shape=(n_samples) \
-            or :obj:`list` of length n_samples
-            The dependent variable (age, sex, IQ, yes/no, etc.).
-            Target variable to predict. Must have exactly as many elements as
-            3D images in niimg.
-
-        %(groups)s
-
-        %(base_decoder_fit_attributes)s
-
-        """
-        check_params(self.__dict__)
-        if isinstance(self.cv, int):
-            self.cv = StratifiedShuffleSplit(self.cv, random_state=0)
-        return super().fit(X, y, groups=groups)

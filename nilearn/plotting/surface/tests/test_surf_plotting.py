@@ -13,7 +13,6 @@ from numpy.testing import assert_array_equal
 from nilearn._utils.exceptions import MeshDimensionError
 from nilearn._utils.helpers import (
     is_kaleido_installed,
-    is_matplotlib_installed,
     is_plotly_installed,
 )
 from nilearn.datasets import fetch_surf_fsaverage
@@ -24,7 +23,6 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting.surface.surf_plotting import _get_surface_backend
 
 
 @pytest.fixture
@@ -33,38 +31,6 @@ def surf_roi_data(rng, in_memory_mesh):
     roi_idx = rng.integers(0, in_memory_mesh.n_vertices, size=10)
     roi_map[roi_idx] = 1
     return roi_map
-
-
-@pytest.mark.skipif(
-    is_matplotlib_installed(),
-    reason="This test is run only if matplotlib is not installed.",
-)
-def test_get_surface_backend_matplotlib_not_installed():
-    """Tests to see if get_surface_backend raises error when matplotlib is not
-    installed.
-    """
-    with pytest.raises(ImportError, match="Using engine"):
-        _get_surface_backend("matplotlib")
-
-
-@pytest.mark.skipif(
-    is_plotly_installed(),
-    reason="This test is run only if plotly is not installed.",
-)
-def test_get_surface_backend_plotly_not_installed():
-    """Tests to see if get_surface_backend raises error when plotly is not
-    installed.
-    """
-    with pytest.raises(ImportError, match="Using engine"):
-        _get_surface_backend("plotly")
-
-
-def test_get_surface_backend_unknown_error():
-    """Tests to see if get_surface_backend raises error when the specified
-    backend is not implemented.
-    """
-    with pytest.raises(ValueError, match="Unknown plotting engine"):
-        _get_surface_backend("unknown")
 
 
 @pytest.mark.parametrize(
@@ -80,6 +46,23 @@ def test_check_surface_plotting_inputs_error_mesh_and_data_none(fn):
     """Fail if no mesh or data is passed."""
     with pytest.raises(TypeError, match="cannot both be None"):
         fn(None, None)
+
+
+@pytest.mark.parametrize(
+    "fn",
+    [
+        plot_surf,
+        plot_surf_stat_map,
+        plot_img_on_surf,
+        plot_surf_roi,
+    ],
+)
+def test_check_surface_plotting_inputs_error_negative_threshold(
+    fn, in_memory_mesh
+):
+    """Fail if negative threshold is passed."""
+    with pytest.raises(ValueError, match="Threshold should be a"):
+        fn(in_memory_mesh, threshold=-1)
 
 
 def test_check_surface_plotting_inputs_errors():

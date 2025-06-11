@@ -523,7 +523,7 @@ authors:
     email: mwaskom+www@gmail.com
   - given-names: Michelle
     family-names: Wang
-    website: https://github.com/michellewang
+    website: https://michellewang.github.io
     affiliation: Origami lab, McGill University, Montréal, Canada
   - given-names: Mohammad
     family-names: Torabi
@@ -605,6 +605,10 @@ authors:
     family-names: Glaser
     website: https://pierreglaser.github.io/
     affiliation: Gatsby Computational Neuroscience Unit, University College London, London, UK
+  - given-names: Pierre-Louis
+    family-names: Barbarant
+    website: https://github.com/pbarbarant
+    affiliation: Inria, Saclay, France
   - given-names: Pierre-Olivier
     family-names: Quirion
     website: https://github.com/poquirion
