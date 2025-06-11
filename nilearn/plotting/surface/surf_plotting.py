@@ -645,18 +645,18 @@ def plot_img_on_surf(
     surf_mesh="fsaverage5",
     mask_img=None,
     hemispheres=None,
+    views=None,
+    cmap=DEFAULT_DIVERGING_CMAP,
+    colorbar=True,
+    threshold=None,
     bg_on_data=False,
     inflate=False,
-    views=None,
-    output_file=None,
-    title=None,
-    colorbar=True,
     vmin=None,
     vmax=None,
-    threshold=None,
     symmetric_cbar="auto",
-    cmap=DEFAULT_DIVERGING_CMAP,
     cbar_tick_format="%i",
+    title=None,
+    output_file=None,
     **kwargs,
 ):
     """Plot multiple views of plot_surf_stat_map \
@@ -688,15 +688,9 @@ def plot_img_on_surf(
         during projection of the volume to the surface.
         If ``None``, don't apply any mask.
 
-    %(bg_on_data)s
-
     hemispheres : :obj:`list` of :obj:`str`, default=None
         Hemispheres to display.
         Will default to ``['left', 'right']`` if ``None`` or "both" is passed.
-
-    inflate : :obj:`bool`, default=False
-        If True, display images in inflated brain.
-        If False, display images in pial surface.
 
     views : :obj:`list` of :obj:`str`, default=None
         A list containing all views to display.
@@ -705,9 +699,8 @@ def plot_img_on_surf(
         are shown on the left and right sides of the figure.
         Will default to ``['lateral', 'medial']`` if ``None`` is passed.
 
-    %(output_file)s
-
-    %(title)s
+    %(cmap)s
+        Default="RdBu_r".
 
     %(colorbar)s
 
@@ -716,19 +709,26 @@ def plot_img_on_surf(
 
         Default=True.
 
+    %(threshold)s
+        Default=None
+
+    %(bg_on_data)s
+
+    inflate : :obj:`bool`, default=False
+        If True, display images in inflated brain.
+        If False, display images in pial surface.
+
     %(vmin)s
 
     %(vmax)s
 
-    %(threshold)s
-        Default=None
-
     %(symmetric_cbar)s
 
-    %(cmap)s
-        Default="RdBu_r".
-
     %(cbar_tick_format)s
+
+    %(title)s
+
+    %(output_file)s
 
     kwargs : :obj:`dict`, optional
         keyword arguments passed to plot_surf_stat_map.
