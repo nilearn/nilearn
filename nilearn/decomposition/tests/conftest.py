@@ -17,6 +17,91 @@ N_SUBJECTS = 4
 N_SAMPLES = 5
 
 
+@pytest.fixture
+def _mesh() -> PolyMesh:
+    return PolyMesh(
+        left=flat_mesh(*SHAPE_SURF["left"]),
+        right=flat_mesh(*SHAPE_SURF["right"]),
+    )
+
+
+@pytest.fixture
+def mask_img(
+    data_type: str, _mesh: PolyMesh, affine_eye: np.ndarray
+) -> Union[SurfaceImage, Nifti1Image]:
+    if data_type == "surface":
+        mask_data = {
+            "left": np.ones((_mesh.parts["left"].coordinates.shape[0],)),
+            "right": np.ones((_mesh.parts["right"].coordinates.shape[0],)),
+        }
+        return SurfaceImage(mesh=_mesh, data=mask_data)
+
+    shape = (*SHAPE_NIFTI, N_SAMPLES)
+    mask = np.ones(SHAPE_NIFTI)
+    mask[:5] = 0
+    mask[-5:] = 0
+    mask[:, :5] = 0
+    mask[:, -5:] = 0
+    mask[..., -2:] = 0
+    mask[..., :2] = 0
+    return Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine_eye)
+
+
+@pytest.fixture
+def masker(
+    mask_img: SurfaceImage, img_3d_ones_eye: Nifti1Image, data_type: str
+) -> Union[SurfaceMasker, MultiNiftiMasker]:
+    """Return the proper masker for test with volume of surface."""
+    if data_type == "surface":
+        return SurfaceMasker(mask_img=mask_img).fit()
+    return MultiNiftiMasker(mask_img=img_3d_ones_eye).fit()
+
+
+@pytest.fixture
+def decomposition_data(
+    rng, affine_eye: np.ndarray, data_type: str, with_activation: bool = True
+) -> Union[list[SurfaceImage], list[Nifti1Image]]:
+    """Create "multi-subject" dataset with fake activation."""
+    if data_type == "surface":
+        surf_imgs = []
+        mesh = {
+            "left": flat_mesh(*SHAPE_SURF["left"]),
+            "right": flat_mesh(*SHAPE_SURF["right"]),
+        }
+        for _ in range(N_SUBJECTS):
+            data = {
+                "left": rng.standard_normal(
+                    size=(mesh["left"].coordinates.shape[0], N_SAMPLES)
+                ),
+                "right": rng.standard_normal(
+                    size=(mesh["right"].coordinates.shape[0], N_SAMPLES)
+                ),
+            }
+            if with_activation:
+                data["left"][2:4, :] += 10
+                data["right"][2:4, :] += 10
+            surf_imgs.append(SurfaceImage(mesh=mesh, data=data))
+
+        return surf_imgs
+
+    nii_imgs = []
+    shape = (*SHAPE_NIFTI, N_SAMPLES)
+    for _ in range(N_SUBJECTS):
+        this_img = rng.normal(size=shape)
+        if with_activation:
+            this_img[2:4, 2:4, 2:4, :] += 10
+        nii_imgs.append(Nifti1Image(this_img, affine_eye))
+
+    return nii_imgs
+
+
+@pytest.fixture
+def decomposition_data_single_img(
+    decomposition_data,
+) -> Union[SurfaceImage, Nifti1Image]:
+    return decomposition_data[0]
+
+
 def _make_data_from_components(
     components: np.ndarray,
     affine: Optional[np.ndarray] = None,
@@ -104,81 +189,3 @@ def canica_data(rng, n_subjects=N_SUBJECTS) -> list[Nifti1Image]:
 def canica_data_single_img(canica_data) -> Nifti1Image:
     """Create a canonical ICA data for testing purposes."""
     return canica_data[0]
-
-
-@pytest.fixture
-def _mesh() -> PolyMesh:
-    return PolyMesh(
-        left=flat_mesh(*SHAPE_SURF["left"]),
-        right=flat_mesh(*SHAPE_SURF["right"]),
-    )
-
-
-@pytest.fixture
-def mask_img(
-    data_type: str, _mesh: PolyMesh, affine_eye: np.ndarray
-) -> Union[SurfaceImage, Nifti1Image]:
-    if data_type == "surface":
-        mask_data = {
-            "left": np.ones((_mesh.parts["left"].coordinates.shape[0],)),
-            "right": np.ones((_mesh.parts["right"].coordinates.shape[0],)),
-        }
-        return SurfaceImage(mesh=_mesh, data=mask_data)
-
-    shape = (*SHAPE_NIFTI, N_SAMPLES)
-    mask = np.ones(SHAPE_NIFTI)
-    mask[:5] = 0
-    mask[-5:] = 0
-    mask[:, :5] = 0
-    mask[:, -5:] = 0
-    mask[..., -2:] = 0
-    mask[..., :2] = 0
-    return Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine_eye)
-
-
-@pytest.fixture
-def input_imgs(
-    rng, affine_eye: np.ndarray, data_type: str, with_activation: bool = True
-) -> Union[list[SurfaceImage], list[Nifti1Image]]:
-    """Create "multi-subject" dataset with fake activation."""
-    if data_type == "surface":
-        surf_imgs = []
-        mesh = {
-            "left": flat_mesh(*SHAPE_SURF["left"]),
-            "right": flat_mesh(*SHAPE_SURF["right"]),
-        }
-        for _ in range(N_SUBJECTS):
-            data = {
-                "left": rng.standard_normal(
-                    size=(mesh["left"].coordinates.shape[0], N_SAMPLES)
-                ),
-                "right": rng.standard_normal(
-                    size=(mesh["right"].coordinates.shape[0], N_SAMPLES)
-                ),
-            }
-            if with_activation:
-                data["left"][2:4, :] += 10
-                data["right"][2:4, :] += 10
-            surf_imgs.append(SurfaceImage(mesh=mesh, data=data))
-
-        return surf_imgs
-
-    nii_imgs = []
-    shape = (*SHAPE_NIFTI, N_SAMPLES)
-    for _ in range(N_SUBJECTS):
-        this_img = rng.normal(size=shape)
-        if with_activation:
-            this_img[2:4, 2:4, 2:4, :] += 10
-        nii_imgs.append(Nifti1Image(this_img, affine_eye))
-
-    return nii_imgs
-
-
-@pytest.fixture
-def masker(
-    mask_img: SurfaceImage, img_3d_ones_eye: Nifti1Image, data_type: str
-) -> Union[SurfaceMasker, MultiNiftiMasker]:
-    """Return the proper masker for test with volume of surface."""
-    if data_type == "surface":
-        return SurfaceMasker(mask_img=mask_img).fit()
-    return MultiNiftiMasker(mask_img=img_3d_ones_eye).fit()
