@@ -23,7 +23,11 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         check_estimator(estimators=ESTIMATORS_TO_CHECK),
     )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+    def test_check_estimator_sklearn_valid(
+        estimator,
+        check,
+        name,  # noqa: ARG001
+    ):
         """Check compliance with sklearn estimators."""
         check(estimator)
 
@@ -35,7 +39,11 @@ if SKLEARN_LT_1_6:
             valid=False,
         ),
     )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+    def test_check_estimator_sklearn_invalid(
+        estimator,
+        check,
+        name,  # noqa: ARG001
+    ):
         """Check compliance with sklearn estimators."""
         check(estimator)
 
@@ -62,7 +70,10 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize("data_type", ["nifti"])
 @pytest.mark.parametrize("n_epochs", [1, 2, 10])
 def test_dict_learning_check_values_epoch_argument_smoke(
-    data_type, mask_img, n_epochs, canica_components
+    data_type,  # noqa: ARG001
+    mask_img,
+    n_epochs,
+    canica_components,
 ):
     """Smoke test to check different values of the epoch argument."""
     data = _make_canica_test_data()
@@ -85,7 +96,11 @@ def test_dict_learning_check_values_epoch_argument_smoke(
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_dict_learning(data_type, mask_img, canica_components):
+def test_dict_learning(
+    data_type,  # noqa: ARG001
+    mask_img,
+    canica_components,
+):
     data = _make_canica_test_data()
 
     masker = NiftiMasker(mask_img=mask_img).fit()
@@ -136,7 +151,10 @@ def test_dict_learning(data_type, mask_img, canica_components):
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_component_sign(data_type, mask_img) -> None:
+def test_component_sign(
+    data_type,  # noqa: ARG001
+    mask_img,
+) -> None:
     # Regression test
     # We should have a heuristic that flips the sign of components in
     # DictLearning to have more positive values than negative values, for
@@ -158,7 +176,11 @@ def test_component_sign(data_type, mask_img) -> None:
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_masker_attributes_with_fit(canica_data, mask_img, data_type):
+def test_masker_attributes_with_fit(
+    canica_data,
+    mask_img,
+    data_type,  # noqa: ARG001
+):
     # Test base module at sub-class
 
     # Passing mask_img
@@ -176,7 +198,10 @@ def test_masker_attributes_with_fit(canica_data, mask_img, data_type):
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_empty_data_to_fit_error(mask_img, data_type):
+def test_empty_data_to_fit_error(
+    mask_img,
+    data_type,  # noqa: ARG001
+):
     """Test if raises an error when empty list of provided."""
     dict_learning = DictLearning(mask=mask_img, n_components=3)
 
@@ -199,7 +224,11 @@ def test_passing_masker_arguments_to_estimator(affine_eye, canica_data):
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_components_img(canica_data, mask_img, data_type):
+def test_components_img(
+    canica_data,
+    mask_img,
+    data_type,  # noqa: ARG001
+):
     n_components = 3
     dict_learning = DictLearning(n_components=n_components, mask=mask_img)
 
@@ -215,7 +244,12 @@ def test_components_img(canica_data, mask_img, data_type):
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 @pytest.mark.parametrize("n_subjects", [1, 3])
-def test_with_globbing_patterns(mask_img, n_subjects, tmp_path, data_type):
+def test_with_globbing_patterns(
+    mask_img,
+    n_subjects,
+    tmp_path,
+    data_type,  # noqa: ARG001
+):
     data = _make_canica_test_data(n_subjects=n_subjects)
 
     n_components = 3
@@ -242,7 +276,11 @@ def test_with_globbing_patterns(mask_img, n_subjects, tmp_path, data_type):
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
-def test_dictlearning_score(canica_data, mask_img, data_type):
+def test_dictlearning_score(
+    canica_data,
+    mask_img,
+    data_type,  # noqa: ARG001
+):
     # Multi subjects
     n_components = 10
     dict_learning = DictLearning(
