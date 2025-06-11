@@ -309,19 +309,6 @@ def check_surface_plotting_inputs(
     bg_map : :obj:`str` | :obj:`pathlib.Path` | :obj:`numpy.ndarray` | None
 
     """
-    if not isinstance(surf_map, SurfaceImage) and not isinstance(
-        surf_mesh, PolyMesh
-    ):
-        warn(
-            category=UserWarning,
-            message=(
-                f"{hemi=} was passed with "
-                f"{type(surf_map)=} and {type(surf_mesh)=}.\n"
-                "Please make sure that the specified hemi corresponds to data."
-            ),
-            stacklevel=find_stack_level(),
-        )
-
     if surf_mesh is None and surf_map is None:
         raise TypeError(
             f"{mesh_var_name} and {map_var_name} cannot both be None."
