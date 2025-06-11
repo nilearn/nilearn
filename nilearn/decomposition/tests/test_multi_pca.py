@@ -103,6 +103,7 @@ def test_multi_pca_check_masker_attributes(multi_pca_data, mask_img):
     assert multi_pca.mask_img_ == multi_pca.masker_.mask_img_
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("length", [1, 2])
 def test_multi_pca(multi_pca_data, mask_img, length):
     """Components are the same if we put twice the same data, \
