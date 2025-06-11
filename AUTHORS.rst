@@ -27,16 +27,15 @@ Core developers
 
 The nilearn core developers are:
 
+* `Alexis Thual`_
 * `Bertrand Thirion`_
 * `Elizabeth DuPre`_
-* `Hande Gözükan`_
 * `Hao-Ting Wang`_
 * `Himanshu Aggarwal`_
 * `Jerome Dockes`_
-* `Michelle Wang`_
-* `Mohammad Torabi`_
-* `Pierre-Louis Barbarant`_
+* `Nicolas Gensollen`_
 * `Rémi Gau`_
+* `Taylor Salo`_
 
 .. CORE DEV SECTION ENDS HERE
 
@@ -174,8 +173,8 @@ Some other past or present contributors are:
 * `Philippe Gervais`_: Zurich, Switzerland
 * `Pierre Bellec`_: Psychology Department, University of Montréal, Montréal, Canada
 * `Pierre Glaser`_: Gatsby Computational Neuroscience Unit, University College London, London, UK
-* `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
 * `Pierre-Louis Barbarant`_: Inria, Saclay, France
+* `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
 * `Pradeep Reddy Raamana`_: University of Pittsburgh, Pittsburgh, PA, USA
 * `Prakhar Jain`_: RV College of Engineering, Bangalore, India
 * `Rahul Brito`_
