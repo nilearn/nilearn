@@ -559,7 +559,7 @@ class NiftiSpheresMasker(BaseMasker):
             "warning_message": None,
         }
 
-        self = sanitize_cleaning_parameters(self)
+        sanitize_cleaning_parameters(self)
 
         error = (
             "Seeds must be a list of triplets of coordinates in "

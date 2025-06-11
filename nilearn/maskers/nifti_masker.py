@@ -444,7 +444,7 @@ class NiftiMasker(BaseMasker):
         if getattr(self, "_shelving", None) is None:
             self._shelving = False
 
-        self = sanitize_cleaning_parameters(self)
+        sanitize_cleaning_parameters(self)
 
         # Load data (if filenames are given, load them)
         logger.log(

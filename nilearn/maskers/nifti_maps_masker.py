@@ -404,7 +404,7 @@ class NiftiMapsMasker(BaseMasker):
                 "Set resampling_target to something else or provide a mask."
             )
 
-        self = sanitize_cleaning_parameters(self)
+        sanitize_cleaning_parameters(self)
 
         self._report_content = {
             "description": (

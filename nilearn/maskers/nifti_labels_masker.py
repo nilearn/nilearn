@@ -516,7 +516,7 @@ class NiftiLabelsMasker(BaseMasker):
                 f"parameter: {self.resampling_target}"
             )
 
-        self = sanitize_cleaning_parameters(self)
+        sanitize_cleaning_parameters(self)
 
         self._report_content = {
             "description": (

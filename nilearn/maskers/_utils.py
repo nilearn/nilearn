@@ -35,8 +35,6 @@ def sanitize_cleaning_parameters(masker):
     else:
         masker.clean_args_ = masker.clean_args
 
-    return masker
-
 
 def _check_dims(imgs):
     # check dims of one image if given a list
