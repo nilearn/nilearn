@@ -11,7 +11,8 @@ from nilearn.maskers import MultiNiftiMasker, SurfaceMasker
 from nilearn.surface import PolyMesh, SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
 
-SHAPE_NIFTI = (30, 30, 5)
+# from nilearn.conftest import _shape_3d_large
+
 SHAPE_SURF = {"left": (10, 8), "right": (9, 7)}
 N_SUBJECTS = 4
 N_SAMPLES = 5
@@ -28,7 +29,10 @@ def decomposition_mesh() -> PolyMesh:
 
 @pytest.fixture
 def decomposition_mask_img(
-    data_type: str, decomposition_mesh: PolyMesh, affine_eye: np.ndarray
+    data_type: str,
+    decomposition_mesh: PolyMesh,
+    affine_eye: np.ndarray,
+    shape_3d_large,
 ) -> Union[SurfaceImage, Nifti1Image]:
     """Return a mask for decomposition."""
     if data_type == "surface":
@@ -42,7 +46,7 @@ def decomposition_mask_img(
         }
         return SurfaceImage(mesh=decomposition_mesh, data=mask_data)
 
-    mask = np.ones(SHAPE_NIFTI, dtype=np.int8)
+    mask = np.ones(shape_3d_large, dtype=np.int8)
     mask[:5] = 0
     mask[-5:] = 0
     mask[:, :5] = 0
@@ -66,7 +70,11 @@ def decomposition_masker(
 
 @pytest.fixture
 def decomposition_data(
-    rng, affine_eye: np.ndarray, data_type: str, with_activation: bool = True
+    rng,
+    affine_eye: np.ndarray,
+    data_type: str,
+    shape_3d_large,
+    with_activation: bool = True,
 ) -> Union[list[SurfaceImage], list[Nifti1Image]]:
     """Create "multi-subject" dataset with fake activation."""
     if data_type == "surface":
@@ -92,7 +100,7 @@ def decomposition_data(
         return surf_imgs
 
     nii_imgs = []
-    shape = (*SHAPE_NIFTI, N_SAMPLES)
+    shape = (*shape_3d_large, N_SAMPLES)
     for _ in range(N_SUBJECTS):
         this_img = rng.normal(size=shape)
         if with_activation:
@@ -112,7 +120,7 @@ def decomposition_data_single_img(
 
 def _make_data_from_components(
     components: np.ndarray,
-    shape: tuple[int, int, int] = SHAPE_NIFTI,
+    shape: tuple[int, int, int],
     n_subjects=N_SUBJECTS,
 ) -> list[Nifti1Image]:
     affine = _affine_eye()
@@ -169,9 +177,9 @@ def _make_canica_components(shape: tuple[int, int, int]) -> np.ndarray:
 
 
 @pytest.fixture
-def canica_components(rng) -> np.ndarray:
+def canica_components(rng, shape_3d_large) -> np.ndarray:
     """Create noisy non positive data."""
-    components = _make_canica_components(SHAPE_NIFTI)
+    components = _make_canica_components(shape_3d_large)
     components[rng.standard_normal(components.shape) > 0.8] *= -2.0
     for mp in components:
         assert mp.max() <= -mp.min()  # Goal met ?
@@ -179,11 +187,11 @@ def canica_components(rng) -> np.ndarray:
 
 
 @pytest.fixture
-def canica_data(n_subjects=N_SUBJECTS) -> list[Nifti1Image]:
+def canica_data(shape_3d_large, n_subjects=N_SUBJECTS) -> list[Nifti1Image]:
     """Create a "multi-subject" dataset."""
-    components = _make_canica_components(SHAPE_NIFTI)
+    components = _make_canica_components(shape_3d_large)
     data = _make_data_from_components(
-        components, SHAPE_NIFTI, n_subjects=n_subjects
+        components, shape_3d_large, n_subjects=n_subjects
     )
     return data
 
