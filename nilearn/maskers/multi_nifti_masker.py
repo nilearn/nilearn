@@ -27,10 +27,7 @@ from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     resample_img,
 )
-from nilearn.maskers._utils import (
-    compute_middle_image,
-    sanitize_cleaning_parameters,
-)
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import prepare_confounds_multimaskers
 from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
 from nilearn.masking import (
@@ -197,7 +194,7 @@ class MultiNiftiMasker(NiftiMasker):
         verbose=0,
         cmap="CMRmap_r",
         clean_args=None,
-        **kwargs,
+        **kwargs,  # TODO remove when bumping to nilearn >0.13
     ):
         super().__init__(
             # Mask is provided or computed
@@ -220,6 +217,7 @@ class MultiNiftiMasker(NiftiMasker):
             verbose=verbose,
             cmap=cmap,
             clean_args=clean_args,
+            # TODO remove when bumping to nilearn >0.13
             **kwargs,
         )
         self.n_jobs = n_jobs
@@ -284,8 +282,8 @@ class MultiNiftiMasker(NiftiMasker):
             "hover over the displayed image."
         )
 
-        sanitize_cleaning_parameters(self)
-        self.clean_args_ = {}  if self.clean_args is None else  self.clean_args
+        self.sanitize_cleaning_parameters()
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         self.mask_img_ = self._load_mask(imgs)
 

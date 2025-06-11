@@ -14,10 +14,7 @@ from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
 from nilearn._utils.param_validation import check_params
 from nilearn.image import clean_img, get_data, index_img, resample_img
-from nilearn.maskers._utils import (
-    compute_middle_image,
-    sanitize_cleaning_parameters,
-)
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import load_mask_img
 
@@ -173,7 +170,7 @@ class NiftiMapsMasker(BaseMasker):
         reports=True,
         cmap="CMRmap_r",
         clean_args=None,
-        **kwargs,
+        **kwargs,  # TODO remove when bumping to nilearn >0.13
     ):
         self.maps_img = maps_img
         self.mask_img = mask_img
@@ -194,6 +191,8 @@ class NiftiMapsMasker(BaseMasker):
         self.t_r = t_r
         self.dtype = dtype
         self.clean_args = clean_args
+
+        # TODO remove when bumping to nilearn >0.13
         self.clean_kwargs = kwargs
 
         # Parameters for resampling
@@ -404,8 +403,8 @@ class NiftiMapsMasker(BaseMasker):
                 "Set resampling_target to something else or provide a mask."
             )
 
-        sanitize_cleaning_parameters(self)
-        self.clean_args_ = {}  if self.clean_args is None else  self.clean_args
+        self.sanitize_cleaning_parameters()
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         self._report_content = {
             "description": (

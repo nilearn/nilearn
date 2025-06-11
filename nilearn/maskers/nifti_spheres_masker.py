@@ -29,10 +29,7 @@ from nilearn._utils.niimg_conversions import (
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
-from nilearn.maskers._utils import (
-    compute_middle_image,
-    sanitize_cleaning_parameters,
-)
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
 
@@ -559,8 +556,8 @@ class NiftiSpheresMasker(BaseMasker):
             "warning_message": None,
         }
 
-        sanitize_cleaning_parameters(self)
-        self.clean_args_ = {}  if self.clean_args is None else  self.clean_args
+        self.sanitize_cleaning_parameters()
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         error = (
             "Seeds must be a list of triplets of coordinates in "

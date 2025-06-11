@@ -478,6 +478,33 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         raise NotImplementedError()
 
+    def _sanitize_cleaning_parameters(self):
+        """Make sure that clarning parameters are passed via clean_args.
+
+        TODO remove when bumping to nilearn >0.13
+        """
+        if hasattr(self, "clean_kwargs"):
+            if self.clean_kwargs:
+                tmp = [", ".join(list(self.clean_kwargs))]
+                warnings.warn(
+                    f"You passed some kwargs to {self.__class__.__name__}: "
+                    f"{tmp}. "
+                    "This behavior is deprecated "
+                    "and will be removed in version >0.13.",
+                    DeprecationWarning,
+                    stacklevel=find_stack_level(),
+                )
+                if self.clean_args:
+                    raise ValueError(
+                        "Passing arguments via 'kwargs' "
+                        "is mutually exclusive with using 'clean_args'"
+                    )
+            self.clean_kwargs_ = {
+                k[7:]: v
+                for k, v in self.clean_kwargs.items()
+                if k.startswith("clean__")
+            }
+
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Class from which all surface maskers should inherit."""
