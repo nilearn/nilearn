@@ -90,7 +90,7 @@ def canica_components(rng) -> np.ndarray:
     return components
 
 
-def _make_canica_test_data(n_subjects=N_SUBJECTS) -> list[Nifti1Image]:
+def canica_data(n_subjects=N_SUBJECTS) -> list[Nifti1Image]:
     # Use legacy generator for sklearn compatibility
     rng = np.random.RandomState(42)
     components = _make_canica_components(SHAPE_NIFTI)
@@ -102,9 +102,9 @@ def _make_canica_test_data(n_subjects=N_SUBJECTS) -> list[Nifti1Image]:
 
 
 @pytest.fixture
-def canica_data() -> Nifti1Image:
+def canica_data_single_img() -> Nifti1Image:
     """Create a canonical ICA data for testing purposes."""
-    return _make_canica_test_data()[0]
+    return canica_data()[0]
 
 
 @pytest.fixture

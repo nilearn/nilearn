@@ -11,7 +11,7 @@ from nilearn._utils.estimator_checks import (
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.decomposition.dict_learning import DictLearning
-from nilearn.decomposition.tests.conftest import _make_canica_test_data
+from nilearn.decomposition.tests.conftest import canica_data
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker
 
@@ -76,7 +76,7 @@ def test_dict_learning_check_values_epoch_argument_smoke(
     canica_components,
 ):
     """Smoke test to check different values of the epoch argument."""
-    data = _make_canica_test_data()
+    data = canica_data()
 
     masker = NiftiMasker(mask_img=mask_img).fit()
     mask = get_data(mask_img) != 0
@@ -101,7 +101,7 @@ def test_dict_learning(
     mask_img,
     canica_components,
 ):
-    data = _make_canica_test_data()
+    data = canica_data()
 
     masker = NiftiMasker(mask_img=mask_img).fit()
     mask = get_data(mask_img) != 0
@@ -160,7 +160,7 @@ def test_component_sign(
     # DictLearning to have more positive values than negative values, for
     # instance by making sure that the largest value is positive.
 
-    data = _make_canica_test_data()
+    data = canica_data()
 
     dict_learning = DictLearning(
         n_components=4,
@@ -177,7 +177,7 @@ def test_component_sign(
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_masker_attributes_with_fit(
-    canica_data,
+    canica_data_single_img,
     mask_img,
     data_type,  # noqa: ARG001
 ):
@@ -185,14 +185,14 @@ def test_masker_attributes_with_fit(
 
     # Passing mask_img
     dict_learning = DictLearning(n_components=3, mask=mask_img, random_state=0)
-    dict_learning.fit(canica_data)
+    dict_learning.fit(canica_data_single_img)
 
     assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
 
     # Passing masker
     masker = NiftiMasker(mask_img=mask_img)
     dict_learning = DictLearning(n_components=3, mask=masker, random_state=0)
-    dict_learning.fit(canica_data)
+    dict_learning.fit(canica_data_single_img)
 
     assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
 
@@ -213,31 +213,33 @@ def test_empty_data_to_fit_error(
         dict_learning.fit([])
 
 
-def test_passing_masker_arguments_to_estimator(affine_eye, canica_data):
+def test_passing_masker_arguments_to_estimator(
+    affine_eye, canica_data_single_img
+):
     dict_learning = DictLearning(
         n_components=3,
         target_affine=affine_eye,
         target_shape=(6, 8, 10),
         mask_strategy="background",
     )
-    dict_learning.fit(canica_data)
+    dict_learning.fit(canica_data_single_img)
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_components_img(
-    canica_data,
+    canica_data_single_img,
     mask_img,
     data_type,  # noqa: ARG001
 ):
     n_components = 3
     dict_learning = DictLearning(n_components=n_components, mask=mask_img)
 
-    dict_learning.fit(canica_data)
+    dict_learning.fit(canica_data_single_img)
     components_img = dict_learning.components_img_
 
     assert isinstance(components_img, Nifti1Image)
 
-    check_shape = canica_data.shape[:3] + (n_components,)
+    check_shape = canica_data_single_img.shape[:3] + (n_components,)
 
     assert components_img.shape, check_shape
 
@@ -246,23 +248,16 @@ def test_components_img(
 @pytest.mark.parametrize("n_subjects", [1, 3])
 def test_with_globbing_patterns(
     mask_img,
-    n_subjects,
+    n_subjects,  # noqa: ARG001
     tmp_path,
     data_type,  # noqa: ARG001
+    canica_data,
 ):
-    data = _make_canica_test_data(n_subjects=n_subjects)
-
     n_components = 3
     dict_learning = DictLearning(n_components=n_components, mask=mask_img)
 
-    # just for test readability
-    if n_subjects == 1:
-        data = [data[0]]
-    elif n_subjects == 3:
-        data = [data[0], data[1], data[2]]
-
     img = write_imgs_to_path(
-        *data, file_path=tmp_path, create_files=True, use_wildcards=True
+        *canica_data, file_path=tmp_path, create_files=True, use_wildcards=True
     )
 
     dict_learning.fit(img)
@@ -270,14 +265,14 @@ def test_with_globbing_patterns(
 
     assert isinstance(components_img, Nifti1Image)
 
-    check_shape = data[0].shape[:3] + (n_components,)
+    check_shape = canica_data[0].shape[:3] + (n_components,)
 
     assert components_img.shape, check_shape
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_dictlearning_score(
-    canica_data,
+    canica_data_single_img,
     mask_img,
     data_type,  # noqa: ARG001
 ):
@@ -287,16 +282,16 @@ def test_dictlearning_score(
         n_components=n_components, mask=mask_img, random_state=0
     )
 
-    dict_learning.fit(canica_data)
+    dict_learning.fit(canica_data_single_img)
 
     # One score for all components
-    scores = dict_learning.score(canica_data, per_component=False)
+    scores = dict_learning.score(canica_data_single_img, per_component=False)
 
     assert scores <= 1
     assert scores >= 0
 
     # Per component score
-    scores = dict_learning.score(canica_data, per_component=True)
+    scores = dict_learning.score(canica_data_single_img, per_component=True)
 
     assert scores.shape, (n_components,)
     assert np.all(scores <= 1)
