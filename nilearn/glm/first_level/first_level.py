@@ -7,8 +7,8 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 
 from __future__ import annotations
 
-import inspect
 import csv
+import inspect
 import time
 from collections.abc import Iterable
 from pathlib import Path
@@ -484,47 +484,51 @@ class FirstLevelModel(BaseGLM):
         design_matrices,
     ):
         """Run input validation and ensure inputs are compatible."""
-        # If design_matrices is provided,
-        # throw warning for the attributes or parameters
-        # that were provided at init or fit time
-        # but will be ignored
-        # because they will not be used to generate a design matrix.
+        if not isinstance(run_imgs, (list, tuple)):
+            run_imgs = [run_imgs]
+
         if design_matrices is not None:
+            # If design_matrices is provided,
+            # throw warning for the attributes or parameters
+            # that were provided at init or fit time
+            # but that will be ignored
+            # because they will not be used to generate a design matrix.
             non_default_value = []
             if confounds is not None:
                 non_default_value.append("confounds")
             if events is not None:
                 non_default_value.append("events")
 
-        #     warn(
-        #         "If design matrices are supplied, "
-        #         "confounds and events will be ignored.",
-        #         stacklevel=find_stack_level(),
-        #     )
-
             # check with the default of __init__
-            attributes_used_in_des_mat_generation = ["slice_time_ref",
-            "t_r",
-            "hrf_model",
-            "drift_model",
-            "drift_order",
-            "fir_delays",
-            "min_onset",
+            attributes_used_in_des_mat_generation = [
+                "slice_time_ref",
+                "t_r",
+                "hrf_model",
+                "drift_model",
+                "drift_order",
+                "fir_delays",
+                "min_onset",
             ]
             tmp = dict(**inspect.signature(self.__init__).parameters)
-            for k in attributes_used_in_des_mat_generation:
-                if getattr(self, k) != tmp[k].default:
-            
-            
+            non_default_value.extend(
+                [
+                    k
+                    for k in attributes_used_in_des_mat_generation
+                    if getattr(self, k) != tmp[k].default
+                ]
+            )
 
+            if non_default_value:
+                warn(
+                    "If design matrices are supplied, "
+                    "confounds and events will be ignored.",
+                    stacklevel=find_stack_level(),
+                )
+            design_matrices = _check_run_tables(
+                run_imgs, design_matrices, "design_matrices"
+            )
 
-        if events is not None:
-            _check_events_file_uses_tab_separators(events_files=events)
-
-        if not isinstance(run_imgs, (list, tuple)):
-            run_imgs = [run_imgs]
-
-        if design_matrices is None:
+        else:
             if events is None:
                 raise ValueError("events or design matrices must be provided")
             if self.t_r is None:
@@ -532,16 +536,14 @@ class FirstLevelModel(BaseGLM):
                     "t_r not given to FirstLevelModel object"
                     " to compute design from events"
                 )
-        else:
-            design_matrices = _check_run_tables(
-                run_imgs, design_matrices, "design_matrices"
-            )
 
-        # Check that number of events and confound files match number of runs
-        # Also check that events and confound files can be loaded as DataFrame
-        if events is not None:
+            # Check that events files match number of runs
+            # and can be loaded as DataFrame.
+            _check_events_file_uses_tab_separators(events_files=events)
             events = _check_run_tables(run_imgs, events, "events")
 
+        # Check that confound files match number of runs
+        # and can be loaded as DataFrame.
         if confounds is not None:
             confounds = _check_run_tables(run_imgs, confounds, "confounds")
 
