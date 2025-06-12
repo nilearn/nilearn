@@ -789,6 +789,7 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
         assert file not in report.__str__()
 
 
+@pytest.mark.timeout(0)
 def test_save_glm_to_bids_infer_filenames(tmp_path):
     """Check that output filenames can be inferred from BIDS input."""
     n_sub = 1
