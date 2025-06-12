@@ -266,7 +266,9 @@ def load_confounds(
         - "basic": use noise independent components only.
 
     tedana : :obj:`str`, default="rejected"
-        - "rejected": use TEDANA rejected ICA components.
+
+        - "rejected": use :term:`Tedana` tedana optimaly combined image.
+           `~desc-optcom_bold.nii.gz`.
 
     demean : :obj:`bool`, default=True
         If True, the confounds are standardized to a zero mean (over time).
@@ -282,6 +284,8 @@ def load_confounds(
     confounds : :class:`pandas.DataFrame`, or :obj:`list` of \
         :class:`pandas.DataFrame`
         A reduced version of :term:`fMRIPrep` confounds based on selected
+        strategy and flags.
+        Or a reduced version of the :term:`Tedana` confounds based on the
         strategy and flags.
         The columns contains the labels of the regressors.
 

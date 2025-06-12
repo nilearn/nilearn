@@ -30,7 +30,10 @@ img_file_error = {
     ),
     "nii.gz": "Invalid file type for the selected 'nii.gz' method.",
     "dtseries.nii": "Invalid file type for the selected 'dtseries.nii' method",
-    "tedana": "Invalid file type for the selected tedana method",
+    "tedana": "Input must be the ~desc-optcom_bold.nii.gz file "
+    "for tedana strategy. Other files like "
+    "~desc-denoised_bold.nii.gz are not supported or "
+    "have already been denoised.",
     "func.gii": "need fMRIprep output with extension func.gii",
 }
 
