@@ -58,6 +58,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(

@@ -4,13 +4,11 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from scipy.ndimage import label
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
 from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
-    return_expected_failed_checks,
 )
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.tags import SKLEARN_LT_1_6

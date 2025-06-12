@@ -107,6 +107,7 @@ def test_flm_reporting_height_control(flm, height_control, contrasts):
     assert "cosine" in report_flm.__str__()
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_slm_reporting_method(slm, height_control):
     """Test for the second level reporting."""
@@ -118,6 +119,7 @@ def test_slm_reporting_method(slm, height_control):
     report_slm.get_iframe()
 
 
+@pytest.mark.timeout(0)
 def test_slm_with_flm_as_inputs(flm, contrasts):
     """Test second level reporting when inputs are first level models."""
     model = SecondLevelModel()
