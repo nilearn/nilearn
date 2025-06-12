@@ -70,8 +70,8 @@ def get_testdata_path(
             return [
                 path_data / filename
                 for filename in [
-                    f"{suffix}_desc-ICA_mixing.tsv",
-                    f"{suffix}_desc-ICA_status_table.tsv",
+                    "test_desc-ICA_mixing.tsv",
+                    "test_desc-ICA_status_table.tsv",
                 ]
             ]
         return [
