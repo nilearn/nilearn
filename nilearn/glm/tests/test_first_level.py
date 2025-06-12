@@ -843,6 +843,49 @@ def test_fmri_inputs_errors(shape_4d_default):
         FirstLevelModel(mask_img=None, t_r=1.0).fit(fmri_data, design_matrices)
 
 
+@pytest.mark.parametrize(
+    "to_ignore",
+    [
+        {"slice_time_ref": 0.5},
+        {"t_r": 2},
+        {"hrf_model": "fir"},
+    ],
+)
+def test_parameter_attributes_ignored_with_design_matrix(
+    shape_4d_default, to_ignore
+):
+    """Warn some parameters/attributes are ignored when using design matrix.
+
+    Test that the warning is thrown if events are passed with design matrix.
+    Also test with some of the non default value for some attributes
+    """
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )
+
+    fmri_data = fmri_data[0]
+    design_matrices = design_matrices[0]
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        FirstLevelModel().fit([fmri_data], design_matrices=[design_matrices])
+    assert not any(
+        "If design matrices are supplied" in str(x.message)
+        for x in warning_list
+    )
+
+    with pytest.warns(UserWarning, match="If design matrices are supplied"):
+        FirstLevelModel().fit(
+            [fmri_data],
+            design_matrices=[design_matrices],
+            events=basic_paradigm(),
+        )
+
+    with pytest.warns(UserWarning, match="If design matrices are supplied"):
+        FirstLevelModel(**to_ignore).fit(
+            [fmri_data], design_matrices=[design_matrices]
+        )
+
+
 def test_fmri_inputs_errors_confounds(shape_4d_default):
     """Raise errors when incompatible inputs and confounds are passed."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(

@@ -498,8 +498,15 @@ class FirstLevelModel(BaseGLM):
                 non_default_value.append("confounds")
             if events is not None:
                 non_default_value.append("events")
+            if non_default_value:
+                warn(
+                    "If design matrices are supplied, "
+                    f"{' and '.join(non_default_value)} will be ignored.",
+                    stacklevel=find_stack_level(),
+                )
 
             # check with the default of __init__
+            non_default_value = []
             attributes_used_in_des_mat_generation = [
                 "slice_time_ref",
                 "t_r",
@@ -521,9 +528,10 @@ class FirstLevelModel(BaseGLM):
             if non_default_value:
                 warn(
                     "If design matrices are supplied, "
-                    "confounds and events will be ignored.",
+                    f"[{', '.join(non_default_value)}] will be ignored.",
                     stacklevel=find_stack_level(),
                 )
+
             design_matrices = _check_run_tables(
                 run_imgs, design_matrices, "design_matrices"
             )
@@ -537,15 +545,13 @@ class FirstLevelModel(BaseGLM):
                     " to compute design from events"
                 )
 
-            # Check that events files match number of runs
+            # Check that events and confounds files match number of runs
             # and can be loaded as DataFrame.
             _check_events_file_uses_tab_separators(events_files=events)
             events = _check_run_tables(run_imgs, events, "events")
 
-        # Check that confound files match number of runs
-        # and can be loaded as DataFrame.
-        if confounds is not None:
-            confounds = _check_run_tables(run_imgs, confounds, "confounds")
+            if confounds is not None:
+                confounds = _check_run_tables(run_imgs, confounds, "confounds")
 
         if sample_masks is not None:
             sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
