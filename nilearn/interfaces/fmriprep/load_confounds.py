@@ -322,6 +322,20 @@ def load_confounds(
 
     """
     _check_strategy(strategy)
+    if "tedana" in strategy and len(strategy) > 1:
+        tedana_warning = (
+            "TEDANA strategy will only look for the ~desc-ICA_mixing.tsv "
+            "and the ~desc-ICA_status_table.tsv for the provided "
+            "~desc-optcom_bold.nii.gz from the tedana folder "
+            "to load the rejected ICA confounds. Other strategies: \n"
+            f"strategies {[s for s in strategy if 'tedana' not in s]} "
+            "will NOT be applied for the Tedana confounds."
+        )
+        warnings.warn(
+            category=UserWarning,
+            message=tedana_warning,
+            stacklevel=find_stack_level(),
+        )
     if "scrub" in strategy and fd_threshold == 0.2:
         fd_threshold_default = (
             "The default parameter for fd_threshold is currently 0.2 "
