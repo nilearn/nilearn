@@ -7,7 +7,7 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn.conftest import _affine_eye
-from nilearn.maskers import MultiNiftiMasker, SurfaceMasker
+from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 from nilearn.surface import PolyMesh, SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
 
@@ -15,6 +15,7 @@ SHAPE_SURF = {"left": (30, 8), "right": (20, 7)}
 N_COMPONENTS = 4
 N_SUBJECTS = 4
 N_SAMPLES = 5
+RANDOM_STATE = 42
 
 
 def _decomposition_mesh() -> PolyMesh:
@@ -275,3 +276,22 @@ def canica_components(rng, _make_canica_components) -> np.ndarray:
 def canica_data_single_img(canica_data) -> Nifti1Image:
     """Create a canonical ICA data for testing purposes."""
     return canica_data[0]
+
+
+def check_decomposition_estimator(estimator, data_type):
+    """Run several standard checks on decomposition estimators."""
+    assert estimator.mask_img_ == estimator.masker_.mask_img_
+
+    if data_type == "nifti":
+        assert isinstance(estimator.mask_img_, Nifti1Image)
+        assert isinstance(estimator.components_img_, Nifti1Image)
+        assert isinstance(estimator.masker_, NiftiMasker)
+        check_shape = (*estimator.mask_img_.shape, estimator.n_components)
+
+    elif data_type == "surface":
+        assert isinstance(estimator.mask_img_, SurfaceImage)
+        assert isinstance(estimator.components_img_, SurfaceImage)
+        assert isinstance(estimator.masker_, SurfaceMasker)
+        check_shape = (estimator.mask_img_.shape[-1], estimator.n_components)
+
+    assert estimator.components_img_.shape == check_shape

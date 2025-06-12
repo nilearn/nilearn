@@ -16,7 +16,10 @@ from nilearn.decomposition._base import (
     _fast_svd,
     _mask_and_reduce,
 )
-from nilearn.decomposition.tests.conftest import N_SUBJECTS
+from nilearn.decomposition.tests.conftest import (
+    N_SUBJECTS,
+    RANDOM_STATE,
+)
 
 ESTIMATORS_TO_CHECK = [_BaseDecomposition()]
 
@@ -156,7 +159,7 @@ def test_mask_reducer_single_image_same_with_multiple_jobs(
         imgs=decomposition_data_single_img,
         n_components=n_components,
         n_jobs=2,
-        random_state=0,
+        random_state=RANDOM_STATE,
     )
     if data_type == "nifti":
         assert data.shape == (
@@ -181,7 +184,7 @@ def test_mask_reducer_reduced_data_is_orthogonal(
         masker=decomposition_masker,
         imgs=decomposition_data_single_img,
         n_components=n_components,
-        random_state=0,
+        random_state=RANDOM_STATE,
     )
 
     if data_type == "nifti":
@@ -215,13 +218,13 @@ def test_mask_reducer_reduced_reproducible(
         masker=decomposition_masker,
         imgs=decomposition_data_single_img,
         n_components=n_components,
-        random_state=0,
+        random_state=RANDOM_STATE,
     )
     data2 = _mask_and_reduce(
         masker=decomposition_masker,
         imgs=[decomposition_data_single_img] * 2,
         n_components=n_components,
-        random_state=0,
+        random_state=RANDOM_STATE,
     )
 
     if data_type == "nifti":
