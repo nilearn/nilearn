@@ -7,7 +7,7 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn.conftest import _affine_eye
-from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
+from nilearn.maskers import MultiNiftiMasker, SurfaceMasker
 from nilearn.surface import PolyMesh, SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
 
@@ -291,7 +291,7 @@ def check_decomposition_estimator(estimator, data_type):
     if data_type == "nifti":
         assert isinstance(estimator.mask_img_, Nifti1Image)
         assert isinstance(estimator.components_img_, Nifti1Image)
-        assert isinstance(estimator.masker_, NiftiMasker)
+        assert isinstance(estimator.masker_, MultiNiftiMasker)
         check_shape = (*estimator.mask_img_.shape, estimator.n_components)
 
     elif data_type == "surface":

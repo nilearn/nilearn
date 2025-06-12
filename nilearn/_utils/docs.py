@@ -1301,7 +1301,7 @@ docdict["multi_pca_attributes"] = """
                 ``components_`` with ``masker_`` attribute.
 
         components_img_ : 4D Nifti image \
-            or 2D :obj:`~nilearn.surface.SurfaceImage`
+                          or 2D :obj:`~nilearn.surface.SurfaceImage`
             The image giving the extracted components.
             Each 3D Nifti image or 1D SurfaceImage is a component.
 

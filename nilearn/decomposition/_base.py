@@ -274,6 +274,8 @@ def _mask_and_reduce_single(
     random_state=None,
 ):
     """Implement multiprocessing from MaskReducer."""
+    if confound is not None and not isinstance(confound, list):
+        confound = [confound]
     this_data = masker.transform(img, confound)
     this_data = np.atleast_2d(this_data)
     # Now get rid of the img as fast as possible, to free a
@@ -517,7 +519,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                 "an empty list was given."
             )
 
-        masker_type = "nii"
+        masker_type = "multi_nii"
         if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
             isinstance(x, SurfaceImage) for x in imgs
         ):
