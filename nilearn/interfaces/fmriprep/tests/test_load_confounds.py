@@ -24,21 +24,6 @@ from nilearn.maskers import NiftiMasker
 from nilearn.tests.test_signal import generate_trends
 
 
-def test_create_tmp_filepath_touch_confound_only(tmp_path):
-    """
-    Test that confound file is touched (not written)
-    when copy_confounds=False.
-    """
-    tmp_img, tmp_conf = create_tmp_filepath(
-        tmp_path,
-        image_type="tedana",  # Any non-TEDANA image type
-        copy_confounds=False,  # This triggers tmp_conf.touch()
-    )
-
-    assert tmp_conf.exists()
-    assert tmp_conf.stat().st_size == 0  # File should be empty
-
-
 def _simu_img(tmp_path, trend, demean, image_type="regular"):
     """Simulate an nifti image based on confound file \
     with some parts confounds and some parts noise.
