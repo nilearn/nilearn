@@ -7,8 +7,10 @@ from numpy.testing import assert_array_almost_equal
 from nilearn.decomposition.canica import CanICA
 from nilearn.decomposition.tests.conftest import (
     RANDOM_STATE,
+    check_decomposition_estimator,
 )
 from nilearn.image import get_data, iter_img
+from nilearn.surface.surface import get_data as get_surface_data
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
@@ -43,7 +45,6 @@ def test_canica_square_img(
         n_components=4,
         random_state=RANDOM_STATE,
         mask=decomposition_mask_img,
-        smoothing_fwhm=0.0,
         n_init=50,
     )
     canica.fit(canica_data)
@@ -67,8 +68,8 @@ def test_canica_square_img(
     assert_array_almost_equal(K_abs, 0, 1)
 
 
-@pytest.mark.parametrize("data_type", ["nifti"])
-def test_component_sign(decomposition_mask_img, canica_data):
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_component_sign(canica_data, data_type):
     """Check sign of extracted components.
 
     Regression test:
@@ -77,13 +78,14 @@ def test_component_sign(decomposition_mask_img, canica_data):
     instance by making sure that the largest value is positive.
     """
     # run CanICA many times (this is known to produce different results)
-    canica = CanICA(
-        n_components=4, random_state=RANDOM_STATE, mask=decomposition_mask_img
-    )
+    canica = CanICA(n_components=4, random_state=RANDOM_STATE)
 
     for _ in range(3):
         canica.fit(canica_data)
+
+        check_decomposition_estimator(canica, data_type)
+
         for mp in iter_img(canica.components_img_):
-            mp = get_data(mp)
+            mp = get_data(mp) if data_type == "nifti" else get_surface_data(mp)
 
             assert -mp.min() <= mp.max()

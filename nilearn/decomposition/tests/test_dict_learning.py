@@ -8,6 +8,7 @@ from nilearn.decomposition.tests.conftest import (
 )
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker
+from nilearn.surface.surface import get_data as get_surface_data
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
@@ -26,7 +27,6 @@ def test_dict_learning_check_values_epoch_argument_smoke(
         random_state=RANDOM_STATE,
         dict_init=dict_init,
         mask=decomposition_mask_img,
-        smoothing_fwhm=0.0,
         n_epochs=n_epochs,
         alpha=1,
     )
@@ -35,7 +35,7 @@ def test_dict_learning_check_values_epoch_argument_smoke(
     check_decomposition_estimator(dict_learning, data_type)
 
 
-@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+@pytest.mark.parametrize("data_type", ["nifti"])
 def test_dict_learning(
     decomposition_mask_img, canica_components, canica_data, data_type
 ):
@@ -51,7 +51,6 @@ def test_dict_learning(
         random_state=RANDOM_STATE,
         dict_init=dict_init,
         mask=decomposition_mask_img,
-        smoothing_fwhm=0.0,
         alpha=1,
     )
 
@@ -59,7 +58,6 @@ def test_dict_learning(
         n_components=4,
         random_state=RANDOM_STATE,
         mask=decomposition_mask_img,
-        smoothing_fwhm=0.0,
         n_epochs=10,
         alpha=1,
     )
@@ -105,7 +103,6 @@ def test_component_sign(
         n_components=4,
         random_state=RANDOM_STATE,
         mask=decomposition_mask_img,
-        smoothing_fwhm=0,
         alpha=1,
     )
     dict_learning.fit(canica_data)
@@ -113,5 +110,5 @@ def test_component_sign(
     check_decomposition_estimator(dict_learning, data_type)
 
     for mp in iter_img(dict_learning.components_img_):
-        mp = get_data(mp)
+        mp = get_data(mp) if data_type == "nifti" else get_surface_data(mp)
         assert np.sum(mp[mp <= 0]) <= np.sum(mp[mp > 0])

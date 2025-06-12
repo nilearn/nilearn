@@ -4,6 +4,7 @@ Utilities for masking and dimension reduction of group data
 """
 
 import glob
+import inspect
 import itertools
 import warnings
 from math import ceil
@@ -36,17 +37,30 @@ from nilearn.surface import SurfaceImage
 def _warn_ignored_surface_masker_params(estimator):
     """Warn about parameters that are ignored by SurfaceMasker.
 
+    Only raise warning if parameters are different
+    from the default value in the estimator __init__ signature.
+
     Parameters
     ----------
     estimator : _BaseDecomposition
         The estimator to check for ignored parameters.
     """
     params_to_ignore = ["mask_strategy", "target_affine", "target_shape"]
-    ignored_params = [
-        param
-        for param in params_to_ignore
-        if getattr(estimator, param, None) is not None
-    ]
+
+    tmp = dict(**inspect.signature(estimator.__init__).parameters)
+
+    ignored_params = []
+    for param in params_to_ignore:
+        if param in tmp:
+            if (
+                tmp[param].default is None
+                and getattr(estimator, param) is not None
+            ):
+                # this should catch when user passes a numpy array
+                ignored_params.append(param)
+            elif getattr(estimator, param) != tmp[param].default:
+                ignored_params.append(param)
+
     if ignored_params:
         warnings.warn(
             Template(
@@ -294,7 +308,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     Parameters
     ----------
     n_components : int, default=20
-        Number of components to extract, for each 4D-Niimage
+        Number of components to extract,
+        for each 4D-Niimage or each 2D surface image
 
     %(random_state)s
 

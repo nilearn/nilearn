@@ -11,7 +11,7 @@ from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 from nilearn.surface import PolyMesh, SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
 
-SHAPE_SURF = {"left": (30, 8), "right": (20, 7)}
+SHAPE_SURF = {"left": (15, 5), "right": (10, 4)}
 N_COMPONENTS = 4
 N_SUBJECTS = 4
 N_SAMPLES = 5
@@ -81,6 +81,31 @@ def decomposition_masker(
     if data_type == "surface":
         return SurfaceMasker(mask_img=decomposition_mask_img).fit()
     return MultiNiftiMasker(mask_img=img_3d_ones_eye).fit()
+
+
+def _decomposition_data_surface(rng, decomposition_mesh, with_activation):
+    surf_imgs = []
+    for _ in range(N_SUBJECTS):
+        data = {
+            "left": rng.standard_normal(
+                size=(
+                    decomposition_mesh.parts["left"].coordinates.shape[0],
+                    N_SAMPLES,
+                )
+            ),
+            "right": rng.standard_normal(
+                size=(
+                    decomposition_mesh.parts["right"].coordinates.shape[0],
+                    N_SAMPLES,
+                )
+            ),
+        }
+        if with_activation:
+            data["left"][2:4, :] += 10
+            data["right"][2:4, :] += 10
+        surf_imgs.append(SurfaceImage(mesh=decomposition_mesh, data=data))
+
+    return surf_imgs
 
 
 @pytest.fixture
@@ -174,34 +199,11 @@ def canica_data(
         return data_nii
 
     else:
-        data_surf = []
-        for _ in range(n_subjects):
-            tmp = np.dot(
-                rng.normal(size=(20, N_COMPONENTS)), _make_canica_components
-            )
-            tmp += 0.01 * rng.normal(size=tmp.shape)
-
-            this_data = {
-                "right": np.reshape(
-                    tmp,
-                    (
-                        decomposition_mesh.parts["right"].coordinates.shape[0],
-                        20,
-                    ),
-                ),
-                "left": np.reshape(
-                    tmp,
-                    (
-                        decomposition_mesh.parts["left"].coordinates.shape[0],
-                        20,
-                    ),
-                ),
-            }
-            data_surf.append(
-                SurfaceImage(mesh=decomposition_mesh, data=this_data)
-            )
-
-        return data_surf
+        # TODO for now we generate random data
+        # rather than data based on actual components.
+        return _decomposition_data_surface(
+            rng, decomposition_mesh, with_activation=True
+        )
 
 
 @pytest.fixture
@@ -281,6 +283,7 @@ def canica_data_single_img(canica_data) -> Nifti1Image:
 def check_decomposition_estimator(estimator, data_type):
     """Run several standard checks on decomposition estimators."""
     assert estimator.mask_img_ == estimator.masker_.mask_img_
+    assert estimator.components_.shape[0] == estimator.n_components
 
     if data_type == "nifti":
         assert isinstance(estimator.mask_img_, Nifti1Image)
@@ -292,6 +295,6 @@ def check_decomposition_estimator(estimator, data_type):
         assert isinstance(estimator.mask_img_, SurfaceImage)
         assert isinstance(estimator.components_img_, SurfaceImage)
         assert isinstance(estimator.masker_, SurfaceMasker)
-        check_shape = (estimator.mask_img_.shape[-1], estimator.n_components)
+        check_shape = (estimator.mask_img_.shape[0], estimator.n_components)
 
     assert estimator.components_img_.shape == check_shape
