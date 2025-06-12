@@ -491,15 +491,19 @@ def _load_single_confounds_file(
     )
 
     if flag_tedana:
-        all_t_c = {}
+        all_tedana_confounds = {}
         for tedana_conf in ["mixing", "status_table"]:
-            all_t_c[tedana_conf] = load_confounds_file_as_dataframe(
-                next(file for file in confounds_file if tedana_conf in file),
-                flag_tedana=flag_tedana,
+            all_tedana_confounds[tedana_conf] = (
+                load_confounds_file_as_dataframe(
+                    next(
+                        file for file in confounds_file if tedana_conf in file
+                    ),
+                    flag_tedana=flag_tedana,
+                )
             )
 
-        rejected = all_t_c["status_table"][
-            all_t_c["status_table"].iloc[:, -1] == "rejected"
+        rejected = all_tedana_confounds["status_table"][
+            all_tedana_confounds["status_table"].iloc[:, -1] == "rejected"
         ]
 
         # normalize rejected component names: ICA_04 -> ICA_4
@@ -514,7 +518,7 @@ def _load_single_confounds_file(
         )
 
         # normalize column names in the mixing file
-        mixing = all_t_c["mixing"]
+        mixing = all_tedana_confounds["mixing"]
         mixing.columns = [
             re.sub(r"ICA_0*(\d+)$", lambda m: f"ICA_{int(m.group(1))}", col)
             for col in mixing.columns
