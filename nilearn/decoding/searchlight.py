@@ -55,7 +55,7 @@ def search_light(
         object to use to fit the data
 
     A : scipy sparse matrix.
-        adjacency matrix. Defines for each feature the neigbhoring features
+        adjacency matrix. Defines for each feature the neighboring features
         following a given structure of the data.
 
     groups : array-like, default=None

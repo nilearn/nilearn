@@ -183,7 +183,7 @@ def iter_check_niimg(
                 if resample_to_first_img:
                     warnings.warn(
                         "Affine is different across subjects."
-                        " Realignement on first subject "
+                        " Realignment on first subject "
                         "affine forced",
                         stacklevel=find_stack_level(),
                     )

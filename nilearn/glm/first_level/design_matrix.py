@@ -229,7 +229,7 @@ def _convolve_regressors(
         if 'spm + derivative + dispersion' or
             'glover + derivative + dispersion',
             a third name is used, i.e. '#name_dispersion'
-        if 'fir', the regressos are numbered according to '#name_#delay'
+        if 'fir', the regressors are numbered according to '#name_#delay'
 
     """
     check_params(locals())

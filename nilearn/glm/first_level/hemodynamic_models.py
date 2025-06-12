@@ -1,6 +1,6 @@
 """Hemodynamic response function (hrf) specification.
 
-Here we provide for SPM, Glover hrfs and finite timpulse response (FIR) models.
+Here we provide for SPM, Glover hrfs and finite impulse response (FIR) models.
 This module closely follows SPM implementation
 """
 

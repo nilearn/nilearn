@@ -864,7 +864,7 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
 
 
 @pytest.mark.parametrize("prefix", ["", "sub-01", "foo_"])
-def test_save_glm_to_bids_infer_filenames_overide(tmp_path, prefix):
+def test_save_glm_to_bids_infer_filenames_override(tmp_path, prefix):
     """Check that output filenames is not inferred when prefix is passed."""
     n_sub = 1
 

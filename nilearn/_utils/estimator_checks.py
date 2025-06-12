@@ -944,7 +944,7 @@ def check_image_estimator_requires_y_none(estimator) -> None:
     try:
         estimator.fit(input_img, None)
     except ValueError as ve:
-        if not any(msg in str(ve) for msg in expected_err_msgs):
+        if all(msg not in str(ve) for msg in expected_err_msgs):
             raise ve
 
 
@@ -1661,10 +1661,10 @@ def check_masker_smooth(estimator):
     """
     assert hasattr(estimator, "smoothing_fwhm")
 
-    n_sample = 1
     if accept_niimg_input(estimator):
         imgs = _img_3d_rand()
     else:
+        n_sample = 1
         imgs = _make_surface_img(n_sample)
 
     signal = estimator.fit_transform(imgs)
@@ -1826,8 +1826,8 @@ def check_masker_transform_resampling(estimator) -> None:
             # no resampling warning at fit time
             with warnings.catch_warnings(record=True) as warning_list:
                 estimator.fit(imgs)
-            assert not any(
-                "at transform time" in str(x.message) for x in warning_list
+            assert all(
+                "at transform time" not in str(x.message) for x in warning_list
             )
 
             signals = _rng().random((n_sample, estimator.n_elements_))
@@ -1841,8 +1841,8 @@ def check_masker_transform_resampling(estimator) -> None:
             # no resampling warning when using same imgs as for fit()
             with warnings.catch_warnings(record=True) as warning_list:
                 estimator.transform(imgs)
-            assert not any(
-                "at transform time" in str(x.message) for x in warning_list
+            assert all(
+                "at transform time" not in str(x.message) for x in warning_list
             )
 
             # same result before and after running transform()
@@ -1861,8 +1861,9 @@ def check_masker_transform_resampling(estimator) -> None:
                     "at transform time" in str(x.message) for x in warning_list
                 )
             else:
-                assert not any(
-                    "at transform time" in str(x.message) for x in warning_list
+                assert all(
+                    "at transform time" not in str(x.message)
+                    for x in warning_list
                 )
 
 

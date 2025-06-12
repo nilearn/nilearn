@@ -191,7 +191,7 @@ def test_find_cut_slices(affine_eye, direction):
     cuts = find_cut_slices(img, direction=direction, n_cuts=n_cuts, spacing=2)
 
 
-def test_find_cut_slices_directrion_z():
+def test_find_cut_slices_direction_z():
     """Test find_cut_slices in the z direction.
 
     Test that we are not getting cuts that are separated by
