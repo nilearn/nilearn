@@ -15,6 +15,7 @@ from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.decomposition.canica import CanICA
 from nilearn.image import get_data, iter_img
+from nilearn.surface import SurfaceImage
 
 ESTIMATORS_TO_CHECK = [CanICA()]
 
@@ -75,7 +76,7 @@ def test_transform_and_fit_errors(decomposition_mask_img):
     # error when empty list of provided.
     with pytest.raises(
         ValueError,
-        match="Need one or more Niimg-like objects as input, "
+        match="Need one or more Niimg-like or SurfaceImage objects as input, "
         "an empty list was given.",
     ):
         canica.fit([])
@@ -134,13 +135,17 @@ def test_canica_square_img(
     assert_array_almost_equal(K_abs, 0, 1)
 
 
-@pytest.mark.parametrize("data_type", ["nifti"])
-def test_canica_single_subject_smoke(canica_data_single_img):
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_canica_single_subject_smoke(data_type, canica_data_single_img):
     """Check that canica runs on a single-subject dataset."""
     canica = CanICA(
         n_components=4, random_state=42, smoothing_fwhm=0.0, n_init=1
     )
     canica.fit(canica_data_single_img)
+    if data_type == "nifti":
+        assert isinstance(canica.mask_img_, Nifti1Image)
+    elif data_type == "surface":
+        assert isinstance(canica.mask_img_, SurfaceImage)
 
 
 @pytest.mark.parametrize("data_type", ["nifti"])
@@ -165,9 +170,12 @@ def test_component_sign(decomposition_mask_img, canica_data):
             assert -mp.min() <= mp.max()
 
 
-@pytest.mark.parametrize("data_type", ["nifti"])
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_masker_attributes_with_fit(
-    canica_data_single_img, decomposition_mask_img, decomposition_masker
+    data_type,
+    canica_data_single_img,
+    decomposition_mask_img,
+    decomposition_masker,
 ):
     """Test mask_img_ properly set when passing mask_img or masker."""
     # Passing mask_img
@@ -175,6 +183,11 @@ def test_masker_attributes_with_fit(
         n_components=3, mask=decomposition_mask_img, random_state=0
     )
     canica.fit(canica_data_single_img)
+
+    if data_type == "nifti":
+        assert isinstance(canica.mask_img_, Nifti1Image)
+    else:
+        assert isinstance(canica.mask_img_, SurfaceImage)
 
     assert canica.mask_img_ == canica.masker_.mask_img_
 
@@ -199,8 +212,10 @@ def test_masker_attributes_passing_masker_arguments_to_estimator(
     canica.fit(canica_data_single_img)
 
 
-@pytest.mark.parametrize("data_type", ["nifti"])
-def test_components_img(canica_data_single_img, decomposition_mask_img):
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_components_img(
+    data_type, canica_data_single_img, decomposition_mask_img
+):
     """Check content components_img_ after fitting."""
     n_components = 3
 
@@ -208,7 +223,10 @@ def test_components_img(canica_data_single_img, decomposition_mask_img):
     canica.fit(canica_data_single_img)
     components_img = canica.components_img_
 
-    assert isinstance(components_img, Nifti1Image)
+    if data_type == "nifti":
+        assert isinstance(components_img, Nifti1Image)
+    else:
+        assert isinstance(components_img, SurfaceImage)
 
     check_shape = canica_data_single_img.shape[:3] + (n_components,)
 
@@ -256,9 +274,9 @@ def test_with_globbing_patterns_with_single_subject_path(
     canica.fit(tmp_file)
 
 
-@pytest.mark.parametrize("data_type", ["nifti"])
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_with_globbing_patterns_with_multi_subjects(
-    canica_data, decomposition_mask_img, tmp_path
+    data_type, canica_data, decomposition_mask_img, tmp_path
 ):
     """Test CanICA with data on disk from multiple subject."""
     n_components = 3
@@ -273,10 +291,13 @@ def test_with_globbing_patterns_with_multi_subjects(
     canica.fit(img)
     components_img = canica.components_img_
 
-    assert isinstance(components_img, Nifti1Image)
-
-    # n_components = 3
-    check_shape = canica_data[0].shape[:3] + (3,)
+    n_components = 3
+    if data_type == "nifti":
+        assert isinstance(components_img, Nifti1Image)
+        check_shape = (*canica_data[0].shape[:3], n_components)
+    else:
+        assert isinstance(components_img, SurfaceImage)
+        check_shape = (*canica_data[0].shape[0], n_components)
 
     assert components_img.shape, check_shape
 

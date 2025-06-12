@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn.conftest import _affine_eye, _rng
+from nilearn.conftest import _affine_eye
 from nilearn.maskers import MultiNiftiMasker, SurfaceMasker
 from nilearn.surface import PolyMesh, SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
@@ -135,27 +135,31 @@ def decomposition_data_single_img(
     return decomposition_data[0]
 
 
-def _make_data_from_components(
-    components: np.ndarray,
-    shape: tuple[int, int, int],
+@pytest.fixture
+def canica_data(
+    rng,
+    _make_canica_components: np.ndarray,
+    shape_3d_large,
+    decomposition_mesh,
     data_type: str,
     n_subjects=N_SUBJECTS,
 ) -> Union[list[Nifti1Image], list[SurfaceImage]]:
-    rng = _rng()
-
-    data = []
+    """Create a "multi-subject" dataset."""
     if data_type == "nifti":
+        data_nii = []
         affine = _affine_eye()
 
-        background = -0.01 * rng.normal(size=shape) - 2
+        background = -0.01 * rng.normal(size=shape_3d_large) - 2
         background = background[..., np.newaxis]
 
         for _ in range(n_subjects):
-            this_data = np.dot(rng.normal(size=(40, N_COMPONENTS)), components)
+            this_data = np.dot(
+                rng.normal(size=(40, N_COMPONENTS)), _make_canica_components
+            )
             this_data += 0.01 * rng.normal(size=this_data.shape)
 
             # Get back into 3D for CanICA
-            this_data = np.reshape(this_data, (40, *shape))
+            this_data = np.reshape(this_data, (40, *shape_3d_large))
             this_data = np.rollaxis(this_data, 0, N_COMPONENTS)
 
             # Put the border of the image to zero, to mimic a brain image
@@ -164,42 +168,86 @@ def _make_data_from_components(
             this_data[:, :5] = background[:, :5]
             this_data[:, -5:] = background[:, -5:]
 
-            data.append(Nifti1Image(this_data, affine))
+            data_nii.append(Nifti1Image(this_data, affine))
 
-    elif data_type == "surface":
-        mesh = _decomposition_mesh()
+        return data_nii
 
-        tmp = np.dot(rng.normal(size=(40, N_COMPONENTS)), components)
-        tmp += 0.01 * rng.normal(size=tmp.shape)
-
-        this_data = {
-            "left": np.reshape(tmp, (40, *mesh.parts["left"].shape)),
-            "right": np.reshape(tmp, (40, *mesh.parts["right"].shape)),
-        }
-
+    else:
+        data_surf = []
         for _ in range(n_subjects):
-            data.append(SurfaceImage(mesh=mesh, data=this_data))
+            tmp = np.dot(
+                rng.normal(size=(20, N_COMPONENTS)), _make_canica_components
+            )
+            tmp += 0.01 * rng.normal(size=tmp.shape)
 
-    return data
+            this_data = {
+                "right": np.reshape(
+                    tmp,
+                    (
+                        decomposition_mesh.parts["right"].coordinates.shape[0],
+                        20,
+                    ),
+                ),
+                "left": np.reshape(
+                    tmp,
+                    (
+                        decomposition_mesh.parts["left"].coordinates.shape[0],
+                        20,
+                    ),
+                ),
+            }
+            data_surf.append(
+                SurfaceImage(mesh=decomposition_mesh, data=this_data)
+            )
+
+        return data_surf
 
 
-def _make_canica_components(shape: tuple[int, ...]) -> np.ndarray:
-    """Create 4 components."""
-    component1 = np.zeros(shape)
-    component1[:5, :10] = 1
-    component1[5:10, :10] = -1
+@pytest.fixture
+def _make_canica_components(
+    decomposition_mesh, shape_3d_large, data_type
+) -> np.ndarray:
+    """Create 4 components.
 
-    component2 = np.zeros(shape)
-    component2[:5, -10:] = 1
-    component2[5:10, -10:] = -1
+    3D images unraveled for volume, 2D for surface
+    """
+    if data_type == "nifti":
+        shape = shape_3d_large
 
-    component3 = np.zeros(shape)
-    component3[-5:, -10:] = 1
-    component3[-10:-5, -10:] = -1
+        component1 = np.zeros(shape)
+        component1[:5, :10] = 1
+        component1[5:10, :10] = -1
 
-    component4 = np.zeros(shape)
-    component4[-5:, :10] = 1
-    component4[-10:-5, :10] = -1
+        component2 = np.zeros(shape)
+        component2[:5, -10:] = 1
+        component2[5:10, -10:] = -1
+
+        component3 = np.zeros(shape)
+        component3[-5:, -10:] = 1
+        component3[-10:-5, -10:] = -1
+
+        component4 = np.zeros(shape)
+        component4[-5:, :10] = 1
+        component4[-10:-5, :10] = -1
+
+    else:
+        shape = (decomposition_mesh.n_vertices, 1)
+
+        component1 = np.zeros(shape)
+        component1[:5] = 1
+        component1[5:10] = -1
+
+        component2 = np.zeros(shape)
+        component2[:5] = 1
+        component2[5:10] = -1
+
+        component3 = np.zeros(shape)
+        component3[-5:] = 1
+        component3[-10:-5] = -1
+
+        component4 = np.zeros(shape)
+        component4[-5:] = 1
+        component4[-10:-5] = -1
 
     return np.vstack(
         (
@@ -212,25 +260,15 @@ def _make_canica_components(shape: tuple[int, ...]) -> np.ndarray:
 
 
 @pytest.fixture
-def canica_components(rng, shape_3d_large, data_type) -> np.ndarray:
-    """Create noisy non positive data."""
-    components = _make_canica_components(shape_3d_large)
+def canica_components(rng, _make_canica_components) -> np.ndarray:
+    """Create noisy non-positive components data."""
+    components = _make_canica_components
     components[rng.standard_normal(components.shape) > 0.8] *= -2.0
+
     for mp in components:
         assert mp.max() <= -mp.min()  # Goal met ?
+
     return components
-
-
-@pytest.fixture
-def canica_data(
-    shape_3d_large, data_type: str, n_subjects=N_SUBJECTS
-) -> Union[list[Nifti1Image], list[SurfaceImage]]:
-    """Create a "multi-subject" dataset."""
-    components = _make_canica_components(shape_3d_large)
-    data = _make_data_from_components(
-        components, shape_3d_large, data_type, n_subjects
-    )
-    return data
 
 
 @pytest.fixture

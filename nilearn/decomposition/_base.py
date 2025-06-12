@@ -497,7 +497,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             # Common error that arises from a null glob. Capture
             # it early and raise a helpful message
             raise ValueError(
-                "Need one or more Niimg-like objects as input, "
+                "Need one or more Niimg-like or SurfaceImage "
+                "objects as input, "
                 "an empty list was given."
             )
 

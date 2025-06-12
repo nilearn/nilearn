@@ -13,6 +13,7 @@ from nilearn._utils.testing import write_imgs_to_path
 from nilearn.decomposition.dict_learning import DictLearning
 from nilearn.image import get_data, iter_img
 from nilearn.maskers import NiftiMasker
+from nilearn.surface import SurfaceImage
 
 ESTIMATORS_TO_CHECK = [DictLearning()]
 
@@ -93,7 +94,7 @@ def test_dict_learning_check_values_epoch_argument_smoke(
     dict_learning.fit(canica_data)
 
 
-@pytest.mark.parametrize("data_type", ["nifti"])
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_dict_learning(
     decomposition_mask_img,
     canica_components,
@@ -178,7 +179,7 @@ def test_component_sign(
 def test_masker_attributes_with_fit(
     canica_data_single_img,
     decomposition_mask_img,
-    data_type,  # noqa: ARG001
+    data_type,
 ):
     """Test base module at sub-class."""
     # Passing mask_img
@@ -186,6 +187,11 @@ def test_masker_attributes_with_fit(
         n_components=3, mask=decomposition_mask_img, random_state=0
     )
     dict_learning.fit(canica_data_single_img)
+
+    if data_type == "nifti":
+        assert isinstance(dict_learning.mask_img_, Nifti1Image)
+    elif data_type == "surface":
+        assert isinstance(dict_learning.mask_img_, SurfaceImage)
 
     assert dict_learning.mask_img_ == dict_learning.masker_.mask_img_
 
@@ -207,8 +213,8 @@ def test_empty_data_to_fit_error(
 
     with pytest.raises(
         ValueError,
-        match="Need one or more Niimg-like objects "
-        "as input, an empty list was given.",
+        match="Need one or more Niimg-like or SurfaceImage objects as input, "
+        "an empty list was given.",
     ):
         dict_learning.fit([])
 
@@ -227,7 +233,7 @@ def test_passing_masker_arguments_to_estimator(
     dict_learning.fit(canica_data_single_img)
 
 
-@pytest.mark.parametrize("data_type", ["nifti"])
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_components_img(
     canica_data_single_img,
     decomposition_mask_img,
