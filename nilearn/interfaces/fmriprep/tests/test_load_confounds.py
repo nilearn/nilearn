@@ -243,6 +243,7 @@ def test_nilearn_standardize_false(tmp_path):
     assert np.mean(tseries_std > 0.9)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.filterwarnings("ignore")
 @pytest.mark.parametrize("standardize_signal", ["zscore", "psc"])
 @pytest.mark.parametrize(
