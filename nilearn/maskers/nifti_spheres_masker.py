@@ -556,7 +556,7 @@ class NiftiSpheresMasker(BaseMasker):
             "warning_message": None,
         }
 
-        self.sanitize_cleaning_parameters()
+        self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         error = (
