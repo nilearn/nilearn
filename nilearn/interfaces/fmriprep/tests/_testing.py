@@ -70,8 +70,8 @@ def get_testdata_path(
             return [
                 path_data / filename
                 for filename in [
-                    "test_desc-ICA_mixing.tsv",
-                    "test_desc-ICA_status_table.tsv",
+                    f"{suffix}_desc-ICA_mixing.tsv",
+                    f"{suffix}_desc-ICA_status_table.tsv",
                 ]
             ]
         return [
@@ -116,9 +116,9 @@ def create_tmp_filepath(
 
     if "tedana" in image_type:
         # confound files
-        for suf in ["mixing", "status_table"]:
+        for suffix in ["mixing", "status_table"]:
             bids_fields["entities"]["desc"] = "ICA"
-            bids_fields["suffix"] = suf
+            bids_fields["suffix"] = suffix
             bids_fields["extension"] = "tsv"
 
             confounds_filename = create_bids_filename(
@@ -131,10 +131,10 @@ def create_tmp_filepath(
                     tedana=True, fmriprep_version=fmriprep_version
                 )
                 for n, i_conf in enumerate(conf):
-                    if n == 0 and suf == "mixing":
+                    if n == 0 and suffix == "mixing":
                         # mixing file
                         i_conf.to_csv(tmp_conf, sep="\t", index=False)
-                    if n == 1 and suf == "status_table":
+                    if n == 1 and suffix == "status_table":
                         # status_table file
                         i_conf.to_csv(tmp_conf, sep="\t", index=False)
             else:
