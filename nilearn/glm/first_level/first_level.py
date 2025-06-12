@@ -303,26 +303,56 @@ class FirstLevelModel(BaseGLM):
         matrix. This parameter is also passed to :func:`nilearn.signal.clean`.
         Please see the related documentation for details.
 
+        .. warning::
+
+                    This parameter is ignored by fit() if design matrices
+                    are passed at fit time.
+
     slice_time_ref : :obj:`float`, default=0.0
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs.
         It is expressed as a fraction of the ``t_r`` (repetition time),
         so it can have values between 0. and 1.
 
+        .. warning::
+
+                    This parameter is ignored by fit() if design matrices
+                    are passed at fit time.
+
     %(hrf_model)s
         Default='glover'.
+
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
 
     drift_model : :obj:`str`, default='cosine'
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
 
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
+
     high_pass : :obj:`float`, default=0.01
         This parameter specifies the cut frequency of the high-pass filter in
         Hz for the design matrices. Used only if drift_model is 'cosine'.
 
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
+
     drift_order : :obj:`int`, default=1
         This parameter specifies the order of the drift model (in case it is
         polynomial) for the design matrices.
+
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
 
     fir_delays : array of shape(n_onsets), :obj:`list` or None, default=None
         Will be set to ``[0]`` if ``None`` is passed.
@@ -330,10 +360,20 @@ class FirstLevelModel(BaseGLM):
         yields the array of delays used in the :term:`FIR` model,
         in scans.
 
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
+
     min_onset : :obj:`float`, default=-24
         This parameter specifies the minimal onset relative to the design
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
+
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
 
     mask_img : Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
              :obj:`~nilearn.maskers.SurfaceMasker`, False or \
@@ -508,13 +548,14 @@ class FirstLevelModel(BaseGLM):
             # check with the default of __init__
             non_default_value = []
             attributes_used_in_des_mat_generation = [
-                "slice_time_ref",
-                "t_r",
-                "hrf_model",
                 "drift_model",
                 "drift_order",
                 "fir_delays",
+                "high_pass",
+                "hrf_model",
                 "min_onset",
+                "slice_time_ref",
+                "t_r",
             ]
             tmp = dict(**inspect.signature(self.__init__).parameters)
             non_default_value.extend(
@@ -760,6 +801,13 @@ class FirstLevelModel(BaseGLM):
         2. do a masker job: fMRI_data -> Y
         3. fit regression to (Y, X)
 
+        .. warning::
+
+            If design_matrices are passed to fit(),
+            then the following attributes are ignored:
+            ``drift_model``, ``drift_order``, ``fir_delays``, ``high_pass``,
+            ``hrf_model``, ``min_onset``, ``slice_time_ref``, ``t_r``.
+
         Parameters
         ----------
         run_imgs : Niimg-like object, \
@@ -801,6 +849,10 @@ class FirstLevelModel(BaseGLM):
             See :func:`~nilearn.glm.first_level.make_first_level_design_matrix`
             for details on the required content of events files.
 
+            .. warning::
+
+                This parameter is ignored if design_matrices are passed.
+
         confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
                     :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
                     :class:`numpy.ndarray` or :obj:`str`, default=None
@@ -810,6 +862,10 @@ class FirstLevelModel(BaseGLM):
             respective run_img.
             Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
+
+            .. warning::
+
+                This parameter is ignored if design_matrices are passed.
 
         sample_masks : array_like, or :obj:`list` of array_like, default=None
             shape of array: (number of scans - number of volumes remove)
