@@ -13,14 +13,21 @@ from nilearn._utils.estimator_checks import (
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.decomposition import CanICA, DictLearning
+from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.decomposition.tests.conftest import (
+    N_SAMPLES,
     N_SUBJECTS,
     RANDOM_STATE,
     check_decomposition_estimator,
 )
 
-ESTIMATORS_TO_CHECK = [_MultiPCA(), DictLearning(), CanICA()]
+ESTIMATORS_TO_CHECK = [
+    _MultiPCA(),
+    DictLearning(),
+    CanICA(),
+    _BaseDecomposition(),
+]
 
 if SKLEARN_LT_1_6:
 
@@ -173,7 +180,7 @@ def test_with_confounds(data_type, decomposition_data, estimator):
 
     Output should be different with and without confounds.
     """
-    confounds = [np.arange(10).reshape(5, 2)] * N_SUBJECTS
+    confounds = [np.arange(N_SAMPLES * 2).reshape(N_SAMPLES, 2)] * N_SUBJECTS
 
     est = estimator(n_components=3, random_state=RANDOM_STATE)
 

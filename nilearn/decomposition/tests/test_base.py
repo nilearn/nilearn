@@ -2,64 +2,14 @@ import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
 from scipy import linalg
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import (
-    check_estimator,
-    nilearn_check_estimator,
-    return_expected_failed_checks,
-)
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _rng
-from nilearn.decomposition._base import (
-    _BaseDecomposition,
-    _fast_svd,
-    _mask_and_reduce,
-)
+from nilearn.decomposition._base import _fast_svd, _mask_and_reduce
 from nilearn.decomposition.tests.conftest import (
+    N_SAMPLES,
     N_SUBJECTS,
     RANDOM_STATE,
 )
-
-ESTIMATORS_TO_CHECK = [_BaseDecomposition()]
-
-if SKLEARN_LT_1_6:
-
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK),
-    )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-    @pytest.mark.xfail(reason="invalid checks should fail")
-    @pytest.mark.parametrize(
-        "estimator, check, name",
-        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
-    )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-else:
-
-    @parametrize_with_checks(
-        estimators=ESTIMATORS_TO_CHECK,
-        expected_failed_checks=return_expected_failed_checks,
-    )
-    def test_check_estimator_sklearn(estimator, check):
-        """Check compliance with sklearn estimators."""
-        check(estimator)
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
-)
-def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
-    """Check compliance with nilearn estimators rules."""
-    check(estimator)
 
 
 # We need to use n_features > 500 to trigger the randomized_svd
@@ -94,7 +44,7 @@ def test_fast_svd(n_features):
 @pytest.mark.parametrize(
     "n_components,reduction_ratio,expected_shape_0",
     [
-        (None, "auto", N_SUBJECTS * 5),
+        (None, "auto", N_SUBJECTS * N_SAMPLES),
         (3, "auto", N_SUBJECTS * 3),
         (None, 0.4, N_SUBJECTS * 2),
     ],
@@ -107,7 +57,7 @@ def test_mask_reducer_multiple_image(
     decomposition_masker,
     decomposition_data,
 ):
-    """Mask and reduce 4D images with several values of input arguments."""
+    """Mask and reduce images with several values of input arguments."""
     data = _mask_and_reduce(
         masker=decomposition_masker,
         imgs=decomposition_data,
@@ -139,7 +89,7 @@ def test_mask_reducer_single_image_same_with_multiple_jobs(
     data_single = _mask_and_reduce(
         masker=decomposition_masker,
         imgs=decomposition_data_single_img,
-        n_components=3,
+        n_components=n_components,
     )
     if data_type == "nifti":
         assert data_single.shape == (

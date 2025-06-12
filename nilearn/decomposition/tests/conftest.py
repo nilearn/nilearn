@@ -12,10 +12,13 @@ from nilearn.surface import PolyMesh, SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
 
 SHAPE_SURF = {"left": (15, 5), "right": (10, 4)}
-N_COMPONENTS = 4
-N_SUBJECTS = 4
-N_SAMPLES = 5
 RANDOM_STATE = 42
+N_SUBJECTS = 3
+# TODO
+# some fixtures or tests start breaking if some of those values below
+# are changed
+N_SAMPLES = 5
+N_COMPONENTS = 4
 
 
 def _decomposition_mesh() -> PolyMesh:
