@@ -68,6 +68,7 @@ def test_canica_square_img(
     assert_array_almost_equal(K_abs, 0, 1)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_component_sign(canica_data, data_type):
     """Check sign of extracted components.
