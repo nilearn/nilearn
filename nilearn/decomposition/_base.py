@@ -153,12 +153,12 @@ def _mask_and_reduce(
 
     Parameters
     ----------
-    masker : NiftiMasker or MultiNiftiMasker or
-    :obj:`~nilearn.maskers.SurfaceMasker`
+    masker : NiftiMasker or MultiNiftiMasker or \
+        :obj:`~nilearn.maskers.SurfaceMasker`
         Instance used to mask provided data.
 
-    imgs : list of 4D Niimg-like objects or list of
-    :obj:`~nilearn.surface.SurfaceImage`
+    imgs : list of 4D Niimg-like objects or list of \
+        :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
         List of subject data to mask, reduce and stack.
 

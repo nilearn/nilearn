@@ -181,8 +181,7 @@ class DictLearning(_BaseDecomposition):
         memory=None,
         memory_level=0,
     ):
-        _BaseDecomposition.__init__(
-            self,
+        super().__init__(
             n_components=n_components,
             random_state=random_state,
             mask=mask,
