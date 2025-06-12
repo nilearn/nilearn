@@ -7,6 +7,7 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 
 from __future__ import annotations
 
+import inspect
 import csv
 import time
 from collections.abc import Iterable
@@ -483,15 +484,39 @@ class FirstLevelModel(BaseGLM):
         design_matrices,
     ):
         """Run input validation and ensure inputs are compatible."""
-        # Raise a warning if both design_matrices and confounds are provided
-        if design_matrices is not None and (
-            confounds is not None or events is not None
-        ):
-            warn(
-                "If design matrices are supplied, "
-                "confounds and events will be ignored.",
-                stacklevel=find_stack_level(),
-            )
+        # If design_matrices is provided,
+        # throw warning for the attributes or parameters
+        # that were provided at init or fit time
+        # but will be ignored
+        # because they will not be used to generate a design matrix.
+        if design_matrices is not None:
+            non_default_value = []
+            if confounds is not None:
+                non_default_value.append("confounds")
+            if events is not None:
+                non_default_value.append("events")
+
+        #     warn(
+        #         "If design matrices are supplied, "
+        #         "confounds and events will be ignored.",
+        #         stacklevel=find_stack_level(),
+        #     )
+
+            # check with the default of __init__
+            attributes_used_in_des_mat_generation = ["slice_time_ref",
+            "t_r",
+            "hrf_model",
+            "drift_model",
+            "drift_order",
+            "fir_delays",
+            "min_onset",
+            ]
+            tmp = dict(**inspect.signature(self.__init__).parameters)
+            for k in attributes_used_in_des_mat_generation:
+                if getattr(self, k) != tmp[k].default:
+            
+            
+
 
         if events is not None:
             _check_events_file_uses_tab_separators(events_files=events)
