@@ -86,7 +86,9 @@ def decomposition_masker(
     return MultiNiftiMasker(mask_img=img_3d_ones_eye).fit()
 
 
-def _decomposition_data_surface(rng, decomposition_mesh, with_activation):
+def _decomposition_data_surface(
+    rng, decomposition_mesh, with_activation
+) -> list[SurfaceImage]:
     surf_imgs = []
     for _ in range(N_SUBJECTS):
         data = {
@@ -122,28 +124,9 @@ def decomposition_data(
 ) -> Union[list[SurfaceImage], list[Nifti1Image]]:
     """Create "multi-subject" dataset with fake activation."""
     if data_type == "surface":
-        surf_imgs = []
-        for _ in range(N_SUBJECTS):
-            data = {
-                "left": rng.standard_normal(
-                    size=(
-                        decomposition_mesh.parts["left"].coordinates.shape[0],
-                        N_SAMPLES,
-                    )
-                ),
-                "right": rng.standard_normal(
-                    size=(
-                        decomposition_mesh.parts["right"].coordinates.shape[0],
-                        N_SAMPLES,
-                    )
-                ),
-            }
-            if with_activation:
-                data["left"][2:4, :] += 10
-                data["right"][2:4, :] += 10
-            surf_imgs.append(SurfaceImage(mesh=decomposition_mesh, data=data))
-
-        return surf_imgs
+        return _decomposition_data_surface(
+            rng, decomposition_mesh, with_activation
+        )
 
     nii_imgs = []
     shape = (*shape_3d_large, N_SAMPLES)
@@ -183,12 +166,12 @@ def canica_data(
 
         for _ in range(n_subjects):
             this_data = np.dot(
-                rng.normal(size=(40, N_COMPONENTS)), _make_canica_components
+                rng.normal(size=(11, N_COMPONENTS)), _make_canica_components
             )
             this_data += 0.01 * rng.normal(size=this_data.shape)
 
             # Get back into 3D for CanICA
-            this_data = np.reshape(this_data, (40, *shape_3d_large))
+            this_data = np.reshape(this_data, (11, *shape_3d_large))
             this_data = np.rollaxis(this_data, 0, N_COMPONENTS)
 
             # Put the border of the image to zero, to mimic a brain image
