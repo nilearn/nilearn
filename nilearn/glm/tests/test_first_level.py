@@ -845,11 +845,7 @@ def test_fmri_inputs_errors(shape_4d_default):
 
 @pytest.mark.parametrize(
     "to_ignore",
-    [
-        {"slice_time_ref": 0.5},
-        {"t_r": 2},
-        {"hrf_model": "fir"},
-    ],
+    [{"slice_time_ref": 0.5}, {"t_r": 2}, {"hrf_model": "fir"}],
 )
 def test_parameter_attributes_ignored_with_design_matrix(
     shape_4d_default, to_ignore
