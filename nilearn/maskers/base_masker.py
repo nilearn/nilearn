@@ -479,7 +479,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         raise NotImplementedError()
 
     def _sanitize_cleaning_parameters(self):
-        """Make sure that clarning parameters are passed via clean_args.
+        """Make sure that cleaning parameters are passed via clean_args.
 
         TODO remove when bumping to nilearn >0.13
         """
