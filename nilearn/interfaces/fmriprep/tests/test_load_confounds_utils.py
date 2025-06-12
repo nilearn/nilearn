@@ -33,17 +33,19 @@ def test_sanitize_confounds(inputs, flag):
 
 
 @pytest.mark.parametrize(
-    "flag,keyword",
+    "flag,keyword,tedana_keyword",
     [
-        ("1.2.x", "_desc-confounds_regressors"),
-        ("1.4.x", "_desc-confounds_timeseries"),
-        ("21.x.x", "21xx"),
+        ("1.2.x", "_desc-confounds_regressors", "_desc-ICA_mixing"),
+        ("1.4.x", "_desc-confounds_timeseries", "_desc-ICA_status_table"),
+        ("21.x.x", "21xx", "missing"),
+        ("21.x.x", "21xx", "invalid_columns"),
     ],
 )
 @pytest.mark.parametrize(
-    "image_type", ["regular", "native", "res", "cifti", "den", "part", "gifti"]
+    "image_type",
+    ["regular", "native", "res", "cifti", "den", "part", "gifti", "tedana"],
 )
-def test_get_file_name(tmp_path, flag, keyword, image_type):
+def test_get_file_name(tmp_path, flag, keyword, tedana_keyword, image_type):
     """Test _get_file_name."""
     if image_type == "part":
         kwargs = {
@@ -65,46 +67,51 @@ def test_get_file_name(tmp_path, flag, keyword, image_type):
         fmriprep_version=flag,
         **kwargs,
     )
+    # If image_type is "tedana", we expect the keyword to be different
+    flag_tedana = False
+    if image_type == "tedana":
+        flag_tedana = True
+        keyword = tedana_keyword
 
-    conf = _get_file_name(img)
-    assert keyword in conf
+    # if flag_tedana and tedana_keyword is missing we test raise error
+    if flag_tedana and tedana_keyword == "missing":
+        (
+            tmp_path
+            / f"sub-{flag.replace('.', '')}_task-test_desc-ICA_mixing.tsv"
+        ).unlink(missing_ok=True)
+        with pytest.raises(ValueError, match="expected 2 for TEDANA"):
+            _get_file_name(img, flag_tedana=flag_tedana)
+        return
 
+    # if flag_tedana and tedana_keyword is invalid_columns we test
+    # raise error
+    if flag_tedana and tedana_keyword == "invalid_columns":
+        # create a fake confound file with invalid TEDANA headers
+        fake_confounds = pd.DataFrame(
+            {
+                "junk_col1": [0.1, 0.2],
+                "junk_col2": [1, 0],
+            }
+        )
+        conf_file = (
+            tmp_path / f"sub-{flag.replace('.', '')}"
+            "_task-test_desc-ICA_mixing.tsv"
+        )
+        fake_confounds.to_csv(
+            conf_file,
+            sep="\t",
+            index=False,
+        )
+        with pytest.raises(
+            ValueError,
+            match="The confound file does not contain the expected columns",
+        ):
+            load_confounds_file_as_dataframe(str(conf_file), flag_tedana=True)
+        return
 
-def test_get_file_name_raises_on_invalid_tedana_confounds(tmp_path):
-    """
-    Test that _get_file_name raises
-    when TEDANA confound file count is not 2.
-    """
-    func_file = tmp_path / "sub-01_task-rest_desc-optcom_bold.nii.gz"
-    func_file.write_text("dummy")
+    conf = _get_file_name(img, flag_tedana=flag_tedana)
 
-    # TEDANA expects exactly these two suffixes, so we can test with one
-    for suffix in ["_mixing.tsv"]:
-        (tmp_path / f"sub-01_task-rest_desc-ICA{suffix}").write_text("dummy")
-
-    with pytest.raises(ValueError, match="expected 2 for TEDANA"):
-        _get_file_name(str(func_file), flag_tedana=True)
-
-
-def test_load_confounds_file_as_dataframe_tedana_invalid_columns(tmp_path):
-    """
-    Test that loading TEDANA confounds raises ValueError
-    when the required columns are not present in the confound file.
-    """
-    # create a fake confound file with invalid TEDANA headers
-    fake_confounds = pd.DataFrame(
-        {
-            "junk_col1": [0.1, 0.2],
-            "junk_col2": [1, 0],
-        }
-    )
-    conf_file = tmp_path / "fake_tedana.tsv"
-    fake_confounds.to_csv(conf_file, sep="\t", index=False)
-
-    # this should raise a ValueError because required TEDANA
-    # headers are missing
-    with pytest.raises(
-        ValueError,
-        match="The confound file does not contain the expected columns",
-    ):
-        load_confounds_file_as_dataframe(str(conf_file), flag_tedana=True)
+    if isinstance(conf, list):
+        assert any(keyword in item for item in conf)
+    else:
+        assert keyword in conf
