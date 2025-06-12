@@ -175,14 +175,18 @@ def test_nifti_maps_masker_(canica_data_single_img, estimator):
 # @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
 @pytest.mark.parametrize("estimator", [_MultiPCA])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
-def test_with_confounds(data_type, decomposition_data, estimator):
+def test_with_confounds(
+    data_type, decomposition_data, decomposition_mask_img, estimator
+):
     """Test of estimator with confounds.
 
     Output should be different with and without confounds.
     """
     confounds = [np.arange(N_SAMPLES * 2).reshape(N_SAMPLES, 2)] * N_SUBJECTS
 
-    est = estimator(n_components=3, random_state=RANDOM_STATE)
+    est = estimator(
+        n_components=3, random_state=RANDOM_STATE, mask=decomposition_mask_img
+    )
 
     est.fit(decomposition_data)
 
@@ -190,7 +194,9 @@ def test_with_confounds(data_type, decomposition_data, estimator):
 
     components = est.components_
 
-    est = estimator(n_components=3, random_state=RANDOM_STATE)
+    est = estimator(
+        n_components=3, random_state=RANDOM_STATE, mask=decomposition_mask_img
+    )
     est.fit(decomposition_data, confounds=confounds)
 
     components_clean = est.components_

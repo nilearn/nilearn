@@ -135,11 +135,7 @@ class _MultiPCA(_BaseDecomposition):
         n_jobs=1,
         verbose=0,
     ):
-        self.n_components = n_components
-        self.do_cca = do_cca
-
-        _BaseDecomposition.__init__(
-            self,
+        super().__init__(
             n_components=n_components,
             random_state=random_state,
             mask=mask,
@@ -159,6 +155,8 @@ class _MultiPCA(_BaseDecomposition):
             n_jobs=n_jobs,
             verbose=verbose,
         )
+
+        self.do_cca = do_cca
 
     def _raw_fit(self, data):
         """Process unmasked data directly."""
