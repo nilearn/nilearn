@@ -157,9 +157,9 @@ def find_stack_level() -> int:
         n = 0
         while frame:
             filename = inspect.getfile(frame)
-            if not filename.startswith(str(pkg_dir)) or Path(
-                filename
-            ).name.startswith("test_"):
+            is_test_file = Path(filename).name.startswith("test_")
+            in_nilearn_code = filename.startswith(str(pkg_dir))
+            if not in_nilearn_code or is_test_file:
                 break
             frame = frame.f_back
             n += 1
@@ -168,3 +168,11 @@ def find_stack_level() -> int:
         # https://docs.python.org/3/library/inspect.html#inspect.Traceback
         del frame
     return n
+
+
+def one_level_deeper():
+    """Use for testing find_stack_level.
+
+    Needs to be in a module that does not start with 'test'
+    """
+    return find_stack_level()
