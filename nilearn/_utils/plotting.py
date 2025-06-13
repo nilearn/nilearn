@@ -104,7 +104,7 @@ def generate_design_matrices_figures(
     return design_matrices_dict
 
 
-def generate_constrat_matrices_figures(
+def generate_contrast_matrices_figures(
     design_matrices, contrasts=None, contrasts_dict=None, output=None
 ):
     """Generate plot for contrasts matrices.

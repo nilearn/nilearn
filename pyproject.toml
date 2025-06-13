@@ -167,7 +167,7 @@ module = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --template=maint_tools/templates/index.html --timeout=75"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --template=maint_tools/templates/index.html --timeout=45"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
@@ -256,7 +256,7 @@ select = [
 unfixable = []
 
 [tool.ruff.lint.mccabe]
-max-complexity = 22
+max-complexity = 23
 
 [tool.ruff.lint.per-file-ignores]
 "**/{doc}/*" = ["D103"]

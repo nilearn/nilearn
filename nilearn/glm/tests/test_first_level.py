@@ -1,3 +1,5 @@
+"""Test related to first level model."""
+
 import itertools
 import shutil
 import string
@@ -158,6 +160,7 @@ def test_glm_fit_valid_mask_img(shape_4d_default):
     assert isinstance(z1, Nifti1Image)
 
 
+@pytest.mark.timeout(0)
 def test_explicit_fixed_effects(shape_3d_default):
     """Test the fixed effects performed manually/explicitly."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3
@@ -221,6 +224,7 @@ def test_explicit_fixed_effects(shape_3d_default):
         )
 
 
+@pytest.mark.timeout(0)
 def test_explicit_fixed_effects_without_mask(shape_3d_default):
     """Test the fixed effects performed manually/explicitly with no mask."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3
@@ -1522,9 +1526,6 @@ def test_glm_sample_mask(shape_4d_default):
 
     assert model.design_matrices_[0].shape[0] == shape_4d_default[3] - 3
     assert model.predicted[0].shape[-1] == shape_4d_default[3] - 3
-
-
-"""Test the first level model on BIDS datasets."""
 
 
 def _inputs_for_new_bids_dataset():

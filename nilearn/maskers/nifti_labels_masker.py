@@ -29,10 +29,7 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import get_data, load_img, resample_img
-from nilearn.maskers._utils import (
-    compute_middle_image,
-    sanitize_cleaning_parameters,
-)
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import load_mask_img
 
@@ -215,7 +212,7 @@ class NiftiLabelsMasker(BaseMasker):
         reports=True,
         cmap="CMRmap_r",
         clean_args=None,
-        **kwargs,
+        **kwargs,  # TODO remove when bumping to nilearn >0.13
     ):
         self.labels_img = labels_img
         self.background_label = background_label
@@ -239,6 +236,8 @@ class NiftiLabelsMasker(BaseMasker):
         self.t_r = t_r
         self.dtype = dtype
         self.clean_args = clean_args
+
+        # TODO remove when bumping to nilearn >0.13
         self.clean_kwargs = kwargs
 
         # Parameters for resampling
@@ -516,7 +515,8 @@ class NiftiLabelsMasker(BaseMasker):
                 f"parameter: {self.resampling_target}"
             )
 
-        self = sanitize_cleaning_parameters(self)
+        self._sanitize_cleaning_parameters()
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         self._report_content = {
             "description": (

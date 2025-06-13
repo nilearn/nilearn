@@ -173,6 +173,7 @@ Some other past or present contributors are:
 * `Philippe Gervais`_: Zurich, Switzerland
 * `Pierre Bellec`_: Psychology Department, University of Montréal, Montréal, Canada
 * `Pierre Glaser`_: Gatsby Computational Neuroscience Unit, University College London, London, UK
+* `Pierre-Louis Barbarant`_: Inria, Saclay, France
 * `Pierre-Olivier Quirion`_: Canadian Center for Computational Genomics / Calcul, Québec, Canada
 * `Pradeep Reddy Raamana`_: University of Pittsburgh, Pittsburgh, PA, USA
 * `Prakhar Jain`_: RV College of Engineering, Bangalore, India

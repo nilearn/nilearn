@@ -29,10 +29,7 @@ from nilearn._utils.niimg_conversions import (
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
-from nilearn.maskers._utils import (
-    compute_middle_image,
-    sanitize_cleaning_parameters,
-)
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
 
@@ -508,7 +505,7 @@ class NiftiSpheresMasker(BaseMasker):
         display = plotting.plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
         )
-        embeded_images = [embed_img(display)]
+        embedded_images = [embed_img(display)]
         display.close()
         for idx, seed in enumerate(seeds):
             regions_summary["seed number"].append(idx)
@@ -528,16 +525,16 @@ class NiftiSpheresMasker(BaseMasker):
                     marker_color="g",
                     marker_size=20 * radius,
                 )
-                embeded_images.append(embed_img(display))
+                embedded_images.append(embed_img(display))
                 display.close()
 
-        assert len(embeded_images) == len(
+        assert len(embedded_images) == len(
             self._report_content["displayed_maps"]
         )
 
         self._report_content["summary"] = regions_summary
 
-        return embeded_images
+        return embedded_images
 
     @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     def fit(
@@ -559,7 +556,8 @@ class NiftiSpheresMasker(BaseMasker):
             "warning_message": None,
         }
 
-        self = sanitize_cleaning_parameters(self)
+        self._sanitize_cleaning_parameters()
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         error = (
             "Seeds must be a list of triplets of coordinates in "

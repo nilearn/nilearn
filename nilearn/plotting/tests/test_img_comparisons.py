@@ -42,7 +42,7 @@ def test_deprecation_function_moved(matplotlib_pyplot, img_3d_mni):
     ],
 )
 def test_plot_img_comparison_masker(matplotlib_pyplot, img_3d_mni, masker):
-    """Tests for plot_img_comparision with masker or mask image."""
+    """Tests for plot_img_comparison with masker or mask image."""
     plot_img_comparison(
         img_3d_mni,
         img_3d_mni,
@@ -77,7 +77,7 @@ def test_plot_img_comparison_error(surf_img_1d, img_3d_mni):
 
 
 def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
-    """Tests for plot_img_comparision."""
+    """Tests for plot_img_comparison."""
     _, axes = plt.subplots(2, 1)
     axes = axes.ravel()
 
@@ -129,7 +129,7 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
 
 
 def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
-    """Tests for plot_img_comparision no plot should return same result."""
+    """Tests for plot_img_comparison no plot should return same result."""
     _, axes = plt.subplots(2, 1)
     axes = axes.ravel()
 

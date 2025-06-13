@@ -19,7 +19,7 @@ def test_check_estimator_has_sklearn_is_fitted():
     """Check errors are thrown for unfitted estimator.
 
     Check that before fitting
-    - estimlator has a __sklearn_is_fitted__ method that returns false
+    - estimator has a __sklearn_is_fitted__ method that returns false
     - running sklearn check_is_fitted on masker throws an error
     """
 

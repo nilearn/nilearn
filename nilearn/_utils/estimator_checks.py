@@ -71,6 +71,7 @@ from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers import (
+    MultiNiftiMapsMasker,
     NiftiLabelsMasker,
     NiftiMapsMasker,
     NiftiMasker,
@@ -186,38 +187,22 @@ def return_expected_failed_checks(
     expected_failed_checks: dict[str, str] = {}
 
     if isinstance(estimator, ConnectivityMeasure):
-        return {
-            "check_complex_data": "TODO",
-            "check_dict_unchanged": "TODO",
-            "check_dont_overwrite_parameters": "TODO",
-            "check_dtype_object": "TODO",
-            "check_estimators_dtypes": "TODO",
-            "check_estimator_sparse_data": "TODO",
-            "check_estimator_sparse_array": "TODO",
-            "check_estimator_sparse_matrix": "TODO",
-            "check_estimators_empty_data_messages": "TODO",
-            "check_estimators_fit_returns_self": "TODO",
-            "check_estimators_nan_inf": "TODO",
-            "check_estimators_overwrite_params": "TODO",
-            "check_estimators_pickle": "TODO",
-            "check_f_contiguous_array_estimator": "TODO",
-            "check_fit_check_is_fitted": "TODO",
-            "check_fit_idempotent": "TODO",
-            "check_fit_score_takes_y": "TODO",
-            "check_fit2d_1feature": "TODO",
-            "check_fit2d_1sample": "TODO",
-            "check_fit2d_predict1d": "TODO",
+        expected_failed_checks = {
+            "check_fit2d_predict1d": "not applicable",
             "check_methods_sample_order_invariance": "TODO",
             "check_methods_subset_invariance": "TODO",
-            "check_pipeline_consistency": "TODO",
-            "check_positive_only_tag_during_fit": "TODO",
             "check_n_features_in": "TODO",
             "check_n_features_in_after_fitting": "TODO",
             "check_readonly_memmap_input": "TODO",
             "check_transformer_data_not_an_array": "TODO",
             "check_transformer_general": "TODO",
-            "check_transformer_preserve_dtypes": "TODO",
         }
+        if SKLEARN_MINOR > 4:
+            expected_failed_checks |= {
+                "check_transformer_preserve_dtypes": "TODO",
+            }
+
+        return expected_failed_checks
 
     elif isinstance(estimator, HierarchicalKMeans):
         return expected_failed_checks_clustering()
@@ -959,7 +944,7 @@ def check_image_estimator_requires_y_none(estimator) -> None:
     try:
         estimator.fit(input_img, None)
     except ValueError as ve:
-        if not any(msg in str(ve) for msg in expected_err_msgs):
+        if all(msg not in str(ve) for msg in expected_err_msgs):
             raise ve
 
 
@@ -1676,10 +1661,10 @@ def check_masker_smooth(estimator):
     """
     assert hasattr(estimator, "smoothing_fwhm")
 
-    n_sample = 1
     if accept_niimg_input(estimator):
         imgs = _img_3d_rand()
     else:
+        n_sample = 1
         imgs = _make_surface_img(n_sample)
 
     signal = estimator.fit_transform(imgs)
@@ -1841,8 +1826,8 @@ def check_masker_transform_resampling(estimator) -> None:
             # no resampling warning at fit time
             with warnings.catch_warnings(record=True) as warning_list:
                 estimator.fit(imgs)
-            assert not any(
-                "at transform time" in str(x.message) for x in warning_list
+            assert all(
+                "at transform time" not in str(x.message) for x in warning_list
             )
 
             signals = _rng().random((n_sample, estimator.n_elements_))
@@ -1856,8 +1841,8 @@ def check_masker_transform_resampling(estimator) -> None:
             # no resampling warning when using same imgs as for fit()
             with warnings.catch_warnings(record=True) as warning_list:
                 estimator.transform(imgs)
-            assert not any(
-                "at transform time" in str(x.message) for x in warning_list
+            assert all(
+                "at transform time" not in str(x.message) for x in warning_list
             )
 
             # same result before and after running transform()
@@ -1876,8 +1861,9 @@ def check_masker_transform_resampling(estimator) -> None:
                     "at transform time" in str(x.message) for x in warning_list
                 )
             else:
-                assert not any(
-                    "at transform time" in str(x.message) for x in warning_list
+                assert all(
+                    "at transform time" not in str(x.message)
+                    for x in warning_list
                 )
 
 
@@ -2432,11 +2418,6 @@ def _generate_report(estimator):
     For example by only passing the number of displayed maps
     that a map masker contains.
     """
-    from nilearn.maskers import (
-        MultiNiftiMapsMasker,
-        NiftiMapsMasker,
-    )
-
     if isinstance(
         estimator,
         (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),

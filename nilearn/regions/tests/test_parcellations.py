@@ -244,6 +244,7 @@ def test_fit_transform(method, n_parcel, test_image_2):
     assert parcellator.masker_ is not None
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_fit_transform_with_confounds(method, n_parcel, test_image_2, rng):

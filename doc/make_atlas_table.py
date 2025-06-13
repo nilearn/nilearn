@@ -205,11 +205,11 @@ for display_name, details in deterministic_atlases.items():
         n_rois=n_rois,
     )
 
-"""
-SURFACE DETERMINISTIC ATLASES
-
-Surface atlases are bit different so we deal with them separately.
-"""
+#
+# SURFACE DETERMINISTIC ATLASES
+#
+# Surface atlases are bit different so we deal with them separately.
+#
 
 fsaverage = load_fsaverage("fsaverage5")
 fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
@@ -269,9 +269,9 @@ dict_for_df = _update_dict(
 
 _generate_markdown_file("deterministic_atlases.md", dict_for_df)
 
-"""
-PROBABILISTIC ATLASES
-"""
+#
+# PROBABILISTIC ATLASES
+#
 
 # dict to define fetching options for each atlas
 probablistic_atlases = {
