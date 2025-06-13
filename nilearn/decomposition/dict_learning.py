@@ -293,7 +293,7 @@ class DictLearning(_BaseDecomposition):
         S[S == 0] = 1
         self.components_ /= S[:, np.newaxis]
 
-        # Flip signs in each composant so that positive part is l1 larger
+        # Flip signs in each component so that positive part is l1 larger
         # than negative part. Empirically this yield more positive looking maps
         # than with setting the max to be positive.
         for component in self.components_:

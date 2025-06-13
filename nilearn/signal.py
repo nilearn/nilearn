@@ -30,7 +30,7 @@ __all__ = [
     "high_variance_confounds",
 ]
 
-availiable_filters = ["butterworth", "cosine"]
+available_filters = ("butterworth", "cosine")
 
 
 def standardize_signal(
@@ -1139,7 +1139,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
                 stacklevel=find_stack_level(),
             )
         return False
-    elif filter in availiable_filters:
+    elif filter in available_filters:
         if filter == "cosine" and not all(
             isinstance(item, (float, int)) for item in [t_r, high_pass]
         ):

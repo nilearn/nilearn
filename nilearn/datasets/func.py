@@ -86,11 +86,11 @@ def fetch_haxby(
         - 'mask_vt': :obj:`list` of :obj:`str`.
           Paths to nifti ventral temporal mask file.
         - 'mask_face': :obj:`list` of :obj:`str`.
-          Paths to nifti with face-reponsive brain regions.
+          Paths to nifti with face-responsive brain regions.
         - 'mask_face_little': :obj:`list` of :obj:`str`.
           Spatially more constrained version of the above.
         - 'mask_house': :obj:`list` of :obj:`str`.
-          Paths to nifti with house-reponsive brain regions.
+          Paths to nifti with house-responsive brain regions.
         - 'mask_house_little': :obj:`list` of :obj:`str`.
           Spatially more constrained version of the above.
 

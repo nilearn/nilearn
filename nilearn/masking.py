@@ -540,7 +540,7 @@ def compute_background_mask(
     )
 
     if np.isnan(get_border_data(data, border_size)).any():
-        # We absolutely need to catter for NaNs as a background:
+        # We absolutely need to cater for NaNs as a background:
         # SPM does that by default
         mask = np.logical_not(np.isnan(data))
     else:
@@ -1053,8 +1053,7 @@ def unmask(X, mask_img, order="F"):
     # Handle lists. This can be a list of other lists / arrays, or a list or
     # numbers. In the latter case skip.
     if isinstance(X, list) and not isinstance(X[0], numbers.Number):
-        ret = [unmask(x, mask_img, order=order) for x in X]
-        return ret
+        return [unmask(x, mask_img, order=order) for x in X]
 
     # The code after this block assumes that X is an ndarray; ensure this
     X = np.asanyarray(X)
