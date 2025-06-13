@@ -13,23 +13,27 @@ from nilearn.image import get_data, iter_img
 from nilearn.surface.surface import get_data as get_surface_data
 
 
-@pytest.mark.parametrize("data_type", ["nifti"])
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_threshold_bound_error(canica_data_single_img):
     """Test that an error is raised when the threshold is higher \
     than the number of components.
     """
     with pytest.raises(ValueError, match="Threshold must not be higher"):
-        canica = CanICA(n_components=4, threshold=5.0)
+        canica = CanICA(n_components=4, threshold=5.0, smoothing_fwhm=None)
         canica.fit(canica_data_single_img)
 
 
-@pytest.mark.parametrize("data_type", ["nifti"])
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_percentile_range(rng, canica_data_single_img):
     """Test that a warning is given when thresholds are stressed."""
     edge_case = rng.integers(low=1, high=10)
 
     # stress thresholding via edge case
-    canica = CanICA(n_components=edge_case, threshold=float(edge_case))
+    canica = CanICA(
+        n_components=edge_case,
+        threshold=float(edge_case),
+        smoothing_fwhm=None,
+    )
 
     with pytest.warns(UserWarning, match="obtained a critical threshold"):
         canica.fit(canica_data_single_img)
@@ -85,7 +89,11 @@ def test_component_sign(canica_data, data_type):
     instance by making sure that the largest value is positive.
     """
     # run CanICA many times (this is known to produce different results)
-    canica = CanICA(n_components=4, random_state=RANDOM_STATE)
+    canica = CanICA(
+        n_components=4,
+        random_state=RANDOM_STATE,
+        smoothing_fwhm=None,
+    )
 
     for _ in range(3):
         canica.fit(canica_data)

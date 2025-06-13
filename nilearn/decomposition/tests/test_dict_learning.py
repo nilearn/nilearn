@@ -7,18 +7,23 @@ from nilearn.decomposition.tests.conftest import (
     check_decomposition_estimator,
 )
 from nilearn.image import get_data, iter_img
-from nilearn.maskers import NiftiMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface.surface import get_data as get_surface_data
 
 
-@pytest.mark.parametrize("data_type", ["nifti"])
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
 @pytest.mark.parametrize("n_epochs", [1, 2, 10])
 def test_check_values_epoch_argument_smoke(
     decomposition_mask_img, n_epochs, canica_components, canica_data, data_type
 ):
     """Smoke test to check different values of the epoch argument."""
-    masker = NiftiMasker(mask_img=decomposition_mask_img).fit()
-    mask = get_data(decomposition_mask_img) != 0
+    if data_type == "nifti":
+        masker = NiftiMasker(mask_img=decomposition_mask_img).fit()
+        mask = get_data(decomposition_mask_img) != 0
+    else:
+        masker = SurfaceMasker(mask_img=decomposition_mask_img).fit()
+        mask = get_surface_data(decomposition_mask_img) != 0
+
     flat_mask = mask.ravel()
     dict_init = masker.inverse_transform(canica_components[:, flat_mask])
 
@@ -28,6 +33,7 @@ def test_check_values_epoch_argument_smoke(
         dict_init=dict_init,
         mask=decomposition_mask_img,
         n_epochs=n_epochs,
+        smoothing_fwhm=None,
         alpha=1,
     )
     dict_learning.fit(canica_data)
@@ -109,6 +115,7 @@ def test_component_sign(
         n_components=4,
         random_state=RANDOM_STATE,
         mask=decomposition_mask_img,
+        smoothing_fwhm=None,
         alpha=1,
     )
     dict_learning.fit(canica_data)

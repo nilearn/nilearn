@@ -72,7 +72,9 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_fit_errors(data_type, decomposition_data, estimator):
     """Fit and transform fail without the proper arguments."""
-    est = estimator()
+    est = estimator(
+        smoothing_fwhm=None,
+    )
 
     # Test if raises an error when empty list of provided.
     with pytest.raises(
@@ -83,7 +85,9 @@ def test_fit_errors(data_type, decomposition_data, estimator):
         est.fit([])
 
     # No mask provided
-    est = estimator()
+    est = estimator(
+        smoothing_fwhm=None,
+    )
     # the default mask computation strategy 'epi' will result in an empty mask
     if data_type == "nifti":
         with pytest.raises(
@@ -110,7 +114,10 @@ def test_masker_attributes_with_fit(
     """Test mask_img_ properly set when passing mask_img or masker."""
     # Passing mask_img
     est = estimator(
-        n_components=3, mask=decomposition_mask_img, random_state=RANDOM_STATE
+        n_components=3,
+        mask=decomposition_mask_img,
+        random_state=RANDOM_STATE,
+        smoothing_fwhm=None,
     )
     est.fit(canica_data)
 
@@ -118,7 +125,10 @@ def test_masker_attributes_with_fit(
 
     # Passing masker
     canica = estimator(
-        n_components=3, mask=decomposition_masker, random_state=RANDOM_STATE
+        n_components=3,
+        mask=decomposition_masker,
+        random_state=RANDOM_STATE,
+        smoothing_fwhm=None,
     )
     canica.fit(canica_data)
 
@@ -142,6 +152,7 @@ def test_pass_masker_arg_to_estimator(
         n_components=3,
         mask_strategy="background",
         random_state=RANDOM_STATE,
+        smoothing_fwhm=None,
     )
 
     # for surface we should get a warning about target_affine, target_shape
@@ -186,7 +197,10 @@ def test_with_confounds(
     confounds = [np.arange(N_SAMPLES * 2).reshape(N_SAMPLES, 2)] * N_SUBJECTS
 
     est = estimator(
-        n_components=3, random_state=RANDOM_STATE, mask=decomposition_mask_img
+        n_components=3,
+        random_state=RANDOM_STATE,
+        mask=decomposition_mask_img,
+        smoothing_fwhm=None,
     )
 
     est.fit(decomposition_data)
