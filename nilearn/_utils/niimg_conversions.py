@@ -93,9 +93,9 @@ def check_imgs_equal(img1, img2) -> bool:
 
 
 def _index_img(img, index):
+    """Helper function for check_niimg_4d."""  # noqa: D401
     from ..image import new_img_like  # avoid circular imports
 
-    """Helper function for check_niimg_4d."""
     return new_img_like(
         img, _get_data(img)[:, :, :, index], img.affine, copy_header=True
     )

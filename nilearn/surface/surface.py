@@ -505,10 +505,10 @@ def _nearest_most_frequent(
     )
     texture = np.zeros((mesh.n_vertices, images.shape[0]))
     for img in range(images.shape[0]):
-        for loc in range(len(sample_locations)):
+        for loc, sample_location in enumerate(sample_locations):
             possible_values = [
                 data[img][coords[0], coords[1], coords[2]]
-                for coords in sample_locations[loc]
+                for coords in sample_location
             ]
             unique, counts = np.unique(possible_values, return_counts=True)
             texture[loc, img] = unique[np.argmax(counts)]

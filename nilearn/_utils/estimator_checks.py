@@ -71,6 +71,7 @@ from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers import (
+    MultiNiftiMapsMasker,
     NiftiLabelsMasker,
     NiftiMapsMasker,
     NiftiMasker,
@@ -2518,11 +2519,6 @@ def _generate_report(estimator):
     For example by only passing the number of displayed maps
     that a map masker contains.
     """
-    from nilearn.maskers import (
-        MultiNiftiMapsMasker,
-        NiftiMapsMasker,
-    )
-
     if isinstance(
         estimator,
         (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),
