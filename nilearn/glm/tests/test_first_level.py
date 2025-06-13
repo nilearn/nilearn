@@ -1,3 +1,5 @@
+"""Test related to first level model."""
+
 import itertools
 import shutil
 import string
@@ -1488,9 +1490,6 @@ def test_glm_sample_mask(shape_4d_default):
 
     assert model.design_matrices_[0].shape[0] == shape_4d_default[3] - 3
     assert model.predicted[0].shape[-1] == shape_4d_default[3] - 3
-
-
-"""Test the first level model on BIDS datasets."""
 
 
 def _inputs_for_new_bids_dataset():
