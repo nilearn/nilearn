@@ -172,7 +172,7 @@ def test_pass_masker_arg_to_estimator(
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_nifti_maps_masker_(canica_data_single_img, estimator):
-    """Check depreacation of nifti_maps_masker_."""
+    """Check deprecation of nifti_maps_masker_."""
     est = estimator()
 
     est.fit(canica_data_single_img)
