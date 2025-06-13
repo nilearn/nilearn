@@ -377,7 +377,7 @@ def test_canica_score(canica_data, mask_img):
 
 
 def test_nifti_maps_masker_(canica_data, mask_img):
-    """Check depreacation of nifti_maps_masker_."""
+    """Check deprecation of nifti_maps_masker_."""
     n_components = 10
 
     canica = CanICA(n_components=n_components, mask=mask_img, random_state=0)

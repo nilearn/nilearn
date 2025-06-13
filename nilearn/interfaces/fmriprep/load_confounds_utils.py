@@ -426,7 +426,7 @@ def prepare_output(confounds, demean):
     Returns
     -------
     sample_mask : None or numpy.ndarray
-        When no volumns require removal, the value is None.
+        When no volume removal is required, the value is None.
         Otherwise, the shape is \
             (number of scans - number of volumes removed, )
         The index of the niimgs along time/fourth dimension for valid
@@ -458,7 +458,7 @@ def _demean_confounds(confounds, sample_mask):
         Confound regressors loaded based on user's choice.
 
     sample_mask : None or numpy.ndarray
-        When no volumns require removal, the value is None.
+        When no volume removal is required, the value is None.
         Otherwise, the shape is \
             (number of scans - number of volumes removed, )
         The index of the niimgs along time/fourth dimension for valid

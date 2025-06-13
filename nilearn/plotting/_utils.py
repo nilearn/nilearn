@@ -68,7 +68,7 @@ def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
         vmax += np.finfo(np.float32).eps
 
     # If a threshold is specified, we want two of the tick
-    # to correspond to -thresold and +threshold on the colorbar.
+    # to correspond to -threshold and +threshold on the colorbar.
     # If the threshold is very small compared to vmax,
     # we use a simple linspace as the result would be very difficult to see.
     ticks = np.linspace(vmin, vmax, n_ticks)
