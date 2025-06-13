@@ -29,10 +29,7 @@ from nilearn._utils.niimg_conversions import (
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
-from nilearn.maskers._utils import (
-    compute_middle_image,
-    sanitize_cleaning_parameters,
-)
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
 
@@ -556,7 +553,8 @@ class NiftiSpheresMasker(BaseMasker):
             "warning_message": None,
         }
 
-        self = sanitize_cleaning_parameters(self)
+        self._sanitize_cleaning_parameters()
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         error = (
             "Seeds must be a list of triplets of coordinates in "
@@ -683,10 +681,10 @@ class NiftiSpheresMasker(BaseMasker):
         check_is_fitted(self)
 
         params = get_params(NiftiSpheresMasker, self)
-        params["clean_kwargs"] = self.clean_args
+        params["clean_kwargs"] = self.clean_args_
         # TODO remove in 0.13.2
         if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs
+            params["clean_kwargs"] = self.clean_kwargs_
 
         signals, _ = self._cache(
             filter_and_extract, ignore=["verbose", "memory", "memory_level"]

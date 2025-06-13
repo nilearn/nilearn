@@ -478,6 +478,33 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         raise NotImplementedError()
 
+    def _sanitize_cleaning_parameters(self):
+        """Make sure that cleaning parameters are passed via clean_args.
+
+        TODO remove when bumping to nilearn >0.13
+        """
+        if hasattr(self, "clean_kwargs"):
+            if self.clean_kwargs:
+                tmp = [", ".join(list(self.clean_kwargs))]
+                warnings.warn(
+                    f"You passed some kwargs to {self.__class__.__name__}: "
+                    f"{tmp}. "
+                    "This behavior is deprecated "
+                    "and will be removed in version >0.13.",
+                    DeprecationWarning,
+                    stacklevel=find_stack_level(),
+                )
+                if self.clean_args:
+                    raise ValueError(
+                        "Passing arguments via 'kwargs' "
+                        "is mutually exclusive with using 'clean_args'"
+                    )
+            self.clean_kwargs_ = {
+                k[7:]: v
+                for k, v in self.clean_kwargs.items()
+                if k.startswith("clean__")
+            }
+
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Class from which all surface maskers should inherit."""
@@ -509,6 +536,20 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             surf_img=True, niimg_like=False, masker=True
         )
         return tags
+
+    def _check_imgs(self, imgs) -> None:
+        if not (
+            isinstance(imgs, SurfaceImage)
+            or (
+                hasattr(imgs, "__iter__")
+                and all(isinstance(x, SurfaceImage) for x in imgs)
+            )
+        ):
+            raise TypeError(
+                "'imgs' should be a SurfaceImage or "
+                "an iterable of SurfaceImage."
+                f"Got: {imgs.__class__.__name__}"
+            )
 
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
@@ -576,6 +617,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         %(signals_transform_surface)s
         """
         check_is_fitted(self)
+        self._check_imgs(imgs)
 
         return_1D = isinstance(imgs, SurfaceImage) and len(imgs.shape) < 2
 

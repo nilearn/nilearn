@@ -14,10 +14,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import crop_img, resample_img
-from nilearn.maskers._utils import (
-    compute_middle_image,
-    sanitize_cleaning_parameters,
-)
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import (
     apply_mask,
@@ -296,7 +293,7 @@ class NiftiMasker(BaseMasker):
         reports=True,
         cmap="gray",
         clean_args=None,
-        **kwargs,
+        **kwargs,  # TODO remove when bumping to nilearn >0.13
     ):
         # Mask is provided or computed
         self.mask_img = mask_img
@@ -320,6 +317,8 @@ class NiftiMasker(BaseMasker):
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
+
+        # TODO remove when bumping to nilearn >0.13
         self.clean_kwargs = kwargs
 
     def generate_report(self):
@@ -444,7 +443,8 @@ class NiftiMasker(BaseMasker):
         if getattr(self, "_shelving", None) is None:
             self._shelving = False
 
-        self = sanitize_cleaning_parameters(self)
+        self._sanitize_cleaning_parameters()
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         # Load data (if filenames are given, load them)
         logger.log(
@@ -590,10 +590,10 @@ class NiftiMasker(BaseMasker):
                 "sample_mask",
             ],
         )
-        params["clean_kwargs"] = self.clean_args
+        params["clean_kwargs"] = self.clean_args_
         # TODO remove in 0.13.2
         if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs
+            params["clean_kwargs"] = self.clean_kwargs_
 
         data = self._cache(
             filter_and_mask,

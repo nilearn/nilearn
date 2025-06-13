@@ -215,7 +215,7 @@
 
 .. _Michael Waskom: https://mwaskom.github.io/
 
-.. _Michelle Wang: https://github.com/michellewang
+.. _Michelle Wang: https://michellewang.github.io
 
 .. _Mohammad Torabi: https://github.com/mtorabi59
 
@@ -252,6 +252,8 @@
 .. _Pierre Bellec: https://github.com/pbellec
 
 .. _Pierre Glaser: https://pierreglaser.github.io/
+
+.. _Pierre-Louis Barbarant: https://github.com/pbarbarant
 
 .. _Pierre-Olivier Quirion: https://github.com/poquirion
 

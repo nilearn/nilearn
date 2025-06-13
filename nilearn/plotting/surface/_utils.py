@@ -1,5 +1,6 @@
 """Utility functions used in nilearn.plotting.surface module."""
 
+from collections.abc import Sequence
 from warnings import warn
 
 import numpy as np
@@ -11,11 +12,25 @@ from nilearn.plotting._utils import DEFAULT_ENGINE
 from nilearn.surface import (
     PolyMesh,
     SurfaceImage,
+    load_surf_data,
 )
 from nilearn.surface.surface import combine_hemispheres_meshes, get_data
 from nilearn.surface.utils import check_polymesh_equal
 
 DEFAULT_HEMI = "left"
+
+VALID_VIEWS = (
+    "anterior",
+    "posterior",
+    "medial",
+    "lateral",
+    "dorsal",
+    "ventral",
+    "left",
+    "right",
+)
+
+VALID_HEMISPHERES = "left", "right", "both"
 
 
 def get_surface_backend(engine=DEFAULT_ENGINE):
@@ -29,11 +44,14 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
 
     Returns
     -------
-    backend : :class:`~nilearn.plotting.surface._backend.BaseSurfaceBackend`
-        The backend for the specified engine.
+    backend : :class:`~nilearn.plotting.surface._matplotlib_backend` or
+    :class:`~nilearn.plotting.surface._plotly_backend`.
+        The backend module for the specified engine.
     """
     if engine == "matplotlib":
-        if not is_matplotlib_installed():
+        if is_matplotlib_installed():
+            import nilearn.plotting.surface._matplotlib_backend as backend
+        else:
             raise ImportError(
                 "Using engine='matplotlib' requires that ``matplotlib`` is "
                 "installed."
@@ -45,11 +63,7 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
         return MatplotlibSurfaceBackend()
     elif engine == "plotly":
         if is_plotly_installed():
-            from nilearn.plotting.surface._plotly_backend import (
-                PlotlySurfaceBackend,
-            )
-
-            return PlotlySurfaceBackend()
+            import nilearn.plotting.surface._plotly_backend as backend
         else:
             raise ImportError(
                 "Using engine='plotly' requires that ``plotly`` is installed."
@@ -60,6 +74,122 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
             "Please use either 'matplotlib' or "
             "'plotly'."
         )
+    return backend
+
+
+def check_engine_params(params, engine):
+    """Check default values of the parameters that are not implemented for
+    current engine and warn the user if the parameter has other value then
+    None.
+
+    Parameters
+    ----------
+    params: :obj:`dict`
+        A dictionary where keys are the unimplemented parameter names for a
+    specific engine and values are the assigned value for corresponding
+    parameter.
+    """
+    for parameter, value in params.items():
+        if value is not None:
+            warn(
+                f"'{parameter}' is not implemented "
+                f"for the {engine} engine.\n"
+                f"Got '{parameter} = {value}'.\n"
+                f"Use '{parameter} = None' to silence this warning.",
+                stacklevel=find_stack_level(),
+            )
+
+
+def _check_hemisphere_is_valid(hemi):
+    return hemi in VALID_HEMISPHERES
+
+
+def check_hemispheres(hemispheres):
+    """Check whether the hemispheres passed to in plot_img_on_surf are \
+    correct.
+
+    hemispheres : :obj:`list`
+        Any combination of 'left' and 'right'.
+
+    """
+    invalid_hemis = [
+        not _check_hemisphere_is_valid(hemi) for hemi in hemispheres
+    ]
+    if any(invalid_hemis):
+        raise ValueError(
+            "Invalid hemispheres definition!\n"
+            f"Got: {np.array(hemispheres)[invalid_hemis]!s}\n"
+            f"Supported values are: {VALID_HEMISPHERES!s}"
+        )
+    return hemispheres
+
+
+def check_surf_map(surf_map, n_vertices):
+    """Help for plot_surf.
+
+    This function checks the dimensions of provided surf_map.
+    """
+    surf_map_data = load_surf_data(surf_map)
+    if surf_map_data.ndim != 1:
+        raise ValueError(
+            "'surf_map' can only have one dimension "
+            f"but has '{surf_map_data.ndim}' dimensions"
+        )
+    if surf_map_data.shape[0] != n_vertices:
+        raise ValueError(
+            "The surf_map does not have the same number "
+            "of vertices as the mesh."
+        )
+    return surf_map_data
+
+
+def _check_view_is_valid(view) -> bool:
+    """Check whether a single view is one of two valid input types.
+
+    Parameters
+    ----------
+    view : :obj:`str` in {"anterior", "posterior", "medial", "lateral",
+        "dorsal", "ventral" or pair of floats (elev, azim).
+
+    Returns
+    -------
+    valid : True if view is valid, False otherwise.
+    """
+    if isinstance(view, str) and (view in VALID_VIEWS):
+        return True
+    return (
+        isinstance(view, Sequence)
+        and len(view) == 2
+        and all(isinstance(x, (int, float)) for x in view)
+    )
+
+
+def check_views(views) -> list:
+    """Check whether the views passed to in plot_img_on_surf are correct.
+
+    Parameters
+    ----------
+    views : :obj:`list`
+        Any combination of strings in {"anterior", "posterior", "medial",
+        "lateral", "dorsal", "ventral"} and / or pair of floats (elev, azim).
+
+    Returns
+    -------
+    views : :obj:`list`
+        Views given as inputs.
+    """
+    invalid_views = [not _check_view_is_valid(view) for view in views]
+
+    if any(invalid_views):
+        raise ValueError(
+            "Invalid view definition!\n"
+            f"Got: {np.array(views)[invalid_views]!s}\n"
+            f"Supported values are: {VALID_VIEWS!s}"
+            " or a sequence of length 2"
+            " setting the elevation and azimut of the camera."
+        )
+
+    return views
 
 
 def _check_bg_map(bg_map, hemi):
@@ -184,21 +314,6 @@ def check_surface_plotting_inputs(
     bg_map : :obj:`str` | :obj:`pathlib.Path` | :obj:`numpy.ndarray` | None
 
     """
-    if not isinstance(surf_map, SurfaceImage) and not isinstance(
-        surf_mesh, PolyMesh
-    ):
-        warn(
-            category=UserWarning,
-            message=(
-                f"{hemi=} was passed with "
-                f"{type(surf_map)=} and {type(surf_mesh)=}.\n"
-                "This value will be ignored as it is only used when "
-                "'map' is a SurfaceImage instance and / or "
-                "'mesh' is a PolyMesh instance."
-            ),
-            stacklevel=find_stack_level(),
-        )
-
     if surf_mesh is None and surf_map is None:
         raise TypeError(
             f"{mesh_var_name} and {map_var_name} cannot both be None."
@@ -209,7 +324,7 @@ def check_surface_plotting_inputs(
     if surf_mesh is None and not isinstance(surf_map, SurfaceImage):
         raise TypeError(
             f"If you want to pass {mesh_var_name}=None, "
-            f"then {mesh_var_name} must be a SurfaceImage instance."
+            f"then {map_var_name} must be a SurfaceImage instance."
         )
 
     if isinstance(surf_mesh, SurfaceImage):
@@ -273,3 +388,14 @@ def get_faces_on_edge(faces, parc_idx):
     faces_outside_edge = np.isin(faces, vertices_on_edge).sum(axis=1)
 
     return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
+
+
+def sanitize_hemi_view(hemi, view):
+    """Check ``hemi`` and ``view``, if ``view`` is `None`, set value for
+    ``view`` depending on the ``hemi`` value and return ``view``.
+    """
+    check_hemispheres([hemi])
+    if view is None:
+        view = "dorsal" if hemi == "both" else "lateral"
+    check_views([view])
+    return view

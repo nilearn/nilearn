@@ -1,11 +1,40 @@
 """Functions for surface visualization."""
 
+from warnings import warn
+
+import numpy as np
+import pandas as pd
+
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import fill_doc
-from nilearn.plotting._utils import DEFAULT_ENGINE
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn._utils.param_validation import check_params
+from nilearn.image import get_data
+from nilearn.plotting._utils import (
+    DEFAULT_ENGINE,
+    check_threshold_not_negative,
+    create_colormap_from_lut,
+)
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
+    check_hemispheres,
+    check_surface_plotting_inputs,
+    check_views,
     get_surface_backend,
+)
+from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
+from nilearn.surface.surface import (
+    FREESURFER_DATA_EXTENSIONS,
+    check_extensions,
+    check_mesh_is_fsaverage,
+)
+
+# subset of data format extensions supported
+DATA_EXTENSIONS = (
+    "gii",
+    "gii.gz",
+    "mgz",
 )
 
 
@@ -59,6 +88,10 @@ def plot_surf(
         :obj:`~nilearn.surface.SurfaceImage` instance and its mesh will be
         used for plotting.
 
+        When specified `surf_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `surf_map`
+        data.
+
     %(bg_map)s
 
     %(hemi)s
@@ -111,10 +144,8 @@ def plot_surf(
         When using ``matplotlib`` as engine, ``avg_method`` will default to
         ``"mean"`` if `None` is passed.
 
-    threshold : a number or None, default=None.
-        If `None` is given, the image is not thresholded.
-        If a number is given, it is used to threshold the image, values
-        below the threshold (in absolute value) are plotted as transparent.
+    %(threshold)s
+        Default=None
 
     alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
@@ -217,8 +248,16 @@ def plot_surf(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    fig = get_surface_backend(engine).plot_surf(
-        surf_mesh=surf_mesh,
+    check_params(locals())
+    check_threshold_not_negative(threshold)
+    surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
+        surf_map, surf_mesh, hemi, bg_map
+    )
+    check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
+    backend = get_surface_backend(engine)
+    fig = backend._plot_surf(
+        surf_mesh,
         surf_map=surf_map,
         bg_map=bg_map,
         hemi=hemi,
@@ -283,6 +322,10 @@ def plot_surf_contours(
         :obj:`~nilearn.surface.SurfaceImage` instance and its the mesh will be
         used for plotting.
 
+        When specified `roi_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `roi_map`
+        data.
+
     %(hemi)s
         It is only used if ``roi_map`` is :obj:`~nilearn.surface.SurfaceImage`
         and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
@@ -335,7 +378,13 @@ def plot_surf_contours(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    fig = get_surface_backend(DEFAULT_ENGINE).plot_surf_contours(
+    roi_map, surf_mesh, _ = check_surface_plotting_inputs(
+        roi_map, surf_mesh, hemi, map_var_name="roi_map"
+    )
+    check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
+    backend = get_surface_backend(DEFAULT_ENGINE)
+    fig = backend._plot_surf_contours(
         surf_mesh=surf_mesh,
         roi_map=roi_map,
         hemi=hemi,
@@ -350,7 +399,6 @@ def plot_surf_contours(
         figure=figure,
         **kwargs,
     )
-
     return fig
 
 
@@ -363,6 +411,7 @@ def plot_surf_stat_map(
     view=None,
     engine=DEFAULT_ENGINE,
     cmap=DEFAULT_DIVERGING_CMAP,
+    symmetric_cmap=None,
     colorbar=True,
     avg_method=None,
     threshold=None,
@@ -403,6 +452,10 @@ def plot_surf_stat_map(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
+        When specified `surf_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `surf_map`
+        data.
+
     %(bg_map)s
 
     %(hemi)s
@@ -432,6 +485,18 @@ def plot_surf_stat_map(
     %(cmap)s
         default="RdBu_r"
 
+    symmetric_cmap : :obj:`bool`, default=None
+        Whether to use a symmetric colormap or not.
+
+        .. note::
+            This option is currently only implemented for the ``plotly``
+            engine.
+
+        When using ``plotly`` as engine, ``symmetric_cmap`` will default to
+        `False` if `None` is passed.
+
+        .. versionadded:: 0.12.0
+
     %(colorbar)s
 
         .. note::
@@ -450,11 +515,8 @@ def plot_surf_stat_map(
 
         .. versionadded:: 0.10.3dev
 
-    threshold : a number or None, default=None
-        If None is given, the image is not thresholded.
-        If a number is given, it is used to threshold the image,
-        values below the threshold (in absolute value) are plotted
-        as transparent.
+    %(threshold)s
+        Default=None
 
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not the stat_map).
@@ -526,13 +588,36 @@ def plot_surf_stat_map(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    display = get_surface_backend(engine).plot_surf_stat_map(
-        surf_mesh=surf_mesh,
-        stat_map=stat_map,
+    check_params(locals())
+    check_threshold_not_negative(threshold)
+
+    stat_map, surf_mesh, bg_map = check_surface_plotting_inputs(
+        stat_map, surf_mesh, hemi, bg_map, map_var_name="stat_map"
+    )
+    check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+    loaded_stat_map = load_surf_data(stat_map)
+
+    backend = get_surface_backend(engine)
+    # derive symmetric vmin, vmax and colorbar limits depending on
+    # symmetric_cbar settings
+    cbar_vmin, cbar_vmax, vmin, vmax = (
+        backend._adjust_colorbar_and_data_ranges(
+            loaded_stat_map,
+            vmin=vmin,
+            vmax=vmax,
+            symmetric_cbar=symmetric_cbar,
+        )
+    )
+
+    fig = plot_surf(
+        surf_mesh,
+        surf_map=loaded_stat_map,
         bg_map=bg_map,
         hemi=hemi,
         view=view,
+        engine=engine,
         cmap=cmap,
+        symmetric_cmap=symmetric_cmap,
         colorbar=colorbar,
         avg_method=avg_method,
         threshold=threshold,
@@ -541,7 +626,8 @@ def plot_surf_stat_map(
         darkness=darkness,
         vmin=vmin,
         vmax=vmax,
-        symmetric_cbar=symmetric_cbar,
+        cbar_vmin=cbar_vmin,
+        cbar_vmax=cbar_vmax,
         cbar_tick_format=cbar_tick_format,
         title=title,
         title_font_size=title_font_size,
@@ -550,8 +636,7 @@ def plot_surf_stat_map(
         figure=figure,
         **kwargs,
     )
-
-    return display
+    return fig
 
 
 @fill_doc
@@ -560,18 +645,18 @@ def plot_img_on_surf(
     surf_mesh="fsaverage5",
     mask_img=None,
     hemispheres=None,
+    views=None,
+    cmap=DEFAULT_DIVERGING_CMAP,
+    colorbar=True,
+    threshold=None,
     bg_on_data=False,
     inflate=False,
-    views=None,
-    output_file=None,
-    title=None,
-    colorbar=True,
     vmin=None,
     vmax=None,
-    threshold=None,
     symmetric_cbar="auto",
-    cmap=DEFAULT_DIVERGING_CMAP,
     cbar_tick_format="%i",
+    title=None,
+    output_file=None,
     **kwargs,
 ):
     """Plot multiple views of plot_surf_stat_map \
@@ -603,15 +688,9 @@ def plot_img_on_surf(
         during projection of the volume to the surface.
         If ``None``, don't apply any mask.
 
-    %(bg_on_data)s
-
     hemispheres : :obj:`list` of :obj:`str`, default=None
         Hemispheres to display.
         Will default to ``['left', 'right']`` if ``None`` or "both" is passed.
-
-    inflate : :obj:`bool`, default=False
-        If True, display images in inflated brain.
-        If False, display images in pial surface.
 
     views : :obj:`list` of :obj:`str`, default=None
         A list containing all views to display.
@@ -620,9 +699,8 @@ def plot_img_on_surf(
         are shown on the left and right sides of the figure.
         Will default to ``['lateral', 'medial']`` if ``None`` is passed.
 
-    %(output_file)s
-
-    %(title)s
+    %(cmap)s
+        Default="RdBu_r".
 
     %(colorbar)s
 
@@ -631,18 +709,26 @@ def plot_img_on_surf(
 
         Default=True.
 
+    %(threshold)s
+        Default=None
+
+    %(bg_on_data)s
+
+    inflate : :obj:`bool`, default=False
+        If True, display images in inflated brain.
+        If False, display images in pial surface.
+
     %(vmin)s
 
     %(vmax)s
 
-    %(threshold)s
-
     %(symmetric_cbar)s
 
-    %(cmap)s
-        Default="RdBu_r".
-
     %(cbar_tick_format)s
+
+    %(title)s
+
+    %(output_file)s
 
     kwargs : :obj:`dict`, optional
         keyword arguments passed to plot_surf_stat_map.
@@ -662,14 +748,60 @@ def plot_img_on_surf(
         accepted by plot_img_on_surf.
 
     """
-    fig = get_surface_backend(DEFAULT_ENGINE).plot_img_on_surf(
-        stat_map,
+    check_params(locals())
+    check_threshold_not_negative(threshold)
+
+    for arg in ("figure", "axes", "engine"):
+        if arg in kwargs:
+            raise ValueError(
+                f"plot_img_on_surf does not accept {arg} as an argument"
+            )
+
+    if hemispheres in (None, "both", ["both"]):
+        hemispheres = ["left", "right"]
+    if not isinstance(hemispheres, list):
+        hemispheres = [hemispheres]
+    hemis = check_hemispheres(hemispheres)
+
+    if views is None:
+        views = ["lateral", "medial"]
+    modes = check_views(views)
+
+    stat_map = check_niimg_3d(stat_map, dtype="auto")
+    surf_mesh = check_mesh_is_fsaverage(surf_mesh)
+
+    mesh_prefix = "infl" if inflate else "pial"
+    surf = {
+        "left": surf_mesh[f"{mesh_prefix}_left"],
+        "right": surf_mesh[f"{mesh_prefix}_right"],
+    }
+    texture = {
+        "left": vol_to_surf(
+            stat_map, surf_mesh["pial_left"], mask_img=mask_img
+        ),
+        "right": vol_to_surf(
+            stat_map, surf_mesh["pial_right"], mask_img=mask_img
+        ),
+    }
+
+    backend = get_surface_backend(DEFAULT_ENGINE)
+    # get vmin and vmax for entire data (all hemis)
+    _, _, vmin, vmax = backend._adjust_colorbar_and_data_ranges(
+        get_data(stat_map),
+        vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar,
+    )
+
+    fig = backend._plot_img_on_surf(
+        surf,
         surf_mesh=surf_mesh,
-        mask_img=mask_img,
-        hemispheres=hemispheres,
+        stat_map=stat_map,
+        texture=texture,
+        hemis=hemis,
+        modes=modes,
         bg_on_data=bg_on_data,
         inflate=inflate,
-        views=views,
         output_file=output_file,
         title=title,
         colorbar=colorbar,
@@ -681,7 +813,6 @@ def plot_img_on_surf(
         cbar_tick_format=cbar_tick_format,
         **kwargs,
     )
-
     return fig
 
 
@@ -696,7 +827,7 @@ def plot_surf_roi(
     cmap="gist_ncar",
     colorbar=True,
     avg_method=None,
-    threshold=1e-14,
+    threshold=None,
     alpha=None,
     bg_on_data=False,
     darkness=0.7,
@@ -739,6 +870,10 @@ def plot_surf_roi(
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
 
+        When specified `roi_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `roi_map`
+        data.
+
     %(bg_map)s
 
     %(hemi)s
@@ -779,9 +914,13 @@ def plot_surf_roi(
         When using matplotlib as engine,
         `avg_method` will default to ``"median"`` if ``None`` is passed.
 
-    threshold : a number or None, default=1e-14
-        Threshold regions that are labeled 0.
-        If you want to use 0 as a label, set threshold to None.
+    %(threshold)s
+        Default=None
+
+        .. note::
+            By default, the regions that are labeled 0 are not thresholded.
+            Threshold should be set to a very small number, ex. 1e-14 to
+            threshold the those 0 labeled regions.
 
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
@@ -851,22 +990,86 @@ def plot_surf_roi(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    display = get_surface_backend(engine).plot_surf_roi(
-        surf_mesh,
-        roi_map=roi_map,
+    check_params(locals())
+    check_threshold_not_negative(threshold)
+    roi_map, surf_mesh, bg_map = check_surface_plotting_inputs(
+        roi_map, surf_mesh, hemi, bg_map
+    )
+    check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
+    # preload roi and mesh to determine vmin, vmax and give more useful
+    # error messages in case of wrong inputs
+    roi = load_surf_data(roi_map)
+
+    if roi.ndim != 1:
+        raise ValueError(
+            "roi_map can only have one dimension but has "
+            f"{roi.ndim} dimensions"
+        )
+    if (roi < 0).any():
+        # TODO raise ValueError in release 0.13
+        warn(
+            (
+                "Negative values in roi_map will no longer be allowed in"
+                " Nilearn version 0.13"
+            ),
+            DeprecationWarning,
+            stacklevel=find_stack_level(),
+        )
+
+    mesh = load_surf_mesh(surf_mesh)
+    if roi.shape[0] != mesh.n_vertices:
+        raise ValueError(
+            "roi_map does not have the same number of vertices "
+            "as the mesh. If you have a list of indices for the "
+            "ROI you can convert them into a ROI map like this:\n"
+            "roi_map = np.zeros(n_vertices)\n"
+            "roi_map[roi_idx] = 1"
+        )
+
+    idx_not_na = ~np.isnan(roi)
+    if vmin is None:
+        vmin = float(np.nanmin(roi))
+    if vmax is None:
+        vmax = float(1 + np.nanmax(roi))
+
+    if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
+        # TODO raise ValueError in release 0.13
+        warn(
+            (
+                "Non-integer values in roi_map will no longer be allowed "
+                "in Nilearn version 0.13"
+            ),
+            DeprecationWarning,
+            stacklevel=find_stack_level(),
+        )
+    if isinstance(cmap, pd.DataFrame):
+        cmap = create_colormap_from_lut(cmap)
+
+    params = {
+        "avg_method": avg_method,
+        "cbar_tick_format": cbar_tick_format,
+    }
+
+    backend = get_surface_backend(engine)
+    backend._adjust_plot_roi_params(params)
+
+    fig = backend._plot_surf(
+        mesh,
+        surf_map=roi,
         bg_map=bg_map,
         hemi=hemi,
         view=view,
         cmap=cmap,
         colorbar=colorbar,
-        avg_method=avg_method,
+        avg_method=params["avg_method"],
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
         darkness=darkness,
         vmin=vmin,
         vmax=vmax,
-        cbar_tick_format=cbar_tick_format,
+        cbar_tick_format=params["cbar_tick_format"],
         title=title,
         title_font_size=title_font_size,
         output_file=output_file,
@@ -874,5 +1077,4 @@ def plot_surf_roi(
         figure=figure,
         **kwargs,
     )
-
-    return display
+    return fig

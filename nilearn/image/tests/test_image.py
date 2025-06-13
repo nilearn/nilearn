@@ -1558,6 +1558,71 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     assert_almost_equal(get_data(data_img_), get_data(data_img_mask_))
 
 
+def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
+    """Test clean on surface image.
+
+    - check that clean returns image of same shape, geometry
+      but different data
+    - with mask should only clean the included vertices
+    - 1D image should raise error.
+    - check sample mask can be passed as a kwarg and used correctly
+    """
+    length = 50
+    imgs = surf_img_2d(length)
+
+    cleaned_img = clean_img(
+        imgs, detrend=True, standardize=False, low_pass=0.1, t_r=1.0
+    )
+
+    assert cleaned_img.shape == imgs.shape
+    assert_polymesh_equal(cleaned_img.mesh, imgs.mesh)
+    with pytest.raises(ValueError, match="not equal"):
+        assert_surface_image_equal(cleaned_img, imgs)
+
+    cleaned_img_with_mask = clean_img(
+        imgs,
+        detrend=True,
+        standardize=False,
+        low_pass=0.1,
+        t_r=1.0,
+        mask_img=surf_mask_1d,
+    )
+    with pytest.raises(ValueError, match="not equal"):
+        assert_surface_image_equal(cleaned_img_with_mask, cleaned_img)
+
+    # Checks that output with full mask and without is equal
+    full_mask = new_img_like(
+        surf_mask_1d,
+        data={k: np.ones(v.shape) for k, v in surf_mask_1d.data.parts.items()},
+    )
+    cleaned_img_with_full_mask = clean_img(
+        imgs,
+        detrend=True,
+        standardize=False,
+        low_pass=0.1,
+        t_r=1.0,
+        mask_img=full_mask,
+    )
+    assert_surface_image_equal(cleaned_img, cleaned_img_with_full_mask)
+
+    # 1D fails
+    with pytest.raises(ValueError, match="should be 2D"):
+        clean_img(surf_img_1d, detrend=True)
+
+    sample_mask = np.arange(length - 1)
+
+    # check sample mask can be passed as a kwarg and used correctly
+    cleaned_img = clean_img(
+        imgs,
+        detrend=True,
+        standardize=False,
+        low_pass=0.1,
+        t_r=1.0,
+        clean__sample_mask=sample_mask,
+    )
+    assert cleaned_img.shape[-1] == length - 1
+
+
 @pytest.mark.parametrize("create_files", [True, False])
 def test_largest_cc_img(create_files, tmp_path):
     """Check the extraction of the largest connected component, for niftis.
