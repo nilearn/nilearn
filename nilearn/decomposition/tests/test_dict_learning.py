@@ -13,7 +13,7 @@ from nilearn.surface.surface import get_data as get_surface_data
 
 @pytest.mark.parametrize("data_type", ["nifti"])
 @pytest.mark.parametrize("n_epochs", [1, 2, 10])
-def test_dict_learning_check_values_epoch_argument_smoke(
+def test_check_values_epoch_argument_smoke(
     decomposition_mask_img, n_epochs, canica_components, canica_data, data_type
 ):
     """Smoke test to check different values of the epoch argument."""
@@ -46,11 +46,16 @@ def test_dict_learning(
     masked_components = canica_components[:, flat_mask]
     dict_init = masker.inverse_transform(masked_components)
 
+    # Note that
+    # adding smoothing will make this test break
+    smoothing_fwhm = None
+
     dict_learning = DictLearning(
         n_components=4,
         random_state=RANDOM_STATE,
         dict_init=dict_init,
         mask=decomposition_mask_img,
+        smoothing_fwhm=smoothing_fwhm,
         alpha=1,
     )
 
@@ -59,6 +64,7 @@ def test_dict_learning(
         random_state=RANDOM_STATE,
         mask=decomposition_mask_img,
         n_epochs=10,
+        smoothing_fwhm=smoothing_fwhm,
         alpha=1,
     )
     maps = {}

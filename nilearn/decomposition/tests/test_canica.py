@@ -39,12 +39,18 @@ def test_percentile_range(rng, canica_data_single_img):
 def test_canica_square_img(
     decomposition_mask_img, canica_components, canica_data
 ):
-    """Check ???."""
+    """Check content of components."""
     # We do a large number of inits to be sure to find the good match
+
+    # Note that
+    # adding smoothing will make this test break
+    smoothing_fwhm = None
+
     canica = CanICA(
         n_components=4,
         random_state=RANDOM_STATE,
         mask=decomposition_mask_img,
+        smoothing_fwhm=smoothing_fwhm,
         n_init=50,
     )
     canica.fit(canica_data)

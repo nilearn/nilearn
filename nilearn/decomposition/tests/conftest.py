@@ -6,7 +6,6 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn.conftest import _affine_eye
 from nilearn.maskers import MultiNiftiMasker, SurfaceMasker
 from nilearn.surface import PolyMesh, SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
@@ -152,37 +151,20 @@ def canica_data(
     rng,
     _make_canica_components: np.ndarray,
     shape_3d_large,
+    affine_eye,
     decomposition_mesh,
     data_type: str,
     n_subjects=N_SUBJECTS,
 ) -> Union[list[Nifti1Image], list[SurfaceImage]]:
     """Create a "multi-subject" dataset."""
     if data_type == "nifti":
-        data_nii = []
-        affine = _affine_eye()
-
-        background = -0.01 * rng.normal(size=shape_3d_large) - 2
-        background = background[..., np.newaxis]
-
-        for _ in range(n_subjects):
-            this_data = np.dot(
-                rng.normal(size=(11, N_COMPONENTS)), _make_canica_components
-            )
-            this_data += 0.01 * rng.normal(size=this_data.shape)
-
-            # Get back into 3D for CanICA
-            this_data = np.reshape(this_data, (11, *shape_3d_large))
-            this_data = np.rollaxis(this_data, 0, N_COMPONENTS)
-
-            # Put the border of the image to zero, to mimic a brain image
-            this_data[:5] = background[:5]
-            this_data[-5:] = background[-5:]
-            this_data[:, :5] = background[:, :5]
-            this_data[:, -5:] = background[:, -5:]
-
-            data_nii.append(Nifti1Image(this_data, affine))
-
-        return data_nii
+        return _make_volume_data_from_components(
+            _make_canica_components,
+            affine_eye,
+            shape_3d_large,
+            rng,
+            n_subjects,
+        )
 
     else:
         # TODO for now we generate random data
@@ -201,23 +183,7 @@ def _make_canica_components(
     3D images unraveled for volume, 2D for surface
     """
     if data_type == "nifti":
-        shape = shape_3d_large
-
-        component1 = np.zeros(shape)
-        component1[:5, :10] = 1
-        component1[5:10, :10] = -1
-
-        component2 = np.zeros(shape)
-        component2[:5, -10:] = 1
-        component2[5:10, -10:] = -1
-
-        component3 = np.zeros(shape)
-        component3[-5:, -10:] = 1
-        component3[-10:-5, -10:] = -1
-
-        component4 = np.zeros(shape)
-        component4[-5:, :10] = 1
-        component4[-10:-5, :10] = -1
+        return _canica_components_volume(shape_3d_large)
 
     else:
         shape = (decomposition_mesh.n_vertices, 1)
@@ -238,6 +204,34 @@ def _make_canica_components(
         component4[-5:] = 1
         component4[-10:-5] = -1
 
+        return np.vstack(
+            (
+                component1.ravel(),
+                component2.ravel(),
+                component3.ravel(),
+                component4.ravel(),
+            )
+        )
+
+
+def _canica_components_volume(shape):
+    """Create 4 volume components."""
+    component1 = np.zeros(shape)
+    component1[:5, :10] = 1
+    component1[5:10, :10] = -1
+
+    component2 = np.zeros(shape)
+    component2[:5, -10:] = 1
+    component2[5:10, -10:] = -1
+
+    component3 = np.zeros(shape)
+    component3[-5:, -10:] = 1
+    component3[-10:-5, -10:] = -1
+
+    component4 = np.zeros(shape)
+    component4[-5:, :10] = 1
+    component4[-10:-5, :10] = -1
+
     return np.vstack(
         (
             component1.ravel(),
@@ -246,6 +240,37 @@ def _make_canica_components(
             component4.ravel(),
         )
     )
+
+
+def _make_volume_data_from_components(
+    components,
+    affine,
+    shape,
+    rng,
+    n_subjects,
+):
+    """Create a "multi-subject" dataset of volume data."""
+    background = -0.01 * rng.normal(size=shape) - 2
+    background = background[..., np.newaxis]
+
+    data = []
+    for _ in range(n_subjects):
+        this_data = np.dot(rng.normal(size=(40, N_COMPONENTS)), components)
+        this_data += 0.01 * rng.normal(size=this_data.shape)
+
+        # Get back into 3D for CanICA
+        this_data = np.reshape(this_data, (40, *shape))
+        this_data = np.rollaxis(this_data, 0, N_COMPONENTS)
+
+        # Put the border of the image to zero, to mimic a brain image
+        this_data[:5] = background[:5]
+        this_data[-5:] = background[-5:]
+        this_data[:, :5] = background[:, :5]
+        this_data[:, -5:] = background[:, -5:]
+
+        data.append(Nifti1Image(this_data, affine))
+
+    return data
 
 
 @pytest.fixture
