@@ -200,10 +200,10 @@ show()
 # We can now easily save the main results,
 # the model metadata and an HTML report to the disk.
 #
+from nilearn.interfaces.bids import save_glm_to_bids
+
 output_dir = Path.cwd() / "results" / "plot_bids_features"
 output_dir.mkdir(exist_ok=True, parents=True)
-
-from nilearn.interfaces.bids import save_glm_to_bids
 
 stat_threshold = norm.isf(0.001)
 
