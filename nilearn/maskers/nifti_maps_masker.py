@@ -332,7 +332,7 @@ class NiftiMapsMasker(BaseMasker):
         self._report_content["displayed_maps"] = list(maps_to_be_displayed)
 
         img = self._reporting_data["img"]
-        embeded_images = []
+        embedded_images = []
 
         if img is None:
             msg = (
@@ -345,9 +345,9 @@ class NiftiMapsMasker(BaseMasker):
                 display = plotting.plot_stat_map(
                     index_img(maps_image, component)
                 )
-                embeded_images.append(embed_img(display))
+                embedded_images.append(embed_img(display))
                 display.close()
-            return embeded_images
+            return embedded_images
 
         if self._reporting_data["dim"] == 5:
             msg = (
@@ -372,9 +372,9 @@ class NiftiMapsMasker(BaseMasker):
                 index_img(maps_image, component),
                 cmap=plotting.cm.black_blue,
             )
-            embeded_images.append(embed_img(display))
+            embedded_images.append(embed_img(display))
             display.close()
-        return embeded_images
+        return embedded_images
 
     @fill_doc
     def fit(self, imgs=None, y=None):

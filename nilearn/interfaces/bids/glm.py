@@ -194,7 +194,7 @@ def save_glm_to_bids(
 
     if is_matplotlib_installed():
         from nilearn._utils.plotting import (
-            generate_constrat_matrices_figures,
+            generate_contrast_matrices_figures,
             generate_design_matrices_figures,
         )
     else:
@@ -257,7 +257,7 @@ def save_glm_to_bids(
         generate_design_matrices_figures(design_matrices, output=filenames)
 
         logger.log("Generating contrast matrices figures...", verbose=verbose)
-        generate_constrat_matrices_figures(
+        generate_contrast_matrices_figures(
             design_matrices,
             contrasts,
             output=filenames,

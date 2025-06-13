@@ -475,13 +475,13 @@ def img_atlas(shape_3d_default, affine_mni):
 
 
 def _n_regions():
-    """Return a default numher of regions for maps."""
+    """Return a default number of regions for maps."""
     return 9
 
 
 @pytest.fixture
 def n_regions():
-    """Return a default numher of regions for maps."""
+    """Return a default number of regions for maps."""
     return _n_regions()
 
 

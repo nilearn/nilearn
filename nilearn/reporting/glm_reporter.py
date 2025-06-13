@@ -57,7 +57,7 @@ if is_matplotlib_installed():
     from matplotlib import pyplot as plt
 
     from nilearn._utils.plotting import (
-        generate_constrat_matrices_figures,
+        generate_contrast_matrices_figures,
         generate_design_matrices_figures,
         resize_plot_inches,
     )
@@ -346,7 +346,7 @@ def make_glm_report(
         logger.log(
             "Generating contrast matrices figures...", verbose=model.verbose
         )
-        contrasts_dict = generate_constrat_matrices_figures(
+        contrasts_dict = generate_contrast_matrices_figures(
             design_matrices,
             contrasts,
             contrasts_dict=contrasts_dict,
