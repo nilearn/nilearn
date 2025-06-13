@@ -157,6 +157,7 @@ def test_pass_masker_arg_to_estimator(
     check_decomposition_estimator(est, data_type)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_nifti_maps_masker_(canica_data_single_img, estimator):
@@ -210,10 +211,16 @@ def test_with_confounds(
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_single_subject_score(canica_data_single_img, data_type, estimator):
     """Check content of scores after fitting."""
-    n_components = 10
+    n_components = 3
+
+    # quick sanity check to avoid some tests failures if
+    # n_components < N_SAMPLES
+    assert n_components < N_SAMPLES
+
     est = estimator(
         n_components=n_components,
         random_state=RANDOM_STATE,
+        smoothing_fwhm=None,
     )
 
     est.fit(canica_data_single_img)

@@ -261,5 +261,6 @@ class CanICA(_MultiPCA):
                 f"and you provided threshold={self.threshold}."
             )
         components = _MultiPCA._raw_fit(self, data)
+
         self._unmix_components(components)
         return self
