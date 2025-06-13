@@ -1,49 +1,40 @@
 """Functions for surface visualization."""
 
-import itertools
 from warnings import warn
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib import gridspec
-from matplotlib.colors import Normalize, to_rgba
-from matplotlib.patches import Patch
-from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
-from nilearn import DEFAULT_DIVERGING_CMAP, image, surface
-from nilearn._utils import check_niimg_3d, compare_version, fill_doc
+from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils import fill_doc
+from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
+from nilearn.image import get_data
 from nilearn.plotting._utils import (
+    DEFAULT_ENGINE,
+    check_threshold_not_negative,
     create_colormap_from_lut,
-    get_colorbar_and_data_ranges,
-    save_figure_if_needed,
-)
-from nilearn.plotting.displays import PlotlySurfaceFigure
-from nilearn.plotting.surface._backend import (
-    DATA_EXTENSIONS,
-    check_hemispheres,
-    check_views,
-)
-from nilearn.plotting.surface._matplotlib_backend import (
-    _colorbar_from_array,
-    _get_ticks,
 )
 from nilearn.plotting.surface._utils import (
+    DEFAULT_HEMI,
+    check_hemispheres,
     check_surface_plotting_inputs,
+    check_views,
     get_surface_backend,
-    sanitize_hemi_for_surface_image,
 )
-from nilearn.surface import (
-    load_surf_data,
-    load_surf_mesh,
-    vol_to_surf,
-)
+from nilearn.surface import load_surf_data, load_surf_mesh, vol_to_surf
 from nilearn.surface.surface import (
     FREESURFER_DATA_EXTENSIONS,
     check_extensions,
     check_mesh_is_fsaverage,
+)
+
+# subset of data format extensions supported
+DATA_EXTENSIONS = (
+    "gii",
+    "gii.gz",
+    "mgz",
 )
 
 
@@ -52,9 +43,9 @@ def plot_surf(
     surf_mesh=None,
     surf_map=None,
     bg_map=None,
-    hemi="left",
+    hemi=DEFAULT_HEMI,
     view=None,
-    engine="matplotlib",
+    engine=DEFAULT_ENGINE,
     cmap=None,
     symmetric_cmap=None,
     colorbar=True,
@@ -80,39 +71,26 @@ def plot_surf(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
-        Surface :term:`mesh` geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the :term:`mesh` :term:`vertices<vertex>`,
-        the second containing the indices (into coords)
-        of the :term:`mesh` :term:`faces`,
-        or a :obj:`~nilearn.surface.InMemoryMesh` object with
-        "coordinates" and "faces" attributes,
-        or a :obj:`~nilearn.surface.PolyMesh` object,
-        or None.
-        If None is passed, then ``surf_map``
-        must be a :obj:`~nilearn.surface.SurfaceImage` instance
-        and the mesh from that :obj:`~nilearn.surface.SurfaceImage` instance
-        will be used.
+    %(surf_mesh)s
+        If `None` is passed, then ``surf_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
+        :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
-    surf_map : :obj:`str` or :class:`numpy.ndarray`\
-               or :obj:`~nilearn.surface.SurfaceImage` or None, \
-               default=None
+    surf_map : :obj:`str` or :class:`numpy.ndarray` or \
+               :obj:`~nilearn.surface.SurfaceImage` or None, default=None
         Data to be displayed on the surface :term:`mesh`.
-        Can be a file
-        (valid formats are .gii, .mgz, .nii, .nii.gz,
-        or Freesurfer specific files such as
-        .thickness, .area, .curv, .sulc, .annot, .label) or
-        a Numpy array with a value for each :term:`vertex` of the `surf_mesh`,
-        or a :obj:`~nilearn.surface.SurfaceImage` instance.
-        If None is passed for ``surf_mesh``
-        then ``surf_map``
-        must be a :obj:`~nilearn.surface.SurfaceImage` instance
-        and its the mesh will be used for plotting.
+        Can be a file (valid formats are .gii, .mgz, .nii, .nii.gz, or
+        Freesurfer specific files such as .thickness, .area, .curv, .sulc,
+        .annot, .label) or a Numpy array with a value for each :term:`vertex`
+        of the `surf_mesh`, or a :obj:`~nilearn.surface.SurfaceImage`
+        instance.
+        If `None` is passed for ``surf_mesh``, then ``surf_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and its mesh will be
+        used for plotting.
+
+        When specified `surf_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `surf_map`
+        data.
 
     %(bg_map)s
 
@@ -128,30 +106,29 @@ def plot_surf(
         Currently, only ``matplotlib`` and ``plotly`` are supported.
 
         .. note::
-            To use the ``plotly`` engine, you need to
-            have ``plotly`` installed.
+            To use the ``plotly`` engine, you need to have ``plotly``
+            installed.
 
         .. note::
-            To be able to save figures to disk with the
-            ``plotly`` engine, you need to have
-            ``kaleido`` installed.
+            To be able to save figures to disk with the ``plotly`` engine, you
+            need to have ``kaleido`` installed.
 
         .. warning::
-            The ``plotly`` engine is new and experimental.
-            Please report bugs that you may encounter.
+            The ``plotly`` engine is new and experimental. Please report bugs
+            that you may encounter.
 
     %(cmap)s
-        If None, matplotlib default will be chosen.
+        If `None`, ``matplotlib`` default will be chosen.
 
     symmetric_cmap : :obj:`bool`, default=None
         Whether to use a symmetric colormap or not.
 
         .. note::
-            This option is currently only implemented for
-            the ``plotly`` engine.
+            This option is currently only implemented for the ``plotly``
+            engine.
 
-        When using plotly as engine, `symmetric_cmap` will default to ``False``
-        if ``None`` is passed.
+        When using ``plotly`` as engine, ``symmetric_cmap`` will default to
+        `False` if `None` is passed.
 
         .. versionadded:: 0.9.0
 
@@ -161,29 +138,27 @@ def plot_surf(
     %(avg_method)s
 
         .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
+            This option is currently only implemented for the ``matplotlib``
+            engine.
 
-        When using matplotlib as engine,
-        `avg_method` will default to ``"mean"`` if ``None`` is passed.
+        When using ``matplotlib`` as engine, ``avg_method`` will default to
+        ``"mean"`` if `None` is passed.
 
-    threshold : a number or None, default=None.
-        If None is given, the image is not thresholded.
-        If a number is given, it is used to threshold the image, values
-        below the threshold (in absolute value) are plotted as transparent.
+    %(threshold)s
+        Default=None
 
     alpha : :obj:`float` or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
 
-        If 'auto' is chosen, alpha will default to 0.5 when no bg_map
-        is passed and to 1 if a bg_map is passed.
+        If `'auto'` is chosen, ``alpha`` will default to `0.5` when no
+        ``bg_map`` is passed and to `1` if a ``bg_map`` is passed.
 
         .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
+            This option is currently only implemented for the ``matplotlib``
+            engine.
 
-        When using matplotlib as engine,
-        `alpha` will default to ``"auto"`` if ``None`` is passed.
+        When using ``matplotlib`` as engine, ``alpha`` will default to `"auto"`
+        if `None` is passed.
 
     %(bg_on_data)s
 
@@ -196,25 +171,25 @@ def plot_surf(
 
     cbar_vmin : :obj:`float` or None, default=None
         Lower bound for the colorbar.
-        If None, the value will be set from the data.
+        If `None`, the value will be set from the data.
 
         .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
+            This option is currently only implemented for the ``matplotlib``
+            engine.
 
     cbar_vmax : :obj:`float` or None, default=None
         Upper bound for the colorbar.
-        If None, the value will be set from the data.
+        If `None`, the value will be set from the data.
 
         .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
+            This option is currently only implemented for the ``matplotlib``
+            engine.
 
     %(cbar_tick_format)s
         Default="auto" which will select:
 
-        - '%%.2g' (scientific notation) with ``matplotlib`` engine.
-        - '.1f' (rounded floats) with ``plotly`` engine.
+        - `'%%.2g'` (scientific notation) with ``matplotlib`` engine.
+        - `'.1f'` (rounded floats) with ``plotly`` engine.
 
         .. versionadded:: 0.7.1
 
@@ -224,35 +199,35 @@ def plot_surf(
         Size of the title font
 
         .. note::
-            This option is currently only implemented for
-            the ``plotly`` engine.
+            This option is currently only implemented for the ``plotly``
+            engine.
 
-        When using plotly as engine, `title_font_size` will default to ``18``
-        if ``None`` is passed.
+        When using ``plotly`` as engine, ``title_font_size`` will default to
+        `18` if `None` is passed.
 
         .. versionadded:: 0.9.0
 
     %(output_file)s
 
     axes : instance of matplotlib axes or None, default=None
-        The axes instance to plot to. The projection must be '3d' (e.g.,
-        `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
+        The axes instance to plot to. The projection must be `"3d"` (e.g.,
+        `figure, axes = plt.subplots(subplot_kw={'projection': "3d"})`,
         where axes should be passed.).
-        If None, a new axes is created.
+        If `None`, a new axes is created.
 
         .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
+            This option is currently only implemented for the ``matplotlib``
+            engine.
 
     %(figure)s
 
         .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
+            This option is currently only implemented for the ``matplotlib``
+            engine.
 
     Returns
     -------
-    fig : :class:`~matplotlib.figure.Figure` or\
+    fig : :class:`~matplotlib.figure.Figure` or
     :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
         The surface figure. If ``engine='matplotlib'`` then a
         :class:`~matplotlib.figure.Figure` is returned.
@@ -273,8 +248,16 @@ def plot_surf(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    fig = get_surface_backend(engine).plot_surf(
-        surf_mesh=surf_mesh,
+    check_params(locals())
+    check_threshold_not_negative(threshold)
+    surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
+        surf_map, surf_mesh, hemi, bg_map
+    )
+    check_extensions(surf_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
+
+    backend = get_surface_backend(engine)
+    fig = backend._plot_surf(
+        surf_mesh,
         surf_map=surf_map,
         bg_map=bg_map,
         hemi=hemi,
@@ -302,40 +285,11 @@ def plot_surf(
     return fig
 
 
-def _get_faces_on_edge(faces, parc_idx):
-    """Identify which faces lie on the outeredge of the parcellation \
-    defined by the indices in parc_idx.
-
-    Parameters
-    ----------
-    faces : :class:`numpy.ndarray` of shape (n, 3), indices of the mesh faces
-
-    parc_idx : :class:`numpy.ndarray`, indices of the vertices
-        of the region to be plotted
-
-    """
-    # count how many vertices belong to the given parcellation in each face
-    verts_per_face = np.isin(faces, parc_idx).sum(axis=1)
-
-    # test if parcellation forms regions
-    if np.all(verts_per_face < 2):
-        raise ValueError("Vertices in parcellation do not form region.")
-
-    vertices_on_edge = np.intersect1d(
-        np.unique(faces[verts_per_face == 2]), parc_idx
-    )
-    faces_outside_edge = np.isin(faces, vertices_on_edge).sum(axis=1)
-
-    return np.logical_and(faces_outside_edge > 0, verts_per_face < 3)
-
-
 @fill_doc
 def plot_surf_contours(
     surf_mesh=None,
     roi_map=None,
-    hemi=None,
-    axes=None,
-    figure=None,
+    hemi=DEFAULT_HEMI,
     levels=None,
     labels=None,
     colors=None,
@@ -343,76 +297,53 @@ def plot_surf_contours(
     cmap="tab20",
     title=None,
     output_file=None,
+    axes=None,
+    figure=None,
     **kwargs,
 ):
-    """Plot contours of ROIs on a surface, \
-    optionally over a statistical map.
+    """Plot contours of ROIs on a surface, optionally over a statistical map.
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
-        Surface :term:`mesh` geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the :term:`mesh` :term:`vertices<vertex>`,
-        the second containing the indices (into coords)
-        of the :term:`mesh` :term:`faces`,
-        or a :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
-        and "faces" attributes,
-        or a :obj:`~nilearn.surface.PolyMesh` object,
-        or None.
-        If None is passed, then ``roi_map``
-        must be a :obj:`~nilearn.surface.SurfaceImage` instance
-        and the mesh from that :obj:`~nilearn.surface.SurfaceImage` instance
-        will be used.
+    %(surf_mesh)s
+        If None is passed, then ``roi_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
+        :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
     roi_map : :obj:`str` or :class:`numpy.ndarray` or \
-              :obj:`~nilearn.surface.SurfaceImage` or None, \
-              default=None
-        ROI map to be displayed on the surface mesh,
-        can be a file
-        (valid formats are .gii, .mgz, or
-        Freesurfer specific files such as
-        .thickness, .area, .curv, .sulc, .annot, .label) or
-        a Numpy array with a value for each :term:`vertex` of the `surf_mesh`.
-        The value at each :term:`vertex` one inside the ROI
-        and zero inside ROI,
-        or an integer giving the label number for atlases.
-        If None is passed for ``surf_mesh``
-        then ``roi_map``
-        must be a :obj:`~nilearn.surface.SurfaceImage` instance
-        and its the mesh will be used for plotting.
+              :obj:`~nilearn.surface.SurfaceImage` or None, default=None
+        ROI map to be displayed on the surface mesh, can be a file (valid
+        formats are .gii, .mgz, or Freesurfer specific files such as
+        .thickness, .area, .curv, .sulc, .annot, .label) or a Numpy array with
+        a value for each :term:`vertex` of the `surf_mesh`.
+        The value at each :term:`vertex` one inside the ROI and zero inside
+        ROI, or an integer giving the label number for atlases.
+        If None is passed for ``surf_mesh`` then ``roi_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and its the mesh will be
+        used for plotting.
 
-    hemi : {"left", "right", "both", None}, default=None
-        Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
-        is passed as ``roi_map``
-        and / or if PolyMesh is passed as ``surf_mesh``.
-        In these cases, if ``hemi`` is set to None, it will default to "left".
+        When specified `roi_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `roi_map`
+        data.
+
+    %(hemi)s
+        It is only used if ``roi_map`` is :obj:`~nilearn.surface.SurfaceImage`
+        and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
+        Otherwise a warning will be displayed.
 
         .. versionadded:: 0.11.0
 
-    axes : instance of matplotlib axes or None, default=None
-        The axes instance to plot to. The projection must be '3d' (e.g.,
-        `figure, axes = plt.subplots(subplot_kw={'projection': '3d'})`,
-        where axes should be passed.).
-        If None, uses axes from figure if available, else creates new axes.
-
-    %(figure)s
-
     levels : :obj:`list` of :obj:`int`, or None, default=None
         A list of indices of the regions that are to be outlined.
-        Every index needs to correspond to one index in roi_map.
-        If None, all regions in roi_map are used.
+        Every index needs to correspond to one index in ``roi_map``.
+        If `None`, all regions in ``roi_map`` are used.
 
     labels : :obj:`list` of :obj:`str` or None, or None, default=None
         A list of labels for the individual regions of interest.
-        Provide None as list entry to skip showing the label of that region.
-        If None no labels are used.
+        Provide `None` as list entry to skip showing the label of that region.
+        If `None`, no labels are used.
 
-    colors : :obj:`list` of matplotlib color names or RGBA values, or None \
+    colors : :obj:`list` of matplotlib color names or RGBA values, or None,
         default=None
         Colors to be used.
 
@@ -426,9 +357,16 @@ def plot_surf_contours(
 
     %(output_file)s
 
+    axes : instance of matplotlib axes or None, default=None
+        The axes instance to plot to. The projection must be `"3d"` (e.g.,
+        `figure, axes = plt.subplots(subplot_kw={'projection': "3d"})`,
+        where axes should be passed.).
+        If `None`, uses axes from figure if available, else creates new axes.
+
+    %(figure)s
+
     kwargs : extra keyword arguments, optional
-        Extra keyword arguments passed to
-        :func:`~nilearn.plotting.plot_surf`.
+        Extra keyword arguments passed to :func:`~nilearn.plotting.plot_surf`.
 
     See Also
     --------
@@ -440,104 +378,28 @@ def plot_surf_contours(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    hemi = sanitize_hemi_for_surface_image(hemi, roi_map, surf_mesh)
     roi_map, surf_mesh, _ = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, map_var_name="roi_map"
     )
-
-    _check_figure_axes_inputs_plot_surf_contours(figure, axes)
-
-    if figure is None and axes is None:
-        figure = plot_surf(surf_mesh, **kwargs)
-        axes = figure.axes[0]
-    if figure is None:
-        figure = axes.get_figure()
-    if axes is None:
-        axes = figure.axes[0]
-    if axes.name != "3d":
-        raise ValueError("Axes must be 3D.")
-    # test if axes contains Poly3DCollection, if not initialize surface
-    if not axes.collections or not isinstance(
-        axes.collections[0], Poly3DCollection
-    ):
-        _ = plot_surf(surf_mesh, axes=axes, **kwargs)
-
-    _, faces = load_surf_mesh(surf_mesh)
-
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
-    roi = load_surf_data(roi_map)
 
-    if levels is None:
-        levels = np.unique(roi_map)
-    if colors is None:
-        n_levels = len(levels)
-        vmax = n_levels
-        cmap = plt.get_cmap(cmap)
-        norm = Normalize(vmin=0, vmax=vmax)
-        colors = [cmap(norm(color_i)) for color_i in range(vmax)]
-    else:
-        try:
-            colors = [to_rgba(color, alpha=1.0) for color in colors]
-        except ValueError:
-            raise ValueError(
-                "All elements of colors need to be either a"
-                " matplotlib color string or RGBA values."
-            )
-
-    if labels is None:
-        labels = [None] * len(levels)
-    if not (len(levels) == len(labels) == len(colors)):
-        raise ValueError(
-            "Levels, labels, and colors "
-            "argument need to be either the same length or None."
-        )
-
-    patch_list = []
-    for level, color, label in zip(levels, colors, labels):
-        roi_indices = np.where(roi == level)[0]
-        faces_outside = _get_faces_on_edge(faces, roi_indices)
-        # Fix: Matplotlib version 3.3.2 to 3.3.3
-        # Attribute _facecolors3d changed to _facecolor3d in
-        # matplotlib version 3.3.3
-        if compare_version(mpl.__version__, "<", "3.3.3"):
-            axes.collections[0]._facecolors3d[faces_outside] = color
-            if axes.collections[0]._edgecolors3d.size == 0:
-                axes.collections[0].set_edgecolor(
-                    axes.collections[0]._facecolors3d
-                )
-            axes.collections[0]._edgecolors3d[faces_outside] = color
-        else:
-            axes.collections[0]._facecolor3d[faces_outside] = color
-            if axes.collections[0]._edgecolor3d.size == 0:
-                axes.collections[0].set_edgecolor(
-                    axes.collections[0]._facecolor3d
-                )
-            axes.collections[0]._edgecolor3d[faces_outside] = color
-        if label and legend:
-            patch_list.append(Patch(color=color, label=label))
-    # plot legend only if indicated and labels provided
-    if legend and np.any([lbl is not None for lbl in labels]):
-        figure.legend(handles=patch_list)
-        # if legends, then move title to the left
-    if title is None and hasattr(figure._suptitle, "_text"):
-        title = figure._suptitle._text
-    if title:
-        axes.set_title(title)
-
-    return save_figure_if_needed(figure, output_file)
-
-
-def _check_figure_axes_inputs_plot_surf_contours(figure, axes):
-    if isinstance(figure, PlotlySurfaceFigure):
-        raise ValueError(
-            "figure argument is a PlotlySurfaceFigure"
-            "but it should be None or a matplotlib figure"
-        )
-    if isinstance(axes, PlotlySurfaceFigure):
-        raise ValueError(
-            "axes argument is a PlotlySurfaceFigure"
-            "but it should be None or a matplotlib axes"
-        )
+    backend = get_surface_backend(DEFAULT_ENGINE)
+    fig = backend._plot_surf_contours(
+        surf_mesh=surf_mesh,
+        roi_map=roi_map,
+        hemi=hemi,
+        levels=levels,
+        labels=labels,
+        colors=colors,
+        legend=legend,
+        cmap=cmap,
+        title=title,
+        output_file=output_file,
+        axes=axes,
+        figure=figure,
+        **kwargs,
+    )
+    return fig
 
 
 @fill_doc
@@ -545,25 +407,26 @@ def plot_surf_stat_map(
     surf_mesh=None,
     stat_map=None,
     bg_map=None,
-    hemi="left",
+    hemi=DEFAULT_HEMI,
     view=None,
-    engine="matplotlib",
+    engine=DEFAULT_ENGINE,
+    cmap=DEFAULT_DIVERGING_CMAP,
+    symmetric_cmap=None,
+    colorbar=True,
+    avg_method=None,
     threshold=None,
     alpha=None,
-    vmin=None,
-    vmax=None,
-    cmap=DEFAULT_DIVERGING_CMAP,
-    colorbar=True,
-    symmetric_cbar="auto",
-    cbar_tick_format="auto",
     bg_on_data=False,
     darkness=0.7,
+    vmin=None,
+    vmax=None,
+    symmetric_cbar="auto",
+    cbar_tick_format="auto",
     title=None,
-    title_font_size=18,
+    title_font_size=None,
     output_file=None,
     axes=None,
     figure=None,
-    avg_method=None,
     **kwargs,
 ):
     """Plot a stats map on a surface :term:`mesh` with optional background.
@@ -572,22 +435,9 @@ def plot_surf_stat_map(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
-        Surface :term:`mesh` geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z
-        coordinates of the :term:`mesh` :term:`vertices<vertex>`,
-        the second containing the indices (into coords)
-        of the :term:`mesh` :term:`faces`,
-        or a :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
-        and "faces" attributes, or a :obj:`~nilearn.surface.PolyMesh` object,
-        or None.
-        If None is passed, then ``surf_map``
-        must be a :obj:`~nilearn.surface.SurfaceImage` instance
-        and the mesh from
+    %(surf_mesh)s
+        If None is passed, then ``stat_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from
         that :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
     stat_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
@@ -601,6 +451,10 @@ def plot_surf_stat_map(
         then ``stat_map``
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
+
+        When specified `surf_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `surf_map`
+        data.
 
     %(bg_map)s
 
@@ -628,22 +482,20 @@ def plot_surf_stat_map(
             Please report bugs that you may encounter.
 
 
-    threshold : a number or None, default=None
-        If None is given, the image is not thresholded.
-        If a number is given, it is used to threshold the image,
-        values below the threshold (in absolute value) are plotted
-        as transparent.
-
     %(cmap)s
         default="RdBu_r"
 
-    %(cbar_tick_format)s
-        Default="auto" which will select:
+    symmetric_cmap : :obj:`bool`, default=None
+        Whether to use a symmetric colormap or not.
 
-            - '%%.2g' (scientific notation) with ``matplotlib`` engine.
-            - '.1f' (rounded floats) with ``plotly`` engine.
+        .. note::
+            This option is currently only implemented for the ``plotly``
+            engine.
 
-        .. versionadded:: 0.7.1
+        When using ``plotly`` as engine, ``symmetric_cmap`` will default to
+        `False` if `None` is passed.
+
+        .. versionadded:: 0.12.0
 
     %(colorbar)s
 
@@ -651,6 +503,20 @@ def plot_surf_stat_map(
             This function uses a symmetric colorbar for the statistical map.
 
         Default=True.
+
+    %(avg_method)s
+
+        .. note::
+            This option is currently only implemented for the
+            ``matplotlib`` engine.
+
+        When using matplotlib as engine,
+        `avg_method` will default to ``"mean"`` if ``None`` is passed.
+
+        .. versionadded:: 0.10.3dev
+
+    %(threshold)s
+        Default=None
 
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not the stat_map).
@@ -662,12 +528,6 @@ def plot_surf_stat_map(
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-    %(vmin)s
-
-    %(vmax)s
-
-    %(symmetric_cbar)s
-
     %(bg_on_data)s
 
     %(darkness)s
@@ -677,9 +537,23 @@ def plot_surf_stat_map(
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
+    %(vmin)s
+
+    %(vmax)s
+
+    %(symmetric_cbar)s
+
+    %(cbar_tick_format)s
+        Default="auto" which will select:
+
+            - '%%.2g' (scientific notation) with ``matplotlib`` engine.
+            - '.1f' (rounded floats) with ``plotly`` engine.
+
+        .. versionadded:: 0.7.1
+
     %(title)s
 
-    title_font_size : :obj:`int`, default=18
+    title_font_size : :obj:`int`, default=None
         Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
@@ -702,17 +576,6 @@ def plot_surf_stat_map(
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-    %(avg_method)s
-
-        .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
-
-        When using matplotlib as engine,
-        `avg_method` will default to ``"mean"`` if ``None`` is passed.
-
-        .. versionadded:: 0.10.3dev
-
     kwargs : :obj:`dict`, optional
         Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
 
@@ -725,60 +588,55 @@ def plot_surf_stat_map(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    # set default view to dorsal if hemi is both and view is not set
     check_params(locals())
-    if view is None:
-        view = "dorsal" if hemi == "both" else "lateral"
+    check_threshold_not_negative(threshold)
 
     stat_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         stat_map, surf_mesh, hemi, bg_map, map_var_name="stat_map"
     )
-
     check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     loaded_stat_map = load_surf_data(stat_map)
 
-    # Call get_colorbar_and_data_ranges to derive symmetric vmin, vmax
-    # And colorbar limits depending on symmetric_cbar settings
-    cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
-        loaded_stat_map,
-        vmin=vmin,
-        vmax=vmax,
-        symmetric_cbar=symmetric_cbar,
+    backend = get_surface_backend(engine)
+    # derive symmetric vmin, vmax and colorbar limits depending on
+    # symmetric_cbar settings
+    cbar_vmin, cbar_vmax, vmin, vmax = (
+        backend._adjust_colorbar_and_data_ranges(
+            loaded_stat_map,
+            vmin=vmin,
+            vmax=vmax,
+            symmetric_cbar=symmetric_cbar,
+        )
     )
-    # Set to None the values that are not used by plotly
-    # to avoid warnings thrown by plot_surf
-    if engine == "plotly":
-        cbar_vmin = None
-        cbar_vmax = None
 
-    display = plot_surf(
+    fig = plot_surf(
         surf_mesh,
         surf_map=loaded_stat_map,
         bg_map=bg_map,
         hemi=hemi,
         view=view,
         engine=engine,
+        cmap=cmap,
+        symmetric_cmap=symmetric_cmap,
+        colorbar=colorbar,
         avg_method=avg_method,
         threshold=threshold,
-        cmap=cmap,
-        symmetric_cmap=True,
-        colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format,
         alpha=alpha,
         bg_on_data=bg_on_data,
         darkness=darkness,
-        vmax=vmax,
         vmin=vmin,
+        vmax=vmax,
+        cbar_vmin=cbar_vmin,
+        cbar_vmax=cbar_vmax,
+        cbar_tick_format=cbar_tick_format,
         title=title,
         title_font_size=title_font_size,
         output_file=output_file,
         axes=axes,
         figure=figure,
-        cbar_vmin=cbar_vmin,
-        cbar_vmax=cbar_vmax,
         **kwargs,
     )
-    return display
+    return fig
 
 
 @fill_doc
@@ -787,18 +645,18 @@ def plot_img_on_surf(
     surf_mesh="fsaverage5",
     mask_img=None,
     hemispheres=None,
+    views=None,
+    cmap=DEFAULT_DIVERGING_CMAP,
+    colorbar=True,
+    threshold=None,
     bg_on_data=False,
     inflate=False,
-    views=None,
-    output_file=None,
-    title=None,
-    colorbar=True,
     vmin=None,
     vmax=None,
-    threshold=None,
     symmetric_cbar="auto",
-    cmap=DEFAULT_DIVERGING_CMAP,
     cbar_tick_format="%i",
+    title=None,
+    output_file=None,
     **kwargs,
 ):
     """Plot multiple views of plot_surf_stat_map \
@@ -830,15 +688,9 @@ def plot_img_on_surf(
         during projection of the volume to the surface.
         If ``None``, don't apply any mask.
 
-    %(bg_on_data)s
-
     hemispheres : :obj:`list` of :obj:`str`, default=None
         Hemispheres to display.
         Will default to ``['left', 'right']`` if ``None`` or "both" is passed.
-
-    inflate : :obj:`bool`, default=False
-        If True, display images in inflated brain.
-        If False, display images in pial surface.
 
     views : :obj:`list` of :obj:`str`, default=None
         A list containing all views to display.
@@ -847,9 +699,8 @@ def plot_img_on_surf(
         are shown on the left and right sides of the figure.
         Will default to ``['lateral', 'medial']`` if ``None`` is passed.
 
-    %(output_file)s
-
-    %(title)s
+    %(cmap)s
+        Default="RdBu_r".
 
     %(colorbar)s
 
@@ -858,21 +709,33 @@ def plot_img_on_surf(
 
         Default=True.
 
+    %(threshold)s
+        Default=None
+
+    %(bg_on_data)s
+
+    inflate : :obj:`bool`, default=False
+        If True, display images in inflated brain.
+        If False, display images in pial surface.
+
     %(vmin)s
 
     %(vmax)s
 
-    %(threshold)s
-
     %(symmetric_cbar)s
-
-    %(cmap)s
-        Default="RdBu_r".
 
     %(cbar_tick_format)s
 
+    %(title)s
+
+    %(output_file)s
+
     kwargs : :obj:`dict`, optional
         keyword arguments passed to plot_surf_stat_map.
+
+        .. note::
+            Parameters "figure", "axes", and "engine" which are valid for
+            ``plot_surf_stat_map`` are not valid for ``plot_img_on_surf``.
 
     See Also
     --------
@@ -886,19 +749,25 @@ def plot_img_on_surf(
 
     """
     check_params(locals())
-    if hemispheres in (None, "both"):
-        hemispheres = ["left", "right"]
-    if views is None:
-        views = ["lateral", "medial"]
+    check_threshold_not_negative(threshold)
+
     for arg in ("figure", "axes", "engine"):
         if arg in kwargs:
             raise ValueError(
                 f"plot_img_on_surf does not accept {arg} as an argument"
             )
 
-    stat_map = check_niimg_3d(stat_map, dtype="auto")
-    modes = check_views(views)
+    if hemispheres in (None, "both", ["both"]):
+        hemispheres = ["left", "right"]
+    if not isinstance(hemispheres, list):
+        hemispheres = [hemispheres]
     hemis = check_hemispheres(hemispheres)
+
+    if views is None:
+        views = ["lateral", "medial"]
+    modes = check_views(views)
+
+    stat_map = check_niimg_3d(stat_map, dtype="auto")
     surf_mesh = check_mesh_is_fsaverage(surf_mesh)
 
     mesh_prefix = "infl" if inflate else "pial"
@@ -906,7 +775,6 @@ def plot_img_on_surf(
         "left": surf_mesh[f"{mesh_prefix}_left"],
         "right": surf_mesh[f"{mesh_prefix}_right"],
     }
-
     texture = {
         "left": vol_to_surf(
             stat_map, surf_mesh["pial_left"], mask_img=mask_img
@@ -916,98 +784,36 @@ def plot_img_on_surf(
         ),
     }
 
-    cbar_h = 0.25
-    title_h = 0.25 * (title is not None)
-    w, h = plt.figaspect((len(modes) + cbar_h + title_h) / len(hemispheres))
-    fig = plt.figure(figsize=(w, h), constrained_layout=False)
-    height_ratios = [title_h] + [1.0] * len(modes) + [cbar_h]
-    grid = gridspec.GridSpec(
-        len(modes) + 2,
-        len(hemis),
-        left=0.0,
-        right=1.0,
-        bottom=0.0,
-        top=1.0,
-        height_ratios=height_ratios,
-        hspace=0.0,
-        wspace=0.0,
-    )
-    axes = []
-
+    backend = get_surface_backend(DEFAULT_ENGINE)
     # get vmin and vmax for entire data (all hemis)
-    _, _, vmin, vmax = get_colorbar_and_data_ranges(
-        image.get_data(stat_map),
+    _, _, vmin, vmax = backend._adjust_colorbar_and_data_ranges(
+        get_data(stat_map),
         vmin=vmin,
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
     )
 
-    for i, (mode, hemi) in enumerate(itertools.product(modes, hemis)):
-        bg_map = None
-        # By default, add curv sign background map if mesh is inflated,
-        # sulc depth background map otherwise
-        if inflate:
-            curv_map = surface.load_surf_data(surf_mesh[f"curv_{hemi}"])
-            curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
-            bg_map = curv_sign_map
-        else:
-            sulc_map = surf_mesh[f"sulc_{hemi}"]
-            bg_map = sulc_map
-
-        ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
-        axes.append(ax)
-
-        plot_surf_stat_map(
-            surf[hemi],
-            texture[hemi],
-            view=mode,
-            hemi=hemi,
-            bg_map=bg_map,
-            bg_on_data=bg_on_data,
-            axes=ax,
-            colorbar=False,  # Colorbar created externally.
-            vmin=vmin,
-            vmax=vmax,
-            threshold=threshold,
-            cmap=cmap,
-            symmetric_cbar=symmetric_cbar,
-            **kwargs,
-        )
-
-        # We increase this value to better position the camera of the
-        # 3D projection plot. The default value makes meshes look too small.
-        ax.set_box_aspect(None, zoom=1.3)
-
-    if colorbar:
-        sm = _colorbar_from_array(
-            image.get_data(stat_map),
-            vmin,
-            vmax,
-            threshold,
-            symmetric_cbar=symmetric_cbar,
-            cmap=plt.get_cmap(cmap),
-        )
-
-        cbar_grid = gridspec.GridSpecFromSubplotSpec(3, 3, grid[-1, :])
-        cbar_ax = fig.add_subplot(cbar_grid[1])
-        axes.append(cbar_ax)
-        # Get custom ticks to set in colorbar
-        ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold)
-        fig.colorbar(
-            sm,
-            cax=cbar_ax,
-            orientation="horizontal",
-            ticks=ticks,
-            format=cbar_tick_format,
-        )
-
-    if title is not None:
-        fig.suptitle(title, y=1.0 - title_h / sum(height_ratios), va="bottom")
-
-    if output_file is None:
-        return fig, axes
-    fig.savefig(output_file, bbox_inches="tight")
-    plt.close(fig)
+    fig = backend._plot_img_on_surf(
+        surf,
+        surf_mesh=surf_mesh,
+        stat_map=stat_map,
+        texture=texture,
+        hemis=hemis,
+        modes=modes,
+        bg_on_data=bg_on_data,
+        inflate=inflate,
+        output_file=output_file,
+        title=title,
+        colorbar=colorbar,
+        vmin=vmin,
+        vmax=vmax,
+        threshold=threshold,
+        symmetric_cbar=symmetric_cbar,
+        cmap=cmap,
+        cbar_tick_format=cbar_tick_format,
+        **kwargs,
+    )
+    return fig
 
 
 @fill_doc
@@ -1015,24 +821,24 @@ def plot_surf_roi(
     surf_mesh=None,
     roi_map=None,
     bg_map=None,
-    hemi="left",
+    hemi=DEFAULT_HEMI,
     view=None,
-    engine="matplotlib",
-    avg_method=None,
-    threshold=1e-14,
-    alpha=None,
-    vmin=None,
-    vmax=None,
+    engine=DEFAULT_ENGINE,
     cmap="gist_ncar",
-    cbar_tick_format="auto",
+    colorbar=True,
+    avg_method=None,
+    threshold=None,
+    alpha=None,
     bg_on_data=False,
     darkness=0.7,
+    vmin=None,
+    vmax=None,
+    cbar_tick_format="auto",
     title=None,
-    title_font_size=18,
+    title_font_size=None,
     output_file=None,
     axes=None,
     figure=None,
-    colorbar=True,
     **kwargs,
 ):
     """Plot ROI on a surface :term:`mesh` with optional background.
@@ -1041,23 +847,10 @@ def plot_surf_roi(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`\
-                or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
-        Surface :term:`mesh` geometry, can be a file (valid formats are
-        .gii or Freesurfer specific files such as .orig, .pial,
-        .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the :term:`mesh` :term:`vertices<vertex>`,
-        the second containing the indices (into coords)
-        of the :term:`mesh` :term:`faces`,
-        or a :obj:`~nilearn.surface.InMemoryMesh` object with "coordinates"
-        and "faces" attributes, or a :obj:`~nilearn.surface.PolyMesh` object,
-        or None.
-        If None is passed, then ``surf_map``
-        must be a :obj:`~nilearn.surface.SurfaceImage` instance
-        and the mesh
-        from that :obj:`~nilearn.surface.SurfaceImage` instance will be used.
+    %(surf_mesh)s
+        If None is passed, then ``roi_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
+        :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
     roi_map : :obj:`str` or :class:`numpy.ndarray` or \
               :obj:`list` of :class:`numpy.ndarray` or \
@@ -1076,6 +869,10 @@ def plot_surf_roi(
         then ``roi_map``
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
+
+        When specified `roi_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `roi_map`
+        data.
 
     %(bg_map)s
 
@@ -1102,6 +899,12 @@ def plot_surf_roi(
             The ``plotly`` engine is new and experimental.
             Please report bugs that you may encounter.
 
+    %(cmap_lut)s
+        Default='gist_ncar'.
+
+    %(colorbar)s
+        Default=True
+
     %(avg_method)s
 
         .. note::
@@ -1111,20 +914,13 @@ def plot_surf_roi(
         When using matplotlib as engine,
         `avg_method` will default to ``"median"`` if ``None`` is passed.
 
-    threshold : a number or None, default=1e-14
-        Threshold regions that are labeled 0.
-        If you want to use 0 as a label, set threshold to None.
+    %(threshold)s
+        Default=None
 
-    %(cmap_lut)s
-        Default='gist_ncar'.
-
-    %(cbar_tick_format)s
-        Default="auto" which defaults to integers format:
-
-            - "%%i" for ``matplotlib`` engine.
-            - "." for ``plotly`` engine.
-
-        .. versionadded:: 0.7.1
+        .. note::
+            By default, the regions that are labeled 0 are not thresholded.
+            Threshold should be set to a very small number, ex. 1e-14 to
+            threshold the those 0 labeled regions.
 
     alpha : :obj:`float` or 'auto' or None, default=None
         Alpha level of the :term:`mesh` (not surf_data).
@@ -1137,10 +933,6 @@ def plot_surf_roi(
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-    %(vmin)s
-
-    %(vmax)s
-
     %(bg_on_data)s
 
     %(darkness)s
@@ -1150,9 +942,21 @@ def plot_surf_roi(
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
+    %(vmin)s
+
+    %(vmax)s
+
+    %(cbar_tick_format)s
+        Default="auto" which defaults to integers format:
+
+            - "%%i" for ``matplotlib`` engine.
+            - "." for ``plotly`` engine.
+
+        .. versionadded:: 0.7.1
+
     %(title)s
 
-    title_font_size : :obj:`int`, default=18
+    title_font_size : :obj:`int`, default=None
         Size of the title font (only implemented for the plotly engine).
 
         .. versionadded:: 0.9.0
@@ -1174,9 +978,6 @@ def plot_surf_roi(
             This option is currently only implemented for the
             ``matplotlib`` engine.
 
-    %(colorbar)s
-        Default=True
-
     kwargs : :obj:`dict`, optional
         Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
 
@@ -1189,44 +990,21 @@ def plot_surf_roi(
 
     nilearn.surface.vol_to_surf : For info on the generation of surfaces.
     """
-    # set default view to dorsal if hemi is both and view is not set
     check_params(locals())
-    if view is None:
-        view = "dorsal" if hemi == "both" else "lateral"
-
+    check_threshold_not_negative(threshold)
     roi_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         roi_map, surf_mesh, hemi, bg_map
     )
-
-    if engine == "matplotlib" and avg_method is None:
-        avg_method = "median"
-
-    # preload roi and mesh to determine vmin, vmax and give more useful error
-    # messages in case of wrong inputs
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
+    # preload roi and mesh to determine vmin, vmax and give more useful
+    # error messages in case of wrong inputs
     roi = load_surf_data(roi_map)
-
-    idx_not_na = ~np.isnan(roi)
-    if vmin is None:
-        vmin = float(np.nanmin(roi))
-    if vmax is None:
-        vmax = float(1 + np.nanmax(roi))
-
-    mesh = load_surf_mesh(surf_mesh)
 
     if roi.ndim != 1:
         raise ValueError(
             "roi_map can only have one dimension but has "
             f"{roi.ndim} dimensions"
-        )
-    if roi.shape[0] != mesh.n_vertices:
-        raise ValueError(
-            "roi_map does not have the same number of vertices "
-            "as the mesh. If you have a list of indices for the "
-            "ROI you can convert them into a ROI map like this:\n"
-            "roi_map = np.zeros(n_vertices)\n"
-            "roi_map[roi_idx] = 1"
         )
     if (roi < 0).any():
         # TODO raise ValueError in release 0.13
@@ -1236,46 +1014,67 @@ def plot_surf_roi(
                 " Nilearn version 0.13"
             ),
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
+
+    mesh = load_surf_mesh(surf_mesh)
+    if roi.shape[0] != mesh.n_vertices:
+        raise ValueError(
+            "roi_map does not have the same number of vertices "
+            "as the mesh. If you have a list of indices for the "
+            "ROI you can convert them into a ROI map like this:\n"
+            "roi_map = np.zeros(n_vertices)\n"
+            "roi_map[roi_idx] = 1"
+        )
+
+    idx_not_na = ~np.isnan(roi)
+    if vmin is None:
+        vmin = float(np.nanmin(roi))
+    if vmax is None:
+        vmax = float(1 + np.nanmax(roi))
+
     if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
         # TODO raise ValueError in release 0.13
         warn(
             (
-                "Non-integer values in roi_map will no longer be allowed in"
-                " Nilearn version 0.13"
+                "Non-integer values in roi_map will no longer be allowed "
+                "in Nilearn version 0.13"
             ),
             DeprecationWarning,
+            stacklevel=find_stack_level(),
         )
-
-    if cbar_tick_format == "auto":
-        cbar_tick_format = "." if engine == "plotly" else "%i"
-
     if isinstance(cmap, pd.DataFrame):
         cmap = create_colormap_from_lut(cmap)
 
-    display = plot_surf(
+    params = {
+        "avg_method": avg_method,
+        "cbar_tick_format": cbar_tick_format,
+    }
+
+    backend = get_surface_backend(engine)
+    backend._adjust_plot_roi_params(params)
+
+    fig = backend._plot_surf(
         mesh,
         surf_map=roi,
         bg_map=bg_map,
         hemi=hemi,
         view=view,
-        engine=engine,
-        avg_method=avg_method,
-        threshold=threshold,
         cmap=cmap,
-        cbar_tick_format=cbar_tick_format,
+        colorbar=colorbar,
+        avg_method=params["avg_method"],
+        threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
         darkness=darkness,
         vmin=vmin,
         vmax=vmax,
+        cbar_tick_format=params["cbar_tick_format"],
         title=title,
         title_font_size=title_font_size,
         output_file=output_file,
         axes=axes,
         figure=figure,
-        colorbar=colorbar,
         **kwargs,
     )
-
-    return display
+    return fig

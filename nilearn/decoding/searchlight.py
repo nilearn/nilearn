@@ -6,6 +6,7 @@ in the neighborhood of each location of a domain.
 
 import time
 import warnings
+from copy import deepcopy
 
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
@@ -13,6 +14,7 @@ from sklearn import svm
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
+from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import check_niimg_3d, check_niimg_4d, fill_doc, logger
@@ -350,11 +352,36 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
             return tags()
 
+        from sklearn.utils import ClassifierTags, RegressorTags
+
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags()
+        tags.input_tags = InputTags(surf_img=True)
+
+        if self.estimator == "svr":
+            if SKLEARN_LT_1_6:
+                tags["multioutput"] = True
+                return tags
+            tags.estimator_type = "regressor"
+            tags.regressor_tags = RegressorTags()
+
+        elif self.estimator == "svc":
+            if SKLEARN_LT_1_6:
+                return tags
+            tags.estimator_type = "classifier"
+            tags.classifier_tags = ClassifierTags()
+
         return tags
+
+    @property
+    def _estimator_type(self):
+        # TODO rm sklearn>=1.6
+        if self.estimator == "svr":
+            return "regressor"
+        elif self.estimator == "svc":
+            return "classifier"
+        return ""
 
     def fit(self, imgs, y, groups=None):
         """Fit the searchlight.
@@ -378,10 +405,13 @@ class SearchLight(TransformerMixin, BaseEstimator):
         # check if image is 4D
         imgs = check_niimg_4d(imgs)
 
+        check_array(y, ensure_2d=False, dtype=None)
+
         # Get the seeds
-        if self.mask_img is not None:
-            self.mask_img = check_niimg_3d(self.mask_img)
-        process_mask_img = self.process_mask_img or self.mask_img
+        self.mask_img_ = deepcopy(self.mask_img)
+        if self.mask_img_ is not None:
+            self.mask_img_ = check_niimg_3d(self.mask_img_)
+        process_mask_img = self.process_mask_img or self.mask_img_
 
         # Compute world coordinates of the seeds
         process_mask, process_mask_affine = masking.load_mask_img(
@@ -403,7 +433,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
             imgs,
             self.radius,
             True,
-            mask_img=self.mask_img,
+            mask_img=self.mask_img_,
         )
 
         estimator = self.estimator
@@ -432,6 +462,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         return (
             hasattr(self, "scores_")
             and hasattr(self, "process_mask_")
+            and hasattr(self, "mask_img_")
             and self.scores_ is not None
             and self.process_mask_ is not None
         )
@@ -440,7 +471,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
     def scores_img_(self):
         """Convert the 3D scores array into a NIfTI image."""
         check_is_fitted(self)
-        return new_img_like(self.mask_img, self.scores_)
+        return new_img_like(self.mask_img_, self.scores_)
 
     def transform(self, imgs):
         """Apply the fitted searchlight on new images."""
@@ -453,7 +484,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
             imgs,
             self.radius,
             True,
-            mask_img=self.mask_img,
+            mask_img=self.mask_img_,
         )
 
         estimator = self.estimator
@@ -478,3 +509,12 @@ class SearchLight(TransformerMixin, BaseEstimator):
         reshaped_result = np.abs(reshaped_result)
 
         return reshaped_result
+
+    def set_output(self, *, transform=None):
+        """Set the output container when ``"transform"`` is called.
+
+        .. warning::
+
+            This has not been implemented yet.
+        """
+        raise NotImplementedError()

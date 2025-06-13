@@ -5,6 +5,7 @@ import pytest
 from nilearn._utils.data_gen import (
     basic_paradigm,
     generate_fake_fmri_data_and_design,
+    write_fake_bold_img,
 )
 from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.datasets import load_fsaverage
@@ -106,6 +107,7 @@ def test_flm_reporting_height_control(flm, height_control, contrasts):
     assert "cosine" in report_flm.__str__()
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_slm_reporting_method(slm, height_control):
     """Test for the second level reporting."""
@@ -115,6 +117,43 @@ def test_slm_reporting_method(slm, height_control):
     )
     # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
     report_slm.get_iframe()
+
+
+@pytest.mark.timeout(0)
+def test_slm_with_flm_as_inputs(flm, contrasts):
+    """Test second level reporting when inputs are first level models."""
+    model = SecondLevelModel()
+
+    Y = [flm] * 3
+    X = pd.DataFrame([[1]] * 3, columns=["intercept"])
+    first_level_contrast = contrasts
+
+    model.fit(Y, design_matrix=X)
+
+    c1 = np.eye(len(model.design_matrix_.columns))[0]
+
+    model.generate_report(c1, first_level_contrast=first_level_contrast)
+
+
+def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
+    """Test second level reporting when input is a dataframe."""
+    file_path = write_fake_bold_img(
+        file_path=tmp_path / "img.nii.gz", shape=shape_3d_default
+    )
+
+    dfcols = ["subject_label", "map_name", "effects_map_path"]
+    dfrows = [
+        ["01", "a", file_path],
+        ["02", "a", file_path],
+        ["03", "a", file_path],
+    ]
+    niidf = pd.DataFrame(dfrows, columns=dfcols)
+
+    model = SecondLevelModel().fit(niidf)
+
+    c1 = np.eye(len(model.design_matrix_.columns))[0]
+
+    model.generate_report(c1, first_level_contrast="a")
 
 
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])

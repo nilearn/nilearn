@@ -20,6 +20,7 @@ from nilearn._utils import CacheMixin, fill_doc, logger
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
+from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -601,6 +602,31 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         self.memory_level = memory_level
         self.verbose = verbose
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(niimg_like=False)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(niimg_like=False)
+        return tags
+
+    @fill_doc
     def fit(self, subjects, y=None):
         """Fits the group sparse precision model according \
         to the given training data and parameters.
@@ -612,6 +638,8 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
             input subjects. Each subject is a 2D array, whose columns contain
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns).
+
+        %(y_dummy)s
 
         Returns
         -------
@@ -1077,6 +1105,31 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
         self.debug = debug
         self.early_stopping = early_stopping
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(niimg_like=False)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(niimg_like=False)
+        return tags
+
+    @fill_doc
     def fit(self, subjects, y=None):
         """Compute cross-validated group-sparse precisions.
 
@@ -1087,6 +1140,8 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
             input subjects. Each subject is a 2D array, whose columns contain
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns.)
+
+        %(y_dummy)s
 
         Returns
         -------

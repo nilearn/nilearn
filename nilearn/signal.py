@@ -542,7 +542,7 @@ def high_variance_confounds(
 def _ensure_float(data):
     """Make sure that data is a float type."""
     if data.dtype.kind != "f":
-        if data.dtype.itemsize == "8":
+        if data.dtype.itemsize == 8:
             data = data.astype(np.float64)
         else:
             data = data.astype(np.float32)
@@ -1115,8 +1115,8 @@ def _sanitize_confound_dtype(n_signal, confound):
             )
         if confound.shape[0] != n_signal:
             raise ValueError(
-                "Confound signal has an incorrect "
-                f"lengthSignal length: {n_signal}; "
+                "Confound signal has an incorrect length. "
+                f"Signal length: {n_signal}; "
                 f"confound length: {confound.shape[0]}."
             )
 

@@ -694,7 +694,7 @@ class FirstLevelModel(BaseGLM):
             self.drift_model,
             self.high_pass,
             self.drift_order,
-            self.fir_delays,
+            self.fir_delays_,
             confounds_matrix,
             confounds_names,
             self.min_onset,
@@ -706,6 +706,7 @@ class FirstLevelModel(BaseGLM):
         return (
             hasattr(self, "labels_")
             and hasattr(self, "results_")
+            and hasattr(self, "fir_delays_")
             and self.labels_ is not None
             and self.results_ is not None
         )
@@ -810,7 +811,9 @@ class FirstLevelModel(BaseGLM):
             _check_slice_time_ref(self.slice_time_ref)
 
         if self.fir_delays is None:
-            self.fir_delays = [0]
+            self.fir_delays_ = [0]
+        else:
+            self.fir_delays_ = self.fir_delays
 
         self.memory = check_memory(self.memory)
 
@@ -1161,6 +1164,72 @@ class FirstLevelModel(BaseGLM):
 
             self.masker_ = self.mask_img
 
+    @fill_doc
+    def generate_report(
+        self,
+        contrasts=None,
+        title=None,
+        bg_img="MNI152TEMPLATE",
+        threshold=3.09,
+        alpha=0.001,
+        cluster_threshold=0,
+        height_control="fpr",
+        two_sided=False,
+        min_distance=8.0,
+        plot_type="slice",
+        cut_coords=None,
+        display_mode=None,
+        report_dims=(1600, 800),
+    ):
+        """Return a :class:`~nilearn.reporting.HTMLReport` \
+        which shows all important aspects of a fitted :term:`GLM`.
+
+        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
+        browser, displayed in a notebook, or saved to disk as a standalone
+        HTML file.
+
+        The :term:`GLM` must be fitted and have the computed design
+        matrix(ces).
+
+        .. note::
+
+            Refer to the documentation of
+            :func:`~nilearn.reporting.make_glm_report`
+            for details about the parameters
+
+        Returns
+        -------
+        report_text : :class:`~nilearn.reporting.HTMLReport`
+            Contains the HTML code for the :term:`GLM` report.
+
+        """
+        from nilearn.reporting.glm_reporter import make_glm_report
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = {
+                "trial_types": [],
+                "noise_model": getattr(self, "noise_model", None),
+                "hrf_model": getattr(self, "hrf_model", None),
+                "drift_model": None,
+            }
+
+        return make_glm_report(
+            self,
+            contrasts,
+            title=title,
+            bg_img=bg_img,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            plot_type=plot_type,
+            cut_coords=cut_coords,
+            display_mode=display_mode,
+            report_dims=report_dims,
+        )
+
 
 def _check_events_file_uses_tab_separators(events_files):
     """Raise a ValueError if provided list of text based data files \
@@ -1274,7 +1343,7 @@ def first_level_from_bids(
     sub_labels=None,
     img_filters=None,
     t_r=None,
-    slice_time_ref=0.0,
+    slice_time_ref=None,
     hrf_model="glover",
     drift_model="cosine",
     high_pass=0.01,
@@ -1344,16 +1413,15 @@ def first_level_from_bids(
         Filter examples would be ``('desc', 'preproc')``, ``('dir', 'pa')``
         and ``('run', '10')``.
 
-    slice_time_ref : :obj:`float` between ``0.0`` and ``1.0``, default= ``0.0``
+    slice_time_ref : :obj:`float` between ``0.0`` and ``1.0``, or None, \
+                     default= None
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
         expressed as a fraction of the ``t_r`` (time repetition), so it can
         have values between ``0.`` and ``1.``
-
-        .. deprecated:: 0.10.1
-
-            The default= ``0`` for ``slice_time_ref`` will be deprecated.
-            The default value will change to ``None`` in 0.12.
+        If ``slice_time_ref`` is  ``None``, this function will attempt
+        to infer it from the metadata found in a ``bold.json``.
+        If it cannot be inferred from metadata, it will be set to 0.
 
     derivatives_folder : :obj:`str`, default= ``"derivatives"``.
         derivatives and app folder path containing preprocessed files.
@@ -1463,12 +1531,6 @@ def first_level_from_bids(
     """
     if memory is None:
         memory = Memory(None)
-    if slice_time_ref == 0:
-        warn(
-            "Starting in version 0.12, slice_time_ref will default to None.",
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
     if space_label is None:
         space_label = "MNI152NLin2009cAsym"
 

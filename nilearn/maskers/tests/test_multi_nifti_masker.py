@@ -8,35 +8,57 @@ import pytest
 from joblib import Memory, hash
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+    return_expected_failed_checks,
+)
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
-from nilearn.maskers.tests.conftest import expected_failed_checks_0pt13pt2
+
+ESTIMATORS_TO_CHECK = [MultiNiftiMasker()]
+
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
+# check_multi_masker_transformer_high_variance_confounds is slow
+@pytest.mark.timeout(90)
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[MultiNiftiMasker()],
-        expected_failed_checks=expected_failed_checks_0pt13pt2(),
-    ),
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[MultiNiftiMasker()],
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     """Check compliance with sklearn estimators."""
     check(estimator)
 
@@ -121,13 +143,16 @@ def test_different_affines():
         masker.inverse_transform(this_epi)
 
 
-def test_3d_images():
-    """Test that the MultiNiftiMasker works with 3D images."""
+def test_3d_images(rng):
+    """Test that the MultiNiftiMasker works with 3D images.
+
+    Note that fit() requires all images in list to have the same affine.
+    """
     mask_img = Nifti1Image(
-        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
+        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((2, 2, 2, 1))
     )
-    epi_img1 = Nifti1Image(np.ones((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
-    epi_img2 = Nifti1Image(np.ones((2, 2, 2)), affine=np.diag((2, 2, 2, 1)))
+    epi_img1 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
+    epi_img2 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
     masker = MultiNiftiMasker(mask_img=mask_img)
 
     masker.fit_transform([epi_img1, epi_img2])
@@ -146,13 +171,13 @@ def test_joblib_cache(mask_img_1, tmp_path):
     assert mask_hash == hash(masker.mask_img_)
 
 
-def test_shelving():
+def test_shelving(rng):
     """Check behavior when shelving masker."""
     mask_img = Nifti1Image(
-        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((4, 4, 4, 1))
+        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((2, 2, 2, 1))
     )
-    epi_img1 = Nifti1Image(np.ones((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
-    epi_img2 = Nifti1Image(np.ones((2, 2, 2)), affine=np.diag((2, 2, 2, 1)))
+    epi_img1 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
+    epi_img2 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
     cachedir = mkdtemp()
     try:
         masker_shelved = MultiNiftiMasker(

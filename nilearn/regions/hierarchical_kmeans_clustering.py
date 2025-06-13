@@ -252,9 +252,10 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags()
+        tags.input_tags = InputTags(niimg_like=False)
         return tags
 
+    @fill_doc
     def fit(self, X, y=None):
         """Compute clustering of the data.
 
@@ -262,7 +263,8 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         ----------
         X : ndarray, shape = [n_samples, n_features]
             Training data.
-        y : Ignored
+
+        %(y_dummy)s
 
         Returns
         -------
@@ -313,6 +315,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "labels_")
 
+    @fill_doc
     def transform(
         self,
         X,
@@ -324,6 +327,8 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         ----------
         X : ndarray, shape = [n_samples, n_features]
             Data to transform with the fitted clustering.
+
+        %(y_dummy)s
 
         Returns
         -------
@@ -376,3 +381,12 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         X_inv = X_red[inverse, ...]
         X_inv = X_inv.T
         return X_inv
+
+    def set_output(self, *, transform=None):
+        """Set the output container when ``"transform"`` is called.
+
+        .. warning::
+
+            This has not been implemented yet.
+        """
+        raise NotImplementedError()

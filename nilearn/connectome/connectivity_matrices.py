@@ -13,6 +13,7 @@ from nilearn import signal
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 def _check_square(matrix):
@@ -445,13 +446,35 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         self.discard_diagonal = discard_diagonal
         self.standardize = standardize
 
-    def _check_input(self, X, confounds=None):
-        if not hasattr(X, "__iter__"):
-            raise ValueError(
-                "'subjects' input argument must be an iterable. "
-                f"You provided {X.__class__}"
-            )
+    def _more_tags(self):
+        """Return estimator tags.
 
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(niimg_like=False)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(niimg_like=False)
+        return tags
+
+    def _check_input(self, X, confounds=None):
         subjects_types = [type(s) for s in X]
         if set(subjects_types) != {np.ndarray}:
             raise ValueError(
@@ -479,6 +502,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 f"You provided {confounds.__class__}"
             )
 
+    @fill_doc
     def fit(self, X, y=None):
         """Fit the covariance estimator to the given time series for each \
         subject.
@@ -487,8 +511,10 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         ----------
         X : :obj:`list` of numpy.ndarray, \
             shape for each (n_samples, n_features)
-            The input subjects time series. The number of samples may differ
-            from one subject to another.
+            The input subjects time series.
+            The number of samples may differ from one subject to another.
+
+        %(y_dummy)s
 
         Returns
         -------
@@ -507,6 +533,10 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         if self.cov_estimator is None:
             self.cov_estimator = LedoitWolf(store_precision=False)
 
+        # casting to a list
+        # to make it easier to check with sklearn estimator compliance
+        if not isinstance(X, list):
+            X = [X]
         self._check_input(X, confounds=confounds)
 
         if do_fit:
@@ -595,6 +625,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         return connectivities
 
+    @fill_doc
     def fit_transform(self, X, y=None, confounds=None):
         """Fit the covariance estimator to the given time series \
         for each subject. \
@@ -605,7 +636,8 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         X : :obj:`list` of n_subjects numpy.ndarray with shapes \
             (n_samples, n_features)
             The input subjects time series. The number of samples may differ
-            from one subject to another.
+
+        %(y_dummy)s
 
         confounds : np.ndarray with shape (n_samples) or \
                     (n_samples, n_confounds), or pandas DataFrame, default=None
@@ -624,6 +656,10 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         """
         del y
+        # casting to a list
+        # to make it easier to check with sklearn estimator compliance
+        if not isinstance(X, list):
+            X = [X]
         if self.kind == "tangent" and len(X) <= 1:
             # Check that people are applying fit_transform to a group of
             # subject
@@ -727,3 +763,12 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             connectivities = np.array(connectivities)
 
         return connectivities
+
+    def set_output(self, *, transform=None):
+        """Set the output container when ``"transform"`` is called.
+
+        .. warning::
+
+            This has not been implemented yet.
+        """
+        raise NotImplementedError()

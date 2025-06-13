@@ -408,6 +408,7 @@ def test_parse_bids_filename():
     assert file_dict["entities"] == entities
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback", "task-nback"]
 )
@@ -577,6 +578,7 @@ def test_save_glm_to_bids_errors(
         )
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "prefix", ["sub-01_ses-01_task-nback", "sub-01_task-nback_", 1]
 )
@@ -715,6 +717,7 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
         assert (tmpdir / "group" / f"{prefix}_{fname}").exists()
 
 
+@pytest.mark.timeout(0)
 def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
     """Run generate_report with no contrasts after save_glm_to_bids.
 
@@ -764,6 +767,7 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
         assert f'src="{file}"' not in report.__str__()
 
 
+@pytest.mark.timeout(0)
 def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
     """Run generate_report after save_glm_to_bids with different contrasts.
 

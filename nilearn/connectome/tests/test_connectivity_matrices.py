@@ -7,15 +7,16 @@ import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from pandas import DataFrame
 from scipy import linalg
-from sklearn import __version__ as sklearn_version
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
-from sklearn.utils.estimator_checks import (
-    check_estimator as sklearn_check_estimator,
-)
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils import compare_version
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+    return_expected_failed_checks,
+)
 from nilearn._utils.extmath import is_spd
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
     _check_spd,
@@ -42,81 +43,59 @@ N_FEATURES = 49
 N_SUBJECTS = 5
 
 
-@pytest.mark.parametrize(
-    "estimator",
-    [EmpiricalCovariance(), LedoitWolf()],
-)
-def test_check_estimator_cov_estimator(estimator):
-    """Check compliance with sklearn estimators."""
-    sklearn_check_estimator(estimator)
+ESTIMATORS_TO_CHECK = [
+    ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
+]
 
+if SKLEARN_LT_1_6:
 
-expected_failed_checks = {
-    "check_complex_data": "TODO",
-    "check_dont_overwrite_parameters": "TODO",
-    "check_dtype_object": "TODO",
-    "check_estimators_dtypes": "TODO",
-    "check_estimator_sparse_array": "TODO",
-    "check_estimator_sparse_matrix": "TODO",
-    "check_estimators_empty_data_messages": "TODO",
-    "check_estimators_overwrite_params": "TODO",
-    "check_f_contiguous_array_estimator": "TODO",
-    "check_fit_check_is_fitted": "handled by nilearn checks",
-    "check_fit_score_takes_y": "not applicable",
-    "check_fit2d_1feature": "TODO",
-    "check_fit2d_1sample": "TODO",
-    "check_fit2d_predict1d": "TODO",
-    "check_methods_sample_order_invariance": "TODO",
-    "check_methods_subset_invariance": "TODO",
-    "check_positive_only_tag_during_fit": "TODO",
-    "check_n_features_in": "TODO",
-    "check_n_features_in_after_fitting": "TODO",
-    "check_readonly_memmap_input": "TODO",
-    "check_transformer_data_not_an_array": "TODO",
-    "check_transformer_general": "TODO",
-    "check_transformer_preserve_dtypes": "TODO",
-}
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        (check_estimator(estimators=ESTIMATORS_TO_CHECK)),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):
+        """Check compliance with sklearn estimators."""
+        if name == "check_estimators_fit_returns_self":
+            # "check_estimators_fit_returns_self" fails with sklearn 1.4
+            # whether passed as a valid or invalid check
+            # so we are skipping it.
+            # Note it passes fine with later sklearn versions
+            pytest.skip("ignored for older sklearn")
+        check(estimator)
 
-if compare_version(sklearn_version, "<", "1.5.0"):
-    expected_failed_checks |= {
-        "check_estimator_sparse_data": "TODO",
-    }
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    (
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
         check_estimator(
-            estimator=[
-                ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
-            ],
-            expected_failed_checks=expected_failed_checks,
-        )
-    ),
-)
-def test_check_estimator_group_sparse_covariance(
-    estimator,
-    check,
-    name,  # noqa: ARG001
-):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+            estimators=ESTIMATORS_TO_CHECK,
+            valid=False,
+        ),
+    )
+    def test_check_estimator_sklearn_invalid(
+        estimator,
+        check,
+        name,  # noqa: ARG001
+    ):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn_2(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
-@pytest.mark.xfail(reason="invalid checks should fail")
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[ConnectivityMeasure(cov_estimator=EmpiricalCovariance())],
-        valid=False,
-    ),
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
-def test_check_estimator_invalid_group_sparse_covariance(
-    estimator,
-    check,
-    name,  # noqa: ARG001
-):
-    """Check compliance with sklearn estimators."""
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
     check(estimator)
 
 
@@ -641,11 +620,6 @@ def test_prec_to_partial():
 def test_connectivity_measure_errors():
     # Raising error for input subjects not iterable
     conn_measure = ConnectivityMeasure()
-
-    with pytest.raises(
-        ValueError, match="'subjects' input argument must be an iterable"
-    ):
-        conn_measure.fit(1.0)
 
     # input subjects not 2D numpy.ndarrays
     with pytest.raises(

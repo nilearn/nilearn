@@ -7,6 +7,7 @@ import contextlib
 import warnings
 
 import numpy as np
+from joblib import Memory
 from scipy import sparse
 from sklearn import neighbors
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -28,10 +29,7 @@ from nilearn._utils.niimg_conversions import (
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
-from nilearn.maskers._utils import (
-    compute_middle_image,
-    sanitize_cleaning_parameters,
-)
+from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
 
@@ -69,7 +67,7 @@ def apply_mask_and_get_affinity(
 
     Returns
     -------
-    X : 2D numpy.ndarray
+    X : numpy.ndarray
         Signal for each brain voxel in the (masked) niimgs.
         shape: (number of scans, number of voxels)
 
@@ -213,6 +211,7 @@ class _ExtractionFunctor:
 
     def __call__(self, imgs):
         n_seeds = len(self.seeds_)
+
         imgs = check_niimg_4d(imgs, dtype=self.dtype)
 
         signals = np.empty(
@@ -228,6 +227,7 @@ class _ExtractionFunctor:
             )
         ):
             signals[:, i] = np.mean(sphere, axis=1)
+
         return signals, None
 
 
@@ -556,7 +556,8 @@ class NiftiSpheresMasker(BaseMasker):
             "warning_message": None,
         }
 
-        self = sanitize_cleaning_parameters(self)
+        self._sanitize_cleaning_parameters()
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         error = (
             "Seeds must be a list of triplets of coordinates in "
@@ -564,6 +565,9 @@ class NiftiSpheresMasker(BaseMasker):
         )
 
         self.mask_img_ = self._load_mask(imgs)
+
+        if self.memory is None:
+            self.memory = Memory(location=None)
 
         if imgs is not None:
             if self.reports:
@@ -632,8 +636,6 @@ class NiftiSpheresMasker(BaseMasker):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
 
         y : None
             This parameter is unused. It is solely included for scikit-learn
@@ -647,9 +649,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : 2D :obj:`numpy.ndarray`
-            Signal for each sphere.
-            shape: (number of scans, number of spheres)
+        %(signals_transform_nifti)s
 
         """
         del y
@@ -669,8 +669,6 @@ class NiftiSpheresMasker(BaseMasker):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
 
         %(confounds)s
 
@@ -680,26 +678,16 @@ class NiftiSpheresMasker(BaseMasker):
 
         Returns
         -------
-        region_signals : 2D :obj:`numpy.ndarray`
-            Signal for each sphere.
-            shape: (number of scans, number of spheres)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
+        %(signals_transform_nifti)s
 
         """
         check_is_fitted(self)
 
         params = get_params(NiftiSpheresMasker, self)
-        params["clean_kwargs"] = self.clean_args
+        params["clean_kwargs"] = self.clean_args_
         # TODO remove in 0.13.2
         if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs
+            params["clean_kwargs"] = self.clean_kwargs_
 
         signals, _ = self._cache(
             filter_and_extract, ignore=["verbose", "memory", "memory_level"]
@@ -723,8 +711,9 @@ class NiftiSpheresMasker(BaseMasker):
             # kwargs
             verbose=self.verbose,
         )
-        return signals
+        return np.atleast_1d(signals)
 
+    @fill_doc
     def inverse_transform(self, region_signals):
         """Compute :term:`voxel` signals from spheres signals.
 
@@ -733,24 +722,16 @@ class NiftiSpheresMasker(BaseMasker):
 
         Parameters
         ----------
-        region_signals : 1D/2D :obj:`numpy.ndarray`
-            Signal for each region.
-            If a 1D array is provided, then the shape should be
-            (number of elements,), and a 3D img will be returned.
-            If a 2D array is provided, then the shape should be
-            (number of scans, number of elements), and a 4D img will be
-            returned.
+        %(region_signals_inv_transform)s
 
         Returns
         -------
-        voxel_signals : :obj:`nibabel.nifti1.Nifti1Image`
-            Signal for each sphere.
-            shape: (mask_img, number of scans).
+        %(img_inv_transform_nifti)s
 
         """
         check_is_fitted(self)
 
-        self._check_signal_shape(region_signals)
+        region_signals = self._check_array(region_signals)
 
         logger.log("computing image from signals", verbose=self.verbose)
 
