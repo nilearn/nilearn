@@ -416,7 +416,7 @@ class Contrast:
     def __add__(self, other):
         """Add two contrast, Yields an new Contrast instance.
 
-        This should be used only on indepndent contrasts.
+        This should be used only on independent contrasts.
         """
         if self.stat_type != other.stat_type:
             raise ValueError(

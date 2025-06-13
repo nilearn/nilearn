@@ -204,11 +204,11 @@ def test_transfer_deprecated_param_vals():
         "replacement_param_1": "deprecated_param_1_val",
         "unchanged_param_1": "unchanged_param_1_val",
     }
-    actual_ouput = transfer_deprecated_param_vals(
+    actual_output = transfer_deprecated_param_vals(
         replacement_params,
         mock_input,
     )
-    assert actual_ouput == expected_output
+    assert actual_output == expected_output
 
 
 def test_future_warn_deprecated_params():

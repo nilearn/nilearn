@@ -389,7 +389,7 @@ def crop_img(
 
     rtol : :obj:`float`, default=1e-08
         relative tolerance (with respect to maximal absolute value of the
-        image), under which values are considered negligeable and thus
+        image), under which values are considered negligible and thus
         croppable.
 
     copy : :obj:`bool`, default=True

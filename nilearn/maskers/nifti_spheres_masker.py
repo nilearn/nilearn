@@ -502,7 +502,7 @@ class NiftiSpheresMasker(BaseMasker):
         display = plotting.plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
         )
-        embeded_images = [embed_img(display)]
+        embedded_images = [embed_img(display)]
         display.close()
         for idx, seed in enumerate(seeds):
             regions_summary["seed number"].append(idx)
@@ -522,16 +522,16 @@ class NiftiSpheresMasker(BaseMasker):
                     marker_color="g",
                     marker_size=20 * radius,
                 )
-                embeded_images.append(embed_img(display))
+                embedded_images.append(embed_img(display))
                 display.close()
 
-        assert len(embeded_images) == len(
+        assert len(embedded_images) == len(
             self._report_content["displayed_maps"]
         )
 
         self._report_content["summary"] = regions_summary
 
-        return embeded_images
+        return embedded_images
 
     @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     def fit(
