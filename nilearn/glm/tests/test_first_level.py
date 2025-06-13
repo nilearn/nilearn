@@ -1,4 +1,4 @@
-"""Test the first level model on BIDS datasets."""
+"""Test related to first level model."""
 
 import itertools
 import shutil
