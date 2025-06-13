@@ -234,6 +234,7 @@ def test_multi_nifti_maps_masker_resampling_error(
         masker.fit()
 
 
+@pytest.mark.timeout(0)
 def test_multi_nifti_maps_masker_resampling_to_mask(
     shape_mask,
     affine_eye,
