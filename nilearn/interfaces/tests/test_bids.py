@@ -474,6 +474,7 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
         assert (tmpdir / sub_prefix / f"{prefix}_{fname}").exists()
 
 
+@pytest.mark.timeout(0)
 def test_save_glm_to_bids_serialize_affine(tmp_path):
     """Test that affines are turned into a serializable type.
 
@@ -650,6 +651,7 @@ def test_save_glm_to_bids_contrast_definitions(
         assert (tmpdir / sub_prefix / f"{prefix}{fname}").exists()
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("prefix", ["task-nback"])
 def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
     """Test save_glm_to_bids on a SecondLevelModel.
@@ -864,6 +866,7 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
         assert key in metadata
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("prefix", ["", "sub-01", "foo_"])
 def test_save_glm_to_bids_infer_filenames_overide(tmp_path, prefix):
     """Check that output filenames is not inferred when prefix is passed."""
