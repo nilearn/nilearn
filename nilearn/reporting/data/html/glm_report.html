@@ -225,15 +225,19 @@
         <h3>{{contrast_name}}</h3>
 
         <div class="d-flex flex-column">
-          <div class="scroll-y">
-            <img
-              class="pure-img"
-              src="data:image/png;base64,{{ details.stat_map_img }}"
-              alt="Stat map plot for the contrast: {{contrast_name}}"
-              title="Stat map plot for the contrast: {{contrast_name}}"
-              style="min-width: 600px"
-            />
-          </div>
+          {{if details.stat_map_img }}
+            <div class="scroll-y">
+              <img
+                class="pure-img"
+                src="data:image/png;base64,{{ details.stat_map_img }}"
+                alt="Stat map plot for the contrast: {{contrast_name}}"
+                title="Stat map plot for the contrast: {{contrast_name}}"
+                style="min-width: 600px"
+              />
+            </div>
+          {{else}}
+            <p style="text-align: center; font-size: 200%; color: grey">No suprathreshold cluster</p>
+          {{endif}}
 
           <details>
             <summary class="pure-button button-small contrast-button">
@@ -247,11 +251,17 @@
             <p>No cluster table parameter provided</p>
             {{endif}}
             <!--  -->
-            {{ details.cluster_table|html }}
+            {{if details.cluster_table }}
+              {{ details.cluster_table|html }}
+            {{else}}
+              <p style="text-align: center; font-size: 200%; color: grey">No suprathreshold cluster</p>
+
+            {{endif}}
           </details>
         </div>
       </div>
-      {{endfor}} {{else}}
+      {{endfor}}
+      {{else}}
       <div class="d-flex flex-wrap justify-content-evenly">
         <p style="letter-spacing: normal">No statistical map was provided.</p>
       </div>

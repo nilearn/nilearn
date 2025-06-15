@@ -640,7 +640,12 @@ def _make_stat_maps_contrast_clusters(
             header=False,
         )
 
-        cluster_table_html = None
+        cluster_table_html = """
+        <p style="text-align: center; font-size: 200%; color: grey"
+            >
+            Results table not available for surface data.
+        </p>
+        """
         if not isinstance(thresholded_img, SurfaceImage):
             if clusters_tsvs:
                 # try to reuse results saved to disk by
@@ -665,12 +670,11 @@ def _make_stat_maps_contrast_clusters(
                     min_distance=min_distance,
                     two_sided=two_sided,
                 )
-
-            cluster_table_html = dataframe_to_html(
-                cluster_table,
-                precision=2,
-                index=False,
-            )
+                cluster_table_html = dataframe_to_html(
+                    cluster_table,
+                    precision=2,
+                    index=False,
+                )
 
         stat_map_png = _stat_map_to_png(
             stat_img=thresholded_img,
@@ -681,6 +685,12 @@ def _make_stat_maps_contrast_clusters(
             plot_type=plot_type,
             table_details=table_details,
         )
+        if (
+            not isinstance(thresholded_img, SurfaceImage)
+            and len(cluster_table) < 2
+        ):
+            cluster_table_html = None
+            stat_map_png = None
 
         results[escape(contrast_name)] = tempita.bunch(
             stat_map_img=stat_map_png,
