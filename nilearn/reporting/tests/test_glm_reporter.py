@@ -302,7 +302,12 @@ def test_flm_generate_report_surface_data_error(
         model.generate_report("c0", bg_img=img_3d_mni, height_control=None)
 
 
-def test_carousel_two_runs(flm, slm, contrasts):
+def test_carousel_two_runs(
+    matplotlib_pyplot,  # noqa: ARG001
+    flm,
+    slm,
+    contrasts,
+):
     """Check that a carousel is present when there is more than 1 run."""
     # Second level have a single "run" and do not need a carousel
     report_slm = slm.generate_report()
