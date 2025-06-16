@@ -302,6 +302,7 @@ def test_flm_generate_report_surface_data_error(
         model.generate_report("c0", bg_img=img_3d_mni, height_control=None)
 
 
+@pytest.mark.timeout(0)
 def test_carousel_two_runs(
     matplotlib_pyplot,  # noqa: ARG001
     flm,
