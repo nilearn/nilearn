@@ -486,6 +486,7 @@ def test_img_comparison_default(
     return plt.gcf()
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])

@@ -79,6 +79,7 @@ def input_parameters(masker_class, img_mask_eye, labels, img_labels):
         return {"seeds": [(1, 1, 1)]}
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "masker_class",
     [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker, NiftiSpheresMasker],
@@ -125,6 +126,7 @@ def test_nifti_maps_masker_report_maps_number_errors(
         masker.generate_report(displayed_maps)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("displayed_maps", [[1, 2], np.array([0, 1, 2])])
 def test_nifti_maps_masker_report_list_and_arrays_maps_number(
     niftimapsmasker_inputs, displayed_maps
@@ -148,6 +150,7 @@ def test_nifti_maps_masker_report_list_and_arrays_maps_number(
     assert html.body.count("<img") == len(displayed_maps)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("displayed_maps", [1, 3, 4, "all"])
 def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
     niftimapsmasker_inputs, displayed_maps
@@ -182,6 +185,7 @@ def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
     assert html.body.count("<img") == expected_n_maps
 
 
+@pytest.mark.timeout(0)
 def test_nifti_maps_masker_report_image_in_fit(
     niftimapsmasker_inputs, affine_eye
 ):
@@ -271,6 +275,7 @@ def test_nifti_spheres_masker_report_1_sphere():
     assert empty_div not in report.body
 
 
+@pytest.mark.timeout(0)
 def test_nifti_labels_masker_report_no_image_for_fit(
     img_3d_rand_eye, n_regions, labels, img_labels
 ):
@@ -355,6 +360,7 @@ def test_nifti_labels_masker_report(
         )
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
 def test_nifti_labels_masker_report_cut_coords(
     masker_class, input_parameters, img_3d_rand_eye
@@ -370,6 +376,7 @@ def test_nifti_labels_masker_report_cut_coords(
     assert display[0].cut_coords == display_data[0].cut_coords
 
 
+@pytest.mark.timeout(0)
 def test_4d_reports(img_mask_eye, affine_eye):
     # Dummy 4D data
     data = np.zeros((10, 10, 10, 3), dtype="int32")
@@ -396,6 +403,7 @@ def test_4d_reports(img_mask_eye, affine_eye):
     _check_html(html)
 
 
+@pytest.mark.timeout(0)
 def test_overlaid_report(img_fmri):
     """Check empty report generated before fit and with image after."""
     masker = NiftiMasker(

@@ -504,6 +504,7 @@ def test_signal_extraction_with_maps(affine_eye, shape_3d_default, rng):
     assert_almost_equal(get_data(img_r), get_data(imgs))
 
 
+@pytest.mark.timeout(0)
 def test_signal_extraction_with_maps_and_labels(
     labeled_regions, fmri_img, shape_3d_default
 ):

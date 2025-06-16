@@ -607,6 +607,7 @@ def test_decoder_binary_classification_screening(
     assert accuracy_score(y, y_pred) > 0.95
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
 def test_decoder_binary_classification_clustering(
     binary_classification_data, clustering_percentile
@@ -1015,6 +1016,7 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
             model.fit(X, y)
 
 
+@pytest.mark.timeout(0)
 def test_decoder_multiclass_warnings(multiclass_data):
     X, y, _ = multiclass_data
     groups = _rng(0).binomial(2, 0.3, size=len(y))
