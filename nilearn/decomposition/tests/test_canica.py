@@ -239,6 +239,7 @@ def test_canica_single_subject_smoke():
     canica.fit(data[0])
 
 
+@pytest.mark.timeout(0)
 def test_component_sign(mask_img):
     # We should have a heuristic that flips the sign of components in
     # CanICA to have more positive values than negative values, for
