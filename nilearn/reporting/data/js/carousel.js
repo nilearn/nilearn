@@ -68,6 +68,17 @@ class Carousel {
             }
 
         }
+
+        // For GLM only
+        // Update the section the navbar links to.
+        let matrixNavBar = document.querySelector(`#navbar-matrix-link-${this.uid}`);
+        if (matrixNavBar) {
+            matrixNavBar.href = `#design-matrix-${this.uid}-${index}`;
+        }
+        let contrastNavBar = document.querySelector(`#navbar-contrasts-link-${this.uid}`);
+        if (contrastNavBar) {
+            contrastNavBar.href = `#contrasts-${this.uid}-${index}`;
+        }
     }
 
     /**

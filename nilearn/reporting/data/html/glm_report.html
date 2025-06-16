@@ -23,17 +23,21 @@
           >
         </li>
         <li class="pure-menu-item">
-          <a href="#design-matrix-{{unique_id}}" class="pure-menu-link"
+          <a id="navbar-matrix-link-{{unique_id}}"
+             href="#design-matrix-{{unique_id}}"
+             class="pure-menu-link"
             >Design Matrix</a
           >
         </li>
         <li class="pure-menu-item">
-          <a href="#mask-{{unique_id}}" class="pure-menu-link">Mask</a>
-        </li>
-        <li class="pure-menu-item">
-          <a href="#contrasts-{{unique_id}}" class="pure-menu-link"
+          <a id="navbar-contrasts-link-{{unique_id}}"
+             href="#contrasts-{{unique_id}}"
+             class="pure-menu-link"
             >Contrasts</a
           >
+        </li>
+        <li class="pure-menu-item">
+          <a href="#mask-{{unique_id}}" class="pure-menu-link">Mask</a>
         </li>
         <li class="pure-menu-item">
           <a href="#statistical-maps-{{unique_id}}" class="pure-menu-link"
@@ -158,8 +162,7 @@
       id="carousel-obj-{{unique_id}}-{{i_run}}"
       >
 
-      <section id="design-matrix-{{unique_id}}">
-
+      <section id="design-matrix-{{unique_id}}-{{i_run}}">
         <h3>Design Matrix</h3>
         {{py: has_design_matrix = run_content.design_matrix_png is not None}}
         {{if has_design_matrix}}
@@ -189,7 +192,7 @@
         {{endif}}
       </section>
 
-      <section id="contrasts-{{unique_id}}">
+      <section id="contrasts-{{unique_id}}-{{i_run}}">
         <h3>Contrasts</h3>
 
         <div class="d-flex flex-column">
