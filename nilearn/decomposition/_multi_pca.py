@@ -32,7 +32,7 @@ class _MultiPCA(_BaseDecomposition):
 
     %(smoothing_fwhm)s
 
-    mask : Niimg-like object, :obj:`~nilearn.maskers.NiftiMasker` or \ 
+    mask : Niimg-like object, :obj:`~nilearn.maskers.NiftiMasker` or \
           :obj:`~nilearn.maskers.MultiNiftiMasker` or \
            :obj:`~nilearn.surface.SurfaceImage` or \
            :obj:`~nilearn.maskers.SurfaceMasker` object, optional

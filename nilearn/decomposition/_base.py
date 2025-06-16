@@ -153,7 +153,7 @@ def _mask_and_reduce(
 
     Parameters
     ----------
-    masker : :obj:`~nilearn.maskers.NiftiMasker` or \ 
+    masker : :obj:`~nilearn.maskers.NiftiMasker` or \
         :obj:`~nilearn.maskers.MultiNiftiMasker` or \
         :obj:`~nilearn.maskers.SurfaceMasker`
         Instance used to mask provided data.
