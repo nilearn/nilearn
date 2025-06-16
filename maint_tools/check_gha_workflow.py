@@ -61,17 +61,17 @@ REPO = "nilearn"
 # your github username
 USERNAME = "Remi-Gau"
 # file containing your github token
-TOKEN_FILE = Path("/home/remi/Documents/tokens/gh_read_repo_for_orga.txt")
+TOKEN_FILE = Path("/home/remi-gau/Documents/tokens/gh_user.txt")
 
 BRANCH = "main"
 
 # Set to True if yu want to also include the runs of a CI workflow
 # that did not complete successfully.
-INCLUDE_FAILED_RUNS = False
+INCLUDE_FAILED_RUNS = True
 
 # Pages of runs to collect
 # 100 per page
-PAGES_TO_COLLECT = range(1, 30)
+PAGES_TO_COLLECT = range(1, 3)
 
 # If False, just plots the content of the TSV
 UPDATE_TSV = True
