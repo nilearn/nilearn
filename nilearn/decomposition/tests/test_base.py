@@ -40,6 +40,7 @@ def test_fast_svd(n_features):
     )
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 @pytest.mark.parametrize(
     "n_components,reduction_ratio,expected_shape_0",

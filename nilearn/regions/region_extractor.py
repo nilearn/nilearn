@@ -464,6 +464,9 @@ class RegionExtractor(NiftiMapsMasker):
 
         self.mask_img_ = self._load_mask(imgs)
 
+        if imgs is not None:
+            check_niimg(imgs)
+
         list_of_strategies = ["ratio_n_voxels", "img_value", "percentile"]
         if self.thresholding_strategy not in list_of_strategies:
             message = (

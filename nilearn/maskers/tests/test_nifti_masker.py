@@ -389,6 +389,7 @@ def test_compute_brain_mask_empty_mask_error(strategy, mask_args):
         masker.fit(img)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
