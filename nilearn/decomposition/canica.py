@@ -22,7 +22,7 @@ class CanICA(_MultiPCA):
 
     Parameters
     ----------
-    mask : Niimg-like object or MultiNiftiMasker instance or \
+    mask : Niimg-like object, :obj:`~nilearn.maskers.MultiNiftiMasker` or \
            :obj:`~nilearn.surface.SurfaceImage` or \
            :obj:`~nilearn.maskers.SurfaceMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,

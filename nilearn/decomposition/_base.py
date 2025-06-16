@@ -153,7 +153,8 @@ def _mask_and_reduce(
 
     Parameters
     ----------
-    masker : NiftiMasker or MultiNiftiMasker or \
+    masker : :obj:`~nilearn.maskers.NiftiMasker` or \ 
+        :obj:`~nilearn.maskers.MultiNiftiMasker` or \
         :obj:`~nilearn.maskers.SurfaceMasker`
         Instance used to mask provided data.
 
@@ -315,7 +316,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     %(random_state)s
 
-    mask : Niimg-like object or MultiNiftiMasker instance or
+    mask : Niimg-like object,  :obj:`~nilearn.maskers.MultiNiftiMasker` or
            :obj:`~nilearn.surface.SurfaceImage` or
            :obj:`~nilearn.maskers.SurfaceMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
