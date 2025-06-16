@@ -1,25 +1,25 @@
 /**
- * A class representing a map carousel that cycles through different maps.
+ * A class representing a carousel that cycles through different objects.
  */
-class MapCarousel {
+class Carousel {
     /**
-     * Creates a new MapCarousel instance.
+     * Creates a new Carousel instance.
      * @param {string} uid - A unique identifier for the masker report.
-     * @param {number[]} displayed_maps - An array of map IDs to cycle through.
+     * @param {number[]} displayed_objects - An array of IDs to cycle through.
      * @param {boolean} [is_sphere=false] - Determines whether the carousel operates on sphere masker.
      */
-    constructor(uid, displayed_maps, is_sphere = false) {
+    constructor(uid, displayed_objects, is_sphere = false) {
         /** @private {string} */
         this.uid = uid;
 
         /** @private {number[]} */
-        this.displayed_maps = displayed_maps;
+        this.displayed_objects = displayed_objects;
 
         /** @private {number} */
-        this.current_map_idx = 0;
+        this.current_obj_idx = 0;
 
         /** @private {number} */
-        this.number_maps = displayed_maps.length;
+        this.number_objs = displayed_objects.length;
 
         /** @private {boolean} */
         this.is_sphere = is_sphere;
@@ -28,27 +28,29 @@ class MapCarousel {
     }
 
     /**
-     * Initializes the carousel by setting up event listeners and displaying the first map.
+     * Initializes the carousel by setting up event listeners and displaying the first object.
      */
     init() {
-        this.showMap(0);
+        this.showObj(0);
 
         let prevButton = document.querySelector(`#prev-btn-${this.uid}`);
         let nextButton = document.querySelector(`#next-btn-${this.uid}`);
 
-        if (prevButton) prevButton.addEventListener("click", () => this.displayPreviousMap());
-        if (nextButton) nextButton.addEventListener("click", () => this.displayNextMap());
+        if (prevButton) prevButton.addEventListener("click", () => this.displayPrevious());
+        if (nextButton) nextButton.addEventListener("click", () => this.displayNext());
+
+        this.bindKeyboardEvents();
     }
 
     /**
-     * Displays the map at the given index and hides all others.
+     * Displays the object at the given index and hides all others.
      * @param {number} index - The index of the map to display.
      *
      * for sphere masker report this adapts the full title in the carousel
      */
-    showMap(index) {
-        this.displayed_maps.forEach((_, i) => {
-            let mapElement = document.getElementById(`map-${this.uid}-${i}`);
+    showObj(index) {
+        this.displayed_objects.forEach((_, i) => {
+            let mapElement = document.getElementById(`carousel-obj-${this.uid}-${i}`);
             if (mapElement) {
                 mapElement.style.display = i === index ? "block" : "none";
             }
@@ -56,12 +58,12 @@ class MapCarousel {
 
         let compElement = document.getElementById(`comp-${this.uid}`);
         if (compElement) {
-            compElement.innerHTML = this.displayed_maps[index];
+            compElement.innerHTML = this.displayed_objects[index];
             if (this.is_sphere){
                 if (index === 0){
                     compElement.innerHTML = "All Spheres"
                 } else{
-                    compElement.innerHTML = "Sphere " + this.displayed_maps[index];
+                    compElement.innerHTML = "Sphere " + this.displayed_objects[index];
                 }
             }
 
@@ -69,22 +71,35 @@ class MapCarousel {
     }
 
     /**
-     * Advances the carousel to the next map.
+     * Advances the carousel to the next object.
      *
      * using % modulo to ensure we 'wrap' back to start in the carousel
     */
-    displayNextMap() {
-        this.current_map_idx = (this.current_map_idx + 1) % this.number_maps;
-        this.showMap(this.current_map_idx);
+    displayNext() {
+        this.current_obj_idx = (this.current_obj_idx + 1) % this.number_objs;
+        this.showObj(this.current_obj_idx);
     }
 
     /**
-     * Moves the carousel to the previous map.
+     * Moves the carousel to the previous object.
      *
      * using % modulo to ensure we 'wrap' back to start in the carousel
     */
-    displayPreviousMap() {
-        this.current_map_idx = (this.current_map_idx - 1 + this.number_maps) % this.number_maps;
-        this.showMap(this.current_map_idx);
+    displayPrevious() {
+        this.current_obj_idx = (this.current_obj_idx - 1 + this.number_objs) % this.number_objs;
+        this.showObj(this.current_obj_idx);
+    }
+
+    /**
+     * Binds carousel to right and left arrow keys to cycle through carousel.
+    */
+    bindKeyboardEvents() {
+        document.addEventListener("keydown", (event) => {
+            if (event.key === "ArrowRight") {
+                this.displayNext();
+            } else if (event.key === "ArrowLeft") {
+                this.displayPrevious();
+            }
+        });
     }
 }

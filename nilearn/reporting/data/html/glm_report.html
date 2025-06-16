@@ -114,78 +114,111 @@
     <div class="table-container">{{ parameters|html }}</div>
   </section>
 
-  <section id="design-matrix-{{unique_id}}">
-    <h2>Design Matrix</h2>
+  {{py: n_runs = len(displayed_runs)}}
 
-    {{if design_matrices_dict}}
-    <!--  -->
-    {{py: design_matrices = design_matrices_dict.items()}}
-    <!--  -->
-    {{for dmtx_title, dmtx in design_matrices}}
-    <div class="d-flex flex-column">
-      <h3>run {{dmtx_title}}</h3>
-      <div class="scroll-y">
-        {{py: is_bytes = not dmtx.design_matrix_png.endswith('.png')}}
-        <img
-          class="pure-img"
-          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.design_matrix_png}}"
-          title="Plot of design matrix for {{dmtx_title}}."
-          alt="Plot of design matrix for {{dmtx_title}}."
-          style="min-width: 600px"
-        />
-      </div>
+  <div id="carousel-container-{{unique_id}}">
 
-      {{if dmtx.correlation_matrix_png }}
-      <h4>correlation matrix</h4>
-      <div class="scroll-y">
-        <!--  -->
-        {{py: is_bytes = is_bytes = not dmtx.correlation_matrix_png.endswith('.png')}}
-        <!--  -->
-        <img
-          class="pure-img"
-          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{dmtx.correlation_matrix_png}}"
-          title="Plot of correlation of design matrix for run {{dmtx_title}}."
-          alt="Plot of correlation of design matrix for run {{dmtx_title}}."
-          style="min-width: 600px"
-        />
-      </div>
-      {{endif}}
+    {{if n_runs > 1}}
+    <div class="pure-g d-flex justify-content-center align-items-stretch mt-1"
+         id="carousel-navbar">
+      <button class="btn pure-u-1-3 text-center rounded-2 carousel-navbar-element"
+              id="prev-btn-{{unique_id}}">
+        Previous Run
+      </button>
+      <!-- the content of the h4 will be injected by javascript -->
+      <h2 class="pure-u-1-4 py-3 text-center carousel-navbar-element"
+          style="margin: 0px; padding: 0px">
+        Run <span id="comp-{{unique_id}}"></span>
+      </h2>
+      <button class="btn pure-u-1-3 text-center rounded-2 carousel-navbar-element"
+              id="next-btn-{{unique_id}}">
+        Next Run
+      </button>
     </div>
-    {{endfor}}
-    <!--  -->
-    {{else}}
-    <p>No design matrix was provided.</p>
+    <div class="d-flex justify-content-center align-items-stretch mt-2">
+      <p>
+        You can cycle through the different runs
+        using your left and right arrow keys.
+      </p>
+    </div>
     {{endif}}
-  </section>
 
-  <section id="contrasts-{{unique_id}}">
-    <h2>Contrasts</h2>
-    <div class="d-flex flex-column">
-      {{if contrasts_dict}}
-      <!--  -->
-      {{py: runs = contrasts_dict.items()}} {{for i_run, all_contrasts in runs}}
-      <!--  -->
-      {{py: contrasts = all_contrasts.items()}} {{for contrast_name,
-      contrast_plot in contrasts}}
-      <div class="scroll-y">
-        {{py: is_bytes = not contrast_plot.endswith('.png')}}
-        <img
-          class="pure-img"
-          src="{{if is_bytes}}data:image/png;base64,{{endif}}{{contrast_plot}}"
-          title="Plot of the contrast {{contrast_name}} (run {{ i_run }})."
-          alt="Plot of the contrast {{contrast_name}} (run {{ i_run }})."
-          style="min-width: 600px"
-        />
-      </div>
-      {{endfor}}
-      <!--  -->
-      {{endfor}}
-      <!--  -->
-      {{else}}
-      <p>No contrast was provided.</p>
+
+    <!--
+      when there is more than one run
+      all runs are set to display 'none',
+      but initialization of the carousel
+      will set the first one to be shown.
+    -->
+    {{for i_run, run_content in run_wise_dict.items()}}
+
+    <div {{if n_runs> 1}}
+      style="display: none"
       {{endif}}
+      id="carousel-obj-{{unique_id}}-{{i_run}}"
+      >
+
+      <section id="design-matrix-{{unique_id}}">
+
+        <h3>Design Matrix</h3>
+        {{py: has_design_matrix = run_content.design_matrix_png is not None}}
+        {{if has_design_matrix}}
+        <div class="scroll-y">
+          {{py: is_bytes = not run_content.design_matrix_png.endswith('.png')}}
+          <img class="pure-img" src="{{if is_bytes}}data:image/png;base64,{{endif}}{{run_content.design_matrix_png}}"
+            title="Plot of design matrix for {{i_run}}." alt="Plot of design matrix for {{i_run}}."
+            style="min-width: 600px" />
+        </div>
+
+        {{py: has_correlation_matrix = run_content.correlation_matrix_png is not None}}
+        <!--  -->
+        {{if has_correlation_matrix}}
+        <h3>correlation matrix</h3>
+        <div class="scroll-y">
+          {{py: is_bytes = not run_content.correlation_matrix_png.endswith('.png')}}
+          <img class="pure-img"
+            src="{{if is_bytes}}data:image/png;base64,{{endif}}{{run_content.correlation_matrix_png}}"
+            title="Plot of correlation of design matrix for run {{i_run}}."
+            alt="Plot of correlation of design matrix for run {{i_run}}." style="min-width: 600px" />
+        </div>
+        {{endif}}
+        <!--  -->
+        {{else}}
+          <p>No design matrix was provided.</p>
+
+        {{endif}}
+      </section>
+
+      <section id="contrasts-{{unique_id}}">
+        <h3>Contrasts</h3>
+
+        <div class="d-flex flex-column">
+          {{py: has_contrasts = run_content.all_contrasts is not None}}
+          {{if has_contrasts}}
+          <!--  -->
+          {{py: contrasts = run_content.all_contrasts.items()}}
+          <!--  -->
+          {{for contrast_name, contrast_plot in contrasts}}
+          <div class="scroll-y">
+            {{py: is_bytes = not contrast_plot.endswith('.png')}}
+            <img class="pure-img" src="{{if is_bytes}}data:image/png;base64,{{endif}}{{contrast_plot}}"
+              title="Plot of the contrast {{contrast_name}} (run {{ i_run }})."
+              alt="Plot of the contrast {{contrast_name}} (run {{ i_run }})." style="min-width: 600px" />
+          </div>
+          {{endfor}}
+          <!--  -->
+          {{else}}
+            <p>No contrast was provided.</p>
+            {{endif}}
+        </div>
+
+      </section>
+
     </div>
-  </section>
+
+    {{endfor}}
+
+  </div>
 
   <section id="mask-{{unique_id}}">
     <h2>Mask</h2>
@@ -267,4 +300,15 @@
     </ul>
   </section>
 </div>
+
+{{if n_runs > 1}}
+<script>
+  {{ js_carousel | html }}
+  document.addEventListener("DOMContentLoaded", function () {
+    new Carousel("{{unique_id}}", {{ displayed_runs }}, false);
+}
+);
+</script>
+{{endif}}
+
 {{enddef}}

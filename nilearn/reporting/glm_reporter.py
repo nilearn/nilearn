@@ -44,6 +44,7 @@ from nilearn.reporting.html_report import (
 from nilearn.reporting.utils import (
     CSS_PATH,
     HTML_TEMPLATE_PATH,
+    JS_PATH,
     TEMPLATE_ROOT_PATH,
     figure_to_png_base64,
 )
@@ -348,6 +349,20 @@ def make_glm_report(
             output=output,
         )
 
+    run_wise_dict = tempita.bunch()
+    for i_run in design_matrices_dict:
+        tmp = tempita.bunch()
+        tmp["design_matrix_png"] = design_matrices_dict[i_run][
+            "design_matrix_png"
+        ]
+        tmp["correlation_matrix_png"] = design_matrices_dict[i_run][
+            "correlation_matrix_png"
+        ]
+        tmp["all_contrasts"] = None
+        if i_run in contrasts_dict:
+            tmp["all_contrasts"] = contrasts_dict[i_run]
+        run_wise_dict[i_run] = tmp
+
     # for methods writing, only keep the contrast expressed as strings
     if contrasts is not None:
         contrasts = [x for x in contrasts.values() if isinstance(x, str)]
@@ -374,20 +389,24 @@ def make_glm_report(
     with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
 
+    with (JS_PATH / "carousel.js").open(encoding="utf-8") as js_file:
+        js_carousel = js_file.read()
+
     body = tpl.substitute(
         css=css,
         title=title,
         docstring=snippet,
         warning_messages=_render_warnings_partial(warning_messages),
         parameters=model_attributes_html,
-        contrasts_dict=contrasts_dict,
         mask_plot=mask_plot,
         results=results,
-        design_matrices_dict=design_matrices_dict,
+        run_wise_dict=run_wise_dict,
         unique_id=unique_id,
         date=date,
         show_navbar="style='display: none;'" if is_notebook() else "",
         method_section=method_section,
+        js_carousel=js_carousel,
+        displayed_runs=list(range(len(run_wise_dict))),
         **mask_info,
     )
 
