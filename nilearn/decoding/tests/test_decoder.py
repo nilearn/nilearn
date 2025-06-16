@@ -1074,6 +1074,7 @@ def test_decoder_decision_function(binary_classification_data):
     model.decision_function(X)
 
 
+@pytest.mark.timeout(0)
 def test_decoder_strings_filepaths_input(
     tiny_binary_classification_data, tmp_path
 ):

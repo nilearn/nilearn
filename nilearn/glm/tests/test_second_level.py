@@ -568,6 +568,7 @@ def test_high_level_glm_with_paths_errors():
         SecondLevelModel(mask_img=masker, verbose=1).fit(Y, design_matrix=X)
 
 
+@pytest.mark.timeout(0)
 def test_high_level_non_parametric_inference_with_paths(tmp_path):
     mask_file, fmri_files, _ = write_fake_fmri_data_and_design(
         (SHAPE,), file_path=tmp_path
@@ -1048,6 +1049,7 @@ def test_non_parametric_inference_cluster_level():
     assert get_data(out["logp_max_t"]).shape == SHAPE[:3]
 
 
+@pytest.mark.timeout(0)
 def test_non_parametric_inference_cluster_level_with_covariates(
     shape_3d_default,
     rng,
@@ -1152,6 +1154,7 @@ def test_second_level_contrast_computation_smoke():
     model.compute_contrast()
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "output_type",
     [

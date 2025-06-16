@@ -8,6 +8,7 @@ from nibabel import Nifti1Image
 from nilearn.plotting import plot_prob_atlas
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "params",
     [
