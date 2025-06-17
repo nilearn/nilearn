@@ -1,6 +1,8 @@
 import numpy as np
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
+VALID_TRI_VALUES = ("full", "lower", "diag")
+
 
 def mask_matrix(mat, tri):
     """Help for plot_matrix.
@@ -13,6 +15,16 @@ def mask_matrix(mat, tri):
     else:
         mask = np.tri(mat.shape[0], dtype=bool) ^ True
     return np.ma.masked_array(mat, mask)
+
+
+def sanitize_tri(tri, allowed_values=None):
+    """Help for plot_matrix."""
+    if allowed_values is None:
+        allowed_values = VALID_TRI_VALUES
+    if tri not in allowed_values:
+        raise ValueError(
+            f"Parameter tri needs to be one of: {', '.join(allowed_values)}."
+        )
 
 
 def reorder_matrix(mat, labels, reorder):

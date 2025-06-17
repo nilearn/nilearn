@@ -25,11 +25,11 @@ from nilearn.plotting.matrix._matplotlib_backend import (
     _configure_grid,
     _fit_axes,
     _sanitize_inputs_plot_matrix,
-    _sanitize_tri,
 )
 from nilearn.plotting.matrix._utils import (
     mask_matrix,
     reorder_matrix,
+    sanitize_tri,
 )
 
 
@@ -530,7 +530,7 @@ def plot_design_matrix_correlation(
             "removing drift and constant regressors."
         )
 
-    _sanitize_tri(tri, allowed_values=("full", "diag"))
+    sanitize_tri(tri, allowed_values=("full", "diag"))
 
     mat = design_matrix.corr()
 
