@@ -7,10 +7,7 @@ import pytest
 from nilearn.plotting.matrix._matplotlib_backend import (
     _sanitize_figure_and_axes,
     _sanitize_labels,
-    _sanitize_reorder,
 )
-
-VALID_REORDER_VALUES = (True, False, "single", "complete", "average")
 
 ##############################################################################
 # Some smoke testing for graphics-related code
@@ -54,19 +51,3 @@ def test_sanitize_labels():
         _sanitize_labels((6, 6), labs)
     for lab in [labs, np.array(labs)]:
         assert _sanitize_labels((2, 2), lab) == labs
-
-
-@pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)
-def test_sanitize_reorder(reorder):
-    if reorder is not True:
-        assert _sanitize_reorder(reorder) == reorder
-    else:
-        assert _sanitize_reorder(reorder) == "average"
-
-
-@pytest.mark.parametrize("reorder", [None, "foo", 2])
-def test_sanitize_reorder_error(reorder):
-    with pytest.raises(
-        ValueError, match=("Parameter reorder needs to be one of")
-    ):
-        _sanitize_reorder(reorder)
