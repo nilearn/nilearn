@@ -1,11 +1,28 @@
+import re
+
+import numpy as np
 import pytest
 
 from nilearn.plotting.matrix._utils import (
     VALID_REORDER_VALUES,
     VALID_TRI_VALUES,
+    sanitize_labels,
     sanitize_reorder,
     sanitize_tri,
 )
+
+
+def test_sanitize_labels():
+    labs = ["foo", "bar"]
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Length of labels (2) unequal to length of matrix (6)."
+        ),
+    ):
+        sanitize_labels((6, 6), labs)
+    for lab in [labs, np.array(labs)]:
+        assert sanitize_labels((2, 2), lab) == labs
 
 
 @pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)

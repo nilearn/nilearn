@@ -1,12 +1,8 @@
-import re
-
 import matplotlib.pyplot as plt
-import numpy as np
 import pytest
 
 from nilearn.plotting.matrix._matplotlib_backend import (
     _sanitize_figure_and_axes,
-    _sanitize_labels,
 )
 
 ##############################################################################
@@ -38,16 +34,3 @@ def test_sanitize_figure_and_axes(fig, axes, expected):
     assert isinstance(fig2, plt.Figure)
     assert isinstance(axes2, plt.Axes)
     assert own_fig == expected
-
-
-def test_sanitize_labels():
-    labs = ["foo", "bar"]
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Length of labels (2) unequal to length of matrix (6)."
-        ),
-    ):
-        _sanitize_labels((6, 6), labs)
-    for lab in [labs, np.array(labs)]:
-        assert _sanitize_labels((2, 2), lab) == labs
