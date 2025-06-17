@@ -10,16 +10,15 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.tests._testing import block_paradigm, modulated_event_paradigm
-from nilearn.plotting import (
+from nilearn.plotting.matrix._utils import VALID_TRI_VALUES
+from nilearn.plotting.matrix.matrix_plotting import (
+    _sanitize_figure_and_axes,
+    pad_contrast_matrix,
     plot_contrast_matrix,
     plot_design_matrix,
     plot_design_matrix_correlation,
     plot_event,
     plot_matrix,
-)
-from nilearn.plotting.matrix._utils import VALID_TRI_VALUES
-from nilearn.plotting.matrix.matrix_plotting import (
-    pad_contrast_matrix,
 )
 
 
@@ -31,6 +30,37 @@ def mat():
 @pytest.fixture
 def labels():
     return [str(i) for i in range(10)]
+
+
+##############################################################################
+# Some smoke testing for graphics-related code
+
+
+@pytest.mark.parametrize(
+    "fig,axes", [("foo", "bar"), (1, 2), plt.subplots(1, 1, figsize=(7, 5))]
+)
+def test_sanitize_figure_and_axes_error(fig, axes):
+    with pytest.raises(
+        ValueError,
+        match=("Parameters figure and axes cannot be specified together."),
+    ):
+        _sanitize_figure_and_axes(fig, axes)
+
+
+@pytest.mark.parametrize(
+    "fig,axes,expected",
+    [
+        ((6, 4), None, True),
+        (plt.figure(figsize=(3, 2)), None, True),
+        (None, None, True),
+        (None, plt.subplots(1, 1)[1], False),
+    ],
+)
+def test_sanitize_figure_and_axes(fig, axes, expected):
+    fig2, axes2, own_fig = _sanitize_figure_and_axes(fig, axes)
+    assert isinstance(fig2, plt.Figure)
+    assert isinstance(axes2, plt.Axes)
+    assert own_fig == expected
 
 
 @pytest.mark.parametrize(
