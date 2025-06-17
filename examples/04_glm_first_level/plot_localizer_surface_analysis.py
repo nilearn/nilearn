@@ -183,13 +183,17 @@ for contrast_id, contrast_val in contrasts.items():
     # compute contrast-related statistics
     z_score = glm.compute_contrast(contrast_val, stat_type="t")
 
+    hemi = "left"
+    if contrast_id == "(left - right) button press":
+        hemi = "both"
+
     # we plot it on the surface, on the inflated fsaverage mesh,
     # together with a suitable background to give an impression
     # of the cortex folding.
     fig = plot_surf_stat_map(
         surf_mesh=fsaverage5["inflated"],
         stat_map=z_score,
-        hemi="both",
+        hemi=hemi,
         title=contrast_id,
         threshold=threshold,
         bg_map=fsaverage_data,
@@ -198,38 +202,40 @@ for contrast_id, contrast_val in contrasts.items():
 
 show()
 
-# # %%
-# # Or we can save as an html file.
-# from pathlib import Path
+# %%
+# Or we can save as an html file.
+from pathlib import Path
 
-# from nilearn.interfaces.bids import save_glm_to_bids
+from nilearn.interfaces.bids import save_glm_to_bids
 
-# output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
-# output_dir.mkdir(exist_ok=True, parents=True)
+output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
+output_dir.mkdir(exist_ok=True, parents=True)
 
-# save_glm_to_bids(
-#     glm,
-#     contrasts=contrasts,
-#     threshold=threshold,
-#     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
-#     height_control=None,
-#     prefix="sub-01",
-#     out_dir=output_dir,
-# )
+save_glm_to_bids(
+    glm,
+    contrasts=contrasts,
+    threshold=threshold,
+    bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+    height_control=None,
+    prefix="sub-01",
+    out_dir=output_dir,
+)
 
-# report = glm.generate_report(
-#     contrasts,
-#     threshold=threshold,
-#     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
-#     height_control=None,
-# )
+report = glm.generate_report(
+    contrasts,
+    threshold=threshold,
+    bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+    height_control=None,
+)
 
-# # %%
-# # This report can be viewed in a notebook.
-# report
+# %%
+# This report can be viewed in a notebook.
+report
 
-# # %%
-# # Or in a separate browser window
-# report.open_in_browser()
+# %%
+# Or in a separate browser window
+report.open_in_browser()
 
-# report.save_as_html(output_dir / "report.html")
+report.save_as_html(output_dir / "report.html")
+
+# sphinx_gallery_thumbnail_number = 1

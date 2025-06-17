@@ -4,6 +4,7 @@ import inspect
 import json
 import warnings
 from collections.abc import Iterable
+from copy import deepcopy
 from pathlib import Path
 
 from nilearn import __version__
@@ -398,7 +399,8 @@ def _write_mask(model):
         model.masker_.mask_img_.to_filename(out_dir / filenames["mask"])
     else:
         # need to convert mask from book to a type that's gifti friendly
-        mask = model.masker_.mask_img_
+
+        mask = deepcopy(model.masker_.mask_img_)
         for label, hemi in zip(["L", "R"], ["left", "right"]):
             mask.data.parts[hemi] = mask.data.parts[hemi].astype("uint8")
             density = mask.mesh.parts[hemi].n_vertices

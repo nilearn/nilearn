@@ -694,7 +694,7 @@ def _make_stat_maps_contrast_clusters(
             )
 
         stat_map_png = _stat_map_to_png(
-            stat_img=thresholded_img,
+            stat_img=stat_map_img,
             threshold=threshold,
             bg_img=bg_img,
             cut_coords=cut_coords,
@@ -730,7 +730,6 @@ def _stat_map_to_png(
     stat_img : Niimg-like object or None
        Statistical image (presumably in z scale),
        to be plotted as slices or glass brain.
-       Does not perform any thresholding.
 
     threshold : float
        Desired threshold in z-scale.
