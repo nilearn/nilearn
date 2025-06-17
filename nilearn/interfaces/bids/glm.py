@@ -435,14 +435,8 @@ def _generate_filename_surface_file(filename, hemi, den=None):
         create_bids_filename,
     )
 
-    parsed_file = parse_bids_filename(filename)
-
-    fields = {
-        "prefix": None,
-        "suffix": parsed_file["file_tag"],
-        "extension": parsed_file["file_type"],
-        "entities": {k: parsed_file[k] for k in parsed_file["file_fields"]},
-    }
+    fields = parse_bids_filename(filename, legacy=False)
+    fields["prefix"] = None
 
     fields["entities"]["hemi"] = hemi
     if den:

@@ -798,6 +798,7 @@ def _stat_map_to_png(
             bg_map=bg_img,
             surf_mesh=surf_mesh,
             cmap=cmap,
+            darkness=None,
         )
 
         x_label_color = "black"
