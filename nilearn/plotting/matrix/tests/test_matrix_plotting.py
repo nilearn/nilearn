@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-from numpy.testing import assert_array_equal
 
 from nilearn._utils import constrained_layout_kwargs
 from nilearn.glm.first_level.design_matrix import (
@@ -13,7 +12,6 @@ from nilearn.glm.tests._testing import block_paradigm, modulated_event_paradigm
 from nilearn.plotting.matrix._utils import VALID_TRI_VALUES
 from nilearn.plotting.matrix.matrix_plotting import (
     _sanitize_figure_and_axes,
-    pad_contrast_matrix,
     plot_contrast_matrix,
     plot_design_matrix,
     plot_design_matrix_correlation,
@@ -286,33 +284,6 @@ def test_show_contrast_matrix_axes():
     # above allows us to test the kwargs are at least okay
     pytest.importorskip("matplotlib", minversion="3.5.0")
     assert "constrained" in fig.get_layout_engine().__class__.__name__.lower()
-
-
-def test_pad_contrast_matrix():
-    """Test for contrasts padding before plotting.
-
-    See https://github.com/nilearn/nilearn/issues/4211
-    """
-    frame_times = np.linspace(0, 127 * 1.0, 128)
-    dmtx = make_first_level_design_matrix(
-        frame_times, drift_model="polynomial", drift_order=3
-    )
-    contrast = np.array([[1, -1]])
-    padded_contrast = pad_contrast_matrix(contrast, dmtx)
-    assert_array_equal(padded_contrast, np.array([[1, -1, 0, 0]]))
-
-    contrast = np.eye(3)
-    padded_contrast = pad_contrast_matrix(contrast, dmtx)
-    assert_array_equal(
-        padded_contrast,
-        np.array(
-            [
-                [1, 0, 0, 0],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-            ]
-        ),
-    )
 
 
 @pytest.mark.parametrize("cmap", ["RdBu_r", "bwr", "seismic_r"])

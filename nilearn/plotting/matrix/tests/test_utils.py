@@ -2,14 +2,46 @@ import re
 
 import numpy as np
 import pytest
+from numpy.testing import assert_array_equal
 
+from nilearn.glm.first_level.design_matrix import (
+    make_first_level_design_matrix,
+)
 from nilearn.plotting.matrix._utils import (
     VALID_REORDER_VALUES,
     VALID_TRI_VALUES,
+    pad_contrast_matrix,
     sanitize_labels,
     sanitize_reorder,
     sanitize_tri,
 )
+
+
+def test_pad_contrast_matrix():
+    """Test for contrasts padding before plotting.
+
+    See https://github.com/nilearn/nilearn/issues/4211
+    """
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3
+    )
+    contrast = np.array([[1, -1]])
+    padded_contrast = pad_contrast_matrix(contrast, dmtx)
+    assert_array_equal(padded_contrast, np.array([[1, -1, 0, 0]]))
+
+    contrast = np.eye(3)
+    padded_contrast = pad_contrast_matrix(contrast, dmtx)
+    assert_array_equal(
+        padded_contrast,
+        np.array(
+            [
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+            ]
+        ),
+    )
 
 
 def test_sanitize_labels():
