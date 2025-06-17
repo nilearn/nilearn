@@ -281,7 +281,7 @@ def make_glm_report(
 
         clusters_tsvs = None
         statistical_maps = {}
-        if output is not None:
+        if model._is_volume_glm() and output is not None:
             try:
                 statistical_maps = {
                     contrast_name: output["dir"]
@@ -560,7 +560,7 @@ def _make_stat_maps_contrast_clusters(
 
     Parameters
     ----------
-    stat_img : dictionary of Niimg-like object or None
+    stat_img : dictionary of Niimg-like object or SurfaceImage, or None
        Statistical image (presumably in z scale)
        whenever height_control is 'fpr' or None,
        stat_img=None is acceptable.
