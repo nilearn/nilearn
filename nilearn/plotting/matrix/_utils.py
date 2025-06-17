@@ -18,6 +18,19 @@ def mask_matrix(mat, tri):
     return np.ma.masked_array(mat, mask)
 
 
+def sanitize_labels(mat_shape, labels):
+    """Help for plot_matrix."""
+    # we need a list so an empty one will be cast to False
+    if isinstance(labels, np.ndarray):
+        labels = labels.tolist()
+    if labels and len(labels) != mat_shape[0]:
+        raise ValueError(
+            f"Length of labels ({len(labels)}) "
+            f"unequal to length of matrix ({mat_shape[0]})."
+        )
+    return labels
+
+
 def sanitize_reorder(reorder):
     """Help for plot_matrix."""
     if reorder not in VALID_REORDER_VALUES:

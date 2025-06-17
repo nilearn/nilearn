@@ -2,7 +2,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn._utils import constrained_layout_kwargs
-from nilearn.plotting.matrix._utils import sanitize_reorder, sanitize_tri
+from nilearn.plotting.matrix._utils import (
+    sanitize_labels,
+    sanitize_reorder,
+    sanitize_tri,
+)
 
 
 def _configure_axis(
@@ -110,19 +114,6 @@ def _sanitize_figure_and_axes(figure, axes):
     return fig, axes, own_fig
 
 
-def _sanitize_labels(mat_shape, labels):
-    """Help for plot_matrix."""
-    # we need a list so an empty one will be cast to False
-    if isinstance(labels, np.ndarray):
-        labels = labels.tolist()
-    if labels and len(labels) != mat_shape[0]:
-        raise ValueError(
-            f"Length of labels ({len(labels)}) "
-            f"unequal to length of matrix ({mat_shape[0]})."
-        )
-    return labels
-
-
 def _sanitize_inputs_plot_matrix(
     mat_shape, tri, labels, reorder, figure, axes
 ):
@@ -131,7 +122,7 @@ def _sanitize_inputs_plot_matrix(
     This function makes sure the inputs to plot_matrix are valid.
     """
     sanitize_tri(tri)
-    labels = _sanitize_labels(mat_shape, labels)
+    labels = sanitize_labels(mat_shape, labels)
     reorder = sanitize_reorder(reorder)
     fig, axes, own_fig = _sanitize_figure_and_axes(figure, axes)
     return labels, reorder, fig, axes, own_fig
