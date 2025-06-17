@@ -39,7 +39,7 @@ def _simu_img(tmp_path, trend, demean):
     # demean set to False just for simulating signal based on the original
     # state
     confounds, _ = load_confounds(
-        file_nii, strategy=("motion",), motion="basic", demean=demean
+        file_nii, strategy=("motion",), motion="basic", demean=False
     )
 
     X = _handle_non_steady(confounds)
@@ -84,7 +84,6 @@ def _simu_img(tmp_path, trend, demean):
     test_confounds, _ = load_confounds(
         file_nii, strategy=("motion",), motion="basic", demean=demean
     )
-
     # match how we extend the length to increase the degree of freedom
     test_confounds = _handle_non_steady(test_confounds)
     sample_mask = np.arange(test_confounds.shape[0])[1:]
@@ -152,7 +151,7 @@ def test_nilearn_regress(tmp_path, test_strategy, param, fmriprep_version):
     if fmriprep_version == "21.x.x" and test_strategy == ("ica_aroma",):
         return
     confounds, _ = load_confounds(img_nii, strategy=test_strategy, **param)
-    _regression(confounds, tmp_path=tmp_path)
+    _regression(confounds, tmp_path)
 
 
 def _tseries_std(
