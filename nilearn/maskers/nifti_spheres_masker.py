@@ -278,7 +278,7 @@ class NiftiSpheresMasker(BaseMasker):
     %(verbose0)s
 
     %(clean_args)s
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.11.2
 
     %(masker_kwargs)s
 
@@ -536,7 +536,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         return embedded_images
 
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit(
         self,
         imgs=None,
@@ -685,7 +685,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         params = get_params(NiftiSpheresMasker, self)
         params["clean_kwargs"] = self.clean_args_
-        # TODO remove in 0.13.2
+        # TODO remove in 0.13.0
         if self.clean_kwargs:
             params["clean_kwargs"] = self.clean_kwargs_
 

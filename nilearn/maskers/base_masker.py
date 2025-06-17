@@ -349,7 +349,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         )
 
     @fill_doc
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit_transform(
         self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
     ):
@@ -597,7 +597,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         return mask_img_
 
     @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
+        replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
@@ -673,7 +673,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         raise NotImplementedError()
 
     @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
+        replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):

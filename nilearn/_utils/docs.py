@@ -672,7 +672,7 @@ kwargs : dict
     `'butterworth__'` will be passed to the Butterworth filter
     (i.e., `clean__butterworth__`).
 
-    .. deprecated:: 0.11.2dev
+    .. deprecated:: 0.11.2
 
     .. admonition:: Use ``clean_args`` instead!
        :class: important
@@ -1107,7 +1107,7 @@ tfce : :obj:`bool`, default=False
        The number of thresholds used in the TFCE procedure
        will set between 10 and 1000.
 
-       .. versionadded:: 0.11.2dev
+       .. versionadded:: 0.11.2
 
     .. warning::
 

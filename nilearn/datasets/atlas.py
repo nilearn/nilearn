@@ -1293,9 +1293,9 @@ def fetch_atlas_yeo_2011(
         - 17 networks parcellation.
 
         If ``thickness`` is not None, this will default to ``7``.
-        The default will be set to ``7`` in version 0.13.2.
+        The default will be set to ``7`` in version 0.13.0.
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.11.2
 
     thickness : {"thin", "thick", None}, default = None
         If not None,
@@ -1305,9 +1305,9 @@ def fetch_atlas_yeo_2011(
         - ``"thin"``: parcellation fitted to thin cortex segmentations.
 
         If ``n_networks`` is not None, this will default to ``"thick"``.
-        The default will be set to ``"thick"`` in version 0.13.2.
+        The default will be set to ``"thick"`` in version 0.13.0.
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.11.2
 
     Returns
     -------
@@ -1401,7 +1401,7 @@ def fetch_atlas_yeo_2011(
         warnings.warn(
             category=DeprecationWarning,
             message=(
-                deprecation_message.format(version="0.13.2")
+                deprecation_message.format(version="0.13.0")
                 + (
                     "To suppress this warning, "
                     "Please use the parameters 'n_networks' and 'thickness' "

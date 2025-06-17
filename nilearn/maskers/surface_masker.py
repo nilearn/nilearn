@@ -196,7 +196,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
     @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
+        replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
     @fill_doc
     def fit(self, imgs=None, y=None):
