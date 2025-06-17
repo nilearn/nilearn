@@ -876,7 +876,6 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
         assert key in metadata
 
 
-
 def test_save_glm_to_bids_surface_prefix_override(tmp_path):
     """Save surface GLM results to disk with prefix."""
     n_sub = 1
@@ -916,8 +915,6 @@ def test_save_glm_to_bids_surface_prefix_override(tmp_path):
     EXPECTED_FILENAME_ENDINGS = [
         "run-2_design.tsv",
         "run-2_design.json",
-        "contrast-c0_clusters.tsv",
-        "contrast-c0_clusters.json",
         "hemi-L_den-10242_mask.gii",
         "hemi-R_den-10242_mask.gii",
         "hemi-L_den-10242_contrast-c0_stat-z_statmap.gii",
@@ -942,6 +939,16 @@ def test_save_glm_to_bids_surface_prefix_override(tmp_path):
     for fname in EXPECTED_FILENAME_ENDINGS:
         assert (tmp_path / "output" / sub_prefix / f"{prefix}{fname}").exists()
 
+        # clusters cannot yet be computed on surface,
+        # so no TSV should be saved to disk
+        MISSING_FILENAME_ENDINGS = [
+            "contrast-c0_clusters.tsv",
+            "contrast-c0_clusters.json",
+        ]
+    for fname in MISSING_FILENAME_ENDINGS:
+        assert not (
+            tmp_path / "output" / sub_prefix / f"{prefix}{fname}"
+        ).exists()
 
 
 @pytest.mark.timeout(0)

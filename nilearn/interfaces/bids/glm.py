@@ -12,6 +12,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn.surface import SurfaceImage
 
 
 def _generate_model_metadata(out_file, model):
@@ -317,6 +318,11 @@ def save_glm_to_bids(
                             filename, label, density
                         )
                     )
+
+        if isinstance(img, SurfaceImage):
+            # cluster computation is not implemented for surface data
+            # so we do not save any TSV or JSON to disk in this case.
+            continue
 
         thresholded_img, threshold = threshold_stats_img(
             stat_img=img,
