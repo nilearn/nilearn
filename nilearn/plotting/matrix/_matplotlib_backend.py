@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn._utils import constrained_layout_kwargs
-from nilearn.plotting.matrix._utils import sanitize_tri
+from nilearn.plotting.matrix._utils import sanitize_reorder, sanitize_tri
 
 
 def _configure_axis(
@@ -132,24 +132,6 @@ def _sanitize_inputs_plot_matrix(
     """
     sanitize_tri(tri)
     labels = _sanitize_labels(mat_shape, labels)
-    reorder = _sanitize_reorder(reorder)
+    reorder = sanitize_reorder(reorder)
     fig, axes, own_fig = _sanitize_figure_and_axes(figure, axes)
     return labels, reorder, fig, axes, own_fig
-
-
-def _sanitize_reorder(reorder):
-    """Help for plot_matrix."""
-    VALID_REORDER_ARGS = (True, False, "single", "complete", "average")
-    if reorder not in VALID_REORDER_ARGS:
-        param_to_print = []
-        for item in VALID_REORDER_ARGS:
-            if isinstance(item, str):
-                param_to_print.append(f'"{item}"')
-            else:
-                param_to_print.append(str(item))
-        raise ValueError(
-            "Parameter reorder needs to be one of:"
-            f"\n{', '.join(param_to_print)}."
-        )
-    reorder = "average" if reorder is True else reorder
-    return reorder
