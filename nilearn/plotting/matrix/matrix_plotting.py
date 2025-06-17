@@ -28,8 +28,8 @@ from nilearn.plotting.matrix._matplotlib_backend import (
     _sanitize_tri,
 )
 from nilearn.plotting.matrix._utils import (
-    _mask_matrix,
-    _reorder_matrix,
+    mask_matrix,
+    reorder_matrix,
 )
 
 
@@ -124,9 +124,9 @@ def plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
     if reorder:
-        mat, labels = _reorder_matrix(mat, labels, reorder)
+        mat, labels = reorder_matrix(mat, labels, reorder)
     if tri != "full":
-        mat = _mask_matrix(mat, tri)
+        mat = mask_matrix(mat, tri)
     display = axes.imshow(
         mat, aspect="equal", interpolation="nearest", cmap=cmap, **kwargs
     )

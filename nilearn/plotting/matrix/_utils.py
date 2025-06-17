@@ -2,7 +2,7 @@ import numpy as np
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
 
-def _mask_matrix(mat, tri):
+def mask_matrix(mat, tri):
     """Help for plot_matrix.
 
     This function masks the matrix depending on the provided
@@ -15,7 +15,7 @@ def _mask_matrix(mat, tri):
     return np.ma.masked_array(mat, mask)
 
 
-def _reorder_matrix(mat, labels, reorder):
+def reorder_matrix(mat, labels, reorder):
     """Help for plot_matrix.
 
     This function reorders the provided matrix.
