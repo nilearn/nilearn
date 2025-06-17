@@ -1,7 +1,5 @@
 """Miscellaneous matrix plotting utilities."""
 
-import warnings
-
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,13 +13,12 @@ from nilearn._utils import (
     rename_parameters,
 )
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.logger import find_stack_level
-from nilearn.glm.contrasts import expression_to_contrast_vector
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.plotting._utils import save_figure_if_needed
 from nilearn.plotting.matrix._utils import (
     mask_matrix,
+    pad_contrast_matrix,
     reorder_matrix,
     sanitize_labels,
     sanitize_reorder,
@@ -340,54 +337,6 @@ def plot_contrast_matrix(
         fig.colorbar(mat, fraction=0.025, pad=0.04)
 
     return save_figure_if_needed(axes, output_file)
-
-
-def pad_contrast_matrix(contrast_def, design_matrix):
-    """Pad contrasts with zeros.
-
-    Parameters
-    ----------
-    contrast_def : :class:`numpy.ndarray`
-        Contrast to be padded
-
-    design_matrix : :class:`pandas.DataFrame`
-        Design matrix to use.
-
-    Returns
-    -------
-    axes : :class:`numpy.ndarray`
-        Padded contrast
-
-    """
-    design_column_names = design_matrix.columns.tolist()
-    if isinstance(contrast_def, str):
-        contrast_def = expression_to_contrast_vector(
-            contrast_def, design_column_names
-        )
-    n_columns_design_matrix = len(design_column_names)
-    n_columns_contrast_def = (
-        contrast_def.shape[0]
-        if contrast_def.ndim == 1
-        else contrast_def.shape[1]
-    )
-    horizontal_padding = n_columns_design_matrix - n_columns_contrast_def
-    if horizontal_padding == 0:
-        return contrast_def
-    warnings.warn(
-        (
-            f"Contrasts will be padded with {horizontal_padding} "
-            "column(s) of zeros."
-        ),
-        category=UserWarning,
-        stacklevel=find_stack_level(),
-    )
-    contrast_def = np.pad(
-        contrast_def,
-        ((0, 0), (0, horizontal_padding)),
-        "constant",
-        constant_values=(0, 0),
-    )
-    return contrast_def
 
 
 @fill_doc
