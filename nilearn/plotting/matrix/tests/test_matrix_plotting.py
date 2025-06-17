@@ -17,11 +17,10 @@ from nilearn.plotting import (
     plot_event,
     plot_matrix,
 )
+from nilearn.plotting.matrix._utils import VALID_TRI_VALUES
 from nilearn.plotting.matrix.matrix_plotting import (
     pad_contrast_matrix,
 )
-
-VALID_TRI_VALUES = ("full", "lower", "diag")
 
 
 @pytest.fixture

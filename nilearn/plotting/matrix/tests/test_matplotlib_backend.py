@@ -8,9 +8,7 @@ from nilearn.plotting.matrix._matplotlib_backend import (
     _sanitize_figure_and_axes,
     _sanitize_labels,
     _sanitize_reorder,
-    _sanitize_tri,
 )
-from nilearn.plotting.matrix.tests.test_matrix_plotting import VALID_TRI_VALUES
 
 VALID_REORDER_VALUES = (True, False, "single", "complete", "average")
 
@@ -56,22 +54,6 @@ def test_sanitize_labels():
         _sanitize_labels((6, 6), labs)
     for lab in [labs, np.array(labs)]:
         assert _sanitize_labels((2, 2), lab) == labs
-
-
-@pytest.mark.parametrize("tri", VALID_TRI_VALUES)
-def test_sanitize_tri(tri):
-    _sanitize_tri(tri)
-
-
-@pytest.mark.parametrize("tri", [None, "foo", 2])
-def test_sanitize_tri_error(tri):
-    with pytest.raises(
-        ValueError,
-        match=(
-            f"Parameter tri needs to be one of: {', '.join(VALID_TRI_VALUES)}"
-        ),
-    ):
-        _sanitize_tri(tri)
 
 
 @pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)
