@@ -1013,9 +1013,9 @@ def check_decoder_empty_data_messages(estimator):
     else:
         # we can use classification data even for regressors
         # because fit should fail early
+        dim = (5,)
         _, y = make_classification(
             n_samples=20,
-            dim=5
             n_features=dim**3,
             scale=3.0,
             n_informative=5,
