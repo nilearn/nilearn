@@ -143,7 +143,7 @@ display = plot_stat_map(
     figure=fig,
 )
 fig.suptitle("age effect on gray matter density (FDR = .05)")
-# show()
+show()
 
 # %%
 # We can also study the effect of sex by computing the contrast, thresholding
@@ -158,7 +158,7 @@ plot_stat_map(
     threshold=threshold,
     title="sex effect on gray matter density (FDR = .05)",
 )
-# show()
+show()
 
 # %%
 # Note that there does not seem to be any significant effect of sex on

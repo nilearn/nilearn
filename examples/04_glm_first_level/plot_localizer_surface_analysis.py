@@ -190,7 +190,7 @@ for contrast_id, contrast_val in contrasts.items():
     # we plot it on the surface, on the inflated fsaverage mesh,
     # together with a suitable background to give an impression
     # of the cortex folding.
-    fig = plot_surf_stat_map(
+    plot_surf_stat_map(
         surf_mesh=fsaverage5["inflated"],
         stat_map=z_score,
         hemi=hemi,
@@ -234,7 +234,7 @@ report
 
 # %%
 # Or in a separate browser window
-report.open_in_browser()
+# report.open_in_browser()
 
 report.save_as_html(output_dir / "report.html")
 
