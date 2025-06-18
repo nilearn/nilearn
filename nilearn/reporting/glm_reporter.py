@@ -273,7 +273,6 @@ def make_glm_report(
         if "coverage" in mask_info:
             mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
 
-        clusters_tsvs = None
         statistical_maps = {}
         if output is not None:
             # we try to rely on the content of glm object only
@@ -281,11 +280,6 @@ def make_glm_report(
                 statistical_maps = {
                     contrast_name: output["dir"]
                     / output["statistical_maps"][contrast_name]["z_score"]
-                    for contrast_name in output["statistical_maps"]
-                }
-                clusters_tsvs = {
-                    contrast_name: output["dir"]
-                    / output["statistical_maps"][contrast_name]["clusters_tsv"]
                     for contrast_name in output["statistical_maps"]
                 }
             except KeyError:  # pragma: no cover
@@ -319,7 +313,6 @@ def make_glm_report(
             cut_coords=cut_coords,
             display_mode=display_mode,
             plot_type=plot_type,
-            clusters_tsvs=clusters_tsvs,
         )
 
     design_matrices_dict = tempita.bunch()
