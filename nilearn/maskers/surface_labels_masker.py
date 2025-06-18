@@ -32,7 +32,12 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.image import mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface.surface import SurfaceImage, at_least_2d, get_data
+from nilearn.surface.surface import (
+    SurfaceImage,
+    at_least_2d,
+    check_surf_img,
+    get_data,
+)
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -267,6 +272,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         check_params(self.__dict__)
         if imgs is not None:
             self._check_imgs(imgs)
+
+        if imgs is not None:
+            check_surf_img(imgs)
 
         check_reduction_strategy(self.strategy)
 

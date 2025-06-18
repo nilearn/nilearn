@@ -4,8 +4,9 @@ import abc
 import gzip
 import pathlib
 import warnings
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 import sklearn.cluster
@@ -1982,6 +1983,21 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
+def check_surf_img(img: Union[SurfaceImage, Iterable[SurfaceImage]]) -> None:
+    """Validate SurfaceImage.
+
+    Equivalent to check_niimg for volumes.
+    """
+    if isinstance(img, SurfaceImage):
+        if get_data(img).size == 0:
+            raise ValueError("The image is empty.")
+        return None
+
+    if hasattr(img, "__iter__"):
+        for x in img:
+            check_surf_img(x)
+
+
 def get_data(img, ensure_finite=False) -> np.ndarray:
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
@@ -2004,6 +2020,10 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
         data = img.data
     elif isinstance(img, PolyData):
         data = img
+    else:
+        raise TypeError(
+            f"Expected PolyData or SurfaceImage. Got {img.__class__.__name__}."
+        )
 
     data = np.concatenate(list(data.parts.values()), axis=0)
 

@@ -294,6 +294,11 @@ def return_expected_failed_checks(
             "replaced by check_img_estimator_dont_overwrite_parameters"
         ),
         "check_estimators_dtypes": ("replaced by check_masker_dtypes"),
+        "check_estimators_empty_data_messages": (
+            "replaced by check_masker_empty_data_messages "
+            "for surface maskers and not implemented for nifti maskers "
+            "for performance reasons."
+        ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
@@ -307,7 +312,6 @@ def return_expected_failed_checks(
         # that errors with maskers,
         # or because a suitable nilearn replacement
         # has not yet been created.
-        "check_estimators_empty_data_messages": "TODO",
         "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
@@ -351,6 +355,9 @@ def return_expected_failed_checks(
         expected_failed_checks |= {
             # have nilearn replacements
             "check_estimators_dtypes": ("replaced by check_glm_dtypes"),
+            "check_estimators_empty_data_messages": (
+                "not implemented for nifti data for performance reasons"
+            ),
             "check_estimators_fit_returns_self": (
                 "replaced by check_glm_fit_returns_self"
             ),
@@ -465,6 +472,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
     expected_failed_checks = {
         # the following are have nilearn replacement for masker and/or glm
         # but not for decoders
+        "check_estimators_empty_data_messages": (
+            "not implemented for nifti data performance reasons"
+        ),
         "check_dont_overwrite_parameters": (
             "replaced by check_img_estimator_dont_overwrite_parameters"
         ),
@@ -485,7 +495,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         # has not yet been created.
         "check_dict_unchanged": "TODO",
         "check_estimators_dtypes": "TODO",
-        "check_estimators_empty_data_messages": "TODO",
         "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
@@ -584,6 +593,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
 
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_image_supervised_estimator_y_no_nan)
+            yield (clone(estimator), check_decoder_empty_data_messages)
 
         if (
             is_classifier(estimator)
@@ -602,6 +612,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_masker_compatibility_mask_image)
         yield (clone(estimator), check_masker_dict_unchanged)
         yield (clone(estimator), check_masker_dtypes)
+        yield (clone(estimator), check_masker_empty_data_messages)
         yield (clone(estimator), check_masker_fit_score_takes_y)
         yield (clone(estimator), check_masker_fit_with_empty_mask)
         yield (
@@ -664,6 +675,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
 
     if is_glm(estimator):
         yield (clone(estimator), check_glm_dtypes)
+        yield (clone(estimator), check_glm_empty_data_messages)
         yield (clone(estimator), check_glm_is_fitted)
 
 
@@ -956,10 +968,10 @@ def check_image_supervised_estimator_y_no_nan(estimator) -> None:
     dim = 5
     if isinstance(estimator, SearchLight):
         n_samples = 30
-        data = _rng().random((dim, dim, dim, n_samples))
         # Create a condition array, with balanced classes
         y = np.arange(n_samples, dtype=int) >= (n_samples // 2)
 
+        data = _rng().random((dim, dim, dim, n_samples))
         data[2, 2, 2, :] = 0
         data[2, 2, 2, y] = 2
         X = Nifti1Image(data, np.eye(4))
@@ -983,6 +995,45 @@ def check_image_supervised_estimator_y_no_nan(estimator) -> None:
         y[5,] = value
         with pytest.raises(ValueError, match="Input .*contains"):
             estimator.fit(X, y)
+
+
+def check_decoder_empty_data_messages(estimator):
+    """Check that empty images are caught properly.
+
+    Replaces sklearn check_estimators_empty_data_messages.
+
+    Not implemented for nifti data for performance reasons.
+    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
+    """
+    n_samples = 30
+    if isinstance(estimator, SearchLight):
+        # SearchLight do not support surface data directly
+        return None
+
+    else:
+        # we can use classification data even for regressors
+        # because fit should fail early
+        _, y = make_classification(
+            n_samples=20,
+            dim=5
+            n_features=dim**3,
+            scale=3.0,
+            n_informative=5,
+            n_classes=2,
+            random_state=42,
+        )
+
+    imgs = _make_surface_img(n_samples)
+    data = {
+        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
+        for part in imgs.data.parts
+    }
+    X = SurfaceImage(imgs.mesh, data)
+
+    y = _rng().random(y.shape)
+
+    with pytest.raises(ValueError, match="empty"):
+        estimator.fit(X, y)
 
 
 # ------------------ MASKER CHECKS ------------------
@@ -1567,6 +1618,39 @@ def check_masker_refit(estimator):
     else:
         with pytest.raises(ValueError):
             assert_surface_image_equal(fitted_mask_1, fitted_mask_2)
+
+
+def check_masker_empty_data_messages(estimator):
+    """Check that empty images are caught properly.
+
+    Replaces sklearn check_estimators_empty_data_messages.
+
+    Not implemented for nifti maskers for performance reasons.
+    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
+    """
+    if accept_niimg_input(estimator):
+        return None
+
+    else:
+        imgs = _make_surface_img()
+        data = {
+            part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
+            for part in imgs.data.parts
+        }
+        imgs = SurfaceImage(imgs.mesh, data)
+
+        mask_img = _make_surface_mask()
+
+    with pytest.raises(ValueError, match="empty"):
+        estimator.fit(imgs)
+
+    estimator.mask_img = mask_img
+    estimator.fit()
+    with pytest.raises(ValueError, match="empty"):
+        estimator.transform(imgs)
+
+
+# ------------------ SURFACE MASKER CHECKS ------------------
 
 
 def check_masker_fit_with_empty_mask(estimator):
@@ -2342,6 +2426,31 @@ def check_multi_masker_transformer_high_variance_confounds(estimator):
 
 
 # ------------------ GLM CHECKS ------------------
+
+
+def check_glm_empty_data_messages(estimator: BaseEstimator) -> None:
+    """Check that empty images are caught properly.
+
+    Replaces sklearn check_estimators_empty_data_messages.
+
+    Not implemented for nifti data for performance reasons.
+    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
+    """
+    imgs, design_matrices = _make_surface_img_and_design()
+
+    data = {
+        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
+        for part in imgs.data.parts
+    }
+    imgs = SurfaceImage(imgs.mesh, data)
+
+    with pytest.raises(ValueError, match="empty"):
+        # FirstLevel
+        if hasattr(estimator, "hrf_model"):
+            estimator.fit(imgs, design_matrices=design_matrices)
+        # SecondLevel
+        else:
+            estimator.fit(imgs, design_matrix=design_matrices)
 
 
 def check_glm_is_fitted(estimator):

@@ -164,6 +164,7 @@ def test_plot_carpet_default_params(img_4d_mni, img_3d_ones_mni):
     return plot_carpet(img_4d_mni, mask_img=img_3d_ones_mni)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.mpl_image_compare
 def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
     """Smoke-test for plot_prob_atlas with default arguments."""
