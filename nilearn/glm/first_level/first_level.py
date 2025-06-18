@@ -524,6 +524,27 @@ class FirstLevelModel(BaseGLM):
         design_matrices,
     ):
         """Run input validation and ensure inputs are compatible."""
+        if not isinstance(
+            run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
+        ) or (
+            isinstance(run_imgs, (list, tuple))
+            and not all(
+                isinstance(x, (*NiimgLike, SurfaceImage)) for x in run_imgs
+            )
+        ):
+            input_type = type(run_imgs)
+            if isinstance(run_imgs, list):
+                input_type = [type(x) for x in run_imgs]
+            raise TypeError(
+                "'run_imgs' must be a single instance / a list "
+                "of any of the following:\n"
+                "- string\n"
+                "- pathlib.Path\n"
+                "- NiftiImage\n"
+                "- SurfaceImage\n"
+                f"Got: {input_type}"
+            )
+
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
 
@@ -912,27 +933,6 @@ class FirstLevelModel(BaseGLM):
             )
         if self.signal_scaling in [0, 1, (0, 1)]:
             self.standardize = False
-
-        if not isinstance(
-            run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
-        ) or (
-            isinstance(run_imgs, (list, tuple))
-            and not all(
-                isinstance(x, (*NiimgLike, SurfaceImage)) for x in run_imgs
-            )
-        ):
-            input_type = type(run_imgs)
-            if isinstance(run_imgs, list):
-                input_type = [type(x) for x in run_imgs]
-            raise TypeError(
-                "'run_imgs' must be a single instance / a list "
-                "of any of the following:\n"
-                "- string\n"
-                "- pathlib.Path\n"
-                "- NiftiImage\n"
-                "- SurfaceImage\n"
-                f"Got: {input_type}"
-            )
 
         self.labels_ = None
         self.results_ = None
