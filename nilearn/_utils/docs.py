@@ -1281,10 +1281,10 @@ docdict["base_decomposition_attributes"] = """
         """
 
 docdict["multi_pca_attributes"] = """
-        masker_ : instance of MultiNiftiMasker or \
+        masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
                 :obj:`~nilearn.maskers.SurfaceMasker`
             Masker used to filter and mask data as first step.
-            If an instance of MultiNiftiMasker
+            If :obj:`~nilearn.maskers.MultiNiftiMasker`
             or :obj:`~nilearn.maskers.SurfaceMasker` is given in
             ``mask`` parameter, this is a copy of it.
             Otherwise, a masker is created using the value of ``mask`` and
