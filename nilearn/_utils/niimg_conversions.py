@@ -352,9 +352,6 @@ def check_niimg(
     # Otherwise, it should be a filename or a SpatialImage, we load it
     niimg = load_niimg(niimg, dtype=dtype)
 
-    if safe_get_data(niimg).size == 0:
-        raise ValueError("The image is empty.")
-
     if ensure_ndim == 3 and len(niimg.shape) == 4 and niimg.shape[3] == 1:
         # "squeeze" the image.
         data = safe_get_data(niimg)

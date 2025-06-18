@@ -295,7 +295,9 @@ def return_expected_failed_checks(
         ),
         "check_estimators_dtypes": ("replaced by check_masker_dtypes"),
         "check_estimators_empty_data_messages": (
-            "replaced by check_masker_empty_data_messages"
+            "replaced by check_masker_empty_data_messages "
+            "for surface maskers and not implemented for nifti maskers "
+            "for performance reasons."
         ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
@@ -354,7 +356,7 @@ def return_expected_failed_checks(
             # have nilearn replacements
             "check_estimators_dtypes": ("replaced by check_glm_dtypes"),
             "check_estimators_empty_data_messages": (
-                "replaced by check_glm_empty_data_messages"
+                "not implemented for nifti data for performance reasons"
             ),
             "check_estimators_fit_returns_self": (
                 "replaced by check_glm_fit_returns_self"
@@ -471,7 +473,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         # the following are have nilearn replacement for masker and/or glm
         # but not for decoders
         "check_estimators_empty_data_messages": (
-            "replaced by check_decoder_empty_data_messages"
+            "not implemented for nifti data performance reasons"
         ),
         "check_dont_overwrite_parameters": (
             "replaced by check_img_estimator_dont_overwrite_parameters"
@@ -999,29 +1001,34 @@ def check_decoder_empty_data_messages(estimator):
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
-    """
-    dim = 5
-    if isinstance(estimator, SearchLight):
-        n_samples = 30
-        # Create a condition array, with balanced classes
-        y = np.arange(n_samples, dtype=int) >= (n_samples // 2)
 
-        data = np.empty(0).reshape((dim, 0, 0, 0))
-        X = Nifti1Image(data, _affine_eye())
+    Not implemented for nifti data for performance reasons.
+    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
+    """
+    n_samples = 30
+    if isinstance(estimator, SearchLight):
+        # SearchLight do not support surface data directly
+        return None
 
     else:
         # we can use classification data even for regressors
         # because fit should fail early
         _, y = make_classification(
             n_samples=20,
+            dim=5
             n_features=dim**3,
             scale=3.0,
             n_informative=5,
             n_classes=2,
             random_state=42,
         )
-        data = np.empty(0).reshape((dim, 0, 0))
-        X = Nifti1Image(data, _affine_eye())
+
+    imgs = _make_surface_img(n_samples)
+    data = {
+        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
+        for part in imgs.data.parts
+    }
+    X = SurfaceImage(imgs.mesh, data)
 
     y = _rng().random(y.shape)
 
@@ -1617,15 +1624,12 @@ def check_masker_empty_data_messages(estimator):
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
+
+    Not implemented for nifti maskers for performance reasons.
+    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
     """
     if accept_niimg_input(estimator):
-        data = np.empty(0).reshape(12, 0, 0)
-        imgs = Nifti1Image(data, _affine_eye())
-
-        shape = (29, 30, 31)
-        mask = np.zeros(shape, dtype=np.int8)
-        mask[1:-1, 1:-1, 1:-1] = 1
-        mask_img = Nifti1Image(mask, _affine_eye())
+        return None
 
     else:
         imgs = _make_surface_img()
@@ -2428,6 +2432,9 @@ def check_glm_empty_data_messages(estimator: BaseEstimator) -> None:
     """Check that empty images are caught properly.
 
     Replaces sklearn check_estimators_empty_data_messages.
+
+    Not implemented for nifti data for performance reasons.
+    See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
     """
     imgs, design_matrices = _make_surface_img_and_design()
 
