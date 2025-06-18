@@ -533,20 +533,20 @@ class FirstLevelModel(BaseGLM):
             # that were provided at init or fit time
             # but that will be ignored
             # because they will not be used to generate a design matrix.
-            non_default_value = []
+            parameters_to_ignore = []
             if confounds is not None:
-                non_default_value.append("confounds")
+                parameters_to_ignore.append("confounds")
             if events is not None:
-                non_default_value.append("events")
-            if non_default_value:
+                parameters_to_ignore.append("events")
+            if parameters_to_ignore:
                 warn(
                     "If design matrices are supplied, "
-                    f"{' and '.join(non_default_value)} will be ignored.",
+                    f"{' and '.join(parameters_to_ignore)} will be ignored.",
                     stacklevel=find_stack_level(),
                 )
 
             # check with the default of __init__
-            non_default_value = []
+            attributes_to_ignore = []
             attributes_used_in_des_mat_generation = [
                 "drift_model",
                 "drift_order",
@@ -558,7 +558,7 @@ class FirstLevelModel(BaseGLM):
                 "t_r",
             ]
             tmp = dict(**inspect.signature(self.__init__).parameters)
-            non_default_value.extend(
+            attributes_to_ignore.extend(
                 [
                     k
                     for k in attributes_used_in_des_mat_generation
@@ -566,10 +566,10 @@ class FirstLevelModel(BaseGLM):
                 ]
             )
 
-            if non_default_value:
+            if attributes_to_ignore:
                 warn(
                     "If design matrices are supplied, "
-                    f"[{', '.join(non_default_value)}] will be ignored.",
+                    f"[{', '.join(attributes_to_ignore)}] will be ignored.",
                     stacklevel=find_stack_level(),
                 )
 
