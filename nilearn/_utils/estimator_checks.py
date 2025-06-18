@@ -1015,7 +1015,8 @@ def check_decoder_empty_data_messages(estimator):
         # because fit should fail early
         _, y = make_classification(
             n_samples=20,
-            n_features=5**3,
+            dim=5
+            n_features=dim**3,
             scale=3.0,
             n_informative=5,
             n_classes=2,
