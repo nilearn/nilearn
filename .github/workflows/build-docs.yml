@@ -381,7 +381,8 @@ jobs:
         # no data is downloaded for partial builds).
         -   name: Build docs
             id: build-docs
-            if: ${{ matrix.env == 'doc' ||  matrix.env == 'doc_latest' && contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) }}
+            if: ${{ matrix.env == 'doc' ||  matrix.env == 'doc_latest' && contains(fromJSON('["pull_request", "workflow_dispatch", "schedule"]'), github.event_name)
+                }}
             run: |
                 set -o pipefail;
                 export PATTERN=$(cat pattern.txt)
