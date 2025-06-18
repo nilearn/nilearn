@@ -112,12 +112,65 @@ def _decomposition_images_surface(
     return surf_imgs
 
 
+def _decomposition_img(
+    data_type,
+    rng,
+    mesh,
+    shape,
+    affine,
+    with_activation: bool = True,
+) -> Union[SurfaceImage, Nifti1Image]:
+    """Return a single image for decomposition."""
+    if data_type == "surface":
+        data = {
+            "left": rng.standard_normal(
+                size=(
+                    mesh.parts["left"].coordinates.shape[0],
+                    N_SAMPLES,
+                )
+            ),
+            "right": rng.standard_normal(
+                size=(
+                    mesh.parts["right"].coordinates.shape[0],
+                    N_SAMPLES,
+                )
+            ),
+        }
+        if with_activation:
+            data["left"][2:4, :] += 10
+            data["right"][2:4, :] += 10
+
+        return SurfaceImage(mesh=mesh, data=data)
+
+    shape = (*shape, N_SAMPLES)
+    this_img = rng.normal(size=shape)
+    if with_activation:
+        this_img[2:4, 2:4, 2:4, :] += 10
+
+    return Nifti1Image(this_img, affine)
+
+
 @pytest.fixture
 def decomposition_images(
-    decomposition_img,
-) -> Union[list[SurfaceImage], list[Nifti1Image]]:
+    data_type,
+    rng,
+    decomposition_mesh,
+    shape_3d_large,
+    affine_eye,
+    with_activation=True,
+):
     """Create "multi-subject" dataset with fake activation."""
-    return [decomposition_img for _ in range(N_SUBJECTS)]
+    return [
+        _decomposition_img(
+            data_type,
+            rng,
+            decomposition_mesh,
+            shape_3d_large,
+            affine_eye,
+            with_activation,
+        )
+        for _ in range(N_SUBJECTS)
+    ]
 
 
 @pytest.fixture
@@ -130,33 +183,14 @@ def decomposition_img(
     with_activation: bool = True,
 ) -> Union[SurfaceImage, Nifti1Image]:
     """Return a single image for decomposition."""
-    if data_type == "surface":
-        data = {
-            "left": rng.standard_normal(
-                size=(
-                    decomposition_mesh.parts["left"].coordinates.shape[0],
-                    N_SAMPLES,
-                )
-            ),
-            "right": rng.standard_normal(
-                size=(
-                    decomposition_mesh.parts["right"].coordinates.shape[0],
-                    N_SAMPLES,
-                )
-            ),
-        }
-        if with_activation:
-            data["left"][2:4, :] += 10
-            data["right"][2:4, :] += 10
-
-        return SurfaceImage(mesh=decomposition_mesh, data=data)
-
-    shape = (*shape_3d_large, N_SAMPLES)
-    this_img = rng.normal(size=shape)
-    if with_activation:
-        this_img[2:4, 2:4, 2:4, :] += 10
-
-    return Nifti1Image(this_img, affine_eye)
+    return _decomposition_img(
+        data_type,
+        rng,
+        decomposition_mesh,
+        shape_3d_large,
+        affine_eye,
+        with_activation,
+    )
 
 
 @pytest.fixture

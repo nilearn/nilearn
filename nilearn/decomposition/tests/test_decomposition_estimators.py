@@ -287,6 +287,7 @@ def test_single_subject_file(
     check_decomposition_estimator(est, data_type)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
 @pytest.mark.parametrize("n_subjects", [1, 3])
