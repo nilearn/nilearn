@@ -305,7 +305,7 @@ jobs:
         runs-on: ubuntu-latest
 
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 description: [doc]
                 py: [3.13]
