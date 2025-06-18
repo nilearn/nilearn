@@ -56,12 +56,12 @@ def test_mask_reducer_multiple_image(
     reduction_ratio,
     expected_shape_0,
     decomposition_masker,
-    decomposition_data,
+    decomposition_images,
 ):
     """Mask and reduce images with several values of input arguments."""
     data = _mask_and_reduce(
         masker=decomposition_masker,
-        imgs=decomposition_data,
+        imgs=decomposition_images,
         n_components=n_components,
         reduction_ratio=reduction_ratio,
     )
@@ -73,7 +73,7 @@ def test_mask_reducer_multiple_image(
     elif data_type == "surface":
         expected_shape = (
             expected_shape_0,
-            decomposition_data[0].mesh.n_vertices,
+            decomposition_images[0].mesh.n_vertices,
         )
 
     assert data.shape == expected_shape
@@ -81,7 +81,7 @@ def test_mask_reducer_multiple_image(
 
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_mask_reducer_single_image_same_with_multiple_jobs(
-    data_type, decomposition_masker, decomposition_data_single_img
+    data_type, decomposition_masker, decomposition_img
 ):
     """Mask and reduce a 3D image and check results is the same \
     when split over several CPUs.
@@ -89,7 +89,7 @@ def test_mask_reducer_single_image_same_with_multiple_jobs(
     n_components = 3
     data_single = _mask_and_reduce(
         masker=decomposition_masker,
-        imgs=decomposition_data_single_img,
+        imgs=decomposition_img,
         n_components=n_components,
     )
     if data_type == "nifti":
@@ -107,7 +107,7 @@ def test_mask_reducer_single_image_same_with_multiple_jobs(
     # Test n_jobs > 1
     data = _mask_and_reduce(
         masker=decomposition_masker,
-        imgs=decomposition_data_single_img,
+        imgs=decomposition_img,
         n_components=n_components,
         n_jobs=2,
         random_state=RANDOM_STATE,
@@ -127,13 +127,13 @@ def test_mask_reducer_single_image_same_with_multiple_jobs(
 
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_mask_reducer_reduced_data_is_orthogonal(
-    data_type, decomposition_masker, decomposition_data_single_img
+    data_type, decomposition_masker, decomposition_img
 ):
     """Test that the reduced data is orthogonal."""
     n_components = 3
     data = _mask_and_reduce(
         masker=decomposition_masker,
-        imgs=decomposition_data_single_img,
+        imgs=decomposition_img,
         n_components=n_components,
         random_state=RANDOM_STATE,
     )
@@ -161,19 +161,19 @@ def test_mask_reducer_reduced_data_is_orthogonal(
 def test_mask_reducer_reduced_reproducible(
     data_type,
     decomposition_masker,
-    decomposition_data_single_img,
+    decomposition_img,
 ):
     """Check that same input image give same results."""
     n_components = 3
     data1 = _mask_and_reduce(
         masker=decomposition_masker,
-        imgs=decomposition_data_single_img,
+        imgs=decomposition_img,
         n_components=n_components,
         random_state=RANDOM_STATE,
     )
     data2 = _mask_and_reduce(
         masker=decomposition_masker,
-        imgs=[decomposition_data_single_img] * 2,
+        imgs=[decomposition_img] * 2,
         n_components=n_components,
         random_state=RANDOM_STATE,
     )

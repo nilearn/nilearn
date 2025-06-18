@@ -85,7 +85,7 @@ def decomposition_masker(
     return MultiNiftiMasker(mask_img=img_3d_ones_eye).fit()
 
 
-def _decomposition_data_surface(
+def _decomposition_images_surface(
     rng, decomposition_mesh, with_activation
 ) -> list[SurfaceImage]:
     surf_imgs = []
@@ -113,37 +113,50 @@ def _decomposition_data_surface(
 
 
 @pytest.fixture
-def decomposition_data(
-    decomposition_mesh,
-    rng,
-    affine_eye: np.ndarray,
-    data_type: str,
-    shape_3d_large,
-    with_activation: bool = True,
+def decomposition_images(
+    decomposition_img,
 ) -> Union[list[SurfaceImage], list[Nifti1Image]]:
     """Create "multi-subject" dataset with fake activation."""
-    if data_type == "surface":
-        return _decomposition_data_surface(
-            rng, decomposition_mesh, with_activation
-        )
-
-    nii_imgs = []
-    shape = (*shape_3d_large, N_SAMPLES)
-    for _ in range(N_SUBJECTS):
-        this_img = rng.normal(size=shape)
-        if with_activation:
-            this_img[2:4, 2:4, 2:4, :] += 10
-        nii_imgs.append(Nifti1Image(this_img, affine_eye))
-
-    return nii_imgs
+    return [decomposition_img for _ in range(N_SUBJECTS)]
 
 
 @pytest.fixture
-def decomposition_data_single_img(
-    decomposition_data,
+def decomposition_img(
+    data_type,
+    rng,
+    decomposition_mesh,
+    shape_3d_large,
+    affine_eye,
+    with_activation: bool = True,
 ) -> Union[SurfaceImage, Nifti1Image]:
     """Return a single image for decomposition."""
-    return decomposition_data[0]
+    if data_type == "surface":
+        data = {
+            "left": rng.standard_normal(
+                size=(
+                    decomposition_mesh.parts["left"].coordinates.shape[0],
+                    N_SAMPLES,
+                )
+            ),
+            "right": rng.standard_normal(
+                size=(
+                    decomposition_mesh.parts["right"].coordinates.shape[0],
+                    N_SAMPLES,
+                )
+            ),
+        }
+        if with_activation:
+            data["left"][2:4, :] += 10
+            data["right"][2:4, :] += 10
+
+        return SurfaceImage(mesh=decomposition_mesh, data=data)
+
+    shape = (*shape_3d_large, N_SAMPLES)
+    this_img = rng.normal(size=shape)
+    if with_activation:
+        this_img[2:4, 2:4, 2:4, :] += 10
+
+    return Nifti1Image(this_img, affine_eye)
 
 
 @pytest.fixture
@@ -169,7 +182,7 @@ def canica_data(
     else:
         # TODO for now we generate random data
         # rather than data based on actual components.
-        return _decomposition_data_surface(
+        return _decomposition_images_surface(
             rng, decomposition_mesh, with_activation=True
         )
 

@@ -70,7 +70,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
-def test_fit_errors(data_type, decomposition_data, estimator):
+def test_fit_errors(data_type, decomposition_images, estimator):
     """Fit and transform fail without the proper arguments."""
     est = estimator(
         smoothing_fwhm=None,
@@ -93,13 +93,15 @@ def test_fit_errors(data_type, decomposition_data, estimator):
         with pytest.raises(
             ValueError, match="The mask is invalid as it is empty"
         ):
-            est.fit(decomposition_data)
+            est.fit(decomposition_images)
     # but with surface images, the mask encompasses all vertices
     # so it should have the same number of True vertices as the vertices
     # in input images
     elif data_type == "surface":
-        est.fit(decomposition_data)
-        assert est.masker_.n_elements_ == decomposition_data[0].mesh.n_vertices
+        est.fit(decomposition_images)
+        assert (
+            est.masker_.n_elements_ == decomposition_images[0].mesh.n_vertices
+        )
 
 
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
@@ -138,13 +140,13 @@ def test_masker_attributes_with_fit(
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_pass_masker_arg_to_estimator(
-    data_type, affine_eye, decomposition_data_single_img, estimator
+    data_type, affine_eye, decomposition_img, estimator
 ):
     """Masker arguments are passed to the estimator without fail."""
     shape = (
-        decomposition_data_single_img.shape[:3]
+        decomposition_img.shape[:3]
         if data_type == "nifti"
-        else (decomposition_data_single_img.mesh.n_vertices,)
+        else (decomposition_img.mesh.n_vertices,)
     )
     est = estimator(
         target_affine=affine_eye,
@@ -161,9 +163,9 @@ def test_pass_masker_arg_to_estimator(
         with pytest.warns(
             UserWarning, match="The following parameters are not relevant"
         ):
-            est.fit(decomposition_data_single_img)
+            est.fit(decomposition_img)
     elif data_type == "nifti":
-        est.fit(decomposition_data_single_img)
+        est.fit(decomposition_img)
 
     check_decomposition_estimator(est, data_type)
 
@@ -188,7 +190,7 @@ def test_nifti_maps_masker_(canica_data_single_img, estimator):
 @pytest.mark.parametrize("estimator", [_MultiPCA])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_with_confounds(
-    data_type, decomposition_data, decomposition_mask_img, estimator
+    data_type, decomposition_images, decomposition_mask_img, estimator
 ):
     """Test of estimator with confounds.
 
@@ -203,7 +205,7 @@ def test_with_confounds(
         smoothing_fwhm=None,
     )
 
-    est.fit(decomposition_data)
+    est.fit(decomposition_images)
 
     check_decomposition_estimator(est, data_type)
 
@@ -212,7 +214,7 @@ def test_with_confounds(
     est = estimator(
         n_components=3, random_state=RANDOM_STATE, mask=decomposition_mask_img
     )
-    est.fit(decomposition_data, confounds=confounds)
+    est.fit(decomposition_images, confounds=confounds)
 
     components_clean = est.components_
 

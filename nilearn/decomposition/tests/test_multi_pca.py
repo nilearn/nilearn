@@ -23,7 +23,7 @@ def test_multi_pca(
     length,
     data_type,
     decomposition_mask_img,
-    decomposition_data,
+    decomposition_images,
 ):
     """Components are the same if we put twice the same data, \
        and that fit output is deterministic.
@@ -31,12 +31,17 @@ def test_multi_pca(
     multi_pca = _MultiPCA(
         mask=decomposition_mask_img, n_components=3, random_state=RANDOM_STATE
     )
-    multi_pca.fit(decomposition_data)
+    multi_pca.fit(decomposition_images)
 
     check_decomposition_estimator(multi_pca, data_type)
 
     components1 = multi_pca.components_
-    components2 = multi_pca.fit(length * decomposition_data).components_
+
+    multi_pca = _MultiPCA(
+        mask=decomposition_mask_img, n_components=3, random_state=RANDOM_STATE
+    )
+    multi_pca.fit(length * decomposition_images)
+    components2 = multi_pca.components_
 
     if length == 1:
         assert_array_equal(components1, components2)
@@ -48,7 +53,7 @@ def test_multi_pca(
 def test_multi_pca_with_masker_without_cca_smoke(
     data_type,
     decomposition_masker,
-    decomposition_data,
+    decomposition_images,
 ):
     """Multi-pca can run with a masker \
         and without canonical correlation analysis.
@@ -58,12 +63,12 @@ def test_multi_pca_with_masker_without_cca_smoke(
         do_cca=False,
         n_components=3,
     )
-    multi_pca.fit(decomposition_data[:2])
+    multi_pca.fit(decomposition_images[:2])
 
     check_decomposition_estimator(multi_pca, data_type)
 
     # Smoke test the transform and inverse_transform
-    multi_pca.inverse_transform(multi_pca.transform(decomposition_data[-2:]))
+    multi_pca.inverse_transform(multi_pca.transform(decomposition_images[-2:]))
 
 
 @pytest.mark.parametrize("with_activation", [False])
@@ -71,7 +76,7 @@ def test_multi_pca_with_masker_without_cca_smoke(
 def test_multi_pca_score_single_subject_n_components(
     data_type,
     decomposition_mask_img,
-    decomposition_data_single_img,
+    decomposition_img,
     with_activation,  # noqa: ARG001
 ):
     """Score is one for n_components == n_sample \
@@ -83,8 +88,8 @@ def test_multi_pca_score_single_subject_n_components(
         memory_level=0,
         n_components=5,
     )
-    multi_pca.fit(decomposition_data_single_img)
-    s = multi_pca.score(decomposition_data_single_img)
+    multi_pca.fit(decomposition_img)
+    s = multi_pca.score(decomposition_img)
 
     assert_almost_equal(s, 1.0, 1)
 
@@ -95,7 +100,7 @@ def test_multi_pca_score_single_subject_n_components(
         memory_level=0,
         n_components=5,
     )
-    multi_pca.fit(decomposition_data_single_img)
+    multi_pca.fit(decomposition_img)
 
     check_decomposition_estimator(multi_pca, data_type)
 
@@ -105,7 +110,7 @@ def test_multi_pca_score_single_subject_n_components(
         masker = SurfaceMasker(decomposition_mask_img).fit()
 
     s = multi_pca._raw_score(
-        masker.transform(decomposition_data_single_img), per_component=True
+        masker.transform(decomposition_img), per_component=True
     )
 
     assert s.shape == (5,)
