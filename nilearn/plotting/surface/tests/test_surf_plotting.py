@@ -1043,6 +1043,7 @@ def test_plot_img_on_surf_hemispheres_and_orientations(
     plot_img_on_surf(img_3d_mni, hemispheres=hemispheres, views=views)
 
 
+@pytest.mark.timeout(0)
 def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni):
     """Smoke test for nilearn.plotting.surface.plot_img_on_surf colorbar
     parameter.

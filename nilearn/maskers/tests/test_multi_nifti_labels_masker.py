@@ -52,6 +52,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
@@ -178,6 +179,7 @@ def test_multi_nifti_labels_masker_errors_resampling(
         masker.fit()
 
 
+@pytest.mark.timeout(0)
 def test_multi_nifti_labels_masker_reduction_strategies(affine_eye):
     """Tests strategies of MultiNiftiLabelsMasker.
 

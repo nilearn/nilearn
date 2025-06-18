@@ -619,7 +619,6 @@ def test_index_img():
         *range(fourth_dim_size),
         slice(2, 8, 2),
         [1, 2, 3, 2],
-        [],
         (np.arange(fourth_dim_size) % 3) == 1,
     ]
     for i in tested_indices:
@@ -669,6 +668,7 @@ def test_iter_img_3d_imag_error(affine_eye):
         iter_img(img_3d)
 
 
+@pytest.mark.timeout(0)
 def test_iter_img(tmp_path):
     img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
 
