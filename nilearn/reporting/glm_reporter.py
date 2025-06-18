@@ -26,7 +26,7 @@ from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
@@ -775,6 +775,7 @@ def _stat_map_to_png(
     if isinstance(stat_img, SurfaceImage):
         data = get_surface_data(stat_img)
     else:
+        stat_img = load_niimg(stat_img)
         data = safe_get_data(stat_img, ensure_finite=True)
 
     stat_map_min = np.nanmin(data)
