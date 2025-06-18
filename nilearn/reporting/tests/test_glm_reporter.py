@@ -26,7 +26,7 @@ def rk():
 @pytest.fixture
 def contrasts(rk):
     c = np.zeros((1, rk))
-    c[0] = 1
+    c[0][0] = 1
     return c
 
 
@@ -52,6 +52,15 @@ def slm():
     Y = [fmri_data[0]] * 2
     X = pd.DataFrame([[1]] * 2, columns=["intercept"])
     return model.fit(Y, design_matrix=X)
+
+
+def test_flm_report_no_activation_found(flm, contrasts):
+    """Check presence message of no activation found.
+
+    We use random data, so we should not get activations.
+    """
+    report = flm.generate_report(contrasts=contrasts)
+    assert "No suprathreshold cluster" in report.__str__()
 
 
 @pytest.mark.parametrize("model", [FirstLevelModel, SecondLevelModel])
@@ -81,7 +90,7 @@ def test_flm_reporting_no_contrasts(flm):
 def test_mask_coverage_in_report(flm):
     """Check that how much image is included in mask is in the report."""
     report = flm.generate_report()
-    assert "The mask includes" in str(report)
+    assert "The mask includes" in report.__str__()
 
 
 @pytest.mark.parametrize("height_control", ["fdr", "bonferroni", None])
@@ -286,6 +295,8 @@ def test_flm_generate_report_surface_data(rng):
     report = model.generate_report("c0", height_control=None)
 
     assert isinstance(report, HTMLReport)
+
+    assert "Results table not available for surface data." in report.__str__()
 
 
 def test_flm_generate_report_surface_data_error(
