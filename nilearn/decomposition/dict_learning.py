@@ -128,7 +128,7 @@ class DictLearning(_BaseDecomposition):
 
         .. note::
             These strategies are only relevant for Nifti images and the
-            parameterm is ignored for SurfaceImage objects.
+            parameter is ignored for SurfaceImage objects.
 
     mask_args : :obj:`dict`, optional
         If mask is None, these are additional parameters passed to
