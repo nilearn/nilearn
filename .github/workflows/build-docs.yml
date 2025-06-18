@@ -5,7 +5,8 @@
 # - check the quality of the doc strings
 # - get datasets from cache or from source
 # - build doc and upload it as artifact
-# - on `main` (or on github release): trigger hosting of dev (or stable) doc on https://github.com/nilearn//nilearn.github.io.git
+# - on ``main`` (or on github release): trigger hosting of dev (or stable) doc on https://github.com/nilearn//nilearn.github.io.git
+# - on ``main`` when triggered by schedule or manually via the github UI, this workflow will also attempt to do a full build of the documentation on the latest supported python and dependencies
 #
 # .. admonition:: Control via commit message
 #    :class: tip
@@ -301,18 +302,29 @@ jobs:
     # Steps to build the documentation.
     build_docs:
         needs: [get_data]
-        # This prevents this workflow from running on a fork.
-        # To test this workflow on a fork, uncomment the following line.
         runs-on: ubuntu-latest
+
+        strategy:
+            fail-fast: true
+            matrix:
+                description: [doc]
+                py: [3.13]
+                env: [doc_latest]
+                include:
+                -   description: doc
+                    py: 3.9
+                    env: doc
+
         defaults:
             run:
                 shell: bash -el {0}
 
         steps:
+
         -   name: Checkout nilearn
             uses: actions/checkout@v4
             with:
-        # If pull request, checkout HEAD commit with all commit history
+                # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
         -   name: Merge with upstream
@@ -347,7 +359,7 @@ jobs:
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
-                python-version: ${{ env.MIN_PYTHON_VERSION }}
+                python-version: ${{ matrix.py }}
 
         -   name: Download build type
             uses: actions/download-artifact@v4
@@ -361,6 +373,7 @@ jobs:
             run: tox c
 
         # Run the doc build
+        #
         # We let tox handle creating virtual env and install dependencies.
         # If no data is restored in previous steps,
         # the data will be downloaded during the build
@@ -368,13 +381,14 @@ jobs:
         # no data is downloaded for partial builds).
         -   name: Build docs
             id: build-docs
+            if: ${{ matrix.env == 'doc' ||  matrix.env == 'doc_latest' && contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) }}
             run: |
                 set -o pipefail;
                 export PATTERN=$(cat pattern.txt)
                 tox run \
                     --colored yes \
                     --list-dependencies \
-                    -e doc -- $(cat build.txt) 2>&1 | tee log.txt;
+                    -e  ${{ matrix.env }} -- $(cat build.txt) 2>&1 | tee log.txt;
 
         -   name: Check for unreplaced argument in docstrings
             if: always()
@@ -386,7 +400,7 @@ jobs:
             if: steps.build-docs.outcome == 'success'
             uses: actions/upload-artifact@v4
             with:
-                name: doc
+                name: ${{ matrix.env }}
                 path: doc/_build/html
 
     deploy_on_main:
