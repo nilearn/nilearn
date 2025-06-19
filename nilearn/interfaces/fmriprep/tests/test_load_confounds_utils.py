@@ -36,7 +36,7 @@ def test_sanitize_confounds(inputs, flag):
     "flag,keyword,tedana_keyword",
     [
         ("1.2.x", "_desc-confounds_regressors", "_desc-ICA_mixing"),
-        ("1.4.x", "_desc-confounds_timeseries", "_desc-ICA_status_table"),
+        ("1.4.x", "_desc-confounds_timeseries", "_desc-tedana_metrics"),
         ("21.x.x", "21xx", "missing"),
         ("21.x.x", "21xx", "invalid_columns"),
     ],

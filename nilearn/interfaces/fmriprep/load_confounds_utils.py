@@ -187,31 +187,46 @@ def _generate_confounds_file_candidates(nii_file, flag_tedana=False):
     variants.append(entities_fmriprep)
 
     if flag_tedana:
-        # ICA - mixing
+        # ICA  mixing and tedana
         entities_tedana = deepcopy(entities)
-        entities_tedana["desc"] = "ICA"
+        entities_tedana["desc"] = ["ICA", "tedana"]
         variants.append(entities_tedana)
 
     filenames = []
 
-    for entities in variants:
-        all_subsets = [
-            list(itertools.combinations(entities.keys(), n))
-            for n in range(1, len(entities.keys()) + 1)
-        ]
-        # Flatten the list of lists
-        all_subsets = [list(x) for sublist in all_subsets for x in sublist]
-        # https://stackoverflow.com/a/3724558/2589328
-        unique_subsets = [list(x) for x in {tuple(x) for x in all_subsets}]
-        # Require "desc"
-        subset_with_desc = [
-            subset for subset in unique_subsets if "desc" in subset
-        ]
+    for variant in variants:
+        # make sure “desc” is iterable
+        desc_values = (
+            [variant["desc"]]
+            if isinstance(variant["desc"], str)
+            else variant["desc"]
+        )
 
-        filenames = [
-            "_".join(f"{k}-{entities[k]}" for k in subset)
-            for subset in subset_with_desc
-        ]
+        # Allows us to generate filenames separately for each
+        # desc value (“confounds”, “ICA”, “tedana”).
+        for desc_value in desc_values:
+            variant_with_desc = variant.copy()
+            variant_with_desc["desc"] = desc_value
+
+            all_subsets = [
+                list(itertools.combinations(variant_with_desc.keys(), n))
+                for n in range(1, len(variant_with_desc.keys()) + 1)
+            ]
+            # Flatten the list of lists
+            all_subsets = [list(x) for sublist in all_subsets for x in sublist]
+            # https://stackoverflow.com/a/3724558/2589328
+            unique_subsets = [list(x) for x in {tuple(x) for x in all_subsets}]
+            # Require "desc"
+            subset_with_desc = [
+                subset for subset in unique_subsets if "desc" in subset
+            ]
+
+            # Prevents overwriting the list on each iteration;
+            # instead, accumulates all filename variants.
+            filenames.extend(
+                "_".join(f"{k}-{variant_with_desc[k]}" for k in subset)
+                for subset in subset_with_desc
+            )
 
     return filenames
 
@@ -248,7 +263,7 @@ def _get_file_name(nii_file, flag_tedana=False):
     # for backward compatibility.
     suffixes = ["_timeseries.tsv", "_regressors.tsv"]
     if flag_tedana:  # tedana has different suffixes
-        suffixes = ["_mixing.tsv", "_status_table.tsv"]
+        suffixes = ["_mixing.tsv", "_metrics.tsv"]
 
     confound_file_candidates = []
     for suffix in suffixes:
@@ -392,7 +407,7 @@ def load_confounds_file_as_dataframe(confounds_raw_path, flag_tedana=False):
             raise ValueError(
                 "The confound file does not contain the expected columns for "
                 "TEDANA output. Expected 'ICA_xx' for mixing.tsv and"
-                "'Component' for the status_table.tsv columns."
+                "'Component' for the metrics.tsv columns."
             )
 
     # check if the version of fMRIprep (>=1.2.0) is supported based on

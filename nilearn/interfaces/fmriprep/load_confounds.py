@@ -325,7 +325,7 @@ def load_confounds(
     if "tedana" in strategy and len(strategy) > 1:
         tedana_warning = (
             "TEDANA strategy will only look for the ~desc-ICA_mixing.tsv "
-            "and the ~desc-ICA_status_table.tsv for the provided "
+            "and the ~desc-tedana_metrics.tsv for the provided "
             "~desc-optcom_bold.nii.gz from the tedana folder "
             "to load the rejected ICA confounds. Other strategies: \n"
             f"strategies {[s for s in strategy if 'tedana' not in s]} "
@@ -431,9 +431,7 @@ def _load_confounds_for_single_image_file(
         kwargs.get("ica_aroma") == "full"
     )
     # Check for tedana
-    flag_tedana = ("tedana" in strategy) and (
-        kwargs.get("tedana") == "rejected"
-    )
+    flag_tedana = ("tedana" in strategy) and (kwargs.get("tedana"))
 
     confounds_file = get_confounds_file(
         image_file, flag_full_aroma=flag_full_aroma, flag_tedana=flag_tedana
@@ -486,9 +484,7 @@ def _load_single_confounds_file(
     flag_acompcor = ("compcor" in strategy) and (
         "anat" in kwargs.get("compcor")
     )
-    flag_tedana = ("tedana" in strategy) and (
-        kwargs.get("tedana") == "rejected"
-    )
+    flag_tedana = ("tedana" in strategy) and (kwargs.get("tedana"))
 
     if flag_tedana:
         all_tedana_confounds = {}
