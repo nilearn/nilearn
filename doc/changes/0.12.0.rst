@@ -56,8 +56,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-dark:`Code` Add surface support for :func:`~nilearn.image.clean_img`, :func:`~nilearn.image.new_img_like`, :func:`~nilearn.image.index_img`, :func:`~nilearn.image.mean_img`, :func:`~nilearn.image.concat_imgs`, :func:`~nilearn.image.iter_img`,
-:func:`~nilearn.image.threshold_img` (:gh:`4999`, :gh:`5425`, :gh:`5224`, :gh:`5301` by `Rémi Gau`_).
+- :bdg-dark:`Code` Add surface support for :func:`~nilearn.image.clean_img`, :func:`~nilearn.image.new_img_like`, :func:`~nilearn.image.index_img`, :func:`~nilearn.image.mean_img`, :func:`~nilearn.image.concat_imgs`, :func:`~nilearn.image.iter_img`, :func:`~nilearn.image.threshold_img` (:gh:`4999`, :gh:`5425`, :gh:`5224`, :gh:`5301` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add surface support for :class:`~nilearn.decomposition.DictLearning` and :class:`~nilearn.decomposition.CanICA` (:gh:`5377` by `Himanshu Aggarwal`_ and `Rémi Gau`_).
 
@@ -114,19 +113,17 @@ Changes
 
 - :bdg-dark:`Code` Move ``nilearn.plotting.surf_plotting`` and ``nilearn.plotting.html_surface`` under ``nilearn.plotting.surface`` (:gh:`5234` by `Hande Gözükan`_).
 
-- :bdg-dark:`Code` Move ``nilearn.plotting.matrix_plotting`` under ``nilearn.plotting.matrix`` (:gh:`5240` by `Hande Gözükan`_).
+- :bdg-danger:`Deprecation` In version >=0.13.0, the parameter ``img`` or  ``X`` will be renamed to ``imgs`` for the ``fit``, ``transform`` and ``fit_transform`` method of all the surface maskers, the fit method of the :class:`~nilearn.maskers.NiftiSpheresMasker` and the :class:`~nilearn.regions.RegionExtractor`, and the ``fit_transform`` method of the  :class:`~nilearn.maskers.NiftiMasker` (:gh:`5262` by `Rémi Gau`_).
 
-- :bdg-danger:`Deprecation` In version >0.13.0, the parameter ``img`` or  ``X`` will be renamed to ``imgs`` for the ``fit``, ``transform`` and ``fit_transform`` method of all the surface maskers, the fit method of the :class:`~nilearn.maskers.NiftiSpheresMasker` and the :class:`~nilearn.regions.RegionExtractor`, and the ``fit_transform`` method of the  :class:`~nilearn.maskers.NiftiMasker` (:gh:`5262` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` From version >=0.13.0, :func:`nilearn.datasets.fetch_atlas_yeo_2011` will return a single parcellation (:gh:`5085` by `Rémi Gau`_).
 
-- :bdg-danger:`Deprecation` Add a ``nilearn.plotting.img_plotting.plot_img_comparison`` was moved to :func:`~nilearn.plotting.img_comparison.plot_img_comparison` (:gh:`5120` by `Rémi Gau`_).
-
-- :bdg-danger:`Deprecation` From version 0.13.0, :func:`nilearn.datasets.fetch_atlas_yeo_2011` will return a single parcellation (:gh:`5085` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` For version >=0.13.0 :func:`~nilearn.interfaces.bids.parse_bids_filename` will return a dictionary whose keys correspond to valid BIDS terms. (:gh:`5320` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Remove the ``legacy_format`` parameter from several dataset fetcher functions as it was due for deprecation in version 0.11.0  (:gh:`5004` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Deprecate passing cleaning arguments to maskers for NiftiImages via ``kwargs``. Introduce a ``clean_args`` parameter to match API of Surface maskers.  (:gh:`5082` by `Rémi Gau`_).
 
-- :bdg-danger:`Deprecation` For version >=0.13.0 :func:`~nilearn.interfaces.bids.parse_bids_filename` will return a dictionary whose keys correspond to valid BIDS terms. (:gh:`5320` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` ``nilearn.plotting.img_plotting.plot_img_comparison`` was moved to :func:`~nilearn.plotting.img_comparison.plot_img_comparison` (:gh:`5120` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Using the transform method of nifti maskers on 3D images now returns 1D arrays. Similarly, using the transform method of surface maskers on 1D surface images now returns 1D arrays.  (:gh:`5381` by `Rémi Gau`_).
 
