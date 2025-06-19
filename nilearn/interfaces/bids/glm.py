@@ -303,7 +303,7 @@ def save_glm_to_bids(
             if output_type in ["metadata", "clusters_tsv"]:
                 continue
 
-            img = statistical_maps[contrast_name][output_type]
+            img = contrast_maps[output_type]
             filename = filenames["statistical_maps"][contrast_name][
                 output_type
             ]

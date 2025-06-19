@@ -211,6 +211,7 @@ def test_check_parameters_transform(test_image_2, rng):
         _check_parameters_transform(fmri_imgs, not_match_confounds_list)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_with_multi_confounds_multi_images(
@@ -230,6 +231,7 @@ def test_parcellations_transform_with_multi_confounds_multi_images(
     assert signals[0].shape == (10, n_parcel)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_fit_transform(method, n_parcel, test_image_2):

@@ -27,8 +27,6 @@ from nilearn.interfaces.bids.query import (
 )
 from nilearn.maskers import NiftiMasker
 
-# ruff: noqa: ARG001
-
 
 def test_get_metadata_from_bids(tmp_path):
     """Ensure that metadata is correctly extracted from BIDS JSON files.
