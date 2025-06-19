@@ -228,7 +228,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         The region name corresponding to ``region_signal[:,i]``
         is ``region_names_[i]``.
 
-        .. versionadded:: 0.11.2
+        .. versionadded:: 0.12.0
         """
         check_is_fitted(self)
         lut = self.lut_
@@ -244,7 +244,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         is ``region_ids_[i]``.
         ``region_ids_['background']`` is the background label.
 
-        .. versionadded:: 0.11.2
+        .. versionadded:: 0.12.0
         """
         check_is_fitted(self)
         lut = self.lut_

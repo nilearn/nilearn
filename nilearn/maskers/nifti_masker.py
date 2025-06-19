@@ -238,7 +238,7 @@ class NiftiMasker(BaseMasker):
         Only relevant for the report figures.
 
     %(clean_args)s
-        .. versionadded:: 0.11.2
+        .. versionadded:: 0.12.0
 
     %(masker_kwargs)s
 

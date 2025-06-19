@@ -1295,7 +1295,7 @@ def fetch_atlas_yeo_2011(
         If ``thickness`` is not None, this will default to ``7``.
         The default will be set to ``7`` in version 0.13.0.
 
-        .. versionadded:: 0.11.2
+        .. versionadded:: 0.12.0
 
     thickness : {"thin", "thick", None}, default = None
         If not None,
@@ -1307,7 +1307,7 @@ def fetch_atlas_yeo_2011(
         If ``n_networks`` is not None, this will default to ``"thick"``.
         The default will be set to ``"thick"`` in version 0.13.0.
 
-        .. versionadded:: 0.11.2
+        .. versionadded:: 0.12.0
 
     Returns
     -------

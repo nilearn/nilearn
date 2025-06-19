@@ -49,7 +49,7 @@ def check_threshold(
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-        .. versionadded:: 0.11.2
+        .. versionadded:: 0.12.0
 
     Returns
     -------

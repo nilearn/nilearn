@@ -281,7 +281,7 @@ def parse_bids_filename(img_path, legacy=True):
         or the legacy content for the output (``True``).
         ``False`` will become the default in version >= 0.13.0.
 
-        .. versionadded :: 0.11.2
+        .. versionadded :: 0.12.0
 
     Returns
     -------

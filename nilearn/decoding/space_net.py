@@ -634,7 +634,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.11.2
+        .. versionadded:: 0.12.0
 
     Attributes
     ----------

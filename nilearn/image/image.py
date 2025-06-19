@@ -988,7 +988,7 @@ def threshold_img(
     .. versionchanged:: 0.9.0
         New ``cluster_threshold`` and ``two_sided`` parameters added.
 
-    .. versionchanged:: 0.11.2
+    .. versionchanged:: 0.12.0
         Add support for SurfaceImage.
 
     Parameters

@@ -278,7 +278,7 @@ class NiftiSpheresMasker(BaseMasker):
     %(verbose0)s
 
     %(clean_args)s
-        .. versionadded:: 0.11.2
+        .. versionadded:: 0.12.0
 
     %(masker_kwargs)s
 

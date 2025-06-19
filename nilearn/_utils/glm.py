@@ -158,7 +158,7 @@ def make_stat_maps(
 
     %(first_level_contrast)s
 
-        .. versionadded:: 0.11.2
+        .. versionadded:: 0.12.0
 
     Returns
     -------
