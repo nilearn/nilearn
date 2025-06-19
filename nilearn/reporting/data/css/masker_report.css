@@ -326,6 +326,19 @@ End pure-button class definition from pure-min.css
   }
 }
 
+/* -----------------------  Carousel navbar  ----------------------- */
+
+.carousel-navbar {
+  position: sticky;
+  top: 34px;
+  background-color: #fff;
+  height: 35px;
+}
+
+.carousel-navbar-element {
+  height: 100%;
+}
+
 /* -----------------------  Nilearn report  ----------------------- */
 .nilearn-report {
   border-color: rgb(150, 150, 150);

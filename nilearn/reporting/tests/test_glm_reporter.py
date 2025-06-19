@@ -38,9 +38,7 @@ def flm(rk):
         shapes, rk=rk
     )
     # generate_fake_fmri_data_and_design
-    return FirstLevelModel(mask_img=mask).fit(
-        fmri_data, design_matrices=design_matrices
-    )
+    return FirstLevelModel().fit(fmri_data, design_matrices=design_matrices)
 
 
 @pytest.fixture()
@@ -67,7 +65,7 @@ def test_flm_report_no_activation_found(flm, contrasts):
 @pytest.mark.parametrize("bg_img", [_img_mask_mni(), _make_surface_mask()])
 def test_empty_surface_reports(tmp_path, model, bg_img):
     """Test that empty reports on unfitted model can be generated."""
-    report = model().generate_report(bg_img=bg_img)
+    report = model(smoothing_fwhm=None).generate_report(bg_img=bg_img)
 
     assert isinstance(report, HTMLReport)
 
@@ -288,7 +286,7 @@ def test_flm_generate_report_surface_data(rng):
     fmri_data = SurfaceImage(mesh, data)
 
     # using smoothing_fwhm for coverage
-    model = FirstLevelModel(t_r=t_r, smoothing_fwhm=0)
+    model = FirstLevelModel(t_r=t_r, smoothing_fwhm=None)
 
     model.fit(fmri_data, events=events)
 
@@ -303,7 +301,9 @@ def test_flm_generate_report_surface_data_error(
     surf_mask_1d, surf_img_2d, img_3d_mni
 ):
     """Generate report from flm fitted surface."""
-    model = FirstLevelModel(mask_img=surf_mask_1d, t_r=2.0)
+    model = FirstLevelModel(
+        mask_img=surf_mask_1d, t_r=2.0, smoothing_fwhm=None
+    )
     events = basic_paradigm()
     model.fit(surf_img_2d(9), events=events)
 
@@ -311,3 +311,40 @@ def test_flm_generate_report_surface_data_error(
         TypeError, match="'bg_img' must a SurfaceImage instance"
     ):
         model.generate_report("c0", bg_img=img_3d_mni, height_control=None)
+
+
+@pytest.mark.timeout(0)
+def test_carousel_two_runs(
+    matplotlib_pyplot,  # noqa: ARG001
+    flm,
+    slm,
+    contrasts,
+):
+    """Check that a carousel is present when there is more than 1 run."""
+    # Second level have a single "run" and do not need a carousel
+    report_slm = slm.generate_report()
+
+    assert 'id="carousel-navbar"' not in report_slm.__str__()
+
+    # first level model with one run : no run carousel
+    report_one_run = flm.generate_report(contrasts=contrasts)
+
+    assert 'id="carousel-navbar"' not in report_one_run.__str__()
+
+    # first level model with 2 runs : run carousel
+    rk = 6
+    shapes = ((7, 7, 7, 5), (7, 7, 7, 10))
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk=rk
+    )
+
+    contrasts = np.zeros((1, rk))
+    contrasts[0][1] = 1
+
+    flm_two_runs = FirstLevelModel().fit(
+        fmri_data, design_matrices=design_matrices
+    )
+
+    report = flm_two_runs.generate_report(contrasts=contrasts)
+
+    assert 'id="carousel-navbar"' in report.__str__()
