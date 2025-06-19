@@ -188,6 +188,11 @@ linkcheck_ignore = [
     "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
     "http://brainomics.cea.fr/localizer/",
     "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
+    (
+        "https://www.info.gouv.fr/"
+        "organisation/"  # codespell:ignore organisation
+        "secretariat-general-pour-l-investissement-sgpi"
+    ),
     "https://pkgs.org/search/.*",
     # ignore nilearn github issues mostly for the sake of speed
     # given that there many of those in our changelog

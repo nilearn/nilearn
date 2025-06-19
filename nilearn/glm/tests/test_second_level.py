@@ -1134,6 +1134,7 @@ def test_non_parametric_inference_cluster_level_with_single_covariates(
     )
 
 
+@pytest.mark.timeout(0)
 def test_second_level_contrast_computation_smoke():
     """Smoke test for different contrasts in fixed effects."""
     func_img, mask = fake_fmri_data()

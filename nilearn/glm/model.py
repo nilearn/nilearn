@@ -153,7 +153,7 @@ class LikelihoodModelResults:
             else:
                 return self.cov[column][:, column] * dispersion
 
-        elif matrix is not None:
+        else:
             if other is None:
                 other = matrix
             tmp = np.dot(matrix, np.dot(self.cov, np.transpose(other)))

@@ -76,10 +76,10 @@
 </div>
 
 <script>
-  {{js_carousel|html}}
-  document.addEventListener("DOMContentLoaded", function () {
-    new MapCarousel("{{unique_id}}", {{displayed_maps}});
-    }
+    {{ js_carousel | html }}
+    document.addEventListener("DOMContentLoaded", function () {
+      new Carousel("{{unique_id}}", {{ displayed_maps }});
+  }
   );
 </script>
 
