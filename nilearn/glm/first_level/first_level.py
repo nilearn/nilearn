@@ -434,7 +434,7 @@ class FirstLevelModel(BaseGLM):
         further inspection of model details. This has an important impact
         on memory consumption.
 
-    subject_label : :obj:`str`, optional
+    subject_label : :obj:`str`, default=None
         This id will be used to identify a `FirstLevelModel` when passed to
         a `SecondLevelModel` object.
 
@@ -444,6 +444,11 @@ class FirstLevelModel(BaseGLM):
         of order at least 2 ('ar(N)' with n >= 2).
 
         .. versionadded:: 0.9.1
+
+    design_only : :obj:`bool`, default=False
+        If True the model is specified but not estimated.
+
+        .. versionadded:: 0.12.1dev
 
     Attributes
     ----------
@@ -485,6 +490,7 @@ class FirstLevelModel(BaseGLM):
         minimize_memory=True,
         subject_label=None,
         random_state=None,
+        design_only=False,
     ):
         # design matrix parameters
         self.t_r = t_r
@@ -514,6 +520,7 @@ class FirstLevelModel(BaseGLM):
         # attributes
         self.subject_label = subject_label
         self.random_state = random_state
+        self.design_only = design_only
 
     def _check_fit_inputs(
         self,
@@ -524,7 +531,19 @@ class FirstLevelModel(BaseGLM):
         design_matrices,
     ):
         """Run input validation and ensure inputs are compatible."""
-        if not isinstance(
+        if self.design_only:
+            if design_matrices is not None:
+                n_runs = (
+                    1
+                    if not isinstance(design_matrices, list)
+                    else len(design_matrices)
+                )
+            else:
+                n_runs = 1 if not isinstance(events, list) else len(events)
+
+            run_imgs = [None] * n_runs
+
+        elif not isinstance(
             run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
         ) or (
             isinstance(run_imgs, (list, tuple))
@@ -802,13 +821,16 @@ class FirstLevelModel(BaseGLM):
             hasattr(self, "labels_")
             and hasattr(self, "results_")
             and hasattr(self, "fir_delays_")
+            and self.design_only
+        ) or (
+            not self.design_only
             and self.labels_ is not None
             and self.results_ is not None
         )
 
     def fit(
         self,
-        run_imgs,
+        run_imgs=None,
         events=None,
         confounds=None,
         sample_masks=None,
@@ -835,9 +857,11 @@ class FirstLevelModel(BaseGLM):
                    :obj:`list` or :obj:`tuple` of Niimg-like objects, \
                    SurfaceImage object, \
                    or :obj:`list` or \
-                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
+                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`,
+                   default=None
             Data on which the :term:`GLM` will be fitted.
             If this is a list, the affine is considered the same for all.
+            If ``design_only`` is True, then ``run_imgs`` can be ``None``.
 
             .. warning::
 
@@ -980,24 +1004,25 @@ class FirstLevelModel(BaseGLM):
         )
 
         # For each run fit the model and keep only the regression results.
-        self.labels_, self.results_ = [], []
-        self._reporting_data["run_imgs"] = {}
-        n_runs = len(run_imgs)
-        t0 = time.time()
-        for run_idx, run_img in enumerate(run_imgs):
-            self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
+        if not self.design_only:
+            n_runs = len(run_imgs)
+            self.labels_, self.results_ = [], []
+            self._reporting_data["run_imgs"] = {}
+            t0 = time.time()
+            for run_idx, run_img in enumerate(run_imgs):
+                self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
 
-            # collect name of input files
-            # for eventual saving to disk later
-            self._reporting_data["run_imgs"][run_idx] = {}
-            if isinstance(run_img, (str, Path)):
-                self._reporting_data["run_imgs"][run_idx] = (
-                    parse_bids_filename(run_img, legacy=False)
-                )
+                # collect name of input files
+                # for eventual saving to disk later
+                self._reporting_data["run_imgs"][run_idx] = {}
+                if isinstance(run_img, (str, Path)):
+                    self._reporting_data["run_imgs"][run_idx] = (
+                        parse_bids_filename(run_img, legacy=False)
+                    )
 
-            self._fit_single_run(sample_masks, bins, run_img, run_idx)
+                self._fit_single_run(sample_masks, bins, run_img, run_idx)
 
-        self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
+            self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
 
         return self
 
@@ -1246,7 +1271,8 @@ class FirstLevelModel(BaseGLM):
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"
 
-            self.masker_.fit(run_img)
+            if not self.design_only:
+                self.masker_.fit(run_img)
 
         else:
             check_is_fitted(self.mask_img)

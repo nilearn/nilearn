@@ -2579,3 +2579,18 @@ def test_first_level_from_bids_surface(tmp_path):
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+
+def test_first_level_design_only(shape_4d_default):
+    """Check that design only GLM can be fitted and generate report."""
+    rk = 3
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default], rk=rk
+    )
+    flm = FirstLevelModel(design_only=True)
+    flm.fit(run_imgs=None, design_matrices=design_matrices)
+    report = flm.generate_report(np.asarray([1, 0, 0]))
+    report.open_in_browser()
+
+    # test with mask_img, with masker, when passing images to fit
+    # test with surface data

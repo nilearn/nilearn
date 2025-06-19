@@ -266,16 +266,22 @@ def make_glm_report(
 
         mask_plot = _mask_to_plot(model, bg_img, cut_coords)
 
-        mask_info = {
-            k: v
-            for k, v in model.masker_._report_content.items()
-            if k in ["n_elements", "coverage"]
-        }
-        if "coverage" in mask_info:
-            mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
+        if not model.design_only:
+            mask_info = {
+                k: v
+                for k, v in model.masker_._report_content.items()
+                if k in ["n_elements", "coverage"]
+            }
+            if "coverage" in mask_info:
+                mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
+        # TODO
+        else:
+            mask_info = {"n_elements": 0, "coverage": 0}
 
         statistical_maps = {}
-        if output is not None:
+        if model.design_only:
+            ...
+        elif output is not None:
             # we try to rely on the content of glm object only
             try:
                 statistical_maps = {
@@ -493,6 +499,13 @@ def _mask_to_plot(model, bg_img, cut_coords):
     """
     if not is_matplotlib_installed():
         return None
+
+    if model.design_only:
+        # TODO
+        # if a mask_img or a masker were passed
+        # then the report should still contain the mask
+        return None
+
     # Select mask_img to use for plotting
     if not model._is_volume_glm():
         model.masker_._create_figure_for_report()
