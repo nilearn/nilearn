@@ -821,11 +821,14 @@ class FirstLevelModel(BaseGLM):
             hasattr(self, "labels_")
             and hasattr(self, "results_")
             and hasattr(self, "fir_delays_")
-            and self.design_only
-        ) or (
-            not self.design_only
-            and self.labels_ is not None
-            and self.results_ is not None
+            and (
+                self.design_only
+                or (
+                    not self.design_only
+                    and self.labels_ is not None
+                    and self.results_ is not None
+                )
+            )
         )
 
     def fit(

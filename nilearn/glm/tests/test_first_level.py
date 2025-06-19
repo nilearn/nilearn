@@ -2623,8 +2623,6 @@ def test_first_level_design_only(mask_img, run_imgs, shape_4d_default) -> None:
     assert "No contrast was provided." not in report.__str__()
     assert "No statistical map was provided." in report.__str__()
 
-    report.open_in_browser()
-
     if mask_img is None:
         assert "No mask was provided." in report.__str__()
     else:
