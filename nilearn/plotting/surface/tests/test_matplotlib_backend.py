@@ -1,7 +1,5 @@
 """Test nilearn.plotting.surface._matplotlib_backend functions."""
 
-# ruff: noqa: ARG001
-
 import numpy as np
 import pytest
 
