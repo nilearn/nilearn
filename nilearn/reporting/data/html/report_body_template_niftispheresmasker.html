@@ -31,7 +31,7 @@
 
       <!-- glass brain with all spheres -->
       <img
-        id="map-{{unique_id}}-0"
+        id="carousel-obj-{{unique_id}}-0"
         class="pure-img"
         width="100%"
         style="display: block"
@@ -42,7 +42,7 @@
       <!-- individual spheres -->
       {{for map in range(1, len(displayed_maps))}}
       <img
-        id="map-{{unique_id}}-{{map}}"
+        id="carousel-obj-{{unique_id}}-{{map}}"
         class="pure-img"
         width="100%"
         style="display: none"
@@ -92,10 +92,10 @@
 </div>
 
 <script>
-  {{js_carousel|html}}
-  document.addEventListener("DOMContentLoaded", function () {
-    new MapCarousel("{{unique_id}}", {{displayed_maps}}, true);
-    }
+    {{ js_carousel | html }}
+    document.addEventListener("DOMContentLoaded", function () {
+      new Carousel("{{unique_id}}", {{ displayed_maps }}, true);
+  }
   );
 </script>
 {{enddef}}
