@@ -1,7 +1,5 @@
 """Benchmarks for image operations under nilearn.image module."""
 
-# ruff: noqa: RUF012
-
 from nilearn.image import mean_img
 
 from ..common import Benchmark
