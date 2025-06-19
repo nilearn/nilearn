@@ -397,6 +397,18 @@ jobs:
                 ./build_tools/github/fill_doc_check.sh
                 cat doc/tmp/doc_check.txt
 
+        -   name: Check warnings in doc
+            if: always()
+            run: |
+                ./build_tools/github/warning_in_doc_check.sh
+
+        -   name: Upload doc checks
+            if: steps.build-docs.outcome == 'success'
+            uses: actions/upload-artifact@v4
+            with:
+                name: doc_checks
+                path: doc/tmp
+
         -   name: Upload documentation
             if: steps.build-docs.outcome == 'success'
             uses: actions/upload-artifact@v4

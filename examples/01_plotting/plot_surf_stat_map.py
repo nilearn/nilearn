@@ -124,6 +124,7 @@ plot_surf_roi(
     bg_on_data=True,
     title="PCC Seed",
     colorbar=False,
+    darkness=None,
 )
 
 show()
@@ -153,6 +154,7 @@ plot_surf_roi(
     bg_on_data=True,
     title="PCC Seed on flat map",
     colorbar=False,
+    darkness=None,
 )
 
 show()
@@ -211,8 +213,8 @@ plot_surf_stat_map(
     view="medial",
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    darkness=0.3,
     title="Correlation map",
+    darkness=None,
 )
 
 show()
@@ -230,6 +232,7 @@ plot_surf_stat_map(
     cmap="bwr",
     threshold=0.5,
     title="Threshold and colormap",
+    darkness=None,
 )
 
 show()
@@ -247,6 +250,7 @@ plot_surf_stat_map(
     cmap="bwr",
     threshold=0.5,
     title="Plotting without background",
+    darkness=None,
 )
 
 show()
@@ -269,6 +273,7 @@ plot_surf_stat_map(
     threshold=0.5,
     output_file=output_dir / "plot_surf_stat_map.png",
     cmap="bwr",
+    darkness=None,
 )
 
 # %%
