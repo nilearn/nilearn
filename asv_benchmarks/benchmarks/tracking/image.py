@@ -1,4 +1,5 @@
 """Benchmarks for image operations under nilearn.image module."""
+
 from nilearn.image import mean_img
 
 from ..common import Benchmark
