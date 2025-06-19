@@ -132,6 +132,7 @@ z_map = second_level_model.compute_contrast(
 # We threshold the second level :term:`contrast`
 # at FDR-corrected p < 0.05 and plot it.
 from nilearn.glm import threshold_stats_img
+from nilearn.plotting import show
 
 _, threshold = threshold_stats_img(z_map, alpha=0.05, height_control="fdr")
 print(f"The FDR=.05-corrected threshold is: {threshold:03g}")
