@@ -500,12 +500,6 @@ def _mask_to_plot(model, bg_img, cut_coords):
     if not is_matplotlib_installed():
         return None
 
-    if model.design_only:
-        # TODO
-        # if a mask_img or a masker were passed
-        # then the report should still contain the mask
-        return None
-
     # Select mask_img to use for plotting
     if not model._is_volume_glm():
         model.masker_._create_figure_for_report()
@@ -523,6 +517,8 @@ def _mask_to_plot(model, bg_img, cut_coords):
             check_niimg(model.mask_img)
             mask_img = model.mask_img
         except Exception:
+            if model.design_only:
+                return None
             mask_img = model.masker_.mask_img_
 
     plot_roi(

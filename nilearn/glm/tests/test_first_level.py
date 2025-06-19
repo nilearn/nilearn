@@ -34,6 +34,7 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.conftest import _shape_4d_default
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
     FirstLevelModel,
@@ -2581,16 +2582,52 @@ def test_first_level_from_bids_surface(tmp_path):
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
 
-def test_first_level_design_only(shape_4d_default):
+@pytest.mark.parametrize(
+    "mask_img",
+    [
+        None,
+        generate_fake_fmri_data_and_design(shapes=[_shape_4d_default()])[0],
+    ],
+)
+@pytest.mark.parametrize(
+    "run_imgs",
+    [
+        None,
+        generate_fake_fmri_data_and_design(shapes=[_shape_4d_default()])[1],
+    ],
+)
+def test_first_level_design_only(mask_img, run_imgs, shape_4d_default) -> None:
     """Check that design only GLM can be fitted and generate report."""
-    rk = 3
-    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[shape_4d_default], rk=rk
+    design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )[2]
+    model = FirstLevelModel(design_only=True)
+
+    report = model.generate_report()
+    assert "The model has not been fit yet." in report.__str__()
+    assert "No mask was provided." in report.__str__()
+    assert "No statistical map was provided." in report.__str__()
+
+    model.mask_img = mask_img
+
+    model.fit(run_imgs=run_imgs, design_matrices=design_matrices)
+
+    assert model.labels_ is None
+    assert model.results_ is None
+
+    report = model.generate_report(
+        np.asarray([1, 0, 0]), title=f"{mask_img is None=}-{run_imgs is None=}"
     )
-    flm = FirstLevelModel(design_only=True)
-    flm.fit(run_imgs=None, design_matrices=design_matrices)
-    report = flm.generate_report(np.asarray([1, 0, 0]))
+
+    assert "The model has not been fit yet." not in report.__str__()
+    assert "No contrast was provided." not in report.__str__()
+    assert "No statistical map was provided." in report.__str__()
+
     report.open_in_browser()
 
-    # test with mask_img, with masker, when passing images to fit
+    if mask_img is None:
+        assert "No mask was provided." in report.__str__()
+    else:
+        assert "No mask was provided." not in report.__str__()
+
     # test with surface data

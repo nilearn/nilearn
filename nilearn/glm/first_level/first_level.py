@@ -1251,7 +1251,8 @@ class FirstLevelModel(BaseGLM):
             )
             self.smoothing_fwhm = 0
 
-        check_compatibility_mask_and_images(self.mask_img, run_img)
+        if not self.design_only:
+            check_compatibility_mask_and_images(self.mask_img, run_img)
         if (  # deal with self.mask_img as image, str, path, none
             (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
             or
