@@ -1,7 +1,5 @@
 """Benchmarks for image operations under nilearn.image module."""
 
-# ruff: noqa: RUF012
-
 from nilearn.image import mean_img
 
 from ..common import Benchmark
@@ -15,8 +13,8 @@ class CompareLoad(Benchmark):
     """
 
     # compare loading images using nibabel and nilearn
-    param_names = ["loader"]
-    params = ["nilearn", "nibabel (ref)"]
+    param_names = ("loader",)
+    params = ("nilearn", "nibabel (ref)")
 
     def time_compare_load(self, loader):
         """Time the loading of images."""
@@ -34,8 +32,8 @@ class CompareMean(Benchmark):
     """
 
     # compare loading images using nibabel and nilearn
-    param_names = ["loader"]
-    params = ["nilearn", "nibabel (ref)"]
+    param_names = ("loader",)
+    params = ("nilearn", "nibabel (ref)")
 
     def time_compare_mean(self, loader):
         """Time the loading followed by taking the mean."""
@@ -55,8 +53,8 @@ class CompareSlice(Benchmark):
     """
 
     # compare loading images using nibabel and nilearn
-    param_names = ["loader"]
-    params = ["nilearn", "nibabel (ref)"]
+    param_names = ("loader",)
+    params = ("nilearn", "nibabel (ref)")
 
     def time_compare_slice(self, loader):
         """Time the loading the image followed by extracting a slice of it."""
