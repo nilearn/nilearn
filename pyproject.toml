@@ -175,11 +175,10 @@ minversion = "6.0"
 xfail_strict = true
 
 [tool.ruff]
-extend-exclude = [
+exclude = [
     "nilearn/externals/*",
-    "doc/auto_examples/*"
+    "nilearn/_version.py"
 ]
-include = ["pyproject.toml", "nilearn/**/*.py", "examples/**/*.py", "maint_tools/**/*.py", "doc/**/*.py"]
 indent-width = 4
 line-length = 79
 
