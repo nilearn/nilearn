@@ -136,7 +136,7 @@ def _regression(confounds, tmp_path):
         (("high_pass", "compcor"), {"compcor": "anat_separated"}),
         (("high_pass", "compcor"), {"compcor": "temporal"}),
         (("ica_aroma",), {"ica_aroma": "basic"}),
-        (("tedana",), {"tedana": "rejected"}),
+        (("tedana",), {"tedana": "aggressive"}),
     ],
 )
 def test_nilearn_regress(tmp_path, test_strategy, param, fmriprep_version):
