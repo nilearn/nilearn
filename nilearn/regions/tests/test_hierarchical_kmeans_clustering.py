@@ -19,7 +19,10 @@ from nilearn.regions.hierarchical_kmeans_clustering import (
 from nilearn.surface import SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
 
-ESTIMATORS_TO_CHECK = [HierarchicalKMeans(n_clusters=8)]
+# IMPORTANT
+# keeping the n_clusters low (< 3) to make it easier
+# to run sklearn checks
+ESTIMATORS_TO_CHECK = [HierarchicalKMeans(n_clusters=2)]
 
 if SKLEARN_LT_1_6:
 
