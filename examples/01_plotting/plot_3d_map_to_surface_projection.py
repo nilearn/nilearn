@@ -266,6 +266,8 @@ plot_img_on_surf(
     hemispheres=["left", "right"],
     title="multiple views of the 3D volume",
     bg_on_data=True,
+    darkness=None,
+    symmetric_cmap=None,
 )
 show()
 
@@ -298,7 +300,7 @@ view
 # :func:`~nilearn.plotting.view_img_on_surf`:
 from nilearn.plotting import view_img_on_surf
 
-view = view_img_on_surf(stat_img, threshold="90%")
+view = view_img_on_surf(stat_img, threshold="90%", darkness=None)
 
 view
 # view.open_in_browser()
@@ -324,7 +326,7 @@ view = view_img_on_surf(
     vol_to_surf_kwargs={
         "n_samples": 1,
         "radius": 0.0,
-        "interpolation": "nearest",
+        "interpolation": "nearest_most_frequent",
     },
     symmetric_cmap=False,
     colorbar=False,
