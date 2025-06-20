@@ -13,7 +13,9 @@ import datetime
 import uuid
 import warnings
 from html import escape
+from pathlib import Path
 from string import Template
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -24,7 +26,7 @@ from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
@@ -239,6 +241,8 @@ def make_glm_report(
     output = None
     if contrasts is None:
         output = model._reporting_data.get("filenames", None)
+        if output is not None and output["use_absolute_path"]:
+            output = _turn_into_full_path(output, output["dir"])
 
     design_matrices = None
     mask_plot = None
@@ -266,6 +270,8 @@ def make_glm_report(
 
         mask_plot = _mask_to_plot(model, bg_img, cut_coords)
 
+        # We try to rely on the content of glm object only
+        # by reading images from disk rarther than recomputing them
         mask_info = {
             k: v
             for k, v in model.masker_._report_content.items()
@@ -275,8 +281,7 @@ def make_glm_report(
             mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
 
         statistical_maps = {}
-        if output is not None:
-            # we try to rely on the content of glm object only
+        if model._is_volume_glm() and output is not None:
             try:
                 statistical_maps = {
                     contrast_name: output["dir"]
@@ -432,6 +437,22 @@ def make_glm_report(
     return report
 
 
+def _turn_into_full_path(bunch, dir: Path) -> Union[str, tempita.bunch]:
+    """Recursively turns str values of a dict into path.
+
+    Used to turn relative paths into full paths.
+    """
+    if isinstance(bunch, str) and not bunch.startswith(str(dir)):
+        return str(dir / bunch)
+    tmp = tempita.bunch()
+    for k in bunch:
+        if isinstance(bunch[k], (dict, str, tempita.bunch)):
+            tmp[k] = _turn_into_full_path(bunch[k], dir)
+        else:
+            tmp[k] = bunch[k]
+    return tmp
+
+
 def _glm_model_attributes_to_dataframe(model):
     """Return a pandas dataframe with pertinent model attributes & information.
 
@@ -551,7 +572,7 @@ def _make_stat_maps_contrast_clusters(
 
     Parameters
     ----------
-    stat_img : dictionary of Niimg-like object or None
+    stat_img : dictionary of Niimg-like object or SurfaceImage, or None
        Statistical image (presumably in z scale)
        whenever height_control is 'fpr' or None,
        stat_img=None is acceptable.
@@ -700,7 +721,7 @@ def _make_stat_maps_contrast_clusters(
             )
 
         stat_map_png = _stat_map_to_png(
-            stat_img=thresholded_img,
+            stat_img=stat_map_img,
             threshold=threshold,
             bg_img=bg_img,
             cut_coords=cut_coords,
@@ -742,7 +763,6 @@ def _stat_map_to_png(
     stat_img : Niimg-like object or None
        Statistical image (presumably in z scale),
        to be plotted as slices or glass brain.
-       Does not perform any thresholding.
 
     threshold : float
        Desired threshold in z-scale.
@@ -788,6 +808,7 @@ def _stat_map_to_png(
     if isinstance(stat_img, SurfaceImage):
         data = get_surface_data(stat_img)
     else:
+        stat_img = load_niimg(stat_img)
         data = safe_get_data(stat_img, ensure_finite=True)
 
     stat_map_min = np.nanmin(data)
@@ -810,6 +831,7 @@ def _stat_map_to_png(
             bg_map=bg_img,
             surf_mesh=surf_mesh,
             cmap=cmap,
+            darkness=None,
         )
 
         x_label_color = "black"
