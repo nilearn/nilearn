@@ -696,10 +696,10 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : iterable of n_subjects numpy.ndarray with shapes \
-            (n_samples, n_features)
-            The input subjects time series. The number of samples may differ
-            from one subject to another.
+        X : iterable of :class:`numpy.ndarray` \
+            each of shape (n_samples, n_features)
+            Each :class:`numpy.ndarray` represents a subject's time series.
+            The number of samples may differ from one subject to another.
 
         confounds : numpy.ndarray with shape (n_samples) or \
                     (n_samples, n_confounds), default=None
