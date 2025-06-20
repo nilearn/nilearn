@@ -667,6 +667,30 @@ def test_connectivity_measure_generic(
         assert is_spd(covs[k], decimal=7)
 
 
+@pytest.mark.parametrize(
+    "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
+)
+@pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
+def test_connectivity_measure_generic_3d_array(kind, cov_estimator, signals):
+    """Ensure ConnectivityMeasure accepts 3D arrays or tuple of 2D arrays."""
+    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+
+    signals_as_array = np.asarray(
+        [_signals(n_subjects=1)[0] for _ in range(5)]
+    ).squeeze()
+    assert signals_as_array.ndim == 3
+
+    connectivities = conn_measure.fit_transform(signals_as_array)
+
+    assert isinstance(connectivities, np.ndarray)
+
+    signals_as_tuple = tuple(x for x in signals)
+
+    connectivities = conn_measure.fit_transform(signals_as_tuple)
+
+    assert isinstance(connectivities, np.ndarray)
+
+
 def _assert_connectivity_tangent(connectivities, conn_measure, covs):
     """Check output value properties for tangent connectivity measure \
     that they have the expected relationship \

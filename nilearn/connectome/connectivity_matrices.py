@@ -513,7 +513,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : :obj:`list` of numpy.ndarray, \
+        X : iterable of numpy.ndarray, \
             shape for each (n_samples, n_features)
             The input subjects time series.
             The number of samples may differ from one subject to another.
@@ -539,9 +539,9 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         # casting to a list
         # to make it easier to check with sklearn estimator compliance
-        if not isinstance(X, (np.ndarray, list)):
+        if not hasattr(X, "__iter__"):
             raise TypeError(
-                "Input must be list or numpy array. "
+                "Input must be an iterable of numpy arrays. "
                 f"Got {X.__class__.__name__}"
             )
         if isinstance(X, np.ndarray) and X.ndim == 2:
@@ -643,7 +643,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : :obj:`list` of n_subjects numpy.ndarray with shapes \
+        X : iterable of n_subjects numpy.ndarray with shapes \
             (n_samples, n_features)
             The input subjects time series. The number of samples may differ
 
@@ -668,9 +668,9 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         del y
         # casting to a list
         # to make it easier to check with sklearn estimator compliance
-        if not isinstance(X, (np.ndarray, list)):
+        if not hasattr(X, "__iter__"):
             raise TypeError(
-                "Input must be list or numpy array. "
+                "Input must be an iterable of numpy arrays. "
                 f"Got {X.__class__.__name__}"
             )
         if isinstance(X, np.ndarray) and X.ndim == 2:
@@ -696,7 +696,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : :obj:`list` of n_subjects numpy.ndarray with shapes \
+        X : iterable of n_subjects numpy.ndarray with shapes \
             (n_samples, n_features)
             The input subjects time series. The number of samples may differ
             from one subject to another.

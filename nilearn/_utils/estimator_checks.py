@@ -190,7 +190,6 @@ def return_expected_failed_checks(
         expected_failed_checks = {
             "check_estimator_sparse_array": "TODO",
             "check_estimator_sparse_matrix": "TODO",
-            "check_estimator_sparse_tag": "TODO",
             "check_fit2d_predict1d": "not applicable",
             "check_methods_sample_order_invariance": "TODO",
             "check_methods_subset_invariance": "TODO",
