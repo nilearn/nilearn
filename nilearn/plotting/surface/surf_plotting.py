@@ -132,6 +132,9 @@ def plot_surf(
 
         .. versionadded:: 0.9.0
 
+        .. versionchanged:: 0.12.0
+            Default value changed to None.
+
     %(colorbar)s
         Default=True.
 
@@ -411,7 +414,6 @@ def plot_surf_stat_map(
     view=None,
     engine=DEFAULT_ENGINE,
     cmap=DEFAULT_DIVERGING_CMAP,
-    symmetric_cmap=None,
     colorbar=True,
     avg_method=None,
     threshold=None,
@@ -484,18 +486,6 @@ def plot_surf_stat_map(
 
     %(cmap)s
         default="RdBu_r"
-
-    symmetric_cmap : :obj:`bool`, default=None
-        Whether to use a symmetric colormap or not.
-
-        .. note::
-            This option is currently only implemented for the ``plotly``
-            engine.
-
-        When using ``plotly`` as engine, ``symmetric_cmap`` will default to
-        `False` if `None` is passed.
-
-        .. versionadded:: 0.12.0
 
     %(colorbar)s
 
@@ -617,7 +607,6 @@ def plot_surf_stat_map(
         view=view,
         engine=engine,
         cmap=cmap,
-        symmetric_cmap=symmetric_cmap,
         colorbar=colorbar,
         avg_method=avg_method,
         threshold=threshold,
