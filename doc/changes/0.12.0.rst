@@ -115,6 +115,8 @@ Changes
 
 - :bdg-dark:`Code` Move ``nilearn.plotting.surf_plotting`` and ``nilearn.plotting.html_surface`` under ``nilearn.plotting.surface`` (:gh:`5234` by `Hande Gözükan`_).
 
+- :bdg-dark:`Code` Move ``nilearn.plotting.matrix_plotting`` under ``nilearn.plotting.matrix`` (:gh:`5240` by `Hande Gözükan`_).
+
 - :bdg-danger:`Deprecation` In version >=0.13.0, the parameter ``img`` or  ``X`` will be renamed to ``imgs`` for the ``fit``, ``transform`` and ``fit_transform`` method of all the surface maskers, the fit method of the :class:`~nilearn.maskers.NiftiSpheresMasker` and the :class:`~nilearn.regions.RegionExtractor`, and the ``fit_transform`` method of the  :class:`~nilearn.maskers.NiftiMasker` (:gh:`5262` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` From version >=0.13.0, :func:`nilearn.datasets.fetch_atlas_yeo_2011` will return a single parcellation (:gh:`5085` by `Rémi Gau`_).
