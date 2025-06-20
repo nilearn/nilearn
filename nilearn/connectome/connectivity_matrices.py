@@ -537,15 +537,15 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         if self.cov_estimator is None:
             self.cov_estimator = LedoitWolf(store_precision=False)
 
-        # casting to a list
-        # to make it easier to check with sklearn estimator compliance
         if not hasattr(X, "__iter__"):
             raise TypeError(
                 "Input must be an iterable of numpy arrays. "
                 f"Got {X.__class__.__name__}"
             )
+
+        # casting to a list
+        # to make it easier to check with sklearn estimator compliance
         if isinstance(X, np.ndarray) and X.ndim == 2:
-            check_array(X, accept_sparse=False)
             X = [X]
         self._check_input(X, confounds=confounds)
 
@@ -675,7 +675,6 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 f"Got {X.__class__.__name__}"
             )
         if isinstance(X, np.ndarray) and X.ndim == 2:
-            check_array(X, accept_sparse=False)
             X = [X]
         if self.kind == "tangent" and len(X) <= 1:
             # Check that people are applying fit_transform to a group of
