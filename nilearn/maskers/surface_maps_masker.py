@@ -629,5 +629,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                         colorbar=False,
                         threshold=threshold,
                         bg_on_data=True,
+                        darkness=None,
                     )
         return fig

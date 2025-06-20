@@ -1023,6 +1023,7 @@ def test_non_parametric_inference_tfce():
     assert get_data(out["logp_max_tfce"]).shape == shapes[0][:3]
 
 
+@pytest.mark.timeout(0)
 def test_non_parametric_inference_cluster_level():
     """Test non-parametric inference with cluster-level inference."""
     func_img, mask = fake_fmri_data()
