@@ -482,7 +482,6 @@ def _plot_surf(
         "symmetric_cmap": symmetric_cmap,
         "title_font_size": title_font_size,
     }
-
     check_engine_params(parameters_not_implemented_in_matplotlib, "matplotlib")
 
     # adjust values
@@ -752,7 +751,6 @@ def _plot_img_on_surf(
         symmetric_cbar = "auto"
     if cbar_tick_format is None:
         cbar_tick_format = "%i"
-    symmetric_cmap = kwargs.pop("symmetric_cmap", True)
 
     cbar_h = 0.25
     title_h = 0.25 * (title is not None)
@@ -817,7 +815,6 @@ def _plot_img_on_surf(
             hemi=hemi,
             view=mode,
             cmap=cmap,
-            symmetric_cmap=symmetric_cmap,
             colorbar=False,  # Colorbar created externally.
             threshold=threshold,
             bg_on_data=bg_on_data,
