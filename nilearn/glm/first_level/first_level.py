@@ -1071,7 +1071,7 @@ class FirstLevelModel(BaseGLM):
         check_is_fitted(self)
         if self.design_only:
             raise RuntimeError(
-                "Cannot compute contrasts on design_only models."
+                "Cannot compute contrasts on 'design_only' models."
             )
 
         if isinstance(contrast_def, (np.ndarray, str)):

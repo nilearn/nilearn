@@ -2629,6 +2629,19 @@ def test_first_level_design_only(mask_img, run_imgs, shape_4d_default) -> None:
         assert "No mask was provided." not in report.__str__()
 
 
+def test_first_level_design_only_compute_contrast_error(shape_4d_default) -> None:
+    """Check cannot compute contrast on design only GLM."""
+    design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )[2]
+    model = FirstLevelModel(design_only=True)
+    model.fit(run_imgs=None, design_matrices=design_matrices)
+
+    with pytest.raises(RuntimeError, match="Cannot compute contrasts on 'design_only' models."):
+        model.compute_contrast(
+        np.asarray([1, 0, 0])
+    )
+
 def test_first_level_design_only_surface(surface_glm_data) -> None:
     """Check design only GLM fit and generate_report with surface data.
 
