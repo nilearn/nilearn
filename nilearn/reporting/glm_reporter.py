@@ -274,38 +274,39 @@ def make_glm_report(
         # by reading images from disk rarther than recomputing them
         # TODO: the default value should depend on the presence of a mask
         mask_info = {"n_elements": 0, "coverage": 0}
-        if not model.design_only:
-          mask_info = {
-              k: v
-              for k, v in model.masker_._report_content.items()
-              if k in ["n_elements", "coverage"]
-          }
-          if "coverage" in mask_info:
-              mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
+        if model.masker_.__sklearn_is_fitted__():
+            mask_info = {
+                k: v
+                for k, v in model.masker_._report_content.items()
+                if k in ["n_elements", "coverage"]
+            }
+            if "coverage" in mask_info:
+                mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
 
         statistical_maps = {}
-        if model._is_volume_glm() and output is not None:
-            try:
-                statistical_maps = {
-                    contrast_name: output["dir"]
-                    / output["statistical_maps"][contrast_name]["z_score"]
-                    for contrast_name in output["statistical_maps"]
-                }
-            except KeyError:  # pragma: no cover
-                if contrasts is not None:
-                    statistical_maps = make_stat_maps(
-                        model,
-                        contrasts,
-                        output_type="z_score",
-                        first_level_contrast=first_level_contrast,
-                    )
-        elif contrasts is not None:
-            statistical_maps = make_stat_maps(
-                model,
-                contrasts,
-                output_type="z_score",
-                first_level_contrast=first_level_contrast,
-            )
+        if not model.design_only:
+            if model._is_volume_glm() and output is not None:
+                try:
+                    statistical_maps = {
+                        contrast_name: output["dir"]
+                        / output["statistical_maps"][contrast_name]["z_score"]
+                        for contrast_name in output["statistical_maps"]
+                    }
+                except KeyError:  # pragma: no cover
+                    if contrasts is not None:
+                        statistical_maps = make_stat_maps(
+                            model,
+                            contrasts,
+                            output_type="z_score",
+                            first_level_contrast=first_level_contrast,
+                        )
+            elif contrasts is not None:
+                statistical_maps = make_stat_maps(
+                    model,
+                    contrasts,
+                    output_type="z_score",
+                    first_level_contrast=first_level_contrast,
+                )
 
         logger.log(
             "Generating contrast-level figures...", verbose=model.verbose

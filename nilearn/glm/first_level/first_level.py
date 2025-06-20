@@ -533,14 +533,7 @@ class FirstLevelModel(BaseGLM):
         """Run input validation and ensure inputs are compatible."""
         if self.design_only:
             if design_matrices is not None:
-                n_runs = (
-                    1
-                    if not isinstance(design_matrices, list)
-                    else len(design_matrices)
-                )
-                run_imgs = [None] * n_runs
-            else:
-                n_runs = 1 if not isinstance(events, list) else len(events)
+                run_imgs = [None] * self._n_runs_
 
         elif not isinstance(
             run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
@@ -644,12 +637,10 @@ class FirstLevelModel(BaseGLM):
             design_matrices,
         )
 
-    def _log(
-        self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
-    ):
+    def _log(self, step, run_idx=None, t0=None, time_in_second=None):
         """Generate and log messages for different step of the model fit."""
         if step == "progress":
-            msg = self._report_progress(run_idx, n_runs, t0)
+            msg = self._report_progress(run_idx, self._n_runs_, t0)
         elif step == "running":
             msg = "Performing GLM computation."
         elif step == "run_done":
@@ -660,7 +651,7 @@ class FirstLevelModel(BaseGLM):
             msg = f"Masking took {int(time_in_second)} seconds."
         elif step == "done":
             msg = (
-                f"Computation of {n_runs} runs done "
+                f"Computation of {self._n_runs_} runs done "
                 f"in {int(time_in_second)} seconds."
             )
 
@@ -669,10 +660,10 @@ class FirstLevelModel(BaseGLM):
             verbose=self.verbose,
         )
 
-    def _report_progress(self, run_idx, n_runs, t0):
+    def _report_progress(self, run_idx, t0):
         remaining = "go take a coffee, a big one"
         if run_idx != 0:
-            percent = float(run_idx) / n_runs
+            percent = float(run_idx) / self._n_runs_
             percent = round(percent * 100, 2)
             dt = time.time() - t0
             # We use a max to avoid a division by zero
@@ -680,7 +671,8 @@ class FirstLevelModel(BaseGLM):
             remaining = f"{int(remaining)} seconds remaining"
 
         return (
-            f"Computing run {run_idx + 1} out of {n_runs} runs ({remaining})."
+            f"Computing run {run_idx + 1} "
+            f"out of {self._n_runs_} runs ({remaining})."
         )
 
     def _fit_single_run(self, sample_masks, bins, run_img, run_idx):
@@ -963,6 +955,10 @@ class FirstLevelModel(BaseGLM):
         self.labels_ = None
         self.results_ = None
 
+        self._n_runs_ = (
+            len(run_imgs) if isinstance(run_imgs, (list, tuple)) else 1
+        )
+
         run_imgs, events, confounds, sample_masks, design_matrices = (
             self._check_fit_inputs(
                 run_imgs,
@@ -1007,12 +1003,11 @@ class FirstLevelModel(BaseGLM):
 
         # For each run fit the model and keep only the regression results.
         if not self.design_only:
-            n_runs = len(run_imgs)
             self.labels_, self.results_ = [], []
             self._reporting_data["run_imgs"] = {}
             t0 = time.time()
             for run_idx, run_img in enumerate(run_imgs):
-                self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
+                self._log("progress", run_idx=run_idx, t0=t0)
 
                 # collect name of input files
                 # for eventual saving to disk later
@@ -1024,7 +1019,7 @@ class FirstLevelModel(BaseGLM):
 
                 self._fit_single_run(sample_masks, bins, run_img, run_idx)
 
-            self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
+            self._log("done", time_in_second=time.time() - t0)
 
         return self
 
@@ -1074,6 +1069,10 @@ class FirstLevelModel(BaseGLM):
 
         """
         check_is_fitted(self)
+        if self.design_only:
+            raise RuntimeError(
+                "Cannot compute contrasts on design_only models."
+            )
 
         if isinstance(contrast_def, (np.ndarray, str)):
             con_vals = [contrast_def]
@@ -1085,19 +1084,21 @@ class FirstLevelModel(BaseGLM):
                 " (array or str)."
             )
 
-        n_runs = len(self.labels_)
         n_contrasts = len(con_vals)
-        if n_contrasts == 1 and n_runs > 1:
+        if n_contrasts == 1 and self._n_runs_ > 1:
             warn(
-                f"One contrast given, assuming it for all {n_runs} runs",
+                (
+                    "One contrast given, "
+                    f"assuming it for all {self._n_runs_} runs"
+                ),
                 category=UserWarning,
                 stacklevel=find_stack_level(),
             )
-            con_vals = con_vals * n_runs
-        elif n_contrasts != n_runs:
+            con_vals = con_vals * self._n_runs_
+        elif n_contrasts != self._n_runs_:
             raise ValueError(
                 f"{n_contrasts} contrasts given, "
-                f"while there are {n_runs} runs."
+                f"while there are {self._n_runs_} runs."
             )
 
         # Translate formulas to vectors
