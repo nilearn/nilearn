@@ -596,8 +596,6 @@ def plot_surf_stat_map(
         )
     )
 
-    symmetric_cmap = kwargs.pop("symmetric_cmap", None)
-
     fig = plot_surf(
         surf_mesh,
         surf_map=loaded_stat_map,
@@ -606,7 +604,6 @@ def plot_surf_stat_map(
         view=view,
         engine=engine,
         cmap=cmap,
-        symmetric_cmap=symmetric_cmap,
         colorbar=colorbar,
         avg_method=avg_method,
         threshold=threshold,
