@@ -2594,7 +2594,10 @@ def test_first_level_from_bids_surface(tmp_path):
     ],
 )
 def test_first_level_design_only(mask_img, run_imgs, shape_4d_default) -> None:
-    """Check that design only GLM can be fitted and generate report."""
+    """Check design only GLM fit and generate_report.
+
+    Uses design matrices at fit time.
+    """
     design_matrices = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default]
     )[2]
@@ -2625,4 +2628,28 @@ def test_first_level_design_only(mask_img, run_imgs, shape_4d_default) -> None:
     else:
         assert "No mask was provided." not in report.__str__()
 
-    # test with surface data
+
+def test_first_level_design_only_surface(surface_glm_data) -> None:
+    """Check design only GLM fit and generate_report with surface data.
+
+    Uses events at fit time.
+    """
+    mini_img, _ = surface_glm_data(5)
+
+    masker = SurfaceMasker().fit(mini_img)
+    model = FirstLevelModel(mask_img=masker, t_r=2.0, design_only=True)
+
+    events = basic_paradigm()
+
+    model.fit([mini_img, mini_img], events=[events, events])
+
+    assert model.labels_ is None
+    assert model.results_ is None
+
+    report = model.generate_report("c0")
+
+    assert "The model has not been fit yet." not in report.__str__()
+    assert "No contrast was provided." not in report.__str__()
+    assert "No mask was provided." not in report.__str__()
+
+    assert "No statistical map was provided." in report.__str__()

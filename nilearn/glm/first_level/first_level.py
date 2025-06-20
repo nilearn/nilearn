@@ -538,10 +538,9 @@ class FirstLevelModel(BaseGLM):
                     if not isinstance(design_matrices, list)
                     else len(design_matrices)
                 )
+                run_imgs = [None] * n_runs
             else:
                 n_runs = 1 if not isinstance(events, list) else len(events)
-
-            run_imgs = [None] * n_runs
 
         elif not isinstance(
             run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
