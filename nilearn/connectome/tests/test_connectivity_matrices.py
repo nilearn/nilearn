@@ -986,6 +986,14 @@ def test_confounds_connectome_measure():
 
 
 def test_confounds_connectome_measure_errors(signals):
+    """Check proper errors raised for wrong inputs."""
+    # Raising error for input signals are not iterable
+    conn_measure = ConnectivityMeasure(vectorize=True)
+    msg = "is not iterable"
+
+    with pytest.raises(TypeError, match=msg):
+        conn_measure._check_input(X=1.0)
+
     # Generate signals and compute covariances and apply confounds while
     # computing covariances
     signals, confounds = _signals()
@@ -994,15 +1002,15 @@ def test_confounds_connectome_measure_errors(signals):
     conn_measure = ConnectivityMeasure(vectorize=True)
     msg = "'confounds' input argument must be an iterable"
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure._check_input(X=signals, confounds=1.0)
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure._fit_transform(
             X=signals, do_fit=True, do_transform=True, confounds=1.0
         )
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure.fit_transform(X=signals, y=None, confounds=1.0)
 
     # Raising error for input confounds are given but not vectorize=True

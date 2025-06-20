@@ -501,7 +501,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             check_array(s, accept_sparse=False)
 
         if confounds is not None and not hasattr(confounds, "__iter__"):
-            raise ValueError(
+            raise TypeError(
                 "'confounds' input argument must be an iterable. "
                 f"You provided {confounds.__class__}"
             )
