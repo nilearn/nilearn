@@ -597,6 +597,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                         cmap=self.cmap,
                         vmin=vmin,
                         vmax=vmax,
+                        darkness=None,
                     )
                 plot_surf_contours(
                     roi_map=labels_img,

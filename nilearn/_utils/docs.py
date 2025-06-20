@@ -624,13 +624,17 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
     The strategy used to compute the mask:
 
     - ``"background"``: Use this option if your images present
-      a clear homogeneous background.
+      a clear homogeneous background. Uses
+      :func:`nilearn.masking.compute_background_mask` under the hood.
 
-    - ``"epi"``: Use this option if your images are raw EPI images
+    - ``"epi"``: Use this option if your images are raw EPI images. Uses
+      :func:`nilearn.masking.compute_epi_mask`.
 
     - ``"whole-brain-template"``: This will extract the whole-brain
       part of your data by resampling the MNI152 brain mask for
-      your data's field of view.
+      your data's field of view. Uses
+      :func:`nilearn.masking.compute_brain_mask` with
+      ``mask_type="whole-brain"``.
 
       .. note::
 
@@ -639,16 +643,17 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
 
     - ``"gm-template"``: This will extract the gray matter part of your
       data by resampling the corresponding MNI152 template for your
-      data's field of view.
+      data's field of view. Uses
+      :func:`nilearn.masking.compute_brain_mask` with ``mask_type="gm"``.
 
       .. versionadded:: 0.8.1
 
     - ``"wm-template"``: This will extract the white matter part of your
       data by resampling the corresponding MNI152 template for your
-      data's field of view.
+      data's field of view. Uses
+      :func:`nilearn.masking.compute_brain_mask` with ``mask_type="wm"``.
 
       .. versionadded:: 0.8.1
-
 """
 
 # mask_type
@@ -1259,6 +1264,53 @@ y : None
 docdict["atlas_type"] = """'atlas_type' : :obj:`str`
         Type of atlas.
         See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
+
+docdict["base_decomposition_attributes"] = """
+        Attributes
+        ----------
+        mask_img_ : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+            See :ref:`extracting_data`.
+            The mask of the data.
+            If no mask was given at masker creation :
+
+            - for Nifti images, this contains automatically computed mask
+              via the selected ``mask_strategy``.
+
+            - for SurfaceImage objects, this mask encompasses all vertices of
+              the input images.
+        """
+
+docdict["multi_pca_attributes"] = """
+        masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
+                :obj:`~nilearn.maskers.SurfaceMasker`
+            Masker used to filter and mask data as first step.
+            If :obj:`~nilearn.maskers.MultiNiftiMasker`
+            or :obj:`~nilearn.maskers.SurfaceMasker` is given in
+            ``mask`` parameter, this is a copy of it.
+            Otherwise, a masker is created using the value of ``mask`` and
+            other NiftiMasker/SurfaceMasker
+            related parameters as initialization.
+
+        components_ : 2D numpy array (n_components x n-voxels or n-vertices)
+            Array of masked extracted components.
+
+            .. note::
+
+                Use attribute ``components_img_``
+                rather than manually unmasking
+                ``components_`` with ``masker_`` attribute.
+
+        components_img_ : 4D Nifti image \
+                          or 2D :obj:`~nilearn.surface.SurfaceImage`
+            The image giving the extracted components.
+            Each 3D Nifti image or 1D SurfaceImage is a component.
+
+            .. versionadded:: 0.4.1
+
+        variance_ : numpy array (n_components,)
+            The amount of variance explained
+            by each of the selected components.
+        """
 
 docdict["base_decoder_fit_attributes"] = """
         Attributes

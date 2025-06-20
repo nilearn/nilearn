@@ -47,7 +47,7 @@ from nilearn.surface.surface import (
 datadir = Path(__file__).resolve().parent / "data"
 
 
-def flat_mesh(x_s, y_s, z=0):
+def flat_mesh(x_s: int, y_s: int, z=0) -> InMemoryMesh:
     """Create a flat horizontal mesh."""
     x, y = np.mgrid[:x_s, :y_s]
     x, y = x.ravel(), y.ravel()

@@ -32,22 +32,21 @@ class _MultiPCA(_BaseDecomposition):
 
     %(smoothing_fwhm)s
 
-    mask : Niimg-like object, instance of NiftiMasker
-        or MultiNiftiMasker, optional
+    mask : Niimg-like object, :obj:`~nilearn.maskers.NiftiMasker` or \
+          :obj:`~nilearn.maskers.MultiNiftiMasker` or \
+           :obj:`~nilearn.surface.SurfaceImage` or \
+           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given,
+        then its mask will be used. If no mask is given, for Nifti images,
         it will be computed automatically by a MultiNiftiMasker with default
-        parameters.
+        parameters; for surface images, all the vertices will be used.
 
     %(mask_strategy)s
-
-        .. note::
-             Depending on this value, the mask will be computed from
-             :func:`nilearn.masking.compute_background_mask`,
-             :func:`nilearn.masking.compute_epi_mask`, or
-             :func:`nilearn.masking.compute_brain_mask`.
-
         Default='epi'.
+        .. note::
+
+          These strategies are only relevant for Nifti images and the parameter
+          is ignored for SurfaceImage objects.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -109,35 +108,9 @@ class _MultiPCA(_BaseDecomposition):
 
     %(verbose0)s
 
-    Attributes
-    ----------
-    masker_ : instance of MultiNiftiMasker
-        Masker used to filter and mask data as first step. If an instance of
-        MultiNiftiMasker is given in ``mask`` parameter,
-        this is a copy of it. Otherwise, a masker is created using the value
-        of ``mask`` and other NiftiMasker related parameters as initialization.
+    %(base_decomposition_attributes)s
 
-    mask_img_ : Niimg-like object
-        See :ref:`extracting_data`.
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
-
-    components_ : 2D numpy array (n_components x n-voxels)
-        Array of masked extracted components.
-
-        .. note::
-
-            Use attribute ``components_img_`` rather than manually unmasking
-            ``components_`` with ``masker_`` attribute.
-
-    components_img_ : 4D Nifti image
-        4D image giving the extracted PCA components. Each 3D image is a
-        component.
-
-        .. versionadded:: 0.4.1
-
-    variance_ : numpy array (n_components,)
-        The amount of variance explained by each of the selected components.
+    %(multi_pca_attributes)s
 
     """
 
@@ -163,11 +136,7 @@ class _MultiPCA(_BaseDecomposition):
         n_jobs=1,
         verbose=0,
     ):
-        self.n_components = n_components
-        self.do_cca = do_cca
-
-        _BaseDecomposition.__init__(
-            self,
+        super().__init__(
             n_components=n_components,
             random_state=random_state,
             mask=mask,
@@ -187,6 +156,8 @@ class _MultiPCA(_BaseDecomposition):
             n_jobs=n_jobs,
             verbose=verbose,
         )
+
+        self.do_cca = do_cca
 
     def _raw_fit(self, data):
         """Process unmasked data directly."""

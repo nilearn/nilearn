@@ -574,6 +574,13 @@ def _plot_surf(
         if colorbar:
             cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
             cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
+
+            # in rare cases where plotting an image of zeroes
+            # this avoids a matplolib error
+            if cbar_vmax == cbar_vmin == 0:
+                cbar_vmax = 1
+                cbar_vmin = -1
+
             ticks = _get_ticks(
                 cbar_vmin, cbar_vmax, cbar_tick_format, threshold
             )
@@ -745,6 +752,7 @@ def _plot_img_on_surf(
         symmetric_cbar = "auto"
     if cbar_tick_format is None:
         cbar_tick_format = "%i"
+    symmetric_cmap = kwargs.pop("symmetric_cmap", True)
 
     cbar_h = 0.25
     title_h = 0.25 * (title is not None)
@@ -809,7 +817,7 @@ def _plot_img_on_surf(
             hemi=hemi,
             view=mode,
             cmap=cmap,
-            symmetric_cmap=True,
+            symmetric_cmap=symmetric_cmap,
             colorbar=False,  # Colorbar created externally.
             threshold=threshold,
             bg_on_data=bg_on_data,
