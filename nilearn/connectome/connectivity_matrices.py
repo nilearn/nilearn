@@ -7,6 +7,7 @@ import numpy as np
 from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
+from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import signal
@@ -496,8 +497,11 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 f"You provided: {features_dims}"
             )
 
+        for s in X:
+            check_array(s, accept_sparse=False)
+
         if confounds is not None and not hasattr(confounds, "__iter__"):
-            raise ValueError(
+            raise TypeError(
                 "'confounds' input argument must be an iterable. "
                 f"You provided {confounds.__class__}"
             )
@@ -509,9 +513,9 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : :obj:`list` of numpy.ndarray, \
-            shape for each (n_samples, n_features)
-            The input subjects time series.
+        X : iterable of :class:`numpy.ndarray` \
+            each of shape (n_samples, n_features)
+            Each :class:`numpy.ndarray` represents a subject's time series.
             The number of samples may differ from one subject to another.
 
         %(y_dummy)s
@@ -533,9 +537,15 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         if self.cov_estimator is None:
             self.cov_estimator = LedoitWolf(store_precision=False)
 
+        if not hasattr(X, "__iter__"):
+            raise TypeError(
+                "Input must be an iterable of numpy arrays. "
+                f"Got {X.__class__.__name__}"
+            )
+
         # casting to a list
         # to make it easier to check with sklearn estimator compliance
-        if not isinstance(X, list):
+        if isinstance(X, np.ndarray) and X.ndim == 2:
             X = [X]
         self._check_input(X, confounds=confounds)
 
@@ -633,9 +643,10 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : :obj:`list` of n_subjects numpy.ndarray with shapes \
-            (n_samples, n_features)
-            The input subjects time series. The number of samples may differ
+        X : iterable of :class:`numpy.ndarray` \
+            each of shape (n_samples, n_features)
+            Each :class:`numpy.ndarray` represents a subject's time series.
+            The number of samples may differ from one subject to another.
 
         %(y_dummy)s
 
@@ -658,7 +669,12 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         del y
         # casting to a list
         # to make it easier to check with sklearn estimator compliance
-        if not isinstance(X, list):
+        if not hasattr(X, "__iter__"):
+            raise TypeError(
+                "Input must be an iterable of numpy arrays. "
+                f"Got {X.__class__.__name__}"
+            )
+        if isinstance(X, np.ndarray) and X.ndim == 2:
             X = [X]
         if self.kind == "tangent" and len(X) <= 1:
             # Check that people are applying fit_transform to a group of
@@ -680,10 +696,10 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : :obj:`list` of n_subjects numpy.ndarray with shapes \
-            (n_samples, n_features)
-            The input subjects time series. The number of samples may differ
-            from one subject to another.
+        X : iterable of :class:`numpy.ndarray` \
+            each of shape (n_samples, n_features)
+            Each :class:`numpy.ndarray` represents a subject's time series.
+            The number of samples may differ from one subject to another.
 
         confounds : numpy.ndarray with shape (n_samples) or \
                     (n_samples, n_confounds), default=None

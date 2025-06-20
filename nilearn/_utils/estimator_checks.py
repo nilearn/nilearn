@@ -188,7 +188,10 @@ def return_expected_failed_checks(
 
     if isinstance(estimator, ConnectivityMeasure):
         expected_failed_checks = {
+            "check_estimator_sparse_data": "remove when dropping sklearn 1.4",
             "check_fit2d_predict1d": "not applicable",
+            "check_estimator_sparse_array": "TODO",
+            "check_estimator_sparse_matrix": "TODO",
             "check_methods_sample_order_invariance": "TODO",
             "check_methods_subset_invariance": "TODO",
             "check_n_features_in": "TODO",
@@ -198,6 +201,7 @@ def return_expected_failed_checks(
             "check_transformer_general": "TODO",
         }
         if SKLEARN_MINOR > 4:
+            expected_failed_checks.pop("check_estimator_sparse_data")
             expected_failed_checks |= {
                 "check_transformer_preserve_dtypes": "TODO",
             }
