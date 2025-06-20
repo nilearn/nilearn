@@ -132,6 +132,9 @@ def plot_surf(
 
         .. versionadded:: 0.9.0
 
+        .. versionchanged:: 0.12.0
+            Default value changed to None.
+
     %(colorbar)s
         Default=True.
 
