@@ -388,7 +388,7 @@ jobs:
                 ./build_tools/github/warning_in_doc_check.sh
 
         -   name: Upload doc checks
-            if: steps.build-docs.outcome == 'success'
+            if: always()
             uses: actions/upload-artifact@v4
             with:
                 name: doc_checks
