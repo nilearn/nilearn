@@ -434,7 +434,7 @@ class FirstLevelModel(BaseGLM):
         further inspection of model details. This has an important impact
         on memory consumption.
 
-    subject_label : :obj:`str`, optional
+    subject_label : :obj:`str`, default=None
         This id will be used to identify a `FirstLevelModel` when passed to
         a `SecondLevelModel` object.
 
@@ -444,6 +444,11 @@ class FirstLevelModel(BaseGLM):
         of order at least 2 ('ar(N)' with n >= 2).
 
         .. versionadded:: 0.9.1
+
+    design_only : :obj:`bool`, default=False
+        If True the model is specified but not estimated.
+
+        .. versionadded:: 0.12.1dev
 
     Attributes
     ----------
@@ -485,6 +490,7 @@ class FirstLevelModel(BaseGLM):
         minimize_memory=True,
         subject_label=None,
         random_state=None,
+        design_only=False,
     ):
         # design matrix parameters
         self.t_r = t_r
@@ -514,6 +520,7 @@ class FirstLevelModel(BaseGLM):
         # attributes
         self.subject_label = subject_label
         self.random_state = random_state
+        self.design_only = design_only
 
     def _check_fit_inputs(
         self,
@@ -524,7 +531,11 @@ class FirstLevelModel(BaseGLM):
         design_matrices,
     ):
         """Run input validation and ensure inputs are compatible."""
-        if not isinstance(
+        if self.design_only:
+            if design_matrices is not None:
+                run_imgs = [None] * self._n_runs_
+
+        elif not isinstance(
             run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
         ) or (
             isinstance(run_imgs, (list, tuple))
@@ -626,12 +637,10 @@ class FirstLevelModel(BaseGLM):
             design_matrices,
         )
 
-    def _log(
-        self, step, run_idx=None, n_runs=None, t0=None, time_in_second=None
-    ):
+    def _log(self, step, run_idx=None, t0=None, time_in_second=None):
         """Generate and log messages for different step of the model fit."""
         if step == "progress":
-            msg = self._report_progress(run_idx, n_runs, t0)
+            msg = self._report_progress(run_idx, self._n_runs_, t0)
         elif step == "running":
             msg = "Performing GLM computation."
         elif step == "run_done":
@@ -642,7 +651,7 @@ class FirstLevelModel(BaseGLM):
             msg = f"Masking took {int(time_in_second)} seconds."
         elif step == "done":
             msg = (
-                f"Computation of {n_runs} runs done "
+                f"Computation of {self._n_runs_} runs done "
                 f"in {int(time_in_second)} seconds."
             )
 
@@ -651,10 +660,10 @@ class FirstLevelModel(BaseGLM):
             verbose=self.verbose,
         )
 
-    def _report_progress(self, run_idx, n_runs, t0):
+    def _report_progress(self, run_idx, t0):
         remaining = "go take a coffee, a big one"
         if run_idx != 0:
-            percent = float(run_idx) / n_runs
+            percent = float(run_idx) / self._n_runs_
             percent = round(percent * 100, 2)
             dt = time.time() - t0
             # We use a max to avoid a division by zero
@@ -662,7 +671,8 @@ class FirstLevelModel(BaseGLM):
             remaining = f"{int(remaining)} seconds remaining"
 
         return (
-            f"Computing run {run_idx + 1} out of {n_runs} runs ({remaining})."
+            f"Computing run {run_idx + 1} "
+            f"out of {self._n_runs_} runs ({remaining})."
         )
 
     def _fit_single_run(self, sample_masks, bins, run_img, run_idx):
@@ -802,13 +812,19 @@ class FirstLevelModel(BaseGLM):
             hasattr(self, "labels_")
             and hasattr(self, "results_")
             and hasattr(self, "fir_delays_")
-            and self.labels_ is not None
-            and self.results_ is not None
+            and (
+                self.design_only
+                or (
+                    not self.design_only
+                    and self.labels_ is not None
+                    and self.results_ is not None
+                )
+            )
         )
 
     def fit(
         self,
-        run_imgs,
+        run_imgs=None,
         events=None,
         confounds=None,
         sample_masks=None,
@@ -835,9 +851,11 @@ class FirstLevelModel(BaseGLM):
                    :obj:`list` or :obj:`tuple` of Niimg-like objects, \
                    SurfaceImage object, \
                    or :obj:`list` or \
-                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`
+                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`,
+                   default=None
             Data on which the :term:`GLM` will be fitted.
             If this is a list, the affine is considered the same for all.
+            If ``design_only`` is True, then ``run_imgs`` can be ``None``.
 
             .. warning::
 
@@ -937,6 +955,10 @@ class FirstLevelModel(BaseGLM):
         self.labels_ = None
         self.results_ = None
 
+        self._n_runs_ = (
+            len(run_imgs) if isinstance(run_imgs, (list, tuple)) else 1
+        )
+
         run_imgs, events, confounds, sample_masks, design_matrices = (
             self._check_fit_inputs(
                 run_imgs,
@@ -980,24 +1002,24 @@ class FirstLevelModel(BaseGLM):
         )
 
         # For each run fit the model and keep only the regression results.
-        self.labels_, self.results_ = [], []
-        self._reporting_data["run_imgs"] = {}
-        n_runs = len(run_imgs)
-        t0 = time.time()
-        for run_idx, run_img in enumerate(run_imgs):
-            self._log("progress", run_idx=run_idx, n_runs=n_runs, t0=t0)
+        if not self.design_only:
+            self.labels_, self.results_ = [], []
+            self._reporting_data["run_imgs"] = {}
+            t0 = time.time()
+            for run_idx, run_img in enumerate(run_imgs):
+                self._log("progress", run_idx=run_idx, t0=t0)
 
-            # collect name of input files
-            # for eventual saving to disk later
-            self._reporting_data["run_imgs"][run_idx] = {}
-            if isinstance(run_img, (str, Path)):
-                self._reporting_data["run_imgs"][run_idx] = (
-                    parse_bids_filename(run_img, legacy=False)
-                )
+                # collect name of input files
+                # for eventual saving to disk later
+                self._reporting_data["run_imgs"][run_idx] = {}
+                if isinstance(run_img, (str, Path)):
+                    self._reporting_data["run_imgs"][run_idx] = (
+                        parse_bids_filename(run_img, legacy=False)
+                    )
 
-            self._fit_single_run(sample_masks, bins, run_img, run_idx)
+                self._fit_single_run(sample_masks, bins, run_img, run_idx)
 
-        self._log("done", n_runs=n_runs, time_in_second=time.time() - t0)
+            self._log("done", time_in_second=time.time() - t0)
 
         return self
 
@@ -1047,6 +1069,10 @@ class FirstLevelModel(BaseGLM):
 
         """
         check_is_fitted(self)
+        if self.design_only:
+            raise RuntimeError(
+                "Cannot compute contrasts on 'design_only' models."
+            )
 
         if isinstance(contrast_def, (np.ndarray, str)):
             con_vals = [contrast_def]
@@ -1058,19 +1084,21 @@ class FirstLevelModel(BaseGLM):
                 " (array or str)."
             )
 
-        n_runs = len(self.labels_)
         n_contrasts = len(con_vals)
-        if n_contrasts == 1 and n_runs > 1:
+        if n_contrasts == 1 and self._n_runs_ > 1:
             warn(
-                f"One contrast given, assuming it for all {n_runs} runs",
+                (
+                    "One contrast given, "
+                    f"assuming it for all {self._n_runs_} runs"
+                ),
                 category=UserWarning,
                 stacklevel=find_stack_level(),
             )
-            con_vals = con_vals * n_runs
-        elif n_contrasts != n_runs:
+            con_vals = con_vals * self._n_runs_
+        elif n_contrasts != self._n_runs_:
             raise ValueError(
                 f"{n_contrasts} contrasts given, "
-                f"while there are {n_runs} runs."
+                f"while there are {self._n_runs_} runs."
             )
 
         # Translate formulas to vectors
@@ -1226,7 +1254,8 @@ class FirstLevelModel(BaseGLM):
             )
             self.smoothing_fwhm = 0
 
-        check_compatibility_mask_and_images(self.mask_img, run_img)
+        if not self.design_only:
+            check_compatibility_mask_and_images(self.mask_img, run_img)
         if (  # deal with self.mask_img as image, str, path, none
             (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
             or
@@ -1246,7 +1275,8 @@ class FirstLevelModel(BaseGLM):
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"
 
-            self.masker_.fit(run_img)
+            if not self.design_only:
+                self.masker_.fit(run_img)
 
         else:
             check_is_fitted(self.mask_img)
