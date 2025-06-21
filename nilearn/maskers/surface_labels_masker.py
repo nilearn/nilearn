@@ -228,7 +228,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         The region name corresponding to ``region_signal[:,i]``
         is ``region_names_[i]``.
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
         """
         check_is_fitted(self)
         lut = self.lut_
@@ -244,7 +244,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         is ``region_ids_[i]``.
         ``region_ids_['background']`` is the background label.
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
         """
         check_is_fitted(self)
         lut = self.lut_
@@ -252,7 +252,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     @fill_doc
     @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
+        replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.

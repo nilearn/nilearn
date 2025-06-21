@@ -460,7 +460,7 @@ class MultiNiftiMasker(NiftiMasker):
             ],
         )
         params["clean_kwargs"] = self.clean_args_
-        # TODO remove in 0.13.2
+        # TODO remove in 0.13.0
         if self.clean_kwargs:
             params["clean_kwargs"] = self.clean_kwargs_
 
