@@ -231,7 +231,8 @@ from the current ``[x.y.z].dev`` tag to the new version number.
 These directives are added in a function's docstring to indicate the version number,
 when, say, a new parameter is added or deprecated.
 
-For example, if a parameter ``param2`` was added in version ``x.y.z``, the docstring should be updated to:
+For example, if a parameter ``param2`` was added in version ``x.y.z``,
+the docstring should be updated to:
 
 .. code-block:: python
 
