@@ -573,7 +573,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             vmin, vmax = img.data._get_min_max()
 
         # TODO: possibly allow to generate a report with other views
-        views = ["lateral", "medial"]
+        views = ["lateral", "medial", "anterior", "posterior"]
         hemispheres = ["left", "right"]
 
         fig, axes = plt.subplots(
