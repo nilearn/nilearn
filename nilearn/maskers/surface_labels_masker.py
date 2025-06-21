@@ -251,7 +251,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         return lut["index"].to_dict()
 
     @fill_doc
-    @rename_parameters(replacement_params={"img": "imgs"}, end_version="0.13.2")
+    @rename_parameters(
+        replacement_params={"img": "imgs"}, end_version="0.13.2"
+    )
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -297,12 +299,16 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             # apply mask to label image
             for k in self.labels_img_.data.parts:
                 mask = self.mask_img_.data.parts[k]
-                self.labels_img_.data.parts[k][
-                    np.logical_not(mask)
-                ] = self.background_label
+                self.labels_img_.data.parts[k][np.logical_not(mask)] = (
+                    self.background_label
+                )
 
-            labels_before_mask = {int(x) for x in np.unique(get_data(self.labels_img))}
-            labels_after_mask = {int(x) for x in np.unique(get_data(self.labels_img_))}
+            labels_before_mask = {
+                int(x) for x in np.unique(get_data(self.labels_img))
+            }
+            labels_after_mask = {
+                int(x) for x in np.unique(get_data(self.labels_img_))
+            }
             labels_diff = labels_before_mask - labels_after_mask
             if labels_diff:
                 warnings.warn(
@@ -331,7 +337,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 index=self.labels_img_,
             )
         else:
-            lut = generate_atlas_look_up_table(function=None, index=self.labels_img_)
+            lut = generate_atlas_look_up_table(
+                function=None, index=self.labels_img_
+            )
 
         self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img_)
 
@@ -361,9 +369,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         }
 
         for part in self.labels_img_.data.parts:
-            self._report_content["n_vertices"][part] = self.labels_img_.mesh.parts[
-                part
-            ].n_vertices
+            self._report_content["n_vertices"][part] = (
+                self.labels_img_.mesh.parts[part].n_vertices
+            )
 
         self._reporting_data = self._generate_reporting_data()
 
@@ -426,7 +434,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         imgs = at_least_2d(imgs)
         img_data = get_data(imgs)
 
-        target_datatype = np.float32 if img_data.dtype == np.float32 else np.float64
+        target_datatype = (
+            np.float32 if img_data.dtype == np.float32 else np.float64
+        )
 
         img_data = img_data.astype(target_datatype)
 
