@@ -2,8 +2,8 @@
 
 .. include:: names.rst
 
-x.y.z+1.dev
-=========
+0.12.1.dev
+==========
 
 NEW
 ---
