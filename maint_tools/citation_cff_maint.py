@@ -14,15 +14,16 @@ yaml.indent(mapping=2, sequence=4, offset=2)
 yaml.width = 4096
 
 CORE_DEVS = [
-    "Alexis Thual",
     "Bertrand Thirion",
     "Elizabeth DuPre",
+    "Hande Gözükan",
     "Hao-Ting Wang",
     "Himanshu Aggarwal",
     "Jerome Dockes",
-    "Nicolas Gensollen",
+    "Michelle Wang",
+    "Mohammad Torabi",
+    "Pierre-Louis Barbarant",
     "Rémi Gau",
-    "Taylor Salo",
 ]
 
 
