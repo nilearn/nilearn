@@ -572,9 +572,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             img = mean_img(img)
             vmin, vmax = img.data._get_min_max()
 
-        # TODO: possibly allow to generate a report with other views
         views = ["lateral", "medial", "anterior", "posterior"]
-        hemispheres = ["left", "right"]
+        hemispheres = ["left", "right", "both"]
 
         fig, axes = plt.subplots(
             len(views),
@@ -585,15 +584,23 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         )
         axes = np.atleast_2d(axes)
 
-        for ax_row, view in zip(axes, views):
-            for ax, hemi in zip(ax_row, hemispheres):
+        for row_idx, view in enumerate(views):
+            if view in ["lateral", "medial"]:
+                hemispheres = ["left", "right"]
+                ax_row = axes[row_idx]
+                col_idxs = [0, 1]
+            elif view in ["anterior", "posterior"]:
+                hemispheres = ["both"]
+                ax_row = axes[row_idx - 2]
+                col_idxs = [2]
+            for col_idx, hemi in zip(col_idxs, hemispheres):
                 if img:
                     plot_surf(
                         surf_map=img,
                         hemi=hemi,
                         view=view,
                         figure=fig,
-                        axes=ax,
+                        axes=ax_row[col_idx],
                         cmap=self.cmap,
                         vmin=vmin,
                         vmax=vmax,
@@ -604,7 +611,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                     hemi=hemi,
                     view=view,
                     figure=fig,
-                    axes=ax,
+                    axes=ax_row[col_idx],
                 )
 
         return fig
