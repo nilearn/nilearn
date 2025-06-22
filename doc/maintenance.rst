@@ -277,6 +277,17 @@ but care should be taken that at least the following have not been affected:
 - the tables in the :ref:`plotting` section,
 - ...
 
+Update the links for the new version of the documentation in ``doc/versions.rst``.
+For example:
+
+.. code-block:: rst
+
+    Web-based documentation is available for versions listed below:
+
+    * `Nilearn latest - dev documentation <http://nilearn.github.io/dev/>`_
+    * `Nilearn latest - stable documentation <http://nilearn.github.io/stable/>`_
+    * `Nilearn x.y.z documentation <http://nilearn.github.io/x.y.z/>`_
+
 Prepare the release
 -------------------
 
