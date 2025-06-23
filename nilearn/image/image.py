@@ -531,7 +531,7 @@ def mean_img(
 
     Parameters
     ----------
-    imgs : Niimg-like or or :obj:`~nilearn.surface.SurfaceImage` object, or \
+    imgs : Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object, or \
            iterable of Niimg-like or :obj:`~nilearn.surface.SurfaceImage`.
         Images to be averaged over 'time'
         (see :ref:`extracting_data`
