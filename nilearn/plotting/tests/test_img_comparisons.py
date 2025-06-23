@@ -22,7 +22,9 @@ def _mask():
 
 
 def test_deprecation_function_moved(matplotlib_pyplot, img_3d_mni):
-    from nilearn.plotting.img_plotting import plot_img_comparison as old_fn
+    from nilearn.plotting.image.img_plotting import (
+        plot_img_comparison as old_fn,
+    )
 
     with pytest.warns(DeprecationWarning, match="moved"):
         old_fn(
