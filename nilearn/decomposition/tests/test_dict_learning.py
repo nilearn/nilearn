@@ -41,6 +41,7 @@ def test_check_values_epoch_argument_smoke(
     check_decomposition_estimator(dict_learning, data_type)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_dict_learning(
     decomposition_mask_img, canica_components, canica_data, data_type
