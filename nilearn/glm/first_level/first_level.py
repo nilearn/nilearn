@@ -640,7 +640,7 @@ class FirstLevelModel(BaseGLM):
     def _log(self, step, run_idx=None, t0=None, time_in_second=None):
         """Generate and log messages for different step of the model fit."""
         if step == "progress":
-            msg = self._report_progress(run_idx, self._n_runs_, t0)
+            msg = self._report_progress(run_idx, t0)
         elif step == "running":
             msg = "Performing GLM computation."
         elif step == "run_done":
@@ -1169,6 +1169,11 @@ class FirstLevelModel(BaseGLM):
         """
         # check if valid attribute is being accessed.
         check_is_fitted(self)
+
+        if self.design_only:
+            raise RuntimeError(
+                "Cannot get_element_wise_model_attribute on 'design_only' models."
+            )
 
         all_attributes = dict(vars(RegressionResults)).keys()
         possible_attributes = [
