@@ -604,6 +604,8 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
                 or :obj:`~nilearn.maskers.SurfaceMasker` object \
                 or None, default=None
         Object used for masking the data.
+        If None is passed a dummy nifti image will be created
+        to match the array passed at fit time.
 
     n_clusters : :obj:`int`, default=2
         The number of clusters to find.
