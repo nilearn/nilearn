@@ -441,12 +441,6 @@ def expected_failed_checks_clustering() -> dict[str, str]:
         "check_estimator_sparse_array": "remove when dropping sklearn 1.4",
         "check_estimator_sparse_matrix": "remove when dropping sklearn 1.4",
         "check_clustering": "TODO",
-        "check_estimators_nan_inf": "TODO",
-        "check_fit2d_predict1d": "TODO",
-        "check_n_features_in": "TODO",
-        "check_n_features_in_after_fitting": "TODO",
-        "check_transformer_data_not_an_array": "TODO",
-        "check_transformer_general": "TODO",
     }
 
     if SKLEARN_MINOR >= 5:
