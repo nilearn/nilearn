@@ -37,6 +37,7 @@ sys.path.insert(0, str(Path("..").absolute()))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     "gh_substitutions",
+    "jupyterlite_sphinx",
     "myst_parser",
     "numpydoc",
     "sphinx_copybutton",
@@ -430,6 +431,11 @@ sphinx_gallery_conf = {
     },
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
     "within_subsection_order": "ExampleTitleSortKey",
+    "jupyterlite": {
+        "use_jupyter_lab": True
+        # 'notebook_modification_function': <str>,
+        # 'jupyterlite_contents': <str>,
+    },
 }
 
 mermaid_version = "11.4.0"
