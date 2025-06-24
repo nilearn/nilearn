@@ -253,6 +253,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
 
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(niimg_like=False)
+        tags.target_tags.required = False
         return tags
 
     @fill_doc

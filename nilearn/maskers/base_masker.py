@@ -269,6 +269,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(masker=True)
+        tags.target_tags.required = False
         return tags
 
     def fit(self, imgs=None, y=None):
@@ -535,6 +536,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         tags.input_tags = InputTags(
             surf_img=True, niimg_like=False, masker=True
         )
+        tags.target_tags.required = False
         return tags
 
     def _check_imgs(self, imgs) -> None:

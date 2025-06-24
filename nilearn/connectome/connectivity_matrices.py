@@ -473,6 +473,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(niimg_like=False)
+        tags.target_tags.required = False
         return tags
 
     def _check_input(self, X, confounds=None):

@@ -462,6 +462,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(surf_img=True, niimg_like=True)
+        tags.target_tags.required = False
         return tags
 
     @fill_doc
