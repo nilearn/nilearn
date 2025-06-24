@@ -670,7 +670,7 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
                 ensure_min_samples=2,
             )
 
-        self.n_features_in_ = {s.shape[1] for s in subjects}
+        self.n_features_in_ = next(iter({s.shape[1] for s in subjects}))
 
         if self.memory is None:
             self.memory = Memory(location=None)
@@ -1192,7 +1192,7 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
                 ensure_min_samples=2,
             )
 
-        self.n_features_in_ = {s.shape[1] for s in subjects}
+        self.n_features_in_ = next(iter({s.shape[1] for s in subjects}))
 
         # Empirical covariances
         emp_covs, n_samples = empirical_covariances(
