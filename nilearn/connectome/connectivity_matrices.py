@@ -473,6 +473,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(niimg_like=False)
+        tags.target_tags.required = False
         return tags
 
     def _check_input(self, X, confounds=None):
@@ -548,6 +549,8 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         if isinstance(X, np.ndarray) and X.ndim == 2:
             X = [X]
         self._check_input(X, confounds=confounds)
+
+        self.n_features_in_ = next(iter({s.shape[1] for s in X}))
 
         if do_fit:
             self.cov_estimator_ = clone(self.cov_estimator)
