@@ -257,8 +257,6 @@ def return_expected_failed_checks(
             "check_estimator_sparse_data": "removed when dropping sklearn 1.4",
             "check_estimator_sparse_matrix": "TODO",
             "check_estimator_sparse_tag": "TODO",
-            "check_n_features_in": "TODO",
-            "check_n_features_in_after_fitting": "TODO",
         }
         if SKLEARN_MINOR > 4:
             expected_failed_checks.pop("check_estimator_sparse_data")
