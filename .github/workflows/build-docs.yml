@@ -2,6 +2,7 @@
 # Workflow to build the documentation.
 #
 # - validate CITATION.CFF file
+# - check the quality of the doc strings
 # - get datasets from cache or from source
 # - build doc and upload it as artifact
 # - on `main` (or on github release): trigger hosting of dev (or stable) doc on https://github.com/nilearn//nilearn.github.io.git
@@ -119,6 +120,28 @@ jobs:
             uses: citation-file-format/cffconvert-github-action@2.0.0
             with:
                 args: --validate
+
+    quality_control:
+        # run a couple of scripts to check quality of the docstrings
+        runs-on: ubuntu-latest
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v4
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v6
+        -   uses: actions/setup-python@v5
+            with:
+                python-version: ${{ env.MIN_PYTHON_VERSION }}
+        -   name: Install tox
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+        -   name: Show tox config
+            run: tox c
+        -   name: Check doc strings
+            run: |
+                tox run \
+                    --colored yes \
+                    --list-dependencies \
+                    -e doc_qc
 
     check_skip_flags:
         name: Check skip flags
@@ -319,7 +342,7 @@ jobs:
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v5
+            uses: astral-sh/setup-uv@v6
 
         -   name: Setup python
             uses: actions/setup-python@v5
@@ -358,6 +381,18 @@ jobs:
             run: |
                 ./build_tools/github/fill_doc_check.sh
                 cat doc/tmp/doc_check.txt
+
+        -   name: Check warnings in doc
+            if: always()
+            run: |
+                ./build_tools/github/warning_in_doc_check.sh
+
+        -   name: Upload doc checks
+            if: always()
+            uses: actions/upload-artifact@v4
+            with:
+                name: doc_checks
+                path: doc/tmp
 
         -   name: Upload documentation
             if: steps.build-docs.outcome == 'success'

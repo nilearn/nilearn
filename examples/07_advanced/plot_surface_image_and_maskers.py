@@ -95,12 +95,13 @@ for view, ax_row in zip(views, axes):
             axes=ax,
             title=f"{hemi} - {view}",
             colorbar=False,
-            symmetric_cmap=True,
+            symmetric_cmap=None,
             bg_on_data=True,
             vmin=vmin,
             vmax=vmax,
             bg_map=fsaverage_sulcal,
             cmap="seismic",
+            darkness=None,
         )
 fig.set_size_inches(12, 8)
 
@@ -147,7 +148,9 @@ print(f"Masked data shape: {masked_data.shape}")
 # %%
 # Plot connectivity matrix
 # ------------------------
-connectome_measure = ConnectivityMeasure(kind="correlation")
+connectome_measure = ConnectivityMeasure(
+    kind="correlation", standardize="zscore_sample"
+)
 connectome = connectome_measure.fit([masked_data])
 
 vmax = np.absolute(connectome.mean_).max()
@@ -157,7 +160,7 @@ vmin = -vmax
 # We only print every 3rd label
 # for a more legible figure.
 labels = []
-for i, label in enumerate(labels_masker.label_names_):
+for i, label in enumerate(labels_masker.region_names_.values()):
     if i % 3 == 1:
         labels.append(label)
     else:
@@ -215,6 +218,7 @@ plot_surf(
     bg_on_data=True,
     cmap="inferno",
     vmin=0,
+    darkness=None,
 )
 show()
 
@@ -236,14 +240,14 @@ decoder.fit(surf_img_nki, y)
 coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
 vmax = max(np.absolute(hemi).max() for hemi in coef_img.data.parts.values())
-vmin = -vmax
 plot_surf(
     surf_map=coef_img,
     cmap="RdBu_r",
-    vmin=vmin,
+    vmin=-vmax,
     vmax=vmax,
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
+    darkness=None,
 )
 show()

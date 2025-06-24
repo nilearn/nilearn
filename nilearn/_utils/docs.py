@@ -73,7 +73,7 @@ of :obj:`float`: (xmin, ymin, width, height), default=None
     If `None`, the complete figure is used.
 """
 
-# bg_img
+# bg_map
 docdict["bg_map"] = """
 bg_map : :obj:`str` or :obj:`pathlib.Path` or \
          :class:`numpy.ndarray` \
@@ -254,10 +254,20 @@ connected : :obj:`bool`, optional
 
 # confounds
 docdict["confounds"] = """
-confounds : CSV file or array-like, optional
+confounds : :class:`numpy.ndarray`, :obj:`str`, :class:`pathlib.Path`, \
+            :class:`pandas.DataFrame` \
+            or :obj:`list` of confounds timeseries, default=None
     This parameter is passed to :func:`nilearn.signal.clean`.
     Please see the related documentation for details.
-    shape: list of (number of scans, number of confounds)
+    shape: (number of scans, number of confounds)
+"""
+docdict["confounds_multi"] = """
+confounds : :obj:`list` of confounds, default=None
+    List of confounds (arrays, dataframes,
+    str or path of files loadable into an array).
+    As confounds are passed to :func:`nilearn.signal.clean`,
+    please see the related documentation for details about accepted types.
+    Must be of same length than imgs.
 """
 
 # cut_coords
@@ -381,6 +391,30 @@ docdict["figure"] = """
 figure : :obj:`int`, or :class:`matplotlib.figure.Figure`, or None,  optional
     Matplotlib figure used or its number.
     If `None` is given, a new figure is created.
+"""
+
+# figure
+docdict["first_level_contrast"] = """
+first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
+                        shape (n_col) with respect to \
+                        :class:`~nilearn.glm.first_level.FirstLevelModel` \
+                        or None, default=None
+
+    When the model is a :class:`~nilearn.glm.second_level.SecondLevelModel`:
+
+    - in case a :obj:`list` of
+      :class:`~nilearn.glm.first_level.FirstLevelModel` was provided
+      as ``second_level_input``,
+      we have to provide a :term:`contrast`
+      to apply to the first level models
+      to get the corresponding list of images desired,
+      that would be tested at the second level,
+    - in case a :class:`~pandas.DataFrame` was provided
+      as ``second_level_input`` this is the map name to extract
+      from the :class:`~pandas.DataFrame` ``map_name`` column.
+      (it has to be a 't' contrast).
+
+    This parameter is ignored for all other cases.
 """
 
 # fwhm
@@ -573,6 +607,15 @@ lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
 """
 
+# masker_lut
+docdict["masker_lut"] = """lut : :obj:`pandas.DataFrame` or :obj:`str` \
+            or :obj:`pathlib.Path` to a TSV file or None, default=None
+        Mutually exclusive with ``labels``.
+        Act as a look up table (lut)
+        with at least columns 'index' and 'name'.
+        Formatted according to 'dseg.tsv' format from
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+
 
 # mask_strategy
 docdict["mask_strategy"] = """
@@ -581,13 +624,17 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
     The strategy used to compute the mask:
 
     - ``"background"``: Use this option if your images present
-      a clear homogeneous background.
+      a clear homogeneous background. Uses
+      :func:`nilearn.masking.compute_background_mask` under the hood.
 
-    - ``"epi"``: Use this option if your images are raw EPI images
+    - ``"epi"``: Use this option if your images are raw EPI images. Uses
+      :func:`nilearn.masking.compute_epi_mask`.
 
     - ``"whole-brain-template"``: This will extract the whole-brain
       part of your data by resampling the MNI152 brain mask for
-      your data's field of view.
+      your data's field of view. Uses
+      :func:`nilearn.masking.compute_brain_mask` with
+      ``mask_type="whole-brain"``.
 
       .. note::
 
@@ -596,16 +643,17 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
 
     - ``"gm-template"``: This will extract the gray matter part of your
       data by resampling the corresponding MNI152 template for your
-      data's field of view.
+      data's field of view. Uses
+      :func:`nilearn.masking.compute_brain_mask` with ``mask_type="gm"``.
 
       .. versionadded:: 0.8.1
 
     - ``"wm-template"``: This will extract the white matter part of your
       data by resampling the corresponding MNI152 template for your
-      data's field of view.
+      data's field of view. Uses
+      :func:`nilearn.masking.compute_brain_mask` with ``mask_type="wm"``.
 
       .. versionadded:: 0.8.1
-
 """
 
 # mask_type
@@ -629,7 +677,7 @@ kwargs : dict
     `'butterworth__'` will be passed to the Butterworth filter
     (i.e., `clean__butterworth__`).
 
-    .. deprecated:: 0.11.2dev
+    .. deprecated:: 0.12.0
 
     .. admonition:: Use ``clean_args`` instead!
        :class: important
@@ -807,10 +855,30 @@ resume : :obj:`bool`, default=True
 
 # sample_mask
 docdict["sample_mask"] = """
-sample_mask : Any type compatible with numpy-array indexing, optional
-    shape: (number of scans - number of volumes removed, )
-    Masks the niimgs along time/fourth dimension to perform scrubbing
-    (remove volumes with high motion) and/or non-steady-state volumes.
+sample_mask : Any type compatible with numpy-array indexing, default=None
+    ``shape = (total number of scans - number of scans removed)``
+    for explicit index (for example, ``sample_mask=np.asarray([1, 2, 4])``),
+    or ``shape = (number of scans)`` for binary mask
+    (for example,
+    ``sample_mask=np.asarray([False, True, True, False, True])``).
+    Masks the images along the last dimension to perform scrubbing:
+    for example to remove volumes with high motion
+    and/or non-steady-state volumes.
+    This parameter is passed to :func:`nilearn.signal.clean`.
+"""
+docdict["sample_mask_multi"] = """
+sample_mask : :obj:`list` of sample_mask, default=None
+    List of sample_mask (any type compatible with numpy-array indexing)
+    to use for scrubbing outliers.
+    Must be of same length as ``imgs``.
+    ``shape = (total number of scans - number of scans removed)``
+    for explicit index (for example, ``sample_mask=np.asarray([1, 2, 4])``),
+    or ``shape = (number of scans)`` for binary mask
+    (for example,
+    ``sample_mask=np.asarray([False, True, True, False, True])``).
+    Masks the images along the last dimension to perform scrubbing:
+    for example to remove volumes with high motion
+    and/or non-steady-state volumes.
     This parameter is passed to :func:`nilearn.signal.clean`.
 """
 
@@ -910,6 +978,19 @@ docdict["second_level_mask"] = docdict["second_level_mask_img"].replace(
     "mask_img :", "mask :"
 )
 
+# signals for inverse transform
+docdict["signals_inv_transform"] = """
+signals : 1D/2D :obj:`numpy.ndarray`
+    Extracted signal.
+    If a 1D array is provided,
+    then the shape should be (number of elements,).
+    If a 2D array is provided,
+    then the shape should be (number of scans, number of elements).
+"""
+docdict["region_signals_inv_transform"] = docdict["signals_inv_transform"]
+docdict["x_inv_transform"] = docdict["signals_inv_transform"]
+
+
 # smoothing_fwhm
 docdict["smoothing_fwhm"] = """
 smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
@@ -965,6 +1046,21 @@ strategy : :obj:`str`, default="mean"
     standard_deviation.
 """
 
+# surf_mesh
+docdict["surf_mesh"] = """
+surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray` \
+            or a :obj:`~nilearn.surface.InMemoryMesh`, or a \
+            :obj:`~nilearn.surface.PolyMesh`, or None, default=None
+    Surface :term:`mesh` geometry, can be a file (valid formats are .gii or
+    Freesurfer specific files such as .orig, .pial, .sphere, .white,
+    .inflated) or a list of two Numpy arrays, the first containing the
+    x-y-z coordinates of the :term:`mesh` :term:`vertices<vertex>`, the
+    second containing the indices (into coords) of the :term:`mesh`
+    :term:`faces`, or a :obj:`~nilearn.surface.InMemoryMesh` object with
+    "coordinates" and "faces" attributes, or a
+    :obj:`~nilearn.surface.PolyMesh` object, or None.
+"""
+
 # symmetric_cbar
 docdict["symmetric_cbar"] = """
 symmetric_cbar : :obj:`bool`, or "auto", default="auto"
@@ -1016,7 +1112,7 @@ tfce : :obj:`bool`, default=False
        The number of thresholds used in the TFCE procedure
        will set between 10 and 1000.
 
-       .. versionadded:: 0.11.2dev
+       .. versionadded:: 0.12.0
 
     .. warning::
 
@@ -1056,7 +1152,7 @@ transparency : :obj:`float` between 0 and 1, \
     If an image is passed, voxel-wise alpha blending will be applied,
     by relying on the absolute value of ``transparency`` at each voxel.
 
-    .. versionadded:: 0.11.2
+    .. versionadded:: 0.12.0
 """
 
 # transparency
@@ -1085,7 +1181,7 @@ transparency_range : :obj:`tuple` or :obj:`list` of 2 non-negative numbers, \
     if ``None`` is passed,
     this will be set to ``[0, max(abs(transparency))]``.
 
-    .. versionadded:: 0.11.2
+    .. versionadded:: 0.12.0
 """
 
 # upper_cutoff
@@ -1151,16 +1247,70 @@ vmin : :obj:`float`  or obj:`int` or None, optional
     Passed to :func:`matplotlib.pyplot.imshow`.
 """
 
+# y
+docdict["y_dummy"] = """
+y : None
+    This parameter is unused.
+    It is solely included for scikit-learn compatibility.
+"""
+
 
 ##############################################################################
 #
-# Other values definitions
+# Other values definitions: return values, attributes...
 #
 
 # atlas_type
 docdict["atlas_type"] = """'atlas_type' : :obj:`str`
         Type of atlas.
         See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
+
+docdict["base_decomposition_attributes"] = """
+        Attributes
+        ----------
+        mask_img_ : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+            See :ref:`extracting_data`.
+            The mask of the data.
+            If no mask was given at masker creation :
+
+            - for Nifti images, this contains automatically computed mask
+              via the selected ``mask_strategy``.
+
+            - for SurfaceImage objects, this mask encompasses all vertices of
+              the input images.
+        """
+
+docdict["multi_pca_attributes"] = """
+        masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
+                :obj:`~nilearn.maskers.SurfaceMasker`
+            Masker used to filter and mask data as first step.
+            If :obj:`~nilearn.maskers.MultiNiftiMasker`
+            or :obj:`~nilearn.maskers.SurfaceMasker` is given in
+            ``mask`` parameter, this is a copy of it.
+            Otherwise, a masker is created using the value of ``mask`` and
+            other NiftiMasker/SurfaceMasker
+            related parameters as initialization.
+
+        components_ : 2D numpy array (n_components x n-voxels or n-vertices)
+            Array of masked extracted components.
+
+            .. note::
+
+                Use attribute ``components_img_``
+                rather than manually unmasking
+                ``components_`` with ``masker_`` attribute.
+
+        components_img_ : 4D Nifti image \
+                          or 2D :obj:`~nilearn.surface.SurfaceImage`
+            The image giving the extracted components.
+            Each 3D Nifti image or 1D SurfaceImage is a component.
+
+            .. versionadded:: 0.4.1
+
+        variance_ : numpy array (n_components,)
+            The amount of variance explained
+            by each of the selected components.
+        """
 
 docdict["base_decoder_fit_attributes"] = """
         Attributes
@@ -1273,16 +1423,91 @@ docdict["fsaverage_options"] = """
 
 """
 
+# image returned Nifti maskers by inverse_transform
+docdict["img_inv_transform_nifti"] = """img : :obj:`nibabel.nifti1.Nifti1Image`
+        Transformed image in brain space.
+        Output shape for :
+
+        - 1D array : 3D :obj:`nibabel.nifti1.Nifti1Image` will be returned.
+        - 2D array : 4D :obj:`nibabel.nifti1.Nifti1Image` will be returned.
+
+        See :ref:`extracting_data`.
+        """
+# image returned surface maskers by inverse_transform
+docdict[
+    "img_inv_transform_surface"
+] = """img : :obj:`~nilearn.surface.SurfaceImage`
+        Signal for each vertex projected on the mesh.
+        Output shape for :
+
+        - 1D array : 1D :obj:`~nilearn.surface.SurfaceImage` will be returned.
+        - 2D array : 2D :obj:`~nilearn.surface.SurfaceImage` will be returned.
+
+        See :ref:`extracting_data`.
+        """
+
 # atlas labels
 docdict["labels"] = """'labels' : :obj:`list` of :obj:`str`
         List of the names of the regions."""
 
+# mask_img_ for most nifti maskers
+docdict[
+    "nifti_mask_img_"
+] = """mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image` or None.
+        The mask of the data.
+        If no ``mask_img`` was passed at masker construction,
+        then ``mask_img_`` is ``None``, otherwise
+        is the resulting binarized version of ``mask_img``
+        where each voxel is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0."""
+
 # look up table
-docdict["lut"] = """'lut' : :obj:`pandas.DataFrame`
+docdict["lut"] = """lut : :obj:`pandas.DataFrame`
         Act as a look up table (lut)
         with at least columns 'index' and 'name'.
         Formatted according to 'dseg.tsv' format from
         `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+
+# signals returned Nifti maskers by transform, fit_transform...
+docdict["signals_transform_nifti"] = """signals : :obj:`numpy.ndarray`
+        Signal for each :term:`voxel`.
+        Output shape for :
+
+        - 3D images: (number of elements,) array
+        - 4D images: (number of scans, number of elements) array
+        """
+# signals returned Mulit Nifti maskers by transform, fit_transform...
+docdict[
+    "signals_transform_multi_nifti"
+] = """signals : :obj:`list` of :obj:`numpy.ndarray` or :obj:`numpy.ndarray`
+        Signal for each :term:`voxel`.
+        Output shape for :
+
+        - 3D images: (number of elements,) array
+        - 4D images: (number of scans, number of elements) array
+        - list of 3D images: list of (number of elements,) array
+        - list of 4D images: list of (number of scans, number of elements)
+          array
+        """
+# signals returned Mulit Nifti maskers by transform, fit_transform...
+docdict[
+    "signals_transform_imgs_multi_nifti"
+] = """signals : :obj:`list` of :obj:`numpy.ndarray`
+        Signal for each :term:`voxel`.
+        Output shape for :
+
+        - list of 3D images: list of (number of elements,) array
+        - list of 4D images: list of (number of scans, number of elements)
+          array
+        """
+# signals returned surface maskers by transform, fit_transform...
+docdict["signals_transform_surface"] = """signals : :obj:`numpy.ndarray`
+        Signal for each element.
+        Output shape for :
+
+        - 1D images: (number of elements,) array
+        - 2D images: (number of scans, number of elements) array
+        """
 
 # template
 docdict["template"] = """'template' : :obj:`str`

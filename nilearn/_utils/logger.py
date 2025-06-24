@@ -2,6 +2,7 @@
 
 import inspect
 import traceback
+from pathlib import Path
 
 from sklearn.base import BaseEstimator
 
@@ -28,7 +29,7 @@ def log(
     msg,
     verbose=1,
     object_classes=(BaseEstimator,),
-    stack_level=1,
+    stack_level=None,
     msg_level=1,
     with_traceback=False,
 ):
@@ -50,9 +51,11 @@ def log(
     object_classes : tuple of type, default=(BaseEstimator, )
         Classes that should appear to emit the message.
 
-    stack_level : int, default=1
+    stack_level : int or None, default=None
         If no object in the call stack matches object_classes, go back that
         amount in the call stack and display class/function name thereof.
+        If None is passed this should show
+        the first nilearn public function in the stack.
 
     msg_level : int, default=1
         Verbosity level at and above which message should be displayed to the
@@ -71,6 +74,8 @@ def log(
     """
     if verbose < msg_level:
         return
+    if stack_level is None:
+        stack_level = find_stack_level() - 2
     stack = inspect.stack()
     object_frame = None
     object_self = None
@@ -132,3 +137,42 @@ def compose_err_msg(msg, **kwargs):
             updated_msg += f"\n{k}: {v}"
 
     return updated_msg
+
+
+def find_stack_level() -> int:
+    """
+    Find the first place in the stack that is not inside nilearn
+    (tests notwithstanding).
+
+    Taken from the pandas codebase.
+    https://github.com/pandas-dev/pandas/tree/main/pandas/util/_exceptions.py#L37
+    """
+    import nilearn as nil
+
+    pkg_dir = Path(nil.__file__).parent
+
+    # https://stackoverflow.com/questions/17407119/python-inspect-stack-is-slow
+    frame = inspect.currentframe()
+    try:
+        n = 0
+        while frame:
+            filename = inspect.getfile(frame)
+            is_test_file = Path(filename).name.startswith("test_")
+            in_nilearn_code = filename.startswith(str(pkg_dir))
+            if not in_nilearn_code or is_test_file:
+                break
+            frame = frame.f_back
+            n += 1
+    finally:
+        # See note in
+        # https://docs.python.org/3/library/inspect.html#inspect.Traceback
+        del frame
+    return n
+
+
+def one_level_deeper():
+    """Use for testing find_stack_level.
+
+    Needs to be in a module that does not start with 'test'
+    """
+    return find_stack_level()

@@ -53,12 +53,12 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface._testing import (
+from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.surface.utils import (
     assert_polymesh_equal,
     assert_surface_image_equal,
 )
-from nilearn.surface.surface import SurfaceImage
-from nilearn.surface.surface import get_data as get_surface_data
 
 X64 = platform.architecture()[0] == "64bit"
 
@@ -191,10 +191,12 @@ def test_get_data(tmp_path, shape_3d_default):
 
 
 def test_high_variance_confounds(shape_3d_default):
-    # See also test_signals.test_high_variance_confounds()
-    # There is only tests on what is added by high_variance_confounds()
-    # compared to signal.high_variance_confounds()
+    """Check high_variance_confounds returns proper shape.
 
+    See also test_signals.test_high_variance_confounds()
+    There is only tests on what is added by high_variance_confounds()
+    compared to signal.high_variance_confounds()
+    """
     length = 17
     n_confounds = 10
 
@@ -202,6 +204,27 @@ def test_high_variance_confounds(shape_3d_default):
 
     confounds1 = high_variance_confounds(
         img, mask_img=mask_img, percentile=10.0, n_confounds=n_confounds
+    )
+
+    assert confounds1.shape == (length, n_confounds)
+
+    # No mask.
+    confounds2 = high_variance_confounds(
+        img, percentile=10.0, n_confounds=n_confounds
+    )
+
+    assert confounds2.shape == (length, n_confounds)
+
+
+def test_high_variance_confounds_surface(surf_mask_1d, surface_glm_data):
+    """Check high_variance_confounds returns proper shape from surface."""
+    length = 17
+    n_confounds = 10
+
+    img, _ = surface_glm_data(length)
+
+    confounds1 = high_variance_confounds(
+        img, mask_img=surf_mask_1d, percentile=10.0, n_confounds=n_confounds
     )
 
     assert confounds1.shape == (length, n_confounds)
@@ -544,6 +567,21 @@ def test_mean_img_surface(surf_img_1d, surf_img_2d):
     assert img.shape == (img.mesh.n_vertices,)
 
 
+def test_mean_img_surface_list(surf_img_2d):
+    """Check that mean_img computes mean of mean."""
+    surf_img_1 = surf_img_2d(2)
+    surf_img_2 = surf_img_2d(3)
+
+    mean_surf_img_1 = mean_img(surf_img_1)
+    mean_surf_img_2 = mean_img(surf_img_2)
+
+    direct_mean = mean_img([surf_img_1, surf_img_2])
+
+    assert_surface_image_equal(
+        direct_mean, mean_img([mean_surf_img_1, mean_surf_img_2])
+    )
+
+
 def test_swap_img_hemispheres(affine_eye, shape_3d_default, rng):
     # make sure input image data is not overwritten inside function
     data = rng.standard_normal(size=shape_3d_default)
@@ -581,7 +619,6 @@ def test_index_img():
         *range(fourth_dim_size),
         slice(2, 8, 2),
         [1, 2, 3, 2],
-        [],
         (np.arange(fourth_dim_size) % 3) == 1,
     ]
     for i in tested_indices:
@@ -631,6 +668,7 @@ def test_iter_img_3d_imag_error(affine_eye):
         iter_img(img_3d)
 
 
+@pytest.mark.timeout(0)
 def test_iter_img(tmp_path):
     img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
 
@@ -1011,8 +1049,8 @@ def test_threshold_img(affine_eye):
 @pytest.mark.parametrize(
     "threshold, expected_n_non_zero",
     [
-        (0.9, {"left": 4, "right": 5}),
-        (9, {"left": 0, "right": 5}),
+        (1, {"left": 2, "right": 4}),
+        (10, {"left": 0, "right": 3}),
         (50, {"left": 0, "right": 0}),
         ("50%", {"left": 0, "right": 4}),
     ],
@@ -1020,8 +1058,8 @@ def test_threshold_img(affine_eye):
 def test_threshold_surf_img_1d(surf_img_1d, threshold, expected_n_non_zero):
     """Check number of elements surviving thresholding 1D surface image.
 
-    For left hemisphere: 1 <= values < 10
-    For right hemisphere: 10 <= values < 50
+    For left hemisphere: 1 < values < 10
+    For right hemisphere: 10 < values < 50
     """
     thr_img = threshold_img(surf_img_1d, threshold=threshold)
     for hemi in thr_img.data.parts:
@@ -1059,12 +1097,12 @@ def test_threshold_surf_img_1d_with_mask(
 @pytest.mark.parametrize(
     "threshold, expected_n_non_zero, two_sided",
     [
-        (1, {"left": 0, "right": 5}, False),
-        (39, {"left": 0, "right": 2}, False),
+        (1, {"left": 0, "right": 4}, False),
+        (29, {"left": 0, "right": 2}, False),
         (50, {"left": 0, "right": 0}, False),
-        ("50%", {"left": 0, "right": 2}, False),
-        (1, {"left": 4, "right": 5}, True),
-        (39, {"left": 1, "right": 2}, True),
+        ("50%", {"left": 0, "right": 3}, False),
+        (1, {"left": 3, "right": 4}, True),
+        (29, {"left": 1, "right": 2}, True),
         (50, {"left": 0, "right": 0}, True),
         ("50%", {"left": 1, "right": 2}, True),
     ],
@@ -1199,7 +1237,7 @@ def test_threshold_img_copy_surface(surf_img_1d):
     threshold = 15
     input_img = surf_img_1d
     result = threshold_img(input_img, threshold=threshold, copy=True)
-    with pytest.raises(AssertionError):
+    with pytest.raises(ValueError):
         assert_surface_image_equal(result, surf_img_1d)
 
 
@@ -1251,7 +1289,7 @@ def test_threshold_img_copied_header(img_4d_mni_tr2):
     assert thr_img.header["cal_min"] == 0
 
 
-def test_math_img_exceptions(affine_eye, img_4d_ones_eye):
+def test_math_img_exceptions(affine_eye, img_4d_ones_eye, surf_img_2d):
     img1 = img_4d_ones_eye
     img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), affine_eye)
     img3 = img_4d_ones_eye
@@ -1271,6 +1309,11 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye):
         AttributeError, match="Input formula couldn't be processed"
     ):
         math_img(bad_formula, img1=img1, img3=img3)
+    # Same but for surface data
+    with pytest.raises(
+        AttributeError, match="Input formula couldn't be processed"
+    ):
+        math_img(bad_formula, img1=surf_img_2d(2), img3=surf_img_2d(3))
 
     # Test copy_header_from parameter
     # Copying header from 4d image to a result that is 3d should raise a
@@ -1301,6 +1344,26 @@ def test_math_img(
         assert_array_equal(get_data(result), get_data(expected_result))
         assert_array_equal(result.affine, expected_result.affine)
         assert result.shape == expected_result.shape
+
+
+def test_math_img_surface(surf_img_2d):
+    """Test math_img on surface data."""
+    img1 = surf_img_2d(1)
+    img2 = surf_img_2d(3)
+
+    tmp = {}
+    for part in img1.data.parts:
+        tmp[part] = np.mean(img1.data.parts[part], axis=-1) - np.mean(
+            img2.data.parts[part], axis=-1
+        )
+
+    expected_result = SurfaceImage(mesh=img1.mesh, data=tmp)
+
+    formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"
+    result = math_img(formula, img1=img1, img2=img2)
+
+    assert isinstance(result, SurfaceImage)
+    assert_surface_image_equal(result, expected_result)
 
 
 def test_math_img_copy_default_header(
@@ -1371,6 +1434,21 @@ def test_binarize_img(img_4d_rand_eye):
     img3.dataobj[img_4d_rand_eye.dataobj >= 0.5] = 1
 
     assert_array_equal(img2.dataobj, img3.dataobj)
+
+
+def test_binarize_img_surface(surf_img_1d):
+    """Test binarize_img on surface data."""
+    img = surf_img_1d
+    for k, v in img.data.parts.items():
+        img.data.parts[k] = v + 1
+    # Test that all output values are 1.
+    img1 = binarize_img(surf_img_1d)
+
+    assert_array_equal(np.unique(get_surface_data(img1)), np.array([1]))
+
+    # Test that it works with threshold
+    img2 = binarize_img(surf_img_1d, threshold=9)
+    assert_array_equal(np.unique(get_surface_data(img2)), np.array([0, 1]))
 
 
 def test_binarize_negative_img(img_4d_rand_eye, rng):
@@ -1478,6 +1556,71 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     data_img_ = clean_img(img)
 
     assert_almost_equal(get_data(data_img_), get_data(data_img_mask_))
+
+
+def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
+    """Test clean on surface image.
+
+    - check that clean returns image of same shape, geometry
+      but different data
+    - with mask should only clean the included vertices
+    - 1D image should raise error.
+    - check sample mask can be passed as a kwarg and used correctly
+    """
+    length = 50
+    imgs = surf_img_2d(length)
+
+    cleaned_img = clean_img(
+        imgs, detrend=True, standardize=False, low_pass=0.1, t_r=1.0
+    )
+
+    assert cleaned_img.shape == imgs.shape
+    assert_polymesh_equal(cleaned_img.mesh, imgs.mesh)
+    with pytest.raises(ValueError, match="not equal"):
+        assert_surface_image_equal(cleaned_img, imgs)
+
+    cleaned_img_with_mask = clean_img(
+        imgs,
+        detrend=True,
+        standardize=False,
+        low_pass=0.1,
+        t_r=1.0,
+        mask_img=surf_mask_1d,
+    )
+    with pytest.raises(ValueError, match="not equal"):
+        assert_surface_image_equal(cleaned_img_with_mask, cleaned_img)
+
+    # Checks that output with full mask and without is equal
+    full_mask = new_img_like(
+        surf_mask_1d,
+        data={k: np.ones(v.shape) for k, v in surf_mask_1d.data.parts.items()},
+    )
+    cleaned_img_with_full_mask = clean_img(
+        imgs,
+        detrend=True,
+        standardize=False,
+        low_pass=0.1,
+        t_r=1.0,
+        mask_img=full_mask,
+    )
+    assert_surface_image_equal(cleaned_img, cleaned_img_with_full_mask)
+
+    # 1D fails
+    with pytest.raises(ValueError, match="should be 2D"):
+        clean_img(surf_img_1d, detrend=True)
+
+    sample_mask = np.arange(length - 1)
+
+    # check sample mask can be passed as a kwarg and used correctly
+    cleaned_img = clean_img(
+        imgs,
+        detrend=True,
+        standardize=False,
+        low_pass=0.1,
+        t_r=1.0,
+        clean__sample_mask=sample_mask,
+    )
+    assert cleaned_img.shape[-1] == length - 1
 
 
 @pytest.mark.parametrize("create_files", [True, False])

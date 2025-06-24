@@ -2,6 +2,7 @@
 
 import collections.abc
 import numbers
+from copy import deepcopy
 
 import numpy as np
 from scipy.ndimage import label
@@ -14,8 +15,8 @@ from nilearn._utils import (
     check_niimg_4d,
     fill_doc,
 )
-from nilearn._utils.masker_validation import (
-    check_compatibility_mask_and_images,
+from nilearn._utils.helpers import (
+    rename_parameters,
 )
 from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data
@@ -30,7 +31,6 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.maskers import NiftiMapsMasker
-from nilearn.masking import load_mask_img
 
 
 def _threshold_maps_ratio(maps_img, threshold):
@@ -444,21 +444,28 @@ class RegionExtractor(NiftiMapsMasker):
         self.extractor = extractor
         self.smoothing_fwhm = smoothing_fwhm
 
-    def fit(
-        self,
-        X=None,
-        y=None,  # noqa: ARG002
-    ):
-        """Prepare the data and setup for the region extraction."""
-        check_params(self.__dict__)
-        maps_img = check_niimg_4d(self.maps_img)
+    @fill_doc
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
+    def fit(self, imgs=None, y=None):
+        """Prepare signal extraction from regions.
 
-        # Check mask
-        if self.mask_img is not None:
-            if X is not None:
-                check_compatibility_mask_and_images(self.mask_img, X)
-            self.mask_img = check_niimg_3d(self.mask_img)
-            load_mask_img(self.mask_img)
+        Parameters
+        ----------
+        imgs : :obj:`list` of Niimg-like objects or None, default=None
+            See :ref:`extracting_data`.
+            Image data passed to the reporter.
+
+        %(y_dummy)s
+        """
+        del y
+        check_params(self.__dict__)
+        maps_img = deepcopy(self.maps_img)
+        maps_img = check_niimg_4d(maps_img)
+
+        self.mask_img_ = self._load_mask(imgs)
+
+        if imgs is not None:
+            check_niimg(imgs)
 
         list_of_strategies = ["ratio_n_voxels", "img_value", "percentile"]
         if self.thresholding_strategy not in list_of_strategies:
@@ -485,7 +492,7 @@ class RegionExtractor(NiftiMapsMasker):
                     self.threshold = f"{self.threshold}%"
                 threshold_maps = threshold_img(
                     maps_img,
-                    mask_img=self.mask_img,
+                    mask_img=self.mask_img_,
                     copy=True,
                     threshold=self.threshold,
                     two_sided=self.two_sided,
@@ -498,11 +505,11 @@ class RegionExtractor(NiftiMapsMasker):
             self.min_region_size,
             self.extractor,
             self.smoothing_fwhm,
-            mask_img=self.mask_img,
+            mask_img=self.mask_img_,
         )
 
-        self.maps_img = self.regions_img_
-        super().fit()
+        self._maps_img = self.regions_img_
+        super().fit(imgs)
 
         return self
 

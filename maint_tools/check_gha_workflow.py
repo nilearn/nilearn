@@ -61,13 +61,13 @@ REPO = "nilearn"
 # your github username
 USERNAME = "Remi-Gau"
 # file containing your github token
-TOKEN_FILE = Path("/home/remi/Documents/tokens/gh_read_repo_for_orga.txt")
+TOKEN_FILE = Path("/home/remi-gau/Documents/tokens/gh_user.txt")
 
 BRANCH = "main"
 
 # Set to True if yu want to also include the runs of a CI workflow
 # that did not complete successfully.
-INCLUDE_FAILED_RUNS = False
+INCLUDE_FAILED_RUNS = True
 
 # Pages of runs to collect
 # 100 per page
@@ -77,7 +77,7 @@ PAGES_TO_COLLECT = range(1, 30)
 UPDATE_TSV = True
 
 # used by set_python_version to filter jobs by their python version
-EXPECTED_PYTHON_VERSIONS = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+EXPECTED_PYTHON_VERSIONS = ["3.9", "3.10", "3.11", "3.12", "3.13", "3.13t"]
 
 
 def main(args=sys.argv) -> None:

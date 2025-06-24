@@ -215,7 +215,7 @@
 
 .. _Michael Waskom: https://mwaskom.github.io/
 
-.. _Michelle Wang: https://github.com/michellewang
+.. _Michelle Wang: https://michellewang.github.io
 
 .. _Mohammad Torabi: https://github.com/mtorabi59
 
@@ -249,9 +249,11 @@
 
 .. _Philippe Gervais: https://github.com/pgervais
 
-.. _Pierre Bellec: https://github.com/pbellec
+.. _Pierre Bellec: https://github.com/lunebellec
 
 .. _Pierre Glaser: https://pierreglaser.github.io/
+
+.. _Pierre-Louis Barbarant: https://github.com/pbarbarant
 
 .. _Pierre-Olivier Quirion: https://github.com/poquirion
 
@@ -269,6 +271,8 @@
 
 .. _Roberto Guidotti: https://github.com/robbisg
 
+.. _Rohan Thomas Jepegnanam: https://github.com/rohan3412
+
 .. _Ronald Phlypo: https://github.com/rphlypo
 
 .. _Ryan Hammonds: https://github.com/ryanhammonds
@@ -277,7 +281,7 @@
 
 .. _Sachin Patalasingh: https://github.com/sachin-bsai
 
-.. _Sage Hahn: https://sagehahn.com/
+.. _Sage Hahn: https://github.com/sahahn
 
 .. _Salma Bougacha: https://github.com/salma1601
 

@@ -3,13 +3,12 @@
 import json
 from warnings import warn
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import check_niimg_3d, fill_doc
 from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting import cm
 from nilearn.plotting.js_plotting_utils import (
@@ -17,11 +16,12 @@ from nilearn.plotting.js_plotting_utils import (
     colorscale,
     get_html_template,
     mesh_to_plotly,
-    to_color_strings,
 )
 from nilearn.plotting.surface._utils import (
+    DEFAULT_ENGINE,
+    DEFAULT_HEMI,
     check_surface_plotting_inputs,
-    sanitize_hemi_for_surface_image,
+    get_surface_backend,
 )
 from nilearn.surface import (
     PolyMesh,
@@ -39,59 +39,6 @@ from nilearn.surface.surface import (
 
 class SurfaceView(HTMLDocument):  # noqa: D101
     pass
-
-
-def get_vertexcolor(
-    surf_map,
-    cmap,
-    norm,
-    absolute_threshold=None,
-    bg_map=None,
-    bg_on_data=None,
-    darkness=None,
-):
-    """Get the color of the vertices."""
-    if bg_map is None:
-        bg_data = np.ones(len(surf_map)) * 0.5
-        bg_vmin, bg_vmax = 0, 1
-    else:
-        bg_data = np.copy(load_surf_data(bg_map))
-
-    # scale background map if need be
-    bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
-    if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_data = bg_norm(bg_data)
-
-    if darkness is not None:
-        bg_data *= darkness
-        warn(
-            (
-                "The `darkness` parameter will be deprecated in release 0.13. "
-                "We recommend setting `darkness` to None"
-            ),
-            DeprecationWarning,
-        )
-
-    bg_colors = plt.get_cmap("Greys")(bg_data)
-
-    # select vertices which are filtered out by the threshold
-    if absolute_threshold is None:
-        under_threshold = np.zeros_like(surf_map, dtype=bool)
-    else:
-        under_threshold = np.abs(surf_map) < absolute_threshold
-
-    surf_colors = cmap(norm(surf_map).data)
-    # set transparency of voxels under threshold to 0
-    surf_colors[under_threshold, 3] = 0
-    if bg_on_data:
-        # if need be, set transparency of voxels above threshold to 0.7
-        # so that background map becomes visible
-        surf_colors[~under_threshold, 3] = 0.7
-
-    vertex_colors = cm.mix_colormaps(surf_colors, bg_colors)
-
-    return to_color_strings(vertex_colors)
 
 
 def _one_mesh_info(
@@ -123,7 +70,8 @@ def _one_mesh_info(
         vmin=vmin,
     )
     info = {"inflated_both": mesh_to_plotly(surf_mesh)}
-    info["vertexcolor_both"] = get_vertexcolor(
+    backend = get_surface_backend(DEFAULT_ENGINE)
+    info["vertexcolor_both"] = backend._get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
@@ -158,6 +106,7 @@ def one_mesh_info(
         message="one_mesh_info is a private function and is renamed "
         "to _one_mesh_info. Using the deprecated name will "
         "raise an error in release 0.13",
+        stacklevel=find_stack_level(),
     )
 
     return _one_mesh_info(
@@ -241,7 +190,8 @@ def _full_brain_info(
         info[f"pial_{hemi}"] = mesh_to_plotly(mesh[f"pial_{hemi}"])
         info[f"inflated_{hemi}"] = mesh_to_plotly(mesh[f"infl_{hemi}"])
 
-        info[f"vertexcolor_{hemi}"] = get_vertexcolor(
+        backend = get_surface_backend(DEFAULT_ENGINE)
+        info[f"vertexcolor_{hemi}"] = backend._get_vertexcolor(
             surf_map,
             colors["cmap"],
             colors["norm"],
@@ -271,7 +221,8 @@ def _full_brain_info(
                     )
                 )
             )
-    info["vertexcolor_both"] = get_vertexcolor(
+    backend = get_surface_backend(DEFAULT_ENGINE)
+    info["vertexcolor_both"] = backend._get_vertexcolor(
         get_data(surface_maps),
         colors["cmap"],
         colors["norm"],
@@ -308,6 +259,7 @@ def full_brain_info(
         message="full_brain_info is a private function and is renamed to "
         "_full_brain_info. Using the deprecated name will raise an error "
         "in release 0.13",
+        stacklevel=find_stack_level(),
     )
 
     return _full_brain_info(
@@ -474,7 +426,7 @@ def view_surf(
     surf_mesh=None,
     surf_map=None,
     bg_map=None,
-    hemi=None,
+    hemi=DEFAULT_HEMI,
     threshold=None,
     cmap=DEFAULT_DIVERGING_CMAP,
     black_bg=False,
@@ -493,23 +445,10 @@ def view_surf(
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`, \
-                or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
-        Surface :term:`mesh` geometry, can be a file
-        (valid formats are .gii or Freesurfer specific files
-        such as .orig, .pial, .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the :term:`mesh` vertices, the second containing the indices
-        (into coords) of the :term:`mesh` :term:`faces`.
-        or a :obj:`~nilearn.surface.InMemoryMesh` object with
-        "coordinates" and "faces" attributes,
-        or a :obj:`~nilearn.surface.PolyMesh` object,
-        or None.
-        If None is passed, then ``surf_map``
-        must be a :obj:`~nilearn.surface.SurfaceImage` instance
-        and the mesh from that :obj:`~nilearn.surface.SurfaceImage` instance
-        will be used.
+    %(surf_mesh)s
+        If None is passed, then ``surf_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
+        :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
     surf_map : :obj:`str` or :class:`numpy.ndarray`, \
                or :obj:`~nilearn.surface.SurfaceImage` or None, \
@@ -526,12 +465,10 @@ def view_surf(
 
     %(bg_map)s
 
-    hemi : {"left", "right", "both", None}, default=None
-        Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
-        is passed as ``surf_map``
-        and / or if :obj:`~nilearn.surface.PolyMesh`
-        is passed as ``surf_mesh``.
-        In these cases, if ``hemi`` is set to None, it will default to "left".
+    %(hemi)s
+        It is only used if ``surf_map`` is :obj:`~nilearn.surface.SurfaceImage`
+        and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
+        Otherwise a warning will be displayed.
 
         .. versionadded:: 0.11.0
 
@@ -600,7 +537,6 @@ def view_surf(
     nilearn.plotting.view_img_on_surf: Surface plot from a 3D statistical map.
     """
     check_params(locals())
-    hemi = sanitize_hemi_for_surface_image(hemi, surf_map, surf_mesh)
     surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map, map_var_name="surf_map"
     )

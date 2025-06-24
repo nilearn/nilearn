@@ -45,6 +45,7 @@ from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import CacheMixin, fill_doc
 from nilearn._utils.cache_mixin import check_memory
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
@@ -259,7 +260,8 @@ def _wrap_param_grid(param_grid, param_name):
                 f"parameter '{param_name}' should be a sequence of iterables"
                 f" (e.g., {{param_name: [[1, 10, 100]]}}) to benefit from"
                 " the built-in cross-validation of the estimator."
-                f" Wrapping {param_grid_item[param_name]} in an outer list."
+                f" Wrapping {param_grid_item[param_name]} in an outer list.",
+                stacklevel=find_stack_level(),
             )
 
             param_grid_item = dict(param_grid_item)  # make a new dict
@@ -309,7 +311,7 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
                 " choice of underlying scikit-learn estimator. In a future"
                 " version, this will result in an error.",
                 DeprecationWarning,
-                stacklevel=13,
+                stacklevel=find_stack_level(),
             )
             param_grid_item[new_key] = param_grid_item.pop(key_to_replace)
         new_param_grid.append(param_grid_item)
@@ -325,7 +327,8 @@ def _check_estimator(estimator):
     if not isinstance(estimator, str):
         warnings.warn(
             "Use a custom estimator at your own risk "
-            "of the process not working as intended."
+            "of the process not working as intended.",
+            stacklevel=find_stack_level(),
         )
     elif estimator in SUPPORTED_ESTIMATORS:
         estimator = SUPPORTED_ESTIMATORS.get(estimator)
@@ -634,7 +637,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         """
         check_params(self.__dict__)
-        self.estimator = _check_estimator(self.estimator)
+        self.estimator_ = _check_estimator(self.estimator)
         self.memory_ = check_memory(self.memory, self.verbose)
 
         X = self._apply_mask(X)
@@ -649,13 +652,22 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         # splitter, default is LeaveOneGroupOut. If self.cv is manually set to
         # a CV splitter object do check_cv regardless of groups parameter.
         cv = self.cv
-        if (isinstance(cv, int) or cv is None) and groups is not None:
+
+        if isinstance(cv, int) and isinstance(self, FREMClassifier):
+            cv_object = StratifiedShuffleSplit(cv, random_state=0)
+
+        elif isinstance(cv, int) and isinstance(self, FREMRegressor):
+            cv_object = ShuffleSplit(cv, random_state=0)
+
+        elif (isinstance(cv, int) or cv is None) and groups is not None:
             warnings.warn(
                 "groups parameter is specified but "
                 "cv parameter is not set to custom CV splitter. "
-                "Using default object LeaveOneGroupOut()."
+                "Using default object LeaveOneGroupOut().",
+                stacklevel=find_stack_level(),
             )
             cv_object = LeaveOneGroupOut()
+
         else:
             cv_object = check_cv(cv, y=y, classifier=self.is_classification)
 
@@ -707,13 +719,14 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 "Consider raising clustering_percentile or "
                 "screening_percentile parameters.",
                 UserWarning,
+                stacklevel=find_stack_level(),
             )
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
 
         parallel_fit_outputs = parallel(
             delayed(self._cache(_parallel_fit))(
-                estimator=self.estimator,
+                estimator=self.estimator_,
                 X=X,
                 y=y[:, c],
                 train=train,
@@ -735,7 +748,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         )
 
         # Build the final model (the aggregated one)
-        if not isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
+        if not isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
             self.coef_ = np.vstack(
                 [
                     np.mean(coefs[class_index], axis=0)
@@ -773,6 +786,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             )
             if self.is_classification and (self.n_classes_ == 2):
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
+
+        return self
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "coef_") and hasattr(self, "masker_")
@@ -861,7 +876,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         # Prediction for dummy estimator is different from others as there is
         # no fitted coefficient
-        if isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
+        if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
             scores = self._predict_dummy(n_samples)
         else:
             scores = self.decision_function(X)
@@ -939,7 +954,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             cv_scores.setdefault(classes[class_index], []).append(scores)
 
             self.cv_params_.setdefault(classes[class_index], {})
-            if isinstance(self.estimator, (DummyClassifier, DummyRegressor)):
+            if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
                 self.dummy_output_.setdefault(classes[class_index], []).append(
                     dummy_output
                 )
@@ -967,7 +982,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                     classes[class_index]
                 ]
                 if isinstance(
-                    self.estimator, (DummyClassifier, DummyRegressor)
+                    self.estimator_, (DummyClassifier, DummyRegressor)
                 ):
                     self.dummy_output_.setdefault(other_class, []).append(
                         dummy_output
@@ -981,7 +996,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     def _set_scorer(self):
         if self.scoring is not None:
-            self.scorer_ = check_scoring(self.estimator, self.scoring)
+            self.scorer_ = check_scoring(self.estimator_, self.scoring)
         elif self.is_classification:
             self.scorer_ = get_scorer("accuracy")
         else:
@@ -1017,15 +1032,15 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             dummy_output = self.dummy_output_[0]
         else:
             dummy_output = self.dummy_output_[:, 1]
-        if isinstance(self.estimator, DummyClassifier):
-            strategy = self.estimator.get_params()["strategy"]
+        if isinstance(self.estimator_, DummyClassifier):
+            strategy = self.estimator_.get_params()["strategy"]
             if strategy in ["most_frequent", "prior"]:
                 scores = np.tile(dummy_output, reps=(n_samples, 1))
             elif strategy == "stratified":
                 rs = np.random.default_rng(0)
                 scores = rs.multinomial(1, dummy_output, size=n_samples)
 
-        elif isinstance(self.estimator, DummyRegressor):
+        elif isinstance(self.estimator_, DummyRegressor):
             scores = np.full(
                 (n_samples, self.n_outputs_),
                 self.dummy_output_,
@@ -1218,6 +1233,8 @@ class Decoder(ClassifierMixin, _BaseDecoder):
             verbose=verbose,
             n_jobs=n_jobs,
         )
+        # TODO remove for sklearn>=1.6
+        self._estimator_type = "classifier"
 
     def _more_tags(self):
         """Return estimator tags.
@@ -1239,7 +1256,12 @@ class Decoder(ClassifierMixin, _BaseDecoder):
         tags = super().__sklearn_tags__()
         if SKLEARN_LT_1_6:
             return tags
+
+        from sklearn.utils import ClassifierTags
+
         tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+
         return tags
 
 
@@ -1397,6 +1419,9 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
             n_jobs=n_jobs,
         )
 
+        # TODO remove for sklearn>=1.6
+        self._estimator_type = "regressor"
+
     def _more_tags(self):
         """Return estimator tags.
 
@@ -1418,7 +1443,11 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         if SKLEARN_LT_1_6:
             tags["multioutput"] = True
             return tags
+        from sklearn.utils import RegressorTags
+
         tags.estimator_type = "regressor"
+        tags.regressor_tags = RegressorTags()
+
         return tags
 
     @fill_doc
@@ -1444,7 +1473,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         """
         check_params(self.__dict__)
         self.classes_ = ["beta"]
-        super().fit(X, y, groups=groups)
+        return super().fit(X, y, groups=groups)
 
 
 @fill_doc
@@ -1600,6 +1629,38 @@ class FREMRegressor(_BaseDecoder):
             n_jobs=n_jobs,
         )
 
+        # TODO remove after sklearn>=1.6
+        self._estimator_type = "regressor"
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        tags = super().__sklearn_tags__()
+        if SKLEARN_LT_1_6:
+            tags["multioutput"] = True
+            return tags
+
+        from sklearn.utils import RegressorTags
+
+        tags.estimator_type = "regressor"
+        tags.regressor_tags = RegressorTags()
+
+        return tags
+
     @fill_doc
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
@@ -1623,9 +1684,8 @@ class FREMRegressor(_BaseDecoder):
         """
         check_params(self.__dict__)
         self.classes_ = ["beta"]
-        if isinstance(self.cv, int):
-            self.cv = ShuffleSplit(self.cv, random_state=0)
         super().fit(X, y, groups=groups)
+        return self
 
 
 @fill_doc
@@ -1780,31 +1840,33 @@ class FREMClassifier(_BaseDecoder):
             t_r=t_r,
         )
 
-    @fill_doc
-    def fit(self, X, y, groups=None):
-        """Fit the decoder (learner).
+        # TODO remove after sklearn>=1.6
+        self._estimator_type = "classifier"
 
-        Parameters
-        ----------
-        X : :obj:`list` of Niimg-like \
-            or :obj:`~nilearn.surface.SurfaceImage` objects
-            See :ref:`extracting_data`.
-            Data on which model is to be fitted.
-            If this is a list,
-            the affine is considered the same for all.
+    def _more_tags(self):
+        """Return estimator tags.
 
-        y : numpy.ndarray of shape=(n_samples) \
-            or :obj:`list` of length n_samples
-            The dependent variable (age, sex, IQ, yes/no, etc.).
-            Target variable to predict. Must have exactly as many elements as
-            3D images in niimg.
-
-        %(groups)s
-
-        %(base_decoder_fit_attributes)s
-
+        TODO remove when bumping sklearn_version > 1.5
         """
-        check_params(self.__dict__)
-        if isinstance(self.cv, int):
-            self.cv = StratifiedShuffleSplit(self.cv, random_state=0)
-        super().fit(X, y, groups=groups)
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        tags = super().__sklearn_tags__()
+        if SKLEARN_LT_1_6:
+            return tags
+
+        from sklearn.utils import ClassifierTags
+
+        tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+
+        return tags

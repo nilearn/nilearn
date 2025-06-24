@@ -380,7 +380,7 @@ def report_nifti_labels_masker(build_type):
 
     masker = NiftiLabelsMasker(
         atlas.maps,
-        labels=atlas.labels,
+        lut=atlas.lut,
         standardize="zscore_sample",
     )
     masker.fit()
@@ -644,7 +644,7 @@ def report_surface_label_masker(build_type):
         volume_img=stat_img,
     )
 
-    labels_masker.transform(surface_stat_image)
+    labels_masker.fit_transform(surface_stat_image)
     labels_masker_report = labels_masker.generate_report()
     labels_masker_report.save_as_html(
         REPORTS_DIR / "surface_label_masker.html"
@@ -677,8 +677,8 @@ def report_surface_maps_masker(build_type):
     # Fetch the NKI dataset
     surf_img = load_nki()[0]
     # Create a masker object
-    masker = SurfaceMapsMasker(surf_atlas).fit()
-    masker.transform(surf_img)
+    masker = SurfaceMapsMasker(surf_atlas)
+    masker.fit_transform(surf_img)
     # generate report with plotly engine
     report_plotly = masker.generate_report(engine="plotly")
     report_plotly.save_as_html(REPORTS_DIR / "surface_maps_masker_plotly.html")

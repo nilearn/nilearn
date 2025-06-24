@@ -231,7 +231,8 @@ from the current ``[x.y.z].dev`` tag to the new version number.
 These directives are added in a function's docstring to indicate the version number,
 when, say, a new parameter is added or deprecated.
 
-For example, if a parameter ``param2`` was added in version ``x.y.z``, the docstring should be updated to:
+For example, if a parameter ``param2`` was added in version ``x.y.z``,
+the docstring should be updated to:
 
 .. code-block:: python
 
@@ -260,6 +261,32 @@ If this new release comes with dependency version bumps (Python, Numpy...),
 make sure to implement and test these changes beforehand.
 Ideally, these would have been done before such as to update the code base if necessary.
 Finally, make sure the documentation can be built correctly.
+
+Prepare the documentation for the release
+-----------------------------------------
+
+In several places the user guide relies on figures generated in the examples for illustration.
+
+If the examples are modified, and an expected figure is not created anymore
+or the order of the generated figures is changed,
+this may silently (without causing warnings or errors) "break" the documentation.
+
+It is not possible to list all the places to check,
+but care should be taken that at least the following have not been affected:
+- ``.rst`` files containing the string ``image:: ../auto_examples``,
+- the tables in the :ref:`plotting` section,
+- ...
+
+Update the links for the new version of the documentation in ``doc/versions.rst``.
+For example:
+
+.. code-block:: rst
+
+    Web-based documentation is available for versions listed below:
+
+    * `Nilearn latest - dev documentation <http://nilearn.github.io/dev/>`_
+    * `Nilearn latest - stable documentation <http://nilearn.github.io/stable/>`_
+    * `Nilearn x.y.z documentation <http://nilearn.github.io/x.y.z/>`_
 
 Prepare the release
 -------------------

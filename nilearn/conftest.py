@@ -204,6 +204,16 @@ def _shape_3d_default():
     return (7, 8, 9)
 
 
+def _shape_3d_large():
+    """Shape usually used for maps images.
+
+    Mostly used for set up in other fixtures in other testing modules.
+    """
+    # avoid having identical shapes values,
+    # because this fails to detect if the code does not handle dimensions well.
+    return (29, 30, 31)
+
+
 def _shape_4d_default():
     """Return default shape for a 4D image.
 
@@ -232,6 +242,12 @@ def _shape_4d_long():
 def shape_3d_default():
     """Return default shape for a 3D image."""
     return _shape_3d_default()
+
+
+@pytest.fixture
+def shape_3d_large():
+    """Shape usually used for maps images."""
+    return _shape_3d_large()
 
 
 @pytest.fixture()
@@ -459,13 +475,13 @@ def img_atlas(shape_3d_default, affine_mni):
 
 
 def _n_regions():
-    """Return a default numher of regions for maps."""
+    """Return a default number of regions for maps."""
     return 9
 
 
 @pytest.fixture
 def n_regions():
-    """Return a default numher of regions for maps."""
+    """Return a default number of regions for maps."""
     return _n_regions()
 
 
@@ -579,9 +595,9 @@ def _make_surface_img(n_samples=1):
     for i, (key, val) in enumerate(mesh.parts.items()):
         data_shape = (val.n_vertices, n_samples)
         data_part = (
-            np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
+            np.arange(np.prod(data_shape)).reshape(data_shape[::-1])
         ) * 10**i
-        data[key] = data_part.T
+        data[key] = data_part.astype(float).T
     return SurfaceImage(mesh, data)
 
 
@@ -620,8 +636,7 @@ def _make_surface_mask(n_zeros=4):
     return SurfaceImage(mesh, data)
 
 
-@pytest.fixture
-def surf_mask_1d():
+def _surf_mask_1d():
     """Create a sample surface mask using the sample mesh.
     This will create a mask with n_zeros zeros (default is 4) and the
     rest ones.
@@ -633,6 +648,17 @@ def surf_mask_1d():
     mask.data.parts["right"] = np.squeeze(mask.data.parts["right"])
 
     return mask
+
+
+@pytest.fixture
+def surf_mask_1d():
+    """Create a sample surface mask using the sample mesh.
+    This will create a mask with n_zeros zeros (default is 4) and the
+    rest ones.
+
+    The shape of the data will be (n_vertices,).
+    """
+    return _surf_mask_1d()
 
 
 @pytest.fixture
@@ -709,42 +735,45 @@ def surf_maps_img():
     return _surf_maps_img()
 
 
+def _flip_surf_img_parts(poly_obj):
+    """Flip hemispheres of a surface image data or mesh."""
+    keys = list(poly_obj.parts.keys())
+    keys = [keys[-1]] + keys[:-1]
+    return dict(zip(keys, poly_obj.parts.values()))
+
+
 @pytest.fixture
 def flip_surf_img_parts():
     """Flip hemispheres of a surface image data or mesh."""
+    return _flip_surf_img_parts
 
-    def f(poly_obj):
-        keys = list(poly_obj.parts.keys())
-        keys = [keys[-1]] + keys[:-1]
-        return dict(zip(keys, poly_obj.parts.values()))
 
-    return f
+def _flip_surf_img(img):
+    """Flip hemispheres of a surface image."""
+    return SurfaceImage(
+        _flip_surf_img_parts(img.mesh), _flip_surf_img_parts(img.data)
+    )
 
 
 @pytest.fixture
-def flip_surf_img(flip_surf_img_parts):
+def flip_surf_img():
     """Flip hemispheres of a surface image."""
+    return _flip_surf_img
 
-    def f(img):
-        return SurfaceImage(
-            flip_surf_img_parts(img.mesh), flip_surf_img_parts(img.data)
-        )
 
-    return f
+def _drop_surf_img_part(img, part_name="right"):
+    """Remove one hemisphere from a SurfaceImage."""
+    mesh_parts = img.mesh.parts.copy()
+    mesh_parts.pop(part_name)
+    data_parts = img.data.parts.copy()
+    data_parts.pop(part_name)
+    return SurfaceImage(mesh_parts, data_parts)
 
 
 @pytest.fixture
 def drop_surf_img_part():
     """Remove one hemisphere from a SurfaceImage."""
-
-    def f(img, part_name="right"):
-        mesh_parts = img.mesh.parts.copy()
-        mesh_parts.pop(part_name)
-        data_parts = img.data.parts.copy()
-        data_parts.pop(part_name)
-        return SurfaceImage(mesh_parts, data_parts)
-
-    return f
+    return _drop_surf_img_part
 
 
 def _make_surface_img_and_design(n_samples=5):
@@ -793,7 +822,9 @@ def plotly():
     plotly : module
         The ``plotly`` module.
     """
-    yield pytest.importorskip("plotly")
+    yield pytest.importorskip(
+        "plotly", reason="Plotly is not installed; required to run the tests!"
+    )
 
 
 @pytest.fixture

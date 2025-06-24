@@ -6,9 +6,13 @@ from nibabel import Nifti1Image
 from scipy.ndimage import label
 
 from nilearn._utils.data_gen import generate_labeled_regions, generate_maps
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+)
 from nilearn._utils.exceptions import DimensionError
-from nilearn.conftest import _img_4d_zeros
+from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.conftest import _affine_eye, _img_4d_zeros, _shape_3d_large
 from nilearn.image import get_data
 from nilearn.regions import (
     RegionExtractor,
@@ -45,14 +49,11 @@ def map_img_3d(rng, affine_eye, shape_3d_default):
 
 N_REGIONS = 3
 
-# some tests require larger images
-MAP_SHAPE = (29, 30, 31)
-
 
 @pytest.fixture
-def maps(negative_regions, n_regions):
+def maps(negative_regions, n_regions, shape_3d_large):
     return generate_maps(
-        shape=MAP_SHAPE,
+        shape=shape_3d_large,
         n_regions=n_regions,
         random_state=42,
         negative_regions=negative_regions,
@@ -60,53 +61,67 @@ def maps(negative_regions, n_regions):
 
 
 @pytest.fixture
-def maps_and_mask(n_regions):
-    return generate_maps(shape=MAP_SHAPE, n_regions=n_regions, random_state=42)
+def maps_and_mask(n_regions, shape_3d_large):
+    return generate_maps(
+        shape=shape_3d_large, n_regions=n_regions, random_state=42
+    )
 
 
-# Note: some report genetation tests take too long
-# Incresaing the timeout for this one
+ESTIMATORS_TO_CHECK = [RegionExtractor()]
+
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+    from sklearn.utils.estimator_checks import parametrize_with_checks
+
+    from nilearn._utils.estimator_checks import (
+        return_expected_failed_checks,
+    )
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[
+    nilearn_check_estimator(
+        estimators=[
             RegionExtractor(
                 maps_img=generate_maps(
-                    shape=MAP_SHAPE, n_regions=2, random_state=42
+                    shape=_shape_3d_large(),
+                    n_regions=2,
+                    random_state=42,
+                    affine=_affine_eye(),
                 )[0]
             )
-        ],
-        expected_failed_checks={
-            # TODO remove when buming to nilearn 0.13.2
-            "check_no_attributes_set_in_init": (
-                "Deprecation cycle started to fix."
-            ),
-        },
+        ]
     ),
 )
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[
-            RegionExtractor(
-                maps_img=generate_maps(
-                    shape=MAP_SHAPE, n_regions=2, random_state=42
-                )[0]
-            )
-        ],
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
     check(estimator)
 
 
@@ -339,9 +354,11 @@ def test_region_extractor_strategy_percentile(maps_and_mask):
         assert expected_signal_shape == signal.shape
 
 
-def test_region_extractor_high_resolution_image(affine_eye, n_regions):
+def test_region_extractor_high_resolution_image(
+    affine_eye, n_regions, shape_3d_large
+):
     maps, _ = generate_maps(
-        shape=MAP_SHAPE, n_regions=n_regions, affine=0.2 * affine_eye
+        shape=shape_3d_large, n_regions=n_regions, affine=0.2 * affine_eye
     )
 
     extract_ratio = RegionExtractor(

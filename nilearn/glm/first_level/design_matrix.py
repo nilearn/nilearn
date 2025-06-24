@@ -37,6 +37,7 @@ import pandas as pd
 
 from nilearn._utils import fill_doc
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.glm._utils import full_rank
 from nilearn.glm.first_level.experimental_paradigm import (
@@ -110,7 +111,7 @@ def create_cosine_drift(high_pass, frame_times):
             "and saturate the design matrix. "
             "You may want to reduce the high_pass value."
             f"The provided value is {high_pass} Hz",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
     order = np.minimum(
         n_frames - 1, int(np.floor(2 * n_frames * high_pass * dt))
@@ -228,7 +229,7 @@ def _convolve_regressors(
         if 'spm + derivative + dispersion' or
             'glover + derivative + dispersion',
             a third name is used, i.e. '#name_dispersion'
-        if 'fir', the regressos are numbered according to '#name_#delay'
+        if 'fir', the regressors are numbered according to '#name_#delay'
 
     """
     check_params(locals())
@@ -529,6 +530,6 @@ def make_second_level_design_matrix(subjects_label, confounds=None):
         warn(
             "Attention: Design matrix is singular. Aberrant estimates "
             "are expected.",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
     return design_matrix

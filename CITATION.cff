@@ -523,7 +523,7 @@ authors:
     email: mwaskom+www@gmail.com
   - given-names: Michelle
     family-names: Wang
-    website: https://github.com/michellewang
+    website: https://michellewang.github.io
     affiliation: Origami lab, McGill University, Montréal, Canada
   - given-names: Mohammad
     family-names: Torabi
@@ -597,7 +597,7 @@ authors:
     affiliation: Zurich, Switzerland
   - given-names: Pierre
     family-names: Bellec
-    website: https://github.com/pbellec
+    website: https://github.com/lunebellec
     affiliation: Psychology Department, University of Montréal, Montréal, Canada
     orcid: https://orcid.org/0000-0002-9111-0699
     email: pierre.bellec@gmail.com
@@ -605,6 +605,10 @@ authors:
     family-names: Glaser
     website: https://pierreglaser.github.io/
     affiliation: Gatsby Computational Neuroscience Unit, University College London, London, UK
+  - given-names: Pierre-Louis
+    family-names: Barbarant
+    website: https://github.com/pbarbarant
+    affiliation: Inria, Saclay, France
   - given-names: Pierre-Olivier
     family-names: Quirion
     website: https://github.com/poquirion
@@ -640,6 +644,10 @@ authors:
     family-names: Guidotti
     website: https://github.com/robbisg
     affiliation: University "G. D'Annunzio" Chieti-Pescara, San Benedetto del Tronto, Italy
+  - given-names: Rohan Thomas
+    family-names: Jepegnanam
+    website: https://github.com/rohan3412
+    affiliation: Cognitive Neuroscience & Clinical Phenomenology Lab, Christian Medical College, Vellore, India
   - given-names: Ronald
     family-names: Phlypo
     website: https://github.com/rphlypo
@@ -659,7 +667,7 @@ authors:
     website: https://github.com/sachin-bsai
   - given-names: Sage
     family-names: Hahn
-    website: https://sagehahn.com/
+    website: https://github.com/sahahn
     orcid: https://orcid.org/0000-0003-3560-2952
     affiliation: deephealth
   - given-names: Salma

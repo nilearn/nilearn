@@ -7,6 +7,8 @@ import scipy.linalg as spl
 from scipy.linalg.lapack import get_lapack_funcs
 from scipy.stats import norm
 
+from nilearn._utils.logger import find_stack_level
+
 
 def z_score(pvalue, one_minus_pvalue=None):
     """Return the z-score(s) corresponding to certain p-value(s) and, \
@@ -136,7 +138,7 @@ def multiple_mahalanobis(effect, covariance):
     if covariance.shape[0] != covariance.shape[1]:
         raise ValueError("Inconsistent shape for covariance")
 
-    # transpose and make contuguous for the sake of speed
+    # transpose and make contiguous for the sake of speed
     Xt, Kt = np.ascontiguousarray(effect.T), np.ascontiguousarray(covariance.T)
 
     # compute the inverse of the covariances
@@ -176,7 +178,7 @@ def full_rank(X, cmax=1e15):
 
     warn(
         "Matrix is singular at working precision, regularizing...",
-        stacklevel=4,
+        stacklevel=find_stack_level(),
     )
     lda = (smax - cmax * smin) / (cmax - 1)
     X = np.dot(U, np.dot(np.diag(s + lda), V))
@@ -251,15 +253,15 @@ def pad_contrast(con_val, theta, stat_type):
                 f"but it has length {n_cols}. "
                 "The rest of the contrast was padded with zeros.",
                 category=UserWarning,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
         if stat_type == "F":
             warn(
-                f"F contrasts should have {theta.shape[0]} colmuns, "
+                f"F contrasts should have {theta.shape[0]} columns, "
                 f"but it has only {n_cols}. "
                 "The rest of the contrast was padded with zeros.",
                 category=UserWarning,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
     if pad:

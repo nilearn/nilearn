@@ -1,31 +1,34 @@
-import re
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
-from numpy.testing import assert_array_equal
 
 from nilearn._utils import constrained_layout_kwargs
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.tests._testing import block_paradigm, modulated_event_paradigm
-from nilearn.plotting import (
+from nilearn.plotting.matrix._utils import VALID_TRI_VALUES
+from nilearn.plotting.matrix.matrix_plotting import (
+    _sanitize_figure_and_axes,
     plot_contrast_matrix,
     plot_design_matrix,
     plot_design_matrix_correlation,
     plot_event,
     plot_matrix,
 )
-from nilearn.plotting.matrix.matrix_plotting import (
-    _sanitize_figure_and_axes,
-    _sanitize_labels,
-    _sanitize_reorder,
-    _sanitize_tri,
-    pad_contrast_matrix,
-)
+
+
+@pytest.fixture
+def mat():
+    return np.zeros((10, 10))
+
+
+@pytest.fixture
+def labels():
+    return [str(i) for i in range(10)]
+
 
 ##############################################################################
 # Some smoke testing for graphics-related code
@@ -56,67 +59,6 @@ def test_sanitize_figure_and_axes(fig, axes, expected):
     assert isinstance(fig2, plt.Figure)
     assert isinstance(axes2, plt.Axes)
     assert own_fig == expected
-
-
-def test_sanitize_labels():
-    labs = ["foo", "bar"]
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Length of labels (2) unequal to length of matrix (6)."
-        ),
-    ):
-        _sanitize_labels((6, 6), labs)
-    for lab in [labs, np.array(labs)]:
-        assert _sanitize_labels((2, 2), lab) == labs
-
-
-VALID_TRI_VALUES = ("full", "lower", "diag")
-
-
-@pytest.mark.parametrize("tri", VALID_TRI_VALUES)
-def test_sanitize_tri(tri):
-    _sanitize_tri(tri)
-
-
-@pytest.mark.parametrize("tri", [None, "foo", 2])
-def test_sanitize_tri_error(tri):
-    with pytest.raises(
-        ValueError,
-        match=(
-            f"Parameter tri needs to be one of: {', '.join(VALID_TRI_VALUES)}"
-        ),
-    ):
-        _sanitize_tri(tri)
-
-
-VALID_REORDER_VALUES = (True, False, "single", "complete", "average")
-
-
-@pytest.mark.parametrize("reorder", VALID_REORDER_VALUES)
-def test_sanitize_reorder(reorder):
-    if reorder is not True:
-        assert _sanitize_reorder(reorder) == reorder
-    else:
-        assert _sanitize_reorder(reorder) == "average"
-
-
-@pytest.mark.parametrize("reorder", [None, "foo", 2])
-def test_sanitize_reorder_error(reorder):
-    with pytest.raises(
-        ValueError, match=("Parameter reorder needs to be one of")
-    ):
-        _sanitize_reorder(reorder)
-
-
-@pytest.fixture
-def mat():
-    return np.zeros((10, 10))
-
-
-@pytest.fixture
-def labels():
-    return [str(i) for i in range(10)]
 
 
 @pytest.mark.parametrize(
@@ -342,33 +284,6 @@ def test_show_contrast_matrix_axes():
     # above allows us to test the kwargs are at least okay
     pytest.importorskip("matplotlib", minversion="3.5.0")
     assert "constrained" in fig.get_layout_engine().__class__.__name__.lower()
-
-
-def test_pad_contrast_matrix():
-    """Test for contrasts padding before plotting.
-
-    See https://github.com/nilearn/nilearn/issues/4211
-    """
-    frame_times = np.linspace(0, 127 * 1.0, 128)
-    dmtx = make_first_level_design_matrix(
-        frame_times, drift_model="polynomial", drift_order=3
-    )
-    contrast = np.array([[1, -1]])
-    padded_contrast = pad_contrast_matrix(contrast, dmtx)
-    assert_array_equal(padded_contrast, np.array([[1, -1, 0, 0]]))
-
-    contrast = np.eye(3)
-    padded_contrast = pad_contrast_matrix(contrast, dmtx)
-    assert_array_equal(
-        padded_contrast,
-        np.array(
-            [
-                [1, 0, 0, 0],
-                [0, 1, 0, 0],
-                [0, 0, 1, 0],
-            ]
-        ),
-    )
 
 
 @pytest.mark.parametrize("cmap", ["RdBu_r", "bwr", "seismic_r"])

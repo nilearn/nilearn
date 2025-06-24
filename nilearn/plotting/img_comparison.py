@@ -13,12 +13,14 @@ from nilearn._utils import (
     constrained_layout_kwargs,
     fill_doc,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.plotting._utils import save_figure_if_needed
-from nilearn.surface.surface import SurfaceImage, check_same_n_vertices
+from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import NiimgLike
 
 
@@ -146,7 +148,10 @@ def plot_img_comparison(
         )
 
         if ref_data.shape != src_data.shape:
-            warnings.warn("Images are not shape-compatible")
+            warnings.warn(
+                "Images are not shape-compatible",
+                stacklevel=find_stack_level(),
+            )
             return
 
         corr = stats.pearsonr(ref_data, src_data)[0]
@@ -435,7 +440,7 @@ def _extract_data_2_images(ref_img, src_img, masker=None):
         image_type = "surface"
         ref_img.data._check_ndims(1)
         src_img.data._check_ndims(1)
-        check_same_n_vertices(ref_img.mesh, src_img.mesh)
+        check_polymesh_equal(ref_img.mesh, src_img.mesh)
 
     else:
         raise TypeError(
@@ -479,7 +484,7 @@ def _sanitize_masker(masker, image_type, ref_img):
             target_shape=ref_img.shape,
         )
     elif isinstance(masker, SurfaceImage):
-        check_same_n_vertices(ref_img.mesh, masker.mesh)
+        check_polymesh_equal(ref_img.mesh, masker.mesh)
         masker = SurfaceMasker(
             mask_img=masker,
         )

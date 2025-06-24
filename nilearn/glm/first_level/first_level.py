@@ -8,6 +8,7 @@ Author: Bertrand Thirion, Martin Perez-Guevara, 2016
 from __future__ import annotations
 
 import csv
+import inspect
 import time
 from collections.abc import Iterable
 from pathlib import Path
@@ -24,6 +25,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
@@ -89,7 +91,7 @@ def mean_scaling(Y, axis=0):
             "The data have probably been centered."
             "Scaling might not work as expected",
             UserWarning,
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
     mean = np.maximum(mean, 1)
     Y = 100 * (Y / mean - 1)
@@ -284,7 +286,7 @@ def _check_trial_type(events):
             "If there is a column in the dataframe "
             "corresponding to trial information, "
             "consider renaming it to 'trial_type'.",
-            stacklevel=6,
+            stacklevel=find_stack_level(),
         )
 
 
@@ -301,26 +303,56 @@ class FirstLevelModel(BaseGLM):
         matrix. This parameter is also passed to :func:`nilearn.signal.clean`.
         Please see the related documentation for details.
 
+        .. warning::
+
+                    This parameter is ignored by fit() if design matrices
+                    are passed at fit time.
+
     slice_time_ref : :obj:`float`, default=0.0
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs.
         It is expressed as a fraction of the ``t_r`` (repetition time),
         so it can have values between 0. and 1.
 
+        .. warning::
+
+                    This parameter is ignored by fit() if design matrices
+                    are passed at fit time.
+
     %(hrf_model)s
         Default='glover'.
+
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
 
     drift_model : :obj:`str`, default='cosine'
         This parameter specifies the desired drift model for the design
         matrices. It can be 'polynomial', 'cosine' or None.
 
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
+
     high_pass : :obj:`float`, default=0.01
         This parameter specifies the cut frequency of the high-pass filter in
         Hz for the design matrices. Used only if drift_model is 'cosine'.
 
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
+
     drift_order : :obj:`int`, default=1
         This parameter specifies the order of the drift model (in case it is
         polynomial) for the design matrices.
+
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
 
     fir_delays : array of shape(n_onsets), :obj:`list` or None, default=None
         Will be set to ``[0]`` if ``None`` is passed.
@@ -328,10 +360,20 @@ class FirstLevelModel(BaseGLM):
         yields the array of delays used in the :term:`FIR` model,
         in scans.
 
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
+
     min_onset : :obj:`float`, default=-24
         This parameter specifies the minimal onset relative to the design
         (in seconds). Events that start before (slice_time_ref * t_r +
         min_onset) are not considered.
+
+        .. warning::
+
+            This parameter is ignored by fit() if design matrices
+            are passed at fit time.
 
     mask_img : Niimg-like, NiftiMasker, :obj:`~nilearn.surface.SurfaceImage`,\
              :obj:`~nilearn.maskers.SurfaceMasker`, False or \
@@ -482,23 +524,81 @@ class FirstLevelModel(BaseGLM):
         design_matrices,
     ):
         """Run input validation and ensure inputs are compatible."""
-        # Raise a warning if both design_matrices and confounds are provided
-        if design_matrices is not None and (
-            confounds is not None or events is not None
-        ):
-            warn(
-                "If design matrices are supplied, "
-                "confounds and events will be ignored.",
-                stacklevel=3,
+        if not isinstance(
+            run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
+        ) or (
+            isinstance(run_imgs, (list, tuple))
+            and not all(
+                isinstance(x, (*NiimgLike, SurfaceImage)) for x in run_imgs
             )
-
-        if events is not None:
-            _check_events_file_uses_tab_separators(events_files=events)
+        ):
+            input_type = type(run_imgs)
+            if isinstance(run_imgs, list):
+                input_type = [type(x) for x in run_imgs]
+            raise TypeError(
+                "'run_imgs' must be a single instance / a list "
+                "of any of the following:\n"
+                "- string\n"
+                "- pathlib.Path\n"
+                "- NiftiImage\n"
+                "- SurfaceImage\n"
+                f"Got: {input_type}"
+            )
 
         if not isinstance(run_imgs, (list, tuple)):
             run_imgs = [run_imgs]
 
-        if design_matrices is None:
+        if design_matrices is not None:
+            # If design_matrices is provided,
+            # throw warning for the attributes or parameters
+            # that were provided at init or fit time
+            # but that will be ignored
+            # because they will not be used to generate a design matrix.
+            parameters_to_ignore = []
+            if confounds is not None:
+                parameters_to_ignore.append("confounds")
+            if events is not None:
+                parameters_to_ignore.append("events")
+            if parameters_to_ignore:
+                warn(
+                    "If design matrices are supplied, "
+                    f"{' and '.join(parameters_to_ignore)} will be ignored.",
+                    stacklevel=find_stack_level(),
+                )
+
+            # check with the default of __init__
+            attributes_to_ignore = []
+            attributes_used_in_des_mat_generation = [
+                "drift_model",
+                "drift_order",
+                "fir_delays",
+                "high_pass",
+                "hrf_model",
+                "min_onset",
+                "slice_time_ref",
+                "t_r",
+            ]
+            tmp = dict(**inspect.signature(self.__init__).parameters)
+            attributes_to_ignore.extend(
+                [
+                    k
+                    for k in attributes_used_in_des_mat_generation
+                    if getattr(self, k) != tmp[k].default
+                ]
+            )
+
+            if attributes_to_ignore:
+                warn(
+                    "If design matrices are supplied, "
+                    f"[{', '.join(attributes_to_ignore)}] will be ignored.",
+                    stacklevel=find_stack_level(),
+                )
+
+            design_matrices = _check_run_tables(
+                run_imgs, design_matrices, "design_matrices"
+            )
+
+        else:
             if events is None:
                 raise ValueError("events or design matrices must be provided")
             if self.t_r is None:
@@ -506,18 +606,14 @@ class FirstLevelModel(BaseGLM):
                     "t_r not given to FirstLevelModel object"
                     " to compute design from events"
                 )
-        else:
-            design_matrices = _check_run_tables(
-                run_imgs, design_matrices, "design_matrices"
-            )
 
-        # Check that number of events and confound files match number of runs
-        # Also check that events and confound files can be loaded as DataFrame
-        if events is not None:
+            # Check that events and confounds files match number of runs
+            # and can be loaded as DataFrame.
+            _check_events_file_uses_tab_separators(events_files=events)
             events = _check_run_tables(run_imgs, events, "events")
 
-        if confounds is not None:
-            confounds = _check_run_tables(run_imgs, confounds, "confounds")
+            if confounds is not None:
+                confounds = _check_run_tables(run_imgs, confounds, "confounds")
 
         if sample_masks is not None:
             sample_masks = check_run_sample_masks(len(run_imgs), sample_masks)
@@ -550,7 +646,10 @@ class FirstLevelModel(BaseGLM):
                 f"in {int(time_in_second)} seconds."
             )
 
-        logger.log(msg, verbose=self.verbose, stack_level=2)
+        logger.log(
+            msg,
+            verbose=self.verbose,
+        )
 
     def _report_progress(self, run_idx, n_runs, t0):
         remaining = "go take a coffee, a big one"
@@ -676,7 +775,9 @@ class FirstLevelModel(BaseGLM):
 
         tmp = check_and_load_tables(events[run_idx], "events")[0]
         if "trial_type" in tmp.columns:
-            self._reporting_data["trial_types"].extend(tmp["trial_type"])
+            self._reporting_data["trial_types"].extend(
+                x for x in tmp["trial_type"] if x
+            )
 
         start_time = self.slice_time_ref * self.t_r
         end_time = (n_scans - 1 + self.slice_time_ref) * self.t_r
@@ -688,7 +789,7 @@ class FirstLevelModel(BaseGLM):
             self.drift_model,
             self.high_pass,
             self.drift_order,
-            self.fir_delays,
+            self.fir_delays_,
             confounds_matrix,
             confounds_names,
             self.min_onset,
@@ -700,6 +801,7 @@ class FirstLevelModel(BaseGLM):
         return (
             hasattr(self, "labels_")
             and hasattr(self, "results_")
+            and hasattr(self, "fir_delays_")
             and self.labels_ is not None
             and self.results_ is not None
         )
@@ -719,6 +821,13 @@ class FirstLevelModel(BaseGLM):
         1. create design matrix X
         2. do a masker job: fMRI_data -> Y
         3. fit regression to (Y, X)
+
+        .. warning::
+
+            If design_matrices are passed to fit(),
+            then the following attributes are ignored:
+            ``drift_model``, ``drift_order``, ``fir_delays``, ``high_pass``,
+            ``hrf_model``, ``min_onset``, ``slice_time_ref``, ``t_r``.
 
         Parameters
         ----------
@@ -761,6 +870,10 @@ class FirstLevelModel(BaseGLM):
             See :func:`~nilearn.glm.first_level.make_first_level_design_matrix`
             for details on the required content of events files.
 
+            .. warning::
+
+                This parameter is ignored if design_matrices are passed.
+
         confounds : :class:`pandas.DataFrame`, :class:`numpy.ndarray` or \
                     :obj:`str` or :obj:`list` of :class:`pandas.DataFrame`, \
                     :class:`numpy.ndarray` or :obj:`str`, default=None
@@ -770,6 +883,10 @@ class FirstLevelModel(BaseGLM):
             respective run_img.
             Ignored in case designs is not None.
             If string, then a path to a csv file is expected.
+
+            .. warning::
+
+                This parameter is ignored if design_matrices are passed.
 
         sample_masks : array_like, or :obj:`list` of array_like, default=None
             shape of array: (number of scans - number of volumes remove)
@@ -804,7 +921,9 @@ class FirstLevelModel(BaseGLM):
             _check_slice_time_ref(self.slice_time_ref)
 
         if self.fir_delays is None:
-            self.fir_delays = [0]
+            self.fir_delays_ = [0]
+        else:
+            self.fir_delays_ = self.fir_delays
 
         self.memory = check_memory(self.memory)
 
@@ -814,27 +933,6 @@ class FirstLevelModel(BaseGLM):
             )
         if self.signal_scaling in [0, 1, (0, 1)]:
             self.standardize = False
-
-        if not isinstance(
-            run_imgs, (str, Path, Nifti1Image, SurfaceImage, list, tuple)
-        ) or (
-            isinstance(run_imgs, (list, tuple))
-            and not all(
-                isinstance(x, (*NiimgLike, SurfaceImage)) for x in run_imgs
-            )
-        ):
-            input_type = type(run_imgs)
-            if isinstance(run_imgs, list):
-                input_type = [type(x) for x in run_imgs]
-            raise TypeError(
-                "'run_imgs' must be a single instance / a list "
-                "of any of the following:\n"
-                "- string\n"
-                "- pathlib.Path\n"
-                "- NiftiImage\n"
-                "- SurfaceImage\n"
-                f"Got: {input_type}"
-            )
 
         self.labels_ = None
         self.results_ = None
@@ -894,7 +992,7 @@ class FirstLevelModel(BaseGLM):
             self._reporting_data["run_imgs"][run_idx] = {}
             if isinstance(run_img, (str, Path)):
                 self._reporting_data["run_imgs"][run_idx] = (
-                    parse_bids_filename(run_img)
+                    parse_bids_filename(run_img, legacy=False)
                 )
 
             self._fit_single_run(sample_masks, bins, run_img, run_idx)
@@ -966,7 +1064,7 @@ class FirstLevelModel(BaseGLM):
             warn(
                 f"One contrast given, assuming it for all {n_runs} runs",
                 category=UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
@@ -1124,7 +1222,7 @@ class FirstLevelModel(BaseGLM):
                 "Parameter smoothing_fwhm is not "
                 "yet supported for surface data",
                 UserWarning,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = 0
 
@@ -1154,6 +1252,72 @@ class FirstLevelModel(BaseGLM):
             check_is_fitted(self.mask_img)
 
             self.masker_ = self.mask_img
+
+    @fill_doc
+    def generate_report(
+        self,
+        contrasts=None,
+        title=None,
+        bg_img="MNI152TEMPLATE",
+        threshold=3.09,
+        alpha=0.001,
+        cluster_threshold=0,
+        height_control="fpr",
+        two_sided=False,
+        min_distance=8.0,
+        plot_type="slice",
+        cut_coords=None,
+        display_mode=None,
+        report_dims=(1600, 800),
+    ):
+        """Return a :class:`~nilearn.reporting.HTMLReport` \
+        which shows all important aspects of a fitted :term:`GLM`.
+
+        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
+        browser, displayed in a notebook, or saved to disk as a standalone
+        HTML file.
+
+        The :term:`GLM` must be fitted and have the computed design
+        matrix(ces).
+
+        .. note::
+
+            Refer to the documentation of
+            :func:`~nilearn.reporting.make_glm_report`
+            for details about the parameters
+
+        Returns
+        -------
+        report_text : :class:`~nilearn.reporting.HTMLReport`
+            Contains the HTML code for the :term:`GLM` report.
+
+        """
+        from nilearn.reporting.glm_reporter import make_glm_report
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = {
+                "trial_types": [],
+                "noise_model": getattr(self, "noise_model", None),
+                "hrf_model": getattr(self, "hrf_model", None),
+                "drift_model": None,
+            }
+
+        return make_glm_report(
+            self,
+            contrasts,
+            title=title,
+            bg_img=bg_img,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            plot_type=plot_type,
+            cut_coords=cut_coords,
+            display_mode=display_mode,
+            report_dims=report_dims,
+        )
 
 
 def _check_events_file_uses_tab_separators(events_files):
@@ -1268,7 +1432,7 @@ def first_level_from_bids(
     sub_labels=None,
     img_filters=None,
     t_r=None,
-    slice_time_ref=0.0,
+    slice_time_ref=None,
     hrf_model="glover",
     drift_model="cosine",
     high_pass=0.01,
@@ -1338,16 +1502,15 @@ def first_level_from_bids(
         Filter examples would be ``('desc', 'preproc')``, ``('dir', 'pa')``
         and ``('run', '10')``.
 
-    slice_time_ref : :obj:`float` between ``0.0`` and ``1.0``, default= ``0.0``
+    slice_time_ref : :obj:`float` between ``0.0`` and ``1.0``, or None, \
+                     default= None
         This parameter indicates the time of the reference slice used in the
         slice timing preprocessing step of the experimental runs. It is
         expressed as a fraction of the ``t_r`` (time repetition), so it can
         have values between ``0.`` and ``1.``
-
-        .. deprecated:: 0.10.1
-
-            The default= ``0`` for ``slice_time_ref`` will be deprecated.
-            The default value will change to ``None`` in 0.12.
+        If ``slice_time_ref`` is  ``None``, this function will attempt
+        to infer it from the metadata found in a ``bold.json``.
+        If it cannot be inferred from metadata, it will be set to 0.
 
     derivatives_folder : :obj:`str`, default= ``"derivatives"``.
         derivatives and app folder path containing preprocessed files.
@@ -1457,12 +1620,6 @@ def first_level_from_bids(
     """
     if memory is None:
         memory = Memory(None)
-    if slice_time_ref == 0:
-        warn(
-            "Starting in version 0.12, slice_time_ref will default to None.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
     if space_label is None:
         space_label = "MNI152NLin2009cAsym"
 
@@ -1506,7 +1663,7 @@ def first_level_from_bids(
  Remember to visualize your design matrix before fitting your model
  to check that your model is not overspecified.""",
             UserWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     derivatives_path = Path(dataset_path) / derivatives_folder
@@ -1553,7 +1710,7 @@ def first_level_from_bids(
             f"\n't_r' provided ({t_r}) is different "
             f"from the value found in the BIDS dataset ({inferred_t_r}).\n"
             "Note this may lead to the wrong model specification.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     if t_r is not None:
         _check_repetition_time(t_r)
@@ -1562,7 +1719,7 @@ def first_level_from_bids(
             "\n't_r' not provided and cannot be inferred from BIDS metadata.\n"
             "It will need to be set manually in the list of models, "
             "otherwise their fit will throw an exception.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     # Slice time correction reference time
@@ -1595,7 +1752,7 @@ def first_level_from_bids(
                 "is 0.0 percent of the repetition time.\n"
                 "If it is not the case it will need to "
                 "be set manually in the generated list of models.",
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
         inferred_slice_time_ref = 0.0
 
@@ -1610,7 +1767,7 @@ def first_level_from_bids(
             f"from the value found in the BIDS dataset "
             f"({inferred_slice_time_ref}).\n"
             "Note this may lead to the wrong model specification.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
     if slice_time_ref is not None:
         _check_slice_time_ref(slice_time_ref)
@@ -1726,7 +1883,7 @@ def _list_valid_subjects(derivatives_path, sub_labels):
                 f"\nSubject label '{sub_label_}' is not present "
                 "in the following dataset and cannot be processed:\n"
                 f" {derivatives_path}",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
     return sorted(set(sub_labels_exist))
@@ -1758,7 +1915,6 @@ def _report_found_files(files, text, sub_label, filters, verbose):
         f"- for filter: {filters}:\n\t"
         f"- {unordered_list_string}\n",
         verbose=verbose,
-        stack_level=3,
     )
 
 
@@ -2239,7 +2395,7 @@ def _make_bids_files_filter(
                         f"The filter {filter_} will be skipped. "
                         f"'{filter_[0]}' is not among the supported filters. "
                         f"Allowed filters include: {supported_filters}",
-                        stacklevel=3,
+                        stacklevel=find_stack_level(),
                     )
                 continue
 
@@ -2293,9 +2449,9 @@ def _check_bids_image_list(imgs, sub_label, filters):
     run_check_list = []
 
     for img_ in imgs:
-        parsed_filename = parse_bids_filename(img_)
-        session = parsed_filename.get("ses")
-        run = parsed_filename.get("run")
+        parsed_filename = parse_bids_filename(img_, legacy=False)
+        session = parsed_filename["entities"].get("ses")
+        run = parsed_filename["entities"].get("run")
 
         if session and run:
             if (session, run) in set(run_check_list):
@@ -2379,11 +2535,11 @@ def _check_bids_events_list(
         *bids_entities()["raw"],
     ]
     for this_img in imgs:
-        parsed_filename = parse_bids_filename(this_img)
+        parsed_filename = parse_bids_filename(this_img, legacy=False)
         extra_filter = [
-            (key, parsed_filename[key])
-            for key in parsed_filename
-            if key in supported_filters
+            (entity, parsed_filename["entities"][entity])
+            for entity in parsed_filename["entities"]
+            if entity in supported_filters
         ]
         filters = _make_bids_files_filter(
             task_label=task_label,

@@ -134,7 +134,9 @@ def coerce_to_dict(input_arg):
     return input_arg
 
 
-def make_stat_maps(model, contrasts, output_type="z_score"):
+def make_stat_maps(
+    model, contrasts, output_type="z_score", first_level_contrast=None
+):
     """Given a model and contrasts, return the corresponding z-maps.
 
     Parameters
@@ -154,6 +156,10 @@ def make_stat_maps(model, contrasts, output_type="z_score"):
 
         .. versionadded:: 0.9.2
 
+    %(first_level_contrast)s
+
+        .. versionadded:: 0.12.0
+
     Returns
     -------
     statistical_maps : Dict[str, niimg] or Dict[str, Dict[str, niimg]]
@@ -165,6 +171,18 @@ def make_stat_maps(model, contrasts, output_type="z_score"):
     nilearn.glm.second_level.SecondLevelModel.compute_contrast
 
     """
+    from nilearn.glm.second_level import SecondLevelModel
+
+    if isinstance(model, SecondLevelModel):
+        return {
+            contrast_name: model.compute_contrast(
+                contrast_data,
+                output_type=output_type,
+                first_level_contrast=first_level_contrast,
+            )
+            for contrast_name, contrast_data in contrasts.items()
+        }
+
     return {
         contrast_name: model.compute_contrast(
             contrast_data,

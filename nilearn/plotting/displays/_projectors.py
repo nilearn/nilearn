@@ -8,6 +8,7 @@ from scipy.sparse import issparse
 from scipy.stats import scoreatpercentile
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
 from nilearn.plotting.displays._axes import GlassBrainAxes
 from nilearn.plotting.displays._slicers import OrthoSlicer
@@ -210,7 +211,7 @@ class OrthoProjector(OrthoSlicer):
             warnings.warn(
                 "'adjacency_matrix' is not symmetric.\n"
                 "A directed graph will be plotted.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
         # For a masked array, masked values are replaced with zeros
@@ -221,7 +222,7 @@ class OrthoProjector(OrthoSlicer):
                     "'adjacency_matrix' was masked \
                     with a non symmetric mask.\n"
                     "A directed graph will be plotted.",
-                    stacklevel=3,
+                    stacklevel=find_stack_level(),
                 )
             adjacency_matrix = adjacency_matrix.filled(0)
 

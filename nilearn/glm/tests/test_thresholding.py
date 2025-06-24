@@ -196,6 +196,7 @@ def test_hommel(alpha, expected):
     assert _compute_hommel_value(z, alpha=alpha) == expected
 
 
+@pytest.mark.timeout(0)
 def test_all_resolution_inference(data_norm_isf, affine_eye):
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0

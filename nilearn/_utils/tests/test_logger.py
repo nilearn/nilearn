@@ -12,12 +12,17 @@ from io import StringIO
 import pytest
 from sklearn.base import BaseEstimator
 
-from nilearn._utils.logger import _has_rich, log
+from nilearn._utils.logger import (
+    _has_rich,
+    find_stack_level,
+    log,
+    one_level_deeper,
+)
 
 
 # Helper functions and classes
 def run():
-    log("function run()")
+    log("function run()", stack_level=1)
 
 
 def other_run():
@@ -28,20 +33,20 @@ def other_run():
 
 class Run3:
     def run3(self):
-        log("method Test3")
+        log("method Test3", stack_level=1)
         run()
 
 
 class Run2(BaseEstimator):
     def run2(self):
-        log("method Test2")
-        t = Run()
+        log("method Test2", stack_level=1)
+        t = Run1()
         t.run()
 
 
-class Run(BaseEstimator):
+class Run1(BaseEstimator):
     def run(self):
-        log("method Test")
+        log("method Test", stack_level=1)
         run()
 
 
@@ -59,10 +64,12 @@ def test_log_2_matching_object(capsys):
 
 @pytest.mark.skipif(_has_rich(), reason="Skip test when rich is installed.")
 def test_log_1_matching_object(capsys):
-    t = Run()
+    t = Run1()
     t.run()
     captured = capsys.readouterr()
-    assert captured.out == "[Run.run] method Test\n[Run.run] function run()\n"
+    assert captured.out == (
+        "[Run1.run] method Test\n[Run1.run] function run()\n"
+    )
 
 
 @pytest.mark.skipif(_has_rich(), reason="Skip test when rich is installed.")
@@ -78,6 +85,12 @@ def test_log_1_non_matching_object(capsys):
     t.run3()
     captured = capsys.readouterr()
     assert captured.out == "[Run3.run3] method Test3\n[run] function run()\n"
+
+
+def test_find_stack_level():
+    """Test find_stack_level."""
+    assert find_stack_level() == 1
+    assert one_level_deeper() == 2
 
 
 def test_log_stack_lvl_stack_too_large(capsys):
@@ -110,7 +123,7 @@ def capture_output():
 
 # Will be executed by testrunner upon importing
 with capture_output() as out:
-    log("message from no function")
+    log("message from no function", stack_level=1)
     if _has_rich() is False:
         if isinstance(out[0], StringIO):
             assert out[0].getvalue() == "[<module>] message from no function\n"

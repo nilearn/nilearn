@@ -17,6 +17,7 @@ from sklearn.utils import as_float_array, gen_even_slices
 
 from nilearn._utils import fill_doc, stringify_path
 from nilearn._utils.exceptions import AllVolumesRemovedError
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import (
     check_params,
@@ -29,7 +30,7 @@ __all__ = [
     "high_variance_confounds",
 ]
 
-availiable_filters = ["butterworth", "cosine"]
+available_filters = ("butterworth", "cosine")
 
 
 def standardize_signal(
@@ -77,7 +78,8 @@ def standardize_signal(
         if signals.shape[0] == 1:
             warnings.warn(
                 "Standardization of 3D signal has been requested but "
-                "would lead to zero values. Skipping."
+                "would lead to zero values. Skipping.",
+                stacklevel=find_stack_level(),
             )
             return signals
 
@@ -104,7 +106,7 @@ def standardize_signal(
             warnings.warn(
                 category=DeprecationWarning,
                 message=std_strategy_default,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
             if not detrend:
@@ -127,7 +129,8 @@ def standardize_signal(
                 warnings.warn(
                     "psc standardization strategy is meaningless "
                     "for features that have a mean of 0. "
-                    "These time series are set to 0."
+                    "These time series are set to 0.",
+                    stacklevel=find_stack_level(),
                 )
                 signals[:, invalid_ix] = 0
 
@@ -264,7 +267,8 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
     if signals.shape[0] == 1:
         warnings.warn(
             "Detrending of 3D signal has been requested but "
-            "would lead to zero values. Skipping."
+            "would lead to zero values. Skipping.",
+            stacklevel=find_stack_level(),
         )
         return signals
 
@@ -311,7 +315,8 @@ def _check_wn(btype, freq, nyq):
             f"The frequency specified for the {btype} pass filter is "
             "too high to be handled by a digital filter "
             "(superior to Nyquist frequency). "
-            f"It has been lowered to {freq} (Nyquist frequency)."
+            f"It has been lowered to {freq} (Nyquist frequency).",
+            stacklevel=find_stack_level(),
         )
 
     elif freq < 0.0:  # equal to 0.0 is okay
@@ -319,7 +324,8 @@ def _check_wn(btype, freq, nyq):
         warnings.warn(
             f"The frequency specified for the {btype} pass filter is too "
             "low to be handled by a digital filter (must be non-negative). "
-            f"It has been set to eps: {freq}."
+            f"It has been set to eps: {freq}.",
+            stacklevel=find_stack_level(),
         )
 
     return freq
@@ -414,7 +420,8 @@ def butterworth(
             warnings.warn(
                 "Signals are returned unfiltered because band-pass critical "
                 "frequencies are equal. Please check that inputs for "
-                "sampling_rate, low_pass, and high_pass are valid."
+                "sampling_rate, low_pass, and high_pass are valid.",
+                stacklevel=find_stack_level(),
             )
             return signals.copy() if copy else signals
     else:
@@ -467,7 +474,7 @@ def butterworth(
 @fill_doc
 def high_variance_confounds(
     series, n_confounds=5, percentile=2.0, detrend=True
-):
+) -> np.ndarray:
     """Return confounds time series extracted from series \
     with highest variance.
 
@@ -535,7 +542,7 @@ def high_variance_confounds(
 def _ensure_float(data):
     """Make sure that data is a float type."""
     if data.dtype.kind != "f":
-        if data.dtype.itemsize == "8":
+        if data.dtype.itemsize == 8:
             data = data.astype(np.float64)
         else:
             data = data.astype(np.float32)
@@ -897,6 +904,7 @@ def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
         warnings.warn(
             category=FutureWarning,
             message=extrapolate_default,
+            stacklevel=find_stack_level(),
         )
     frame_times = np.arange(volumes.shape[0]) * t_r
     remained_vol = frame_times[sample_mask]
@@ -928,7 +936,8 @@ def _check_cosine_by_user(confounds, cosine_drift):
     if n_cosines == 0:
         warnings.warn(
             "Cosine filter was not created. The time series might be too "
-            "short or the high pass filter is not suitable for the data."
+            "short or the high pass filter is not suitable for the data.",
+            stacklevel=find_stack_level(),
         )
         return confounds
 
@@ -945,7 +954,8 @@ def _check_cosine_by_user(confounds, cosine_drift):
     if cosine_exists:
         warnings.warn(
             "Cosine filter(s) exist in user supplied confounds."
-            "Use user supplied regressors only."
+            "Use user supplied regressors only.",
+            stacklevel=find_stack_level(),
         )
         return confounds
 
@@ -1091,7 +1101,7 @@ def _sanitize_confound_dtype(n_signal, confound):
             confound = csv_to_array(filename, skip_header=1)
         if confound.shape[0] != n_signal:
             raise ValueError(
-                "Confound signal has an incorrect length.\n"
+                "Confound signal has an incorrect length. \n"
                 f"Signal length: {n_signal}; "
                 f"confound length: {confound.shape[0]}"
             )
@@ -1105,8 +1115,8 @@ def _sanitize_confound_dtype(n_signal, confound):
             )
         if confound.shape[0] != n_signal:
             raise ValueError(
-                "Confound signal has an incorrect "
-                f"lengthSignal length: {n_signal}; "
+                "Confound signal has an incorrect length. "
+                f"Signal length: {n_signal}; "
                 f"confound length: {confound.shape[0]}."
             )
 
@@ -1125,10 +1135,11 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
         ):
             warnings.warn(
                 "No filter type selected but cutoff frequency provided."
-                "Will not perform filtering."
+                "Will not perform filtering.",
+                stacklevel=find_stack_level(),
             )
         return False
-    elif filter in availiable_filters:
+    elif filter in available_filters:
         if filter == "cosine" and not all(
             isinstance(item, (float, int)) for item in [t_r, high_pass]
         ):
@@ -1184,5 +1195,6 @@ def _check_signal_parameters(detrend, standardize_confounds):
             f"standardize_confounds={standardize_confounds}. "
             "If confounds were not standardized or demeaned "
             "before passing to signal.clean signal "
-            "will not be correctly cleaned. "
+            "will not be correctly cleaned. ",
+            stacklevel=find_stack_level(),
         )

@@ -1,6 +1,8 @@
 """Implement plotting functions useful to report analysis results."""
 
 import warnings
+from collections import OrderedDict
+from decimal import Decimal
 from string import ascii_lowercase
 
 import numpy as np
@@ -15,9 +17,11 @@ from scipy.ndimage import (
 )
 
 from nilearn._utils import check_niimg_3d
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn.image import new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
+from nilearn.surface import SurfaceImage
 
 
 def _local_max(data, affine, min_distance):
@@ -104,7 +108,7 @@ def _identify_subpeaks(data):
                 "falls outside of the cluster body. "
                 "Identifying the nearest in-cluster voxel."
             ),
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
         # Replace centers of mass with their nearest neighbor points in the
         # corresponding clusters. Note this is also equivalent to computing the
@@ -301,6 +305,15 @@ def get_clusters_table(
 
     """
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
+
+    label_maps = []
+
+    if isinstance(stat_img, SurfaceImage):
+        result_table = pd.DataFrame(columns=cols)
+        return (
+            (result_table, label_maps) if return_label_maps else result_table
+        )
+
     # Replace None with 0
     cluster_threshold = 0 if cluster_threshold is None else cluster_threshold
 
@@ -336,7 +349,6 @@ def get_clusters_table(
     signs = [1, -1] if two_sided else [1]
     no_clusters_found = True
     rows = []
-    label_maps = []
     for sign in signs:
         # Flip map if necessary
         temp_stat_map = stat_map * sign
@@ -352,7 +364,7 @@ def get_clusters_table(
                 f"with stat {'higher' if sign == 1 else 'lower'} "
                 f"than {stat_threshold * sign}",
                 category=UserWarning,
-                stacklevel=2,
+                stacklevel=find_stack_level(),
             )
             continue
 
@@ -432,3 +444,78 @@ def get_clusters_table(
         result_table = pd.DataFrame(columns=cols, data=rows)
 
     return (result_table, label_maps) if return_label_maps else result_table
+
+
+def clustering_params_to_dataframe(
+    threshold,
+    cluster_threshold,
+    min_distance,
+    height_control,
+    alpha,
+    is_volume_glm,
+):
+    """Create a Pandas DataFrame from the supplied arguments.
+
+    For use as part of the Cluster Table.
+
+    Parameters
+    ----------
+    threshold : float
+        Cluster forming threshold in same scale as `stat_img` (either a
+        p-value or z-scale value).
+
+    cluster_threshold : int or None
+        Cluster size threshold, in voxels.
+
+    min_distance : float
+        For display purposes only.
+        Minimum distance between subpeaks in mm.
+
+    height_control : string or None
+        False positive control meaning of cluster forming
+        threshold: 'fpr' (default) or 'fdr' or 'bonferroni' or None
+
+    alpha : float
+        Number controlling the thresholding (either a p-value or q-value).
+        Its actual meaning depends on the height_control parameter.
+        This function translates alpha to a z-scale threshold.
+
+    is_volume_glm: bool
+        True if we are dealing with volume data.
+
+    Returns
+    -------
+    table_details : Pandas.DataFrame
+        Dataframe with clustering parameters.
+
+    """
+    table_details = OrderedDict()
+    threshold = np.around(threshold, 3)
+
+    if height_control:
+        table_details.update({"Height control": height_control})
+        # HTMLDocument.get_iframe() invoked in Python2 Jupyter Notebooks
+        # mishandles certain unicode characters
+        # & raises error due to greek alpha symbol.
+        # This is simpler than overloading the class using inheritance,
+        # especially given limited Python2 use at time of release.
+        if alpha < 0.001:
+            alpha = f"{Decimal(alpha):.2E}"
+        table_details.update({"\u03b1": alpha})
+        table_details.update({"Threshold (computed)": threshold})
+    else:
+        table_details.update({"Height control": "None"})
+        table_details.update({"Threshold Z": threshold})
+
+    if is_volume_glm:
+        table_details.update(
+            {"Cluster size threshold (voxels)": cluster_threshold}
+        )
+        table_details.update({"Minimum distance (mm)": min_distance})
+
+    table_details = pd.DataFrame.from_dict(
+        table_details,
+        orient="index",
+    )
+
+    return table_details

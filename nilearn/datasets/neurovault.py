@@ -21,6 +21,7 @@ from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
 from nilearn._utils import fill_doc
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import resample_img
 
@@ -974,7 +975,6 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
         f"{prefix_msg}getting new batch:\n\t{query}",
         verbose=verbose,
         msg_level=_DEBUG,
-        stack_level=6,
     )
     try:
         resp = session.send(prepped, timeout=timeout)
@@ -990,7 +990,6 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
             msg_level=_ERROR,
             verbose=verbose,
             with_traceback=False,
-            stack_level=4,
         )
         raise
     except Exception:
@@ -999,7 +998,6 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
             msg_level=_ERROR,
             verbose=verbose,
             with_traceback=True,
-            stack_level=4,
         )
         raise
     if "id" in batch:
@@ -1010,7 +1008,7 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
                 f'Could not find required key "{key}" '
                 f"in batch retrieved from {query}."
             )
-            logger.log(msg, msg_level=_ERROR, verbose=verbose, stack_level=4)
+            logger.log(msg, msg_level=_ERROR, verbose=verbose)
             raise ValueError(msg)
 
     return batch
@@ -1094,7 +1092,6 @@ def _scroll_server_results(
                 f"{prefix_msg}batch size: {batch_size}",
                 msg_level=_DEBUG,
                 verbose=verbose,
-                stack_level=5,
             )
             if n_available is None:
                 n_available = batch["count"]
@@ -1182,7 +1179,6 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
         f"Downloading file: {url}",
         msg_level=_DEBUG,
         verbose=verbose,
-        stack_level=8,
     )
     try:
         downloaded = fetch_single_file(
@@ -1193,7 +1189,6 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
             f"Problem downloading file from {url}",
             msg_level=_ERROR,
             verbose=verbose,
-            stack_level=9,
         )
         raise
     shutil.move(downloaded, target_file)
@@ -1201,7 +1196,6 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
         f"Download succeeded, downloaded to: {target_file}",
         msg_level=_DEBUG,
         verbose=verbose,
-        stack_level=8,
     )
     return target_file
 
@@ -1267,7 +1261,8 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     if voc_empty:
         warnings.warn(
             "No word weight could be loaded, "
-            "vectorizing Neurosynth words failed."
+            "vectorizing Neurosynth words failed.",
+            stacklevel=find_stack_level(),
         )
         return None, None
     vectorizer = DictVectorizer(**kwargs)
@@ -1565,7 +1560,9 @@ def _download_image_nii_file(image_info, collection, download_params):
         )
 
         # Resample here
-        logger.log("Resampling...", stack_level=8)
+        logger.log(
+            "Resampling...",
+        )
         # TODO switch to force_resample=True
         # when bumping to version > 0.13
         im_resampled = resample_img(
@@ -1663,7 +1660,6 @@ def _download_image_terms(image_info, collection, download_params):
             msg_level=_ERROR,
             verbose=download_params["verbose"],
             with_traceback=True,
-            stack_level=2,
         )
 
     return image_info, collection
@@ -1748,7 +1744,8 @@ def _update_image(image_info, download_params):
         warnings.warn(
             f"Could not update metadata for image {image_info['id']}, "
             "most likely because you do not have "
-            "write permissions to its metadata file."
+            "write permissions to its metadata file.",
+            stacklevel=find_stack_level(),
         )
     return image_info
 
@@ -1782,7 +1779,6 @@ def _scroll_local(download_params):
         "Reading local neurovault data.",
         msg_level=_DEBUG,
         verbose=download_params["verbose"],
-        stack_level=4,
     )
 
     collections = Path(download_params["nv_data_dir"]).rglob(
@@ -1883,7 +1879,6 @@ def _scroll_collection(collection, download_params):
                 msg_level=_ERROR,
                 verbose=download_params["verbose"],
                 with_traceback=True,
-                stack_level=4,
             )
             yield None
         if fails_in_collection == download_params["max_fails_in_collection"]:
@@ -1892,7 +1887,6 @@ def _scroll_collection(collection, download_params):
                 f"{fails_in_collection} bad images.",
                 msg_level=_ERROR,
                 verbose=download_params["verbose"],
-                stack_level=4,
             )
             return
     logger.log(
@@ -1902,7 +1896,6 @@ def _scroll_collection(collection, download_params):
         f"matched query in collection {collection['id']}",
         msg_level=_INFO,
         verbose=download_params["verbose"],
-        stack_level=5,
     )
 
 
@@ -1937,7 +1930,6 @@ def _scroll_filtered(download_params):
         "Reading server neurovault data.",
         msg_level=_DEBUG,
         verbose=download_params["verbose"],
-        stack_level=4,
     )
 
     download_params["collection_filter"] = ResultFilter(
@@ -2002,7 +1994,6 @@ def _scroll_collection_ids(download_params):
             "Reading collections from server neurovault data.",
             msg_level=_DEBUG,
             verbose=download_params["verbose"],
-            stack_level=4,
         )
 
     collections = _yield_from_url_list(
@@ -2108,7 +2099,6 @@ def _print_progress(found, download_params, level=_INFO):
         f"Already fetched {found} image{'s' if found > 1 else ''}",
         msg_level=level,
         verbose=download_params["verbose"],
-        stack_level=4,
     )
 
 
@@ -2160,7 +2150,6 @@ def _scroll(download_params):
             "found on local disk.",
             msg_level=_INFO,
             verbose=download_params["verbose"],
-            stack_level=3,
         )
 
     if download_params["download_mode"] == "offline":
@@ -2181,7 +2170,8 @@ def _scroll(download_params):
         if n_consecutive_fails >= download_params["max_consecutive_fails"]:
             warnings.warn(
                 "Neurovault download stopped early: "
-                f"too many downloads failed in a row ({n_consecutive_fails})"
+                f"too many downloads failed in a row ({n_consecutive_fails})",
+                stacklevel=find_stack_level(),
             )
             return
         if found == download_params["max_images"]:
@@ -2262,7 +2252,8 @@ def _move_col_id(im_terms, col_terms):
         warnings.warn(
             "You specified contradictory collection ids, "
             "one in the image filters and one in the "
-            "collection filters"
+            "collection filters",
+            stacklevel=find_stack_level(),
         )
     return im_terms, col_terms
 
@@ -2491,7 +2482,8 @@ def _fetch_neurovault_implementation(
         warnings.warn(
             "You don't have write access to neurovault dir: "
             f"{neurovault_data_dir}. "
-            "fetch_neurovault is working offline."
+            "fetch_neurovault is working offline.",
+            stacklevel=find_stack_level(),
         )
         mode = "offline"
 
@@ -2739,7 +2731,8 @@ def fetch_neurovault(
         warnings.warn(
             "You specified a value for `image_filter` but the "
             "default filters in `image_terms` still apply. "
-            "If you want to disable them, pass `image_terms={}`"
+            "If you want to disable them, pass `image_terms={}`",
+            stacklevel=find_stack_level(),
         )
     if (
         collection_filter is not _empty_filter
@@ -2748,7 +2741,8 @@ def fetch_neurovault(
         warnings.warn(
             "You specified a value for `collection_filter` but the "
             "default filters in `collection_terms` still apply. "
-            "If you want to disable them, pass `collection_terms={}`"
+            "If you want to disable them, pass `collection_terms={}`",
+            stacklevel=find_stack_level(),
         )
 
     return _fetch_neurovault_implementation(
@@ -2895,7 +2889,7 @@ def fetch_neurovault_motor_task(
     """Fetch left vs right button press \
        group :term:`contrast` map from :term:`Neurovault`.
 
-    .. deprecated:: 0.11.2dev
+    .. deprecated:: 0.12.0
 
         This fetcher function will be removed in version>0.13.1
         as it returns the same data
@@ -2945,7 +2939,7 @@ def fetch_neurovault_motor_task(
             "Please use 'load_sample_motor_activation_image' instead.'"
         ),
         DeprecationWarning,
-        stacklevel=2,
+        stacklevel=find_stack_level(),
     )
 
     data = fetch_neurovault_ids(

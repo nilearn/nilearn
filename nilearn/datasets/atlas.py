@@ -18,6 +18,7 @@ from nilearn._utils.bids import (
     check_look_up_table,
     generate_atlas_look_up_table,
 )
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
@@ -343,6 +344,7 @@ def fetch_atlas_craddock_2012(
                 "to specify the exact atlas image you want."
             )
         ),
+        stacklevel=find_stack_level(),
     )
 
     params = dict(
@@ -1241,6 +1243,7 @@ def fetch_atlas_smith_2009(
                 "to specify the exact atlas image you want."
             )
         ),
+        stacklevel=find_stack_level(),
     )
 
     keys = list(files.keys())
@@ -1290,9 +1293,9 @@ def fetch_atlas_yeo_2011(
         - 17 networks parcellation.
 
         If ``thickness`` is not None, this will default to ``7``.
-        The default will be set to ``7`` in version 0.13.2.
+        The default will be set to ``7`` in version 0.13.0.
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
 
     thickness : {"thin", "thick", None}, default = None
         If not None,
@@ -1302,9 +1305,9 @@ def fetch_atlas_yeo_2011(
         - ``"thin"``: parcellation fitted to thin cortex segmentations.
 
         If ``n_networks`` is not None, this will default to ``"thick"``.
-        The default will be set to ``"thick"`` in version 0.13.2.
+        The default will be set to ``"thick"`` in version 0.13.0.
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
 
     Returns
     -------
@@ -1398,13 +1401,14 @@ def fetch_atlas_yeo_2011(
         warnings.warn(
             category=DeprecationWarning,
             message=(
-                deprecation_message.format(version="0.13.2")
+                deprecation_message.format(version="0.13.0")
                 + (
                     "To suppress this warning, "
                     "Please use the parameters 'n_networks' and 'thickness' "
                     "to specify the exact atlas image you want."
                 )
             ),
+            stacklevel=find_stack_level(),
         )
 
     if n_networks is not None:
@@ -1633,7 +1637,9 @@ def fetch_atlas_aal(
                 "Starting in version 0.13, the default fetched mask will be"
                 "AAL 3v2 instead."
             )
-            warnings.warn(message, DeprecationWarning)
+            warnings.warn(
+                message, DeprecationWarning, stacklevel=find_stack_level()
+            )
 
         elif version == "3v2":
             url = f"{base_url}wp-content/uploads/AAL3v2_for_SPM12.tar.gz"
@@ -1848,6 +1854,7 @@ def fetch_atlas_basc_multiscale_2015(
                 "to specify the exact atlas image you want."
             )
         ),
+        stacklevel=find_stack_level(),
     )
 
     basenames = [
@@ -2251,12 +2258,11 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
     logger.log(
         f"Separating talairach atlas levels: {_TALAIRACH_LEVELS}",
         verbose=verbose,
-        stack_level=3,
     )
     for level_name, old_level_labels in zip(
         _TALAIRACH_LEVELS, np.asarray(labels).T
     ):
-        logger.log(level_name, verbose=verbose, stack_level=3)
+        logger.log(level_name, verbose=verbose)
         # level with most regions, ba, has 72 regions
         level_data = np.zeros(atlas_img.shape, dtype="uint8")
         level_labels = {"*": 0}
@@ -2446,7 +2452,7 @@ def fetch_atlas_pauli_2017(
         warnings.warn(
             category=DeprecationWarning,
             message=atlas_type_values,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
         atlas_type = (
             "probabilistic" if atlas_type == "prob" else "deterministic"

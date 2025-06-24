@@ -4,8 +4,9 @@ import abc
 import gzip
 import pathlib
 import warnings
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 import sklearn.cluster
@@ -17,6 +18,7 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils
 from nilearn._utils import stringify_path
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
 
@@ -45,7 +47,7 @@ def _load_uniform_ball_cloud(n_points=20):
         "have a big impact on the result, we strongly recommend using one "
         'of these values when using kind="ball" for much better performance.',
         EfficiencyWarning,
-        stacklevel=3,
+        stacklevel=find_stack_level(),
     )
     return _uniform_ball_cloud(n_points=n_points)
 
@@ -503,10 +505,10 @@ def _nearest_most_frequent(
     )
     texture = np.zeros((mesh.n_vertices, images.shape[0]))
     for img in range(images.shape[0]):
-        for loc in range(len(sample_locations)):
+        for loc, sample_location in enumerate(sample_locations):
             possible_values = [
                 data[img][coords[0], coords[1], coords[2]]
-                for coords in sample_locations[loc]
+                for coords in sample_location
             ]
             unique, counts = np.unique(possible_values, return_counts=True)
             texture[loc, img] = unique[np.argmax(counts)]
@@ -644,7 +646,7 @@ def vol_to_surf(
         - 'nearest':
             Use the intensity of the nearest voxel.
 
-            .. versionchanged:: 0.11.2.dev
+            .. versionchanged:: 0.12.0
 
                 The 'nearest' interpolation method will be removed in
                 version 0.13.0. It is recommended to use 'linear' for
@@ -659,7 +661,7 @@ def vol_to_surf(
             when the image is a
             :term:`deterministic atlas<Deterministic atlas>`.
 
-            .. versionadded:: 0.11.2.dev
+            .. versionadded:: 0.12.0
 
         For one image, the speed difference is small, 'linear' takes about x1.5
         more time. For many images, 'nearest' scales much better, up to x20
@@ -828,7 +830,7 @@ def vol_to_surf(
             "'nearest_most_frequent' is recommended. Otherwise, use 'linear'. "
             "See the documentation for more information.",
             FutureWarning,
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
 
     img = load_img(img)
@@ -1747,31 +1749,6 @@ def _check_data_and_mesh_compat(mesh, data):
             )
 
 
-def check_same_n_vertices(mesh_1, mesh_2):
-    """Check that 2 PolyMesh have the same keys and that n vertices match.
-
-    Parameters
-    ----------
-    mesh_1: PolyMesh
-
-    mesh_2: PolyMesh
-    """
-    keys_1, keys_2 = set(mesh_1.parts.keys()), set(mesh_2.parts.keys())
-    if keys_1 != keys_2:
-        diff = keys_1.symmetric_difference(keys_2)
-        raise ValueError(
-            f"Meshes do not have the same keys. Offending keys: {diff}"
-        )
-    for key in keys_1:
-        if mesh_1.parts[key].n_vertices != mesh_2.parts[key].n_vertices:
-            raise ValueError(
-                f"Number of vertices do not match for '{key}'."
-                "number of vertices in mesh_1: "
-                f"{mesh_1.parts[key].n_vertices}; "
-                f"in mesh_2: {mesh_2.parts[key].n_vertices}"
-            )
-
-
 def _mesh_to_gifti(coordinates, faces, gifti_file):
     """Write surface mesh to gifti file on disk.
 
@@ -2006,6 +1983,21 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
+def check_surf_img(img: Union[SurfaceImage, Iterable[SurfaceImage]]) -> None:
+    """Validate SurfaceImage.
+
+    Equivalent to check_niimg for volumes.
+    """
+    if isinstance(img, SurfaceImage):
+        if get_data(img).size == 0:
+            raise ValueError("The image is empty.")
+        return None
+
+    if hasattr(img, "__iter__"):
+        for x in img:
+            check_surf_img(x)
+
+
 def get_data(img, ensure_finite=False) -> np.ndarray:
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
@@ -2015,7 +2007,7 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
     img : :obj:`~surface.SurfaceImage` or :obj:`~surface.PolyData`
         SurfaceImage whose data to concatenate and extract.
 
-    ensure_finite : bool
+    ensure_finite : bool, Default=False
         If True, non-finite values such as (NaNs and infs) found in the
         image will be replaced by zeros.
 
@@ -2028,6 +2020,10 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
         data = img.data
     elif isinstance(img, PolyData):
         data = img
+    else:
+        raise TypeError(
+            f"Expected PolyData or SurfaceImage. Got {img.__class__.__name__}."
+        )
 
     data = np.concatenate(list(data.parts.values()), axis=0)
 
@@ -2037,7 +2033,7 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
             warnings.warn(
                 "Non-finite values detected. "
                 "These values will be replaced with zeros.",
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
             data[non_finite_mask] = 0
 

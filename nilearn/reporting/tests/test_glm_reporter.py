@@ -5,6 +5,7 @@ import pytest
 from nilearn._utils.data_gen import (
     basic_paradigm,
     generate_fake_fmri_data_and_design,
+    write_fake_bold_img,
 )
 from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.datasets import load_fsaverage
@@ -25,7 +26,7 @@ def rk():
 @pytest.fixture
 def contrasts(rk):
     c = np.zeros((1, rk))
-    c[0] = 1
+    c[0][0] = 1
     return c
 
 
@@ -37,9 +38,7 @@ def flm(rk):
         shapes, rk=rk
     )
     # generate_fake_fmri_data_and_design
-    return FirstLevelModel(mask_img=mask).fit(
-        fmri_data, design_matrices=design_matrices
-    )
+    return FirstLevelModel().fit(fmri_data, design_matrices=design_matrices)
 
 
 @pytest.fixture()
@@ -53,11 +52,20 @@ def slm():
     return model.fit(Y, design_matrix=X)
 
 
+def test_flm_report_no_activation_found(flm, contrasts):
+    """Check presence message of no activation found.
+
+    We use random data, so we should not get activations.
+    """
+    report = flm.generate_report(contrasts=contrasts)
+    assert "No suprathreshold cluster" in report.__str__()
+
+
 @pytest.mark.parametrize("model", [FirstLevelModel, SecondLevelModel])
 @pytest.mark.parametrize("bg_img", [_img_mask_mni(), _make_surface_mask()])
 def test_empty_surface_reports(tmp_path, model, bg_img):
     """Test that empty reports on unfitted model can be generated."""
-    report = model().generate_report(bg_img=bg_img)
+    report = model(smoothing_fwhm=None).generate_report(bg_img=bg_img)
 
     assert isinstance(report, HTMLReport)
 
@@ -65,6 +73,25 @@ def test_empty_surface_reports(tmp_path, model, bg_img):
     assert (tmp_path / "tmp.html").exists()
 
 
+def test_flm_reporting_no_contrasts(flm):
+    """Test for model report can be generated with no contrasts."""
+    report = flm.generate_report(
+        plot_type="glass",
+        contrasts=None,
+        min_distance=15,
+        alpha=0.01,
+        threshold=2,
+    )
+    assert "No statistical map was provided." in report.__str__()
+
+
+def test_mask_coverage_in_report(flm):
+    """Check that how much image is included in mask is in the report."""
+    report = flm.generate_report()
+    assert "The mask includes" in report.__str__()
+
+
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("height_control", ["fdr", "bonferroni", None])
 def test_flm_reporting_height_control(flm, height_control, contrasts):
     """Test for first level model reporting."""
@@ -88,6 +115,7 @@ def test_flm_reporting_height_control(flm, height_control, contrasts):
     assert "cosine" in report_flm.__str__()
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_slm_reporting_method(slm, height_control):
     """Test for the second level reporting."""
@@ -99,6 +127,44 @@ def test_slm_reporting_method(slm, height_control):
     report_slm.get_iframe()
 
 
+@pytest.mark.timeout(0)
+def test_slm_with_flm_as_inputs(flm, contrasts):
+    """Test second level reporting when inputs are first level models."""
+    model = SecondLevelModel()
+
+    Y = [flm] * 3
+    X = pd.DataFrame([[1]] * 3, columns=["intercept"])
+    first_level_contrast = contrasts
+
+    model.fit(Y, design_matrix=X)
+
+    c1 = np.eye(len(model.design_matrix_.columns))[0]
+
+    model.generate_report(c1, first_level_contrast=first_level_contrast)
+
+
+def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
+    """Test second level reporting when input is a dataframe."""
+    file_path = write_fake_bold_img(
+        file_path=tmp_path / "img.nii.gz", shape=shape_3d_default
+    )
+
+    dfcols = ["subject_label", "map_name", "effects_map_path"]
+    dfrows = [
+        ["01", "a", file_path],
+        ["02", "a", file_path],
+        ["03", "a", file_path],
+    ]
+    niidf = pd.DataFrame(dfrows, columns=dfcols)
+
+    model = SecondLevelModel().fit(niidf)
+
+    c1 = np.eye(len(model.design_matrix_.columns))[0]
+
+    model.generate_report(c1, first_level_contrast="a")
+
+
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 def test_report_plot_type(flm, plot_type, contrasts):
     """Smoke test for valid plot type."""
@@ -188,6 +254,7 @@ def test_fir_delays_in_params(contrasts):
     assert "fir_delays" in report.__str__()
 
 
+@pytest.mark.timeout(0)
 def test_drift_order_in_params(contrasts):
     """Check that drift_order is in the report when parameter is drift_model is
     polynomial.
@@ -222,7 +289,7 @@ def test_flm_generate_report_surface_data(rng):
     fmri_data = SurfaceImage(mesh, data)
 
     # using smoothing_fwhm for coverage
-    model = FirstLevelModel(t_r=t_r, smoothing_fwhm=0)
+    model = FirstLevelModel(t_r=t_r, smoothing_fwhm=None)
 
     model.fit(fmri_data, events=events)
 
@@ -230,12 +297,16 @@ def test_flm_generate_report_surface_data(rng):
 
     assert isinstance(report, HTMLReport)
 
+    assert "Results table not available for surface data." in report.__str__()
+
 
 def test_flm_generate_report_surface_data_error(
     surf_mask_1d, surf_img_2d, img_3d_mni
 ):
     """Generate report from flm fitted surface."""
-    model = FirstLevelModel(mask_img=surf_mask_1d, t_r=2.0)
+    model = FirstLevelModel(
+        mask_img=surf_mask_1d, t_r=2.0, smoothing_fwhm=None
+    )
     events = basic_paradigm()
     model.fit(surf_img_2d(9), events=events)
 
@@ -243,3 +314,40 @@ def test_flm_generate_report_surface_data_error(
         TypeError, match="'bg_img' must a SurfaceImage instance"
     ):
         model.generate_report("c0", bg_img=img_3d_mni, height_control=None)
+
+
+@pytest.mark.timeout(0)
+def test_carousel_two_runs(
+    matplotlib_pyplot,  # noqa: ARG001
+    flm,
+    slm,
+    contrasts,
+):
+    """Check that a carousel is present when there is more than 1 run."""
+    # Second level have a single "run" and do not need a carousel
+    report_slm = slm.generate_report()
+
+    assert 'id="carousel-navbar"' not in report_slm.__str__()
+
+    # first level model with one run : no run carousel
+    report_one_run = flm.generate_report(contrasts=contrasts)
+
+    assert 'id="carousel-navbar"' not in report_one_run.__str__()
+
+    # first level model with 2 runs : run carousel
+    rk = 6
+    shapes = ((7, 7, 7, 5), (7, 7, 7, 10))
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk=rk
+    )
+
+    contrasts = np.zeros((1, rk))
+    contrasts[0][1] = 1
+
+    flm_two_runs = FirstLevelModel().fit(
+        fmri_data, design_matrices=design_matrices
+    )
+
+    report = flm_two_runs.generate_report(contrasts=contrasts)
+
+    assert 'id="carousel-navbar"' in report.__str__()

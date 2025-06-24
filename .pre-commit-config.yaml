@@ -13,6 +13,7 @@ exclude: |
         | nilearn/externals/.*
         | nilearn/plotting/data/js/.*js
         | nilearn/_version.py
+        | asv_benchmarks/asv.conf.json
     )$
 
 repos:
@@ -65,7 +66,7 @@ repos:
     # Check formatting of CSS and HTML
     # prettier: https://prettier.io/
 -   repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.5.3
+    rev: v3.6.0
     hooks:
     -   id: prettier
         types_or: [css, html]
@@ -75,7 +76,7 @@ repos:
             )$
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.2
+    rev: v0.12.0
     hooks:
     # Run the linter.
     -   id: ruff
@@ -87,13 +88,13 @@ repos:
 
 
 -   repo: https://github.com/PyCQA/doc8
-    rev: v1.1.2
+    rev: v2.0.0
     hooks:
     -   id: doc8
         args: [--config=pyproject.toml, nilearn]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.15.0
+    rev: v1.16.1
     hooks:
     -   id: mypy
         files: nilearn

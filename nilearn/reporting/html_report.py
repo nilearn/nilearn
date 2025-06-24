@@ -8,6 +8,7 @@ import pandas as pd
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
@@ -157,6 +158,13 @@ def _update_template(
     with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
 
+    if "n_elements" not in data:
+        data["n_elements"] = 0
+    if "coverage" in data:
+        data["coverage"] = f"{data['coverage']:0.1f}"
+    else:
+        data["coverage"] = ""
+
     body = tpl.substitute(
         title=title,
         content=content,
@@ -246,7 +254,9 @@ def generate_report(estimator):
             )
             warnings.filterwarnings("always", message=mpl_unavail_msg)
             warnings.warn(
-                category=ImportWarning, message=mpl_unavail_msg, stacklevel=3
+                category=ImportWarning,
+                message=mpl_unavail_msg,
+                stacklevel=find_stack_level(),
             )
             return [None]
 
@@ -275,7 +285,7 @@ def generate_report(estimator):
         for msg in warning_messages:
             warnings.warn(
                 msg,
-                stacklevel=3,
+                stacklevel=find_stack_level(),
             )
 
         return _update_template(
@@ -387,12 +397,7 @@ def is_notebook() -> bool:
     """
     try:
         shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
-        if shell == "ZMQInteractiveShell":
-            return True  # Jupyter notebook or qtconsole
-        elif shell == "TerminalInteractiveShell":
-            return False  # Terminal running IPython
-        else:
-            return False  # Other type (?)
+        return shell == "ZMQInteractiveShell"
     except NameError:
         return False  # Probably standard Python interpreter
 

@@ -6,6 +6,19 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import LinearSegmentedColormap
 
+from nilearn._utils.logger import find_stack_level
+
+DEFAULT_ENGINE = "matplotlib"
+
+
+def engine_warning(engine):
+    message = (
+        f"'{engine}' is not installed. To be able to use '{engine}' as "
+        "plotting engine for 'nilearn.plotting' package:\n"
+        " pip install 'nilearn[plotting]'"
+    )
+    warn(message, stacklevel=find_stack_level())
+
 
 def save_figure_if_needed(fig, output_file):
     """Save figure if an output file value is given.
@@ -55,7 +68,7 @@ def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
         vmax += np.finfo(np.float32).eps
 
     # If a threshold is specified, we want two of the tick
-    # to correspond to -thresold and +threshold on the colorbar.
+    # to correspond to -threshold and +threshold on the colorbar.
     # If the threshold is very small compared to vmax,
     # we use a simple linspace as the result would be very difficult to see.
     ticks = np.linspace(vmin, vmax, n_ticks)
@@ -189,7 +202,7 @@ def create_colormap_from_lut(cmap, default_cmap="gist_ncar"):
         warn(
             "No 'color' column found in the look-up table. "
             "Will use the default colormap instead.",
-            stacklevel=3,
+            stacklevel=find_stack_level(),
         )
         return default_cmap
 

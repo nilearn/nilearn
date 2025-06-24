@@ -18,7 +18,9 @@ from sklearn.utils.extmath import fast_logdet
 
 from nilearn._utils import CacheMixin, fill_doc, logger
 from nilearn._utils.extmath import is_spd
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
+from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 def compute_alpha_max(emp_covs, n_samples):
@@ -308,7 +310,6 @@ def _group_sparse_covariance(
         logger.log(
             f"* iteration {n:d} ({100.0 * n / max_iter:.0f} %){suffix} ...",
             verbose=verbose,
-            stack_level=2,
         )
 
         omega_old[...] = omega
@@ -386,7 +387,11 @@ def _group_sparse_covariance(
 
                         if fder == 0:
                             msg = "derivative was zero."
-                            warnings.warn(msg, RuntimeWarning, stacklevel=4)
+                            warnings.warn(
+                                msg,
+                                RuntimeWarning,
+                                stacklevel=find_stack_level(),
+                            )
                             break
                         fval = -(alpha2 - (cc / aq2).sum()) / fder
                         gamma = fval + gamma
@@ -397,7 +402,7 @@ def _group_sparse_covariance(
                         warnings.warn(
                             "Newton-Raphson step did not converge.\n"
                             "This may indicate a badly conditioned system.",
-                            stacklevel=4,
+                            stacklevel=find_stack_level(),
                         )
 
                     if debug:
@@ -431,10 +436,7 @@ def _group_sparse_covariance(
         ):
             probe_interrupted = True
             logger.log(
-                "probe_function interrupted loop",
-                verbose=verbose,
-                msg_level=2,
-                stack_level=2,
+                "probe_function interrupted loop", verbose=verbose, msg_level=2
             )
             break
 
@@ -453,7 +455,7 @@ def _group_sparse_covariance(
         warnings.warn(
             "Maximum number of iterations reached without getting "
             "to the requested tolerance level.",
-            stacklevel=4,
+            stacklevel=find_stack_level(),
         )
 
     return omega
@@ -492,7 +494,7 @@ def _check_diagonal_normalization(emp_covs, n_subjects):
             warnings.warn(
                 "Input signals do not all have unit variance. "
                 "This can lead to numerical instability.",
-                stacklevel=4,
+                stacklevel=find_stack_level(),
             )
             break
 
@@ -537,7 +539,6 @@ def _check_if_tolerance_reached(tol, max_norm, verbose, n):
         logger.log(
             f"tolerance reached at iteration number {n + 1:d}: {max_norm:.3e}",
             verbose=verbose,
-            stack_level=2,
         )
     return tolerance_reached
 
@@ -601,11 +602,32 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         self.memory_level = memory_level
         self.verbose = verbose
 
-    def fit(
-        self,
-        subjects,
-        y=None,  # noqa: ARG002
-    ):
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(niimg_like=False)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(niimg_like=False)
+        return tags
+
+    @fill_doc
+    def fit(self, subjects, y=None):
         """Fits the group sparse precision model according \
         to the given training data and parameters.
 
@@ -617,12 +639,15 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns).
 
+        %(y_dummy)s
+
         Returns
         -------
         self : GroupSparseCovariance instance
             the object itself. Useful for chaining operations.
 
         """
+        del y
         check_params(self.__dict__)
         for x in subjects:
             check_array(x, accept_sparse=False)
@@ -1080,11 +1105,32 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
         self.debug = debug
         self.early_stopping = early_stopping
 
-    def fit(
-        self,
-        subjects,
-        y=None,  # noqa: ARG002
-    ):
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(niimg_like=False)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(niimg_like=False)
+        return tags
+
+    @fill_doc
+    def fit(self, subjects, y=None):
         """Compute cross-validated group-sparse precisions.
 
         Parameters
@@ -1095,12 +1141,15 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
             signals. Sample number can vary from subject to subject, but all
             subjects must have the same number of features (i.e. of columns.)
 
+        %(y_dummy)s
+
         Returns
         -------
         self : GroupSparseCovarianceCV
             the object instance itself.
 
         """
+        del y
         check_params(self.__dict__)
 
         for x in subjects:
