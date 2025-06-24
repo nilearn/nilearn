@@ -60,10 +60,21 @@ def _input_type_error_message(second_level_input):
 
 
 def _check_second_level_input(
-    second_level_input, design_matrix, confounds=None
+    second_level_input, design_matrix, design_only=False, confounds=None
 ):
     """Check second_level_input type."""
     _check_design_matrix(design_matrix)
+    if not design_only:
+        if second_level_input is None:
+            raise TypeError(
+                "'second_level_input' can only be None for design only models."
+            )
+    elif second_level_input is None:
+        if design_matrix is None:
+            raise TypeError(
+                "'second_level_input' and 'design_matrix' cannot both be None for design only models."
+            )
+        return
 
     input_type = _check_input_type(second_level_input)
     _check_input_as_type(
@@ -377,8 +388,10 @@ def _infer_effect_maps(second_level_input, contrast_def):
     return effect_maps
 
 
-def _process_second_level_input(second_level_input):
+def _process_second_level_input(second_level_input, design_only=False):
     """Process second_level_input."""
+    if design_only and second_level_input:
+        return None, None
     if isinstance(second_level_input, pd.DataFrame):
         return _process_second_level_input_as_dataframe(second_level_input)
     elif hasattr(second_level_input, "__iter__") and isinstance(
@@ -432,7 +445,7 @@ def _process_second_level_input_as_firstlevelmodels(second_level_input):
 
 def _process_second_level_input_as_surface_image(second_level_input):
     """Compute mean image across sample maps.
-
+    _get_element_wise_model_attribute
     All should have the same underlying meshes.
 
     Returns
@@ -494,6 +507,11 @@ class SecondLevelModel(BaseGLM):
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption.
+
+    design_only : :obj:`bool`, default=False
+        If True the model is specified but not estimated.
+
+        .. versionadded:: 0.12.1dev
     """
 
     def __str__(self):
@@ -510,6 +528,7 @@ class SecondLevelModel(BaseGLM):
         verbose=0,
         n_jobs=1,
         minimize_memory=True,
+        design_only=False,
     ):
         self.mask_img = mask_img
         self.target_affine = target_affine
@@ -520,9 +539,10 @@ class SecondLevelModel(BaseGLM):
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
+        self.design_only = design_only
 
     @fill_doc
-    def fit(self, second_level_input, confounds=None, design_matrix=None):
+    def fit(self, second_level_input=None, confounds=None, design_matrix=None):
         """Fit the second-level :term:`GLM`.
 
         1. create design matrix
@@ -548,7 +568,10 @@ class SecondLevelModel(BaseGLM):
 
         # check second_level_input
         _check_second_level_input(
-            second_level_input, design_matrix, confounds=confounds
+            second_level_input,
+            design_matrix,
+            self.design_only,
+            confounds=confounds,
         )
 
         # check confounds
@@ -564,7 +587,7 @@ class SecondLevelModel(BaseGLM):
         self.confounds_ = confounds
 
         sample_map, subjects_label = _process_second_level_input(
-            second_level_input
+            second_level_input, self.design_only
         )
 
         # Report progress
@@ -601,7 +624,8 @@ class SecondLevelModel(BaseGLM):
         check_compatibility_mask_and_images(self.mask_img, sample_map)
         self.masker_ = check_embedded_masker(self, masker_type)
 
-        self.masker_.fit(sample_map)
+        if sample_map is not None:
+            self.masker_.fit(sample_map)
 
         # Report progress
         logger.log(
@@ -615,9 +639,9 @@ class SecondLevelModel(BaseGLM):
         return self
 
     def __sklearn_is_fitted__(self):
-        return (
-            hasattr(self, "second_level_input_")
-            and self.second_level_input_ is not None
+        return hasattr(self, "second_level_input_") and (
+            (not self.design_only and self.second_level_input_ is not None)
+            or self.design_only
         )
 
     @fill_doc
@@ -655,6 +679,10 @@ class SecondLevelModel(BaseGLM):
 
         """
         check_is_fitted(self)
+        if self.design_only:
+            raise RuntimeError(
+                "Cannot compute contrasts on 'design_only' models."
+            )
 
         # check first_level_contrast
         _check_first_level_contrast(
@@ -758,6 +786,10 @@ class SecondLevelModel(BaseGLM):
 
         """
         check_is_fitted(self)
+        if self.design_only:
+            raise RuntimeError(
+                "Cannot get_element_wise_model_attribute on 'design_only' models."
+            )
         # check if valid attribute is being accessed.
         all_attributes = dict(vars(RegressionResults)).keys()
         possible_attributes = [
