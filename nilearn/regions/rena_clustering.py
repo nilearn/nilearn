@@ -706,27 +706,37 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         X = check_array(
             X, ensure_min_features=2, ensure_min_samples=2, estimator=self
         )
-        n_features = X.shape[1]
+        self.n_features_in_ = X.shape[1]
+
+        # If no mask images was passed we create a dummy nifti image
+        # with a single slice
+        self.mask_img_ = self.mask_img
+        if self.mask_img_ is None:
+            self.mask_img_ = Nifti1Image(
+                np.ones((self.n_features_in_, 1, 1), dtype=np.int8),
+                affine=np.eye(4),
+            )
 
         if not isinstance(
-            self.mask_img, (str, Nifti1Image, SurfaceImage, SurfaceMasker)
+            self.mask_img_, (str, Nifti1Image, SurfaceImage, SurfaceMasker)
         ):
             raise TypeError(
                 "The mask image should be a Niimg-like object, "
-                "a SurfaceImage object or a SurfaceMasker."
-                f"Instead a {type(self.mask_img)} object was provided."
+                "a SurfaceImage object or a SurfaceMasker. "
+                f"Instead a {self.mask_img.__class__.__name__} "
+                "object was provided."
             )
 
         # If mask_img is a SurfaceMasker, we need to extract the mask_img
         if isinstance(self.mask_img, SurfaceMasker):
-            self.mask_img = self.mask_img.mask_img_
+            check_is_fitted(self.mask_img)
+            self.mask_img_ = self.mask_img.mask_img_
 
+        self.memory_ = self.memory
         if self.memory is None or isinstance(self.memory, str):
             self.memory_ = Memory(
                 location=self.memory, verbose=max(0, self.verbose - 1)
             )
-        else:
-            self.memory_ = self.memory
 
         if self.n_clusters <= 0:
             raise ValueError(
@@ -740,11 +750,11 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
                 f" {self.n_iter} was provided."
             )
 
-        if self.n_clusters > n_features:
-            self.n_clusters = n_features
+        if self.n_clusters > self.n_features_in_:
+            self.n_clusters = self.n_features_in_
             warnings.warn(
                 "n_clusters should be at most the number of features. "
-                f"Taking n_clusters = {n_features} instead.",
+                f"Taking n_clusters = {self.n_features_in_} instead.",
                 stacklevel=find_stack_level(),
             )
 
@@ -752,7 +762,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             recursive_neighbor_agglomeration
         )(
             X,
-            self.mask_img,
+            self.mask_img_,
             self.n_clusters,
             n_iter=self.n_iter,
             threshold=self.threshold,
@@ -793,6 +803,12 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
 
         """
         check_is_fitted(self)
+
+        # TODO simplify when dropping sklearn 1.5
+        if not SKLEARN_LT_1_6:
+            from sklearn.utils.validation import validate_data
+
+            validate_data(self, X, reset=False)
 
         unique_labels = np.unique(self.labels_)
 
