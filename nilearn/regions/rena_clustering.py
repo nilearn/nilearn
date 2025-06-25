@@ -706,7 +706,12 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         del y
         check_params(self.__dict__)
 
-        if not SKLEARN_LT_1_6:
+        if SKLEARN_LT_1_6:
+            X = check_array(
+                X, ensure_min_features=2, ensure_min_samples=2, estimator=self
+            )
+            self.n_features_in_ = X.shape[1]
+        else:
             from sklearn.utils.validation import validate_data
 
             X = validate_data(
@@ -716,11 +721,6 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
                 ensure_min_features=2,
                 ensure_min_samples=2,
             )
-        else:
-            X = check_array(
-                X, ensure_min_features=2, ensure_min_samples=2, estimator=self
-            )
-            self.n_features_in_ = X.shape[1]
 
         # If no mask images was passed we create a dummy nifti image
         # with a single slice
@@ -817,17 +817,17 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         check_is_fitted(self)
 
         # TODO simplify when dropping sklearn 1.5
-        if not SKLEARN_LT_1_6:
-            from sklearn.utils.validation import validate_data
-
-            X = validate_data(self, X, reset=False)
-        else:
+        if SKLEARN_LT_1_6:
             X = check_array(
                 X,
                 ensure_2d=True,
                 estimator=self,
                 ensure_min_features=self.n_features_in_,
             )
+        else:
+            from sklearn.utils.validation import validate_data
+
+            X = validate_data(self, X, reset=False)
 
         unique_labels = np.unique(self.labels_)
 
