@@ -62,7 +62,6 @@ nosetests_coverage/
 
 # documentation
 doc/_build/
-doc/jupyterlite_contents
 doc/auto_examples/
 doc/building_blocks/generated/
 doc/ci.rst
