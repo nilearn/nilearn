@@ -608,7 +608,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         # Compute the vector we return on transform
         if do_transform:
             # TODO simplify when dropping sklearn 1.5
-            if SKLEARN_LT_1_6:
+            if not SKLEARN_LT_1_6:
                 from sklearn.utils.validation import validate_data
 
                 for x in X:
