@@ -1063,8 +1063,14 @@ class FirstLevelModel(BaseGLM):
         n_contrasts = len(con_vals)
         if n_contrasts == 1 and n_runs > 1:
             warn(
-                f"One contrast given, assuming it for all {n_runs} runs",
-                category=UserWarning,
+                (
+                    f"The same contrast will be used for all {n_runs} runs. "
+                    "If you want to apply a different contrast to each run, "
+                    "pass contrast as an expression using "
+                    "the name of the conditions "
+                    "as they appear in the design matrix."
+                ),
+                category=RuntimeWarning,
                 stacklevel=find_stack_level(),
             )
             con_vals = con_vals * n_runs
