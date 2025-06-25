@@ -589,7 +589,7 @@ class NiftiLabelsMasker(BaseMasker):
                 self.mask_img_,
             )
         ):
-            mask_logger("resampling_mask", verbose=self.verbose)
+            mask_logger("resample_mask", verbose=self.verbose)
 
             # TODO switch to force_resample=True
             # when bumping to version > 0.13

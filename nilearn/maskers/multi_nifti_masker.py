@@ -345,7 +345,7 @@ class MultiNiftiMasker(NiftiMasker):
         # TODO add if block to only run when resampling is needed
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.
-        mask_logger("resampling_mask", verbose=self.verbose)
+        mask_logger("resample_mask", verbose=self.verbose)
 
         # TODO switch to force_resample=True
         # when bumping to version > 0.13
