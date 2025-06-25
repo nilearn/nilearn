@@ -696,6 +696,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             self.mask_img_,
             self.is_classification,
             mesh_n_vertices=mesh_n_vertices,
+            verbose=self.verbose,
         )
 
         # Return a suitable screening percentile according to the mask image
