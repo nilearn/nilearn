@@ -29,8 +29,11 @@ mean_func = image.mean_img(first_epi_file, copy_header=True)
 # %%
 # Then we smooth, with a varying amount of smoothing, from none to 20mm
 # by increments of 5mm
-for smoothing in range(0, 25, 5):
+for smoothing in [None, 5, 10, 15, 20, 25]:
     smoothed_img = image.smooth_img(mean_func, smoothing)
-    plotting.plot_epi(smoothed_img, title=f"Smoothing {int(smoothing)}mm")
+    title = (
+        "No smoothing" if smoothing is None else f"Smoothing {smoothing} mm"
+    )
+    plotting.plot_epi(smoothed_img, title=title)
 
 plotting.show()

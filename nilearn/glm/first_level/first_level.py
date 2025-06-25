@@ -10,6 +10,7 @@ from __future__ import annotations
 import csv
 import inspect
 import time
+import warnings
 from collections.abc import Iterable
 from pathlib import Path
 from warnings import warn
@@ -88,8 +89,8 @@ def mean_scaling(Y, axis=0):
     if (mean == 0).any():
         warn(
             "Mean values of 0 observed. "
-            "The data have probably been centered."
-            "Scaling might not work as expected",
+            "The data have probably been centered. "
+            "Scaling might not work as expected.",
             UserWarning,
             stacklevel=find_stack_level(),
         )
@@ -1246,7 +1247,11 @@ class FirstLevelModel(BaseGLM):
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"
 
-            self.masker_.fit(run_img)
+            with warnings.catch_warnings():
+                # ignore warning in case the masker
+                # was initialized with a mask image
+                warnings.simplefilter("ignore")
+                self.masker_.fit(run_img)
 
         else:
             check_is_fitted(self.mask_img)
