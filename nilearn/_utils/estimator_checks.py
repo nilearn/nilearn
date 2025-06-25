@@ -230,34 +230,25 @@ def return_expected_failed_checks(
     elif isinstance(
         estimator, (GroupSparseCovariance, GroupSparseCovarianceCV)
     ):
-        return {
-            "check_fit_score_takes_y": "not applicable",
-            "check_fit_check_is_fitted": "handled by nilearn checks",
-            "check_dict_unchanged": "TODO",
-            "check_dont_overwrite_parameters": "TODO",
-            "check_dtype_object": "TODO",
+        expected_failed_checks = {
             "check_estimator_sparse_array": "TODO",
-            "check_estimator_sparse_data": "TODO",
+            "check_estimator_sparse_data": "removed when dropping sklearn 1.4",
             "check_estimator_sparse_matrix": "TODO",
-            "check_estimators_dtypes": "TODO",
-            "check_estimators_empty_data_messages": "TODO",
-            "check_estimators_fit_returns_self": "TODO",
-            "check_estimators_nan_inf": "TODO",
-            "check_estimators_overwrite_params": "TODO",
-            "check_estimators_pickle": "TODO",
-            "check_f_contiguous_array_estimator": "TODO",
-            "check_fit_idempotent": "TODO",
-            "check_fit2d_1feature": "TODO",
-            "check_fit2d_1sample": "TODO",
-            "check_fit2d_predict1d": "TODO",
-            "check_methods_sample_order_invariance": "TODO",
-            "check_methods_subset_invariance": "TODO",
-            "check_n_features_in": "TODO",
-            "check_n_features_in_after_fitting": "TODO",
-            "check_pipeline_consistency": "TODO",
-            "check_positive_only_tag_during_fit": "TODO",
-            "check_readonly_memmap_input": "TODO",
+            "check_estimator_sparse_tag": "TODO",
         }
+        if SKLEARN_MINOR > 4:
+            expected_failed_checks.pop("check_estimator_sparse_data")
+        if isinstance(estimator, GroupSparseCovariance):
+            expected_failed_checks |= {
+                "check_dont_overwrite_parameters": "TODO",
+                "check_estimators_overwrite_params": "TODO",
+            }
+        if isinstance(estimator, GroupSparseCovarianceCV):
+            expected_failed_checks |= {
+                "check_estimators_dtypes": "TODO",
+                "check_dtype_object": "TODO",
+            }
+        return expected_failed_checks
 
     # below this point we should only deal with estimators
     # that accept images as input

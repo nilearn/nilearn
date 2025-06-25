@@ -649,8 +649,28 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         """
         del y
         check_params(self.__dict__)
+
+        # casting single arrays to list mostly to help
+        # with checking comlpliance with sklearn estimator guidelines
+        if isinstance(subjects, np.ndarray):
+            subjects = [subjects]
+
+        if not isinstance(subjects, list):
+            raise TypeError(
+                "'subjects' must be a list of arrays. "
+                f"Got {subjects.__class__.__name__}"
+            )
+
         for x in subjects:
-            check_array(x, accept_sparse=False)
+            check_array(
+                x,
+                accept_sparse=False,
+                ensure_2d=True,
+                ensure_min_features=2,
+                ensure_min_samples=2,
+            )
+
+        self.n_features_in_ = next(iter({s.shape[1] for s in subjects}))
 
         if self.memory is None:
             self.memory = Memory(location=None)
@@ -1152,8 +1172,27 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
         del y
         check_params(self.__dict__)
 
+        # casting single arrays to list mostly to help
+        # with checking comlpliance with sklearn estimator guidelines
+        if isinstance(subjects, np.ndarray):
+            subjects = [subjects]
+
+        if not isinstance(subjects, list):
+            raise TypeError(
+                "'subjects' must be a list of 2D numpy arrays. "
+                f"Got {subjects.__class__.__name__}"
+            )
+
         for x in subjects:
-            check_array(x, accept_sparse=False)
+            check_array(
+                x,
+                accept_sparse=False,
+                ensure_2d=True,
+                ensure_min_features=2,
+                ensure_min_samples=2,
+            )
+
+        self.n_features_in_ = next(iter({s.shape[1] for s in subjects}))
 
         # Empirical covariances
         emp_covs, n_samples = empirical_covariances(
