@@ -239,6 +239,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap_centered(model_intercept):
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
 
 
+@pytest.mark.timeout(0)
 def test_permuted_ols_check_h0_noeffect_labelswap_uncentered():
     """Check distributions of permutations when tested vars are uncentered."""
     # create dummy design with no effect
@@ -254,6 +255,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap_uncentered():
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
 
 
+@pytest.mark.timeout(0)
 def test_permuted_ols_check_h0_noeffect_signswap():
     """Check that h0 is close to the theoretical distribution \
     for permuted OLS with sign swap.
