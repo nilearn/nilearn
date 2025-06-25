@@ -613,6 +613,14 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
                 for x in X:
                     validate_data(self, x, reset=False)
+            else:
+                for x in X:
+                    check_array(
+                        x,
+                        reset=False,
+                        estimator=self,
+                        ensure_min_features=self.n_features_in_,
+                    )
 
             if self.kind == "tangent":
                 connectivities = [
