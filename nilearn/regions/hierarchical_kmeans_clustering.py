@@ -352,14 +352,15 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
-        if not SKLEARN_LT_1_6:
-            from sklearn.utils.validation import validate_data
-
-            X = validate_data(self, X=X, reset=False)
-        else:
+        # TODO simplify when dropping sklearn 1.5
+        if SKLEARN_LT_1_6:
             X = check_array(
                 X, estimator=self, ensure_min_features=self.n_features_in_
             )
+        else:
+            from sklearn.utils.validation import validate_data
+
+            X = validate_data(self, X=X, reset=False)
 
         # Transpose the data so that we can cluster features (voxels)
         # and input them as samples to the sklearn's clustering algorithm
