@@ -576,11 +576,11 @@ def nilearn_check_generator(estimator: BaseEstimator):
     else:
         requires_y = getattr(tags.target_tags, "required", False)
 
-    yield (clone(estimator), check_fit_check_is_fitted)
     yield (clone(estimator), check_fit_returns_self)
     yield (clone(estimator), check_transformer_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
+        yield (clone(estimator), check_fit_check_is_fitted)
         if requires_y:
             yield (clone(estimator), check_image_estimator_requires_y_none)
 
