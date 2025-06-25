@@ -174,6 +174,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 "if no mask is passed to mask_img."
             )
 
+        mask_logger("compute_mask", verbose=self.verbose)
+
         img = deepcopy(img)
         if not isinstance(img, list):
             img = [img]

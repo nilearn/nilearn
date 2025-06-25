@@ -15,7 +15,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
 
-from nilearn._utils import logger
+from nilearn._utils import logger, repr_niimgs
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -210,26 +210,31 @@ def prepare_confounds_multimaskers(masker, imgs_list, confounds):
 
 def mask_logger(step, img=None, verbose=0):
     """Log similar messages for all maskers."""
+    repr = None
+    if img is not None:
+        repr = img.__repr__()
+        if verbose > 1:
+            repr = repr_niimgs(img, shorten=True)
+        if verbose > 2:
+            repr = repr_niimgs(img, shorten=False)
+
     if step == "load_mask":
-        if img is not None:
-            # repr = repr_niimgs(self.mask_img, shorten=(not self.verbose))
+        if repr is not None:
             logger.log(
-                msg=f"Loading mask from {img.__repr__()}",
+                msg=f"Loading mask from {repr}",
                 verbose=verbose,
             )
 
     elif step == "load_data":
-        if img is not None:
-            # repr = repr_niimgs(self.mask_img, shorten=(not self.verbose))
+        if repr is not None:
             logger.log(
-                msg=f"Loading data from {img.__repr__()}",
+                msg=f"Loading data from {repr}",
                 verbose=verbose,
             )
 
     elif step == "load_regions":
-        # repr = repr_niimgs(self.mask_img, shorten=(not self.verbose))
         logger.log(
-            msg=f"Loading regions from {img.__repr__()}",
+            msg=f"Loading regions from {repr}",
             verbose=verbose,
         )
 
@@ -253,6 +258,9 @@ def mask_logger(step, img=None, verbose=0):
 
     elif step == "inverse_transform":
         logger.log("Computing image from signals", verbose=verbose)
+
+    else:  # pragma: no cover
+        raise ValueError("Unknown step")
 
 
 @fill_doc
