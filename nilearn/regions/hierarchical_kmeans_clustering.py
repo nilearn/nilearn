@@ -281,7 +281,11 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
             from sklearn.utils.validation import validate_data
 
             X = validate_data(
-                self, X=X, ensure_min_features=2, ensure_min_samples=2
+                self,
+                X=X,
+                ensure_min_features=2,
+                ensure_min_samples=2,
+                reset=True,
             )
 
         # Transpose the data so that we can cluster features (voxels)
@@ -352,6 +356,10 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
             from sklearn.utils.validation import validate_data
 
             X = validate_data(self, X=X, reset=False)
+        else:
+            X = check_array(
+                X, estimator=self, ensure_min_features=self.n_features_in_
+            )
 
         # Transpose the data so that we can cluster features (voxels)
         # and input them as samples to the sklearn's clustering algorithm
