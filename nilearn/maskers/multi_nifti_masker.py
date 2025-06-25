@@ -13,8 +13,6 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import (
     fill_doc,
-    logger,
-    repr_niimgs,
     stringify_path,
 )
 from nilearn._utils.class_inspect import (
@@ -290,11 +288,7 @@ class MultiNiftiMasker(NiftiMasker):
 
         self.mask_img_ = self._load_mask(imgs)
 
-        if imgs is not None:
-            logger.log(
-                f"Loading data from {repr_niimgs(imgs, shorten=False)}.",
-                self.verbose,
-            )
+        mask_logger("load_data", img=imgs, verbose=self.verbose)
 
         # Compute the mask if not given by the user
         if self.mask_img_ is None:
@@ -348,9 +342,10 @@ class MultiNiftiMasker(NiftiMasker):
                 self._reporting_data["images"] = imgs
                 self._reporting_data["dim"] = dims
 
+        # TODO add if block to only run when resampling is needed
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.
-        logger.log("Resampling mask")
+        mask_logger("resampling_mask", verbose=self.verbose)
 
         # TODO switch to force_resample=True
         # when bumping to version > 0.13

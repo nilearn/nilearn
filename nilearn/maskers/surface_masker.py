@@ -346,6 +346,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
         # with some GLM inputs
         signals = self._check_array(signals, sklearn_check=False)
 
+        mask_logger("inverse_transform", verbose=self.verbose)
+
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
             data[part_name] = np.zeros(

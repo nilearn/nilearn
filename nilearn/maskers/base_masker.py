@@ -26,7 +26,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import repr_niimgs, safe_get_data
+from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -87,10 +87,7 @@ def filter_and_extract(
     if isinstance(imgs, str):
         copy = False
 
-    logger.log(
-        f"Loading data from {repr_niimgs(imgs, shorten=False)}",
-        verbose=verbose,
-    )
+    mask_logger("load_data", imgs, verbose)
 
     # Convert input to niimg to check shape.
     # This must be repeated after the shape check because check_niimg will
@@ -220,8 +217,30 @@ def mask_logger(step, img=None, verbose=0):
                 msg=f"Loading mask from {img.__repr__()}",
                 verbose=verbose,
             )
+
+    elif step == "load_data":
+        if img is not None:
+            # repr = repr_niimgs(self.mask_img, shorten=(not self.verbose))
+            logger.log(
+                msg=f"Loading data from {img.__repr__()}",
+                verbose=verbose,
+            )
+
+    elif step == "load_regions":
+        # repr = repr_niimgs(self.mask_img, shorten=(not self.verbose))
+        logger.log(
+            msg=f"Loading regions from {img.__repr__()}",
+            verbose=verbose,
+        )
+
     elif step == "compute_mask":
         logger.log("Computing mask", verbose=verbose)
+
+    elif step == "resample_mask":
+        logger.log("Resamping mask", verbose=verbose)
+
+    elif step == "resample_regions":
+        logger.log("Resampling regions", verbose=verbose)
 
     elif step == "extracting":
         logger.log("Extracting region signals", verbose=verbose)
@@ -231,6 +250,9 @@ def mask_logger(step, img=None, verbose=0):
 
     elif step == "fit_done":
         logger.log("Finished fit", verbose=verbose)
+
+    elif step == "inverse_transform":
+        logger.log("Computing image from signals", verbose=verbose)
 
 
 @fill_doc
@@ -447,6 +469,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # do not run sklearn_check as they may cause some failure
         # with some GLM inputs
         X = self._check_array(X, sklearn_check=False)
+
+        mask_logger("inverse_transform", verbose=self.verbose)
 
         img = self._cache(unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in

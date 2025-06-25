@@ -10,7 +10,6 @@ import pandas as pd
 from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import logger, repr_niimgs
 from nilearn._utils.bids import (
     generate_atlas_look_up_table,
     sanitize_look_up_table,
@@ -530,9 +529,8 @@ class NiftiLabelsMasker(BaseMasker):
             "warning_message": None,
         }
 
-        repr = repr_niimgs(self.labels_img, shorten=(not self.verbose))
-        msg = f"loading data from {repr}"
-        logger.log(msg=msg, verbose=self.verbose)
+        mask_logger("load_regions", self.labels_img, verbose=self.verbose)
+
         self.labels_img_ = deepcopy(self.labels_img)
         self.labels_img_ = check_niimg_3d(self.labels_img_)
 
@@ -591,7 +589,8 @@ class NiftiLabelsMasker(BaseMasker):
                 self.mask_img_,
             )
         ):
-            logger.log("Resampling mask...", self.verbose)
+            mask_logger("resampling_mask", verbose=self.verbose)
+
             # TODO switch to force_resample=True
             # when bumping to version > 0.13
             self.mask_img_ = self._cache(resample_img, func_memory_level=2)(
@@ -858,7 +857,8 @@ class NiftiLabelsMasker(BaseMasker):
         return region_signals
 
     def _resample_labels(self, imgs_):
-        logger.log("Resampling labels", self.verbose)
+        mask_logger("resample_regions", verbose=self.verbose)
+
         labels_before_resampling = set(
             np.unique(safe_get_data(self.labels_img_))
         )
@@ -910,7 +910,8 @@ class NiftiLabelsMasker(BaseMasker):
 
         signals = self._check_array(signals)
 
-        logger.log("computing image from signals", verbose=self.verbose)
+        mask_logger("inverse_transform", verbose=self.verbose)
+
         return signal_extraction.signals_to_img_labels(
             signals,
             self.labels_img_,

@@ -290,6 +290,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "but not both."
             )
 
+        mask_logger("load_regions", self.labels_img, verbose=self.verbose)
+
         self.labels_img_ = deepcopy(self.labels_img)
 
         self.mask_img_ = self._load_mask(imgs)
@@ -509,6 +511,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         return_1D = signals.ndim < 2
 
         signals = self._check_array(signals)
+
+        mask_logger("inverse_transform", verbose=self.verbose)
 
         imgs = signals_to_surf_img_labels(
             signals,

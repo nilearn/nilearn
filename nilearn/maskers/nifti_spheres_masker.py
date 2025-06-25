@@ -12,7 +12,6 @@ from scipy import sparse
 from sklearn import neighbors
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import logger
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -736,7 +735,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         region_signals = self._check_array(region_signals)
 
-        logger.log("computing image from signals", verbose=self.verbose)
+        mask_logger("inverse_transform", verbose=self.verbose)
 
         if self.mask_img_ is not None:
             mask = check_niimg_3d(self.mask_img_)

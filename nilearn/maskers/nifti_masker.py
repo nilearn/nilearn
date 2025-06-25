@@ -9,7 +9,6 @@ from joblib import Memory
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
-from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
@@ -451,10 +450,7 @@ class NiftiMasker(BaseMasker):
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         # Load data (if filenames are given, load them)
-        logger.log(
-            f"Loading data from {_utils.repr_niimgs(imgs, shorten=False)}",
-            verbose=self.verbose,
-        )
+        mask_logger("load_data", img=imgs, verbose=self.verbose)
 
         self.mask_img_ = self._load_mask(imgs)
 
@@ -496,9 +492,10 @@ class NiftiMasker(BaseMasker):
         else:
             self._reporting_data = None
 
+        # TODO add if block to only run when resampling is needed
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
-        logger.log("Resampling mask", verbose=self.verbose)
+        mask_logger("resampling_mask", verbose=self.verbose)
 
         # TODO switch to force_resample=True
         # when bumping to version > 0.13

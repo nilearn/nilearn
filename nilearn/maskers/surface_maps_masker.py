@@ -9,7 +9,7 @@ from scipy import linalg
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import (
@@ -187,10 +187,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if imgs is not None:
             check_surf_img(imgs)
 
-        logger.log(
-            msg=f"loading regions from {self.maps_img.__repr__()}",
-            verbose=self.verbose,
-        )
+        mask_logger("load_regions", self.maps_img, verbose=self.verbose)
+
         # check maps_img data is 2D
         self.maps_img.data._check_ndims(2, "maps_img")
         self.maps_img_ = self.maps_img
@@ -365,7 +363,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 f"but got {region_signals.shape[1]}."
             )
 
-        logger.log("computing image from signals", verbose=self.verbose)
+        mask_logger("inverse_transform", verbose=self.verbose)
+
         # project region signals back to vertices
         if mask_data is not None:
             # vertices that are not in the mask will have a signal of 0

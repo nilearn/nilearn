@@ -6,11 +6,10 @@ from copy import deepcopy
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import repr_niimgs
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.logger import find_stack_level, log
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
 from nilearn._utils.param_validation import check_params
 from nilearn.image import clean_img, get_data, index_img, resample_img
@@ -423,9 +422,9 @@ class NiftiMapsMasker(BaseMasker):
             # This is for RegionExtractor that first modifies
             # maps_img before passing to its parent fit method.
             maps_img = self._maps_img
-        repr = repr_niimgs(maps_img, shorten=(not self.verbose))
-        msg = f"loading regions from {repr}"
-        log(msg=msg, verbose=self.verbose)
+
+        mask_logger("load_regions", maps_img, verbose=self.verbose)
+
         self.maps_img_ = deepcopy(maps_img)
         self.maps_img_ = check_niimg(
             self.maps_img_, dtype=self.dtype, atleast_4d=True
@@ -463,7 +462,8 @@ class NiftiMapsMasker(BaseMasker):
             if self.resampling_target != "maps" and not check_same_fov(
                 ref_img, self.maps_img_
             ):
-                log("Resampling maps...", self.verbose)
+                mask_logger("resample_regions", verbose=self.verbose)
+
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
                 self.maps_img_ = self._cache(resample_img)(
@@ -477,7 +477,8 @@ class NiftiMapsMasker(BaseMasker):
             if self.mask_img_ is not None and not check_same_fov(
                 ref_img, self.mask_img_
             ):
-                log("Resampling mask...", self.verbose)
+                mask_logger("resampling_mask", verbose=self.verbose)
+
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
                 self.mask_img_ = resample_img(
@@ -695,7 +696,6 @@ class NiftiMapsMasker(BaseMasker):
                 maps_img_,
                 mask_img_,
                 self.keep_masked_maps,
-                verbose=self.verbose,
             ),
             # Pre-treatments
             params,
@@ -731,7 +731,8 @@ class NiftiMapsMasker(BaseMasker):
 
         region_signals = self._check_array(region_signals)
 
-        log("computing image from signals", verbose=self.verbose)
+        mask_logger("inverse_transform", verbose=self.verbose)
+
         return signal_extraction.signals_to_img_maps(
             region_signals,
             self.maps_img_,
