@@ -218,7 +218,6 @@ def return_expected_failed_checks(
                 "remove when dropping sklearn 1.4"
             ),
             "check_clustering": "TODO",
-            "check_transformer_data_not_an_array": "TODO",
             "check_transformer_preserve_dtypes": "TODO",
         }
 

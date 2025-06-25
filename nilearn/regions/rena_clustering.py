@@ -705,10 +705,22 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         """
         del y
         check_params(self.__dict__)
-        X = check_array(
-            X, ensure_min_features=2, ensure_min_samples=2, estimator=self
-        )
-        self.n_features_in_ = X.shape[1]
+
+        if not SKLEARN_LT_1_6:
+            from sklearn.utils.validation import validate_data
+
+            X = validate_data(
+                self,
+                X,
+                reset=True,
+                ensure_min_features=2,
+                ensure_min_samples=2,
+            )
+        else:
+            X = check_array(
+                X, ensure_min_features=2, ensure_min_samples=2, estimator=self
+            )
+            self.n_features_in_ = X.shape[1]
 
         # If no mask images was passed we create a dummy nifti image
         # with a single slice
@@ -718,7 +730,6 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
                 np.ones((self.n_features_in_, 1, 1), dtype=np.int8),
                 affine=np.eye(4),
             )
-
         if not isinstance(
             self.mask_img_, (str, Nifti1Image, SurfaceImage, SurfaceMasker)
         ):
@@ -728,7 +739,6 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
                 f"Instead a {self.mask_img.__class__.__name__} "
                 "object was provided."
             )
-
         # If mask_img is a SurfaceMasker, we need to extract the mask_img
         if isinstance(self.mask_img, SurfaceMasker):
             check_is_fitted(self.mask_img)
@@ -810,7 +820,14 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         if not SKLEARN_LT_1_6:
             from sklearn.utils.validation import validate_data
 
-            validate_data(self, X, reset=False)
+            X = validate_data(self, X, reset=False)
+        else:
+            X = check_array(
+                X,
+                ensure_2d=True,
+                estimator=self,
+                ensure_min_features=self.n_features_in_,
+            )
 
         unique_labels = np.unique(self.labels_)
 
