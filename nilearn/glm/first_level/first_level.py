@@ -89,8 +89,8 @@ def mean_scaling(Y, axis=0):
     if (mean == 0).any():
         warn(
             "Mean values of 0 observed. "
-            "The data have probably been centered."
-            "Scaling might not work as expected",
+            "The data have probably been centered. "
+            "Scaling might not work as expected.",
             UserWarning,
             stacklevel=find_stack_level(),
         )
