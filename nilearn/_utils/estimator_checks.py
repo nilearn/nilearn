@@ -254,7 +254,9 @@ def return_expected_failed_checks(
     ):
         return {
             "check_fit_score_takes_y": "not applicable",
-            "check_fit_check_is_fitted": "handled by nilearn checks",
+            "check_fit_check_is_fitted": (
+                "handled by check_fit_check_is_fitted"
+            ),
             "check_dict_unchanged": "TODO",
             "check_dont_overwrite_parameters": "TODO",
             "check_dtype_object": "TODO",
@@ -306,7 +308,7 @@ def return_expected_failed_checks(
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
-        "check_fit_check_is_fitted": ("replaced by check_masker_fitted"),
+        "check_fit_check_is_fitted": ("replaced by check_fit_check_is_fitted"),
         "check_fit_score_takes_y": (
             "replaced by check_masker_fit_score_takes_y"
         ),
@@ -365,7 +367,9 @@ def return_expected_failed_checks(
             "check_estimators_fit_returns_self": (
                 "replaced by check_glm_fit_returns_self"
             ),
-            "check_fit_check_is_fitted": ("replaced by check_glm_is_fitted"),
+            "check_fit_check_is_fitted": (
+                "replaced by check_fit_check_is_fitted"
+            ),
             "check_transformer_data_not_an_array": (
                 "replaced by check_masker_transformer"
             ),
@@ -470,6 +474,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
+        "check_fit_check_is_fitted": "replaced by check_fit_check_is_fitted",
         "check_requires_y_none": (
             "replaced by check_image_estimator_requires_y_none"
         ),
@@ -487,7 +492,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
-        "check_fit_check_is_fitted": "TODO",
         "check_fit_idempotent": "TODO",
         "check_fit_score_takes_y": "TODO",
         "check_methods_sample_order_invariance": "TODO",
@@ -572,7 +576,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
     else:
         requires_y = getattr(tags.target_tags, "required", False)
 
-    yield (clone(estimator), check_estimator_has_sklearn_is_fitted)
+    yield (clone(estimator), check_fit_check_is_fitted)
     yield (clone(estimator), check_fit_returns_self)
     yield (clone(estimator), check_transformer_set_output)
 
@@ -608,7 +612,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
             clone(estimator),
             check_masker_fit_with_non_finite_in_mask,
         )
-        yield (clone(estimator), check_masker_fitted)
         yield (clone(estimator), check_masker_generate_report)
         yield (clone(estimator), check_masker_generate_report_false)
         yield (clone(estimator), check_masker_inverse_transform)
@@ -665,7 +668,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
     if is_glm(estimator):
         yield (clone(estimator), check_glm_dtypes)
         yield (clone(estimator), check_glm_empty_data_messages)
-        yield (clone(estimator), check_glm_is_fitted)
 
 
 def get_tag(estimator: BaseEstimator, tag: str) -> bool:
@@ -780,12 +782,21 @@ def _check_mask_img_(estimator):
     load_mask_img(estimator.mask_img_)
 
 
-def check_estimator_has_sklearn_is_fitted(estimator):
+def check_fit_check_is_fitted(estimator):
     """Check appropriate response to check_fitted from sklearn before fitting.
 
+    Should act as a replacement in the case of the maskers
+    for sklearn's check_fit_check_is_fitted
+
     check that before fitting
+    - transform() and inverse_transform() \
+      throw same error
     - estimator has a __sklearn_is_fitted__ method
     - running sklearn check_is_fitted on estimator throws an error
+
+    check that after fitting
+    - __sklearn_is_fitted__ returns true
+    - running sklearn check_fitted throws no error
     """
     if not hasattr(estimator, "__sklearn_is_fitted__"):
         raise TypeError(
@@ -799,6 +810,31 @@ def check_estimator_has_sklearn_is_fitted(estimator):
 
     with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
         check_is_fitted(estimator)
+
+    # Failure should happen before the input type is determined
+    # so we can pass nifti image (or array) to surface maskers.
+    signals = np.ones((10, 11))
+    methods_to_check = [
+        "transform",
+        "transform_single_imgs",
+        "transform_imgs",
+        "inverse_transform",
+    ]
+    method_input = [_img_3d_rand(), _img_3d_rand(), [_img_3d_rand()], signals]
+    for meth, input in zip(methods_to_check, method_input):
+        method = getattr(estimator, meth, None)
+        if method is None:
+            continue
+        with pytest.raises(
+            ValueError, match=_not_fitted_error_message(estimator)
+        ):
+            method(input)
+
+    estimator = fit_estimator(estimator)
+
+    assert estimator.__sklearn_is_fitted__()
+
+    check_is_fitted(estimator)
 
 
 def check_transformer_set_output(estimator):
@@ -1100,48 +1136,16 @@ def check_masker_dict_unchanged(estimator):
             raise e
 
 
-def check_masker_fitted(estimator):
+def check_masker_n_elements(estimator):
     """Check appropriate response of maskers to check_fitted from sklearn.
 
-    Should act as a replacement in the case of the maskers
-    for sklearn's check_fit_check_is_fitted
-
-    check that before fitting
-    - transform() and inverse_transform() \
-      throw same error
-
     check that after fitting
-    - __sklearn_is_fitted__ returns true
-    - running sklearn check_fitted throws no error
     - masker have a n_elements_ attribute that is positive int
     """
-    # Failure should happen before the input type is determined
-    # so we can pass nifti image to surface maskers.
-    with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
-        estimator.transform(_img_3d_rand())
-    with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
-        estimator.transform_single_imgs(_img_3d_rand())
-    if is_multimasker(estimator):
-        with pytest.raises(
-            ValueError, match=_not_fitted_error_message(estimator)
-        ):
-            estimator.transform_imgs([_img_3d_rand()])
-
-    # Failure should happen before the size of the input type is determined
-    # so we can pass any array here.
-    signals = np.ones((10, 11))
-    with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
-        estimator.inverse_transform(signals)
-
-    # NiftiMasker and SurfaceMasker cannot accept None on fit
     if accept_niimg_input(estimator):
         estimator.fit(_img_3d_rand())
     else:
         estimator.fit(_make_surface_img(10))
-
-    assert estimator.__sklearn_is_fitted__()
-
-    check_is_fitted(estimator)
 
     assert isinstance(estimator.n_elements_, int) and estimator.n_elements_ > 0
 
@@ -2440,24 +2444,6 @@ def check_glm_empty_data_messages(estimator: BaseEstimator) -> None:
         # SecondLevel
         else:
             estimator.fit(imgs, design_matrix=design_matrices)
-
-
-def check_glm_is_fitted(estimator):
-    """Check glm throws proper error when not fitted."""
-    with pytest.raises(ValueError, match=_not_fitted_error_message(estimator)):
-        estimator.compute_contrast([])
-
-    data, design_matrices = _make_surface_img_and_design()
-    # FirstLevel
-    if hasattr(estimator, "hrf_model"):
-        estimator.fit(data, design_matrices=design_matrices)
-    # SecondLevel
-    else:
-        estimator.fit(data, design_matrix=design_matrices)
-
-    assert estimator.__sklearn_is_fitted__()
-
-    check_is_fitted(estimator)
 
 
 def check_glm_dtypes(estimator):
