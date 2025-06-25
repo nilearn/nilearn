@@ -74,14 +74,7 @@ def colorscale(
     """Normalize a cmap, put it in plotly format, get threshold and range."""
     cmap = plt.get_cmap(cmap)
     abs_values = np.abs(values)
-    if not symmetric_cmap and (values.min() < 0):
-        warnings.warn(
-            "you have specified symmetric_cmap=False "
-            "but the map contains negative values; ",
-            #           "setting symmetric_cmap to True",
-            stacklevel=find_stack_level(),
-        )
-    #        symmetric_cmap = True
+
     if symmetric_cmap and vmin is not None:
         warnings.warn(
             "vmin cannot be chosen when cmap is symmetric",
