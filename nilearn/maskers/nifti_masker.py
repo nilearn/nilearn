@@ -15,7 +15,11 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import crop_img, resample_img
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
+from nilearn.maskers.base_masker import (
+    BaseMasker,
+    filter_and_extract,
+    mask_logger,
+)
 from nilearn.masking import (
     apply_mask,
     compute_background_mask,
@@ -464,7 +468,8 @@ class NiftiMasker(BaseMasker):
                 )
             mask_args = self.mask_args if self.mask_args is not None else {}
 
-            logger.log("Computing the mask", verbose=self.verbose)
+            mask_logger("compute_mask", verbose=self.verbose)
+
             compute_mask = _get_mask_strategy(self.mask_strategy)
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs, verbose=max(0, self.verbose - 1), **mask_args
@@ -522,8 +527,6 @@ class NiftiMasker(BaseMasker):
             self.n_elements_ / np.prod(data.shape) * 100
         )
 
-        logger.log("Finished fit", verbose=self.verbose)
-
         if (self.target_shape is not None) or (
             (self.target_affine is not None) and self.reports
         ):
@@ -543,6 +546,8 @@ class NiftiMasker(BaseMasker):
                 resampl_imgs = None
 
             self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]
+
+        mask_logger("fit_done", verbose=self.verbose)
 
         return self
 

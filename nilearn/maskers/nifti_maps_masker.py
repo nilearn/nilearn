@@ -15,7 +15,11 @@ from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
 from nilearn._utils.param_validation import check_params
 from nilearn.image import clean_img, get_data, index_img, resample_img
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
+from nilearn.maskers.base_masker import (
+    BaseMasker,
+    filter_and_extract,
+    mask_logger,
+)
 from nilearn.masking import load_mask_img
 
 
@@ -506,6 +510,8 @@ class NiftiMapsMasker(BaseMasker):
         # The number of elements is equal to the number of volumes
         self.n_elements_ = self.maps_img_.shape[3]
 
+        mask_logger("fit_done", verbose=self.verbose)
+
         return self
 
     def __sklearn_is_fitted__(self):
@@ -689,6 +695,7 @@ class NiftiMapsMasker(BaseMasker):
                 maps_img_,
                 mask_img_,
                 self.keep_masked_maps,
+                verbose=self.verbose,
             ),
             # Pre-treatments
             params,

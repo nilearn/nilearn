@@ -22,7 +22,7 @@ from nilearn._utils.helpers import (
     rename_parameters,
     stringify_path,
 )
-from nilearn._utils.logger import find_stack_level, log
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
@@ -87,7 +87,7 @@ def filter_and_extract(
     if isinstance(imgs, str):
         copy = False
 
-    log(
+    logger.log(
         f"Loading data from {repr_niimgs(imgs, shorten=False)}",
         verbose=verbose,
     )
@@ -102,7 +102,7 @@ def filter_and_extract(
     target_shape = parameters.get("target_shape")
     target_affine = parameters.get("target_affine")
     if target_shape is not None or target_affine is not None:
-        log("Resampling images")
+        logger.log("Resampling images")
 
         imgs = cache(
             resample_img,
@@ -122,7 +122,7 @@ def filter_and_extract(
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
     if smoothing_fwhm is not None:
-        log("Smoothing images", verbose=verbose)
+        logger.log("Smoothing images", verbose=verbose)
 
         imgs = cache(
             smooth_img,
@@ -131,7 +131,7 @@ def filter_and_extract(
             memory_level=memory_level,
         )(imgs, parameters["smoothing_fwhm"])
 
-    log("Extracting region signals", verbose=verbose)
+    mask_logger("extracting", verbose=verbose)
 
     region_signals, aux = cache(
         extraction_function,
@@ -147,7 +147,7 @@ def filter_and_extract(
     # Confounds removing (from csv file or numpy array)
     # Normalizing
 
-    log("Cleaning extracted signals", verbose=verbose)
+    mask_logger("cleaning", verbose=verbose)
 
     runs = parameters.get("runs", None)
     region_signals = cache(
@@ -209,6 +209,28 @@ def prepare_confounds_multimaskers(masker, imgs_list, confounds):
                 confounds[i].append(hv_confounds)
 
     return confounds
+
+
+def mask_logger(step, img=None, verbose=0):
+    """Log similar messages for all maskers."""
+    if step == "load_mask":
+        if img is not None:
+            # repr = repr_niimgs(self.mask_img, shorten=(not self.verbose))
+            logger.log(
+                msg=f"Loading mask from {img.__repr__()}",
+                verbose=verbose,
+            )
+    elif step == "compute_mask":
+        logger.log("Computing mask", verbose=verbose)
+
+    elif step == "extracting":
+        logger.log("Extracting region signals", verbose=verbose)
+
+    elif step == "cleaning":
+        logger.log("Cleaning extracted signals", verbose=verbose)
+
+    elif step == "fit_done":
+        logger.log("Finished fit", verbose=verbose)
 
 
 @fill_doc
@@ -288,9 +310,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             # other nifti maskers are OK with None
             return None
 
-        repr = repr_niimgs(self.mask_img, shorten=(not self.verbose))
-        msg = f"loading mask from {repr}"
-        log(msg=msg, verbose=self.verbose)
+        mask_logger("load_mask", img=self.mask_img, verbose=self.verbose)
 
         # ensure that the mask_img_ is a 3D binary image
         tmp = check_niimg(self.mask_img, atleast_4d=True)
@@ -563,10 +583,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         mask_img_ = deepcopy(self.mask_img)
 
-        logger.log(
-            msg=f"loading mask from {mask_img_.__repr__()}",
-            verbose=self.verbose,
-        )
+        mask_logger("load_mask", img=mask_img_, verbose=self.verbose)
 
         mask_img_ = at_least_2d(mask_img_)
         mask = {}

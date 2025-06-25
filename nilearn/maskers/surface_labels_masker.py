@@ -31,7 +31,7 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import mean_img
-from nilearn.maskers.base_masker import _BaseSurfaceMasker
+from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -375,6 +375,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         self._reporting_data = self._generate_reporting_data()
 
+        mask_logger("fit_done", verbose=self.verbose)
+
         return self
 
     def _generate_reporting_data(self):
@@ -455,19 +457,17 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         reduction_function = getattr(ndimage, self.strategy)
 
+        mask_logger("extracting", verbose=self.verbose)
+
         for n, sample in enumerate(np.rollaxis(img_data, -1)):
             tmp = np.asarray(
                 reduction_function(sample, labels=labels_data, index=index)
             )
             region_signals[n] = tmp
 
-        parameters = get_params(
-            self.__class__,
-            self,
-            ignore=[
-                "mask_img",
-            ],
-        )
+        mask_logger("cleaning", verbose=self.verbose)
+
+        parameters = get_params(self.__class__, self, ignore=["mask_img"])
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here

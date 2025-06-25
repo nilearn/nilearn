@@ -21,7 +21,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
-from nilearn.maskers.base_masker import _BaseSurfaceMasker
+from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
 
@@ -251,6 +251,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
         else:
             self.clean_args_ = self.clean_args
 
+        mask_logger("fit_done", verbose=self.verbose)
+
         return self
 
     @fill_doc
@@ -280,16 +282,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        parameters = get_params(
-            self.__class__,
-            self,
-            ignore=[
-                "mask_img",
-            ],
-        )
-
-        parameters["clean_args"] = self.clean_args_
-
         check_compatibility_mask_and_images(self.mask_img_, imgs)
 
         check_polymesh_equal(self.mask_img_.mesh, imgs.mesh)
@@ -297,12 +289,20 @@ class SurfaceMasker(_BaseSurfaceMasker):
         if self.reports:
             self._reporting_data["images"] = imgs
 
+        mask_logger("extracting", verbose=self.verbose)
+
         output = np.empty((1, self.n_elements_))
         if len(imgs.shape) == 2:
             output = np.empty((imgs.shape[1], self.n_elements_))
         for part_name, (start, stop) in self._slices.items():
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = imgs.data.parts[part_name][mask].T
+
+        mask_logger("cleaning", verbose=self.verbose)
+
+        parameters = get_params(self.__class__, self, ignore=["mask_img"])
+
+        parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
         output = cache(

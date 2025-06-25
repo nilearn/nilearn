@@ -30,7 +30,11 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.image import get_data, load_img, resample_img
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
+from nilearn.maskers.base_masker import (
+    BaseMasker,
+    filter_and_extract,
+    mask_logger,
+)
 from nilearn.masking import load_mask_img
 
 
@@ -52,7 +56,7 @@ class _ExtractionFunctor:
         self.mask_img = mask_img
 
     def __call__(self, imgs):
-        from ..regions.signal_extraction import img_to_signals_labels
+        from nilearn.regions.signal_extraction import img_to_signals_labels
 
         signals, labels, masked_labels_img = img_to_signals_labels(
             imgs,
@@ -616,6 +620,8 @@ class NiftiLabelsMasker(BaseMasker):
         else:
             self._reporting_data = None
 
+        mask_logger("fit_done", verbose=self.verbose)
+
         return self
 
     def _check_labels(self):
@@ -852,10 +858,7 @@ class NiftiLabelsMasker(BaseMasker):
         return region_signals
 
     def _resample_labels(self, imgs_):
-        logger.log(
-            "Resampling labels",
-            self.verbose,
-        )
+        logger.log("Resampling labels", self.verbose)
         labels_before_resampling = set(
             np.unique(safe_get_data(self.labels_img_))
         )

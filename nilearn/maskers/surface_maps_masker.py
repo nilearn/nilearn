@@ -24,7 +24,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
-from nilearn.maskers.base_masker import _BaseSurfaceMasker
+from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -237,6 +237,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         else:
             self.clean_args_ = self.clean_args
 
+        mask_logger("fit_done", verbose=self.verbose)
+
         return self
 
     def __sklearn_is_fitted__(self):
@@ -279,14 +281,12 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             get_data(self.mask_img_) if self.mask_img_ is not None else None
         )
 
-        parameters = get_params(
-            self.__class__,
-            self,
-        )
+        parameters = get_params(self.__class__, self)
         parameters["clean_args"] = self.clean_args_
 
         # apply mask if provided
         # and then extract signal via least square regression
+        mask_logger("extracting", verbose=self.verbose)
         if mask_data is not None:
             region_signals = cache(
                 linalg.lstsq,
@@ -308,10 +308,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 shelve=self._shelving,
             )(maps_data, img_data)[0].T
 
-        parameters = get_params(
-            self.__class__,
-            self,
-        )
+        mask_logger("cleaning", verbose=self.verbose)
+
+        parameters = get_params(self.__class__, self)
 
         parameters["clean_args"] = self.clean_args_
 

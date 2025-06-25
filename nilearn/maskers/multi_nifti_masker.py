@@ -28,7 +28,10 @@ from nilearn.image import (
     resample_img,
 )
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import prepare_confounds_multimaskers
+from nilearn.maskers.base_masker import (
+    mask_logger,
+    prepare_confounds_multimaskers,
+)
 from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
 from nilearn.masking import (
     compute_multi_background_mask,
@@ -302,7 +305,7 @@ class MultiNiftiMasker(NiftiMasker):
                     "if no mask is passed to mask_img."
                 )
 
-            logger.log("Computing mask", self.verbose)
+            mask_logger("compute_mask", verbose=self.verbose)
 
             imgs = stringify_path(imgs)
             if not isinstance(imgs, collections.abc.Iterable) or isinstance(
@@ -393,6 +396,8 @@ class MultiNiftiMasker(NiftiMasker):
                 )
 
             self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]
+
+        mask_logger("fit_done", verbose=self.verbose)
 
         return self
 
