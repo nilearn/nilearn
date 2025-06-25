@@ -115,9 +115,9 @@ def _decomposition_images_surface(
 def _decomposition_img(
     data_type,
     rng,
-    mesh,
-    shape,
-    affine,
+    mesh=None,
+    shape=None,
+    affine=None,
     with_activation: bool = True,
 ) -> Union[SurfaceImage, Nifti1Image]:
     """Return a single image for decomposition."""
