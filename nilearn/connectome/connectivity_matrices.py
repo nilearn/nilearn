@@ -608,18 +608,18 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         # Compute the vector we return on transform
         if do_transform:
             # TODO simplify when dropping sklearn 1.5
-            if not SKLEARN_LT_1_6:
-                from sklearn.utils.validation import validate_data
-
-                for x in X:
-                    validate_data(self, x, reset=False)
-            else:
+            if SKLEARN_LT_1_6:
                 for x in X:
                     check_array(
                         x,
                         estimator=self,
                         ensure_min_features=self.n_features_in_,
                     )
+            else:
+                from sklearn.utils.validation import validate_data
+
+                for x in X:
+                    validate_data(self, x, reset=False)
 
             if self.kind == "tangent":
                 connectivities = [
