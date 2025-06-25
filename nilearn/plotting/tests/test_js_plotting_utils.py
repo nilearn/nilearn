@@ -123,8 +123,6 @@ def expected_vmin_vmax(values, vmax, vmin):
     """Return expected vmin and vmax."""
     if vmax is None:
         return (min(values), max(values))
-    if min(values) < 0:
-        return (-vmax, vmax)
     return (min(values), vmax) if vmin is None else (vmin, vmax)
 
 
