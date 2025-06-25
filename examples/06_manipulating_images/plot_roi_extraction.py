@@ -258,7 +258,7 @@ from nilearn.plotting import plot_roi, show
 # values in data type boolean should be converted to int data type at the same
 # time. Otherwise, an error will be raised
 bin_p_values_and_vt_img = new_img_like(
-    fmri_img, bin_p_values_and_vt.astype(int)
+    fmri_img, bin_p_values_and_vt.astype(np.int32)
 )
 # Visualizing goes here with background as computed mean of functional images
 plot_roi(
@@ -288,7 +288,7 @@ dil_bin_p_values_and_vt = binary_dilation(bin_p_values_and_vt)
 # In all new image like, reference image is the same but second argument
 # varies with data specific
 dil_bin_p_values_and_vt_img = new_img_like(
-    fmri_img, dil_bin_p_values_and_vt.astype(int)
+    fmri_img, dil_bin_p_values_and_vt.astype(np.int32)
 )
 # Visualization goes here without 'L', 'R' annotation and coordinates being the
 # same
@@ -313,9 +313,9 @@ from scipy.ndimage import label
 
 labels, _ = label(dil_bin_p_values_and_vt)
 # we take first roi data with labels assigned as integer 1
-first_roi_data = (labels == 5).astype(int)
+first_roi_data = (labels == 5).astype(np.int32)
 # Similarly, second roi data is assigned as integer 2
-second_roi_data = (labels == 3).astype(int)
+second_roi_data = (labels == 3).astype(np.int32)
 # Visualizing the connected components
 # First, we create a Nifti image type from first roi data in a array
 first_roi_img = new_img_like(fmri_img, first_roi_data)
