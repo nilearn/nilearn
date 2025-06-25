@@ -5,6 +5,7 @@ and importing them will fail if pytest is not installed.
 """
 
 import inspect
+import pickle
 import sys
 import warnings
 from copy import deepcopy
@@ -28,6 +29,7 @@ from sklearn.base import BaseEstimator, is_classifier, is_regressor
 from sklearn.datasets import make_classification, make_regression
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils._testing import (
+    assert_allclose_dense_sparse,
     set_random_state,
 )
 from sklearn.utils.estimator_checks import (
@@ -301,13 +303,13 @@ def return_expected_failed_checks(
         "check_fit_score_takes_y": (
             "replaced by check_masker_fit_score_takes_y"
         ),
+        "check_estimators_pickle": "replaced by check_img_estimators_pickle",
         # Those are skipped for now they fail
         # for unknown reasons
         # most often because sklearn inputs expect a numpy array
         # that errors with maskers,
         # or because a suitable nilearn replacement
         # has not yet been created.
-        "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
         "check_fit_idempotent": "TODO",
@@ -562,6 +564,8 @@ def nilearn_check_generator(estimator: BaseEstimator):
     yield (clone(estimator), check_transformer_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
+        yield (clone(estimator), check_img_estimators_pickle)
+
         if requires_y:
             yield (clone(estimator), check_image_estimator_requires_y_none)
 
@@ -690,18 +694,10 @@ def _not_fitted_error_message(estimator):
     )
 
 
-def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
-    """Fit on a nilearn estimator with appropriate input and return it."""
-    assert accept_niimg_input(estimator) or accept_surf_img_input(estimator)
-
+def generate_data_to_fit(estimator: BaseEstimator):
     if is_glm(estimator):
         data, design_matrices = _make_surface_img_and_design()
-        # FirstLevel
-        if hasattr(estimator, "hrf_model"):
-            return estimator.fit(data, design_matrices=design_matrices)
-        # SecondLevel
-        else:
-            return estimator.fit(data, design_matrix=design_matrices)
+        return data, design_matrices
 
     elif isinstance(estimator, SearchLight):
         n_samples = 30
@@ -713,7 +709,7 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
         data[2, 2, 2, y] = 2
         X = Nifti1Image(data, np.eye(4))
 
-        return estimator.fit(X, y)
+        return X, y
 
     elif is_classifier(estimator):
         dim = 5
@@ -726,7 +722,7 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
             random_state=42,
         )
         X, _ = to_niimgs(X, [dim, dim, dim])
-        return estimator.fit(X, y)
+        return X, y
 
     elif is_regressor(estimator):
         dim = 5
@@ -740,18 +736,43 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
         )
         X = StandardScaler().fit_transform(X)
         X, _ = to_niimgs(X, [dim, dim, dim])
-        return estimator.fit(X, y)
+        return X, y
 
     elif is_masker(estimator):
         if accept_niimg_input(estimator):
             imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_eye())
         else:
             imgs = _make_surface_img(10)
-        return estimator.fit(imgs)
+        return imgs, None
 
     else:
         imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_eye())
-        return estimator.fit(imgs)
+        return imgs, None
+
+
+def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
+    """Fit on a nilearn estimator with appropriate input and return it."""
+    assert accept_niimg_input(estimator) or accept_surf_img_input(estimator)
+
+    X, y = generate_data_to_fit(estimator)
+
+    if is_glm(estimator):
+        # FirstLevel
+        if hasattr(estimator, "hrf_model"):
+            return estimator.fit(X, design_matrices=y)
+        # SecondLevel
+        else:
+            return estimator.fit(X, design_matrix=y)
+
+    elif (
+        isinstance(estimator, SearchLight)
+        or is_classifier(estimator)
+        or is_regressor(estimator)
+    ):
+        return estimator.fit(X, y)
+
+    else:
+        return estimator.fit(X)
 
 
 # ------------------ GENERIC CHECKS ------------------
@@ -914,6 +935,35 @@ def check_img_estimators_overwrite_params(estimator) -> None:
             f"the parameter {param_name} from {original_value} "
             f"to {new_value} during fit."
         )
+
+
+def check_img_estimators_pickle(estimator_orig):
+    """Test that we can pickle all estimators.
+
+    Replace sklearn's check_estimators_pickle
+    """
+    check_methods = ["transform", "inverse_transform"]
+
+    estimator = clone(estimator_orig)
+
+    set_random_state(estimator)
+
+    fitted_estimator = fit_estimator(estimator)
+
+    pickled_estimator = pickle.dumps(fitted_estimator)
+
+    unpickled_estimator = pickle.loads(pickled_estimator)
+
+    X, _ = generate_data_to_fit(estimator)
+
+    result = {}
+    for method in check_methods:
+        if hasattr(estimator, method):
+            result[method] = getattr(estimator, method)(X)
+
+    for method in result:
+        unpickled_result = getattr(unpickled_estimator, method)(X)
+        assert_allclose_dense_sparse(result[method], unpickled_result)
 
 
 # ------------------ DECODERS CHECKS ------------------
