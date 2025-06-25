@@ -247,7 +247,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags()
+            return tags(niimg_like=False)
 
         from nilearn._utils.tags import InputTags
 
