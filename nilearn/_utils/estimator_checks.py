@@ -72,6 +72,7 @@ from nilearn.decoding.decoder import _BaseDecoder
 from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition._base import _BaseDecomposition
+from nilearn.image import new_img_like
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     NiftiLabelsMasker,
@@ -940,30 +941,42 @@ def check_img_estimators_overwrite_params(estimator) -> None:
 def check_img_estimators_pickle(estimator_orig):
     """Test that we can pickle all estimators.
 
-    Replace sklearn's check_estimators_pickle
+    Adapted from sklearn's check_estimators_pickle
     """
-    check_methods = ["transform", "inverse_transform"]
-
     estimator = clone(estimator_orig)
+
+    X, _ = generate_data_to_fit(estimator)
+
+    if isinstance(estimator, NiftiSpheresMasker):
+        # NiftiSpheresMasker needs mask_img to run inverse_transform
+        mask_img = new_img_like(X, np.ones(X.shape[:3]))
+        estimator.mask_img = mask_img
 
     set_random_state(estimator)
 
     fitted_estimator = fit_estimator(estimator)
 
     pickled_estimator = pickle.dumps(fitted_estimator)
-
     unpickled_estimator = pickle.loads(pickled_estimator)
 
-    X, _ = generate_data_to_fit(estimator)
-
     result = {}
-    for method in check_methods:
+    check_methods = ["transform", "inverse_transform"]
+    input_data = [X, _rng().random((1, fitted_estimator.n_elements_))]
+    for method, input in zip(check_methods, input_data):
         if hasattr(estimator, method):
-            result[method] = getattr(estimator, method)(X)
+            result[method] = getattr(estimator, method)(input)
+            result["input"] = input
 
-    for method in result:
-        unpickled_result = getattr(unpickled_estimator, method)(X)
-        assert_allclose_dense_sparse(result[method], unpickled_result)
+    for method, input in zip(check_methods, input_data):
+        if method not in result:
+            continue
+        unpickled_result = getattr(unpickled_estimator, method)(input)
+        if isinstance(unpickled_result, np.ndarray):
+            assert_allclose_dense_sparse(result[method], unpickled_result)
+        elif isinstance(unpickled_result, SurfaceImage):
+            assert_surface_image_equal(result[method], unpickled_result)
+        elif isinstance(unpickled_result, Nifti1Image):
+            check_imgs_equal(result[method], unpickled_result)
 
 
 # ------------------ DECODERS CHECKS ------------------
