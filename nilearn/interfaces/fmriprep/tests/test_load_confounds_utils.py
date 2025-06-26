@@ -93,20 +93,39 @@ def test_get_file_name(tmp_path, flag, keyword, tedana_keyword, image_type):
                 "junk_col2": [1, 0],
             }
         )
+        fake_confounds2 = pd.DataFrame(
+            {
+                "junk_col1": [0.1, 0.2],
+                "junk_col2": [1, 0],
+            }
+        )
         conf_file = (
             tmp_path / f"sub-{flag.replace('.', '')}"
             "_task-test_desc-ICA_mixing.tsv"
+        )
+        conf_file2 = (
+            tmp_path / f"sub-{flag.replace('.', '')}"
+            "_task-test_desc-tedana_metrics.tsv"
         )
         fake_confounds.to_csv(
             conf_file,
             sep="\t",
             index=False,
         )
+        fake_confounds2.to_csv(
+            conf_file2,
+            sep="\t",
+            index=False,
+        )
+        print(conf_file)
+        print(conf_file2)
         with pytest.raises(
             ValueError,
             match="The confound file does not contain the expected columns",
         ):
-            load_confounds_file_as_dataframe(str(conf_file), flag_tedana=True)
+            load_confounds_file_as_dataframe(
+                [str(conf_file), str(conf_file2)], flag_tedana=True
+            )
         return
 
     conf = _get_file_name(img, flag_tedana=flag_tedana)

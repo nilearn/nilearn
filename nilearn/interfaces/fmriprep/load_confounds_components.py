@@ -53,24 +53,17 @@ def _load_tedana(confounds_files, tedana):
         When TEDANA regressors are not found, raise error as tedana is not
         a valid choice of strategy.
     """
-    all_tedana_confounds = {}
-
     if tedana not in ["aggressive", "non-aggressive", "orthogonal"]:
         raise ValueError(
             "Please select an option when using TEDANA strategy. "
             f"Current input: {tedana}"
         )
-    if tedana == "aggressive":
-        for tedana_conf in ["mixing", "metrics"]:
-            all_tedana_confounds[tedana_conf] = (
-                load_confounds_file_as_dataframe(
-                    next(
-                        file for file in confounds_files if tedana_conf in file
-                    ),
-                    flag_tedana=True,
-                )
-            )
 
+    all_tedana_confounds = load_confounds_file_as_dataframe(
+        confounds_files, flag_tedana=True
+    )
+
+    if tedana == "aggressive":
         # 1. Get rejected components from status table
         rejected = all_tedana_confounds["metrics"][
             all_tedana_confounds["metrics"]["classification"] == "rejected"

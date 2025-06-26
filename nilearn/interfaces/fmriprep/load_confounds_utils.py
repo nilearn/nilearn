@@ -380,8 +380,8 @@ def load_confounds_file_as_dataframe(confounds_raw_path, flag_tedana=False):
 
     Parameters
     ----------
-    confounds_raw_path : :obj:`str`
-        Path to the confounds file.
+    confounds_raw_path : :obj:`str` or :obj:`list`
+        Path to the confounds file or List of paths for tedana.
 
     flag_tedana : :obj:`bool`
         True if the input is a TEDANA optimally combined output, False
@@ -392,24 +392,36 @@ def load_confounds_file_as_dataframe(confounds_raw_path, flag_tedana=False):
     confounds_raw : pandas.DataFrame
         Raw confounds loaded from the confounds file.
     """
-    confounds_raw = pd.read_csv(
-        confounds_raw_path, delimiter="\t", encoding="utf-8"
-    )
     if flag_tedana:
         # TEDANA outputs are not camel case, but they have a different
         # header format.
-        if (
-            any(col.startswith("ICA_") for col in confounds_raw.columns)
-            or "Component" in confounds_raw.columns
+        confounds_tedana_raw = {}
+        for tedana_conf in ["mixing", "metrics"]:
+            confounds_tedana_raw[tedana_conf] = pd.read_csv(
+                next(
+                    file for file in confounds_raw_path if tedana_conf in file
+                ),
+                delimiter="\t",
+                encoding="utf-8",
+            )
+        if any(
+            col.startswith("ICA_")
+            for confounds_raw in confounds_tedana_raw.values()
+            for col in confounds_raw
+        ) or any(
+            "Component" in confounds_raw.columns
+            for confounds_raw in confounds_tedana_raw.values()
         ):
-            return confounds_raw
+            return confounds_tedana_raw
         else:
             raise ValueError(
                 "The confound file does not contain the expected columns for "
                 "TEDANA output. Expected 'ICA_xx' for mixing.tsv and"
                 "'Component' for the metrics.tsv columns."
             )
-
+    confounds_raw = pd.read_csv(
+        confounds_raw_path, delimiter="\t", encoding="utf-8"
+    )
     # check if the version of fMRIprep (>=1.2.0) is supported based on
     # header format. 1.0.x and 1.1.x series uses camel case
     if any(is_camel_case(col_name) for col_name in confounds_raw.columns):
