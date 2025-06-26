@@ -7,9 +7,13 @@ import warnings
 from pathlib import Path
 from string import Template
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import (
+    LinearSegmentedColormap,
+    ListedColormap,
+    Normalize,
+)
 
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.html_document import (  # noqa: F401
@@ -97,7 +101,7 @@ def colorscale(
     if symmetric_cmap:
         vmax = max(abs(vmin), abs(vmax))
         vmin = -vmax
-    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+    norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
     abs_threshold = None
     if threshold is not None:
@@ -106,7 +110,7 @@ def colorscale(
         istop = int(norm(abs_threshold, clip=True) * (cmap.N - 1))
         for i in range(istart, istop):
             cmaplist[i] = (0.5, 0.5, 0.5, 1.0)  # just an average gray color
-    our_cmap = mpl.colors.LinearSegmentedColormap.from_list(
+    our_cmap = LinearSegmentedColormap.from_list(
         "Custom cmap", cmaplist, cmap.N
     )
     x = np.linspace(0, 1, 100)
@@ -159,7 +163,7 @@ def mesh_to_plotly(mesh):
 
 def to_color_strings(colors):
     """Return a list of colors as hex strings."""
-    cmap = mpl.colors.ListedColormap(colors)
+    cmap = ListedColormap(colors)
     colors = cmap(np.arange(cmap.N))[:, :3]
     colors = np.asarray(colors * 255, dtype="uint8")
     colors = [
