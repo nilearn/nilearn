@@ -497,14 +497,11 @@ def _load_single_confounds_file(
     missing = {"confounds": [], "keywords": []}
     # tedana will load multiple files so we need to handle if
     # before loading "regular" confounds from other sources
-    if flag_tedana:
-        confounds_all, missing = _load_noise_component(
-            confounds_file, "tedana", missing, **kwargs
-        )
-        return prepare_output(confounds_all, demean)
 
     # Convert tsv file to pandas dataframe
-    confounds_all = load_confounds_file_as_dataframe(confounds_file)
+    confounds_all = load_confounds_file_as_dataframe(
+        confounds_file, flag_tedana=flag_tedana
+    )
 
     if confounds_json_file is None:
         confounds_json_file = get_json(confounds_file)
@@ -522,6 +519,10 @@ def _load_single_confounds_file(
         meta_json=meta_json,
         **kwargs,
     )
+
+    # clean out the other strategies as tedana will only work with files from
+    # tedana output and no cross-functionality has been coded
+    strategy = ["tedana"] if "tedana" in strategy else strategy
     for component in strategy:
         loaded_confounds, missing = _load_noise_component(
             confounds_all, component, missing, meta_json=meta_json, **kwargs
