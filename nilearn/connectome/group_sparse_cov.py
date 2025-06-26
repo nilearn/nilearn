@@ -670,8 +670,6 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
                 ensure_min_samples=2,
             )
 
-        self.n_features_in_ = next(iter(s.shape[1] for s in subjects))
-
         if self.memory is None:
             self.memory = Memory(location=None)
 
@@ -679,6 +677,8 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         self.covariances_, n_samples = empirical_covariances(
             subjects, assume_centered=False
         )
+
+        self.n_features_in_ = next(iter(s.shape[1] for s in subjects))
 
         logger.log("Computing precision matrices", verbose=self.verbose)
         ret = self._cache(_group_sparse_covariance)(
@@ -1192,13 +1192,13 @@ class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
                 ensure_min_samples=2,
             )
 
-        self.n_features_in_ = next(iter(s.shape[1] for s in subjects))
-
         # Empirical covariances
         emp_covs, n_samples = empirical_covariances(
             subjects, assume_centered=False
         )
         n_subjects = emp_covs.shape[2]
+
+        self.n_features_in_ = next(iter(s.shape[1] for s in subjects))
 
         # One cv generator per subject must be created, because each subject
         # can have a different number of samples from the others.
