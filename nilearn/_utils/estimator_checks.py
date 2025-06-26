@@ -194,8 +194,6 @@ def return_expected_failed_checks(
             "check_estimator_sparse_matrix": "TODO",
             "check_methods_sample_order_invariance": "TODO",
             "check_methods_subset_invariance": "TODO",
-            "check_n_features_in": "TODO",
-            "check_n_features_in_after_fitting": "TODO",
             "check_readonly_memmap_input": "TODO",
             "check_transformer_data_not_an_array": "TODO",
             "check_transformer_general": "TODO",
