@@ -75,20 +75,28 @@ def colorscale(
     cmap = plt.get_cmap(cmap)
     abs_values = np.abs(values)
 
-    if symmetric_cmap and vmin is not None:
+    if (
+        symmetric_cmap
+        and vmin is not None
+        and vmax is not None
+        and vmin != -vmax
+    ):
         warnings.warn(
-            "vmin cannot be chosen when cmap is symmetric",
+            f"Specified {vmin=} and {vmax=} values do not create a symmetric"
+            " colorbar. The values will be modified to be symmetric.",
             stacklevel=find_stack_level(),
         )
-        vmin = None
     if vmax is None:
         vmax = abs_values.max()
-    # cast to float to avoid TypeError if vmax is a numpy boolean
-    vmax = float(vmax)
-    if symmetric_cmap:
-        vmin = -vmax
     if vmin is None:
         vmin = values.min()
+    # cast to float to avoid TypeError if vmax/vmin is a numpy boolean
+    vmax = float(vmax)
+    vmin = float(vmin)
+
+    if symmetric_cmap:
+        vmax = max(abs(vmin), abs(vmax))
+        vmin = -vmax
     norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
     abs_threshold = None
