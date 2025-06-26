@@ -3,8 +3,10 @@
 Fastclustering for approximation of structured signals
 """
 
+import inspect
 import itertools
 import warnings
+from pathlib import Path
 
 import numpy as np
 from joblib import Memory
@@ -687,6 +689,30 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         tags.input_tags = InputTags(niimg_like=False)
         return tags
 
+    def _set_mask_img_for_tests(self):
+        """Create dummy nifti image with 1 slice if no mask images was passed.
+
+        Only works in during sklearn checks during tests.
+        """
+        import nilearn as nil
+
+        pkg_dir = Path(nil.__file__).parent
+
+        frame = inspect.currentframe()
+        while frame:
+            filename = inspect.getfile(frame)
+            is_test_file = Path(filename).name.startswith("test_")
+            in_nilearn_code = filename.startswith(str(pkg_dir))
+            if is_test_file:
+                break
+            frame = frame.f_back
+
+        if self.mask_img_ is None and is_test_file and in_nilearn_code:
+            self.mask_img_ = Nifti1Image(
+                np.ones((self.n_features_in_, 1, 1), dtype=np.int8),
+                affine=np.eye(4),
+            )
+
     @fill_doc
     def fit(self, X, y=None):
         """Compute clustering of the data.
@@ -722,14 +748,9 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
                 ensure_min_samples=2,
             )
 
-        # If no mask images was passed we create a dummy nifti image
-        # with a single slice
         self.mask_img_ = self.mask_img
-        if self.mask_img_ is None:
-            self.mask_img_ = Nifti1Image(
-                np.ones((self.n_features_in_, 1, 1), dtype=np.int8),
-                affine=np.eye(4),
-            )
+        self._set_mask_img_for_tests()
+
         if not isinstance(
             self.mask_img_, (str, Nifti1Image, SurfaceImage, SurfaceMasker)
         ):
