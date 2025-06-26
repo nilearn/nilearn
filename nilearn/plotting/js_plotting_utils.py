@@ -123,7 +123,6 @@ def colorscale(
         "cmap": our_cmap,
         "norm": norm,
         "abs_threshold": abs_threshold,
-        "symmetric_cmap": symmetric_cmap,
     }
 
 
