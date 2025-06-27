@@ -65,11 +65,11 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 
 
 def test_rena_clustering_mask_error():
-    """Check an error is raised if no mask is provided before fit."""
+    """Check an error is raised if invalid mask is provided before fit."""
     data_img, mask_img = generate_fake_fmri(
         shape=_shape_3d_default(), length=5
     )
-    rena = ReNA(n_clusters=10)
+    rena = ReNA(n_clusters=10, mask_img=1)
 
     data = get_data(data_img)
     mask = get_data(mask_img)
