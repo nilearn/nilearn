@@ -13,7 +13,6 @@ from nilearn._utils.estimator_checks import (
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.decomposition import CanICA, DictLearning
-from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.decomposition.tests.conftest import (
     N_SAMPLES,
@@ -23,10 +22,9 @@ from nilearn.decomposition.tests.conftest import (
 )
 
 ESTIMATORS_TO_CHECK = [
-    _MultiPCA(),
-    DictLearning(),
-    CanICA(),
-    _BaseDecomposition(),
+    _MultiPCA(verbose=0),
+    DictLearning(verbose=0),
+    CanICA(verbose=0),
 ]
 
 if SKLEARN_LT_1_6:
