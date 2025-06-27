@@ -29,6 +29,65 @@ from .load_confounds_utils import (
 )
 
 
+def _tedana_strategy(classification, mixing, metrics):
+    """
+    Auxiliary functionality to extract confounds based on the strategy.
+
+    Parameters
+    ----------
+    classification : :obj:`list`
+        list of classifications to be returned from the mixing file
+
+    mixing : :obj:`pd.DataFrame`
+        pandas dataframe with the mixing file.
+
+    metrics : :obj:`pd.DataFrame`
+        pandas dataframe with the metrics file.
+
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame of TEDANA regressors.
+    """
+    # 1. Get selected components from status table
+    selected_components = mixing[
+        metrics[metrics["classification"].isin(classification)]["Component"]
+    ]
+
+    #############################################################
+    # tedana versions like 24.0.2 do not have matching component
+    # names from the mixing and status tables. For backwards
+    # compatibility we will normalize the component names to
+    # match the mixing file normalize rejected component
+    # names: ICA_04 -> ICA_4
+    #############################################################
+
+    # 3. Normalize mixing file column names and build a mapping
+    original_columns = mixing.columns.tolist()
+
+    # Map: normalized_name → original_name
+    column_mapping = {
+        re.sub(r"ICA_0*(\d+)$", lambda m: f"ICA_{int(m.group(1))}", col): col
+        for col in original_columns
+    }
+
+    # Apply normalized names to columns
+    mixing.columns = list(column_mapping.keys())
+
+    # 4. Select matched columns (normalized)
+    matched_components = [
+        c for c in selected_components if c in mixing.columns
+    ]
+    selected = mixing[sorted(matched_components)]
+
+    # 5. Rename columns back to original names using mapping
+    load_confounds = selected.rename(
+        columns={norm: column_mapping[norm] for norm in selected.columns}
+    )
+
+    return load_confounds
+
+
 def _load_tedana(confounds_files, tedana):
     """Load the TEDANA regressors.
 
@@ -38,78 +97,32 @@ def _load_tedana(confounds_files, tedana):
         dict of confounds dataframes.
 
     tedana : str
-        TEDANA strategy to use. Options are "aggressive",
-        "non-aggressive", or "orthogonal".
+        TEDANA strategy to use. Options are "aggressive" or
+        "non-aggressive".
 
     Returns
     -------
     pandas.DataFrame
         DataFrame of TEDANA regressors.
-
-    Raises
-    ------
-    MissingConfoundError
-        When TEDANA regressors are not found, raise error as tedana is not
-        a valid choice of strategy.
     """
-    if tedana not in ["aggressive", "non-aggressive", "orthogonal"]:
+    if tedana not in ["aggressive", "non-aggressive"]:
         raise ValueError(
             "Please select an option when using TEDANA strategy. "
             f"Current input: {tedana}"
         )
 
     if tedana == "aggressive":
-        # 1. Get rejected components from status table
-        rejected = confounds_files["metrics"][
-            confounds_files["metrics"]["classification"] == "rejected"
-        ]
-
-        # 2. Normalize rejected component names (e.g., ICA_04 -> ICA_4)
-        rejected_components = (
-            rejected["Component"]
-            .apply(
-                lambda x: re.sub(
-                    r"ICA_0*(\d+)$", lambda m: f"ICA_{int(m.group(1))}", x
-                )
-            )
-            .tolist()
+        return _tedana_strategy(
+            ["rejected"],
+            mixing=confounds_files["mixing"],
+            metrics=confounds_files["metrics"],
         )
-
-        #############################################################
-        # tedana versions like 24.0.2 do not have matching component
-        # names from the mixing and status tables. For backwards
-        # compatibility we will normalize the component names to
-        # match the mixing file normalize rejected component
-        # names: ICA_04 -> ICA_4
-        #############################################################
-
-        # 3. Normalize mixing file column names and build a mapping
-        mixing = confounds_files["mixing"]
-        original_columns = mixing.columns.tolist()
-
-        # Map: normalized_name → original_name
-        column_mapping = {
-            re.sub(
-                r"ICA_0*(\d+)$", lambda m: f"ICA_{int(m.group(1))}", col
-            ): col
-            for col in original_columns
-        }
-
-        # Apply normalized names to columns
-        mixing.columns = list(column_mapping.keys())
-
-        # 4. Select matched columns (normalized)
-        matched_components = [
-            c for c in rejected_components if c in mixing.columns
-        ]
-        selected = mixing[sorted(matched_components)]
-
-        # 5. Rename columns back to original names using mapping
-        load_confounds = selected.rename(
-            columns={norm: column_mapping[norm] for norm in selected.columns}
+    elif tedana == "non-aggressive":
+        return _tedana_strategy(
+            ["accepted", "rejected"],
+            mixing=confounds_files["mixing"],
+            metrics=confounds_files["metrics"],
         )
-
-        return load_confounds
 
 
 def _load_motion(confounds_raw, motion):
