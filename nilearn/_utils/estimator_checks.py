@@ -72,14 +72,11 @@ from nilearn.decoding.decoder import _BaseDecoder
 from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition._base import _BaseDecomposition
-
-from nilearn.image import new_img_like
-
 from nilearn.decomposition.tests.conftest import (
     _decomposition_img,
     _decomposition_mesh,
 )
-
+from nilearn.image import new_img_like
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     NiftiLabelsMasker,
@@ -547,7 +544,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
     yield (clone(estimator), check_transformer_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
-
         yield (clone(estimator), check_img_estimators_pickle)
         yield (clone(estimator), check_fit_returns_self)
 
