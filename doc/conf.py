@@ -412,7 +412,10 @@ nitpick_ignore = [
 binder_branch = "main" if "dev" in current_version else current_version
 
 
-def notebook_modification_function(notebook_content):
+def notebook_modification_function(
+    notebook_content,
+    notebook_filename,  # noqa : ARG001
+):
     warning_template = "\n".join(  # noqa : FLY002
         [
             "<div class='alert alert-{message_class}'>",
