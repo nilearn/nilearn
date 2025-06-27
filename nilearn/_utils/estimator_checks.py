@@ -936,8 +936,13 @@ def check_img_estimators_pickle(estimator_orig):
     unpickled_estimator = pickle.loads(pickled_estimator)
 
     result = {}
+
     check_methods = ["transform", "inverse_transform"]
-    input_data = [X, _rng().random((1, fitted_estimator.n_elements_))]
+    input_data = [X]
+    if hasattr(estimator, "inverse_transform"):
+        check_methods.append("inverse_transform")
+        input_data.append(_rng().random((1, fitted_estimator.n_elements_)))
+
     for method, input in zip(check_methods, input_data):
         if hasattr(estimator, method):
             result[method] = getattr(estimator, method)(input)
