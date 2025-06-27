@@ -484,7 +484,7 @@ sphinx_gallery_conf = {
     "within_subsection_order": "ExampleTitleSortKey",
     "jupyterlite": {
         "use_jupyter_lab": True,
-        "jupyterlite_contents": "auto_examples",
+        # "jupyterlite_contents": ".",
         "notebook_modification_function": notebook_modification_function,
     },
 }
