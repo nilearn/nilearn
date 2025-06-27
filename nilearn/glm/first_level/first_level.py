@@ -10,6 +10,7 @@ from __future__ import annotations
 import csv
 import inspect
 import time
+import warnings
 from collections.abc import Iterable
 from pathlib import Path
 from warnings import warn
@@ -88,8 +89,8 @@ def mean_scaling(Y, axis=0):
     if (mean == 0).any():
         warn(
             "Mean values of 0 observed. "
-            "The data have probably been centered."
-            "Scaling might not work as expected",
+            "The data have probably been centered. "
+            "Scaling might not work as expected.",
             UserWarning,
             stacklevel=find_stack_level(),
         )
@@ -1062,8 +1063,16 @@ class FirstLevelModel(BaseGLM):
         n_contrasts = len(con_vals)
         if n_contrasts == 1 and n_runs > 1:
             warn(
-                f"One contrast given, assuming it for all {n_runs} runs",
-                category=UserWarning,
+                (
+                    f"The same contrast will be used for all {n_runs} runs. "
+                    "If the design matrices are not the same for all runs, "
+                    "(for example with different column names "
+                    "or column order across runs) "
+                    "you should pass contrast as an expression using "
+                    "the name of the conditions "
+                    "as they appear in the design matrices."
+                ),
+                category=RuntimeWarning,
                 stacklevel=find_stack_level(),
             )
             con_vals = con_vals * n_runs
@@ -1246,7 +1255,11 @@ class FirstLevelModel(BaseGLM):
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"
 
-            self.masker_.fit(run_img)
+            with warnings.catch_warnings():
+                # ignore warning in case the masker
+                # was initialized with a mask image
+                warnings.simplefilter("ignore")
+                self.masker_.fit(run_img)
 
         else:
             check_is_fitted(self.mask_img)

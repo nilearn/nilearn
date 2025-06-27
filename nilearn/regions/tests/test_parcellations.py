@@ -152,6 +152,7 @@ def test_parcellations_transform_verbose(test_image_2, verbose):
     parcellator.transform(test_image_2)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_multi_nifti_images(
