@@ -210,24 +210,8 @@ def return_expected_failed_checks(
 
         return expected_failed_checks
 
-    elif isinstance(estimator, HierarchicalKMeans):
+    elif isinstance(estimator, (HierarchicalKMeans, ReNA)):
         return expected_failed_checks_clustering()
-
-    elif isinstance(estimator, ReNA):
-        expected_failed_checks = {
-            "check_estimator_sparse_array": "remove when dropping sklearn 1.4",
-            "check_estimator_sparse_matrix": (
-                "remove when dropping sklearn 1.4"
-            ),
-            "check_clustering": "TODO",
-            "check_transformer_preserve_dtypes": "TODO",
-        }
-
-        if SKLEARN_MINOR >= 5:
-            expected_failed_checks.pop("check_estimator_sparse_matrix")
-            expected_failed_checks.pop("check_estimator_sparse_array")
-
-        return expected_failed_checks
 
     elif isinstance(
         estimator, (GroupSparseCovariance, GroupSparseCovarianceCV)
