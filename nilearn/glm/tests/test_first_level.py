@@ -483,7 +483,7 @@ def test_high_level_glm_different_design_matrices_formulas():
     formula = f"{cols_formula[0]}-{cols_formula[1]}"
 
     with pytest.warns(
-        UserWarning, match="One contrast given, assuming it for all 2 runs"
+        RuntimeWarning, match="The same contrast will be used for all"
     ):
         multi_run_model.compute_contrast(formula, output_type="effect_size")
 
@@ -509,7 +509,7 @@ def test_compute_contrast_num_contrasts(shape_4d_default):
     multi_run_model.compute_contrast([np.eye(rk)[1]] * 3)
 
     with pytest.warns(
-        UserWarning, match="One contrast given, assuming it for all 3 runs"
+        RuntimeWarning, match="The same contrast will be used for all"
     ):
         multi_run_model.compute_contrast([np.eye(rk)[1]])
 
