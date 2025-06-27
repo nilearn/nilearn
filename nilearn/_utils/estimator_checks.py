@@ -70,6 +70,10 @@ from nilearn.decoding.decoder import _BaseDecoder
 from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition._base import _BaseDecomposition
+from nilearn.decomposition.tests.conftest import (
+    _decomposition_img,
+    _decomposition_mesh,
+)
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     NiftiLabelsMasker,
@@ -534,10 +538,10 @@ def nilearn_check_generator(estimator: BaseEstimator):
         requires_y = getattr(tags.target_tags, "required", False)
 
     yield (clone(estimator), check_estimator_has_sklearn_is_fitted)
-    yield (clone(estimator), check_fit_returns_self)
     yield (clone(estimator), check_transformer_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
+        yield (clone(estimator), check_fit_returns_self)
         if requires_y:
             yield (clone(estimator), check_image_estimator_requires_y_none)
 
@@ -725,6 +729,16 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
             imgs = _make_surface_img(10)
         return estimator.fit(imgs)
 
+    elif isinstance(estimator, _BaseDecomposition):
+        decomp_input = _decomposition_img(
+            data_type="surface",
+            rng=_rng(),
+            mesh=_decomposition_mesh(),
+        )
+        # only to silence warnings
+        estimator.smoothing_fwhm = None
+        return estimator.fit(decomp_input)
+
     else:
         imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_eye())
         return estimator.fit(imgs)
@@ -774,20 +788,6 @@ def check_fit_returns_self(estimator) -> None:
 
     Replace sklearn check_estimators_fit_returns_self
     """
-    # TODO make sure the following estimator pass this check
-    if isinstance(
-        estimator,
-        (
-            _BaseDecomposition,
-            ReNA,
-            HierarchicalKMeans,
-            GroupSparseCovariance,
-            GroupSparseCovarianceCV,
-            ConnectivityMeasure,
-        ),
-    ):
-        return None
-
     fitted_estimator = fit_estimator(estimator)
 
     assert fitted_estimator is estimator
