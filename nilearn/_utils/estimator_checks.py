@@ -72,7 +72,14 @@ from nilearn.decoding.decoder import _BaseDecoder
 from nilearn.decoding.searchlight import SearchLight
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition._base import _BaseDecomposition
+
 from nilearn.image import new_img_like
+
+from nilearn.decomposition.tests.conftest import (
+    _decomposition_img,
+    _decomposition_mesh,
+)
+
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     NiftiLabelsMasker,
@@ -197,8 +204,6 @@ def return_expected_failed_checks(
             "check_estimator_sparse_matrix": "TODO",
             "check_methods_sample_order_invariance": "TODO",
             "check_methods_subset_invariance": "TODO",
-            "check_n_features_in": "TODO",
-            "check_n_features_in_after_fitting": "TODO",
             "check_readonly_memmap_input": "TODO",
             "check_transformer_data_not_an_array": "TODO",
             "check_transformer_general": "TODO",
@@ -221,28 +226,6 @@ def return_expected_failed_checks(
                 "remove when dropping sklearn 1.4"
             ),
             "check_clustering": "TODO",
-            "check_dict_unchanged": "TODO",
-            "check_dtype_object": "TODO",
-            "check_dont_overwrite_parameters": "TODO",
-            "check_estimators_dtypes": "TODO",
-            "check_estimators_fit_returns_self": "TODO",
-            "check_estimators_nan_inf": "TODO",
-            "check_estimators_overwrite_params": "TODO",
-            "check_estimators_pickle": "TODO",
-            "check_f_contiguous_array_estimator": "TODO",
-            "check_fit_idempotent": "TODO",
-            "check_fit_check_is_fitted": "TODO",
-            "check_fit_score_takes_y": "TODO",
-            "check_fit2d_predict1d": "TODO",
-            "check_methods_sample_order_invariance": "TODO",
-            "check_methods_subset_invariance": "TODO",
-            "check_n_features_in": "TODO",
-            "check_n_features_in_after_fitting": "TODO",
-            "check_pipeline_consistency": "TODO",
-            "check_positive_only_tag_during_fit": "TODO",
-            "check_readonly_memmap_input": "TODO",
-            "check_transformer_data_not_an_array": "TODO",
-            "check_transformer_general": "TODO",
             "check_transformer_preserve_dtypes": "TODO",
         }
 
@@ -561,11 +544,12 @@ def nilearn_check_generator(estimator: BaseEstimator):
         requires_y = getattr(tags.target_tags, "required", False)
 
     yield (clone(estimator), check_estimator_has_sklearn_is_fitted)
-    yield (clone(estimator), check_fit_returns_self)
     yield (clone(estimator), check_transformer_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
+
         yield (clone(estimator), check_img_estimators_pickle)
+        yield (clone(estimator), check_fit_returns_self)
 
         if requires_y:
             yield (clone(estimator), check_image_estimator_requires_y_none)
@@ -746,6 +730,16 @@ def generate_data_to_fit(estimator: BaseEstimator):
             imgs = _make_surface_img(10)
         return imgs, None
 
+    elif isinstance(estimator, _BaseDecomposition):
+        decomp_input = _decomposition_img(
+            data_type="surface",
+            rng=_rng(),
+            mesh=_decomposition_mesh(),
+        )
+        # only to silence warnings
+        estimator.smoothing_fwhm = None
+        return estimator.fit(decomp_input)
+
     else:
         imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_eye())
         return imgs, None
@@ -820,20 +814,6 @@ def check_fit_returns_self(estimator) -> None:
 
     Replace sklearn check_estimators_fit_returns_self
     """
-    # TODO make sure the following estimator pass this check
-    if isinstance(
-        estimator,
-        (
-            _BaseDecomposition,
-            ReNA,
-            HierarchicalKMeans,
-            GroupSparseCovariance,
-            GroupSparseCovarianceCV,
-            ConnectivityMeasure,
-        ),
-    ):
-        return None
-
     fitted_estimator = fit_estimator(estimator)
 
     assert fitted_estimator is estimator
