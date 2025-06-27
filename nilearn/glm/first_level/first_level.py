@@ -1065,10 +1065,12 @@ class FirstLevelModel(BaseGLM):
             warn(
                 (
                     f"The same contrast will be used for all {n_runs} runs. "
-                    "If you want to apply a different contrast to each run, "
-                    "pass contrast as an expression using "
+                    "If the design matrices are not the same for all runs, "
+                    "(for example with different column names "
+                    "or column order across runs) "
+                    "you should pass contrast as an expression using "
                     "the name of the conditions "
-                    "as they appear in the design matrix."
+                    "as they appear in the design matrices."
                 ),
                 category=RuntimeWarning,
                 stacklevel=find_stack_level(),
