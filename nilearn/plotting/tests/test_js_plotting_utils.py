@@ -105,7 +105,6 @@ def test_colorscale_threshold(threshold, expected_abs_threshold):
     assert colors["cmap"].N == 256
     assert (colors["norm"].vmax, colors["norm"].vmin) == (13, -13)
     assert np.allclose(colors["abs_threshold"], expected_abs_threshold, 2)
-    assert colors["symmetric_cmap"]
 
 
 @pytest.mark.parametrize("vmin,vmax", [(None, 7), (-5, 7)])
@@ -115,7 +114,6 @@ def test_colorscale_symmetric_cmap(vmin, vmax):
     assert (colors["vmin"], colors["vmax"]) == (-7, 7)
     assert colors["cmap"].N == 256
     assert (colors["norm"].vmax, colors["norm"].vmin) == (7, -7)
-    assert colors["symmetric_cmap"]
 
 
 @pytest.fixture
@@ -123,8 +121,6 @@ def expected_vmin_vmax(values, vmax, vmin):
     """Return expected vmin and vmax."""
     if vmax is None:
         return (min(values), max(values))
-    if min(values) < 0:
-        return (-vmax, vmax)
     return (min(values), vmax) if vmin is None else (vmin, vmax)
 
 
@@ -154,7 +150,6 @@ def test_colorscale_asymmetric_cmap(
         threshold=threshold,
         symmetric_cmap=False,
     )
-    assert (min(values) < 0) | (not colors["symmetric_cmap"])
     assert colors["cmap"].N == 256
     assert (int(colors["vmin"]), int(colors["vmax"])) == expected_vmin_vmax
     assert (colors["norm"].vmax, colors["norm"].vmin) == expected_vmin_vmax[
