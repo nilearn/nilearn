@@ -353,12 +353,6 @@ def return_expected_failed_checks(
                 ),
             }
 
-        if isinstance(estimator, (NiftiMasker)) and SKLEARN_MINOR >= 5:
-            if not IS_SKLEARN_1_6_1_on_py_3_9:
-                expected_failed_checks.pop("check_estimator_sparse_array")
-
-            expected_failed_checks.pop("check_estimator_sparse_tag")
-
         if isinstance(estimator, (RegionExtractor)) and SKLEARN_MINOR >= 6:
             expected_failed_checks.pop(
                 "check_do_not_raise_errors_in_init_or_set_params"
@@ -483,12 +477,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         }
 
     expected_failed_checks |= unapplicable_checks()
-
-    if isinstance(estimator, SearchLight):
-        return expected_failed_checks
-
-    if not IS_SKLEARN_1_6_1_on_py_3_9:
-        expected_failed_checks.pop("check_estimator_sparse_tag")
 
     return expected_failed_checks
 

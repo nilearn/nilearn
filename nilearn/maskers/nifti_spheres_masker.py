@@ -12,7 +12,6 @@ from scipy import sparse
 from sklearn import neighbors
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import logger
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -30,7 +29,11 @@ from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
+from nilearn.maskers.base_masker import (
+    BaseMasker,
+    filter_and_extract,
+    mask_logger,
+)
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
 
 
@@ -622,6 +625,8 @@ class NiftiSpheresMasker(BaseMasker):
 
         self.n_elements_ = len(self.seeds_)
 
+        mask_logger("fit_done", verbose=self.verbose)
+
         return self
 
     @fill_doc
@@ -730,7 +735,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         region_signals = self._check_array(region_signals)
 
-        logger.log("computing image from signals", verbose=self.verbose)
+        mask_logger("inverse_transform", verbose=self.verbose)
 
         if self.mask_img_ is not None:
             mask = check_niimg_3d(self.mask_img_)
