@@ -71,9 +71,8 @@ plotly = ["nilearn[plotting]"]
 # See https://github.com/plotly/Kaleido/issues/134 for more detail
 plotting = [
     "matplotlib>=3.3.0",
-    "plotly>=5.0.0,!=6.1.0",
-    "kaleido ; platform_system != 'Windows'",
-    "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
+    "plotly>=6.1.1",
+    "kaleido>=1.0.0"
 ]
 style = [
     'tox'
