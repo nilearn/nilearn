@@ -188,6 +188,7 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
         Gives the level of the intersection, must be within [0, 1].
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
+
     %(connected)s
         Default=True.
 

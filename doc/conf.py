@@ -16,6 +16,8 @@ import re
 import sys
 from pathlib import Path
 
+from sphinx_gallery.notebook import add_code_cell, add_markdown_cell
+
 from nilearn._version import __version__
 
 # ----------------------------------------------------------------------------
@@ -37,6 +39,7 @@ sys.path.insert(0, str(Path("..").absolute()))
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = [
     "gh_substitutions",
+    "jupyterlite_sphinx",
     "myst_parser",
     "numpydoc",
     "sphinx_copybutton",
@@ -408,6 +411,58 @@ nitpick_ignore = [
 
 binder_branch = "main" if "dev" in current_version else current_version
 
+
+def notebook_modification_function(
+    notebook_content,
+    notebook_filename,  # noqa : ARG001
+):
+    warning_template = "\n".join(  # noqa : FLY002
+        [
+            "<div class='alert alert-{message_class}'>",
+            "",
+            "# JupyterLite warning",
+            "",
+            "{message}",
+            "</div>",
+        ]
+    )
+
+    message_class = "warning"
+    message = (
+        "Running the scikit-learn examples in JupyterLite is experimental"
+        " and you may encounter some unexpected behavior."
+        "\n\nThe main difference is that imports"
+        " will take a lot longer than usual,"
+        " for example the first `import sklearn` can"
+        " take roughly 10-20s."
+        "\n\nIf you notice problems, feel free to open an"
+        " [issue](https://github.com/scikit-learn/scikit-learn/issues/new/choose)"
+        " about it."
+    )
+
+    markdown = warning_template.format(
+        message_class=message_class, message=message
+    )
+
+    dummy_notebook_content = {"cells": []}
+    add_markdown_cell(dummy_notebook_content, markdown)
+
+    code_lines = []
+
+    # always import matplotlib and pandas to avoid Pyodide limitation with
+    # imports inside functions
+    code_lines.extend(["import matplotlib", "import pandas"])
+
+    if code_lines:
+        code_lines = ["# JupyterLite-specific code"] + code_lines
+        code = "\n".join(code_lines)
+        add_code_cell(dummy_notebook_content, code)
+
+    notebook_content["cells"] = (
+        dummy_notebook_content["cells"] + notebook_content["cells"]
+    )
+
+
 sphinx_gallery_conf = {
     "doc_module": "nilearn",
     "backreferences_dir": Path("modules", "generated"),
@@ -430,6 +485,11 @@ sphinx_gallery_conf = {
     },
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
     "within_subsection_order": "ExampleTitleSortKey",
+    "jupyterlite": {
+        "use_jupyter_lab": True,
+        # "jupyterlite_contents": ".",
+        "notebook_modification_function": notebook_modification_function,
+    },
 }
 
 mermaid_version = "11.4.0"
