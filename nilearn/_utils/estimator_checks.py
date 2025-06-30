@@ -1090,7 +1090,6 @@ def check_masker_dict_unchanged(estimator):
             raise e
 
 
-
 @ignore_warnings()
 def check_masker_n_elements(estimator):
     """Check appropriate response of maskers to check_fitted from sklearn.
