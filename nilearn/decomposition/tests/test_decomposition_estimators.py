@@ -69,7 +69,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_fit_errors(data_type, decomposition_images, estimator):
-    """Fit and transform fail without the proper arguments."""
+    """Fit fail without the proper arguments."""
     est = estimator(
         smoothing_fwhm=None,
     )
@@ -134,6 +134,11 @@ def test_masker_attributes_with_fit(
 
     check_decomposition_estimator(canica, data_type)
 
+    # smoke test transforn and inverse transform
+    signals = canica.transform(canica_data)
+
+    canica.inverse_transform(signals)
+
 
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
@@ -166,6 +171,11 @@ def test_pass_masker_arg_to_estimator(
         est.fit(decomposition_img)
 
     check_decomposition_estimator(est, data_type)
+
+    # smoke test transforn and inverse transform
+    signals = est.transform(decomposition_img)
+
+    est.inverse_transform(signals)
 
 
 @pytest.mark.timeout(0)
@@ -219,6 +229,18 @@ def test_with_confounds(
     assert_raises(
         AssertionError, assert_array_equal, components, components_clean
     )
+
+    signals = est.transform(decomposition_images)
+    signals_confounds = est.transform(
+        decomposition_images, confounds=confounds
+    )
+
+    assert_raises(
+        AssertionError, assert_array_equal, signals, signals_confounds
+    )
+
+    # smoke test
+    est.inverse_transform(signals)
 
 
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
@@ -284,6 +306,11 @@ def test_single_subject_file(
 
     check_decomposition_estimator(est, data_type)
 
+    # smoke test transforn and inverse transform
+    signals = est.transform(tmp_file)
+
+    est.inverse_transform(signals)
+
 
 @pytest.mark.timeout(0)
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
@@ -311,3 +338,8 @@ def test_with_globbing_patterns(
     est.fit(img)
 
     check_decomposition_estimator(est, data_type)
+
+    # smoke test transforn and inverse transform
+    signals = est.transform(img)
+
+    est.inverse_transform(signals)
