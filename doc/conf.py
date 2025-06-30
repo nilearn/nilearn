@@ -416,6 +416,15 @@ def notebook_modification_function(
     notebook_content,
     notebook_filename,  # noqa : ARG001
 ):
+    """Implement JupyterLite-specific modifications of notebooks.
+
+    See sphinx gallery doc for details about this function.
+
+    https://sphinx-gallery.github.io/stable/configuration.html#generate-jupyterlite-links-for-gallery-notebooks-experimental
+
+    """
+    notebook_content_str = str(notebook_content)
+
     warning_template = "\n".join(  # noqa : FLY002
         [
             "<div class='alert alert-{message_class}'>",
@@ -429,14 +438,12 @@ def notebook_modification_function(
 
     message_class = "warning"
     message = (
-        "Running the scikit-learn examples in JupyterLite is experimental"
+        "Running the nilearn examples in JupyterLite is experimental"
         " and you may encounter some unexpected behavior."
         "\n\nThe main difference is that imports"
-        " will take a lot longer than usual,"
-        " for example the first `import sklearn` can"
-        " take roughly 10-20s."
+        " will take a lot longer than usual."
         "\n\nIf you notice problems, feel free to open an"
-        " [issue](https://github.com/scikit-learn/scikit-learn/issues/new/choose)"
+        " [issue](https://github.com/nilearn/nilearn/issues/new/choose)"
         " about it."
     )
 
@@ -451,12 +458,22 @@ def notebook_modification_function(
 
     # always import matplotlib and pandas to avoid Pyodide limitation with
     # imports inside functions
-    code_lines.extend(["import matplotlib", "import pandas"])
+    code_lines.extend(
+        ["import matplotlib", "import pandas", "import plotly nbformat"]
+    )
 
-    if code_lines:
-        code_lines = ["# JupyterLite-specific code"] + code_lines
-        code = "\n".join(code_lines)
-        add_code_cell(dummy_notebook_content, code)
+    if "fetch_" in notebook_content_str:
+        code_lines.extend(
+            [
+                "%pip install pyodide-http",
+                "import pyodide_http",
+                "pyodide_http.patch_all()",
+            ]
+        )
+
+    code_lines = ["# JupyterLite-specific code"] + code_lines
+    code = "\n".join(code_lines)
+    add_code_cell(dummy_notebook_content, code)
 
     notebook_content["cells"] = (
         dummy_notebook_content["cells"] + notebook_content["cells"]
@@ -487,10 +504,12 @@ sphinx_gallery_conf = {
     "within_subsection_order": "ExampleTitleSortKey",
     "jupyterlite": {
         "use_jupyter_lab": True,
-        # "jupyterlite_contents": ".",
+        "jupyterlite_contents": "_build/html/jupyterlite_contents",
         "notebook_modification_function": notebook_modification_function,
     },
 }
+
+jupyterlite_bind_ipynb_suffix = False
 
 mermaid_version = "11.4.0"
 

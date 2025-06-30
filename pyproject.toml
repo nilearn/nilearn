@@ -52,7 +52,8 @@ doc = [
     "nilearn[plotting]",
     "docutils>=0.17",
     "furo>=2024.8.6",
-    "jupyterlite-sphinx",
+    "jupyterlite-pyodide-kernel",
+    "jupyterlite-sphinx>=0.8",
     "memory_profiler>=0.61.0",  # measuring memory during docs building
     "myst-parser>=3.0.1",
     "numpydoc>=1.8.0",
