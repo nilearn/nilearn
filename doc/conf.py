@@ -456,12 +456,6 @@ def notebook_modification_function(
 
     code_lines = []
 
-    # always import matplotlib and pandas to avoid Pyodide limitation with
-    # imports inside functions
-    code_lines.extend(
-        ["import matplotlib", "import pandas", "import plotly nbformat"]
-    )
-
     if "fetch_" in notebook_content_str:
         code_lines.extend(
             [
@@ -470,6 +464,11 @@ def notebook_modification_function(
                 "pyodide_http.patch_all()",
             ]
         )
+    # always import matplotlib and pandas to avoid Pyodide limitation with
+    # imports inside functions
+    code_lines.extend(
+        ["import matplotlib", "import pandas", "import plotly, nbformat"]
+    )
 
     code_lines = ["# JupyterLite-specific code"] + code_lines
     code = "\n".join(code_lines)
@@ -503,13 +502,9 @@ sphinx_gallery_conf = {
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
     "within_subsection_order": "ExampleTitleSortKey",
     "jupyterlite": {
-        "use_jupyter_lab": True,
-        "jupyterlite_contents": "_build/html/jupyterlite_contents",
         "notebook_modification_function": notebook_modification_function,
     },
 }
-
-jupyterlite_bind_ipynb_suffix = False
 
 mermaid_version = "11.4.0"
 
