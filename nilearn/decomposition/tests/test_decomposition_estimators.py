@@ -130,7 +130,9 @@ def test_masker_attributes_with_fit(
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
     )
-    canica.fit(canica_data)
+
+    with pytest.warns(UserWarning, match="overriding estimator parameter"):
+        canica.fit(canica_data)
 
     check_decomposition_estimator(canica, data_type)
 
@@ -143,13 +145,13 @@ def test_masker_attributes_with_fit(
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_pass_masker_arg_to_estimator(
-    data_type, affine_eye, decomposition_img, estimator
+    data_type, affine_eye, canica_data, estimator
 ):
     """Masker arguments are passed to the estimator without fail."""
     shape = (
-        decomposition_img.shape[:3]
+        canica_data[0].shape[:3]
         if data_type == "nifti"
-        else (decomposition_img.mesh.n_vertices,)
+        else (canica_data[0].mesh.n_vertices,)
     )
     est = estimator(
         target_affine=affine_eye,
@@ -166,14 +168,14 @@ def test_pass_masker_arg_to_estimator(
         with pytest.warns(
             UserWarning, match="The following parameters are not relevant"
         ):
-            est.fit(decomposition_img)
+            est.fit(canica_data)
     elif data_type == "nifti":
-        est.fit(decomposition_img)
+        est.fit(canica_data)
 
     check_decomposition_estimator(est, data_type)
 
     # smoke test transforn and inverse transform
-    signals = est.transform(decomposition_img)
+    signals = est.transform(canica_data)
 
     est.inverse_transform(signals)
 
@@ -306,10 +308,8 @@ def test_single_subject_file(
 
     check_decomposition_estimator(est, data_type)
 
-    # smoke test transforn and inverse transform
-    signals = est.transform(tmp_file)
-
-    est.inverse_transform(signals)
+    # smoke test transforn
+    est.transform(tmp_file)
 
 
 @pytest.mark.timeout(0)

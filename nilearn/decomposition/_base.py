@@ -13,6 +13,7 @@ from string import Template
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
+from nibabel import Nifti1Image
 from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LinearRegression
@@ -21,7 +22,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import check_niimg, fill_doc, logger, stringify_path
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import check_embedded_masker
@@ -608,8 +609,18 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         check_is_fitted(self)
 
         # XXX: dealing properly with 4D/ list of 4D data?
+        imgs = stringify_path(imgs)
+        if isinstance(imgs, str):
+            imgs = check_niimg(imgs)
+
+        if isinstance(imgs, (SurfaceImage, Nifti1Image)):
+            imgs = [imgs]
+
+        n_imgs = len(imgs)
+
         if confounds is None:
-            confounds = [None] * len(imgs)
+            confounds = list(itertools.repeat(None, n_imgs))
+
         return [
             self.maps_masker_.transform(img, confounds=confound)
             for img, confound in zip(imgs, confounds)
@@ -635,6 +646,12 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         check_is_fitted(self)
 
         # XXX: dealing properly with 2D/ list of 2D data?
+        if not isinstance(loadings, list):
+            raise TypeError(
+                "'loadings' must be a list of numpy arrays. "
+                f"Got: {loadings.__class__.__name__}"
+            )
+
         return [
             self.maps_masker_.inverse_transform(loading)
             for loading in loadings
