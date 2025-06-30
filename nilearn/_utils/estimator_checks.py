@@ -902,6 +902,7 @@ def check_img_estimators_overwrite_params(estimator) -> None:
         )
 
 
+@ignore_warnings()
 def check_img_estimators_pickle(estimator_orig):
     """Test that we can pickle all estimators.
 
