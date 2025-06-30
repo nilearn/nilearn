@@ -247,7 +247,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags()
+            return tags(niimg_like=False)
 
         from nilearn._utils.tags import InputTags
 
@@ -271,14 +271,29 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         self
         """
         del y
-        X = check_array(
-            X, ensure_min_features=2, ensure_min_samples=2, estimator=self
-        )
+        if SKLEARN_LT_1_6:
+            X = check_array(
+                X, ensure_min_features=2, ensure_min_samples=2, estimator=self
+            )
+            self.n_features_in_ = X.shape[1]
+
+        else:
+            from sklearn.utils.validation import validate_data
+
+            X = validate_data(
+                self,
+                X=X,
+                ensure_min_features=2,
+                ensure_min_samples=2,
+                reset=True,
+            )
+
         # Transpose the data so that we can cluster features (voxels)
         # and input them as samples to the sklearn's clustering algorithm
         # This is because sklearn's clustering algorithm does clustering
         # on samples and not on features
         X = X.T
+
         # n_features for the sklearn's clustering algorithm would be the
         # number of samples in the input data
         n_features = X.shape[1]
@@ -336,6 +351,16 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
             Data reduced with agglomerated signal for each cluster
         """
         check_is_fitted(self)
+
+        # TODO simplify when dropping sklearn 1.5
+        if SKLEARN_LT_1_6:
+            X = check_array(
+                X, estimator=self, ensure_min_features=self.n_features_in_
+            )
+        else:
+            from sklearn.utils.validation import validate_data
+
+            X = validate_data(self, X=X, reset=False)
 
         # Transpose the data so that we can cluster features (voxels)
         # and input them as samples to the sklearn's clustering algorithm
