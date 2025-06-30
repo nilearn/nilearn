@@ -550,6 +550,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         self._check_input(X, confounds=confounds)
 
         if do_fit:
+            self.n_features_in_ = next(iter({s.shape[1] for s in X}))
             self.cov_estimator_ = clone(self.cov_estimator)
 
         # Compute all the matrices, stored in "connectivities"
@@ -605,6 +606,20 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         # Compute the vector we return on transform
         if do_transform:
+            # TODO simplify when dropping sklearn 1.5
+            if SKLEARN_LT_1_6:
+                for x in X:
+                    check_array(
+                        x,
+                        estimator=self,
+                        ensure_min_features=self.n_features_in_,
+                    )
+            else:
+                from sklearn.utils.validation import validate_data
+
+                for x in X:
+                    validate_data(self, x, reset=False)
+
             if self.kind == "tangent":
                 connectivities = [
                     _map_eigenvalues(

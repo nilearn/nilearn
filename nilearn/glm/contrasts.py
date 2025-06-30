@@ -566,6 +566,15 @@ def compute_fixed_effects(
     fixed_fx_variance_img = masker.inverse_transform(fixed_fx_variance)
     fixed_fx_stat_img = masker.inverse_transform(fixed_fx_stat)
     fixed_fx_z_score_img = masker.inverse_transform(fixed_fx_z_score)
+
+    if return_z_score:
+        return (
+            fixed_fx_contrast_img,
+            fixed_fx_variance_img,
+            fixed_fx_stat_img,
+            fixed_fx_z_score_img,
+        )
+
     warn(
         category=DeprecationWarning,
         message="The behavior of this function will be "
@@ -574,15 +583,7 @@ def compute_fixed_effects(
         "Please set return_z_score to True.",
         stacklevel=find_stack_level(),
     )
-    if return_z_score:
-        return (
-            fixed_fx_contrast_img,
-            fixed_fx_variance_img,
-            fixed_fx_stat_img,
-            fixed_fx_z_score_img,
-        )
-    else:
-        return fixed_fx_contrast_img, fixed_fx_variance_img, fixed_fx_stat_img
+    return fixed_fx_contrast_img, fixed_fx_variance_img, fixed_fx_stat_img
 
 
 def _compute_fixed_effects_params(

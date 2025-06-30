@@ -60,6 +60,7 @@ for term_idx in np.argsort(total_scores)[-10:][::-1]:
 # %%
 # Reshape and mask images
 # -----------------------
+import warnings
 
 print("\nReshaping and masking images.\n")
 
@@ -78,7 +79,9 @@ for index, image_path in enumerate(images):
     # non-finite values but otherwise doesn't modify the image.
     image = smooth_img(image_path, fwhm=None)
     try:
-        X.append(masker.transform(image))
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            X.append(masker.transform(image))
     except Exception as e:
         meta = nv_data["images_meta"][index]
         print(

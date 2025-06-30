@@ -655,7 +655,7 @@ def generate_group_sparse_gaussian_graphs(
     density=0.1,
     random_state=0,
     verbose=0,
-):
+) -> tuple[list[np.ndarray], list[np.ndarray], np.ndarray]:
     """Generate signals drawn from a sparse Gaussian graphical model.
 
     Parameters
