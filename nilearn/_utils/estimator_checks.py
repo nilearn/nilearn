@@ -72,6 +72,7 @@ from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
+    MultiNiftiMasker,
     NiftiLabelsMasker,
     NiftiMapsMasker,
     NiftiMasker,
@@ -371,11 +372,14 @@ def return_expected_failed_checks(
             "check_fit_score_takes_y": "TODO",
         }
 
-    if isinstance(estimator, (_BaseDecomposition,)):
+    if isinstance(estimator, (_BaseDecomposition)):
         if SKLEARN_MINOR >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
         if not IS_SKLEARN_1_6_1_on_py_3_9 and SKLEARN_MINOR >= 5:
             expected_failed_checks.pop("check_estimator_sparse_array")
+
+    if isinstance(estimator, (MultiNiftiMasker)) and SKLEARN_MINOR >= 6:
+        expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if is_masker(estimator):
         if accept_niimg_input(estimator):
