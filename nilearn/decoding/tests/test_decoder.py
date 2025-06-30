@@ -88,7 +88,6 @@ ESTIMATORS_TO_CHECK = [
     FREMRegressor(),
 ]
 
-
 if SKLEARN_LT_1_6:
 
     @pytest.mark.parametrize(
@@ -1127,7 +1126,6 @@ def _make_surface_reg_data(rng, surf_img_2d, n_samples=50):
     return surf_img_2d(n_samples), y
 
 
-@pytest.mark.filterwarnings("ignore:Overriding provided")
 def test_decoder_apply_mask_surface(_make_surface_class_data):
     """Test _apply_mask on surface image."""
     X, _ = _make_surface_class_data
@@ -1138,8 +1136,6 @@ def test_decoder_apply_mask_surface(_make_surface_class_data):
     assert type(model.mask_img_).__name__ == "SurfaceImage"
 
 
-@pytest.mark.filterwarnings("ignore:Overriding provided")
-@pytest.mark.filterwarnings("ignore:After clustering")
 def test_decoder_screening_percentile_surface_default(
     _make_surface_class_data,
 ):
@@ -1152,8 +1148,6 @@ def test_decoder_screening_percentile_surface_default(
     assert model.screening_percentile_ == 20
 
 
-@pytest.mark.filterwarnings("ignore:Overriding provided")
-@pytest.mark.filterwarnings("ignore:After clustering")
 @pytest.mark.parametrize("perc", [None, 100, 0])
 def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
     """Test passing screening percentile with surface image."""
@@ -1169,7 +1163,6 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
 
 
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
-@pytest.mark.filterwarnings("ignore:After clustering and screening")
 def test_decoder_adjust_screening_lessthan_mask_surface(
     surf_mask_dim,
     surf_mask_1d,
@@ -1200,7 +1193,6 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
 
 
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
-@pytest.mark.filterwarnings("ignore:After clustering and screening")
 def test_decoder_adjust_screening_greaterthan_mask_surface(
     surf_mask_dim,
     surf_mask_1d,
@@ -1240,7 +1232,6 @@ def test_decoder_fit_surface(decoder, _make_surface_class_data, mask):
     assert model.coef_ is not None
 
 
-@pytest.mark.filterwarnings("ignore:After clustering and screening")
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
 def test_decoder_fit_surface_with_mask_image(
@@ -1260,7 +1251,6 @@ def test_decoder_fit_surface_with_mask_image(
     assert model.coef_ is not None
 
 
-@pytest.mark.filterwarnings("ignore:Overriding provided")
 @pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
 def test_decoder_error_incompatible_surface_mask_and_volume_data(
     decoder, surf_mask_1d, tiny_binary_classification_data
@@ -1312,8 +1302,6 @@ def test_decoder_predict_score_surface(_make_surface_class_data):
     assert 0.3 < acc < 0.7
 
 
-@pytest.mark.filterwarnings("ignore:Overriding provided")
-@pytest.mark.filterwarnings("ignore:After clustering and screening")
 @pytest.mark.filterwarnings("ignore:Solver terminated early")
 def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
     """Test regression predict and scoring for surface image."""
@@ -1329,7 +1317,6 @@ def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
     assert r2 <= 0
 
 
-@pytest.mark.filterwarnings("ignore:After clustering and screening")
 @pytest.mark.filterwarnings("ignore:divide by zero encountered in divide")
 @pytest.mark.filterwarnings("ignore:Liblinear failed to converge")
 @pytest.mark.filterwarnings("ignore:Solver terminated early")
