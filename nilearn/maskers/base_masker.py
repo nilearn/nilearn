@@ -215,52 +215,29 @@ def mask_logger(step, img=None, verbose=0):
         repr = img.__repr__()
         if verbose > 1:
             repr = repr_niimgs(img, shorten=True)
-        if verbose > 2:
+        elif verbose > 2:
             repr = repr_niimgs(img, shorten=False)
 
-    if step == "load_mask":
-        if repr is not None:
-            logger.log(
-                msg=f"Loading mask from {repr}",
-                verbose=verbose,
-            )
+    messages = {
+        "cleaning": "Cleaning extracted signals",
+        "compute_mask": "Computing mask",
+        "extracting": "Extracting region signals",
+        "fit_done": "Finished fit",
+        "inverse_transform": "Computing image from signals",
+        "load_data": f"Loading data from {repr}",
+        "load_mask": f"Loading mask from {repr}",
+        "load_regions": f"Loading regions from {repr}",
+        "resample_mask": "Resamping mask",
+        "resample_regions": "Resampling regions",
+    }
 
-    elif step == "load_data":
-        if repr is not None:
-            logger.log(
-                msg=f"Loading data from {repr}",
-                verbose=verbose,
-            )
+    if step not in messages:
+        raise ValueError(f"Unknown step: {step}")
 
-    elif step == "load_regions":
-        logger.log(
-            msg=f"Loading regions from {repr}",
-            verbose=verbose,
-        )
+    if step in ["load_mask", "load_data"] and repr is None:
+        return
 
-    elif step == "compute_mask":
-        logger.log("Computing mask", verbose=verbose)
-
-    elif step == "resample_mask":
-        logger.log("Resamping mask", verbose=verbose)
-
-    elif step == "resample_regions":
-        logger.log("Resampling regions", verbose=verbose)
-
-    elif step == "extracting":
-        logger.log("Extracting region signals", verbose=verbose)
-
-    elif step == "cleaning":
-        logger.log("Cleaning extracted signals", verbose=verbose)
-
-    elif step == "fit_done":
-        logger.log("Finished fit", verbose=verbose)
-
-    elif step == "inverse_transform":
-        logger.log("Computing image from signals", verbose=verbose)
-
-    else:  # pragma: no cover
-        raise ValueError("Unknown step")
+    logger.log(messages[step], verbose=verbose)
 
 
 @fill_doc
