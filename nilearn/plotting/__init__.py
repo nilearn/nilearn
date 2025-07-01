@@ -16,18 +16,20 @@ from nilearn.plotting.html_connectome import view_connectome, view_markers
 from nilearn.plotting.html_stat_map import view_img
 from nilearn.plotting.image import (
     plot_anat,
-    plot_bland_altman,
     plot_carpet,
     plot_connectome,
     plot_epi,
     plot_glass_brain,
     plot_img,
-    plot_img_comparison,
     plot_markers,
     plot_prob_atlas,
     plot_roi,
     plot_stat_map,
     show,
+)
+from nilearn.plotting.img_comparison import (
+    plot_bland_altman,
+    plot_img_comparison,
 )
 from nilearn.plotting.matrix import (
     plot_contrast_matrix,
