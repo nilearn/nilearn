@@ -262,7 +262,9 @@ def return_expected_failed_checks(
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
-        "check_fit_check_is_fitted": ("replaced by check_fit_check_is_fitted"),
+        "check_fit_check_is_fitted": (
+            "replaced by check_image_estimator_fit_check_is_fitted"
+        ),
         "check_fit_score_takes_y": (
             "replaced by check_masker_fit_score_takes_y"
         ),
@@ -322,7 +324,7 @@ def return_expected_failed_checks(
                 "replaced by check_glm_fit_returns_self"
             ),
             "check_fit_check_is_fitted": (
-                "replaced by check_fit_check_is_fitted"
+                "replaced by check_image_estimator_fit_check_is_fitted"
             ),
             "check_transformer_data_not_an_array": (
                 "replaced by check_masker_transformer"
@@ -422,7 +424,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
-        "check_fit_check_is_fitted": "replaced by check_fit_check_is_fitted",
+        "check_fit_check_is_fitted": (
+            "replaced by check_image_estimator_fit_check_is_fitted"
+        ),
         "check_requires_y_none": (
             "replaced by check_image_estimator_requires_y_none"
         ),
@@ -528,7 +532,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
         yield (clone(estimator), check_fit_returns_self)
-        yield (clone(estimator), check_fit_check_is_fitted)
+        yield (clone(estimator), check_image_estimator_fit_check_is_fitted)
 
         if requires_y:
             yield (clone(estimator), check_image_estimator_requires_y_none)
@@ -742,7 +746,7 @@ def _check_mask_img_(estimator):
 
 
 @ignore_warnings()
-def check_fit_check_is_fitted(estimator):
+def check_image_estimator_fit_check_is_fitted(estimator):
     """Check appropriate response to check_fitted from sklearn before fitting.
 
     Should act as a replacement in the case of the maskers
