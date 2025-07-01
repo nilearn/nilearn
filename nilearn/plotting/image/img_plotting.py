@@ -45,12 +45,15 @@ from nilearn.plotting import cm
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
     create_colormap_from_lut,
-    get_cbar_ticks,
     get_colorbar_and_data_ranges,
     save_figure_if_needed,
 )
 from nilearn.plotting.displays import get_projector, get_slicer
-from nilearn.plotting.image._utils import MNI152TEMPLATE, load_anat
+from nilearn.plotting.image._utils import (
+    MNI152TEMPLATE,
+    get_cropped_cbar_ticks,
+    load_anat,
+)
 from nilearn.signal import clean
 
 
@@ -277,40 +280,12 @@ def _plot_img_with_bg(
         display.title(title)
     if hasattr(display, "_cbar"):
         cbar = display._cbar
-        new_tick_locs = _get_cropped_cbar_ticks(
+        new_tick_locs = get_cropped_cbar_ticks(
             cbar.vmin, cbar.vmax, threshold, n_ticks=len(cbar.locator.locs)
         )
         cbar.set_ticks(new_tick_locs)
 
     return save_figure_if_needed(display, output_file)
-
-
-def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
-    """Return ticks for cropped colorbars."""
-    new_tick_locs = np.linspace(cbar_vmin, cbar_vmax, n_ticks)
-    if threshold is not None:
-        # Case where cbar is either all positive or all negative
-        if 0 <= cbar_vmin <= cbar_vmax or cbar_vmin <= cbar_vmax <= 0:
-            idx_closest = np.argmin(
-                [abs(abs(new_tick_locs) - threshold) for _ in new_tick_locs]
-            )
-            new_tick_locs[idx_closest] = threshold
-        # Case where we do a symmetric thresholding
-        # within an asymmetric cbar
-        # and both threshold values are within bounds
-        elif cbar_vmin <= -threshold <= threshold <= cbar_vmax:
-            new_tick_locs = get_cbar_ticks(
-                cbar_vmin, cbar_vmax, threshold, n_ticks=len(new_tick_locs)
-            )
-        # Case where one of the threshold values is out of bounds
-        else:
-            idx_closest = np.argmin(
-                [abs(new_tick_locs - threshold) for _ in new_tick_locs]
-            )
-            new_tick_locs[idx_closest] = (
-                -threshold if threshold > cbar_vmax else threshold
-            )
-    return new_tick_locs
 
 
 @fill_doc
