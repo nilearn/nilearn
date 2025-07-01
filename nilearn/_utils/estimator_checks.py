@@ -751,12 +751,12 @@ def check_fit_check_is_fitted(estimator):
     check that before fitting
     - transform() and inverse_transform() \
       throw same error
-    - estimator has a __sklearn_is_fitted__ method
+    - estimator has a __sklearn_is_fitted__ method and does not return True
     - running sklearn check_is_fitted on estimator throws an error
 
     check that after fitting
-    - __sklearn_is_fitted__ returns true
-    - running sklearn check_fitted throws no error
+    - __sklearn_is_fitted__ returns True
+    - running sklearn check_is_fitted throws no error
     """
     if not hasattr(estimator, "__sklearn_is_fitted__"):
         raise TypeError(
@@ -1092,7 +1092,7 @@ def check_masker_dict_unchanged(estimator):
 
 @ignore_warnings()
 def check_masker_n_elements(estimator):
-    """Check appropriate response of maskers to check_fitted from sklearn.
+    """Check appropriate response of maskers to check_is_fitted from sklearn.
 
     check that after fitting
     - masker have a n_elements_ attribute that is positive int
