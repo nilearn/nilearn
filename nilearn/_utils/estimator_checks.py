@@ -432,7 +432,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
             "replaced by check_img_estimator_requires_y_none"
         ),
         "check_supervised_y_no_nan": (
-            "replaced by check_image_supervised_estimator_y_no_nan"
+            "replaced by check_supervised_img_estimator_y_no_nan"
         ),
         # Those are skipped for now they fail
         # for unknown reasons
@@ -534,7 +534,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
             yield (clone(estimator), check_img_estimator_requires_y_none)
 
         if is_classifier(estimator) or is_regressor(estimator):
-            yield (clone(estimator), check_image_supervised_estimator_y_no_nan)
+            yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
 
         if (
@@ -985,9 +985,6 @@ def check_img_estimator_pickle(estimator_orig):
             check_imgs_equal(result[method], unpickled_result)
 
 
-# ------------------ DECODERS CHECKS ------------------
-
-
 @ignore_warnings()
 def check_img_estimator_requires_y_none(estimator) -> None:
     """Check estimator with requires_y=True fails gracefully for y=None.
@@ -1004,8 +1001,11 @@ def check_img_estimator_requires_y_none(estimator) -> None:
             raise ve
 
 
+# ------------------ DECODERS CHECKS ------------------
+
+
 @ignore_warnings()
-def check_image_supervised_estimator_y_no_nan(estimator) -> None:
+def check_supervised_img_estimator_y_no_nan(estimator) -> None:
     """Check estimator fails if y contains nan or inf.
 
     Replaces sklearn check_supervised_y_no_nan
@@ -1677,9 +1677,6 @@ def check_masker_empty_data_messages(estimator):
     estimator.fit()
     with pytest.raises(ValueError, match="empty"):
         estimator.transform(imgs)
-
-
-# ------------------ SURFACE MASKER CHECKS ------------------
 
 
 @ignore_warnings()
