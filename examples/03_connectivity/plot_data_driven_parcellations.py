@@ -74,7 +74,7 @@ ward = Parcellations(
     standardize=False,
     smoothing_fwhm=2.0,
     memory="nilearn_cache",
-    memory_level=2,
+    memory_level=1,
     verbose=1,
 )
 # Call fit on functional dataset: single subject (less samples).
@@ -92,7 +92,7 @@ ward = Parcellations(
     standardize=False,
     smoothing_fwhm=2.0,
     memory="nilearn_cache",
-    memory_level=2,
+    memory_level=1,
     verbose=1,
 )
 ward.fit(dataset.func)
@@ -198,7 +198,7 @@ kmeans = Parcellations(
     standardize="zscore_sample",
     smoothing_fwhm=10.0,
     memory="nilearn_cache",
-    memory_level=2,
+    memory_level=1,
     verbose=1,
 )
 # Call fit on functional dataset: single subject (less samples)
@@ -249,7 +249,7 @@ hkmeans = Parcellations(
     standardize="zscore_sample",
     smoothing_fwhm=10,
     memory="nilearn_cache",
-    memory_level=2,
+    memory_level=1,
     verbose=1,
 )
 # Call fit on functional dataset: single subject (less samples)
