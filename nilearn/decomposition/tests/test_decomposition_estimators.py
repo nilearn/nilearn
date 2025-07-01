@@ -136,7 +136,7 @@ def test_masker_attributes_with_fit(
 
     check_decomposition_estimator(canica, data_type)
 
-    # smoke test transforn and inverse transform
+    # smoke test transform and inverse transform
     signals = canica.transform(canica_data)
 
     canica.inverse_transform(signals)
@@ -174,7 +174,7 @@ def test_pass_masker_arg_to_estimator(
 
     check_decomposition_estimator(est, data_type)
 
-    # smoke test transforn and inverse transform
+    # smoke test transform and inverse transform
     signals = est.transform(canica_data)
 
     est.inverse_transform(signals)
@@ -308,7 +308,7 @@ def test_single_subject_file(
 
     check_decomposition_estimator(est, data_type)
 
-    # smoke test transforn
+    # smoke test transform
     est.transform(tmp_file)
 
 
@@ -339,7 +339,7 @@ def test_with_globbing_patterns(
 
     check_decomposition_estimator(est, data_type)
 
-    # smoke test transforn and inverse transform
+    # smoke test transform and inverse transform
     signals = est.transform(img)
 
     est.inverse_transform(signals)
