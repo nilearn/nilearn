@@ -80,7 +80,7 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
     )
 
 
-def linkcode_resolve(domain, info):
+def make_linkcode_resolve(domain, info):
     """Return a linkcode_resolve function for the given URL format.
 
     revision is a git commit reference (hash or name)

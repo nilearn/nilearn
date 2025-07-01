@@ -28,6 +28,9 @@ from nilearn._version import __version__
 sys.path.insert(0, str(Path("sphinxext").absolute()))
 
 # See https://www.sphinx-doc.org/en/master/usage/extensions/linkcode.html
+from github_link import make_linkcode_resolve
+
+linkcode_resolve = make_linkcode_resolve
 
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, str(Path("..").absolute()))
