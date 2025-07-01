@@ -77,6 +77,7 @@ from nilearn.decomposition.tests.conftest import (
 )
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
+    MultiNiftiMasker,
     NiftiLabelsMasker,
     NiftiMapsMasker,
     NiftiMasker,
@@ -336,11 +337,14 @@ def return_expected_failed_checks(
             "check_fit_score_takes_y": "TODO",
         }
 
-    if isinstance(estimator, (_BaseDecomposition,)):
+    if isinstance(estimator, (_BaseDecomposition)):
         if SKLEARN_MINOR >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
         if not IS_SKLEARN_1_6_1_on_py_3_9 and SKLEARN_MINOR >= 5:
             expected_failed_checks.pop("check_estimator_sparse_array")
+
+    if isinstance(estimator, (MultiNiftiMasker)) and SKLEARN_MINOR >= 6:
+        expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if is_masker(estimator):
         if accept_niimg_input(estimator):
@@ -353,12 +357,6 @@ def return_expected_failed_checks(
                     "Deprecation cycle started to fix."
                 ),
             }
-
-        if isinstance(estimator, (NiftiMasker)) and SKLEARN_MINOR >= 5:
-            if not IS_SKLEARN_1_6_1_on_py_3_9:
-                expected_failed_checks.pop("check_estimator_sparse_array")
-
-            expected_failed_checks.pop("check_estimator_sparse_tag")
 
         if isinstance(estimator, (RegionExtractor)) and SKLEARN_MINOR >= 6:
             expected_failed_checks.pop(
@@ -484,12 +482,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         }
 
     expected_failed_checks |= unapplicable_checks()
-
-    if isinstance(estimator, SearchLight):
-        return expected_failed_checks
-
-    if not IS_SKLEARN_1_6_1_on_py_3_9:
-        expected_failed_checks.pop("check_estimator_sparse_tag")
 
     return expected_failed_checks
 
