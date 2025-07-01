@@ -6,8 +6,7 @@ This is only useful for internal purposes especially when the SVG is modified.
 """
 
 from nilearn.plotting.glass_brain import plot_brain_schematics
-from nilearn.plotting.image import plot_anat, plot_glass_brain, show
-from nilearn.plotting.image.img_plotting import load_anat
+from nilearn.plotting.image import load_anat, plot_anat, plot_glass_brain, show
 
 if __name__ == "__main__":
     # plotting anat for coarse alignment

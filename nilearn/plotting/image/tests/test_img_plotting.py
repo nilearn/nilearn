@@ -20,7 +20,7 @@ from nilearn.plotting import (
     plot_roi,
     plot_stat_map,
 )
-from nilearn.plotting.image.img_plotting import MNI152TEMPLATE
+from nilearn.plotting.image._utils import MNI152TEMPLATE
 
 ALL_PLOTTING_FUNCS = {
     plot_img,

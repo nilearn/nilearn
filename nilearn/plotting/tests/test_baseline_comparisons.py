@@ -40,7 +40,7 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting.image.img_plotting import MNI152TEMPLATE
+from nilearn.plotting.image._utils import MNI152TEMPLATE
 
 PLOTTING_FUNCS_3D = {
     plot_img,

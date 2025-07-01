@@ -18,8 +18,6 @@ from matplotlib import get_backend
 from matplotlib.colors import LinearSegmentedColormap, Normalize
 from matplotlib.gridspec import GridSpecFromSubplotSpec
 from matplotlib.ticker import MaxNLocator
-from nibabel.spatialimages import SpatialImage
-from scipy.ndimage import binary_fill_holes
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import (
@@ -32,10 +30,8 @@ from nilearn._utils import (
 )
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.ndimage import get_border_data
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params, check_threshold
-from nilearn.datasets import load_mni152_template
 from nilearn.image import (
     get_data,
     iter_img,
@@ -43,7 +39,6 @@ from nilearn.image import (
     new_img_like,
     resample_to_img,
 )
-from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
@@ -55,6 +50,7 @@ from nilearn.plotting._utils import (
     save_figure_if_needed,
 )
 from nilearn.plotting.displays import get_projector, get_slicer
+from nilearn.plotting.image._utils import MNI152TEMPLATE, load_anat
 from nilearn.signal import clean
 
 
@@ -468,133 +464,6 @@ def plot_img(
     )
 
     return display
-
-
-###############################################################################
-# Anatomy image for background
-
-
-# A constant class to serve as a sentinel for the default MNI template
-class _MNI152Template(SpatialImage):
-    """Constant pointing to the MNI152 Template provided by nilearn."""
-
-    data = None
-    _affine = None
-    vmax = None
-    _shape = None
-    # Having a header is required by the load_niimg function
-    header = None  # type: ignore[assignment]
-
-    def __init__(self, data=None, affine=None, header=None):
-        # Comply with spatial image requirements while allowing empty init
-        pass
-
-    def load(self):
-        if self.data is None:
-            anat_img = load_mni152_template(resolution=2)
-            anat_img = reorder_img(anat_img, copy_header=True)
-            data = get_data(anat_img)
-            data = data.astype(np.float64)
-            anat_mask = binary_fill_holes(data > np.finfo(float).eps)
-            data = np.ma.masked_array(data, np.logical_not(anat_mask))
-            self._affine = anat_img.affine
-            self.data = data
-            self.vmax = data.max()
-            self._shape = anat_img.shape
-
-    @property
-    def _data_cache(self):
-        self.load()
-        return self.data
-
-    @property
-    def _dataobj(self):
-        self.load()
-        return self.data
-
-    def get_data(self):
-        self.load()
-        return self.data
-
-    @property
-    def affine(self):
-        self.load()
-        return self._affine
-
-    def get_affine(self):
-        self.load()
-        return self._affine
-
-    @property
-    def shape(self):
-        self.load()
-        return self._shape
-
-    def get_shape(self):
-        self.load()
-        return self._shape
-
-    def __str__(self):
-        return "<MNI152Template>"
-
-    def __repr__(self):
-        return "<MNI152Template>"
-
-
-# The constant that we use as a default in functions
-MNI152TEMPLATE = _MNI152Template()
-
-
-def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
-    """Load anatomy, for optional diming."""
-    vmin = None
-    vmax = None
-    if anat_img is False or anat_img is None:
-        if black_bg == "auto":
-            # No anatomy given: no need to turn black_bg on
-            black_bg = False
-        return anat_img, black_bg, vmin, vmax
-
-    if anat_img is MNI152TEMPLATE:
-        anat_img.load()
-        # We special-case the 'canonical anat', as we don't need
-        # to do a few transforms to it.
-        vmin = 0
-        vmax = anat_img.vmax
-        if black_bg == "auto":
-            black_bg = False
-    else:
-        anat_img = check_niimg_3d(anat_img)
-        # Clean anat_img for non-finite values to avoid computing unnecessary
-        # border data values.
-        data = safe_get_data(anat_img, ensure_finite=True)
-        anat_img = new_img_like(anat_img, data, affine=anat_img.affine)
-        if dim or black_bg == "auto":
-            # We need to inspect the values of the image
-            vmin = np.nanmin(data)
-            vmax = np.nanmax(data)
-        if black_bg == "auto":
-            # Guess if the background is rather black or light based on
-            # the values of voxels near the border
-            background = np.median(get_border_data(data, 2))
-            black_bg = not (background > 0.5 * (vmin + vmax))
-    if dim:
-        if dim != "auto" and not isinstance(dim, numbers.Number):
-            raise ValueError(
-                "The input given for 'dim' needs to be a float. "
-                f"You provided dim={dim} in {type(dim)}."
-            )
-        vmean = 0.5 * (vmin + vmax)
-        ptp = 0.5 * (vmax - vmin)
-        if black_bg:
-            if not isinstance(dim, numbers.Number):
-                dim = 0.8
-            vmax = vmean + (1 + dim) * ptp
-        else:
-            if not isinstance(dim, numbers.Number):
-                dim = 0.6
-            vmin = 0.5 * (2 - dim) * vmean - (1 + dim) * ptp
-    return anat_img, black_bg, vmin, vmax
 
 
 ###############################################################################
