@@ -267,12 +267,12 @@ def return_expected_failed_checks(
             "replaced by check_fit_returns_self"
         ),
         "check_fit_check_is_fitted": (
-            "replaced by check_image_estimator_fit_check_is_fitted"
+            "replaced by check_img_estimator_fit_check_is_fitted"
         ),
         "check_fit_score_takes_y": (
             "replaced by check_masker_fit_score_takes_y"
         ),
-        "check_estimators_pickle": "replaced by check_img_estimators_pickle",
+        "check_estimators_pickle": "replaced by check_img_estimator_pickle",
         # Those are skipped for now they fail
         # for unknown reasons
         # most often because sklearn inputs expect a numpy array
@@ -328,7 +328,7 @@ def return_expected_failed_checks(
                 "replaced by check_glm_fit_returns_self"
             ),
             "check_fit_check_is_fitted": (
-                "replaced by check_image_estimator_fit_check_is_fitted"
+                "replaced by check_img_estimator_fit_check_is_fitted"
             ),
             "check_transformer_data_not_an_array": (
                 "replaced by check_masker_transformer"
@@ -426,10 +426,10 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
             "replaced by check_fit_returns_self"
         ),
         "check_fit_check_is_fitted": (
-            "replaced by check_image_estimator_fit_check_is_fitted"
+            "replaced by check_img_estimator_fit_check_is_fitted"
         ),
         "check_requires_y_none": (
-            "replaced by check_image_estimator_requires_y_none"
+            "replaced by check_img_estimator_requires_y_none"
         ),
         "check_supervised_y_no_nan": (
             "replaced by check_image_supervised_estimator_y_no_nan"
@@ -526,12 +526,12 @@ def nilearn_check_generator(estimator: BaseEstimator):
     yield (clone(estimator), check_transformer_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
-        yield (clone(estimator), check_img_estimators_pickle)
+        yield (clone(estimator), check_img_estimator_pickle)
         yield (clone(estimator), check_fit_returns_self)
-        yield (clone(estimator), check_image_estimator_fit_check_is_fitted)
+        yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
 
         if requires_y:
-            yield (clone(estimator), check_image_estimator_requires_y_none)
+            yield (clone(estimator), check_img_estimator_requires_y_none)
 
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_image_supervised_estimator_y_no_nan)
@@ -547,7 +547,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
                 clone(estimator),
                 check_img_estimator_dont_overwrite_parameters,
             )
-            yield (clone(estimator), check_img_estimators_overwrite_params)
+            yield (clone(estimator), check_img_estimator_overwrite_params)
 
     if is_masker(estimator):
         yield (clone(estimator), check_masker_clean_kwargs)
@@ -757,7 +757,7 @@ def _check_mask_img_(estimator):
 
 
 @ignore_warnings()
-def check_image_estimator_fit_check_is_fitted(estimator):
+def check_img_estimator_fit_check_is_fitted(estimator):
     """Check appropriate response to check_fitted from sklearn before fitting.
 
     Should act as a replacement in the case of the maskers
@@ -891,7 +891,7 @@ def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
 
 
 @ignore_warnings()
-def check_img_estimators_overwrite_params(estimator) -> None:
+def check_img_estimator_overwrite_params(estimator) -> None:
     """Check that we do not change or mutate the internal state of input.
 
     Replaces sklearn check_estimators_overwrite_params
@@ -933,7 +933,7 @@ def check_img_estimators_overwrite_params(estimator) -> None:
 
 
 @ignore_warnings()
-def check_img_estimators_pickle(estimator_orig):
+def check_img_estimator_pickle(estimator_orig):
     """Test that we can pickle all estimators.
 
     Adapted from sklearn's check_estimators_pickle
@@ -989,7 +989,7 @@ def check_img_estimators_pickle(estimator_orig):
 
 
 @ignore_warnings()
-def check_image_estimator_requires_y_none(estimator) -> None:
+def check_img_estimator_requires_y_none(estimator) -> None:
     """Check estimator with requires_y=True fails gracefully for y=None.
 
     Replaces sklearn check_requires_y_none
