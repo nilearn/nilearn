@@ -10,12 +10,14 @@ import functools
 import numbers
 import warnings
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib import gridspec as mgs
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib import __version__ as mpl_version
+from matplotlib import get_backend
+from matplotlib.colors import LinearSegmentedColormap, Normalize
+from matplotlib.gridspec import GridSpecFromSubplotSpec
+from matplotlib.ticker import MaxNLocator
 from nibabel.spatialimages import SpatialImage
 from scipy.ndimage import binary_fill_holes
 
@@ -64,7 +66,7 @@ def show():
     than to emit a warning.
 
     """
-    if mpl.get_backend().lower() != "agg":  # avoid warnings
+    if get_backend().lower() != "agg":  # avoid warnings
         plt.show()
 
 
@@ -1305,8 +1307,8 @@ def plot_prob_atlas(
         cmap = LinearSegmentedColormap.from_list(
             "segmented colors", color_list, n_maps + 1
         )
-        display._show_colorbar(cmap, mpl.colors.Normalize(1, n_maps + 1))
-        tick_locator = mpl.ticker.MaxNLocator(nbins=10)
+        display._show_colorbar(cmap, Normalize(1, n_maps + 1))
+        tick_locator = MaxNLocator(nbins=10)
         display.locator = tick_locator
         display._cbar.update_ticks()
         tick_location = np.round(
@@ -1972,7 +1974,7 @@ def plot_markers(
     if node_vmin == node_vmax:
         node_vmin = 0.9 * node_vmin
         node_vmax = 1.1 * node_vmax
-    norm = mpl.colors.Normalize(vmin=node_vmin, vmax=node_vmax)
+    norm = Normalize(vmin=node_vmin, vmax=node_vmax)
     node_cmap = (
         plt.get_cmap(node_cmap) if isinstance(node_cmap, str) else node_cmap
     )
@@ -2166,7 +2168,7 @@ def plot_carpet(
         # Define nested GridSpec
         legend = False
         wratios = [2, 100, 20]
-        gs = mgs.GridSpecFromSubplotSpec(
+        gs = GridSpecFromSubplotSpec(
             1,
             2 + int(legend),
             subplot_spec=axes.get_subplotspec(),
@@ -2197,7 +2199,7 @@ def plot_carpet(
             ax0.set_yticks([])
 
         # Carpet plot
-        if compare_version(mpl.__version__, ">=", "3.8.0rc1"):
+        if compare_version(mpl_version, ">=", "3.8.0rc1"):
             axes.remove()  # remove axes for newer versions of mpl
         axes = plt.subplot(gs[1])  # overwrites axes with older versions of mpl
         axes.imshow(
