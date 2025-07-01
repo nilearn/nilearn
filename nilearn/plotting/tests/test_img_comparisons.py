@@ -1,4 +1,4 @@
-"""Tests for nilearn.plotting.image.img_comparison."""
+"""Tests for nilearn.plotting.img_comparison."""
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -19,6 +19,19 @@ def _mask():
     data_positive = np.zeros((7, 7, 3))
     data_positive[1:-1, 2:-1, 1:] = 1
     return Nifti1Image(data_positive, affine)
+
+
+def test_deprecation_function_moved(matplotlib_pyplot, img_3d_mni):
+    from nilearn.plotting.image.img_plotting import (
+        plot_img_comparison as old_fn,
+    )
+
+    with pytest.warns(DeprecationWarning, match="moved"):
+        old_fn(
+            img_3d_mni,
+            img_3d_mni,
+            plot_hist=False,
+        )
 
 
 @pytest.mark.parametrize(
