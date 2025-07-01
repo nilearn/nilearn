@@ -4,7 +4,6 @@ import inspect
 import os
 import subprocess
 import sys
-from functools import partial
 from operator import attrgetter
 from pathlib import Path
 
@@ -30,8 +29,7 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
     ...     "py",
     ...     {"module": "tty", "fullname": "setraw"},
     ...     package="tty",
-    ...     url_fmt="http://hg.python.org/cpython/file/"
-    ...     "{revision}/Lib/{package}/{path}#L{lineno}",
+    ...     url_fmt="http://hg.python.org/cpython/file/{revision}/Lib/{package}/{path}#L{lineno}",
     ...     revision="xxxx",
     ... )
     'http://hg.python.org/cpython/file/xxxx/Lib/tty/tty.py#L18'
@@ -82,7 +80,7 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
     )
 
 
-def make_linkcode_resolve(package, url_fmt):
+def make_linkcode_resolve(domain, info):
     """Return a linkcode_resolve function for the given URL format.
 
     revision is a git commit reference (hash or name)
@@ -93,7 +91,9 @@ def make_linkcode_resolve(package, url_fmt):
                                    'blob/{revision}/{package}/'
                                    '{path}#L{lineno}')
     """
+    package = "nilearn"
+    url_fmt = "https://github.com/nilearn/nilearn/blob/{revision}/{package}/{path}#L{lineno}"
     revision = _get_git_revision()
-    return partial(
-        _linkcode_resolve, revision=revision, package=package, url_fmt=url_fmt
+    return _linkcode_resolve(
+        domain, info, revision=revision, package=package, url_fmt=url_fmt
     )

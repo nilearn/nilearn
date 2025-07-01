@@ -452,12 +452,7 @@ def setup(app):
 
 
 # The following is used by sphinx.ext.linkcode to provide links to github
-linkcode_resolve = make_linkcode_resolve(
-    "nilearn",
-    "https://github.com/nilearn/"
-    "nilearn/blob/{revision}/"
-    "{package}/{path}#L{lineno}",
-)
+linkcode_resolve = make_linkcode_resolve
 
 # -- sphinxext.opengraph configuration -------------------------------------
 ogp_site_url = "https://nilearn.github.io/"
