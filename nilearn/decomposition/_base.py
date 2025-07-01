@@ -566,6 +566,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             )
         self.maps_masker_.fit()
 
+        self.n_elements_ = self.maps_masker_.n_elements_
+
         return self
 
     @property
