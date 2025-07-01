@@ -80,7 +80,7 @@ def _linkcode_resolve(domain, info, package, url_fmt, revision):
     )
 
 
-def make_linkcode_resolve(domain, info):
+def linkcode_resolve(domain, info):
     """Return a linkcode_resolve function for the given URL format.
 
     revision is a git commit reference (hash or name)
@@ -90,6 +90,8 @@ def make_linkcode_resolve(domain, info):
     url_fmt is along the lines of ('https://github.com/USER/PROJECT/'
                                    'blob/{revision}/{package}/'
                                    '{path}#L{lineno}')
+
+    See https://www.sphinx-doc.org/en/master/usage/extensions/linkcode.html
     """
     package = "nilearn"
     url_fmt = "https://github.com/nilearn/nilearn/blob/{revision}/{package}/{path}#L{lineno}"
