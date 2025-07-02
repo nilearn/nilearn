@@ -4,9 +4,14 @@ from warnings import warn
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import (
+    LinearSegmentedColormap,
+    Normalize,
+)
 
+from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_threshold
 
 DEFAULT_ENGINE = "matplotlib"
 
@@ -18,6 +23,64 @@ def engine_warning(engine):
         " pip install 'nilearn[plotting]'"
     )
     warn(message, stacklevel=find_stack_level())
+
+
+def colorscale(
+    cmap, values, threshold=None, symmetric_cmap=True, vmax=None, vmin=None
+):
+    """Normalize a cmap, put it in plotly format, get threshold and range."""
+    cmap = plt.get_cmap(cmap)
+    abs_values = np.abs(values)
+
+    if (
+        symmetric_cmap
+        and vmin is not None
+        and vmax is not None
+        and vmin != -vmax
+    ):
+        warn(
+            f"Specified {vmin=} and {vmax=} values do not create a symmetric"
+            " colorbar. The values will be modified to be symmetric.",
+            stacklevel=find_stack_level(),
+        )
+    if vmax is None:
+        vmax = abs_values.max()
+    if vmin is None:
+        vmin = values.min()
+    # cast to float to avoid TypeError if vmax/vmin is a numpy boolean
+    vmax = float(vmax)
+    vmin = float(vmin)
+
+    if symmetric_cmap:
+        vmax = max(abs(vmin), abs(vmax))
+        vmin = -vmax
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    cmaplist = [cmap(i) for i in range(cmap.N)]
+    abs_threshold = None
+    if threshold is not None:
+        abs_threshold = check_threshold(threshold, values, fast_abs_percentile)
+        istart = int(norm(-abs_threshold, clip=True) * (cmap.N - 1))
+        istop = int(norm(abs_threshold, clip=True) * (cmap.N - 1))
+        for i in range(istart, istop):
+            cmaplist[i] = (0.5, 0.5, 0.5, 1.0)  # just an average gray color
+    our_cmap = LinearSegmentedColormap.from_list(
+        "Custom cmap", cmaplist, cmap.N
+    )
+    x = np.linspace(0, 1, 100)
+    rgb = our_cmap(x, bytes=True)[:, :3]
+    rgb = np.array(rgb, dtype=int)
+    colors = [
+        [np.round(i, 3), f"rgb({col[0]}, {col[1]}, {col[2]})"]
+        for i, col in zip(x, rgb)
+    ]
+    return {
+        "colors": colors,
+        "vmin": vmin,
+        "vmax": vmax,
+        "cmap": our_cmap,
+        "norm": norm,
+        "abs_threshold": abs_threshold,
+    }
 
 
 def save_figure_if_needed(fig, output_file):
