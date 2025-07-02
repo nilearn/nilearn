@@ -521,6 +521,12 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                 "an empty list was given."
             )
 
+        if confounds is not None and len(confounds) != len(imgs):
+            raise ValueError(
+                f"Number of confounds ({len(confounds)=}) "
+                f"must match number of images ({len(imgs)=})."
+            )
+
         masker_type = "multi_nii"
         if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
             isinstance(x, SurfaceImage) for x in imgs
@@ -616,10 +622,13 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         if isinstance(imgs, (SurfaceImage, Nifti1Image)):
             imgs = [imgs]
 
-        n_imgs = len(imgs)
-
         if confounds is None:
-            confounds = list(itertools.repeat(None, n_imgs))
+            confounds = list(itertools.repeat(None, len(imgs)))
+        elif len(confounds) != len(imgs):
+            raise ValueError(
+                f"Number of confounds ({len(confounds)=}) "
+                f"must match number of images ({len(imgs)=})."
+            )
 
         return [
             self.maps_masker_.transform(img, confounds=confound)
