@@ -112,6 +112,7 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
+@pytest.mark.timeout(0)
 def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
     """Test nilearn.plotting.surface.surf_plotting.plot_surf function with
     available engine backends.

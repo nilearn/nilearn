@@ -531,7 +531,7 @@ def mean_img(
 
     Parameters
     ----------
-    imgs : Niimg-like or or :obj:`~nilearn.surface.SurfaceImage` object, or \
+    imgs : Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object, or \
            iterable of Niimg-like or :obj:`~nilearn.surface.SurfaceImage`.
         Images to be averaged over 'time'
         (see :ref:`extracting_data`
@@ -988,7 +988,7 @@ def threshold_img(
     .. versionchanged:: 0.9.0
         New ``cluster_threshold`` and ``two_sided`` parameters added.
 
-    .. versionchanged:: 0.11.2dev
+    .. versionchanged:: 0.12.0
         Add support for SurfaceImage.
 
     Parameters

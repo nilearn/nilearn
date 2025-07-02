@@ -646,7 +646,7 @@ def vol_to_surf(
         - 'nearest':
             Use the intensity of the nearest voxel.
 
-            .. versionchanged:: 0.11.2.dev
+            .. versionchanged:: 0.12.0
 
                 The 'nearest' interpolation method will be removed in
                 version 0.13.0. It is recommended to use 'linear' for
@@ -661,7 +661,7 @@ def vol_to_surf(
             when the image is a
             :term:`deterministic atlas<Deterministic atlas>`.
 
-            .. versionadded:: 0.11.2.dev
+            .. versionadded:: 0.12.0
 
         For one image, the speed difference is small, 'linear' takes about x1.5
         more time. For many images, 'nearest' scales much better, up to x20

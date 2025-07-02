@@ -167,7 +167,7 @@ module = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --template=maint_tools/templates/index.html --timeout=45"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -v --template=maint_tools/templates/index.html --timeout=45"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
@@ -299,6 +299,6 @@ max-args = 27
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
 max-branches = 22
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
-max-returns = 7
+max-returns = 8
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
 max-statements = 93

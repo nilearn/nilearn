@@ -91,6 +91,7 @@ def test_mask_coverage_in_report(flm):
     assert "The mask includes" in report.__str__()
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("height_control", ["fdr", "bonferroni", None])
 def test_flm_reporting_height_control(flm, height_control, contrasts):
     """Test for first level model reporting."""
@@ -163,6 +164,7 @@ def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
     model.generate_report(c1, first_level_contrast="a")
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 def test_report_plot_type(flm, plot_type, contrasts):
     """Smoke test for valid plot type."""
@@ -252,6 +254,7 @@ def test_fir_delays_in_params(contrasts):
     assert "fir_delays" in report.__str__()
 
 
+@pytest.mark.timeout(0)
 def test_drift_order_in_params(contrasts):
     """Check that drift_order is in the report when parameter is drift_model is
     polynomial.

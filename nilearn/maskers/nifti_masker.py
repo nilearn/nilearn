@@ -9,13 +9,16 @@ from joblib import Memory
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import _utils
-from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import crop_img, resample_img
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
+from nilearn.maskers.base_masker import (
+    BaseMasker,
+    filter_and_extract,
+    mask_logger,
+)
 from nilearn.masking import (
     apply_mask,
     compute_background_mask,
@@ -238,7 +241,7 @@ class NiftiMasker(BaseMasker):
         Only relevant for the report figures.
 
     %(clean_args)s
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
 
     %(masker_kwargs)s
 
@@ -447,10 +450,7 @@ class NiftiMasker(BaseMasker):
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         # Load data (if filenames are given, load them)
-        logger.log(
-            f"Loading data from {_utils.repr_niimgs(imgs, shorten=False)}",
-            verbose=self.verbose,
-        )
+        mask_logger("load_data", img=imgs, verbose=self.verbose)
 
         self.mask_img_ = self._load_mask(imgs)
 
@@ -464,7 +464,8 @@ class NiftiMasker(BaseMasker):
                 )
             mask_args = self.mask_args if self.mask_args is not None else {}
 
-            logger.log("Computing the mask", verbose=self.verbose)
+            mask_logger("compute_mask", verbose=self.verbose)
+
             compute_mask = _get_mask_strategy(self.mask_strategy)
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs, verbose=max(0, self.verbose - 1), **mask_args
@@ -491,9 +492,10 @@ class NiftiMasker(BaseMasker):
         else:
             self._reporting_data = None
 
+        # TODO add if block to only run when resampling is needed
         # If resampling is requested, resample also the mask
         # Resampling: allows the user to change the affine, the shape or both
-        logger.log("Resampling mask", verbose=self.verbose)
+        mask_logger("resample_mask", verbose=self.verbose)
 
         # TODO switch to force_resample=True
         # when bumping to version > 0.13
@@ -522,8 +524,6 @@ class NiftiMasker(BaseMasker):
             self.n_elements_ / np.prod(data.shape) * 100
         )
 
-        logger.log("Finished fit", verbose=self.verbose)
-
         if (self.target_shape is not None) or (
             (self.target_affine is not None) and self.reports
         ):
@@ -543,6 +543,8 @@ class NiftiMasker(BaseMasker):
                 resampl_imgs = None
 
             self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]
+
+        mask_logger("fit_done", verbose=self.verbose)
 
         return self
 
@@ -591,7 +593,7 @@ class NiftiMasker(BaseMasker):
             ],
         )
         params["clean_kwargs"] = self.clean_args_
-        # TODO remove in 0.13.2
+        # TODO remove in 0.13.0
         if self.clean_kwargs:
             params["clean_kwargs"] = self.clean_kwargs_
 
