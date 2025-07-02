@@ -16,5 +16,7 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Add anterior and posterior views to SurfaceLabelsMasker and SurfaceMasker (:gh:`5473` by `Chloe Hampson`_).
+
 Changes
 -------
