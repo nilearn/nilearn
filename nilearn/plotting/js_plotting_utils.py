@@ -7,9 +7,13 @@ import warnings
 from pathlib import Path
 from string import Template
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.colors import (
+    LinearSegmentedColormap,
+    ListedColormap,
+    Normalize,
+)
 
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.html_document import (  # noqa: F401
@@ -74,29 +78,30 @@ def colorscale(
     """Normalize a cmap, put it in plotly format, get threshold and range."""
     cmap = plt.get_cmap(cmap)
     abs_values = np.abs(values)
-    if not symmetric_cmap and (values.min() < 0):
+
+    if (
+        symmetric_cmap
+        and vmin is not None
+        and vmax is not None
+        and vmin != -vmax
+    ):
         warnings.warn(
-            "you have specified symmetric_cmap=False "
-            "but the map contains negative values; "
-            "setting symmetric_cmap to True",
+            f"Specified {vmin=} and {vmax=} values do not create a symmetric"
+            " colorbar. The values will be modified to be symmetric.",
             stacklevel=find_stack_level(),
         )
-        symmetric_cmap = True
-    if symmetric_cmap and vmin is not None:
-        warnings.warn(
-            "vmin cannot be chosen when cmap is symmetric",
-            stacklevel=find_stack_level(),
-        )
-        vmin = None
     if vmax is None:
         vmax = abs_values.max()
-    # cast to float to avoid TypeError if vmax is a numpy boolean
-    vmax = float(vmax)
-    if symmetric_cmap:
-        vmin = -vmax
     if vmin is None:
         vmin = values.min()
-    norm = mpl.colors.Normalize(vmin=vmin, vmax=vmax)
+    # cast to float to avoid TypeError if vmax/vmin is a numpy boolean
+    vmax = float(vmax)
+    vmin = float(vmin)
+
+    if symmetric_cmap:
+        vmax = max(abs(vmin), abs(vmax))
+        vmin = -vmax
+    norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [cmap(i) for i in range(cmap.N)]
     abs_threshold = None
     if threshold is not None:
@@ -105,7 +110,7 @@ def colorscale(
         istop = int(norm(abs_threshold, clip=True) * (cmap.N - 1))
         for i in range(istart, istop):
             cmaplist[i] = (0.5, 0.5, 0.5, 1.0)  # just an average gray color
-    our_cmap = mpl.colors.LinearSegmentedColormap.from_list(
+    our_cmap = LinearSegmentedColormap.from_list(
         "Custom cmap", cmaplist, cmap.N
     )
     x = np.linspace(0, 1, 100)
@@ -122,7 +127,6 @@ def colorscale(
         "cmap": our_cmap,
         "norm": norm,
         "abs_threshold": abs_threshold,
-        "symmetric_cmap": symmetric_cmap,
     }
 
 
@@ -159,7 +163,7 @@ def mesh_to_plotly(mesh):
 
 def to_color_strings(colors):
     """Return a list of colors as hex strings."""
-    cmap = mpl.colors.ListedColormap(colors)
+    cmap = ListedColormap(colors)
     colors = cmap(np.arange(cmap.N))[:, :3]
     colors = np.asarray(colors * 255, dtype="uint8")
     colors = [

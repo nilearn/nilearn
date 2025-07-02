@@ -124,6 +124,7 @@ def test_fit_errors(
         est.fit(decomposition_images, confounds=confounds)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_masker_attributes_with_fit(
@@ -402,6 +403,7 @@ def test_single_subject_score(canica_data_single_img, data_type, estimator):
     assert np.all(scores >= 0)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_single_subject_file(
