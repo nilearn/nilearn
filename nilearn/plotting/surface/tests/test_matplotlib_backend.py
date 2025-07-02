@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from nilearn.datasets import fetch_surf_fsaverage
-from nilearn.plotting.js_plotting_utils import colorscale
+from nilearn.plotting._utils import colorscale
 from nilearn.plotting.surface._matplotlib_backend import (
     MATPLOTLIB_VIEWS,
     _compute_facecolors,
