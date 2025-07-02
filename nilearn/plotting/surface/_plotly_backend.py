@@ -111,6 +111,10 @@ def _adjust_colorbar_and_data_ranges(
     Returns
     -------
         cbar_vmin, cbar_vmax, vmin, vmax
+
+    .. note::
+        Returned ``cbar_vmin`` and ``cbar_vmax`` values are ``None`` for
+        'plotly' engine.
     """
     _, _, vmin, vmax = get_colorbar_and_data_ranges(
         stat_map,
