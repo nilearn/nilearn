@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colors import (
     LinearSegmentedColormap,
+    ListedColormap,
     Normalize,
 )
 
@@ -81,6 +82,18 @@ def colorscale(
         "norm": norm,
         "abs_threshold": abs_threshold,
     }
+
+
+def to_color_strings(colors):
+    """Return a list of colors as hex strings."""
+    cmap = ListedColormap(colors)
+    colors = cmap(np.arange(cmap.N))[:, :3]
+    colors = np.asarray(colors * 255, dtype="uint8")
+    colors = [
+        f"#{int(row[0]):02x}{int(row[1]):02x}{int(row[2]):02x}"
+        for row in colors
+    ]
+    return colors
 
 
 def save_figure_if_needed(fig, output_file):

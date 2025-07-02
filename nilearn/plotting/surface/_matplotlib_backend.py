@@ -19,9 +19,9 @@ from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
     save_figure_if_needed,
+    to_color_strings,
 )
 from nilearn.plotting.cm import mix_colormaps
-from nilearn.plotting.js_plotting_utils import to_color_strings
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
     check_engine_params,
