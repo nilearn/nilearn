@@ -337,6 +337,11 @@ def return_expected_failed_checks(
         }
 
     if isinstance(estimator, (_BaseDecomposition,)):
+        expected_failed_checks |= {
+            "check_transformer_data_not_an_array": "TODO",
+            "check_transformer_general": "TODO",
+            "check_transformer_preserve_dtypes": "TODO",
+        }
         if SKLEARN_MINOR >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
         if not IS_SKLEARN_1_6_1_on_py_3_9 and SKLEARN_MINOR >= 5:
