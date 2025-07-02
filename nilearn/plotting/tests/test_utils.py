@@ -10,6 +10,7 @@ import pytest
 from nilearn.plotting._utils import (
     colorscale,
     get_colorbar_and_data_ranges,
+    to_color_strings,
 )
 
 
@@ -306,3 +307,12 @@ def test_get_colorbar_and_data_ranges_force_min_stat_map_value(data_pos_neg):
         symmetric_cbar="auto",
         force_min_stat_map_value=0,
     )
+
+
+def test_to_color_strings(colors):
+    """Tests for function to_color_strings with different color inputs."""
+    if len(colors) == 3:
+        expected = ["#0000ff", "#ff0000", "#7f7f7f"]
+    else:
+        expected = ["#ff0000", "#008000", "#000000", "#ffffff"]
+    assert to_color_strings(colors) == expected

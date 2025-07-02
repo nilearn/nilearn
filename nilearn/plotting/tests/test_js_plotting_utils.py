@@ -11,7 +11,6 @@ from nilearn.plotting.js_plotting_utils import (
     encode,
     get_html_template,
     mesh_to_plotly,
-    to_color_strings,
 )
 from nilearn.surface import load_surf_mesh
 
@@ -145,15 +144,6 @@ def check_html(
         ["#0000ffff", "#ff0000ab", "#7f7f7f00"],
     ],
 )
-def test_to_color_strings(colors):
-    """Tests for function to_color_strings with different color inputs."""
-    if len(colors) == 3:
-        expected = ["#0000ff", "#ff0000", "#7f7f7f"]
-    else:
-        expected = ["#ff0000", "#008000", "#000000", "#ffffff"]
-    assert to_color_strings(colors) == expected
-
-
 def test_import_html_document_from_js_plotting():
     """Smoke test importing HTMLDocument from js_plotting_utils."""
     from nilearn.plotting.js_plotting_utils import (  # noqa: F401
