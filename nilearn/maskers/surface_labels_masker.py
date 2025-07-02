@@ -572,21 +572,23 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             img = mean_img(img)
             vmin, vmax = img.data._get_min_max()
 
-        hem_view = {
+        hemi_view = {
             "left": ["lateral", "medial"],
             "right": ["lateral", "medial"],
             "both": ["anterior", "posterior"],
         }
 
         fig, axes = plt.subplots(
-            len(next(iter(hem_view.values()))),
-            len(hem_view.keys()),
+            len(next(iter(hemi_view.values()))),
+            len(hemi_view.keys()),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
             **constrained_layout_kwargs(),
         )
 
-        for j, (hemi, views) in enumerate(hem_view.items()):
+        axes = np.atleast_2d(axes)
+
+        for j, (hemi, views) in enumerate(hemi_view.items()):
             for i, view in enumerate(views):
                 if img:
                     plot_surf(
