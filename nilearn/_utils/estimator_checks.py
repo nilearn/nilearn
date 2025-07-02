@@ -330,15 +330,6 @@ def return_expected_failed_checks(
             "check_fit_check_is_fitted": (
                 "replaced by check_img_estimator_fit_check_is_fitted"
             ),
-            "check_transformer_data_not_an_array": (
-                "replaced by check_masker_transformer"
-            ),
-            "check_transformer_general": (
-                "replaced by check_masker_transformer"
-            ),
-            "check_transformer_preserve_dtypes": (
-                "replaced by check_masker_transformer"
-            ),
             # nilearn replacements required
             "check_dict_unchanged": "TODO",
             "check_fit_score_takes_y": "TODO",
@@ -484,15 +475,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
 
     if hasattr(estimator, "transform"):
         expected_failed_checks |= {
-            "check_transformer_data_not_an_array": (
-                "replaced by check_masker_transformer"
-            ),
-            "check_transformer_general": (
-                "replaced by check_masker_transformer"
-            ),
-            "check_transformer_preserve_dtypes": (
-                "replaced by check_masker_transformer"
-            ),
+            "check_transformer_data_not_an_array": "TODO",
+            "check_transformer_general": "TODO",
+            "check_transformer_preserve_dtypes": "TODO",
         }
 
     expected_failed_checks |= unapplicable_checks()
