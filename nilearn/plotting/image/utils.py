@@ -1,3 +1,5 @@
+"""Functions that help image plotting."""
+
 import numbers
 
 import numpy as np

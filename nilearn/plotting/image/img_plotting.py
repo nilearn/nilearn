@@ -49,7 +49,7 @@ from nilearn.plotting._utils import (
     save_figure_if_needed,
 )
 from nilearn.plotting.displays import get_projector, get_slicer
-from nilearn.plotting.image._utils import (
+from nilearn.plotting.image.utils import (
     MNI152TEMPLATE,
     get_cropped_cbar_ticks,
     load_anat,

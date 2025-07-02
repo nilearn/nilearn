@@ -1,4 +1,3 @@
-from nilearn.plotting.image._utils import load_anat
 from nilearn.plotting.image.img_plotting import (
     plot_anat,
     plot_carpet,
@@ -14,7 +13,6 @@ from nilearn.plotting.image.img_plotting import (
 )
 
 __all__ = [
-    "load_anat",
     "plot_anat",
     "plot_carpet",
     "plot_connectome",
