@@ -5,6 +5,7 @@ and importing them will fail if pytest is not installed.
 """
 
 import inspect
+import pickle
 import sys
 import warnings
 from copy import deepcopy
@@ -28,6 +29,7 @@ from sklearn.base import BaseEstimator, is_classifier, is_regressor
 from sklearn.datasets import make_classification, make_regression
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils._testing import (
+    assert_allclose_dense_sparse,
     set_random_state,
 )
 from sklearn.utils.estimator_checks import (
@@ -75,8 +77,10 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_img,
     _decomposition_mesh,
 )
+from nilearn.image import new_img_like
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
+    MultiNiftiMasker,
     NiftiLabelsMasker,
     NiftiMapsMasker,
     NiftiMasker,
@@ -266,13 +270,13 @@ def return_expected_failed_checks(
         "check_fit_score_takes_y": (
             "replaced by check_masker_fit_score_takes_y"
         ),
+        "check_estimators_pickle": "replaced by check_img_estimators_pickle",
         # Those are skipped for now they fail
         # for unknown reasons
         # most often because sklearn inputs expect a numpy array
         # that errors with maskers,
         # or because a suitable nilearn replacement
         # has not yet been created.
-        "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
         "check_fit_idempotent": "TODO",
@@ -336,11 +340,14 @@ def return_expected_failed_checks(
             "check_fit_score_takes_y": "TODO",
         }
 
-    if isinstance(estimator, (_BaseDecomposition,)):
+    if isinstance(estimator, (_BaseDecomposition)):
         if SKLEARN_MINOR >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
         if not IS_SKLEARN_1_6_1_on_py_3_9 and SKLEARN_MINOR >= 5:
             expected_failed_checks.pop("check_estimator_sparse_array")
+
+    if isinstance(estimator, (MultiNiftiMasker)) and SKLEARN_MINOR >= 6:
+        expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if is_masker(estimator):
         if accept_niimg_input(estimator):
@@ -353,12 +360,6 @@ def return_expected_failed_checks(
                     "Deprecation cycle started to fix."
                 ),
             }
-
-        if isinstance(estimator, (NiftiMasker)) and SKLEARN_MINOR >= 5:
-            if not IS_SKLEARN_1_6_1_on_py_3_9:
-                expected_failed_checks.pop("check_estimator_sparse_array")
-
-            expected_failed_checks.pop("check_estimator_sparse_tag")
 
         if isinstance(estimator, (RegionExtractor)) and SKLEARN_MINOR >= 6:
             expected_failed_checks.pop(
@@ -485,12 +486,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
 
     expected_failed_checks |= unapplicable_checks()
 
-    if isinstance(estimator, SearchLight):
-        return expected_failed_checks
-
-    if not IS_SKLEARN_1_6_1_on_py_3_9:
-        expected_failed_checks.pop("check_estimator_sparse_tag")
-
     return expected_failed_checks
 
 
@@ -526,7 +521,9 @@ def nilearn_check_generator(estimator: BaseEstimator):
     yield (clone(estimator), check_transformer_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
+        yield (clone(estimator), check_img_estimators_pickle)
         yield (clone(estimator), check_fit_returns_self)
+
         if requires_y:
             yield (clone(estimator), check_image_estimator_requires_y_none)
 
@@ -655,18 +652,10 @@ def _not_fitted_error_message(estimator):
     )
 
 
-def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
-    """Fit on a nilearn estimator with appropriate input and return it."""
-    assert accept_niimg_input(estimator) or accept_surf_img_input(estimator)
-
+def generate_data_to_fit(estimator: BaseEstimator):
     if is_glm(estimator):
         data, design_matrices = _make_surface_img_and_design()
-        # FirstLevel
-        if hasattr(estimator, "hrf_model"):
-            return estimator.fit(data, design_matrices=design_matrices)
-        # SecondLevel
-        else:
-            return estimator.fit(data, design_matrix=design_matrices)
+        return data, design_matrices
 
     elif isinstance(estimator, SearchLight):
         n_samples = 30
@@ -678,7 +667,7 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
         data[2, 2, 2, y] = 2
         X = Nifti1Image(data, np.eye(4))
 
-        return estimator.fit(X, y)
+        return X, y
 
     elif is_classifier(estimator):
         dim = 5
@@ -691,7 +680,7 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
             random_state=42,
         )
         X, _ = to_niimgs(X, [dim, dim, dim])
-        return estimator.fit(X, y)
+        return X, y
 
     elif is_regressor(estimator):
         dim = 5
@@ -705,14 +694,14 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
         )
         X = StandardScaler().fit_transform(X)
         X, _ = to_niimgs(X, [dim, dim, dim])
-        return estimator.fit(X, y)
+        return X, y
 
     elif is_masker(estimator):
         if accept_niimg_input(estimator):
             imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_eye())
         else:
             imgs = _make_surface_img(10)
-        return estimator.fit(imgs)
+        return imgs, None
 
     elif isinstance(estimator, _BaseDecomposition):
         decomp_input = _decomposition_img(
@@ -720,13 +709,36 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
             rng=_rng(),
             mesh=_decomposition_mesh(),
         )
-        # only to silence warnings
-        estimator.smoothing_fwhm = None
-        return estimator.fit(decomp_input)
+        return decomp_input, None
 
     else:
         imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_eye())
-        return estimator.fit(imgs)
+        return imgs, None
+
+
+def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
+    """Fit on a nilearn estimator with appropriate input and return it."""
+    assert accept_niimg_input(estimator) or accept_surf_img_input(estimator)
+
+    X, y = generate_data_to_fit(estimator)
+
+    if is_glm(estimator):
+        # FirstLevel
+        if hasattr(estimator, "hrf_model"):
+            return estimator.fit(X, design_matrices=y)
+        # SecondLevel
+        else:
+            return estimator.fit(X, design_matrix=y)
+
+    elif (
+        isinstance(estimator, SearchLight)
+        or is_classifier(estimator)
+        or is_regressor(estimator)
+    ):
+        return estimator.fit(X, y)
+
+    else:
+        return estimator.fit(X)
 
 
 # ------------------ GENERIC CHECKS ------------------
@@ -880,6 +892,59 @@ def check_img_estimators_overwrite_params(estimator) -> None:
             f"the parameter {param_name} from {original_value} "
             f"to {new_value} during fit."
         )
+
+
+@ignore_warnings()
+def check_img_estimators_pickle(estimator_orig):
+    """Test that we can pickle all estimators.
+
+    Adapted from sklearn's check_estimators_pickle
+    """
+    estimator = clone(estimator_orig)
+
+    X, _ = generate_data_to_fit(estimator)
+
+    if isinstance(estimator, NiftiSpheresMasker):
+        # NiftiSpheresMasker needs mask_img to run inverse_transform
+        mask_img = new_img_like(X, np.ones(X.shape[:3]))
+        estimator.mask_img = mask_img
+
+    set_random_state(estimator)
+
+    fitted_estimator = fit_estimator(estimator)
+
+    pickled_estimator = pickle.dumps(fitted_estimator)
+    unpickled_estimator = pickle.loads(pickled_estimator)
+
+    result = {}
+
+    check_methods = ["transform"]
+    input_data = [X] if isinstance(estimator, SearchLight) else [[X]]
+    if hasattr(estimator, "inverse_transform"):
+        check_methods.append("inverse_transform")
+        input_data.append(_rng().random((1, fitted_estimator.n_elements_)))
+
+    for method, input in zip(check_methods, input_data):
+        if hasattr(estimator, method):
+            result[method] = getattr(estimator, method)(input)
+            result["input"] = input
+
+    for method, input in zip(check_methods, input_data):
+        if method not in result:
+            continue
+        unpickled_result = getattr(unpickled_estimator, method)(input)
+        if isinstance(unpickled_result, np.ndarray):
+            if isinstance(estimator, SearchLight):
+                # TODO check why Searchlight has lower absolute tolerance
+                assert_allclose_dense_sparse(
+                    result[method], unpickled_result, atol=1e-4
+                )
+            else:
+                assert_allclose_dense_sparse(result[method], unpickled_result)
+        elif isinstance(unpickled_result, SurfaceImage):
+            assert_surface_image_equal(result[method], unpickled_result)
+        elif isinstance(unpickled_result, Nifti1Image):
+            check_imgs_equal(result[method], unpickled_result)
 
 
 # ------------------ DECODERS CHECKS ------------------
