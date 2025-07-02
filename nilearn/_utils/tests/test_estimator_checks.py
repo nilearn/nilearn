@@ -9,7 +9,7 @@ ignores modules whose name starts with an underscore.
 import pytest
 
 from nilearn._utils.estimator_checks import (
-    check_estimator_has_sklearn_is_fitted,
+    check_img_estimator_fit_check_is_fitted,
     check_masker_dict_unchanged,
 )
 from nilearn.maskers.base_masker import BaseMasker
@@ -30,7 +30,7 @@ def test_check_estimator_has_sklearn_is_fitted():
     with pytest.raises(
         TypeError, match="must have __sklearn_is_fitted__ method"
     ):
-        check_estimator_has_sklearn_is_fitted(DummyEstimator())
+        check_img_estimator_fit_check_is_fitted(DummyEstimator())
 
     class DummyEstimator:
         def __init__(self):
@@ -40,7 +40,7 @@ def test_check_estimator_has_sklearn_is_fitted():
             return True
 
     with pytest.raises(ValueError, match="must return False before fit"):
-        check_estimator_has_sklearn_is_fitted(DummyEstimator())
+        check_img_estimator_fit_check_is_fitted(DummyEstimator())
 
 
 def test_check_masker_dict_unchanged():
