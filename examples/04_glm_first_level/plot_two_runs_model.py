@@ -172,8 +172,8 @@ show()
 # of the resulting brain maps.
 
 # %%
-# Compute the fixed effects statistics
-# using the preprocessed data of both runs.
+# Compute fixed effects statistics using preprocessed data of both runs
+# ---------------------------------------------------------------------
 #
 # A more straightforward alternative to fitting run-specific GLMs,
 # than combining the results with :func:`~nilearn.glm.compute_fixed_effects`,

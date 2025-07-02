@@ -7,16 +7,17 @@ from pathlib import Path
 
 import numpy as np
 from joblib import Memory
+from nibabel.spatialimages import SpatialImage
 from numpy.testing import assert_array_equal
 
 import nilearn as ni
+from nilearn._utils.cache_mixin import cache
+from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-
-from .cache_mixin import cache
-from .exceptions import DimensionError
-from .helpers import stringify_path
-from .niimg import _get_data, load_niimg, safe_get_data
-from .path_finding import resolve_globbing
+from nilearn._utils.niimg import _get_data, load_niimg, safe_get_data
+from nilearn._utils.path_finding import resolve_globbing
+from nilearn.typing import NiimgLike
 
 
 def _check_fov(img, affine, shape):
@@ -92,9 +93,9 @@ def check_imgs_equal(img1, img2) -> bool:
 
 
 def _index_img(img, index):
+    """Helper function for check_niimg_4d."""  # noqa: D401
     from ..image import new_img_like  # avoid circular imports
 
-    """Helper function for check_niimg_4d."""
     return new_img_like(
         img, _get_data(img)[:, :, :, index], img.affine, copy_header=True
     )
@@ -183,7 +184,7 @@ def iter_check_niimg(
                 if resample_to_first_img:
                     warnings.warn(
                         "Affine is different across subjects."
-                        " Realignement on first subject "
+                        " Realignment on first subject "
                         "affine forced",
                         stacklevel=find_stack_level(),
                     )
@@ -283,6 +284,28 @@ def check_niimg(
 
     """
     from ..image import new_img_like  # avoid circular imports
+
+    if not (
+        isinstance(niimg, (NiimgLike, SpatialImage))
+        or (hasattr(niimg, "__iter__"))
+    ):
+        raise TypeError(
+            "input should be a NiftiLike object "
+            "or an iterable of NiftiLike object. "
+            f"Got: {niimg.__class__.__name__}"
+        )
+
+    if hasattr(niimg, "__iter__"):
+        for x in niimg:
+            if not (
+                isinstance(x, (NiimgLike, SpatialImage))
+                or hasattr(x, "__iter__")
+            ):
+                raise TypeError(
+                    "iterable inputs should contain "
+                    "NiftiLike objects or iterables. "
+                    f"Got: {x.__class__.__name__}"
+                )
 
     niimg = stringify_path(niimg)
 

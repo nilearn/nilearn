@@ -31,8 +31,13 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import mean_img
-from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface.surface import SurfaceImage, at_least_2d, get_data
+from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
+from nilearn.surface.surface import (
+    SurfaceImage,
+    at_least_2d,
+    check_surf_img,
+    get_data,
+)
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -223,7 +228,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         The region name corresponding to ``region_signal[:,i]``
         is ``region_names_[i]``.
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
         """
         check_is_fitted(self)
         lut = self.lut_
@@ -239,7 +244,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         is ``region_ids_[i]``.
         ``region_ids_['background']`` is the background label.
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
         """
         check_is_fitted(self)
         lut = self.lut_
@@ -247,7 +252,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     @fill_doc
     @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
+        replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
@@ -268,6 +273,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         if imgs is not None:
             self._check_imgs(imgs)
 
+        if imgs is not None:
+            check_surf_img(imgs)
+
         check_reduction_strategy(self.strategy)
 
         if self.labels_img is None:
@@ -281,6 +289,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "Pass either labels or a lookup table (lut) to the masker, "
                 "but not both."
             )
+
+        mask_logger("load_regions", self.labels_img, verbose=self.verbose)
 
         self.labels_img_ = deepcopy(self.labels_img)
 
@@ -367,6 +377,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         self._reporting_data = self._generate_reporting_data()
 
+        mask_logger("fit_done", verbose=self.verbose)
+
         return self
 
     def _generate_reporting_data(self):
@@ -447,19 +459,17 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         reduction_function = getattr(ndimage, self.strategy)
 
+        mask_logger("extracting", verbose=self.verbose)
+
         for n, sample in enumerate(np.rollaxis(img_data, -1)):
             tmp = np.asarray(
                 reduction_function(sample, labels=labels_data, index=index)
             )
             region_signals[n] = tmp
 
-        parameters = get_params(
-            self.__class__,
-            self,
-            ignore=[
-                "mask_img",
-            ],
-        )
+        mask_logger("cleaning", verbose=self.verbose)
+
+        parameters = get_params(self.__class__, self, ignore=["mask_img"])
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
@@ -501,6 +511,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         return_1D = signals.ndim < 2
 
         signals = self._check_array(signals)
+
+        mask_logger("inverse_transform", verbose=self.verbose)
 
         imgs = signals_to_surf_img_labels(
             signals,
@@ -589,6 +601,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                         cmap=self.cmap,
                         vmin=vmin,
                         vmax=vmax,
+                        darkness=None,
                     )
                 plot_surf_contours(
                     roi_map=labels_img,

@@ -9,7 +9,7 @@ from scipy import linalg
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import fill_doc
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import (
@@ -24,8 +24,13 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
-from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface.surface import SurfaceImage, at_least_2d, get_data
+from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
+from nilearn.surface.surface import (
+    SurfaceImage,
+    at_least_2d,
+    check_surf_img,
+    get_data,
+)
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -152,7 +157,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
     @fill_doc
     @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
+        replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
@@ -179,10 +184,11 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 "For example, masker = SurfaceMapsMasker(maps_img=maps_img)"
             )
 
-        logger.log(
-            msg=f"loading regions from {self.maps_img.__repr__()}",
-            verbose=self.verbose,
-        )
+        if imgs is not None:
+            check_surf_img(imgs)
+
+        mask_logger("load_regions", self.maps_img, verbose=self.verbose)
+
         # check maps_img data is 2D
         self.maps_img.data._check_ndims(2, "maps_img")
         self.maps_img_ = self.maps_img
@@ -229,6 +235,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         else:
             self.clean_args_ = self.clean_args
 
+        mask_logger("fit_done", verbose=self.verbose)
+
         return self
 
     def __sklearn_is_fitted__(self):
@@ -271,14 +279,12 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             get_data(self.mask_img_) if self.mask_img_ is not None else None
         )
 
-        parameters = get_params(
-            self.__class__,
-            self,
-        )
+        parameters = get_params(self.__class__, self)
         parameters["clean_args"] = self.clean_args_
 
         # apply mask if provided
         # and then extract signal via least square regression
+        mask_logger("extracting", verbose=self.verbose)
         if mask_data is not None:
             region_signals = cache(
                 linalg.lstsq,
@@ -300,10 +306,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 shelve=self._shelving,
             )(maps_data, img_data)[0].T
 
-        parameters = get_params(
-            self.__class__,
-            self,
-        )
+        mask_logger("cleaning", verbose=self.verbose)
+
+        parameters = get_params(self.__class__, self)
 
         parameters["clean_args"] = self.clean_args_
 
@@ -358,7 +363,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 f"but got {region_signals.shape[1]}."
             )
 
-        logger.log("computing image from signals", verbose=self.verbose)
+        mask_logger("inverse_transform", verbose=self.verbose)
+
         # project region signals back to vertices
         if mask_data is not None:
             # vertices that are not in the mask will have a signal of 0
@@ -621,5 +627,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                         colorbar=False,
                         threshold=threshold,
                         bg_on_data=True,
+                        darkness=None,
                     )
         return fig

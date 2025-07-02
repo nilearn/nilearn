@@ -12,7 +12,6 @@ from scipy import sparse
 from sklearn import neighbors
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import logger
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -29,11 +28,12 @@ from nilearn._utils.niimg_conversions import (
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
-from nilearn.maskers._utils import (
-    compute_middle_image,
-    sanitize_cleaning_parameters,
+from nilearn.maskers._utils import compute_middle_image
+from nilearn.maskers.base_masker import (
+    BaseMasker,
+    filter_and_extract,
+    mask_logger,
 )
-from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
 
 
@@ -106,7 +106,7 @@ def apply_mask_and_get_affinity(
 
         X = apply_mask_fmri(niimg, mask_img)
 
-    elif niimg is not None:
+    else:
         affine = niimg.affine
         if np.isnan(np.sum(safe_get_data(niimg))):
             warnings.warn(
@@ -119,9 +119,6 @@ def apply_mask_and_get_affinity(
             X = safe_get_data(niimg).reshape([-1, niimg.shape[3]]).T
 
         mask_coords = list(np.ndindex(niimg.shape[:3]))
-
-    else:
-        raise ValueError("Either a niimg or a mask_img must be provided.")
 
     # For each seed, get coordinates of nearest voxel
     nearests = []
@@ -281,7 +278,7 @@ class NiftiSpheresMasker(BaseMasker):
     %(verbose0)s
 
     %(clean_args)s
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
 
     %(masker_kwargs)s
 
@@ -508,7 +505,7 @@ class NiftiSpheresMasker(BaseMasker):
         display = plotting.plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
         )
-        embeded_images = [embed_img(display)]
+        embedded_images = [embed_img(display)]
         display.close()
         for idx, seed in enumerate(seeds):
             regions_summary["seed number"].append(idx)
@@ -528,18 +525,18 @@ class NiftiSpheresMasker(BaseMasker):
                     marker_color="g",
                     marker_size=20 * radius,
                 )
-                embeded_images.append(embed_img(display))
+                embedded_images.append(embed_img(display))
                 display.close()
 
-        assert len(embeded_images) == len(
+        assert len(embedded_images) == len(
             self._report_content["displayed_maps"]
         )
 
         self._report_content["summary"] = regions_summary
 
-        return embeded_images
+        return embedded_images
 
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit(
         self,
         imgs=None,
@@ -559,7 +556,8 @@ class NiftiSpheresMasker(BaseMasker):
             "warning_message": None,
         }
 
-        self = sanitize_cleaning_parameters(self)
+        self._sanitize_cleaning_parameters()
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         error = (
             "Seeds must be a list of triplets of coordinates in "
@@ -627,6 +625,8 @@ class NiftiSpheresMasker(BaseMasker):
 
         self.n_elements_ = len(self.seeds_)
 
+        mask_logger("fit_done", verbose=self.verbose)
+
         return self
 
     @fill_doc
@@ -687,7 +687,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         params = get_params(NiftiSpheresMasker, self)
         params["clean_kwargs"] = self.clean_args_
-        # TODO remove in 0.13.2
+        # TODO remove in 0.13.0
         if self.clean_kwargs:
             params["clean_kwargs"] = self.clean_kwargs_
 
@@ -735,7 +735,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         region_signals = self._check_array(region_signals)
 
-        logger.log("computing image from signals", verbose=self.verbose)
+        mask_logger("inverse_transform", verbose=self.verbose)
 
         if self.mask_img_ is not None:
             mask = check_niimg_3d(self.mask_img_)

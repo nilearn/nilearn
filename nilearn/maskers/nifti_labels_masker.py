@@ -10,7 +10,6 @@ import pandas as pd
 from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import logger, repr_niimgs
 from nilearn._utils.bids import (
     generate_atlas_look_up_table,
     sanitize_look_up_table,
@@ -29,11 +28,12 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import get_data, load_img, resample_img
-from nilearn.maskers._utils import (
-    compute_middle_image,
-    sanitize_cleaning_parameters,
+from nilearn.maskers._utils import compute_middle_image
+from nilearn.maskers.base_masker import (
+    BaseMasker,
+    filter_and_extract,
+    mask_logger,
 )
-from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import load_mask_img
 
 
@@ -55,7 +55,7 @@ class _ExtractionFunctor:
         self.mask_img = mask_img
 
     def __call__(self, imgs):
-        from ..regions.signal_extraction import img_to_signals_labels
+        from nilearn.regions.signal_extraction import img_to_signals_labels
 
         signals, labels, masked_labels_img = img_to_signals_labels(
             imgs,
@@ -159,7 +159,7 @@ class NiftiLabelsMasker(BaseMasker):
         Only relevant for the report figures.
 
     %(clean_args)s
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
 
     %(masker_kwargs)s
 
@@ -215,7 +215,7 @@ class NiftiLabelsMasker(BaseMasker):
         reports=True,
         cmap="CMRmap_r",
         clean_args=None,
-        **kwargs,
+        **kwargs,  # TODO remove when bumping to nilearn >0.13
     ):
         self.labels_img = labels_img
         self.background_label = background_label
@@ -239,6 +239,8 @@ class NiftiLabelsMasker(BaseMasker):
         self.t_r = t_r
         self.dtype = dtype
         self.clean_args = clean_args
+
+        # TODO remove when bumping to nilearn >0.13
         self.clean_kwargs = kwargs
 
         # Parameters for resampling
@@ -516,7 +518,8 @@ class NiftiLabelsMasker(BaseMasker):
                 f"parameter: {self.resampling_target}"
             )
 
-        self = sanitize_cleaning_parameters(self)
+        self._sanitize_cleaning_parameters()
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         self._report_content = {
             "description": (
@@ -526,9 +529,8 @@ class NiftiLabelsMasker(BaseMasker):
             "warning_message": None,
         }
 
-        repr = repr_niimgs(self.labels_img, shorten=(not self.verbose))
-        msg = f"loading data from {repr}"
-        logger.log(msg=msg, verbose=self.verbose)
+        mask_logger("load_regions", self.labels_img, verbose=self.verbose)
+
         self.labels_img_ = deepcopy(self.labels_img)
         self.labels_img_ = check_niimg_3d(self.labels_img_)
 
@@ -587,7 +589,8 @@ class NiftiLabelsMasker(BaseMasker):
                 self.mask_img_,
             )
         ):
-            logger.log("Resampling mask...", self.verbose)
+            mask_logger("resample_mask", verbose=self.verbose)
+
             # TODO switch to force_resample=True
             # when bumping to version > 0.13
             self.mask_img_ = self._cache(resample_img, func_memory_level=2)(
@@ -615,6 +618,8 @@ class NiftiLabelsMasker(BaseMasker):
                 self._reporting_data["dim"] = dims
         else:
             self._reporting_data = None
+
+        mask_logger("fit_done", verbose=self.verbose)
 
         return self
 
@@ -812,7 +817,7 @@ class NiftiLabelsMasker(BaseMasker):
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
         params["clean_kwargs"] = self.clean_args_
-        # TODO remove in 0.13.2
+        # TODO remove in 0.13.0
         if self.clean_kwargs:
             params["clean_kwargs"] = self.clean_kwargs_
 
@@ -852,10 +857,8 @@ class NiftiLabelsMasker(BaseMasker):
         return region_signals
 
     def _resample_labels(self, imgs_):
-        logger.log(
-            "Resampling labels",
-            self.verbose,
-        )
+        mask_logger("resample_regions", verbose=self.verbose)
+
         labels_before_resampling = set(
             np.unique(safe_get_data(self.labels_img_))
         )
@@ -907,7 +910,8 @@ class NiftiLabelsMasker(BaseMasker):
 
         signals = self._check_array(signals)
 
-        logger.log("computing image from signals", verbose=self.verbose)
+        mask_logger("inverse_transform", verbose=self.verbose)
+
         return signal_extraction.signals_to_img_labels(
             signals,
             self.labels_img_,

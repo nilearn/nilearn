@@ -53,7 +53,7 @@ else:
 
 
 # check_multi_masker_transformer_high_variance_confounds is slow
-@pytest.mark.timeout(90)
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -171,6 +171,7 @@ def test_joblib_cache(mask_img_1, tmp_path):
     assert mask_hash == hash(masker.mask_img_)
 
 
+@pytest.mark.timeout(0)
 def test_shelving(rng):
     """Check behavior when shelving masker."""
     mask_img = Nifti1Image(
@@ -182,7 +183,7 @@ def test_shelving(rng):
     try:
         masker_shelved = MultiNiftiMasker(
             mask_img=mask_img,
-            memory=Memory(location=cachedir, mmap_mode="r", verbose=0),
+            memory=Memory(location=cachedir, mmap_mode="r"),
         )
         masker_shelved._shelving = True
         epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])

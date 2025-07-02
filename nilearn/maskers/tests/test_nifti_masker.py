@@ -286,7 +286,7 @@ def test_joblib_cache(tmp_path, mask_img_1):
     # imgs return by inverse_transform impossible to save
     cachedir = Path(mkdtemp())
     try:
-        masker.memory = Memory(location=cachedir, mmap_mode="r", verbose=0)
+        masker.memory = Memory(location=cachedir, mmap_mode="r")
         X = masker.transform(mask_img_1)
         # inverse_transform a first time, so that the result is cached
         out_img = masker.inverse_transform(X)
@@ -389,6 +389,7 @@ def test_compute_brain_mask_empty_mask_error(strategy, mask_args):
         masker.fit(img)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )

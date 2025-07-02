@@ -15,18 +15,18 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
 
-from nilearn._utils import logger
+from nilearn._utils import logger, repr_niimgs
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     rename_parameters,
     stringify_path,
 )
-from nilearn._utils.logger import find_stack_level, log
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import repr_niimgs, safe_get_data
+from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -39,7 +39,7 @@ from nilearn.image import (
 )
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
-from nilearn.surface.surface import SurfaceImage, at_least_2d
+from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -87,10 +87,7 @@ def filter_and_extract(
     if isinstance(imgs, str):
         copy = False
 
-    log(
-        f"Loading data from {repr_niimgs(imgs, shorten=False)}",
-        verbose=verbose,
-    )
+    mask_logger("load_data", imgs, verbose)
 
     # Convert input to niimg to check shape.
     # This must be repeated after the shape check because check_niimg will
@@ -102,7 +99,7 @@ def filter_and_extract(
     target_shape = parameters.get("target_shape")
     target_affine = parameters.get("target_affine")
     if target_shape is not None or target_affine is not None:
-        log("Resampling images")
+        logger.log("Resampling images")
 
         imgs = cache(
             resample_img,
@@ -122,7 +119,7 @@ def filter_and_extract(
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
     if smoothing_fwhm is not None:
-        log("Smoothing images", verbose=verbose)
+        logger.log("Smoothing images", verbose=verbose)
 
         imgs = cache(
             smooth_img,
@@ -131,7 +128,7 @@ def filter_and_extract(
             memory_level=memory_level,
         )(imgs, parameters["smoothing_fwhm"])
 
-    log("Extracting region signals", verbose=verbose)
+    mask_logger("extracting", verbose=verbose)
 
     region_signals, aux = cache(
         extraction_function,
@@ -147,7 +144,7 @@ def filter_and_extract(
     # Confounds removing (from csv file or numpy array)
     # Normalizing
 
-    log("Cleaning extracted signals", verbose=verbose)
+    mask_logger("cleaning", verbose=verbose)
 
     runs = parameters.get("runs", None)
     region_signals = cache(
@@ -209,6 +206,38 @@ def prepare_confounds_multimaskers(masker, imgs_list, confounds):
                 confounds[i].append(hv_confounds)
 
     return confounds
+
+
+def mask_logger(step, img=None, verbose=0):
+    """Log similar messages for all maskers."""
+    repr = None
+    if img is not None:
+        repr = img.__repr__()
+        if verbose > 1:
+            repr = repr_niimgs(img, shorten=True)
+        elif verbose > 2:
+            repr = repr_niimgs(img, shorten=False)
+
+    messages = {
+        "cleaning": "Cleaning extracted signals",
+        "compute_mask": "Computing mask",
+        "extracting": "Extracting region signals",
+        "fit_done": "Finished fit",
+        "inverse_transform": "Computing image from signals",
+        "load_data": f"Loading data from {repr}",
+        "load_mask": f"Loading mask from {repr}",
+        "load_regions": f"Loading regions from {repr}",
+        "resample_mask": "Resamping mask",
+        "resample_regions": "Resampling regions",
+    }
+
+    if step not in messages:
+        raise ValueError(f"Unknown step: {step}")
+
+    if step in ["load_mask", "load_data"] and repr is None:
+        return
+
+    logger.log(messages[step], verbose=verbose)
 
 
 @fill_doc
@@ -288,9 +317,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             # other nifti maskers are OK with None
             return None
 
-        repr = repr_niimgs(self.mask_img, shorten=(not self.verbose))
-        msg = f"loading mask from {repr}"
-        log(msg=msg, verbose=self.verbose)
+        mask_logger("load_mask", img=self.mask_img, verbose=self.verbose)
 
         # ensure that the mask_img_ is a 3D binary image
         tmp = check_niimg(self.mask_img, atleast_4d=True)
@@ -349,7 +376,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         )
 
     @fill_doc
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit_transform(
         self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
     ):
@@ -428,6 +455,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # with some GLM inputs
         X = self._check_array(X, sklearn_check=False)
 
+        mask_logger("inverse_transform", verbose=self.verbose)
+
         img = self._cache(unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
         # internal structures of the header: remove the memmaped array
@@ -477,6 +506,33 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             This has not been implemented yet.
         """
         raise NotImplementedError()
+
+    def _sanitize_cleaning_parameters(self):
+        """Make sure that cleaning parameters are passed via clean_args.
+
+        TODO remove when bumping to nilearn >0.13
+        """
+        if hasattr(self, "clean_kwargs"):
+            if self.clean_kwargs:
+                tmp = [", ".join(list(self.clean_kwargs))]
+                warnings.warn(
+                    f"You passed some kwargs to {self.__class__.__name__}: "
+                    f"{tmp}. "
+                    "This behavior is deprecated "
+                    "and will be removed in version >0.13.",
+                    DeprecationWarning,
+                    stacklevel=find_stack_level(),
+                )
+                if self.clean_args:
+                    raise ValueError(
+                        "Passing arguments via 'kwargs' "
+                        "is mutually exclusive with using 'clean_args'"
+                    )
+            self.clean_kwargs_ = {
+                k[7:]: v
+                for k, v in self.clean_kwargs.items()
+                if k.startswith("clean__")
+            }
 
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
@@ -536,10 +592,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         mask_img_ = deepcopy(self.mask_img)
 
-        logger.log(
-            msg=f"loading mask from {mask_img_.__repr__()}",
-            verbose=self.verbose,
-        )
+        mask_logger("load_mask", img=mask_img_, verbose=self.verbose)
 
         mask_img_ = at_least_2d(mask_img_)
         mask = {}
@@ -564,12 +617,13 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             if not isinstance(imgs, Iterable):
                 imgs = [imgs]
             for x in imgs:
+                check_surf_img(x)
                 check_polymesh_equal(mask_img_.mesh, x.mesh)
 
         return mask_img_
 
     @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
+        replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
@@ -597,6 +651,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if not isinstance(imgs, list):
             imgs = [imgs]
         imgs = concat_imgs(imgs)
+        check_surf_img(imgs)
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
 
@@ -644,7 +699,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         raise NotImplementedError()
 
     @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
+        replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):

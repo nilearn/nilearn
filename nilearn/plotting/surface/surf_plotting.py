@@ -88,6 +88,10 @@ def plot_surf(
         :obj:`~nilearn.surface.SurfaceImage` instance and its mesh will be
         used for plotting.
 
+        When specified `surf_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `surf_map`
+        data.
+
     %(bg_map)s
 
     %(hemi)s
@@ -127,6 +131,9 @@ def plot_surf(
         `False` if `None` is passed.
 
         .. versionadded:: 0.9.0
+
+        .. versionchanged:: 0.12.0
+            Default value changed to None.
 
     %(colorbar)s
         Default=True.
@@ -318,6 +325,10 @@ def plot_surf_contours(
         :obj:`~nilearn.surface.SurfaceImage` instance and its the mesh will be
         used for plotting.
 
+        When specified `roi_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `roi_map`
+        data.
+
     %(hemi)s
         It is only used if ``roi_map`` is :obj:`~nilearn.surface.SurfaceImage`
         and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
@@ -442,6 +453,10 @@ def plot_surf_stat_map(
         then ``stat_map``
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
+
+        When specified `surf_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `surf_map`
+        data.
 
     %(bg_map)s
 
@@ -584,30 +599,30 @@ def plot_surf_stat_map(
         )
     )
 
-    fig = backend._plot_surf(
+    fig = plot_surf(
         surf_mesh,
         surf_map=loaded_stat_map,
         bg_map=bg_map,
         hemi=hemi,
         view=view,
+        engine=engine,
+        cmap=cmap,
+        colorbar=colorbar,
         avg_method=avg_method,
         threshold=threshold,
-        cmap=cmap,
-        symmetric_cmap=True,
-        colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format,
         alpha=alpha,
         bg_on_data=bg_on_data,
         darkness=darkness,
-        vmax=vmax,
         vmin=vmin,
+        vmax=vmax,
+        cbar_vmin=cbar_vmin,
+        cbar_vmax=cbar_vmax,
+        cbar_tick_format=cbar_tick_format,
         title=title,
         title_font_size=title_font_size,
         output_file=output_file,
         axes=axes,
         figure=figure,
-        cbar_vmin=cbar_vmin,
-        cbar_vmax=cbar_vmax,
         **kwargs,
     )
     return fig
@@ -619,18 +634,18 @@ def plot_img_on_surf(
     surf_mesh="fsaverage5",
     mask_img=None,
     hemispheres=None,
+    views=None,
+    cmap=DEFAULT_DIVERGING_CMAP,
+    colorbar=True,
+    threshold=None,
     bg_on_data=False,
     inflate=False,
-    views=None,
-    output_file=None,
-    title=None,
-    colorbar=True,
     vmin=None,
     vmax=None,
-    threshold=None,
     symmetric_cbar="auto",
-    cmap=DEFAULT_DIVERGING_CMAP,
     cbar_tick_format="%i",
+    title=None,
+    output_file=None,
     **kwargs,
 ):
     """Plot multiple views of plot_surf_stat_map \
@@ -662,15 +677,9 @@ def plot_img_on_surf(
         during projection of the volume to the surface.
         If ``None``, don't apply any mask.
 
-    %(bg_on_data)s
-
     hemispheres : :obj:`list` of :obj:`str`, default=None
         Hemispheres to display.
         Will default to ``['left', 'right']`` if ``None`` or "both" is passed.
-
-    inflate : :obj:`bool`, default=False
-        If True, display images in inflated brain.
-        If False, display images in pial surface.
 
     views : :obj:`list` of :obj:`str`, default=None
         A list containing all views to display.
@@ -679,9 +688,8 @@ def plot_img_on_surf(
         are shown on the left and right sides of the figure.
         Will default to ``['lateral', 'medial']`` if ``None`` is passed.
 
-    %(output_file)s
-
-    %(title)s
+    %(cmap)s
+        Default="RdBu_r".
 
     %(colorbar)s
 
@@ -690,19 +698,26 @@ def plot_img_on_surf(
 
         Default=True.
 
+    %(threshold)s
+        Default=None
+
+    %(bg_on_data)s
+
+    inflate : :obj:`bool`, default=False
+        If True, display images in inflated brain.
+        If False, display images in pial surface.
+
     %(vmin)s
 
     %(vmax)s
 
-    %(threshold)s
-        Default=None
-
     %(symmetric_cbar)s
 
-    %(cmap)s
-        Default="RdBu_r".
-
     %(cbar_tick_format)s
+
+    %(title)s
+
+    %(output_file)s
 
     kwargs : :obj:`dict`, optional
         keyword arguments passed to plot_surf_stat_map.
@@ -843,6 +858,10 @@ def plot_surf_roi(
         then ``roi_map``
         must be a :obj:`~nilearn.surface.SurfaceImage` instance
         and its the mesh will be used for plotting.
+
+        When specified `roi_map` is of type :class:`numpy.ndarray`, to have a
+        correct view, `hemi` should have a value corresponding to `roi_map`
+        data.
 
     %(bg_map)s
 

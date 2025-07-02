@@ -249,7 +249,7 @@
 
 .. _Philippe Gervais: https://github.com/pgervais
 
-.. _Pierre Bellec: https://github.com/pbellec
+.. _Pierre Bellec: https://github.com/lunebellec
 
 .. _Pierre Glaser: https://pierreglaser.github.io/
 

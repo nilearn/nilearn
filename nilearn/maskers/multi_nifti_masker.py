@@ -13,8 +13,6 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import (
     fill_doc,
-    logger,
-    repr_niimgs,
     stringify_path,
 )
 from nilearn._utils.class_inspect import (
@@ -27,11 +25,11 @@ from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     resample_img,
 )
-from nilearn.maskers._utils import (
-    compute_middle_image,
-    sanitize_cleaning_parameters,
+from nilearn.maskers._utils import compute_middle_image
+from nilearn.maskers.base_masker import (
+    mask_logger,
+    prepare_confounds_multimaskers,
 )
-from nilearn.maskers.base_masker import prepare_confounds_multimaskers
 from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
 from nilearn.masking import (
     compute_multi_background_mask,
@@ -197,7 +195,7 @@ class MultiNiftiMasker(NiftiMasker):
         verbose=0,
         cmap="CMRmap_r",
         clean_args=None,
-        **kwargs,
+        **kwargs,  # TODO remove when bumping to nilearn >0.13
     ):
         super().__init__(
             # Mask is provided or computed
@@ -220,6 +218,7 @@ class MultiNiftiMasker(NiftiMasker):
             verbose=verbose,
             cmap=cmap,
             clean_args=clean_args,
+            # TODO remove when bumping to nilearn >0.13
             **kwargs,
         )
         self.n_jobs = n_jobs
@@ -284,15 +283,12 @@ class MultiNiftiMasker(NiftiMasker):
             "hover over the displayed image."
         )
 
-        self = sanitize_cleaning_parameters(self)
+        self._sanitize_cleaning_parameters()
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         self.mask_img_ = self._load_mask(imgs)
 
-        if imgs is not None:
-            logger.log(
-                f"Loading data from {repr_niimgs(imgs, shorten=False)}.",
-                self.verbose,
-            )
+        mask_logger("load_data", img=imgs, verbose=self.verbose)
 
         # Compute the mask if not given by the user
         if self.mask_img_ is None:
@@ -303,7 +299,7 @@ class MultiNiftiMasker(NiftiMasker):
                     "if no mask is passed to mask_img."
                 )
 
-            logger.log("Computing mask", self.verbose)
+            mask_logger("compute_mask", verbose=self.verbose)
 
             imgs = stringify_path(imgs)
             if not isinstance(imgs, collections.abc.Iterable) or isinstance(
@@ -346,9 +342,10 @@ class MultiNiftiMasker(NiftiMasker):
                 self._reporting_data["images"] = imgs
                 self._reporting_data["dim"] = dims
 
+        # TODO add if block to only run when resampling is needed
         # If resampling is requested, resample the mask as well.
         # Resampling: allows the user to change the affine, the shape or both.
-        logger.log("Resampling mask")
+        mask_logger("resample_mask", verbose=self.verbose)
 
         # TODO switch to force_resample=True
         # when bumping to version > 0.13
@@ -394,6 +391,8 @@ class MultiNiftiMasker(NiftiMasker):
                 )
 
             self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]
+
+        mask_logger("fit_done", verbose=self.verbose)
 
         return self
 
@@ -461,7 +460,7 @@ class MultiNiftiMasker(NiftiMasker):
             ],
         )
         params["clean_kwargs"] = self.clean_args_
-        # TODO remove in 0.13.2
+        # TODO remove in 0.13.0
         if self.clean_kwargs:
             params["clean_kwargs"] = self.clean_kwargs_
 

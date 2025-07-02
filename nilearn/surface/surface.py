@@ -4,8 +4,9 @@ import abc
 import gzip
 import pathlib
 import warnings
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 import sklearn.cluster
@@ -645,7 +646,7 @@ def vol_to_surf(
         - 'nearest':
             Use the intensity of the nearest voxel.
 
-            .. versionchanged:: 0.11.2.dev
+            .. versionchanged:: 0.12.0
 
                 The 'nearest' interpolation method will be removed in
                 version 0.13.0. It is recommended to use 'linear' for
@@ -660,7 +661,7 @@ def vol_to_surf(
             when the image is a
             :term:`deterministic atlas<Deterministic atlas>`.
 
-            .. versionadded:: 0.11.2.dev
+            .. versionadded:: 0.12.0
 
         For one image, the speed difference is small, 'linear' takes about x1.5
         more time. For many images, 'nearest' scales much better, up to x20
@@ -1982,6 +1983,21 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
+def check_surf_img(img: Union[SurfaceImage, Iterable[SurfaceImage]]) -> None:
+    """Validate SurfaceImage.
+
+    Equivalent to check_niimg for volumes.
+    """
+    if isinstance(img, SurfaceImage):
+        if get_data(img).size == 0:
+            raise ValueError("The image is empty.")
+        return None
+
+    if hasattr(img, "__iter__"):
+        for x in img:
+            check_surf_img(x)
+
+
 def get_data(img, ensure_finite=False) -> np.ndarray:
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
@@ -2004,6 +2020,10 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
         data = img.data
     elif isinstance(img, PolyData):
         data = img
+    else:
+        raise TypeError(
+            f"Expected PolyData or SurfaceImage. Got {img.__class__.__name__}."
+        )
 
     data = np.concatenate(list(data.parts.values()), axis=0)
 

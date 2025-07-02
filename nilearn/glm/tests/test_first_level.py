@@ -1,3 +1,5 @@
+"""Test related to first level model."""
+
 import itertools
 import shutil
 import string
@@ -481,7 +483,7 @@ def test_high_level_glm_different_design_matrices_formulas():
     formula = f"{cols_formula[0]}-{cols_formula[1]}"
 
     with pytest.warns(
-        UserWarning, match="One contrast given, assuming it for all 2 runs"
+        RuntimeWarning, match="The same contrast will be used for all"
     ):
         multi_run_model.compute_contrast(formula, output_type="effect_size")
 
@@ -507,7 +509,7 @@ def test_compute_contrast_num_contrasts(shape_4d_default):
     multi_run_model.compute_contrast([np.eye(rk)[1]] * 3)
 
     with pytest.warns(
-        UserWarning, match="One contrast given, assuming it for all 3 runs"
+        RuntimeWarning, match="The same contrast will be used for all"
     ):
         multi_run_model.compute_contrast([np.eye(rk)[1]])
 
@@ -843,6 +845,42 @@ def test_fmri_inputs_errors(shape_4d_default):
         match="The provided events data has no onset column.",
     ):
         FirstLevelModel(mask_img=None, t_r=1.0).fit(fmri_data, design_matrices)
+
+
+@pytest.mark.parametrize(
+    "to_ignore",
+    [{"slice_time_ref": 0.5}, {"t_r": 2}, {"hrf_model": "fir"}],
+)
+def test_parameter_attributes_ignored_with_design_matrix(
+    shape_4d_default, to_ignore
+):
+    """Warn some parameters/attributes are ignored when using design matrix.
+
+    Test that the warning is thrown if events are passed with design matrix.
+    Also test with some of the non default value for some attributes
+    """
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )
+
+    fmri_data = fmri_data[0]
+    design_matrices = design_matrices[0]
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        FirstLevelModel().fit([fmri_data], design_matrices=[design_matrices])
+    assert not warning_list
+
+    with pytest.warns(UserWarning, match="If design matrices are supplied"):
+        FirstLevelModel().fit(
+            [fmri_data],
+            design_matrices=[design_matrices],
+            events=basic_paradigm(),
+        )
+
+    with pytest.warns(UserWarning, match="If design matrices are supplied"):
+        FirstLevelModel(**to_ignore).fit(
+            [fmri_data], design_matrices=[design_matrices]
+        )
 
 
 def test_fmri_inputs_errors_confounds(shape_4d_default):
@@ -1488,9 +1526,6 @@ def test_glm_sample_mask(shape_4d_default):
 
     assert model.design_matrices_[0].shape[0] == shape_4d_default[3] - 3
     assert model.predicted[0].shape[-1] == shape_4d_default[3] - 3
-
-
-"""Test the first level model on BIDS datasets."""
 
 
 def _inputs_for_new_bids_dataset():
@@ -2397,10 +2432,7 @@ def test_flm_with_surface_masker_with_mask(
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    if surf_mask_dim == 1:
-        assert model.masker_.mask_img_.shape == (9,)
-    else:
-        assert model.masker_.mask_img_.shape == (9,)
+    assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 

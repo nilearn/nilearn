@@ -27,15 +27,16 @@ Core developers
 
 The nilearn core developers are:
 
-* `Alexis Thual`_
 * `Bertrand Thirion`_
 * `Elizabeth DuPre`_
+* `Hande Gözükan`_
 * `Hao-Ting Wang`_
 * `Himanshu Aggarwal`_
 * `Jerome Dockes`_
-* `Nicolas Gensollen`_
+* `Michelle Wang`_
+* `Mohammad Torabi`_
+* `Pierre-Louis Barbarant`_
 * `Rémi Gau`_
-* `Taylor Salo`_
 
 .. CORE DEV SECTION ENDS HERE
 

@@ -65,6 +65,25 @@ def test_check_surface_plotting_inputs_error_negative_threshold(
         fn(in_memory_mesh, threshold=-1)
 
 
+@pytest.mark.parametrize(
+    "fn",
+    [
+        plot_surf,
+        plot_surf_contours,
+        plot_surf_stat_map,
+        plot_surf_roi,
+    ],
+)
+@pytest.mark.parametrize("hemi", ["left", "right", "both"])
+def test_check_surface_plotting_inputs_single_hemi_data(
+    in_memory_mesh, fn, hemi
+):
+    """Smoke test when single hemi data is passed."""
+    parcellation = np.zeros((in_memory_mesh.n_vertices,))
+    parcellation[in_memory_mesh.faces[3]] = 1
+    fn(in_memory_mesh, parcellation, hemi=hemi)
+
+
 def test_check_surface_plotting_inputs_errors():
     """Fail if mesh is None and data is not a SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
@@ -93,6 +112,7 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
+@pytest.mark.timeout(0)
 def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
     """Test nilearn.plotting.surface.surf_plotting.plot_surf function with
     available engine backends.
@@ -395,14 +415,6 @@ def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
         plot_surf_stat_map(stat_map=surf_img_1d, axes=axes)
 
 
-def test_plot_surf_contours_warning_hemi(in_memory_mesh):
-    """Test warning that hemi will be ignored."""
-    parcellation = np.zeros((in_memory_mesh.n_vertices,))
-    parcellation[in_memory_mesh.faces[3]] = 1
-    with pytest.warns(UserWarning, match="This value will be ignored"):
-        plot_surf_contours(in_memory_mesh, parcellation, hemi="left")
-
-
 def test_plot_surf_contours(
     matplotlib_pyplot, in_memory_mesh, parcellation, surf_mask_1d
 ):
@@ -658,6 +670,52 @@ def test_plot_surf_stat_map_colorbar_tick(plotly, in_memory_mesh, bg_map):
         cbar_tick_format="%.2g",
         engine="plotly",
     )
+
+
+@pytest.mark.parametrize("symmetric_cmap", [True, False, None])
+def test_plot_surf_stat_map_symmetric_cmap_plotly(
+    plotly, in_memory_mesh, bg_map, symmetric_cmap
+):
+    """Smoke test when symmetric_cmap with plotly engine is specified to
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
+    """
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=bg_map,
+        symmetric_cmap=symmetric_cmap,
+        engine="plotly",
+    )
+
+
+def test_plot_surf_stat_map_symmetric_cmap_matplotlib(
+    matplotlib_pyplot, in_memory_mesh, bg_map
+):
+    """Smoke test when symmetric_cmap is specified as None for matplotlib
+    engine to nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
+    """
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=bg_map,
+        symmetric_cmap=None,
+        engine="matplotlib",
+    )
+
+
+@pytest.mark.parametrize("symmetric_cmap", [True, False])
+def test_plot_surf_stat_map_symmetric_cmap_matplotlib_error(
+    matplotlib_pyplot, in_memory_mesh, bg_map, symmetric_cmap
+):
+    """Test if
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map raises error when
+    True or False is specified as symmetric_cmap for matplotlib engine.
+    """
+    with pytest.warns(UserWarning, match="'symmetric_cmap' is not implement"):
+        plot_surf_stat_map(
+            in_memory_mesh,
+            stat_map=bg_map,
+            symmetric_cmap=symmetric_cmap,
+            engine="matplotlib",
+        )
 
 
 def test_plot_surf_stat_map_matplotlib_specific(
@@ -986,6 +1044,7 @@ def test_plot_img_on_surf_hemispheres_and_orientations(
     plot_img_on_surf(img_3d_mni, hemispheres=hemispheres, views=views)
 
 
+@pytest.mark.timeout(0)
 def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni):
     """Smoke test for nilearn.plotting.surface.plot_img_on_surf colorbar
     parameter.
