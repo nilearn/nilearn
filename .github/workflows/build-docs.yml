@@ -307,12 +307,10 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                description: [doc]
                 py: [3.13]
                 env: [doc_latest]
                 include:
-                -   description: doc
-                    py: 3.9
+                -   py: 3.9
                     env: doc
 
         defaults:
@@ -406,7 +404,7 @@ jobs:
             if: always()
             uses: actions/upload-artifact@v4
             with:
-                name: doc_checks
+                name: ${{ matrix.env }}_checks
                 path: doc/tmp
 
         -   name: Upload documentation
