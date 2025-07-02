@@ -965,7 +965,11 @@ def check_img_estimator_pickle(estimator_orig):
     input_data = [X] if isinstance(estimator, SearchLight) else [[X]]
     if hasattr(estimator, "inverse_transform"):
         check_methods.append("inverse_transform")
-        input_data.append(_rng().random((1, fitted_estimator.n_elements_)))
+
+        signal = _rng().random((1, fitted_estimator.n_elements_))
+        if isinstance(estimator, _BaseDecomposition):
+            signal = [signal]
+        input_data.append(signal)
 
     for method, input in zip(check_methods, input_data):
         if hasattr(estimator, method):
