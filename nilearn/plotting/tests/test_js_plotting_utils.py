@@ -133,17 +133,6 @@ def check_html(
     assert len(view.findall("option")) == 7
 
 
-@pytest.mark.parametrize(
-    "colors",
-    [
-        [[0, 0, 1], [1, 0, 0], [0.5, 0.5, 0.5]],
-        [[0, 0, 1, 1], [1, 0, 0, 1], [0.5, 0.5, 0.5, 0]],
-        ["#0000ff", "#ff0000", "#7f7f7f"],
-        [[0, 0, 1, 1], [1, 0, 0, 1], [0.5, 0.5, 0.5, 0]],
-        ["r", "green", "black", "white"],
-        ["#0000ffff", "#ff0000ab", "#7f7f7f00"],
-    ],
-)
 def test_import_html_document_from_js_plotting():
     """Smoke test importing HTMLDocument from js_plotting_utils."""
     from nilearn.plotting.js_plotting_utils import (  # noqa: F401

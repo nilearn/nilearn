@@ -341,6 +341,17 @@ def test_get_colorbar_and_data_ranges_force_min_stat_map_value(data_pos_neg):
     )
 
 
+@pytest.mark.parametrize(
+    "colors",
+    [
+        [[0, 0, 1], [1, 0, 0], [0.5, 0.5, 0.5]],
+        [[0, 0, 1, 1], [1, 0, 0, 1], [0.5, 0.5, 0.5, 0]],
+        ["#0000ff", "#ff0000", "#7f7f7f"],
+        [[0, 0, 1, 1], [1, 0, 0, 1], [0.5, 0.5, 0.5, 0]],
+        ["r", "green", "black", "white"],
+        ["#0000ffff", "#ff0000ab", "#7f7f7f00"],
+    ],
+)
 def test_to_color_strings(colors):
     """Tests for function to_color_strings with different color inputs."""
     if len(colors) == 3:
