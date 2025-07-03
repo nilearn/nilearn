@@ -25,6 +25,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_contrast,
@@ -1061,7 +1062,7 @@ def non_parametric_inference(
                 "for surface data.\n"
                 f"Setting {tfce=} and {threshold=}."
             ),
-            UserWarning,
+            NotImplementedWarning,
             stacklevel=find_stack_level(),
         )
 

@@ -34,6 +34,7 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
     FirstLevelModel,
@@ -2334,7 +2335,7 @@ def test_warn_flm_smooth_surface_image(surface_glm_data):
     mini_img, des = surface_glm_data(5)
     model = FirstLevelModel(mask_img=False, smoothing_fwhm=5)
     with pytest.warns(
-        UserWarning,
+        NotImplementedWarning,
         match="Parameter smoothing_fwhm is not yet supported for surface data",
     ):
         model.fit(mini_img, design_matrices=des)
