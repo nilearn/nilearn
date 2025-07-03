@@ -305,7 +305,7 @@ def test_get_colorbar_and_data_ranges_force_min_stat_map_value(data_pos_neg):
         vmin=None,
         vmax=None,
         symmetric_cbar="auto",
-        force_min_stat_map_value=0,
+        force_min_value=0,
     )
 
 

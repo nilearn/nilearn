@@ -173,7 +173,7 @@ def get_colorbar_and_data_ranges(
     vmin=None,
     vmax=None,
     symmetric_cbar=True,
-    force_min_stat_map_value=None,
+    force_min_value=None,
 ):
     """Set colormap and colorbar limits.
 
@@ -192,10 +192,7 @@ def get_colorbar_and_data_ranges(
     if hasattr(data, "_mask"):
         data = np.asarray(data[np.logical_not(data._mask)])
 
-    if force_min_stat_map_value is None:
-        data_min = np.nanmin(data)
-    else:
-        data_min = force_min_stat_map_value
+    data_min = np.nanmin(data) if force_min_value is None else force_min_value
     data_max = np.nanmax(data)
 
     if symmetric_cbar == "auto":
