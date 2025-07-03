@@ -16,6 +16,7 @@ import joblib
 import numpy as np
 import pandas as pd
 import pytest
+from joblib import Memory
 from nibabel import Nifti1Image
 from numpy.testing import (
     assert_array_almost_equal,
@@ -579,6 +580,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
                 clone(estimator),
                 check_nifti_masker_generate_report_after_fit_with_only_mask,
             )
+            yield (clone(estimator), check_nifti_masker_shelving)
 
             if is_multimasker(estimator):
                 yield (
@@ -594,6 +596,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
                     check_multi_masker_transformer_sample_mask,
                 )
                 yield (clone(estimator), check_multi_masker_with_confounds)
+                yield (clone(estimator), check_multi_nifti_masker_shelving)
 
         if accept_surf_img_input(estimator):
             yield (clone(estimator), check_surface_masker_fit_with_mask)
@@ -2279,7 +2282,75 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
     assert hasattr(estimator, "mask_img_")
 
 
+@ignore_warnings()
+def check_nifti_masker_shelving(estimator):
+    """Check behavior when shelving masker."""
+    mask_img = Nifti1Image(
+        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((2, 2, 2, 1))
+    )
+    epi_img1 = Nifti1Image(
+        _rng().random((2, 2, 2)), affine=np.diag((4, 4, 4, 1))
+    )
+
+    estimator.verbose = 0
+
+    masker = clone(estimator)
+    masker.mask_img = mask_img
+
+    epi = masker.fit_transform(epi_img1)
+
+    masker = clone(estimator)
+    masker.mask_img = mask_img
+
+    with TemporaryDirectory() as tmp_dir:
+        masker_shelved = clone(estimator)
+
+        masker_shelved.mask_img = mask_img
+        masker_shelved.memory = Memory(location=tmp_dir, mmap_mode="r")
+        masker_shelved._shelving = True
+
+        epi_shelved = masker_shelved.fit_transform(epi_img1)
+
+        epi_shelved = epi_shelved.get()
+
+        assert_array_equal(epi_shelved, epi)
+
+
 # ------------------ MULTI NIFTI MASKER CHECKS ------------------
+
+
+@ignore_warnings()
+def check_multi_nifti_masker_shelving(estimator):
+    """Check behavior when shelving masker."""
+    mask_img = Nifti1Image(
+        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((2, 2, 2, 1))
+    )
+    epi_img1 = Nifti1Image(
+        _rng().random((2, 3, 4, 5)), affine=np.diag((4, 4, 4, 1))
+    )
+    epi_img2 = Nifti1Image(
+        _rng().random((2, 3, 4, 6)), affine=np.diag((4, 4, 4, 1))
+    )
+
+    estimator.verbose = 0
+
+    masker = clone(estimator)
+    masker.mask_img = mask_img
+
+    epis = masker.fit_transform([epi_img1, epi_img2])
+
+    with TemporaryDirectory() as tmp_dir:
+        masker_shelved = clone(estimator)
+
+        masker_shelved.mask_img = mask_img
+        masker_shelved.memory = Memory(location=tmp_dir, mmap_mode="r")
+        masker_shelved._shelving = True
+
+        epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])
+
+        for e_shelved, e in zip(epis_shelved, epis):
+            e_shelved = e_shelved.get()
+            assert_array_equal(e_shelved, e)
 
 
 @ignore_warnings()
