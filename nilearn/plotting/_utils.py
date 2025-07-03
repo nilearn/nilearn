@@ -191,7 +191,10 @@ def get_colorbar_and_data_ranges(
 
     symmetric_cbar : :obj:`bool`, default=True
         if True, colorbar will have values in range [vmin, vmax] where
-        vmax = -vmin
+        vmax = -vmin.
+        if True:
+        - specified ``vmin`` value should be less than or equal to 0.
+        - specified ``vmax`` value should be greater than or equal to 0.
 
     force_min_value : :obj:`int`, default=None
         The value to force as minimum value for the colorbar
@@ -205,23 +208,15 @@ def get_colorbar_and_data_ranges(
     if vmin is not None and vmax is not None and vmin >= vmax:
         raise ValueError("vmin must be less then vmax.")
 
-    if vmin is not None and vmin >= 0:
-        raise ValueError(
-            "vmin must be less than 0 when symmetric_cbar is True."
-        )
-
-    if vmax is not None and vmax <= 0:
-        raise ValueError(
-            "vmax must be greater than 0 when symmetric_cbar is True."
-        )
-
     # avoid dealing with masked_array:
     if hasattr(data, "_mask"):
         data = np.asarray(data[np.logical_not(data._mask)])
 
+    # TODO force_min_value is only forced when vmin is None
     data_min = np.nanmin(data) if force_min_value is None else force_min_value
     data_max = np.nanmax(data)
 
+    # set value of symmetric_cbar depending on vmin, vmax, data_min, data_max
     if symmetric_cbar == "auto":
         if vmin is None or vmax is None:
             min_value = data_min if vmin is None else max(vmin, data_min)
@@ -235,14 +230,29 @@ def get_colorbar_and_data_ranges(
         if vmin is None and vmax is None:
             vmax = max(-data_min, data_max)
             vmin = -vmax
-        elif vmin is None:
-            vmin = -vmax
-        elif vmax is None:
-            vmax = -vmin
-        elif not np.isclose(vmin, -vmax):
-            raise ValueError(
-                "vmin must be equal to -vmax unless symmetric_cbar is False."
-            )
+
+        else:
+            if vmin is not None and vmin > 0:
+                raise ValueError(
+                    "vmin must be less than or equal to 0 when symmetric_cbar"
+                    "is True."
+                )
+
+            if vmax is not None and vmax < 0:
+                raise ValueError(
+                    "vmax must be greater than or equal to 0 when "
+                    "symmetric_cbar is True."
+                )
+
+            if vmin is None:
+                vmin = -vmax
+            elif vmax is None:
+                vmax = -vmin
+            elif not np.isclose(vmin, -vmax):
+                raise ValueError(
+                    "vmin must be equal to -vmax unless symmetric_cbar is "
+                    "False."
+                )
         cbar_vmin = vmin
         cbar_vmax = vmax
     # set colorbar limits
