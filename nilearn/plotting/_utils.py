@@ -202,6 +202,9 @@ def get_colorbar_and_data_ranges(
     if (not isinstance(vmax, Number)) or (not np.isfinite(vmax)):
         vmax = None
 
+    if vmin is not None and vmax is not None and vmin >= vmax:
+        raise ValueError("vmin must be less then vmax.")
+
     # avoid dealing with masked_array:
     if hasattr(data, "_mask"):
         data = np.asarray(data[np.logical_not(data._mask)])
