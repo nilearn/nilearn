@@ -15,7 +15,6 @@ from nilearn._utils.bids import (
     generate_atlas_look_up_table,
     sanitize_look_up_table,
 )
-from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -290,6 +289,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "but not both."
             )
 
+        self._fit_cache()
+
         mask_logger("load_regions", self.labels_img, verbose=self.verbose)
 
         self.labels_img_ = deepcopy(self.labels_img)
@@ -473,11 +474,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
-        region_signals = cache(
+        region_signals = self._cache(
             signal.clean,
-            memory=self.memory,
             func_memory_level=2,
-            memory_level=self.memory_level,
             shelve=self._shelving,
         )(
             region_signals,

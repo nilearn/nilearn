@@ -187,6 +187,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if imgs is not None:
             check_surf_img(imgs)
 
+        self._fit_cache()
+
         mask_logger("load_regions", self.maps_img, verbose=self.verbose)
 
         # check maps_img data is 2D
@@ -288,7 +290,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if mask_data is not None:
             region_signals = cache(
                 linalg.lstsq,
-                memory=self.memory,
+                memory=self.memory_,
                 func_memory_level=2,
                 memory_level=self.memory_level,
                 shelve=self._shelving,
@@ -300,7 +302,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         else:
             region_signals = cache(
                 linalg.lstsq,
-                memory=self.memory,
+                memory=self.memory_,
                 func_memory_level=2,
                 memory_level=self.memory_level,
                 shelve=self._shelving,
@@ -313,11 +315,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
-        region_signals = cache(
+        region_signals = self._cache(
             signal.clean,
-            memory=self.memory,
             func_memory_level=2,
-            memory_level=self.memory_level,
             shelve=self._shelving,
         )(
             region_signals,

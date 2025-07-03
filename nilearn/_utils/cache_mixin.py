@@ -195,6 +195,11 @@ class CacheMixin:
 
     """
 
+    def _fit_cache(self):
+        """Set a fitted memory attribute."""
+        verbose = getattr(self, "verbose", 0)
+        self.memory_ = check_memory(self.memory, verbose=verbose)
+
     def _cache(self, func, func_memory_level=1, shelve=False, **kwargs):
         """Return a joblib.Memory object.
 
@@ -226,19 +231,9 @@ class CacheMixin:
             For consistency, a callable object is always returned.
 
         """
-        verbose = getattr(self, "verbose", 0)
-
-        # Creates attributes if they don't exist
-        # This is to make creating them in __init__() optional.
-        if not hasattr(self, "memory_level"):
-            self.memory_level = 0
-        if not hasattr(self, "memory"):
-            self.memory = Memory(location=None, verbose=verbose)
-        self.memory = check_memory(self.memory, verbose=verbose)
-
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
-        if self.memory_level == 0 and self.memory.location is not None:
+        if self.memory_level == 0 and self.memory_.location is not None:
             warnings.warn(
                 "memory_level is currently set to 0 but "
                 "a Memory object has been provided. "
@@ -249,7 +244,7 @@ class CacheMixin:
 
         return cache(
             func,
-            self.memory,
+            self.memory_,
             func_memory_level=func_memory_level,
             memory_level=self.memory_level,
             shelve=shelve,

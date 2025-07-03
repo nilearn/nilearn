@@ -520,6 +520,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                 "an empty list was given."
             )
 
+        self._fit_cache()
+
         masker_type = "multi_nii"
         if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
             isinstance(x, SurfaceImage) for x in imgs

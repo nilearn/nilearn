@@ -9,7 +9,6 @@ import warnings
 from pathlib import Path
 
 import numpy as np
-from joblib import Memory
 from nibabel import Nifti1Image
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
@@ -17,6 +16,7 @@ from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
+from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -593,7 +593,7 @@ def recursive_neighbor_agglomeration(
 
 
 @fill_doc
-class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
+class ReNA(CacheMixin, ClusterMixin, TransformerMixin, BaseEstimator):
     """Recursive Neighbor Agglomeration (:term:`ReNA`).
 
     Recursively merges the pair of clusters according to 1-nearest neighbors
@@ -765,11 +765,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             check_is_fitted(self.mask_img)
             self.mask_img_ = self.mask_img.mask_img_
 
-        self.memory_ = self.memory
-        if self.memory is None or isinstance(self.memory, str):
-            self.memory_ = Memory(
-                location=self.memory, verbose=max(0, self.verbose - 1)
-            )
+        self._fit_cache()
 
         if self.n_clusters <= 0:
             raise ValueError(
@@ -791,9 +787,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
                 stacklevel=find_stack_level(),
             )
 
-        n_components, labels = self.memory_.cache(
-            recursive_neighbor_agglomeration
-        )(
+        _, labels = self._cache(recursive_neighbor_agglomeration)(
             X,
             self.mask_img_,
             self.n_clusters,

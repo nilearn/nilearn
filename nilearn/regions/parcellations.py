@@ -476,7 +476,7 @@ class Parcellations(_MultiPCA):
                 n_clusters=self.n_parcels,
                 scaling=self.scaling,
                 n_iter=self.n_iter,
-                memory=self.memory,
+                memory=self.memory_,
                 memory_level=self.memory_level,
                 verbose=max(0, self.verbose - 1),
             )
@@ -500,7 +500,7 @@ class Parcellations(_MultiPCA):
                 n_clusters=self.n_parcels,
                 connectivity=connectivity,
                 linkage=self.method,
-                memory=self.memory,
+                memory=self.memory_,
             )
 
             labels = self._cache(_estimator_fit, func_memory_level=1)(
@@ -577,7 +577,7 @@ class Parcellations(_MultiPCA):
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,
                 t_r=self.t_r,
-                memory=self.memory,
+                memory=self.memory_,
                 memory_level=self.memory_level,
                 verbose=self.verbose,
             )
@@ -593,7 +593,7 @@ class Parcellations(_MultiPCA):
                 high_pass=self.high_pass,
                 t_r=self.t_r,
                 resampling_target="data",
-                memory=self.memory,
+                memory=self.memory_,
                 memory_level=self.memory_level,
                 verbose=self.verbose,
             )

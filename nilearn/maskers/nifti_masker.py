@@ -449,6 +449,8 @@ class NiftiMasker(BaseMasker):
         self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
+        self._fit_cache()
+
         # Load data (if filenames are given, load them)
         mask_logger("load_data", img=imgs, verbose=self.verbose)
 
@@ -611,7 +613,7 @@ class NiftiMasker(BaseMasker):
             self.mask_img_,
             params,
             memory_level=self.memory_level,
-            memory=self.memory,
+            memory=self.memory_,
             verbose=self.verbose,
             confounds=confounds,
             sample_mask=sample_mask,

@@ -526,9 +526,11 @@ def nilearn_check_generator(estimator: BaseEstimator):
     yield (clone(estimator), check_transformer_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
-        yield (clone(estimator), check_img_estimator_pickle)
         yield (clone(estimator), check_fit_returns_self)
+        yield (clone(estimator), check_img_estimator_dont_overwrite_parameters)
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
+        yield (clone(estimator), check_img_estimator_overwrite_params)
+        yield (clone(estimator), check_img_estimator_pickle)
 
         if requires_y:
             yield (clone(estimator), check_img_estimator_requires_y_none)
@@ -536,18 +538,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
-
-        if (
-            is_classifier(estimator)
-            or is_regressor(estimator)
-            or is_masker(estimator)
-            or is_glm(estimator)
-        ):
-            yield (
-                clone(estimator),
-                check_img_estimator_dont_overwrite_parameters,
-            )
-            yield (clone(estimator), check_img_estimator_overwrite_params)
 
     if is_masker(estimator):
         yield (clone(estimator), check_masker_clean_kwargs)
@@ -868,16 +858,10 @@ def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
     )
 
     # check that fit doesn't change any public attribute
-
-    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
-    # change memory parameters on fit if it's None
-    keys_to_ignore = ["memory"]
-
     attrs_changed_by_fit = [
         key
         for key in public_keys_after_fit
         if (dict_before_fit[key] is not dict_after_fit[key])
-        and key not in keys_to_ignore
     ]
 
     assert not attrs_changed_by_fit, (
@@ -908,14 +892,7 @@ def check_img_estimator_overwrite_params(estimator) -> None:
     # Compare the state of the model parameters with the original parameters
     new_params = fitted_estimator.get_params()
 
-    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
-    # change memory parameters on fit if it's None
-    param_to_ignore = ["memory"]
-
     for param_name, original_value in original_params.items():
-        if param_name in param_to_ignore:
-            continue
-
         new_value = new_params[param_name]
 
         # We should never change or mutate the internal state of input
