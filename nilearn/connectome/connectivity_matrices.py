@@ -550,7 +550,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         self._check_input(X, confounds=confounds)
 
         if do_fit:
-            self.n_features_in_ = next(iter({s.shape[1] for s in X}))
+            self.n_features_in_ = next(iter(s.shape[1] for s in X))
             self.cov_estimator_ = clone(self.cov_estimator)
 
         # Compute all the matrices, stored in "connectivities"
