@@ -325,8 +325,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                     stacklevel=find_stack_level(),
                 )
 
-        self._shelving = False
-
         # generate a look up table if one was not provided
         if self.lut is not None:
             if isinstance(self.lut, (str, Path)):
@@ -345,8 +343,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             )
 
         self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img_)
-
-        self._shelving = False
 
         if self.clean_args is None:
             self.clean_args_ = {}
@@ -477,7 +473,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         region_signals = self._cache(
             signal.clean,
             func_memory_level=2,
-            shelve=self._shelving,
         )(
             region_signals,
             detrend=parameters["detrend"],

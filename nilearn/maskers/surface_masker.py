@@ -117,7 +117,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
-        self._shelving = False
         # content to inject in the HTML template
         self._report_content = {
             "description": (
@@ -311,7 +310,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
         output = self._cache(
             signal.clean,
             func_memory_level=2,
-            shelve=self._shelving,
         )(
             output,
             detrend=parameters["detrend"],

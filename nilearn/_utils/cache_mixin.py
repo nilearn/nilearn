@@ -196,11 +196,21 @@ class CacheMixin:
     """
 
     def _fit_cache(self):
-        """Set a fitted memory attribute."""
+        """Set attributes during estimator fit.
+
+        _shelving : bool
+            Used during calls to the method _cache
+            to return a joblib MemorizedResult,
+            callable by a .get() method,
+            instead of the return value of func.
+        """
         verbose = getattr(self, "verbose", 0)
         self.memory_ = check_memory(self.memory, verbose=verbose)
 
-    def _cache(self, func, func_memory_level=1, shelve=False, **kwargs):
+        if getattr(self, "_shelving", None) is None:
+            self._shelving = False
+
+    def _cache(self, func, func_memory_level=1, **kwargs):
         """Return a joblib.Memory object.
 
         The memory_level determines the level above which the wrapped
@@ -217,10 +227,6 @@ class CacheMixin:
         func_memory_level : int, default=1
             The memory_level from which caching must be enabled for the wrapped
             function.
-
-        shelve : bool, default=False
-            Whether to return a joblib MemorizedResult, callable by a .get()
-            method, instead of the return value of func.
 
         Returns
         -------
@@ -247,6 +253,6 @@ class CacheMixin:
             self.memory_,
             func_memory_level=func_memory_level,
             memory_level=self.memory_level,
-            shelve=shelve,
+            shelve=self._shelving,
             **kwargs,
         )

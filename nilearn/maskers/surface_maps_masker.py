@@ -10,7 +10,6 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils import fill_doc
-from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import (
     constrained_layout_kwargs,
@@ -201,8 +200,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
 
-        self._shelving = False
-
         # initialize reporting content and data
         if not self.reports:
             self._reporting_data = None
@@ -288,24 +285,18 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         # and then extract signal via least square regression
         mask_logger("extracting", verbose=self.verbose)
         if mask_data is not None:
-            region_signals = cache(
+            region_signals = self._cache(
                 linalg.lstsq,
-                memory=self.memory_,
                 func_memory_level=2,
-                memory_level=self.memory_level,
-                shelve=self._shelving,
             )(
                 maps_data[mask_data.flatten(), :],
                 img_data[mask_data.flatten(), :],
             )[0].T
         # if no mask, directly extract signal
         else:
-            region_signals = cache(
+            region_signals = self._cache(
                 linalg.lstsq,
-                memory=self.memory_,
                 func_memory_level=2,
-                memory_level=self.memory_level,
-                shelve=self._shelving,
             )(maps_data, img_data)[0].T
 
         mask_logger("cleaning", verbose=self.verbose)
@@ -318,7 +309,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         region_signals = self._cache(
             signal.clean,
             func_memory_level=2,
-            shelve=self._shelving,
         )(
             region_signals,
             detrend=parameters["detrend"],

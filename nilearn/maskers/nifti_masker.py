@@ -443,9 +443,6 @@ class NiftiMasker(BaseMasker):
             "hover over the displayed image."
         )
 
-        if getattr(self, "_shelving", None) is None:
-            self._shelving = False
-
         self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
@@ -607,7 +604,6 @@ class NiftiMasker(BaseMasker):
                 "memory_level",
                 "copy",
             ],
-            shelve=self._shelving,
         )(
             imgs,
             self.mask_img_,

@@ -264,8 +264,6 @@ class MultiNiftiMasker(NiftiMasker):
         """
         del y
         check_params(self.__dict__)
-        if getattr(self, "_shelving", None) is None:
-            self._shelving = False
 
         self._report_content = {
             "description": (
@@ -474,7 +472,6 @@ class MultiNiftiMasker(NiftiMasker):
                 "memory_level",
                 "copy",
             ],
-            shelve=self._shelving,
         )
         data = Parallel(n_jobs=n_jobs)(
             delayed(func)(
