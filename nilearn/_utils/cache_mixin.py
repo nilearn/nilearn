@@ -210,7 +210,7 @@ class CacheMixin:
         if getattr(self, "_shelving", None) is None:
             self._shelving = False
 
-    def _cache(self, func, func_memory_level=1, **kwargs):
+    def _cache(self, func, func_memory_level=1, shelve=False, **kwargs):
         """Return a joblib.Memory object.
 
         The memory_level determines the level above which the wrapped
@@ -253,6 +253,6 @@ class CacheMixin:
             self.memory_,
             func_memory_level=func_memory_level,
             memory_level=self.memory_level,
-            shelve=self._shelving,
+            shelve=shelve,
             **kwargs,
         )

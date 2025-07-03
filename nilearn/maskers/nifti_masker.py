@@ -604,6 +604,7 @@ class NiftiMasker(BaseMasker):
                 "memory_level",
                 "copy",
             ],
+            shelve=self._shelving,
         )(
             imgs,
             self.mask_img_,

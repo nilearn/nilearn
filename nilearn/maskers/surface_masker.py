@@ -310,6 +310,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         output = self._cache(
             signal.clean,
             func_memory_level=2,
+            shelve=self._shelving,
         )(
             output,
             detrend=parameters["detrend"],

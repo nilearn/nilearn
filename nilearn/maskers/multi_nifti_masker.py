@@ -467,11 +467,11 @@ class MultiNiftiMasker(NiftiMasker):
         func = self._cache(
             filter_and_mask,
             ignore=[
-                "verbose",
                 "memory",
                 "memory_level",
                 "copy",
             ],
+            shelve=self._shelving,
         )
         data = Parallel(n_jobs=n_jobs)(
             delayed(func)(

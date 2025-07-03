@@ -309,6 +309,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         region_signals = self._cache(
             signal.clean,
             func_memory_level=2,
+            shelve=self._shelving,
         )(
             region_signals,
             detrend=parameters["detrend"],
