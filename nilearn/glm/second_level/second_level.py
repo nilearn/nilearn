@@ -594,7 +594,7 @@ class SecondLevelModel(BaseGLM):
             warn(
                 "Parameter 'smoothing_fwhm' is not "
                 "yet supported for surface data.",
-                UserWarning,
+                NotImplementedWarning,
                 stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = None
@@ -1048,7 +1048,7 @@ def non_parametric_inference(
         warn(
             "Parameter 'smoothing_fwhm' is not "
             "yet supported for surface data.",
-            UserWarning,
+            NotImplementedWarning,
             stacklevel=find_stack_level(),
         )
         smoothing_fwhm = None
