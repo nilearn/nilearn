@@ -470,11 +470,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
-        region_signals = self._cache(
-            signal.clean,
-            func_memory_level=2,
-            shelve=self._shelving,
-        )(
+        region_signals = self._cache(signal.clean, func_memory_level=2)(
             region_signals,
             detrend=parameters["detrend"],
             standardize=parameters["standardize"],

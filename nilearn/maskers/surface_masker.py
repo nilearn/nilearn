@@ -307,11 +307,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
-        output = self._cache(
-            signal.clean,
-            func_memory_level=2,
-            shelve=self._shelving,
-        )(
+        output = self._cache(signal.clean, func_memory_level=2)(
             output,
             detrend=parameters["detrend"],
             standardize=parameters["standardize"],

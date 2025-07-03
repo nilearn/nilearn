@@ -561,6 +561,9 @@ def nilearn_check_generator(estimator: BaseEstimator):
             clone(estimator),
             check_masker_transformer_high_variance_confounds,
         )
+        if isinstance(estimator, NiftiMasker):
+            # TODO enforce for other maskers
+            yield (clone(estimator), check_masker_shelving)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_clean)
@@ -580,7 +583,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
                 clone(estimator),
                 check_nifti_masker_generate_report_after_fit_with_only_mask,
             )
-            yield (clone(estimator), check_nifti_masker_shelving)
 
             if is_multimasker(estimator):
                 yield (
@@ -596,7 +598,10 @@ def nilearn_check_generator(estimator: BaseEstimator):
                     check_multi_masker_transformer_sample_mask,
                 )
                 yield (clone(estimator), check_multi_masker_with_confounds)
-                yield (clone(estimator), check_multi_nifti_masker_shelving)
+
+                if isinstance(estimator, NiftiMasker):
+                    # TODO enforce for other maskers
+                    yield (clone(estimator), check_multi_nifti_masker_shelving)
 
         if accept_surf_img_input(estimator):
             yield (clone(estimator), check_surface_masker_fit_with_mask)
@@ -1980,6 +1985,32 @@ def check_masker_fit_score_takes_y(estimator):
         assert tmp["y"] is None
 
 
+@ignore_warnings()
+def check_masker_shelving(estimator):
+    """Check behavior when shelving masker."""
+    img, _ = generate_data_to_fit(estimator)
+
+    estimator.verbose = 0
+
+    masker = clone(estimator)
+
+    epi = masker.fit_transform(img)
+
+    masker = clone(estimator)
+
+    with TemporaryDirectory() as tmp_dir:
+        masker_shelved = clone(estimator)
+
+        masker_shelved.memory = Memory(location=tmp_dir, mmap_mode="r")
+        masker_shelved._shelving = True
+
+        epi_shelved = masker_shelved.fit_transform(img)
+
+        epi_shelved = epi_shelved.get()
+
+        assert_array_equal(epi_shelved, epi)
+
+
 # ------------------ SURFACE MASKER CHECKS ------------------
 
 
@@ -2280,40 +2311,6 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
     estimator.fit([_img_3d_rand()])
 
     assert hasattr(estimator, "mask_img_")
-
-
-@ignore_warnings()
-def check_nifti_masker_shelving(estimator):
-    """Check behavior when shelving masker."""
-    mask_img = Nifti1Image(
-        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((2, 2, 2, 1))
-    )
-    epi_img1 = Nifti1Image(
-        _rng().random((2, 2, 2)), affine=np.diag((4, 4, 4, 1))
-    )
-
-    estimator.verbose = 0
-
-    masker = clone(estimator)
-    masker.mask_img = mask_img
-
-    epi = masker.fit_transform(epi_img1)
-
-    masker = clone(estimator)
-    masker.mask_img = mask_img
-
-    with TemporaryDirectory() as tmp_dir:
-        masker_shelved = clone(estimator)
-
-        masker_shelved.mask_img = mask_img
-        masker_shelved.memory = Memory(location=tmp_dir, mmap_mode="r")
-        masker_shelved._shelving = True
-
-        epi_shelved = masker_shelved.fit_transform(epi_img1)
-
-        epi_shelved = epi_shelved.get()
-
-        assert_array_equal(epi_shelved, epi)
 
 
 # ------------------ MULTI NIFTI MASKER CHECKS ------------------

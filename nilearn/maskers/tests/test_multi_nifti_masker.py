@@ -2,7 +2,7 @@
 
 import numpy as np
 import pytest
-from joblib import Memory, hash
+from joblib import hash
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
@@ -166,36 +166,6 @@ def test_joblib_cache(mask_img_1, tmp_path):
     get_data(masker.mask_img_)
 
     assert mask_hash == hash(masker.mask_img_)
-
-
-@pytest.mark.timeout(0)
-def test_shelving(rng, tmp_path):
-    """Check behavior when shelving masker."""
-    mask_img = Nifti1Image(
-        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((2, 2, 2, 1))
-    )
-    epi_img1 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
-    epi_img2 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
-
-    masker_shelved = MultiNiftiMasker(
-        mask_img=mask_img,
-        memory=Memory(location=tmp_path, mmap_mode="r"),
-        verbose=0,
-    )
-    masker_shelved._shelving = True
-    epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])
-    masker = MultiNiftiMasker(mask_img=mask_img, verbose=0)
-    epis = masker.fit_transform([epi_img1, epi_img2])
-
-    for epi_shelved, epi in zip(epis_shelved, epis):
-        epi_shelved = epi_shelved.get()
-        assert_array_equal(epi_shelved, epi)
-
-    epi = masker.fit_transform(epi_img1)
-    epi_shelved = masker_shelved.fit_transform(epi_img1)
-    epi_shelved = epi_shelved.get()
-
-    assert_array_equal(epi_shelved, epi)
 
 
 @pytest.fixture
