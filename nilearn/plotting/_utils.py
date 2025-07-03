@@ -205,6 +205,16 @@ def get_colorbar_and_data_ranges(
     if vmin is not None and vmax is not None and vmin >= vmax:
         raise ValueError("vmin must be less then vmax.")
 
+    if vmin is not None and vmin >= 0:
+        raise ValueError(
+            "vmin must be less than 0 when symmetric_cbar is True."
+        )
+
+    if vmax is not None and vmax <= 0:
+        raise ValueError(
+            "vmax must be greater than 0 when symmetric_cbar is True."
+        )
+
     # avoid dealing with masked_array:
     if hasattr(data, "_mask"):
         data = np.asarray(data[np.logical_not(data._mask)])

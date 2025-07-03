@@ -146,7 +146,7 @@ def test_get_colorbar_and_data_ranges_error():
     with pytest.raises(ValueError, match="vmin must be equal to -vmax"):
         get_colorbar_and_data_ranges(
             data_pos_neg,
-            vmin=0,
+            vmin=-3.0,
             vmax=1.0,
             symmetric_cbar=True,
         )
@@ -163,6 +163,22 @@ def test_get_colorbar_and_data_ranges_error():
         get_colorbar_and_data_ranges(
             data_pos_neg,
             vmin=1.0,
+            vmax=-1.0,
+            symmetric_cbar=True,
+        )
+
+    with pytest.raises(ValueError, match="vmin must be less than 0"):
+        get_colorbar_and_data_ranges(
+            data_pos_neg,
+            vmin=3.0,
+            vmax=None,
+            symmetric_cbar=True,
+        )
+
+    with pytest.raises(ValueError, match="vmax must be greater than 0"):
+        get_colorbar_and_data_ranges(
+            data_pos_neg,
+            vmin=None,
             vmax=-1.0,
             symmetric_cbar=True,
         )
