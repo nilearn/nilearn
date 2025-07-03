@@ -523,7 +523,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
     yield (clone(estimator), check_transformer_set_output)
 
     if isinstance(estimator, CacheMixin):
-        yield (clone(estimator), check_img_estimator_cache)
+        yield (clone(estimator), check_img_estimator_cache_warning)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
         yield (clone(estimator), check_img_estimators_pickle)
@@ -860,7 +860,7 @@ def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
     )
 
 
-def check_img_estimator_cache(estimator) -> None:
+def check_img_estimator_cache_warning(estimator) -> None:
     """Check estimator behavior with caching.
 
     Make sure some warnings are thrown at the appropriate time.
@@ -886,8 +886,8 @@ def check_img_estimator_cache(estimator) -> None:
 
         with warnings.catch_warnings(record=True) as warning_list:
             fit_estimator(estimator)
-            if is_masker(estimator) and accept_surf_img_input(estimator):
-                # surface masker only cache during transform
+            if is_masker(estimator):
+                # some maskers only cache during transform
                 estimator.transform(X)
             elif isinstance(estimator, SecondLevelModel):
                 # second level only cache during contrast computation
@@ -909,8 +909,8 @@ def check_img_estimator_cache(estimator) -> None:
             match="memory_level is currently set to 0 but a Memory object",
         ):
             fit_estimator(estimator)
-            if is_masker(estimator) and accept_surf_img_input(estimator):
-                # surface masker only cache during transform
+            if is_masker(estimator):
+                # some maskers also cache during transform
                 estimator.transform(X)
             elif isinstance(estimator, SecondLevelModel):
                 # second level only cache during contrast computation
