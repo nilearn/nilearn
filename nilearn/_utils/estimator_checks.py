@@ -78,6 +78,7 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_img,
     _decomposition_mesh,
 )
+from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import new_img_like
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
@@ -860,7 +861,10 @@ def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
 
 
 def check_img_estimator_cache(estimator) -> None:
-    """Check estimator behavior with caching."""
+    """Check estimator behavior with caching.
+
+    Make sure some warnings are thrown at the appropriate time.
+    """
     assert hasattr(estimator, "memory")
     assert hasattr(estimator, "memory_level")
 
@@ -874,6 +878,7 @@ def check_img_estimator_cache(estimator) -> None:
         mask_img = new_img_like(X, np.ones(X.shape[:3]))
         estimator.mask_img = mask_img
 
+    # ensure warnings are NOT thrown
     for memory, memory_level in zip([None, "tmp"], [0, 1]):
         estimator = clone(estimator)
         estimator.memory = memory
@@ -884,12 +889,16 @@ def check_img_estimator_cache(estimator) -> None:
             if is_masker(estimator) and accept_surf_img_input(estimator):
                 # surface masker only cache during transform
                 estimator.transform(X)
+            elif isinstance(estimator, SecondLevelModel):
+                # second level only cache during contrast computation
+                estimator.compute_contrast(np.asarray([1]))
         assert all(
             "memory_level is currently set to 0 but a Memory object"
             not in str(x.message)
             for x in warning_list
         )
 
+    # ensure warning are thrown
     estimator = clone(estimator)
     with TemporaryDirectory() as tmp_dir:
         estimator.memory = tmp_dir
@@ -903,6 +912,9 @@ def check_img_estimator_cache(estimator) -> None:
             if is_masker(estimator) and accept_surf_img_input(estimator):
                 # surface masker only cache during transform
                 estimator.transform(X)
+            elif isinstance(estimator, SecondLevelModel):
+                # second level only cache during contrast computation
+                estimator.compute_contrast(np.asarray([1]))
 
 
 @ignore_warnings()
