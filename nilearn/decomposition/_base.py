@@ -617,8 +617,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         check_is_fitted(self)
 
         # XXX: dealing properly with 4D/ list of 4D data?
-        imgs = stringify_path(imgs)
-        if isinstance(imgs, str):
+        if isinstance(imgs, (str, Path)):
             imgs = check_niimg(imgs)
 
         if isinstance(imgs, (SurfaceImage, Nifti1Image)):
