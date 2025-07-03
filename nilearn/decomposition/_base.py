@@ -22,7 +22,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
-from nilearn._utils import check_niimg, fill_doc, logger, stringify_path
+from nilearn._utils import check_niimg, fill_doc, logger
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import check_embedded_masker
