@@ -229,11 +229,6 @@ def return_expected_failed_checks(
         }
         if SKLEARN_MINOR > 4:
             expected_failed_checks.pop("check_estimator_sparse_data")
-        if isinstance(estimator, GroupSparseCovariance):
-            expected_failed_checks |= {
-                "check_dont_overwrite_parameters": "TODO",
-                "check_estimators_overwrite_params": "TODO",
-            }
         if isinstance(estimator, GroupSparseCovarianceCV):
             expected_failed_checks |= {
                 "check_estimators_dtypes": "TODO",
