@@ -11,9 +11,9 @@ import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.helpers import is_kaleido_installed
+from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting._utils import get_colorbar_and_data_ranges
 from nilearn.plotting.displays import PlotlySurfaceFigure
-from nilearn.plotting.js_plotting_utils import colorscale
 from nilearn.plotting.surface._utils import (
     DEFAULT_ENGINE,
     DEFAULT_HEMI,
@@ -111,6 +111,10 @@ def _adjust_colorbar_and_data_ranges(
     Returns
     -------
         cbar_vmin, cbar_vmax, vmin, vmax
+
+    .. note::
+        Returned ``cbar_vmin`` and ``cbar_vmax`` values are ``None`` for
+        'plotly' engine.
     """
     _, _, vmin, vmax = get_colorbar_and_data_ranges(
         stat_map,
@@ -308,12 +312,14 @@ def _plot_surf(
     check_engine_params(parameters_not_implemented_in_plotly, "plotly")
 
     # adjust values
+    # plotly specific
+    symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
+    title_font_size = 18 if title_font_size is None else title_font_size
+    # common
     cbar_tick_format = (
         ".1f" if cbar_tick_format == "auto" else cbar_tick_format
     )
     cmap = DEFAULT_DIVERGING_CMAP if cmap is None else cmap
-    symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
-    title_font_size = 18 if title_font_size is None else title_font_size
 
     coords, faces = load_surf_mesh(surf_mesh)
 
