@@ -15,7 +15,6 @@ from nilearn._utils.bids import (
     generate_atlas_look_up_table,
     sanitize_look_up_table,
 )
-from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -290,6 +289,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "but not both."
             )
 
+        self._fit_cache()
+
         mask_logger("load_regions", self.labels_img, verbose=self.verbose)
 
         self.labels_img_ = deepcopy(self.labels_img)
@@ -324,8 +325,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                     stacklevel=find_stack_level(),
                 )
 
-        self._shelving = False
-
         # generate a look up table if one was not provided
         if self.lut is not None:
             if isinstance(self.lut, (str, Path)):
@@ -344,8 +343,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             )
 
         self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img_)
-
-        self._shelving = False
 
         if self.clean_args is None:
             self.clean_args_ = {}
@@ -473,13 +470,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
-        region_signals = cache(
-            signal.clean,
-            memory=self.memory,
-            func_memory_level=2,
-            memory_level=self.memory_level,
-            shelve=self._shelving,
-        )(
+        region_signals = self._cache(signal.clean, func_memory_level=2)(
             region_signals,
             detrend=parameters["detrend"],
             standardize=parameters["standardize"],

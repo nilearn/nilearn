@@ -264,8 +264,6 @@ class MultiNiftiMasker(NiftiMasker):
         """
         del y
         check_params(self.__dict__)
-        if getattr(self, "_shelving", None) is None:
-            self._shelving = False
 
         self._report_content = {
             "description": (
@@ -287,6 +285,8 @@ class MultiNiftiMasker(NiftiMasker):
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         self.mask_img_ = self._load_mask(imgs)
+
+        self._fit_cache()
 
         mask_logger("load_data", img=imgs, verbose=self.verbose)
 
@@ -317,7 +317,7 @@ class MultiNiftiMasker(NiftiMasker):
                 target_affine=self.target_affine,
                 target_shape=self.target_shape,
                 n_jobs=self.n_jobs,
-                memory=self.memory,
+                memory=self.memory_,
                 verbose=max(0, self.verbose - 1),
                 **mask_args,
             )
@@ -432,7 +432,7 @@ class MultiNiftiMasker(NiftiMasker):
             ensure_ndim=None,
             atleast_4d=False,
             target_fov=target_fov,
-            memory=self.memory,
+            memory=self.memory_,
             memory_level=self.memory_level,
         )
 
@@ -467,7 +467,6 @@ class MultiNiftiMasker(NiftiMasker):
         func = self._cache(
             filter_and_mask,
             ignore=[
-                "verbose",
                 "memory",
                 "memory_level",
                 "copy",
@@ -480,7 +479,7 @@ class MultiNiftiMasker(NiftiMasker):
                 self.mask_img_,
                 params,
                 memory_level=self.memory_level,
-                memory=self.memory,
+                memory=self.memory_,
                 verbose=self.verbose,
                 confounds=cfs,
                 copy=copy,

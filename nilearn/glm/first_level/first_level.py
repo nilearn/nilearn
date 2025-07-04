@@ -24,7 +24,6 @@ from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
-from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
@@ -686,8 +685,8 @@ class FirstLevelModel(BaseGLM):
         if self.signal_scaling is not False:
             Y, _ = mean_scaling(Y, self.signal_scaling)
 
-        if self.memory:
-            mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
+        if self.memory_:
+            mem_glm = self._cache(run_glm, ignore=["n_jobs"])
         else:
             mem_glm = run_glm
 
@@ -926,7 +925,7 @@ class FirstLevelModel(BaseGLM):
         else:
             self.fir_delays_ = self.fir_delays
 
-        self.memory = check_memory(self.memory)
+        self._fit_cache()
 
         if self.signal_scaling not in {False, 1, (0, 1)}:
             raise ValueError(

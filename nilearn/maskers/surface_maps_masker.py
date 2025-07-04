@@ -10,7 +10,6 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils import fill_doc
-from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import (
     constrained_layout_kwargs,
@@ -187,6 +186,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if imgs is not None:
             check_surf_img(imgs)
 
+        self._fit_cache()
+
         mask_logger("load_regions", self.maps_img, verbose=self.verbose)
 
         # check maps_img data is 2D
@@ -198,8 +199,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.mask_img_ = self._load_mask(imgs)
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
-
-        self._shelving = False
 
         # initialize reporting content and data
         if not self.reports:
@@ -286,24 +285,18 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         # and then extract signal via least square regression
         mask_logger("extracting", verbose=self.verbose)
         if mask_data is not None:
-            region_signals = cache(
+            region_signals = self._cache(
                 linalg.lstsq,
-                memory=self.memory,
                 func_memory_level=2,
-                memory_level=self.memory_level,
-                shelve=self._shelving,
             )(
                 maps_data[mask_data.flatten(), :],
                 img_data[mask_data.flatten(), :],
             )[0].T
         # if no mask, directly extract signal
         else:
-            region_signals = cache(
+            region_signals = self._cache(
                 linalg.lstsq,
-                memory=self.memory,
                 func_memory_level=2,
-                memory_level=self.memory_level,
-                shelve=self._shelving,
             )(maps_data, img_data)[0].T
 
         mask_logger("cleaning", verbose=self.verbose)
@@ -313,13 +306,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
-        region_signals = cache(
-            signal.clean,
-            memory=self.memory,
-            func_memory_level=2,
-            memory_level=self.memory_level,
-            shelve=self._shelving,
-        )(
+        region_signals = self._cache(signal.clean, func_memory_level=2)(
             region_signals,
             detrend=parameters["detrend"],
             standardize=parameters["standardize"],

@@ -857,12 +857,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
         # misc
         self._check_params()
-        if self.memory is None or isinstance(self.memory, str):
-            self.memory_ = Memory(
-                self.memory, verbose=max(0, self.verbose - 1)
-            )
-        else:
-            self.memory_ = self.memory
+
+        self._fit_cache()
 
         tic = time.time()
 
