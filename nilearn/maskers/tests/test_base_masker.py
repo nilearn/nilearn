@@ -50,11 +50,13 @@ def test_cropping_code_paths(rng):
     assert_array_almost_equal(out_data_cropped, out_data_uncropped)
 
 
-@pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32])
+@pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32, "auto"])
 def test_filter_and_mask_dtype(img_3d_rand_eye, dtype, img_3d_ones_eye):
     """Ensure filter_and_mask conserves dtype."""
     data = img_3d_rand_eye.get_fdata()
-    img = image.new_img_like(img_3d_rand_eye, data.astype(dtype))
+
+    dtype_input = np.float32 if dtype == "auto" else dtype
+    img = image.new_img_like(img_3d_rand_eye, data.astype(dtype_input))
 
     parameters = {
         "smoothing_fwhm": None,
@@ -69,7 +71,7 @@ def test_filter_and_mask_dtype(img_3d_rand_eye, dtype, img_3d_ones_eye):
 
     output = filter_and_mask(img, img_3d_ones_eye, parameters)
 
-    assert output.dtype == dtype
+    assert output.dtype == dtype_input
 
     output = filter_and_mask(
         img, img_3d_ones_eye, parameters, dtype=np.float64
