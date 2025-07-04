@@ -31,7 +31,7 @@ nifti_masker = NiftiMasker(
     standardize="zscore_sample",
     mask_strategy="epi",
     memory="nilearn_cache",
-    memory_level=2,
+    memory_level=1,
     smoothing_fwhm=8,
 )
 nifti_masker.fit(func_filename)

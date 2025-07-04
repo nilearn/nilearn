@@ -600,6 +600,7 @@ class SecondLevelModel(BaseGLM):
 
         check_compatibility_mask_and_images(self.mask_img, sample_map)
         self.masker_ = check_embedded_masker(self, masker_type)
+        self.masker_.memory_level = self.memory_level
 
         self.masker_.fit(sample_map)
 
@@ -687,7 +688,7 @@ class SecondLevelModel(BaseGLM):
         # Fit an Ordinary Least Squares regression for parametric statistics
         Y = self.masker_.transform(effect_maps)
         if self.memory:
-            mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
+            mem_glm = self._cache(run_glm, ignore=["n_jobs"])
         else:
             mem_glm = run_glm
         labels, results = mem_glm(
@@ -706,7 +707,7 @@ class SecondLevelModel(BaseGLM):
 
         # We compute contrast object
         if self.memory:
-            mem_contrast = self.memory.cache(compute_contrast)
+            mem_contrast = self._cache(compute_contrast)
         else:
             mem_contrast = compute_contrast
         contrast = mem_contrast(

@@ -75,7 +75,7 @@ masker = NiftiMapsMasker(
     standardize_confounds=True,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=2,
+    verbose=1,
 )
 
 subject_time_series = []

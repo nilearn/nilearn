@@ -1013,7 +1013,7 @@ class EarlyStopProbe:
 
 
 @fill_doc
-class GroupSparseCovarianceCV(CacheMixin, BaseEstimator):
+class GroupSparseCovarianceCV(BaseEstimator):
     """Sparse inverse covariance w/ cross-validated choice of the parameter.
 
     A cross-validated value for the regularization parameter is first

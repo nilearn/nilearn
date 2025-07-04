@@ -54,7 +54,7 @@ masker = NiftiLabelsMasker(
     standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
-    verbose=5,
+    verbose=1,
 )
 
 # Here we go from nifti files to the signal time series in a numpy

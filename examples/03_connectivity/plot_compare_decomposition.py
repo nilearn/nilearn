@@ -47,8 +47,8 @@ from nilearn.decomposition import CanICA
 canica = CanICA(
     n_components=20,
     memory="nilearn_cache",
-    memory_level=2,
-    verbose=10,
+    memory_level=1,
+    verbose=1,
     mask_strategy="whole-brain-template",
     random_state=0,
     standardize="zscore_sample",
@@ -115,7 +115,7 @@ from nilearn.decomposition import DictLearning
 dict_learning = DictLearning(
     n_components=20,
     memory="nilearn_cache",
-    memory_level=2,
+    memory_level=1,
     verbose=1,
     random_state=0,
     n_epochs=1,

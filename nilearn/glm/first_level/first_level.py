@@ -687,7 +687,7 @@ class FirstLevelModel(BaseGLM):
             Y, _ = mean_scaling(Y, self.signal_scaling)
 
         if self.memory:
-            mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
+            mem_glm = self._cache(run_glm, ignore=["n_jobs"])
         else:
             mem_glm = run_glm
 
@@ -1251,6 +1251,7 @@ class FirstLevelModel(BaseGLM):
             self.masker_ = check_embedded_masker(
                 self, masker_type, ignore=["high_pass"]
             )
+            self.masker_.memory_level = self.memory_level
 
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"

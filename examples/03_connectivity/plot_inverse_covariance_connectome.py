@@ -50,7 +50,7 @@ masker = NiftiMapsMasker(
     standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
-    verbose=5,
+    verbose=1,
 )
 
 time_series = masker.fit_transform(data.func[0], confounds=data.confounds)
