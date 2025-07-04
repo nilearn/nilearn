@@ -330,21 +330,17 @@ def return_expected_failed_checks(
             "check_fit_check_is_fitted": (
                 "replaced by check_img_estimator_fit_check_is_fitted"
             ),
-            "check_transformer_data_not_an_array": (
-                "replaced by check_masker_transformer"
-            ),
-            "check_transformer_general": (
-                "replaced by check_masker_transformer"
-            ),
-            "check_transformer_preserve_dtypes": (
-                "replaced by check_masker_transformer"
-            ),
             # nilearn replacements required
             "check_dict_unchanged": "TODO",
             "check_fit_score_takes_y": "TODO",
         }
 
-    if isinstance(estimator, (_BaseDecomposition)):
+    if isinstance(estimator, (_BaseDecomposition,)):
+        expected_failed_checks |= {
+            "check_transformer_data_not_an_array": "TODO",
+            "check_transformer_general": "TODO",
+            "check_transformer_preserve_dtypes": "TODO",
+        }
         if SKLEARN_MINOR >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
         if not IS_SKLEARN_1_6_1_on_py_3_9 and SKLEARN_MINOR >= 5:
@@ -479,15 +475,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
 
     if hasattr(estimator, "transform"):
         expected_failed_checks |= {
-            "check_transformer_data_not_an_array": (
-                "replaced by check_masker_transformer"
-            ),
-            "check_transformer_general": (
-                "replaced by check_masker_transformer"
-            ),
-            "check_transformer_preserve_dtypes": (
-                "replaced by check_masker_transformer"
-            ),
+            "check_transformer_data_not_an_array": "TODO",
+            "check_transformer_general": "TODO",
+            "check_transformer_preserve_dtypes": "TODO",
         }
 
     expected_failed_checks |= unapplicable_checks()
@@ -960,7 +950,11 @@ def check_img_estimator_pickle(estimator_orig):
     input_data = [X] if isinstance(estimator, SearchLight) else [[X]]
     if hasattr(estimator, "inverse_transform"):
         check_methods.append("inverse_transform")
-        input_data.append(_rng().random((1, fitted_estimator.n_elements_)))
+
+        signal = _rng().random((1, fitted_estimator.n_elements_))
+        if isinstance(estimator, _BaseDecomposition):
+            signal = [signal]
+        input_data.append(signal)
 
     for method, input in zip(check_methods, input_data):
         if hasattr(estimator, method):
