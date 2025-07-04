@@ -9,8 +9,8 @@ ignores modules whose name starts with an underscore.
 import pytest
 
 from nilearn._utils.estimator_checks import (
+    check_img_estimator_dict_unchanged,
     check_img_estimator_fit_check_is_fitted,
-    check_masker_dict_unchanged,
 )
 from nilearn.maskers.base_masker import BaseMasker
 
@@ -62,7 +62,7 @@ def test_check_masker_dict_unchanged():
     with pytest.raises(
         ValueError, match="Estimator changes '__dict__' keys during transform."
     ):
-        check_masker_dict_unchanged(estimator)
+        check_img_estimator_dict_unchanged(estimator)
 
     class DummyEstimator(BaseMasker):
         """Estimator with a transform method that modifies an attribute."""
@@ -83,4 +83,4 @@ def test_check_masker_dict_unchanged():
     with pytest.raises(
         ValueError, match="Estimator changes the following '__dict__' keys"
     ):
-        check_masker_dict_unchanged(estimator)
+        check_img_estimator_dict_unchanged(estimator)
