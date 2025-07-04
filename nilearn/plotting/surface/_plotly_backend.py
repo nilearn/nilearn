@@ -11,7 +11,8 @@ import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.helpers import is_kaleido_installed
-from nilearn.plotting._utils import colorscale, get_colorbar_and_data_ranges
+from nilearn.plotting._engine_utils import colorscale
+from nilearn.plotting._utils import get_colorbar_and_data_ranges
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.surface._utils import (
     DEFAULT_ENGINE,

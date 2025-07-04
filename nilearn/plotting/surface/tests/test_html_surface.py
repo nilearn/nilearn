@@ -19,8 +19,8 @@ from nilearn.plotting.surface.html_surface import (
     view_img_on_surf,
     view_surf,
 )
+from nilearn.plotting.tests.test_engine_utils import check_colors
 from nilearn.plotting.tests.test_js_plotting_utils import check_html
-from nilearn.plotting.tests.test_utils import check_colors
 from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
     load_surf_data,

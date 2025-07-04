@@ -9,7 +9,7 @@ from nibabel import Nifti1Image
 
 from nilearn import datasets, image
 from nilearn.image import get_data, new_img_like
-from nilearn.plotting._utils import colorscale
+from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.html_stat_map import (
     StatMapView,
     _bytes_io_to_base64,
