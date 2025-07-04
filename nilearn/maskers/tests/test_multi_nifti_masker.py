@@ -2,7 +2,6 @@
 
 import numpy as np
 import pytest
-from joblib import hash
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
@@ -13,7 +12,6 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
 
@@ -153,19 +151,6 @@ def test_3d_images(rng):
     masker = MultiNiftiMasker(mask_img=mask_img)
 
     masker.fit_transform([epi_img1, epi_img2])
-
-
-def test_joblib_cache(mask_img_1, tmp_path):
-    """Check cached data."""
-    filename = write_imgs_to_path(
-        mask_img_1, file_path=tmp_path, create_files=True
-    )
-    masker = MultiNiftiMasker(mask_img=filename)
-    masker.fit()
-    mask_hash = hash(masker.mask_img_)
-    get_data(masker.mask_img_)
-
-    assert mask_hash == hash(masker.mask_img_)
 
 
 @pytest.fixture

@@ -10,13 +10,12 @@ import sys
 import warnings
 from copy import deepcopy
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from tempfile import TemporaryDirectory, mkdtemp
 
-import joblib
 import numpy as np
 import pandas as pd
 import pytest
-from joblib import Memory
+from joblib import Memory, hash
 from nibabel import Nifti1Image
 from numpy.testing import (
     assert_array_almost_equal,
@@ -78,7 +77,7 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_img,
     _decomposition_mesh,
 )
-from nilearn.image import new_img_like
+from nilearn.image import get_data, new_img_like
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     MultiNiftiMasker,
@@ -550,17 +549,19 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_masker_generate_report)
         yield (clone(estimator), check_masker_generate_report_false)
         yield (clone(estimator), check_masker_inverse_transform)
-        yield (clone(estimator), check_masker_transform_resampling)
+        yield (clone(estimator), check_masker_joblib_cache)
         yield (clone(estimator), check_masker_mask_img)
         yield (clone(estimator), check_masker_mask_img_from_imgs)
         yield (clone(estimator), check_masker_no_mask_no_img)
         yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_smooth)
+        yield (clone(estimator), check_masker_transform_resampling)
         yield (clone(estimator), check_masker_transformer)
         yield (
             clone(estimator),
             check_masker_transformer_high_variance_confounds,
         )
+
         if isinstance(estimator, NiftiMasker):
             # TODO enforce for other maskers
             yield (clone(estimator), check_masker_shelving)
@@ -904,7 +905,7 @@ def check_img_estimator_overwrite_params(estimator) -> None:
         # The only exception to this rule of immutable constructor parameters
         # is possible RandomState instance but in this check we explicitly
         # fixed the random_state params recursively to be integer seeds.
-        assert joblib.hash(new_value) == joblib.hash(original_value), (
+        assert hash(new_value) == hash(original_value), (
             f"Estimator {estimator.__class__.__name__} "
             "should not change or mutate "
             f"the parameter {param_name} from {original_value} "
@@ -2009,6 +2010,43 @@ def check_masker_shelving(estimator):
         epi_shelved = epi_shelved.get()
 
         assert_array_equal(epi_shelved, epi)
+
+
+@ignore_warnings()
+def check_masker_joblib_cache(estimator):
+    """Check cached data."""
+    img, _ = generate_data_to_fit(estimator)
+
+    if accept_niimg_input(estimator):
+        mask_img = new_img_like(img, np.ones(img.shape[:3]))
+    else:
+        mask_img = _make_surface_mask()
+
+    estimator.mask_img = mask_img
+    estimator.fit(img)
+
+    mask_hash = hash(estimator.mask_img_)
+
+    if accept_niimg_input(estimator):
+        get_data(estimator.mask_img_)
+    else:
+        get_surface_data(estimator.mask_img_)
+
+    assert mask_hash == hash(estimator.mask_img_)
+
+    # Test a tricky issue with memmapped joblib.memory that makes
+    # imgs return by inverse_transform impossible to save
+    if accept_niimg_input(estimator):
+        cachedir = Path(mkdtemp())
+        estimator.memory = Memory(location=cachedir, mmap_mode="r")
+        X = estimator.transform(img)
+
+        # inverse_transform a first time, so that the result is cached
+        out_img = estimator.inverse_transform(X)
+
+        out_img = estimator.inverse_transform(X)
+
+        out_img.to_filename(cachedir / "test.nii")
 
 
 # ------------------ SURFACE MASKER CHECKS ------------------
