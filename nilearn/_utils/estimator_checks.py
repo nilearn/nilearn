@@ -77,7 +77,7 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_img,
     _decomposition_mesh,
 )
-from nilearn.image import new_img_like
+from nilearn.image import get_data, new_img_like
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     MultiNiftiMasker,
@@ -85,6 +85,7 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceLabelsMasker,
     SurfaceMapsMasker,
     SurfaceMasker,
 )
@@ -984,27 +985,38 @@ def check_img_estimator_pickle(estimator_orig):
 
 @ignore_warnings()
 def check_img_estimator_dtypes(estimator):
-    """Check estimator can fit/transform with inputs of varying dtypes.
+    """Check estimator can fit/transform/inverse_transform \
+       with inputs of varying dtypes.
 
     Replacement for sklearn check_estimators_dtypes.
 
+    For some estimators that only extract data (like niftimasker)
+    and do not aggregate it (like maps masker)
+    we check that transform,
+    return signals with the same type.
+
+    Similarly, inverse transform should generate images
+    and conserve dtype.
+
     np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    length = 20
     for dtype in [np.float32, np.float64, np.int32]:
         estimator = clone(estimator)
+
+        estimator.dtype = dtype
+
+        if isinstance(estimator, (NiftiLabelsMasker, SurfaceLabelsMasker)):
+            # use strategy that can conserve dtype
+            estimator.strategy = "median"
 
         X, y = generate_data_to_fit(estimator)
 
         if isinstance(X, Nifti1Image):
-            data = np.zeros((*_shape_3d_large(), length))
-            data[1:28, 1:28, 1:28, ...] = (
-                _rng().random((27, 27, 27, length)) + 2.0
-            )
+            data = get_data(X)
+            data[2, 3, 4] = 2
             X = Nifti1Image(data.astype(dtype), affine=_affine_eye())
 
         else:
-            X = _make_surface_img(length)
             for k, v in X.data.parts.items():
                 X.data.parts[k] = v.astype(dtype)
 
@@ -1015,18 +1027,32 @@ def check_img_estimator_dtypes(estimator):
             # SecondLevel
             else:
                 estimator.fit(X, design_matrix=y)
+
         elif (
             isinstance(estimator, SearchLight)
             or is_classifier(estimator)
             or is_regressor(estimator)
         ):
             estimator.fit(X, y)
+
         else:
             estimator.fit(X)
 
-        if hasattr(estimator, "transform"):
-            signal = estimator.transform(X)
-            assert signal.dtype == dtype
+        signal = estimator.transform(X)
+        if not isinstance(signal, list):
+            signal = [signal]
+        if hasattr(estimator, "transform") and not isinstance(
+            estimator,
+            (
+                SearchLight,
+                # _BaseDecomposition,
+                SurfaceMapsMasker,
+                NiftiMapsMasker,
+                NiftiSpheresMasker,
+            ),
+        ):
+            for s in signal:
+                assert np.issubdtype(s.dtype, dtype)
 
 
 @ignore_warnings()

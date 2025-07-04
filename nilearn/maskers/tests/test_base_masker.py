@@ -1,6 +1,7 @@
 """Test the base_masker module."""
 
 import numpy as np
+import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_almost_equal
 
@@ -47,3 +48,31 @@ def test_cropping_code_paths(rng):
     out_data_cropped = filter_and_mask(img, cropped_mask_img, parameters)
 
     assert_array_almost_equal(out_data_cropped, out_data_uncropped)
+
+
+@pytest.mark.parametrize("dtype", [np.float32, np.float64, np.int32])
+def test_filter_and_mask_dtype(img_3d_rand_eye, dtype, img_3d_ones_eye):
+    """Ensure filter_and_mask conserves dtype."""
+    data = img_3d_rand_eye.get_fdata()
+    img = image.new_img_like(img_3d_rand_eye, data.astype(dtype))
+
+    parameters = {
+        "smoothing_fwhm": None,
+        "high_pass": None,
+        "low_pass": None,
+        "t_r": None,
+        "detrend": False,
+        "standardize": "zscore",
+        "standardize_confounds": True,
+        "clean_kwargs": {},
+    }
+
+    output = filter_and_mask(img, img_3d_ones_eye, parameters)
+
+    assert output.dtype == dtype
+
+    output = filter_and_mask(
+        img, img_3d_ones_eye, parameters, dtype=np.float64
+    )
+
+    assert output.dtype == np.float64
