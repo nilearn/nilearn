@@ -311,12 +311,14 @@ def _plot_surf(
     check_engine_params(parameters_not_implemented_in_plotly, "plotly")
 
     # adjust values
+    # plotly specific
+    symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
+    title_font_size = 18 if title_font_size is None else title_font_size
+    # common
     cbar_tick_format = (
         ".1f" if cbar_tick_format == "auto" else cbar_tick_format
     )
     cmap = DEFAULT_DIVERGING_CMAP if cmap is None else cmap
-    symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
-    title_font_size = 18 if title_font_size is None else title_font_size
 
     coords, faces = load_surf_mesh(surf_mesh)
 
