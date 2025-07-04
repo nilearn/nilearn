@@ -526,7 +526,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                 f"Number of confounds ({len(confounds)=}) "
                 f"must match number of images ({len(imgs)=})."
             )
-            
+
         self._fit_cache()
 
         masker_type = "multi_nii"
