@@ -547,7 +547,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             confounds=confounds,
             n_components=self.n_components,
             random_state=self.random_state,
-            memory=self.memory,
+            memory=self.memory_,
             memory_level=max(0, self.memory_level + 1),
             n_jobs=self.n_jobs,
         )
