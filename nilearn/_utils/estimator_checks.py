@@ -1073,9 +1073,10 @@ def check_img_estimator_dtypes(estimator):
 
     np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    # TODO np.int32,
-    for input_dtype in [np.float32, np.float64]:
-        for dtype in [np.float32, np.float64, "float64", "auto", None]:
+    # TODO np.int32, "i4"
+    # for multi/nifti_labels_masker, multi/nifti_masker, nifti_spheres_masker
+    for input_dtype in [np.float32, "float64"]:
+        for dtype in [np.float32, "float64", "auto", None]:
             estimator = clone(estimator)
 
             if hasattr(estimator, "dtype"):
@@ -1129,12 +1130,12 @@ def check_img_estimator_dtypes_inverse_transform(estimator):
 
     np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    for input_dtype in [np.float32, np.float64, np.int32]:
+    for input_dtype in [np.float32, "float64", np.int32, "i4"]:
         for dtype in [
             np.float32,
-            np.float64,
-            np.int32,
             "float64",
+            np.int32,
+            "i4",
             "auto",
             None,
         ]:
@@ -1172,6 +1173,8 @@ def check_img_estimator_dtypes_inverse_transform(estimator):
                     # output_dtype = img_data_dtype(output_img)
                     # or
                     # output_dtype = output_img.get_fdata().dtype
+                    # or
+                    # output_dtype = get_data(output_img).dtype
 
                     output_dtype = output_img.get_data_dtype()
                     assert output_dtype == target_dtype
