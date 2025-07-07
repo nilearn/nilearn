@@ -313,8 +313,10 @@ def _plot_surf(
 
     # adjust values
     # plotly specific
-    symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
-    title_font_size = 18 if title_font_size is None else title_font_size
+    if symmetric_cmap is None:
+        symmetric_cmap = False
+    if title_font_size is None:
+        title_font_size = 18
     # common
     cbar_tick_format = (
         ".1f" if cbar_tick_format == "auto" else cbar_tick_format
