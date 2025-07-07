@@ -28,7 +28,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.numpy_conversions import csv_to_array
+from nilearn._utils.numpy_conversions import csv_to_array, get_target_dtype
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     concat_imgs,
@@ -671,6 +671,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             signals = self.transform_single_imgs(
                 imgs, confounds=confounds, sample_mask=sample_mask
             )
+            signals = self._set_output_dtype(imgs, signals)
             return signals.squeeze() if return_1D else signals
 
         # Compute high variance confounds if requested
@@ -690,7 +691,15 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
+        signals = self._set_output_dtype(imgs, signals)
+
         return signals.squeeze() if return_1D else signals
+
+    def _set_output_dtype(self, input, output):
+        target_dtype = get_target_dtype(input.data._dtype(), self.dtype)
+        if target_dtype is None:
+            target_dtype = input.data._dtype()
+        return output.astype(target_dtype)
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):

@@ -45,6 +45,7 @@ from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.niimg_conversions import check_imgs_equal
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
@@ -1075,7 +1076,7 @@ def check_img_estimator_dtypes(estimator):
     np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
     # TODO np.int32,
-    for dtype in [np.float32, np.float64, "auto", None]:
+    for dtype in [np.float32, np.float64, "float64", "auto", None]:
         estimator = clone(estimator)
 
         if hasattr(estimator, "dtype"):
@@ -1087,13 +1088,18 @@ def check_img_estimator_dtypes(estimator):
 
         X, y = generate_data_to_fit(estimator)
 
-        input_dtype = np.float32 if dtype == "auto" else dtype
+        input_dtype = (
+            get_data(X).dtype
+            if isinstance(X, Nifti1Image)
+            else X.data._dtype()
+        )
+        target_dtype = get_target_dtype(input_dtype, dtype)
         if isinstance(X, Nifti1Image):
             data = get_data(X)
-            X = Nifti1Image(data.astype(input_dtype), affine=_affine_eye())
+            X = Nifti1Image(data.astype(target_dtype), affine=_affine_eye())
         else:
             for k, v in X.data.parts.items():
-                X.data.parts[k] = v.astype(input_dtype)
+                X.data.parts[k] = v.astype(target_dtype)
 
         estimator = fit_estimator(estimator, X, y)
 
@@ -1114,7 +1120,8 @@ def check_img_estimator_dtypes(estimator):
                 ),
             ):
                 for s in signal:
-                    assert np.issubdtype(s.dtype, input_dtype)
+                    output_dtype = s.dtype
+                    assert output_dtype == target_dtype
 
 
 @ignore_warnings()
@@ -1126,7 +1133,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator):
     np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
     # TODO np.int32,
-    for dtype in [np.float32, np.float64, "auto", None]:
+    for dtype in [np.float32, np.float64, "float64", "auto", None]:
         estimator = clone(estimator)
 
         if hasattr(estimator, "dtype"):
@@ -1140,23 +1147,25 @@ def check_img_estimator_dtypes_inverse_transform(estimator):
 
         estimator = fit_estimator(estimator)
 
-        signal = _rng().random((10, estimator.n_elements_)).astype(dtype)
+        input_dtype = np.dtype(np.float64)
+        target_dtype = get_target_dtype(input_dtype, dtype)
 
+        signal = _rng().random((10, estimator.n_elements_)).astype(input_dtype)
         if isinstance(estimator, _BaseDecomposition):
             signal = [signal]
 
         output_img = estimator.inverse_transform(signal)
-
         if isinstance(estimator, _BaseDecomposition):
             output_img = output_img[0]
 
-        input_dtype = np.float32 if dtype == "auto" else dtype
         if isinstance(output_img, Nifti1Image):
             output_data = output_img.get_fdata()
-            assert output_data.dtype == input_dtype
+            output_dtype = output_data.dtype
+            assert output_dtype == target_dtype
         else:
             for v in output_img.data.parts.values():
-                assert np.issubdtype(v.dtype, input_dtype)
+                output_dtype = v.dtype
+                assert output_dtype == target_dtype
 
 
 @ignore_warnings()

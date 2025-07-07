@@ -1492,6 +1492,13 @@ class PolyData:
 
         _data_to_gifti(data, filename)
 
+    def _dtype(self):
+        """Return dtype of the first part.
+
+        Assume all parts have same dtype.
+        """
+        return next(iter(self.parts.values())).dtype
+
 
 def at_least_2d(input):
     """Force surface image or polydata to be 2d."""

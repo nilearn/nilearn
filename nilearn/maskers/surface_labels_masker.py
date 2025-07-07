@@ -26,6 +26,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
@@ -120,6 +121,10 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     %(t_r)s
 
+    %(dtype)s
+
+        ..versionadded:: 0.12.1dev
+
     %(memory)s
 
     %(memory_level1)s
@@ -170,6 +175,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         verbose=0,
@@ -191,6 +197,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
@@ -514,6 +521,11 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         signals = self._check_array(signals)
 
         mask_logger("inverse_transform", verbose=self.verbose)
+
+        target_dtype = get_target_dtype(signals.dtype, self.dtype)
+        if target_dtype is None:
+            target_dtype = signals.dtype
+        signals = signals.astype(target_dtype)
 
         imgs = signals_to_surf_img_labels(
             signals,
