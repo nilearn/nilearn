@@ -599,6 +599,7 @@ class SecondLevelModel(BaseGLM):
 
         check_compatibility_mask_and_images(self.mask_img, sample_map)
         self.masker_ = check_embedded_masker(self, masker_type)
+        self.masker_.memory_level = self.memory_level
 
         self.masker_.fit(sample_map)
 

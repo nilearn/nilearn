@@ -1250,6 +1250,7 @@ class FirstLevelModel(BaseGLM):
             self.masker_ = check_embedded_masker(
                 self, masker_type, ignore=["high_pass"]
             )
+            self.masker_.memory_level = self.memory_level
 
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"

@@ -6,6 +6,7 @@ from copy import deepcopy
 from warnings import warn
 
 import numpy as np
+from joblib import Memory
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
@@ -220,6 +221,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
         check_params(self.__dict__)
         if imgs is not None:
             self._check_imgs(imgs)
+
+        if self.memory is None:
+            self.memory = Memory(location=None)
 
         self._fit_mask_img(imgs)
         assert self.mask_img_ is not None

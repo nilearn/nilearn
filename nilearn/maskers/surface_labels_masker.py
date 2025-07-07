@@ -7,6 +7,7 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
+from joblib import Memory
 from scipy import ndimage
 from sklearn.utils.estimator_checks import check_is_fitted
 

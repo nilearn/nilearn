@@ -902,6 +902,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             masker_type = "surface"
 
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
+        self.masker_.memory_level = self.memory_level
         check_compatibility_mask_and_images(self.mask, X)
 
         X = self.masker_.fit_transform(X)
