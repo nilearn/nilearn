@@ -25,6 +25,7 @@ from nilearn._utils.niimg_conversions import (
     check_niimg_4d,
     safe_get_data,
 )
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
@@ -756,4 +757,10 @@ class NiftiSpheresMasker(BaseMasker):
             adjacency = adjacency.dot(sparse.diags(scale))
 
         img = adjacency.T.dot(region_signals.T).T
+
+        target_dtype = get_target_dtype(region_signals.dtype, self.dtype)
+        if target_dtype is None:
+            target_dtype = region_signals.dtype
+        img = img.astype(target_dtype)
+
         return unmask(img, self.mask_img_)
