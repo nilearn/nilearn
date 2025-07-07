@@ -1500,6 +1500,7 @@ class PolyData:
         return next(iter(self.parts.values())).dtype
 
     def _set_dtype(self, dtype):
+        """Set dtype for all parts."""
         for k, v in self.parts.items():
             self.parts[k] = v.astype(dtype)
 
