@@ -17,8 +17,6 @@ def colorscale(
     cmap, values, threshold=None, symmetric_cmap=True, vmax=None, vmin=None
 ):
     """Normalize a cmap, put it in plotly format, get threshold and range."""
-    abs_values = np.abs(values)
-
     if (
         symmetric_cmap
         and vmin is not None
@@ -31,6 +29,7 @@ def colorscale(
             stacklevel=find_stack_level(),
         )
     if vmax is None:
+        abs_values = np.abs(values)
         vmax = abs_values.max()
     if vmin is None:
         vmin = values.min()
