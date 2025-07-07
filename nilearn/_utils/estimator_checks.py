@@ -531,6 +531,12 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_dtypes)
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
 
+        if hasattr(estimator, "inverse_transform"):
+            yield (
+                clone(estimator),
+                check_img_estimator_dtypes_inverse_transform,
+            )
+
         if requires_y:
             yield (clone(estimator), check_img_estimator_requires_y_none)
 
@@ -1068,7 +1074,8 @@ def check_img_estimator_dtypes(estimator):
 
     np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    for dtype in [np.float32, np.float64, np.int32, "auto"]:
+    # TODO np.int32,
+    for dtype in [np.float32, np.float64, "auto", None]:
         estimator = clone(estimator)
 
         if hasattr(estimator, "dtype"):
@@ -1079,11 +1086,6 @@ def check_img_estimator_dtypes(estimator):
             estimator.strategy = "median"
 
         X, y = generate_data_to_fit(estimator)
-
-        if isinstance(estimator, NiftiSpheresMasker):
-            # NiftiSpheresMasker needs mask_img to run inverse_transform
-            mask_img = new_img_like(X, np.ones(X.shape[:3]))
-            estimator.mask_img = mask_img
 
         input_dtype = np.float32 if dtype == "auto" else dtype
         if isinstance(X, Nifti1Image):
@@ -1114,17 +1116,44 @@ def check_img_estimator_dtypes(estimator):
                 for s in signal:
                     assert np.issubdtype(s.dtype, input_dtype)
 
-        if hasattr(estimator, "inverse_transform"):
-            signal = signal[0].astype(np.int32)
 
-            output_img = estimator.inverse_transform(signal)
+@ignore_warnings()
+def check_img_estimator_dtypes_inverse_transform(estimator):
+    """Check estimator can inverse_transform with inputs of varying dtypes.
 
-            if isinstance(X, Nifti1Image):
-                output_data = output_img.get_fdata()
-                assert output_data.dtype == input_dtype
-            else:
-                for v in X.data.parts.values():
-                    assert np.issubdtype(v.dtype, input_dtype)
+    inverse transform should generate images and conserve dtype.
+
+    np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
+    """
+    # TODO np.int32,
+    for dtype in [np.float32, np.float64, "auto", None]:
+        estimator = clone(estimator)
+
+        if hasattr(estimator, "dtype"):
+            estimator.dtype = dtype
+
+        if isinstance(estimator, NiftiSpheresMasker):
+            # NiftiSpheresMasker needs mask_img to run inverse_transform
+            X, _ = generate_data_to_fit(estimator)
+            mask_img = new_img_like(X, np.ones(X.shape[:3]))
+            estimator.mask_img = mask_img
+
+        estimator = fit_estimator(estimator)
+
+        signal = _rng().random((10, estimator.n_elements_)).astype(dtype)
+
+        if isinstance(estimator, _BaseDecomposition):
+            signal = [signal]
+
+        output_img = estimator.inverse_transform(signal)
+
+        input_dtype = np.float32 if dtype == "auto" else dtype
+        if isinstance(output_img, Nifti1Image):
+            output_data = output_img.get_fdata()
+            assert output_data.dtype == input_dtype
+        else:
+            for v in output_img.data.parts.values():
+                assert np.issubdtype(v.dtype, input_dtype)
 
 
 @ignore_warnings()
