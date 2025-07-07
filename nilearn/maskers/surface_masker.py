@@ -19,7 +19,6 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
@@ -358,22 +357,15 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         mask_logger("inverse_transform", verbose=self.verbose)
 
-        target_dtype = get_target_dtype(signals.dtype, self.dtype)
-        if target_dtype is None:
-            target_dtype = signals.dtype
-
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
-            data[part_name] = np.zeros(
-                (mask.shape[0], signals.shape[0]),
-                dtype=target_dtype,
-            )
+            data[part_name] = np.zeros((mask.shape[0], signals.shape[0]))
             start, stop = self._slices[part_name]
             data[part_name][mask.ravel()] = signals[:, start:stop].T
-            if return_1D:
-                data[part_name] = data[part_name].squeeze()
 
-        return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
+        imgs = SurfaceImage(mesh=self.mask_img_.mesh, data=data)
+
+        return self._post_process_inverse_transform(signals, imgs, return_1D)
 
     def generate_report(self):
         """Generate a report for the SurfaceMasker.

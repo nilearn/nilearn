@@ -464,7 +464,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
 
-        img = self._set_inverse_transform_dtype(X, img)
+        img = self._set_inverse_transform_output_dtype(X, img)
 
         return img
 
@@ -538,7 +538,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 if k.startswith("clean__")
             }
 
-    def _set_inverse_transform_dtype(
+    def _set_inverse_transform_output_dtype(
         self, input: np.ndarray, output: Nifti1Image
     ) -> Nifti1Image:
         """Set dtype for data to return for inverse_transform."""
@@ -717,6 +717,18 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if target_dtype is None:
             target_dtype = input.data._dtype()
         return output.astype(target_dtype)
+
+    def _post_process_inverse_transform(
+        self, input: np.ndarray, output: SurfaceImage, return_1D: bool
+    ) -> SurfaceImage:
+        """Set dtype and squeeze data to return for inverse_transform."""
+        target_dtype = get_target_dtype(input.dtype, self.dtype)
+        if target_dtype is None:
+            target_dtype = input.dtype
+        if return_1D:
+            for k, v in output.data.parts.items():
+                output.data.parts[k] = v.squeeze()
+        return output.data._set_dtype(target_dtype)
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):

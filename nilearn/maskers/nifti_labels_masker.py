@@ -919,6 +919,6 @@ class NiftiLabelsMasker(BaseMasker):
             background_label=self.background_label,
         )
 
-        img = self._set_inverse_transform_dtype(signals, img)
+        img = self._set_inverse_transform_output_dtype(signals, img)
 
         return img

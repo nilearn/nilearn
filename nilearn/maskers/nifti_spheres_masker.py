@@ -759,6 +759,6 @@ class NiftiSpheresMasker(BaseMasker):
 
         img = unmask(img, self.mask_img_)
 
-        img = self._set_inverse_transform_dtype(region_signals, img)
+        img = self._set_inverse_transform_output_dtype(region_signals, img)
 
         return img

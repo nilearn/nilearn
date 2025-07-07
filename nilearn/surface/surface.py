@@ -1499,6 +1499,10 @@ class PolyData:
         """
         return next(iter(self.parts.values())).dtype
 
+    def _set_dtype(self, dtype):
+        for k, v in self.parts.items():
+            self.parts[k] = v.astype(dtype)
+
 
 def at_least_2d(input):
     """Force surface image or polydata to be 2d."""

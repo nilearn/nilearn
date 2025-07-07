@@ -22,7 +22,6 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
@@ -387,11 +386,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         # because the SurfaceImage object expects it
         vertex_signals = vertex_signals.T
 
-        target_dtype = get_target_dtype(region_signals.dtype, self.dtype)
-        if target_dtype is None:
-            target_dtype = region_signals.dtype
-        vertex_signals = vertex_signals.astype(target_dtype)
-
         # split the signal into hemispheres
         vertex_signals = {
             "left": vertex_signals[
@@ -404,11 +398,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         imgs = SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
 
-        if return_1D:
-            for k, v in imgs.data.parts.items():
-                imgs.data.parts[k] = v.squeeze()
-
-        return imgs
+        return self._post_process_inverse_transform(
+            region_signals, imgs, return_1D
+        )
 
     def generate_report(self, displayed_maps=10, engine="matplotlib"):
         """Generate an HTML report for the current ``SurfaceMapsMasker``
