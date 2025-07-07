@@ -726,7 +726,8 @@ def generate_data_to_fit(estimator: BaseEstimator):
         return _rng().random((5, 5)), None
 
     else:
-        imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_eye())
+        data = _rng().random(_shape_3d_large()) + 1
+        imgs = Nifti1Image(data, _affine_eye())
         return imgs, None
 
 
@@ -1075,39 +1076,52 @@ def check_img_estimator_dtypes(estimator):
     np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
     # TODO np.int32,
-    for dtype in [np.float32, np.float64, "float64", "auto", None]:
-        estimator = clone(estimator)
+    for input_dtype in [np.float32, np.float64]:
+        for dtype in [np.float32, np.float64, "float64", "auto", None]:
+            estimator = clone(estimator)
 
-        if hasattr(estimator, "dtype"):
-            estimator.dtype = dtype
+            if hasattr(estimator, "dtype"):
+                estimator.dtype = dtype
 
-        X, y = generate_data_to_fit(estimator)
+            X, y = generate_data_to_fit(estimator)
 
-        input_dtype = (
-            get_data(X).dtype
-            if isinstance(X, Nifti1Image)
-            else X.data._dtype()
-        )
-        target_dtype = get_target_dtype(input_dtype, dtype)
-        if isinstance(X, Nifti1Image):
-            data = get_data(X)
-            X = Nifti1Image(data.astype(target_dtype), affine=_affine_eye())
-        else:
-            for k, v in X.data.parts.items():
-                X.data.parts[k] = v.astype(target_dtype)
+            input_dtype = np.dtype(input_dtype)
 
-        estimator = fit_estimator(estimator, X, y)
+            if isinstance(X, Nifti1Image):
+                data = get_data(X)
+                X = Nifti1Image(
+                    data.astype(input_dtype),
+                    affine=_affine_eye(),
+                    dtype=input_dtype,
+                )
+                assert X.get_data_dtype() == input_dtype
+            else:
+                for k, v in X.data.parts.items():
+                    X.data.parts[k] = v.astype(input_dtype)
 
-        if hasattr(estimator, "transform"):
-            signal = estimator.transform(X)
+            estimator = fit_estimator(estimator, X, y)
 
-            if not isinstance(signal, list):
-                signal = [signal]
+            if hasattr(estimator, "transform"):
+                signal = estimator.transform(X)
 
-            if not isinstance(estimator, (SearchLight)):
-                for s in signal:
-                    output_dtype = s.dtype
-                    assert output_dtype == target_dtype
+                if not isinstance(estimator, (SearchLight)):
+                    if not isinstance(signal, list):
+                        signal = [signal]
+
+                    target_dtype = get_target_dtype(input_dtype, dtype)
+                    if target_dtype is None:
+                        target_dtype = input_dtype
+
+                    for s in signal:
+                        output_dtype = s.dtype
+                        try:
+                            assert output_dtype == target_dtype
+                        except AssertionError:
+                            raise TypeError(
+                                "'transform' should have returned "
+                                f"an array of type '{target_dtype}'. "
+                                f"Got '{output_dtype}' instead."
+                            )
 
 
 @ignore_warnings()
