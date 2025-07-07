@@ -6,11 +6,11 @@ from copy import deepcopy
 from warnings import warn
 
 import numpy as np
+from joblib import Memory
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils import constrained_layout_kwargs, fill_doc
-from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.helpers import (
     rename_parameters,
@@ -223,6 +223,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
         if imgs is not None:
             self._check_imgs(imgs)
 
+        if self.memory is None:
+            self.memory = Memory(location=None)
+
         self._fit_mask_img(imgs)
         assert self.mask_img_ is not None
 
@@ -307,11 +310,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
-        output = cache(
+        output = self._cache(
             signal.clean,
-            memory=self.memory,
             func_memory_level=2,
-            memory_level=self.memory_level,
             shelve=self._shelving,
         )(
             output,

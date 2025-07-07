@@ -64,7 +64,7 @@ masker = NiftiSpheresMasker(
     t_r=2,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=2,
+    verbose=1,
     clean_args={
         "butterworth__padtype": "even"
     },  # kwarg to modify Butterworth filter
