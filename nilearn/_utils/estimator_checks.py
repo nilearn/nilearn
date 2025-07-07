@@ -1118,39 +1118,50 @@ def check_img_estimator_dtypes_inverse_transform(estimator):
 
     np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    # TODO np.int32,
-    for dtype in [np.float32, np.float64, "float64", "auto", None]:
-        estimator = clone(estimator)
+    for input_dtype in [np.float32, np.float64, np.int32]:
+        for dtype in [
+            np.float32,
+            np.float64,
+            np.int32,
+            "float64",
+            "auto",
+            None,
+        ]:
+            estimator = clone(estimator)
 
-        if hasattr(estimator, "dtype"):
-            estimator.dtype = dtype
+            if hasattr(estimator, "dtype"):
+                estimator.dtype = dtype
 
-        if isinstance(estimator, NiftiSpheresMasker):
-            # NiftiSpheresMasker needs mask_img to run inverse_transform
-            X, _ = generate_data_to_fit(estimator)
-            mask_img = new_img_like(X, np.ones(X.shape[:3]))
-            estimator.mask_img = mask_img
+            if isinstance(estimator, NiftiSpheresMasker):
+                # NiftiSpheresMasker needs mask_img to run inverse_transform
+                X, _ = generate_data_to_fit(estimator)
+                mask_img = new_img_like(X, np.ones(X.shape[:3]))
+                estimator.mask_img = mask_img
 
-        estimator = fit_estimator(estimator)
+            estimator = fit_estimator(estimator)
 
-        input_dtype = np.dtype(np.float64)
+            input_dtype = np.dtype(input_dtype)
 
-        signal = _rng().random((10, estimator.n_elements_)).astype(input_dtype)
-        if isinstance(estimator, _BaseDecomposition):
-            signal = [signal]
+            signal = (
+                _rng().random((10, estimator.n_elements_)).astype(input_dtype)
+            )
+            if isinstance(estimator, _BaseDecomposition):
+                signal = [signal]
 
-        output_img = estimator.inverse_transform(signal)
-        if isinstance(estimator, _BaseDecomposition):
-            output_img = output_img[0]
+            output_img = estimator.inverse_transform(signal)
+            if isinstance(estimator, _BaseDecomposition):
+                output_img = output_img[0]
 
-        target_dtype = get_target_dtype(input_dtype, dtype)
-        if isinstance(output_img, Nifti1Image):
-            output_dtype = output_img.get_data_dtype()
-            assert output_dtype == target_dtype
-        else:
-            for v in output_img.data.parts.values():
-                output_dtype = v.dtype
+            target_dtype = get_target_dtype(input_dtype, dtype)
+            if target_dtype is None:
+                target_dtype = input_dtype
+            if isinstance(output_img, Nifti1Image):
+                output_dtype = output_img.get_data_dtype()
                 assert output_dtype == target_dtype
+            else:
+                for v in output_img.data.parts.values():
+                    output_dtype = v.dtype
+                    assert output_dtype == target_dtype
 
 
 @ignore_warnings()
