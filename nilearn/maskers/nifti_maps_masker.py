@@ -11,6 +11,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import check_params
 from nilearn.image import clean_img, get_data, index_img, resample_img
 from nilearn.maskers._utils import compute_middle_image
@@ -730,6 +731,11 @@ class NiftiMapsMasker(BaseMasker):
         check_is_fitted(self)
 
         region_signals = self._check_array(region_signals)
+
+        target_dtype = get_target_dtype(region_signals.dtype, self.dtype)
+        if target_dtype is None:
+            target_dtype = region_signals.dtype
+        region_signals = region_signals.astype(target_dtype)
 
         mask_logger("inverse_transform", verbose=self.verbose)
 
