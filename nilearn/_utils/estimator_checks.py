@@ -714,11 +714,12 @@ def generate_data_to_fit(estimator: BaseEstimator):
         return imgs, None
 
 
-def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
+def fit_estimator(estimator: BaseEstimator, X=None, y=None) -> BaseEstimator:
     """Fit on a nilearn estimator with appropriate input and return it."""
     assert accept_niimg_input(estimator) or accept_surf_img_input(estimator)
 
-    X, y = generate_data_to_fit(estimator)
+    if X is None and y is None:
+        X, y = generate_data_to_fit(estimator)
 
     if is_glm(estimator):
         # FirstLevel
@@ -1000,10 +1001,11 @@ def check_img_estimator_dtypes(estimator):
 
     np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
-    for dtype in [np.float32, np.float64, np.int32]:
+    for dtype in [np.float32, np.float64, np.int32, "auto"]:
         estimator = clone(estimator)
 
-        estimator.dtype = dtype
+        if hasattr(estimator, "dtype"):
+            estimator.dtype = dtype
 
         if isinstance(estimator, (NiftiLabelsMasker, SurfaceLabelsMasker)):
             # use strategy that can conserve dtype
@@ -1011,48 +1013,51 @@ def check_img_estimator_dtypes(estimator):
 
         X, y = generate_data_to_fit(estimator)
 
+        if isinstance(estimator, NiftiSpheresMasker):
+            # NiftiSpheresMasker needs mask_img to run inverse_transform
+            mask_img = new_img_like(X, np.ones(X.shape[:3]))
+            estimator.mask_img = mask_img
+
+        input_dtype = np.float32 if dtype == "auto" else dtype
         if isinstance(X, Nifti1Image):
             data = get_data(X)
-            data[2, 3, 4] = 2
-            X = Nifti1Image(data.astype(dtype), affine=_affine_eye())
-
+            X = Nifti1Image(data.astype(input_dtype), affine=_affine_eye())
         else:
             for k, v in X.data.parts.items():
-                X.data.parts[k] = v.astype(dtype)
+                X.data.parts[k] = v.astype(input_dtype)
 
-        if is_glm(estimator):
-            # FirstLevel
-            if hasattr(estimator, "hrf_model"):
-                estimator.fit(X, design_matrices=y)
-            # SecondLevel
+        estimator = fit_estimator(estimator, X, y)
+
+        if hasattr(estimator, "transform"):
+            signal = estimator.transform(X)
+
+            if not isinstance(signal, list):
+                signal = [signal]
+
+            if not isinstance(
+                estimator,
+                (
+                    SearchLight,
+                    _BaseDecomposition,
+                    SurfaceMapsMasker,
+                    NiftiMapsMasker,
+                    NiftiSpheresMasker,
+                ),
+            ):
+                for s in signal:
+                    assert np.issubdtype(s.dtype, input_dtype)
+
+        if hasattr(estimator, "inverse_transform"):
+            signal = signal[0].astype(np.int32)
+
+            output_img = estimator.inverse_transform(signal)
+
+            if isinstance(X, Nifti1Image):
+                output_data = output_img.get_fdata()
+                assert output_data.dtype == input_dtype
             else:
-                estimator.fit(X, design_matrix=y)
-
-        elif (
-            isinstance(estimator, SearchLight)
-            or is_classifier(estimator)
-            or is_regressor(estimator)
-        ):
-            estimator.fit(X, y)
-
-        else:
-            estimator.fit(X)
-
-        signal = estimator.transform(X)
-        if not isinstance(signal, list):
-            signal = [signal]
-        if hasattr(estimator, "transform") and not isinstance(
-            estimator,
-            (
-                SearchLight,
-                # _BaseDecomposition,
-                SurfaceMapsMasker,
-                NiftiMapsMasker,
-                NiftiSpheresMasker,
-            ),
-        ):
-            for s in signal:
-                assert np.issubdtype(s.dtype, dtype)
+                for v in X.data.parts.values():
+                    assert np.issubdtype(v.dtype, input_dtype)
 
 
 @ignore_warnings()

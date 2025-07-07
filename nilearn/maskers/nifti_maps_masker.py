@@ -94,7 +94,7 @@ class NiftiMapsMasker(BaseMasker):
 
     %(t_r)s
 
-    %(dtype)s.
+    %(dtype)s
 
     resampling_target : {"data", "mask", "maps", None}, default="data"
         Gives which image gives the final shape/size. For example, if
