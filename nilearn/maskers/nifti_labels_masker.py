@@ -23,7 +23,6 @@ from nilearn._utils.niimg_conversions import (
     check_niimg_3d,
     check_same_fov,
 )
-from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
@@ -911,16 +910,15 @@ class NiftiLabelsMasker(BaseMasker):
 
         signals = self._check_array(signals)
 
-        target_dtype = get_target_dtype(signals.dtype, self.dtype)
-        if target_dtype is None:
-            target_dtype = signals.dtype
-        signals = signals.astype(target_dtype)
-
         mask_logger("inverse_transform", verbose=self.verbose)
 
-        return signal_extraction.signals_to_img_labels(
+        img = signal_extraction.signals_to_img_labels(
             signals,
             self.labels_img_,
             self.mask_img_,
             background_label=self.background_label,
         )
+
+        img = self._set_inverse_transform_dtype(signals, img)
+
+        return img

@@ -11,6 +11,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from joblib import Memory
+from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
@@ -463,10 +464,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
 
-        target_dtype = get_target_dtype(X.dtype, self.dtype)
-        if target_dtype is None:
-            target_dtype = X.dtype
-        img.set_data_dtype(target_dtype)
+        img = self._set_inverse_transform_dtype(X, img)
 
         return img
 
@@ -539,6 +537,16 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 for k, v in self.clean_kwargs.items()
                 if k.startswith("clean__")
             }
+
+    def _set_inverse_transform_dtype(
+        self, input: np.ndarray, output: Nifti1Image
+    ) -> Nifti1Image:
+        """Set dtype for data to return for inverse_transform."""
+        target_dtype = get_target_dtype(input.dtype, self.dtype)
+        if target_dtype is None:
+            target_dtype = input.dtype
+        output.set_data_dtype(target_dtype)
+        return output
 
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
@@ -702,6 +710,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         return signals.squeeze() if return_1D else signals
 
     def _set_output_dtype(self, input, output):
+        """Set dtype for extracted data."""
         target_dtype = get_target_dtype(input.data._dtype(), self.dtype)
         if target_dtype is None:
             target_dtype = input.data._dtype()
