@@ -10,7 +10,6 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
 from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import check_params
@@ -598,7 +597,7 @@ class NiftiMapsMasker(BaseMasker):
 
         target_dtype = get_target_dtype(imgs_.get_data_dtype(), self.dtype)
         if target_dtype is None:
-            target_dtype = img_data_dtype(imgs_)
+            target_dtype = imgs_.get_data_dtype()
 
         if self.resampling_target is None:
             images = {"maps": maps_img_, "data": imgs_}
