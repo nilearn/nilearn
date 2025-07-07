@@ -1109,16 +1109,7 @@ def check_img_estimator_dtypes(estimator):
             if not isinstance(signal, list):
                 signal = [signal]
 
-            if not isinstance(
-                estimator,
-                (
-                    SearchLight,
-                    # _BaseDecomposition,
-                    # SurfaceMapsMasker,
-                    # NiftiMapsMasker,
-                    # NiftiSpheresMasker,
-                ),
-            ):
+            if not isinstance(estimator, (SearchLight)):
                 for s in signal:
                     output_dtype = s.dtype
                     assert output_dtype == target_dtype
