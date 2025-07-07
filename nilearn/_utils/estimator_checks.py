@@ -1107,10 +1107,10 @@ def check_img_estimator_dtypes(estimator):
                 estimator,
                 (
                     SearchLight,
-                    _BaseDecomposition,
-                    SurfaceMapsMasker,
-                    NiftiMapsMasker,
-                    NiftiSpheresMasker,
+                    # _BaseDecomposition,
+                    # SurfaceMapsMasker,
+                    # NiftiMapsMasker,
+                    # NiftiSpheresMasker,
                 ),
             ):
                 for s in signal:
@@ -1146,6 +1146,9 @@ def check_img_estimator_dtypes_inverse_transform(estimator):
             signal = [signal]
 
         output_img = estimator.inverse_transform(signal)
+
+        if isinstance(estimator, _BaseDecomposition):
+            output_img = output_img[0]
 
         input_dtype = np.float32 if dtype == "auto" else dtype
         if isinstance(output_img, Nifti1Image):
