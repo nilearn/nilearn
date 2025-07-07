@@ -534,6 +534,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             masker_type = "surface"
             _warn_ignored_surface_masker_params(self)
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
+        self.masker_.memory_level = self.memory_level
 
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img

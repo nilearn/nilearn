@@ -92,7 +92,7 @@ glm = FirstLevelModel(
     high_pass=0.008,
     smoothing_fwhm=4,
     memory="nilearn_cache",
-    memory_level=2,
+    memory_level=1,
     verbose=1,
 )
 
