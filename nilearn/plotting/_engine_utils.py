@@ -17,7 +17,6 @@ def colorscale(
     cmap, values, threshold=None, symmetric_cmap=True, vmax=None, vmin=None
 ):
     """Normalize a cmap, put it in plotly format, get threshold and range."""
-    cmap = plt.get_cmap(cmap)
     abs_values = np.abs(values)
 
     if (
@@ -42,18 +41,11 @@ def colorscale(
     if symmetric_cmap:
         vmax = max(abs(vmin), abs(vmax))
         vmin = -vmax
-    norm = Normalize(vmin=vmin, vmax=vmax)
-    cmaplist = [cmap(i) for i in range(cmap.N)]
-    abs_threshold = None
+
     if threshold is not None:
-        abs_threshold = check_threshold(threshold, values, fast_abs_percentile)
-        istart = int(norm(-abs_threshold, clip=True) * (cmap.N - 1))
-        istop = int(norm(abs_threshold, clip=True) * (cmap.N - 1))
-        for i in range(istart, istop):
-            cmaplist[i] = (0.5, 0.5, 0.5, 1.0)  # just an average gray color
-    our_cmap = LinearSegmentedColormap.from_list(
-        "Custom cmap", cmaplist, cmap.N
-    )
+        threshold = check_threshold(threshold, values, fast_abs_percentile)
+    our_cmap, norm = adjust_cmap(cmap, vmin, vmax, threshold)
+
     x = np.linspace(0, 1, 100)
     rgb = our_cmap(x, bytes=True)[:, :3]
     rgb = np.array(rgb, dtype=int)
@@ -67,8 +59,40 @@ def colorscale(
         "vmax": vmax,
         "cmap": our_cmap,
         "norm": norm,
-        "abs_threshold": abs_threshold,
+        "abs_threshold": threshold,
     }
+
+
+def adjust_cmap(cmap, vmin, vmax, threshold):
+    """Generate a colormap using specified vmin, vmax, threshold values.
+
+    Parameters
+    ----------
+    cmap :
+    vmin :
+        Should not be None
+    vmax :
+        Should not be None
+    threshold :
+        Should be non-negative
+    """
+    our_cmap = plt.get_cmap(cmap)
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
+
+    # threshold is always checked to to be non negative before calling this
+    # function.
+    if threshold is not None:
+        # set colors to gray for absolute values < threshold
+        istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
+        istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
+        for i in range(istart, istop):
+            cmaplist[i] = (0.5, 0.5, 0.5, 1.0)
+
+    our_cmap = LinearSegmentedColormap.from_list(
+        "Custom cmap", cmaplist, our_cmap.N
+    )
+    return our_cmap, norm
 
 
 def create_colormap_from_lut(cmap, default_cmap="gist_ncar"):
