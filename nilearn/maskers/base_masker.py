@@ -725,10 +725,11 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         target_dtype = get_target_dtype(input.dtype, self.dtype)
         if target_dtype is None:
             target_dtype = input.dtype
+        output.data._set_dtype(target_dtype)
         if return_1D:
             for k, v in output.data.parts.items():
                 output.data.parts[k] = v.squeeze()
-        return output.data._set_dtype(target_dtype)
+        return output
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):

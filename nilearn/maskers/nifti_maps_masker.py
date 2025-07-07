@@ -594,7 +594,11 @@ class NiftiMapsMasker(BaseMasker):
         mask_img_ = self.mask_img_
         maps_img_ = self.maps_img_
 
-        imgs_ = check_niimg(imgs, atleast_4d=True)
+        imgs_ = check_niimg(imgs, atleast_4d=True, dtype=self.dtype)
+
+        target_dtype = get_target_dtype(imgs_.get_data_dtype(), self.dtype)
+        if target_dtype is None:
+            target_dtype = img_data_dtype(imgs_)
 
         if self.resampling_target is None:
             images = {"maps": maps_img_, "data": imgs_}
@@ -711,9 +715,6 @@ class NiftiMapsMasker(BaseMasker):
             verbose=self.verbose,
         )
 
-        target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
-        if target_dtype is None:
-            target_dtype = img_data_dtype(imgs)
         return region_signals.astype(target_dtype)
 
     @fill_doc
