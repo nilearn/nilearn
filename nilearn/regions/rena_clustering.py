@@ -50,7 +50,7 @@ def _compute_weights(X, mask_img):
         shape: (n_edges,).
 
     """
-    n_samples, n_features = X.shape
+    n_samples, _ = X.shape
 
     mask = get_data(mask_img).astype("bool")
     shape = mask.shape
