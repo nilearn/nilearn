@@ -709,7 +709,9 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return signals.squeeze() if return_1D else signals
 
-    def _set_output_dtype(self, input, output):
+    def _set_output_dtype(
+        self, input: SurfaceImage, output: np.ndarray
+    ) -> np.ndarray:
         """Set dtype for extracted data."""
         target_dtype = get_target_dtype(input.data._dtype(), self.dtype)
         if target_dtype is None:
