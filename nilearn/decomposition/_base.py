@@ -12,12 +12,8 @@ from pathlib import Path
 from string import Template
 
 import numpy as np
-
 from joblib import Parallel, delayed
-
-from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
-
 from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LinearRegression
@@ -26,13 +22,8 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
-
-from nilearn._utils import fill_doc, logger
-from nilearn._utils.cache_mixin import CacheMixin
-
 from nilearn._utils import check_niimg, fill_doc, logger
-from nilearn._utils.cache_mixin import CacheMixin, cache
-
+from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.niimg import safe_get_data
@@ -513,13 +504,13 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                 "objects as input, "
                 "an empty list was given."
             )
-            
+
         if confounds is not None and len(confounds) != len(imgs):
             raise ValueError(
                 f"Number of confounds ({len(confounds)=}) "
                 f"must match number of images ({len(imgs)=})."
             )
-            
+
         self._fit_cache()
 
         masker_type = "multi_nii"

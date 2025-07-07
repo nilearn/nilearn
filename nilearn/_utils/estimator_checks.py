@@ -78,12 +78,8 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_img,
     _decomposition_mesh,
 )
-
-from nilearn.image import get_data, new_img_like
-
 from nilearn.glm.second_level import SecondLevelModel
-from nilearn.image import new_img_like
-
+from nilearn.image import get_data, new_img_like
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     MultiNiftiMasker,
