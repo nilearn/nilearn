@@ -462,6 +462,12 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # internal structures of the header: remove the memmaped array
         with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
+
+        target_dtype = get_target_dtype(X.dtype, self.dtype)
+        if target_dtype is None:
+            target_dtype = X.dtype
+        img.set_data_dtype(target_dtype)
+
         return img
 
     def _check_array(
