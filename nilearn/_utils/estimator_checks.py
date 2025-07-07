@@ -88,7 +88,6 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
-    SurfaceLabelsMasker,
     SurfaceMapsMasker,
     SurfaceMasker,
 )
@@ -1082,10 +1081,6 @@ def check_img_estimator_dtypes(estimator):
         if hasattr(estimator, "dtype"):
             estimator.dtype = dtype
 
-        if isinstance(estimator, (NiftiLabelsMasker, SurfaceLabelsMasker)):
-            # use strategy that can conserve dtype
-            estimator.strategy = "median"
-
         X, y = generate_data_to_fit(estimator)
 
         input_dtype = (
@@ -1139,7 +1134,6 @@ def check_img_estimator_dtypes_inverse_transform(estimator):
         estimator = fit_estimator(estimator)
 
         input_dtype = np.dtype(np.float64)
-        target_dtype = get_target_dtype(input_dtype, dtype)
 
         signal = _rng().random((10, estimator.n_elements_)).astype(input_dtype)
         if isinstance(estimator, _BaseDecomposition):
@@ -1149,6 +1143,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator):
         if isinstance(estimator, _BaseDecomposition):
             output_img = output_img[0]
 
+        target_dtype = get_target_dtype(input_dtype, dtype)
         if isinstance(output_img, Nifti1Image):
             output_dtype = output_img.get_data_dtype()
             assert output_dtype == target_dtype
