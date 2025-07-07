@@ -41,6 +41,7 @@ from sklearn.utils.estimator_checks import (
     check_estimator as sklearn_check_estimator,
 )
 
+from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.niimg_conversions import check_imgs_equal
@@ -77,6 +78,7 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_img,
     _decomposition_mesh,
 )
+from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import new_img_like
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
@@ -515,6 +517,9 @@ def nilearn_check_generator(estimator: BaseEstimator):
 
     yield (clone(estimator), check_transformer_set_output)
 
+    if isinstance(estimator, CacheMixin):
+        yield (clone(estimator), check_img_estimator_cache_warning)
+
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
         yield (clone(estimator), check_img_estimator_pickle)
         yield (clone(estimator), check_fit_returns_self)
@@ -705,6 +710,11 @@ def generate_data_to_fit(estimator: BaseEstimator):
         )
         return decomp_input, None
 
+    elif not (
+        accept_niimg_input(estimator) or accept_surf_img_input(estimator)
+    ):
+        return _rng().random((5, 5)), None
+
     else:
         imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_eye())
         return imgs, None
@@ -712,8 +722,6 @@ def generate_data_to_fit(estimator: BaseEstimator):
 
 def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
     """Fit on a nilearn estimator with appropriate input and return it."""
-    assert accept_niimg_input(estimator) or accept_surf_img_input(estimator)
-
     X, y = generate_data_to_fit(estimator)
 
     if is_glm(estimator):
@@ -878,6 +886,63 @@ def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
         " or ended with _, but"
         f" [{', '.join(attrs_changed_by_fit)}] changed"
     )
+
+
+def check_img_estimator_cache_warning(estimator) -> None:
+    """Check estimator behavior with caching.
+
+    Make sure some warnings are thrown at the appropriate time.
+    """
+    assert hasattr(estimator, "memory")
+    assert hasattr(estimator, "memory_level")
+
+    if hasattr(estimator, "smoothing_fwhm"):
+        # to avoid not supported warnings
+        estimator.smoothing_fwhm = None
+
+    X, _ = generate_data_to_fit(estimator)
+    if isinstance(estimator, NiftiSpheresMasker):
+        # NiftiSpheresMasker needs mask_img to do some caching during fit
+        mask_img = new_img_like(X, np.ones(X.shape[:3]))
+        estimator.mask_img = mask_img
+
+    # ensure warnings are NOT thrown
+    for memory, memory_level in zip([None, "tmp"], [0, 1]):
+        estimator = clone(estimator)
+        estimator.memory = memory
+        estimator.memory_level = memory_level
+
+        with warnings.catch_warnings(record=True) as warning_list:
+            fit_estimator(estimator)
+            if is_masker(estimator):
+                # some maskers only cache during transform
+                estimator.transform(X)
+            elif isinstance(estimator, SecondLevelModel):
+                # second level only cache during contrast computation
+                estimator.compute_contrast(np.asarray([1]))
+        assert all(
+            "memory_level is currently set to 0 but a Memory object"
+            not in str(x.message)
+            for x in warning_list
+        )
+
+    # ensure warning are thrown
+    estimator = clone(estimator)
+    with TemporaryDirectory() as tmp_dir:
+        estimator.memory = tmp_dir
+        estimator.memory_level = 0
+
+        with pytest.warns(
+            UserWarning,
+            match="memory_level is currently set to 0 but a Memory object",
+        ):
+            fit_estimator(estimator)
+            if is_masker(estimator):
+                # some maskers also cache during transform
+                estimator.transform(X)
+            elif isinstance(estimator, SecondLevelModel):
+                # second level only cache during contrast computation
+                estimator.compute_contrast(np.asarray([1]))
 
 
 @ignore_warnings()
