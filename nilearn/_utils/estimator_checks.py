@@ -733,8 +733,6 @@ def generate_data_to_fit(estimator: BaseEstimator):
 
 def fit_estimator(estimator: BaseEstimator, X=None, y=None) -> BaseEstimator:
     """Fit on a nilearn estimator with appropriate input and return it."""
-    assert accept_niimg_input(estimator) or accept_surf_img_input(estimator)
-
     if X is None and y is None:
         X, y = generate_data_to_fit(estimator)
 
