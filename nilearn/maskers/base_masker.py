@@ -545,6 +545,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         target_dtype = get_target_dtype(input.dtype, self.dtype)
         if target_dtype is None:
             target_dtype = input.dtype
+        output = new_img_like(output, output.get_fdata().astype(target_dtype))
         output.set_data_dtype(target_dtype)
         return output
 
