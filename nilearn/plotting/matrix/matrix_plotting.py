@@ -316,8 +316,7 @@ def plot_contrast_matrix(
             figsize=(
                 0.4 * n_columns_design_matrix,
                 1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
-            ),
-            **constrained_layout_kwargs(),
+            )
         )
 
     maxval = np.max(np.abs(contrast_def))
