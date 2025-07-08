@@ -57,6 +57,15 @@ class NiftiMapsMasker(BaseMasker):
         Inf or NaN present in the given input images are automatically
         put to zero rather than considered as missing data.
 
+    .. warning::
+
+        The data extraction is done via least square regression,
+        such that ``map @ x = data``.
+        If you want to extract data
+        from a map in another way (mean, max...),
+        you should use :class:`~nilearn.maskers.NiftiLabelsMasker`
+        on a thresholded map.
+
     For more details on the definitions of maps in Nilearn,
     see the :ref:`region` section.
 
@@ -520,7 +529,7 @@ class NiftiMapsMasker(BaseMasker):
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
-        """Prepare and perform signal extraction.
+        """Prepare and perform signal extraction via least square regression.
 
         Parameters
         ----------
@@ -548,11 +557,11 @@ class NiftiMapsMasker(BaseMasker):
 
     @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
-        """Extract signals from a single 4D niimg.
+        """Extract signals from Niimg-like object via least square regression.
 
-        Parameters
+        ParametersNiimg-like object
         ----------
-        imgs : 3D/4D Niimg-like object
+        imgs :
             See :ref:`extracting_data`.
             Images to process.
 

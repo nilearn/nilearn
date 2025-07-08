@@ -41,6 +41,15 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
     .. versionadded:: 0.11.1
 
+    .. warning::
+
+        The data extraction is done via least square regression,
+        such that ``map @ x = data``.
+        If you want to extract data
+        from a map in another way (mean, max...),
+        you should use :class:`~nilearn.maskers.SurfaceLabelsMasker`
+        on a thresholded map.
+
     Parameters
     ----------
     maps_img : :obj:`~nilearn.surface.SurfaceImage`
@@ -247,7 +256,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
     @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
-        """Extract signals from surface object.
+        """Extract signals from surface object via least square regression.
 
         Parameters
         ----------
