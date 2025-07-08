@@ -266,7 +266,7 @@ def load_confounds(
 
     tedana : :obj:`str`, default="aggressive"
 
-        - "aggressive": use :term:`Tedana` tedana optimaly combined
+        - "aggressive": use :term:`Tedana` tedana optimally combined
             image output.
             `~desc-optcom_bold.nii.gz`.
             If aggressive is selected all the components classified as
