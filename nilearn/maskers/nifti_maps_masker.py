@@ -559,9 +559,9 @@ class NiftiMapsMasker(BaseMasker):
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
         """Extract signals from Niimg-like object via least square regression.
 
-        ParametersNiimg-like object
+        Parameters
         ----------
-        imgs :
+        imgs : Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
 
