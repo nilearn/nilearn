@@ -58,7 +58,8 @@ def _tedana_strategy(classification, mixing, metrics):
     # tedana versions like 24.0.2 do not have matching component
     # names from the mixing and status tables. For backwards
     # compatibility we will normalize the component names to
-    # match the mixing file normalize rejected component
+    # match the mixing file  rejected component
+``` (sorry if I misunderstood)
     # names: ICA_04 -> ICA_4
     #############################################################
 
