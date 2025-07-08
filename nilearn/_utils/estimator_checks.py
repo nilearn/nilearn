@@ -1247,8 +1247,11 @@ def check_img_estimator_dtypes_inverse_transform(estimator):
             try:
                 if isinstance(output_img, Nifti1Image):
                     # ensure both image and dataobj have consistent type
-                    assert img_data_dtype(output_img) == target_dtype
-                    assert output_img.get_data_dtype() == target_dtype
+                    for output_dtype in [
+                        img_data_dtype(output_img),
+                        output_img.get_data_dtype(),
+                    ]:
+                        assert output_dtype == target_dtype
                 else:
                     for v in output_img.data.parts.values():
                         output_dtype = v.dtype
