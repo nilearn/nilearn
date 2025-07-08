@@ -44,6 +44,7 @@ from sklearn.utils.estimator_checks import (
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import check_imgs_equal
 from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -1245,15 +1246,9 @@ def check_img_estimator_dtypes_inverse_transform(estimator):
                 target_dtype = input_dtype
             try:
                 if isinstance(output_img, Nifti1Image):
-                    # TODO: would fail with the following
-                    # output_dtype = img_data_dtype(output_img)
-                    # or
-                    # output_dtype = output_img.get_fdata().dtype
-                    # or
-                    # output_dtype = get_data(output_img).dtype
-
-                    output_dtype = output_img.get_data_dtype()
-                    assert output_dtype == target_dtype
+                    # ensure both image and dataobj have consistent type
+                    assert img_data_dtype(output_img) == target_dtype
+                    assert output_img.get_data_dtype() == target_dtype
                 else:
                     for v in output_img.data.parts.values():
                         output_dtype = v.dtype
