@@ -256,7 +256,9 @@ def return_expected_failed_checks(
     expected_failed_checks = {
         # the following are skipped
         # because there is nilearn specific replacement
-        "check_dict_unchanged": "replaced by check_masker_dict_unchanged",
+        "check_dict_unchanged": (
+            "replaced by check_img_estimator_dict_unchanged"
+        ),
         "check_dont_overwrite_parameters": (
             "replaced by check_img_estimator_dont_overwrite_parameters"
         ),
@@ -326,6 +328,7 @@ def return_expected_failed_checks(
             "check_estimators_dtypes": (
                 "replaced by check_img_estimator_dtypes"
             ),
+            "check_dict_unchanged": "does not apply - no transform method",
             "check_estimators_empty_data_messages": (
                 "not implemented for nifti data for performance reasons"
             ),
@@ -336,7 +339,6 @@ def return_expected_failed_checks(
                 "replaced by check_img_estimator_fit_check_is_fitted"
             ),
             # nilearn replacements required
-            "check_dict_unchanged": "TODO",
             "check_fit_score_takes_y": "TODO",
         }
 
@@ -441,7 +443,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         # that errors with maskers,
         # or because a suitable nilearn replacement
         # has not yet been created.
-        "check_dict_unchanged": "TODO",
+        "check_dict_unchanged": (
+            "replaced by check_img_estimator_dict_unchanged"
+        ),
         "check_estimators_dtypes": "replaced by check_img_estimator_dtypes",
         "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
@@ -531,6 +535,9 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_dtypes)
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
 
+        if hasattr(estimator, "transform"):
+            yield (clone(estimator), check_img_estimator_dict_unchanged)
+
         if hasattr(estimator, "inverse_transform"):
             yield (
                 clone(estimator),
@@ -559,7 +566,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
     if is_masker(estimator):
         yield (clone(estimator), check_masker_clean_kwargs)
         yield (clone(estimator), check_masker_compatibility_mask_image)
-        yield (clone(estimator), check_masker_dict_unchanged)
         yield (clone(estimator), check_masker_empty_data_messages)
         yield (clone(estimator), check_masker_fit_score_takes_y)
         yield (clone(estimator), check_masker_fit_with_empty_mask)
@@ -1000,6 +1006,76 @@ def check_img_estimator_overwrite_params(estimator) -> None:
 
 
 @ignore_warnings()
+def check_img_estimator_dict_unchanged(estimator):
+    """Replace check_dict_unchanged from sklearn.
+
+    transform() should not change the dict of the object.
+    """
+    estimator = fit_estimator(estimator)
+
+    dict_before = estimator.__dict__.copy()
+
+    input_img, _ = generate_data_to_fit(estimator)
+
+    if isinstance(estimator, _BaseDecomposition):
+        estimator.transform([input_img])
+    else:
+        estimator.transform(input_img)
+
+    dict_after = estimator.__dict__
+
+    # TODO NiftiLabelsMasker is modified at transform time
+    # see issue https://github.com/nilearn/nilearn/issues/2720
+    if isinstance(estimator, (NiftiLabelsMasker)):
+        with pytest.raises(AssertionError):
+            assert dict_after == dict_before
+    else:
+        # The following try / except is mostly
+        # to give more informative error messages when this check fails.
+        try:
+            assert dict_after == dict_before
+        except AssertionError as e:
+            unmatched_keys = set(dict_after.keys()) ^ set(dict_before.keys())
+            if len(unmatched_keys) > 0:
+                raise ValueError(
+                    "Estimator changes '__dict__' keys during transform.\n"
+                    f"{unmatched_keys} \n"
+                )
+
+            difference = {}
+            for x in dict_before:
+                if type(dict_before[x]) is not type(dict_after[x]):
+                    difference[x] = {
+                        "before": dict_before[x],
+                        "after": dict_after[x],
+                    }
+                    continue
+                if (
+                    isinstance(dict_before[x], np.ndarray)
+                    and not np.array_equal(dict_before[x], dict_after[x])
+                    and not check_imgs_equal(dict_before[x], dict_after[x])
+                ) or (
+                    not isinstance(dict_before[x], (np.ndarray, Nifti1Image))
+                    and dict_before[x] != dict_after[x]
+                ):
+                    difference[x] = {
+                        "before": dict_before[x],
+                        "after": dict_after[x],
+                    }
+                    continue
+            if difference:
+                raise ValueError(
+                    "Estimator changes the following '__dict__' keys \n"
+                    "during transform.\n"
+                    f"{difference}"
+                )
+            else:
+                raise e
+        except Exception as e:
+            raise e
+
+
+@ignore_warnings()
 def check_img_estimator_pickle(estimator_orig):
     """Test that we can pickle all estimators.
 
@@ -1288,79 +1364,6 @@ def check_decoder_empty_data_messages(estimator):
 
 
 # ------------------ MASKER CHECKS ------------------
-
-
-@ignore_warnings()
-def check_masker_dict_unchanged(estimator):
-    """Replace check_dict_unchanged from sklearn.
-
-    transform() should not changed the dict of the object.
-    """
-    if accept_niimg_input(estimator):
-        # We use a different shape here to force some maskers
-        # to perform a resampling.
-        shape = (30, 31, 32)
-        input_img = Nifti1Image(_rng().random(shape), _affine_eye())
-    else:
-        input_img = _make_surface_img(10)
-
-    estimator = estimator.fit(input_img)
-
-    dict_before = estimator.__dict__.copy()
-
-    estimator.transform(input_img)
-
-    dict_after = estimator.__dict__
-
-    # TODO NiftiLabelsMasker is modified at transform time
-    # see issue https://github.com/nilearn/nilearn/issues/2720
-    if isinstance(estimator, (NiftiLabelsMasker)):
-        with pytest.raises(AssertionError):
-            assert dict_after == dict_before
-    else:
-        # The following try / except is mostly
-        # to give more informative error messages when this check fails.
-        try:
-            assert dict_after == dict_before
-        except AssertionError as e:
-            unmatched_keys = set(dict_after.keys()) ^ set(dict_before.keys())
-            if len(unmatched_keys) > 0:
-                raise ValueError(
-                    "Estimator changes '__dict__' keys during transform.\n"
-                    f"{unmatched_keys} \n"
-                )
-
-            difference = {}
-            for x in dict_before:
-                if type(dict_before[x]) is not type(dict_after[x]):
-                    difference[x] = {
-                        "before": dict_before[x],
-                        "after": dict_after[x],
-                    }
-                    continue
-                if (
-                    isinstance(dict_before[x], np.ndarray)
-                    and not np.array_equal(dict_before[x], dict_after[x])
-                    and not check_imgs_equal(dict_before[x], dict_after[x])
-                ) or (
-                    not isinstance(dict_before[x], (np.ndarray, Nifti1Image))
-                    and dict_before[x] != dict_after[x]
-                ):
-                    difference[x] = {
-                        "before": dict_before[x],
-                        "after": dict_after[x],
-                    }
-                    continue
-            if difference:
-                raise ValueError(
-                    "Estimator changes the following '__dict__' keys \n"
-                    "during transform.\n"
-                    f"{difference}"
-                )
-            else:
-                raise e
-        except Exception as e:
-            raise e
 
 
 @ignore_warnings()
