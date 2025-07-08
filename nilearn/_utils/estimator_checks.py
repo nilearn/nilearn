@@ -932,7 +932,7 @@ def check_img_estimator_overwrite_params(estimator) -> None:
 def check_img_estimator_dict_unchanged(estimator):
     """Replace check_dict_unchanged from sklearn.
 
-    transform() should not changed the dict of the object.
+    transform() should not change the dict of the object.
     """
     estimator = fit_estimator(estimator)
 
