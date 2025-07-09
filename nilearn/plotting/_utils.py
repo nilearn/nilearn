@@ -4,7 +4,6 @@ from warnings import warn
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colors import LinearSegmentedColormap
 
 from nilearn._utils.logger import find_stack_level
 
@@ -183,33 +182,3 @@ def check_threshold_not_negative(threshold):
     """
     if isinstance(threshold, (int, float)) and threshold < -1e-5:
         raise ValueError("Threshold should be a non-negative number!")
-
-
-def create_colormap_from_lut(cmap, default_cmap="gist_ncar"):
-    """
-    Create a Matplotlib colormap from a DataFrame containing color mappings.
-
-    Parameters
-    ----------
-    cmap : pd.DataFrame
-        DataFrame with columns 'index', 'name', and 'color' (hex values)
-
-    Returns
-    -------
-    colormap (LinearSegmentedColormap): A Matplotlib colormap
-    """
-    if "color" not in cmap.columns:
-        warn(
-            "No 'color' column found in the look-up table. "
-            "Will use the default colormap instead.",
-            stacklevel=find_stack_level(),
-        )
-        return default_cmap
-
-    # Ensure colors are properly extracted from DataFrame
-    colors = cmap.sort_values(by="index")["color"].tolist()
-
-    # Create a colormap from the list of colors
-    return LinearSegmentedColormap.from_list(
-        "custom_colormap", colors, N=len(colors)
-    )
