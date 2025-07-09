@@ -18,3 +18,5 @@ Enhancements
 
 Changes
 -------
+
+:bdg-dark:`Code` Move ``nilearn.plotting.img_plotting`` under ``nilearn.plotting.image`` (:gh:`5481` by `Hande Gözükan`_).
