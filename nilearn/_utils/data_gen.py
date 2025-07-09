@@ -419,16 +419,6 @@ def generate_fake_fmri(
     return (Nifti1Image(fmri, affine), Nifti1Image(mask, affine), target)
 
 
-def generate_fake_design(n_timepoints, rk=3, random_state=0):
-    rand_gen = np.random.default_rng(random_state)
-    columns = rand_gen.choice(
-        list(string.ascii_lowercase), size=rk, replace=True
-    )
-    return pd.DataFrame(
-        rand_gen.standard_normal((n_timepoints, rk)), columns=columns
-    )
-
-
 def generate_fake_fmri_data_and_design(
     shapes, rk=3, affine=None, random_state=0
 ):
@@ -471,11 +461,14 @@ def generate_fake_fmri_data_and_design(
         data = rand_gen.standard_normal(shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
-
-        design_matrices.append(
-            generate_fake_design(shape[3], rk, random_state)
+        columns = rand_gen.choice(
+            list(string.ascii_lowercase), size=rk, replace=False
         )
-
+        design_matrices.append(
+            pd.DataFrame(
+                rand_gen.standard_normal((shape[3], rk)), columns=columns
+            )
+        )
     mask = Nifti1Image(
         (rand_gen.random(shape[:3]) > 0.5).astype(np.int8), affine
     )
