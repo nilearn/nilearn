@@ -381,7 +381,7 @@ def report_surface_flm(build_type):
     return report_flm, report_flm_empty
 
 
-def report_surface(build_type):
+def report_surface_slm(build_type):
     flm = SecondLevelModel(mask_img=SurfaceMasker())
     report_slm_empty = flm.generate_report(height_control="bonferroni")
     report_slm_empty.save_as_html(REPORTS_DIR / "slm_surf_empty.html")
@@ -774,16 +774,16 @@ def main(args=sys.argv):
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 
-    # report_surface_masker(build_type)
-    # report_surface_label_masker(build_type)
-    # report_surface_maps_masker(build_type)
-    # report_nifti_masker(build_type)
-    # report_nifti_maps_masker(build_type)
-    # report_nifti_labels_masker(build_type)
-    # report_sphere_masker(build_type)
-    # report_multi_nifti_masker(build_type)
-    # report_multi_nifti_labels_masker(build_type)
-    # report_multi_nifti_maps_masker(build_type)
+    report_surface_masker(build_type)
+    report_surface_label_masker(build_type)
+    report_surface_maps_masker(build_type)
+    report_nifti_masker(build_type)
+    report_nifti_maps_masker(build_type)
+    report_nifti_labels_masker(build_type)
+    report_sphere_masker(build_type)
+    report_multi_nifti_masker(build_type)
+    report_multi_nifti_labels_masker(build_type)
+    report_multi_nifti_maps_masker(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")
@@ -791,12 +791,12 @@ def main(args=sys.argv):
     print("\nGenerating GLM reports templates\n")
     t0 = time.time()
 
-    # report_flm_adhd_dmn(build_type)
-    # report_flm_bids_features(build_type)
-    # report_flm_fiac(build_type)
-    # report_slm_oasis(build_type)
+    report_flm_adhd_dmn(build_type)
+    report_flm_bids_features(build_type)
+    report_flm_fiac(build_type)
+    report_slm_oasis(build_type)
     report_surface_flm(build_type)
-    # report_surface_glm(build_type)
+    report_surface_slm(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")
