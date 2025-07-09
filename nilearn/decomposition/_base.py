@@ -534,7 +534,10 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             masker_type = "surface"
             _warn_ignored_surface_masker_params(self)
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
+        print(self.masker_)
         self.masker_.memory_level = self.memory_level
+
+        return
 
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
@@ -543,6 +546,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         else:
             self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
+
+        return
 
         # _mask_and_reduce step for decomposition estimators i.e.
         # MultiPCA, CanICA and Dictionary Learning
