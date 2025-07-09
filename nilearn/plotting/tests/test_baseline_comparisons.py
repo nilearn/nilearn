@@ -10,6 +10,7 @@ import pandas as pd
 import pytest
 from matplotlib import pyplot as plt
 
+from nilearn._utils.data_gen import generate_maps
 from nilearn.datasets import (
     load_fsaverage_data,
     load_mni152_template,
@@ -164,11 +165,14 @@ def test_plot_carpet_default_params(img_4d_mni, img_3d_ones_mni):
     return plot_carpet(img_4d_mni, mask_img=img_3d_ones_mni)
 
 
-@pytest.mark.timeout(0)
 @pytest.mark.mpl_image_compare
-def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
+def test_plot_prob_atlas_default_params(
+    img_3d_mni, shape_3d_default, affine_mni
+):
     """Smoke-test for plot_prob_atlas with default arguments."""
-    return plot_prob_atlas(img_4d_mni, bg_img=img_3d_mni)
+    # using only 2 regions to speed up the test
+    maps = generate_maps(shape_3d_default, n_regions=2, affine=affine_mni)
+    return plot_prob_atlas(maps, bg_img=img_3d_mni)
 
 
 @pytest.mark.mpl_image_compare
