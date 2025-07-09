@@ -248,10 +248,12 @@ def _neurovault(match, request):  # noqa: ARG001
 
 @pytest.fixture(autouse=True)
 def neurovault_mocker(request_mocker):
+    """Mock neurovault fetcher."""
     request_mocker.url_mapping["*neurovault.org*"] = _neurovault
 
 
 def test_remove_none_strings():
+    """Test _remove_none_strings."""
     info = {
         "a": "None / Other",
         "b": "",
@@ -959,6 +961,7 @@ def test_fetch_neurovault_ids_overwrite(tmp_path):
 def test_should_download_resampled_images_only_if_no_previous_download(
     tmp_path,
 ):
+    """Test download only resampled original."""
     collections, _ = _get_neurovault_data()
 
     sample_collection = collections.iloc[0]
@@ -984,6 +987,7 @@ def test_should_download_resampled_images_only_if_no_previous_download(
 def test_download_original_images_along_resamp_images_if_previously_downloaded(
     tmp_path,
 ):
+    """Test download original data even if resampled data is here."""
     collections, _ = _get_neurovault_data()
 
     sample_collection = collections.iloc[0]
@@ -1032,6 +1036,7 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
 def test_download_resamp_images_along_original_images_if_previously_downloaded(
     tmp_path,
 ):
+    """Test download resampled data even if non resampled data is here."""
     collections, _ = _get_neurovault_data()
 
     sample_collection = collections.iloc[0]
@@ -1144,5 +1149,6 @@ def test_timeout_error(capsys, request_mocker):
 
 
 def test_fetch_neurovault_motor_task():
+    """Test deprecation fetch_neurovault_motor_task."""
     with pytest.warns(DeprecationWarning, match="will be removed"):
         neurovault.fetch_neurovault_motor_task(verbose=0)

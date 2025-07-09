@@ -264,7 +264,6 @@ max-complexity = 23
 "nilearn/datasets/tests/test_atlas.py" = ["D103"]
 "nilearn/datasets/tests/test_func.py" = ["D103"]
 "nilearn/datasets/tests/test_mocking_autoused.py" = ["D103"]
-"nilearn/datasets/tests/test_neurovault.py" = ["D103"]
 "nilearn/datasets/tests/test_struct.py" = ["D103"]
 "nilearn/datasets/tests/test_testing.py" = ["D103"]
 "nilearn/datasets/tests/test_utils.py" = ["D103"]
