@@ -198,7 +198,6 @@ ignore = [
     "B904",
     "D105",
     "D205",
-    "D208",
     "D301",
     "E741",
     "ERA001",
@@ -215,8 +214,6 @@ ignore = [
     # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
     "COM812",
     "COM819",
-    "D206",
-    "D300",
     "E111",
     "E114",
     "E117",
