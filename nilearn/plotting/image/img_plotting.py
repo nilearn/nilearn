@@ -1967,10 +1967,13 @@ def plot_carpet(
         atlas_values = np.squeeze(atlas_values)
 
         if mask_labels:
-            label_dtype = type(next(iter(mask_labels.values())))
+            label_dtype = next(iter(mask_labels.values()))
             if label_dtype != atlas_values.dtype:
-                logger.log(f"Coercing atlas_values to {label_dtype}")
-                atlas_values = atlas_values.astype(label_dtype)
+                logger.log(
+                    "Coercing atlas_values to "
+                    f"{label_dtype.__class__.__name__}"
+                )
+                atlas_values = atlas_values.astype(type(label_dtype))
 
         # Sort data and atlas by atlas values
         order = np.argsort(atlas_values)
