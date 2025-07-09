@@ -26,10 +26,12 @@ from nilearn.datasets import (
     fetch_fiac_first_level,
     fetch_icbm152_2009,
     fetch_icbm152_brain_gm_mask,
+    fetch_localizer_first_level,
     fetch_miyawaki2008,
     fetch_oasis_vbm,
     fetch_openneuro_dataset,
     load_fsaverage,
+    load_fsaverage_data,
     load_nki,
     load_sample_motor_activation_image,
     select_from_index,
@@ -99,7 +101,7 @@ def report_flm_adhd_dmn(build_type):
     dmn_contrast = np.array([1] + [0] * (design_matrix.shape[1] - 1))
     contrasts = {"seed_based_glm": dmn_contrast}
 
-    first_level_model = FirstLevelModel(t_r=t_r, slice_time_ref=slice_time_ref)
+    first_level_model = FirstLevelModel(slice_time_ref=slice_time_ref)
     first_level_model = first_level_model.fit(
         run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
     )
@@ -320,12 +322,66 @@ def report_slm_oasis(build_type):
     return report
 
 
-def report_surface_glm(build_type):
-    """Empyt reports."""
+def report_surface_flm(build_type):
+    """FirstLevelGLM surface reports."""
+    if build_type == "partial":
+        _generate_dummy_html(filenames=["flm_surf_empty.html"])
+        _generate_dummy_html(filenames=["flm_surf.html"])
+        return None
+
     flm = FirstLevelModel(mask_img=SurfaceMasker())
     report_flm_empty = flm.generate_report(height_control=None)
     report_flm_empty.save_as_html(REPORTS_DIR / "flm_surf_empty.html")
 
+    data = fetch_localizer_first_level()
+
+    fsaverage5 = load_fsaverage()
+    surface_image = SurfaceImage.from_volume(
+        mesh=fsaverage5["pial"],
+        volume_img=data.epi_img,
+    )
+
+    t_r = 2.4
+    slice_time_ref = 0.5
+
+    glm = FirstLevelModel(
+        t_r=t_r,
+        slice_time_ref=slice_time_ref,
+        hrf_model="glover + derivative",
+        minimize_memory=False,
+        verbose=1,
+    ).fit(run_imgs=surface_image, events=data.events)
+
+    design_matrix = glm.design_matrices_[0]
+    contrast_matrix = np.eye(design_matrix.shape[1])
+
+    basic_contrasts = {
+        column: contrast_matrix[i]
+        for i, column in enumerate(design_matrix.columns)
+    }
+
+    contrasts = {
+        "(left - right) button press": (
+            basic_contrasts["audio_left_hand_button_press"]
+            - basic_contrasts["audio_right_hand_button_press"]
+            + basic_contrasts["visual_left_hand_button_press"]
+            - basic_contrasts["visual_right_hand_button_press"]
+        )
+    }
+
+    report_flm = glm.generate_report(
+        contrasts,
+        threshold=3.0,
+        bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        height_control=None,
+    )
+
+    report_flm.save_as_html(REPORTS_DIR / "flm_surf.html")
+
+    return report_flm, report_flm_empty
+
+
+def report_surface(build_type):
     flm = SecondLevelModel(mask_img=SurfaceMasker())
     report_slm_empty = flm.generate_report(height_control="bonferroni")
     report_slm_empty.save_as_html(REPORTS_DIR / "slm_surf_empty.html")
@@ -333,7 +389,7 @@ def report_surface_glm(build_type):
     if build_type == "partial":
         _generate_dummy_html(filenames=["flm_surf_empty.html"])
         _generate_dummy_html(filenames=["slm_surf_empty.html"])
-        return report_flm_empty, report_slm_empty
+        return report_slm_empty
 
 
 # %%
@@ -718,16 +774,16 @@ def main(args=sys.argv):
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 
-    report_surface_masker(build_type)
-    report_surface_label_masker(build_type)
-    report_surface_maps_masker(build_type)
-    report_nifti_masker(build_type)
-    report_nifti_maps_masker(build_type)
-    report_nifti_labels_masker(build_type)
-    report_sphere_masker(build_type)
-    report_multi_nifti_masker(build_type)
-    report_multi_nifti_labels_masker(build_type)
-    report_multi_nifti_maps_masker(build_type)
+    # report_surface_masker(build_type)
+    # report_surface_label_masker(build_type)
+    # report_surface_maps_masker(build_type)
+    # report_nifti_masker(build_type)
+    # report_nifti_maps_masker(build_type)
+    # report_nifti_labels_masker(build_type)
+    # report_sphere_masker(build_type)
+    # report_multi_nifti_masker(build_type)
+    # report_multi_nifti_labels_masker(build_type)
+    # report_multi_nifti_maps_masker(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")
@@ -735,11 +791,12 @@ def main(args=sys.argv):
     print("\nGenerating GLM reports templates\n")
     t0 = time.time()
 
-    report_flm_adhd_dmn(build_type)
-    report_flm_bids_features(build_type)
-    report_flm_fiac(build_type)
-    report_slm_oasis(build_type)
-    report_surface_glm(build_type)
+    # report_flm_adhd_dmn(build_type)
+    # report_flm_bids_features(build_type)
+    # report_flm_fiac(build_type)
+    # report_slm_oasis(build_type)
+    report_surface_flm(build_type)
+    # report_surface_glm(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")
