@@ -11,7 +11,6 @@ from nilearn.plotting.js_plotting_utils import (
     encode,
     get_html_template,
     mesh_to_plotly,
-    to_color_strings,
 )
 from nilearn.surface import load_surf_mesh
 
@@ -132,26 +131,6 @@ def check_html(
     view = selects[2]
     assert ("id", "select-view") in view.items()
     assert len(view.findall("option")) == 7
-
-
-@pytest.mark.parametrize(
-    "colors",
-    [
-        [[0, 0, 1], [1, 0, 0], [0.5, 0.5, 0.5]],
-        [[0, 0, 1, 1], [1, 0, 0, 1], [0.5, 0.5, 0.5, 0]],
-        ["#0000ff", "#ff0000", "#7f7f7f"],
-        [[0, 0, 1, 1], [1, 0, 0, 1], [0.5, 0.5, 0.5, 0]],
-        ["r", "green", "black", "white"],
-        ["#0000ffff", "#ff0000ab", "#7f7f7f00"],
-    ],
-)
-def test_to_color_strings(colors):
-    """Tests for function to_color_strings with different color inputs."""
-    if len(colors) == 3:
-        expected = ["#0000ff", "#ff0000", "#7f7f7f"]
-    else:
-        expected = ["#ff0000", "#008000", "#000000", "#ffffff"]
-    assert to_color_strings(colors) == expected
 
 
 def test_import_html_document_from_js_plotting():

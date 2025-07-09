@@ -7,7 +7,6 @@ from pathlib import Path
 from string import Template
 
 import numpy as np
-from matplotlib.colors import ListedColormap
 
 from nilearn._utils.html_document import (  # noqa: F401
     HTMLDocument,
@@ -92,15 +91,3 @@ def mesh_to_plotly(mesh):
         "_k": k,
     }
     return info
-
-
-def to_color_strings(colors):
-    """Return a list of colors as hex strings."""
-    cmap = ListedColormap(colors)
-    colors = cmap(np.arange(cmap.N))[:, :3]
-    colors = np.asarray(colors * 255, dtype="uint8")
-    colors = [
-        f"#{int(row[0]):02x}{int(row[1]):02x}{int(row[2]):02x}"
-        for row in colors
-    ]
-    return colors

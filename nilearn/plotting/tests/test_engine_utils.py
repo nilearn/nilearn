@@ -3,7 +3,7 @@ import re
 import numpy as np
 import pytest
 
-from nilearn.plotting._engine_utils import colorscale
+from nilearn.plotting._engine_utils import colorscale, to_color_strings
 
 
 def check_colors(colors):
@@ -100,3 +100,23 @@ def test_colorscale_asymmetric_cmap(
     assert (colors["norm"].vmax, colors["norm"].vmin) == expected_vmin_vmax[
         ::-1
     ]
+
+
+@pytest.mark.parametrize(
+    "colors",
+    [
+        [[0, 0, 1], [1, 0, 0], [0.5, 0.5, 0.5]],
+        [[0, 0, 1, 1], [1, 0, 0, 1], [0.5, 0.5, 0.5, 0]],
+        ["#0000ff", "#ff0000", "#7f7f7f"],
+        [[0, 0, 1, 1], [1, 0, 0, 1], [0.5, 0.5, 0.5, 0]],
+        ["r", "green", "black", "white"],
+        ["#0000ffff", "#ff0000ab", "#7f7f7f00"],
+    ],
+)
+def test_to_color_strings(colors):
+    """Tests for function to_color_strings with different color inputs."""
+    if len(colors) == 3:
+        expected = ["#0000ff", "#ff0000", "#7f7f7f"]
+    else:
+        expected = ["#ff0000", "#008000", "#000000", "#ffffff"]
+    assert to_color_strings(colors) == expected
