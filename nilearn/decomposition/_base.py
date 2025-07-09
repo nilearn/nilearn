@@ -537,8 +537,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         print(self.masker_)
         self.masker_.memory_level = self.memory_level
 
-        return
-
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
         if self.masker_.mask_img is None:
@@ -546,8 +544,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         else:
             self.masker_.fit()
         self.mask_img_ = self.masker_.mask_img_
-
-        return
 
         # _mask_and_reduce step for decomposition estimators i.e.
         # MultiPCA, CanICA and Dictionary Learning
