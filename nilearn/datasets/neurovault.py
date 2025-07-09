@@ -2891,9 +2891,7 @@ def fetch_neurovault_motor_task(
 
     .. deprecated:: 0.12.0
 
-        This fetcher function will be removed in version>0.13.1
-        as it returns the same data
-        as :func:`nilearn.datasets.load_sample_motor_activation_image`.
+        This fetcher function will be removed in version>0.13.1.
 
         Please use
         :func:`nilearn.datasets.load_sample_motor_activation_image`
@@ -2934,8 +2932,7 @@ def fetch_neurovault_motor_task(
     warnings.warn(
         (
             "The 'fetch_neurovault_motor_task' function will be removed "
-            "in version>0.13.1 as it returns the same data "
-            "as 'load_sample_motor_activation_image'.\n"
+            "in version>0.13.1. \n"
             "Please use 'load_sample_motor_activation_image' instead.'"
         ),
         DeprecationWarning,
