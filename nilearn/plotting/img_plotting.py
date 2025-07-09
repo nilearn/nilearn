@@ -7,6 +7,7 @@ Only matplotlib is required.
 
 import collections.abc
 import functools
+import inspect
 import numbers
 import warnings
 
@@ -1270,6 +1271,17 @@ def plot_prob_atlas(
             )
     else:
         threshold = [threshold] * n_maps
+
+    tmp = dict(**inspect.signature(plot_prob_atlas).parameters)
+    if (
+        view_type == "filled_contours"
+        and linewidths != tmp["linewidths"].default
+    ):
+        warnings.warn(
+            f"'linewidths' is not supported by {view_type}=",
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
 
     filled = view_type.startswith("filled")
     transparency = alpha
