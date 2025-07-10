@@ -1,4 +1,7 @@
-"""Functions that help image plotting."""
+"""
+Plotting utilities
+that can be used outside of the plotting subpackage.
+"""
 
 import numbers
 
