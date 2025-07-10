@@ -11,10 +11,10 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data
+from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
     check_threshold_not_negative,
-    create_colormap_from_lut,
 )
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
