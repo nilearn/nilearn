@@ -30,8 +30,6 @@ def adjust_cmap(cmap, vmin, vmax, threshold):
     norm = Normalize(vmin=vmin, vmax=vmax)
     cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
 
-    # threshold is always checked to to be non negative before calling this
-    # function.
     if threshold is not None:
         # set colors to gray for absolute values < threshold
         istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
