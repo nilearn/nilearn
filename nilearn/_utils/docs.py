@@ -217,6 +217,10 @@ clean_args : :obj:`dict` or None, default=None
     kwargs prefixed with ``'butterworth__'``
     will be passed to the Butterworth filter.
 """
+docdict["clean_args_"] = docdict["clean_args"].replace(
+    "clean_args : :obj:`dict` or None, default=None",
+    "clean_args_ : :obj:`dict`",
+)
 
 # cmap
 docdict["cmap"] = """
@@ -688,6 +692,11 @@ kwargs : dict
        Passing parameters via "kwargs" is mutually exclusive
        with passing cleaning parameters via ``clean_args``.
 """
+
+docdict["masker_kwargs_"] = docdict["masker_kwargs"].replace(
+    "kwargs : dict",
+    "clean_kwargs_ : dict",
+)
 
 # memory
 docdict["memory"] = """

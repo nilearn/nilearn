@@ -22,6 +22,7 @@ from numpy.testing import (
     assert_array_equal,
     assert_raises,
 )
+from numpydoc.docscrape import NumpyDocString
 from packaging.version import parse
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
@@ -528,6 +529,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_pickle)
         yield (clone(estimator), check_fit_returns_self)
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
+        yield (clone(estimator), check_img_estimator_doc_attributes)
 
         if hasattr(estimator, "transform"):
             yield (clone(estimator), check_img_estimator_dict_unchanged)
@@ -833,6 +835,35 @@ def check_fit_returns_self(estimator) -> None:
     fitted_estimator = fit_estimator(estimator)
 
     assert fitted_estimator is estimator
+
+
+def check_img_estimator_doc_attributes(estimator) -> None:
+    """Check that fitted attributes are documented.
+
+    Fitted attributes (ending with a "_") should be documented.
+    """
+    fitted_estimator = fit_estimator(estimator)
+    fitted_attributes = [
+        x for x in fitted_estimator.__dict__ if x.endswith("_")
+    ]
+    doc = NumpyDocString(fitted_estimator.__doc__)
+    if "Attributes" not in doc:
+        raise ValueError(
+            f"Estimator {estimator.__class__.__name__} "
+            "has no 'Attributes' section."
+        )
+    documented_attributes = {
+        param.name: param.type for param in doc["Attributes"]
+    }
+    undocumented_attributes = [
+        attr for attr in fitted_attributes if attr not in documented_attributes
+    ]
+    if undocumented_attributes:
+        raise ValueError(
+            "Missing docstring for "
+            f"[{', '.join(undocumented_attributes)}] "
+            f"in estimator {estimator.__class__.__name__}."
+        )
 
 
 @ignore_warnings()

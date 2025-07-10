@@ -153,6 +153,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
     lut_ : :obj:`pandas.DataFrame`
         Look-up table derived from the ``labels`` or ``lut``
         or from the values of the label image.
+
+    %(clean_args_)s
     """
 
     def __init__(

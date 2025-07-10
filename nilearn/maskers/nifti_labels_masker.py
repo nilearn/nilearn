@@ -182,6 +182,10 @@ class NiftiLabelsMasker(BaseMasker):
 
         .. versionadded:: 0.10.3
 
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     See Also
     --------
     nilearn.maskers.NiftiMasker

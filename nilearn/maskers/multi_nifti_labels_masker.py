@@ -111,6 +111,14 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
 
+    lut_ : :obj:`pandas.DataFrame`
+        Look-up table derived from the ``labels`` or ``lut``
+        or from the values of the label image.
+
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     See Also
     --------
     nilearn.maskers.NiftiMasker

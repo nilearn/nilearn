@@ -164,6 +164,10 @@ class MultiNiftiMasker(NiftiMasker):
 
         .. versionadded:: 0.9.2
 
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     See Also
     --------
     nilearn.image.resample_img: image resampling

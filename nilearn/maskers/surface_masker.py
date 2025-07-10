@@ -83,6 +83,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
     n_elements_ : :obj:`int` or None
         number of vertices included in mask
 
+    %(clean_args_)s
+
     """
 
     def __init__(
