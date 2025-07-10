@@ -90,6 +90,14 @@ def list_nodes(
     return [c for c in node_definitions if not c.name.startswith("_")]
 
 
+# list objects that are part of the user facing API
+# the code below assumes
+# that we do not have more one 2 levels of "nesting" of subpacakges
+# for example:
+# - nilearn/plotting/matrix/__init__.py
+# - nilearn/glm/first_level/__init__.py
+# but not
+# - nilearn/glm/first_level/too_deep/__init__.py
 public_api = ["nilearn"]
 for subpackage in nilearn.__all__:
     public_api.append(subpackage)
@@ -102,3 +110,13 @@ for subpackage in nilearn.__all__:
             submod = importlib.import_module(f"nilearn.{subpackage}.{x}")
             if hasattr(submod, "__all__"):
                 public_api.extend(submod.__all__)
+
+    public_api = list(set(public_api))
+
+# make sure that we get a "warning"
+# (as in failure during doc checks run in CI)
+# if the number of objects
+# in the user facing public API changes
+assert len(public_api) == 237, (
+    f"the number of objects in the public API is now {len(public_api)}"
+)
