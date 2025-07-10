@@ -144,9 +144,9 @@ ignore_imports = [
     "nilearn.plotting.matrix.* -> nilearn.glm.**"
 ]
 layers = [
-    "nilearn.glm : nilearn.decoding : nilearn.decomposition",
+    "nilearn.glm | nilearn.decoding | nilearn.decomposition",
     "nilearn.mass_univariate",
-    "nilearn.connectome : nilearn.maskers : nilearn.image : nilearn.surface : nilearn.masking : nilearn.interfaces : nilearn.plotting"
+    "nilearn.connectome : nilearn.maskers : nilearn.image : nilearn.surface : nilearn.masking : nilearn.interfaces : nilearn.plotting : nilearn.signal : nilearn.datasets"
 ]
 name = "glm and decoding can import from maskers and each other"
 type = "layers"
