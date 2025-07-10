@@ -146,10 +146,33 @@ ignore_imports = [
 layers = [
     "nilearn.glm | nilearn.decoding | nilearn.decomposition",
     "nilearn.mass_univariate",
-    "nilearn.connectome : nilearn.maskers : nilearn.image : nilearn.surface : nilearn.masking : nilearn.interfaces : nilearn.plotting : nilearn.signal : nilearn.datasets"
+    "nilearn.connectome : nilearn.maskers : nilearn.image : nilearn.surface : nilearn.masking : nilearn.interfaces : nilearn.plotting : nilearn.signal : nilearn.datasets",
+    "nilearn.typing"
 ]
-name = "glm and decoding can import from maskers and each other"
+name = "main layers"
 type = "layers"
+
+[[tool.importlinter.contracts]]
+ignore_imports = [
+    # allowed in tests
+    "nilearn.*.tests.* -> nilearn._utils.estimator_checks",
+    "nilearn.plotting.*.tests.* -> nilearn.glm.**",
+    "nilearn.plotting.tests.* -> nilearn.glm.**",
+    "nilearn.interfaces.tests.* -> nilearn.glm.*",
+    "nilearn.connectome.tests.* -> nilearn.tests.*",
+    "nilearn.connectome.tests.* -> nilearn._utils.data_gen",
+    # ----------------
+    "nilearn._utils.glm -> nilearn.glm.second_level",
+    "nilearn._utils.masker_validation -> nilearn.glm.*",
+    "nilearn.interfaces.bids.glm -> nilearn.glm",
+    "nilearn.plotting.matrix.* -> nilearn.glm.**"
+]
+modules = [
+    "nilearn.connectome",
+    "nilearn.interfaces"
+]
+name = "independence"
+type = "independence"
 
 [tool.mypy]
 allow_redefinition = false
