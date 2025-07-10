@@ -129,8 +129,6 @@ source = "vcs"
 root_package = "nilearn"
 
 [[tool.importlinter.contracts]]
-# TODO
-# nilearn.regions import both from decomposition and maskers
 ignore_imports = [
     # allowed in tests
     "nilearn.*.tests.* -> nilearn._utils.estimator_checks",
@@ -152,6 +150,53 @@ layers = [
     "nilearn.typing"
 ]
 name = "main layers"
+type = "layers"
+
+[[tool.importlinter.contracts]]
+ignore_imports = [
+    # allowed in tests
+    "nilearn.*.tests.* -> nilearn._utils.estimator_checks",
+    "nilearn.plotting.*.tests.* -> nilearn.glm.**",
+    "nilearn.plotting.tests.* -> nilearn.glm.**",
+    "nilearn.interfaces.tests.* -> nilearn.glm.*",
+    "nilearn.connectome.tests.* -> nilearn.tests.*",
+    "nilearn.connectome.tests.* -> nilearn._utils.data_gen",
+    # ----------------
+    "nilearn._utils.glm -> nilearn.glm.second_level",
+    "nilearn._utils.masker_validation -> nilearn.glm.*",
+    "nilearn.interfaces.bids.glm -> nilearn.glm",
+    "nilearn.plotting.matrix.* -> nilearn.glm.**"
+]
+layers = [
+    "nilearn.glm | nilearn.decoding | nilearn.decomposition.dict_learning | nilearn.regions.parcellations",
+    "nilearn.decomposition.canica | nilearn.mass_univariate | nilearn.regions.rena_clustering | nilearn.regions.hierarchical_kmeans_clustering",
+    "nilearn.regions.region_extractor : nilearn.regions.signal_extraction : nilearn.connectome : nilearn.maskers : nilearn.image : nilearn.surface : nilearn.masking : nilearn.interfaces : nilearn.plotting : nilearn.signal : nilearn.datasets",
+    "nilearn.typing"
+]
+name = "main layers"
+type = "layers"
+
+[[tool.importlinter.contracts]]
+ignore_imports = [
+    # allowed in tests
+    "nilearn.*.tests.* -> nilearn._utils.estimator_checks",
+    "nilearn.plotting.*.tests.* -> nilearn.glm.**",
+    "nilearn.plotting.tests.* -> nilearn.glm.**",
+    "nilearn.interfaces.tests.* -> nilearn.glm.*",
+    "nilearn.connectome.tests.* -> nilearn.tests.*",
+    "nilearn.connectome.tests.* -> nilearn._utils.data_gen",
+    # ----------------
+    "nilearn._utils.glm -> nilearn.glm.second_level",
+    "nilearn._utils.masker_validation -> nilearn.glm.*",
+    "nilearn.interfaces.bids.glm -> nilearn.glm",
+    "nilearn.plotting.matrix.* -> nilearn.glm.**"
+]
+layers = [
+    "nilearn.glm : nilearn.reporting.glm_reporter",
+    "nilearn.maskers : nilearn.reporting.html_report : nilearn.reporting.get_clusters_table",
+    "nilearn.reporting.utils"
+]
+name = "reporting layers"
 type = "layers"
 
 [tool.mypy]
