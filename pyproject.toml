@@ -134,8 +134,7 @@ ignore_imports = [
     "nilearn._utils.masker_validation -> nilearn.glm.*",
     "nilearn.interfaces.bids.glm -> nilearn.glm",
     "nilearn._utils.glm -> nilearn.glm.second_level",
-    "nilearn.plotting.matrix.* -> nilearn.glm.**",
-    "nilearn.signal -> nilearn.glm.first_level.design_matrix"
+    "nilearn.plotting.matrix.* -> nilearn.glm.**"
 ]
 layers = [
     "nilearn.glm : nilearn.decoding",
