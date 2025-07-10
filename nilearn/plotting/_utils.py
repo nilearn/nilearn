@@ -100,10 +100,25 @@ def get_colorbar_and_data_ranges(
 ):
     """Set colormap and colorbar limits.
 
-    Used by plot_stat_map, plot_glass_brain and plot_img_on_surf.
+    The limits for the colorbar depend on the symmetric_cbar argument.
 
-    The limits for the colorbar depend on the symmetric_cbar argument. Please
-    refer to docstring of plot_stat_map.
+    Parameters
+    ----------
+    data : :class:`np.ndarray`
+
+    vmin : :obj:`float`, default=None
+        lowest value of the colorbar
+
+    vmax : :obj:`float`, default=None
+        highest value of the colorbar
+
+    symmetric_cbar : :obj:`bool`, default=True
+        if True, colorbar will have values in range [vmin, vmax] where
+        vmax = -vmin.
+
+    force_min_value : :obj:`int`, default=None
+        The value to force as minimum value for the colorbar
+
     """
     # handle invalid vmin/vmax inputs
     if (not isinstance(vmin, Number)) or (not np.isfinite(vmin)):
