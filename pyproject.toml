@@ -129,6 +129,8 @@ source = "vcs"
 root_package = "nilearn"
 
 [[tool.importlinter.contracts]]
+# TODO
+# nilearn.regions import both from decomposition and maskers
 ignore_imports = [
     # allowed in tests
     "nilearn.*.tests.* -> nilearn._utils.estimator_checks",
@@ -144,9 +146,9 @@ ignore_imports = [
     "nilearn.plotting.matrix.* -> nilearn.glm.**"
 ]
 layers = [
-    "nilearn.glm | nilearn.decoding | nilearn.decomposition",
-    "nilearn.mass_univariate",
-    "nilearn.connectome : nilearn.maskers : nilearn.image : nilearn.surface : nilearn.masking : nilearn.interfaces : nilearn.plotting : nilearn.signal : nilearn.datasets",
+    "nilearn.glm | nilearn.decoding | nilearn.decomposition.dict_learning",
+    "nilearn.decomposition.canica | nilearn.mass_univariate",
+    "nilearn.regions : nilearn.connectome : nilearn.maskers : nilearn.image : nilearn.surface : nilearn.masking : nilearn.interfaces : nilearn.plotting : nilearn.signal : nilearn.datasets",
     "nilearn.typing"
 ]
 name = "main layers"
