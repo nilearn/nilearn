@@ -44,7 +44,7 @@ def test_get_colorbar_and_data_ranges_error():
     with pytest.raises(ValueError, match="vmin must be equal to -vmax"):
         get_colorbar_and_data_ranges(
             data_pos_neg,
-            vmin=0,
+            vmin=-3.0,
             vmax=1.0,
             symmetric_cbar=True,
         )
@@ -195,13 +195,13 @@ def test_get_colorbar_and_data_ranges_masked(
     )
 
 
-def test_get_colorbar_and_data_ranges_force_min_stat_map_value(data_pos_neg):
-    """Test for get_colorbar_and_data_ranges with force_min_stat_map_value."""
+def test_get_colorbar_and_data_ranges_force_min_value(data_pos_neg):
+    """Test for get_colorbar_and_data_ranges with force_min_value."""
     expected_results = (0, None, 0, 3)
     assert expected_results == get_colorbar_and_data_ranges(
         data_pos_neg,
         vmin=None,
         vmax=None,
         symmetric_cbar="auto",
-        force_min_stat_map_value=0,
+        force_min_value=0,
     )

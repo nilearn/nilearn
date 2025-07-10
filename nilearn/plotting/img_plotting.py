@@ -1659,7 +1659,7 @@ def plot_glass_brain(
             vmin=vmin,
             vmax=vmax,
             symmetric_cbar=symmetric_cbar,
-            force_min_stat_map_value=force_min_stat_map_value,
+            force_min_value=force_min_stat_map_value,
         )
     else:
         cbar_vmin, cbar_vmax = None, None
