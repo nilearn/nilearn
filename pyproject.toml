@@ -130,15 +130,21 @@ root_package = "nilearn"
 
 [[tool.importlinter.contracts]]
 ignore_imports = [
-    "nilearn.maskers.tests.* -> nilearn._utils.estimator_checks",  # allowed in tests
+    # allowed in tests
+    "nilearn.*.tests.* -> nilearn._utils.estimator_checks",
+    "nilearn.plotting.*.tests.* -> nilearn.glm.**",
+    "nilearn.plotting.tests.* -> nilearn.glm.**",
+    "nilearn.interfaces.tests.* -> nilearn.glm.*",
+    # ----------------
+    "nilearn._utils.glm -> nilearn.glm.second_level",
     "nilearn._utils.masker_validation -> nilearn.glm.*",
     "nilearn.interfaces.bids.glm -> nilearn.glm",
-    "nilearn._utils.glm -> nilearn.glm.second_level",
     "nilearn.plotting.matrix.* -> nilearn.glm.**"
 ]
 layers = [
-    "nilearn.glm : nilearn.decoding",
-    "nilearn.maskers"
+    "nilearn.glm : nilearn.decoding : nilearn.decomposition : nilearn.connectome",
+    "nilearn.mass_univariate",
+    "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.masking : nilearn.interfaces : nilearn.plotting"
 ]
 name = "glm and decoding can import from maskers and each other"
 type = "layers"
