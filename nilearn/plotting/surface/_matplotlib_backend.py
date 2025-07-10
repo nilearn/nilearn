@@ -37,7 +37,7 @@ try:
     from matplotlib import __version__ as mpl_version
     from matplotlib.cm import ScalarMappable
     from matplotlib.colorbar import make_axes
-    from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
+    from matplotlib.colors import Normalize, to_rgba
     from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
     from matplotlib.patches import Patch
     from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -343,25 +343,15 @@ def _get_cmap(cmap, vmin, vmax, cbar_tick_format, threshold=None):
 
     This function returns the colormap.
     """
-    our_cmap = plt.get_cmap(cmap)
-    norm = Normalize(vmin=vmin, vmax=vmax)
-    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-    if threshold is not None:
-        if cbar_tick_format == "%i" and int(threshold) != threshold:
-            warn(
-                "You provided a non integer threshold "
-                "but configured the colorbar to use integer formatting.",
-                stacklevel=find_stack_level(),
-            )
-        # set colors to gray for absolute values < threshold
-        istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
-        istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
-        for i in range(istart, istop):
-            cmaplist[i] = (0.5, 0.5, 0.5, 1.0)
-    our_cmap = LinearSegmentedColormap.from_list(
-        "Custom cmap", cmaplist, our_cmap.N
-    )
-    return our_cmap, norm
+    if threshold is not None and (
+        cbar_tick_format == "%i" and int(threshold) != threshold
+    ):
+        warn(
+            "You provided a non integer threshold "
+            "but configured the colorbar to use integer formatting.",
+            stacklevel=find_stack_level(),
+        )
+    return adjust_cmap(cmap, vmin, vmax, threshold)
 
 
 def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
