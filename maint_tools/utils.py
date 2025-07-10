@@ -92,7 +92,7 @@ def list_nodes(
 
 # list objects that are part of the user facing API
 # the code below assumes
-# that we do not have more one 2 levels of "nesting" of subpacakges
+# that we do not have more one 2 levels of "nesting" of subpackages
 # for example:
 # - nilearn/plotting/matrix/__init__.py
 # - nilearn/glm/first_level/__init__.py
