@@ -143,10 +143,10 @@ ignore_imports = [
     "nilearn.plotting.matrix.matrix_plotting -> nilearn.glm.first_level"
 ]
 layers = [
-    "nilearn.glm | nilearn.decoding | nilearn.decomposition.dict_learning | nilearn.regions.parcellations",
+    "nilearn.glm | nilearn.decoding | nilearn.decomposition.dict_learning | nilearn.regions.parcellations | nilearn.datasets.func | nilearn.datasets.neurovault | nilearn.datasets.atlas",
     "nilearn.decomposition.canica | nilearn.mass_univariate | nilearn.regions.rena_clustering | nilearn.regions.hierarchical_kmeans_clustering",
-    "nilearn.regions.region_extractor : nilearn.regions.signal_extraction : nilearn.connectome : nilearn.maskers : nilearn.image : nilearn.surface : nilearn.masking : nilearn.interfaces : nilearn.plotting : nilearn.signal : nilearn.datasets",
-    "nilearn.typing"
+    "nilearn.regions.region_extractor : nilearn.regions.signal_extraction : nilearn.connectome : nilearn.maskers : nilearn.image : nilearn.surface : nilearn.masking : nilearn.interfaces : nilearn.plotting : nilearn.signal : nilearn.datasets.struct",
+    "nilearn.typing : nilearn.datasets.utils"
 ]
 name = "main layers"
 type = "layers"
