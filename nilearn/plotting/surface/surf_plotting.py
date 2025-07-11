@@ -386,6 +386,11 @@ def plot_surf_contours(
     )
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
+    if "darkness" not in kwargs:
+        # TODO remove in 0.13.0 when darkness is removed
+        # added now to prevent some extra warnings
+        kwargs["darkness"] = None
+
     backend = get_surface_backend(DEFAULT_ENGINE)
     fig = backend._plot_surf_contours(
         surf_mesh=surf_mesh,
