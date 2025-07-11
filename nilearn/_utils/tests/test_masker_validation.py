@@ -5,6 +5,7 @@ from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
 
 from nilearn._utils.masker_validation import check_embedded_masker
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 
 
@@ -47,6 +48,13 @@ class OwningClass(BaseEstimator):
         self.n_jobs = n_jobs
         self.verbose = verbose
         self.dummy = dummy
+
+    def __sklearn_tags__(self):
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(masker=True)
+        return super().__sklearn_tags__()
 
 
 class DummyEstimator:

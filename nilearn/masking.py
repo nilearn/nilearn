@@ -19,7 +19,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import get_border_data, largest_connected_component
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params
-from nilearn.datasets import (
+from nilearn.datasets.struct import (
     load_mni152_gm_template,
     load_mni152_template,
     load_mni152_wm_template,
