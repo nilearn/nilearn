@@ -99,24 +99,36 @@ def list_nodes(
 # but not
 # - nilearn/glm/first_level/too_deep/__init__.py
 public_api = ["nilearn"]
+public_api_with_subpackage = ["nilearn"]
 for subpackage in nilearn.__all__:
     public_api.append(subpackage)
+    public_api_with_subpackage.append(subpackage)
     if subpackage.startswith("_"):
         continue
     mod = importlib.import_module(f"nilearn.{subpackage}")
     public_api.extend(mod.__all__)
+    public_api_with_subpackage.extend(
+        [f"{subpackage}.{x}" for x in mod.__all__]
+    )
     for x in mod.__all__:
         if inspect.ismodule(mod.__dict__[x]):
             submod = importlib.import_module(f"nilearn.{subpackage}.{x}")
             if hasattr(submod, "__all__"):
                 public_api.extend(submod.__all__)
+                public_api_with_subpackage.extend(
+                    [
+                        f"{subpackage}.{submod.__name__}.{x}"
+                        for x in submod.__all__
+                    ]
+                )
 
-    public_api = list(set(public_api))
+    public_api_with_subpackage = sorted(set(public_api_with_subpackage))
 
 # make sure that we get a "warning"
 # (as in failure during doc checks run in CI)
 # if the number of objects
 # in the user facing public API changes
-assert len(public_api) == 237, (
-    f"the number of objects in the public API is now {len(public_api)}"
+assert len(public_api_with_subpackage) == 238, (
+    "the number of objects in the public API is now "
+    f"{len(public_api_with_subpackage)}"
 )
