@@ -1906,7 +1906,8 @@ class SurfaceImage:
 
         if not isinstance(data, (PolyData, dict)):
             raise TypeError(
-                f"'data' must be one of[PolyData, dict].\nGot {type(data)}"
+                "'data' must be one of[PolyData, dict].\n"
+                f"Got {data.__class__.__name__}"
             )
 
         if isinstance(data, PolyData):
