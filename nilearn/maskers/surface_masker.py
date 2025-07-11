@@ -56,6 +56,10 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
     %(t_r)s
 
+    %(dtype)s
+
+        ..versionadded:: 0.12.1dev
+
     %(memory)s
 
     %(memory_level1)s
@@ -96,6 +100,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         verbose=0,
@@ -112,6 +117,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
@@ -353,16 +359,13 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
-            data[part_name] = np.zeros(
-                (mask.shape[0], signals.shape[0]),
-                dtype=signals.dtype,
-            )
+            data[part_name] = np.zeros((mask.shape[0], signals.shape[0]))
             start, stop = self._slices[part_name]
             data[part_name][mask.ravel()] = signals[:, start:stop].T
-            if return_1D:
-                data[part_name] = data[part_name].squeeze()
 
-        return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
+        imgs = SurfaceImage(mesh=self.mask_img_.mesh, data=data)
+
+        return self._post_process_inverse_transform(signals, imgs, return_1D)
 
     def generate_report(self):
         """Generate a report for the SurfaceMasker.
