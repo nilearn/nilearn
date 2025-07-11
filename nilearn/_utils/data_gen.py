@@ -1525,3 +1525,24 @@ def _write_bids_derivative_func(
         _write_fake_bold_gifti(
             gifti_path, n_time_points=n_time_points, n_vertices=n_vertices
         )
+
+
+def generate_trends(n_features=17, length=41, rng=None):
+    """Generate linearly-varying signals, with zero mean.
+
+    Parameters
+    ----------
+    n_features, length : int
+        respectively number of signals and number of samples to generate.
+
+    Returns
+    -------
+    trends : numpy.ndarray, shape (length, n_features)
+        output signals, one per column.
+    """
+    if rng is None:
+        rng = np.random.default_rng(42)
+    trends = scipy.signal.detrend(np.linspace(0, 1.0, length), type="constant")
+    trends = np.repeat(np.atleast_2d(trends).T, n_features, axis=1)
+    factors = rng.standard_normal(size=n_features)
+    return trends * factors

@@ -10,6 +10,7 @@ from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
 from pandas import read_csv
 
 import nilearn as nil
+from nilearn._utils.data_gen import generate_trends
 from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn.conftest import _rng
 from nilearn.signal import (
@@ -92,26 +93,6 @@ def generate_signals(
 
     signals[...] = scipy.signal.detrend(signals, axis=0)
     return signals, noises, confounds
-
-
-def generate_trends(n_features=17, length=41):
-    """Generate linearly-varying signals, with zero mean.
-
-    Parameters
-    ----------
-    n_features, length : int
-        respectively number of signals and number of samples to generate.
-
-    Returns
-    -------
-    trends : numpy.ndarray, shape (length, n_features)
-        output signals, one per column.
-    """
-    rng = _rng()
-    trends = scipy.signal.detrend(np.linspace(0, 1.0, length), type="constant")
-    trends = np.repeat(np.atleast_2d(trends).T, n_features, axis=1)
-    factors = rng.standard_normal(size=n_features)
-    return trends * factors
 
 
 def generate_signals_plus_trends(n_features=17, n_samples=41):

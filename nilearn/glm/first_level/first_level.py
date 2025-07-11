@@ -36,7 +36,7 @@ from nilearn._utils.param_validation import (
     check_run_sample_masks,
 )
 from nilearn._utils.tables import check_and_load_tables
-from nilearn.datasets import load_fsaverage
+from nilearn.datasets.struct import load_fsaverage
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,

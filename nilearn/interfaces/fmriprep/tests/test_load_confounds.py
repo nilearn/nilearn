@@ -7,7 +7,7 @@ from nibabel import Nifti1Image
 from scipy.stats import pearsonr
 from sklearn.preprocessing import scale
 
-from nilearn._utils.data_gen import create_fake_bids_dataset
+from nilearn._utils.data_gen import create_fake_bids_dataset, generate_trends
 from nilearn._utils.fmriprep_confounds import to_camel_case
 from nilearn.conftest import _rng
 from nilearn.interfaces.bids import get_bids_files
@@ -21,7 +21,6 @@ from nilearn.interfaces.fmriprep.tests._testing import (
     get_legal_confound,
 )
 from nilearn.maskers import NiftiMasker
-from nilearn.tests.test_signal import generate_trends
 
 
 def _simu_img(tmp_path, trend, demean):

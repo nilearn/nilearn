@@ -132,21 +132,25 @@ root_package = "nilearn"
 ignore_imports = [
     # allowed in tests
     "nilearn.*.tests.* -> nilearn._utils.estimator_checks",
+    "nilearn.**.tests.* -> nilearn.datasets",
+    "nilearn.**.tests.* -> nilearn.conftest",
+    "nilearn.**.tests.* -> nilearn._utils.data_gen",
+    "nilearn.conftest -> nilearn._utils.data_gen",
     "nilearn.plotting.*.tests.* -> nilearn.glm.**",
     "nilearn.plotting.tests.* -> nilearn.glm.**",
     "nilearn.interfaces.tests.* -> nilearn.glm.*",
     "nilearn.connectome.tests.* -> nilearn.tests.*",
-    "nilearn.connectome.tests.* -> nilearn._utils.data_gen",
     # ----------------
     "nilearn.interfaces.bids.glm -> nilearn.glm",
     "nilearn.plotting.matrix._utils -> nilearn.glm.contrasts",
-    "nilearn.plotting.matrix.matrix_plotting -> nilearn.glm.first_level"
+    "nilearn.plotting.matrix.matrix_plotting -> nilearn.glm.first_level",
+    "nilearn.datasets.utils -> nilearn.datasets.func"  # TODO can be removed at 0.13.0
 ]
 layers = [
     "nilearn.glm | nilearn.decoding | nilearn.decomposition.dict_learning | nilearn.regions.parcellations | nilearn.datasets.func | nilearn.datasets.neurovault | nilearn.datasets.atlas",
     "nilearn.decomposition.canica | nilearn.mass_univariate | nilearn.regions.rena_clustering | nilearn.regions.hierarchical_kmeans_clustering",
-    "nilearn.regions.region_extractor : nilearn.regions.signal_extraction : nilearn.connectome : nilearn.maskers : nilearn.image : nilearn.surface : nilearn.masking : nilearn.interfaces : nilearn.plotting : nilearn.signal : nilearn.datasets.struct",
-    "nilearn.typing : nilearn.datasets.utils"
+    "nilearn.regions.region_extractor : nilearn.regions.signal_extraction : nilearn.connectome : nilearn.maskers : nilearn.image : nilearn.surface : nilearn.masking : nilearn.interfaces : nilearn.plotting : nilearn.signal : nilearn.datasets.struct : nilearn.datasets.utils",
+    "nilearn.typing"
 ]
 name = "main layers"
 type = "layers"
