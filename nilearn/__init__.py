@@ -24,6 +24,7 @@ datasets                --- Utilities to download NeuroImaging datasets
 decoding                --- Decoding tools and algorithms
 decomposition           --- Includes a subject level variant of the ICA
                             algorithm called Canonical ICA
+exceptions              --- Exceptions and warnings
 glm                     --- Analyzing fMRI data using GLMs
 image                   --- Set of functions defining mathematical operations
                             working on Niimg-like objects
@@ -65,6 +66,7 @@ __all__ = [
     "datasets",
     "decoding",
     "decomposition",
+    "exceptions",
     "glm",
     "image",
     "interfaces",
