@@ -392,6 +392,21 @@ class RegionExtractor(NiftiMapsMasker):
         List of separated regions with each region lying on an
         original volume concatenated into a 4D image.
 
+    maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
+        The maps mask of the data.
+
+    %(nifti_mask_img_)s
+
+    n_elements_ : :obj:`int`
+        The number of overlapping maps in the mask.
+        This is equivalent to the number of volumes in the mask image.
+
+        .. versionadded:: 0.9.2
+
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     References
     ----------
     .. footbibliography::
