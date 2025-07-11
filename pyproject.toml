@@ -138,7 +138,6 @@ ignore_imports = [
     "nilearn.connectome.tests.* -> nilearn.tests.*",
     "nilearn.connectome.tests.* -> nilearn._utils.data_gen",
     # ----------------
-    "nilearn._utils.masker_validation -> nilearn.glm.*",
     "nilearn.interfaces.bids.glm -> nilearn.glm",
     "nilearn.plotting.matrix._utils -> nilearn.glm.contrasts",
     "nilearn.plotting.matrix.matrix_plotting -> nilearn.glm.first_level"
@@ -162,9 +161,9 @@ ignore_imports = [
     "nilearn.connectome.tests.* -> nilearn.tests.*",
     "nilearn.connectome.tests.* -> nilearn._utils.data_gen",
     # ----------------
-    "nilearn._utils.masker_validation -> nilearn.glm.*",
     "nilearn.interfaces.bids.glm -> nilearn.glm",
-    "nilearn.plotting.matrix.* -> nilearn.glm.**"
+    "nilearn.plotting.matrix._utils -> nilearn.glm.contrasts",
+    "nilearn.plotting.matrix.matrix_plotting -> nilearn.glm.first_level"
 ]
 layers = [
     "nilearn.glm : nilearn.reporting.glm_reporter",
