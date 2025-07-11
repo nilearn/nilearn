@@ -1356,6 +1356,8 @@ class PolyData:
         dtype to enforce on the data.
         If ``None`` the original dtype if used.
 
+        .. versionadded:: 0.12.1dev
+
     Examples
     --------
     >>> import numpy as np
@@ -1889,6 +1891,8 @@ class SurfaceImage:
     dtype : DTypeLike object, default=None
         dtype to enforce on the data.
         If ``None`` the original dtype if used.
+
+        .. versionadded:: 0.12.1dev
 
     Attributes
     ----------
