@@ -472,7 +472,7 @@ class NiftiMapsMasker(BaseMasker):
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                     copy_header=True,
-                    force_resample=True,
+                    force_resample=False,
                 )
             if self.mask_img_ is not None and not check_same_fov(
                 ref_img, self.mask_img_
@@ -488,7 +488,7 @@ class NiftiMapsMasker(BaseMasker):
                     interpolation="nearest",
                     copy=True,
                     copy_header=True,
-                    force_resample=True,
+                    force_resample=False,
                 )
 
                 # Just check that the mask is valid
