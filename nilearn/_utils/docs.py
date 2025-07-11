@@ -1275,51 +1275,58 @@ docdict["atlas_type"] = """'atlas_type' : :obj:`str`
         See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
 
 docdict["base_decomposition_attributes"] = """
-        Attributes
-        ----------
-        mask_img_ : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
-            See :ref:`extracting_data`.
-            The mask of the data.
-            If no mask was given at masker creation :
+Attributes
+----------
+mask_img_ : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+    See :ref:`extracting_data`.
+    The mask of the data.
+    If no mask was given at masker creation :
 
-            - for Nifti images, this contains automatically computed mask
-              via the selected ``mask_strategy``.
+    - for Nifti images, this contains automatically computed mask
+        via the selected ``mask_strategy``.
 
-            - for SurfaceImage objects, this mask encompasses all vertices of
-              the input images.
-        """
+    - for SurfaceImage objects, this mask encompasses all vertices of
+        the input images.
+
+maps_masker_ : instance of NiftiMapsMasker or SurfaceMapsMasker
+    This masker was initialized with
+    components_img_, masker_.mask_img_
+    and is the masker used
+    when calliing transform and inverse_transform.
+
+"""
 
 docdict["multi_pca_attributes"] = """
-        masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
-                :obj:`~nilearn.maskers.SurfaceMasker`
-            Masker used to filter and mask data as first step.
-            If :obj:`~nilearn.maskers.MultiNiftiMasker`
-            or :obj:`~nilearn.maskers.SurfaceMasker` is given in
-            ``mask`` parameter, this is a copy of it.
-            Otherwise, a masker is created using the value of ``mask`` and
-            other NiftiMasker/SurfaceMasker
-            related parameters as initialization.
+masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
+        :obj:`~nilearn.maskers.SurfaceMasker`
+    Masker used to filter and mask data as first step.
+    If :obj:`~nilearn.maskers.MultiNiftiMasker`
+    or :obj:`~nilearn.maskers.SurfaceMasker` is given in
+    ``mask`` parameter, this is a copy of it.
+    Otherwise, a masker is created using the value of ``mask`` and
+    other NiftiMasker/SurfaceMasker
+    related parameters as initialization.
 
-        components_ : 2D numpy array (n_components x n-voxels or n-vertices)
-            Array of masked extracted components.
+components_ : 2D numpy array (n_components x n-voxels or n-vertices)
+    Array of masked extracted components.
 
-            .. note::
+    .. note::
 
-                Use attribute ``components_img_``
-                rather than manually unmasking
-                ``components_`` with ``masker_`` attribute.
+        Use attribute ``components_img_``
+        rather than manually unmasking
+        ``components_`` with ``masker_`` attribute.
 
-        components_img_ : 4D Nifti image \
-                          or 2D :obj:`~nilearn.surface.SurfaceImage`
-            The image giving the extracted components.
-            Each 3D Nifti image or 1D SurfaceImage is a component.
+components_img_ : 4D Nifti image \
+                    or 2D :obj:`~nilearn.surface.SurfaceImage`
+    The image giving the extracted components.
+    Each 3D Nifti image or 1D SurfaceImage is a component.
 
-            .. versionadded:: 0.4.1
+    .. versionadded:: 0.4.1
 
-        variance_ : numpy array (n_components,)
-            The amount of variance explained
-            by each of the selected components.
-        """
+n_elements_ : :obj:`int`
+    The number of components.
+
+"""
 
 docdict["base_decoder_fit_attributes"] = """
         Attributes

@@ -149,6 +149,12 @@ class DictLearning(_BaseDecomposition):
 
     %(multi_pca_attributes)s
 
+    components_init_ : 2D numpy array (n_components x n-voxels or n-vertices)
+        Array of components used for initialization.
+
+    loadings_init_ : 2D numpy array
+        Initial loadings.
+
     References
     ----------
     .. footbibliography::

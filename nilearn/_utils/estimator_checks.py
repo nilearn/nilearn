@@ -840,7 +840,8 @@ def check_fit_returns_self(estimator) -> None:
 def check_img_estimator_doc_attributes(estimator) -> None:
     """Check that fitted attributes are documented.
 
-    Fitted attributes (ending with a "_") should be documented.
+    - Fitted attributes (ending with a "_") should be documented.
+    - All documented fitted attributes should exist after fit.
     """
     fitted_estimator = fit_estimator(estimator)
     fitted_attributes = [
@@ -862,6 +863,15 @@ def check_img_estimator_doc_attributes(estimator) -> None:
         raise ValueError(
             "Missing docstring for "
             f"[{', '.join(undocumented_attributes)}] "
+            f"in estimator {estimator.__class__.__name__}."
+        )
+    extra_attributes = [
+        attr for attr in documented_attributes if attr not in fitted_attributes
+    ]
+    if extra_attributes:
+        raise ValueError(
+            "Extra docstring for "
+            f"[{', '.join(extra_attributes)}] "
             f"in estimator {estimator.__class__.__name__}."
         )
 

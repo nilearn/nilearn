@@ -118,6 +118,10 @@ class CanICA(_MultiPCA):
 
     %(multi_pca_attributes)s
 
+    variance_ : numpy array (n_components,)
+        The amount of variance explained
+        by each of the selected components.
+
     References
     ----------
     .. footbibliography::
