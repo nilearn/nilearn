@@ -136,6 +136,7 @@ def _regression(confounds, tmp_path):
         (("high_pass", "compcor"), {"compcor": "anat_separated"}),
         (("high_pass", "compcor"), {"compcor": "temporal"}),
         (("ica_aroma",), {"ica_aroma": "basic"}),
+        (("tedana",), {"tedana": "aggressive"}),
     ],
 )
 def test_nilearn_regress(tmp_path, test_strategy, param, fmriprep_version):
@@ -145,6 +146,7 @@ def test_nilearn_regress(tmp_path, test_strategy, param, fmriprep_version):
         copy_confounds=True,
         copy_json=True,
         fmriprep_version=fmriprep_version,
+        image_type="tedana" if test_strategy == ("tedana",) else "regular",
     )
     if fmriprep_version == "21.x.x" and test_strategy == ("ica_aroma",):
         return
@@ -650,6 +652,35 @@ def test_ica_aroma(tmp_path, fmriprep_version):
             regular_nii, strategy=("ica_aroma",), ica_aroma="invalid"
         )
     assert "Current input: invalid" in exc_info.value.args[0]
+
+
+def test_tedana(tmp_path):
+    """Test TEDANA related file input."""
+    # create a regular nifti file with no confounds
+    regular_nii, _ = create_tmp_filepath(
+        tmp_path, image_type="regular", copy_confounds=False
+    )
+    # create a tedana nifti file with no confounds
+    tedana_nii, _ = create_tmp_filepath(
+        tmp_path, image_type="tedana", copy_confounds=True
+    )
+
+    # check that the regular nifti file raises an error
+    with pytest.raises(ValueError) as exc_info:
+        load_confounds(regular_nii, strategy=("tedana",))
+    assert (
+        "Input must be the ~desc-optcom_bold.nii.gz" in exc_info.value.args[0]
+    )
+
+    # check that the tedana nifti file loads correctly
+    conf, _ = load_confounds(tedana_nii, strategy=("tedana",))
+    assert conf.size > 0
+
+    # check that combining tedana with other strategies raises an warning
+    with pytest.warns(UserWarning, match="TEDANA strategy"):
+        conf, _ = load_confounds(
+            tedana_nii, strategy=("tedana", "motion"), motion="basic"
+        )
 
 
 @pytest.mark.parametrize(
