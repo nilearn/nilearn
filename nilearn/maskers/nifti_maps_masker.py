@@ -136,6 +136,10 @@ class NiftiMapsMasker(BaseMasker):
 
         .. versionadded:: 0.9.2
 
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     Notes
     -----
     If resampling_target is set to "maps", every 3D image processed by
