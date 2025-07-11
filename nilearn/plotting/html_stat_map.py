@@ -23,7 +23,7 @@ from nilearn.datasets import load_mni152_template
 from nilearn.image import get_data, new_img_like, reorder_img, resample_to_img
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
-from nilearn.plotting.img_plotting import load_anat
+from nilearn.plotting.image.utils import load_anat
 from nilearn.plotting.js_plotting_utils import get_html_template
 
 

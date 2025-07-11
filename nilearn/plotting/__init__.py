@@ -14,11 +14,7 @@ from nilearn.plotting.find_cuts import (
 )
 from nilearn.plotting.html_connectome import view_connectome, view_markers
 from nilearn.plotting.html_stat_map import view_img
-from nilearn.plotting.img_comparison import (
-    plot_bland_altman,
-    plot_img_comparison,
-)
-from nilearn.plotting.img_plotting import (
+from nilearn.plotting.image import (
     plot_anat,
     plot_carpet,
     plot_connectome,
@@ -30,6 +26,10 @@ from nilearn.plotting.img_plotting import (
     plot_roi,
     plot_stat_map,
     show,
+)
+from nilearn.plotting.img_comparison import (
+    plot_bland_altman,
+    plot_img_comparison,
 )
 from nilearn.plotting.matrix import (
     plot_contrast_matrix,
