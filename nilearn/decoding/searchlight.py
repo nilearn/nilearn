@@ -273,6 +273,9 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     Attributes
     ----------
+    mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
+        Mask computed by the masker object.
+
     scores_ : numpy.ndarray
         3D array containing searchlight scores for each voxel, aligned
          with the mask.
