@@ -97,6 +97,12 @@ else:
 
 
 def get_tag(estimator: BaseEstimator, tag: str) -> bool:
+    """Get some specific nilearn tag."""
+    if SKLEARN_LT_1_6 and not hasattr(estimator, "__sklearn_tags__"):
+        # TODO: remove in when dropping sklearn 1.5
+        # all nilearn estimators should have __sklearn_tags__
+        # so we can return False
+        return False
     tags = estimator.__sklearn_tags__()
     # TODO remove first if when dropping sklearn 1.5
     #  for sklearn >= 1.6 tags are always a dataclass
