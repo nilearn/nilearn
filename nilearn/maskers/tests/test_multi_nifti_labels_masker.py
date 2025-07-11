@@ -179,16 +179,27 @@ def test_multi_nifti_labels_masker_errors_resampling(
         masker.fit()
 
 
-@pytest.mark.timeout(0)
-def test_multi_nifti_labels_masker_reduction_strategies(affine_eye):
+@pytest.mark.parametrize("test_values", [[-2.0, -1.0, 0.0, 1.0, 2]])
+@pytest.mark.parametrize(
+    "strategy, fn",
+    [
+        ("mean", np.mean),
+        ("median", np.median),
+        ("sum", np.sum),
+        ("minimum", np.min),
+        ("maximum", np.max),
+        ("standard_deviation", np.std),
+        ("variance", np.var),
+    ],
+)
+def test_multi_nifti_labels_masker_reduction_strategies(
+    affine_eye, test_values, strategy, fn
+):
     """Tests strategies of MultiNiftiLabelsMasker.
 
-    1. whether the usage of different reduction strategies work
-    2. whether unrecognized strategies raise a ValueError
-    3. whether the default option is backwards compatible (calls "mean")
+    - whether the usage of different reduction strategies work
+    - whether the default option is backwards compatible (calls "mean")
     """
-    test_values = [-2.0, -1.0, 0.0, 1.0, 2]
-
     img_data = np.array([[test_values, test_values]])
 
     labels_data = np.array([[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1]]], dtype=np.int8)
@@ -196,24 +207,16 @@ def test_multi_nifti_labels_masker_reduction_strategies(affine_eye):
     img = Nifti1Image(img_data, affine_eye)
     labels = Nifti1Image(labels_data, affine_eye)
 
-    # What MultiNiftiLabelsMasker should return for each reduction strategy?
-    expected_results = {
-        "mean": np.mean(test_values),
-        "median": np.median(test_values),
-        "sum": np.sum(test_values),
-        "minimum": np.min(test_values),
-        "maximum": np.max(test_values),
-        "standard_deviation": np.std(test_values),
-        "variance": np.var(test_values),
-    }
+    masker = MultiNiftiLabelsMasker(labels, strategy=strategy)
+    # Here passing [img, img] within a list because it is multiple subjects
+    # with a 3D object.
+    results = masker.fit_transform([img, img])
 
-    for strategy, expected_result in expected_results.items():
-        masker = MultiNiftiLabelsMasker(labels, strategy=strategy)
-        # Here passing [img, img] within a list because it is multiple subjects
-        # with a 3D object.
-        results = masker.fit_transform([img, img])
-        for result in results:
-            assert result.squeeze() == expected_result
+    # What MultiNiftiLabelsMasker should return for each reduction strategy?
+    expected_result = fn(test_values)
+
+    for r in results:
+        assert r.squeeze() == expected_result
 
     default_masker = MultiNiftiLabelsMasker(labels)
     assert default_masker.strategy == "mean"
