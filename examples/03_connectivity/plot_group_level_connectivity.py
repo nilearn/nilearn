@@ -19,14 +19,14 @@ for a careful study.
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
 # We study only 30 subjects from the dataset, to save computation time.
-from nilearn import datasets
+from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 from nilearn.plotting import plot_connectome, plot_matrix, show
 
-development_dataset = datasets.fetch_development_fmri(n_subjects=30)
+development_dataset = fetch_development_fmri(n_subjects=30)
 
 # %%
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
-msdl_data = datasets.fetch_atlas_msdl()
+msdl_data = fetch_atlas_msdl()
 msdl_coords = msdl_data.region_coords
 n_regions = len(msdl_coords)
 print(

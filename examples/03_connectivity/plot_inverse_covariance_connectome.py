@@ -26,16 +26,16 @@ represent only the 20% edges with the highest values.
 # %%
 # Retrieve the atlas and the data
 # -------------------------------
-from nilearn import datasets
+from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 
-atlas = datasets.fetch_atlas_msdl()
+atlas = fetch_atlas_msdl()
 # Loading atlas image stored in 'maps'
 atlas_filename = atlas["maps"]
 # Loading atlas data stored in 'labels'
 labels = atlas["labels"]
 
 # Loading the functional datasets
-data = datasets.fetch_development_fmri(n_subjects=1)
+data = fetch_development_fmri(n_subjects=1)
 
 # print basic information on the dataset
 print(f"First subject functional nifti images (4D) are at: {data.func[0]}")
@@ -66,12 +66,17 @@ estimator.fit(time_series)
 # %%
 # Display the connectome matrix
 # -----------------------------
-from nilearn import plotting
+from nilearn.plotting import (
+    plot_connectome,
+    plot_matrix,
+    show,
+    view_connectome,
+)
 
 # Display the covariance
 
 # The covariance can be found at estimator.covariance_
-plotting.plot_matrix(
+plot_matrix(
     estimator.covariance_,
     labels=labels,
     figure=(9, 7),
@@ -85,14 +90,14 @@ plotting.plot_matrix(
 # ---------------------------------------
 coords = atlas.region_coords
 
-plotting.plot_connectome(estimator.covariance_, coords, title="Covariance")
+plot_connectome(estimator.covariance_, coords, title="Covariance")
 
 
 # %%
 # Display the sparse inverse covariance
 # -------------------------------------
 # we negate it to get partial correlations
-plotting.plot_matrix(
+plot_matrix(
     -estimator.precision_,
     labels=labels,
     figure=(9, 7),
@@ -104,11 +109,11 @@ plotting.plot_matrix(
 # %%
 # And now display the corresponding graph
 # ----------------------------------------
-plotting.plot_connectome(
+plot_connectome(
     -estimator.precision_, coords, title="Sparse inverse covariance"
 )
 
-plotting.show()
+show()
 
 # %%
 # 3D visualization in a web browser
@@ -119,7 +124,7 @@ plotting.show()
 # for more details.
 
 
-view = plotting.view_connectome(-estimator.precision_, coords)
+view = view_connectome(-estimator.precision_, coords)
 
 # In a Jupyter notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
