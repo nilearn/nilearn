@@ -332,6 +332,7 @@ class RegionExtractor(NiftiMapsMasker):
         .. versionadded:: 0.11.1
 
     %(extractor)s
+
     %(smoothing_fwhm)s
         Use this parameter to smooth an image
         to extract most sparser regions.
@@ -348,6 +349,7 @@ class RegionExtractor(NiftiMapsMasker):
             otherwise extraction will fail.
 
         Default=6mm.
+
     %(standardize_false)s
 
         .. note::
@@ -355,6 +357,11 @@ class RegionExtractor(NiftiMapsMasker):
             Passed to :class:`~nilearn.maskers.NiftiMapsMasker`.
 
     %(standardize_confounds)s
+
+    high_variance_confounds : :obj:`bool`, default=False
+        If True, high variance confounds are computed on provided image with
+        :func:`nilearn.image.high_variance_confounds` and default parameters
+        and regressed out.
 
     %(detrend)s
 
@@ -378,9 +385,32 @@ class RegionExtractor(NiftiMapsMasker):
         .. note::
             Passed to :func:`nilearn.signal.clean`.
 
+    %(dtype)s
+
+    resampling_target : {"data", "mask", "maps", None}, default="data"
+        Gives which image gives the final shape/size. For example, if
+        `resampling_target` is "mask" then maps_img and images provided to
+        fit() are resampled to the shape and affine of mask_img. "None" means
+        no resampling: if shapes and affines do not match, a ValueError is
+        raised.
+
     %(memory)s
+
     %(memory_level)s
+
     %(verbose0)s
+
+    %(keep_masked_maps)s
+
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+    %(cmap)s
+        default="CMRmap_r"
+        Only relevant for the report figures.
+
+    %(clean_args)s
+        .. versionadded:: 0.12.1dev
 
     Attributes
     ----------
@@ -405,8 +435,6 @@ class RegionExtractor(NiftiMapsMasker):
 
     %(clean_args_)s
 
-    %(masker_kwargs_)s
-
     References
     ----------
     .. footbibliography::
@@ -430,13 +458,20 @@ class RegionExtractor(NiftiMapsMasker):
         smoothing_fwhm=6,
         standardize=False,
         standardize_confounds=True,
+        high_variance_confounds=False,
         detrend=False,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
+        resampling_target="data",
+        keep_masked_maps=True,
         memory=None,
         memory_level=0,
         verbose=0,
+        reports=True,
+        cmap="CMRmap_r",
+        clean_args=None,
     ):
         super().__init__(
             maps_img=maps_img,
@@ -444,13 +479,20 @@ class RegionExtractor(NiftiMapsMasker):
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
             standardize_confounds=standardize_confounds,
+            high_variance_confounds=high_variance_confounds,
             detrend=detrend,
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
+            resampling_target=resampling_target,
+            keep_masked_maps=keep_masked_maps,
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
+            reports=reports,
+            cmap=cmap,
+            clean_args=clean_args,
         )
         self.maps_img = maps_img
         self.min_region_size = min_region_size

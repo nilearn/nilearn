@@ -82,6 +82,8 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
     %(verbose0)s
 
+    %(keep_masked_maps)s
+
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
 
@@ -141,6 +143,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
+        keep_masked_maps=True,
         memory=None,
         memory_level=0,
         verbose=0,
@@ -168,6 +171,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
+            keep_masked_maps=keep_masked_maps,
             reports=reports,
             cmap=cmap,
             clean_args=clean_args,

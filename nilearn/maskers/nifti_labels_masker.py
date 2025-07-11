@@ -174,14 +174,6 @@ class NiftiLabelsMasker(BaseMasker):
         Look-up table derived from the ``labels`` or ``lut``
         or from the values of the label image.
 
-    region_atlas_ : Niimg-like object
-        Regions definition as labels.
-        The labels correspond to the indices in ``region_ids_``.
-        The region in ``region_atlas_`` that takes the value ``region_ids_[i]``
-        is used to compute the signal in ``region_signal[:,i]``.
-
-        .. versionadded:: 0.10.3
-
     %(clean_args_)s
 
     %(masker_kwargs_)s
@@ -735,7 +727,18 @@ class NiftiLabelsMasker(BaseMasker):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
+
+        Attributes
+        ----------
+        region_atlas_ : Niimg-like object
+            Regions definition as labels.
+            The labels correspond to the indices in ``region_ids_``.
+            The region in ``region_atlas_``
+            that takes the value ``region_ids_[i]``
+            is used to compute the signal in ``region_signal[:,i]``.
+
+            .. versionadded:: 0.10.3
 
         Returns
         -------

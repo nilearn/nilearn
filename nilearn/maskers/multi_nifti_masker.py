@@ -87,6 +87,10 @@ class MultiNiftiMasker(NiftiMasker):
         Optional parameters can be set using mask_args and mask_strategy to
         fine tune the mask extraction.
 
+    runs : :obj:`numpy.ndarray`, optional
+        Add a run level to the preprocessing. Each run will be
+        detrended independently. Must be a 1D array of n_samples elements.
+
     %(smoothing_fwhm)s
 
     %(standardize_maskers)s
@@ -143,6 +147,13 @@ class MultiNiftiMasker(NiftiMasker):
 
     %(verbose0)s
 
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+    %(cmap)s
+        default="gray"
+        Only relevant for the report figures.
+
     %(clean_args)s
 
     %(masker_kwargs)s
@@ -180,6 +191,7 @@ class MultiNiftiMasker(NiftiMasker):
     def __init__(
         self,
         mask_img=None,
+        runs=None,
         smoothing_fwhm=None,
         standardize=False,
         standardize_confounds=True,
@@ -197,13 +209,15 @@ class MultiNiftiMasker(NiftiMasker):
         memory_level=0,
         n_jobs=1,
         verbose=0,
-        cmap="CMRmap_r",
+        reports=True,
+        cmap="gray",
         clean_args=None,
         **kwargs,  # TODO remove when bumping to nilearn >0.13
     ):
         super().__init__(
             # Mask is provided or computed
             mask_img=mask_img,
+            runs=runs,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
             standardize_confounds=standardize_confounds,
@@ -220,6 +234,7 @@ class MultiNiftiMasker(NiftiMasker):
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
+            reports=reports,
             cmap=cmap,
             clean_args=clean_args,
             # TODO remove when bumping to nilearn >0.13

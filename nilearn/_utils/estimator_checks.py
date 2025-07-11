@@ -838,23 +838,60 @@ def check_fit_returns_self(estimator) -> None:
 
 
 def check_img_estimator_doc_attributes(estimator) -> None:
-    """Check that fitted attributes are documented.
+    """Check that parameters and attributes are documented.
 
+    - Public parameters should be documented.
+    - All documented parameters should exist after init.
     - Fitted attributes (ending with a "_") should be documented.
     - All documented fitted attributes should exist after fit.
     """
+    doc = NumpyDocString(estimator.__doc__)
+    for section in ["Parameters", "Attributes"]:
+        if section not in doc:
+            raise ValueError(
+                f"Estimator {estimator.__class__.__name__} "
+                f"has no '{section} section."
+            )
+
+    # check public attributes before fit
+    parameters = [x for x in estimator.__dict__ if not x.startswith("_")]
+    documented_parameters = {
+        param.name: param.type for param in doc["Parameters"]
+    }
+    # TODO in 0.13.0
+    # remove the 'and param != "clean_kwargs"'
+    undocumented_parameters = [
+        param
+        for param in parameters
+        if param not in documented_parameters and param != "clean_kwargs"
+    ]
+    if undocumented_parameters:
+        raise ValueError(
+            "Missing docstring for "
+            f"[{', '.join(undocumented_parameters)}] "
+            f"in estimator {estimator.__class__.__name__}."
+        )
+    extra_parameters = [
+        attr
+        for attr in documented_parameters
+        if attr not in parameters and attr != "kwargs"
+    ]
+    if extra_parameters:
+        raise ValueError(
+            "Extra docstring for "
+            f"[{', '.join(extra_parameters)}] "
+            f"in estimator {estimator.__class__.__name__}."
+        )
+
+    # check fitted attributes after fit
     fitted_estimator = fit_estimator(estimator)
+
     fitted_attributes = [
         x for x in fitted_estimator.__dict__ if x.endswith("_")
     ]
-    doc = NumpyDocString(fitted_estimator.__doc__)
-    if "Attributes" not in doc:
-        raise ValueError(
-            f"Estimator {estimator.__class__.__name__} "
-            "has no 'Attributes' section."
-        )
+
     documented_attributes = {
-        param.name: param.type for param in doc["Attributes"]
+        attr.name: attr.type for attr in doc["Attributes"]
     }
     undocumented_attributes = [
         attr for attr in fitted_attributes if attr not in documented_attributes
@@ -865,6 +902,7 @@ def check_img_estimator_doc_attributes(estimator) -> None:
             f"[{', '.join(undocumented_attributes)}] "
             f"in estimator {estimator.__class__.__name__}."
         )
+
     extra_attributes = [
         attr for attr in documented_attributes if attr not in fitted_attributes
     ]

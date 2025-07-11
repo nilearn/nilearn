@@ -93,6 +93,10 @@ class DictLearning(_BaseDecomposition):
         If standardize is True, the time-series are centered and normed:
         their variance is put to 1 in the time dimension.
 
+    standardize_confounds : boolean, default=True
+        If standardize_confounds is True, the confounds are z-scored:
+        their mean is put to 0 and their variance to 1 in the time dimension.
+
     detrend : :obj:`bool`, default=True
         If detrend is True, the time-series will be detrended before
         components extraction.
@@ -174,6 +178,7 @@ class DictLearning(_BaseDecomposition):
         mask=None,
         smoothing_fwhm=4,
         standardize=True,
+        standardize_confounds=True,
         detrend=True,
         low_pass=None,
         high_pass=None,
@@ -193,6 +198,7 @@ class DictLearning(_BaseDecomposition):
             mask=mask,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
+            standardize_confounds=standardize_confounds,
             detrend=detrend,
             low_pass=low_pass,
             high_pass=high_pass,

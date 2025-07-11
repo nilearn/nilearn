@@ -100,6 +100,10 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
 
+    %(cmap)s
+        default="CMRmap_r"
+        Only relevant for the report figures.
+
     %(clean_args)s
 
     %(masker_kwargs)s
@@ -149,6 +153,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         strategy="mean",
         keep_masked_labels=True,
         reports=True,
+        cmap="CMRmap_r",
         n_jobs=1,
         clean_args=None,
         **kwargs,
@@ -175,6 +180,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             verbose=verbose,
             strategy=strategy,
             reports=reports,
+            cmap=cmap,
             clean_args=clean_args,
             keep_masked_labels=keep_masked_labels,
             **kwargs,

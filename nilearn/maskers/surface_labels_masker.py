@@ -126,6 +126,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     %(verbose0)s
 
+    %(strategy)s
+
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
 
