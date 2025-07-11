@@ -66,7 +66,9 @@ fmri_masked = nifti_masker.transform(func_filename)
 from sklearn.decomposition import FastICA
 
 n_components = 10
-ica = FastICA(n_components=n_components, random_state=42)
+ica = FastICA(
+    n_components=n_components, random_state=42, tol=0.001, max_iter=2000
+)
 components_masked = ica.fit_transform(fmri_masked.T).T
 
 # %%

@@ -488,6 +488,10 @@ class BaseSlicer:
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = get_mask_bounds(
                 new_img_like(img, not_mask, affine)
             )
+            if type == "contourf" and "linewidths" in kwargs:
+                # linewidths not supported by contourf
+                kwargs.pop("linewidths")
+
         elif hasattr(data, "mask") and isinstance(data.mask, np.ndarray):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = get_mask_bounds(
