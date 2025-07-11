@@ -12,9 +12,9 @@ from nilearn._utils import (
     fill_doc,
     rename_parameters,
 )
+from nilearn._utils.experimental_paradigm import check_events
 from nilearn._utils.tables import check_and_load_tables
 from nilearn.glm.first_level import check_design_matrix
-from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.plotting._utils import save_figure_if_needed
 from nilearn.plotting.matrix._utils import (
     mask_matrix,

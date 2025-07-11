@@ -139,8 +139,7 @@ ignore_imports = [
     "nilearn.connectome.tests.* -> nilearn._utils.data_gen",
     # ----------------
     "nilearn._utils.masker_validation -> nilearn.glm.*",
-    "nilearn.interfaces.bids.glm -> nilearn.glm",
-    "nilearn.plotting.matrix.* -> nilearn.glm.**"
+    "nilearn.interfaces.bids.glm -> nilearn.glm"
 ]
 layers = [
     "nilearn.glm | nilearn.decoding | nilearn.decomposition.dict_learning | nilearn.regions.parcellations",

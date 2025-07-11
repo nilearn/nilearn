@@ -36,14 +36,14 @@ import numpy as np
 import pandas as pd
 
 from nilearn._utils import fill_doc
+from nilearn._utils.experimental_paradigm import (
+    check_events,
+    handle_modulation_of_duplicate_events,
+)
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tables import check_and_load_tables
 from nilearn.glm._utils import full_rank
-from nilearn.glm.first_level.experimental_paradigm import (
-    check_events,
-    handle_modulation_of_duplicate_events,
-)
 from nilearn.glm.first_level.hemodynamic_models import (
     compute_regressor,
     orthogonalize,
