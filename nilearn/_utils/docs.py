@@ -917,7 +917,7 @@ confounds : :obj:`pandas.DataFrame` or None, default=None
     and at least one confound.
 """
 
-# second_level_confounds
+# second_level_design_matrix
 docdict["second_level_design_matrix"] = """
 design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
                 or :obj:`pathlib.Path` to a CSV or TSV file, \
