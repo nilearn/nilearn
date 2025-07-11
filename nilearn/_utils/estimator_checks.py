@@ -85,7 +85,6 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_img,
     _decomposition_mesh,
 )
-from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import new_img_like
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
@@ -900,7 +899,7 @@ def check_img_estimator_cache_warning(estimator) -> None:
             if is_masker(estimator):
                 # some maskers only cache during transform
                 estimator.transform(X)
-            elif isinstance(estimator, SecondLevelModel):
+            elif is_glm(estimator) and not hasattr(estimator, "hrf_model"):
                 # second level only cache during contrast computation
                 estimator.compute_contrast(np.asarray([1]))
         assert all(
@@ -923,7 +922,7 @@ def check_img_estimator_cache_warning(estimator) -> None:
             if is_masker(estimator):
                 # some maskers also cache during transform
                 estimator.transform(X)
-            elif isinstance(estimator, SecondLevelModel):
+            elif is_glm(estimator) and not hasattr(estimator, "hrf_model"):
                 # second level only cache during contrast computation
                 estimator.compute_contrast(np.asarray([1]))
 
