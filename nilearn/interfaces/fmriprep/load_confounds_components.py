@@ -50,8 +50,8 @@ def _tedana_strategy(classification, mixing, metrics):
         DataFrame of TEDANA regressors.
     """
     # 1. Get selected components from status table
-    selected_components = mixing[
-        metrics[metrics["classification"].isin(classification)]["Component"]
+    selected_metric_components = metrics[
+        metrics["classification"].isin(classification)
     ]
 
     #############################################################
@@ -74,16 +74,28 @@ def _tedana_strategy(classification, mixing, metrics):
     # Apply normalized names to columns
     mixing.columns = list(column_mapping.keys())
 
+    # Build classification lookup from normalized component names
+    classification_lookup = {
+        re.sub(
+            r"ICA_0*(\d+)$",
+            lambda m: f"ICA_{int(m.group(1))}",
+            row["Component"],
+        ): row["classification"]
+        for _, row in selected_metric_components.iterrows()
+    }
+
     # 4. Select matched columns (normalized)
     matched_components = [
-        c for c in selected_components if c in mixing.columns
+        c for c in classification_lookup if c in mixing.columns
     ]
     selected = mixing[sorted(matched_components)]
 
-    # 5. Rename columns back to original names using mapping
-    load_confounds = selected.rename(
-        columns={norm: column_mapping[norm] for norm in selected.columns}
-    )
+    # 5. Rename columns using classification + original name
+    renamed_columns = {
+        col: f"{classification_lookup[col]}_{column_mapping[col]}"
+        for col in selected.columns
+    }
+    load_confounds = selected.rename(columns=renamed_columns)
 
     return load_confounds
 
