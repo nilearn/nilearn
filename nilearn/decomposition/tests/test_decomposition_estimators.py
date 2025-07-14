@@ -160,6 +160,7 @@ def test_masker_attributes_with_fit(
     check_decomposition_estimator(est, data_type)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform(

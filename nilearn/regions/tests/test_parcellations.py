@@ -307,6 +307,7 @@ def test_transform_single_3d_input_images(affine_eye):
     assert X.shape == (1, 20)
 
 
+@pytest.mark.timeout(0)
 def test_transform_list_3d_input_images(affine_eye):
     """Test fit_transform list 3D image."""
     data = np.ones((10, 11, 12))

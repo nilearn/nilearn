@@ -45,9 +45,9 @@ from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
+from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
-    create_colormap_from_lut,
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
     save_figure_if_needed,
