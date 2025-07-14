@@ -132,11 +132,12 @@ If you wish to add a missing term, please
     Tedana
         `Tedana`_ is a multi-echo :term:`fMRI` data denoising pipeline.
         :term:`Tedana` originally came about as a part of the ME-ICA pipeline,
-        although it has since diverged. An important distinction is that while
-        the ME-ICA pipeline originally performed both pre-processing and
+        although it has since diverged. An important distinction is that
+        the ME-ICA pipeline was written for python v2.7,
+        and was not designed in a way that others could easily
+        examine and improve the underlying algorithms for
         TE-dependent analysis of multi-echo :term:`fMRI` data, tedana now assumes
-        that you are working with data which has been previously preprocessed with
-        :term:`fMRIPrep`.
+        that you are working with data which has been previously preprocessed.
 
     FPR correction
         False positive rate correction. This refers to the methods employed to
