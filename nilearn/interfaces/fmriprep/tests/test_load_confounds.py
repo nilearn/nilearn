@@ -672,6 +672,14 @@ def test_tedana(tmp_path):
         "Input must be the ~desc-optcom_bold.nii.gz" in exc_info.value.args[0]
     )
 
+    # check that the tedana nifti file raises an error with other strategies
+    with pytest.raises(ValueError) as exc_info:
+        load_confounds(tedana_nii, strategy=("motion",))
+    assert (
+        "Invalid file type for the selected 'nii.gz' method"
+        in exc_info.value.args[0]
+    )
+
     # check that the tedana nifti file loads correctly
     conf, _ = load_confounds(tedana_nii, strategy=("tedana",))
     assert conf.size > 0
@@ -680,6 +688,14 @@ def test_tedana(tmp_path):
     with pytest.warns(UserWarning, match="TEDANA strategy"):
         conf, _ = load_confounds(
             tedana_nii, strategy=("tedana", "motion"), motion="basic"
+        )
+
+    # check that combining tedana with other strategies raises an warning
+    with pytest.warns(UserWarning, match="TEDANA strategy"):
+        conf, _ = load_confounds(
+            tedana_nii,
+            strategy=("tedana", "high_pass", "ica_aroma", "global_signal"),
+            motion="basic",
         )
 
 
