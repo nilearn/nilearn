@@ -64,7 +64,7 @@ def _tedana_strategy(classification, mixing, metrics):
     # 3. Normalize mixing file column names and build a mapping
     original_columns = mixing.columns.tolist()
 
-    # Map: normalized_name → original_name
+    # Map: normalized_name -> original_name
     column_mapping = {
         re.sub(r"ICA_0*(\d+)$", lambda m: f"ICA_{int(m.group(1))}", col): col
         for col in original_columns
@@ -90,13 +90,14 @@ def _tedana_strategy(classification, mixing, metrics):
     selected = mixing[sorted(matched_components)]
 
     # 5. Rename columns using classification + original name
+    # we are prefixing the classification value to the column name
+    # regardless of the tedana strategy selected
     renamed_columns = {
         col: f"{classification_lookup[col]}_{column_mapping[col]}"
         for col in selected.columns
     }
-    load_confounds = selected.rename(columns=renamed_columns)
 
-    return load_confounds
+    return selected.rename(columns=renamed_columns)
 
 
 def _load_tedana(confounds_files, tedana):
@@ -118,7 +119,8 @@ def _load_tedana(confounds_files, tedana):
     """
     if tedana not in ["aggressive", "non-aggressive"]:
         raise ValueError(
-            "Please select an option when using TEDANA strategy. "
+            "Please select a valid option 'aggresive' or 'non-aggressive' "
+            "when using TEDANA strategy. "
             f"Current input: {tedana}"
         )
 
