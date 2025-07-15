@@ -707,7 +707,11 @@ def test_tedana(tmp_path):
     conf, _ = load_confounds(
         tedana_nii, strategy=("tedana",), tedana="non-aggressive"
     )
-    assert conf.size > 0 and any("rejected" in col for col in conf.columns) and any("accepted" in col for col in conf.columns)
+    assert (
+        conf.size > 0
+        and any("rejected" in col for col in conf.columns)
+        and any("accepted" in col for col in conf.columns)
+    )
 
     # tedana strategy with invalid option
     with pytest.raises(ValueError) as exc_info:
