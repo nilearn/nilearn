@@ -698,6 +698,22 @@ def test_tedana(tmp_path):
             motion="basic",
         )
 
+    # check the different strategies for tedana
+    conf, _ = load_confounds(
+        tedana_nii, strategy=("tedana",), tedana="aggressive"
+    )
+    assert conf.size > 0 and any("rejected" in col for col in conf.columns)
+
+    conf, _ = load_confounds(
+        tedana_nii, strategy=("tedana",), tedana="non-aggressive"
+    )
+    assert conf.size > 0 and any("rejected" in col for col in conf.columns) and any("accepted" in col for col in conf.columns)
+
+    # tedana strategy with invalid option
+    with pytest.raises(ValueError) as exc_info:
+        load_confounds(tedana_nii, strategy=("tedana",), tedana="invalid")
+    assert "Current input: invalid" in exc_info.value.args[0]
+
 
 @pytest.mark.parametrize(
     "fmriprep_version, scrubbed_time_points, non_steady_outliers",
