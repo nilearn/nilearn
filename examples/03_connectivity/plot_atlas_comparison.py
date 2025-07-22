@@ -57,7 +57,7 @@ print(
 from nilearn.connectome import ConnectivityMeasure
 from nilearn.maskers import MultiNiftiLabelsMasker
 
-# ConenctivityMeasure from Nilearn uses simple 'correlation' to compute
+# ConnectivityMeasure from Nilearn uses simple 'correlation' to compute
 # connectivity matrices for all subjects in a list
 connectome_measure = ConnectivityMeasure(
     kind="correlation",
