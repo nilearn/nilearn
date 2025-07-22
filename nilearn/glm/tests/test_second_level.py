@@ -27,6 +27,7 @@ from nilearn._utils.estimator_checks import (
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _shape_3d_default
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.glm.second_level.second_level import (
@@ -1522,7 +1523,7 @@ def test_second_level_input_as_surface_image_warning_smoothing(surf_img_1d):
     )
 
     model = SecondLevelModel(smoothing_fwhm=8.0)
-    with pytest.warns(UserWarning, match="not yet supported"):
+    with pytest.warns(NotImplementedWarning, match="not yet supported"):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
@@ -1643,7 +1644,7 @@ def test_non_parametric_inference_with_surface_images_warnings(surf_img_1d):
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
     with pytest.warns(
-        UserWarning,
+        NotImplementedWarning,
         match="'smoothing_fwhm' is not yet supported for surface data.",
     ):
         non_parametric_inference(
@@ -1653,7 +1654,7 @@ def test_non_parametric_inference_with_surface_images_warnings(surf_img_1d):
             smoothing_fwhm=6,
         )
     with pytest.warns(
-        UserWarning,
+        NotImplementedWarning,
         match="Cluster level inference not yet implemented for surface data.",
     ):
         non_parametric_inference(
@@ -1663,7 +1664,7 @@ def test_non_parametric_inference_with_surface_images_warnings(surf_img_1d):
             tfce=True,
         )
     with pytest.warns(
-        UserWarning,
+        NotImplementedWarning,
         match="Cluster level inference not yet implemented for surface data.",
     ):
         non_parametric_inference(
