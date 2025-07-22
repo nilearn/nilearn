@@ -16,7 +16,6 @@ from sklearn.base import clone
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
-from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
@@ -544,7 +543,7 @@ class SecondLevelModel(BaseGLM):
         self.labels_ = None
         self.results_ = None
 
-        self.memory = check_memory(self.memory)
+        self._fit_cache()
 
         # check second_level_input
         _check_second_level_input(
@@ -687,7 +686,7 @@ class SecondLevelModel(BaseGLM):
 
         # Fit an Ordinary Least Squares regression for parametric statistics
         Y = self.masker_.transform(effect_maps)
-        if self.memory:
+        if self.memory_:
             mem_glm = self._cache(run_glm, ignore=["n_jobs"])
         else:
             mem_glm = run_glm
@@ -706,7 +705,7 @@ class SecondLevelModel(BaseGLM):
         self.results_ = results
 
         # We compute contrast object
-        if self.memory:
+        if self.memory_:
             mem_contrast = self._cache(compute_contrast)
         else:
             mem_contrast = compute_contrast

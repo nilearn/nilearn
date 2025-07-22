@@ -5,7 +5,6 @@ brain regions.
 import warnings
 
 import numpy as np
-from joblib import Memory
 from scipy import linalg
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -187,8 +186,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if imgs is not None:
             check_surf_img(imgs)
 
-        if self.memory is None:
-            self.memory = Memory(location=None)
+        self._fit_cache()
 
         mask_logger("load_regions", self.maps_img, verbose=self.verbose)
 
@@ -201,8 +199,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.mask_img_ = self._load_mask(imgs)
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
-
-        self._shelving = False
 
         # initialize reporting content and data
         if not self.reports:
@@ -289,21 +285,15 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         # and then extract signal via least square regression
         mask_logger("extracting", verbose=self.verbose)
         if mask_data is not None:
-            region_signals = self._cache(
-                linalg.lstsq,
-                func_memory_level=2,
-                shelve=self._shelving,
-            )(
+            region_signals = self._cache(linalg.lstsq, func_memory_level=2)(
                 maps_data[mask_data.flatten(), :],
                 img_data[mask_data.flatten(), :],
             )[0].T
         # if no mask, directly extract signal
         else:
-            region_signals = self._cache(
-                linalg.lstsq,
-                func_memory_level=2,
-                shelve=self._shelving,
-            )(maps_data, img_data)[0].T
+            region_signals = self._cache(linalg.lstsq, func_memory_level=2)(
+                maps_data, img_data
+            )[0].T
 
         mask_logger("cleaning", verbose=self.verbose)
 
@@ -312,11 +302,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
-        region_signals = self._cache(
-            signal.clean,
-            func_memory_level=2,
-            shelve=self._shelving,
-        )(
+        region_signals = self._cache(signal.clean, func_memory_level=2)(
             region_signals,
             detrend=parameters["detrend"],
             standardize=parameters["standardize"],
