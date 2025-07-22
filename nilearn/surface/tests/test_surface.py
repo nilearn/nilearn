@@ -11,8 +11,9 @@ from scipy.spatial import Delaunay
 from scipy.stats import pearsonr
 from sklearn.exceptions import EfficiencyWarning
 
-from nilearn import datasets, image
+from nilearn import image
 from nilearn._utils import data_gen
+from nilearn.datasets.struct import fetch_surf_fsaverage
 from nilearn.image import resampling
 from nilearn.surface.surface import (
     FileMesh,
@@ -112,7 +113,7 @@ def test_load_surf_data_numpy_gt_1pt23():
     Regression test for
     https://github.com/nilearn/nilearn/issues/3638
     """
-    fsaverage = datasets.fetch_surf_fsaverage()
+    fsaverage = fetch_surf_fsaverage()
     load_surf_data(fsaverage["pial_left"])
 
 
@@ -158,7 +159,7 @@ def test_load_surf_data_gii_gz():
     # Test the loader `load_surf_data` with gzipped fsaverage5 files
 
     # surface data
-    fsaverage = datasets.fetch_surf_fsaverage().sulc_left
+    fsaverage = fetch_surf_fsaverage().sulc_left
     gii = _load_surf_files_gifti_gzip(fsaverage)
     assert isinstance(gii, gifti.GiftiImage)
 
@@ -166,7 +167,7 @@ def test_load_surf_data_gii_gz():
     assert isinstance(data, np.ndarray)
 
     # surface mesh
-    fsaverage = datasets.fetch_surf_fsaverage().pial_left
+    fsaverage = fetch_surf_fsaverage().pial_left
     gii = _load_surf_files_gifti_gzip(fsaverage)
     assert isinstance(gii, gifti.GiftiImage)
 
@@ -271,7 +272,7 @@ def test_gifti_img_to_mesh(in_memory_mesh):
 
 def test_load_surf_mesh_file_gii_gz():
     # Test the loader `load_surf_mesh` with gzipped fsaverage5 files
-    fsaverage = datasets.fetch_surf_fsaverage().pial_left
+    fsaverage = fetch_surf_fsaverage().pial_left
     mesh = load_surf_mesh(fsaverage)
     coords = mesh.coordinates
     faces = mesh.faces
@@ -573,7 +574,7 @@ def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
 def test_vol_to_surf_errors():
     """Test errors thrown by vol_to_surf."""
     img, *_ = data_gen.generate_mni_space_img()
-    mesh = load_surf_mesh(datasets.fetch_surf_fsaverage()["pial_left"])
+    mesh = load_surf_mesh(fetch_surf_fsaverage()["pial_left"])
 
     with pytest.raises(ValueError, match=".*does not support.*"):
         vol_to_surf(img, mesh, kind="ball", depth=[0.5])
@@ -592,7 +593,7 @@ def test_vol_to_surf(kind, n_scans, use_mask):
     if n_scans == 1:
         img = image.new_img_like(img, image.get_data(img).squeeze())
 
-    fsaverage = datasets.fetch_surf_fsaverage()
+    fsaverage = fetch_surf_fsaverage()
 
     mesh = load_surf_mesh(fsaverage["pial_left"])
     inner_mesh = load_surf_mesh(fsaverage["white_left"])
@@ -964,10 +965,10 @@ def test_load_save_mesh(
     - only one hemisphere is saved if hemi- is in the filename
     - the roundtrip does not change the data
     """
-    mesh_right = datasets.fetch_surf_fsaverage().pial_right
-    mesh_left = datasets.fetch_surf_fsaverage().pial_left
-    data_right = datasets.fetch_surf_fsaverage().sulc_right
-    data_left = datasets.fetch_surf_fsaverage().sulc_left
+    mesh_right = fetch_surf_fsaverage().pial_right
+    mesh_left = fetch_surf_fsaverage().pial_left
+    data_right = fetch_surf_fsaverage().sulc_right
+    data_left = fetch_surf_fsaverage().sulc_left
 
     if use_path:
         img = SurfaceImage(
@@ -1035,10 +1036,10 @@ def test_load_save_data(
     tmp_path, output_filename, expected_files, unexpected_files, use_path
 ):
     """Load and save gifti leaves them unchanged."""
-    mesh_right = datasets.fetch_surf_fsaverage().pial_right
-    mesh_left = datasets.fetch_surf_fsaverage().pial_left
-    data_right = datasets.fetch_surf_fsaverage().sulc_right
-    data_left = datasets.fetch_surf_fsaverage().sulc_left
+    mesh_right = fetch_surf_fsaverage().pial_right
+    mesh_left = fetch_surf_fsaverage().pial_left
+    data_right = fetch_surf_fsaverage().sulc_right
+    data_left = fetch_surf_fsaverage().sulc_left
 
     if use_path:
         img = SurfaceImage(
@@ -1152,8 +1153,8 @@ def test_load_from_volume_4d_nifti(img_4d_mni, surf_mesh, tmp_path):
 
 def test_surface_image_error():
     """Instantiate surface image with Niftiimage object or file for data."""
-    mesh_right = datasets.fetch_surf_fsaverage().pial_right
-    mesh_left = datasets.fetch_surf_fsaverage().pial_left
+    mesh_right = fetch_surf_fsaverage().pial_right
+    mesh_left = fetch_surf_fsaverage().pial_left
 
     with pytest.raises(TypeError, match="[PolyData, dict]"):
         SurfaceImage(mesh={"left": mesh_left, "right": mesh_right}, data=3)

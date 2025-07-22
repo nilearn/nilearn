@@ -10,8 +10,10 @@ from pathlib import Path
 import pytest
 from numpy import __version__ as np_version
 
-from nilearn._utils import compare_version
-from nilearn._utils.helpers import OPTIONAL_MATPLOTLIB_MIN_VERSION
+from nilearn._utils.helpers import (
+    OPTIONAL_MATPLOTLIB_MIN_VERSION,
+    compare_version,
+)
 
 try:
     from matplotlib import __version__ as mpl_version

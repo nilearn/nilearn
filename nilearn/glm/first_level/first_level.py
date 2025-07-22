@@ -25,7 +25,6 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
 from nilearn._utils.cache_mixin import check_memory
-from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -36,7 +35,8 @@ from nilearn._utils.param_validation import (
     check_params,
     check_run_sample_masks,
 )
-from nilearn.datasets import load_fsaverage
+from nilearn._utils.tables import check_and_load_tables
+from nilearn.datasets.struct import load_fsaverage
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
