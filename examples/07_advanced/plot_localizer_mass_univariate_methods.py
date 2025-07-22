@@ -66,7 +66,7 @@ fmri_masked = nifti_masker.fit_transform(contrast_map_filenames)
 # Anova (parametric F-scores)
 from sklearn.feature_selection import f_regression
 
-_, pvals_anova = f_regression(fmri_masked, tested_var, center=True)
+_, pvals_anova = f_regression(fmri_masked, tested_var.ravel(), center=True)
 pvals_anova *= fmri_masked.shape[1]
 pvals_anova[np.isnan(pvals_anova)] = 1
 pvals_anova[pvals_anova > 1] = 1
