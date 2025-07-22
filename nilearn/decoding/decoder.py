@@ -559,6 +559,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     %(verbose0)s
 
+    %(base_decoder_fit_attributes)s
+
     See Also
     --------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
@@ -632,8 +634,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             3D images in niimg.
 
         %(groups)s
-
-        %(base_decoder_fit_attributes)s
 
         """
         check_params(self.__dict__)
@@ -1185,6 +1185,11 @@ class Decoder(ClassifierMixin, _BaseDecoder):
 
     %(verbose0)s
 
+    %(base_decoder_fit_attributes)s
+
+    n_classes_ : int
+        number of classes
+
     See Also
     --------
     nilearn.decoding.DecoderRegressor: regression strategies for Neuro-imaging,
@@ -1370,6 +1375,8 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
 
     %(verbose0)s
 
+    %(base_decoder_fit_attributes)s
+
     See Also
     --------
     nilearn.decoding.Decoder: classification strategies for Neuroimaging,
@@ -1469,8 +1476,6 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
             3D images in niimg.
 
         %(groups)s
-
-        %(base_decoder_fit_attributes)s
 
         """
         check_params(self.__dict__)
@@ -1574,6 +1579,8 @@ class FREMRegressor(_BaseDecoder):
     %(memory_level)s
     %(n_jobs)s
     %(verbose0)s
+
+    %(base_decoder_fit_attributes)s
 
     References
     ----------
@@ -1681,8 +1688,6 @@ class FREMRegressor(_BaseDecoder):
 
         %(groups)s
 
-        %(base_decoder_fit_attributes)s
-
         """
         check_params(self.__dict__)
         self.classes_ = ["beta"]
@@ -1784,6 +1789,11 @@ class FREMClassifier(_BaseDecoder):
     %(memory_level)s
     %(n_jobs)s
     %(verbose0)s
+
+    %(base_decoder_fit_attributes)s
+
+    n_classes_ : int
+        number of classes
 
     References
     ----------

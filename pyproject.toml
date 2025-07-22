@@ -81,6 +81,7 @@ style = [
 # For running unit and docstring tests
 test = [
     "coverage",
+    "numpydoc>=1.8.0",
     "pytest>=6.0.0",
     "pytest-cov",
     "pytest-csv",
@@ -156,6 +157,7 @@ module = [
     "mpl_toolkits.*",
     "nibabel.*",
     "nilearn._version",
+    "numpydoc.*",
     "packaging.*",
     "plotly.*",
     "pytest.*",
