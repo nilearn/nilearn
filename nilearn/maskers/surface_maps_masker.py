@@ -77,6 +77,10 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
     %(t_r)s
 
+    %(dtype)s
+
+        ..versionadded:: 0.12.1dev
+
     %(memory)s
 
     %(memory_level1)s
@@ -130,6 +134,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         verbose=0,
@@ -148,6 +153,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
@@ -272,9 +278,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         imgs = at_least_2d(imgs)
 
-        img_data = np.concatenate(
-            list(imgs.data.parts.values()), axis=0
-        ).astype(np.float32)
+        img_data = np.concatenate(list(imgs.data.parts.values()), axis=0)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
@@ -394,11 +398,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         imgs = SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
 
-        if return_1D:
-            for k, v in imgs.data.parts.items():
-                imgs.data.parts[k] = v.squeeze()
-
-        return imgs
+        return self._post_process_inverse_transform(
+            region_signals, imgs, return_1D
+        )
 
     def generate_report(self, displayed_maps=10, engine="matplotlib"):
         """Generate an HTML report for the current ``SurfaceMapsMasker``

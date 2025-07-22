@@ -10,6 +10,7 @@ import numpy as np
 from nibabel import is_proxy, load, spatialimages
 
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.numpy_conversions import get_target_dtype
 
 from .helpers import stringify_path
 
@@ -69,32 +70,6 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
     return data
 
 
-def _get_target_dtype(dtype, target_dtype):
-    """Return a new dtype if conversion is needed.
-
-    Parameters
-    ----------
-    dtype : dtype
-        Data type of the original data
-
-    target_dtype : {None, dtype, "auto"}
-        If None, no conversion is required. If a type is provided, the
-        function will check if a conversion is needed. The "auto" mode will
-        automatically convert to int32 if dtype is discrete and float32 if it
-        is continuous.
-
-    Returns
-    -------
-    dtype : dtype
-        The data type toward which the original data should be converted.
-    """
-    if target_dtype is None:
-        return None
-    if target_dtype == "auto":
-        target_dtype = np.int32 if dtype.kind == "i" else np.float32
-    return None if target_dtype == dtype else target_dtype
-
-
 def load_niimg(niimg, dtype=None):
     """Load a niimg, check if it is a nibabel SpatialImage and cast if needed.
 
@@ -125,7 +100,7 @@ def load_niimg(niimg, dtype=None):
         )
 
     img_data = _get_data(niimg)
-    target_dtype = _get_target_dtype(img_data.dtype, dtype)
+    target_dtype = get_target_dtype(img_data.dtype, dtype)
 
     if target_dtype is not None:
         copy_header = niimg.header is not None

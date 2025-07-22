@@ -44,7 +44,9 @@ from sklearn.utils.estimator_checks import (
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import check_imgs_equal
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
@@ -79,7 +81,7 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_mesh,
 )
 from nilearn.glm.second_level import SecondLevelModel
-from nilearn.image import new_img_like
+from nilearn.image import get_data, new_img_like
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     MultiNiftiMasker,
@@ -132,7 +134,7 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
     ----------
     estimators : list of estimator object
         Estimator instance to check.
-
+    dtype
     valid : bool, default=True
         Whether to return only the valid checks or not.
     """
@@ -261,7 +263,7 @@ def return_expected_failed_checks(
         "check_dont_overwrite_parameters": (
             "replaced by check_img_estimator_dont_overwrite_parameters"
         ),
-        "check_estimators_dtypes": ("replaced by check_masker_dtypes"),
+        "check_estimators_dtypes": "replaced by check_img_estimator_dtypes",
         "check_estimators_empty_data_messages": (
             "replaced by check_masker_empty_data_messages "
             "for surface maskers and not implemented for nifti maskers "
@@ -304,7 +306,7 @@ def return_expected_failed_checks(
                 "replaced by check_masker_transformer"
             ),
             "check_transformer_preserve_dtypes": (
-                "replaced by check_masker_transformer"
+                "replaced by check_img_estimator_dtypes"
             ),
         }
 
@@ -324,8 +326,10 @@ def return_expected_failed_checks(
 
         expected_failed_checks |= {
             # have nilearn replacements
+            "check_estimators_dtypes": (
+                "replaced by check_img_estimator_dtypes"
+            ),
             "check_dict_unchanged": "does not apply - no transform method",
-            "check_estimators_dtypes": ("replaced by check_glm_dtypes"),
             "check_estimators_empty_data_messages": (
                 "not implemented for nifti data for performance reasons"
             ),
@@ -443,7 +447,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_dict_unchanged": (
             "replaced by check_img_estimator_dict_unchanged"
         ),
-        "check_estimators_dtypes": "TODO",
+        "check_estimators_dtypes": "replaced by check_img_estimator_dtypes",
         "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
@@ -483,7 +487,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         expected_failed_checks |= {
             "check_transformer_data_not_an_array": "TODO",
             "check_transformer_general": "TODO",
-            "check_transformer_preserve_dtypes": "TODO",
+            "check_transformer_preserve_dtypes": (
+                "replaced by check_img_estimator_dtypes"
+            ),
         }
 
     expected_failed_checks |= unapplicable_checks()
@@ -527,10 +533,17 @@ def nilearn_check_generator(estimator: BaseEstimator):
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
         yield (clone(estimator), check_img_estimator_pickle)
         yield (clone(estimator), check_fit_returns_self)
+        yield (clone(estimator), check_img_estimator_dtypes)
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
 
         if hasattr(estimator, "transform"):
             yield (clone(estimator), check_img_estimator_dict_unchanged)
+
+        if hasattr(estimator, "inverse_transform"):
+            yield (
+                clone(estimator),
+                check_img_estimator_dtypes_inverse_transform,
+            )
 
         if requires_y:
             yield (clone(estimator), check_img_estimator_requires_y_none)
@@ -554,7 +567,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
     if is_masker(estimator):
         yield (clone(estimator), check_masker_clean_kwargs)
         yield (clone(estimator), check_masker_compatibility_mask_image)
-        yield (clone(estimator), check_masker_dtypes)
         yield (clone(estimator), check_masker_empty_data_messages)
         yield (clone(estimator), check_masker_fit_score_takes_y)
         yield (clone(estimator), check_masker_fit_with_empty_mask)
@@ -616,7 +628,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
             yield (clone(estimator), check_surface_masker_list_surf_images)
 
     if is_glm(estimator):
-        yield (clone(estimator), check_glm_dtypes)
         yield (clone(estimator), check_glm_empty_data_messages)
 
 
@@ -722,13 +733,15 @@ def generate_data_to_fit(estimator: BaseEstimator):
         return _rng().random((5, 5)), None
 
     else:
-        imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_eye())
+        data = _rng().random(_shape_3d_large()) + 1
+        imgs = Nifti1Image(data, _affine_eye())
         return imgs, None
 
 
-def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
+def fit_estimator(estimator: BaseEstimator, X=None, y=None) -> BaseEstimator:
     """Fit on a nilearn estimator with appropriate input and return it."""
-    X, y = generate_data_to_fit(estimator)
+    if X is None and y is None:
+        X, y = generate_data_to_fit(estimator)
 
     if is_glm(estimator):
         # FirstLevel
@@ -826,7 +839,7 @@ def check_transformer_set_output(estimator):
 
 @ignore_warnings()
 def check_fit_returns_self(estimator) -> None:
-    """Check maskers return itself after fit.
+    """Check nilearn estimator return itself after fit.
 
     Replace sklearn check_estimators_fit_returns_self
     """
@@ -1118,6 +1131,137 @@ def check_img_estimator_pickle(estimator_orig):
             assert_surface_image_equal(result[method], unpickled_result)
         elif isinstance(unpickled_result, Nifti1Image):
             check_imgs_equal(result[method], unpickled_result)
+
+
+@ignore_warnings()
+def check_img_estimator_dtypes(estimator):
+    """Check estimator can fit/transform/inverse_transform \
+       with inputs of varying dtypes.
+
+    Replacement for sklearn check_estimators_dtypes.
+
+    For some estimators that only extract data (like niftimasker)
+    and do not aggregate it (like maps masker)
+    we check that transform,
+    return signals with the same type.
+
+    Similarly, inverse transform should generate images
+    and conserve dtype.
+
+    np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
+    """
+    # TODO np.int32, "i4"
+    # for multi/nifti_labels_masker, multi/nifti_masker, nifti_spheres_masker
+    for input_dtype in [np.float32, "float64"]:
+        for dtype in [np.float32, "float64", "auto", None]:
+            estimator = clone(estimator)
+
+            if hasattr(estimator, "dtype"):
+                estimator.dtype = dtype
+
+            X, y = generate_data_to_fit(estimator)
+
+            input_dtype = np.dtype(input_dtype)
+
+            if isinstance(X, Nifti1Image):
+                data = get_data(X)
+                X = Nifti1Image(
+                    data.astype(input_dtype),
+                    affine=_affine_eye(),
+                    dtype=input_dtype,
+                )
+            else:
+                for k, v in X.data.parts.items():
+                    X.data.parts[k] = v.astype(input_dtype)
+
+            estimator = fit_estimator(estimator, X, y)
+
+            if hasattr(estimator, "transform"):
+                signal = estimator.transform(X)
+
+                if not isinstance(estimator, (SearchLight)):
+                    if not isinstance(signal, list):
+                        signal = [signal]
+
+                    target_dtype = get_target_dtype(input_dtype, dtype)
+                    if target_dtype is None:
+                        target_dtype = input_dtype
+
+                    for s in signal:
+                        output_dtype = s.dtype
+                        try:
+                            assert output_dtype == target_dtype
+                        except AssertionError:
+                            raise TypeError(
+                                "'transform' should have returned "
+                                f"an array of type '{target_dtype}'. "
+                                f"Got '{output_dtype}' instead."
+                            )
+
+
+@ignore_warnings()
+def check_img_estimator_dtypes_inverse_transform(estimator):
+    """Check estimator can inverse_transform with inputs of varying dtypes.
+
+    inverse transform should generate images and conserve dtype.
+
+    np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
+    """
+    for input_dtype in [np.float32, "float64", np.int32, "i4"]:
+        for dtype in [
+            np.float32,
+            "float64",
+            np.int32,
+            "i4",
+            "auto",
+            None,
+        ]:
+            estimator = clone(estimator)
+
+            if hasattr(estimator, "dtype"):
+                estimator.dtype = dtype
+
+            if isinstance(estimator, NiftiSpheresMasker):
+                # NiftiSpheresMasker needs mask_img to run inverse_transform
+                X, _ = generate_data_to_fit(estimator)
+                mask_img = new_img_like(X, np.ones(X.shape[:3]))
+                estimator.mask_img = mask_img
+
+            estimator = fit_estimator(estimator)
+
+            input_dtype = np.dtype(input_dtype)
+
+            signal = (
+                _rng().random((10, estimator.n_elements_)).astype(input_dtype)
+            )
+            if isinstance(estimator, _BaseDecomposition):
+                signal = [signal]
+
+            output_img = estimator.inverse_transform(signal)
+            if isinstance(estimator, _BaseDecomposition):
+                output_img = output_img[0]
+
+            target_dtype = get_target_dtype(input_dtype, dtype)
+            if target_dtype is None:
+                target_dtype = input_dtype
+            try:
+                if isinstance(output_img, Nifti1Image):
+                    # ensure both image and dataobj have consistent type
+                    for output_dtype in [
+                        img_data_dtype(output_img),
+                        output_img.get_data_dtype(),
+                    ]:
+                        assert output_dtype == target_dtype
+                else:
+                    for v in output_img.data.parts.values():
+                        output_dtype = v.dtype
+                        assert output_dtype == target_dtype
+            except AssertionError:
+                raise TypeError(
+                    "'inverse_transform' should have returned "
+                    f"an image of type '{target_dtype}'. "
+                    f"Got '{output_dtype}' instead."
+                )
 
 
 @ignore_warnings()
@@ -1793,34 +1937,6 @@ def check_masker_fit_with_non_finite_in_mask(estimator):
 
     signal = estimator.transform(imgs)
     assert np.all(np.isfinite(signal))
-
-
-@ignore_warnings()
-def check_masker_dtypes(estimator):
-    """Check masker can fit/transform with inputs of varying dtypes.
-
-    Replacement for sklearn check_estimators_dtypes.
-
-    np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
-    """
-    length = 20
-    for dtype in [np.float32, np.float64, np.int32]:
-        estimator = clone(estimator)
-
-        if accept_niimg_input(estimator):
-            data = np.zeros((*_shape_3d_large(), length))
-            data[1:28, 1:28, 1:28, ...] = (
-                _rng().random((27, 27, 27, length)) + 2.0
-            )
-            imgs = Nifti1Image(data.astype(dtype), affine=_affine_eye())
-
-        else:
-            imgs = _make_surface_img(length)
-            for k, v in imgs.data.parts.items():
-                imgs.data.parts[k] = v.astype(dtype)
-
-        estimator.fit(imgs)
-        estimator.transform(imgs)
 
 
 @ignore_warnings()
@@ -2550,30 +2666,6 @@ def check_glm_empty_data_messages(estimator: BaseEstimator) -> None:
     imgs = SurfaceImage(imgs.mesh, data)
 
     with pytest.raises(ValueError, match="empty"):
-        # FirstLevel
-        if hasattr(estimator, "hrf_model"):
-            estimator.fit(imgs, design_matrices=design_matrices)
-        # SecondLevel
-        else:
-            estimator.fit(imgs, design_matrix=design_matrices)
-
-
-@ignore_warnings()
-def check_glm_dtypes(estimator):
-    """Check glm can fit with inputs of varying dtypes.
-
-    Replacement for sklearn check_estimators_dtypes.
-
-    np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
-    """
-    imgs, design_matrices = _make_surface_img_and_design()
-
-    for dtype in [np.float32, np.float64, np.int32]:
-        estimator = clone(estimator)
-
-        for k, v in imgs.data.parts.items():
-            imgs.data.parts[k] = v.astype(dtype)
-
         # FirstLevel
         if hasattr(estimator, "hrf_model"):
             estimator.fit(imgs, design_matrices=design_matrices)

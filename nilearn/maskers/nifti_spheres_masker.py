@@ -756,4 +756,9 @@ class NiftiSpheresMasker(BaseMasker):
             adjacency = adjacency.dot(sparse.diags(scale))
 
         img = adjacency.T.dot(region_signals.T).T
-        return unmask(img, self.mask_img_)
+
+        img = unmask(img, self.mask_img_)
+
+        img = self._set_inverse_transform_output_dtype(region_signals, img)
+
+        return img
