@@ -137,7 +137,7 @@ def get_colorbar_and_data_ranges(
         data = np.asarray(data[np.logical_not(data._mask)])
 
     # TODO force_min_value is only forced when vmin is None
-    data_min = np.nanmin(data) if force_min_value else force_min_value
+    data_min = np.nanmin(data) if force_min_value is None else force_min_value
     data_max = np.nanmax(data)
 
     # set value of symmetric_cbar depending on vmin, vmax, data_min, data_max
