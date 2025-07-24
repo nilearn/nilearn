@@ -18,16 +18,17 @@ from nilearn._utils.param_validation import check_threshold
 
 
 def adjust_cmap(cmap, vmin, vmax, threshold):
-    """Generate a colormap using specified vmin, vmax, threshold values.
+    """Normalize and adjust the specified colormap according to specified vmin,
+    vmax, threshold values.
 
     Parameters
     ----------
-    cmap :
-    vmin :
+    %(cmap)s
+    vmin : :obj:`float`  or obj:`int`
         Should not be None
-    vmax :
+    vmax : :obj:`float`  or obj:`int`
         Should not be None
-    threshold :
+    threshold : :obj:`float`  or obj:`int`
         Should be non-negative
     """
     our_cmap = plt.get_cmap(cmap)
