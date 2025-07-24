@@ -52,13 +52,42 @@ def test_colorscale_threshold(threshold, expected_abs_threshold):
     assert np.allclose(colors["abs_threshold"], expected_abs_threshold, 2)
 
 
-@pytest.mark.parametrize("vmin,vmax", [(None, 7), (-5, 7)])
+@pytest.mark.parametrize("vmin,vmax", [(None, 7), (-7, 7), [None, None]])
 def test_colorscale_symmetric_cmap(vmin, vmax):
-    """Test colorscale with symmetric cmap and positive values."""
-    colors = colorscale("jet", np.arange(15), vmin=vmin, vmax=vmax)
+    """Test colorscale with symmetric cmap and and valid vmin, vmax values."""
+    colors = colorscale("jet", np.arange(8), vmin=vmin, vmax=vmax)
     assert (colors["vmin"], colors["vmax"]) == (-7, 7)
     assert colors["cmap"].N == 256
     assert (colors["norm"].vmax, colors["norm"].vmin) == (7, -7)
+
+
+def test_colorscale_symmetric_cmap_error():
+    """Test colorscale for error when symmetric cmap is True and vmin !=
+    -vmax.
+    """
+    # incompatible vmin and vmax if symmetric_cbar is True
+    with pytest.raises(ValueError, match="vmin must be equal to -vmax"):
+        colorscale("jet", np.arange(8), vmin=-5, vmax=7, symmetric_cmap=True)
+
+    with pytest.raises(ValueError, match="vmin must be less then vmax"):
+        colorscale(
+            "jet", np.arange(8), vmin=1.0, vmax=1.0, symmetric_cmap="auto"
+        )
+
+    with pytest.raises(ValueError, match="vmin must be less then vmax"):
+        colorscale(
+            "jet", np.arange(8), vmin=1.0, vmax=-1.0, symmetric_cmap=True
+        )
+
+    with pytest.raises(ValueError, match="vmin must be less than or equal"):
+        colorscale(
+            "jet", np.arange(8), vmin=3.0, vmax=None, symmetric_cmap=True
+        )
+
+    with pytest.raises(ValueError, match="vmax must be greater than or equal"):
+        colorscale(
+            "jet", np.arange(8), vmin=None, vmax=-1.0, symmetric_cmap=True
+        )
 
 
 @pytest.fixture
