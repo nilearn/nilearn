@@ -138,6 +138,12 @@ If you wish to add a missing term, please
         examine and improve the underlying algorithms for
         TE-dependent analysis of multi-echo :term:`fMRI` data, tedana now assumes
         that you are working with data which has been previously preprocessed.
+        :term:`Tedana` works by decomposing multi-echo BOLD data via principal 
+        component analysis (PCA) and independent component analysis (ICA). The 
+        resulting components are then analyzed to determine whether they are 
+        TE-dependent or -independent. TE-dependent components are classified 
+        as BOLD, while TE-independent components are classified as non-BOLD, 
+        and are discarded as part of data cleaning.
 
     FPR correction
         False positive rate correction. This refers to the methods employed to
