@@ -143,7 +143,8 @@ If you wish to add a missing term, please
         resulting components are then analyzed to determine whether they are
         TE-dependent or -independent. TE-dependent components are classified
         as BOLD, while TE-independent components are classified as non-BOLD,
-        and are discarded as part of data cleaning.
+        and are discarded as part of data cleaning. For more information,
+        visit `Tedanas' documentation <https://me-ica.github.io/multi-echo-data-analysis/content/intro.html>`_.
 
     FPR correction
         False positive rate correction. This refers to the methods employed to
