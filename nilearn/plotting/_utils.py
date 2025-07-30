@@ -157,7 +157,7 @@ def get_colorbar_and_data_ranges(
         else:
             if vmin is not None and vmin > 0:
                 raise ValueError(
-                    "vmin must be less than or equal to 0 when symmetric_cbar"
+                    "vmin must be less than or equal to 0 when symmetric_cbar "
                     "is True."
                 )
 
