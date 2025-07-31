@@ -13,9 +13,8 @@ import numpy as np
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import compare_version
 from nilearn._utils.logger import find_stack_level
-from nilearn.image import get_data
 from nilearn.plotting import cm
-from nilearn.plotting._engine_utils import to_color_strings
+from nilearn.plotting._engine_utils import adjust_cmap, to_color_strings
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
@@ -27,6 +26,7 @@ from nilearn.plotting.surface._utils import (
     check_engine_params,
     check_surf_map,
     check_surface_plotting_inputs,
+    get_bg_data,
     get_faces_on_edge,
     sanitize_hemi_view,
 )
@@ -37,7 +37,7 @@ try:
     from matplotlib import __version__ as mpl_version
     from matplotlib.cm import ScalarMappable
     from matplotlib.colorbar import make_axes
-    from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
+    from matplotlib.colors import Normalize, to_rgba
     from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
     from matplotlib.patches import Patch
     from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -120,6 +120,28 @@ def _adjust_plot_roi_params(params):
         params["cbar_tick_format"] = "%i"
 
 
+def _normalize_bg_data(bg_data):
+    bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
+    if bg_vmin < 0 or bg_vmax > 1:
+        bg_norm = Normalize(vmin=bg_vmin, vmax=bg_vmax)
+        bg_data = bg_norm(bg_data)
+    return bg_data
+
+
+def _apply_darkness(data, darkness):
+    if darkness is not None:
+        data *= darkness
+        warn(
+            (
+                "The `darkness` parameter will be deprecated in release 0.13. "
+                "We recommend setting `darkness` to None"
+            ),
+            DeprecationWarning,
+            stacklevel=find_stack_level(),
+        )
+    return data
+
+
 def _get_vertexcolor(
     surf_map,
     cmap,
@@ -130,28 +152,11 @@ def _get_vertexcolor(
     darkness=None,
 ):
     """Get the color of the vertices."""
-    if bg_map is None:
-        bg_data = np.ones(len(surf_map)) * 0.5
-        bg_vmin, bg_vmax = 0, 1
-    else:
-        bg_data = np.copy(load_surf_data(bg_map))
+    bg_data = get_bg_data(bg_map, len(surf_map))
 
     # scale background map if need be
-    bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
-    if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_data = bg_norm(bg_data)
-
-    if darkness is not None:
-        bg_data *= darkness
-        warn(
-            (
-                "The `darkness` parameter will be deprecated in release 0.13. "
-                "We recommend setting `darkness` to None"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
+    bg_data = _normalize_bg_data(bg_data)
+    bg_data = _apply_darkness(bg_data, darkness)
 
     bg_colors = plt.get_cmap("Greys")(bg_data)
 
@@ -174,20 +179,14 @@ def _get_vertexcolor(
     return to_color_strings(vertex_colors)
 
 
-def _colorbar_from_array(
-    array,
+def _get_colorbar(
     vmin,
     vmax,
     threshold,
-    symmetric_cbar=True,
     cmap=DEFAULT_DIVERGING_CMAP,
+    sm_array=None,
 ):
-    """Generate a custom colorbar for an array.
-
-    Internal function used by plot_img_on_surf
-
-    array : :class:`np.ndarray`
-        Any 3D array.
+    """Generate a custom colorbar.
 
     vmin : :obj:`float`
         lower bound for plotting of stat_map values.
@@ -206,33 +205,24 @@ def _colorbar_from_array(
     cmap : :obj:`str`, default='cold_hot'
         The name of a matplotlib or nilearn colormap.
 
+    sm_array : array-like or None
     """
-    _, _, vmin, vmax = get_colorbar_and_data_ranges(
-        array,
-        vmin=vmin,
-        vmax=vmax,
-        symmetric_cbar=symmetric_cbar,
-    )
-    norm = Normalize(vmin=vmin, vmax=vmax)
-    cmaplist = [cmap(i) for i in range(cmap.N)]
-
     if threshold is None:
         threshold = 0.0
 
-    # set colors to gray for absolute values < threshold
-    istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
-    istop = int(norm(threshold, clip=True) * (cmap.N - 1))
-    for i in range(istart, istop):
-        cmaplist[i] = (0.5, 0.5, 0.5, 1.0)
-    our_cmap = LinearSegmentedColormap.from_list(
-        "Custom cmap", cmaplist, cmap.N
-    )
-    sm = plt.cm.ScalarMappable(cmap=our_cmap, norm=norm)
+    our_cmap, norm = adjust_cmap(cmap, vmin, vmax, threshold)
+    sm = ScalarMappable(cmap=our_cmap, norm=norm)
 
-    # fake up the array of the scalar mappable.
-    sm._A = []
+    if sm_array == []:
+        # TODO check if this can be replaced by None, this was set as empty
+        # list in plot_img_on_surf. Check if it makes difference.
 
-    return sm
+        # fake up the array of the scalar mappable.
+        sm._A = []
+    else:
+        sm.set_array(sm_array)
+
+    return sm, our_cmap
 
 
 def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
@@ -240,33 +230,11 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
 
     This function computes the facecolors.
     """
-    if bg_map is None:
-        bg_data = np.ones(n_vertices) * 0.5
-    else:
-        bg_data = np.copy(load_surf_data(bg_map))
-        if bg_data.shape[0] != n_vertices:
-            raise ValueError(
-                "The bg_map does not have the same number "
-                "of vertices as the mesh."
-            )
-
+    bg_data = get_bg_data(bg_map, n_vertices)
     bg_faces = np.mean(bg_data[faces], axis=1)
     # scale background map if need be
-    bg_vmin, bg_vmax = np.min(bg_faces), np.max(bg_faces)
-    if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_faces = bg_norm(bg_faces)
-
-    if darkness is not None:
-        bg_faces *= darkness
-        warn(
-            (
-                "The `darkness` parameter will be deprecated in release 0.13. "
-                "We recommend setting `darkness` to None"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
+    bg_faces = _normalize_bg_data(bg_faces)
+    bg_faces = _apply_darkness(bg_faces, darkness)
 
     face_colors = plt.cm.gray_r(bg_faces)
 
@@ -346,32 +314,6 @@ def _get_bounds(data, vmin=None, vmax=None):
         vmin = -1
 
     return vmin, vmax
-
-
-def _get_cmap(cmap, vmin, vmax, cbar_tick_format, threshold=None):
-    """Help for plot_surf with matplotlib engine.
-
-    This function returns the colormap.
-    """
-    our_cmap = plt.get_cmap(cmap)
-    norm = Normalize(vmin=vmin, vmax=vmax)
-    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-    if threshold is not None:
-        if cbar_tick_format == "%i" and int(threshold) != threshold:
-            warn(
-                "You provided a non integer threshold "
-                "but configured the colorbar to use integer formatting.",
-                stacklevel=find_stack_level(),
-            )
-        # set colors to gray for absolute values < threshold
-        istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
-        istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
-        for i in range(istart, istop):
-            cmaplist[i] = (0.5, 0.5, 0.5, 1.0)
-    our_cmap = LinearSegmentedColormap.from_list(
-        "Custom cmap", cmaplist, our_cmap.N
-    )
-    return our_cmap, norm
 
 
 def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
@@ -490,6 +432,14 @@ def _plot_surf(
     cbar_tick_format = (
         "%.2g" if cbar_tick_format == "auto" else cbar_tick_format
     )
+    if threshold is not None and (
+        cbar_tick_format == "%i" and int(threshold) != threshold
+    ):
+        warn(
+            "You provided a non integer threshold "
+            "but configured the colorbar to use integer formatting.",
+            stacklevel=find_stack_level(),
+        )
     # Leave space for colorbar
     figsize = [4.7, 5] if colorbar else [4, 5]
 
@@ -571,26 +521,9 @@ def _plot_surf(
         face_colors = mix_colormaps(surf_map_face_colors, bg_face_colors)
 
         if colorbar:
-            cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
-            cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
-
-            # in rare cases where plotting an image of zeroes
-            # this avoids a matplolib error
-            if cbar_vmax == cbar_vmin == 0:
-                cbar_vmax = 1
-                cbar_vmin = -1
-
-            ticks = _get_ticks(
-                cbar_vmin, cbar_vmax, cbar_tick_format, threshold
+            scalar_mappable, our_cmap = _get_colorbar(
+                vmin, vmax, threshold, cmap, surf_map_faces
             )
-            our_cmap, norm = _get_cmap(
-                cmap, vmin, vmax, cbar_tick_format, threshold
-            )
-            bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
-
-            # we need to create a proxy mappable
-            proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
-            proxy_mappable.set_array(surf_map_faces)
             figure._colorbar_ax, _ = make_axes(
                 axes,
                 location="right",
@@ -599,8 +532,20 @@ def _plot_surf(
                 pad=0.0,
                 aspect=10.0,
             )
+            cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
+            cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
+
+            # in rare cases where plotting an image of zeroes
+            # this avoids a matplolib error
+            if cbar_vmax == cbar_vmin == 0:
+                cbar_vmax = 1
+                cbar_vmin = -1
+            ticks = _get_ticks(
+                cbar_vmin, cbar_vmax, cbar_tick_format, threshold
+            )
+            bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
             figure._cbar = figure.colorbar(
-                proxy_mappable,
+                scalar_mappable,
                 cax=figure._colorbar_ax,
                 ticks=ticks,
                 boundaries=bounds,
@@ -727,7 +672,6 @@ def _plot_surf_contours(
 def _plot_img_on_surf(
     surf,
     surf_mesh,
-    stat_map,
     texture,
     hemis,
     modes,
@@ -802,7 +746,7 @@ def _plot_img_on_surf(
 
         # derive symmetric vmin, vmax and colorbar limits depending on
         # symmetric_cbar settings
-        cbar_vmin, cbar_vmax, vmin, vmax = _adjust_colorbar_and_data_ranges(
+        _, _, vmin_iter, vmax_iter = _adjust_colorbar_and_data_ranges(
             loaded_stat_map,
             vmin=vmin,
             vmax=vmax,
@@ -818,8 +762,8 @@ def _plot_img_on_surf(
             colorbar=False,  # Colorbar created externally.
             threshold=threshold,
             bg_on_data=bg_on_data,
-            vmin=vmin,
-            vmax=vmax,
+            vmin=vmin_iter,
+            vmax=vmax_iter,
             axes=ax,
             **kwargs,
         )
@@ -830,13 +774,12 @@ def _plot_img_on_surf(
         ax.set_box_aspect(None, zoom=1.3)
 
     if colorbar:
-        sm = _colorbar_from_array(
-            get_data(stat_map),
+        scalar_mappable, _ = _get_colorbar(
             vmin,
             vmax,
             threshold,
-            symmetric_cbar=symmetric_cbar,
             cmap=plt.get_cmap(cmap),
+            sm_array=[],
         )
 
         cbar_grid = GridSpecFromSubplotSpec(3, 3, grid[-1, :])
@@ -845,7 +788,7 @@ def _plot_img_on_surf(
         # Get custom ticks to set in colorbar
         ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold)
         fig.colorbar(
-            sm,
+            scalar_mappable,
             cax=cbar_ax,
             orientation="horizontal",
             ticks=ticks,

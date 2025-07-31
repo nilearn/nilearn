@@ -358,6 +358,19 @@ def check_surface_plotting_inputs(
     return surf_map, surf_mesh, bg_map
 
 
+def get_bg_data(bg_map, n_vertices):
+    if bg_map is None:
+        bg_data = np.ones(n_vertices) * 0.5
+    else:
+        bg_data = np.copy(load_surf_data(bg_map))
+        if bg_data.shape[0] != n_vertices:
+            raise ValueError(
+                "The bg_map does not have the same number "
+                "of vertices as the mesh."
+            )
+    return bg_data
+
+
 def get_faces_on_edge(faces, parc_idx):
     """Identify which faces lie on the outeredge of the parcellation defined by
     the indices in parc_idx.
