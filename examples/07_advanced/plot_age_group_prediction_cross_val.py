@@ -30,6 +30,7 @@ development_dataset = fetch_development_fmri(n_subjects=60)
 
 # %%
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
+
 from nilearn.maskers import NiftiMapsMasker
 
 msdl_data = fetch_atlas_msdl()
@@ -48,12 +49,13 @@ masker = NiftiMapsMasker(
     standardize_confounds=True,
 )
 
-masked_data = [
-    masker.fit_transform(func, confounds)
-    for (func, confounds) in zip(
-        development_dataset.func, development_dataset.confounds
+masked_data = list(
+    map(
+        masker.fit_transform,
+        development_dataset.func,
+        development_dataset.confounds,
     )
-]
+)
 
 # %%
 # What kind of connectivity is most powerful for classification?
