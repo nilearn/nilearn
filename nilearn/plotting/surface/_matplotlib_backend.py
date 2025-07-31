@@ -774,7 +774,7 @@ def _plot_img_on_surf(
         ax.set_box_aspect(None, zoom=1.3)
 
     if colorbar:
-        scalar_mappable, _, _ = _get_colorbar(
+        scalar_mappable, _ = _get_colorbar(
             vmin,
             vmax,
             threshold,
