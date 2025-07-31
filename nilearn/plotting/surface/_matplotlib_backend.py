@@ -188,8 +188,6 @@ def _get_colorbar(
 ):
     """Generate a custom colorbar.
 
-    Internal function used by plot_img_on_surf
-
     vmin : :obj:`float`
         lower bound for plotting of stat_map values.
 
