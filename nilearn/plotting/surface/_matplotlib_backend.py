@@ -184,6 +184,7 @@ def _get_colorbar(
     vmax,
     threshold,
     cmap=DEFAULT_DIVERGING_CMAP,
+    sm_array=None,
 ):
     """Generate a custom colorbar.
 
@@ -206,6 +207,7 @@ def _get_colorbar(
     cmap : :obj:`str`, default='cold_hot'
         The name of a matplotlib or nilearn colormap.
 
+    sm_array : array-like or None
     """
     if threshold is None:
         threshold = 0.0
@@ -213,10 +215,13 @@ def _get_colorbar(
     our_cmap, norm = adjust_cmap(cmap, vmin, vmax, threshold)
     sm = ScalarMappable(cmap=our_cmap, norm=norm)
 
-    # fake up the array of the scalar mappable.
-    sm._A = []
+    if sm_array == []:
+        # fake up the array of the scalar mappable.
+        sm._A = []
+    else:
+        sm.set_array(sm_array)
 
-    return sm
+    return sm, our_cmap
 
 
 def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
@@ -515,11 +520,9 @@ def _plot_surf(
         face_colors = mix_colormaps(surf_map_face_colors, bg_face_colors)
 
         if colorbar:
-            our_cmap, norm = adjust_cmap(cmap, vmin, vmax, threshold)
-
-            # we need to create a proxy mappable
-            proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
-            proxy_mappable.set_array(surf_map_faces)
+            scalar_mappable, our_cmap = _get_colorbar(
+                vmin, vmax, threshold, cmap, surf_map_faces
+            )
             figure._colorbar_ax, _ = make_axes(
                 axes,
                 location="right",
@@ -541,7 +544,7 @@ def _plot_surf(
             )
             bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
             figure._cbar = figure.colorbar(
-                proxy_mappable,
+                scalar_mappable,
                 cax=figure._colorbar_ax,
                 ticks=ticks,
                 boundaries=bounds,
@@ -770,11 +773,12 @@ def _plot_img_on_surf(
         ax.set_box_aspect(None, zoom=1.3)
 
     if colorbar:
-        sm = _get_colorbar(
+        scalar_mappable, _, _ = _get_colorbar(
             vmin,
             vmax,
             threshold,
             cmap=plt.get_cmap(cmap),
+            sm_array=[],
         )
 
         cbar_grid = GridSpecFromSubplotSpec(3, 3, grid[-1, :])
@@ -783,7 +787,7 @@ def _plot_img_on_surf(
         # Get custom ticks to set in colorbar
         ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold)
         fig.colorbar(
-            sm,
+            scalar_mappable,
             cax=cbar_ax,
             orientation="horizontal",
             ticks=ticks,
