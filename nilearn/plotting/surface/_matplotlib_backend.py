@@ -310,14 +310,6 @@ def _get_bounds(data, vmin=None, vmax=None):
     return vmin, vmax
 
 
-def _get_cmap(cmap, vmin, vmax, threshold=None):
-    """Help for plot_surf with matplotlib engine.
-
-    This function returns the colormap.
-    """
-    return adjust_cmap(cmap, vmin, vmax, threshold)
-
-
 def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
     """Help for plot_surf with matplotlib engine.
 
@@ -535,9 +527,7 @@ def _plot_surf(
             ticks = _get_ticks(
                 cbar_vmin, cbar_vmax, cbar_tick_format, threshold
             )
-            our_cmap, norm = _get_cmap(
-                cmap, vmin, vmax, cbar_tick_format, threshold
-            )
+            our_cmap, norm = adjust_cmap(cmap, vmin, vmax, threshold)
             bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
             # we need to create a proxy mappable
