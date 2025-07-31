@@ -13,7 +13,6 @@ import numpy as np
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import compare_version
 from nilearn._utils.logger import find_stack_level
-from nilearn.image import get_data
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import adjust_cmap, to_color_strings
 from nilearn.plotting._utils import (
@@ -180,20 +179,15 @@ def _get_vertexcolor(
     return to_color_strings(vertex_colors)
 
 
-def _colorbar_from_array(
-    array,
+def _get_colorbar(
     vmin,
     vmax,
     threshold,
-    symmetric_cbar=True,
     cmap=DEFAULT_DIVERGING_CMAP,
 ):
-    """Generate a custom colorbar for an array.
+    """Generate a custom colorbar.
 
     Internal function used by plot_img_on_surf
-
-    array : :class:`np.ndarray`
-        Any 3D array.
 
     vmin : :obj:`float`
         lower bound for plotting of stat_map values.
@@ -213,12 +207,6 @@ def _colorbar_from_array(
         The name of a matplotlib or nilearn colormap.
 
     """
-    _, _, vmin, vmax = get_colorbar_and_data_ranges(
-        array,
-        vmin=vmin,
-        vmax=vmax,
-        symmetric_cbar=symmetric_cbar,
-    )
     if threshold is None:
         threshold = 0.0
 
@@ -691,7 +679,6 @@ def _plot_surf_contours(
 def _plot_img_on_surf(
     surf,
     surf_mesh,
-    stat_map,
     texture,
     hemis,
     modes,
@@ -766,7 +753,7 @@ def _plot_img_on_surf(
 
         # derive symmetric vmin, vmax and colorbar limits depending on
         # symmetric_cbar settings
-        cbar_vmin, cbar_vmax, vmin, vmax = _adjust_colorbar_and_data_ranges(
+        _, _, vmin_iter, vmax_iter = _adjust_colorbar_and_data_ranges(
             loaded_stat_map,
             vmin=vmin,
             vmax=vmax,
@@ -782,8 +769,8 @@ def _plot_img_on_surf(
             colorbar=False,  # Colorbar created externally.
             threshold=threshold,
             bg_on_data=bg_on_data,
-            vmin=vmin,
-            vmax=vmax,
+            vmin=vmin_iter,
+            vmax=vmax_iter,
             axes=ax,
             **kwargs,
         )
@@ -794,12 +781,10 @@ def _plot_img_on_surf(
         ax.set_box_aspect(None, zoom=1.3)
 
     if colorbar:
-        sm = _colorbar_from_array(
-            get_data(stat_map),
+        sm = _get_colorbar(
             vmin,
             vmax,
             threshold,
-            symmetric_cbar=symmetric_cbar,
             cmap=plt.get_cmap(cmap),
         )
 
