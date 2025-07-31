@@ -524,11 +524,7 @@ def _plot_surf(
                 cbar_vmax = 1
                 cbar_vmin = -1
 
-            ticks = _get_ticks(
-                cbar_vmin, cbar_vmax, cbar_tick_format, threshold
-            )
             our_cmap, norm = adjust_cmap(cmap, vmin, vmax, threshold)
-            bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
             # we need to create a proxy mappable
             proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
@@ -541,6 +537,10 @@ def _plot_surf(
                 pad=0.0,
                 aspect=10.0,
             )
+            ticks = _get_ticks(
+                cbar_vmin, cbar_vmax, cbar_tick_format, threshold
+            )
+            bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
             figure._cbar = figure.colorbar(
                 proxy_mappable,
                 cax=figure._colorbar_ax,
