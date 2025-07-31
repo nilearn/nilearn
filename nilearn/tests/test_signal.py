@@ -1396,9 +1396,7 @@ def test_sample_mask_across_runs():
 
     sample_mask_sep = [np.arange(20), np.arange(20)]
     scrub_index = [[6, 7, 8], [10, 11, 12]]
-    sample_mask_sep = [
-        np.delete(sm, si) for sm, si in zip(sample_mask_sep, scrub_index)
-    ]
+    sample_mask_sep = list(map(np.delete, sample_mask_sep, scrub_index))
 
     scrub_sep_mask = clean(
         signals, confounds=confounds, sample_mask=sample_mask_sep, runs=runs
@@ -1437,9 +1435,7 @@ def test_clean_sample_mask_error():
 
     sample_mask_sep = [np.arange(20), np.arange(20)]
     scrub_index = [[6, 7, 8], [10, 11, 12]]
-    sample_mask_sep = [
-        np.delete(sm, si) for sm, si in zip(sample_mask_sep, scrub_index)
-    ]
+    sample_mask_sep = list(map(np.delete, sample_mask_sep, scrub_index))
 
     # 1D sample mask with runs labels
     with pytest.raises(

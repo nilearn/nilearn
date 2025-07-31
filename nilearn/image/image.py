@@ -443,7 +443,7 @@ def crop_img(
         start = np.maximum(start - 1, 0)
         end = np.minimum(end + 1, data.shape[:3])
 
-    slices = [slice(s, e) for s, e in zip(start, end)][:3]
+    slices = list(map(slice, start, end))[:3]
     cropped_im = _crop_img_to(img, slices, copy=copy, copy_header=copy_header)
     return (cropped_im, tuple(slices)) if return_offset else cropped_im
 
