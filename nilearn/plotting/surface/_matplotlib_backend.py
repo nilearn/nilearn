@@ -310,19 +310,11 @@ def _get_bounds(data, vmin=None, vmax=None):
     return vmin, vmax
 
 
-def _get_cmap(cmap, vmin, vmax, cbar_tick_format, threshold=None):
+def _get_cmap(cmap, vmin, vmax, threshold=None):
     """Help for plot_surf with matplotlib engine.
 
     This function returns the colormap.
     """
-    if threshold is not None and (
-        cbar_tick_format == "%i" and int(threshold) != threshold
-    ):
-        warn(
-            "You provided a non integer threshold "
-            "but configured the colorbar to use integer formatting.",
-            stacklevel=find_stack_level(),
-        )
     return adjust_cmap(cmap, vmin, vmax, threshold)
 
 
@@ -442,6 +434,14 @@ def _plot_surf(
     cbar_tick_format = (
         "%.2g" if cbar_tick_format == "auto" else cbar_tick_format
     )
+    if threshold is not None and (
+        cbar_tick_format == "%i" and int(threshold) != threshold
+    ):
+        warn(
+            "You provided a non integer threshold "
+            "but configured the colorbar to use integer formatting.",
+            stacklevel=find_stack_level(),
+        )
     # Leave space for colorbar
     figsize = [4.7, 5] if colorbar else [4, 5]
 
