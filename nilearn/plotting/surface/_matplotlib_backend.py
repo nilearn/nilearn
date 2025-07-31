@@ -211,7 +211,7 @@ def _get_colorbar(
         threshold = 0.0
 
     our_cmap, norm = adjust_cmap(cmap, vmin, vmax, threshold)
-    sm = plt.cm.ScalarMappable(cmap=our_cmap, norm=norm)
+    sm = ScalarMappable(cmap=our_cmap, norm=norm)
 
     # fake up the array of the scalar mappable.
     sm._A = []
