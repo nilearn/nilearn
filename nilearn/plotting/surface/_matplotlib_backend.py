@@ -214,6 +214,9 @@ def _get_colorbar(
     sm = ScalarMappable(cmap=our_cmap, norm=norm)
 
     if sm_array == []:
+        # TODO check if this can be replaced by None, this was set as empty
+        # list in plot_img_on_surf. Check if it makes difference.
+
         # fake up the array of the scalar mappable.
         sm._A = []
     else:
