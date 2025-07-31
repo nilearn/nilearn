@@ -138,7 +138,7 @@ for color, classifier_name in zip(["b", "m", "k", "r", "g"], classifiers):
         height=height,
         color=color,
     )
-    tick_position = tick_position + height
+    tick_position += height
 
 plt.xlabel("Classification accuracy (AUC score)")
 plt.ylabel("Visual stimuli category")

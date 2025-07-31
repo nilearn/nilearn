@@ -127,7 +127,7 @@ n_parcels = len(coordinates)
 corr = np.zeros((n_parcels, n_parcels))
 n_parcels_hemi = n_parcels // 2
 corr[np.arange(n_parcels_hemi), np.arange(n_parcels_hemi) + n_parcels_hemi] = 1
-corr = corr + corr.T
+corr += corr.T
 
 plot_connectome(
     adjacency_matrix=corr,

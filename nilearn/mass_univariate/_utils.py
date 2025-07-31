@@ -281,7 +281,7 @@ def calculate_cluster_measures(
                 bin_struct,
             )
             temp_labeled_arr3d[temp_labeled_arr3d > 0] += n_positive_clusters
-            labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
+            labeled_arr3d += temp_labeled_arr3d
             del temp_labeled_arr3d
 
         clust_vals, clust_sizes = np.unique(labeled_arr3d, return_counts=True)

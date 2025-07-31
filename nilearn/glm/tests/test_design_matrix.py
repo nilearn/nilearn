@@ -281,7 +281,7 @@ def test_design_matrix_fir_time_shift(frame_times):
     # Check that the first column of FIR design matrix is OK after a 1/2
     # time shift
     t_r = 1.0
-    frame_times = frame_times + t_r / 2
+    frame_times += t_r / 2
     events = basic_paradigm()
     hrf_model = "FIR"
     X, _ = design_matrix_light(

@@ -447,7 +447,7 @@ def _reduce_data_and_connectivity(
     reduced_X = (incidence * X.T).T
     reduced_connectivity = (incidence * connectivity) * incidence.T
 
-    reduced_connectivity = reduced_connectivity - dia_matrix(
+    reduced_connectivity -= dia_matrix(
         (reduced_connectivity.diagonal(), 0),
         shape=(reduced_connectivity.shape),
     )
@@ -501,7 +501,7 @@ def _nearest_neighbor_grouping(X, connectivity, n_clusters, threshold=1e-7):
         # remove edges so that the final number of clusters is not less than
         # n_clusters (to achieve the desired number of clusters)
         n_edges = n_features - n_clusters
-        nn_connectivity = nn_connectivity + nn_connectivity.T
+        nn_connectivity += nn_connectivity.T
 
         i_idx, j_idx = nn_connectivity.nonzero()
         edges = np.array([i_idx, j_idx])

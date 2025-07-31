@@ -1162,7 +1162,7 @@ class OrthoSlicer(BaseSlicer):
             adjusted_width = self._colorbar_width / len(self.axes)
             right_margin = self._colorbar_margin["right"] / len(self.axes)
             ticks_margin = self._colorbar_margin["left"] / len(self.axes)
-            x1 = x1 - (adjusted_width + ticks_margin + right_margin)
+            x1 -= adjusted_width + ticks_margin + right_margin
 
         for display_ax in display_ax_dict.values():
             bounds = display_ax.get_object_bounds()
@@ -1427,11 +1427,11 @@ class TiledSlicer(BaseSlicer):
 
         if "x" in self.axes:
             ax = self.axes["x"].ax
-            total_width = total_width + width_dict[ax]
+            total_width += width_dict[ax]
 
         if "z" in self.axes:
             ax = self.axes["z"].ax
-            total_height = total_height + height_dict[ax]
+            total_height += height_dict[ax]
 
         for ax, width in width_dict.items():
             width_dict[ax] = width / total_width * (rect_x1 - rect_x0)
@@ -1523,7 +1523,7 @@ class TiledSlicer(BaseSlicer):
             adjusted_width = self._colorbar_width / len(self.axes)
             right_margin = self._colorbar_margin["right"] / len(self.axes)
             ticks_margin = self._colorbar_margin["left"] / len(self.axes)
-            rect_x1 = rect_x1 - (adjusted_width + ticks_margin + right_margin)
+            rect_x1 -= adjusted_width + ticks_margin + right_margin
 
         for display_ax in display_ax_dict.values():
             bounds = display_ax.get_object_bounds()
@@ -1724,7 +1724,7 @@ class BaseStackedSlicer(BaseSlicer):
             adjusted_width = self._colorbar_width / len(self.axes)
             right_margin = self._colorbar_margin["right"] / len(self.axes)
             ticks_margin = self._colorbar_margin["left"] / len(self.axes)
-            x1 = x1 - (adjusted_width + right_margin + ticks_margin)
+            x1 -= adjusted_width + right_margin + ticks_margin
 
         for display_ax in display_ax_dict.values():
             bounds = display_ax.get_object_bounds()
@@ -2206,7 +2206,7 @@ class MosaicSlicer(BaseSlicer):
             adjusted_width = self._colorbar_width / len(self.axes)
             right_margin = self._colorbar_margin["right"] / len(self.axes)
             ticks_margin = self._colorbar_margin["left"] / len(self.axes)
-            x1 = x1 - (adjusted_width + right_margin + ticks_margin)
+            x1 -= adjusted_width + right_margin + ticks_margin
 
         # capture widths for each axes for anchoring Bbox
         width_dict = {}

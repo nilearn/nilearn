@@ -909,19 +909,19 @@ def reorder_img(img, resample=None, copy_header=False):
     # Now make sure the affine is positive
     pixdim = np.diag(A).copy()
     if pixdim[0] < 0:
-        b[0] = b[0] + pixdim[0] * (data.shape[0] - 1)
+        b[0] += pixdim[0] * (data.shape[0] - 1)
         pixdim[0] = -pixdim[0]
         slice1 = slice(None, None, -1)
     else:
         slice1 = slice(None, None, None)
     if pixdim[1] < 0:
-        b[1] = b[1] + pixdim[1] * (data.shape[1] - 1)
+        b[1] += pixdim[1] * (data.shape[1] - 1)
         pixdim[1] = -pixdim[1]
         slice2 = slice(None, None, -1)
     else:
         slice2 = slice(None, None, None)
     if pixdim[2] < 0:
-        b[2] = b[2] + pixdim[2] * (data.shape[2] - 1)
+        b[2] += pixdim[2] * (data.shape[2] - 1)
         pixdim[2] = -pixdim[2]
         slice3 = slice(None, None, -1)
     else:

@@ -997,7 +997,7 @@ def _prepare_output_permuted_ols(
             )
             n_negative_clusters = np.max(temp_labeled_arr3d)
             labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
-            labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
+            labeled_arr3d += temp_labeled_arr3d
             del temp_labeled_arr3d
 
         cluster_labels, idx, cluster_dict["size_regressor"] = np.unique(

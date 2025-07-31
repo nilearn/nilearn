@@ -166,7 +166,7 @@ for color, mask_name in zip("rgb", mask_names):
         facecolor="none",
     )
 
-    tick_position = tick_position + 0.2
+    tick_position += 0.2
 
 plt.ylabel("Classification accuracy (AUC score)")
 plt.xlabel("Visual stimuli category")
