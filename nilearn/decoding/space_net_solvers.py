@@ -250,10 +250,7 @@ def _logistic_data_loss_and_spatial_grad_derivative(
     image_buffer = np.zeros(mask.shape)
     image_buffer[mask] = w[:-1]
     data_section = logistic_loss_grad(X, y, w)
-    data_section[:-1] = (
-        data_section[:-1]
-        - grad_weight * divergence(gradient(image_buffer))[mask]
-    )
+    data_section[:-1] -= grad_weight * divergence(gradient(image_buffer))[mask]
     return data_section
 
 

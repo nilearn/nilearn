@@ -601,7 +601,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             else:
                 self.mean_ = np.mean(connectivities, axis=0)
                 # Fight numerical instabilities: make symmetric
-                self.mean_ = self.mean_ + self.mean_.T
+                self.mean_ += self.mean_.T
                 self.mean_ *= 0.5
 
         # Compute the vector we return on transform

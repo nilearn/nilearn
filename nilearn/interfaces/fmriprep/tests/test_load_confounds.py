@@ -68,7 +68,7 @@ def _simu_img(tmp_path, trend, demean):
     vol_rand[:, :, range(nz, 2 * nz)] = 1
 
     # Shift the mean to non-zero
-    vol = vol + 10
+    vol += 10
 
     # add a linear trend to the data
     if trend:

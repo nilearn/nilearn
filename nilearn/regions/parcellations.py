@@ -77,7 +77,7 @@ def _connectivity_surface(mask_img):
         ).tocsr()
         connectivity += conn_temp
     # make symmetric
-    connectivity = connectivity + connectivity.T
+    connectivity += connectivity.T
     # set diagonal to 1 for connectivity matrix
     connectivity[np.diag_indices_from(connectivity)] = 1
     return connectivity
@@ -509,7 +509,7 @@ class Parcellations(_MultiPCA):
 
             self.connectivity_ = connectivity
         # Avoid 0 label
-        labels = labels + 1
+        labels += 1
         unique_labels = np.unique(labels)
 
         # Check that appropriate number of labels were created

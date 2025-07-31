@@ -120,7 +120,7 @@ score_img = SurfaceImage(mesh=fsaverage["inflated"], data=scores)
 
 chance = 0.5
 for hemi in hemispheres_to_analyze:
-    score_img.data.parts[hemi] = score_img.data.parts[hemi] - chance
+    score_img.data.parts[hemi] -= chance
 
 for hemi in hemispheres_to_analyze:
     plot_surf_stat_map(

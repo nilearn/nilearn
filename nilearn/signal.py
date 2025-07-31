@@ -86,7 +86,7 @@ def standardize_signal(
         elif standardize == "zscore_sample":
             if not detrend:
                 # remove mean if not already detrended
-                signals = signals - signals.mean(axis=0)
+                signals -= signals.mean(axis=0)
 
             std = signals.std(axis=0, ddof=1)
             # avoid numerical problems
@@ -111,7 +111,7 @@ def standardize_signal(
 
             if not detrend:
                 # remove mean if not already detrended
-                signals = signals - signals.mean(axis=0)
+                signals -= signals.mean(axis=0)
 
             std = signals.std(axis=0)
             # avoid numerical problems

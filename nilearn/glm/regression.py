@@ -258,9 +258,7 @@ class ARModel(OLSModel):
         X = np.asarray(X, np.float64)
         whitened_X = X.copy()
         for i in range(self.order):
-            whitened_X[(i + 1) :] = (
-                whitened_X[(i + 1) :] - self.rho[i] * X[: -(i + 1)]
-            )
+            whitened_X[(i + 1) :] -= self.rho[i] * X[: -(i + 1)]
         return whitened_X
 
 
