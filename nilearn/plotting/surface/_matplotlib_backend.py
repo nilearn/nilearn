@@ -515,15 +515,6 @@ def _plot_surf(
         face_colors = mix_colormaps(surf_map_face_colors, bg_face_colors)
 
         if colorbar:
-            cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
-            cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
-
-            # in rare cases where plotting an image of zeroes
-            # this avoids a matplolib error
-            if cbar_vmax == cbar_vmin == 0:
-                cbar_vmax = 1
-                cbar_vmin = -1
-
             our_cmap, norm = adjust_cmap(cmap, vmin, vmax, threshold)
 
             # we need to create a proxy mappable
@@ -537,6 +528,14 @@ def _plot_surf(
                 pad=0.0,
                 aspect=10.0,
             )
+            cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
+            cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
+
+            # in rare cases where plotting an image of zeroes
+            # this avoids a matplolib error
+            if cbar_vmax == cbar_vmin == 0:
+                cbar_vmax = 1
+                cbar_vmin = -1
             ticks = _get_ticks(
                 cbar_vmin, cbar_vmax, cbar_tick_format, threshold
             )
