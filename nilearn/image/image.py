@@ -1429,13 +1429,14 @@ def binarize_img(
      >>> img = binarize_img(anatomical_image, copy_header=True)
 
     """
-    warnings.warn(
-        'The current default behavior for the "two_sided" argument '
-        'is  "True". This behavior will be changed to "False" in '
-        "version 0.13.",
-        DeprecationWarning,
-        stacklevel=find_stack_level(),
-    )
+    if two_sided is True:
+        warnings.warn(
+            'The current default behavior for the "two_sided" argument '
+            'is  "True". This behavior will be changed to "False" in '
+            "version 0.13.",
+            DeprecationWarning,
+            stacklevel=find_stack_level(),
+        )
 
     return math_img(
         "img.astype(bool).astype('int8')",

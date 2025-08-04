@@ -131,7 +131,6 @@ def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
 
     # Plot mesh with background
     plot_surf(in_memory_mesh, bg_map=bg_map, engine=engine)
-    plot_surf(in_memory_mesh, bg_map=bg_map, darkness=0.5, engine=engine)
     plot_surf(
         in_memory_mesh,
         bg_map=bg_map,
@@ -1044,47 +1043,40 @@ def test_plot_img_on_surf_hemispheres_and_orientations(
     plot_img_on_surf(img_3d_mni, hemispheres=hemispheres, views=views)
 
 
-@pytest.mark.timeout(0)
-def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni):
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {
+            "colorbar": True,
+            "vmin": -5,
+            "vmax": 5,
+            "threshold": 3,
+        },
+        {
+            "colorbar": True,
+            "vmin": -1,
+            "vmax": 5,
+            "symmetric_cbar": False,
+            "threshold": 3,
+        },
+        {"colorbar": False},
+        {
+            "colorbar": False,
+            "cmap": "roy_big_bl",
+        },
+        {
+            "colorbar": True,
+            "cmap": "roy_big_bl",
+            "vmax": 2,
+        },
+    ],
+)
+def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni, kwargs):
     """Smoke test for nilearn.plotting.surface.plot_img_on_surf colorbar
     parameter.
     """
     plot_img_on_surf(
-        img_3d_mni,
-        hemispheres=["right"],
-        views=["lateral"],
-        colorbar=True,
-        vmin=-5,
-        vmax=5,
-        threshold=3,
-    )
-    plot_img_on_surf(
-        img_3d_mni,
-        hemispheres=["right"],
-        views=["lateral"],
-        colorbar=True,
-        vmin=-1,
-        vmax=5,
-        symmetric_cbar=False,
-        threshold=3,
-    )
-    plot_img_on_surf(
-        img_3d_mni, hemispheres=["right"], views=["lateral"], colorbar=False
-    )
-    plot_img_on_surf(
-        img_3d_mni,
-        hemispheres=["right"],
-        views=["lateral"],
-        colorbar=False,
-        cmap="roy_big_bl",
-    )
-    plot_img_on_surf(
-        img_3d_mni,
-        hemispheres=["right"],
-        views=["lateral"],
-        colorbar=True,
-        cmap="roy_big_bl",
-        vmax=2,
+        img_3d_mni, hemispheres=["right"], views=["lateral"], **kwargs
     )
 
 
