@@ -589,6 +589,22 @@ def test_clean_kwargs(kwarg_set):
     assert np.any(np.not_equal(base_filtered, test_filtered))
 
 
+@pytest.mark.parametrize("cast_to", [int, float, np.int32, np.float32])
+def test_clean_t_r_type(cast_to):
+    """Check that several types are supported for TR.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5545.
+    """
+    n_samples = 34
+    n_features = 501
+    x_orig = generate_signals_plus_trends(
+        n_features=n_features, n_samples=n_samples
+    )
+
+    t_r, high_pass, low_pass = cast_to(1.8), 0.01, 0.08
+    clean(x_orig, t_r=t_r, low_pass=low_pass, high_pass=high_pass)
+
+
 def test_clean_frequencies():
     """Check several values for low and high pass."""
     sx1 = np.sin(np.linspace(0, 100, 2000))
