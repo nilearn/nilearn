@@ -1890,7 +1890,7 @@ class SurfaceImage:
 
     dtype : DTypeLike object, default=None
         dtype to enforce on the data.
-        If ``None`` the original dtype if used.
+        If ``None`` the original dtype is used.
 
         .. versionadded:: 0.12.1dev
 
