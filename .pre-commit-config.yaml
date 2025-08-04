@@ -79,7 +79,7 @@ repos:
     rev: v0.12.2
     hooks:
     # Run the linter.
-    -   id: ruff
+    -   id: ruff-check
         # args: [--statistics]
         args: [--fix, --show-fixes]
     # Run the formatter.
