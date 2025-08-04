@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "hatchling.build"
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatchling", "hatch-vcs", "setuptools-scm!=9.0.0"]
 
 [project]
 authors = [{name = "Nilearn developers"}]
