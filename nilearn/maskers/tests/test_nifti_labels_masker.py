@@ -695,6 +695,94 @@ def test_region_names(
     )
 
 
+def test_regions_id_names_no_labels_no_lut(affine_eye):
+    """Check match between id and names.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5542.
+    """
+    atlas = np.zeros((8, 8, 8))
+    atlas[4, 4, 3:5] = 1
+    atlas[4, 4, 5:7] = 2
+    atlas = Nifti1Image(atlas, affine_eye)
+
+    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 2.0}
+
+    # no label, no lut: names are inferred from id
+    masker = NiftiLabelsMasker(atlas).fit()
+
+    assert masker.region_ids_ == expected_region_ids_
+    assert masker.region_names_ == {1: "1.0", 2: "2.0"}
+
+    expected_fitted_lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[0.0, "Background"], [1.0, "1.0"], [2.0, "2.0"]],
+    )
+    pd.testing.assert_frame_equal(
+        masker.lut_,
+        expected_fitted_lut,
+    )
+
+
+def test_regions_id_names_with_labels(affine_eye):
+    """Check match between id and names.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5542.
+    """
+    atlas = np.zeros((8, 8, 8))
+    atlas[4, 4, 3:5] = 1
+    atlas[4, 4, 5:7] = 2
+    atlas = Nifti1Image(atlas, affine_eye)
+
+    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 2.0}
+
+    masker = NiftiLabelsMasker(atlas, labels=["A", "B"]).fit()
+
+    assert masker.region_ids_ == expected_region_ids_
+    assert masker.region_names_ == {1: "A", 2: "B"}
+
+    expected_fitted_lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[0.0, "Background"], [1.0, "A"], [2.0, "B"]],
+    )
+    pd.testing.assert_frame_equal(
+        masker.lut_,
+        expected_fitted_lut,
+    )
+
+
+def test_regions_id_names_lut(affine_eye):
+    """Check match between id and names.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5542.
+    """
+    atlas = np.zeros((8, 8, 8))
+    atlas[4, 4, 3:5] = 1
+    atlas[4, 4, 5:7] = 2
+    atlas = Nifti1Image(atlas, affine_eye)
+
+    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 2.0}
+
+    lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[1.0, "A"], [2.0, "B"]],
+    )
+
+    masker = NiftiLabelsMasker(atlas, lut=lut).fit()
+
+    # fitted lut now includes background
+    expected_fitted_lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[0.0, "Background"], [1.0, "A"], [2.0, "B"]],
+    )
+    pd.testing.assert_frame_equal(
+        masker.lut_,
+        expected_fitted_lut,
+    )
+
+    assert masker.region_names_ == {1: "A", 2: "B"}
+    assert masker.region_ids_ == expected_region_ids_
+
+
 def generate_expected_lut(region_names):
     """Generate a look up table based on a list of regions names."""
     if "background" in region_names:

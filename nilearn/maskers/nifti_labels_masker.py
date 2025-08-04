@@ -656,17 +656,19 @@ class NiftiLabelsMasker(BaseMasker):
                 function=None,
                 name=deepcopy(self.labels),
                 index=self.labels_img_,
+                background_label=self.background_label,
             )
 
         else:
             lut = generate_atlas_look_up_table(
-                function=None, index=self.labels_img_
+                function=None,
+                index=self.labels_img_,
+                background_label=self.background_label,
             )
 
         # passed labels or lut may not include background label
         # because of poor data standardization
         # so we need to update the lut accordingly
-        mask_background_name = lut["name"] == "Background"
         mask_background_index = lut["index"] == self.background_label
         if (mask_background_index).any():
             # Ensure background is the first row with name "Background"
@@ -676,10 +678,21 @@ class NiftiLabelsMasker(BaseMasker):
             other_rows = lut[~mask_background_index]
             lut = pd.concat([first_rows, other_rows], ignore_index=True)
 
+            mask_background_name = lut["name"] == "Background"
             if not (mask_background_name).any():
                 lut["name"] = lut["name"].shift(1)
 
             lut.loc[0, "name"] = "Background"
+
+        else:
+            first_row = {"name": "Background", "index": self.background_label}
+            first_row = {
+                col: first_row[col] if col in lut else np.nan
+                for col in lut.columns
+            }
+            lut = pd.concat(
+                [pd.DataFrame([first_row]), lut], ignore_index=True
+            )
 
         return sanitize_look_up_table(lut, atlas=self.labels_img_)
 

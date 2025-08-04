@@ -12,7 +12,7 @@ from nilearn.typing import NiimgLike
 
 
 def generate_atlas_look_up_table(
-    function=None, name=None, index=None, strict=False
+    function=None, name=None, index=None, strict=False, background_label=None
 ):
     """Generate a BIDS compatible look up table for an atlas.
 
@@ -62,7 +62,12 @@ def generate_atlas_look_up_table(
     if name is None:
         if fname == "unknown":
             index = _get_indices_from_image(index)
-        name = [str(x) for x in index]
+        name = []
+        for x in index:
+            if background_label is not None and x == background_label:
+                name.append("Background")
+            else:
+                name.append(str(x))
 
     # deal with indices
     if index is None:
