@@ -79,7 +79,7 @@ def test_surface_label_masker_fit(surf_label_img):
     assert masker.n_elements_ == 1
     assert masker.labels_ == [0, 1]
     assert masker._reporting_data is not None
-    assert masker.lut_["name"].to_list() == ["0", "1"]
+    assert masker.lut_["name"].to_list() == ["Background", "1"]
     assert masker.region_names_ == {1: "1"}
     assert masker.region_ids_ == {0: 0, 1: 1}
 
