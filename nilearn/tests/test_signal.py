@@ -9,9 +9,10 @@ from numpy import array_equal
 from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
 from pandas import read_csv
 
+import nilearn as nil
+from nilearn._utils.data_gen import generate_trends
 from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn.conftest import _rng
-from nilearn.glm.first_level.design_matrix import create_cosine_drift
 from nilearn.signal import (
     _censor_signals,
     _create_cosine_drift_terms,
@@ -20,6 +21,7 @@ from nilearn.signal import (
     _mean_of_squares,
     butterworth,
     clean,
+    create_cosine_drift,
     high_variance_confounds,
     row_sum_of_squares,
     standardize_signal,
@@ -91,26 +93,6 @@ def generate_signals(
 
     signals[...] = scipy.signal.detrend(signals, axis=0)
     return signals, noises, confounds
-
-
-def generate_trends(n_features=17, length=41):
-    """Generate linearly-varying signals, with zero mean.
-
-    Parameters
-    ----------
-    n_features, length : int
-        respectively number of signals and number of samples to generate.
-
-    Returns
-    -------
-    trends : numpy.ndarray, shape (length, n_features)
-        output signals, one per column.
-    """
-    rng = _rng()
-    trends = scipy.signal.detrend(np.linspace(0, 1.0, length), type="constant")
-    trends = np.repeat(np.atleast_2d(trends).T, n_features, axis=1)
-    factors = rng.standard_normal(size=n_features)
-    return trends * factors
 
 
 def generate_signals_plus_trends(n_features=17, n_samples=41):
@@ -1619,3 +1601,21 @@ def test_handle_scrubbed_volumes_exception():
         _handle_scrubbed_volumes(
             signals, confounds, sample_mask, "butterworth", 2.5, True
         )
+
+
+def test_cosine_drift():
+    """Test create_cosine_drift."""
+    design_matrix_file = (
+        Path(nil.__file__).parent / "glm" / "tests" / "spm_dmtx.npz"
+    )
+    design_matrix = np.load(design_matrix_file)
+
+    spm_drifts = design_matrix["cosbf_dt_1_nt_20_hcut_0p1"]
+
+    frame_times = np.arange(20)
+    high_pass_frequency = 0.1
+
+    nilearn_drifts = create_cosine_drift(high_pass_frequency, frame_times)
+
+    assert_almost_equal(spm_drifts[:, 1:], nilearn_drifts[:, :-2])
+    # nilearn_drifts is placing the constant at the end [:, : - 1]

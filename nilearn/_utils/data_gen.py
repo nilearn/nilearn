@@ -13,8 +13,9 @@ import scipy.signal
 from nibabel import Nifti1Image, gifti
 from scipy.ndimage import binary_dilation
 
-from nilearn import datasets, image, maskers, masking
+from nilearn import image, maskers, masking
 from nilearn._utils import as_ndarray, logger
+from nilearn.datasets.struct import load_mni152_brain_mask
 from nilearn.interfaces.bids.utils import (
     bids_entities,
     check_bids_label,
@@ -53,7 +54,7 @@ def generate_mni_space_img(n_scans=1, res=30, random_state=0, mask_dilation=2):
 
     """
     rand_gen = np.random.default_rng(random_state)
-    mask_img = datasets.load_mni152_brain_mask(resolution=res)
+    mask_img = load_mni152_brain_mask(resolution=res)
     masker = maskers.NiftiMasker(mask_img).fit()
     n_voxels = image.get_data(mask_img).sum()
     data = rand_gen.standard_normal((n_scans, n_voxels))
@@ -1525,3 +1526,24 @@ def _write_bids_derivative_func(
         _write_fake_bold_gifti(
             gifti_path, n_time_points=n_time_points, n_vertices=n_vertices
         )
+
+
+def generate_trends(n_features=17, length=41, rng=None):
+    """Generate linearly-varying signals, with zero mean.
+
+    Parameters
+    ----------
+    n_features, length : int
+        respectively number of signals and number of samples to generate.
+
+    Returns
+    -------
+    trends : numpy.ndarray, shape (length, n_features)
+        output signals, one per column.
+    """
+    if rng is None:
+        rng = np.random.default_rng(42)
+    trends = scipy.signal.detrend(np.linspace(0, 1.0, length), type="constant")
+    trends = np.repeat(np.atleast_2d(trends).T, n_features, axis=1)
+    factors = rng.standard_normal(size=n_features)
+    return trends * factors

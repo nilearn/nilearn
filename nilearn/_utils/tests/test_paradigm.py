@@ -1,5 +1,5 @@
 """
-Test the design_matrix utilities.
+Test the experimental_paradigm utilities.
 
 Note that the tests just look whether the data produced has correct dimension,
 not whether it is exact.
@@ -13,12 +13,11 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.data_gen import basic_paradigm
-from nilearn.glm.first_level.experimental_paradigm import (
+from nilearn._utils.experimental_paradigm import (
     check_events,
     handle_modulation_of_duplicate_events,
 )
-
-from ._testing import (
+from nilearn.glm.tests._testing import (
     block_paradigm,
     design_with_nan_durations,
     design_with_nan_onsets,

@@ -1131,7 +1131,7 @@ def check_mesh_is_fsaverage(mesh):
     """
     if isinstance(mesh, str):
         # avoid circular imports
-        from nilearn.datasets import fetch_surf_fsaverage
+        from nilearn.datasets.struct import fetch_surf_fsaverage
 
         return fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, Mapping):

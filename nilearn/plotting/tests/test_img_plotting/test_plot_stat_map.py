@@ -8,7 +8,7 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn.conftest import _rng
-from nilearn.datasets import load_mni152_template
+from nilearn.datasets.struct import load_mni152_template
 from nilearn.image import get_data
 from nilearn.image.resampling import coord_transform
 from nilearn.plotting import plot_stat_map
