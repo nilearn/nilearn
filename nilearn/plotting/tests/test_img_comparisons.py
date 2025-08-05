@@ -219,7 +219,6 @@ def test_plot_bland_altman_surface(matplotlib_pyplot, surf_img_1d, masker):
     )
 
 
-@pytest.mark.timeout(0)
 def test_plot_bland_altman_errors(
     surf_img_1d, surf_mask_1d, img_3d_rand_eye, img_3d_ones_eye
 ):
@@ -238,8 +237,20 @@ def test_plot_bland_altman_errors(
     with pytest.raises(TypeError, match="Mask should be of type:"):
         plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, masker=1)
 
+    with pytest.raises(
+        TypeError, match="'lims' must be a list or tuple of length == 4"
+    ):
+        plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[-1])
+
+    with pytest.raises(TypeError, match="with all values different from 0."):
+        plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[0, 1, -2, 0])
+
+
+def test_plot_bland_altman_incompatible_errors(
+    surf_img_1d, surf_mask_1d, img_3d_rand_eye, img_3d_ones_eye
+):
+    """Check error for bland altman plots incompatible mask and images."""
     error_msg = "Mask and images to fit must be of compatible types."
-    # invalid masker for that image type
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(
             img_3d_rand_eye, img_3d_rand_eye, masker=SurfaceMasker()
@@ -253,11 +264,3 @@ def test_plot_bland_altman_errors(
 
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(surf_img_1d, surf_img_1d, masker=img_3d_ones_eye)
-
-    with pytest.raises(
-        TypeError, match="'lims' must be a list or tuple of length == 4"
-    ):
-        plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[-1])
-
-    with pytest.raises(TypeError, match="with all values different from 0."):
-        plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[0, 1, -2, 0])

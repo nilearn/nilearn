@@ -443,7 +443,7 @@ def crop_img(
         start = np.maximum(start - 1, 0)
         end = np.minimum(end + 1, data.shape[:3])
 
-    slices = [slice(s, e) for s, e in zip(start, end)][:3]
+    slices = list(map(slice, start, end))[:3]
     cropped_im = _crop_img_to(img, slices, copy=copy, copy_header=copy_header)
     return (cropped_im, tuple(slices)) if return_offset else cropped_im
 
@@ -1429,13 +1429,14 @@ def binarize_img(
      >>> img = binarize_img(anatomical_image, copy_header=True)
 
     """
-    warnings.warn(
-        'The current default behavior for the "two_sided" argument '
-        'is  "True". This behavior will be changed to "False" in '
-        "version 0.13.",
-        DeprecationWarning,
-        stacklevel=find_stack_level(),
-    )
+    if two_sided is True:
+        warnings.warn(
+            'The current default behavior for the "two_sided" argument '
+            'is  "True". This behavior will be changed to "False" in '
+            "version 0.13.",
+            DeprecationWarning,
+            stacklevel=find_stack_level(),
+        )
 
     return math_img(
         "img.astype(bool).astype('int8')",
