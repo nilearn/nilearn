@@ -300,7 +300,11 @@ class NiftiLabelsMasker(BaseMasker):
         lut = self.lut_
         if hasattr(self, "_lut_"):
             lut = self._lut_
-        return lut.loc[lut["index"] != self.background_label, "name"].to_dict()
+        tmp = lut.loc[lut["index"] != self.background_label, "name"].to_dict()
+        region_names_ = {}
+        for key, value in list(tmp.items()):
+            region_names_[key - 1] = value
+        return region_names_
 
     @property
     def region_ids_(self) -> dict[Union[str, int], int]:
@@ -315,10 +319,20 @@ class NiftiLabelsMasker(BaseMasker):
         .. versionadded:: 0.10.3
         """
         check_is_fitted(self)
+
         lut = self.lut_
         if hasattr(self, "_lut_"):
             lut = self._lut_
-        return lut["index"].to_dict()
+
+        tmp = lut["index"].to_dict()
+        region_ids_: dict[Union[str, int], int] = {}
+        for key, value in list(tmp.items()):
+            if value == self.background_label:
+                region_ids_["background"] = value
+            else:
+                region_ids_[key - 1] = value
+
+        return region_ids_
 
     @property
     def n_elements_(self) -> int:
@@ -863,11 +877,18 @@ class NiftiLabelsMasker(BaseMasker):
             verbose=self.verbose,
         )
 
+        # Create a lut that may be different from the fitted lut_
+        # and whose rows are sorted according
+        # to the columns in the region_signals array.
         self._lut_ = self.lut_.copy()
-        mask = mask = self.lut_["index"].isin([self.background_label, *ids])
+        desired_order = [self.background_label, *ids]
+        mask = mask = self.lut_["index"].isin(desired_order)
         self._lut_ = self._lut_[mask]
         self._lut_ = sanitize_look_up_table(
-            self._lut_, atlas=np.array([self.background_label, *ids])
+            self._lut_, atlas=np.array(desired_order)
+        )
+        self._lut_ = (
+            self._lut_.set_index("index").loc[desired_order].reset_index()
         )
 
         self.region_atlas_ = masked_atlas

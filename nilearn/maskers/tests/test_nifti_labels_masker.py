@@ -712,10 +712,10 @@ def test_regions_id_names_no_labels_no_lut(affine_eye, shape_3d_default):
     fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
     signals = masker.fit_transform(fmri_img)
 
-    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 2.0}
+    expected_region_ids_ = {"background": 0.0, 0: 1.0, 1: 2.0}
     assert masker.region_ids_ == expected_region_ids_
 
-    assert masker.region_names_ == {1: "1.0", 2: "2.0"}
+    assert masker.region_names_ == {0: "1.0", 1: "2.0"}
 
     # Background is not returned by 'region_names_'
     # but has been added internally
@@ -760,9 +760,9 @@ def test_regions_id_names_with_labels(
             # label for Background was not passed so we should get a warning
             signals = masker.fit_transform(fmri_img)
 
-    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 2.0}
+    expected_region_ids_ = {"background": 0.0, 0: 1.0, 1: 2.0}
     assert masker.region_ids_ == expected_region_ids_
-    assert masker.region_names_ == {1: "A", 2: "B"}
+    assert masker.region_names_ == {0: "A", 1: "B"}
 
     # Background is not returned by 'region_names_'
     # but has been added internally even if it was not passed
@@ -794,10 +794,10 @@ def test_regions_id_names_with_too_few_labels(affine_eye):
             atlas, labels=["Background", "A", "B"]
         ).fit()
 
-    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 6.0, 3: 10.0}
+    expected_region_ids_ = {"background": 0.0, 0: 1.0, 1: 6.0, 2: 10.0}
     assert masker.region_ids_ == expected_region_ids_
 
-    assert masker.region_names_ == {1: "A", 2: "B", 3: "unknown"}
+    assert masker.region_names_ == {0: "A", 1: "B", 2: "unknown"}
 
     expected_lut = pd.DataFrame(
         columns=["index", "name"],
@@ -827,10 +827,10 @@ def test_regions_id_names_lut(affine_eye, shape_3d_default):
     fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
     signals = masker.fit_transform(fmri_img)
 
-    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 2.0}
+    expected_region_ids_ = {"background": 0.0, 0: 1.0, 1: 2.0}
     assert masker.region_ids_ == expected_region_ids_
 
-    assert masker.region_names_ == {1: "A", 2: "B"}
+    assert masker.region_names_ == {0: "A", 1: "B"}
 
     # Background is not returned by 'region_names_'
     # but has been added internally even if it was not passed
@@ -866,10 +866,10 @@ def test_regions_id_names_lut_too_few(affine_eye):
 
     masker = NiftiLabelsMasker(atlas, lut=lut).fit()
 
-    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 10.0, 3: 6.0}
+    expected_region_ids_ = {"background": 0.0, 0: 1.0, 1: 10.0, 2: 6.0}
     assert masker.region_ids_ == expected_region_ids_
 
-    assert masker.region_names_ == {1: "A", 2: "B", 3: "unknown"}
+    assert masker.region_names_ == {0: "A", 1: "B", 2: "unknown"}
 
     expected_lut = pd.DataFrame(
         columns=["index", "name"],
@@ -898,10 +898,10 @@ def test_regions_id_names_lut_too_many_entries(affine_eye):
 
     masker = NiftiLabelsMasker(atlas, lut=lut).fit()
 
-    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 6.0, 3: 10.0}
+    expected_region_ids_ = {"background": 0.0, 0: 1.0, 1: 6.0, 2: 10.0}
     assert masker.region_ids_ == expected_region_ids_
 
-    assert masker.region_names_ == {1: "A", 2: "C", 3: "B"}
+    assert masker.region_names_ == {0: "A", 1: "C", 2: "B"}
 
     # fitted lut keeps track of background
     # but the missing regions was dropped
