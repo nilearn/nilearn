@@ -368,6 +368,13 @@ argument. To keep the 10% most correlated voxels, just create us this parameter 
    :start-after: # on nested cross-validation.
    :end-before: # Visualize the results
 
+.. note::
+
+    If ``screening_percentile`` is used in combination
+    with a mask that is too small
+    relative to the total brain volume,
+    then all the voxels of the mask
+    may be included even for very small ``screening_percentile``.
 
 Visualizing the results
 -----------------------
