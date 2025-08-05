@@ -340,10 +340,13 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 function=None,
                 name=self.labels,
                 index=self.labels_img_,
+                background_label=self.background_label,
             )
         else:
             lut = generate_atlas_look_up_table(
-                function=None, index=self.labels_img_
+                function=None,
+                index=self.labels_img_,
+                background_label=self.background_label,
             )
 
         self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img_)
