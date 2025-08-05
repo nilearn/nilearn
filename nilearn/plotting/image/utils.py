@@ -1,6 +1,6 @@
 """
 Plotting utilities
-that can be used outside of the plotting subpackage.
+that can be used outside of the plotting.image subpackage.
 """
 
 import numbers
