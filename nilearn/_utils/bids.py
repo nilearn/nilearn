@@ -52,6 +52,10 @@ def generate_atlas_look_up_table(
     strict: bool, default=False
         If True, an error will be thrown
         if ``name`` and ``index``have different length.
+
+    background_label: str or None, default=None
+        If not None and no 'name' was passed,
+        this label is used to describe the background value in the image.
     """
     if name is None and index is None:
         raise ValueError("'index' and 'name' cannot both be None.")
@@ -126,7 +130,7 @@ def generate_atlas_look_up_table(
     return lut
 
 
-def check_look_up_table(lut, atlas, strict=False, verbose=1):
+def check_look_up_table(lut: pd.DataFrame, atlas, strict=False, verbose=1):
     """Validate atlas look up table (LUT).
 
     Make sure it complies with BIDS requirements.
