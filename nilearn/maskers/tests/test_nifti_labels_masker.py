@@ -861,7 +861,7 @@ def test_regions_id_names_lut_too_few(affine_eye):
 def test_regions_id_names_lut_too_many_entries(affine_eye):
     """Check passing LUT with too many entries.
 
-    The missing region won't appear in region_ids_ or region_names_
+    The extra regions won't appear in region_ids_ or region_names_
     or in the fitted lut_
     (same behavior as when passing too many labels).
     """
