@@ -12,6 +12,7 @@ from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
+from nilearn.surface import SurfaceImage
 
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1882989.0
@@ -156,12 +157,7 @@ def _get_mask_extent(mask_img):
 
 
 @fill_doc
-def adjust_screening_percentile(
-    screening_percentile,
-    mask_img,
-    verbose=0,
-    mesh_n_vertices=None,
-):
+def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
     """Adjust the screening percentile according to the MNI152 template or
     the number of vertices of the provided standard brain mesh.
 
@@ -174,11 +170,6 @@ def adjust_screening_percentile(
         number of vertices are to be computed.
 
     %(verbose0)s
-
-    mesh_n_vertices : int, default=None
-        Number of vertices of the reference brain mesh, eg., fsaverage5
-        or fsaverage7 etc.. If provided, the screening percentile will be
-        adjusted according to the number of vertices.
 
     Returns
     -------
@@ -194,7 +185,9 @@ def adjust_screening_percentile(
     # in the standard mesh otherwise it is the volume of the MNI152 brain
     # template
     reference_extent = (
-        MNI152_BRAIN_VOLUME if mesh_n_vertices is None else mesh_n_vertices
+        mask_img.mesh.n_vertices
+        if isinstance(mask_img, SurfaceImage)
+        else MNI152_BRAIN_VOLUME
     )
     if mask_extent > 1.1 * reference_extent:
         unit = "mm^3"
@@ -256,11 +249,7 @@ def adjust_screening_percentile(
 
 @fill_doc
 def check_feature_screening(
-    screening_percentile,
-    mask_img,
-    is_classification,
-    verbose=0,
-    mesh_n_vertices=None,
+    screening_percentile, mask_img, is_classification, verbose=0
 ):
     """Check feature screening method.
 
@@ -278,11 +267,6 @@ def check_feature_screening(
         is performed. Otherwise, a regression task is performed.
 
     %(verbose0)s
-
-    mesh_n_vertices : int, default=None
-        Number of vertices of the reference mesh, eg., fsaverage5 or
-        fsaverage7 etc.. If provided, the screening percentile will be adjusted
-        according to the number of vertices.
 
     Returns
     -------
@@ -306,7 +290,6 @@ def check_feature_screening(
             screening_percentile,
             mask_img,
             verbose=verbose,
-            mesh_n_vertices=mesh_n_vertices,
         )
 
         return SelectPercentile(f_test, percentile=int(screening_percentile_))

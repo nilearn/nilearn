@@ -891,7 +891,7 @@ screening_percentile : int, float, \
         This percentile is expressed
         with respect to the volume of either a standard (MNI152) brain
         (if mask_img is a 3D volume)
-        or a the number of vertices in the standard brain mesh
+        or a the number of vertices in the mask mesh
         (if mask_img is a SurfaceImage).
         This means that the
         ``screening_percentile`` is corrected at runtime by premultiplying it
@@ -1348,7 +1348,7 @@ docdict["base_decoder_fit_attributes"] = """
             This percentile is expressed
             with respect to the volume of either a standard (MNI152) brain
             (if mask_img is a 3D volume)
-            or a the number of vertices in the standard brain mesh
+            or a the number of vertices in the mask mesh
             (if mask_img is a SurfaceImage).
 
         coef_ : numpy.ndarray, shape=(n_classes, n_features)
