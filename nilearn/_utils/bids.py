@@ -203,15 +203,33 @@ def check_look_up_table(lut, atlas, strict=False, verbose=1):
                 warnings.warn(msg, stacklevel=find_stack_level())
 
 
-def sanitize_look_up_table(lut, atlas) -> pd.DataFrame:
-    """Remove entries in lut that are missing from image."""
+def sanitize_look_up_table(lut: pd.DataFrame, atlas) -> pd.DataFrame:
+    """Sanitize lookup table.
+
+    - remove entries in lut that are missing from image.
+    - add 'unknown' entries in lut image indices missing from lut.
+    """
     check_look_up_table(lut, atlas, strict=False, verbose=0)
+
     indices = _get_indices_from_image(atlas)
     lut = lut[lut["index"].isin(indices)]
+
+    missing_from_lut = sorted(
+        set(indices.tolist()) - set(lut["index"].to_list())
+    )
+    if missing_from_lut:
+        missing_rows = pd.DataFrame(
+            {
+                "name": ["unknown"] * len(missing_from_lut),
+                "index": missing_from_lut,
+            }
+        )
+        lut = pd.concat([lut, missing_rows], ignore_index=True)
+
     return lut
 
 
-def _get_indices_from_image(image):
+def _get_indices_from_image(image) -> np.ndarray:
     if isinstance(image, NiimgLike):
         img = check_niimg(image)
         data = safe_get_data(img)

@@ -105,8 +105,6 @@ class NiftiLabelsMasker(BaseMasker):
 
     %(masker_lut)s
 
-        .. warning::
-
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.

@@ -829,8 +829,8 @@ def test_regions_id_names_lut(affine_eye, shape_3d_default):
     check_lut(masker, expected_lut)
 
 
-def test_regions_id_names_lut_mismatch(affine_eye):
-    """Check passing LUT with too many / few entries."""
+def test_regions_id_names_lut_too_few(affine_eye):
+    """Check passing LUT with too few entries."""
     atlas = np.zeros((8, 8, 8))
     atlas[4, 4, 3:5] = 1
     atlas[4, 4, 5:7] = 6
@@ -846,19 +846,31 @@ def test_regions_id_names_lut_mismatch(affine_eye):
 
     masker = NiftiLabelsMasker(atlas, lut=lut).fit()
 
-    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 10.0}
+    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 10.0, 3: 6.0}
     assert masker.region_ids_ == expected_region_ids_
 
-    assert masker.region_names_ == {1: "A", 2: "B"}
+    assert masker.region_names_ == {1: "A", 2: "B", 3: "unknown"}
 
     expected_lut = pd.DataFrame(
         columns=["index", "name"],
-        data=[[0.0, "Background"], [1.0, "A"], [10.0, "B"], [2.0, "unknown"]],
+        data=[[0.0, "Background"], [1.0, "A"], [10.0, "B"], [6.0, "unknown"]],
     )
     check_lut(masker, expected_lut)
 
-    # Too many entries
-    # the missing region won't appear in region_ids_ or region_names_
+
+def test_regions_id_names_lut_too_many_entries(affine_eye):
+    """Check passing LUT with too many entries.
+
+    The missing region won't appear in region_ids_ or region_names_
+    or in the fitted lut_
+    (same behavior as when passing too many labels).
+    """
+    atlas = np.zeros((8, 8, 8))
+    atlas[4, 4, 3:5] = 1
+    atlas[4, 4, 5:7] = 6
+    atlas[4, 3, 5:7] = 10
+    atlas = Nifti1Image(atlas, affine_eye)
+
     lut = pd.DataFrame(
         columns=["index", "name"],
         data=[[1.0, "A"], [6.0, "C"], [10.0, "B"], [2.0, "missing region"]],
@@ -872,7 +884,7 @@ def test_regions_id_names_lut_mismatch(affine_eye):
     assert masker.region_names_ == {1: "A", 2: "C", 3: "B"}
 
     # fitted lut keeps track of background
-    # but the missing regions as dropped
+    # but the missing regions was dropped
     expected_lut = pd.DataFrame(
         columns=["index", "name"],
         data=[[0.0, "Background"], [1.0, "A"], [6.0, "C"], [10.0, "B"]],
