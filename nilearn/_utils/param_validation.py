@@ -365,6 +365,7 @@ TYPE_MAPS = {
     "random_state": nilearn_typing.RandomState,
     "resolution": nilearn_typing.Resolution,
     "resume": nilearn_typing.Resume,
+    "screening_percentile": nilearn_typing.ScreeningPercentile,
     "smoothing_fwhm": nilearn_typing.SmoothingFwhm,
     "standardize_confounds": nilearn_typing.StandardizeConfounds,
     "t_r": nilearn_typing.Tr,
