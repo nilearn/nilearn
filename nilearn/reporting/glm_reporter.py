@@ -69,7 +69,7 @@ if is_matplotlib_installed():
         plot_surf_stat_map,
     )
     from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
-    from nilearn.plotting.image.img_plotting import (  # type: ignore[assignment]
+    from nilearn.plotting.image.utils import (  # type: ignore[assignment]
         MNI152TEMPLATE,
     )
 
