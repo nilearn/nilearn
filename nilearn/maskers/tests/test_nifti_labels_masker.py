@@ -6,6 +6,7 @@ test_masking.py and test_signal.py for details.
 """
 
 from copy import deepcopy
+from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -582,7 +583,7 @@ def test_nifti_labels_masker_with_mask(
     assert np.allclose(get_data(masker.region_atlas_), masked_labels_data)
 
 
-def generate_labels(n_regions, background=""):
+def generate_labels(n_regions: int, background: str = ""):
     """Create list of strings to use as labels."""
     labels = []
     if background:
@@ -591,7 +592,7 @@ def generate_labels(n_regions, background=""):
     return labels
 
 
-def generate_expected_lut(region_names):
+def generate_expected_lut(region_names: list[str]):
     """Generate a look up table based on a list of regions names."""
     if "background" in region_names:
         idx = region_names.index("background")
@@ -602,13 +603,32 @@ def generate_expected_lut(region_names):
 
 
 def check_region_names_after_fit(
-    masker,
-    signals,
-    region_names,
-    background,
-    resampling=False,
+    masker: NiftiLabelsMasker,
+    signals: np.ndarray,
+    region_names: list[str],
+    background: Union[str, None],
+    resampling: bool = False,
 ):
     """Perform several checks on the expected attributes of the masker.
+
+    Parameters
+    ----------
+        masker: NiftiLabelsMasker
+
+        signals: np.ndarray
+            output of fit_transfrom from the masker
+
+        region_names: list[str]
+            list of regions names expected after fit
+
+        background: str | None
+            if not None and present in region_names
+            it will be removed from region_names
+            to before checking the fitted content of the masker
+
+        resampling: bool
+            if some resampling was done
+            some checks are skipped as some regions may have been dropped
 
     - region_names_ does not include background
       should have same length as signals
@@ -639,7 +659,7 @@ def check_region_names_after_fit(
         assert region_names_after_fit == region_names
 
 
-def check_lut(masker, expected_lut):
+def check_lut(masker: NiftiLabelsMasker, expected_lut: pd.DataFrame):
     """Check content of the look up table."""
     assert masker.background_label in masker.lut_["index"].to_list()
     assert "Background" in masker.lut_["name"].to_list()
@@ -652,7 +672,7 @@ def check_lut(masker, expected_lut):
 
 
 def check_region_names_ids_match_after_fit(
-    masker, region_names, region_ids, background
+    masker: NiftiLabelsMasker, region_names: list[str], region_ids, background
 ):
     """Check the region names and ids correspondence.
 
