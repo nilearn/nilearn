@@ -891,9 +891,9 @@ screening_percentile : int, float, \
         A value of ``100`` means "keep all features".
         This percentile is expressed
         with respect to the volume of either a standard (MNI152) brain
-        (if mask_img_ is a 3D volume)
+        (if ``mask_img_`` is a 3D volume)
         or a the number of vertices in the mask mesh
-        (if mask_img_ is a SurfaceImage).
+        (if ``mask_img_`` is a SurfaceImage).
         This means that the
         ``screening_percentile`` is corrected at runtime by premultiplying it
         with the ratio of volume of the
@@ -904,7 +904,7 @@ screening_percentile : int, float, \
             If the mask used is too small
             compared to the total brain volume / surface,
             then all its elements (voxels / vertices)
-            may be included even for very small screening_percentile.
+            may be included even for very small ``screening_percentile``.
 
 """
 
