@@ -98,8 +98,15 @@ class NiftiLabelsMasker(BaseMasker):
         .. warning::
             The labels must be consistent with the label values
             provided through ``labels_img``.
+            If too many labels are passed,
+            a warning is thrown and extra labels are dropped.
+            If too few labels are passed,
+            extra regions will get the 'unknown' label.
 
     %(masker_lut)s
+
+        .. warning::
+
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.

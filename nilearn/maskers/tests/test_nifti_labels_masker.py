@@ -5,6 +5,8 @@ not the underlying functions (clean(), img_to_signals_labels(), etc.). See
 test_masking.py and test_signal.py for details.
 """
 
+from copy import deepcopy
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -580,6 +582,304 @@ def test_nifti_labels_masker_with_mask(
     assert np.allclose(get_data(masker.region_atlas_), masked_labels_data)
 
 
+def generate_labels(n_regions, background=""):
+    """Create list of strings to use as labels."""
+    labels = []
+    if background:
+        labels.append(background)
+    labels.extend([f"region_{i + 1!s}" for i in range(n_regions)])
+    return labels
+
+
+def generate_expected_lut(region_names):
+    """Generate a look up table based on a list of regions names."""
+    if "background" in region_names:
+        idx = region_names.index("background")
+        region_names[idx] = "Background"
+    return pd.DataFrame(
+        {"name": region_names, "index": list(range(len(region_names)))}
+    )
+
+
+def check_region_names_after_fit(
+    masker,
+    signals,
+    region_names,
+    background,
+    resampling=False,
+):
+    """Perform several checks on the expected attributes of the masker.
+
+    - region_names_ does not include background
+      should have same length as signals
+    - region_ids_ does include background
+    - region_names_ should be the same as the region names
+      passed to the masker minus that for "background"
+    """
+    n_regions = signals.shape[0] if signals.ndim == 1 else signals.shape[1]
+
+    assert len(masker.region_names_) == n_regions
+    assert len(list(masker.region_ids_.items())) == n_regions + 1
+
+    # for coverage
+    masker.labels_  # noqa: B018
+    masker._region_id_name  # noqa: B018
+
+    # resampling may drop some labels so we do not check the region names
+    # in this case
+    if not resampling:
+        region_names_after_fit = [
+            masker.region_names_[i] for i in masker.region_names_
+        ]
+        region_names_after_fit.sort()
+        region_names.sort()
+        if background:
+            region_names = deepcopy(region_names)
+            region_names.pop(region_names.index(background))
+        assert region_names_after_fit == region_names
+
+
+def check_lut(masker, expected_lut):
+    """Check content of the look up table."""
+    assert masker.background_label in masker.lut_["index"].to_list()
+    assert "Background" in masker.lut_["name"].to_list()
+    pd.testing.assert_series_equal(
+        masker.lut_["index"], expected_lut["index"], check_dtype=False
+    )
+    pd.testing.assert_series_equal(
+        masker.lut_["name"], expected_lut["name"], check_dtype=False
+    )
+
+
+def check_region_names_ids_match_after_fit(
+    masker, region_names, region_ids, background
+):
+    """Check the region names and ids correspondence.
+
+    Check that the same region names and ids correspond to each other
+    after fit by comparing with before fit.
+    """
+    # region_ids includes background, so we make
+    # sure that the region_names also include it
+    region_names = deepcopy(region_names)
+    if not background:
+        region_names.insert(0, "background")
+    # if they don't have the same length, we can't compare them
+    if len(region_names) == len(region_ids):
+        region_id_names = {
+            region_id: region_names[i]
+            for i, region_id in enumerate(region_ids)
+        }
+        for key, region_name in masker.region_names_.items():
+            assert region_id_names[masker.region_ids_[key]] == region_name
+
+
+def test_regions_id_names_no_labels_no_lut(affine_eye, shape_3d_default):
+    """Check match between id and names.
+
+    When no label, no lut: names are inferred from id
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5542
+    and https://github.com/nilearn/nilearn/issues/5544
+    """
+    atlas = np.zeros((8, 8, 8))
+    atlas[4, 4, 3:5] = 1
+    atlas[4, 4, 5:7] = 2
+    atlas = Nifti1Image(atlas, affine_eye)
+
+    masker = NiftiLabelsMasker(atlas)
+
+    fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
+    signals = masker.fit_transform(fmri_img)
+
+    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 2.0}
+    assert masker.region_ids_ == expected_region_ids_
+
+    assert masker.region_names_ == {1: "1.0", 2: "2.0"}
+
+    # Background is not returned by 'region_names_'
+    # but has been added internally
+    region_names = ["Background", "1.0", "2.0"]
+    region_ids = [0.0, 1.0, 2.0]
+    check_region_names_ids_match_after_fit(
+        masker, region_names, region_ids, "Background"
+    )
+    check_region_names_after_fit(masker, signals, region_names, "Background")
+
+    expected_lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[0.0, "Background"], [1.0, "1.0"], [2.0, "2.0"]],
+    )
+    check_lut(masker, expected_lut)
+
+
+@pytest.mark.parametrize("Background", [False, True])
+def test_regions_id_names_with_labels(
+    affine_eye, Background, shape_3d_default
+):
+    """Check match between id and names.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5542
+    and https://github.com/nilearn/nilearn/issues/5544
+    """
+    atlas = np.zeros((8, 8, 8))
+    atlas[4, 4, 3:5] = 1
+    atlas[4, 4, 5:7] = 2
+    atlas = Nifti1Image(atlas, affine_eye)
+
+    labels = ["Background", "A", "B"] if Background else ["A", "B"]
+    masker = NiftiLabelsMasker(atlas, labels=labels)
+
+    fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
+    if Background:
+        signals = masker.fit_transform(fmri_img)
+    else:
+        with pytest.warns(
+            UserWarning, match="Too many indices for the names."
+        ):
+            # label for Background was not passed so we should get a warning
+            signals = masker.fit_transform(fmri_img)
+
+    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 2.0}
+    assert masker.region_ids_ == expected_region_ids_
+    assert masker.region_names_ == {1: "A", 2: "B"}
+
+    # Background is not returned by 'region_names_'
+    # but has been added internally even if it was not passed
+    region_names = ["Background", "A", "B"]
+    region_ids = [0.0, 1.0, 2.0]
+    check_region_names_ids_match_after_fit(
+        masker, region_names, region_ids, "Background"
+    )
+    check_region_names_after_fit(masker, signals, region_names, "Background")
+
+    expected_lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[0.0, "Background"], [1.0, "A"], [2.0, "B"]],
+    )
+    check_lut(masker, expected_lut)
+
+
+def test_regions_id_names_with_too_few_labels(affine_eye):
+    """Check match between id and names when too few labels are passed."""
+    atlas = np.zeros((8, 8, 8))
+    atlas[4, 4, 3:5] = 1
+    atlas[4, 4, 5:7] = 6
+    atlas[4, 3, 5:7] = 10
+    atlas = Nifti1Image(atlas, affine_eye)
+
+    with pytest.warns(UserWarning, match="Too many indices for the names."):
+        # label for 3rd region was not passed so we should get a warning
+        masker = NiftiLabelsMasker(
+            atlas, labels=["Background", "A", "B"]
+        ).fit()
+
+    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 6.0, 3: 10.0}
+    assert masker.region_ids_ == expected_region_ids_
+
+    assert masker.region_names_ == {1: "A", 2: "B", 3: "unknown"}
+
+    expected_lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[0.0, "Background"], [1.0, "A"], [6.0, "B"], [10.0, "unknown"]],
+    )
+    check_lut(masker, expected_lut)
+
+
+def test_regions_id_names_lut(affine_eye, shape_3d_default):
+    """Check match between id and names.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5542
+    and https://github.com/nilearn/nilearn/issues/5544
+    """
+    atlas = np.zeros((8, 8, 8))
+    atlas[4, 4, 3:5] = 1
+    atlas[4, 4, 5:7] = 2
+    atlas = Nifti1Image(atlas, affine_eye)
+
+    lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[1.0, "A"], [2.0, "B"]],
+    )
+
+    masker = NiftiLabelsMasker(atlas, lut=lut)
+
+    fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
+    signals = masker.fit_transform(fmri_img)
+
+    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 2.0}
+    assert masker.region_ids_ == expected_region_ids_
+
+    assert masker.region_names_ == {1: "A", 2: "B"}
+
+    # Background is not returned by 'region_names_'
+    # but has been added internally even if it was not passed
+    region_names = ["Background", "A", "B"]
+    region_ids = [0.0, 1.0, 2.0]
+    check_region_names_ids_match_after_fit(
+        masker, region_names, region_ids, "Background"
+    )
+    check_region_names_after_fit(masker, signals, region_names, "Background")
+
+    # fitted lut now includes background
+    expected_lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[0.0, "Background"], [1.0, "A"], [2.0, "B"]],
+    )
+    check_lut(masker, expected_lut)
+
+
+def test_regions_id_names_lut_mismatch(affine_eye):
+    """Check passing LUT with too many / few entries."""
+    atlas = np.zeros((8, 8, 8))
+    atlas[4, 4, 3:5] = 1
+    atlas[4, 4, 5:7] = 6
+    atlas[4, 3, 5:7] = 10
+    atlas = Nifti1Image(atlas, affine_eye)
+
+    # Too few entries
+    # we are skipping region with index 6
+    lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[1.0, "A"], [10.0, "B"]],
+    )
+
+    masker = NiftiLabelsMasker(atlas, lut=lut).fit()
+
+    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 10.0}
+    assert masker.region_ids_ == expected_region_ids_
+
+    assert masker.region_names_ == {1: "A", 2: "B"}
+
+    expected_lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[0.0, "Background"], [1.0, "A"], [10.0, "B"], [2.0, "unknown"]],
+    )
+    check_lut(masker, expected_lut)
+
+    # Too many entries
+    # the missing region won't appear in region_ids_ or region_names_
+    lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[1.0, "A"], [6.0, "C"], [10.0, "B"], [2.0, "missing region"]],
+    )
+
+    masker = NiftiLabelsMasker(atlas, lut=lut).fit()
+
+    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 6.0, 3: 10.0}
+    assert masker.region_ids_ == expected_region_ids_
+
+    assert masker.region_names_ == {1: "A", 2: "C", 3: "B"}
+
+    # fitted lut keeps track of background
+    # but the missing regions as dropped
+    expected_lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[0.0, "Background"], [1.0, "A"], [6.0, "C"], [10.0, "B"]],
+    )
+    check_lut(masker, expected_lut)
+
+
 @pytest.mark.parametrize(
     "background",
     [
@@ -695,149 +995,6 @@ def test_region_names(
     )
 
 
-def test_regions_id_names_no_labels_no_lut(affine_eye):
-    """Check match between id and names.
-
-    Regression test for https://github.com/nilearn/nilearn/issues/5542.
-    """
-    atlas = np.zeros((8, 8, 8))
-    atlas[4, 4, 3:5] = 1
-    atlas[4, 4, 5:7] = 2
-    atlas = Nifti1Image(atlas, affine_eye)
-
-    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 2.0}
-
-    # no label, no lut: names are inferred from id
-    masker = NiftiLabelsMasker(atlas).fit()
-
-    assert masker.region_ids_ == expected_region_ids_
-    assert masker.region_names_ == {1: "1.0", 2: "2.0"}
-
-    expected_fitted_lut = pd.DataFrame(
-        columns=["index", "name"],
-        data=[[0.0, "Background"], [1.0, "1.0"], [2.0, "2.0"]],
-    )
-    pd.testing.assert_frame_equal(
-        masker.lut_,
-        expected_fitted_lut,
-    )
-
-
-def test_regions_id_names_with_labels(affine_eye):
-    """Check match between id and names.
-
-    Regression test for https://github.com/nilearn/nilearn/issues/5542.
-    """
-    atlas = np.zeros((8, 8, 8))
-    atlas[4, 4, 3:5] = 1
-    atlas[4, 4, 5:7] = 2
-    atlas = Nifti1Image(atlas, affine_eye)
-
-    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 2.0}
-
-    masker = NiftiLabelsMasker(atlas, labels=["A", "B"]).fit()
-
-    assert masker.region_ids_ == expected_region_ids_
-    assert masker.region_names_ == {1: "A", 2: "B"}
-
-    expected_fitted_lut = pd.DataFrame(
-        columns=["index", "name"],
-        data=[[0.0, "Background"], [1.0, "A"], [2.0, "B"]],
-    )
-    pd.testing.assert_frame_equal(
-        masker.lut_,
-        expected_fitted_lut,
-    )
-
-
-def test_regions_id_names_lut(affine_eye):
-    """Check match between id and names.
-
-    Regression test for https://github.com/nilearn/nilearn/issues/5542.
-    """
-    atlas = np.zeros((8, 8, 8))
-    atlas[4, 4, 3:5] = 1
-    atlas[4, 4, 5:7] = 2
-    atlas = Nifti1Image(atlas, affine_eye)
-
-    expected_region_ids_ = {0: 0.0, 1: 1.0, 2: 2.0}
-
-    lut = pd.DataFrame(
-        columns=["index", "name"],
-        data=[[1.0, "A"], [2.0, "B"]],
-    )
-
-    masker = NiftiLabelsMasker(atlas, lut=lut).fit()
-
-    # fitted lut now includes background
-    expected_fitted_lut = pd.DataFrame(
-        columns=["index", "name"],
-        data=[[0.0, "Background"], [1.0, "A"], [2.0, "B"]],
-    )
-    pd.testing.assert_frame_equal(
-        masker.lut_,
-        expected_fitted_lut,
-    )
-
-    assert masker.region_names_ == {1: "A", 2: "B"}
-    assert masker.region_ids_ == expected_region_ids_
-
-
-def generate_expected_lut(region_names):
-    """Generate a look up table based on a list of regions names."""
-    if "background" in region_names:
-        idx = region_names.index("background")
-        region_names[idx] = "Background"
-    return pd.DataFrame(
-        {"name": region_names, "index": list(range(len(region_names)))}
-    )
-
-
-def check_region_names_after_fit(
-    masker,
-    signals,
-    region_names,
-    background,
-    resampling=False,
-):
-    """Perform several checks on the expected attributes of the masker.
-
-    - region_names_ does not include background
-      should have same length as signals
-    - region_ids_ does include background
-    - region_names_ should be the same as the region names
-      passed to the masker minus that for "background"
-    """
-    n_regions = signals.shape[0] if signals.ndim == 1 else signals.shape[1]
-
-    assert len(masker.region_names_) == n_regions
-    assert len(list(masker.region_ids_.items())) == n_regions + 1
-
-    # for coverage
-    masker.labels_  # noqa: B018
-    masker._region_id_name  # noqa: B018
-
-    # resampling may drop some labels so we do not check the region names
-    # in this case
-    if not resampling:
-        region_names_after_fit = [
-            masker.region_names_[i] for i in masker.region_names_
-        ]
-        region_names_after_fit.sort()
-        region_names.sort()
-        if background:
-            region_names.pop(region_names.index(background))
-        assert region_names_after_fit == region_names
-
-
-def check_lut(masker, expected_lut):
-    """Check content of the look up table."""
-    assert masker.background_label in masker.lut_["index"].to_list()
-    assert "Background" in masker.lut_["name"].to_list()
-    assert masker.lut_["name"].to_list() == expected_lut["name"].to_list()
-    assert masker.lut_["index"].to_list() == expected_lut["index"].to_list()
-
-
 @pytest.mark.parametrize(
     "background",
     [
@@ -920,37 +1077,6 @@ def test_region_names_ids_match_after_fit(
     )
 
 
-def check_region_names_ids_match_after_fit(
-    masker, region_names, region_ids, background
-):
-    """Check the region names and ids correspondence.
-
-    Check that the same region names and ids correspond to each other
-    after fit by comparing with before fit.
-    """
-    # region_ids includes background, so we make
-    # sure that the region_names also include it
-    if not background:
-        region_names.insert(0, "background")
-    # if they don't have the same length, we can't compare them
-    if len(region_names) == len(region_ids):
-        region_id_names = {
-            region_id: region_names[i]
-            for i, region_id in enumerate(region_ids)
-        }
-        for key, region_name in masker.region_names_.items():
-            assert region_id_names[masker.region_ids_[key]] == region_name
-
-
-def generate_labels(n_regions, background=""):
-    """Create list of strings to use as labels."""
-    labels = []
-    if background:
-        labels.append(background)
-    labels.extend([f"region_{i + 1!s}" for i in range(n_regions)])
-    return labels
-
-
 @pytest.mark.parametrize("background", [None, "background", "Background"])
 def test_region_names_with_non_sequential_labels(
     shape_3d_default, affine_eye, background
@@ -1015,6 +1141,9 @@ def test_more_labels_than_actual_region_in_atlas(
         match="Too many names for the indices. Dropping excess names values.",
     ):
         masker.fit_transform(fmri_img)
+
+    # lut should have one extra row for background
+    assert len(masker.lut_) == n_regions + 1
 
 
 @pytest.mark.parametrize("background", [None, "Background"])
