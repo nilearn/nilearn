@@ -9,11 +9,12 @@ from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 
 import nilearn.typing as nilearn_typing
 from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
 
 # Volume of a standard (MNI152) brain mask in mm^3
-MNI152_BRAIN_VOLUME = 1827243.0
+MNI152_BRAIN_VOLUME = 1882989.0
 
 
 def check_threshold(
@@ -154,6 +155,7 @@ def _get_mask_extent(mask_img):
     return prod_vox_dims * _get_data(mask_img).astype(bool).sum()
 
 
+@fill_doc
 def adjust_screening_percentile(
     screening_percentile,
     mask_img,
@@ -165,15 +167,7 @@ def adjust_screening_percentile(
 
     Parameters
     ----------
-    screening_percentile : float in the interval [0, 100]
-        Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is expressed
-        w.r.t the volume of either a standard (MNI152) brain (if mask_img is a
-        3D volume) or a the number of vertices in the standard brain mesh
-        (if mask_img is a SurfaceImage). This means that the
-        `screening_percentile` is corrected at runtime by premultiplying it
-        with the ratio of the volume of the mask of the data and volume of the
-        standard brain.
+    %(screening_percentile)s
 
     mask_img :  Nifti1Image or SurfaceImage
         The Nifti1Image whose voxel dimensions or the SurfaceImage whose
@@ -203,10 +197,13 @@ def adjust_screening_percentile(
         MNI152_BRAIN_VOLUME if mesh_n_vertices is None else mesh_n_vertices
     )
     if mask_extent > 1.1 * reference_extent:
+        unit = "mm^3"
+        if hasattr(mask_img, "mesh"):
+            unit = "vertices"
         warnings.warn(
-            "Brain mask is bigger than the standard "
-            "human brain. This object is probably not tuned to "
-            "be used on such data.",
+            f"Brain mask ({mask_extent} {unit}) is bigger than the standard "
+            f"human brain ({reference_extent} {unit})."
+            "This object is probably not tuned to be used on such data.",
             stacklevel=find_stack_level(),
         )
     elif mask_extent < 0.005 * reference_extent:
@@ -257,6 +254,7 @@ def adjust_screening_percentile(
     return screening_percentile
 
 
+@fill_doc
 def check_feature_screening(
     screening_percentile,
     mask_img,
@@ -270,13 +268,7 @@ def check_feature_screening(
 
     Parameters
     ----------
-    screening_percentile : float in the interval [0, 100]
-        Percentile value for :term:`ANOVA` univariate feature selection.
-        A value of 100 means 'keep all features'.
-        This percentile is expressed
-        w.r.t the volume of a standard (MNI152) brain, and so is corrected
-        at runtime by premultiplying it with the ratio of the volume of the
-        mask of the data and volume of a standard brain.
+    %(screening_percentile)s
 
     mask_img : nibabel image object
         Input image whose :term:`voxel` dimensions are to be computed.

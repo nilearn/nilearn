@@ -84,9 +84,8 @@ def _univariate_feature_screening(
     is_classif : bool
         Flag telling whether the learning task is classification or regression.
 
-    screening_percentile : float in the closed interval [0., 100.]
-        Only the `screening_percentile * 100" percent most import voxels will
-        be retained.
+    %(screening_percentile)s
+
     %(smoothing_fwhm)s
         Default=2.
 
@@ -312,7 +311,7 @@ def path_scores(
     eps=1e-3,
     key=None,
     debias=False,
-    screening_percentile=20.0,
+    screening_percentile=20,
     verbose=1,
 ):
     """Compute scores of different alphas in regression \
@@ -365,15 +364,8 @@ def path_scores(
     debias : :obj:`bool`, default=False
         If set, then the estimated weights maps will be debiased.
 
-    screening_percentile : :obj:`float` in the interval [0, 100], \
-        default=20.0
-        Percentile value for :term:`ANOVA` univariate feature selection.
-        A value of 100 means 'keep all features'.
-        This percentile is expressed
-        w.r.t the volume of a standard (MNI152) brain, and so is corrected
-        at runtime to correspond to the volume of the user-supplied mask
-        (which is typically smaller). If '100' is given, all the features
-        are used, regardless of the number of voxels.
+    %(screening_percentile)s
+
     %(verbose)s
 
     """
@@ -595,14 +587,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    screening_percentile : :obj:`float` in the interval [0, 100]; Optional (\
-        default 20)
-        Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is expressed
-        w.r.t the volume of a standard (MNI152) brain, and so is corrected
-        at runtime to correspond to the volume of the user-supplied mask
-        (which is typically smaller). If '100' is given, all the features
-        are used, regardless of the number of voxels.
+
+    %(screening_percentile)s
 
     standardize : :obj:`bool`, default=True
         If set, then the data (X, y) are centered to have mean zero along
@@ -740,7 +726,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         eps=1e-3,
         cv=8,
         fit_intercept=True,
-        screening_percentile=20.0,
+        screening_percentile=20,
         debias=False,
         positive=False,
     ):
@@ -1143,16 +1129,8 @@ class SpaceNetClassifier(BaseSpaceNet):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    screening_percentile : :obj:`float` in the interval [0, 100]; \
-        default=20
-        Percentile value for ANOVA univariate feature selection.
-        A value of 100 means 'keep all features'.
-        This percentile is expressed w.r.t the volume
-        of a standard (MNI152) brain, and so is corrected
-        at runtime by premultiplying it with the ratio of the volume
-        of the mask of the data and volume of a standard brain.
-        If '100' is given, all the features are used,
-        regardless of the number of voxels.
+
+    %(screening_percentile)s
 
     standardize : :obj:`bool`, default=True
         If set, then we'll center the data (X, y) have mean zero along axis 0.
@@ -1282,7 +1260,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         eps=1e-3,
         cv=8,
         fit_intercept=True,
-        screening_percentile=20.0,
+        screening_percentile=20,
         debias=False,
     ):
         if memory is None:
@@ -1394,14 +1372,8 @@ class SpaceNetRegressor(BaseSpaceNet):
     %(low_pass)s
     %(high_pass)s
     %(t_r)s
-    screening_percentile : :obj:`float` in the interval [0, 100]; \
-        default=20
-        Percentile value for ANOVA univariate feature selection.
-        A value of 100 means 'keep all features'.
-        This percentile is expressed w.r.t the volume
-        of a standard (MNI152) brain, and so is corrected
-        at runtime to correspond to the volume of the user-supplied mask
-        (which is typically smaller).
+
+    %(screening_percentile)s
 
     standardize : :obj:`bool`, default=True
         If set, then we'll center the data (X, y) have mean zero along axis 0.
@@ -1516,7 +1488,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         eps=1e-3,
         cv=8,
         fit_intercept=True,
-        screening_percentile=20.0,
+        screening_percentile=20,
         debias=False,
     ):
         if memory is None:
