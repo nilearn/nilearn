@@ -104,13 +104,19 @@ fig.suptitle("Second level design matrix")
 # %%
 # Next, we specify and fit the second-level model when loading the data and
 # also smooth a little bit to improve statistical behavior.
+from pathlib import Path
+
 from nilearn.glm.second_level import SecondLevelModel
+
+output_dir = Path.cwd() / "results" / "plot_oasis"
+output_dir.mkdir(exist_ok=True, parents=True)
 
 second_level_model = SecondLevelModel(
     smoothing_fwhm=2.0,
     mask_img=mask_img,
     n_jobs=2,
     minimize_memory=False,
+    memory=output_dir / "tmp",
     verbose=1,
 )
 second_level_model.fit(
@@ -176,12 +182,7 @@ show()
 # including an HTML report.
 # This is easy to do if you have a fitted model and the list of contrasts,
 # which we do here.
-from pathlib import Path
-
 from nilearn.interfaces.bids import save_glm_to_bids
-
-output_dir = Path.cwd() / "results" / "plot_oasis"
-output_dir.mkdir(exist_ok=True, parents=True)
 
 icbm152_2009 = fetch_icbm152_2009()
 

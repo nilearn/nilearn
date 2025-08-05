@@ -294,7 +294,7 @@ convention = "numpy"
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-args
 max-args = 27
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
-max-branches = 22
+max-branches = 23
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 8
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements

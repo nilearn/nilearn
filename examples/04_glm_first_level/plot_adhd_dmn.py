@@ -92,7 +92,15 @@ contrasts = {"seed_based_glm": dmn_contrast}
 # Perform first level analysis
 # ----------------------------
 # Setup and fit GLM.
-first_level_model = FirstLevelModel()
+#
+# We cache some results on disk with 'memory= output_dir / "tmp"'
+# to avoid recomputing things when generating a GLM report at the end.
+from pathlib import Path
+
+output_dir = Path.cwd() / "results" / "plot_adhd_dmn"
+output_dir.mkdir(exist_ok=True, parents=True)
+
+first_level_model = FirstLevelModel(memory=output_dir / "tmp")
 first_level_model = first_level_model.fit(
     run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
 )
@@ -106,8 +114,6 @@ z_map = first_level_model.compute_contrast(
 
 # %%
 # Saving snapshots of the contrasts
-from pathlib import Path
-
 display = plotting.plot_stat_map(
     z_map, threshold=3.0, title="Seed based GLM", cut_coords=pcc_coords
 )
@@ -115,8 +121,6 @@ display.add_markers(
     marker_coords=[pcc_coords], marker_color="g", marker_size=300
 )
 
-output_dir = Path.cwd() / "results" / "plot_adhd_dmn"
-output_dir.mkdir(exist_ok=True, parents=True)
 filename = "dmn_z_map.png"
 display.savefig(output_dir / filename)
 print(f"Save z-map in '{filename}'.")
