@@ -2056,8 +2056,6 @@ def check_masker_shelving(estimator):
 
     epi = masker.fit_transform(img)
 
-    masker = clone(estimator)
-
     with TemporaryDirectory() as tmp_dir:
         masker_shelved = clone(estimator)
 

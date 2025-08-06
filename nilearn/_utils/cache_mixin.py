@@ -5,11 +5,11 @@ import warnings
 from pathlib import Path
 
 from joblib import Memory
+from sklearn.utils.estimator_checks import check_is_fitted
 
-import nilearn
+from nilearn import EXPAND_PATH_WILDCARDS
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-
-from .helpers import stringify_path
 
 MEMORY_CLASSES = (Memory,)
 
@@ -37,7 +37,7 @@ def check_memory(memory, verbose=0):
     memory = stringify_path(memory)
     if isinstance(memory, str):
         cache_dir = memory
-        if nilearn.EXPAND_PATH_WILDCARDS:
+        if EXPAND_PATH_WILDCARDS:
             cache_dir = Path(cache_dir).expanduser()
 
         # Perform some verifications on given path.
@@ -45,7 +45,7 @@ def check_memory(memory, verbose=0):
         if len(split_cache_dir) > 1 and (
             not Path(split_cache_dir[0]).exists() and split_cache_dir[0] != ""
         ):
-            if not nilearn.EXPAND_PATH_WILDCARDS and cache_dir.startswith("~"):
+            if not EXPAND_PATH_WILDCARDS and cache_dir.startswith("~"):
                 # Maybe the user want to enable expanded user path.
                 error_msg = (
                     "Given cache path parent directory doesn't "
@@ -196,14 +196,7 @@ class CacheMixin:
     """
 
     def _fit_cache(self):
-        """Set attributes during estimator fit.
-
-        _shelving : bool
-            Used during calls to the method _cache
-            to return a joblib MemorizedResult,
-            callable by a .get() method,
-            instead of the return value of func.
-        """
+        """Set attributes during estimator fit."""
         verbose = getattr(self, "verbose", 0)
         self.memory_ = check_memory(self.memory, verbose=verbose)
 
@@ -237,6 +230,7 @@ class CacheMixin:
             For consistency, a callable object is always returned.
 
         """
+        check_is_fitted(self)
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
         if self.memory_level == 0 and self.memory_.location is not None:
