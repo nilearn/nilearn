@@ -134,7 +134,6 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
     ----------
     estimators : list of estimator object
         Estimator instance to check.
-    dtype
     valid : bool, default=True
         Whether to return only the valid checks or not.
     """

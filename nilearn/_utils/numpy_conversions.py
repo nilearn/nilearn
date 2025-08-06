@@ -154,5 +154,5 @@ def get_target_dtype(dtype, target_dtype):
     if target_dtype is None:
         return None
     if target_dtype == "auto":
-        target_dtype = np.int32 if dtype.kind == "i" else np.float32
+        target_dtype = "int32" if dtype.kind == "i" else "float32"
     return None if target_dtype == dtype else target_dtype
