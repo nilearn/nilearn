@@ -1140,8 +1140,8 @@ def check_img_estimator_dtypes(estimator):
 
     Replacement for sklearn check_estimators_dtypes.
 
-    For some estimators that only extract data (like niftimasker)
-    and do not aggregate it (like maps masker)
+    For some estimators that only extract data (like NiftiMasker)
+    and do not aggregate it (like NiftiMapsMasker)
     we check that transform,
     return signals with the same type.
 
