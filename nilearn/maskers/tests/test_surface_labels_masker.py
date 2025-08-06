@@ -68,11 +68,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
 
 
 def test_surface_label_masker_fit(surf_label_img):
-    """Test fit and check estimated attributes.
-
-    0 value in data is considered as background
-    and should not be listed in the labels.
-    """
+    """Test fit and check estimated attributes."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img)
     masker = masker.fit()
 
@@ -80,8 +76,20 @@ def test_surface_label_masker_fit(surf_label_img):
     assert masker.labels_ == [0, 1]
     assert masker._reporting_data is not None
     assert masker.lut_["name"].to_list() == ["Background", "1"]
-    assert masker.region_names_ == {1: "1"}
-    assert masker.region_ids_ == {0: 0, 1: 1}
+    assert masker.region_names_ == {0: "1"}
+    assert masker.region_ids_ == {"background": 0, 0: 1}
+
+
+def test_surface_label_masker_fit_transform(surf_label_img, surf_img_1d):
+    """Test transform does not return any value for the background.
+
+    A single scalar should be return as the mask only has 1 region.
+    """
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img)
+    signal = masker.fit_transform(surf_img_1d)
+
+    assert masker.n_elements_ == 1
+    assert signal.size == masker.n_elements_
 
 
 def test_surface_label_masker_fit_with_names(surf_label_img):
@@ -96,6 +104,8 @@ def test_surface_label_masker_fit_with_names(surf_label_img):
     assert masker.n_elements_ == 1
     assert masker.labels_ == [0, 1]
     assert masker.lut_["name"].to_list() == ["background", "bar"]
+    assert masker.region_names_ == {0: "bar"}
+    assert masker.region_ids_ == {"background": 0, 0: 1}
 
     masker = SurfaceLabelsMasker(
         labels_img=surf_label_img, labels=["background"]
@@ -107,6 +117,8 @@ def test_surface_label_masker_fit_with_names(surf_label_img):
     assert masker.n_elements_ == 1
     assert masker.labels_ == [0, 1]
     assert masker.lut_["name"].to_list() == ["background", "unknown"]
+    assert masker.region_names_ == {0: "unknown"}
+    assert masker.region_ids_ == {"background": 0, 0: 1}
 
 
 def test_surface_label_masker_fit_with_lut(surf_label_img, tmp_path):
@@ -176,7 +188,7 @@ def test_surface_label_masker_transform(surf_label_img, surf_img_1d, strategy):
     signal = masker.transform(surf_img_1d)
 
     assert isinstance(signal, np.ndarray)
-    assert signal.shape == ()
+    assert signal.size == 1
 
 
 def test_surface_label_masker_transform_with_mask(surf_mesh, surf_img_2d):
@@ -213,6 +225,15 @@ def test_surface_label_masker_transform_with_mask(surf_mesh, surf_img_2d):
     expected_n_regions = 2
     assert masker.n_elements_ == expected_n_regions
     assert signal.shape == (n_timepoints, masker.n_elements_)
+
+    # note that even if the label image contained no vertex with
+    # background level values, some vertices were masked
+    # and given background value
+    # so background should appear here.
+    assert masker.labels_ == [0, 1, 2]
+    assert masker.lut_["name"].to_list() == ["Background", "1", "2"]
+    assert masker.region_names_ == {0: "1", 1: "2"}
+    assert masker.region_ids_ == {"background": 0, 0: 1, 1: 2}
 
 
 @pytest.fixture
@@ -332,6 +353,17 @@ def test_surface_label_masker_check_output_1d(
 
     assert_array_equal(signal, np.asarray(expected_signal))
 
+    assert masker.labels_ == [0, 1, 2, 10, 20]
+    assert masker.lut_["name"].to_list() == [
+        "Background",
+        "1",
+        "2",
+        "10",
+        "20",
+    ]
+    assert masker.region_names_ == {0: "1", 1: "2", 2: "10", 3: "20"}
+    assert masker.region_ids_ == {"background": 0, 0: 1, 1: 2, 2: 10, 3: 20}
+
     # also check the output of inverse_transform
     img = masker.inverse_transform(signal)
     assert img.shape[0] == surf_img_1d.shape[0]
@@ -344,6 +376,57 @@ def test_surface_label_masker_check_output_1d(
 
     assert_array_equal(img.data.parts["left"], expected_inverse_data["left"])
     assert_array_equal(img.data.parts["right"], expected_inverse_data["right"])
+
+
+def test_surface_label_masker_lut_unsorted(
+    surf_mesh,
+    polydata_labels,
+    expected_signal,
+    data_left_1d_with_expected_mean,
+    data_right_1d_with_expected_mean,
+):
+    """Test lut with wrong order of regions.
+
+    LUT, region_ids, region_names should be properly sorted after transform.
+    Result of region_ids, region_names
+    should still match content of extracted signals.
+    """
+    surf_label_img = SurfaceImage(surf_mesh, polydata_labels)
+
+    lut = pd.DataFrame(
+        columns=["index", "name"],
+        data=[[1.0, "one"], [20.0, "twenty"], [10.0, "ten"], [2.0, "two"]],
+    )
+
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img, lut=lut)
+    masker = masker.fit()
+
+    data = {
+        "left": data_left_1d_with_expected_mean,
+        "right": data_right_1d_with_expected_mean,
+    }
+    surf_img_1d = SurfaceImage(surf_mesh, data)
+    signal = masker.transform(surf_img_1d)
+
+    assert isinstance(signal, np.ndarray)
+    assert_array_equal(signal, np.asarray(expected_signal))
+
+    assert masker.labels_ == [0.0, 1.0, 2.0, 10.0, 20.0]
+    assert masker.lut_["name"].to_list() == [
+        "Background",
+        "one",
+        "two",
+        "ten",
+        "twenty",
+    ]
+    assert masker.region_ids_ == {
+        "background": 0,
+        0: 1.0,
+        1: 2.0,
+        2: 10.0,
+        3: 20.0,
+    }
+    assert masker.region_names_ == {0: "one", 1: "two", 2: "ten", 3: "twenty"}
 
 
 def test_surface_label_masker_check_output_2d(
@@ -390,6 +473,17 @@ def test_surface_label_masker_check_output_2d(
 
     expected_signal = np.asarray([expected_signal - 1, expected_signal + 1])
     assert_array_equal(signal, expected_signal)
+
+    assert masker.labels_ == [0, 1, 2, 10, 20]
+    assert masker.lut_["name"].to_list() == [
+        "Background",
+        "1",
+        "2",
+        "10",
+        "20",
+    ]
+    assert masker.region_names_ == {0: "1", 1: "2", 2: "10", 3: "20"}
+    assert masker.region_ids_ == {"background": 0, 0: 1, 1: 2, 2: 10, 3: 20}
 
     # also check the output of inverse_transform
     img = masker.inverse_transform(signal)

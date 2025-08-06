@@ -817,9 +817,10 @@ def test_regions_id_names_lut(affine_eye, shape_3d_default):
     atlas[4, 4, 5:7] = 2
     atlas = Nifti1Image(atlas, affine_eye)
 
+    # note that regions do not have to be in the right order
     lut = pd.DataFrame(
         columns=["index", "name"],
-        data=[[1.0, "A"], [2.0, "B"]],
+        data=[[2.0, "B"], [1.0, "A"]],
     )
 
     masker = NiftiLabelsMasker(atlas, lut=lut)

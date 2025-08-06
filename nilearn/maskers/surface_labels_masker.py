@@ -232,7 +232,11 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
         lut = self.lut_
-        return lut.loc[lut["index"] != self.background_label, "name"].to_dict()
+        tmp = lut.loc[lut["index"] != self.background_label, "name"].to_dict()
+        region_names_ = {}
+        for key, value in list(tmp.items()):
+            region_names_[key - 1] = value
+        return region_names_
 
     @property
     def region_ids_(self) -> dict[Union[str, int], int]:
@@ -248,7 +252,15 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
         lut = self.lut_
-        return lut["index"].to_dict()
+        tmp = lut["index"].to_dict()
+        region_ids_: dict[Union[str, int], int] = {}
+        for key, value in list(tmp.items()):
+            if value == self.background_label:
+                region_ids_["background"] = value
+            else:
+                region_ids_[key - 1] = value
+
+        return region_ids_
 
     @fill_doc
     @rename_parameters(
@@ -327,6 +339,13 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                     stacklevel=find_stack_level(),
                 )
 
+        labels_present = set(np.unique(get_data(self.labels_img_)))
+        add_background_to_lut = (
+            None
+            if self.background_label not in labels_present
+            else self.background_label
+        )
+
         self._shelving = False
 
         # generate a look up table if one was not provided
@@ -340,16 +359,45 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 function=None,
                 name=self.labels,
                 index=self.labels_img_,
-                background_label=self.background_label,
+                background_label=add_background_to_lut,
             )
         else:
             lut = generate_atlas_look_up_table(
                 function=None,
                 index=self.labels_img_,
-                background_label=self.background_label,
+                background_label=add_background_to_lut,
+            )
+
+        # passed labels or lut may not include background label
+        # because of poor data standardization
+        # so we need to update the lut accordingly
+        mask_background_index = lut["index"] == self.background_label
+        if (mask_background_index).any():
+            # Ensure background is the first row with name "Background"
+            # Shift the 'name' column down by one
+            # if background row was not named properly
+            first_rows = lut[mask_background_index]
+            other_rows = lut[~mask_background_index]
+            lut = pd.concat([first_rows, other_rows], ignore_index=True)
+
+            mask_background_name = lut["name"] == "Background"
+            if not (mask_background_name).any():
+                lut["name"] = lut["name"].shift(1)
+
+            lut.loc[0, "name"] = "Background"
+
+        else:
+            first_row = {"name": "Background", "index": self.background_label}
+            first_row = {
+                col: first_row[col] if col in lut else np.nan
+                for col in lut.columns
+            }
+            lut = pd.concat(
+                [pd.DataFrame([first_row]), lut], ignore_index=True
             )
 
         self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img_)
+        self.lut_ = self.lut_.sort_values("index")
 
         self._shelving = False
 
@@ -462,6 +510,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         index = self.labels_
         if self.background_label in index:
             index.pop(index.index(self.background_label))
+        print(index)
 
         reduction_function = getattr(ndimage, self.strategy)
 
