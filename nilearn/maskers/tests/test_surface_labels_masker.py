@@ -419,6 +419,7 @@ def test_surface_label_masker_lut_unsorted(
         "ten",
         "twenty",
     ]
+    assert masker.region_names_ == {0: "one", 1: "two", 2: "ten", 3: "twenty"}
     assert masker.region_ids_ == {
         "background": 0,
         0: 1.0,
@@ -426,7 +427,6 @@ def test_surface_label_masker_lut_unsorted(
         2: 10.0,
         3: 20.0,
     }
-    assert masker.region_names_ == {0: "one", 1: "two", 2: "ten", 3: "twenty"}
 
 
 def test_surface_label_masker_check_output_2d(
