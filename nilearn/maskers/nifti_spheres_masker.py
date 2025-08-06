@@ -658,11 +658,7 @@ class NiftiSpheresMasker(BaseMasker):
         )
 
     def __sklearn_is_fitted__(self):
-        return (
-            hasattr(self, "seeds_")
-            and hasattr(self, "n_elements_")
-            and self.memory_ is not None
-        )
+        return hasattr(self, "seeds_") and hasattr(self, "n_elements_")
 
     @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):

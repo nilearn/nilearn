@@ -406,11 +406,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         }
 
     def __sklearn_is_fitted__(self):
-        return (
-            hasattr(self, "lut_")
-            and hasattr(self, "mask_img_")
-            and self.memory_ is not None
-        )
+        return hasattr(self, "lut_") and hasattr(self, "mask_img_")
 
     @fill_doc
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):

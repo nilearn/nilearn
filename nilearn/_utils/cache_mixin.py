@@ -5,7 +5,6 @@ import warnings
 from pathlib import Path
 
 from joblib import Memory
-from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import EXPAND_PATH_WILDCARDS
 from nilearn._utils.helpers import stringify_path
@@ -230,7 +229,8 @@ class CacheMixin:
             For consistency, a callable object is always returned.
 
         """
-        check_is_fitted(self)
+        if not hasattr(self, "memory_") or self.memory_ is None:
+            self._fit_cache()
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
         if self.memory_level == 0 and self.memory_.location is not None:
