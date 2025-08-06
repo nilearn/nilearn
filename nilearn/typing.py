@@ -67,7 +67,7 @@ if sys.version_info[1] < 10:
     TargetShape = (tuple, list)
     Threshold = (float, int, str, np.floating, np.integer)
     Title = str
-    Tr = (float, int)
+    Tr = (float, int, np.floating, np.integer)
     Transparency = (
         float,
         int,
