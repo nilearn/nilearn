@@ -409,7 +409,7 @@ class NiftiMasker(BaseMasker):
         return [init_display, final_display]
 
     def __sklearn_is_fitted__(self):
-        return hasattr(self, "mask_img_")
+        return hasattr(self, "mask_img_") and self.memory_ is not None
 
     @fill_doc
     def fit(self, imgs=None, y=None):

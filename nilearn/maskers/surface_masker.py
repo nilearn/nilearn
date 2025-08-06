@@ -142,6 +142,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
             and hasattr(self, "n_elements_")
             and self.mask_img_ is not None
             and self.n_elements_ is not None
+            and self.memory_ is not None
         )
 
     def _fit_mask_img(self, img):

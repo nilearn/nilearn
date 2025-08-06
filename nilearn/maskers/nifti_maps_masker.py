@@ -518,7 +518,11 @@ class NiftiMapsMasker(BaseMasker):
         return self
 
     def __sklearn_is_fitted__(self):
-        return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
+        return (
+            hasattr(self, "maps_img_")
+            and hasattr(self, "n_elements_")
+            and self.memory_ is not None
+        )
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
