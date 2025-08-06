@@ -470,7 +470,7 @@ class NiftiMapsMasker(BaseMasker):
                 # when bumping to version > 0.13
                 self.maps_img_ = self._cache(resample_img)(
                     self.maps_img_,
-                    interpolation="continuous",
+                    interpolation="linear",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                     copy_header=True,
@@ -622,7 +622,7 @@ class NiftiMapsMasker(BaseMasker):
                 # when bumping to version > 0.13
                 maps_img_ = self._cache(resample_img)(
                     self.maps_img_,
-                    interpolation="continuous",
+                    interpolation="linear",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                     copy_header=True,

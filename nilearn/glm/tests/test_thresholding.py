@@ -196,34 +196,26 @@ def test_hommel(alpha, expected):
     assert _compute_hommel_value(z, alpha=alpha) == expected
 
 
-@pytest.mark.timeout(0)
-def test_all_resolution_inference(data_norm_isf, affine_eye):
+@pytest.mark.parametrize(
+    "kwargs, expected",
+    [
+        (
+            {"threshold": 3, "verbose": 1},
+            8,
+        ),  # standard case (also test verbose)
+        ({"threshold": 6}, 0),  # high threshold
+        ({"threshold": [3, 6]}, 8),  # list of thresholds
+    ],
+)
+def test_all_resolution_inference(data_norm_isf, affine_eye, kwargs, expected):
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
 
-    # standard case
-    th_map = cluster_level_inference(stat_img, threshold=3, alpha=0.05)
+    th_map = cluster_level_inference(stat_img, alpha=0.05, **kwargs)
     vals = get_data(th_map)
 
-    assert np.sum(vals > 0) == 8
-
-    # high threshold
-    th_map = cluster_level_inference(stat_img, threshold=6, alpha=0.05)
-    vals = get_data(th_map)
-
-    assert np.sum(vals > 0) == 0
-
-    # list of thresholds
-    th_map = cluster_level_inference(stat_img, threshold=[3, 6], alpha=0.05)
-    vals = get_data(th_map)
-
-    assert np.sum(vals > 0) == 8
-
-    # verbose mode
-    th_map = cluster_level_inference(
-        stat_img, threshold=3, alpha=0.05, verbose=1
-    )
+    assert np.sum(vals > 0) == expected
 
 
 def test_all_resolution_inference_with_mask(
