@@ -510,7 +510,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         index = self.labels_
         if self.background_label in index:
             index.pop(index.index(self.background_label))
-        print(index)
 
         reduction_function = getattr(ndimage, self.strategy)
 
