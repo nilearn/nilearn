@@ -1906,14 +1906,14 @@ class SurfaceImage:
 
         if not isinstance(data, (PolyData, dict)):
             raise TypeError(
-                "'data' must be one of[PolyData, dict].\n"
+                "'data' must be one of [PolyData, dict].\n"
                 f"Got {data.__class__.__name__}"
             )
 
         if isinstance(data, PolyData):
             self.data = data
             self.data._set_data_dtype(dtype)
-        elif isinstance(data, dict):
+        else:
             self.data = PolyData(**data, dtype=dtype)
 
         _check_data_and_mesh_compat(self.mesh, self.data)
