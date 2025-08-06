@@ -339,7 +339,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                     stacklevel=find_stack_level(),
                 )
 
-        labels_present = set(np.unique(get_data(self.labels_img_)))
+        labels_present = set(get_data(self.labels_img_))
         add_background_to_lut = (
             None
             if self.background_label not in labels_present
