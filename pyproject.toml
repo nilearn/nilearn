@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "hatchling.build"
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatchling", "hatch-vcs", "setuptools-scm!=9.0.0"]
 
 [project]
 authors = [{name = "Nilearn developers"}]
@@ -198,11 +198,11 @@ ignore = [
     "B904",
     "D105",
     "D205",
-    "D208",
     "D301",
     "E741",
     "ERA001",
     "FURB105",
+    "PD901",  # https://github.com/astral-sh/ruff/issues/7710
     "N803",
     "N806",
     "PERF203",
@@ -215,8 +215,6 @@ ignore = [
     # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
     "COM812",
     "COM819",
-    "D206",
-    "D300",
     "E111",
     "E114",
     "E117",
@@ -267,7 +265,6 @@ max-complexity = 23
 "nilearn/datasets/tests/test_atlas.py" = ["D103"]
 "nilearn/datasets/tests/test_func.py" = ["D103"]
 "nilearn/datasets/tests/test_mocking_autoused.py" = ["D103"]
-"nilearn/datasets/tests/test_neurovault.py" = ["D103"]
 "nilearn/datasets/tests/test_struct.py" = ["D103"]
 "nilearn/datasets/tests/test_testing.py" = ["D103"]
 "nilearn/datasets/tests/test_utils.py" = ["D103"]

@@ -12,9 +12,12 @@ Fixes
 -----
 
 - :bdg-dark:`Code` Align ``symmetric_cmap`` behavior for ``plotly`` backend in :func:`~nilearn.plotting.plot_surf` function with ``matplotlib`` backend (:gh:`5492` by `Hande Gözükan`_).
+- :bdg-dark:`Code` Fix type of ``t_r`` to support numpy dtypes for python < 3.10 (:gh:`5550` by `Rémi Gau`_).
 
 Enhancements
 ------------
 
 Changes
 -------
+
+- :bdg-dark:`Code` Resampling of maps by :class:`~nilearn.maskers.NiftiMapsMasker` is now done with a linear insteadt of a continuous interpolation  (:gh:`5519` by `Rémi Gau`_).
