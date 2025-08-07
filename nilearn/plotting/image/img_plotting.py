@@ -1124,6 +1124,10 @@ def plot_prob_atlas(
     if not filled:
         kwargs_contour = {"linewidths": linewidths}
     elif linewidths != tmp["linewidths"].default:
+        # only throw warning if the user has changed
+        # from the default linewidths
+        # otherwise this function will always
+        # throw a warning any time the user tries to plot filled contours
         warnings.warn(
             f"'linewidths' is not supported by {view_type}=",
             UserWarning,
