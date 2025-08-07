@@ -1232,3 +1232,27 @@ def test_check_surf_img(surf_img_1d, surf_img_2d):
     imgs = SurfaceImage(surf_img_1d.mesh, data)
     with pytest.raises(ValueError, match="empty"):
         check_surf_img(imgs)
+
+
+def test_check_surf_img_dtype(surf_img_1d):
+    """Check dtype of SurfaceImage can be set at init."""
+    data = {
+        "left": np.ones(surf_img_1d.data.parts["left"].shape, dtype="float32"),
+        "right": np.ones(surf_img_1d.data.parts["right"].shape, dtype="int32"),
+    }
+    new_img = SurfaceImage(surf_img_1d.mesh, data, dtype=np.int32)
+
+    for k in surf_img_1d.data.parts:
+        assert new_img.data.parts[k].dtype != surf_img_1d.data.parts[k].dtype
+        assert new_img.data.parts[k].dtype == np.int32
+
+
+def test_check_surf_img_dtype_error(surf_img_1d):
+    """Check that both hemispheres must have same dtype."""
+    data = {
+        "left": np.ones(surf_img_1d.data.parts["left"].shape, dtype="float32"),
+        "right": np.ones(surf_img_1d.data.parts["right"].shape, dtype="int32"),
+    }
+
+    with pytest.raises(TypeError, match="All parts should have same dtype."):
+        SurfaceImage(surf_img_1d.mesh, data)
