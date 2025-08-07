@@ -101,10 +101,10 @@ def list_nodes(
 public_api = ["nilearn"]
 public_api_with_subpackage = ["nilearn"]
 for subpackage in nilearn.__all__:
-    public_api.append(subpackage)
-    public_api_with_subpackage.append(subpackage)
     if subpackage.startswith("_"):
         continue
+    public_api.append(subpackage)
+    public_api_with_subpackage.append(subpackage)
     mod = importlib.import_module(f"nilearn.{subpackage}")
     public_api.extend(mod.__all__)
     public_api_with_subpackage.extend(
