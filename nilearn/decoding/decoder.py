@@ -1022,7 +1022,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
     def _set_scorer(self):
         if self.scoring is not None:
             self.scorer_ = check_scoring(self.estimator_, self.scoring)
-        elif self.__sklearn_tags__().estimator_type == "classifier":
+        elif self._is_classification
             self.scorer_ = get_scorer("accuracy")
         else:
             self.scorer_ = get_scorer("r2")
