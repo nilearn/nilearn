@@ -352,7 +352,7 @@ def _parallel_fit(
     scorer,
     mask_img,
     class_index,
-    clustering_percentile,
+    clustering_percentile=100,
 ):
     """Find the best estimator for a fold within a job.
 
@@ -492,14 +492,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         For Dummy estimators, parameter grid defaults to empty dictionary.
 
-    clustering_percentile : int, float, in the [0, 100], default=100
-        Percentile of features to keep after clustering. If it is lower
-        than 100, a ReNA clustering is performed as a first step of fit
-        to agglomerate similar features together. ReNA is typically efficient
-        for clustering_percentile equal to 10. Only used with
-        :class:`nilearn.decoding.FREMClassifier` and
-        :class:`nilearn.decoding.FREMRegressor`.
-
     screening_percentile : int, float, \
                           in the closed interval [0, 100], \
                           default=20
@@ -577,7 +569,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         mask=None,
         cv=10,
         param_grid=None,
-        clustering_percentile=100,
         screening_percentile=20,
         scoring=None,
         smoothing_fwhm=None,
@@ -599,7 +590,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.param_grid = param_grid
         self.screening_percentile = screening_percentile
         self.scoring = scoring
-        self.clustering_percentile = clustering_percentile
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
         self.target_affine = target_affine
@@ -614,14 +604,22 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.verbose = verbose
 
     @property
-    def _is_classification(self):
+    def _is_classification(self) -> bool:
         # TODO remove for sklearn>=1.6
         # this private method can probably be removed
         # when dropping sklearn>=1.5 and replaced by just:
         #   self.__sklearn_tags__().estimator_type == "classifier"
         if SKLEARN_LT_1_6:
+            # TODO remove for sklearn>=1.6
             return self._estimator_type == "classifier"
         return self.__sklearn_tags__().estimator_type == "classifier"
+
+    @property
+    def _clustering_percentile(self):
+        # only FREMClassifier and FREMRegressor use clustering_percentile
+        if hasattr(self, "clustering_percentile"):
+            return self.clustering_percentile
+        return 100
 
     @fill_doc
     def fit(self, X, y, groups=None):
@@ -677,7 +675,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             cv_object = LeaveOneGroupOut()
 
         else:
-            cv_object = check_cv(cv, y=y, classifier=self._is_classification())
+            cv_object = check_cv(cv, y=y, classifier=self._is_classification)
 
         self.cv_ = list(cv_object.split(X, y, groups=groups))
 
@@ -685,11 +683,11 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         # number corresponds to the number of binary problems to solve
         y = (
             self._binarize_y(y)
-            if self._is_classification()
+            if self._is_classification
             else y[:, np.newaxis]
         )
 
-        if self._is_classification() and self.n_classes_ > 2:
+        if self._is_classification and self.n_classes_ > 2:
             n_problems = self.n_classes_
         else:
             n_problems = 1
@@ -706,7 +704,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         selector = check_feature_screening(
             self.screening_percentile,
             self.mask_img_,
-            self._is_classification(),
+            self._is_classification,
             mesh_n_vertices=mesh_n_vertices,
             verbose=self.verbose,
         )
@@ -722,15 +720,15 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         n_final_features = int(
             X.shape[1]
             * self.screening_percentile_
-            * self.clustering_percentile
+            * self._clustering_percentile
             / 10000
         )
         if n_final_features < 50:
+            msg_extension = " and / or 'clustering_percentile'"
             warnings.warn(
                 "After clustering and screening, the decoding model will "
                 f"be trained only on {n_final_features} features. "
-                "Consider raising clustering_percentile or "
-                "screening_percentile parameters.",
+                f"Consider raising 'screening_percentile'{msg_extension}.",
                 UserWarning,
                 stacklevel=find_stack_level(),
             )
@@ -749,7 +747,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 scorer=self.scorer_,
                 mask_img=self.mask_img_,
                 class_index=c,
-                clustering_percentile=self.clustering_percentile,
+                clustering_percentile=self._clustering_percentile,
             )
             for c, (train, test) in itertools.product(
                 range(n_problems), self.cv_
@@ -785,7 +783,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 self.classes_, self.coef_, self.std_coef_
             )
 
-            if self._is_classification() and (self.n_classes_ == 2):
+            if self._is_classification and (self.n_classes_ == 2):
                 self.coef_ = self.coef_[0, :][np.newaxis, :]
                 self.intercept_ = self.intercept_[0]
         else:
@@ -797,7 +795,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                     for class_index in self.classes_
                 ]
             )
-            if self._is_classification() and (self.n_classes_ == 2):
+            if self._is_classification and (self.n_classes_ == 2):
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
         return self
@@ -894,7 +892,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         else:
             scores = self.decision_function(X)
 
-        if self._is_classification():
+        if self._is_classification:
             if scores.ndim == 1:
                 indices = (scores > 0).astype(int)
             else:
@@ -1625,7 +1623,6 @@ class FREMRegressor(_BaseDecoder):
             mask=mask,
             cv=cv,
             param_grid=param_grid,
-            clustering_percentile=clustering_percentile,
             screening_percentile=screening_percentile,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
@@ -1641,6 +1638,8 @@ class FREMRegressor(_BaseDecoder):
             verbose=verbose,
             n_jobs=n_jobs,
         )
+
+        self.clustering_percentile = clustering_percentile
 
         # TODO remove after sklearn>=1.6
         self._estimator_type = "regressor"
@@ -1835,7 +1834,6 @@ class FREMClassifier(_BaseDecoder):
             mask=mask,
             cv=cv,
             param_grid=param_grid,
-            clustering_percentile=clustering_percentile,
             screening_percentile=screening_percentile,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
@@ -1851,6 +1849,8 @@ class FREMClassifier(_BaseDecoder):
             high_pass=high_pass,
             t_r=t_r,
         )
+
+        self.clustering_percentile = clustering_percentile
 
         # TODO remove after sklearn>=1.6
         self._estimator_type = "classifier"
