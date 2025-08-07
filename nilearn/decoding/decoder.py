@@ -588,7 +588,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         high_pass=None,
         t_r=None,
         mask_strategy="background",
-        is_classification=True,
         memory=None,
         memory_level=0,
         n_jobs=1,
@@ -600,7 +599,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.param_grid = param_grid
         self.screening_percentile = screening_percentile
         self.scoring = scoring
-        self.is_classification = is_classification
         self.clustering_percentile = clustering_percentile
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
@@ -614,6 +612,16 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
+
+    @property
+    def _is_classification(self):
+        # TODO remove for sklearn>=1.6
+        # this private method can probably be removed
+        # when dropping sklearn>=1.5 and replaced by just:
+        #   self.__sklearn_tags__().estimator_type == "classifier"
+        if SKLEARN_LT_1_6:
+            return self._estimator_type == "classifier"
+        return self.__sklearn_tags__().estimator_type == "classifier"
 
     @fill_doc
     def fit(self, X, y, groups=None):
@@ -669,15 +677,19 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             cv_object = LeaveOneGroupOut()
 
         else:
-            cv_object = check_cv(cv, y=y, classifier=self.is_classification)
+            cv_object = check_cv(cv, y=y, classifier=self._is_classification())
 
         self.cv_ = list(cv_object.split(X, y, groups=groups))
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
-        y = self._binarize_y(y) if self.is_classification else y[:, np.newaxis]
+        y = (
+            self._binarize_y(y)
+            if self._is_classification()
+            else y[:, np.newaxis]
+        )
 
-        if self.is_classification and self.n_classes_ > 2:
+        if self._is_classification() and self.n_classes_ > 2:
             n_problems = self.n_classes_
         else:
             n_problems = 1
@@ -694,7 +706,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         selector = check_feature_screening(
             self.screening_percentile,
             self.mask_img_,
-            self.is_classification,
+            self._is_classification(),
             mesh_n_vertices=mesh_n_vertices,
             verbose=self.verbose,
         )
@@ -773,7 +785,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 self.classes_, self.coef_, self.std_coef_
             )
 
-            if self.is_classification and (self.n_classes_ == 2):
+            if self._is_classification() and (self.n_classes_ == 2):
                 self.coef_ = self.coef_[0, :][np.newaxis, :]
                 self.intercept_ = self.intercept_[0]
         else:
@@ -785,7 +797,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                     for class_index in self.classes_
                 ]
             )
-            if self.is_classification and (self.n_classes_ == 2):
+            if self._is_classification() and (self.n_classes_ == 2):
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
         return self
@@ -882,7 +894,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         else:
             scores = self.decision_function(X)
 
-        if self.is_classification:
+        if self._is_classification():
             if scores.ndim == 1:
                 indices = (scores > 0).astype(int)
             else:
@@ -969,7 +981,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                     params[k]
                 )
 
-            if (n_problems <= 2) and self.is_classification:
+            if (
+                n_problems <= 2
+            ) and self.__sklearn_tags__().estimator_type == "classifier":
                 # Binary classification
                 other_class = np.setdiff1d(classes, classes[class_index])[0]
                 if coef is not None:
@@ -999,7 +1013,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
     def _set_scorer(self):
         if self.scoring is not None:
             self.scorer_ = check_scoring(self.estimator_, self.scoring)
-        elif self.is_classification:
+        elif self.__sklearn_tags__().estimator_type == "classifier":
             self.scorer_ = get_scorer("accuracy")
         else:
             self.scorer_ = get_scorer("r2")
@@ -1230,7 +1244,6 @@ class Decoder(ClassifierMixin, _BaseDecoder):
             high_pass=high_pass,
             t_r=t_r,
             memory=memory,
-            is_classification=True,
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
@@ -1415,7 +1428,6 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
             t_r=t_r,
             mask_strategy=mask_strategy,
             memory=memory,
-            is_classification=False,
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
@@ -1625,7 +1637,6 @@ class FREMRegressor(_BaseDecoder):
             t_r=t_r,
             mask_strategy=mask_strategy,
             memory=memory,
-            is_classification=False,
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
@@ -1833,7 +1844,6 @@ class FREMClassifier(_BaseDecoder):
             target_shape=target_shape,
             mask_strategy=mask_strategy,
             memory=memory,
-            is_classification=True,
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
