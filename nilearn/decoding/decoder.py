@@ -352,7 +352,7 @@ def _parallel_fit(
     scorer,
     mask_img,
     class_index,
-    clustering_percentile=100,
+    clustering_percentile,
 ):
     """Find the best estimator for a fold within a job.
 
