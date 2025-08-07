@@ -1120,11 +1120,9 @@ def plot_prob_atlas(
 
     filled = view_type.startswith("filled")
     tmp = dict(**inspect.signature(plot_prob_atlas).parameters)
-    kwargs_contour = {
-        "linestyles": "solid",
-    }
+    kwargs_contour = {}
     if not filled:
-        kwargs_contour |= {"linewidths": linewidths}
+        kwargs_contour = {"linewidths": linewidths}
     elif linewidths != tmp["linewidths"].default:
         warnings.warn(
             f"'linewidths' is not supported by {view_type}=",
@@ -1133,7 +1131,6 @@ def plot_prob_atlas(
         )
 
     transparency = alpha
-    kwargs_contour |= {"transparency": transparency}
     for map_img, color, thr in zip(iter_img(maps_img), color_list, threshold):
         data = get_data(map_img)
         # To threshold or choose the level of the contours
@@ -1151,10 +1148,13 @@ def plot_prob_atlas(
                 transparency=transparency,
             )
         else:
-            kwargs_contour |= {"color": color, "levels": [thr]}
             display.add_contours(
                 map_img,
                 filled=filled,
+                linestyles="solid",
+                color=color,
+                levels=[thr],
+                transparency=transparency,
                 **kwargs_contour,
             )
     if colorbar:
