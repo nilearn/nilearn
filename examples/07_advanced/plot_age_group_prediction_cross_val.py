@@ -24,15 +24,16 @@ except ImportError:
 # Load brain development :term:`fMRI` dataset and MSDL atlas
 # ----------------------------------------------------------
 # We study only 60 subjects from the dataset, to save computation time.
-from nilearn import datasets
+from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 
-development_dataset = datasets.fetch_development_fmri(n_subjects=60)
+development_dataset = fetch_development_fmri(n_subjects=60)
 
 # %%
 # We use probabilistic regions of interest (ROIs) from the MSDL atlas.
+
 from nilearn.maskers import NiftiMapsMasker
 
-msdl_data = datasets.fetch_atlas_msdl()
+msdl_data = fetch_atlas_msdl()
 msdl_coords = msdl_data.region_coords
 
 masker = NiftiMapsMasker(
@@ -48,12 +49,13 @@ masker = NiftiMapsMasker(
     standardize_confounds=True,
 )
 
-masked_data = [
-    masker.fit_transform(func, confounds)
-    for (func, confounds) in zip(
-        development_dataset.func, development_dataset.confounds
+masked_data = list(
+    map(
+        masker.fit_transform,
+        development_dataset.func,
+        development_dataset.confounds,
     )
-]
+)
 
 # %%
 # What kind of connectivity is most powerful for classification?

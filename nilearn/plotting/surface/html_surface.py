@@ -11,9 +11,9 @@ from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting import cm
+from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
-    colorscale,
     get_html_template,
     mesh_to_plotly,
 )
