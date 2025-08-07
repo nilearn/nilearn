@@ -990,9 +990,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                     params[k]
                 )
 
-            if (
-                n_problems <= 2
-            ) and self.__sklearn_tags__().estimator_type == "classifier":
+            if (n_problems <= 2) and self._is_classification:
                 # Binary classification
                 other_class = np.setdiff1d(classes, classes[class_index])[0]
                 if coef is not None:
