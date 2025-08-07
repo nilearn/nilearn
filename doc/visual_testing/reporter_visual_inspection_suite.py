@@ -382,14 +382,15 @@ def report_surface_flm(build_type):
 
 
 def report_surface_slm(build_type):
-    flm = SecondLevelModel(mask_img=SurfaceMasker())
-    report_slm_empty = flm.generate_report(height_control="bonferroni")
+    if build_type == "partial":
+        _generate_dummy_html(filenames=["slm_surf_empty.html"])
+        return None
+
+    slm = SecondLevelModel(mask_img=SurfaceMasker())
+    report_slm_empty = slm.generate_report(height_control="bonferroni")
     report_slm_empty.save_as_html(REPORTS_DIR / "slm_surf_empty.html")
 
-    if build_type == "partial":
-        _generate_dummy_html(filenames=["flm_surf_empty.html"])
-        _generate_dummy_html(filenames=["slm_surf_empty.html"])
-        return report_slm_empty
+    return report_slm_empty
 
 
 # %%
