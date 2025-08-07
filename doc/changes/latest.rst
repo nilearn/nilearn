@@ -12,10 +12,10 @@ Fixes
 -----
 
 - :bdg-dark:`Code` Align ``symmetric_cmap`` behavior for ``plotly`` backend in :func:`~nilearn.plotting.plot_surf` function with ``matplotlib`` backend (:gh:`5492` by `Hande Gözükan`_).
+
 - :bdg-dark:`Code` Fix type of ``t_r`` to support numpy dtypes for python < 3.10 (:gh:`5550` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Enforce consistent ``dtype`` for all parts of :class:`~nilearn.surface.surface.SurfaceImage` and :class:`~nilearn.surface.surface.Polydata` (:gh:`5530` by `Rémi Gau`_).
-
+- :bdg-dark:`Code` Enforce consistent ``dtype`` for all parts of :class:`~nilearn.surface.SurfaceImage` and :class:`~nilearn.surface.Polydata` (:gh:`5530` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Ensure all maskers transform and inverse_transform can output arrays and images of a specific data type (:gh:`5511` by `Rémi Gau`_).
 
