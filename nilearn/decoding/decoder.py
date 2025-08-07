@@ -615,7 +615,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         return self.__sklearn_tags__().estimator_type == "classifier"
 
     @property
-    def _clustering_percentile(self):
+    def _clustering_percentile(self) -> int:
         # only FREMClassifier and FREMRegressor use clustering_percentile
         if hasattr(self, "clustering_percentile"):
             return self.clustering_percentile
