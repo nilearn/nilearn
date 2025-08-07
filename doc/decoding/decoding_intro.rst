@@ -370,11 +370,12 @@ argument. To keep the 10% most correlated voxels, just create us this parameter 
 
 .. note::
 
-    If ``screening_percentile`` is used in combination
-    with a mask that is too small
-    relative to the total brain volume,
-    then all the voxels of the mask
-    may be included even for very small ``screening_percentile``.
+    Providing a region-of-interest mask may interact with
+    the ``screening_percentile`` parameter, particularly
+    in cases where the mask extent is small relative to the
+    total brain volume. In these cases, there may not be
+    enough features in the mask to allow for further
+    sub-selection with ``screening_percentile``.
 
 Visualizing the results
 -----------------------
