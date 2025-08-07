@@ -724,13 +724,24 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             / 10000
         )
         if n_final_features < 50:
-            msg_extension = " and / or 'clustering_percentile'"
+            screening_percentile_msg = ""
+            if self.screening_percentile_ < 100:
+                screening_percentile_msg = (
+                    "Consider raising 'screening_percentile'"
+                )
+            clustering_percentile_msg = ""
+            if (
+                hasattr(self, "clustering_percentile")
+                and self._clustering_percentile < 100
+            ):
+                clustering_percentile_msg = " and / or 'clustering_percentile'"
+            warning_msg = (
+                "The decoding model will be trained only "
+                f"on {n_final_features} features. "
+                f"{screening_percentile_msg}{clustering_percentile_msg}."
+            )
             warnings.warn(
-                "After clustering and screening, the decoding model will "
-                f"be trained only on {n_final_features} features. "
-                f"Consider raising 'screening_percentile'{msg_extension}.",
-                UserWarning,
-                stacklevel=find_stack_level(),
+                warning_msg, UserWarning, stacklevel=find_stack_level()
             )
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
