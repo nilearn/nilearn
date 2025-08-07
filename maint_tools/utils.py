@@ -117,8 +117,8 @@ for subpackage in nilearn.__all__:
                 public_api.extend(submod.__all__)
                 public_api_with_subpackage.extend(
                     [
-                        f"{subpackage}.{submod.__name__}.{x}"
-                        for x in submod.__all__
+                        f"{subpackage}.{submod.__name__}.{y}"
+                        for y in submod.__all__
                     ]
                 )
 
