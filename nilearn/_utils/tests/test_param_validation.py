@@ -17,10 +17,6 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.datasets import load_mni152_brain_mask
 
-mni152_brain_mask = (
-    "/usr/share/fsl/data/standard/MNI152_T1_1mm_brain_mask.nii.gz"
-)
-
 
 @pytest.fixture
 def matrix():
