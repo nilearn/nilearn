@@ -88,10 +88,9 @@ def _get_neurovault_data():
     image_names = [
         hashlib.sha1(bytes(img_id)).hexdigest()[:4] for img_id in image_ids
     ]
-    images["file"] = [
-        url.format(col_id, img_name)
-        for (col_id, img_name) in zip(images["collection_id"], image_names)
-    ]
+    images["file"] = list(
+        map(url.format, images["collection_id"], image_names)
+    )
 
     collections = collections.set_index("id", drop=False)
     images = images.set_index("id", drop=False)
