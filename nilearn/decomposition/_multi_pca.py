@@ -161,6 +161,8 @@ class _MultiPCA(_BaseDecomposition):
 
     def _raw_fit(self, data):
         """Process unmasked data directly."""
+        self._fit_cache()
+
         if self.do_cca:
             S = np.sqrt(np.sum(data**2, axis=1))
             S[S == 0] = 1
