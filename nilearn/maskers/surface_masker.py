@@ -6,7 +6,6 @@ from copy import deepcopy
 from warnings import warn
 
 import numpy as np
-from joblib import Memory
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
@@ -118,7 +117,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
-        self._shelving = False
         # content to inject in the HTML template
         self._report_content = {
             "description": (
@@ -223,8 +221,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         if imgs is not None:
             self._check_imgs(imgs)
 
-        if self.memory is None:
-            self.memory = Memory(location=None)
+        self._fit_cache()
 
         self._fit_mask_img(imgs)
         assert self.mask_img_ is not None
@@ -310,11 +307,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
-        output = self._cache(
-            signal.clean,
-            func_memory_level=2,
-            shelve=self._shelving,
-        )(
+        output = self._cache(signal.clean, func_memory_level=2)(
             output,
             detrend=parameters["detrend"],
             standardize=parameters["standardize"],
