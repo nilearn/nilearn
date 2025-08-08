@@ -10,7 +10,7 @@ from functools import partial
 from typing import ClassVar
 
 import numpy as np
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 from scipy import stats
 from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
@@ -1070,6 +1070,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             case, confidence score for `self.classes_[1]` where >0 means this
             class would be predicted.
         """
+        check_is_fitted(self)
+
         # handle regression (least-squared loss)
         if not self.is_classif:
             raise ValueError("There is no decision_function in classification")
@@ -1311,8 +1313,6 @@ class SpaceNetClassifier(BaseSpaceNet):
         screening_percentile=20.0,
         debias=False,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=True,
@@ -1372,6 +1372,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         score : float
             Mean accuracy of self.predict(X)  w.r.t y.
         """
+        check_is_fitted(self)
         return accuracy_score(y, self.predict(X))
 
     def _more_tags(self):
@@ -1573,8 +1574,6 @@ class SpaceNetRegressor(BaseSpaceNet):
         screening_percentile=20.0,
         debias=False,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=False,
