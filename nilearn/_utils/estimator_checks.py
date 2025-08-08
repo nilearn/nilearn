@@ -278,6 +278,9 @@ def return_expected_failed_checks(
             "replaced by check_masker_fit_score_takes_y"
         ),
         "check_estimators_pickle": "replaced by check_img_estimator_pickle",
+        "check_pipeline_consistency": (
+            "replaced by check_img_estimator_pipeline_consistency"
+        ),
         # Those are skipped for now they fail
         # for unknown reasons
         # most often because sklearn inputs expect a numpy array
@@ -290,7 +293,6 @@ def return_expected_failed_checks(
         "check_methods_sample_order_invariance": "TODO",
         "check_methods_subset_invariance": "TODO",
         "check_positive_only_tag_during_fit": "TODO",
-        "check_pipeline_consistency": "TODO",
         "check_readonly_memmap_input": "TODO",
     }
 
@@ -433,6 +435,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_fit_check_is_fitted": (
             "replaced by check_img_estimator_fit_check_is_fitted"
         ),
+        "check_pipeline_consistency": (
+            "replaced by check_img_estimator_pipeline_consistency"
+        ),
         "check_requires_y_none": (
             "replaced by check_img_estimator_requires_y_none"
         ),
@@ -453,7 +458,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_methods_sample_order_invariance": "TODO",
         "check_methods_subset_invariance": "TODO",
         "check_positive_only_tag_during_fit": "TODO",
-        "check_pipeline_consistency": "TODO",
         "check_readonly_memmap_input": "TODO",
         "check_supervised_y_2d": "TODO",
     }
@@ -529,7 +533,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_pickle)
         yield (clone(estimator), check_fit_returns_self)
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
-        yield (clone(estimator), check_pipeline_consistency)
+        yield (clone(estimator), check_img_estimator_pipeline_consistency)
 
         if hasattr(estimator, "transform"):
             yield (clone(estimator), check_img_estimator_dict_unchanged)
@@ -1123,10 +1127,15 @@ def check_img_estimator_pickle(estimator_orig):
 
 
 @ignore_warnings
-def check_pipeline_consistency(estimator_orig):
+def check_img_estimator_pipeline_consistency(estimator_orig):
+    """Check pipeline consistency for nilearn estimators.
+
+
+    Substitute for sklearn add check_pipeline_consistency.
+    """
     estimator = clone(estimator_orig)
 
-    X, _ = generate_data_to_fit(estimator)
+    X, y = generate_data_to_fit(estimator)
 
     if isinstance(estimator, NiftiSpheresMasker):
         # NiftiSpheresMasker needs mask_img to run inverse_transform
@@ -1136,8 +1145,24 @@ def check_pipeline_consistency(estimator_orig):
     set_random_state(estimator)
 
     pipeline = make_pipeline(estimator)
-    estimator.fit(X)
-    pipeline.fit(X)
+
+    if is_glm(estimator):
+        # FirstLevel
+        if hasattr(estimator, "hrf_model"):
+            pipeline.fit(X, firstlevelmodel__design_matrices=y)
+        # SecondLevel
+        else:
+            pipeline.fit(X, secondlevelmodel__design_matrix=y)
+
+    elif (
+        isinstance(estimator, SearchLight)
+        or is_classifier(estimator)
+        or is_regressor(estimator)
+    ):
+        pipeline.fit(X, y)
+
+    else:
+        pipeline.fit(X)
 
     funcs = ["score", "transform"]
 
@@ -1145,8 +1170,12 @@ def check_pipeline_consistency(estimator_orig):
         func = getattr(estimator, func_name, None)
         if func is not None:
             func_pipeline = getattr(pipeline, func_name)
-            result = func(X)
-            result_pipe = func_pipeline(X)
+            if func_name == "transform":
+                result = func(X)
+                result_pipe = func_pipeline(X)
+            else:
+                result = func(X, y)
+                result_pipe = func_pipeline(X, y)
             assert_allclose_dense_sparse(result, result_pipe)
 
 
