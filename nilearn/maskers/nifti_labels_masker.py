@@ -914,9 +914,13 @@ class NiftiLabelsMasker(BaseMasker):
 
         mask_logger("inverse_transform", verbose=self.verbose)
 
-        return signal_extraction.signals_to_img_labels(
+        img = signal_extraction.signals_to_img_labels(
             signals,
             self.labels_img_,
             self.mask_img_,
             background_label=self.background_label,
         )
+
+        img = self._set_inverse_transform_output_dtype(signals, img)
+
+        return img
