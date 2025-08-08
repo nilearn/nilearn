@@ -1132,8 +1132,8 @@ def check_img_estimator_dtypes(estimator):
     """
     # TODO np.int32, "i4"
     # for multi/nifti_labels_masker, multi/nifti_masker, nifti_spheres_masker
-    for input_dtype in [np.float32, "float64"]:
-        for dtype in [np.float32, "float64", "auto", None]:
+    for input_dtype in [np.float32, "float64", np.int32, "i4"]:
+        for dtype in [np.float32, "float64", np.int32, "i4", "auto", None]:
             estimator = clone(estimator)
 
             if hasattr(estimator, "dtype"):
