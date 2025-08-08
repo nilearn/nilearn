@@ -77,22 +77,34 @@ def fetch_haxby(
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-        - 'anat': :obj:`list` of :obj:`str`. Paths to anatomic images.
+        - 'anat': :obj:`list` of :obj:`str`.
+            Paths to anatomic images.
+
         - 'func': :obj:`list` of :obj:`str`.
-          Paths to nifti file with :term:`BOLD` data.
+            Paths to nifti file with :term:`BOLD` data.
+
         - 'session_target': :obj:`list` of :obj:`str`.
-          Paths to text file containing run and target data.
+            Paths to text file containing run and target data.
+
         - 'mask': :obj:`str`. Path to fullbrain mask file.
+
         - 'mask_vt': :obj:`list` of :obj:`str`.
-          Paths to nifti ventral temporal mask file.
+            Paths to nifti ventral temporal mask file.
+
         - 'mask_face': :obj:`list` of :obj:`str`.
-          Paths to nifti with face-responsive brain regions.
+            Paths to nifti with face-responsive brain regions.
+
         - 'mask_face_little': :obj:`list` of :obj:`str`.
-          Spatially more constrained version of the above.
+            Spatially more constrained version of the above.
+
         - 'mask_house': :obj:`list` of :obj:`str`.
-          Paths to nifti with house-responsive brain regions.
+            Paths to nifti with house-responsive brain regions.
+
         - 'mask_house_little': :obj:`list` of :obj:`str`.
-          Spatially more constrained version of the above.
+            Spatially more constrained version of the above.
+
+        - 't_r': :obj:`float`
+            Repetition time of the functional data.
 
     References
     ----------
@@ -218,6 +230,7 @@ def fetch_haxby(
         mask_house_little=files[6::n_files],
         mask=mask,
         description=fdescr,
+        t_r=2.5,
         **kwargs,
     )
 
