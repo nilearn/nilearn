@@ -268,9 +268,6 @@ def return_expected_failed_checks(
         "check_fit_check_is_fitted": (
             "replaced by check_img_estimator_fit_check_is_fitted"
         ),
-        "check_fit_score_takes_y": (
-            "replaced by check_masker_fit_score_takes_y"
-        ),
         "check_estimators_pickle": "replaced by check_img_estimator_pickle",
         # Those are skipped for now they fail
         # for unknown reasons
@@ -330,8 +327,9 @@ def return_expected_failed_checks(
             "check_fit_check_is_fitted": (
                 "replaced by check_img_estimator_fit_check_is_fitted"
             ),
-            # nilearn replacements required
-            "check_fit_score_takes_y": "TODO",
+            "check_fit_score_takes_y": (
+                "replaced by check_img_estimator_fit_score_takes_y"
+            ),
         }
 
     if isinstance(estimator, (_BaseDecomposition,)):
@@ -443,7 +441,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
         "check_fit_idempotent": "TODO",
-        "check_fit_score_takes_y": "TODO",
         "check_methods_sample_order_invariance": "TODO",
         "check_methods_subset_invariance": "TODO",
         "check_positive_only_tag_during_fit": "TODO",
@@ -525,6 +522,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
         yield (clone(estimator), check_img_estimator_overwrite_params)
         yield (clone(estimator), check_img_estimator_pickle)
+        yield (clone(estimator), check_img_estimator_fit_score_takes_y)
 
         if hasattr(estimator, "transform"):
             yield (clone(estimator), check_img_estimator_dict_unchanged)
@@ -541,7 +539,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_masker_compatibility_mask_image)
         yield (clone(estimator), check_masker_dtypes)
         yield (clone(estimator), check_masker_empty_data_messages)
-        yield (clone(estimator), check_masker_fit_score_takes_y)
         yield (clone(estimator), check_masker_fit_with_empty_mask)
         yield (
             clone(estimator),
@@ -1115,6 +1112,31 @@ def check_img_estimator_requires_y_none(estimator) -> None:
     except ValueError as ve:
         if all(msg not in str(ve) for msg in expected_err_msgs):
             raise ve
+
+
+@ignore_warnings()
+def check_img_estimator_fit_score_takes_y(estimator):
+    """Replace sklearn check_fit_score_takes_y for maskers.
+
+    Check that all estimators accept an optional y
+    in fit and score so they can be used in pipelines.
+    """
+    for attr in ["fit", "fit_transform", "score"]:
+        if not hasattr(estimator, attr):
+            continue
+        tmp = {
+            k: v.default
+            for k, v in inspect.signature(
+                getattr(estimator, attr)
+            ).parameters.items()
+            if v.default is not inspect.Parameter.empty
+        }
+        if "y" not in tmp:
+            raise ValueError(
+                f"{estimator.__class__.__name__} "
+                f"is missing 'y=None' for the method '{attr}'."
+            )
+        assert tmp["y"] is None
 
 
 # ------------------ DECODERS CHECKS ------------------
@@ -2023,29 +2045,6 @@ def check_masker_transform_resampling(estimator) -> None:
                     "at transform time" not in str(x.message)
                     for x in warning_list
                 )
-
-
-@ignore_warnings()
-def check_masker_fit_score_takes_y(estimator):
-    """Replace sklearn check_fit_score_takes_y for maskers.
-
-    Check that all estimators accept an optional y
-    in fit and score so they can be used in pipelines.
-    """
-    for attr in ["fit", "fit_transform"]:
-        tmp = {
-            k: v.default
-            for k, v in inspect.signature(
-                getattr(estimator, attr)
-            ).parameters.items()
-            if v.default is not inspect.Parameter.empty
-        }
-        if "y" not in tmp:
-            raise ValueError(
-                f"{estimator.__class__.__name__} "
-                f"is missing 'y=None' for the method '{attr}'."
-            )
-        assert tmp["y"] is None
 
 
 @ignore_warnings()
