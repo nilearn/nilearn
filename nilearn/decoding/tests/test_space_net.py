@@ -1,15 +1,34 @@
+# ruff: noqa: ARG001
+
 from functools import partial
 
 import numpy as np
 import pytest
-from numpy.testing import assert_almost_equal, assert_array_equal
+from numpy.testing import (
+    assert_almost_equal,
+    assert_array_equal,
+)
 from scipy import linalg
 from sklearn.datasets import load_iris
-from sklearn.linear_model import Lasso, LogisticRegression
+from sklearn.linear_model import (
+    Lasso,
+    LogisticRegression,
+)
 from sklearn.linear_model._coordinate_descent import _alpha_grid
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import (
+    accuracy_score,
+)
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils.param_validation import adjust_screening_percentile
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+    return_expected_failed_checks,
+)
+from nilearn._utils.param_validation import (
+    adjust_screening_percentile,
+)
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.decoding.space_net import (
     BaseSpaceNet,
     SpaceNetClassifier,
@@ -25,9 +44,8 @@ from nilearn.decoding.space_net_solvers import (
     graph_net_squared_loss,
 )
 from nilearn.decoding.tests._testing import create_graph_net_simulation_data
+from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.image import get_data
-
-from .test_same_api import to_niimgs
 
 logistic_path_scores = partial(path_scores, is_classif=True)
 squared_loss_path_scores = partial(path_scores, is_classif=False)
@@ -36,6 +54,45 @@ squared_loss_path_scores = partial(path_scores, is_classif=False)
 IS_CLASSIF = [True, False]
 
 PENALTY = ["graph-net", "tv-l1"]
+
+ESTIMATORS_TO_CHECK = [SpaceNetClassifier(), SpaceNetRegressor()]
+
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+else:
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+
+@pytest.mark.parametrize(
+    "estimator, check, name",
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
+)
+def test_check_estimator_nilearn(estimator, check, name):
+    """Check compliance with nilearn estimators rules."""
+    check(estimator)
 
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)

@@ -72,6 +72,7 @@ from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
 from nilearn.connectome.connectivity_matrices import ConnectivityMeasure
 from nilearn.decoding.decoder import _BaseDecoder
 from nilearn.decoding.searchlight import SearchLight
+from nilearn.decoding.space_net import BaseSpaceNet
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.decomposition._base import _BaseDecomposition
 from nilearn.decomposition.tests.conftest import (
@@ -244,6 +245,9 @@ def return_expected_failed_checks(
 
     if isinstance(estimator, (_BaseDecoder, SearchLight)):
         return expected_failed_checks_decoders(estimator)
+
+    if isinstance(estimator, (BaseSpaceNet)):
+        return expected_failed_checks_spacenet()
 
     # keeping track of some of those in
     # https://github.com/nilearn/nilearn/issues/4538
@@ -482,6 +486,12 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         }
 
     expected_failed_checks |= unapplicable_checks()
+
+    return expected_failed_checks
+
+
+def expected_failed_checks_spacenet() -> dict[str, str]:
+    expected_failed_checks = unapplicable_checks()
 
     return expected_failed_checks
 
