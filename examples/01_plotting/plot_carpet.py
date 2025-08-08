@@ -17,11 +17,6 @@ from nilearn.plotting import plot_carpet
 
 adhd_dataset = fetch_adhd(n_subjects=1)
 
-# plot_carpet can infer TR from the image header,
-# but preprocessing can often overwrite that particular header field,
-# so we will be explicit.
-t_r = 2.0
-
 # Print basic information on the dataset
 print(
     f"First subject functional nifti image (4D) is at: {adhd_dataset.func[0]}"
@@ -43,7 +38,7 @@ import matplotlib.pyplot as plt
 display = plot_carpet(
     adhd_dataset.func[0],
     mask_img,
-    t_r=t_r,
+    t_r=adhd_dataset.t_r,
     standardize="zscore_sample",
     title="global patterns over time",
 )
@@ -80,7 +75,7 @@ fig, ax = plt.subplots(figsize=(10, 10))
 display = plot_carpet(
     adhd_dataset.func[0],
     discrete_atlas_img,
-    t_r=t_r,
+    t_r=adhd_dataset.t_r,
     mask_labels=map_labels,
     axes=ax,
     standardize="zscore_sample",

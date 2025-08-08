@@ -290,9 +290,18 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-        - 'func': Paths to functional :term:`resting-state` images
-        - 'phenotypic': pd.dataframe with explanations of preprocessing steps
-        - 'confounds': CSV files containing the nuisance variables
+        - 'func':
+            Paths to functional :term:`resting-state` images
+
+        - 'phenotypic': pd.dataframe
+            explanations of preprocessing steps
+
+        - 'confounds':
+            CSV files containing the nuisance variables
+
+        - 't_r': :obj:`float`
+            Repetition time of the functional data.
+
 
     References
     ----------
@@ -375,6 +384,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
         confounds=confounds,
         phenotypic=phenotypic,
         description=fdescr,
+        t_r=2.0,
     )
 
 

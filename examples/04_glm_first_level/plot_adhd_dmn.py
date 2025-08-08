@@ -38,10 +38,6 @@ from nilearn.maskers import NiftiSpheresMasker
 # Prepare the data.
 adhd_dataset = fetch_adhd(n_subjects=1)
 
-# Prepare timing
-t_r = 2.0
-n_scans = 176
-
 # Prepare seed
 pcc_coords = (0, -53, 26)
 
@@ -56,13 +52,15 @@ seed_masker = NiftiSpheresMasker(
     standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
-    t_r=2.0,
+    t_r=adhd_dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
     verbose=0,
 )
 seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
-frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
+
+n_scans = seed_time_series.shape[0]
+frametimes = np.linspace(0, (n_scans - 1) * adhd_dataset.t_r, n_scans)
 
 # %%
 # Plot the time course of the seed region.
