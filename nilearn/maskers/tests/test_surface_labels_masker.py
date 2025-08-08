@@ -129,7 +129,7 @@ def test_surface_label_masker_fit_with_lut(surf_label_img, tmp_path):
     - a csv file (doc strings only mention TSV but testing for robustness)
     - a dataframe
     """
-    lut_df = pd.DataFrame({"index": [0, 1], "name": ["background", "bar"]})
+    lut_df = pd.DataFrame({"index": [0, 1], "name": ["Background", "bar"]})
 
     lut_tsv = tmp_path / "lut.tsv"
     lut_df.to_csv(lut_tsv, sep="\t", index=False)
@@ -142,7 +142,7 @@ def test_surface_label_masker_fit_with_lut(surf_label_img, tmp_path):
 
         assert masker.n_elements_ == 1
         assert masker.labels_ == [0, 1]
-        assert masker.lut_["name"].to_list() == ["background", "bar"]
+        assert masker.lut_["name"].to_list() == ["Background", "bar"]
 
 
 def test_surface_label_masker_error_names_and_lut(surf_label_img):

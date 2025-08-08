@@ -845,7 +845,7 @@ def test_regions_id_names_lut(affine_eye, shape_3d_default):
     # fitted lut now includes background
     expected_lut = pd.DataFrame(
         columns=["index", "name"],
-        data=[[0.0, "Background"], [1.0, "A"], [2.0, "B"]],
+        data=[[0.0, "Background"], [2.0, "B"], [1.0, "A"]],
     )
     check_lut(masker, expected_lut)
 
