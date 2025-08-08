@@ -1246,8 +1246,8 @@ def check_decoder_empty_data_messages(estimator):
     See : https://github.com/nilearn/nilearn/pull/5293#issuecomment-2977170723
     """
     n_samples = 30
-    if isinstance(estimator, SearchLight):
-        # SearchLight do not support surface data directly
+    if isinstance(estimator, (SearchLight, BaseSpaceNet)):
+        # SearchLight, BaseSpaceNet do not support surface data directly
         return None
 
     else:

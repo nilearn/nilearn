@@ -893,6 +893,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         tic = time.time()
 
         self.masker_ = check_embedded_masker(self, masker_type="nii")
+        self.masker_.memory_level = self.memory_level
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(
