@@ -495,22 +495,26 @@ def expected_failed_checks_spacenet(estimator) -> dict[str, str]:
         # the following are have nilearn replacement for masker and/or glm
         # but not for decoders
         "check_estimators_empty_data_messages": (
-            "CHECK not implemented for nifti data performance reasons"
+            "not implemented for nifti data performance reasons"
         ),
         "check_dont_overwrite_parameters": (
-            "CHECK replaced by check_img_estimator_dont_overwrite_parameters"
+            "replaced by check_img_estimator_dont_overwrite_parameters"
         ),
         "check_estimators_fit_returns_self": (
-            "CHECK replaced by check_fit_returns_self"
+            "replaced by check_fit_returns_self"
         ),
+        "check_estimators_overwrite_params": (
+            "replaced by check_img_estimator_overwrite_params"
+        ),
+        "check_estimators_pickle": "replaced by check_img_estimator_pickle",
         "check_fit_check_is_fitted": (
-            "CHECK replaced by check_img_estimator_fit_check_is_fitted"
+            "replaced by check_img_estimator_fit_check_is_fitted"
         ),
         "check_requires_y_none": (
-            "CHECK replaced by check_img_estimator_requires_y_none"
+            "replaced by check_img_estimator_requires_y_none"
         ),
         "check_supervised_y_no_nan": (
-            "CHECK replaced by check_supervised_img_estimator_y_no_nan"
+            "replaced by check_supervised_img_estimator_y_no_nan"
         ),
         # Those are skipped for now they fail
         # for unknown reasons
@@ -519,12 +523,10 @@ def expected_failed_checks_spacenet(estimator) -> dict[str, str]:
         # or because a suitable nilearn replacement
         # has not yet been created.
         "check_dict_unchanged": (
-            "CHECK replaced by check_img_estimator_dict_unchanged"
+            "replaced by check_img_estimator_dict_unchanged"
         ),
         "check_estimators_dtypes": "TODO",
-        "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
-        "check_estimators_overwrite_params": "TODO",
         "check_fit_idempotent": "TODO",
         "check_fit_score_takes_y": "TODO",
         "check_methods_sample_order_invariance": "TODO",
