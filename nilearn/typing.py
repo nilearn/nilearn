@@ -63,6 +63,7 @@ if sys.version_info[1] < 10:
     RandomState = (int, np.integer, np.random.RandomState)
     Resolution = (int, np.integer)
     SmoothingFwhm = (float, int, np.floating, np.integer)
+    ScreeningPercentile = (float, int, np.floating, np.integer)
     TargetAffine = ndarray
     TargetShape = (tuple, list)
     Threshold = (float, int, str, np.floating, np.integer)
@@ -109,6 +110,9 @@ else:
     RandomState = int | np.floating | np.integer | np.random.RandomState | None
     Opening: TypeAlias = bool | int | np.integer
     Resolution: TypeAlias = int | np.integer | None
+    ScreeningPercentile: TypeAlias = (
+        float | int | np.floating | np.integer | None
+    )
     SmoothingFwhm: TypeAlias = float | int | np.floating | np.integer | None
     TargetAffine: TypeAlias = ndarray | None
 
