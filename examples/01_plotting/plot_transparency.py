@@ -355,7 +355,7 @@ from nilearn.plotting import plot_stat_map, show
 subject_data = fetch_spm_auditory(verbose=0)
 
 fmri_glm = FirstLevelModel(
-    t_r=7,
+    t_r=subject_data.t_r,
     smoothing_fwhm=4,
     noise_model="ar1",
     standardize=False,

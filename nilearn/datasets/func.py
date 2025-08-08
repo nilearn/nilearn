@@ -2832,10 +2832,21 @@ def fetch_spm_auditory(
     -------
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are:
-        - 'anat': :obj:`list` of :obj:`str`. Path to anat image
-        - 'func': :obj:`list` of :obj:`str`. Path to functional image
-        - 'events': :obj:`list` of :obj:`str`. Path to events.tsv file
-        - 'description': :obj:`str`. Data description
+
+        - 'anat': :obj:`list` of :obj:`str`.
+            Path to anat image
+
+        - 'func': :obj:`list` of :obj:`str`.
+            Path to functional image
+
+        - 'events': :obj:`list` of :obj:`str`.
+            Path to events.tsv file
+
+        - 'description': :obj:`str`.
+            Data description
+
+        - 't_r' : :obj:`float`.
+            Repetition time in seconds of the functional images.
 
     References
     ----------
@@ -2869,6 +2880,7 @@ def fetch_spm_auditory(
         "func": func,
         "events": events,
         "description": get_dataset_descr("spm_auditory"),
+        "t_r": 7.0,
     }
     return Bunch(**spm_auditory_data)
 
