@@ -273,16 +273,6 @@ def test_mask_strategy_errors_warnings(img_fmri):
     ):
         masker.fit(img_fmri)
 
-    # Warning with deprecated 'template' strategy,
-    # plus an exception because there's no resulting mask
-    masker = NiftiMasker(
-        mask_strategy="template", mask_args={"threshold": 0.0}
-    )
-    with pytest.warns(
-        UserWarning, match="Masking strategy 'template' is deprecated."
-    ):
-        masker.fit(img_fmri)
-
 
 def test_compute_epi_mask(affine_eye):
     """Test that the masker class is passing parameters appropriately."""
