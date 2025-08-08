@@ -268,6 +268,9 @@ def return_expected_failed_checks(
         "check_fit_check_is_fitted": (
             "replaced by check_img_estimator_fit_check_is_fitted"
         ),
+        "check_fit_idempotent": (
+            "replaced by check_img_estimator_fit_idempotent"
+        ),
         "check_fit_score_takes_y": (
             "replaced by check_masker_fit_score_takes_y"
         ),
@@ -280,7 +283,6 @@ def return_expected_failed_checks(
         # has not yet been created.
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
-        "check_fit_idempotent": "TODO",
         "check_methods_sample_order_invariance": "TODO",
         "check_methods_subset_invariance": "TODO",
         "check_positive_only_tag_during_fit": "TODO",
@@ -442,7 +444,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
-        "check_fit_idempotent": "TODO",
         "check_fit_score_takes_y": "TODO",
         "check_methods_sample_order_invariance": "TODO",
         "check_methods_subset_invariance": "TODO",
@@ -523,6 +524,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_fit_returns_self)
         yield (clone(estimator), check_img_estimator_dont_overwrite_parameters)
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
+        yield (clone(estimator), check_img_estimator_fit_idempotent)
         yield (clone(estimator), check_img_estimator_overwrite_params)
         yield (clone(estimator), check_img_estimator_pickle)
 
@@ -937,6 +939,53 @@ def check_img_estimator_cache_warning(estimator) -> None:
             elif isinstance(estimator, SecondLevelModel):
                 # second level only cache during contrast computation
                 estimator.compute_contrast(np.asarray([1]))
+
+
+def check_img_estimator_fit_idempotent(estimator_orig):
+    """Check that est.fit(X) is the same as est.fit(X).fit(X).
+
+    So we check that
+    predict(), decision_function() and transform() return
+    the same results.
+
+    replaces sklearn check_fit_idempotent
+    """
+    check_methods = ["predict", "transform", "decision_function"]
+
+    estimator = clone(estimator_orig)
+
+    # Fit for the first time
+    set_random_state(estimator)
+    estimator = fit_estimator(estimator)
+
+    X, _ = generate_data_to_fit(estimator)
+
+    result = {
+        method: getattr(estimator, method)(X)
+        for method in check_methods
+        if hasattr(estimator, method)
+    }
+
+    # Fit again
+    set_random_state(estimator)
+    estimator = fit_estimator(estimator)
+
+    for method in check_methods:
+        if hasattr(estimator, method):
+            new_result = getattr(estimator, method)(X)
+            if hasattr(new_result, "dtype") and np.issubdtype(
+                new_result.dtype, np.floating
+            ):
+                tol = 2 * np.finfo(new_result.dtype).eps
+            else:
+                tol = 2 * np.finfo(np.float64).eps
+            assert_allclose_dense_sparse(
+                result[method],
+                new_result,
+                atol=max(tol, 1e-9),
+                rtol=max(tol, 1e-7),
+                err_msg=f"Idempotency check failed for method {method}",
+            )
 
 
 @ignore_warnings()
