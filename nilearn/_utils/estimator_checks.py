@@ -470,13 +470,15 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
 
     if is_regressor(estimator):
         expected_failed_checks |= {
+            "check_regressors_no_decision_function": (
+                "replaced by check_img_regressors_no_decision_function"
+            ),
             "check_regressor_data_not_an_array": (
                 "not applicable for image input"
             ),
             "check_regressor_multioutput": "TODO",
             "check_regressors_int": "TODO",
             "check_regressors_train": "TODO",
-            "check_regressors_no_decision_function": "TODO",
         }
 
     if hasattr(estimator, "transform"):
@@ -538,6 +540,11 @@ def nilearn_check_generator(estimator: BaseEstimator):
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
+            if is_regressor(estimator):
+                yield (
+                    clone(estimator),
+                    check_img_regressors_no_decision_function,
+                )
 
         if (
             is_classifier(estimator)
@@ -1215,6 +1222,22 @@ def check_decoder_empty_data_messages(estimator):
 
     with pytest.raises(ValueError, match="empty"):
         estimator.fit(X, y)
+
+
+@ignore_warnings
+def check_img_regressors_no_decision_function(regressor_orig):
+    """Check that regressors don't have a decision_function.
+
+    replaces sklearn check_regressors_no_decision_function
+    """
+    regressor = clone(regressor_orig)
+
+    X, y = generate_data_to_fit(regressor)
+
+    regressor.fit(X, y)
+    funcs = ["decision_function"]
+    for func_name in funcs:
+        assert not hasattr(regressor, func_name)
 
 
 # ------------------ MASKER CHECKS ------------------
