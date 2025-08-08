@@ -1120,13 +1120,9 @@ def check_img_estimator_dtypes(estimator):
 
     Replacement for sklearn check_estimators_dtypes.
 
-    For some estimators that only extract data (like NiftiMasker)
-    and do not aggregate it (like NiftiMapsMasker)
-    we check that transform,
-    return signals with the same type.
+    Check that several methods are OK dealing with input of varying dtype.
 
-    Similarly, inverse transform should generate images
-    and conserve dtype.
+    For transform, check the dtype of the output.
 
     np.int64 not tested: see no_int64_nifti in nilearn/conftest.py
     """
@@ -1156,12 +1152,27 @@ def check_img_estimator_dtypes(estimator):
 
             estimator = fit_estimator(estimator, X, y)
 
-            if hasattr(estimator, "transform") and not isinstance(
-                estimator, (SearchLight)
-            ):
-                # skip SearchLight transform
-                # as it behaves differently from others
-                signal = estimator.transform(X)
+            for method in [
+                "transform",
+                "predict",
+                "score",
+                "decision_function",
+            ]:
+                if not hasattr(estimator, method):
+                    continue
+
+                if method == "transform" and not isinstance(
+                    estimator, (SearchLight)
+                ):
+                    # skip SearchLight transform
+                    # as it behaves differently from others
+                    continue
+
+                signal = getattr(estimator, method)(X)
+
+                if method != "transform":
+                    # we only check the output dtype for transform
+                    continue
 
                 if not isinstance(signal, list):
                     signal = [signal]
