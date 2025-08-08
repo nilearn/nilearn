@@ -10,7 +10,7 @@ from functools import partial
 from typing import ClassVar
 
 import numpy as np
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 from scipy import stats
 from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
@@ -31,6 +31,7 @@ from nilearn._utils.param_validation import (
     adjust_screening_percentile,
     check_params,
 )
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -771,6 +772,35 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.mask_args = mask_args
         self.positive = positive
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(require_y=True, niimg_like=True, surf_img=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.target_tags.required = True
+        tags.input_tags = InputTags(niimg_like=True, surf_img=True)
+        return tags
+
     def _check_params(self):
         """Make sure parameters are sane."""
         if self.l1_ratios is not None:
@@ -863,6 +893,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         tic = time.time()
 
         self.masker_ = check_embedded_masker(self, masker_type="nii")
+        self.masker_.memory_level = self.memory_level
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(
@@ -1040,6 +1071,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             case, confidence score for `self.classes_[1]` where >0 means this
             class would be predicted.
         """
+        check_is_fitted(self)
+
         # handle regression (least-squared loss)
         if not self.is_classif:
             raise ValueError("There is no decision_function in classification")
@@ -1281,8 +1314,6 @@ class SpaceNetClassifier(BaseSpaceNet):
         screening_percentile=20.0,
         debias=False,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=True,
@@ -1342,7 +1373,36 @@ class SpaceNetClassifier(BaseSpaceNet):
         score : float
             Mean accuracy of self.predict(X)  w.r.t y.
         """
+        check_is_fitted(self)
         return accuracy_score(y, self.predict(X))
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        tags = super().__sklearn_tags__()
+        if SKLEARN_LT_1_6:
+            return tags
+
+        from sklearn.utils import ClassifierTags
+
+        tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+
+        return tags
 
 
 @fill_doc
@@ -1515,8 +1575,6 @@ class SpaceNetRegressor(BaseSpaceNet):
         screening_percentile=20.0,
         debias=False,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=False,
@@ -1542,3 +1600,32 @@ class SpaceNetRegressor(BaseSpaceNet):
             target_affine=target_affine,
             verbose=verbose,
         )
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        tags = super().__sklearn_tags__()
+        if SKLEARN_LT_1_6:
+            tags["multioutput"] = True
+            return tags
+
+        from sklearn.utils import RegressorTags
+
+        tags.estimator_type = "regressor"
+        tags.regressor_tags = RegressorTags()
+
+        return tags
