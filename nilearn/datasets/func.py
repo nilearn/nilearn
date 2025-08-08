@@ -2132,6 +2132,9 @@ def fetch_development_fmri(
             Contains each subject age, age group, child or adult, gender,
             handedness.
 
+        - 't_r': :obj:`float`
+            Repetition time of the functional data.
+
     Notes
     -----
     The original data is downloaded from OpenNeuro
@@ -2220,6 +2223,7 @@ def fetch_development_fmri(
         confounds=regressors,
         phenotypic=participants,
         description=fdescr,
+        t_r=2,
     )
 
 

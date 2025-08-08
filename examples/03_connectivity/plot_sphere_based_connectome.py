@@ -61,7 +61,7 @@ masker = NiftiSpheresMasker(
     standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
-    t_r=2,
+    t_r=dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
     verbose=1,
@@ -211,7 +211,7 @@ spheres_masker = NiftiSpheresMasker(
     standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
-    t_r=2,
+    t_r=dataset.t_r,
 )
 
 timeseries = spheres_masker.fit_transform(
@@ -351,7 +351,7 @@ spheres_masker = NiftiSpheresMasker(
     standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
-    t_r=2,
+    t_r=dataset.t_r,
 )
 
 timeseries = spheres_masker.fit_transform(
