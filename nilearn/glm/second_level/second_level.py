@@ -494,6 +494,41 @@ class SecondLevelModel(BaseGLM):
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption.
+
+    Attributes
+    ----------
+    labels_ : array of shape (n_voxels,),
+        a map of values on voxels used to identify the corresponding model
+
+    results_ : :obj:`dict`,
+        with keys corresponding to the different labels values.
+        Values are SimpleRegressionResults corresponding to the voxels,
+        if minimize_memory is True,
+        RegressionResults if minimize_memory is False
+
+    masker_ :  :obj:`~nilearn.maskers.NiftiMasker` or \
+            :obj:`~nilearn.maskers.SurfaceMasker`
+        Masker used to filter and mask data during fit.
+        If :obj:`~nilearn.maskers.NiftiMasker`
+        or :obj:`~nilearn.maskers.SurfaceMasker` is given in
+        ``mask_img`` parameter, this is a copy of it.
+        Otherwise, a masker is created using the value of ``mask_img`` and
+        other NiftiMasker/SurfaceMasker
+        related parameters as initialization.
+
+    second_level_input_ : :obj:`list` of \
+        :class:`~nilearn.glm.first_level.FirstLevelModel` objects or \
+        :class:`pandas.DataFrame` or \
+        :obj:`list` of 3D Niimg-like objects or \
+        :obj:`list` of :class:`~nilearn.surface.SurfaceImage` objects or \
+        :obj:`pandas.Series` of Niimg-like objects.
+        Input used to fit the GLM.
+
+    design_matrix_ : :obj:`pandas.DataFrame`
+        Design matrix used to fit the GLM.
+
+    confounds_ : :obj:`pandas.DataFrame` or None
+        Confounds used to fit the GLM.
     """
 
     def __str__(self):
@@ -551,7 +586,6 @@ class SecondLevelModel(BaseGLM):
             second_level_input, design_matrix, confounds=confounds
         )
 
-        # check confounds
         _check_confounds(confounds)
 
         if isinstance(second_level_input, pd.DataFrame):
