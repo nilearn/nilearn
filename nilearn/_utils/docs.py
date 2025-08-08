@@ -614,7 +614,18 @@ docdict["masker_lut"] = """lut : :obj:`pandas.DataFrame` or :obj:`str` \
         Act as a look up table (lut)
         with at least columns 'index' and 'name'.
         Formatted according to 'dseg.tsv' format from
-        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_.
+
+        warning::
+
+            If a region exist in the atlas image
+            but is missing from its associated LUT,
+            a new entry will be added to the LUT during fit
+            with the name "unknown".
+            Conversely, if regions listed in the LUT do not exist
+            in the associated atlas image,
+            they will be dropped from the LUT during fit.
+        """
 
 
 # mask_strategy

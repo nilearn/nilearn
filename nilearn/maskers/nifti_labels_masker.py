@@ -98,8 +98,13 @@ class NiftiLabelsMasker(BaseMasker):
         .. warning::
             The labels must be consistent with the label values
             provided through ``labels_img``.
+            If too many labels are passed,
+            a warning is thrown and extra labels are dropped.
+            If too few labels are passed,
+            extra regions will get the 'unknown' label.
 
     %(masker_lut)s
+
 
     background_label : :obj:`int` or :obj:`float`, default=0
         Label used in labels_img to represent background.
@@ -295,7 +300,11 @@ class NiftiLabelsMasker(BaseMasker):
         lut = self.lut_
         if hasattr(self, "_lut_"):
             lut = self._lut_
-        return lut.loc[lut["index"] != self.background_label, "name"].to_dict()
+        tmp = lut.loc[lut["index"] != self.background_label, "name"].to_dict()
+        region_names_ = {}
+        for key, value in list(tmp.items()):
+            region_names_[key - 1] = value
+        return region_names_
 
     @property
     def region_ids_(self) -> dict[Union[str, int], int]:
@@ -310,10 +319,20 @@ class NiftiLabelsMasker(BaseMasker):
         .. versionadded:: 0.10.3
         """
         check_is_fitted(self)
+
         lut = self.lut_
         if hasattr(self, "_lut_"):
             lut = self._lut_
-        return lut["index"].to_dict()
+
+        tmp = lut["index"].to_dict()
+        region_ids_: dict[Union[str, int], int] = {}
+        for key, value in list(tmp.items()):
+            if value == self.background_label:
+                region_ids_["background"] = value
+            else:
+                region_ids_[key - 1] = value
+
+        return region_ids_
 
     @property
     def n_elements_(self) -> int:
@@ -656,17 +675,19 @@ class NiftiLabelsMasker(BaseMasker):
                 function=None,
                 name=deepcopy(self.labels),
                 index=self.labels_img_,
+                background_label=self.background_label,
             )
 
         else:
             lut = generate_atlas_look_up_table(
-                function=None, index=self.labels_img_
+                function=None,
+                index=self.labels_img_,
+                background_label=self.background_label,
             )
 
         # passed labels or lut may not include background label
         # because of poor data standardization
         # so we need to update the lut accordingly
-        mask_background_name = lut["name"] == "Background"
         mask_background_index = lut["index"] == self.background_label
         if (mask_background_index).any():
             # Ensure background is the first row with name "Background"
@@ -676,10 +697,21 @@ class NiftiLabelsMasker(BaseMasker):
             other_rows = lut[~mask_background_index]
             lut = pd.concat([first_rows, other_rows], ignore_index=True)
 
+            mask_background_name = lut["name"] == "Background"
             if not (mask_background_name).any():
                 lut["name"] = lut["name"].shift(1)
 
             lut.loc[0, "name"] = "Background"
+
+        else:
+            first_row = {"name": "Background", "index": self.background_label}
+            first_row = {
+                col: first_row[col] if col in lut else np.nan
+                for col in lut.columns
+            }
+            lut = pd.concat(
+                [pd.DataFrame([first_row]), lut], ignore_index=True
+            )
 
         return sanitize_look_up_table(lut, atlas=self.labels_img_)
 
@@ -845,11 +877,18 @@ class NiftiLabelsMasker(BaseMasker):
             verbose=self.verbose,
         )
 
+        # Create a lut that may be different from the fitted lut_
+        # and whose rows are sorted according
+        # to the columns in the region_signals array.
         self._lut_ = self.lut_.copy()
-        mask = mask = self.lut_["index"].isin([self.background_label, *ids])
+        desired_order = [self.background_label, *ids]
+        mask = mask = self.lut_["index"].isin(desired_order)
         self._lut_ = self._lut_[mask]
         self._lut_ = sanitize_look_up_table(
-            self._lut_, atlas=np.array([self.background_label, *ids])
+            self._lut_, atlas=np.array(desired_order)
+        )
+        self._lut_ = (
+            self._lut_.set_index("index").loc[desired_order].reset_index()
         )
 
         self.region_atlas_ = masked_atlas

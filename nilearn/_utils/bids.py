@@ -12,7 +12,7 @@ from nilearn.typing import NiimgLike
 
 
 def generate_atlas_look_up_table(
-    function=None, name=None, index=None, strict=False
+    function=None, name=None, index=None, strict=False, background_label=None
 ):
     """Generate a BIDS compatible look up table for an atlas.
 
@@ -52,6 +52,10 @@ def generate_atlas_look_up_table(
     strict: bool, default=False
         If True, an error will be thrown
         if ``name`` and ``index``have different length.
+
+    background_label: str or None, default=None
+        If not None and no 'name' was passed,
+        this label is used to describe the background value in the image.
     """
     if name is None and index is None:
         raise ValueError("'index' and 'name' cannot both be None.")
@@ -62,7 +66,12 @@ def generate_atlas_look_up_table(
     if name is None:
         if fname == "unknown":
             index = _get_indices_from_image(index)
-        name = [str(x) for x in index]
+        name = []
+        for x in index:
+            if background_label is not None and x == background_label:
+                name.append("Background")
+            else:
+                name.append(str(x))
 
     # deal with indices
     if index is None:
@@ -121,7 +130,7 @@ def generate_atlas_look_up_table(
     return lut
 
 
-def check_look_up_table(lut, atlas, strict=False, verbose=1):
+def check_look_up_table(lut: pd.DataFrame, atlas, strict=False, verbose=1):
     """Validate atlas look up table (LUT).
 
     Make sure it complies with BIDS requirements.
@@ -198,15 +207,33 @@ def check_look_up_table(lut, atlas, strict=False, verbose=1):
                 warnings.warn(msg, stacklevel=find_stack_level())
 
 
-def sanitize_look_up_table(lut, atlas) -> pd.DataFrame:
-    """Remove entries in lut that are missing from image."""
+def sanitize_look_up_table(lut: pd.DataFrame, atlas) -> pd.DataFrame:
+    """Sanitize lookup table.
+
+    - remove entries in lut that are missing from image.
+    - add 'unknown' entries in lut image indices missing from lut.
+    """
     check_look_up_table(lut, atlas, strict=False, verbose=0)
+
     indices = _get_indices_from_image(atlas)
     lut = lut[lut["index"].isin(indices)]
+
+    missing_from_lut = sorted(
+        set(indices.tolist()) - set(lut["index"].to_list())
+    )
+    if missing_from_lut:
+        missing_rows = pd.DataFrame(
+            {
+                "name": ["unknown"] * len(missing_from_lut),
+                "index": missing_from_lut,
+            }
+        )
+        lut = pd.concat([lut, missing_rows], ignore_index=True)
+
     return lut
 
 
-def _get_indices_from_image(image):
+def _get_indices_from_image(image) -> np.ndarray:
     if isinstance(image, NiimgLike):
         img = check_niimg(image)
         data = safe_get_data(img)
