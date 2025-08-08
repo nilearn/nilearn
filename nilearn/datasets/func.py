@@ -2782,6 +2782,13 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
         - description: data description
 
+        - t_r: repetition time of the function data in seconds
+
+        - slice_time_ref:
+            slice timing reference used during slice timing correction
+
+
+
     """
     check_params(locals())
 
@@ -2804,6 +2811,8 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
     description = get_dataset_descr(dataset_name)
     data.description = description
+    data.t_r = 2.4
+    data.slice_time_ref = 0.5
     return data
 
 
