@@ -1156,27 +1156,30 @@ def check_img_estimator_dtypes(estimator):
 
             estimator = fit_estimator(estimator, X, y)
 
-            if hasattr(estimator, "transform"):
+            if hasattr(estimator, "transform") and not isinstance(
+                estimator, (SearchLight)
+            ):
+                # skip SearchLight transform
+                # as it behaves differently from others
                 signal = estimator.transform(X)
 
-                if not isinstance(estimator, (SearchLight)):
-                    if not isinstance(signal, list):
-                        signal = [signal]
+                if not isinstance(signal, list):
+                    signal = [signal]
 
-                    target_dtype = get_target_dtype(input_dtype, dtype)
-                    if target_dtype is None:
-                        target_dtype = input_dtype
+                target_dtype = get_target_dtype(input_dtype, dtype)
+                if target_dtype is None:
+                    target_dtype = input_dtype
 
-                    for s in signal:
-                        output_dtype = s.dtype
-                        try:
-                            assert output_dtype == target_dtype
-                        except AssertionError:
-                            raise TypeError(
-                                "'transform' should have returned "
-                                f"an array of type '{target_dtype}'. "
-                                f"Got '{output_dtype}' instead."
-                            )
+                for s in signal:
+                    output_dtype = s.dtype
+                    try:
+                        assert output_dtype == target_dtype
+                    except AssertionError:
+                        raise TypeError(
+                            "'transform' should have returned "
+                            f"an array of type '{target_dtype}'. "
+                            f"Got '{output_dtype}' instead."
+                        )
 
 
 @ignore_warnings()
