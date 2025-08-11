@@ -44,7 +44,6 @@ from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import CacheMixin, fill_doc
-from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -638,7 +637,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         """
         check_params(self.__dict__)
         self.estimator_ = _check_estimator(self.estimator)
-        self.memory = check_memory(self.memory, self.verbose)
+
+        self._fit_cache()
 
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
@@ -818,6 +818,45 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         """
         check_is_fitted(self)
         return self.scorer_(self, X, y, *args)
+
+    def _decision_function(self, X) -> np.ndarray:
+        """Predict class labels for samples in X.
+
+        The function is kept private, as only Classifiers are supposed
+        to have public decision_function method
+        as per sklearn rules.
+
+        Parameters
+        ----------
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like
+            See :ref:`extracting_data`.
+            Data on prediction is to be made. If this is a list,
+            the affine is considered the same for all.
+
+        Returns
+        -------
+        y_pred : :class:`numpy.ndarray`, shape (n_samples,)
+            Predicted class label per sample.
+        """
+        check_is_fitted(self)
+        # for backwards compatibility - apply masker transform if X is
+        # niimg-like or a list of strings
+        if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
+            X = self.masker_.transform(X)
+        n_features = self.coef_.shape[1]
+        if X.shape[1] != n_features:
+            raise ValueError(
+                f"X has {X.shape[1]} features per sample;"
+                f" expecting {n_features}"
+            )
+
+        scores = (
+            safe_sparse_dot(X, self.coef_.T, dense_output=True)
+            + self.intercept_
+        )
+
+        return scores.ravel() if scores.shape[1] == 1 else scores
 
     def predict(self, X):
         """Predict a label for all X vectors indexed by the first axis.
@@ -1063,28 +1102,11 @@ class _ClassifierMixin:
         y_pred : :class:`numpy.ndarray`, shape (n_samples,)
             Predicted class label per sample.
         """
-        check_is_fitted(self)
-        # for backwards compatibility - apply masker transform if X is
-        # niimg-like or a list of strings
-        if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
-            X = self.masker_.transform(X)
-        n_features = self.coef_.shape[1]
-        if X.shape[1] != n_features:
-            raise ValueError(
-                f"X has {X.shape[1]} features per sample;"
-                f" expecting {n_features}"
-            )
-
-        scores = (
-            safe_sparse_dot(X, self.coef_.T, dense_output=True)
-            + self.intercept_
-        )
-
-        return scores.ravel() if scores.shape[1] == 1 else scores
+        return self._decision_function(self, X)
 
 
 @fill_doc
-class Decoder(ClassifierMixin, _ClassifierMixin, _BaseDecoder):
+class Decoder(ClassifierMixin, _BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
@@ -1694,7 +1716,7 @@ class FREMRegressor(_BaseDecoder):
 
 
 @fill_doc
-class FREMClassifier(_ClassifierMixin, _BaseDecoder):
+class FREMClassifier(_BaseDecoder):
     """State of the art :term:`decoding` scheme applied to usual classifiers.
 
     FREM uses an implicit spatial regularization through fast clustering and
