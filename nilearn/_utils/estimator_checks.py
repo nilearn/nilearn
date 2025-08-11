@@ -535,6 +535,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
+            yield (clone(estimator), check_decoder_compatibility_mask_image)
 
     if is_masker(estimator):
         yield (clone(estimator), check_masker_clean_kwargs)
@@ -1196,6 +1197,46 @@ def check_decoder_empty_data_messages(estimator):
 
     with pytest.raises(ValueError, match="empty"):
         estimator.fit(X, y)
+
+
+@ignore_warnings()
+def check_decoder_compatibility_mask_image(estimator_orig):
+    """Check compatibility of the mask_img and images for decoders.
+
+    Compatibility should be check for fit, score, predict, decision function.
+    """
+    estimator = clone(estimator_orig)
+
+    # fitting volume data when the mask is a surface should fail
+    if isinstance(estimator, SearchLight):
+        estimator.mask_img = _make_surface_mask()
+    else:
+        estimator.mask = _make_surface_mask()
+    with pytest.raises(
+        TypeError, match=("Mask and input images must be of compatible types")
+    ):
+        fit_estimator(estimator)
+
+    estimator = clone(estimator_orig)
+
+    X, y = generate_data_to_fit(estimator)
+    estimator.fit(X, y)
+
+    # decoders were fitted with nifti images
+    # so running the following method with surface image should fail
+    for method in ["score", "predict", "decision_function"]:
+        if not hasattr(estimator, method):
+            continue
+
+        input = (_make_surface_img(3),)
+        if method == "score":
+            input = (_make_surface_img(3), y)
+
+        with pytest.raises(
+            TypeError,
+            match=("Mask and input images must be of compatible types"),
+        ):
+            getattr(estimator, method)(*input)
 
 
 # ------------------ MASKER CHECKS ------------------

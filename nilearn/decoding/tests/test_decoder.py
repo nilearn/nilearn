@@ -1260,14 +1260,14 @@ def test_decoder_error_incompatible_surface_mask_and_volume_data(
     model = decoder(mask=surf_mask_1d)
 
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model.fit(data_volume, y)
 
     model = decoder(mask=SurfaceMasker())
 
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model.fit(data_volume, y)
 
@@ -1282,7 +1282,7 @@ def test_decoder_error_incompatible_surface_data_and_volume_mask(
     model = decoder(mask=mask)
 
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model.fit(data_surface, y)
 
