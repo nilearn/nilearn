@@ -18,9 +18,6 @@ from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import check_niimg_3d, check_niimg_4d, fill_doc, logger
-from nilearn._utils.masker_validation import (
-    check_compatibility_mask_and_images,
-)
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import new_img_like
@@ -413,12 +410,12 @@ class SearchLight(TransformerMixin, BaseEstimator):
         # Get the seeds
         self.mask_img_ = deepcopy(self.mask_img)
         if self.mask_img_ is not None:
-            check_compatibility_mask_and_images(self.mask_img_, imgs)
             self.mask_img_ = check_niimg_3d(self.mask_img_)
 
-        process_mask_img = self.process_mask_img or self.mask_img_
+        if self.process_mask_img is not None:
+            check_niimg_3d(self.process_mask_img)
 
-        check_compatibility_mask_and_images(process_mask_img, imgs)
+        process_mask_img = self.process_mask_img or self.mask_img_
 
         # Compute world coordinates of the seeds
         process_mask, process_mask_affine = masking.load_mask_img(

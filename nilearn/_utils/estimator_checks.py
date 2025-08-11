@@ -536,6 +536,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
             yield (clone(estimator), check_decoder_compatibility_mask_image)
+            yield (clone(estimator), check_decoders_with_surface_data)
 
     if is_masker(estimator):
         yield (clone(estimator), check_masker_clean_kwargs)
@@ -1205,13 +1206,14 @@ def check_decoder_compatibility_mask_image(estimator_orig):
 
     Compatibility should be check for fit, score, predict, decision function.
     """
+    if isinstance(estimator_orig, SearchLight):
+        # note searchlight does not fit Surface data
+        return
+
     estimator = clone(estimator_orig)
 
     # fitting volume data when the mask is a surface should fail
-    if isinstance(estimator, SearchLight):
-        estimator.mask_img = _make_surface_mask()
-    else:
-        estimator.mask = _make_surface_mask()
+    estimator.mask = _make_surface_mask()
     with pytest.raises(
         TypeError, match=("Mask and input images must be of compatible types")
     ):
@@ -1237,6 +1239,39 @@ def check_decoder_compatibility_mask_image(estimator_orig):
             match=("Mask and input images must be of compatible types"),
         ):
             getattr(estimator, method)(*input)
+
+
+@ignore_warnings()
+def check_decoders_with_surface_data(estimator_orig):
+    """Test fit for surface image."""
+    if isinstance(estimator_orig, SearchLight):
+        # note searchlight does not fit Surface data
+        return
+
+    n_samples = 50
+    y = _rng().choice([0, 1], size=n_samples)
+    X = _make_surface_img(n_samples)
+
+    estimator = clone(estimator_orig)
+
+    for mask in [None, SurfaceMasker(), _surf_mask_1d(), _make_surface_mask()]:
+        estimator.mask = mask
+        if hasattr(estimator, "clustering_percentile"):
+            # for FREM decoders include all elements
+            # to avoid getting 0 clusters to work with
+            estimator.clustering_percentile = 100
+
+        estimator.fit(X, y)
+
+        assert estimator.coef_ is not None
+
+        for method in ["score", "predict", "decision_function"]:
+            if not hasattr(estimator, method):
+                continue
+            if method == "score":
+                getattr(estimator, method)(X, y)
+            else:
+                getattr(estimator, method)(X)
 
 
 # ------------------ MASKER CHECKS ------------------
