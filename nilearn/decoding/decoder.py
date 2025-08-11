@@ -884,7 +884,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
             scores = self._predict_dummy(n_samples)
         else:
-            scores = self.decision_function(X)
+            scores = self._decision_function(X)
 
         if self.is_classification:
             if scores.ndim == 1:
@@ -1106,7 +1106,7 @@ class _ClassifierMixin:
 
 
 @fill_doc
-class Decoder(ClassifierMixin, _BaseDecoder):
+class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
@@ -1288,6 +1288,9 @@ class Decoder(ClassifierMixin, _BaseDecoder):
 
         tags.estimator_type = "classifier"
         tags.classifier_tags = ClassifierTags()
+
+        # TODO
+        # check sklearn ClassifierMixin to adapt this
 
         return tags
 
@@ -1474,6 +1477,9 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
 
         tags.estimator_type = "regressor"
         tags.regressor_tags = RegressorTags()
+
+        # TODO
+        # check sklearn RegressorMixin and MultiOutputMixin to adapt this
 
         return tags
 
@@ -1716,7 +1722,7 @@ class FREMRegressor(_BaseDecoder):
 
 
 @fill_doc
-class FREMClassifier(_BaseDecoder):
+class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     """State of the art :term:`decoding` scheme applied to usual classifiers.
 
     FREM uses an implicit spatial regularization through fast clustering and
