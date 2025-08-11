@@ -9,7 +9,7 @@ import warnings
 
 import numpy as np
 import scipy.linalg
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 from sklearn.base import BaseEstimator
 from sklearn.covariance import empirical_covariance
 from sklearn.model_selection import check_cv
@@ -670,8 +670,7 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
                 ensure_min_samples=2,
             )
 
-        if self.memory is None:
-            self.memory = Memory(location=None)
+        self._fit_cache()
 
         logger.log("Computing covariance matrices", verbose=self.verbose)
         self.covariances_, n_samples = empirical_covariances(
