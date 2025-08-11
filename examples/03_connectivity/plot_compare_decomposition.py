@@ -127,6 +127,7 @@ dict_learning = DictLearning(
     verbose=1,
     random_state=0,
     n_epochs=1,
+    mask_strategy="whole-brain-template",
     standardize="zscore_sample",
     n_jobs=2,
 )
