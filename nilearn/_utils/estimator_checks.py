@@ -985,7 +985,7 @@ def check_img_estimator_dict_unchanged(estimator):
 
     dict_before = estimator.__dict__.copy()
 
-    input_img, _ = generate_data_to_fit(estimator)
+    input_img, y = generate_data_to_fit(estimator)
 
     for method in ["predict", "transform", "decision_function", "score"]:
         if not hasattr(estimator, method):
@@ -993,6 +993,8 @@ def check_img_estimator_dict_unchanged(estimator):
 
         if method == "transform" and isinstance(estimator, _BaseDecomposition):
             getattr(estimator, method)([input_img])
+        elif method == "score":
+            getattr(estimator, method)(input_img, y)
         else:
             getattr(estimator, method)(input_img)
 
@@ -1061,7 +1063,7 @@ def check_img_estimator_pickle(estimator_orig):
     """
     estimator = clone(estimator_orig)
 
-    X, _ = generate_data_to_fit(estimator)
+    X, y = generate_data_to_fit(estimator)
 
     if isinstance(estimator, NiftiSpheresMasker):
         # NiftiSpheresMasker needs mask_img to run inverse_transform
@@ -1077,13 +1079,18 @@ def check_img_estimator_pickle(estimator_orig):
 
     result = {}
 
-    check_methods = ["transform", "predict", "score", "decision_function"]
+    check_methods = ["transform"]
     input_data = [X] if isinstance(estimator, SearchLight) else [[X]]
-    input_data = input_data * len(check_methods)
+
+    for method in ["predict", "decision_function"]:
+        check_methods.append(method)
+        input_data.append(X)
+
+    check_methods.append("score")
+    input_data.append((X, y))
 
     if hasattr(estimator, "inverse_transform"):
         check_methods.append("inverse_transform")
-
         signal = _rng().random((1, fitted_estimator.n_elements_))
         if isinstance(estimator, _BaseDecomposition):
             signal = [signal]
@@ -1091,13 +1098,21 @@ def check_img_estimator_pickle(estimator_orig):
 
     for method, input in zip(check_methods, input_data):
         if hasattr(estimator, method):
-            result[method] = getattr(estimator, method)(input)
             result["input"] = input
+            if method == "score":
+                result[method] = getattr(estimator, method)(*input)
+            else:
+                result[method] = getattr(estimator, method)(input)
 
     for method, input in zip(check_methods, input_data):
         if method not in result:
             continue
-        unpickled_result = getattr(unpickled_estimator, method)(input)
+
+        if method == "score":
+            unpickled_result = getattr(unpickled_estimator, method)(*input)
+        else:
+            unpickled_result = getattr(unpickled_estimator, method)(input)
+
         if isinstance(unpickled_result, np.ndarray):
             if isinstance(estimator, SearchLight):
                 # TODO check why Searchlight has lower absolute tolerance
