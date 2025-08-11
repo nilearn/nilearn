@@ -10,12 +10,12 @@ import sys
 import warnings
 from copy import deepcopy
 from pathlib import Path
-from tempfile import TemporaryDirectory
+from tempfile import TemporaryDirectory, mkdtemp
 
-import joblib
 import numpy as np
 import pandas as pd
 import pytest
+from joblib import Memory, hash
 from nibabel import Nifti1Image
 from numpy.testing import (
     assert_array_almost_equal,
@@ -79,7 +79,7 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_mesh,
 )
 from nilearn.glm.second_level import SecondLevelModel
-from nilearn.image import new_img_like
+from nilearn.image import get_data, new_img_like
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     MultiNiftiMasker,
@@ -231,11 +231,6 @@ def return_expected_failed_checks(
         }
         if SKLEARN_MINOR > 4:
             expected_failed_checks.pop("check_estimator_sparse_data")
-        if isinstance(estimator, GroupSparseCovariance):
-            expected_failed_checks |= {
-                "check_dont_overwrite_parameters": "TODO",
-                "check_estimators_overwrite_params": "TODO",
-            }
         if isinstance(estimator, GroupSparseCovarianceCV):
             expected_failed_checks |= {
                 "check_estimators_dtypes": "TODO",
@@ -525,9 +520,11 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_cache_warning)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
-        yield (clone(estimator), check_img_estimator_pickle)
         yield (clone(estimator), check_fit_returns_self)
+        yield (clone(estimator), check_img_estimator_dont_overwrite_parameters)
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
+        yield (clone(estimator), check_img_estimator_overwrite_params)
+        yield (clone(estimator), check_img_estimator_pickle)
 
         if hasattr(estimator, "transform"):
             yield (clone(estimator), check_img_estimator_dict_unchanged)
@@ -538,18 +535,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
-
-        if (
-            is_classifier(estimator)
-            or is_regressor(estimator)
-            or is_masker(estimator)
-            or is_glm(estimator)
-        ):
-            yield (
-                clone(estimator),
-                check_img_estimator_dont_overwrite_parameters,
-            )
-            yield (clone(estimator), check_img_estimator_overwrite_params)
 
     if is_masker(estimator):
         yield (clone(estimator), check_masker_clean_kwargs)
@@ -565,17 +550,22 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_masker_generate_report)
         yield (clone(estimator), check_masker_generate_report_false)
         yield (clone(estimator), check_masker_inverse_transform)
-        yield (clone(estimator), check_masker_transform_resampling)
+        yield (clone(estimator), check_masker_joblib_cache)
         yield (clone(estimator), check_masker_mask_img)
         yield (clone(estimator), check_masker_mask_img_from_imgs)
         yield (clone(estimator), check_masker_no_mask_no_img)
         yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_smooth)
+        yield (clone(estimator), check_masker_transform_resampling)
         yield (clone(estimator), check_masker_transformer)
         yield (
             clone(estimator),
             check_masker_transformer_high_variance_confounds,
         )
+
+        if isinstance(estimator, NiftiMasker):
+            # TODO enforce for other maskers
+            yield (clone(estimator), check_masker_shelving)
 
         if not is_multimasker(estimator):
             yield (clone(estimator), check_masker_clean)
@@ -610,6 +600,10 @@ def nilearn_check_generator(estimator: BaseEstimator):
                     check_multi_masker_transformer_sample_mask,
                 )
                 yield (clone(estimator), check_multi_masker_with_confounds)
+
+                if isinstance(estimator, NiftiMasker):
+                    # TODO enforce for other maskers
+                    yield (clone(estimator), check_multi_nifti_masker_shelving)
 
         if accept_surf_img_input(estimator):
             yield (clone(estimator), check_surface_masker_fit_with_mask)
@@ -872,16 +866,10 @@ def check_img_estimator_dont_overwrite_parameters(estimator) -> None:
     )
 
     # check that fit doesn't change any public attribute
-
-    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
-    # change memory parameters on fit if it's None
-    keys_to_ignore = ["memory"]
-
     attrs_changed_by_fit = [
         key
         for key in public_keys_after_fit
         if (dict_before_fit[key] is not dict_after_fit[key])
-        and key not in keys_to_ignore
     ]
 
     assert not attrs_changed_by_fit, (
@@ -969,14 +957,7 @@ def check_img_estimator_overwrite_params(estimator) -> None:
     # Compare the state of the model parameters with the original parameters
     new_params = fitted_estimator.get_params()
 
-    # nifti_maps_masker, nifti_maps_masker, nifti_spheres_masker
-    # change memory parameters on fit if it's None
-    param_to_ignore = ["memory"]
-
     for param_name, original_value in original_params.items():
-        if param_name in param_to_ignore:
-            continue
-
         new_value = new_params[param_name]
 
         # We should never change or mutate the internal state of input
@@ -985,7 +966,7 @@ def check_img_estimator_overwrite_params(estimator) -> None:
         # The only exception to this rule of immutable constructor parameters
         # is possible RandomState instance but in this check we explicitly
         # fixed the random_state params recursively to be integer seeds.
-        assert joblib.hash(new_value) == joblib.hash(original_value), (
+        assert hash(new_value) == hash(original_value), (
             f"Estimator {estimator.__class__.__name__} "
             "should not change or mutate "
             f"the parameter {param_name} from {original_value} "
@@ -2067,6 +2048,67 @@ def check_masker_fit_score_takes_y(estimator):
         assert tmp["y"] is None
 
 
+@ignore_warnings()
+def check_masker_shelving(estimator):
+    """Check behavior when shelving masker."""
+    img, _ = generate_data_to_fit(estimator)
+
+    estimator.verbose = 0
+
+    masker = clone(estimator)
+
+    epi = masker.fit_transform(img)
+
+    with TemporaryDirectory() as tmp_dir:
+        masker_shelved = clone(estimator)
+
+        masker_shelved.memory = Memory(location=tmp_dir, mmap_mode="r")
+        masker_shelved._shelving = True
+
+        epi_shelved = masker_shelved.fit_transform(img)
+
+        epi_shelved = epi_shelved.get()
+
+        assert_array_equal(epi_shelved, epi)
+
+
+@ignore_warnings()
+def check_masker_joblib_cache(estimator):
+    """Check cached data."""
+    img, _ = generate_data_to_fit(estimator)
+
+    if accept_niimg_input(estimator):
+        mask_img = new_img_like(img, np.ones(img.shape[:3]))
+    else:
+        mask_img = _make_surface_mask()
+
+    estimator.mask_img = mask_img
+    estimator.fit(img)
+
+    mask_hash = hash(estimator.mask_img_)
+
+    if accept_niimg_input(estimator):
+        get_data(estimator.mask_img_)
+    else:
+        get_surface_data(estimator.mask_img_)
+
+    assert mask_hash == hash(estimator.mask_img_)
+
+    # Test a tricky issue with memmapped joblib.memory that makes
+    # imgs return by inverse_transform impossible to save
+    if accept_niimg_input(estimator):
+        cachedir = Path(mkdtemp())
+        estimator.memory = Memory(location=cachedir, mmap_mode="r")
+        X = estimator.transform(img)
+
+        # inverse_transform a first time, so that the result is cached
+        out_img = estimator.inverse_transform(X)
+
+        out_img = estimator.inverse_transform(X)
+
+        out_img.to_filename(cachedir / "test.nii")
+
+
 # ------------------ SURFACE MASKER CHECKS ------------------
 
 
@@ -2370,6 +2412,40 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
 
 
 # ------------------ MULTI NIFTI MASKER CHECKS ------------------
+
+
+@ignore_warnings()
+def check_multi_nifti_masker_shelving(estimator):
+    """Check behavior when shelving masker."""
+    mask_img = Nifti1Image(
+        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((2, 2, 2, 1))
+    )
+    epi_img1 = Nifti1Image(
+        _rng().random((2, 3, 4, 5)), affine=np.diag((4, 4, 4, 1))
+    )
+    epi_img2 = Nifti1Image(
+        _rng().random((2, 3, 4, 6)), affine=np.diag((4, 4, 4, 1))
+    )
+
+    estimator.verbose = 0
+
+    masker = clone(estimator)
+    masker.mask_img = mask_img
+
+    epis = masker.fit_transform([epi_img1, epi_img2])
+
+    with TemporaryDirectory() as tmp_dir:
+        masker_shelved = clone(estimator)
+
+        masker_shelved.mask_img = mask_img
+        masker_shelved.memory = Memory(location=tmp_dir, mmap_mode="r")
+        masker_shelved._shelving = True
+
+        epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])
+
+        for e_shelved, e in zip(epis_shelved, epis):
+            e_shelved = e_shelved.get()
+            assert_array_equal(e_shelved, e)
 
 
 @ignore_warnings()

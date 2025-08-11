@@ -47,6 +47,7 @@ class CacheMixinTest(CacheMixin):
         self.memory_level = memory_level
 
     def run(self):
+        self._fit_cache()
         self._cache(f)
 
 
