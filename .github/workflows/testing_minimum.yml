@@ -16,6 +16,9 @@ on:
     push:
         branches:
         -   main
+    pull_request:
+        branches:
+        -   '*'
     # Uses the cron schedule for github actions
     #
     # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#scheduled-events
