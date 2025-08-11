@@ -44,7 +44,6 @@ from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import CacheMixin, fill_doc
-from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -644,7 +643,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         """
         check_params(self.__dict__)
         self.estimator_ = _check_estimator(self.estimator)
-        self.memory = check_memory(self.memory, self.verbose)
+
+        self._fit_cache()
 
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
