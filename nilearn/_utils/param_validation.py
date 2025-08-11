@@ -278,21 +278,36 @@ def check_feature_screening(
 
     if screening_percentile == 100 or screening_percentile is None:
         return None
+
     elif not (0.0 <= screening_percentile <= 100.0):
         raise ValueError(
             "screening_percentile should be in the interval"
             f" [0, 100], got {screening_percentile:g}"
         )
+
     else:
         # correct screening_percentile according to the volume or the number of
         # vertices in the data mask
-        screening_percentile_ = adjust_screening_percentile(
+        effective_screening_percentile = adjust_screening_percentile(
             screening_percentile,
             mask_img,
             verbose=verbose,
         )
 
-        return SelectPercentile(f_test, percentile=int(screening_percentile_))
+        if effective_screening_percentile == 100:
+            warnings.warn(
+                f"screening_percentile set to '100' despite "
+                f"requesting '{screening_percentile=}'. "
+                "\nAll elements in the mask will be included. "
+                "\nThis usually occurs when the mask image "
+                "is too small compared to full brain mask.",
+                category=UserWarning,
+                stacklevel=find_stack_level(),
+            )
+
+        return SelectPercentile(
+            f_test, percentile=int(effective_screening_percentile)
+        )
 
 
 def check_run_sample_masks(n_runs, sample_masks):

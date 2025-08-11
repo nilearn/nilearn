@@ -205,14 +205,20 @@ def test_feature_screening(
                 is_classif,
             )
     else:
-        select_percentile = check_feature_screening(
-            screening_percentile, mask_img, is_classif
-        )
-        assert isinstance(select_percentile, BaseEstimator)
         if roi_size == "small":
+            with pytest.warns(
+                UserWarning, match="screening_percentile set to '100'"
+            ):
+                select_percentile = check_feature_screening(
+                    screening_percentile, mask_img, is_classif
+                )
             assert select_percentile.percentile == 100
         else:
+            select_percentile = check_feature_screening(
+                screening_percentile, mask_img, is_classif
+            )
             assert screening_percentile <= select_percentile.percentile < 100
+        assert isinstance(select_percentile, BaseEstimator)
 
 
 @pytest.mark.parametrize("dtype", (np.uint8, np.uint16, np.uint32, np.int8))
