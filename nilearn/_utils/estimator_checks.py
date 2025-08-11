@@ -265,10 +265,13 @@ def return_expected_failed_checks(
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
+        "check_estimators_pickle": "replaced by check_img_estimator_pickle",
         "check_fit_check_is_fitted": (
             "replaced by check_img_estimator_fit_check_is_fitted"
         ),
-        "check_estimators_pickle": "replaced by check_img_estimator_pickle",
+        "check_fit_score_takes_y": (
+            "replaced by check_img_estimator_fit_score_takes_y"
+        ),
         # Those are skipped for now they fail
         # for unknown reasons
         # most often because sklearn inputs expect a numpy array
@@ -326,9 +329,6 @@ def return_expected_failed_checks(
             ),
             "check_fit_check_is_fitted": (
                 "replaced by check_img_estimator_fit_check_is_fitted"
-            ),
-            "check_fit_score_takes_y": (
-                "replaced by check_img_estimator_fit_score_takes_y"
             ),
         }
 
@@ -1118,25 +1118,47 @@ def check_img_estimator_requires_y_none(estimator) -> None:
 def check_img_estimator_fit_score_takes_y(estimator):
     """Replace sklearn check_fit_score_takes_y for maskers.
 
-    Check that all estimators accept an optional y
-    in fit and score so they can be used in pipelines.
+    Check that all estimators accept an (optional) y
+    in fit / fit_transform and score so they can be used in pipelines.
+
+    For decoders, y is not optional
     """
+    if is_glm(estimator):
+        # GLM estimators take no "y" at all.
+        return
+
     for attr in ["fit", "fit_transform", "score"]:
         if not hasattr(estimator, attr):
             continue
-        tmp = {
-            k: v.default
-            for k, v in inspect.signature(
-                getattr(estimator, attr)
-            ).parameters.items()
-            if v.default is not inspect.Parameter.empty
-        }
-        if "y" not in tmp:
-            raise ValueError(
-                f"{estimator.__class__.__name__} "
-                f"is missing 'y=None' for the method '{attr}'."
-            )
-        assert tmp["y"] is None
+
+        if is_classifier(estimator) or is_regressor(estimator):
+            tmp = {
+                k: v.default
+                for k, v in inspect.signature(
+                    getattr(estimator, attr)
+                ).parameters.items()
+                if v.default is inspect.Parameter.empty
+            }
+            if "y" not in tmp:
+                raise ValueError(
+                    f"{estimator.__class__.__name__} "
+                    f"is missing parameter 'y' for the method '{attr}'."
+                )
+
+        else:
+            tmp = {
+                k: v.default
+                for k, v in inspect.signature(
+                    getattr(estimator, attr)
+                ).parameters.items()
+                if v.default is not inspect.Parameter.empty
+            }
+            if "y" not in tmp:
+                raise ValueError(
+                    f"{estimator.__class__.__name__} "
+                    f"is missing 'y=None' for the method '{attr}'."
+                )
+            assert tmp["y"] is None
 
 
 # ------------------ DECODERS CHECKS ------------------

@@ -474,7 +474,18 @@ class SearchLight(TransformerMixin, BaseEstimator):
         return new_img_like(self.mask_img_, self.scores_)
 
     def transform(self, imgs):
-        """Apply the fitted searchlight on new images."""
+        """Apply the fitted searchlight on new images.
+
+        Parameters
+        ----------
+        imgs : Niimg-like object
+            See :ref:`extracting_data`.
+            4D image.
+
+        Returns
+        -------
+        result : np.ndarray
+        """
         check_is_fitted(self)
 
         imgs = check_niimg_4d(imgs)
@@ -509,6 +520,29 @@ class SearchLight(TransformerMixin, BaseEstimator):
         reshaped_result = np.abs(reshaped_result)
 
         return reshaped_result
+
+    def fit_transform(self, imgs, y, groups=None):
+        """Fit the searchlight and applies to the input image.
+
+        Parameters
+        ----------
+        imgs : Niimg-like object
+            See :ref:`extracting_data`.
+            4D image.
+
+        y : 1D array-like
+            Target variable to predict. Must have exactly as many elements as
+            3D images in img.
+
+        groups : array-like, default=None
+            group label for each sample for cross validation. Must have
+            exactly as many elements as 3D images in img.
+
+        Returns
+        -------
+        result : np.ndarray
+        """
+        return self.fit(imgs, y, groups=groups).transform(imgs)
 
     def set_output(self, *, transform=None):
         """Set the output container when ``"transform"`` is called.
