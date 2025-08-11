@@ -55,6 +55,7 @@ canica = CanICA(
     verbose=1,
     random_state=0,
     standardize="zscore_sample",
+    mask_strategy="whole-brain-template",
     n_jobs=2,
 )
 with warnings.catch_warnings():
