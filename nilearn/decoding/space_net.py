@@ -1340,6 +1340,8 @@ class SpaceNetClassifier(BaseSpaceNet):
             target_affine=target_affine,
             verbose=verbose,
         )
+        # TODO remove for sklearn>=1.6
+        self._estimator_type = "classifier"
 
     def _binarize_y(self, y):
         """Encode target classes as -1 and 1.
@@ -1600,6 +1602,9 @@ class SpaceNetRegressor(BaseSpaceNet):
             target_affine=target_affine,
             verbose=verbose,
         )
+
+        # TODO remove for sklearn>=1.6
+        self._estimator_type = "regressor"
 
     def _more_tags(self):
         """Return estimator tags.
