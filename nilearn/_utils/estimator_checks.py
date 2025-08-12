@@ -1147,11 +1147,11 @@ def check_img_estimator_n_elements(estimator):
     ), f"Got {estimator.n_elements_=}"
 
     for method in [
-        "predict",
-        "transform",  # TODO
         "decision_function",
-        "score",
         "inverse_transform",
+        "predict",
+        "score",  # TODO
+        "transform",  # TODO
     ]:
         if not hasattr(estimator, method):
             continue
@@ -1168,7 +1168,7 @@ def check_img_estimator_n_elements(estimator):
         elif method in ["predict", "decision_function"]:
             with pytest.raises(
                 ValueError,
-                match="Input to 'inverse_transform' has wrong shape.",
+                match="X has .* features per sample; expecting .*",
             ):
                 getattr(estimator, method)(X)
 
