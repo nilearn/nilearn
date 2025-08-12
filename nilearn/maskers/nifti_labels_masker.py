@@ -548,6 +548,8 @@ class NiftiLabelsMasker(BaseMasker):
             "warning_message": None,
         }
 
+        self._fit_cache()
+
         mask_logger("load_regions", self.labels_img, verbose=self.verbose)
 
         self.labels_img_ = deepcopy(self.labels_img)
@@ -872,7 +874,7 @@ class NiftiLabelsMasker(BaseMasker):
             sample_mask=sample_mask,
             dtype=self.dtype,
             # Caching
-            memory=self.memory,
+            memory=self.memory_,
             memory_level=self.memory_level,
             verbose=self.verbose,
         )
