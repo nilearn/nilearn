@@ -842,13 +842,15 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Predicted class label per sample.
         """
         check_is_fitted(self)
-        check_compatibility_mask_and_images(self.mask_img_, X)
 
         # for backwards compatibility - apply masker transform if X is
         # niimg-like or a list of strings or surface image
         if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
+            check_compatibility_mask_and_images(self.mask_img_, X)
             X = self.masker_.transform(X)
+
         n_features = self.coef_.shape[1]
+
         if X.shape[1] != n_features:
             raise ValueError(
                 f"X has {X.shape[1]} features per sample;"
@@ -886,7 +888,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         # Prediction for dummy estimator is different from others as there is
         # no fitted coefficient
         if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
-            if isinstance(SurfaceImage):
+            if isinstance(X, SurfaceImage):
                 n_samples = X.data.shape[1] if len(X.data.shape) == 2 else 1
             else:
                 X = check_niimg(X)
