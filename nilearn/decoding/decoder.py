@@ -1102,7 +1102,8 @@ class _ClassifierMixin:
         y_pred : :class:`numpy.ndarray`, shape (n_samples,)
             Predicted class label per sample.
         """
-        return self._decision_function(self, X)
+        check_is_fitted(self)
+        return self._decision_function(X)
 
 
 @fill_doc
