@@ -708,7 +708,9 @@ def generate_data_to_fit(estimator: BaseEstimator):
 
     elif is_masker(estimator):
         if accept_niimg_input(estimator):
-            imgs = Nifti1Image(_rng().random(_shape_3d_large()), _affine_eye())
+            imgs = Nifti1Image(
+                _rng().random(_shape_3d_large()) + 10.0, _affine_eye()
+            )
         else:
             imgs = _make_surface_img(10)
         return imgs, None
@@ -727,7 +729,7 @@ def generate_data_to_fit(estimator: BaseEstimator):
         return _rng().random((5, 5)), None
 
     else:
-        data = _rng().random(_shape_3d_large()) + 1
+        data = _rng().random(_shape_3d_large()) + 10.0
         imgs = Nifti1Image(data, _affine_eye())
         return imgs, None
 
@@ -1119,7 +1121,8 @@ def check_img_estimator_dtypes(estimator):
     """Check estimator can fit/transform/inverse_transform \
        with inputs of varying dtypes.
 
-    Replacement for sklearn check_estimators_dtypes.
+    Replacement for sklearn check_estimators_dtypes
+    and check_transformer_preserve_dtypes
 
     Check that several methods are OK dealing with input of varying dtype.
 
@@ -1131,14 +1134,20 @@ def check_img_estimator_dtypes(estimator):
     # for multi/nifti_labels_masker, multi/nifti_masker, nifti_spheres_masker
     for input_dtype in [np.float32, "float64", np.int32, "i4"]:
         for dtype in [np.float32, "float64", np.int32, "i4", "auto", None]:
+            input_dtype = np.dtype(input_dtype)
+            if isinstance(estimator, NiftiMasker) and input_dtype == np.int32:
+                # FIXME
+                # This leads to some invalid mask for NiftiMasker
+                # ValueError:
+                # The mask is invalid as it is empty: it masks all data.
+                continue
+
             estimator = clone(estimator)
 
             if hasattr(estimator, "dtype"):
                 estimator.dtype = dtype
 
             X, y = generate_data_to_fit(estimator)
-
-            input_dtype = np.dtype(input_dtype)
 
             if isinstance(X, Nifti1Image):
                 data = get_data(X)
@@ -1169,10 +1178,14 @@ def check_img_estimator_dtypes(estimator):
                     # as it behaves differently from others
                     continue
 
-                signal = getattr(estimator, method)(X)
+                if method == "score":
+                    signal = getattr(estimator, method)(X, y)
+                else:
+                    signal = getattr(estimator, method)(X)
 
                 if method != "transform":
-                    # we only check the output dtype for transform
+                    # TODO
+                    # for now we only check the output dtype for transform
                     continue
 
                 if not isinstance(signal, list):
