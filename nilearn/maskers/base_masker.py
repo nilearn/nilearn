@@ -776,6 +776,16 @@ def generate_lut(labels_img, background_label, lut=None, labels=None):
     """Generate a look up table if one was not provided.
 
     Also sanitize its content if necessary.
+
+    Parameters
+    ----------
+    labels_img : Nifti1Image | SurfaceImage
+
+    background_label : int | float
+
+    lut : Optional[str, Path, pd.DataFrame]
+
+    labels : Optional[list[str]]
     """
     if isinstance(labels_img, Nifti1Image):
         labels_present = get_data(labels_img)
