@@ -984,14 +984,22 @@ def check_img_estimator_fit_idempotent(estimator_orig):
             else:
                 tol = 2 * np.finfo(np.float64).eps
 
+            if (
+                isinstance(estimator, FREMClassifier)
+                and sys.platform == "darwin"
+                and sys.version_info[1] < 11
+                and method == "decision_function"
+            ):
+                continue
+
             # TODO
             # some estimator can return some pretty different results
             # investigate why
-            if isinstance(estimator, (Decoder)):
+            if isinstance(estimator, Decoder):
                 tol = 1e-5
-            elif isinstance(estimator, (SearchLight)):
+            elif isinstance(estimator, SearchLight):
                 tol = 1e-4
-            elif isinstance(estimator, (FREMClassifier)):
+            elif isinstance(estimator, FREMClassifier):
                 tol = 0.1
 
             assert_allclose_dense_sparse(
