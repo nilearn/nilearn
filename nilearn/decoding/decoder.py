@@ -776,6 +776,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             if self.is_classification and (self.n_classes_ == 2):
                 self.coef_ = self.coef_[0, :][np.newaxis, :]
                 self.intercept_ = self.intercept_[0]
+
+            self.n_elements_ = self.coef_.shape[1]
+
         else:
             # For Dummy estimators
             self.coef_ = None
@@ -840,11 +843,10 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         # niimg-like or a list of strings
         if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
             X = self.masker_.transform(X)
-        n_features = self.coef_.shape[1]
-        if X.shape[1] != n_features:
+        if X.shape[1] != self.n_elements_:
             raise ValueError(
                 f"X has {X.shape[1]} features per sample;"
-                f" expecting {n_features}"
+                f" expecting {self.n_elements_}"
             )
 
         scores = (

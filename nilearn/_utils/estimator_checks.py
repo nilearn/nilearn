@@ -287,6 +287,8 @@ def return_expected_failed_checks(
         "check_positive_only_tag_during_fit": "TODO",
         "check_pipeline_consistency": "TODO",
         "check_readonly_memmap_input": "TODO",
+        "check_n_features_in": "TODO",
+        "check_n_features_in_after_fitting": "TODO",
     }
 
     expected_failed_checks |= unapplicable_checks()
@@ -350,6 +352,10 @@ def return_expected_failed_checks(
         expected_failed_checks.pop("check_estimator_sparse_tag")
 
     if is_masker(estimator):
+        expected_failed_checks |= {
+            "check_n_features_in": "TODO",
+            "check_n_features_in_after_fitting": "TODO",
+        }
         if accept_niimg_input(estimator):
             # TODO remove when bumping to nilearn 0.13.0
             expected_failed_checks |= {
@@ -386,8 +392,6 @@ def unapplicable_checks() -> dict[str, str]:
             "check_fit2d_1feature",
             "check_fit2d_1sample",
             "check_fit2d_predict1d",
-            "check_n_features_in",  # implementable for image
-            "check_n_features_in_after_fitting",  # implementable for image
         ],
         "not applicable for image input",
     )
@@ -451,6 +455,8 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_pipeline_consistency": "TODO",
         "check_readonly_memmap_input": "TODO",
         "check_supervised_y_2d": "TODO",
+        "check_n_features_in": "TODO",
+        "check_n_features_in_after_fitting": "TODO",
     }
 
     if is_classifier(estimator):
@@ -526,6 +532,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
         yield (clone(estimator), check_img_estimator_overwrite_params)
         yield (clone(estimator), check_img_estimator_pickle)
+        yield (clone(estimator), check_img_estimator_n_elements)
 
         if hasattr(estimator, "transform"):
             yield (clone(estimator), check_img_estimator_dict_unchanged)
@@ -1118,6 +1125,54 @@ def check_img_estimator_requires_y_none(estimator) -> None:
             raise ve
 
 
+@ignore_warnings()
+def check_img_estimator_n_elements(estimator):
+    """Check n_elements is set during fitting and used after that.
+
+    check that after fitting
+    - n_elements_ does not exist before fit
+    - masker have a n_elements_ attribute that is positive int
+
+    replaces sklearn "check_n_features_in" and
+    "check_n_features_in_after_fitting"
+    """
+    assert not hasattr(estimator, "n_features_in_")
+
+    estimator = fit_estimator(estimator)
+
+    assert hasattr(estimator, "n_elements_")
+    assert (
+        isinstance(estimator.n_elements_, (int, np.integer))
+        and estimator.n_elements_ > 0
+    ), f"Got {estimator.n_elements_=}"
+
+    for method in [
+        "predict",
+        "transform",  # TODO
+        "decision_function",
+        "score",
+        "inverse_transform",
+    ]:
+        if not hasattr(estimator, method):
+            continue
+
+        X = _rng().random((1, estimator.n_elements_ + 1))
+        if method == "inverse_transform":
+            if isinstance(estimator, _BaseDecomposition):
+                X = [X]
+            with pytest.raises(
+                ValueError,
+                match="Input to 'inverse_transform' has wrong shape.",
+            ):
+                getattr(estimator, method)(X)
+        elif method in ["predict", "decision_function"]:
+            with pytest.raises(
+                ValueError,
+                match="Input to 'inverse_transform' has wrong shape.",
+            ):
+                getattr(estimator, method)(X)
+
+
 # ------------------ DECODERS CHECKS ------------------
 
 
@@ -1200,21 +1255,6 @@ def check_decoder_empty_data_messages(estimator):
 
 
 # ------------------ MASKER CHECKS ------------------
-
-
-@ignore_warnings()
-def check_masker_n_elements(estimator):
-    """Check appropriate response of maskers to check_is_fitted from sklearn.
-
-    check that after fitting
-    - masker have a n_elements_ attribute that is positive int
-    """
-    if accept_niimg_input(estimator):
-        estimator.fit(_img_3d_rand())
-    else:
-        estimator.fit(_make_surface_img(10))
-
-    assert isinstance(estimator.n_elements_, int) and estimator.n_elements_ > 0
 
 
 @ignore_warnings()
@@ -1862,8 +1902,6 @@ def check_masker_inverse_transform(estimator) -> None:
 
     Check that running inverse_transform() before and after running transform()
     give same result.
-
-    Check that the proper error is thrown, if signal has the wrong shape.
     """
     if accept_niimg_input(estimator):
         # using different shape for imgs, mask
@@ -1926,12 +1964,6 @@ def check_masker_inverse_transform(estimator) -> None:
             assert check_imgs_equal(new_imgs, new_imgs_2)
         else:
             assert_surface_image_equal(new_imgs, new_imgs_2)
-
-    signals = _rng().random((1, estimator.n_elements_ + 1))
-    with pytest.raises(
-        ValueError, match="Input to 'inverse_transform' has wrong shape."
-    ):
-        estimator.inverse_transform(signals)
 
 
 def check_masker_transform_resampling(estimator) -> None:
