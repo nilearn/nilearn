@@ -386,8 +386,8 @@ def unapplicable_checks() -> dict[str, str]:
             "check_fit2d_1feature",
             "check_fit2d_1sample",
             "check_fit2d_predict1d",
-            "check_n_features_in",
-            "check_n_features_in_after_fitting",
+            "check_n_features_in",  # implementable for image
+            "check_n_features_in_after_fitting",  # implementable for image
         ],
         "not applicable for image input",
     )
