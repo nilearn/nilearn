@@ -92,10 +92,28 @@ def test_surface_label_masker_fit_transform(surf_label_img, surf_img_1d):
     assert signal.size == masker.n_elements_
 
 
-def test_surface_label_masker_fit_with_names(surf_label_img):
+def test_surface_label_masker_fit_with_labels(surf_label_img):
     """Check passing labels is reflected in attributes."""
     masker = SurfaceLabelsMasker(
-        labels_img=surf_label_img, labels=["background", "bar", "foo"]
+        labels_img=surf_label_img, labels=["Background", "bar"]
+    )
+
+    masker = masker.fit()
+
+    assert masker.n_elements_ == 1
+    assert masker.labels_ == [0, 1]
+    assert masker.lut_["name"].to_list() == ["Background", "bar"]
+    assert masker.region_names_ == {0: "bar"}
+    assert masker.region_ids_ == {"background": 0, 0: 1}
+
+
+def test_surface_label_masker_fit_too_many_labels(surf_label_img):
+    """Check passing labels is reflected in attributes.
+
+    Check warning are thrown when too many are passed.
+    """
+    masker = SurfaceLabelsMasker(
+        labels_img=surf_label_img, labels=["Background", "bar", "foo"]
     )
 
     with pytest.warns(UserWarning, match="Dropping excess names values."):
@@ -103,12 +121,18 @@ def test_surface_label_masker_fit_with_names(surf_label_img):
 
     assert masker.n_elements_ == 1
     assert masker.labels_ == [0, 1]
-    assert masker.lut_["name"].to_list() == ["background", "bar"]
+    assert masker.lut_["name"].to_list() == ["Background", "bar"]
     assert masker.region_names_ == {0: "bar"}
     assert masker.region_ids_ == {"background": 0, 0: 1}
 
+
+def test_surface_label_masker_fit_too_few_labels(surf_label_img):
+    """Check passing labels is reflected in attributes.
+
+    Check warning are thrown when too few are passed.
+    """
     masker = SurfaceLabelsMasker(
-        labels_img=surf_label_img, labels=["background"]
+        labels_img=surf_label_img, labels=["Background"]
     )
 
     with pytest.warns(UserWarning, match="Padding 'names' with 'unknown'"):
@@ -116,7 +140,7 @@ def test_surface_label_masker_fit_with_names(surf_label_img):
 
     assert masker.n_elements_ == 1
     assert masker.labels_ == [0, 1]
-    assert masker.lut_["name"].to_list() == ["background", "unknown"]
+    assert masker.lut_["name"].to_list() == ["Background", "unknown"]
     assert masker.region_names_ == {0: "unknown"}
     assert masker.region_ids_ == {"background": 0, 0: 1}
 
@@ -387,7 +411,7 @@ def test_surface_label_masker_lut_unsorted(
 ):
     """Test lut with wrong order of regions.
 
-    LUT, region_ids, region_names should be properly sorted after transform.
+    LUT, region_ids, region_names should be properly sorted after fit.
     Result of region_ids, region_names
     should still match content of extracted signals.
     """
@@ -400,16 +424,6 @@ def test_surface_label_masker_lut_unsorted(
 
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, lut=lut)
     masker = masker.fit()
-
-    data = {
-        "left": data_left_1d_with_expected_mean,
-        "right": data_right_1d_with_expected_mean,
-    }
-    surf_img_1d = SurfaceImage(surf_mesh, data)
-    signal = masker.transform(surf_img_1d)
-
-    assert isinstance(signal, np.ndarray)
-    assert_array_equal(signal, np.asarray(expected_signal))
 
     assert masker.labels_ == [0.0, 1.0, 2.0, 10.0, 20.0]
     assert masker.lut_["name"].to_list() == [
@@ -427,6 +441,16 @@ def test_surface_label_masker_lut_unsorted(
         2: 10.0,
         3: 20.0,
     }
+
+    data = {
+        "left": data_left_1d_with_expected_mean,
+        "right": data_right_1d_with_expected_mean,
+    }
+    surf_img_1d = SurfaceImage(surf_mesh, data)
+    signal = masker.transform(surf_img_1d)
+
+    assert isinstance(signal, np.ndarray)
+    assert_array_equal(signal, np.asarray(expected_signal))
 
 
 def test_surface_label_masker_check_output_2d(

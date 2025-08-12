@@ -338,8 +338,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self.lut_ = generate_lut(
             self.labels_img_, self.background_label, self.lut, self.labels
         )
-
-        self.lut_ = self.lut_.sort_values("index")
+        self.lut_ = self.lut_.sort_values("index").reset_index()
 
         if self.clean_args is None:
             self.clean_args_ = {}
