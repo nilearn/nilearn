@@ -11,6 +11,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from joblib import Memory
+from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
@@ -36,6 +37,7 @@ from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     concat_imgs,
+    get_data,
     high_variance_confounds,
     new_img_like,
     resample_img,
@@ -44,6 +46,7 @@ from nilearn.image import (
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
+from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -774,6 +777,15 @@ def generate_lut(labels_img, background_label, lut=None, labels=None):
 
     Also sanitize its content if necessary.
     """
+    if isinstance(labels_img, Nifti1Image):
+        labels_present = get_data(labels_img)
+    else:
+        labels_present = get_surface_data(labels_img)
+    labels_present = np.unique(labels_present)
+    add_background_to_lut = (
+        None if background_label not in labels_present else background_label
+    )
+
     if lut is not None:
         if isinstance(lut, (str, Path)):
             lut = pd.read_table(lut, sep=None, engine="python")
@@ -783,14 +795,14 @@ def generate_lut(labels_img, background_label, lut=None, labels=None):
             function=None,
             name=deepcopy(labels),
             index=labels_img,
-            background_label=background_label,
+            background_label=add_background_to_lut,
         )
 
     else:
         lut = generate_atlas_look_up_table(
             function=None,
             index=labels_img,
-            background_label=background_label,
+            background_label=add_background_to_lut,
         )
 
     assert isinstance(lut, pd.DataFrame)
