@@ -2,7 +2,6 @@
 
 import warnings
 from copy import deepcopy
-from pathlib import Path
 from typing import Union
 
 import numpy as np
@@ -11,7 +10,6 @@ from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.bids import (
-    generate_atlas_look_up_table,
     sanitize_look_up_table,
 )
 from nilearn._utils.class_inspect import get_params
@@ -32,6 +30,7 @@ from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
     filter_and_extract,
+    generate_lut,
     mask_logger,
 )
 from nilearn.masking import load_mask_img
@@ -567,7 +566,9 @@ class NiftiLabelsMasker(BaseMasker):
                 idx = self.labels.index("background")
                 self.labels[idx] = "Background"
 
-        self.lut_ = self._generate_lut()
+        self.lut_ = generate_lut(
+            self.labels_img_, self.background_label, self.lut, self.labels
+        )
 
         self._original_region_ids = self.lut_["index"].to_list()
 
@@ -660,62 +661,6 @@ class NiftiLabelsMasker(BaseMasker):
                 "All elements of 'labels' must be a string.\n"
                 f"Got a list of {types_labels}",
             )
-
-    def _generate_lut(self):
-        """Generate a look up table if one was not provided.
-
-        Also sanitize its content if necessary.
-        """
-        if self.lut is not None:
-            if isinstance(self.lut, (str, Path)):
-                lut = pd.read_table(self.lut, sep=None, engine="python")
-            else:
-                lut = self.lut
-
-        elif self.labels:
-            lut = generate_atlas_look_up_table(
-                function=None,
-                name=deepcopy(self.labels),
-                index=self.labels_img_,
-                background_label=self.background_label,
-            )
-
-        else:
-            lut = generate_atlas_look_up_table(
-                function=None,
-                index=self.labels_img_,
-                background_label=self.background_label,
-            )
-
-        # passed labels or lut may not include background label
-        # because of poor data standardization
-        # so we need to update the lut accordingly
-        mask_background_index = lut["index"] == self.background_label
-        if (mask_background_index).any():
-            # Ensure background is the first row with name "Background"
-            # Shift the 'name' column down by one
-            # if background row was not named properly
-            first_rows = lut[mask_background_index]
-            other_rows = lut[~mask_background_index]
-            lut = pd.concat([first_rows, other_rows], ignore_index=True)
-
-            mask_background_name = lut["name"] == "Background"
-            if not (mask_background_name).any():
-                lut["name"] = lut["name"].shift(1)
-
-            lut.loc[0, "name"] = "Background"
-
-        else:
-            first_row = {"name": "Background", "index": self.background_label}
-            first_row = {
-                col: first_row[col] if col in lut else np.nan
-                for col in lut.columns
-            }
-            lut = pd.concat(
-                [pd.DataFrame([first_row]), lut], ignore_index=True
-            )
-
-        return sanitize_look_up_table(lut, atlas=self.labels_img_)
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
