@@ -2,19 +2,13 @@
 
 import warnings
 from copy import deepcopy
-from pathlib import Path
 from typing import Union
 
 import numpy as np
-import pandas as pd
 from scipy import ndimage
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils.bids import (
-    generate_atlas_look_up_table,
-    sanitize_look_up_table,
-)
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -30,7 +24,11 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import mean_img
-from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
+from nilearn.maskers.base_masker import (
+    _BaseSurfaceMasker,
+    generate_lut,
+    mask_logger,
+)
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -337,62 +335,10 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                     stacklevel=find_stack_level(),
                 )
 
-        labels_present = set(get_data(self.labels_img_).tolist())
-        add_background_to_lut = (
-            None
-            if self.background_label not in labels_present
-            else self.background_label
+        self.lut_ = generate_lut(
+            self.labels_img_, self.background_label, self.lut, self.labels
         )
 
-        # generate a look up table if one was not provided
-        if self.lut is not None:
-            if isinstance(self.lut, (str, Path)):
-                lut = pd.read_table(self.lut, sep=None)
-            else:
-                lut = self.lut
-        elif self.labels:
-            lut = generate_atlas_look_up_table(
-                function=None,
-                name=self.labels,
-                index=self.labels_img_,
-                background_label=add_background_to_lut,
-            )
-        else:
-            lut = generate_atlas_look_up_table(
-                function=None,
-                index=self.labels_img_,
-                background_label=add_background_to_lut,
-            )
-
-        # passed labels or lut may not include background label
-        # because of poor data standardization
-        # so we need to update the lut accordingly
-        mask_background_index = lut["index"] == self.background_label
-        if (mask_background_index).any():
-            # Ensure background is the first row with name "Background"
-            # Shift the 'name' column down by one
-            # if background row was not named properly
-            first_rows = lut[mask_background_index]
-            other_rows = lut[~mask_background_index]
-            lut = pd.concat([first_rows, other_rows], ignore_index=True)
-
-            mask_background_name = lut["name"] == "Background"
-            if not (mask_background_name).any():
-                lut["name"] = lut["name"].shift(1)
-
-            lut.loc[0, "name"] = "Background"
-
-        else:
-            first_row = {"name": "Background", "index": self.background_label}
-            first_row = {
-                col: first_row[col] if col in lut else np.nan
-                for col in lut.columns
-            }
-            lut = pd.concat(
-                [pd.DataFrame([first_row]), lut], ignore_index=True
-            )
-
-        self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img_)
         self.lut_ = self.lut_.sort_values("index")
 
         if self.clean_args is None:
