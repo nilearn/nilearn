@@ -422,6 +422,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_fit_check_is_fitted": (
             "replaced by check_img_estimator_fit_check_is_fitted"
         ),
+        "check_fit_score_takes_y": (
+            "replaced by check_img_estimator_fit_score_takes_y"
+        ),
         "check_requires_y_none": (
             "replaced by check_img_estimator_requires_y_none"
         ),
