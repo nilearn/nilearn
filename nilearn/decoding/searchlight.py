@@ -532,11 +532,11 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
         y : 1D array-like
             Target variable to predict. Must have exactly as many elements as
-            3D images in img.
+            3D images in imgs.
 
         groups : array-like, default=None
             group label for each sample for cross validation. Must have
-            exactly as many elements as 3D images in img.
+            exactly as many elements as 3D images in imgs.
 
         Returns
         -------
