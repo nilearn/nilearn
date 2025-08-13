@@ -231,8 +231,12 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         lut = self.lut_
         tmp = lut.loc[lut["index"] != self.background_label, "name"].to_dict()
         region_names_ = {}
-        for key, value in list(tmp.items()):
-            region_names_[key - 1] = value
+        for key, value in tmp.items():
+            if key == 0:
+                # in case background_label is not 0
+                region_names_[key] = value
+            else:
+                region_names_[key - 1] = value
         return region_names_
 
     @property
@@ -254,6 +258,9 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         for key, value in list(tmp.items()):
             if value == self.background_label:
                 region_ids_["background"] = value
+            elif key == 0:
+                # in case background_label is not 0
+                region_ids_[key] = value
             else:
                 region_ids_[key - 1] = value
 

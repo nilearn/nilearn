@@ -92,11 +92,13 @@ def test_surface_label_masker_fit_transform(surf_label_img, surf_img_1d):
     assert signal.size == masker.n_elements_
 
 
-def test_surface_label_masker_fit_with_labels(surf_label_img):
-    """Check passing labels is reflected in attributes."""
-    masker = SurfaceLabelsMasker(
-        labels_img=surf_label_img, labels=["Background", "bar"]
-    )
+@pytest.mark.parametrize("labels", [["Background", "bar"], ["bar"]])
+def test_surface_label_masker_fit_with_labels(surf_label_img, labels):
+    """Check passing labels is reflected in attributes.
+
+    Should behave the same even if "Background" is not in the list of labels
+    """
+    masker = SurfaceLabelsMasker(labels_img=surf_label_img, labels=labels)
 
     masker = masker.fit()
 
@@ -105,6 +107,27 @@ def test_surface_label_masker_fit_with_labels(surf_label_img):
     assert masker.lut_["name"].to_list() == ["Background", "bar"]
     assert masker.region_names_ == {0: "bar"}
     assert masker.region_ids_ == {"background": 0, 0: 1}
+
+
+@pytest.mark.parametrize("labels", [["bar"], ["bar", "Background"]])
+def test_surface_label_masker_fit_background_label(surf_label_img, labels):
+    """Check that labels and background label can be matched properly.
+
+    Here we say that the background label is 1 and not 0.
+
+    Should behave the same even if "Background" is not in the list of labels
+    """
+    masker = SurfaceLabelsMasker(
+        labels_img=surf_label_img, labels=labels, background_label=1
+    )
+
+    masker = masker.fit()
+
+    assert masker.n_elements_ == 1
+    assert masker.labels_ == [0, 1]
+    assert masker.lut_["name"].to_list() == ["bar", "Background"]
+    assert masker.region_names_ == {0: "bar"}
+    assert masker.region_ids_ == {"background": 1, 0: 0}
 
 
 def test_surface_label_masker_fit_too_many_labels(surf_label_img):
