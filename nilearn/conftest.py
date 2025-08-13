@@ -481,23 +481,14 @@ def n_regions():
     return _n_regions()
 
 
-def _img_maps(n_regions=None):
-    """Generate a default map image."""
-    if n_regions is None:
-        n_regions = _n_regions()
+def _region_time_series(n_voxels, n_regions):
+    """Generate some regions as timeseries.
 
-    shape = _shape_3d_default()
-    affine = _affine_eye()
-
-    border = 1
-
-    mask = np.zeros(shape, dtype=np.int8)
-    mask[border:-border, border:-border, border:-border] = 1
-
-    n_voxels = mask.sum()
-
-    window = "boxcar"
-
+    Adapted from
+    - nilearn._utils.data_gen.generate_regions_ts
+    that we do not import to avoid circular import
+    and avoid using nilearn code to test nilearn code.
+    """
     assert n_voxels > n_regions
 
     # Compute region boundaries indices.
@@ -510,6 +501,7 @@ def _img_maps(n_regions=None):
     boundaries.sort()
 
     overlap = 0
+    window = "boxcar"
     regions = np.zeros((n_regions, n_voxels), order="C")
     overlap_end = int((overlap + 1) / 2.0)
     overlap_start = int(overlap / 2.0)
@@ -519,6 +511,31 @@ def _img_maps(n_regions=None):
         win = get_window(window, end - start)
         win /= win.mean()  # unity mean
         regions[n, start:end] = win
+
+    return regions
+
+
+def _img_maps(n_regions=None):
+    """Generate a default map image.
+
+    Adapted from
+    - nilearn._utils.data_gen.generate_maps
+    that we do not import to avoid circular import
+    and avoid using nilearn code to test nilearn code.
+    """
+    if n_regions is None:
+        n_regions = _n_regions()
+
+    shape = _shape_3d_default()
+    affine = _affine_eye()
+
+    mask = np.zeros(shape, dtype=np.int8)
+    border = 1
+    mask[border:-border, border:-border, border:-border] = 1
+
+    n_voxels = mask.sum()
+
+    regions = _region_time_series(n_voxels, n_regions)
 
     data = np.zeros(
         (*mask.shape, regions.shape[0]), dtype=regions.dtype, order="F"
@@ -539,7 +556,6 @@ def _img_labels():
 
     Adapted from
     - nilearn._utils.data_gen.generate_labeled_regions
-    - nilearn._utils.data_gen.generate_regions_ts
     that we do not import to avoid circular import
     and avoid using nilearn code to test nilearn code.
 
@@ -553,33 +569,12 @@ def _img_labels():
     n_regions += 1
     labels = range(n_regions)
 
-    # Compute region boundaries indices.
-    # Start at 1 to avoid getting an empty region
-    boundaries = np.zeros(n_regions + 1)
-    boundaries[-1] = n_voxels
-    boundaries[1:-1] = _rng().permutation(np.arange(1, n_voxels))[
-        : n_regions - 1
-    ]
-    boundaries.sort()
-
-    overlap = 0
-    window = "boxcar"
-
-    regions = np.zeros((n_regions, n_voxels), order="C")
-    overlap_end = int((overlap + 1) / 2.0)
-    overlap_start = int(overlap / 2.0)
-    for n in range(len(boundaries) - 1):
-        start = int(max(0, boundaries[n] - overlap_start))
-        end = int(min(n_voxels, boundaries[n + 1] + overlap_end))
-        win = get_window(window, end - start)
-        win /= win.mean()  # unity mean
-        regions[n, start:end] = win
+    regions = _region_time_series(n_voxels, n_regions)
 
     # replace weights with labels
     for n, row in zip(labels, regions):
         row[row > 0] = n
-    dtype = "int32"
-    data = np.zeros(shape, dtype=dtype)
+    data = np.zeros(shape, dtype="int32")
     data[np.ones(shape, dtype=bool)] = regions.sum(axis=0).T
 
     return Nifti1Image(data, affine)
