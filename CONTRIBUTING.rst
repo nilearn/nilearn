@@ -656,7 +656,7 @@ Here are the key steps you need to go through to copy the repo before contributi
 
       git clone git@github.com:<your_username>/nilearn.git
 
-2. (optional but highly recommended) set up a virtual environment to wor
+2. (optional but highly recommended) set up a virtual environment to work
    in using whichever environment management tool you're used to and activate it.
    For example:
 
@@ -672,7 +672,15 @@ or:
       conda create -n nilearn pip
       conda activate nilearn
 
+or, if using `pixi <https://pixi.sh/latest/>`_ :
+
+.. code-block:: bash
+
+        eval $(pixi shell-hook -e dev)
+
 3. install the forked version of ``nilearn``
+
+If using pixi, this step is already taken care of by step (2).
 
 .. admonition:: Recommendation
 
