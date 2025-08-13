@@ -11,7 +11,6 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from joblib import Memory
-from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
@@ -37,16 +36,15 @@ from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     concat_imgs,
-    get_data,
     high_variance_confounds,
     new_img_like,
     resample_img,
     smooth_img,
 )
+from nilearn.image.image import get_indices_from_image
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
-from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -787,11 +785,7 @@ def generate_lut(labels_img, background_label, lut=None, labels=None):
 
     labels : Optional[list[str]]
     """
-    if isinstance(labels_img, Nifti1Image):
-        labels_present = get_data(labels_img)
-    else:
-        labels_present = get_surface_data(labels_img)
-    labels_present = np.unique(labels_present)
+    labels_present = get_indices_from_image(labels_img)
     add_background_to_lut = (
         None if background_label not in labels_present else background_label
     )

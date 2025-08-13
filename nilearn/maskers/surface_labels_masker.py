@@ -255,7 +255,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         lut = self.lut_
         tmp = lut["index"].to_dict()
         region_ids_: dict[Union[str, int], int] = {}
-        for key, value in list(tmp.items()):
+        for key, value in tmp.items():
             if value == self.background_label:
                 region_ids_["background"] = value
             elif key == 0:
