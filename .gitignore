@@ -84,3 +84,6 @@ results/
 # node
 package.json
 package-lock.json
+# pixi environments
+.pixi/*
+!.pixi/config.toml
