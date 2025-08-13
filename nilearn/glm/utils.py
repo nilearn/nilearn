@@ -1,3 +1,5 @@
+"""Misc utilities used inside and outside of nilearn.glm."""
+
 from collections.abc import Iterable
 from pathlib import Path
 

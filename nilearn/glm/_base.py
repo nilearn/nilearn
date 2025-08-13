@@ -9,10 +9,10 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import CacheMixin
-from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.externals import tempita
+from nilearn.glm.utils import coerce_to_dict
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage

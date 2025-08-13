@@ -36,7 +36,6 @@ import numpy as np
 import pandas as pd
 
 from nilearn._utils import fill_doc
-from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.glm._utils import full_rank
@@ -48,6 +47,7 @@ from nilearn.glm.first_level.hemodynamic_models import (
     compute_regressor,
     orthogonalize,
 )
+from nilearn.glm.utils import check_and_load_tables
 
 ######################################################################
 # Ancillary functions

@@ -1,4 +1,4 @@
-"""Misc utilities for the library."""
+"""Misc utilities only used by nilearn.glm."""
 
 from warnings import warn
 
