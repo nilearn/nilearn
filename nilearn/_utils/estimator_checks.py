@@ -493,7 +493,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
 
 def expected_failed_checks_spacenet(estimator) -> dict[str, str]:
     expected_failed_checks = {
-        # the following are have nilearn replacement for masker and/or glm
+        # the following have Nilearn replacement for masker and/or glm
         # but not for decoders
         "check_estimators_empty_data_messages": (
             "not implemented for nifti data performance reasons"
