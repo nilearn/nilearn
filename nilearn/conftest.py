@@ -558,6 +558,8 @@ def _img_maps(n_regions=None):
 
     regions = _region_time_series(n_voxels, n_regions)
 
+    mask = mask.astype(bool)
+
     data = np.zeros(
         (*mask.shape, regions.shape[0]), dtype=regions.dtype, order="F"
     )
