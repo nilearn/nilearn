@@ -117,6 +117,23 @@ def test_get_clusters_table(
     assert len(clusters_table) == expected_n_cluster
 
 
+def test_get_clusters_table_negative_threshold(shape, affine_eye):
+    data = np.zeros(shape)
+    data[2:4, 5:7, 6:8] = 5.0
+    data[4:6, 7:9, 8:10] = -5.0
+    stat_img = Nifti1Image(data, affine_eye)
+
+    clusters_table = get_clusters_table(
+        stat_img,
+        stat_threshold=-1,
+        cluster_threshold=0,
+        two_sided=False,
+    )
+
+    expected_n_cluster = 1
+    assert len(clusters_table) == expected_n_cluster
+
+
 def test_get_clusters_table_more(shape, affine_eye, tmp_path):
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0

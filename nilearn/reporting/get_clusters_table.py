@@ -347,6 +347,7 @@ def get_clusters_table(
     voxel_size = np.prod(stat_img.header.get_zooms())
 
     signs = [1, -1] if two_sided else [1]
+
     no_clusters_found = True
     rows = []
     for sign in signs:
@@ -354,7 +355,10 @@ def get_clusters_table(
         temp_stat_map = stat_map * sign
 
         # Binarize using cluster-defining threshold
-        binarized = temp_stat_map > stat_threshold
+        if not two_sided and stat_threshold < 0:
+            binarized = temp_stat_map < stat_threshold
+        else:
+            binarized = temp_stat_map > stat_threshold
         binarized = binarized.astype(int)
 
         # If the stat threshold is too high simply return an empty dataframe
@@ -371,9 +375,14 @@ def get_clusters_table(
         # Now re-label and create table
         label_map = label(binarized, bin_struct)[0]
         clust_ids = sorted(np.unique(label_map)[1:])
-        peak_vals = np.array(
-            [np.max(temp_stat_map * (label_map == c)) for c in clust_ids]
-        )
+        if not two_sided and stat_threshold < 0:
+            peak_vals = np.array(
+                [np.min(temp_stat_map * (label_map == c)) for c in clust_ids]
+            )
+        else:
+            peak_vals = np.array(
+                [np.max(temp_stat_map * (label_map == c)) for c in clust_ids]
+            )
         # Sort by descending max value
         clust_ids = [clust_ids[c] for c in (-peak_vals).argsort()]
 
@@ -389,6 +398,9 @@ def get_clusters_table(
         for c_id, c_val in enumerate(clust_ids):
             cluster_mask = label_map == c_val
             masked_data = temp_stat_map * cluster_mask
+            if not two_sided and stat_threshold < 0:
+                # in this we will want to find the local minima
+                masked_data *= -1
 
             cluster_size_mm = int(np.sum(cluster_mask) * voxel_size)
 
