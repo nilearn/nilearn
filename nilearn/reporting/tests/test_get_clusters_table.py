@@ -12,6 +12,7 @@ from nilearn.reporting.get_clusters_table import (
 
 @pytest.fixture
 def shape():
+    """Return a shape."""
     return (9, 10, 11)
 
 
@@ -103,6 +104,7 @@ def test_get_clusters_table(
     two_sided,
     expected_n_cluster,
 ):
+    """Test several combination of input parameters."""
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[4:6, 7:9, 8:10] = -5.0
@@ -118,6 +120,7 @@ def test_get_clusters_table(
 
 
 def test_get_clusters_table_negative_threshold(shape, affine_eye):
+    """Check that one sided negative thresholds are handled well."""
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[4:6, 7:9, 8:10] = -5.0
@@ -135,6 +138,14 @@ def test_get_clusters_table_negative_threshold(shape, affine_eye):
 
 
 def test_get_clusters_table_more(shape, affine_eye, tmp_path):
+    """Run more tests get_clusters_table.
+
+    - with input image as filename
+    - test returning label maps
+    - test on 4D image
+    - test with nans
+    - test subpeaks
+    """
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[4:6, 7:9, 8:10] = -5.0
@@ -178,6 +189,7 @@ def test_get_clusters_table_more(shape, affine_eye, tmp_path):
     assert len(cluster_table) == 1
 
     # Test that subpeaks are handled correctly for len(subpeak_vals) > 1
+
     # 1 cluster and two subpeaks, 10 voxels apart.
     data = np.zeros(shape)
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
@@ -236,6 +248,7 @@ def test_get_clusters_table_not_modifying_stat_image(
     two_sided,
     expected_n_cluster,
 ):
+    """Make sure original image is not changed."""
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[0:3, 0:3, 0:3] = 6.0

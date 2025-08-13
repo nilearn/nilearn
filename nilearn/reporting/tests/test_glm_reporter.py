@@ -20,11 +20,13 @@ from nilearn.surface import SurfaceImage
 
 @pytest.fixture
 def rk():
+    """Return rank for design martrix."""
     return 3
 
 
 @pytest.fixture
 def contrasts(rk):
+    """Return a contrast vector."""
     c = np.zeros((1, rk))
     c[0][0] = 1
     return c
@@ -189,6 +191,7 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
 
 
 def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: ARG001
+    """Check errors when wrong plot type is requested."""
     with pytest.raises(KeyError, match="junk"):
         flm.generate_report(
             contrasts=contrasts,
