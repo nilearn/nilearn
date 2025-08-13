@@ -1244,7 +1244,7 @@ def check_decoder_compatibility_mask_image(estimator_orig):
 
 @ignore_warnings()
 def check_decoders_with_surface_data(estimator_orig):
-    """Test fit for surface image."""
+    """Test fit and other methods with surface image."""
     if isinstance(estimator_orig, SearchLight):
         # note searchlight does not fit Surface data
         return
