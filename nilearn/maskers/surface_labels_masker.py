@@ -76,6 +76,10 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         Labels corresponding to the labels image.
         This is used to improve reporting quality if provided.
 
+        "Background" can be included in this list of labels
+        to denote which values in the image should be considered
+        background value.
+
         .. warning::
             If the labels are not be consistent with the label values
             provided through ``labels_img``,

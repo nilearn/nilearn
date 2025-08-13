@@ -94,6 +94,10 @@ class NiftiLabelsMasker(BaseMasker):
         This is used to improve reporting quality if provided.
         Mutually exclusive with ``lut``.
 
+        "Background" can be included in this list of labels
+        to denote which values in the image should be considered
+        background value.
+
         .. warning::
             The labels must be consistent with the label values
             provided through ``labels_img``.
