@@ -987,7 +987,6 @@ def check_img_estimator_fit_idempotent(estimator_orig):
             if (
                 isinstance(estimator, FREMClassifier)
                 and sys.platform == "darwin"
-                and sys.version_info[1] < 11
                 and method == "decision_function"
             ):
                 # On some version of python on mac this flat out fails
