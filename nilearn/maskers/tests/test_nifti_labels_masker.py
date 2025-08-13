@@ -751,14 +751,7 @@ def test_regions_id_names_with_labels(
     masker = NiftiLabelsMasker(atlas, labels=labels)
 
     fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
-    if Background:
-        signals = masker.fit_transform(fmri_img)
-    else:
-        with pytest.warns(
-            UserWarning, match="Too many indices for the names."
-        ):
-            # label for Background was not passed so we should get a warning
-            signals = masker.fit_transform(fmri_img)
+    signals = masker.fit_transform(fmri_img)
 
     expected_region_ids_ = {"background": 0.0, 0: 1.0, 1: 2.0}
     assert masker.region_ids_ == expected_region_ids_
