@@ -25,6 +25,14 @@ pytest.importorskip(
 )
 
 
+def test_dummy(tmp_path):
+    import plotly.express as px
+
+    data_canada = px.data.gapminder().query("country == 'Canada'")
+    fig = px.bar(data_canada, x="year", y="pop")
+    fig.write_image(tmp_path / "fig1.png")
+
+
 @pytest.mark.skipif(
     is_kaleido_installed(),
     reason="This test only runs if Plotly is installed, but not kaleido.",

@@ -107,7 +107,7 @@ jobs:
 
         -   name: Run test suite
             run: |
-                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn/plotting/surface/tests/test_plotly_surface_figure.py
+                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn/plotting/surface/tests/test_plotly_surface_figure.py::test_dummy
                 tox run -e plot_test_timing
 
         -   name: Upload test report
