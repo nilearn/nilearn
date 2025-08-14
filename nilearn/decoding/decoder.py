@@ -1290,9 +1290,6 @@ class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
         tags.estimator_type = "classifier"
         tags.classifier_tags = ClassifierTags()
 
-        # TODO
-        # check sklearn ClassifierMixin to adapt this
-
         return tags
 
 
@@ -1478,9 +1475,6 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
 
         tags.estimator_type = "regressor"
         tags.regressor_tags = RegressorTags()
-
-        # TODO
-        # check sklearn RegressorMixin and MultiOutputMixin to adapt this
 
         return tags
 
