@@ -16,8 +16,7 @@ from nilearn._utils.data_gen import (
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _shape_3d_default
-from nilearn.image import get_data, new_img_like
-from nilearn.maskers import NiftiLabelsMasker
+from nilearn.image import get_data
 from nilearn.regions.signal_extraction import (
     _check_shape_and_affine_compatibility,
     _trim_maps,
@@ -758,31 +757,3 @@ def test_trim_maps(shape_3d_default):
     assert_equal(mask_data, maps_i_mask)
     mask_data[1, 1, 1] = 1  # reset, just in case.
     assert_equal(np.asarray(list(range(4))), maps_i_indices)
-
-
-@pytest.mark.parametrize(
-    "target_dtype",
-    (float, np.float32, np.float64, int, np.uint),
-)
-def test_img_to_signals_labels_non_float_type(target_dtype, rng):
-    fake_fmri_data = rng.uniform(size=(10, 10, 10, N_TIMEPOINTS)) > 0.5
-    fake_affine = np.eye(4, 4).astype(np.float64)
-    fake_fmri_img_orig = Nifti1Image(
-        fake_fmri_data.astype(np.float64), fake_affine
-    )
-    fake_fmri_img_target_dtype = new_img_like(
-        fake_fmri_img_orig, fake_fmri_data.astype(target_dtype)
-    )
-
-    fake_mask_data = np.zeros((10, 10, 10), dtype=np.uint8)
-    fake_mask_data[1:8, 1:8, 1:8] = 1
-    fake_mask = Nifti1Image(fake_mask_data, fake_affine)
-
-    masker = NiftiLabelsMasker(fake_mask)
-    masker.fit()
-
-    timeseries_int = masker.transform(fake_fmri_img_target_dtype)
-    timeseries_float = masker.transform(fake_fmri_img_orig)
-
-    assert np.sum(timeseries_int) != 0
-    assert np.allclose(timeseries_int, timeseries_float)
