@@ -60,7 +60,7 @@ jobs:
                 # TODO switch to macos-latest when dropping python 3.9 and matplotlib 3.3
                 os: [ubuntu-latest, macos-14, windows-latest]
                 python-version: ['3.9']
-                min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.22.4, pandas==2.2.0, scikit-learn==1.4.0, scipy==1.8.0, matplotlib==3.3.0]
+                min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.22.4, pandas==2.2.0, scikit-learn==1.4.0, scipy==1.8.0, matplotlib==3.3.0, plotly==5.0.0]
 
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}
 
@@ -78,14 +78,8 @@ jobs:
             run: |
                 python -m pip install --upgrade pip setuptools
                 pip install ${{ matrix.min_dep }}
-                pip install plotly<6.3
 
-        -   name: Install oldest
-            run: |
-                python -m pip install --upgrade pip setuptools
-                pip install ${{ matrix.min_dep }}
-
-        -   name: Run tests
+        -   name: Install oldest plotly on windows
             if: ${{ matrix.os == 'windows-latest' }}
             # TODO remove when fixed upstream
             # some test on windows require older plotly
