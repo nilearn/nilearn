@@ -24,8 +24,9 @@ from nilearn._utils.niimg_conversions import (
     check_niimg_4d,
     safe_get_data,
 )
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn.datasets import load_mni152_template
-from nilearn.image import resample_img
+from nilearn.image import load_img, resample_img
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
@@ -711,7 +712,13 @@ class NiftiSpheresMasker(BaseMasker):
             # kwargs
             verbose=self.verbose,
         )
-        return np.atleast_1d(signals)
+
+        imgs = load_img(imgs)
+        target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
+        if target_dtype is None:
+            target_dtype = img_data_dtype(imgs)
+
+        return np.atleast_1d(signals).astype(target_dtype)
 
     @fill_doc
     def inverse_transform(self, region_signals):
