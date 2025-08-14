@@ -273,6 +273,10 @@ def return_expected_failed_checks(
             "replaced by check_masker_fit_score_takes_y"
         ),
         "check_estimators_pickle": "replaced by check_img_estimator_pickle",
+        "check_n_features_in": "replaced by check_img_estimator_n_elements",
+        "check_n_features_in_after_fitting": (
+            "replaced by check_img_estimator_n_elements"
+        ),
         # Those are skipped for now they fail
         # for unknown reasons
         # most often because sklearn inputs expect a numpy array
@@ -287,8 +291,6 @@ def return_expected_failed_checks(
         "check_positive_only_tag_during_fit": "TODO",
         "check_pipeline_consistency": "TODO",
         "check_readonly_memmap_input": "TODO",
-        "check_n_features_in": "TODO",
-        "check_n_features_in_after_fitting": "TODO",
     }
 
     expected_failed_checks |= unapplicable_checks()
@@ -353,8 +355,12 @@ def return_expected_failed_checks(
 
     if is_masker(estimator):
         expected_failed_checks |= {
-            "check_n_features_in": "TODO",
-            "check_n_features_in_after_fitting": "TODO",
+            "check_n_features_in": (
+                "replaced by check_img_estimator_n_elements"
+            ),
+            "check_n_features_in_after_fitting": (
+                "replaced by check_img_estimator_n_elements"
+            ),
         }
         if accept_niimg_input(estimator):
             # TODO remove when bumping to nilearn 0.13.0
@@ -416,11 +422,14 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
     expected_failed_checks = {
         # the following are have nilearn replacement for masker and/or glm
         # but not for decoders
-        "check_estimators_empty_data_messages": (
-            "not implemented for nifti data performance reasons"
+        "check_dict_unchanged": (
+            "replaced by check_img_estimator_dict_unchanged"
         ),
         "check_dont_overwrite_parameters": (
             "replaced by check_img_estimator_dont_overwrite_parameters"
+        ),
+        "check_estimators_empty_data_messages": (
+            "not implemented for nifti data performance reasons"
         ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
@@ -434,15 +443,16 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_supervised_y_no_nan": (
             "replaced by check_supervised_img_estimator_y_no_nan"
         ),
+        "check_n_features_in": "replaced by check_img_estimator_n_elements",
+        "check_n_features_in_after_fitting": (
+            "replaced by check_img_estimator_n_elements"
+        ),
         # Those are skipped for now they fail
         # for unknown reasons
         # most often because sklearn inputs expect a numpy array
         # that errors with maskers,
         # or because a suitable nilearn replacement
         # has not yet been created.
-        "check_dict_unchanged": (
-            "replaced by check_img_estimator_dict_unchanged"
-        ),
         "check_estimators_dtypes": "TODO",
         "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
@@ -455,8 +465,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_pipeline_consistency": "TODO",
         "check_readonly_memmap_input": "TODO",
         "check_supervised_y_2d": "TODO",
-        "check_n_features_in": "TODO",
-        "check_n_features_in_after_fitting": "TODO",
     }
 
     if is_classifier(estimator):
