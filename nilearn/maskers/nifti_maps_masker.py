@@ -596,7 +596,7 @@ class NiftiMapsMasker(BaseMasker):
         mask_img_ = self.mask_img_
         maps_img_ = self.maps_img_
 
-        imgs_ = check_niimg(imgs, atleast_4d=True, dtype=self.dtype)
+        imgs_ = check_niimg(imgs, atleast_4d=True)
 
         target_dtype = get_target_dtype(img_data_dtype(imgs_), self.dtype)
         if target_dtype is None:
@@ -709,7 +709,6 @@ class NiftiMapsMasker(BaseMasker):
             params,
             confounds=confounds,
             sample_mask=sample_mask,
-            dtype=self.dtype,
             # Caching
             memory=self.memory_,
             memory_level=self.memory_level,
