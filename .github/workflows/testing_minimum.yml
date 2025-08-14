@@ -80,7 +80,7 @@ jobs:
                 pip install ${{ matrix.min_dep }}
 
         -   name: Install oldest plotly on windows
-            if: ${{ !(contains(matrix.min_dep, 'plotly==6.1.0') && matrix.os == 'windows-latest') }}
+            if: ${{ !(contains(matrix.min_dep, 'plotly==6.1.0')) && matrix.os == 'windows-latest' }}
             # TODO remove when fixed upstream
             # some test on windows require older plotly
             # see https://github.com/plotly/Kaleido/issues/134
