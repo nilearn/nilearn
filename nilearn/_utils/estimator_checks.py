@@ -1171,10 +1171,10 @@ def check_img_estimator_dtypes(estimator):
                 if not hasattr(estimator, method):
                     continue
 
-                if method == "transform" and not isinstance(
-                    estimator, (SearchLight)
+                if method == "transform" and isinstance(
+                    estimator, SearchLight
                 ):
-                    # skip SearchLight transform
+                    # skip SearchLight.transform()
                     # as it behaves differently from others
                     continue
 
