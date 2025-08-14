@@ -1506,6 +1506,7 @@ class PolyData:
 
         _data_to_gifti(data, filename)
 
+    @property
     def _dtype(self):
         """Return dtype of the first part.
 

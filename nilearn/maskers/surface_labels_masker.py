@@ -25,6 +25,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
@@ -488,6 +489,16 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             sample_mask=sample_mask,
             **parameters["clean_args"],
         )
+
+        input_type = (
+            imgs.data._dtype
+            if isinstance(imgs, SurfaceImage)
+            else imgs[0].data._dtype
+        )
+        target_dtype = get_target_dtype(input_type, self.dtype)
+        if target_dtype is None:
+            target_dtype = imgs.data._dtype
+        region_signals = region_signals.astype(target_dtype)
 
         return region_signals
 
