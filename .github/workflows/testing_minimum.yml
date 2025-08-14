@@ -60,7 +60,7 @@ jobs:
                 # TODO switch to macos-latest when dropping python 3.9 and matplotlib 3.3
                 os: [ubuntu-latest, macos-14, windows-latest]
                 python-version: ['3.9']
-                min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.22.4, pandas==2.2.0, scikit-learn==1.4.0, scipy==1.8.0, matplotlib==3.3.0, plotly==5.0.0]
+                min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.22.4, pandas==2.2.0, scikit-learn==1.4.0, scipy==1.8.0, matplotlib==3.3.0, plotly==6.1.0]
 
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}
 
@@ -80,14 +80,14 @@ jobs:
                 pip install ${{ matrix.min_dep }}
 
         -   name: Install oldest plotly on windows
-            if: ${{ matrix.os == 'windows-latest' }}
+            if: ${{ !(contains(matrix.min_dep, 'plotly==6.1.0') && matrix.os == 'windows-latest') }}
             # TODO remove when fixed upstream
             # some test on windows require older plotly
             # see https://github.com/plotly/Kaleido/issues/134
             run: pip install plotly<6.3
 
         -   name: Install nilearn
-            run: pip install .[plotting,plotly,test]
+            run: pip install .[plotting,test]
 
         # there are some numpy 2.0 related issues when using pytest-mpl
         # with matplotlib 3.3.0 on windows:
