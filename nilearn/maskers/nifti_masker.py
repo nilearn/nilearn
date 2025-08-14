@@ -8,11 +8,14 @@ import numpy as np
 from joblib import Memory
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import _utils
+from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg import img_data_dtype
+from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import check_params
-from nilearn.image import crop_img, resample_img
+from nilearn.image import crop_img, load_img, resample_img
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -39,7 +42,6 @@ class _ExtractionFunctor:
             apply_mask(
                 imgs,
                 self.mask_img_,
-                dtype=_utils.niimg.img_data_dtype(imgs),
             ),
             imgs.affine,
         )
@@ -84,7 +86,6 @@ def filter_and_mask(
     confounds=None,
     sample_mask=None,
     copy=True,
-    dtype=None,
 ):
     """Extract representative time series using given mask.
 
@@ -107,14 +108,14 @@ def filter_and_mask(
     # Convert input to niimg to check shape.
     # This must be repeated after the shape check because check_niimg will
     # coerce 5D data to 4D, which we don't want.
-    temp_imgs = _utils.check_niimg(imgs)
+    temp_imgs = check_niimg(imgs)
 
-    imgs = _utils.check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
+    imgs = check_niimg(imgs, atleast_4d=True, ensure_ndim=4)
 
     # Check whether resampling is truly necessary. If so, crop mask
     # as small as possible in order to speed up the process
 
-    if not _utils.niimg_conversions.check_same_fov(imgs, mask_img_):
+    if not check_same_fov(imgs, mask_img_):
         warnings.warn(
             "imgs are being resampled to the mask_img resolution. "
             "This process is memory intensive. You might want to provide "
@@ -140,7 +141,6 @@ def filter_and_mask(
         confounds=confounds,
         sample_mask=sample_mask,
         copy=copy,
-        dtype=dtype,
     )
     # For _later_: missing value removal or imputing of missing data
     # (i.e. we want to get rid of NaNs, if smoothing must be done
@@ -149,6 +149,7 @@ def filter_and_mask(
     # for later: some form of imputation
     if temp_imgs.ndim == 3:
         data = data.squeeze()
+
     return data
 
 
@@ -580,7 +581,7 @@ class NiftiMasker(BaseMasker):
         # Ignore the mask-computing params: they are not useful and will
         # just invalid the cache for no good reason
         # target_shape and target_affine are conveyed implicitly in mask_img
-        params = _utils.class_inspect.get_params(
+        params = get_params(
             self.__class__,
             self,
             ignore=[
@@ -615,7 +616,15 @@ class NiftiMasker(BaseMasker):
             confounds=confounds,
             sample_mask=sample_mask,
             copy=copy,
-            dtype=self.dtype,
         )
 
-        return data
+        if not isinstance(data, np.ndarray):
+            # in case data data is a cached MemorizedResult
+            return data
+
+        imgs = load_img(imgs)
+        target_dtype = get_target_dtype(img_data_dtype(imgs), self.dtype)
+        if target_dtype is None:
+            target_dtype = img_data_dtype(imgs)
+
+        return data.astype(target_dtype)
