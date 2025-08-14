@@ -44,7 +44,6 @@ from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import CacheMixin, fill_doc
-from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -638,7 +637,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         """
         check_params(self.__dict__)
         self.estimator_ = _check_estimator(self.estimator)
-        self.memory_ = check_memory(self.memory, self.verbose)
+
+        self._fit_cache()
 
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
@@ -696,6 +696,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             self.mask_img_,
             self.is_classification,
             mesh_n_vertices=mesh_n_vertices,
+            verbose=self.verbose,
         )
 
         # Return a suitable screening percentile according to the mask image
@@ -901,6 +902,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             masker_type = "surface"
 
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
+        self.masker_.memory_level = self.memory_level
         check_compatibility_mask_and_images(self.mask, X)
 
         X = self.masker_.fit_transform(X)

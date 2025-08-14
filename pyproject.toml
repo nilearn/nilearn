@@ -1,13 +1,12 @@
 [build-system]
 build-backend = "hatchling.build"
-requires = ["hatchling", "hatch-vcs"]
+requires = ["hatchling", "hatch-vcs", "setuptools-scm!=9.0.0"]
 
 [project]
 authors = [{name = "Nilearn developers"}]
 classifiers = [
     "Intended Audience :: Science/Research",
     "Intended Audience :: Developers",
-    "License :: OSI Approved",
     "Programming Language :: C",
     "Programming Language :: Python",
     "Topic :: Software Development",
@@ -36,10 +35,9 @@ dependencies = [
 description = "Statistical learning for neuroimaging in Python"
 # Version from setuptools_scm
 dynamic = ["version"]
-license = {text = "new BSD"}
-maintainers = [
-    {name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}
-]
+license = "BSD-3-Clause"
+license-files = ["LICENSE"]
+maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
 name = "nilearn"
 readme = "README.rst"
 requires-python = ">=3.9"
@@ -157,7 +155,7 @@ module = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -vv --template=maint_tools/templates/index.html --timeout=45"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -v --template=maint_tools/templates/index.html --timeout=45"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
@@ -185,11 +183,11 @@ ignore = [
     "B904",
     "D105",
     "D205",
-    "D208",
     "D301",
     "E741",
     "ERA001",
     "FURB105",
+    "PD901",  # https://github.com/astral-sh/ruff/issues/7710
     "N803",
     "N806",
     "PERF203",
@@ -202,8 +200,6 @@ ignore = [
     # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
     "COM812",
     "COM819",
-    "D206",
-    "D300",
     "E111",
     "E114",
     "E117",
@@ -254,7 +250,6 @@ max-complexity = 23
 "nilearn/datasets/tests/test_atlas.py" = ["D103"]
 "nilearn/datasets/tests/test_func.py" = ["D103"]
 "nilearn/datasets/tests/test_mocking_autoused.py" = ["D103"]
-"nilearn/datasets/tests/test_neurovault.py" = ["D103"]
 "nilearn/datasets/tests/test_struct.py" = ["D103"]
 "nilearn/datasets/tests/test_testing.py" = ["D103"]
 "nilearn/datasets/tests/test_utils.py" = ["D103"]
@@ -286,6 +281,6 @@ max-args = 27
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-branches
 max-branches = 22
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
-max-returns = 7
+max-returns = 8
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
 max-statements = 93

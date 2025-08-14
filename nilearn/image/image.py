@@ -443,7 +443,7 @@ def crop_img(
         start = np.maximum(start - 1, 0)
         end = np.minimum(end + 1, data.shape[:3])
 
-    slices = [slice(s, e) for s, e in zip(start, end)][:3]
+    slices = list(map(slice, start, end))[:3]
     cropped_im = _crop_img_to(img, slices, copy=copy, copy_header=copy_header)
     return (cropped_im, tuple(slices)) if return_offset else cropped_im
 
@@ -531,7 +531,7 @@ def mean_img(
 
     Parameters
     ----------
-    imgs : Niimg-like or or :obj:`~nilearn.surface.SurfaceImage` object, or \
+    imgs : Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object, or \
            iterable of Niimg-like or :obj:`~nilearn.surface.SurfaceImage`.
         Images to be averaged over 'time'
         (see :ref:`extracting_data`
@@ -988,7 +988,7 @@ def threshold_img(
     .. versionchanged:: 0.9.0
         New ``cluster_threshold`` and ``two_sided`` parameters added.
 
-    .. versionchanged:: 0.11.2dev
+    .. versionchanged:: 0.12.0
         Add support for SurfaceImage.
 
     Parameters
@@ -1429,13 +1429,14 @@ def binarize_img(
      >>> img = binarize_img(anatomical_image, copy_header=True)
 
     """
-    warnings.warn(
-        'The current default behavior for the "two_sided" argument '
-        'is  "True". This behavior will be changed to "False" in '
-        "version 0.13.",
-        DeprecationWarning,
-        stacklevel=find_stack_level(),
-    )
+    if two_sided is True:
+        warnings.warn(
+            'The current default behavior for the "two_sided" argument '
+            'is  "True". This behavior will be changed to "False" in '
+            "version 0.13.",
+            DeprecationWarning,
+            stacklevel=find_stack_level(),
+        )
 
     return math_img(
         "img.astype(bool).astype('int8')",
@@ -1923,3 +1924,21 @@ def copy_img(img):
         img.affine.copy(),
         copy_header=True,
     )
+
+
+def get_indices_from_image(image) -> np.ndarray:
+    """Return unique values in a label image."""
+    if isinstance(image, NiimgLike):
+        img = check_niimg(image)
+        data = safe_get_data(img)
+    elif isinstance(image, SurfaceImage):
+        data = get_surface_data(image)
+    elif isinstance(image, np.ndarray):
+        data = image
+    else:
+        raise TypeError(
+            "Image to extract indices from must be one of: "
+            "Niimg-Like, SurfaceIamge, numpy array. "
+            f"Got {type(image)}"
+        )
+    return np.unique(data)

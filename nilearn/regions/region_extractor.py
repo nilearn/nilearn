@@ -445,7 +445,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.smoothing_fwhm = smoothing_fwhm
 
     @fill_doc
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -507,6 +507,8 @@ class RegionExtractor(NiftiMapsMasker):
             self.smoothing_fwhm,
             mask_img=self.mask_img_,
         )
+
+        self._fit_cache()
 
         self._maps_img = self.regions_img_
         super().fit(imgs)

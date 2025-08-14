@@ -10,6 +10,7 @@ from __future__ import annotations
 import csv
 import inspect
 import time
+import warnings
 from collections.abc import Iterable
 from pathlib import Path
 from warnings import warn
@@ -23,7 +24,6 @@ from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import fill_doc, logger
-from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
@@ -88,8 +88,8 @@ def mean_scaling(Y, axis=0):
     if (mean == 0).any():
         warn(
             "Mean values of 0 observed. "
-            "The data have probably been centered."
-            "Scaling might not work as expected",
+            "The data have probably been centered. "
+            "Scaling might not work as expected.",
             UserWarning,
             stacklevel=find_stack_level(),
         )
@@ -685,8 +685,8 @@ class FirstLevelModel(BaseGLM):
         if self.signal_scaling is not False:
             Y, _ = mean_scaling(Y, self.signal_scaling)
 
-        if self.memory:
-            mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
+        if self.memory_:
+            mem_glm = self._cache(run_glm, ignore=["n_jobs"])
         else:
             mem_glm = run_glm
 
@@ -925,7 +925,7 @@ class FirstLevelModel(BaseGLM):
         else:
             self.fir_delays_ = self.fir_delays
 
-        self.memory = check_memory(self.memory)
+        self._fit_cache()
 
         if self.signal_scaling not in {False, 1, (0, 1)}:
             raise ValueError(
@@ -1062,8 +1062,16 @@ class FirstLevelModel(BaseGLM):
         n_contrasts = len(con_vals)
         if n_contrasts == 1 and n_runs > 1:
             warn(
-                f"One contrast given, assuming it for all {n_runs} runs",
-                category=UserWarning,
+                (
+                    f"The same contrast will be used for all {n_runs} runs. "
+                    "If the design matrices are not the same for all runs, "
+                    "(for example with different column names "
+                    "or column order across runs) "
+                    "you should pass contrast as an expression using "
+                    "the name of the conditions "
+                    "as they appear in the design matrices."
+                ),
+                category=RuntimeWarning,
                 stacklevel=find_stack_level(),
             )
             con_vals = con_vals * n_runs
@@ -1242,11 +1250,16 @@ class FirstLevelModel(BaseGLM):
             self.masker_ = check_embedded_masker(
                 self, masker_type, ignore=["high_pass"]
             )
+            self.masker_.memory_level = self.memory_level
 
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"
 
-            self.masker_.fit(run_img)
+            with warnings.catch_warnings():
+                # ignore warning in case the masker
+                # was initialized with a mask image
+                warnings.simplefilter("ignore")
+                self.masker_.fit(run_img)
 
         else:
             check_is_fitted(self.mask_img)

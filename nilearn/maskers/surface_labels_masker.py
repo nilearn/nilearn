@@ -2,20 +2,13 @@
 
 import warnings
 from copy import deepcopy
-from pathlib import Path
 from typing import Union
 
 import numpy as np
-import pandas as pd
 from scipy import ndimage
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils.bids import (
-    generate_atlas_look_up_table,
-    sanitize_look_up_table,
-)
-from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -31,7 +24,11 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import mean_img
-from nilearn.maskers.base_masker import _BaseSurfaceMasker
+from nilearn.maskers.base_masker import (
+    _BaseSurfaceMasker,
+    generate_lut,
+    mask_logger,
+)
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -78,6 +75,10 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         Mutually exclusive with ``lut``.
         Labels corresponding to the labels image.
         This is used to improve reporting quality if provided.
+
+        "Background" can be included in this list of labels
+        to denote which values in the image should be considered
+        background value.
 
         .. warning::
             If the labels are not be consistent with the label values
@@ -228,11 +229,19 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         The region name corresponding to ``region_signal[:,i]``
         is ``region_names_[i]``.
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
         """
         check_is_fitted(self)
         lut = self.lut_
-        return lut.loc[lut["index"] != self.background_label, "name"].to_dict()
+        tmp = lut.loc[lut["index"] != self.background_label, "name"].to_dict()
+        region_names_ = {}
+        for key, value in tmp.items():
+            if key == 0:
+                # in case background_label is not 0
+                region_names_[key] = value
+            else:
+                region_names_[key - 1] = value
+        return region_names_
 
     @property
     def region_ids_(self) -> dict[Union[str, int], int]:
@@ -244,15 +253,26 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         is ``region_ids_[i]``.
         ``region_ids_['background']`` is the background label.
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
         """
         check_is_fitted(self)
         lut = self.lut_
-        return lut["index"].to_dict()
+        tmp = lut["index"].to_dict()
+        region_ids_: dict[Union[str, int], int] = {}
+        for key, value in tmp.items():
+            if value == self.background_label:
+                region_ids_["background"] = value
+            elif key == 0:
+                # in case background_label is not 0
+                region_ids_[key] = value
+            else:
+                region_ids_[key - 1] = value
+
+        return region_ids_
 
     @fill_doc
     @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
+        replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
@@ -290,6 +310,10 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                 "but not both."
             )
 
+        self._fit_cache()
+
+        mask_logger("load_regions", self.labels_img, verbose=self.verbose)
+
         self.labels_img_ = deepcopy(self.labels_img)
 
         self.mask_img_ = self._load_mask(imgs)
@@ -322,28 +346,10 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                     stacklevel=find_stack_level(),
                 )
 
-        self._shelving = False
-
-        # generate a look up table if one was not provided
-        if self.lut is not None:
-            if isinstance(self.lut, (str, Path)):
-                lut = pd.read_table(self.lut, sep=None)
-            else:
-                lut = self.lut
-        elif self.labels:
-            lut = generate_atlas_look_up_table(
-                function=None,
-                name=self.labels,
-                index=self.labels_img_,
-            )
-        else:
-            lut = generate_atlas_look_up_table(
-                function=None, index=self.labels_img_
-            )
-
-        self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img_)
-
-        self._shelving = False
+        self.lut_ = generate_lut(
+            self.labels_img_, self.background_label, self.lut, self.labels
+        )
+        self.lut_ = self.lut_.sort_values("index").reset_index()
 
         if self.clean_args is None:
             self.clean_args_ = {}
@@ -374,6 +380,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             )
 
         self._reporting_data = self._generate_reporting_data()
+
+        mask_logger("fit_done", verbose=self.verbose)
 
         return self
 
@@ -455,29 +463,21 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         reduction_function = getattr(ndimage, self.strategy)
 
+        mask_logger("extracting", verbose=self.verbose)
+
         for n, sample in enumerate(np.rollaxis(img_data, -1)):
             tmp = np.asarray(
                 reduction_function(sample, labels=labels_data, index=index)
             )
             region_signals[n] = tmp
 
-        parameters = get_params(
-            self.__class__,
-            self,
-            ignore=[
-                "mask_img",
-            ],
-        )
+        mask_logger("cleaning", verbose=self.verbose)
+
+        parameters = get_params(self.__class__, self, ignore=["mask_img"])
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
-        region_signals = cache(
-            signal.clean,
-            memory=self.memory,
-            func_memory_level=2,
-            memory_level=self.memory_level,
-            shelve=self._shelving,
-        )(
+        region_signals = self._cache(signal.clean, func_memory_level=2)(
             region_signals,
             detrend=parameters["detrend"],
             standardize=parameters["standardize"],
@@ -509,6 +509,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         return_1D = signals.ndim < 2
 
         signals = self._check_array(signals)
+
+        mask_logger("inverse_transform", verbose=self.verbose)
 
         imgs = signals_to_surf_img_labels(
             signals,
@@ -597,6 +599,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                         cmap=self.cmap,
                         vmin=vmin,
                         vmax=vmax,
+                        darkness=None,
                     )
                 plot_surf_contours(
                     roi_map=labels_img,

@@ -10,14 +10,14 @@ import functools
 import numbers
 import warnings
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from matplotlib import gridspec as mgs
-from matplotlib.colors import LinearSegmentedColormap
-from nibabel.spatialimages import SpatialImage
-from scipy.ndimage import binary_fill_holes
+from matplotlib import __version__ as mpl_version
+from matplotlib import get_backend
+from matplotlib.colors import LinearSegmentedColormap, Normalize
+from matplotlib.gridspec import GridSpecFromSubplotSpec
+from matplotlib.ticker import MaxNLocator
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import (
@@ -30,10 +30,8 @@ from nilearn._utils import (
 )
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.ndimage import get_border_data
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params, check_threshold
-from nilearn.datasets import load_mni152_template
 from nilearn.image import (
     get_data,
     iter_img,
@@ -41,18 +39,21 @@ from nilearn.image import (
     new_img_like,
     resample_to_img,
 )
-from nilearn.image.resampling import reorder_img
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
+from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
-    create_colormap_from_lut,
-    get_cbar_ticks,
     get_colorbar_and_data_ranges,
     save_figure_if_needed,
 )
 from nilearn.plotting.displays import get_projector, get_slicer
+from nilearn.plotting.image.utils import (
+    MNI152TEMPLATE,
+    get_cropped_cbar_ticks,
+    load_anat,
+)
 from nilearn.signal import clean
 
 
@@ -64,7 +65,7 @@ def show():
     than to emit a warning.
 
     """
-    if mpl.get_backend().lower() != "agg":  # avoid warnings
+    if get_backend().lower() != "agg":  # avoid warnings
         plt.show()
 
 
@@ -279,40 +280,12 @@ def _plot_img_with_bg(
         display.title(title)
     if hasattr(display, "_cbar"):
         cbar = display._cbar
-        new_tick_locs = _get_cropped_cbar_ticks(
+        new_tick_locs = get_cropped_cbar_ticks(
             cbar.vmin, cbar.vmax, threshold, n_ticks=len(cbar.locator.locs)
         )
         cbar.set_ticks(new_tick_locs)
 
     return save_figure_if_needed(display, output_file)
-
-
-def _get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
-    """Return ticks for cropped colorbars."""
-    new_tick_locs = np.linspace(cbar_vmin, cbar_vmax, n_ticks)
-    if threshold is not None:
-        # Case where cbar is either all positive or all negative
-        if 0 <= cbar_vmin <= cbar_vmax or cbar_vmin <= cbar_vmax <= 0:
-            idx_closest = np.argmin(
-                [abs(abs(new_tick_locs) - threshold) for _ in new_tick_locs]
-            )
-            new_tick_locs[idx_closest] = threshold
-        # Case where we do a symmetric thresholding
-        # within an asymmetric cbar
-        # and both threshold values are within bounds
-        elif cbar_vmin <= -threshold <= threshold <= cbar_vmax:
-            new_tick_locs = get_cbar_ticks(
-                cbar_vmin, cbar_vmax, threshold, n_ticks=len(new_tick_locs)
-            )
-        # Case where one of the threshold values is out of bounds
-        else:
-            idx_closest = np.argmin(
-                [abs(new_tick_locs - threshold) for _ in new_tick_locs]
-            )
-            new_tick_locs[idx_closest] = (
-                -threshold if threshold > cbar_vmax else threshold
-            )
-    return new_tick_locs
 
 
 @fill_doc
@@ -466,133 +439,6 @@ def plot_img(
     )
 
     return display
-
-
-###############################################################################
-# Anatomy image for background
-
-
-# A constant class to serve as a sentinel for the default MNI template
-class _MNI152Template(SpatialImage):
-    """Constant pointing to the MNI152 Template provided by nilearn."""
-
-    data = None
-    _affine = None
-    vmax = None
-    _shape = None
-    # Having a header is required by the load_niimg function
-    header = None  # type: ignore[assignment]
-
-    def __init__(self, data=None, affine=None, header=None):
-        # Comply with spatial image requirements while allowing empty init
-        pass
-
-    def load(self):
-        if self.data is None:
-            anat_img = load_mni152_template(resolution=2)
-            anat_img = reorder_img(anat_img, copy_header=True)
-            data = get_data(anat_img)
-            data = data.astype(np.float64)
-            anat_mask = binary_fill_holes(data > np.finfo(float).eps)
-            data = np.ma.masked_array(data, np.logical_not(anat_mask))
-            self._affine = anat_img.affine
-            self.data = data
-            self.vmax = data.max()
-            self._shape = anat_img.shape
-
-    @property
-    def _data_cache(self):
-        self.load()
-        return self.data
-
-    @property
-    def _dataobj(self):
-        self.load()
-        return self.data
-
-    def get_data(self):
-        self.load()
-        return self.data
-
-    @property
-    def affine(self):
-        self.load()
-        return self._affine
-
-    def get_affine(self):
-        self.load()
-        return self._affine
-
-    @property
-    def shape(self):
-        self.load()
-        return self._shape
-
-    def get_shape(self):
-        self.load()
-        return self._shape
-
-    def __str__(self):
-        return "<MNI152Template>"
-
-    def __repr__(self):
-        return "<MNI152Template>"
-
-
-# The constant that we use as a default in functions
-MNI152TEMPLATE = _MNI152Template()
-
-
-def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
-    """Load anatomy, for optional diming."""
-    vmin = None
-    vmax = None
-    if anat_img is False or anat_img is None:
-        if black_bg == "auto":
-            # No anatomy given: no need to turn black_bg on
-            black_bg = False
-        return anat_img, black_bg, vmin, vmax
-
-    if anat_img is MNI152TEMPLATE:
-        anat_img.load()
-        # We special-case the 'canonical anat', as we don't need
-        # to do a few transforms to it.
-        vmin = 0
-        vmax = anat_img.vmax
-        if black_bg == "auto":
-            black_bg = False
-    else:
-        anat_img = check_niimg_3d(anat_img)
-        # Clean anat_img for non-finite values to avoid computing unnecessary
-        # border data values.
-        data = safe_get_data(anat_img, ensure_finite=True)
-        anat_img = new_img_like(anat_img, data, affine=anat_img.affine)
-        if dim or black_bg == "auto":
-            # We need to inspect the values of the image
-            vmin = np.nanmin(data)
-            vmax = np.nanmax(data)
-        if black_bg == "auto":
-            # Guess if the background is rather black or light based on
-            # the values of voxels near the border
-            background = np.median(get_border_data(data, 2))
-            black_bg = not (background > 0.5 * (vmin + vmax))
-    if dim:
-        if dim != "auto" and not isinstance(dim, numbers.Number):
-            raise ValueError(
-                "The input given for 'dim' needs to be a float. "
-                f"You provided dim={dim} in {type(dim)}."
-            )
-        vmean = 0.5 * (vmin + vmax)
-        ptp = 0.5 * (vmax - vmin)
-        if black_bg:
-            if not isinstance(dim, numbers.Number):
-                dim = 0.8
-            vmax = vmean + (1 + dim) * ptp
-        else:
-            if not isinstance(dim, numbers.Number):
-                dim = 0.6
-            vmin = 0.5 * (2 - dim) * vmean - (1 + dim) * ptp
-    return anat_img, black_bg, vmin, vmax
 
 
 ###############################################################################
@@ -1305,8 +1151,8 @@ def plot_prob_atlas(
         cmap = LinearSegmentedColormap.from_list(
             "segmented colors", color_list, n_maps + 1
         )
-        display._show_colorbar(cmap, mpl.colors.Normalize(1, n_maps + 1))
-        tick_locator = mpl.ticker.MaxNLocator(nbins=10)
+        display._show_colorbar(cmap, Normalize(1, n_maps + 1))
+        tick_locator = MaxNLocator(nbins=10)
         display.locator = tick_locator
         display._cbar.update_ticks()
         tick_location = np.round(
@@ -1972,7 +1818,7 @@ def plot_markers(
     if node_vmin == node_vmax:
         node_vmin = 0.9 * node_vmin
         node_vmax = 1.1 * node_vmax
-    norm = mpl.colors.Normalize(vmin=node_vmin, vmax=node_vmax)
+    norm = Normalize(vmin=node_vmin, vmax=node_vmax)
     node_cmap = (
         plt.get_cmap(node_cmap) if isinstance(node_cmap, str) else node_cmap
     )
@@ -2121,10 +1967,13 @@ def plot_carpet(
         atlas_values = np.squeeze(atlas_values)
 
         if mask_labels:
-            label_dtype = type(next(iter(mask_labels.values())))
+            label_dtype = next(iter(mask_labels.values()))
             if label_dtype != atlas_values.dtype:
-                logger.log(f"Coercing atlas_values to {label_dtype}")
-                atlas_values = atlas_values.astype(label_dtype)
+                logger.log(
+                    "Coercing atlas_values to "
+                    f"{label_dtype.__class__.__name__}"
+                )
+                atlas_values = atlas_values.astype(type(label_dtype))
 
         # Sort data and atlas by atlas values
         order = np.argsort(atlas_values)
@@ -2166,7 +2015,7 @@ def plot_carpet(
         # Define nested GridSpec
         legend = False
         wratios = [2, 100, 20]
-        gs = mgs.GridSpecFromSubplotSpec(
+        gs = GridSpecFromSubplotSpec(
             1,
             2 + int(legend),
             subplot_spec=axes.get_subplotspec(),
@@ -2197,7 +2046,7 @@ def plot_carpet(
             ax0.set_yticks([])
 
         # Carpet plot
-        if compare_version(mpl.__version__, ">=", "3.8.0rc1"):
+        if compare_version(mpl_version, ">=", "3.8.0rc1"):
             axes.remove()  # remove axes for newer versions of mpl
         axes = plt.subplot(gs[1])  # overwrites axes with older versions of mpl
         axes.imshow(

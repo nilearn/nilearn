@@ -11,10 +11,10 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data
+from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
     check_threshold_not_negative,
-    create_colormap_from_lut,
 )
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
@@ -131,6 +131,9 @@ def plot_surf(
         `False` if `None` is passed.
 
         .. versionadded:: 0.9.0
+
+        .. versionchanged:: 0.12.0
+            Default value changed to None.
 
     %(colorbar)s
         Default=True.
@@ -383,6 +386,11 @@ def plot_surf_contours(
     )
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
+    if "darkness" not in kwargs:
+        # TODO remove in 0.13.0 when darkness is removed
+        # added now to prevent some extra warnings
+        kwargs["darkness"] = None
+
     backend = get_surface_backend(DEFAULT_ENGINE)
     fig = backend._plot_surf_contours(
         surf_mesh=surf_mesh,
@@ -411,7 +419,6 @@ def plot_surf_stat_map(
     view=None,
     engine=DEFAULT_ENGINE,
     cmap=DEFAULT_DIVERGING_CMAP,
-    symmetric_cmap=None,
     colorbar=True,
     avg_method=None,
     threshold=None,
@@ -484,18 +491,6 @@ def plot_surf_stat_map(
 
     %(cmap)s
         default="RdBu_r"
-
-    symmetric_cmap : :obj:`bool`, default=None
-        Whether to use a symmetric colormap or not.
-
-        .. note::
-            This option is currently only implemented for the ``plotly``
-            engine.
-
-        When using ``plotly`` as engine, ``symmetric_cmap`` will default to
-        `False` if `None` is passed.
-
-        .. versionadded:: 0.12.0
 
     %(colorbar)s
 
@@ -617,7 +612,6 @@ def plot_surf_stat_map(
         view=view,
         engine=engine,
         cmap=cmap,
-        symmetric_cmap=symmetric_cmap,
         colorbar=colorbar,
         avg_method=avg_method,
         threshold=threshold,

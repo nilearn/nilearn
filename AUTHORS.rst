@@ -27,15 +27,16 @@ Core developers
 
 The nilearn core developers are:
 
-* `Alexis Thual`_
 * `Bertrand Thirion`_
 * `Elizabeth DuPre`_
+* `Hande Gözükan`_
 * `Hao-Ting Wang`_
 * `Himanshu Aggarwal`_
 * `Jerome Dockes`_
-* `Nicolas Gensollen`_
+* `Michelle Wang`_
+* `Mohammad Torabi`_
+* `Pierre-Louis Barbarant`_
 * `Rémi Gau`_
-* `Taylor Salo`_
 
 .. CORE DEV SECTION ENDS HERE
 
@@ -102,6 +103,7 @@ Some other past or present contributors are:
 * `Greg Kiar`_: Child Mind Institute
 * `Greydon Gilmore`_: Department of Mathematics, Western University, Toronto, Canada
 * `Guillaume Lemaitre`_: Inria, Saclay, France
+* `Gustav Magnusson`_: Linköping University, Linköping
 * `Hande Gözükan`_: Inria, Saclay, France
 * `Hao-Ting Wang`_: Montréal Geriatrics Institute (CRIUGM), Montréal, Canada
 * `Himanshu Aggarwal`_: Inria, Saclay, France

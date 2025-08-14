@@ -6,16 +6,19 @@ from copy import deepcopy
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import repr_niimgs
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.logger import find_stack_level, log
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
 from nilearn._utils.param_validation import check_params
 from nilearn.image import clean_img, get_data, index_img, resample_img
 from nilearn.maskers._utils import compute_middle_image
-from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
+from nilearn.maskers.base_masker import (
+    BaseMasker,
+    filter_and_extract,
+    mask_logger,
+)
 from nilearn.masking import load_mask_img
 
 
@@ -116,7 +119,7 @@ class NiftiMapsMasker(BaseMasker):
         Only relevant for the report figures.
 
     %(clean_args)s
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
 
     %(masker_kwargs)s
 
@@ -419,9 +422,11 @@ class NiftiMapsMasker(BaseMasker):
             # This is for RegionExtractor that first modifies
             # maps_img before passing to its parent fit method.
             maps_img = self._maps_img
-        repr = repr_niimgs(maps_img, shorten=(not self.verbose))
-        msg = f"loading regions from {repr}"
-        log(msg=msg, verbose=self.verbose)
+
+        self._fit_cache()
+
+        mask_logger("load_regions", maps_img, verbose=self.verbose)
+
         self.maps_img_ = deepcopy(maps_img)
         self.maps_img_ = check_niimg(
             self.maps_img_, dtype=self.dtype, atleast_4d=True
@@ -459,12 +464,13 @@ class NiftiMapsMasker(BaseMasker):
             if self.resampling_target != "maps" and not check_same_fov(
                 ref_img, self.maps_img_
             ):
-                log("Resampling maps...", self.verbose)
+                mask_logger("resample_regions", verbose=self.verbose)
+
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
                 self.maps_img_ = self._cache(resample_img)(
                     self.maps_img_,
-                    interpolation="continuous",
+                    interpolation="linear",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                     copy_header=True,
@@ -473,7 +479,8 @@ class NiftiMapsMasker(BaseMasker):
             if self.mask_img_ is not None and not check_same_fov(
                 ref_img, self.mask_img_
             ):
-                log("Resampling mask...", self.verbose)
+                mask_logger("resample_mask", verbose=self.verbose)
+
                 # TODO switch to force_resample=True
                 # when bumping to version > 0.13
                 self.mask_img_ = resample_img(
@@ -505,6 +512,8 @@ class NiftiMapsMasker(BaseMasker):
 
         # The number of elements is equal to the number of volumes
         self.n_elements_ = self.maps_img_.shape[3]
+
+        mask_logger("fit_done", verbose=self.verbose)
 
         return self
 
@@ -609,7 +618,7 @@ class NiftiMapsMasker(BaseMasker):
                 # when bumping to version > 0.13
                 maps_img_ = self._cache(resample_img)(
                     self.maps_img_,
-                    interpolation="continuous",
+                    interpolation="linear",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                     copy_header=True,
@@ -675,7 +684,7 @@ class NiftiMapsMasker(BaseMasker):
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
         params["clean_kwargs"] = self.clean_args_
-        # TODO remove in 0.13.2
+        # TODO remove in 0.13.0
         if self.clean_kwargs:
             params["clean_kwargs"] = self.clean_kwargs_
 
@@ -696,7 +705,7 @@ class NiftiMapsMasker(BaseMasker):
             sample_mask=sample_mask,
             dtype=self.dtype,
             # Caching
-            memory=self.memory,
+            memory=self.memory_,
             memory_level=self.memory_level,
             # kwargs
             verbose=self.verbose,
@@ -724,7 +733,8 @@ class NiftiMapsMasker(BaseMasker):
 
         region_signals = self._check_array(region_signals)
 
-        log("computing image from signals", verbose=self.verbose)
+        mask_logger("inverse_transform", verbose=self.verbose)
+
         return signal_extraction.signals_to_img_maps(
             region_signals,
             self.maps_img_,

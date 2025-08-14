@@ -111,6 +111,8 @@
 
 .. _Guillaume Lemaitre: https://glemaitre.github.io/
 
+.. _Gustav Magnusson: https://github.com/gurraburra
+
 .. _Hande Gözükan: https://github.com/hndgzkn
 
 .. _Hao-Ting Wang: https://wanghaoting.com/

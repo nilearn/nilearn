@@ -667,6 +667,30 @@ def test_connectivity_measure_generic(
         assert is_spd(covs[k], decimal=7)
 
 
+@pytest.mark.parametrize(
+    "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
+)
+@pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
+def test_connectivity_measure_generic_3d_array(kind, cov_estimator, signals):
+    """Ensure ConnectivityMeasure accepts 3D arrays or tuple of 2D arrays."""
+    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+
+    signals_as_array = np.asarray(
+        [_signals(n_subjects=1)[0] for _ in range(5)]
+    ).squeeze()
+    assert signals_as_array.ndim == 3
+
+    connectivities = conn_measure.fit_transform(signals_as_array)
+
+    assert isinstance(connectivities, np.ndarray)
+
+    signals_as_tuple = tuple(x for x in signals)
+
+    connectivities = conn_measure.fit_transform(signals_as_tuple)
+
+    assert isinstance(connectivities, np.ndarray)
+
+
 def _assert_connectivity_tangent(connectivities, conn_measure, covs):
     """Check output value properties for tangent connectivity measure \
     that they have the expected relationship \
@@ -962,6 +986,14 @@ def test_confounds_connectome_measure():
 
 
 def test_confounds_connectome_measure_errors(signals):
+    """Check proper errors raised for wrong inputs."""
+    # Raising error for input signals are not iterable
+    conn_measure = ConnectivityMeasure(vectorize=True)
+    msg = "is not iterable"
+
+    with pytest.raises(TypeError, match=msg):
+        conn_measure._check_input(X=1.0)
+
     # Generate signals and compute covariances and apply confounds while
     # computing covariances
     signals, confounds = _signals()
@@ -970,15 +1002,15 @@ def test_confounds_connectome_measure_errors(signals):
     conn_measure = ConnectivityMeasure(vectorize=True)
     msg = "'confounds' input argument must be an iterable"
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure._check_input(X=signals, confounds=1.0)
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure._fit_transform(
             X=signals, do_fit=True, do_transform=True, confounds=1.0
         )
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure.fit_transform(X=signals, y=None, confounds=1.0)
 
     # Raising error for input confounds are given but not vectorize=True

@@ -21,6 +21,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn.image import new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
+from nilearn.surface import SurfaceImage
 
 
 def _local_max(data, affine, min_distance):
@@ -304,6 +305,15 @@ def get_clusters_table(
 
     """
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
+
+    label_maps = []
+
+    if isinstance(stat_img, SurfaceImage):
+        result_table = pd.DataFrame(columns=cols)
+        return (
+            (result_table, label_maps) if return_label_maps else result_table
+        )
+
     # Replace None with 0
     cluster_threshold = 0 if cluster_threshold is None else cluster_threshold
 
@@ -339,7 +349,6 @@ def get_clusters_table(
     signs = [1, -1] if two_sided else [1]
     no_clusters_found = True
     rows = []
-    label_maps = []
     for sign in signs:
         # Flip map if necessary
         temp_stat_map = stat_map * sign

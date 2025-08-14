@@ -81,11 +81,13 @@ jobs:
                 # As 'no plotting' run fewer tests, this allows to fail event faster if using macos.
                 -   description: oldest dependencies - no plotting
                     py: '3.9'
-                    os: macos-latest
+                    # TODO revert to latest when dropping py 3.9 and bumping matplotlib
+                    os: macos-14
                     env: min
                 -   description: oldest dependencies - no plotly
                     py: '3.9'
-                    os: macos-latest
+                    # TODO revert to latest when dropping py 3.9 and bumping matplotlib
+                    os: macos-14
                     env: plot_min
 
         steps:

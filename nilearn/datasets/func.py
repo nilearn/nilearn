@@ -3029,7 +3029,7 @@ def fetch_spm_multimodal_fmri(
 
     subject_id : :obj:`str`, default=None
 
-        .. deprecated:: 0.11.2
+        .. deprecated:: 0.12.0
 
             Will be removed in version ``0.13.0``.
 

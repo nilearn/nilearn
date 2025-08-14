@@ -614,7 +614,18 @@ docdict["masker_lut"] = """lut : :obj:`pandas.DataFrame` or :obj:`str` \
         Act as a look up table (lut)
         with at least columns 'index' and 'name'.
         Formatted according to 'dseg.tsv' format from
-        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
+        `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_.
+
+        warning::
+
+            If a region exist in the atlas image
+            but is missing from its associated LUT,
+            a new entry will be added to the LUT during fit
+            with the name "unknown".
+            Conversely, if regions listed in the LUT do not exist
+            in the associated atlas image,
+            they will be dropped from the LUT during fit.
+        """
 
 
 # mask_strategy
@@ -677,7 +688,7 @@ kwargs : dict
     `'butterworth__'` will be passed to the Butterworth filter
     (i.e., `clean__butterworth__`).
 
-    .. deprecated:: 0.11.2dev
+    .. deprecated:: 0.12.0
 
     .. admonition:: Use ``clean_args`` instead!
        :class: important
@@ -1112,7 +1123,7 @@ tfce : :obj:`bool`, default=False
        The number of thresholds used in the TFCE procedure
        will set between 10 and 1000.
 
-       .. versionadded:: 0.11.2dev
+       .. versionadded:: 0.12.0
 
     .. warning::
 
@@ -1152,7 +1163,7 @@ transparency : :obj:`float` between 0 and 1, \
     If an image is passed, voxel-wise alpha blending will be applied,
     by relying on the absolute value of ``transparency`` at each voxel.
 
-    .. versionadded:: 0.11.2
+    .. versionadded:: 0.12.0
 """
 
 # transparency
@@ -1181,7 +1192,7 @@ transparency_range : :obj:`tuple` or :obj:`list` of 2 non-negative numbers, \
     if ``None`` is passed,
     this will be set to ``[0, max(abs(transparency))]``.
 
-    .. versionadded:: 0.11.2
+    .. versionadded:: 0.12.0
 """
 
 # upper_cutoff
