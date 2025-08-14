@@ -37,16 +37,16 @@ description = "Statistical learning for neuroimaging in Python"
 # Version from setuptools_scm
 dynamic = ["version"]
 license = {text = "new BSD"}
-maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
+maintainers = [
+    {name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}
+]
 name = "nilearn"
 readme = "README.rst"
 requires-python = ">=3.9"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
-dev = [
-    "nilearn[plotting,doc,style,test]"
-]
+dev = ["nilearn[plotting,doc,style,test]"]
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
@@ -69,14 +69,8 @@ plotly = ["nilearn[plotting]"]
 # Necessary req to use nilearn's plotting module
 # Kaleido version is pinned for windows due to bug
 # See https://github.com/plotly/Kaleido/issues/134 for more detail
-plotting = [
-    "matplotlib>=3.3.0",
-    "plotly>=6.1.1",
-    "kaleido>=1.0.0"
-]
-style = [
-    'tox'
-]
+plotting = ["matplotlib>=3.3.0", "plotly>=6.1.1", "kaleido>=1.0.0"]
+style = ['tox']
 # For running unit and docstring tests
 test = [
     "coverage",
@@ -139,10 +133,7 @@ warn_unreachable = true
 
 [[tool.mypy.overrides]]
 ignore_errors = true
-module = [
-    "nilearn.externals.*",
-    "nilearn._version"
-]
+module = ["nilearn.externals.*", "nilearn._version"]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
@@ -174,10 +165,7 @@ minversion = "6.0"
 xfail_strict = true
 
 [tool.ruff]
-exclude = [
-    "nilearn/externals/*",
-    "nilearn/_version.py"
-]
+exclude = ["nilearn/externals/*", "nilearn/_version.py"]
 indent-width = 4
 line-length = 79
 
