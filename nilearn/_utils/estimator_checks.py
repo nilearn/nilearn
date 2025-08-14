@@ -1179,23 +1179,23 @@ def check_img_estimator_dtypes(estimator):
                     continue
 
                 if method == "score":
-                    signal = getattr(estimator, method)(X, y)
+                    result = getattr(estimator, method)(X, y)
                 else:
-                    signal = getattr(estimator, method)(X)
+                    result = getattr(estimator, method)(X)
 
                 if method != "transform":
                     # TODO
                     # for now we only check the output dtype for transform
                     continue
 
-                if not isinstance(signal, list):
-                    signal = [signal]
+                if not isinstance(result, list):
+                    result = [result]
 
                 target_dtype = get_target_dtype(input_dtype, dtype)
                 if target_dtype is None:
                     target_dtype = input_dtype
 
-                for s in signal:
+                for s in result:
                     output_dtype = s.dtype
                     try:
                         assert output_dtype == target_dtype
