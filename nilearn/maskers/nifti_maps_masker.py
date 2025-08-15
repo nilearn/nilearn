@@ -430,9 +430,7 @@ class NiftiMapsMasker(BaseMasker):
         mask_logger("load_regions", maps_img, verbose=self.verbose)
 
         self.maps_img_ = deepcopy(maps_img)
-        self.maps_img_ = check_niimg(
-            self.maps_img_, dtype=self.dtype, atleast_4d=True
-        )
+        self.maps_img_ = check_niimg(self.maps_img_, atleast_4d=True)
         self.maps_img_ = clean_img(
             self.maps_img_,
             detrend=False,

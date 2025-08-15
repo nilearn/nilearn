@@ -709,7 +709,8 @@ def generate_data_to_fit(estimator: BaseEstimator):
     elif is_masker(estimator):
         if accept_niimg_input(estimator):
             imgs = Nifti1Image(
-                _rng().random(_shape_3d_large()) + 10.0, _affine_eye()
+                _rng().random(_shape_3d_large(), dtype=np.float64) + 10.0,
+                _affine_eye(),
             )
         else:
             imgs = _make_surface_img(10)
@@ -729,7 +730,7 @@ def generate_data_to_fit(estimator: BaseEstimator):
         return _rng().random((5, 5)), None
 
     else:
-        data = _rng().random(_shape_3d_large()) + 10.0
+        data = _rng().random(_shape_3d_large(), dtype=np.float64) + 10.0
         imgs = Nifti1Image(data, _affine_eye())
         return imgs, None
 
@@ -1243,7 +1244,13 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
                 mask_img = new_img_like(X, np.ones(X.shape[:3]))
                 estimator.mask_img = mask_img
 
-            estimator = fit_estimator(estimator)
+            with warnings.catch_warnings(record=True) as warning_list:
+                estimator = fit_estimator(estimator)
+                # no data conversion should happen during fitting
+            assert not any(
+                "data has been converted to int32" in str(x.message)
+                for x in warning_list
+            )
 
             signal = (
                 _rng().random((10, estimator.n_elements_)).astype(input_dtype)
@@ -1257,7 +1264,6 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
             if isinstance(estimator, _BaseDecomposition):
                 output_img = output_img[0]
 
-            # input_dtype = np.dtype(input_dtype)
             target_dtype = get_target_dtype(np.dtype(input_dtype), dtype)
             if target_dtype is None:
                 target_dtype = input_dtype
@@ -1266,9 +1272,8 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
                 "data has been converted to int32" in str(x.message)
                 for x in warning_list
             )
-            if isinstance(output_img, Nifti1Image) and np.int64 in (
-                target_dtype,
-                input_dtype,
+            if isinstance(output_img, Nifti1Image) and (
+                target_dtype == np.int64 or input_dtype == np.int64
             ):
                 assert any(warning_present)
             else:
@@ -1282,7 +1287,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
                         f"img type={img_data_dtype(output_img)}, "
                         f"dataobj type={output_img.get_data_dtype()}"
                     )
-                    if target_dtype != np.int64:
+                    if not target_dtype == np.int64:
                         # ensure both image and dataobj have consistent type
                         assert (
                             img_data_dtype(output_img)
