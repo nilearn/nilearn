@@ -145,13 +145,19 @@ plotting.show()
 # to the SecondLevelModel object for estimation. We can do this because
 # all subjects share a similar design matrix (same variables reflected in
 # column names).
+#
+# Note that we apply a smoothing of 8mm.
+#
 from nilearn.glm.second_level import SecondLevelModel
+
+output_dir = Path.cwd() / "results" / "plot_bids_analysis"
+output_dir.mkdir(exist_ok=True, parents=True)
 
 second_level_input = models
 
-# %%
-# Note that we apply a smoothing of 8mm.
-second_level_model = SecondLevelModel(smoothing_fwhm=8.0, n_jobs=2)
+second_level_model = SecondLevelModel(
+    smoothing_fwhm=8.0, n_jobs=2, memory=output_dir / "tmp"
+)
 second_level_model = second_level_model.fit(second_level_input)
 
 # %%
@@ -195,6 +201,4 @@ report_slm
 
 # %%
 # Save the report to disk
-output_dir = Path.cwd() / "results" / "plot_bids_analysis"
-output_dir.mkdir(exist_ok=True, parents=True)
 report_slm.save_as_html(output_dir / "report_slm.html")
