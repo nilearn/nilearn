@@ -830,7 +830,11 @@ def generate_lut(labels_img, background_label, lut=None, labels=None):
         lut.loc[0, "name"] = "Background"
 
     else:
-        first_row = {"name": "Background", "index": background_label}
+        first_row = {
+            "name": "Background",
+            "index": background_label,
+            "color": "FFFFFF",
+        }
         first_row = {
             col: first_row[col] if col in lut else np.nan
             for col in lut.columns

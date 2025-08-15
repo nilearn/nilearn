@@ -4,6 +4,7 @@ This is done with ALL Nilearn deterministic atlases:
 - with no labels
 - with labels
 - with look up table
+- after just fit() and fit_transform on a given image
 
 Also checks some template flow atlases
 to ensure our maskers can work with external resources.
@@ -64,11 +65,26 @@ def _check_atlas(
         labels_img=labels_img, background_label=background_label, **kwargs
     )
 
-    masker.fit_transform(stat_map)
+    try:
+        masker.fit()
+    except Exception as e:
+        print("\n[red]" + "Could not fit atlas".upper() + f"\n{e!r}")
+        return False
+
+    try:
+        report = masker.generate_report()
+        report.save_as_html(
+            output_dir
+            / f"report_{atlas_name}{_suffix(**kwargs)}_fit_only.html"
+        )
+    except Exception as e:
+        print("\n[red]" + "Could not generate report".upper() + f"\n{e!r}")
+        return False
+
     try:
         masker.fit_transform(stat_map)
     except Exception as e:
-        print("\n[red]" + "Could not fit atlas".upper() + f"\n{e!r}")
+        print("\n[red]" + "Could not fit transform atlas".upper() + f"\n{e!r}")
         return False
 
     try:
