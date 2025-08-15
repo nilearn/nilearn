@@ -57,6 +57,7 @@ else:
             "_utils/plotting.py",
             "plotting",
             "reporting/html_report.py",
+            "reporting/tests/test_baseline_comparisons.py",
             "reporting/tests/test_html_report.py",
         ]
     )

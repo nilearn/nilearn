@@ -809,7 +809,7 @@ def _stat_map_to_png(
 
     """
     if not is_matplotlib_installed():
-        return None
+        return None, None
 
     cmap = DEFAULT_DIVERGING_CMAP
 
