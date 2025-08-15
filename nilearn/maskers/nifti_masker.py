@@ -619,7 +619,8 @@ class NiftiMasker(BaseMasker):
         )
 
         if not isinstance(data, np.ndarray):
-            # in case data data is a cached MemorizedResult
+            # in case data is a cached MemorizedResult
+            # only happens when _shelving is True
             return data
 
         imgs = load_img(imgs)
