@@ -720,7 +720,7 @@ def _make_stat_maps_contrast_clusters(
                 index=False,
             )
 
-        stat_map_png = _stat_map_to_png(
+        stat_map_png, _ = _stat_map_to_png(
             stat_img=thresholded_img,
             threshold=threshold,
             bg_img=bg_img,
@@ -730,6 +730,7 @@ def _make_stat_maps_contrast_clusters(
             table_details=table_details,
             two_sided=two_sided,
         )
+
         if (
             not isinstance(thresholded_img, SurfaceImage)
             and len(cluster_table) < 2
@@ -906,7 +907,8 @@ def _stat_map_to_png(
     # prevents sphinx-gallery & jupyter from scraping & inserting plots
     plt.close()
 
-    return stat_map_png
+    # the fig is returned for testing
+    return stat_map_png, fig
 
 
 def _add_params_to_plot(table_details, stat_map_plot):

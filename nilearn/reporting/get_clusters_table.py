@@ -465,7 +465,7 @@ def clustering_params_to_dataframe(
     height_control,
     alpha,
     is_volume_glm,
-):
+) -> pd.DataFrame:
     """Create a Pandas DataFrame from the supplied arguments.
 
     For use as part of the Cluster Table.
