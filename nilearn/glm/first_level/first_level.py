@@ -1266,6 +1266,8 @@ class FirstLevelModel(BaseGLM):
 
             self.masker_ = self.mask_img
 
+        self.n_elements_ = self.masker_.n_elements_
+
     @fill_doc
     def generate_report(
         self,
