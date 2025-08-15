@@ -4,28 +4,33 @@ Test if figure in report output have changed.
 See the  maintenance page of our documentation for more information
 https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-for-plotting-tests
 """
-import pytest
-import numpy as np
+
 from collections import OrderedDict
+
+import numpy as np
 import pandas as pd
-from nilearn.reporting.glm_reporter import _stat_map_to_png
-from nilearn.glm import threshold_stats_img
+import pytest
+
 from nilearn.datasets import (
     load_mni152_template,
     load_sample_motor_activation_image,
 )
+from nilearn.glm import threshold_stats_img
+from nilearn.reporting.glm_reporter import _stat_map_to_png
+
 
 @pytest.mark.mpl_image_compare
-@pytest.mark.parametrize("plot_type", ['slice', 'glass'])
-@pytest.mark.parametrize("height_control", [None, 'fpr'])
-@pytest.mark.parametrize("two_sided, threshold", 
-                         [(False, 3.09), (False, -3.09), (True, 3.09)])
-@pytest.mark.parametrize("cluster_threshold", 
-                         [0, 200])
-
-def test_stat_map_to_png_volume(plot_type, height_control, two_sided, threshold, cluster_threshold):
-
-    alpha=0.001
+@pytest.mark.parametrize("plot_type", ["slice", "glass"])
+@pytest.mark.parametrize("height_control", [None, "fpr"])
+@pytest.mark.parametrize(
+    "two_sided, threshold", [(False, 3.09), (False, -3.09), (True, 3.09)]
+)
+@pytest.mark.parametrize("cluster_threshold", [0, 200])
+def test_stat_map_to_png_volume(
+    plot_type, height_control, two_sided, threshold, cluster_threshold
+):
+    """Check figures plotting for GLM report."""
+    alpha = 0.001
 
     thresholded_img, threshold = threshold_stats_img(
         stat_img=load_sample_motor_activation_image(),
@@ -35,8 +40,6 @@ def test_stat_map_to_png_volume(plot_type, height_control, two_sided, threshold,
         height_control=height_control,
         two_sided=two_sided,
     )
-
-    print(threshold)
 
     table_details = OrderedDict()
     table_details.update({"Threshold Z": np.around(threshold, 3)})

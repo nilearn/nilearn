@@ -525,9 +525,7 @@ def clustering_params_to_dataframe(
         )
         table_details.update({"Minimum distance (mm)": min_distance})
 
-    table_details = pd.DataFrame.from_dict(
+    return pd.DataFrame.from_dict(
         table_details,
         orient="index",
     )
-
-    return table_details
