@@ -804,8 +804,12 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         check_is_fitted(self)
         return self.scorer_(self, X, y, *args)
 
-    def decision_function(self, X):
+    def _decision_function(self, X) -> np.ndarray:
         """Predict class labels for samples in X.
+
+        The function is kept private, as only Classifiers are supposed
+        to have public decision_function method
+        as per sklearn rules.
 
         Parameters
         ----------
@@ -865,7 +869,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
             scores = self._predict_dummy(n_samples)
         else:
-            scores = self.decision_function(X)
+            scores = self._decision_function(X)
 
         if self.is_classification:
             if scores.ndim == 1:
@@ -1066,7 +1070,29 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
 
 @fill_doc
-class Decoder(ClassifierMixin, _BaseDecoder):
+class _ClassifierMixin:
+    def decision_function(self, X):
+        """Predict class labels for samples in X.
+
+        Parameters
+        ----------
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like
+            See :ref:`extracting_data`.
+            Data on prediction is to be made. If this is a list,
+            the affine is considered the same for all.
+
+        Returns
+        -------
+        y_pred : :class:`numpy.ndarray`, shape (n_samples,)
+            Predicted class label per sample.
+        """
+        check_is_fitted(self)
+        return self._decision_function(X)
+
+
+@fill_doc
+class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
@@ -1657,7 +1683,7 @@ class FREMRegressor(_BaseDecoder):
 
 
 @fill_doc
-class FREMClassifier(_BaseDecoder):
+class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     """State of the art :term:`decoding` scheme applied to usual classifiers.
 
     FREM uses an implicit spatial regularization through fast clustering and
