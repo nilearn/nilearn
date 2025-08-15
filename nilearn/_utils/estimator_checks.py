@@ -1224,17 +1224,17 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
     images with np.int64
     """
     for input_dtype in [
-        # np.float32,
-        # "float64",
+        np.float32,
+        "float64",
         np.int64,
         np.int32,
-        # "i4"
+        "i4"
     ]:
         for dtype in [
             np.float32,
             "float64",
             np.int32,
-            # np.int64,
+            np.int64,
             "i4",
             "auto",
             None,
@@ -1290,6 +1290,8 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
                         assert not any(warning_present)
                     else:
                         assert any(warning_present)
+                elif dtype == np.int64:
+                    assert any(warning_present)
                 else:
                     assert not any(warning_present)
             elif isinstance(output_img, Nifti1Image) and (
