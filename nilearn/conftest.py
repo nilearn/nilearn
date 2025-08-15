@@ -45,9 +45,13 @@ if is_matplotlib_installed():
     if compare_version(
         matplotlib.__version__, ">", OPTIONAL_MATPLOTLIB_MIN_VERSION
     ):
+        # the tests that compare plotted figures
+        # against their expected baseline is only run
+        # with the oldest version of matplolib
         collect_ignore.extend(
             [
                 "plotting/tests/test_baseline_comparisons.py",
+                "reporting/tests/test_baseline_comparisons.py",
             ]
         )
 
@@ -57,7 +61,6 @@ else:
             "_utils/plotting.py",
             "plotting",
             "reporting/html_report.py",
-            "reporting/tests/test_baseline_comparisons.py",
             "reporting/tests/test_html_report.py",
         ]
     )

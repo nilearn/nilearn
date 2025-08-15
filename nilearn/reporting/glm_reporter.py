@@ -868,6 +868,7 @@ def _stat_map_to_png(
                 symmetric_cbar=symmetric_cbar,
                 vmin=vmin,
                 vmax=vmax,
+                draw_cross=False,
                 **plot_kwargs,
             )
         elif plot_type == "glass":
