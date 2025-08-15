@@ -1392,7 +1392,7 @@ class PolyData:
                     param = load_surf_data(param)
                 parts[hemi] = param
         self.parts = parts
-        self._set_data_dtype(dtype)
+        self._set_dtype(dtype)
 
         self._check_parts()
 
@@ -1506,7 +1506,16 @@ class PolyData:
 
         _data_to_gifti(data, filename)
 
-    def _set_data_dtype(self, dtype):
+    @property
+    def _dtype(self):
+        """Return dtype of the first part.
+
+        Assume all parts have same dtype.
+        """
+        return next(iter(self.parts.values())).dtype
+
+    def _set_dtype(self, dtype):
+        """Set dtype for all parts."""
         if dtype is not None:
             for h, v in self.parts.items():
                 self.parts[h] = v.astype(dtype)
@@ -1912,7 +1921,7 @@ class SurfaceImage:
 
         if isinstance(data, PolyData):
             self.data = data
-            self.data._set_data_dtype(dtype)
+            self.data._set_dtype(dtype)
         else:
             self.data = PolyData(**data, dtype=dtype)
 
