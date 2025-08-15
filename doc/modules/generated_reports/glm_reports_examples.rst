@@ -34,11 +34,19 @@ Adapted from :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_two_runs_model
 .. raw:: html
    :file: flm_fiac.html
 
-Surface GLM
-^^^^^^^^^^^
+Surface GLM: empty
+^^^^^^^^^^^^^^^^^^
 
 .. raw:: html
    :file: flm_surf_empty.html
+
+Surface GLM
+^^^^^^^^^^^
+
+Adapted from :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_localizer_surface_analysis.py`
+
+.. raw:: html
+   :file: flm_surf.html
 
 Second level report
 -------------------

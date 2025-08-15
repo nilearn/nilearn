@@ -57,13 +57,6 @@ def _get_mask_strategy(strategy):
         return partial(compute_brain_mask, mask_type="gm")
     elif strategy == "wm-template":
         return partial(compute_brain_mask, mask_type="wm")
-    elif strategy == "template":
-        warnings.warn(
-            "Masking strategy 'template' is deprecated."
-            "Please use 'whole-brain-template' instead.",
-            stacklevel=find_stack_level(),
-        )
-        return partial(compute_brain_mask, mask_type="whole-brain")
     else:
         raise ValueError(
             f"Unknown value of mask_strategy '{strategy}'. "
