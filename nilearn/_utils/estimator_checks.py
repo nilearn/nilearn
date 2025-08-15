@@ -28,6 +28,7 @@ from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import BaseEstimator, is_classifier, is_regressor
 from sklearn.datasets import make_classification, make_regression
+from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils._testing import (
     assert_allclose_dense_sparse,
@@ -273,6 +274,9 @@ def return_expected_failed_checks(
             "replaced by check_masker_fit_score_takes_y"
         ),
         "check_estimators_pickle": "replaced by check_img_estimator_pickle",
+        "check_pipeline_consistency": (
+            "replaced by check_img_estimator_pipeline_consistency"
+        ),
         # Those are skipped for now they fail
         # for unknown reasons
         # most often because sklearn inputs expect a numpy array
@@ -285,7 +289,6 @@ def return_expected_failed_checks(
         "check_methods_sample_order_invariance": "TODO",
         "check_methods_subset_invariance": "TODO",
         "check_positive_only_tag_during_fit": "TODO",
-        "check_pipeline_consistency": "TODO",
         "check_readonly_memmap_input": "TODO",
     }
 
@@ -412,17 +415,24 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
     expected_failed_checks = {
         # the following are have nilearn replacement for masker and/or glm
         # but not for decoders
-        "check_estimators_empty_data_messages": (
-            "not implemented for nifti data performance reasons"
+        "check_dict_unchanged": (
+            "replaced by check_img_estimator_dict_unchanged"
         ),
         "check_dont_overwrite_parameters": (
             "replaced by check_img_estimator_dont_overwrite_parameters"
         ),
+        "check_estimators_empty_data_messages": (
+            "not implemented for nifti data performance reasons"
+        ),
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
+        "check_estimators_pickle": "replaced by check_img_estimator_pickle",
         "check_fit_check_is_fitted": (
             "replaced by check_img_estimator_fit_check_is_fitted"
+        ),
+        "check_pipeline_consistency": (
+            "replaced by check_img_estimator_pipeline_consistency"
         ),
         "check_requires_y_none": (
             "replaced by check_img_estimator_requires_y_none"
@@ -436,11 +446,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         # that errors with maskers,
         # or because a suitable nilearn replacement
         # has not yet been created.
-        "check_dict_unchanged": (
-            "replaced by check_img_estimator_dict_unchanged"
-        ),
         "check_estimators_dtypes": "TODO",
-        "check_estimators_pickle": "TODO",
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
         "check_fit_idempotent": "TODO",
@@ -448,7 +454,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_methods_sample_order_invariance": "TODO",
         "check_methods_subset_invariance": "TODO",
         "check_positive_only_tag_during_fit": "TODO",
-        "check_pipeline_consistency": "TODO",
         "check_readonly_memmap_input": "TODO",
         "check_supervised_y_2d": "TODO",
     }
@@ -526,6 +531,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
         yield (clone(estimator), check_img_estimator_overwrite_params)
         yield (clone(estimator), check_img_estimator_pickle)
+        yield (clone(estimator), check_img_estimator_pipeline_consistency)
 
         if hasattr(estimator, "transform"):
             yield (clone(estimator), check_img_estimator_dict_unchanged)
@@ -1100,6 +1106,65 @@ def check_img_estimator_pickle(estimator_orig):
             assert_surface_image_equal(result[method], unpickled_result)
         elif isinstance(unpickled_result, Nifti1Image):
             check_imgs_equal(result[method], unpickled_result)
+
+
+@ignore_warnings
+def check_img_estimator_pipeline_consistency(estimator_orig):
+    """Check pipeline consistency for nilearn estimators.
+
+
+    Substitute for sklearn check_pipeline_consistency.
+    """
+    estimator = clone(estimator_orig)
+
+    X, y = generate_data_to_fit(estimator)
+
+    if isinstance(estimator, NiftiSpheresMasker):
+        # NiftiSpheresMasker needs mask_img to run inverse_transform
+        mask_img = new_img_like(X, np.ones(X.shape[:3]))
+        estimator.mask_img = mask_img
+
+    set_random_state(estimator)
+
+    pipeline = make_pipeline(estimator)
+
+    if is_glm(estimator):
+        # FirstLevel
+        if hasattr(estimator, "hrf_model"):
+            pipeline.fit(X, firstlevelmodel__design_matrices=y)
+        # SecondLevel
+        else:
+            pipeline.fit(X, secondlevelmodel__design_matrix=y)
+
+    elif (
+        isinstance(estimator, SearchLight)
+        or is_classifier(estimator)
+        or is_regressor(estimator)
+    ):
+        pipeline.fit(X, y)
+
+    else:
+        pipeline.fit(X)
+
+    funcs = ["score", "transform"]
+
+    for func_name in funcs:
+        func = getattr(estimator, func_name, None)
+        if func is not None:
+            func_pipeline = getattr(pipeline, func_name)
+            if func_name == "transform":
+                result = func(X)
+                result_pipe = func_pipeline(X)
+            else:
+                result = func(X, y)
+                result_pipe = func_pipeline(X, y)
+            if isinstance(estimator, SearchLight) and func_name == "transform":
+                # TODO
+                # SearchLight transform seem to return
+                # slightly different results
+                assert_allclose_dense_sparse(result, result_pipe, atol=1e-04)
+            else:
+                assert_allclose_dense_sparse(result, result_pipe)
 
 
 @ignore_warnings()
