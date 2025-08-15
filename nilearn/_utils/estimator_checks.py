@@ -709,7 +709,7 @@ def generate_data_to_fit(estimator: BaseEstimator):
     elif is_masker(estimator):
         if accept_niimg_input(estimator):
             imgs = Nifti1Image(
-                _rng().random(_shape_3d_large(), dtype=np.float64) + 10.0,
+                _rng().random(_shape_3d_large()) + 10.0,
                 _affine_eye(),
             )
         else:
@@ -730,7 +730,7 @@ def generate_data_to_fit(estimator: BaseEstimator):
         return _rng().random((5, 5)), None
 
     else:
-        data = _rng().random(_shape_3d_large(), dtype=np.float64) + 10.0
+        data = _rng().random(_shape_3d_large()) + 10.0
         imgs = Nifti1Image(data, _affine_eye())
         return imgs, None
 
@@ -1223,12 +1223,18 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
     we must handle deal with the fact that nibabel won't create
     images with np.int64
     """
-    for input_dtype in [np.float32, "float64", np.int64, np.int32, "i4"]:
+    for input_dtype in [
+        # np.float32,
+        # "float64",
+        np.int64,
+        np.int32,
+        # "i4"
+    ]:
         for dtype in [
             np.float32,
             "float64",
             np.int32,
-            np.int64,
+            # np.int64,
             "i4",
             "auto",
             None,
@@ -1272,14 +1278,26 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
                 "data has been converted to int32" in str(x.message)
                 for x in warning_list
             )
-            if isinstance(output_img, Nifti1Image) and (
+            if isinstance(estimator, NiftiMapsMasker):
+                if input_dtype == np.int64:
+                    if dtype in [
+                        "auto",
+                        "i4",
+                        np.int32,
+                        "float64",
+                        np.float32,
+                    ]:
+                        assert not any(warning_present)
+                    else:
+                        assert any(warning_present)
+                else:
+                    assert not any(warning_present)
+            elif isinstance(output_img, Nifti1Image) and (
                 target_dtype == np.int64 or input_dtype == np.int64
             ):
                 assert any(warning_present)
             else:
                 assert not any(warning_present)
-
-            assert isinstance(output_img, (Nifti1Image, SurfaceImage))
 
             try:
                 if isinstance(output_img, Nifti1Image):

@@ -772,7 +772,7 @@ def _downcast_from_int64_if_possible(data):
             "passing `int` as the `dtype`. Many tools such as FSL and SPM "
             "cannot deal with int64 in Nifti images, so for compatibility the "
             "data has been converted to int32.",
-            stacklevel=find_stack_level() - 3,
+            stacklevel=find_stack_level(),
         )
         return data.astype("int32")
     warnings.warn(
