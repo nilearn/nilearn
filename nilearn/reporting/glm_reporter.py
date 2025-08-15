@@ -10,6 +10,7 @@ make_glm_report(model, contrasts):
 """
 
 import datetime
+import inspect
 import uuid
 import warnings
 from html import escape
@@ -68,7 +69,6 @@ if is_matplotlib_installed():
         plot_stat_map,
         plot_surf_stat_map,
     )
-    from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
     from nilearn.plotting.image.utils import (  # type: ignore[assignment]
         MNI152TEMPLATE,
     )
@@ -211,6 +211,28 @@ def make_glm_report(
             stacklevel=find_stack_level(),
         )
 
+    tmp = dict(**inspect.signature(make_glm_report).parameters)
+    if height_control is not None:
+        if float(threshold) != float(tmp["threshold"].default):
+            warnings.warn(
+                (
+                    f"'{threshold=}' will not be used "
+                    "with '{height_control=}'. "
+                    "'threshold' is only used when 'height_control=None'. "
+                    "Setting it back to '3.0'."
+                ),
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
+        # setting threshold to the value to its default in threshold_stats_img
+        # to avoid further warnings
+        # TODO
+        # homogenize the default threshold of both
+        # make_glm_report, threshold_stats_img,
+        # FirstLevelModel.generate_report, SecondLevelModel.generate_report
+        # to both be 3.0 or 3.09 and not a mix of both
+        threshold = "3.0"
+
     unique_id = str(uuid.uuid4()).replace("-", "")
 
     title = f"<br>{title}" if title else ""
@@ -309,7 +331,7 @@ def make_glm_report(
         )
         results = _make_stat_maps_contrast_clusters(
             stat_img=statistical_maps,
-            threshold=threshold,
+            threshold_orig=threshold,
             alpha=alpha,
             cluster_threshold=cluster_threshold,
             height_control=height_control,
@@ -551,7 +573,7 @@ def _mask_to_plot(model, bg_img, cut_coords):
 @fill_doc
 def _make_stat_maps_contrast_clusters(
     stat_img,
-    threshold,
+    threshold_orig,
     alpha,
     cluster_threshold,
     height_control,
@@ -582,7 +604,7 @@ def _make_stat_maps_contrast_clusters(
     contrasts_plots : Dict[str, str]
         Contains contrast names & HTML code of the contrast's PNG plot.
 
-    threshold : float
+    threshold_orig : float
        Desired threshold in z-scale.
        This is used only if height_control is None
 
@@ -653,10 +675,11 @@ def _make_stat_maps_contrast_clusters(
         # https://github.com/nilearn/nilearn/issues/4192
         thresholded_img, threshold = threshold_stats_img(
             stat_img=stat_map_img,
-            threshold=threshold,
+            threshold=threshold_orig,
             alpha=alpha,
             cluster_threshold=cluster_threshold,
             height_control=height_control,
+            two_sided=two_sided,
         )
 
         table_details = clustering_params_to_dataframe(
@@ -720,19 +743,22 @@ def _make_stat_maps_contrast_clusters(
                 index=False,
             )
 
-        stat_map_png = _stat_map_to_png(
-            stat_img=stat_map_img,
+        stat_map_png, _ = _stat_map_to_png(
+            stat_img=thresholded_img,
             threshold=threshold,
             bg_img=bg_img,
             cut_coords=cut_coords,
             display_mode=display_mode,
             plot_type=plot_type,
             table_details=table_details,
+            two_sided=two_sided,
         )
+
         if (
             not isinstance(thresholded_img, SurfaceImage)
             and len(cluster_table) < 2
         ):
+            # do not pass anything when nothing survives thresholding
             cluster_table_html = None
             stat_map_png = None
 
@@ -754,6 +780,7 @@ def _stat_map_to_png(
     display_mode,
     plot_type,
     table_details,
+    two_sided,
 ):
     """Generate PNG code for a statistical map, \
     including its clustering parameters.
@@ -794,6 +821,10 @@ def _stat_map_to_png(
         Dataframe listing the parameters used for clustering,
         to be included in the plot.
 
+    two_sided : `bool`, default=False
+        Whether to employ two-sided thresholding or to evaluate positive values
+        only.
+
     Returns
     -------
     stat_map_png : string
@@ -801,37 +832,50 @@ def _stat_map_to_png(
 
     """
     if not is_matplotlib_installed():
-        return None
+        return None, None
 
     cmap = DEFAULT_DIVERGING_CMAP
 
-    if isinstance(stat_img, SurfaceImage):
-        data = get_surface_data(stat_img)
-    else:
-        stat_img = load_niimg(stat_img)
-        data = safe_get_data(stat_img, ensure_finite=True)
+    plot_kwargs = {}
+    if two_sided:
+        symmetric_cbar = True
+        vmin = vmax = None
+        # when two sided, passing the threshold
+        # allows to hide the thresholded values in the colorbar
+        # TODO: this does not (yet) work well with one sided plots
+        plot_kwargs = {"threshold": threshold}
 
-    stat_map_min = np.nanmin(data)
-    stat_map_max = np.nanmax(data)
-    symmetric_cbar = True
-    if stat_map_min >= 0.0:
+    else:
         symmetric_cbar = False
-        cmap = "red_transparent_full_alpha_range"
-    elif stat_map_max <= 0.0:
-        symmetric_cbar = False
-        cmap = "blue_transparent_full_alpha_range"
-        cmap = nilearn_cmaps[cmap].reversed()
+
+        if isinstance(stat_img, SurfaceImage):
+            data = get_surface_data(stat_img)
+        else:
+            stat_img = load_niimg(stat_img)
+            data = safe_get_data(stat_img, ensure_finite=True)
+
+        vmin = np.nanmin(data)
+        vmax = np.nanmax(data)
+        if vmin >= 0.0:
+            vmin = 0
+            cmap = "Reds"
+        elif vmax <= 0.0:
+            vmax = 0
+            cmap = "Blues_r"
 
     if isinstance(stat_img, SurfaceImage):
         surf_mesh = bg_img.mesh if bg_img else None
         stat_map_plot = plot_surf_stat_map(
             stat_map=stat_img,
             hemi="left",
-            threshold=threshold,
             bg_map=bg_img,
             surf_mesh=surf_mesh,
             cmap=cmap,
             darkness=None,
+            symmetric_cbar=symmetric_cbar,
+            vmin=vmin,
+            vmax=vmax,
+            **plot_kwargs,
         )
 
         x_label_color = "black"
@@ -845,7 +889,10 @@ def _stat_map_to_png(
                 display_mode=display_mode,
                 cmap=cmap,
                 symmetric_cbar=symmetric_cbar,
-                threshold=threshold,
+                vmin=vmin,
+                vmax=vmax,
+                draw_cross=False,
+                **plot_kwargs,
             )
         elif plot_type == "glass":
             stat_map_plot = plot_glass_brain(
@@ -854,7 +901,9 @@ def _stat_map_to_png(
                 plot_abs=False,
                 symmetric_cbar=symmetric_cbar,
                 cmap=cmap,
-                threshold=threshold,
+                vmin=vmin,
+                vmax=vmax,
+                **plot_kwargs,
             )
         else:
             raise ValueError(
@@ -882,7 +931,8 @@ def _stat_map_to_png(
     # prevents sphinx-gallery & jupyter from scraping & inserting plots
     plt.close()
 
-    return stat_map_png
+    # the fig is returned for testing
+    return stat_map_png, fig
 
 
 def _add_params_to_plot(table_details, stat_map_plot):
