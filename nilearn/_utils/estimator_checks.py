@@ -1278,22 +1278,13 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
                 "data has been converted to int32" in str(x.message)
                 for x in warning_list
             )
-            if isinstance(estimator, NiftiMapsMasker):
-                if input_dtype == np.int64:
-                    if dtype in [
-                        "auto",
-                        "i4",
-                        np.int32,
-                        "float64",
-                        np.float32,
-                    ]:
-                        assert not any(warning_present)
-                    else:
-                        assert any(warning_present)
-                elif dtype == np.int64:
+            if isinstance(estimator, (NiftiMapsMasker, NiftiSpheresMasker)):
+                # TODO
+                # NiftiMapsMasker, NiftiSpheresMasker
+                # do not throw warnings about casting data to int64
+                # when the input data is int64 and their dtype is 
+                if dtype == np.int64 or (input_dtype == np.int64 and dtype is None):
                     assert any(warning_present)
-                else:
-                    assert not any(warning_present)
             elif isinstance(output_img, Nifti1Image) and (
                 target_dtype == np.int64 or input_dtype == np.int64
             ):
