@@ -23,7 +23,7 @@ from nilearn.reporting.glm_reporter import _stat_map_to_png
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 @pytest.mark.parametrize("height_control", [None, "fpr"])
 @pytest.mark.parametrize(
-    "two_sided, threshold", [(False, 3.09), (False, -3.09), (True, 3.09)]
+    "two_sided, threshold", [(False, 3), (False, -3), (True, 3)]
 )
 @pytest.mark.parametrize("cluster_threshold", [0, 200])
 def test_stat_map_to_png_volume(

@@ -1,5 +1,7 @@
 """Test the thresholding utilities."""
 
+import warnings
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -54,6 +56,25 @@ def data_norm_isf():
     return norm.isf(np.linspace(1.0 / p, 1.0 - 1.0 / p, p)).reshape(
         _shape_3d_default()
     )
+
+
+@pytest.mark.parametrize("height_control", [None, "fpr", "fdr", "bonferroni"])
+def test_threshold_stats_img_warn_threshold_unused(
+    data_norm_isf, affine_eye, height_control
+):
+    """Warn if non default threshold used with height_control != None."""
+    data = data_norm_isf
+    data[2:4, 5:7, 6:8] = 5.0
+    stat_img = Nifti1Image(data, affine_eye)
+
+    with warnings.catch_warnings(record=True) as warnings_list:
+        threshold_stats_img(
+            stat_img,
+            threshold=2,
+            height_control=height_control,
+        )
+    if height_control is not None:
+        assert any("will not be used with" in str(x) for x in warnings_list)
 
 
 def test_threshold_stats_img_no_height_control(

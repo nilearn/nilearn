@@ -10,6 +10,7 @@ make_glm_report(model, contrasts):
 """
 
 import datetime
+import inspect
 import uuid
 import warnings
 from html import escape
@@ -210,6 +211,28 @@ def make_glm_report(
             stacklevel=find_stack_level(),
         )
 
+    tmp = dict(**inspect.signature(make_glm_report).parameters)
+    if height_control is not None:
+        if float(threshold) != float(tmp["threshold"].default):
+            warnings.warn(
+                (
+                    f"'{threshold=}' will not be used "
+                    "with '{height_control=}'. "
+                    "'threshold' is only used when 'height_control=None'. "
+                    "Setting it back to '3.0'."
+                ),
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
+        # setting threshold to the value to its default in threshold_stats_img
+        # to avoid further warnings
+        # TODO
+        # homogenize the default threshold of both
+        # make_glm_report, threshold_stats_img,
+        # FirstLevelModel.generate_report, SecondLevelModel.generate_report
+        # to both be 3.0 or 3.09 and not a mix of both
+        threshold = "3.0"
+
     unique_id = str(uuid.uuid4()).replace("-", "")
 
     title = f"<br>{title}" if title else ""
@@ -308,7 +331,7 @@ def make_glm_report(
         )
         results = _make_stat_maps_contrast_clusters(
             stat_img=statistical_maps,
-            threshold=threshold,
+            threshold_orig=threshold,
             alpha=alpha,
             cluster_threshold=cluster_threshold,
             height_control=height_control,
@@ -550,7 +573,7 @@ def _mask_to_plot(model, bg_img, cut_coords):
 @fill_doc
 def _make_stat_maps_contrast_clusters(
     stat_img,
-    threshold,
+    threshold_orig,
     alpha,
     cluster_threshold,
     height_control,
@@ -581,7 +604,7 @@ def _make_stat_maps_contrast_clusters(
     contrasts_plots : Dict[str, str]
         Contains contrast names & HTML code of the contrast's PNG plot.
 
-    threshold : float
+    threshold_orig : float
        Desired threshold in z-scale.
        This is used only if height_control is None
 
@@ -652,7 +675,7 @@ def _make_stat_maps_contrast_clusters(
         # https://github.com/nilearn/nilearn/issues/4192
         thresholded_img, threshold = threshold_stats_img(
             stat_img=stat_map_img,
-            threshold=threshold,
+            threshold=threshold_orig,
             alpha=alpha,
             cluster_threshold=cluster_threshold,
             height_control=height_control,

@@ -3,6 +3,7 @@ cluster-level in brain imaging: cluster-level thresholding, false \
 discovery rate control, false discovery proportion in clusters.
 """
 
+import inspect
 import warnings
 
 import numpy as np
@@ -262,6 +263,21 @@ def threshold_stats_img(
         raise ValueError(
             f"'height_control' should be one of {height_control_methods}. \n"
             f"Got: '{height_control_methods}'"
+        )
+
+    tmp = dict(**inspect.signature(threshold_stats_img).parameters)
+    if height_control is not None and float(threshold) != float(
+        tmp["threshold"].default
+    ):
+        warnings.warn(
+            (
+                f"'{threshold=}' will not be used with '{height_control=}'. "
+                "'threshold' is only used when 'height_control=None'. "
+                f"Set 'threshold' to '{tmp['threshold'].default}' "
+                "to avoid this warning."
+            ),
+            UserWarning,
+            stacklevel=find_stack_level(),
         )
 
     # if two-sided, correct alpha by a factor of 2
