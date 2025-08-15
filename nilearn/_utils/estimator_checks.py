@@ -1223,13 +1223,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
     we must handle deal with the fact that nibabel won't create
     images with np.int64
     """
-    for input_dtype in [
-        np.float32,
-        "float64",
-        np.int64,
-        np.int32,
-        "i4"
-    ]:
+    for input_dtype in [np.float32, "float64", np.int64, np.int32, "i4"]:
         for dtype in [
             np.float32,
             "float64",
@@ -1253,10 +1247,10 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
             with warnings.catch_warnings(record=True) as warning_list:
                 estimator = fit_estimator(estimator)
                 # no data conversion should happen during fitting
-            assert not any(
-                "data has been converted to int32" in str(x.message)
-                for x in warning_list
-            )
+                assert not any(
+                    "data has been converted to int32" in str(x.message)
+                    for x in warning_list
+                )
 
             signal = (
                 _rng().random((10, estimator.n_elements_)).astype(input_dtype)
@@ -1278,16 +1272,17 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
                 "data has been converted to int32" in str(x.message)
                 for x in warning_list
             )
-            if isinstance(estimator, (NiftiMapsMasker, NiftiSpheresMasker)):
-                # TODO
-                # NiftiMapsMasker, NiftiSpheresMasker
-                # do not throw warnings about casting data to int64
-                # when the input data is int64 and their dtype is 
-                if dtype == np.int64 or (input_dtype == np.int64 and dtype is None):
+            if isinstance(output_img, Nifti1Image) and dtype == np.int64:
+                assert any(warning_present)
+            elif isinstance(estimator, (NiftiMapsMasker, NiftiSpheresMasker)):
+                if input_dtype == np.int64 and dtype is None:
                     assert any(warning_present)
-            elif isinstance(output_img, Nifti1Image) and (
-                target_dtype == np.int64 or input_dtype == np.int64
+            elif (
+                isinstance(output_img, Nifti1Image) and input_dtype == np.int64
             ):
+                # TODO
+                # other maskers should only throw warning
+                # when input_dtype == np.int64 and dtype is None
                 assert any(warning_present)
             else:
                 assert not any(warning_present)
@@ -1298,7 +1293,7 @@ def check_img_estimator_dtypes_inverse_transform(estimator_orig):
                         f"img type={img_data_dtype(output_img)}, "
                         f"dataobj type={output_img.get_data_dtype()}"
                     )
-                    if not target_dtype == np.int64:
+                    if target_dtype != np.int64:
                         # ensure both image and dataobj have consistent type
                         assert (
                             img_data_dtype(output_img)
