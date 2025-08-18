@@ -938,7 +938,11 @@ def _stat_map_to_png(
             color=x_label_color,
         )
 
-        if not two_sided and threshold < 0:
+        if (
+            isinstance(stat_img, SurfaceImage)
+            and not two_sided
+            and threshold < 0
+        ):
             # Because the image has been flipped
             # replace labels with their negative
             ticks = stat_map_plot._cbar.get_ticks()
