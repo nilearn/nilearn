@@ -16,7 +16,6 @@ from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
 from sklearn.exceptions import EfficiencyWarning
 
-from nilearn import _utils
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
@@ -836,7 +835,7 @@ def vol_to_surf(
     img = load_img(img)
 
     if mask_img is not None:
-        mask_img = _utils.check_niimg(mask_img)
+        mask_img = check_niimg(mask_img)
         mask = get_vol_data(
             resample_to_img(
                 mask_img,
@@ -852,7 +851,7 @@ def vol_to_surf(
 
     original_dimension = len(img.shape)
 
-    img = _utils.check_niimg(img, atleast_4d=True)
+    img = check_niimg(img, atleast_4d=True)
 
     frames = np.rollaxis(get_vol_data(img), -1)
 
