@@ -7,7 +7,6 @@ from importlib import import_module
 from pathlib import Path
 
 from .docs import fill_doc
-from .niimg import load_niimg
 from .niimg_conversions import check_niimg, check_niimg_3d, check_niimg_4d
 
 
@@ -195,5 +194,4 @@ __all__ = [
     "check_niimg_3d",
     "check_niimg_4d",
     "fill_doc",
-    "load_niimg",
 ]
