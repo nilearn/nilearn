@@ -11,8 +11,8 @@ from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
 from nilearn import _utils
-from nilearn._utils import fill_doc, stringify_path
-from nilearn._utils.helpers import check_copy_header
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import check_copy_header, stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
 from nilearn.image.image import copy_img, crop_img

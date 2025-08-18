@@ -17,7 +17,7 @@ from scipy import interpolate, sparse
 from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import _utils
-from nilearn._utils import stringify_path
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing

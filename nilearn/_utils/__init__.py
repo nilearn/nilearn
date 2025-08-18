@@ -9,7 +9,6 @@ from pathlib import Path
 from nilearn._utils.helpers import (
     remove_parameters,
     rename_parameters,
-    stringify_path,
 )
 
 from .docs import fill_doc
@@ -207,5 +206,4 @@ __all__ = [
     "remove_parameters",
     "rename_parameters",
     "repr_niimgs",
-    "stringify_path",
 ]

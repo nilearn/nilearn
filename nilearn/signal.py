@@ -15,8 +15,9 @@ from scipy import signal as sp_signal
 from scipy.interpolate import CubicSpline
 from sklearn.utils import as_float_array, gen_even_slices
 
-from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.exceptions import AllVolumesRemovedError
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import (
