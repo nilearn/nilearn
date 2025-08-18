@@ -20,9 +20,9 @@ from nilearn._utils import (
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,
-    repr_niimgs,
 )
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.niimg import repr_niimgs
 from nilearn._utils.niimg_conversions import check_same_fov, iter_check_niimg
 from nilearn._utils.testing import (
     assert_memory_less_than,

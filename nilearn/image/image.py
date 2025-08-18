@@ -22,7 +22,6 @@ from nilearn._utils import (
     check_niimg_4d,
     fill_doc,
     logger,
-    repr_niimgs,
 )
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import (
@@ -33,7 +32,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import _get_data, safe_get_data
+from nilearn._utils.niimg import _get_data, repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import (
     _index_img,
     check_same_fov,
