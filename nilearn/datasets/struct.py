@@ -9,9 +9,9 @@ import pandas as pd
 from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
-from nilearn._utils import check_niimg
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     ALLOWED_DATA_TYPES,
