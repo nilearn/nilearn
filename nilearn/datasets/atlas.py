@@ -13,11 +13,12 @@ import pandas as pd
 from nibabel import freesurfer, load
 from sklearn.utils import Bunch
 
-from nilearn._utils import check_niimg, fill_doc, logger, rename_parameters
+from nilearn._utils import check_niimg, fill_doc, logger
 from nilearn._utils.bids import (
     check_look_up_table,
     generate_atlas_look_up_table,
 )
+from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (

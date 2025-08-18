@@ -15,9 +15,7 @@ from nilearn._utils import (
     check_niimg_4d,
     fill_doc,
 )
-from nilearn._utils.helpers import (
-    rename_parameters,
-)
+from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_same_fov

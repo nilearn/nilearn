@@ -11,7 +11,7 @@ from queue import Empty, Queue
 from socketserver import TCPServer
 from threading import Thread
 
-from nilearn._utils import remove_parameters
+from nilearn._utils.helpers import remove_parameters
 from nilearn._utils.logger import find_stack_level
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
