@@ -338,3 +338,39 @@ def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
     threshold_stats_img(
         surf_img_1d, height_control="bonferroni", mask_img=surf_mask_1d
     )
+
+
+def test_threshold_stats_img_surface_output(surf_img_1d):
+    """Check output threshold_stats_img surface with no height_control."""
+    surf_img_1d.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
+    surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
+
+    # two sided
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, threshold=2
+    )
+
+    assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
+    assert_equal(
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+    )
+
+    # one sided positive
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, threshold=3, two_sided=False
+    )
+
+    assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 4.0]))
+    assert_equal(
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+    )
+
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, threshold=-0.5, two_sided=False
+    )
+
+    # one sided negative
+    assert_equal(result.data.parts["left"], np.asarray([0.0, -1.0, 0.0, 0.0]))
+    assert_equal(
+        result.data.parts["right"], np.asarray([0.0, -2.0, 0.0, 0.0, 0.0])
+    )
