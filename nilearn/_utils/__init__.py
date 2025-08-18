@@ -13,9 +13,7 @@ from nilearn._utils.helpers import (
     stringify_path,
 )
 
-from .cache_mixin import CacheMixin
 from .docs import fill_doc
-from .logger import compose_err_msg
 from .niimg import load_niimg, repr_niimgs
 from .niimg_conversions import check_niimg, check_niimg_3d, check_niimg_4d
 from .numpy_conversions import as_ndarray
@@ -199,7 +197,6 @@ def all_classes(
 
 
 __all__ = [
-    "CacheMixin",
     "all_classes",
     "all_functions",
     "as_ndarray",
@@ -207,7 +204,6 @@ __all__ = [
     "check_niimg_3d",
     "check_niimg_4d",
     "compare_version",
-    "compose_err_msg",
     "fill_doc",
     "load_niimg",
     "remove_parameters",
