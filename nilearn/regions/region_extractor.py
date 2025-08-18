@@ -13,8 +13,8 @@ from nilearn._utils import (
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,
-    fill_doc,
 )
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data

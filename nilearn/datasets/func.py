@@ -20,7 +20,8 @@ from scipy.io import loadmat
 from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
-from nilearn._utils import check_niimg, fill_doc, logger
+from nilearn._utils import check_niimg, logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import remove_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params

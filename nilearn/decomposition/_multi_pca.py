@@ -6,7 +6,7 @@ This is a good initialization method for ICA.
 import numpy as np
 from sklearn.utils.extmath import randomized_svd
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 
 from ._base import _BaseDecomposition
 

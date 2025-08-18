@@ -6,8 +6,11 @@ import warnings
 from importlib import import_module
 from pathlib import Path
 
-from .docs import fill_doc
-from .niimg_conversions import check_niimg, check_niimg_3d, check_niimg_4d
+from nilearn._utils.niimg_conversions import (
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
+)
 
 
 def all_modules(modules_to_ignore=None, modules_to_consider=None):
@@ -193,5 +196,4 @@ __all__ = [
     "check_niimg",
     "check_niimg_3d",
     "check_niimg_4d",
-    "fill_doc",
 ]

@@ -12,11 +12,11 @@ from nibabel import Nifti1Image
 from scipy import linalg, ndimage
 
 from nilearn import _utils, masking
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_reduction_strategy
-
-from .._utils.niimg import safe_get_data
-from ..image import new_img_like
+from nilearn.image import new_img_like
 
 INF = 1000 * np.finfo(np.float32).eps
 
@@ -213,7 +213,7 @@ def _get_labels_data(
 
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
-@_utils.fill_doc
+@fill_doc
 def img_to_signals_labels(
     imgs,
     labels_img,
@@ -425,7 +425,7 @@ def signals_to_img_labels(
     return new_img_like(labels_img, data, labels_img.affine)
 
 
-@_utils.fill_doc
+@fill_doc
 def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
     """Extract region signals from image.
 

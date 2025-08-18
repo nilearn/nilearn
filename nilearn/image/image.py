@@ -20,9 +20,9 @@ from nilearn._utils import (
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,
-    fill_doc,
     logger,
 )
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import (
     check_copy_header,
