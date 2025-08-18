@@ -13,9 +13,9 @@ Fixes
 
 - :bdg-info:`Plotting` Plots of thresholded statistical maps included in GLM reports now take into account the ``two_sided`` parameter (:gh:`5578` by `Rémi Gau`_).
 
-- :bdg-info:`Plotting` :func:`~nilearn.reporting.get_clusters_table` can now handle negative ``stat_threshold`` when ``two_sided=False`` (:gh:`5578` by `Rémi Gau`_).
+- :bdg-dark:`Code` :func:`~nilearn.reporting.get_clusters_table` can now handle negative ``stat_threshold`` when ``two_sided=False`` (:gh:`5578` by `Rémi Gau`_).
 
-- :bdg-info:`Plotting` :func:`~nilearn.reporting.make_glm_report` and :func:`~nilearn.glm.threshold_stats_img` will now warn users when they try to use ``threshold`` with ``height_control`` other than ``None`` (:gh:`5578` by `Rémi Gau`_).
+- :bdg-dark:`Code` :func:`~nilearn.reporting.make_glm_report` and :func:`~nilearn.glm.threshold_stats_img` will now warn users when they try to use ``threshold`` with ``height_control`` other than ``None`` (:gh:`5578` by `Rémi Gau`_).
 
 
 - :bdg-dark:`Code` Align ``symmetric_cmap`` behavior for ``plotly`` backend in :func:`~nilearn.plotting.plot_surf` function with ``matplotlib`` backend (:gh:`5492` by `Hande Gözükan`_).
