@@ -6,11 +6,12 @@ import warnings
 import numpy as np
 from scipy.ndimage import center_of_mass, find_objects, label
 
-from nilearn._utils import as_ndarray, check_niimg_3d, check_niimg_4d
+from nilearn._utils import check_niimg_3d, check_niimg_4d
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import largest_connected_component
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.numpy_conversions import as_ndarray
 
 # Local imports
 from nilearn.image import get_data, iter_img, reorder_img

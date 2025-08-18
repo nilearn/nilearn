@@ -14,7 +14,6 @@ from nilearn._utils.helpers import (
 from .docs import fill_doc
 from .niimg import load_niimg, repr_niimgs
 from .niimg_conversions import check_niimg, check_niimg_3d, check_niimg_4d
-from .numpy_conversions import as_ndarray
 
 
 def all_modules(modules_to_ignore=None, modules_to_consider=None):
@@ -197,7 +196,6 @@ def all_classes(
 __all__ = [
     "all_classes",
     "all_functions",
-    "as_ndarray",
     "check_niimg",
     "check_niimg_3d",
     "check_niimg_4d",

@@ -17,7 +17,6 @@ from scipy.stats import scoreatpercentile
 
 from nilearn import signal
 from nilearn._utils import (
-    as_ndarray,
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,
@@ -40,6 +39,7 @@ from nilearn._utils.niimg_conversions import (
     check_same_fov,
     iter_check_niimg,
 )
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.surface.surface import (
