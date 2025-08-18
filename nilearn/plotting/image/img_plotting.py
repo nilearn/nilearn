@@ -24,11 +24,11 @@ from nilearn._utils import (
     as_ndarray,
     check_niimg_3d,
     check_niimg_4d,
-    compare_version,
-    fill_doc,
     logger,
 )
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params, check_threshold

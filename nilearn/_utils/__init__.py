@@ -7,7 +7,6 @@ from importlib import import_module
 from pathlib import Path
 
 from nilearn._utils.helpers import (
-    compare_version,
     remove_parameters,
     rename_parameters,
     stringify_path,
@@ -203,7 +202,6 @@ __all__ = [
     "check_niimg",
     "check_niimg_3d",
     "check_niimg_4d",
-    "compare_version",
     "fill_doc",
     "load_niimg",
     "remove_parameters",
