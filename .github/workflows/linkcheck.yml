@@ -34,7 +34,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v6
         -   name: Setup python
