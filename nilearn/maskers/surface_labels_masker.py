@@ -2,19 +2,13 @@
 
 import warnings
 from copy import deepcopy
-from pathlib import Path
 from typing import Union
 
 import numpy as np
-import pandas as pd
 from scipy import ndimage
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils.bids import (
-    generate_atlas_look_up_table,
-    sanitize_look_up_table,
-)
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -31,7 +25,11 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import mean_img
-from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
+from nilearn.maskers.base_masker import (
+    _BaseSurfaceMasker,
+    generate_lut,
+    mask_logger,
+)
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -78,6 +76,10 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         Mutually exclusive with ``lut``.
         Labels corresponding to the labels image.
         This is used to improve reporting quality if provided.
+
+        "Background" can be included in this list of labels
+        to denote which values in the image should be considered
+        background value.
 
         .. warning::
             If the labels are not be consistent with the label values
@@ -238,7 +240,15 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
         lut = self.lut_
-        return lut.loc[lut["index"] != self.background_label, "name"].to_dict()
+        tmp = lut.loc[lut["index"] != self.background_label, "name"].to_dict()
+        region_names_ = {}
+        for key, value in tmp.items():
+            if key == 0:
+                # in case background_label is not 0
+                region_names_[key] = value
+            else:
+                region_names_[key - 1] = value
+        return region_names_
 
     @property
     def region_ids_(self) -> dict[Union[str, int], int]:
@@ -254,7 +264,18 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
         lut = self.lut_
-        return lut["index"].to_dict()
+        tmp = lut["index"].to_dict()
+        region_ids_: dict[Union[str, int], int] = {}
+        for key, value in tmp.items():
+            if value == self.background_label:
+                region_ids_["background"] = value
+            elif key == 0:
+                # in case background_label is not 0
+                region_ids_[key] = value
+            else:
+                region_ids_[key - 1] = value
+
+        return region_ids_
 
     @fill_doc
     @rename_parameters(
@@ -332,24 +353,10 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                     stacklevel=find_stack_level(),
                 )
 
-        # generate a look up table if one was not provided
-        if self.lut is not None:
-            if isinstance(self.lut, (str, Path)):
-                lut = pd.read_table(self.lut, sep=None)
-            else:
-                lut = self.lut
-        elif self.labels:
-            lut = generate_atlas_look_up_table(
-                function=None,
-                name=self.labels,
-                index=self.labels_img_,
-            )
-        else:
-            lut = generate_atlas_look_up_table(
-                function=None, index=self.labels_img_
-            )
-
-        self.lut_ = sanitize_look_up_table(lut, atlas=self.labels_img_)
+        self.lut_ = generate_lut(
+            self.labels_img_, self.background_label, self.lut, self.labels
+        )
+        self.lut_ = self.lut_.sort_values("index").reset_index()
 
         if self.clean_args is None:
             self.clean_args_ = {}
