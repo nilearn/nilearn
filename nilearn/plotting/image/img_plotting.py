@@ -1154,11 +1154,11 @@ def plot_prob_atlas(
         else:
             display.add_contours(
                 map_img,
-                filled=filled,
-                linestyles="solid",
-                color=color,
                 levels=[thr],
+                color=[color],
+                filled=filled,
                 transparency=transparency,
+                linestyles="solid",
                 **kwargs_contour,
             )
     if colorbar:
