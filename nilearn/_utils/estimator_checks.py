@@ -1372,7 +1372,7 @@ def check_decoders_with_surface_data(estimator_orig):
             else:
                 getattr(estimator, method)(X)
 
-                
+
 @ignore_warnings
 def check_img_regressors_no_decision_function(regressor_orig):
     """Check that regressors don't have a decision_function.
@@ -1387,7 +1387,6 @@ def check_img_regressors_no_decision_function(regressor_orig):
     funcs = ["decision_function"]
     for func_name in funcs:
         assert not hasattr(regressor, func_name)
-
 
 
 # ------------------ MASKER CHECKS ------------------
