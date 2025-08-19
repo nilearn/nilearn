@@ -1039,44 +1039,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "masker_")
 
-    def decision_function(self, X):
-        """Predict confidence scores for samples.
-
-        The confidence score for a sample is the signed distance of that
-        sample to the hyperplane.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
-            Samples.
-
-        Returns
-        -------
-        array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
-            Confidence scores per (sample, class) combination. In the binary
-            case, confidence score for `self.classes_[1]` where >0 means this
-            class would be predicted.
-        """
-        check_is_fitted(self)
-
-        # handle regression (least-squared loss)
-        if not self.is_classif:
-            raise ValueError("There is no decision_function in classification")
-
-        X = check_array(X)
-        n_features = self.coef_.shape[1]
-        if X.shape[1] != n_features:
-            raise ValueError(
-                f"X has {X.shape[1]} features per sample; "
-                f"expecting {n_features}."
-            )
-
-        scores = (
-            safe_sparse_dot(X, self.coef_.T, dense_output=True)
-            + self.intercept_
-        )
-        return scores.ravel() if scores.shape[1] == 1 else scores
-
     def predict(self, X):
         """Predict class labels for samples in X.
 
@@ -1383,6 +1345,47 @@ class SpaceNetClassifier(BaseSpaceNet):
         tags.classifier_tags = ClassifierTags()
 
         return tags
+
+    def decision_function(self, X):
+        """Predict confidence scores for samples.
+
+        The confidence score for a sample is the signed distance of that
+        sample to the hyperplane.
+
+        Parameters
+        ----------
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like or \
+            {array-like, sparse matrix}, shape = (n_samples, n_features)
+            Samples.
+
+        Returns
+        -------
+        array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
+            Confidence scores per (sample, class) combination. In the binary
+            case, confidence score for `self.classes_[1]` where >0 means this
+            class would be predicted.
+        """
+        check_is_fitted(self)
+
+        # for backwards compatibility - apply masker transform if X is
+        # niimg-like or a list of strings
+        if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
+            X = self.masker_.transform(X)
+
+        X = check_array(X)
+        n_features = self.coef_.shape[1]
+        if X.shape[1] != n_features:
+            raise ValueError(
+                f"X has {X.shape[1]} features per sample; "
+                f"expecting {n_features}."
+            )
+
+        scores = (
+            safe_sparse_dot(X, self.coef_.T, dense_output=True)
+            + self.intercept_
+        )
+        return scores.ravel() if scores.shape[1] == 1 else scores
 
 
 @fill_doc
