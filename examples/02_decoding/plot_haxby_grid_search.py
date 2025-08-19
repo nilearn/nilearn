@@ -166,6 +166,9 @@ for sp in screening_percentile_range:
 # -----------------------
 # We are going to tune the parameter 'screening_percentile' in the
 # pipeline.
+import warnings
+
+from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold
 
 cv = KFold(n_splits=3)
@@ -177,15 +180,21 @@ for train, test in cv.split(run):
     val_scores = []
 
     for sp in screening_percentile_range:
-        decoder = Decoder(
-            estimator="svc",
-            mask=mask_img,
-            smoothing_fwhm=4,
-            cv=3,
-            standardize="zscore_sample",
-            screening_percentile=sp,
-            param_grid=param_grid,
-        )
+        with warnings.catch_warnings():
+            # silence warnings about Liblinear not converging
+            # increase the number of iterations.
+            warnings.filterwarnings(
+                action="ignore", category=ConvergenceWarning
+            )
+            decoder = Decoder(
+                estimator="svc",
+                mask=mask_img,
+                smoothing_fwhm=4,
+                cv=3,
+                standardize="zscore_sample",
+                screening_percentile=sp,
+                param_grid=param_grid,
+            )
         decoder.fit(index_img(fmri_niimgs, train), y_train)
         y_pred = decoder.predict(index_img(fmri_niimgs, test))
         val_scores.append(np.mean(y_pred == y_test))
