@@ -7,6 +7,7 @@ Only matplotlib is required.
 
 import collections.abc
 import functools
+import inspect
 import numbers
 import warnings
 
@@ -1118,6 +1119,21 @@ def plot_prob_atlas(
         threshold = [threshold] * n_maps
 
     filled = view_type.startswith("filled")
+    tmp = dict(**inspect.signature(plot_prob_atlas).parameters)
+    kwargs_contour = {}
+    if not filled:
+        kwargs_contour = {"linewidths": linewidths}
+    elif linewidths != tmp["linewidths"].default:
+        # only throw warning if the user has changed
+        # from the default linewidths
+        # otherwise this function will always
+        # throw a warning any time the user tries to plot filled contours
+        warnings.warn(
+            f"'linewidths' is not supported by {view_type}=",
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
+
     transparency = alpha
     for map_img, color, thr in zip(iter_img(maps_img), color_list, threshold):
         data = get_data(map_img)
@@ -1139,11 +1155,11 @@ def plot_prob_atlas(
             display.add_contours(
                 map_img,
                 levels=[thr],
-                linewidths=linewidths,
                 colors=[color],
                 filled=filled,
                 transparency=transparency,
                 linestyles="solid",
+                **kwargs_contour,
             )
     if colorbar:
         display._colorbar = True
