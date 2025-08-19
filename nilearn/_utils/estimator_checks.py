@@ -529,14 +529,12 @@ def nilearn_check_generator(estimator: BaseEstimator):
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
         yield (clone(estimator), check_fit_returns_self)
+        yield (clone(estimator), check_img_estimator_dict_unchanged)
         yield (clone(estimator), check_img_estimator_dont_overwrite_parameters)
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
         yield (clone(estimator), check_img_estimator_overwrite_params)
         yield (clone(estimator), check_img_estimator_pickle)
         yield (clone(estimator), check_img_estimator_pipeline_consistency)
-
-        if hasattr(estimator, "transform"):
-            yield (clone(estimator), check_img_estimator_dict_unchanged)
 
         if requires_y:
             yield (clone(estimator), check_img_estimator_requires_y_none)
@@ -806,6 +804,9 @@ def check_img_estimator_fit_check_is_fitted(estimator):
         "transform_single_imgs",
         "transform_imgs",
         "inverse_transform",
+        "decision_function",
+        "score",
+        "predict",
     ]
     method_input = [_img_3d_rand(), _img_3d_rand(), [_img_3d_rand()], signals]
     for meth, input in zip(methods_to_check, method_input):
@@ -992,70 +993,80 @@ def check_img_estimator_overwrite_params(estimator) -> None:
 def check_img_estimator_dict_unchanged(estimator):
     """Replace check_dict_unchanged from sklearn.
 
-    transform() should not change the dict of the object.
+    Several methods should not change the dict of the object.
     """
     estimator = fit_estimator(estimator)
 
     dict_before = estimator.__dict__.copy()
 
-    input_img, _ = generate_data_to_fit(estimator)
+    input_img, y = generate_data_to_fit(estimator)
 
-    if isinstance(estimator, _BaseDecomposition):
-        estimator.transform([input_img])
-    else:
-        estimator.transform(input_img)
+    for method in ["predict", "transform", "decision_function", "score"]:
+        if not hasattr(estimator, method):
+            continue
 
-    dict_after = estimator.__dict__
+        if method == "transform" and isinstance(estimator, _BaseDecomposition):
+            getattr(estimator, method)([input_img])
+        elif method == "score":
+            getattr(estimator, method)(input_img, y)
+        else:
+            getattr(estimator, method)(input_img)
 
-    # TODO NiftiLabelsMasker is modified at transform time
-    # see issue https://github.com/nilearn/nilearn/issues/2720
-    if isinstance(estimator, (NiftiLabelsMasker)):
-        with pytest.raises(AssertionError):
-            assert dict_after == dict_before
-    else:
-        # The following try / except is mostly
-        # to give more informative error messages when this check fails.
-        try:
-            assert dict_after == dict_before
-        except AssertionError as e:
-            unmatched_keys = set(dict_after.keys()) ^ set(dict_before.keys())
-            if len(unmatched_keys) > 0:
-                raise ValueError(
-                    "Estimator changes '__dict__' keys during transform.\n"
-                    f"{unmatched_keys} \n"
+        dict_after = estimator.__dict__
+
+        # TODO NiftiLabelsMasker is modified at transform time
+        # see issue https://github.com/nilearn/nilearn/issues/2720
+        if isinstance(estimator, (NiftiLabelsMasker)):
+            with pytest.raises(AssertionError):
+                assert dict_after == dict_before
+        else:
+            # The following try / except is mostly
+            # to give more informative error messages when this check fails.
+            try:
+                assert dict_after == dict_before
+            except AssertionError as e:
+                unmatched_keys = set(dict_after.keys()) ^ set(
+                    dict_before.keys()
                 )
+                if len(unmatched_keys) > 0:
+                    raise ValueError(
+                        "Estimator changes '__dict__' keys during transform.\n"
+                        f"{unmatched_keys} \n"
+                    )
 
-            difference = {}
-            for x in dict_before:
-                if type(dict_before[x]) is not type(dict_after[x]):
-                    difference[x] = {
-                        "before": dict_before[x],
-                        "after": dict_after[x],
-                    }
-                    continue
-                if (
-                    isinstance(dict_before[x], np.ndarray)
-                    and not np.array_equal(dict_before[x], dict_after[x])
-                    and not check_imgs_equal(dict_before[x], dict_after[x])
-                ) or (
-                    not isinstance(dict_before[x], (np.ndarray, Nifti1Image))
-                    and dict_before[x] != dict_after[x]
-                ):
-                    difference[x] = {
-                        "before": dict_before[x],
-                        "after": dict_after[x],
-                    }
-                    continue
-            if difference:
-                raise ValueError(
-                    "Estimator changes the following '__dict__' keys \n"
-                    "during transform.\n"
-                    f"{difference}"
-                )
-            else:
+                difference = {}
+                for x in dict_before:
+                    if type(dict_before[x]) is not type(dict_after[x]):
+                        difference[x] = {
+                            "before": dict_before[x],
+                            "after": dict_after[x],
+                        }
+                        continue
+                    if (
+                        isinstance(dict_before[x], np.ndarray)
+                        and not np.array_equal(dict_before[x], dict_after[x])
+                        and not check_imgs_equal(dict_before[x], dict_after[x])
+                    ) or (
+                        not isinstance(
+                            dict_before[x], (np.ndarray, Nifti1Image)
+                        )
+                        and dict_before[x] != dict_after[x]
+                    ):
+                        difference[x] = {
+                            "before": dict_before[x],
+                            "after": dict_after[x],
+                        }
+                        continue
+                if difference:
+                    raise ValueError(
+                        "Estimator changes the following '__dict__' keys \n"
+                        "during transform.\n"
+                        f"{difference}"
+                    )
+                else:
+                    raise e
+            except Exception as e:
                 raise e
-        except Exception as e:
-            raise e
 
 
 @ignore_warnings()
@@ -1066,7 +1077,7 @@ def check_img_estimator_pickle(estimator_orig):
     """
     estimator = clone(estimator_orig)
 
-    X, _ = generate_data_to_fit(estimator)
+    X, y = generate_data_to_fit(estimator)
 
     if isinstance(estimator, NiftiSpheresMasker):
         # NiftiSpheresMasker needs mask_img to run inverse_transform
@@ -1084,9 +1095,16 @@ def check_img_estimator_pickle(estimator_orig):
 
     check_methods = ["transform"]
     input_data = [X] if isinstance(estimator, SearchLight) else [[X]]
+
+    for method in ["predict", "decision_function"]:
+        check_methods.append(method)
+        input_data.append(X)
+
+    check_methods.append("score")
+    input_data.append((X, y))
+
     if hasattr(estimator, "inverse_transform"):
         check_methods.append("inverse_transform")
-
         signal = _rng().random((1, fitted_estimator.n_elements_))
         if isinstance(estimator, _BaseDecomposition):
             signal = [signal]
@@ -1094,13 +1112,21 @@ def check_img_estimator_pickle(estimator_orig):
 
     for method, input in zip(check_methods, input_data):
         if hasattr(estimator, method):
-            result[method] = getattr(estimator, method)(input)
             result["input"] = input
+            if method == "score":
+                result[method] = getattr(estimator, method)(*input)
+            else:
+                result[method] = getattr(estimator, method)(input)
 
     for method, input in zip(check_methods, input_data):
         if method not in result:
             continue
-        unpickled_result = getattr(unpickled_estimator, method)(input)
+
+        if method == "score":
+            unpickled_result = getattr(unpickled_estimator, method)(*input)
+        else:
+            unpickled_result = getattr(unpickled_estimator, method)(input)
+
         if isinstance(unpickled_result, np.ndarray):
             if isinstance(estimator, SearchLight):
                 # TODO check why Searchlight has lower absolute tolerance
