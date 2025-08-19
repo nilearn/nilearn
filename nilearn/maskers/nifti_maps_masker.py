@@ -427,6 +427,8 @@ class NiftiMapsMasker(BaseMasker):
             # maps_img before passing to its parent fit method.
             maps_img = self._maps_img
 
+        self._fit_cache()
+
         mask_logger("load_regions", maps_img, verbose=self.verbose)
 
         self.maps_img_ = deepcopy(maps_img)
@@ -707,7 +709,7 @@ class NiftiMapsMasker(BaseMasker):
             sample_mask=sample_mask,
             dtype=self.dtype,
             # Caching
-            memory=self.memory,
+            memory=self.memory_,
             memory_level=self.memory_level,
             # kwargs
             verbose=self.verbose,

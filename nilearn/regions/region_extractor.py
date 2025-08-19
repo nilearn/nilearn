@@ -5,7 +5,6 @@ import numbers
 from copy import deepcopy
 
 import numpy as np
-from joblib import Memory
 from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
 
@@ -566,8 +565,7 @@ class RegionExtractor(NiftiMapsMasker):
             mask_img=self.mask_img_,
         )
 
-        if self.memory is None:
-            self.memory = Memory(location=None)
+        self._fit_cache()
 
         self._maps_img = self.regions_img_
         super().fit(imgs)

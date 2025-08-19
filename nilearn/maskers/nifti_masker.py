@@ -57,13 +57,6 @@ def _get_mask_strategy(strategy):
         return partial(compute_brain_mask, mask_type="gm")
     elif strategy == "wm-template":
         return partial(compute_brain_mask, mask_type="wm")
-    elif strategy == "template":
-        warnings.warn(
-            "Masking strategy 'template' is deprecated."
-            "Please use 'whole-brain-template' instead.",
-            stacklevel=find_stack_level(),
-        )
-        return partial(compute_brain_mask, mask_type="whole-brain")
     else:
         raise ValueError(
             f"Unknown value of mask_strategy '{strategy}'. "
@@ -442,11 +435,10 @@ class NiftiMasker(BaseMasker):
             "hover over the displayed image."
         )
 
-        if getattr(self, "_shelving", None) is None:
-            self._shelving = False
-
         self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
+
+        self._fit_cache()
 
         # Load data (if filenames are given, load them)
         mask_logger("load_data", img=imgs, verbose=self.verbose)
@@ -610,7 +602,7 @@ class NiftiMasker(BaseMasker):
             self.mask_img_,
             params,
             memory_level=self.memory_level,
-            memory=self.memory,
+            memory=self.memory_,
             verbose=self.verbose,
             confounds=confounds,
             sample_mask=sample_mask,

@@ -230,7 +230,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             imgs_list,
             ensure_ndim=None,
             atleast_4d=False,
-            memory=self.memory,
+            memory=self.memory_,
             memory_level=self.memory_level,
         )
 

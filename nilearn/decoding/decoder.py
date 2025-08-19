@@ -44,7 +44,6 @@ from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils import CacheMixin, fill_doc
-from nilearn._utils.cache_mixin import check_memory
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -500,14 +499,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         :class:`nilearn.decoding.FREMClassifier` and
         :class:`nilearn.decoding.FREMRegressor`.
 
-    screening_percentile : int, float, \
-                          in the closed interval [0, 100], \
-                          default=20
-        The percentage of brain volume that will be kept with respect to a full
-        MNI template. In particular, if it is lower than 100, a univariate
-        feature selection based on the Anova F-value for the input data will be
-        performed. A float according to a percentile of the highest
-        scores. If None is passed, the percentile is set to 100.
+    %(screening_percentile)s
 
     scoring : str, callable or None,
              default=None
@@ -638,7 +630,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         """
         check_params(self.__dict__)
         self.estimator_ = _check_estimator(self.estimator)
-        self.memory = check_memory(self.memory, self.verbose)
+
+        self._fit_cache()
 
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
@@ -684,18 +677,10 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         # Check if the size of the mask image and the number of features allow
         # to perform feature screening.
-        # If the input data is a SurfaceImage, the number of vertices in the
-        # mesh is needed to perform feature screening.
-        mesh_n_vertices = (
-            self.mask_img_.mesh.n_vertices
-            if isinstance(self.mask_img_, SurfaceImage)
-            else None
-        )
         selector = check_feature_screening(
             self.screening_percentile,
             self.mask_img_,
             self.is_classification,
-            mesh_n_vertices=mesh_n_vertices,
             verbose=self.verbose,
         )
 
@@ -819,8 +804,12 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         check_is_fitted(self)
         return self.scorer_(self, X, y, *args)
 
-    def decision_function(self, X):
+    def _decision_function(self, X) -> np.ndarray:
         """Predict class labels for samples in X.
+
+        The function is kept private, as only Classifiers are supposed
+        to have public decision_function method
+        as per sklearn rules.
 
         Parameters
         ----------
@@ -880,7 +869,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
             scores = self._predict_dummy(n_samples)
         else:
-            scores = self.decision_function(X)
+            scores = self._decision_function(X)
 
         if self.is_classification:
             if scores.ndim == 1:
@@ -1081,7 +1070,29 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
 
 @fill_doc
-class Decoder(ClassifierMixin, _BaseDecoder):
+class _ClassifierMixin:
+    def decision_function(self, X):
+        """Predict class labels for samples in X.
+
+        Parameters
+        ----------
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like
+            See :ref:`extracting_data`.
+            Data on prediction is to be made. If this is a list,
+            the affine is considered the same for all.
+
+        Returns
+        -------
+        y_pred : :class:`numpy.ndarray`, shape (n_samples,)
+            Predicted class label per sample.
+        """
+        check_is_fitted(self)
+        return self._decision_function(X)
+
+
+@fill_doc
+class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
@@ -1132,12 +1143,7 @@ class Decoder(ClassifierMixin, _BaseDecoder):
         For DummyClassifier, parameter grid defaults to empty dictionary, class
         predictions are estimated using default strategy.
 
-    screening_percentile : :obj:`int`, :obj:`float`, optional, \
-                          in the closed interval [0, 100], default=20
-        The percentage of brain volume that will be kept with respect to a full
-        MNI template. In particular, if it is lower than 100, a univariate
-        feature selection based on the Anova F-value for the input data will be
-        performed. A float according to a percentile of the highest scores.
+    %(screening_percentile)s
 
     scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1320,14 +1326,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         For DummyRegressor, parameter grid defaults to empty dictionary, class
         predictions are estimated using default strategy.
 
-    screening_percentile : :obj:`int`, :obj:`float`, \
-                          in the closed interval [0, 100], \
-                          default=20
-        The percentage of brain volume that will be kept with respect to a full
-        MNI template. In particular, if it is lower than 100, a univariate
-        feature selection based on the Anova F-value for the input data will be
-        performed. A float according to a percentile of the highest
-        scores.
+    %(screening_percentile)s
 
     scoring : :obj:`str`, callable or None, optional. default='r2'
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1536,14 +1535,7 @@ class FREMRegressor(_BaseDecoder):
         by this percentile. ReNA is typically efficient for cluster_percentile
         equal to 10.
 
-    screening_percentile : :obj:`int`, :obj:`float`, \
-        in closed interval [0, 100] \
-        default=20
-        The percentage of brain volume that will be kept with respect to a full
-        MNI template. In particular, if it is lower than 100, a univariate
-        feature selection based on the Anova F-value for the input data will be
-        performed. A float according to a percentile of the highest
-        scores.
+    %(screening_percentile)s
 
     scoring : :obj:`str`, callable or None, default= 'r2'
 
@@ -1696,7 +1688,7 @@ class FREMRegressor(_BaseDecoder):
 
 
 @fill_doc
-class FREMClassifier(_BaseDecoder):
+class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     """State of the art :term:`decoding` scheme applied to usual classifiers.
 
     FREM uses an implicit spatial regularization through fast clustering and
