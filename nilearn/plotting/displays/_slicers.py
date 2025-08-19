@@ -418,6 +418,14 @@ class BaseSlicer:
                     # should be given as (lower, upper).
                     levels.append(np.inf)
 
+            if "linewidths" in kwargs:
+                warnings.warn(
+                    "'linewidths' is not supported for filled contours",
+                    UserWarning,
+                    stacklevel=find_stack_level(),
+                )
+                kwargs.pop("linewidths")
+
             self._map_show(img, type="contourf", threshold=threshold, **kwargs)
 
         plt.draw_if_interactive()
@@ -488,6 +496,7 @@ class BaseSlicer:
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = get_mask_bounds(
                 new_img_like(img, not_mask, affine)
             )
+
         elif hasattr(data, "mask") and isinstance(data.mask, np.ndarray):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = get_mask_bounds(
