@@ -5,7 +5,7 @@ from warnings import warn
 
 import numpy as np
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn.plotting._utils import DEFAULT_ENGINE
