@@ -49,6 +49,7 @@ def main(args=sys.argv) -> None:
     datasets.fetch_fiac_first_level()
     datasets.fetch_miyawaki2008()
     datasets.fetch_oasis_vbm(n_subjects=5)
+    datasets.fetch_localizer_first_level()
 
     if build_type in ["full", "html", "html-strict"]:
         # On full build of the doc we get all the data
@@ -96,7 +97,6 @@ def main(args=sys.argv) -> None:
                 contrasts=[contrast],
                 n_subjects=n_subjects,
             )
-        datasets.fetch_localizer_first_level()
         datasets.fetch_neurovault_ids(
             image_ids=(151, 3041, 3042, 2676, 2675, 2818, 2834)
         )
