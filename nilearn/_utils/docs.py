@@ -893,6 +893,32 @@ sample_mask : :obj:`list` of sample_mask, default=None
     This parameter is passed to :func:`nilearn.signal.clean`.
 """
 
+docdict["screening_percentile"] = """
+screening_percentile : int, float, \
+                       in the closed interval [0, 100], or None, \
+                       default=20
+        Percentile value for ANOVA univariate feature selection.
+        If ``None`` is passed, it will be set to ``100``.
+        A value of ``100`` means "keep all features".
+        This percentile is expressed
+        with respect to the volume of either a standard (MNI152) brain
+        (if ``mask_img_`` is a 3D volume)
+        or a the number of vertices in the mask mesh
+        (if ``mask_img_`` is a SurfaceImage).
+        This means that the
+        ``screening_percentile`` is corrected at runtime by premultiplying it
+        with the ratio of volume of the
+        standard brain to the volume of the mask of the data.
+
+        .. note::
+
+            If the mask used is too small
+            compared to the total brain volume / surface,
+            then all its elements (voxels / vertices)
+            may be included even for very small ``screening_percentile``.
+
+"""
+
 # second_level_contrast
 docdict["second_level_contrast"] = """
 second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
@@ -1336,8 +1362,13 @@ docdict["base_decoder_fit_attributes"] = """
             Classes to predict. For classification only.
 
         screening_percentile_ : :obj:`float`
-            Screening percentile corrected according to volume of mask,
-            relative to the volume of standard brain.
+            Percentile value for ANOVA univariate feature selection.
+            A value of 100 means 'keep all features'.
+            This percentile is expressed
+            with respect to the volume of either a standard (MNI152) brain
+            (if mask_img is a 3D volume)
+            or a the number of vertices in the mask mesh
+            (if mask_img is a SurfaceImage).
 
         coef_ : numpy.ndarray, shape=(n_classes, n_features)
             Contains the mean of the models weight vector across
