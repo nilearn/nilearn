@@ -1165,7 +1165,7 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
 
 
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
-def test_decoder_adjust_screening_lessthan_mask_surface(
+def test_decoder_adjust_screening_less_than_mask_surface(
     surf_mask_dim,
     surf_mask_1d,
     surf_mask_2d,
@@ -1195,7 +1195,7 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
 
 
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
-def test_decoder_adjust_screening_greaterthan_mask_surface(
+def test_decoder_adjust_screening_greater_than_mask_surface(
     surf_mask_dim,
     surf_mask_1d,
     surf_mask_2d,
