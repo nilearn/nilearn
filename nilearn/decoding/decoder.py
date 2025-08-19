@@ -699,7 +699,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             self.screening_percentile,
             self.mask_img_,
             self._is_classification,
-            mesh_n_vertices=mesh_n_vertices,
             verbose=self.verbose,
         )
 
