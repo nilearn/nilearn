@@ -40,7 +40,7 @@
     // If missing or the empty string, the tool will be automatically
     // determined by looking for tools on the PATH environment
     // variable.
-    "environment_type": "conda",
+    "environment_type": "virtualenv",
 
     // timeout in seconds for installing any dependencies in environment
     // defaults to 10 min
@@ -77,7 +77,7 @@
         "joblib": ["1.2.0"],
         "pandas": ["2.2.0"],
         "scikit-learn": ["1.4.0"],
-        "nibabel": ["5.2.0"],
+        "nibabel": ["5.2.0"]
     }
 
     // Combinations of libraries/python versions can be excluded/included
