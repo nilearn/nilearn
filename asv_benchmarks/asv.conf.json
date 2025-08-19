@@ -16,7 +16,7 @@
     // The Python project's subdirectory in your repo.  If missing or
     // the empty string, the project is assumed to be located at the root
     // of the repository.
-    // "repo_subdir": "",
+    "repo_subdir": "",
 
     // Customizable commands for building, installing, and
     // uninstalling the project. See asv.conf.json documentation.
@@ -27,13 +27,13 @@
     // List of branches to benchmark. If not provided, defaults to "master
     // (for git) or "default" (for mercurial).
     "branches": ["main"],
-    // "branches": ["default"],    // for mercurial
+
 
     // The DVCS being used.  If not set, it will be automatically
     // determined from "repo" by looking at the protocol in the URL
     // (if remote), or by looking for special directories, such as
     // ".git" (if local).
-    // "dvcs": "git",
+    "dvcs": "git",
 
     // The tool to use to create environments.  May be "conda",
     // "virtualenv" or other value depending on the plugins in use.
@@ -51,7 +51,7 @@
 
     // The Pythons you'd like to test against. If not provided, defaults
     // to the current version of Python used to run `asv`.
-    "pythons": ["3.9"],
+    "pythons": ["3.10"],
 
     // The list of conda channel names to be searched for benchmark
     // dependency packages in the specified order
@@ -77,7 +77,8 @@
         "joblib": ["1.2.0"],
         "pandas": ["2.2.0"],
         "scikit-learn": ["1.4.0"],
-        "nibabel": ["5.2.0"]
+        "nibabel": ["5.2.0"],
+        "matplotlib": ["3.8.0"] // # unusable because it will trigger a failure to create a virtual env because python 3.9 and distutils issues
     }
 
     // Combinations of libraries/python versions can be excluded/included
