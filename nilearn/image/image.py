@@ -1924,3 +1924,21 @@ def copy_img(img):
         img.affine.copy(),
         copy_header=True,
     )
+
+
+def get_indices_from_image(image) -> np.ndarray:
+    """Return unique values in a label image."""
+    if isinstance(image, NiimgLike):
+        img = check_niimg(image)
+        data = safe_get_data(img)
+    elif isinstance(image, SurfaceImage):
+        data = get_surface_data(image)
+    elif isinstance(image, np.ndarray):
+        data = image
+    else:
+        raise TypeError(
+            "Image to extract indices from must be one of: "
+            "Niimg-Like, SurfaceIamge, numpy array. "
+            f"Got {type(image)}"
+        )
+    return np.unique(data)
