@@ -1155,7 +1155,7 @@ def plot_prob_atlas(
             display.add_contours(
                 map_img,
                 levels=[thr],
-                color=[color],
+                colors=[color],
                 filled=filled,
                 transparency=transparency,
                 linestyles="solid",
