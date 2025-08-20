@@ -1,0 +1,54 @@
+---
+# foo
+###
+name: Run Nilearn benchmarks
+
+on:
+    pull_request:
+        branches:
+        -   main
+
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
+env:
+    FORCE_COLOR: true
+    MIN_PYTHON: '3.10'
+
+jobs:
+
+    compare_benchmark:
+
+        runs-on: ubuntu-24-04
+
+        defaults:
+            run:
+                working-directory: ./asv_benchmarks
+
+        steps:
+        -   uses: actions/checkout@v5
+            with:
+                fetch-depth: 0
+        -   uses: actions/setup-python@v5
+            with:
+                python-version: ${{ env.MIN_PYTHON }}
+        -   name: Install asv
+            run: |
+                pip install --upgrade pip
+                pip install asv
+        -   name: Get all the machine info
+            run: |
+                asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+        -   name: Run all benchmarks on the latest commit
+            run: asv run --verbose --show-stderr main..HEAD
+        -   name: Create html with all results
+            run: asv publish
+        -   uses: actions/upload-artifact@v4
+            with:
+                name: benchmark_artifacts_pr
+                path: |
+                    ./asv_benchmarks/env
+                    ./asv_benchmarks/html
+                    ./asv_benchmarks/results
+                compression-level: 9
