@@ -503,8 +503,9 @@ class SecondLevelModel(BaseGLM):
     design_matrix_ : :obj:`pandas.DataFrame`
         Design matrix used to fit the GLM.
 
-    labels_ : array of shape (n_elements_,),
-        a map of values on voxels used to identify the corresponding model
+    labels_ : array of shape ``(n_elements_,)``
+        a map of values on voxels / vertices
+        used to identify the corresponding model
 
     masker_ :  :obj:`~nilearn.maskers.NiftiMasker` or \
             :obj:`~nilearn.maskers.SurfaceMasker`

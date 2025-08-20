@@ -453,8 +453,9 @@ class FirstLevelModel(BaseGLM):
 
     fir_delays_ : array of shape(n_onsets), :obj:`list`
 
-    labels_ : array of shape (n_voxels,),
-        a map of values on voxels used to identify the corresponding model
+    labels_ : array of shape ``(n_elements_,)``
+        a map of values on voxels / vertices
+        used to identify the corresponding model
 
     masker_ :  :obj:`~nilearn.maskers.NiftiMasker` or \
             :obj:`~nilearn.maskers.SurfaceMasker`
