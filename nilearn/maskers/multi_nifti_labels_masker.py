@@ -87,8 +87,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     %(memory_level1)s
 
-    %(n_jobs)s
-
     %(verbose0)s
 
     %(strategy)s
@@ -101,6 +99,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     %(cmap)s
         default="CMRmap_r"
         Only relevant for the report figures.
+
+    %(n_jobs)s
 
     %(clean_args)s
 

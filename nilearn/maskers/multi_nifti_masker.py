@@ -91,12 +91,12 @@ class MultiNiftiMasker(NiftiMasker):
 
     %(standardize_confounds)s
 
+    %(detrend)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
-
-    %(detrend)s
 
     %(low_pass)s
 
