@@ -58,6 +58,10 @@ on:
 
     workflow_dispatch:  # This enables manual triggering from GitHub UI
 
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true
+
 env:
     FORCE_COLOR: true
     MIN_PYTHON: '3.10'
