@@ -275,6 +275,9 @@ def return_expected_failed_checks(
             "replaced by check_masker_fit_score_takes_y"
         ),
         "check_estimators_pickle": "replaced by check_img_estimator_pickle",
+        "check_methods_sample_order_invariance": (
+            "replaced by check_nilearn_methods_sample_order_invariance"
+        ),
         "check_n_features_in": "replaced by check_img_estimator_n_elements",
         "check_n_features_in_after_fitting": (
             "replaced by check_img_estimator_n_elements"
@@ -291,7 +294,6 @@ def return_expected_failed_checks(
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
         "check_fit_idempotent": "TODO",
-        "check_methods_sample_order_invariance": "TODO",
         "check_methods_subset_invariance": "TODO",
         "check_positive_only_tag_during_fit": "TODO",
         "check_readonly_memmap_input": "TODO",
@@ -864,21 +866,17 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig):
     n_samples = 30
     idx = _rng().permutation(n_samples)
 
-    if (
-        is_classifier(estimator)
-        or is_regressor(estimator)
-        or (is_masker(estimator) and accept_niimg_input(estimator))
-    ):
-        shape = X.shape
-        data = _rng().random((*shape, n_samples))
-        X = new_img_like(X, data=data)
-
-    elif accept_surf_img_input(estimator):
+    if isinstance(X, SurfaceImage):
         data = {
             x: _rng().random((v.shape[0], n_samples))
             for x, v in X.data.parts.items()
         }
-        X = new_img_like(X, data=data)
+        new_X = new_img_like(X, data=data)
+
+    elif isinstance(X, Nifti1Image):
+        data = _rng().random((*X.shape[:3], n_samples))
+
+        new_X = new_img_like(X, data=data)
 
     for method in [
         "predict",
@@ -887,20 +885,23 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig):
         "score_samples",
         "predict_proba",
     ]:
-        if isinstance(estimator, SearchLight) and method == "transform":
+        if (
+            isinstance(estimator, (SearchLight, _BaseDecomposition))
+            and method == "transform"
+        ):
             # TODO
             continue
 
         msg = (
-            f"{method} of {estimator.__class__.__name__} "
+            f"'{method}' of {estimator.__class__.__name__} "
             "is not invariant when applied to a dataset "
             "with different sample order."
         )
 
         if hasattr(estimator, method):
             assert_allclose_dense_sparse(
-                getattr(estimator, method)(index_img(X, idx)),
-                _safe_indexing(getattr(estimator, method)(X), idx),
+                getattr(estimator, method)(index_img(new_X, idx)),
+                _safe_indexing(getattr(estimator, method)(new_X), idx),
                 atol=1e-9,
                 err_msg=msg,
             )
