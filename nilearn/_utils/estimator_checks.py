@@ -529,10 +529,11 @@ def nilearn_check_generator(estimator: BaseEstimator):
     if isinstance(estimator, CacheMixin):
         yield (clone(estimator), check_img_estimator_cache_warning)
 
+    yield (clone(estimator), check_img_estimator_doc_attributes)
+
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
         yield (clone(estimator), check_fit_returns_self)
         yield (clone(estimator), check_img_estimator_dict_unchanged)
-        yield (clone(estimator), check_img_estimator_doc_attributes)
         yield (clone(estimator), check_img_estimator_dont_overwrite_parameters)
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
         yield (clone(estimator), check_img_estimator_overwrite_params)
