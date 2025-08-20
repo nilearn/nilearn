@@ -12,7 +12,8 @@ from scipy.interpolate import interp1d
 from scipy.linalg import pinv
 from scipy.stats import gamma
 
-from nilearn._utils import fill_doc, rename_parameters
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 

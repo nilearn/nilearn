@@ -20,7 +20,7 @@ import requests
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import resample_img

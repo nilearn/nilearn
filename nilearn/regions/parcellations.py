@@ -10,7 +10,9 @@ from sklearn.base import clone
 from sklearn.feature_extraction import image
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import iter_check_niimg

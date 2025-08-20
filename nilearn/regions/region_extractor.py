@@ -9,18 +9,16 @@ from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
 
 from nilearn import masking
-from nilearn._utils import (
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import rename_parameters
+from nilearn._utils.ndimage import peak_local_max
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import (
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,
-    fill_doc,
+    check_same_fov,
 )
-from nilearn._utils.helpers import (
-    rename_parameters,
-)
-from nilearn._utils.ndimage import peak_local_max
-from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_same_fov
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.segmentation import random_walker
 from nilearn.image.image import (

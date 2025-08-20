@@ -7,17 +7,14 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy.ndimage import binary_dilation, binary_erosion
 
-from nilearn._utils import (
-    as_ndarray,
-    check_niimg,
-    check_niimg_3d,
-    fill_doc,
-    logger,
-)
+from nilearn._utils import logger
 from nilearn._utils.cache_mixin import cache
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import get_border_data, largest_connected_component
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets import (
     load_mni152_gm_template,

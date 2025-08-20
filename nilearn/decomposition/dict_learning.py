@@ -11,7 +11,8 @@ import numpy as np
 from sklearn.decomposition import dict_learning_online
 from sklearn.linear_model import Ridge
 
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import transfer_deprecated_param_vals
 
 from ._base import _BaseDecomposition

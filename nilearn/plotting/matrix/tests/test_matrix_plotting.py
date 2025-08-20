@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from nilearn._utils import constrained_layout_kwargs
+from nilearn._utils.helpers import constrained_layout_kwargs
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
