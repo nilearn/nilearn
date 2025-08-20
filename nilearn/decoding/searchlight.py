@@ -424,6 +424,9 @@ class SearchLight(TransformerMixin, BaseEstimator):
         )
 
         self.process_mask_ = process_mask
+
+        self.n_elements_ = process_mask.ravel().sum()
+
         process_mask_coords = np.where(process_mask != 0)
         process_mask_coords = coord_transform(
             process_mask_coords[0],
