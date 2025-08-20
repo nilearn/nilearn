@@ -78,7 +78,7 @@
         "pandas": ["2.2.0"],
         "scikit-learn": ["1.4.0"],
         "nibabel": ["5.2.0"],
-        "matplotlib": ["3.8.0"] // # unusable because it will trigger a failure to create a virtual env because python 3.9 and distutils issues
+        "matplotlib": ["3.8.0"]
     }
 
     // Combinations of libraries/python versions can be excluded/included
