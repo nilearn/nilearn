@@ -46,19 +46,8 @@ class DictLearning(_BaseDecomposition):
 
     Parameters
     ----------
-    mask : Niimg-like object, :obj:`~nilearn.maskers.MultiNiftiMasker` or \
-           :obj:`~nilearn.surface.SurfaceImage` or \
-           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given, for Nifti images,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters; for surface images, all the vertices will be used.
-
     n_components : :obj:`int`, default=20
         Number of components to extract.
-
-    batch_size : :obj:`int`, default=20
-        The number of samples to take in each batch.
 
     n_epochs : :obj:`float`, default=1
         Number of epochs the algorithm should run on the data.
@@ -66,16 +55,21 @@ class DictLearning(_BaseDecomposition):
     alpha : :obj:`float`, default=10
         Sparsity controlling parameter.
 
-    dict_init : Niimg-like object or \
-           :obj:`~nilearn.surface.SurfaceImage`, optional
-        Initial estimation of dictionary maps. Would be computed from CanICA if
-        not provided.
-
     reduction_ratio : 'auto' or :obj:`float` between 0. and 1., default='auto'
         - Between 0. or 1. : controls data reduction in the temporal domain.
           1. means no reduction, < 1. calls for an SVD based reduction.
         - if set to 'auto', estimator will set the number of components per
           reduced session to be n_components.
+
+    dict_init : Niimg-like object or \
+           :obj:`~nilearn.surface.SurfaceImage`, optional
+        Initial estimation of dictionary maps. Would be computed from CanICA if
+        not provided.
+
+    %(random_state)s
+
+    batch_size : :obj:`int`, default=20
+        The number of samples to take in each batch.
 
     method : {'cd', 'lars'}, default='cd'
         Coding method used by sklearn backend. Below are the possible values.
@@ -85,32 +79,22 @@ class DictLearning(_BaseDecomposition):
         Lasso solution (linear_model.Lasso). Lars will be faster if
         the estimated components are sparse.
 
-    %(random_state)s
+    mask : Niimg-like object, :obj:`~nilearn.maskers.MultiNiftiMasker` or \
+           :obj:`~nilearn.surface.SurfaceImage` or \
+           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
+        Mask to be used on data. If an instance of masker is passed,
+        then its mask will be used. If no mask is given, for Nifti images,
+        it will be computed automatically by a MultiNiftiMasker with default
+        parameters; for surface images, all the vertices will be used.
 
     %(smoothing_fwhm)s
         Default=4mm.
 
-    standardize : :obj:`bool`, default=True
-        If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
+    %(standardize)s
 
-    standardize_confounds : boolean, default=True
-        If standardize_confounds is True, the confounds are z-scored:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+    %(standardize_confounds)s
 
-    detrend : :obj:`bool`, default=True
-        If detrend is True, the time-series will be detrended before
-        components extraction.
-
-    %(target_affine)s
-
-        .. note::
-            This parameter is passed to :func:`nilearn.image.resample_img`.
-
-    %(target_shape)s
-
-        .. note::
-            This parameter is passed to :func:`nilearn.image.resample_img`.
+    %(detrend)s
 
     %(low_pass)s
 
@@ -123,6 +107,16 @@ class DictLearning(_BaseDecomposition):
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(t_r)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(target_affine)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(target_shape)s
 
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
@@ -142,13 +136,13 @@ class DictLearning(_BaseDecomposition):
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    %(memory)s
-
-    %(memory_level)s
-
     %(n_jobs)s
 
     %(verbose0)s
+
+    %(memory)s
+
+    %(memory_level)s
 
     %(base_decomposition_fit_attributes)s
 
