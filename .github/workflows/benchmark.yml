@@ -1,9 +1,19 @@
 ---
-# TL;DR: this workflow runs the benchmarks on the latest commit on the main
-# and then deploys the updated benchmarks to
-# `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
-# You can trigger it manually via the GitHub UI. It will also run on a schedule
-# at regular interval.
+# .. admonition:: TL;DR
+#    :class: tip
+#
+#    This workflow runs the benchmarks on the latest commit on the main
+#    and then deploys the updated benchmarks to
+#    `nilearn.github.io/benchmarks <https://nilearn.github.io/benchmarks/>`_.
+#    You can trigger it manually on the main branch via the GitHub UI.
+#    It will also run on a schedule at regular interval.
+#
+# .. admonition:: Control via commit message
+#    :class: tip
+#
+#    This workflow can be controlled if your commit message contains:
+#
+#    - ``[bm]`` run benchmarks and compare them to the main branch
 #
 # Step-wise details:
 #
@@ -36,7 +46,7 @@
 name: Run and deploy Nilearn benchmarks
 
 on:
-    push:
+    pull_request:
         branches:
         -   main
     schedule:
@@ -45,14 +55,19 @@ on:
 
     workflow_dispatch:  # This enables manual triggering from GitHub UI
 
+env:
+    FORCE_COLOR: true
+    MIN_PYTHON: '3.10'
+
+
 jobs:
+
     benchmark:
         if: >-
             (github.event_name == 'workflow_dispatch' ||
             github.event_name == 'schedule') &&
             github.repository == 'nilearn/nilearn'
-        # TODO bump to 24.04 when bumping minimum python to 3.10
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24-04
         defaults:
             run:
                 working-directory: ./asv_benchmarks
@@ -64,9 +79,8 @@ jobs:
                 fetch-depth: 0
         -   uses: actions/setup-python@v5
             with:
-                # TODO bump to 3.10 when minimum python is 3.10
-                python-version: 3.9
-        -   name: Install asv and switch to asv_benchmarks directory
+                python-version: ${{ env.MIN_PYTHON }}
+        -   name: Install asv
             run: |
                 pip install --upgrade pip
                 pip install asv
@@ -93,10 +107,9 @@ jobs:
             run: python ../build_tools/github/set_machine_name.py fv-az1113-357
         -   name: Run all benchmarks on the latest commit
             run: |
-                asv run -ev --append-samples --machine fv-az1113-357 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+                asv run --verbose --show-stderr --append-samples --machine fv-az1113-357 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
         -   name: Create html with all results
-            run: |
-                asv publish
+            run: asv publish
         -   uses: actions/upload-artifact@v4
             with:
                 name: Upload asv benchmark results as artifacts
@@ -127,3 +140,52 @@ jobs:
                 git add .
                 git commit -m "Update benchmark HTML (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin gh-pages
+
+    compare_benchmark:
+        # run on pull request
+        if: github.event_name == 'pull_request' && github.repository == 'nilearn/nilearn'
+        runs-on: ubuntu-24-04
+        defaults:
+            run:
+                working-directory: ./asv_benchmarks
+
+        steps:
+        -   uses: actions/checkout@v5
+            with:
+                # fetch all branches and tags
+                fetch-depth: 0
+                ref: ${{ github.event.pull_request.head.sha }}
+        -   name: For PRs check if commit message contains [bm]
+            id: check-commit-msg
+            run: |
+                set -e -x
+                commit_msg=$(git log -2 --format=oneline);
+                if [[ $commit_msg == *"[bm]"* ]]; then
+                    echo "running benchmarks"
+                    echo "skip=false" >> $GITHUB_OUTPUT
+                else
+                    echo "skipping benchmarks"
+                    exit 0
+                fi;
+        -   uses: actions/setup-python@v5
+            with:
+                python-version: ${{ env.MIN_PYTHON }}
+        -   name: Install asv
+            run: |
+                pip install --upgrade pip
+                pip install asv
+        -   name: Get all the machine info
+            run: |
+                asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+        -   name: Run all benchmarks on the latest commit
+            run: asv run --verbose --show-stderr main..HEAD
+        -   name: Create html with all results
+            run: asv publish
+        -   uses: actions/upload-artifact@v4
+            with:
+                name: benchmark_artifacts_pr
+                path: |
+                    ./asv_benchmarks/env
+                    ./asv_benchmarks/html
+                    ./asv_benchmarks/results
+                compression-level: 9
