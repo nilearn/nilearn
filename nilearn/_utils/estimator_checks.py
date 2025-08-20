@@ -859,12 +859,26 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig):
 
     estimator = fit_estimator(estimator)
 
-    if is_classifier(estimator) or is_regressor(estimator):
-        shape = estimator.mask_img_.shape
-        n_samples = 30
+    X, _ = generate_data_to_fit(estimator)
+
+    n_samples = 30
+    idx = _rng().permutation(n_samples)
+
+    if (
+        is_classifier(estimator)
+        or is_regressor(estimator)
+        or (is_masker(estimator) and accept_niimg_input(estimator))
+    ):
+        shape = X.shape
         data = _rng().random((*shape, n_samples))
-        X = new_img_like(estimator.mask_img_, data=data)
-        idx = _rng().permutation(n_samples)
+        X = new_img_like(X, data=data)
+
+    elif accept_surf_img_input(estimator):
+        data = {
+            x: _rng().random((v.shape[0], n_samples))
+            for x, v in X.data.parts.items()
+        }
+        X = new_img_like(X, data=data)
 
     for method in [
         "predict",
