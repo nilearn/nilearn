@@ -30,6 +30,7 @@ from sklearn.base import BaseEstimator, is_classifier, is_regressor
 from sklearn.datasets import make_classification, make_regression
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils import _safe_indexing
 from sklearn.utils._testing import (
     assert_allclose_dense_sparse,
     set_random_state,
@@ -81,7 +82,7 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_mesh,
 )
 from nilearn.glm.second_level import SecondLevelModel
-from nilearn.image import get_data, new_img_like
+from nilearn.image import get_data, index_img, new_img_like
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     MultiNiftiMasker,
@@ -328,6 +329,9 @@ def return_expected_failed_checks(
         expected_failed_checks |= {
             # have nilearn replacements
             "check_dict_unchanged": "does not apply - no transform method",
+            "check_methods_sample_order_invariance": (
+                "does not apply - no relevant method"
+            ),
             "check_estimators_dtypes": ("replaced by check_glm_dtypes"),
             "check_estimators_empty_data_messages": (
                 "not implemented for nifti data for performance reasons"
@@ -441,6 +445,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_fit_check_is_fitted": (
             "replaced by check_img_estimator_fit_check_is_fitted"
         ),
+        "check_methods_sample_order_invariance": (
+            "replaced by check_nilearn_methods_sample_order_invariance"
+        ),
         "check_pipeline_consistency": (
             "replaced by check_img_estimator_pipeline_consistency"
         ),
@@ -465,7 +472,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_estimators_overwrite_params": "TODO",
         "check_fit_idempotent": "TODO",
         "check_fit_score_takes_y": "TODO",
-        "check_methods_sample_order_invariance": "TODO",
         "check_methods_subset_invariance": "TODO",
         "check_positive_only_tag_during_fit": "TODO",
         "check_readonly_memmap_input": "TODO",
@@ -550,6 +556,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_pickle)
         yield (clone(estimator), check_img_estimator_n_elements)
         yield (clone(estimator), check_img_estimator_pipeline_consistency)
+        yield (clone(estimator), check_nilearn_methods_sample_order_invariance)
 
         if requires_y:
             yield (clone(estimator), check_img_estimator_requires_y_none)
@@ -838,6 +845,51 @@ def check_img_estimator_fit_check_is_fitted(estimator):
     assert estimator.__sklearn_is_fitted__()
 
     check_is_fitted(estimator)
+
+
+def check_nilearn_methods_sample_order_invariance(estimator_orig):
+    """Check method gives invariant results \
+        if applied on a subset with different sample order.
+
+    Replace sklearn check_methods_sample_order_invariance.
+    """
+    estimator = clone(estimator_orig)
+
+    set_random_state(estimator)
+
+    estimator = fit_estimator(estimator)
+
+    if is_classifier(estimator) or is_regressor(estimator):
+        shape = estimator.mask_img_.shape
+        n_samples = 30
+        data = _rng().random((*shape, n_samples))
+        X = new_img_like(estimator.mask_img_, data=data)
+        idx = np.random.Generator(n_samples)
+
+    for method in [
+        "predict",
+        "transform",
+        "decision_function",
+        "score_samples",
+        "predict_proba",
+    ]:
+        if isinstance(estimator, SearchLight) and method == "transform":
+            # TODO
+            continue
+
+        msg = (
+            f"{method} of {estimator.__class__.__name__} "
+            "is not invariant when applied to a dataset "
+            "with different sample order."
+        )
+
+        if hasattr(estimator, method):
+            assert_allclose_dense_sparse(
+                getattr(estimator, method)(index_img(X, idx)),
+                _safe_indexing(getattr(estimator, method)(X), idx),
+                atol=1e-9,
+                err_msg=msg,
+            )
 
 
 @ignore_warnings()

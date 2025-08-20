@@ -862,6 +862,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         # niimg-like or a list of strings
         if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
             X = self.masker_.transform(X)
+
         if X.shape[1] != self.n_elements_:
             raise ValueError(
                 f"X has {X.shape[1]} features per sample;"
@@ -894,11 +895,10 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
-        n_samples = np.shape(X)[-1]
-
         # Prediction for dummy estimator is different from others as there is
         # no fitted coefficient
         if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
+            n_samples = np.shape(X)[-1]
             scores = self._predict_dummy(n_samples)
         else:
             scores = self._decision_function(X)
