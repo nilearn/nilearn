@@ -49,9 +49,9 @@
 name: Run Nilearn benchmarks
 
 on:
-    pull_request:
-        branches:
-        -   main
+    # pull_request:
+    #     branches:
+    #     -   main
     schedule:
     # every Monday at 9am UTC
     -   cron: 0 9 * * MON
@@ -148,51 +148,51 @@ jobs:
                 git commit -m "Update benchmark HTML (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin gh-pages
 
-    compare_benchmark:
-        # run on pull request
-        # if: github.event_name == 'pull_request' && github.repository == 'nilearn/nilearn'
-        runs-on: ubuntu-24-04
-        defaults:
-            run:
-                working-directory: ./asv_benchmarks
+    # compare_benchmark:
+    #     # run on pull request
+    #     # if: github.event_name == 'pull_request' && github.repository == 'nilearn/nilearn'
+    #     runs-on: ubuntu-24-04
+    #     defaults:
+    #         run:
+    #             working-directory: ./asv_benchmarks
 
-        steps:
-        -   uses: actions/checkout@v5
-            with:
-                # fetch all branches and tags
-                fetch-depth: 0
-                # ref: ${{ github.event.pull_request.head.sha }}
-        # -   name: For PRs check if commit message contains [bm]
-        #     id: check-commit-msg
-        #     run: |
-        #         set -e -x
-        #         commit_msg=$(git log -2 --format=oneline);
-        #         if [[ $commit_msg == *"[bm]"* ]]; then
-        #             echo "running benchmarks"
-        #             echo "skip=false" >> $GITHUB_OUTPUT
-        #         else
-        #             echo "skipping benchmarks"
-        #             exit 0
-        #         fi;
-        -   uses: actions/setup-python@v5
-            with:
-                python-version: ${{ env.MIN_PYTHON }}
-        -   name: Install asv
-            run: |
-                pip install --upgrade pip
-                pip install asv
-        -   name: Get all the machine info
-            run: |
-                asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
-        -   name: Run all benchmarks on the latest commit
-            run: asv run --verbose --show-stderr main..HEAD
-        -   name: Create html with all results
-            run: asv publish
-        -   uses: actions/upload-artifact@v4
-            with:
-                name: benchmark_artifacts_pr
-                path: |
-                    ./asv_benchmarks/env
-                    ./asv_benchmarks/html
-                    ./asv_benchmarks/results
-                compression-level: 9
+    #     steps:
+    #     -   uses: actions/checkout@v5
+    #         with:
+    #             # fetch all branches and tags
+    #             fetch-depth: 0
+    #             # ref: ${{ github.event.pull_request.head.sha }}
+    #     # -   name: For PRs check if commit message contains [bm]
+    #     #     id: check-commit-msg
+    #     #     run: |
+    #     #         set -e -x
+    #     #         commit_msg=$(git log -2 --format=oneline);
+    #     #         if [[ $commit_msg == *"[bm]"* ]]; then
+    #     #             echo "running benchmarks"
+    #     #             echo "skip=false" >> $GITHUB_OUTPUT
+    #     #         else
+    #     #             echo "skipping benchmarks"
+    #     #             exit 0
+    #     #         fi;
+    #     -   uses: actions/setup-python@v5
+    #         with:
+    #             python-version: ${{ env.MIN_PYTHON }}
+    #     -   name: Install asv
+    #         run: |
+    #             pip install --upgrade pip
+    #             pip install asv
+    #     -   name: Get all the machine info
+    #         run: |
+    #             asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+    #     -   name: Run all benchmarks on the latest commit
+    #         run: asv run --verbose --show-stderr main..HEAD
+    #     -   name: Create html with all results
+    #         run: asv publish
+    #     -   uses: actions/upload-artifact@v4
+    #         with:
+    #             name: benchmark_artifacts_pr
+    #             path: |
+    #                 ./asv_benchmarks/env
+    #                 ./asv_benchmarks/html
+    #                 ./asv_benchmarks/results
+    #             compression-level: 9

@@ -1,20 +1,14 @@
 ---
 # foo
 ###
-name: Run Nilearn benchmarks
+name: Run benchmarks against main
 
-on:
-    pull_request:
-        branches:
-        -   main
+on: pull_request
+
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
-
-env:
-    FORCE_COLOR: true
-    MIN_PYTHON: '3.10'
 
 jobs:
 
@@ -22,28 +16,29 @@ jobs:
 
         runs-on: ubuntu-24-04
 
-        defaults:
-            run:
-                working-directory: ./asv_benchmarks
-
         steps:
         -   uses: actions/checkout@v5
             with:
                 fetch-depth: 0
         -   uses: actions/setup-python@v5
             with:
-                python-version: ${{ env.MIN_PYTHON }}
+                python-version: '3.10'
         -   name: Install asv
             run: |
                 pip install --upgrade pip
                 pip install asv
         -   name: Get all the machine info
             run: |
+                cd asv_benchmarks
                 asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
         -   name: Run all benchmarks on the latest commit
-            run: asv run --verbose --show-stderr main..HEAD
+            run: |
+                cd asv_benchmarks
+                asv run --verbose --show-stderr main..HEAD
         -   name: Create html with all results
-            run: asv publish
+            run: |
+                cd asv_benchmarks
+                asv publish
         -   uses: actions/upload-artifact@v4
             with:
                 name: benchmark_artifacts_pr
