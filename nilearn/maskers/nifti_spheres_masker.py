@@ -288,21 +288,21 @@ class NiftiSpheresMasker(BaseMasker):
 
     Attributes
     ----------
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     %(nifti_mask_img_)s
 
-    seeds_ : :obj:`list` of :obj:`list`
-        The coordinates of the seeds in the masker.
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int`
         The number of seeds in the masker.
 
         .. versionadded:: 0.9.2
 
-    memory_ : joblib memory cache
-
-    %(clean_args_)s
-
-    %(masker_kwargs_)s
+    seeds_ : :obj:`list` of :obj:`list`
+        The coordinates of the seeds in the masker.
 
     See Also
     --------

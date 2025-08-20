@@ -140,10 +140,16 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    %(clean_args_)s
+
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image after fitting.
         If a mask_img was used,
         then masked vertices will have the background value.
+
+    lut_ : :obj:`pandas.DataFrame`
+        Look-up table derived from the ``labels`` or ``lut``
+        or from the values of the label image.
 
     mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage` or None.
         The mask of the data.
@@ -153,13 +159,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         where each vertex is ``True`` if all values across samples
         (for example across timepoints) is finite value different from 0.
 
-    lut_ : :obj:`pandas.DataFrame`
-        Look-up table derived from the ``labels`` or ``lut``
-        or from the values of the label image.
-
     memory_ : joblib memory cache
 
-    %(clean_args_)s
     """
 
     def __init__(

@@ -894,6 +894,7 @@ def check_img_estimator_doc_attributes(estimator) -> None:
             f"in estimator {estimator.__class__.__name__}."
         )
 
+    # avoid duplicates
     assert len(documented_parameters) == len(set(documented_parameters))
 
     # Attributes should be in same order as in __init__()
@@ -937,6 +938,7 @@ def check_img_estimator_doc_attributes(estimator) -> None:
             f"in estimator {estimator.__class__.__name__}."
         )
 
+    # avoid duplicates
     assert len(documented_attributes) == len(set(documented_attributes))
 
     # nice to have

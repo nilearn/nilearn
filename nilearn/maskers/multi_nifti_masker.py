@@ -154,6 +154,13 @@ class MultiNiftiMasker(NiftiMasker):
 
     Attributes
     ----------
+    affine_ : 4x4 :obj:`numpy.ndarray`
+        Affine of the transformed image.
+
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image`
         The mask of the data, or the one computed from ``imgs`` passed to fit.
         If a ``mask_img`` is passed at masker construction,
@@ -161,19 +168,12 @@ class MultiNiftiMasker(NiftiMasker):
         where each voxel is ``True`` if all values across samples
         (for example across timepoints) is finite value different from 0.
 
-    affine_ : 4x4 :obj:`numpy.ndarray`
-        Affine of the transformed image.
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
         .. versionadded:: 0.9.2
-
-    memory_ : joblib memory cache
-
-    %(clean_args_)s
-
-    %(masker_kwargs_)s
 
     See Also
     --------

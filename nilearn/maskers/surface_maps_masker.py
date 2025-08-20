@@ -93,6 +93,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    %(clean_args_)s
+
     maps_img_ : :obj:`~nilearn.surface.SurfaceImage`
         The same as the input `maps_img`, kept solely for consistency
         across maskers.
@@ -105,12 +107,10 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         where each vertex is ``True`` if all values across samples
         (for example across timepoints) is finite value different from 0.
 
-    n_elements_ : :obj:`int`
-        The number of regions in the maps image.
-
     memory_ : joblib memory cache
 
-    %(clean_args_)s
+    n_elements_ : :obj:`int`
+        The number of regions in the maps image.
 
     See Also
     --------

@@ -173,7 +173,9 @@ class NiftiLabelsMasker(BaseMasker):
 
     Attributes
     ----------
-    %(nifti_mask_img_)s
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
 
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
@@ -182,11 +184,10 @@ class NiftiLabelsMasker(BaseMasker):
         Look-up table derived from the ``labels`` or ``lut``
         or from the values of the label image.
 
+    %(nifti_mask_img_)s
+
     memory_ : joblib memory cache
 
-    %(clean_args_)s
-
-    %(masker_kwargs_)s
 
     See Also
     --------
