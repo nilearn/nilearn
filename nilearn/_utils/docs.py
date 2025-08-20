@@ -1363,6 +1363,8 @@ components_img_ : 4D Nifti image \
 n_elements_ : :obj:`int`
     The number of components.
 
+memory_ : joblib memory cache
+
 """
 
 docdict["base_decoder_fit_attributes"] = """

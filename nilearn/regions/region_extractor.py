@@ -406,6 +406,10 @@ class RegionExtractor(NiftiMapsMasker):
         default="CMRmap_r"
         Only relevant for the report figures.
 
+    allow_overlap : True
+        If False, an error is raised if the maps overlaps
+        (ie at least two maps have a non-zero value for the same voxel).
+
     %(clean_args)s
         .. versionadded:: 0.12.1dev
 
@@ -430,11 +434,11 @@ class RegionExtractor(NiftiMapsMasker):
 
         .. versionadded:: 0.9.2
 
-    allow_overlap : True
-        If False, an error is raised if the maps overlaps
-        (ie at least two maps have a non-zero value for the same voxel).
+    memory_ : joblib memory cache
 
     %(clean_args_)s
+
+    %(masker_kwargs_)s
 
     References
     ----------
