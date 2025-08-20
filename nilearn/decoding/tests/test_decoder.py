@@ -1032,7 +1032,9 @@ def test_decoder_multiclass_warnings(multiclass_data):
 
     # Check that warning is raised when n_features is lower than 50 after
     # screening and clustering for FREM
-    with pytest.warns(UserWarning, match=".*screening_percentile parameters"):
+    with pytest.warns(
+        UserWarning, match=".*decoding model will be trained only.*"
+    ):
         model = FREMClassifier(
             clustering_percentile=10,
             screening_percentile=10,
@@ -1222,7 +1224,7 @@ def test_decoder_adjust_screening_greater_than_mask_surface(
 
 
 @pytest.mark.parametrize("mask", [None, SurfaceMasker()])
-@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+@pytest.mark.parametrize("decoder", [Decoder, DecoderRegressor])
 def test_decoder_fit_surface(decoder, _make_surface_class_data, mask):
     """Test fit for surface image."""
     warnings.simplefilter("ignore", ConvergenceWarning)
@@ -1234,7 +1236,7 @@ def test_decoder_fit_surface(decoder, _make_surface_class_data, mask):
 
 
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
-@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+@pytest.mark.parametrize("decoder", [Decoder, DecoderRegressor])
 def test_decoder_fit_surface_with_mask_image(
     _make_surface_class_data,
     decoder,
@@ -1252,7 +1254,7 @@ def test_decoder_fit_surface_with_mask_image(
     assert model.coef_ is not None
 
 
-@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+@pytest.mark.parametrize("decoder", [Decoder, DecoderRegressor])
 def test_decoder_error_incompatible_surface_mask_and_volume_data(
     decoder, surf_mask_1d, tiny_binary_classification_data
 ):
@@ -1273,7 +1275,7 @@ def test_decoder_error_incompatible_surface_mask_and_volume_data(
         model.fit(data_volume, y)
 
 
-@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
+@pytest.mark.parametrize("decoder", [Decoder, DecoderRegressor])
 def test_decoder_error_incompatible_surface_data_and_volume_mask(
     _make_surface_class_data, decoder, tiny_binary_classification_data
 ):
