@@ -864,7 +864,7 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig):
         n_samples = 30
         data = _rng().random((*shape, n_samples))
         X = new_img_like(estimator.mask_img_, data=data)
-        idx = np.random.Generator(n_samples)
+        idx = _rng().permutation(n_samples)
 
     for method in [
         "predict",
