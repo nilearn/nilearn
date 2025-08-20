@@ -604,6 +604,8 @@ class SecondLevelModel(BaseGLM):
 
         self.masker_.fit(sample_map)
 
+        self.n_elements_ = self.masker_.n_elements_
+
         # Report progress
         logger.log(
             "\nComputation of second level model done in "
