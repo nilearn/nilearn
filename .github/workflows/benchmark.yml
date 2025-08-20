@@ -146,7 +146,7 @@ jobs:
 
     compare_benchmark:
         # run on pull request
-        if: github.event_name == 'pull_request' && github.repository == 'nilearn/nilearn'
+        # if: github.event_name == 'pull_request' && github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-24-04
         defaults:
             run:
@@ -157,19 +157,19 @@ jobs:
             with:
                 # fetch all branches and tags
                 fetch-depth: 0
-                ref: ${{ github.event.pull_request.head.sha }}
-        -   name: For PRs check if commit message contains [bm]
-            id: check-commit-msg
-            run: |
-                set -e -x
-                commit_msg=$(git log -2 --format=oneline);
-                if [[ $commit_msg == *"[bm]"* ]]; then
-                    echo "running benchmarks"
-                    echo "skip=false" >> $GITHUB_OUTPUT
-                else
-                    echo "skipping benchmarks"
-                    exit 0
-                fi;
+                # ref: ${{ github.event.pull_request.head.sha }}
+        # -   name: For PRs check if commit message contains [bm]
+        #     id: check-commit-msg
+        #     run: |
+        #         set -e -x
+        #         commit_msg=$(git log -2 --format=oneline);
+        #         if [[ $commit_msg == *"[bm]"* ]]; then
+        #             echo "running benchmarks"
+        #             echo "skip=false" >> $GITHUB_OUTPUT
+        #         else
+        #             echo "skipping benchmarks"
+        #             exit 0
+        #         fi;
         -   uses: actions/setup-python@v5
             with:
                 python-version: ${{ env.MIN_PYTHON }}
