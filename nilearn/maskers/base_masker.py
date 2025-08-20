@@ -15,7 +15,7 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
 
-from nilearn._utils import logger, repr_niimgs
+from nilearn._utils import logger
 from nilearn._utils.bids import (
     generate_atlas_look_up_table,
     sanitize_look_up_table,
@@ -30,7 +30,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -830,7 +830,11 @@ def generate_lut(labels_img, background_label, lut=None, labels=None):
         lut.loc[0, "name"] = "Background"
 
     else:
-        first_row = {"name": "Background", "index": background_label}
+        first_row = {
+            "name": "Background",
+            "index": background_label,
+            "color": "FFFFFF",
+        }
         first_row = {
             col: first_row[col] if col in lut else np.nan
             for col in lut.columns

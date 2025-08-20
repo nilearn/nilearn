@@ -14,7 +14,8 @@ from nibabel import Nifti1Image, gifti
 from scipy.ndimage import binary_dilation
 
 from nilearn import datasets, image, maskers, masking
-from nilearn._utils import as_ndarray, logger
+from nilearn._utils import logger
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn.interfaces.bids.utils import (
     bids_entities,
     check_bids_label,
