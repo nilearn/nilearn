@@ -15,14 +15,18 @@ from nilearn.interfaces.bids.glm import save_glm_to_bids
 class BenchMarkFirstLevelModel:
     """Benchmarks for FLM with different image sizes."""
 
-    # try different combinations of parameters for the NiftiMasker object
-    param_names = "n_timepoints"
-    params: ClassVar[list[int]] = [500, 1000]
+    # try different combinations run length, n_runs, minimze_memory
+    param_names = ("n_timepoints_n_runs", "minimize_memory")
+    params: ClassVar[tuple[list[tuple[int, int]], list[bool]]] = (
+        [(500, 2), (1000, 1)],
+        [True, False],
+    )
 
-    def setup(self, n_timepoints):
+    def setup(self, n_timepoints_n_runs, minimize_memory):
         """Set up common to all benchmarks."""
+        (n_timepoints, n_runs) = n_timepoints_n_runs
         mni_brain_mask = load_mni152_brain_mask(resolution=3)
-        shape = [(64, 64, 64, n_timepoints)]
+        shape = [(64, 64, 64, n_timepoints)] * n_runs
         mask, self.fmri_data, self.design_matrices = (
             generate_fake_fmri_data_and_design(
                 shapes=shape, affine=mni_brain_mask.affine
@@ -36,12 +40,12 @@ class BenchMarkFirstLevelModel:
             force_resample=True,
         )
 
-    def time_glm_fit(self, n_timepoints):
+    def time_glm_fit(self, n_timepoints_n_runs, minimize_memory):
         """Time FirstLevelModel on large data."""
         model = FirstLevelModel(mask_img=self.mask)
         model.fit(self.fmri_data, design_matrices=self.design_matrices)
 
-    def peakmem_glm_fit(self, n_timepoints):
+    def peakmem_glm_fit(self, n_timepoints_n_runs, minimize_memory):
         """Measure peak memory for FirstLevelModel on large data."""
         model = FirstLevelModel(mask_img=self.mask)
         model.fit(self.fmri_data, design_matrices=self.design_matrices)
