@@ -18,9 +18,9 @@ from numpy.testing import (
     assert_equal,
 )
 
-from nilearn import _utils
 from nilearn._utils import testing
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.niimg import is_binary_niimg
 from nilearn.image import get_data
 from nilearn.image.image import crop_img
 from nilearn.image.resampling import (
@@ -441,7 +441,7 @@ def test_resampling_warning_binary_image(affine_eye, rng, force_resample):
     rot = rotation(0, np.pi / 4)
     img_binary = Nifti1Image(data_binary, affine_eye)
 
-    assert _utils.niimg.is_binary_niimg(img_binary)
+    assert is_binary_niimg(img_binary)
 
     with pytest.warns(Warning, match="Resampling binary images with"):
         resample_img(

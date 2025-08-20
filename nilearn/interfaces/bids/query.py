@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from warnings import warn
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 
 
