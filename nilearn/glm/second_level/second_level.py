@@ -497,14 +497,14 @@ class SecondLevelModel(BaseGLM):
 
     Attributes
     ----------
-    labels_ : array of shape (n_voxels,),
-        a map of values on voxels used to identify the corresponding model
+    confounds_ : :obj:`pandas.DataFrame` or None
+        Confounds used to fit the GLM.
 
-    results_ : :obj:`dict`,
-        with keys corresponding to the different labels values.
-        Values are SimpleRegressionResults corresponding to the voxels,
-        if minimize_memory is True,
-        RegressionResults if minimize_memory is False
+    design_matrix_ : :obj:`pandas.DataFrame`
+        Design matrix used to fit the GLM.
+
+    labels_ : array of shape (n_elements_,),
+        a map of values on voxels used to identify the corresponding model
 
     masker_ :  :obj:`~nilearn.maskers.NiftiMasker` or \
             :obj:`~nilearn.maskers.SurfaceMasker`
@@ -516,6 +516,15 @@ class SecondLevelModel(BaseGLM):
         other NiftiMasker/SurfaceMasker
         related parameters as initialization.
 
+    memory_ : joblib memory cache
+
+    results_ : :obj:`dict`,
+        with keys corresponding to the different labels values.
+        Values are SimpleRegressionResults corresponding
+        to the voxels or vertices,
+        if minimize_memory is True,
+        RegressionResults if minimize_memory is False
+
     second_level_input_ : :obj:`list` of \
         :class:`~nilearn.glm.first_level.FirstLevelModel` objects or \
         :class:`pandas.DataFrame` or \
@@ -523,14 +532,6 @@ class SecondLevelModel(BaseGLM):
         :obj:`list` of :class:`~nilearn.surface.SurfaceImage` objects or \
         :obj:`pandas.Series` of Niimg-like objects.
         Input used to fit the GLM.
-
-    design_matrix_ : :obj:`pandas.DataFrame`
-        Design matrix used to fit the GLM.
-
-    confounds_ : :obj:`pandas.DataFrame` or None
-        Confounds used to fit the GLM.
-
-    memory_ : joblib memory cache
     """
 
     def __str__(self):

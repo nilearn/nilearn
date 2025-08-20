@@ -448,14 +448,13 @@ class FirstLevelModel(BaseGLM):
 
     Attributes
     ----------
+    design_matrices_ : :obj:`list` of :obj:`pandas.DataFrame`
+        Design matrices used to fit the GLM.
+
+    fir_delays_ : array of shape(n_onsets), :obj:`list`
+
     labels_ : array of shape (n_voxels,),
         a map of values on voxels used to identify the corresponding model
-
-    results_ : :obj:`dict`,
-        with keys corresponding to the different labels values.
-        Values are SimpleRegressionResults corresponding to the voxels,
-        if minimize_memory is True,
-        RegressionResults if minimize_memory is False
 
     masker_ :  :obj:`~nilearn.maskers.NiftiMasker` or \
             :obj:`~nilearn.maskers.SurfaceMasker`
@@ -467,13 +466,13 @@ class FirstLevelModel(BaseGLM):
         other NiftiMasker/SurfaceMasker
         related parameters as initialization.
 
-    design_matrices_ : :obj:`list` of :obj:`pandas.DataFrame`
-        Design matrices used to fit the GLM.
-
-    fir_delays_ : array of shape(n_onsets), :obj:`list`
-
     memory_ : joblib memory cache
 
+    results_ : :obj:`dict`,
+        with keys corresponding to the different labels values.
+        Values are SimpleRegressionResults corresponding to the voxels,
+        if minimize_memory is True,
+        RegressionResults if minimize_memory is False
     """
 
     def __str__(self):

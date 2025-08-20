@@ -415,18 +415,20 @@ class RegionExtractor(NiftiMapsMasker):
 
     Attributes
     ----------
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     index_ : :class:`numpy.ndarray`
         Array of list of indices where each index value is assigned to
         each separate region of its corresponding family of brain maps.
-
-    regions_img_ : :class:`nibabel.nifti1.Nifti1Image`
-        List of separated regions with each region lying on an
-        original volume concatenated into a 4D image.
 
     maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The maps mask of the data.
 
     %(nifti_mask_img_)s
+
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int`
         The number of overlapping maps in the mask.
@@ -434,11 +436,9 @@ class RegionExtractor(NiftiMapsMasker):
 
         .. versionadded:: 0.9.2
 
-    memory_ : joblib memory cache
-
-    %(clean_args_)s
-
-    %(masker_kwargs_)s
+    regions_img_ : :class:`nibabel.nifti1.Nifti1Image`
+        List of separated regions with each region lying on an
+        original volume concatenated into a 4D image.
 
     References
     ----------

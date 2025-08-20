@@ -1199,12 +1199,6 @@ class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
 
     %(target_shape)s
 
-    %(low_pass)s
-
-    %(high_pass)s
-
-    %(t_r)s
-
     %(mask_strategy)s
 
         .. note::
@@ -1217,6 +1211,12 @@ class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_brain_mask`.
 
         Default='background'.
+
+    %(low_pass)s
+
+    %(high_pass)s
+
+    %(t_r)s
 
     %(memory)s
 
@@ -1384,12 +1384,6 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
 
     %(target_shape)s
 
-    %(low_pass)s
-
-    %(high_pass)s
-
-    %(t_r)s
-
     %(mask_strategy)s
 
         .. note::
@@ -1402,6 +1396,12 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_brain_mask`.
 
         Default='background'.
+
+    %(low_pass)s
+
+    %(high_pass)s
+
+    %(t_r)s
 
     %(memory)s
 
@@ -1588,9 +1588,6 @@ class FREMRegressor(_BaseDecoder):
     %(standardize)s
     %(target_affine)s
     %(target_shape)s
-    %(low_pass)s
-    %(high_pass)s
-    %(t_r)s
     %(mask_strategy)s
 
         .. note::
@@ -1603,6 +1600,9 @@ class FREMRegressor(_BaseDecoder):
             :func:`nilearn.masking.compute_brain_mask`.
 
         Default='background'.
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
@@ -1798,9 +1798,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     %(standardize)s
     %(target_affine)s
     %(target_shape)s
-    %(low_pass)s
-    %(high_pass)s
-    %(t_r)s
+
     %(mask_strategy)s
 
         .. note::
@@ -1813,6 +1811,10 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_brain_mask`.
 
         Default='background'.
+
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     %(memory)s
     %(memory_level)s
     %(n_jobs)s

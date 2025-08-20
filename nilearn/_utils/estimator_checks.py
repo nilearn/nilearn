@@ -47,6 +47,7 @@ from sklearn.utils.estimator_checks import (
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_imgs_equal
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._utils.testing import write_imgs_to_path
@@ -850,6 +851,7 @@ def check_img_estimator_doc_attributes(estimator) -> None:
     """Check that parameters and attributes are documented.
 
     - Public parameters should be documented.
+    - Attributes should be in same order as in __init__()
     - All documented parameters should exist after init.
     - Fitted attributes (ending with a "_") should be documented.
     - All documented fitted attributes should exist after fit.
@@ -892,6 +894,17 @@ def check_img_estimator_doc_attributes(estimator) -> None:
             f"in estimator {estimator.__class__.__name__}."
         )
 
+    assert len(documented_parameters) == len(set(documented_parameters))
+
+    # Attributes should be in same order as in __init__()
+    tmp = dict(**inspect.signature(estimator.__init__).parameters)
+
+    assert [str(x) for x in documented_parameters] == [str(x) for x in tmp], (
+        f"Parameters of {estimator.__class__.__name__} "
+        f"should be in order {list(tmp)}. "
+        f"Got {list(documented_parameters)}"
+    )
+
     # check fitted attributes after fit
     fitted_estimator = fit_estimator(estimator)
 
@@ -901,10 +914,10 @@ def check_img_estimator_doc_attributes(estimator) -> None:
         if x.endswith("_") and not x.startswith("_")
     ]
 
-    documented_attributes = {
+    documented_attributes: dict[str, str] = {
         attr.name: attr.type for attr in doc["Attributes"]
     }
-    undocumented_attributes = [
+    undocumented_attributes: list[str] = [
         attr for attr in fitted_attributes if attr not in documented_attributes
     ]
     if undocumented_attributes:
@@ -922,6 +935,22 @@ def check_img_estimator_doc_attributes(estimator) -> None:
             "Extra docstring for "
             f"[{', '.join(extra_attributes)}] "
             f"in estimator {estimator.__class__.__name__}."
+        )
+
+    assert len(documented_attributes) == len(set(documented_attributes))
+
+    # nice to have
+    # if possible attributes should be in alphabetical order
+    # not always possible as sometimes doc string are composed from
+    # nilearn._utils.docs
+    if list(documented_attributes) != sorted(documented_attributes):
+        warnings.warn(
+            (
+                f"Attributes of {estimator.__class__.__name__} "
+                f"should be in order {sorted(documented_attributes)}. "
+                f"Got {list(documented_attributes)}"
+            ),
+            stacklevel=find_stack_level(),
         )
 
 

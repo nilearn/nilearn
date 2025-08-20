@@ -114,9 +114,9 @@ class CanICA(_MultiPCA):
 
     %(verbose0)s
 
-    %(base_decomposition_attributes)s
+    %(base_decomposition_fit_attributes)s
 
-    %(multi_pca_attributes)s
+    %(multi_pca_fit_attributes)s
 
     variance_ : numpy array (n_components,)
         The amount of variance explained
