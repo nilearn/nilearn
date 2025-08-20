@@ -578,6 +578,11 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
     covariances_ : numpy.ndarray, shape (n_features, n_features, n_subjects)
         empirical covariance matrices.
 
+    memory_ : joblib memory cache
+
+    n_features_in_ : :obj:`int`
+        Number of features seen during fit.
+
     precisions_ : numpy.ndarraye, shape (n_features, n_features, n_subjects)
         precisions matrices estimated using the group-sparse algorithm.
 

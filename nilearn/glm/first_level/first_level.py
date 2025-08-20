@@ -468,6 +468,11 @@ class FirstLevelModel(BaseGLM):
 
     memory_ : joblib memory cache
 
+    n_elements_ : :obj:`int`
+        The number of voxels or vertices in the mask.
+
+        .. versionadded:: 0.12.1dev
+
     results_ : :obj:`dict`,
         with keys corresponding to the different labels values.
         Values are SimpleRegressionResults corresponding to the voxels,

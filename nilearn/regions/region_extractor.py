@@ -391,13 +391,13 @@ class RegionExtractor(NiftiMapsMasker):
         no resampling: if shapes and affines do not match, a ValueError is
         raised.
 
+    %(keep_masked_maps)s
+
     %(memory)s
 
     %(memory_level)s
 
     %(verbose0)s
-
-    %(keep_masked_maps)s
 
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
@@ -476,6 +476,7 @@ class RegionExtractor(NiftiMapsMasker):
         verbose=0,
         reports=True,
         cmap="CMRmap_r",
+        allow_overlap=True,
         clean_args=None,
     ):
         super().__init__(
@@ -498,6 +499,7 @@ class RegionExtractor(NiftiMapsMasker):
             reports=reports,
             cmap=cmap,
             clean_args=clean_args,
+            allow_overlap=allow_overlap,
         )
         self.maps_img = maps_img
         self.min_region_size = min_region_size

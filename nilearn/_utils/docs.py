@@ -1431,6 +1431,11 @@ masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
 
 memory_ : joblib memory cache
 
+n_elements_ : :obj:`int`
+    The number of voxels or vertices in the mask.
+
+    .. versionadded:: 0.12.1dev
+
 n_outputs_ : :obj:`int`
     Number of outputs (column-wise)
 

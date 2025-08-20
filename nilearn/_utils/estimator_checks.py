@@ -922,6 +922,11 @@ def check_img_estimator_doc_attributes(estimator) -> None:
         f"Got {list(documented_parameters)}"
     )
 
+    if isinstance(estimator, (ReNA, GroupSparseCovarianceCV)):
+        # TODO
+        # adapt fit_estimator to handle ReNA and GroupSparseCovarianceCV
+        return
+
     # check fitted attributes after fit
     fitted_estimator = fit_estimator(estimator)
 
