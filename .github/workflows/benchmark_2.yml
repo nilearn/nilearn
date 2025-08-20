@@ -5,11 +5,6 @@ name: Run benchmarks against main
 
 on: pull_request
 
-
-concurrency:
-    group: ${{ github.workflow }}-${{ github.ref }}
-    cancel-in-progress: true
-
 jobs:
 
     compare_benchmark:
@@ -23,27 +18,27 @@ jobs:
         -   uses: actions/setup-python@v5
             with:
                 python-version: '3.10'
-        -   name: Install asv
-            run: |
-                pip install --upgrade pip
-                pip install asv
-        -   name: Get all the machine info
-            run: |
-                cd asv_benchmarks
-                asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
-        -   name: Run all benchmarks on the latest commit
-            run: |
-                cd asv_benchmarks
-                asv run --verbose --show-stderr main..HEAD
-        -   name: Create html with all results
-            run: |
-                cd asv_benchmarks
-                asv publish
-        -   uses: actions/upload-artifact@v4
-            with:
-                name: benchmark_artifacts_pr
-                path: |
-                    ./asv_benchmarks/env
-                    ./asv_benchmarks/html
-                    ./asv_benchmarks/results
-                compression-level: 9
+        # -   name: Install asv
+        #     run: |
+        #         pip install --upgrade pip
+        #         pip install asv
+        # -   name: Get all the machine info
+        #     run: |
+        #         cd asv_benchmarks
+        #         asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+        # -   name: Run all benchmarks on the latest commit
+        #     run: |
+        #         cd asv_benchmarks
+        #         asv run --verbose --show-stderr main..HEAD
+        # -   name: Create html with all results
+        #     run: |
+        #         cd asv_benchmarks
+        #         asv publish
+        # -   uses: actions/upload-artifact@v4
+        #     with:
+        #         name: benchmark_artifacts_pr
+        #         path: |
+        #             ./asv_benchmarks/env
+        #             ./asv_benchmarks/html
+        #             ./asv_benchmarks/results
+        #         compression-level: 9
