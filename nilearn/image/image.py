@@ -16,15 +16,8 @@ from scipy.ndimage import gaussian_filter1d, generate_binary_structure, label
 from scipy.stats import scoreatpercentile
 
 from nilearn import signal
-from nilearn._utils import (
-    as_ndarray,
-    check_niimg,
-    check_niimg_3d,
-    check_niimg_4d,
-    fill_doc,
-    logger,
-    repr_niimgs,
-)
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import (
     check_copy_header,
@@ -34,12 +27,16 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import _get_data, safe_get_data
+from nilearn._utils.niimg import _get_data, repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import (
     _index_img,
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
     check_same_fov,
     iter_check_niimg,
 )
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.surface.surface import (

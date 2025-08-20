@@ -5,9 +5,7 @@ import itertools
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import (
-    fill_doc,
-)
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers.base_masker import prepare_confounds_multimaskers

@@ -1031,7 +1031,9 @@ def test_decoder_multiclass_warnings(multiclass_data):
 
     # Check that warning is raised when n_features is lower than 50 after
     # screening and clustering for FREM
-    with pytest.warns(UserWarning, match=".*screening_percentile parameters"):
+    with pytest.warns(
+        UserWarning, match=".*decoding model will be trained only.*"
+    ):
         model = FREMClassifier(
             clustering_percentile=10,
             screening_percentile=10,

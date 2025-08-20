@@ -8,7 +8,8 @@ import numpy as np
 import pandas as pd
 import scipy.stats as sps
 
-from nilearn._utils import logger, rename_parameters
+from nilearn._utils import logger
+from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker, SurfaceMasker
