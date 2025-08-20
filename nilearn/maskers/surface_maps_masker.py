@@ -108,6 +108,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     n_elements_ : :obj:`int`
         The number of regions in the maps image.
 
+    memory_ : joblib memory cache
+
     %(clean_args_)s
 
     See Also

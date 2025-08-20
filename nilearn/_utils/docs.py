@@ -1461,6 +1461,9 @@ dummy_output_ : ndarray, shape=(n_classes, 2) \
     This attribute is necessary for estimating class predictions
     after fit.
     Returns None if non-dummy estimators are provided.
+
+memory_ : joblib memory cache
+
 """
 
 # dataset description

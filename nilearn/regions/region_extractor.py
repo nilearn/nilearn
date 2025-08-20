@@ -430,6 +430,10 @@ class RegionExtractor(NiftiMapsMasker):
 
         .. versionadded:: 0.9.2
 
+    allow_overlap : True
+        If False, an error is raised if the maps overlaps
+        (ie at least two maps have a non-zero value for the same voxel).
+
     %(clean_args_)s
 
     References

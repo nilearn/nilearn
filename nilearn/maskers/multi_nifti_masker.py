@@ -169,6 +169,8 @@ class MultiNiftiMasker(NiftiMasker):
 
         .. versionadded:: 0.9.2
 
+    memory_ : joblib memory cache
+
     %(clean_args_)s
 
     %(masker_kwargs_)s

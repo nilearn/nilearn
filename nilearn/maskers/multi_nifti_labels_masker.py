@@ -117,6 +117,8 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         Look-up table derived from the ``labels`` or ``lut``
         or from the values of the label image.
 
+    memory_ : joblib memory cache
+
     %(clean_args_)s
 
     %(masker_kwargs_)s

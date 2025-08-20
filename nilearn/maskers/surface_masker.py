@@ -83,6 +83,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
     n_elements_ : :obj:`int` or None
         number of vertices included in mask
 
+    memory_ : joblib memory cache
+
     %(clean_args_)s
 
     """

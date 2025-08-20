@@ -896,7 +896,9 @@ def check_img_estimator_doc_attributes(estimator) -> None:
     fitted_estimator = fit_estimator(estimator)
 
     fitted_attributes = [
-        x for x in fitted_estimator.__dict__ if x.endswith("_")
+        x
+        for x in fitted_estimator.__dict__
+        if x.endswith("_") and not x.startswith("_")
     ]
 
     documented_attributes = {
@@ -1378,7 +1380,7 @@ def check_decoder_empty_data_messages(estimator):
 
 @ignore_warnings
 def check_img_regressors_no_decision_function(regressor_orig):
-    """Check that regressors don't have a decision_function.
+    """Check that regressors don't have some method, attributes.
 
     replaces sklearn check_regressors_no_decision_function
     """
@@ -1387,9 +1389,11 @@ def check_img_regressors_no_decision_function(regressor_orig):
     X, y = generate_data_to_fit(regressor)
 
     regressor.fit(X, y)
-    funcs = ["decision_function"]
-    for func_name in funcs:
-        assert not hasattr(regressor, func_name)
+    attrs = ["decision_function", "classes_", "n_classes_"]
+    for attr in attrs:
+        assert not hasattr(regressor, attr), (
+            f"'{regressor.__class__.__name__}' should not have '{attr}'"
+        )
 
 
 # ------------------ MASKER CHECKS ------------------

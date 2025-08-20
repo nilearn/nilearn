@@ -472,6 +472,8 @@ class FirstLevelModel(BaseGLM):
 
     fir_delays_ : array of shape(n_onsets), :obj:`list`
 
+    memory_ : joblib memory cache
+
     """
 
     def __str__(self):

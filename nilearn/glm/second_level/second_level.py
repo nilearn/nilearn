@@ -529,6 +529,8 @@ class SecondLevelModel(BaseGLM):
 
     confounds_ : :obj:`pandas.DataFrame` or None
         Confounds used to fit the GLM.
+
+    memory_ : joblib memory cache
     """
 
     def __str__(self):
