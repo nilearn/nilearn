@@ -1271,6 +1271,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         check_is_fitted(self)
         return self._decision_function(X)
 
+
 @fill_doc
 class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
     """A wrapper for popular regression strategies in neuroimaging.
@@ -1628,6 +1629,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         self.classes_ = ["beta"]
         super().fit(X, y, groups=groups)
         return self
+
 
 @fill_doc
 class FREMClassifier(_ClassifierMixin, _BaseDecoder):
