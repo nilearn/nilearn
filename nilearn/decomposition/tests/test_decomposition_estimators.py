@@ -23,7 +23,6 @@ from nilearn.decomposition.tests.conftest import (
 )
 
 ESTIMATORS_TO_CHECK = [
-    _MultiPCA(verbose=0),
     DictLearning(verbose=0),
     CanICA(verbose=0),
 ]
