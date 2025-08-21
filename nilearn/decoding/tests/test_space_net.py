@@ -160,14 +160,13 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
 
 
 @pytest.mark.parametrize("penalty", PENALTY)
-@pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("n_alphas", [0.1, 0.01])
 @pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 @pytest.mark.parametrize("n_jobs", [1, -1])
 @pytest.mark.parametrize("cv", [2, 3])
 @pytest.mark.parametrize("perc", [5, 10])
 def test_params_correctly_propagated_in_constructors(
-    penalty, is_classif, n_alphas, l1_ratio, n_jobs, cv, perc
+    penalty, n_alphas, l1_ratio, n_jobs, cv, perc
 ):
     cvobj = BaseSpaceNet(
         mask="dummy",
@@ -177,7 +176,6 @@ def test_params_correctly_propagated_in_constructors(
         cv=cv,
         screening_percentile=perc,
         penalty=penalty,
-        is_classif=is_classif,
     )
 
     assert cvobj.n_alphas == n_alphas
@@ -188,16 +186,14 @@ def test_params_correctly_propagated_in_constructors(
 
 
 @pytest.mark.parametrize("penalty", PENALTY)
-@pytest.mark.parametrize("is_classif", IS_CLASSIF)
 @pytest.mark.parametrize("alpha", [0.4, 0.01])
 @pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
 def test_params_correctly_propagated_in_constructors_biz(
-    penalty, is_classif, alpha, l1_ratio
+    penalty, alpha, l1_ratio
 ):
     cvobj = BaseSpaceNet(
         mask="dummy",
         penalty=penalty,
-        is_classif=is_classif,
         alphas=alpha,
         l1_ratios=l1_ratio,
     )
@@ -294,7 +290,6 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
         alphas=alphas,
         l1_ratios=l1_ratio,
         penalty="tv-l1",
-        is_classif=False,
         max_iter=10,
         debias=debias,
     ).fit(X, y)
@@ -352,7 +347,6 @@ def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
         alphas=alpha,
         l1_ratios=l1_ratio,
         penalty="tv-l1",
-        is_classif=False,
         max_iter=10,
     ).fit(X, y)
 
@@ -432,7 +426,6 @@ def test_lasso_vs_graph_net():
         mask=mask,
         alphas=1.0 * X_.shape[0],
         l1_ratios=1,
-        is_classif=False,
         penalty="graph-net",
         max_iter=100,
     )
