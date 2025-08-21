@@ -1314,7 +1314,7 @@ def check_img_estimator_requires_y_none(estimator) -> None:
         if all(msg not in str(ve) for msg in expected_err_msgs):
             raise ve
 
-            
+
 @ignore_warnings()
 def check_img_estimator_fit_score_takes_y(estimator):
     """Replace sklearn check_fit_score_takes_y for maskers.
@@ -1361,8 +1361,8 @@ def check_img_estimator_fit_score_takes_y(estimator):
                 )
             assert tmp["y"] is None
 
-            
-@ignore_warnings()         
+
+@ignore_warnings()
 def check_img_estimator_n_elements(estimator):
     """Check n_elements is set during fitting and used after that.
 
