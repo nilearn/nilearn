@@ -785,7 +785,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
         tags = super().__sklearn_tags__()
         tags.target_tags.required = True
-        tags.input_tags = InputTags(niimg_like=True, surf_img=True)
+        tags.input_tags = InputTags(niimg_like=True, surf_img=False)
         return tags
 
     def _check_params(self):
