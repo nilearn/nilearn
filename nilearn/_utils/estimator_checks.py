@@ -1228,7 +1228,7 @@ def check_img_estimator_requires_y_none(estimator) -> None:
         estimator.fit(input_img, None)
     except ValueError as ve:
         if all(msg not in str(ve) for msg in expected_err_msgs):
-            raise ve@ignore_warnings()
+            raise ve
 
             
 @ignore_warnings()
