@@ -641,6 +641,8 @@ def nilearn_check_generator(estimator: BaseEstimator):
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
+            yield (clone(estimator), check_decoder_compatibility_mask_image)
+            yield (clone(estimator), check_decoders_with_surface_data)
             if is_regressor(estimator):
                 yield (
                     clone(estimator),
@@ -1442,6 +1444,95 @@ def check_decoder_empty_data_messages(estimator):
 
     with pytest.raises(ValueError, match="empty"):
         estimator.fit(X, y)
+
+
+@ignore_warnings()
+def check_decoder_compatibility_mask_image(estimator_orig):
+    """Check compatibility of the mask_img and images for decoders.
+
+    Compatibility should be check for fit, score, predict, decision function.
+    """
+    if isinstance(estimator_orig, SearchLight):
+        # note searchlight does not fit Surface data
+        return
+
+    estimator = clone(estimator_orig)
+
+    # fitting volume data when the mask is a surface should fail
+    estimator.mask = _make_surface_mask()
+
+    if isinstance(estimator, BaseSpaceNet):
+        # TODO: remove when BaseSpaceNet support surface data
+        with pytest.raises(
+            TypeError, match=("input should be a NiftiLike object")
+        ):
+            fit_estimator(estimator)
+        return
+
+    with pytest.raises(
+        TypeError, match=("Mask and input images must be of compatible types")
+    ):
+        fit_estimator(estimator)
+
+    estimator = clone(estimator_orig)
+
+    X, y = generate_data_to_fit(estimator)
+    estimator.fit(X, y)
+
+    # decoders were fitted with nifti images
+    # so running the following method with surface image should fail
+    for method in ["score", "predict", "decision_function"]:
+        if not hasattr(estimator, method):
+            continue
+
+        input = (_make_surface_img(3),)
+        if method == "score":
+            input = (_make_surface_img(3), y)
+
+        with pytest.raises(
+            TypeError,
+            match=("Mask and input images must be of compatible types"),
+        ):
+            getattr(estimator, method)(*input)
+
+
+@ignore_warnings()
+def check_decoders_with_surface_data(estimator_orig):
+    """Test fit and other methods with surface image."""
+    if isinstance(estimator_orig, SearchLight):
+        # note searchlight does not fit Surface data
+        return
+
+    n_samples = 50
+    y = _rng().choice([0, 1], size=n_samples)
+    X = _make_surface_img(n_samples)
+
+    estimator = clone(estimator_orig)
+
+    for mask in [None, SurfaceMasker(), _surf_mask_1d(), _make_surface_mask()]:
+        estimator.mask = mask
+        if hasattr(estimator, "clustering_percentile"):
+            # for FREM decoders include all elements
+            # to avoid getting 0 clusters to work with
+            estimator.clustering_percentile = 100
+
+        if isinstance(estimator, BaseSpaceNet):
+            # TODO: remove when BaseSpaceNet support surface data
+            with pytest.raises(NotImplementedError):
+                estimator.fit(X, y)
+            continue
+
+        estimator.fit(X, y)
+
+        assert estimator.coef_ is not None
+
+        for method in ["score", "predict", "decision_function"]:
+            if not hasattr(estimator, method):
+                continue
+            if method == "score":
+                getattr(estimator, method)(X, y)
+            else:
+                getattr(estimator, method)(X)
 
 
 @ignore_warnings

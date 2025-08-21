@@ -359,7 +359,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(surf_img=True)
+        tags.input_tags = InputTags(surf_img=False)
 
         if self.estimator == "svr":
             if SKLEARN_LT_1_6:
@@ -413,6 +413,10 @@ class SearchLight(TransformerMixin, BaseEstimator):
         self.mask_img_ = deepcopy(self.mask_img)
         if self.mask_img_ is not None:
             self.mask_img_ = check_niimg_3d(self.mask_img_)
+
+        if self.process_mask_img is not None:
+            check_niimg_3d(self.process_mask_img)
+
         process_mask_img = self.process_mask_img or self.mask_img_
 
         # Compute world coordinates of the seeds
