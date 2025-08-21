@@ -903,7 +903,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             class would be predicted.
         """
         check_is_fitted(self)
-        check_compatibility_mask_and_images(self.mask_img_, X)
+        if not isinstance(X, np.ndarray):
+            check_compatibility_mask_and_images(self.mask_img_, X)
 
         # Prediction for dummy estimator is different from others as there is
         # no fitted coefficient
