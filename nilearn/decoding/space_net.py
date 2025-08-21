@@ -695,7 +695,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     """
 
     SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
-    SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
 
     def __init__(
         self,
@@ -819,19 +818,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 f"{self.SUPPORTED_PENALTIES}. "
                 f"Got {self.penalty}."
             )
-        if (
-            self._is_classification
-            and self.loss is not None
-            and self.loss not in self.SUPPORTED_LOSSES
-        ):
+        if self._is_classification:
             self._validate_loss(self.loss)
-
-    def _validate_loss(self, value):
-        if value is not None and value not in self.SUPPORTED_LOSSES:
-            raise ValueError(
-                f"'loss' parameter must be one of {self.SUPPORTED_LOSSES}. "
-                f"Got {value}."
-            )
 
     def _set_coef_and_intercept(self, w):
         """Set the loadings vector (coef) and the intercept of the fitted \
@@ -1248,6 +1236,8 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     """
 
+    SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
+
     def __init__(
         self,
         penalty="graph-net",
@@ -1302,6 +1292,13 @@ class SpaceNetClassifier(BaseSpaceNet):
 
         # TODO remove for sklearn>=1.6
         self._estimator_type = "classifier"
+
+    def _validate_loss(self, value):
+        if value is not None and value not in self.SUPPORTED_LOSSES:
+            raise ValueError(
+                f"'loss' parameter must be one of {self.SUPPORTED_LOSSES}. "
+                f"Got {value}."
+            )
 
     def _binarize_y(self, y):
         """Encode target classes as -1 and 1.
