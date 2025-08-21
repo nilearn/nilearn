@@ -1245,6 +1245,13 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             n_jobs=n_jobs,
         )
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
     def decision_function(self, X):
         """Predict class labels for samples in X.
 
@@ -1263,13 +1270,6 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         """
         check_is_fitted(self)
         return self._decision_function(X)
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
 
 @fill_doc
 class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
@@ -1417,6 +1417,13 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             n_jobs=n_jobs,
         )
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
     @fill_doc
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
@@ -1442,12 +1449,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         self.classes_ = ["beta"]
         return super().fit(X, y, groups=groups)
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
 
 @fill_doc
 class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
@@ -1595,6 +1596,13 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
         self.clustering_percentile = clustering_percentile
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
     @fill_doc
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
@@ -1620,13 +1628,6 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         self.classes_ = ["beta"]
         super().fit(X, y, groups=groups)
         return self
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
 
 @fill_doc
 class FREMClassifier(_ClassifierMixin, _BaseDecoder):
@@ -1780,6 +1781,13 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
 
         self.clustering_percentile = clustering_percentile
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
     def decision_function(self, X):
         """Predict class labels for samples in X.
 
@@ -1798,10 +1806,3 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         """
         check_is_fitted(self)
         return self._decision_function(X)
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
