@@ -15,7 +15,8 @@ from nibabel.funcs import four_to_three
 from sklearn.base import clone
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
@@ -602,6 +603,8 @@ class SecondLevelModel(BaseGLM):
         self.masker_.memory_level = self.memory_level
 
         self.masker_.fit(sample_map)
+
+        self.n_elements_ = self.masker_.n_elements_
 
         # Report progress
         logger.log(

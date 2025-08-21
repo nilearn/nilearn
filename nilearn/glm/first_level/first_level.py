@@ -23,7 +23,8 @@ from scipy.linalg import toeplitz
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
@@ -1265,6 +1266,8 @@ class FirstLevelModel(BaseGLM):
             check_is_fitted(self.mask_img)
 
             self.masker_ = self.mask_img
+
+        self.n_elements_ = self.masker_.n_elements_
 
     @fill_doc
     def generate_report(

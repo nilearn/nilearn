@@ -10,11 +10,12 @@ import numpy as np
 from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
-from nilearn import _utils
-from nilearn._utils import fill_doc, stringify_path
-from nilearn._utils.helpers import check_copy_header
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import check_copy_header, stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
+from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn.image.image import copy_img, crop_img
 
 ###############################################################################
@@ -220,10 +221,8 @@ def get_mask_bounds(img):
     reorder_img to ensure that it is the case.
 
     """
-    img = _utils.check_niimg_3d(img)
-    mask = _utils.numpy_conversions.as_ndarray(
-        _get_data(img), dtype=bool, copy=False
-    )
+    img = check_niimg_3d(img)
+    mask = as_ndarray(_get_data(img), dtype=bool, copy=False)
     affine = img.affine
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(mask.shape, affine)
     slices = find_objects(mask.astype(int))
@@ -474,7 +473,7 @@ def resample_img(
     _check_resample_img_inputs(target_shape, target_affine, interpolation)
 
     img = stringify_path(img)
-    img = _utils.check_niimg(img)
+    img = check_niimg(img)
 
     # If later on we want to impute sform using qform add this condition
     # see : https://github.com/nilearn/nilearn/issues/3168#issuecomment-1159447771  # noqa: E501
@@ -814,7 +813,7 @@ def resample_to_img(
     """
     force_resample = _check_force_resample(force_resample)
 
-    target = _utils.check_niimg(target_img)
+    target = check_niimg(target_img)
     target_shape = target.shape
 
     # When target shape is greater than 3, we reduce to 3, to be compatible
@@ -867,7 +866,7 @@ def reorder_img(img, resample=None, copy_header=False):
     from .image import new_img_like
 
     check_copy_header(copy_header)
-    img = _utils.check_niimg(img)
+    img = check_niimg(img)
     # The copy is needed in order not to modify the input img affine
     # see https://github.com/nilearn/nilearn/issues/325 for a concrete bug
     affine = img.affine.copy()

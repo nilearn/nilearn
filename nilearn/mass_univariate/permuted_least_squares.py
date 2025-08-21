@@ -13,7 +13,8 @@ from scipy.ndimage import generate_binary_structure, label
 from sklearn.utils import check_random_state
 
 from nilearn import image
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.masking import apply_mask
