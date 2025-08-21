@@ -1005,7 +1005,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 solver_params,
                 n_alphas=self.n_alphas,
                 eps=self.eps,
-                is_classif=self.loss == "logistic",
+                is_classif=self._is_classification,
                 key=(cls, fold),
                 debias=self.debias,
                 verbose=self.verbose,
@@ -1426,6 +1426,9 @@ class SpaceNetRegressor(BaseSpaceNet):
     penalty : :obj:`str`, default='graph-net'
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
+    loss : :obj:`str`, default="mse"
+        Loss to be used in the model. Must be "mse".
+
     l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1]; \
         default=0.5
         Constant that mixes L1 and spatial prior terms in penalization.
@@ -1553,6 +1556,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     def __init__(
         self,
         penalty="graph-net",
+        loss="mse",
         l1_ratios=0.5,
         alphas=None,
         n_alphas=10,
@@ -1578,6 +1582,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         super().__init__(
             penalty=penalty,
             l1_ratios=l1_ratios,
+            loss=loss,
             alphas=alphas,
             n_alphas=n_alphas,
             target_shape=target_shape,
