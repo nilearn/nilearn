@@ -19,7 +19,6 @@ from joblib import Parallel, delayed
 from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
-    ClassifierMixin,
     MultiOutputMixin,
     RegressorMixin,
 )
@@ -1103,6 +1102,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
 @fill_doc
 class _ClassifierMixin:
+    # TODO remove for sklearn>=1.6
+    _estimator_type = "classifier"
+
     def decision_function(self, X):
         """Predict class labels for samples in X.
 
@@ -1122,9 +1124,30 @@ class _ClassifierMixin:
         check_is_fitted(self)
         return self._decision_function(X)
 
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        tags = super().__sklearn_tags__()
+        if SKLEARN_LT_1_6:
+            return tags
+
+        from sklearn.utils import ClassifierTags
+
+        tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+
+        return tags
+
 
 @fill_doc
-class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
+class Decoder(_ClassifierMixin, _BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
@@ -1272,36 +1295,6 @@ class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
             verbose=verbose,
             n_jobs=n_jobs,
         )
-        # TODO remove for sklearn>=1.6
-        self._estimator_type = "classifier"
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            return tags
-
-        from sklearn.utils import ClassifierTags
-
-        tags.estimator_type = "classifier"
-        tags.classifier_tags = ClassifierTags()
-
-        return tags
 
 
 @fill_doc
@@ -1452,13 +1445,6 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
 
         # TODO remove for sklearn>=1.6
         self._estimator_type = "regressor"
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -1655,13 +1641,6 @@ class FREMRegressor(_BaseDecoder):
 
         # TODO remove after sklearn>=1.6
         self._estimator_type = "regressor"
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -1863,34 +1842,3 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         )
 
         self.clustering_percentile = clustering_percentile
-
-        # TODO remove after sklearn>=1.6
-        self._estimator_type = "classifier"
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            return tags
-
-        from sklearn.utils import ClassifierTags
-
-        tags.estimator_type = "classifier"
-        tags.classifier_tags = ClassifierTags()
-
-        return tags
