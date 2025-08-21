@@ -852,7 +852,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         Parameters
         ----------
         X : Niimg-like, :obj:`list` of either \
-            Niimg-like objects or :obj:`str` or path-like
+            Niimg-like objects or :obj:`str` or path-like, \
+            or numpy array.
             See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
@@ -863,6 +864,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Predicted class label per sample.
         """
         check_is_fitted(self)
+
         # for backwards compatibility - apply masker transform if X is
         # niimg-like or a list of strings
         if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
