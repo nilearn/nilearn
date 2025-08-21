@@ -1072,13 +1072,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             )
         return scores.ravel() if scores.shape[1] == 1 else scores
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
     def __sklearn_tags__(self):
         """Return estimator tags.
 
@@ -1271,6 +1264,12 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         check_is_fitted(self)
         return self._decision_function(X)
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
 
 @fill_doc
 class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
@@ -1443,6 +1442,12 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         self.classes_ = ["beta"]
         return super().fit(X, y, groups=groups)
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
 
 @fill_doc
 class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
@@ -1616,6 +1621,12 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         super().fit(X, y, groups=groups)
         return self
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
 
 @fill_doc
 class FREMClassifier(_ClassifierMixin, _BaseDecoder):
@@ -1787,3 +1798,10 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         """
         check_is_fitted(self)
         return self._decision_function(X)
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
