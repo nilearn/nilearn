@@ -551,9 +551,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     penalty : :obj:`str`, default='graph-net'
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : :obj:`str`, default=None
-        Loss to be used in the model. Must be an one of "mse", or "logistic".
-
     l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1]; \
         default=0.5
         Constant that mixes L1 and spatial prior terms in penalization.
@@ -703,7 +700,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     def __init__(
         self,
         penalty="graph-net",
-        loss=None,
         l1_ratios=0.5,
         alphas=None,
         n_alphas=10,
@@ -729,7 +725,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         positive=False,
     ):
         self.penalty = penalty
-        self.loss = loss
         self.n_alphas = n_alphas
         self.eps = eps
         self.l1_ratios = l1_ratios
@@ -824,19 +819,18 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 f"{self.SUPPORTED_PENALTIES}. "
                 f"Got {self.penalty}."
             )
-        if self.loss is not None and self.loss not in self.SUPPORTED_LOSSES:
+        if (
+            self._is_classification
+            and self.loss is not None
+            and self.loss not in self.SUPPORTED_LOSSES
+        ):
+            self._validate_loss(self.loss)
+
+    def _validate_loss(self, value):
+        if value is not None and value not in self.SUPPORTED_LOSSES:
             raise ValueError(
                 f"'loss' parameter must be one of {self.SUPPORTED_LOSSES}. "
-                f"Got {self.loss}."
-            )
-        if (
-            self.loss is not None
-            and not self._is_classification
-            and (self.loss == "logistic")
-        ):
-            raise ValueError(
-                "'logistic' loss is only available for classification "
-                "problems."
+                f"Got {value}."
             )
 
     def _set_coef_and_intercept(self, w):
@@ -921,7 +915,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             alphas, collections.abc.Iterable
         ):
             alphas = [alphas]
-        if self.loss is not None:
+
+        if getattr(self, "loss", None) is not None:
             loss = self.loss
         elif self._is_classification:
             loss = "logistic"
@@ -930,11 +925,11 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
         # set backend solver
         if self.penalty.lower() == "graph-net":
-            if not self._is_classification or loss == "mse":
+            if loss == "mse":
                 solver = graph_net_squared_loss
             else:
                 solver = graph_net_logistic
-        elif not self._is_classification or loss == "mse":
+        elif loss == "mse":
             solver = partial(tvl1_solver, loss="mse")
         else:
             solver = partial(tvl1_solver, loss="logistic")
@@ -1300,10 +1295,11 @@ class SpaceNetClassifier(BaseSpaceNet):
             fit_intercept=fit_intercept,
             standardize=standardize,
             screening_percentile=screening_percentile,
-            loss=loss,
             target_affine=target_affine,
             verbose=verbose,
         )
+        self.loss = loss
+
         # TODO remove for sklearn>=1.6
         self._estimator_type = "classifier"
 
@@ -1425,9 +1421,6 @@ class SpaceNetRegressor(BaseSpaceNet):
     ----------
     penalty : :obj:`str`, default='graph-net'
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
-
-    loss : :obj:`str`, default="mse"
-        Loss to be used in the model. Must be "mse".
 
     l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1]; \
         default=0.5
@@ -1556,7 +1549,6 @@ class SpaceNetRegressor(BaseSpaceNet):
     def __init__(
         self,
         penalty="graph-net",
-        loss="mse",
         l1_ratios=0.5,
         alphas=None,
         n_alphas=10,
@@ -1582,7 +1574,6 @@ class SpaceNetRegressor(BaseSpaceNet):
         super().__init__(
             penalty=penalty,
             l1_ratios=l1_ratios,
-            loss=loss,
             alphas=alphas,
             n_alphas=n_alphas,
             target_shape=target_shape,
