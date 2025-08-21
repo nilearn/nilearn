@@ -1252,6 +1252,14 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         """
         return self.__sklearn_tags__()
 
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        return super().__sklearn_tags__()
+
     def decision_function(self, X):
         """Predict class labels for samples in X.
 
@@ -1424,6 +1432,14 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         TODO remove when bumping sklearn_version > 1.5
         """
         return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        return super().__sklearn_tags__()
 
     @fill_doc
     def fit(self, X, y, groups=None):
@@ -1603,6 +1619,14 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         TODO remove when bumping sklearn_version > 1.5
         """
         return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        return super().__sklearn_tags__()
 
     @fill_doc
     def fit(self, X, y, groups=None):
@@ -1789,6 +1813,14 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         TODO remove when bumping sklearn_version > 1.5
         """
         return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        return super().__sklearn_tags__()
 
     def decision_function(self, X):
         """Predict class labels for samples in X.
