@@ -1460,6 +1460,15 @@ def check_decoder_compatibility_mask_image(estimator_orig):
 
     # fitting volume data when the mask is a surface should fail
     estimator.mask = _make_surface_mask()
+
+    if isinstance(estimator, BaseSpaceNet):
+        # TODO: remove when BaseSpaceNet support surface data
+        with pytest.raises(
+            TypeError, match=("input should be a NiftiLike object")
+        ):
+            fit_estimator(estimator)
+        return
+
     with pytest.raises(
         TypeError, match=("Mask and input images must be of compatible types")
     ):
@@ -1506,6 +1515,12 @@ def check_decoders_with_surface_data(estimator_orig):
             # for FREM decoders include all elements
             # to avoid getting 0 clusters to work with
             estimator.clustering_percentile = 100
+
+        if isinstance(estimator, BaseSpaceNet):
+            # TODO: remove when BaseSpaceNet support surface data
+            with pytest.raises(NotImplementedError):
+                estimator.fit(X, y)
+            continue
 
         estimator.fit(X, y)
 
