@@ -10,7 +10,7 @@ from functools import partial
 from typing import ClassVar
 
 import numpy as np
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 from scipy import stats
 from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
@@ -32,6 +32,7 @@ from nilearn._utils.param_validation import (
     adjust_screening_percentile,
     check_params,
 )
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -758,6 +759,35 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.mask_args = mask_args
         self.positive = positive
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(require_y=True, niimg_like=True, surf_img=True)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.target_tags.required = True
+        tags.input_tags = InputTags(niimg_like=True, surf_img=False)
+        return tags
+
     def _check_params(self):
         """Make sure parameters are sane."""
         if self.l1_ratios is not None:
@@ -850,6 +880,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         tic = time.time()
 
         self.masker_ = check_embedded_masker(self, masker_type="nii")
+        self.masker_.memory_level = self.memory_level
         X = self.masker_.fit_transform(X)
 
         X, y = check_X_y(
@@ -997,6 +1028,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         # unmask weights map as a niimg
         self.coef_img_ = self.masker_.inverse_transform(self.coef_)
 
+        self.n_elements_ = self.coef_.shape[1]
+
         # report time elapsed
         duration = time.time() - tic
         logger.log(
@@ -1009,48 +1042,12 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "masker_")
 
-    def decision_function(self, X):
-        """Predict confidence scores for samples.
-
-        The confidence score for a sample is the signed distance of that
-        sample to the hyperplane.
-
-        Parameters
-        ----------
-        X : {array-like, sparse matrix}, shape = (n_samples, n_features)
-            Samples.
-
-        Returns
-        -------
-        array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
-            Confidence scores per (sample, class) combination. In the binary
-            case, confidence score for `self.classes_[1]` where >0 means this
-            class would be predicted.
-        """
-        # handle regression (least-squared loss)
-        if not self.is_classif:
-            raise ValueError("There is no decision_function in classification")
-
-        X = check_array(X)
-        n_features = self.coef_.shape[1]
-        if X.shape[1] != n_features:
-            raise ValueError(
-                f"X has {X.shape[1]} features per sample; "
-                f"expecting {n_features}."
-            )
-
-        scores = (
-            safe_sparse_dot(X, self.coef_.T, dense_output=True)
-            + self.intercept_
-        )
-        return scores.ravel() if scores.shape[1] == 1 else scores
-
     def predict(self, X):
         """Predict class labels for samples in X.
 
         Parameters
         ----------
-        X : :obj:`list` of Niimg-like objects
+        X : :obj:`list` of Niimg-like objects or numpy array
             See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
@@ -1060,10 +1057,18 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         y_pred : ndarray, shape (n_samples,)
             Predicted class label per sample.
         """
-        # cast X into usual 2D array
         check_is_fitted(self)
 
-        X = self.masker_.transform(X)
+        # cast X into usual 2D array
+        if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
+            X = self.masker_.transform(X)
+
+        X = check_array(X)
+        if X.shape[1] != self.n_elements_:
+            raise ValueError(
+                f"X has {X.shape[1]} features per sample; "
+                f"expecting {self.n_elements_}."
+            )
 
         # handle regression (least-squared loss)
         if not self.is_classif:
@@ -1260,8 +1265,6 @@ class SpaceNetClassifier(BaseSpaceNet):
         screening_percentile=20,
         debias=False,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=True,
@@ -1288,6 +1291,8 @@ class SpaceNetClassifier(BaseSpaceNet):
             target_affine=target_affine,
             verbose=verbose,
         )
+        # TODO remove for sklearn>=1.6
+        self._estimator_type = "classifier"
 
     def _binarize_y(self, y):
         """Encode target classes as -1 and 1.
@@ -1321,7 +1326,76 @@ class SpaceNetClassifier(BaseSpaceNet):
         score : float
             Mean accuracy of self.predict(X)  w.r.t y.
         """
+        check_is_fitted(self)
         return accuracy_score(y, self.predict(X))
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        tags = super().__sklearn_tags__()
+        if SKLEARN_LT_1_6:
+            return tags
+
+        from sklearn.utils import ClassifierTags
+
+        tags.estimator_type = "classifier"
+        tags.classifier_tags = ClassifierTags()
+
+        return tags
+
+    def decision_function(self, X):
+        """Predict confidence scores for samples.
+
+        The confidence score for a sample is the signed distance of that
+        sample to the hyperplane.
+
+        Parameters
+        ----------
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like or \
+            {array-like, sparse matrix}, shape = (n_samples, n_features)
+            Samples.
+
+        Returns
+        -------
+        array, shape=(n_samples,) if n_classes == 2 else (n_samples, n_classes)
+            Confidence scores per (sample, class) combination. In the binary
+            case, confidence score for `self.classes_[1]` where >0 means this
+            class would be predicted.
+        """
+        check_is_fitted(self)
+
+        # for backwards compatibility - apply masker transform if X is
+        # niimg-like or a list of strings
+        if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
+            X = self.masker_.transform(X)
+
+        X = check_array(X)
+        if X.shape[1] != self.n_elements_:
+            raise ValueError(
+                f"X has {X.shape[1]} features per sample; "
+                f"expecting {self.n_elements_}."
+            )
+
+        scores = (
+            safe_sparse_dot(X, self.coef_.T, dense_output=True)
+            + self.intercept_
+        )
+        return scores.ravel() if scores.shape[1] == 1 else scores
 
 
 @fill_doc
@@ -1488,8 +1562,6 @@ class SpaceNetRegressor(BaseSpaceNet):
         screening_percentile=20,
         debias=False,
     ):
-        if memory is None:
-            memory = Memory(location=None)
         super().__init__(
             penalty=penalty,
             is_classif=False,
@@ -1515,3 +1587,35 @@ class SpaceNetRegressor(BaseSpaceNet):
             target_affine=target_affine,
             verbose=verbose,
         )
+
+        # TODO remove for sklearn>=1.6
+        self._estimator_type = "regressor"
+
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO
+        # get rid of if block
+        # bumping sklearn_version > 1.5
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        tags = super().__sklearn_tags__()
+        if SKLEARN_LT_1_6:
+            tags["multioutput"] = True
+            return tags
+
+        from sklearn.utils import RegressorTags
+
+        tags.estimator_type = "regressor"
+        tags.regressor_tags = RegressorTags()
+
+        return tags
