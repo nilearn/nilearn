@@ -22,12 +22,14 @@ import numpy as np
 import pandas as pd
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import check_niimg, fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import load_niimg, safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img

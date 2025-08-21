@@ -11,20 +11,14 @@ import numpy as np
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import (
-    fill_doc,
-    stringify_path,
-)
-from nilearn._utils.class_inspect import (
-    get_params,
-)
+from nilearn._utils.class_inspect import get_params
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.image import (
-    resample_img,
-)
+from nilearn.image import resample_img
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     mask_logger,

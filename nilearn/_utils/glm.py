@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from nilearn._utils import stringify_path
+from nilearn._utils.helpers import stringify_path
 
 
 def check_and_load_tables(tables_to_check, var_name):

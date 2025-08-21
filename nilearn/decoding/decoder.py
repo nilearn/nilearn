@@ -43,12 +43,14 @@ from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
-from nilearn._utils import CacheMixin, fill_doc
+from nilearn._utils.cache_mixin import CacheMixin
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
 )
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_feature_screening,
     check_params,
@@ -569,7 +571,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         mask=None,
         cv=10,
         param_grid=None,
-        clustering_percentile=100,
         screening_percentile=20,
         scoring=None,
         smoothing_fwhm=None,
@@ -580,7 +581,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         high_pass=None,
         t_r=None,
         mask_strategy="background",
-        is_classification=True,
         memory=None,
         memory_level=0,
         n_jobs=1,
@@ -592,8 +592,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.param_grid = param_grid
         self.screening_percentile = screening_percentile
         self.scoring = scoring
-        self.is_classification = is_classification
-        self.clustering_percentile = clustering_percentile
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
         self.target_affine = target_affine
@@ -606,6 +604,24 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.memory_level = memory_level
         self.n_jobs = n_jobs
         self.verbose = verbose
+
+    @property
+    def _is_classification(self) -> bool:
+        # TODO remove for sklearn>=1.6
+        # this private method can probably be removed
+        # when dropping sklearn>=1.5 and replaced by just:
+        #   self.__sklearn_tags__().estimator_type == "classifier"
+        if SKLEARN_LT_1_6:
+            # TODO remove for sklearn>=1.6
+            return self._estimator_type == "classifier"
+        return self.__sklearn_tags__().estimator_type == "classifier"
+
+    @property
+    def _clustering_percentile(self) -> int:
+        # only FREMClassifier and FREMRegressor use clustering_percentile
+        if hasattr(self, "clustering_percentile"):
+            return self.clustering_percentile
+        return 100
 
     @fill_doc
     def fit(self, X, y, groups=None):
@@ -662,15 +678,19 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             cv_object = LeaveOneGroupOut()
 
         else:
-            cv_object = check_cv(cv, y=y, classifier=self.is_classification)
+            cv_object = check_cv(cv, y=y, classifier=self._is_classification)
 
         self.cv_ = list(cv_object.split(X, y, groups=groups))
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
-        y = self._binarize_y(y) if self.is_classification else y[:, np.newaxis]
+        y = (
+            self._binarize_y(y)
+            if self._is_classification
+            else y[:, np.newaxis]
+        )
 
-        if self.is_classification and self.n_classes_ > 2:
+        if self._is_classification and self.n_classes_ > 2:
             n_problems = self.n_classes_
         else:
             n_problems = 1
@@ -680,7 +700,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         selector = check_feature_screening(
             self.screening_percentile,
             self.mask_img_,
-            self.is_classification,
+            self._is_classification,
             verbose=self.verbose,
         )
 
@@ -695,17 +715,28 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         n_final_features = int(
             X.shape[1]
             * self.screening_percentile_
-            * self.clustering_percentile
+            * self._clustering_percentile
             / 10000
         )
         if n_final_features < 50:
+            screening_percentile_msg = ""
+            if self.screening_percentile_ < 100:
+                screening_percentile_msg = (
+                    "Consider raising 'screening_percentile'"
+                )
+            clustering_percentile_msg = ""
+            if (
+                hasattr(self, "clustering_percentile")
+                and self._clustering_percentile < 100
+            ):
+                clustering_percentile_msg = " and / or 'clustering_percentile'"
+            warning_msg = (
+                "The decoding model will be trained only "
+                f"on {n_final_features} features. "
+                f"{screening_percentile_msg}{clustering_percentile_msg}."
+            )
             warnings.warn(
-                "After clustering and screening, the decoding model will "
-                f"be trained only on {n_final_features} features. "
-                "Consider raising clustering_percentile or "
-                "screening_percentile parameters.",
-                UserWarning,
-                stacklevel=find_stack_level(),
+                warning_msg, UserWarning, stacklevel=find_stack_level()
             )
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
@@ -722,7 +753,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 scorer=self.scorer_,
                 mask_img=self.mask_img_,
                 class_index=c,
-                clustering_percentile=self.clustering_percentile,
+                clustering_percentile=self._clustering_percentile,
             )
             for c, (train, test) in itertools.product(
                 range(n_problems), self.cv_
@@ -758,9 +789,12 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 self.classes_, self.coef_, self.std_coef_
             )
 
-            if self.is_classification and (self.n_classes_ == 2):
+            if self._is_classification and (self.n_classes_ == 2):
                 self.coef_ = self.coef_[0, :][np.newaxis, :]
                 self.intercept_ = self.intercept_[0]
+
+            self.n_elements_ = self.coef_.shape[1]
+
         else:
             # For Dummy estimators
             self.coef_ = None
@@ -770,7 +804,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                     for class_index in self.classes_
                 ]
             )
-            if self.is_classification and (self.n_classes_ == 2):
+            if self._is_classification and (self.n_classes_ == 2):
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
         return self
@@ -784,8 +818,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : Niimg-like, :obj:`list` of either \
-            Niimg-like objects or :obj:`str` or path-like
+        X : Niimg-like, :obj:`list` Niimg-like objects,
+            :obj:`nilearn.surface.SurfaceImage`, \
+            or :obj:`list` of :obj:`nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data on which prediction is to be made.
 
@@ -802,6 +837,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         """
         check_is_fitted(self)
+        check_compatibility_mask_and_images(self.mask_img_, X)
         return self.scorer_(self, X, y, *args)
 
     def _decision_function(self, X) -> np.ndarray:
@@ -813,11 +849,14 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : Niimg-like, :obj:`list` of either \
-            Niimg-like objects or :obj:`str` or path-like
+        X : Niimg-like, :obj:`list` Niimg-like objects,
+            :obj:`nilearn.surface.SurfaceImage`, \
+            :obj:`list` of :obj:`nilearn.surface.SurfaceImage`,
+            or numpy array.
             See :ref:`extracting_data`.
-            Data on prediction is to be made. If this is a list,
-            the affine is considered the same for all.
+            Data on prediction is to be made.
+            If this is a list,
+            the affine (or mesh) is considered the same for all.
 
         Returns
         -------
@@ -825,15 +864,17 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Predicted class label per sample.
         """
         check_is_fitted(self)
+
         # for backwards compatibility - apply masker transform if X is
-        # niimg-like or a list of strings
+        # niimg-like or a list of strings or surface image
         if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
+            check_compatibility_mask_and_images(self.mask_img_, X)
             X = self.masker_.transform(X)
-        n_features = self.coef_.shape[1]
-        if X.shape[1] != n_features:
+
+        if X.shape[1] != self.n_elements_:
             raise ValueError(
                 f"X has {X.shape[1]} features per sample;"
-                f" expecting {n_features}"
+                f" expecting {self.n_elements_}"
             )
 
         scores = (
@@ -848,8 +889,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : Niimg-like, :obj:`list` of either \
-            Niimg-like objects or :obj:`str` or path-like
+        X : Niimg-like, :obj:`list` Niimg-like objects,
+            :obj:`nilearn.surface.SurfaceImage`, \
+            or :obj:`list` of :obj:`nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data on which prediction is to be made.
 
@@ -861,17 +903,22 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             class would be predicted.
         """
         check_is_fitted(self)
-
-        n_samples = np.shape(X)[-1]
+        if not isinstance(X, np.ndarray):
+            check_compatibility_mask_and_images(self.mask_img_, X)
 
         # Prediction for dummy estimator is different from others as there is
         # no fitted coefficient
         if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
+            if isinstance(X, SurfaceImage):
+                n_samples = X.data.shape[1] if len(X.data.shape) == 2 else 1
+            else:
+                X = check_niimg(X)
+                n_samples = np.shape(X)[-1]
             scores = self._predict_dummy(n_samples)
         else:
             scores = self._decision_function(X)
 
-        if self.is_classification:
+        if self._is_classification:
             if scores.ndim == 1:
                 indices = (scores > 0).astype(int)
             else:
@@ -958,7 +1005,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                     params[k]
                 )
 
-            if (n_problems <= 2) and self.is_classification:
+            if (n_problems <= 2) and self._is_classification:
                 # Binary classification
                 other_class = np.setdiff1d(classes, classes[class_index])[0]
                 if coef is not None:
@@ -988,7 +1035,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
     def _set_scorer(self):
         if self.scoring is not None:
             self.scorer_ = check_scoring(self.estimator_, self.scoring)
-        elif self.is_classification:
+        elif self._is_classification:
             self.scorer_ = get_scorer("accuracy")
         else:
             self.scorer_ = get_scorer("r2")
@@ -1236,7 +1283,6 @@ class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
             high_pass=high_pass,
             t_r=t_r,
             memory=memory,
-            is_classification=True,
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
@@ -1414,7 +1460,6 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
             t_r=t_r,
             mask_strategy=mask_strategy,
             memory=memory,
-            is_classification=False,
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
@@ -1605,7 +1650,6 @@ class FREMRegressor(_BaseDecoder):
             mask=mask,
             cv=cv,
             param_grid=param_grid,
-            clustering_percentile=clustering_percentile,
             screening_percentile=screening_percentile,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
@@ -1617,11 +1661,12 @@ class FREMRegressor(_BaseDecoder):
             t_r=t_r,
             mask_strategy=mask_strategy,
             memory=memory,
-            is_classification=False,
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
         )
+
+        self.clustering_percentile = clustering_percentile
 
         # TODO remove after sklearn>=1.6
         self._estimator_type = "regressor"
@@ -1816,7 +1861,6 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             mask=mask,
             cv=cv,
             param_grid=param_grid,
-            clustering_percentile=clustering_percentile,
             screening_percentile=screening_percentile,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
@@ -1825,7 +1869,6 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             target_shape=target_shape,
             mask_strategy=mask_strategy,
             memory=memory,
-            is_classification=True,
             memory_level=memory_level,
             verbose=verbose,
             n_jobs=n_jobs,
@@ -1833,6 +1876,8 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             high_pass=high_pass,
             t_r=t_r,
         )
+
+        self.clustering_percentile = clustering_percentile
 
         # TODO remove after sklearn>=1.6
         self._estimator_type = "classifier"
