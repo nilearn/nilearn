@@ -1316,7 +1316,7 @@ Attributes
 ----------
 maps_masker_ : instance of NiftiMapsMasker or SurfaceMapsMasker
     This masker was initialized with
-    components_img_, masker_.mask_img_
+    ``components_img_``, ``masker_.mask_img_``
     and is the masker used
     when calliing transform and inverse_transform.
 
