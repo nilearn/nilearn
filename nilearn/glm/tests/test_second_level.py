@@ -1497,7 +1497,7 @@ def test_second_level_input_with_wrong_mask(
     model = SecondLevelModel(mask_img=img_mask_mni)
 
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 
@@ -1507,7 +1507,7 @@ def test_second_level_input_with_wrong_mask(
     model = SecondLevelModel(mask_img=surf_mask_1d)
 
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 
