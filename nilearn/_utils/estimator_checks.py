@@ -532,6 +532,10 @@ def expected_failed_checks_spacenet(estimator) -> dict[str, str]:
         "check_fit_check_is_fitted": (
             "replaced by check_img_estimator_fit_check_is_fitted"
         ),
+        "check_n_features_in": "replaced by check_img_estimator_n_elements",
+        "check_n_features_in_after_fitting": (
+            "replaced by check_img_estimator_n_elements"
+        ),
         "check_requires_y_none": (
             "replaced by check_img_estimator_requires_y_none"
         ),

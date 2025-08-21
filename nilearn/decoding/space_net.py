@@ -1028,6 +1028,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         # unmask weights map as a niimg
         self.coef_img_ = self.masker_.inverse_transform(self.coef_)
 
+        self.n_elements_ = self.coef_.shape[1]
+
         # report time elapsed
         duration = time.time() - tic
         logger.log(
@@ -1045,7 +1047,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
         Parameters
         ----------
-        X : :obj:`list` of Niimg-like objects
+        X : :obj:`list` of Niimg-like objects or numpy array
             See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
@@ -1055,10 +1057,18 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         y_pred : ndarray, shape (n_samples,)
             Predicted class label per sample.
         """
-        # cast X into usual 2D array
         check_is_fitted(self)
 
-        X = self.masker_.transform(X)
+        # cast X into usual 2D array
+        if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
+            X = self.masker_.transform(X)
+
+        X = check_array(X)
+        if X.shape[1] != self.n_elements_:
+            raise ValueError(
+                f"X has {X.shape[1]} features per sample; "
+                f"expecting {self.n_elements_}."
+            )
 
         # handle regression (least-squared loss)
         if not self.is_classif:
@@ -1375,11 +1385,10 @@ class SpaceNetClassifier(BaseSpaceNet):
             X = self.masker_.transform(X)
 
         X = check_array(X)
-        n_features = self.coef_.shape[1]
-        if X.shape[1] != n_features:
+        if X.shape[1] != self.n_elements_:
             raise ValueError(
                 f"X has {X.shape[1]} features per sample; "
-                f"expecting {n_features}."
+                f"expecting {self.n_elements_}."
             )
 
         scores = (
