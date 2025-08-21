@@ -13,9 +13,6 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy import stats
 from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
-from sklearn.base import (
-    MultiOutputMixin,
-)
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model._base import _preprocess_data as center_data
@@ -1331,7 +1328,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         check_is_fitted(self)
         return accuracy_score(y, self.predict(X))
 
-    def _decision_function(self, X):
+    def decision_function(self, X):
         """Predict confidence scores for samples.
 
         The confidence score for a sample is the signed distance of that
@@ -1373,7 +1370,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
 
 @fill_doc
-class SpaceNetRegressor(MultiOutputMixin, _RegressorMixin, BaseSpaceNet):
+class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
     """Regression learners with sparsity and spatial priors.
 
     `SpaceNetRegressor` implements Graph-Net and TV-L1 priors / penalties

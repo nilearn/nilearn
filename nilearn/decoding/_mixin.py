@@ -1,32 +1,11 @@
 """Replacement for sklearn mixins."""
 
-from sklearn.utils.validation import check_is_fitted
-
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 class _ClassifierMixin:
     # TODO remove for sklearn>=1.6
     _estimator_type = "classifier"
-
-    def decision_function(self, X):
-        """Predict class labels for samples in X.
-
-        Parameters
-        ----------
-        X : Niimg-like, :obj:`list` of either \
-            Niimg-like objects or :obj:`str` or path-like
-            See :ref:`extracting_data`.
-            Data on prediction is to be made. If this is a list,
-            the affine is considered the same for all.
-
-        Returns
-        -------
-        y_pred : :class:`numpy.ndarray`, shape (n_samples,)
-            Predicted class label per sample.
-        """
-        check_is_fitted(self)
-        return self._decision_function(X)
 
     def __sklearn_tags__(self):
         """Return estimator tags.

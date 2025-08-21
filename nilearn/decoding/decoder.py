@@ -1252,6 +1252,25 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             n_jobs=n_jobs,
         )
 
+    def decision_function(self, X):
+        """Predict class labels for samples in X.
+
+        Parameters
+        ----------
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like
+            See :ref:`extracting_data`.
+            Data on prediction is to be made. If this is a list,
+            the affine is considered the same for all.
+
+        Returns
+        -------
+        y_pred : :class:`numpy.ndarray`, shape (n_samples,)
+            Predicted class label per sample.
+        """
+        check_is_fitted(self)
+        return self._decision_function(X)
+
 
 @fill_doc
 class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
@@ -1749,3 +1768,22 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         )
 
         self.clustering_percentile = clustering_percentile
+
+    def decision_function(self, X):
+        """Predict class labels for samples in X.
+
+        Parameters
+        ----------
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like
+            See :ref:`extracting_data`.
+            Data on prediction is to be made. If this is a list,
+            the affine is considered the same for all.
+
+        Returns
+        -------
+        y_pred : :class:`numpy.ndarray`, shape (n_samples,)
+            Predicted class label per sample.
+        """
+        check_is_fitted(self)
+        return self._decision_function(X)
