@@ -1,15 +1,15 @@
 ---
 # foo
 ###
-name: Run benchmarks against main
+name: benchmarks against main
 
 on: pull_request
 
 jobs:
 
-    compare_benchmark:
+    tmp:
 
-        runs-on: ubuntu-24-04
+        runs-on: ubuntu-24.04
 
         steps:
         -   uses: actions/checkout@v5
@@ -25,7 +25,7 @@ jobs:
         # -   name: Get all the machine info
         #     run: |
         #         cd asv_benchmarks
-        #         asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
+        #         asv machine --yes 2>&1
         # -   name: Run all benchmarks on the latest commit
         #     run: |
         #         cd asv_benchmarks
