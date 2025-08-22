@@ -1487,7 +1487,8 @@ def check_img_estimator_dtypes(estimator_orig):
                     # check transform results are the same
                     if memory is not None:
                         result_2 = getattr(estimator, method)(X)
-                        result_2 = [result_2]
+                        if not isinstance(result, list):
+                            result_2 = [result_2]
                         for s1, s2 in zip(result, result_2):
                             assert s1.dtype == s2.dtype
                             assert_array_equal(s1, s2)
