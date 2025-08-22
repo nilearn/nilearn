@@ -22,7 +22,7 @@
     // uninstalling the project. See asv.conf.json documentation.
     "install_command": ["python -m pip install {wheel_file}"],
     "uninstall_command": ["return-code=any python -m pip uninstall -y {project}"],
-    "build_command": ["python -m build --wheel -o {build_cache_dir} {build_dir}"],
+    "build_command": ["python -m build -o {build_cache_dir} {build_dir}"],
 
     // List of branches to benchmark. If not provided, defaults to "master
     // (for git) or "default" (for mercurial).

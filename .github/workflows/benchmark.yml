@@ -165,18 +165,18 @@ jobs:
         -   name: Ensure main branch is available
             run: |
                 git show-ref --verify --quiet refs/heads/main || git fetch origin main:main
-        # -   name: For PRs check if commit message contains [bm]
-        #     id: check-commit-msg
-        #     run: |
-        #         set -e -x
-        #         commit_msg=$(git log -2 --format=oneline);
-        #         if [[ $commit_msg == *"[bm]"* ]]; then
-        #             echo "running benchmarks"
-        #             echo "skip=false" >> $GITHUB_OUTPUT
-        #         else
-        #             echo "skipping benchmarks"
-        #             exit 0
-        #         fi;
+        -   name: For PRs check if commit message contains [bm]
+            id: check-commit-msg
+            run: |
+                set -e -x
+                commit_msg=$(git log -2 --format=oneline);
+                if [[ $commit_msg == *"[bm]"* ]]; then
+                    echo "running benchmarks"
+                    echo "skip=false" >> $GITHUB_OUTPUT
+                else
+                    echo "skipping benchmarks"
+                    exit 0
+                fi;
         -   uses: actions/setup-python@v5
             with:
                 python-version: ${{ env.MIN_PYTHON }}
