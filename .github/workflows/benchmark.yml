@@ -188,7 +188,7 @@ jobs:
             run: |
                 asv machine --yes 2>&1
         -   name: Run all benchmarks on the latest commit
-            run: asv run --verbose --show-stderr main..HEAD
+            run: asv run --verbose --show-stderr main..HEAD --steps 2
         -   name: Create html with all results
             run: asv publish
         -   uses: actions/upload-artifact@v4
