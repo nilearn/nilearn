@@ -156,6 +156,15 @@ def make_glm_report(
         Cluster forming threshold in same scale as `stat_img` (either a
         t-scale or z-scale value). Used only if height_control is None.
 
+        .. note::
+
+            - Negative threshold are not allowed when ``two_sided=True``.
+
+            - Negative threshold are allowed when ``two_sided=False``.
+                In this case, the results would be the same
+                as using a positive threshold
+                and multiplying the image by ``-1``.
+
     alpha : :obj:`float`, default=0.001
         Number controlling the thresholding (either a p-value or q-value).
         Its actual meaning depends on the height_control parameter.

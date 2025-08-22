@@ -176,7 +176,7 @@ def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
     assert th_map is None
 
 
-def test_threshold_stats_img_errors():
+def test_threshold_stats_img_errors(img_3d_rand_eye):
     with pytest.raises(ValueError, match="'stat_img' cannot be None"):
         threshold_stats_img(None, None, alpha=0.05, height_control="fdr")
 
@@ -187,6 +187,18 @@ def test_threshold_stats_img_errors():
 
     with pytest.raises(ValueError, match="'height_control' should be one of"):
         threshold_stats_img(None, None, alpha=0.05, height_control="plop")
+
+    with pytest.raises(
+        ValueError, match="should not be a negative value when two_sided=True."
+    ):
+        threshold_stats_img(
+            img_3d_rand_eye, height_control=None, threshold=-2, two_sided=True
+        )
+    # but this is OK because threshodld is only used
+    # when height_control=None
+    threshold_stats_img(
+        img_3d_rand_eye, height_control="fdr", threshold=-2, two_sided=True
+    )
 
 
 @pytest.mark.parametrize(
@@ -355,6 +367,16 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
         result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
     )
 
+    # two sided, with threshold = 0
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, threshold=0
+    )
+
+    assert_equal(result.data.parts["left"], np.asarray([1.0, -1.0, 3.0, 4.0]))
+    assert_equal(
+        result.data.parts["right"], np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
+    )
+
     # one sided positive
     result, _ = threshold_stats_img(
         surf_img_1d, height_control=None, threshold=3, two_sided=False
@@ -373,4 +395,14 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     assert_equal(result.data.parts["left"], np.asarray([0.0, -1.0, 0.0, 0.0]))
     assert_equal(
         result.data.parts["right"], np.asarray([0.0, -2.0, 0.0, 0.0, 0.0])
+    )
+
+    # one sided, with threshold = 0
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, threshold=0
+    )
+
+    assert_equal(result.data.parts["left"], np.asarray([1.0, -1.0, 3.0, 4.0]))
+    assert_equal(
+        result.data.parts["right"], np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
     )
