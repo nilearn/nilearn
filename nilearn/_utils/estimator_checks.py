@@ -447,7 +447,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         ),
         "check_fit_idempotent": (
             "replaced by check_img_estimator_fit_idempotent"
-        )
+        ),
         "check_fit_score_takes_y": (
             "replaced by check_img_estimator_fit_score_takes_y"
         ),
