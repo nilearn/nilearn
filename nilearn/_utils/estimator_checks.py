@@ -1349,17 +1349,15 @@ def check_img_estimator_dtypes(estimator_orig):
                 estimator.memory = memory
 
                 input_dtype = np.dtype(input_dtype)
+
+                X, y = generate_data_to_fit(estimator)
                 if (
                     isinstance(estimator, NiftiMasker)
                     and input_dtype == np.int32
                 ):
-                    # FIXME
-                    # This leads to some invalid mask for NiftiMasker
-                    # ValueError:
-                    # The mask is invalid as it is empty: it masks all data.
-                    continue
-
-                X, y = generate_data_to_fit(estimator)
+                    # Needed for NiftiMasker because the default strategy
+                    # returns an empty mask
+                    estimator.mask_strategy = "epi"
 
                 if isinstance(X, Nifti1Image):
                     data = get_data(X)
