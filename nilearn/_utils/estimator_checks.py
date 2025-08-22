@@ -1318,7 +1318,7 @@ def check_img_estimator_pipeline_consistency(estimator_orig):
 
 @ignore_warnings()
 def check_img_estimator_dtypes(estimator_orig):
-    """Check estimator can fit/transform/inverse_transform \
+    """Check estimator can fit and run several methods \
        with inputs of varying dtypes.
 
     Replacement for sklearn check_estimators_dtypes
@@ -1340,77 +1340,92 @@ def check_img_estimator_dtypes(estimator_orig):
             "auto",
             None,
         ]:
-            estimator = clone(estimator_orig)
+            for memory in [None, Path(mkdtemp())]:
+                estimator = clone(estimator_orig)
 
-            if hasattr(estimator, "dtype"):
-                estimator.dtype = dtype
+                if hasattr(estimator, "dtype"):
+                    estimator.dtype = dtype
 
-            input_dtype = np.dtype(input_dtype)
-            if isinstance(estimator, NiftiMasker) and input_dtype == np.int32:
-                # FIXME
-                # This leads to some invalid mask for NiftiMasker
-                # ValueError:
-                # The mask is invalid as it is empty: it masks all data.
-                continue
+                estimator.memory = memory
 
-            X, y = generate_data_to_fit(estimator)
-
-            if isinstance(X, Nifti1Image):
-                data = get_data(X)
-                X = Nifti1Image(
-                    data.astype(input_dtype),
-                    affine=_affine_eye(),
-                    dtype=input_dtype,
-                )
-            else:
-                for k, v in X.data.parts.items():
-                    X.data.parts[k] = v.astype(input_dtype)
-
-            estimator = fit_estimator(estimator, X, y)
-
-            for method in [
-                "transform",
-                "predict",
-                "score",
-                "decision_function",
-            ]:
-                if not hasattr(estimator, method):
-                    continue
-
-                if method == "transform" and isinstance(
-                    estimator, SearchLight
+                input_dtype = np.dtype(input_dtype)
+                if (
+                    isinstance(estimator, NiftiMasker)
+                    and input_dtype == np.int32
                 ):
-                    # skip SearchLight.transform()
-                    # as it behaves differently from others
+                    # FIXME
+                    # This leads to some invalid mask for NiftiMasker
+                    # ValueError:
+                    # The mask is invalid as it is empty: it masks all data.
                     continue
 
-                if method == "score":
-                    result = getattr(estimator, method)(X, y)
+                X, y = generate_data_to_fit(estimator)
+
+                if isinstance(X, Nifti1Image):
+                    data = get_data(X)
+                    X = Nifti1Image(
+                        data.astype(input_dtype),
+                        affine=_affine_eye(),
+                        dtype=input_dtype,
+                    )
                 else:
-                    result = getattr(estimator, method)(X)
+                    for k, v in X.data.parts.items():
+                        X.data.parts[k] = v.astype(input_dtype)
 
-                if method != "transform":
-                    # TODO
-                    # for now we only check the output dtype for transform
-                    continue
+                estimator = fit_estimator(estimator, X, y)
 
-                if not isinstance(result, list):
-                    result = [result]
+                for method in [
+                    "transform",
+                    "predict",
+                    "score",
+                    "decision_function",
+                ]:
+                    if not hasattr(estimator, method):
+                        continue
 
-                target_dtype = get_target_dtype(input_dtype, dtype)
-                if target_dtype is None:
-                    target_dtype = input_dtype
+                    if method == "transform" and isinstance(
+                        estimator, SearchLight
+                    ):
+                        # skip SearchLight.transform()
+                        # as it behaves differently from others
+                        continue
 
-                for s in result:
-                    output_dtype = s.dtype
-                    try:
-                        assert output_dtype == target_dtype
-                    except AssertionError:
-                        raise TypeError(
-                            "'transform' should have returned "
-                            f"an array of type '{target_dtype}'. "
-                            f"Got '{output_dtype}' instead."
-                        )
+                    if method == "score":
+                        result = getattr(estimator, method)(X, y)
+                    else:
+                        result = getattr(estimator, method)(X)
+
+                    if method != "transform":
+                        # TODO
+                        # for now we only check the output dtype for transform
+                        continue
+
+                    if not isinstance(result, list):
+                        result = [result]
+
+                    target_dtype = get_target_dtype(input_dtype, dtype)
+                    if target_dtype is None:
+                        target_dtype = input_dtype
+
+                    for s in result:
+                        output_dtype = s.dtype
+                        try:
+                            assert output_dtype == target_dtype
+                        except AssertionError:
+                            raise TypeError(
+                                "'transform' should have returned "
+                                f"an array of type '{target_dtype}'. "
+                                f"Got '{output_dtype}' instead."
+                            )
+
+                    # when caching
+                    # check transform results are the same
+                    if memory is not None:
+                        result_2 = getattr(estimator, method)(X)
+                        result_2 = [result_2]
+                        for s1, s2 in zip(result, result_2):
+                            assert s1.dtype == s2.dtype
+                            assert_array_equal(s1, s2)
 
 
 def check_img_estimator_dtypes_inverse_transform(estimator_orig):
@@ -2593,6 +2608,8 @@ def check_masker_shelving(estimator):
 
         epi_shelved = masker_shelved.fit_transform(img)
 
+        assert not isinstance(epi_shelved, np.ndarray)
+
         epi_shelved = epi_shelved.get()
 
         assert_array_equal(epi_shelved, epi)
@@ -2620,18 +2637,22 @@ def check_masker_joblib_cache(estimator):
 
     assert mask_hash == hash(estimator.mask_img_)
 
+    cachedir = Path(mkdtemp())
+    estimator.memory = Memory(location=cachedir, mmap_mode="r")
+    X = estimator.transform(img)
+
+    X2 = estimator.transform(img)
+
+    assert_array_equal(X, X2)
+
+    # inverse_transform a first time, so that the result is cached
+    out_img = estimator.inverse_transform(X)
+
+    out_img = estimator.inverse_transform(X)
+
     # Test a tricky issue with memmapped joblib.memory that makes
     # imgs return by inverse_transform impossible to save
     if accept_niimg_input(estimator):
-        cachedir = Path(mkdtemp())
-        estimator.memory = Memory(location=cachedir, mmap_mode="r")
-        X = estimator.transform(img)
-
-        # inverse_transform a first time, so that the result is cached
-        out_img = estimator.inverse_transform(X)
-
-        out_img = estimator.inverse_transform(X)
-
         out_img.to_filename(cachedir / "test.nii")
 
 
