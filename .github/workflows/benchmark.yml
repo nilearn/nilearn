@@ -161,7 +161,10 @@ jobs:
             with:
                 # fetch all branches and tags
                 fetch-depth: 0
-                # ref: ${{ github.event.pull_request.head.sha }}
+                ref: ${{ github.event.pull_request.head.sha }}
+        -   name: Ensure main branch is available
+            run: |
+                git show-ref --verify --quiet refs/heads/main || git fetch origin main:main
         # -   name: For PRs check if commit message contains [bm]
         #     id: check-commit-msg
         #     run: |
