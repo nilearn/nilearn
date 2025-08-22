@@ -834,6 +834,18 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         else:
             self._set_intercept(self.Xmean_, self.ymean_, self.Xstd_)
 
+    def _return_loss_value(self):
+        """Set loss value for instances where it is not defined.
+
+        For SpaceNetRegressor it is always "mse".
+        """
+        loss = getattr(self, "loss", None)
+        if loss is None:
+            loss = "logistic"
+            if not self._is_classification:
+                loss = "mse"
+        return loss
+
     def fit(self, X, y):
         """Fit the learner.
 
@@ -904,12 +916,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         ):
             alphas = [alphas]
 
-        if getattr(self, "loss", None) is not None:
-            loss = self.loss
-        elif self._is_classification:
-            loss = "logistic"
-        else:
-            loss = "mse"
+        loss = self._return_loss_value()
 
         # set backend solver
         if self.penalty.lower() == "graph-net":
