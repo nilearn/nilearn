@@ -342,7 +342,6 @@ def return_expected_failed_checks(
             "check_methods_sample_order_invariance": (
                 "does not apply - no relevant method"
             ),
-            "check_estimators_dtypes": ("replaced by check_glm_dtypes"),
             "check_estimators_empty_data_messages": (
                 "not implemented for nifti data for performance reasons"
             ),
