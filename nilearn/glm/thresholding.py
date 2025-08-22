@@ -3,12 +3,14 @@ cluster-level in brain imaging: cluster-level thresholding, false \
 discovery rate control, false discovery proportion in clusters.
 """
 
+import inspect
 import warnings
 
 import numpy as np
 from scipy.ndimage import label
 from scipy.stats import norm
 
+from nilearn._constants import DEFAULT_Z_THRESHOLD
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn.image import get_data, math_img, threshold_img
@@ -262,6 +264,18 @@ def threshold_stats_img(
         raise ValueError(
             f"'height_control' should be one of {height_control_methods}. \n"
             f"Got: '{height_control_methods}'"
+        )
+
+    tmp = dict(**inspect.signature(threshold_stats_img).parameters)
+    if tmp["threshold"].default == threshold == 3.0:
+        warnings.warn(
+            category=FutureWarning,
+            message=(
+                "From nilearn version>=0.15, "
+                "the default 'threshold' will be set to "
+                f"{DEFAULT_Z_THRESHOLD}."
+            ),
+            stacklevel=find_stack_level(),
         )
 
     # if two-sided, correct alpha by a factor of 2

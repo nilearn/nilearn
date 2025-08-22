@@ -10,6 +10,7 @@ make_glm_report(model, contrasts):
 """
 
 import datetime
+import inspect
 import uuid
 import warnings
 from html import escape
@@ -21,6 +22,7 @@ import numpy as np
 import pandas as pd
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._constants import DEFAULT_Z_THRESHOLD
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
@@ -210,6 +212,18 @@ def make_glm_report(
         warnings.warn(
             ("No plotting back-end detected. Output will be missing figures."),
             UserWarning,
+            stacklevel=find_stack_level(),
+        )
+
+    tmp = dict(**inspect.signature(threshold_stats_img).parameters)
+    if tmp["threshold"].default == threshold == 3.0:
+        warnings.warn(
+            category=FutureWarning,
+            message=(
+                "From nilearn version>=0.15, "
+                "the default 'threshold' will be set to "
+                f"{DEFAULT_Z_THRESHOLD}."
+            ),
             stacklevel=find_stack_level(),
         )
 
