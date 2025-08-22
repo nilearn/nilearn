@@ -367,7 +367,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(surf_img=True)
+        tags.input_tags = InputTags(surf_img=False)
 
         if self.estimator == "svr":
             if SKLEARN_LT_1_6:
@@ -421,6 +421,10 @@ class SearchLight(TransformerMixin, BaseEstimator):
         self.mask_img_ = deepcopy(self.mask_img)
         if self.mask_img_ is not None:
             self.mask_img_ = check_niimg_3d(self.mask_img_)
+
+        if self.process_mask_img is not None:
+            check_niimg_3d(self.process_mask_img)
+
         process_mask_img = self.process_mask_img or self.mask_img_
 
         # Compute world coordinates of the seeds
@@ -487,7 +491,18 @@ class SearchLight(TransformerMixin, BaseEstimator):
         return new_img_like(self.mask_img_, self.scores_)
 
     def transform(self, imgs):
-        """Apply the fitted searchlight on new images."""
+        """Apply the fitted searchlight on new images.
+
+        Parameters
+        ----------
+        imgs : Niimg-like object
+            See :ref:`extracting_data`.
+            4D image.
+
+        Returns
+        -------
+        result : np.ndarray
+        """
         check_is_fitted(self)
 
         imgs = check_niimg_4d(imgs)
@@ -522,6 +537,29 @@ class SearchLight(TransformerMixin, BaseEstimator):
         reshaped_result = np.abs(reshaped_result)
 
         return reshaped_result
+
+    def fit_transform(self, imgs, y, groups=None):
+        """Fit the searchlight and applies to the input image.
+
+        Parameters
+        ----------
+        imgs : Niimg-like object
+            See :ref:`extracting_data`.
+            4D image.
+
+        y : 1D array-like
+            Target variable to predict. Must have exactly as many elements as
+            3D images in imgs.
+
+        groups : array-like, default=None
+            group label for each sample for cross validation. Must have
+            exactly as many elements as 3D images in imgs.
+
+        Returns
+        -------
+        result : np.ndarray
+        """
+        return self.fit(imgs, y, groups=groups).transform(imgs)
 
     def set_output(self, *, transform=None):
         """Set the output container when ``"transform"`` is called.

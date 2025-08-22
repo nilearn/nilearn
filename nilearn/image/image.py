@@ -791,12 +791,20 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     ref_niimg : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Reference image. The new image will be of the same type.
 
-    data : :class:`numpy.ndarray`
+    data : :class:`numpy.ndarray`, :obj:`~nilearn.surface.PolyData`, \
+           or :obj:`dict` of  \
+           :obj:`numpy.ndarray`, \
+           :obj:`str`, \
+           :obj:`pathlib.Path`
+
         Data to be stored in the image. If data dtype is a boolean, then data
         is cast to 'uint8' by default.
 
         .. versionchanged:: 0.9.2
             Changed default dtype casting of booleans from 'int8' to 'uint8'.
+
+        If ``ref_niimg`` is a Niimg-like object,
+        then data must be a :class:`numpy.ndarray`.
 
     affine : 4x4 :class:`numpy.ndarray`, default=None
         Transformation matrix.
