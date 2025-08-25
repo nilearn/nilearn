@@ -218,7 +218,9 @@ def make_glm_report(
         )
 
     sig = dict(**inspect.signature(make_glm_report).parameters)
-    warn_default_threshold(threshold, sig["threshold"].default, 3.0)
+    warn_default_threshold(
+        threshold, sig["threshold"].default, 3.0, height_control=height_control
+    )
 
     unique_id = str(uuid.uuid4()).replace("-", "")
 

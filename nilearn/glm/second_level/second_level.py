@@ -848,7 +848,12 @@ class SecondLevelModel(BaseGLM):
         from nilearn.reporting.glm_reporter import make_glm_report
 
         sig = inspect.signature(SecondLevelModel.generate_report)
-        warn_default_threshold(threshold, sig["threshold"].default, 3.09)
+        warn_default_threshold(
+            threshold,
+            sig["threshold"].default,
+            3.09,
+            height_control=height_control,
+        )
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data = {

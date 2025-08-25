@@ -19,13 +19,16 @@ from nilearn.surface import SurfaceImage
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
 
 
-def warn_default_threshold(threshold, current_default, old_default):
+def warn_default_threshold(
+    threshold, current_default, old_default, height_control=None
+):
     """Throw deprecation warning Z threshold.
 
     TODO (nilearn>=0.15)
     Can be removed.
     """
-    if threshold == current_default == old_default:
+    if height_control is None and threshold == current_default == old_default:
+        print(f"{threshold=} {current_default=} {old_default=}")
         warnings.warn(
             category=FutureWarning,
             message=(
@@ -292,7 +295,9 @@ def threshold_stats_img(
         )
 
     sig = dict(**inspect.signature(threshold_stats_img).parameters)
-    warn_default_threshold(threshold, sig["threshold"].default, 3.0)
+    warn_default_threshold(
+        threshold, sig["threshold"].default, 3.0, height_control=height_control
+    )
 
     # if two-sided, correct alpha by a factor of 2
     alpha_ = alpha / 2 if two_sided else alpha
