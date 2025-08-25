@@ -729,7 +729,7 @@ class NiftiLabelsMasker(BaseMasker):
             The labels correspond to the indices in ``region_ids_``.
             The region in ``region_atlas_``
             that takes the value ``region_ids_[i]``
-            is used to compute the signal in ``region_signal[:,i]``.
+            is used to compute the signal in ``region_signal[:, i]``.
 
             .. versionadded:: 0.10.3
 
