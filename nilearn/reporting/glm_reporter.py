@@ -660,6 +660,19 @@ def _make_stat_maps_contrast_clusters(
         # and _stat_map_to_png
         # Necessary to avoid :
         # https://github.com/nilearn/nilearn/issues/4192
+
+        # We silence further warnings about threshold:
+        #   it would throw one per contrast and
+        #   and also because threshold_stats_img and make_glm_report
+        #   have different defaults.
+        # TODO (nilearn>=0.15)
+        # remove
+        warnings.filterwarnings(
+            "ignore",
+            category=FutureWarning,
+            message=".*default 'threshold' will be set.*",
+        )
+
         thresholded_img, threshold = threshold_stats_img(
             stat_img=stat_map_img,
             threshold=threshold,
