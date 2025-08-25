@@ -108,9 +108,9 @@ class _MultiPCA(_BaseDecomposition):
 
     %(verbose0)s
 
-    %(base_decomposition_attributes)s
+    %(base_decomposition_fit_attributes)s
 
-    %(multi_pca_attributes)s
+    %(multi_pca_fit_attributes)s
 
     """
 

@@ -424,8 +424,12 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         correlation matrices). For other values for "kind", it is the
         mean of the corresponding matrices
 
-    whitening_ : numpy.ndarray
+    n_features_in_ : :obj:`int`
+        Number of features seen during fit.
+
+    whitening_ : numpy.ndarray or None
         The inverted square-rooted geometric mean of the covariance matrices.
+        Only set when for ``kind=="tangent"``
 
     References
     ----------
@@ -603,6 +607,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 # Fight numerical instabilities: make symmetric
                 self.mean_ = self.mean_ + self.mean_.T
                 self.mean_ *= 0.5
+                self.whitening_ = None
 
         # Compute the vector we return on transform
         if do_transform:

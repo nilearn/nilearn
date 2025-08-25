@@ -173,7 +173,9 @@ class NiftiLabelsMasker(BaseMasker):
 
     Attributes
     ----------
-    %(nifti_mask_img_)s
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
 
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
@@ -182,13 +184,10 @@ class NiftiLabelsMasker(BaseMasker):
         Look-up table derived from the ``labels`` or ``lut``
         or from the values of the label image.
 
-    region_atlas_ : Niimg-like object
-        Regions definition as labels.
-        The labels correspond to the indices in ``region_ids_``.
-        The region in ``region_atlas_`` that takes the value ``region_ids_[i]``
-        is used to compute the signal in ``region_signal[:,i]``.
+    %(nifti_mask_img_)s
 
-        .. versionadded:: 0.10.3
+    memory_ : joblib memory cache
+
 
     See Also
     --------
@@ -721,7 +720,18 @@ class NiftiLabelsMasker(BaseMasker):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
+
+        Attributes
+        ----------
+        region_atlas_ : Niimg-like object
+            Regions definition as labels.
+            The labels correspond to the indices in ``region_ids_``.
+            The region in ``region_atlas_``
+            that takes the value ``region_ids_[i]``
+            is used to compute the signal in ``region_signal[:, i]``.
+
+            .. versionadded:: 0.10.3
 
         Returns
         -------
