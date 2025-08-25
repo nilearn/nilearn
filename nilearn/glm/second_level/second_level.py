@@ -2,6 +2,7 @@
 first level contrasts or directly on fitted first level models.
 """
 
+import inspect
 import operator
 import time
 from pathlib import Path
@@ -15,7 +16,6 @@ from nibabel.funcs import four_to_three
 from sklearn.base import clone
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._constants import DEFAULT_Z_THRESHOLD
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
@@ -36,6 +36,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
+from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import concat_imgs, iter_img, mean_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.mass_univariate import permuted_ols
@@ -846,16 +847,8 @@ class SecondLevelModel(BaseGLM):
         """
         from nilearn.reporting.glm_reporter import make_glm_report
 
-        if threshold == 3.0:
-            warn(
-                category=FutureWarning,
-                message=(
-                    "From nilearn version>=0.15, "
-                    "the default 'threshold' will be set to "
-                    f"{DEFAULT_Z_THRESHOLD}."
-                ),
-                stacklevel=find_stack_level(),
-            )
+        sig = inspect.signature(SecondLevelModel.generate_report)
+        warn_default_threshold(threshold, sig["threshold"].default, 3.09)
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data = {

@@ -23,7 +23,6 @@ from scipy.linalg import toeplitz
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._constants import DEFAULT_Z_THRESHOLD
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
@@ -52,6 +51,7 @@ from nilearn.glm.regression import (
     RegressionResults,
     SimpleRegressionResults,
 )
+from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids.query import (
@@ -1311,16 +1311,8 @@ class FirstLevelModel(BaseGLM):
         """
         from nilearn.reporting.glm_reporter import make_glm_report
 
-        if threshold == 3.0:
-            warnings.warn(
-                category=FutureWarning,
-                message=(
-                    "From nilearn version>=0.15, "
-                    "the default 'threshold' will be set to "
-                    f"{DEFAULT_Z_THRESHOLD}."
-                ),
-                stacklevel=find_stack_level(),
-            )
+        sig = inspect.signature(FirstLevelModel.generate_report)
+        warn_default_threshold(threshold, sig["threshold"].default, 3.09)
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data = {

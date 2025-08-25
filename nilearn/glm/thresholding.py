@@ -10,12 +10,34 @@ import numpy as np
 from scipy.ndimage import label
 from scipy.stats import norm
 
-from nilearn._constants import DEFAULT_Z_THRESHOLD
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn.image import get_data, math_img, threshold_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
+
+DEFAULT_Z_THRESHOLD = norm.isf(0.001)
+
+
+def warn_default_threshold(threshold, current_default, old_default):
+    """Throw deprecation warning Z threshold.
+
+    TODO (nilearn>=0.15)
+    Can be removed.
+    """
+    if threshold == current_default == old_default:
+        warnings.warn(
+            category=FutureWarning,
+            message=(
+                "From nilearn version>=0.15, "
+                "the default 'threshold' will be set to "
+                f"{DEFAULT_Z_THRESHOLD}."
+                "If you want to silence this warning, "
+                "set the threshold to "
+                "'nilearn.glm.thresholding.DEFAULT_Z_THRESHOLD'."
+            ),
+            stacklevel=find_stack_level(),
+        )
 
 
 def _compute_hommel_value(z_vals, alpha, verbose=0):
@@ -152,6 +174,9 @@ def cluster_level_inference(
     if verbose is True:
         verbose = 1
 
+    sig = dict(**inspect.signature(cluster_level_inference).parameters)
+    warn_default_threshold(threshold, sig["threshold"].default, 3.0)
+
     if not isinstance(threshold, list):
         threshold = [threshold]
 
@@ -266,17 +291,8 @@ def threshold_stats_img(
             f"Got: '{height_control_methods}'"
         )
 
-    tmp = dict(**inspect.signature(threshold_stats_img).parameters)
-    if tmp["threshold"].default == threshold == 3.0:
-        warnings.warn(
-            category=FutureWarning,
-            message=(
-                "From nilearn version>=0.15, "
-                "the default 'threshold' will be set to "
-                f"{DEFAULT_Z_THRESHOLD}."
-            ),
-            stacklevel=find_stack_level(),
-        )
+    sig = dict(**inspect.signature(threshold_stats_img).parameters)
+    warn_default_threshold(threshold, sig["threshold"].default, 3.0)
 
     # if two-sided, correct alpha by a factor of 2
     alpha_ = alpha / 2 if two_sided else alpha

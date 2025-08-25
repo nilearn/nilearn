@@ -22,7 +22,6 @@ import numpy as np
 import pandas as pd
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._constants import DEFAULT_Z_THRESHOLD
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
@@ -33,7 +32,10 @@ from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._version import __version__
 from nilearn.externals import tempita
-from nilearn.glm import threshold_stats_img
+from nilearn.glm.thresholding import (
+    threshold_stats_img,
+    warn_default_threshold,
+)
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (
     dataframe_to_html,
@@ -215,17 +217,8 @@ def make_glm_report(
             stacklevel=find_stack_level(),
         )
 
-    tmp = dict(**inspect.signature(threshold_stats_img).parameters)
-    if tmp["threshold"].default == threshold == 3.0:
-        warnings.warn(
-            category=FutureWarning,
-            message=(
-                "From nilearn version>=0.15, "
-                "the default 'threshold' will be set to "
-                f"{DEFAULT_Z_THRESHOLD}."
-            ),
-            stacklevel=find_stack_level(),
-        )
+    sig = dict(**inspect.signature(make_glm_report).parameters)
+    warn_default_threshold(threshold, sig["threshold"].default, 3.0)
 
     unique_id = str(uuid.uuid4()).replace("-", "")
 
