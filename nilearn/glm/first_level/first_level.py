@@ -37,6 +37,7 @@ from nilearn._utils.param_validation import (
     check_run_sample_masks,
 )
 from nilearn.datasets import load_fsaverage
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -1230,7 +1231,7 @@ class FirstLevelModel(BaseGLM):
             warn(
                 "Parameter smoothing_fwhm is not "
                 "yet supported for surface data",
-                UserWarning,
+                NotImplementedWarning,
                 stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = 0
