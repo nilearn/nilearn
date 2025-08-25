@@ -33,6 +33,7 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -1084,7 +1085,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
 
 @fill_doc
-class SpaceNetClassifier(BaseSpaceNet):
+class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
     """Classification learners with sparsity and spatial priors.
 
     `SpaceNetClassifier` implements Graph-Net and TV-L1
@@ -1291,8 +1292,6 @@ class SpaceNetClassifier(BaseSpaceNet):
             target_affine=target_affine,
             verbose=verbose,
         )
-        # TODO remove for sklearn>=1.6
-        self._estimator_type = "classifier"
 
     def _binarize_y(self, y):
         """Encode target classes as -1 and 1.
@@ -1328,34 +1327,6 @@ class SpaceNetClassifier(BaseSpaceNet):
         """
         check_is_fitted(self)
         return accuracy_score(y, self.predict(X))
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            return tags
-
-        from sklearn.utils import ClassifierTags
-
-        tags.estimator_type = "classifier"
-        tags.classifier_tags = ClassifierTags()
-
-        return tags
 
     def decision_function(self, X):
         """Predict confidence scores for samples.
@@ -1399,7 +1370,7 @@ class SpaceNetClassifier(BaseSpaceNet):
 
 
 @fill_doc
-class SpaceNetRegressor(BaseSpaceNet):
+class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
     """Regression learners with sparsity and spatial priors.
 
     `SpaceNetRegressor` implements Graph-Net and TV-L1 priors / penalties
@@ -1587,35 +1558,3 @@ class SpaceNetRegressor(BaseSpaceNet):
             target_affine=target_affine,
             verbose=verbose,
         )
-
-        # TODO remove for sklearn>=1.6
-        self._estimator_type = "regressor"
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            tags["multioutput"] = True
-            return tags
-
-        from sklearn.utils import RegressorTags
-
-        tags.estimator_type = "regressor"
-        tags.regressor_tags = RegressorTags()
-
-        return tags
