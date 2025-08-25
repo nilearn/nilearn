@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,6 +15,7 @@ from nilearn.glm.first_level import (
     FirstLevelModel,
 )
 from nilearn.glm.second_level import SecondLevelModel
+from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import HTMLReport
 from nilearn.surface import SurfaceImage
@@ -293,7 +296,9 @@ def test_flm_generate_report_surface_data(rng):
 
     model.fit(fmri_data, events=events)
 
-    report = model.generate_report("c0", height_control=None)
+    report = model.generate_report(
+        "c0", height_control=None, threshold=DEFAULT_Z_THRESHOLD
+    )
 
     assert isinstance(report, HTMLReport)
 
@@ -313,7 +318,12 @@ def test_flm_generate_report_surface_data_error(
     with pytest.raises(
         TypeError, match="'bg_img' must a SurfaceImage instance"
     ):
-        model.generate_report("c0", bg_img=img_3d_mni, height_control=None)
+        model.generate_report(
+            "c0",
+            bg_img=img_3d_mni,
+            height_control=None,
+            threshold=DEFAULT_Z_THRESHOLD,
+        )
 
 
 @pytest.mark.timeout(0)
@@ -351,3 +361,29 @@ def test_carousel_two_runs(
     report = flm_two_runs.generate_report(contrasts=contrasts)
 
     assert 'id="carousel-navbar"' in report.__str__()
+
+
+@pytest.mark.parametrize("threshold", [3.09, 2.9, DEFAULT_Z_THRESHOLD])
+@pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
+def test_report_threshold_deprecation_warning(
+    flm, contrasts, threshold, height_control
+):
+    """Check a single warning thrown when threshold==old threshold.
+
+    # TODO (nilearn >= 0.15)
+    # remove
+    """
+    with warnings.catch_warnings(record=True) as warning_list:
+        flm.generate_report(
+            contrasts=contrasts,
+            threshold=threshold,
+            height_control=height_control,
+        )
+
+    n_warnings = len(
+        [x for x in warning_list if issubclass(x.category, FutureWarning)]
+    )
+    if height_control is None and threshold == 3.09:
+        assert n_warnings == 1
+    else:
+        assert n_warnings == 0
