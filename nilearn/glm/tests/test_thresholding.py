@@ -337,7 +337,11 @@ def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
 @pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_deprecation_threshold(surf_img_1d, height_control, threshold):
-    """Check warning thrown when threshold==old threshold."""
+    """Check warning thrown when threshold==old threshold.
+
+    # TODO (nilearn >= 0.15)
+    # remove
+    """
     with warnings.catch_warnings(record=True) as warning_list:
         threshold_stats_img(
             surf_img_1d, height_control=height_control, threshold=threshold
@@ -356,7 +360,11 @@ def test_deprecation_threshold(surf_img_1d, height_control, threshold):
 def test_deprecation_threshold_cluster_level_inference(
     threshold, affine_eye, data_norm_isf
 ):
-    """Check cluster_level_inference warns when threshold==old threshold ."""
+    """Check cluster_level_inference warns when threshold==old threshold .
+
+    # TODO (nilearn >= 0.15)
+    # remove
+    """
     data = data_norm_isf
     data[3, 6, 7] = 10
     stat_img = Nifti1Image(data, affine_eye)
