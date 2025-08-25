@@ -177,8 +177,8 @@ def cluster_level_inference(
     if verbose is True:
         verbose = 1
 
-    sig = dict(**inspect.signature(cluster_level_inference).parameters)
-    warn_default_threshold(threshold, sig["threshold"].default, 3.0)
+    parameters = dict(**inspect.signature(cluster_level_inference).parameters)
+    warn_default_threshold(threshold, parameters["threshold"].default, 3.0)
 
     if not isinstance(threshold, list):
         threshold = [threshold]
@@ -294,9 +294,12 @@ def threshold_stats_img(
             f"Got: '{height_control_methods}'"
         )
 
-    sig = dict(**inspect.signature(threshold_stats_img).parameters)
+    parameters = dict(**inspect.signature(threshold_stats_img).parameters)
     warn_default_threshold(
-        threshold, sig["threshold"].default, 3.0, height_control=height_control
+        threshold,
+        parameters["threshold"].default,
+        3.0,
+        height_control=height_control,
     )
 
     # if two-sided, correct alpha by a factor of 2

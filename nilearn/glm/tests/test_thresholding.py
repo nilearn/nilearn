@@ -353,7 +353,9 @@ def test_deprecation_threshold(surf_img_1d, height_control, threshold):
 
 
 @pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
-def test_deprecation_threshold_cluster_level_inference(threshold, affine_eye):
+def test_deprecation_threshold_cluster_level_inference(
+    threshold, affine_eye, data_norm_isf
+):
     """Check cluster_level_inference warns when threshold==old threshold ."""
     data = data_norm_isf
     data[3, 6, 7] = 10

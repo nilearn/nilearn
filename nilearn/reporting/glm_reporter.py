@@ -217,9 +217,12 @@ def make_glm_report(
             stacklevel=find_stack_level(),
         )
 
-    sig = dict(**inspect.signature(make_glm_report).parameters)
+    parameters = dict(**inspect.signature(make_glm_report).parameters)
     warn_default_threshold(
-        threshold, sig["threshold"].default, 3.0, height_control=height_control
+        threshold,
+        parameters["threshold"].default,
+        3.0,
+        height_control=height_control,
     )
 
     unique_id = str(uuid.uuid4()).replace("-", "")

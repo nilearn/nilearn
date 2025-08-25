@@ -847,7 +847,7 @@ class SecondLevelModel(BaseGLM):
         """
         from nilearn.reporting.glm_reporter import make_glm_report
 
-        sig = inspect.signature(SecondLevelModel.generate_report)
+        sig = inspect.signature(SecondLevelModel.generate_report).parameters
         warn_default_threshold(
             threshold,
             sig["threshold"].default,

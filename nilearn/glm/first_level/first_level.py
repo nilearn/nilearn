@@ -1311,10 +1311,12 @@ class FirstLevelModel(BaseGLM):
         """
         from nilearn.reporting.glm_reporter import make_glm_report
 
-        sig = inspect.signature(FirstLevelModel.generate_report)
+        parameters = inspect.signature(
+            FirstLevelModel.generate_report
+        ).parameters
         warn_default_threshold(
             threshold,
-            sig["threshold"].default,
+            parameters["threshold"].default,
             3.09,
             height_control=height_control,
         )
