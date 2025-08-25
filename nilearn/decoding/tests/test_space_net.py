@@ -247,7 +247,6 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
         alphas=alphas,
         l1_ratios=l1_ratio,
         penalty="tv-l1",
-        is_classif=False,
         max_iter=10,
         debias=debias,
     ).fit(X, y)
@@ -268,6 +267,47 @@ def test_base_estimator_invalid_l1_ratio(rng, l1_ratio):
 
     with pytest.raises(ValueError, match="l1_ratio must be in the interval"):
         BaseSpaceNet(l1_ratios=l1_ratio).fit(X, y)
+
+
+def test_space_net_classifier_invalid_loss(rng):
+    """Check invalid loss throw errors."""
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    y = 2 * (y > 0) - 1
+    X_, mask = to_niimgs(X, (2, 2, 2))
+
+    alphas = 1.0 / 0.01 / X.shape[0]
+
+    SpaceNetClassifier(
+        mask=mask,
+        alphas=alphas,
+        tol=1e-10,
+        standardize=False,
+        screening_percentile=100.0,
+        loss="logistic",
+        verbose=0,
+    ).fit(X_, y)
+
+    SpaceNetClassifier(
+        mask=mask,
+        alphas=alphas,
+        tol=1e-10,
+        standardize=False,
+        screening_percentile=100.0,
+        loss="mse",
+        verbose=0,
+    ).fit(X_, y)
+
+    with pytest.raises(ValueError, match="'loss' parameter must be one of"):
+        SpaceNetClassifier(
+            mask=mask,
+            alphas=alphas,
+            tol=1e-10,
+            standardize=False,
+            screening_percentile=100.0,
+            loss="bar",
+            verbose=0,
+        ).fit(X_, y)
 
 
 @pytest.mark.parametrize("penalty_wrong_case", ["Graph-Net", "TV-L1"])
@@ -305,7 +345,6 @@ def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
         alphas=alpha,
         l1_ratios=l1_ratio,
         penalty="tv-l1",
-        is_classif=False,
         max_iter=10,
     ).fit(X, y)
 
@@ -353,6 +392,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         penalty="tv-l1",
         standardize=False,
         screening_percentile=100.0,
+        verbose=0,
     ).fit(X_, y)
 
     sklogreg = LogisticRegression(
@@ -385,9 +425,9 @@ def test_lasso_vs_graph_net():
         mask=mask,
         alphas=1.0 * X_.shape[0],
         l1_ratios=1,
-        is_classif=False,
         penalty="graph-net",
         max_iter=100,
+        verbose=0,
     )
     lasso.fit(X_, y)
     graph_net.fit(X, y)
@@ -463,8 +503,8 @@ def test_space_net_one_alpha_no_crash(model):
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, [2, 2, 2])
 
-    model(n_alphas=1, mask=mask).fit(X, y)
-    model(n_alphas=2, mask=mask, alphas=None).fit(X, y)
+    model(n_alphas=1, mask=mask, verbose=0).fit(X, y)
+    model(n_alphas=2, mask=mask, alphas=None, verbose=0).fit(X, y)
 
 
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
