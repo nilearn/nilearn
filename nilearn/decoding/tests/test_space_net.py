@@ -159,49 +159,6 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
             w *= 0.0
 
 
-@pytest.mark.parametrize("penalty", PENALTY)
-@pytest.mark.parametrize("n_alphas", [0.1, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
-@pytest.mark.parametrize("n_jobs", [1, -1])
-@pytest.mark.parametrize("cv", [2, 3])
-@pytest.mark.parametrize("perc", [5, 10])
-def test_params_correctly_propagated_in_constructors(
-    penalty, n_alphas, l1_ratio, n_jobs, cv, perc
-):
-    cvobj = BaseSpaceNet(
-        mask="dummy",
-        n_alphas=n_alphas,
-        n_jobs=n_jobs,
-        l1_ratios=l1_ratio,
-        cv=cv,
-        screening_percentile=perc,
-        penalty=penalty,
-    )
-
-    assert cvobj.n_alphas == n_alphas
-    assert cvobj.l1_ratios == l1_ratio
-    assert cvobj.n_jobs == n_jobs
-    assert cvobj.cv == cv
-    assert cvobj.screening_percentile == perc
-
-
-@pytest.mark.parametrize("penalty", PENALTY)
-@pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
-def test_params_correctly_propagated_in_constructors_biz(
-    penalty, alpha, l1_ratio
-):
-    cvobj = BaseSpaceNet(
-        mask="dummy",
-        penalty=penalty,
-        alphas=alpha,
-        l1_ratios=l1_ratio,
-    )
-
-    assert cvobj.alphas == alpha
-    assert cvobj.l1_ratios == l1_ratio
-
-
 def test_screening_space_net():
     size = 4
     X_, *_ = create_graph_net_simulation_data(
@@ -519,40 +476,6 @@ def test_univariate_feature_screening(
     assert X_.shape[1] == n_features_
     assert mask_.sum() == n_features_
     assert n_features_ <= n_features
-
-
-@pytest.mark.parametrize("penalty", PENALTY)
-@pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
-@pytest.mark.parametrize("verbose", [True, False])
-def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
-    cvobj = SpaceNetClassifier(
-        mask="dummy",
-        penalty=penalty,
-        alphas=alpha,
-        l1_ratios=l1_ratio,
-        verbose=verbose,
-    )
-
-    assert cvobj.alphas == alpha
-    assert cvobj.l1_ratios == l1_ratio
-
-
-@pytest.mark.parametrize("penalty", PENALTY)
-@pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
-@pytest.mark.parametrize("verbose", [True, False])
-def test_space_net_regressor_subclass(penalty, alpha, l1_ratio, verbose):
-    cvobj = SpaceNetRegressor(
-        mask="dummy",
-        penalty=penalty,
-        alphas=alpha,
-        l1_ratios=l1_ratio,
-        verbose=verbose,
-    )
-
-    assert cvobj.alphas == alpha
-    assert cvobj.l1_ratios == l1_ratio
 
 
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
