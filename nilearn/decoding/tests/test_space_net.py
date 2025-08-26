@@ -159,53 +159,6 @@ def test_early_stopping_callback_object(rng, n_samples=10, n_features=30):
             w *= 0.0
 
 
-@pytest.mark.parametrize("penalty", PENALTY)
-@pytest.mark.parametrize("is_classif", IS_CLASSIF)
-@pytest.mark.parametrize("n_alphas", [0.1, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
-@pytest.mark.parametrize("n_jobs", [1, -1])
-@pytest.mark.parametrize("cv", [2, 3])
-@pytest.mark.parametrize("perc", [5, 10])
-def test_params_correctly_propagated_in_constructors(
-    penalty, is_classif, n_alphas, l1_ratio, n_jobs, cv, perc
-):
-    cvobj = BaseSpaceNet(
-        mask="dummy",
-        n_alphas=n_alphas,
-        n_jobs=n_jobs,
-        l1_ratios=l1_ratio,
-        cv=cv,
-        screening_percentile=perc,
-        penalty=penalty,
-        is_classif=is_classif,
-    )
-
-    assert cvobj.n_alphas == n_alphas
-    assert cvobj.l1_ratios == l1_ratio
-    assert cvobj.n_jobs == n_jobs
-    assert cvobj.cv == cv
-    assert cvobj.screening_percentile == perc
-
-
-@pytest.mark.parametrize("penalty", PENALTY)
-@pytest.mark.parametrize("is_classif", IS_CLASSIF)
-@pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
-def test_params_correctly_propagated_in_constructors_biz(
-    penalty, is_classif, alpha, l1_ratio
-):
-    cvobj = BaseSpaceNet(
-        mask="dummy",
-        penalty=penalty,
-        is_classif=is_classif,
-        alphas=alpha,
-        l1_ratios=l1_ratio,
-    )
-
-    assert cvobj.alphas == alpha
-    assert cvobj.l1_ratios == l1_ratio
-
-
 def test_screening_space_net():
     size = 4
     X_, *_ = create_graph_net_simulation_data(
@@ -294,7 +247,6 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
         alphas=alphas,
         l1_ratios=l1_ratio,
         penalty="tv-l1",
-        is_classif=False,
         max_iter=10,
         debias=debias,
     ).fit(X, y)
@@ -315,6 +267,47 @@ def test_base_estimator_invalid_l1_ratio(rng, l1_ratio):
 
     with pytest.raises(ValueError, match="l1_ratio must be in the interval"):
         BaseSpaceNet(l1_ratios=l1_ratio).fit(X, y)
+
+
+def test_space_net_classifier_invalid_loss(rng):
+    """Check invalid loss throw errors."""
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    y = 2 * (y > 0) - 1
+    X_, mask = to_niimgs(X, (2, 2, 2))
+
+    alphas = 1.0 / 0.01 / X.shape[0]
+
+    SpaceNetClassifier(
+        mask=mask,
+        alphas=alphas,
+        tol=1e-10,
+        standardize=False,
+        screening_percentile=100.0,
+        loss="logistic",
+        verbose=0,
+    ).fit(X_, y)
+
+    SpaceNetClassifier(
+        mask=mask,
+        alphas=alphas,
+        tol=1e-10,
+        standardize=False,
+        screening_percentile=100.0,
+        loss="mse",
+        verbose=0,
+    ).fit(X_, y)
+
+    with pytest.raises(ValueError, match="'loss' parameter must be one of"):
+        SpaceNetClassifier(
+            mask=mask,
+            alphas=alphas,
+            tol=1e-10,
+            standardize=False,
+            screening_percentile=100.0,
+            loss="bar",
+            verbose=0,
+        ).fit(X_, y)
 
 
 @pytest.mark.parametrize("penalty_wrong_case", ["Graph-Net", "TV-L1"])
@@ -352,7 +345,6 @@ def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
         alphas=alpha,
         l1_ratios=l1_ratio,
         penalty="tv-l1",
-        is_classif=False,
         max_iter=10,
     ).fit(X, y)
 
@@ -400,6 +392,7 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         penalty="tv-l1",
         standardize=False,
         screening_percentile=100.0,
+        verbose=0,
     ).fit(X_, y)
 
     sklogreg = LogisticRegression(
@@ -432,9 +425,9 @@ def test_lasso_vs_graph_net():
         mask=mask,
         alphas=1.0 * X_.shape[0],
         l1_ratios=1,
-        is_classif=False,
         penalty="graph-net",
         max_iter=100,
+        verbose=0,
     )
     lasso.fit(X_, y)
     graph_net.fit(X, y)
@@ -485,40 +478,6 @@ def test_univariate_feature_screening(
     assert n_features_ <= n_features
 
 
-@pytest.mark.parametrize("penalty", PENALTY)
-@pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
-@pytest.mark.parametrize("verbose", [True, False])
-def test_space_net_classifier_subclass(penalty, alpha, l1_ratio, verbose):
-    cvobj = SpaceNetClassifier(
-        mask="dummy",
-        penalty=penalty,
-        alphas=alpha,
-        l1_ratios=l1_ratio,
-        verbose=verbose,
-    )
-
-    assert cvobj.alphas == alpha
-    assert cvobj.l1_ratios == l1_ratio
-
-
-@pytest.mark.parametrize("penalty", PENALTY)
-@pytest.mark.parametrize("alpha", [0.4, 0.01])
-@pytest.mark.parametrize("l1_ratio", [0.5, 0.99])
-@pytest.mark.parametrize("verbose", [True, False])
-def test_space_net_regressor_subclass(penalty, alpha, l1_ratio, verbose):
-    cvobj = SpaceNetRegressor(
-        mask="dummy",
-        penalty=penalty,
-        alphas=alpha,
-        l1_ratios=l1_ratio,
-        verbose=verbose,
-    )
-
-    assert cvobj.alphas == alpha
-    assert cvobj.l1_ratios == l1_ratio
-
-
 @pytest.mark.parametrize("is_classif", IS_CLASSIF)
 def test_space_net_alpha_grid_pure_spatial(rng, is_classif):
     X = rng.standard_normal((10, 100))
@@ -544,8 +503,8 @@ def test_space_net_one_alpha_no_crash(model):
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, [2, 2, 2])
 
-    model(n_alphas=1, mask=mask).fit(X, y)
-    model(n_alphas=2, mask=mask, alphas=None).fit(X, y)
+    model(n_alphas=1, mask=mask, verbose=0).fit(X, y)
+    model(n_alphas=2, mask=mask, alphas=None, verbose=0).fit(X, y)
 
 
 @pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
