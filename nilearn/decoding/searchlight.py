@@ -343,7 +343,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO (sklearn >= 1.6) remove
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -384,7 +384,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     @property
     def _estimator_type(self):
-        # TODO (sklearn >= 1.6) remove
+        # TODO (sklearn >= 1.6.0) remove
         if self.estimator == "svr":
             return "regressor"
         elif self.estimator == "svc":

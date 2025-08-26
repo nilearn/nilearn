@@ -142,7 +142,7 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
     valid : bool, default=True
         Whether to return only the valid checks or not.
     """
-    # TODO (sklearn >= 1.6) remove this function
+    # TODO (sklearn >= 1.6.0) remove this function
     if not SKLEARN_LT_1_6:  # pragma: no cover
         raise RuntimeError(
             "Use dedicated sklearn utilities to test estimators."
@@ -627,7 +627,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
     else:
         tags = estimator.__sklearn_tags__()
 
-    # TODO (sklearn >= 1.6) simplify
+    # TODO (sklearn >= 1.6.0) simplify
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
         requires_y = isinstance(estimator, _BaseDecoder)
@@ -747,7 +747,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
 
 def get_tag(estimator: BaseEstimator, tag: str) -> bool:
     tags = estimator.__sklearn_tags__()
-    # TODO (sklearn >= 1.6) simplify
+    # TODO (sklearn >= 1.6.0) simplify
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
         return tag in tags["X_types"]
@@ -1048,7 +1048,7 @@ def check_img_estimator_doc_attributes(estimator) -> None:
     documented_parameters = {
         param.name: param.type for param in doc["Parameters"]
     }
-    # TODO in 0.13.0
+    # TODO (nilearn >= 0.13.0)
     # remove the 'and param != "clean_kwargs"'
     undocumented_parameters = [
         param
@@ -2670,7 +2670,7 @@ def check_masker_transform_resampling(estimator) -> None:
 def check_masker_shelving(estimator):
     """Check behavior when shelving masker."""
     if os.name == "nt" and sys.version_info[1] == 9:
-        # TODO
+        # TODO (python >= 3.10)
         # rare failure of this test on python 3.9 on windows
         # this works for python 3.13
         # skipping for now: let's check again if this keeps failing
@@ -2939,7 +2939,7 @@ def check_nifti_masker_clean_error(estimator):
     """Nifti maskers cannot be given cleaning parameters \
         via both clean_args and kwargs simultaneously.
 
-    TODO remove after nilearn 0.13.0
+    TODO (nilearn >= 0.13.0) remove
     """
     input_img = _img_4d_rand_eye_medium()
 
@@ -2962,7 +2962,7 @@ def check_nifti_masker_clean_warning(estimator):
 
         But this still affects the transformed signal.
 
-    TODO remove after nilearn 0.13.0
+    TODO (nilearn >= 0.13.0) remove
     """
     input_img = _img_4d_rand_eye_medium()
 

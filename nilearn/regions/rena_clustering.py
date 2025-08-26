@@ -666,7 +666,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO (sklearn >= 1.6) remove
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -830,7 +830,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
-        # TODO (sklearn >= 1.6) simplify
+        # TODO (sklearn >= 1.6.0) simplify
         if SKLEARN_LT_1_6:
             X = check_array(
                 X,

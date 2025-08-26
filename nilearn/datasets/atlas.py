@@ -2445,7 +2445,7 @@ def fetch_atlas_pauli_2017(
     """
     check_params(locals())
 
-    # TODO: remove this part after release 0.13.0
+    # TODO (nilearn >= 0.13.0) remove this part
     if atlas_type in ("prob", "det"):
         atlas_type_values = (
             "The possible values for atlas_type are currently 'prob' and"

@@ -428,7 +428,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO (sklearn >= 1.6) remove
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 

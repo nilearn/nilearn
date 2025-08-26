@@ -756,7 +756,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO (sklearn >= 1.6) remove
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -1324,7 +1324,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO (sklearn >= 1.6) remove
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -1584,7 +1584,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO (sklearn >= 1.6) remove
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 

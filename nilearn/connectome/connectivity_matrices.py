@@ -454,7 +454,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO (sklearn >= 1.6) remove
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -609,7 +609,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         # Compute the vector we return on transform
         if do_transform:
-            # TODO (sklearn >= 1.6) simplify
+            # TODO (sklearn >= 1.6.0) simplify
             if SKLEARN_LT_1_6:
                 for x in X:
                     check_array(

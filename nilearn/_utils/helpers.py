@@ -320,7 +320,7 @@ def is_kaleido_installed():
     return True
 
 
-# TODO: remove this function after release 0.13.0
+# TODO (nilearn >= 0.13.0) remove
 def check_copy_header(copy_header):
     """Check the value of the `copy_header` parameter.
 
@@ -348,7 +348,7 @@ def check_copy_header(copy_header):
         )
 
 
-# TODO: This can be removed once MPL 3.5 is the min
+# TODO (matplotlib >= 3.5.0) This can be removed
 def constrained_layout_kwargs():
     import matplotlib
 

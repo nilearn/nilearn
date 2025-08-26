@@ -1095,7 +1095,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO (sklearn >= 1.6) remove
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -1305,7 +1305,7 @@ class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO (sklearn >= 1.6) remove
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -1483,7 +1483,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO (sklearn >= 1.6) remove
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -1684,7 +1684,7 @@ class FREMRegressor(_BaseDecoder):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO (sklearn >= 1.6) remove
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -1901,7 +1901,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO (sklearn >= 1.6) remove
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
