@@ -647,7 +647,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         memory_level=1,
         standardize=True,
         verbose=1,
-        mask_args=None,
         n_jobs=1,
         eps=1e-3,
         cv=8,
@@ -680,7 +679,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.t_r = t_r
         self.target_affine = target_affine
         self.target_shape = target_shape
-        self.mask_args = mask_args
         self.positive = positive
 
     def _more_tags(self):
@@ -1038,10 +1036,6 @@ class SpaceNetClassifier(BaseSpaceNet):
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : :obj:`float`, default=1e-3
-        Length of the path. For example, ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``.
-
     mask : filename, niimg, NiftiMasker instance, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
@@ -1057,34 +1051,38 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     %(t_r)s
 
-    %(screening_percentile)s
+    %(max_iter)s
+
+    tol : :obj:`float`, default=1e-4.
+        Defines the tolerance for convergence.
+
+    %(memory)s
+
+    %(memory_level1)s
 
     standardize : :obj:`bool`, default=True
         If set, then we'll center the data (X, y) have mean zero along axis 0.
         This is here because nearly all linear models will want their data
         to be centered.
 
-    fit_intercept : :obj:`bool`, default=True
-        Fit or not an intercept.
-
-    %(max_iter)s
-
-    tol : :obj:`float`, default=1e-4.
-        Defines the tolerance for convergence.
-
     %(verbose)s
 
     %(n_jobs)s
 
-    %(memory)s
-
-    %(memory_level1)s
+    eps : :obj:`float`, default=1e-3
+        Length of the path. For example, ``eps=1e-3`` means that
+        ``alpha_min / alpha_max = 1e-3``.
 
     cv : :obj:`int`, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
+
+    fit_intercept : :obj:`bool`, default=True
+        Fit or not an intercept.
+
+    %(screening_percentile)s
 
     %(debias)s
 
@@ -1295,11 +1293,7 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     n_alphas : :obj:`int`, default=10
         Generate this number of alphas per regularization path.
-        This parameter is mutually exclusive with the `alphas` parameter.
-
-    eps : :obj:`float`, default=1e-3
-        Length of the path. For example, ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``
+        This parameter is mutually exclusive with the `alphas` parameter.`
 
     mask : filename, niimg, NiftiMasker instance, default=None
         Mask to be used on data. If an instance of masker is passed,
@@ -1316,28 +1310,27 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     %(t_r)s
 
-    %(screening_percentile)s
+    %(max_iter)s
+
+    tol : :obj:`float`, default=1e-4
+        Defines the tolerance for convergence.
+
+    %(memory)s
+
+    %(memory_level1)s
 
     standardize : :obj:`bool`, default=True
         If set, then we'll center the data (X, y) have mean zero along axis 0.
         This is here because nearly all linear models will want their data
         to be centered.
 
-    fit_intercept : :obj:`bool`, default=True
-        Fit or not an intercept.
-
-    %(max_iter)s
-
-    tol : :obj:`float`, default=1e-4
-        Defines the tolerance for convergence.
-
     %(verbose)s
 
     %(n_jobs)s
 
-    %(memory)s
-
-    %(memory_level1)s
+    eps : :obj:`float`, default=1e-3
+        Length of the path. For example, ``eps=1e-3`` means that
+        ``alpha_min / alpha_max = 1e-3`
 
     cv : :obj:`int`, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
@@ -1345,13 +1338,18 @@ class SpaceNetRegressor(BaseSpaceNet):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
+    fit_intercept : :obj:`bool`, default=True
+        Fit or not an intercept.
+
+    %(screening_percentile)s
+
     %(debias)s
 
     positive : bool, default=False
-    When set to ``True``, forces the coefficients to be positive.
-    This option is only supported for dense arrays.
+        When set to ``True``, forces the coefficients to be positive.
+        This option is only supported for dense arrays.
 
-    .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1dev
 
     %(spacenet_fit_attributes)s
 

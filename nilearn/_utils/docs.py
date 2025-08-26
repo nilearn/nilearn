@@ -1546,6 +1546,11 @@ mask_img_ : Nifti like image
 
 memory_ : joblib memory cache
 
+n_elements_ : :obj:`int`
+    The number of features in the mask.
+
+    .. versionadded:: 0.12.1dev
+
 screening_percentile_ : float
     Screening percentile corrected according to volume of mask,
     relative to the volume of standard brain.
