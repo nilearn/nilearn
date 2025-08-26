@@ -648,6 +648,18 @@ def test_decoder_binary_classification_clustering(
             DecoderRegressor,
             _make_regression_test_data(n_samples=N_SAMPLES, dim=5),
         ),
+        (
+            FREMClassifier,
+            _make_binary_classification_test_data(n_samples=N_SAMPLES),
+        ),
+        (
+            FREMClassifier,
+            _make_multiclass_classification_test_data(n_samples=N_SAMPLES),
+        ),
+        (
+            FREMRegressor,
+            _make_regression_test_data(n_samples=N_SAMPLES, dim=5),
+        ),
     ],
 )
 @pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut(), None])
@@ -664,14 +676,18 @@ def test_cross_validation(estimator, data, cv):
 
     y_pred = model.predict(X)
 
-    if isinstance(estimator, (Decoder)):
-        assert accuracy_score(y, y_pred) > 0.9
-    else:
-        assert r2_score(y, y_pred) > 0.9
-
-    # fall on default of 10 fold when cv is None
+    # fall on default of 10 fold (30 for the FREM) when cv is None
     if cv is None:
-        assert len(model.cv_) == 10
+        n_cv = len(model.cv_)
+        if isinstance(model, (Decoder, DecoderRegressor)):
+            assert n_cv == 10
+        else:
+            assert n_cv == 30
+
+    if isinstance(model, (Decoder)):
+        assert accuracy_score(y, y_pred) > 0.9
+    elif isinstance(model, (DecoderRegressor)):
+        assert r2_score(y, y_pred) > 0.9
 
 
 @ignore_warnings
