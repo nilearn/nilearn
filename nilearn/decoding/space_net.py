@@ -551,12 +551,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     penalty : :obj:`str`, default='graph-net'
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : :obj:`str`, default=None
-        Loss to be used in the model. Must be an one of "mse", or "logistic".
-
-    is_classif : :obj:`bool`, default=False
-        Flag telling whether the learning task is classification or regression.
-
     l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1]; \
         default=0.5
         Constant that mixes L1 and spatial prior terms in penalization.
@@ -695,13 +689,10 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     """
 
     SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
-    SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
 
     def __init__(
         self,
         penalty="graph-net",
-        is_classif=False,
-        loss=None,
         l1_ratios=0.5,
         alphas=None,
         n_alphas=10,
@@ -727,8 +718,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         positive=False,
     ):
         self.penalty = penalty
-        self.is_classif = is_classif
-        self.loss = loss
         self.n_alphas = n_alphas
         self.eps = eps
         self.l1_ratios = l1_ratios
@@ -780,6 +769,17 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         tags.input_tags = InputTags(niimg_like=True, surf_img=False)
         return tags
 
+    @property
+    def _is_classification(self) -> bool:
+        # TODO remove for sklearn>=1.6
+        # this private method can probably be removed
+        # when dropping sklearn>=1.5 and replaced by just:
+        #   self.__sklearn_tags__().estimator_type == "classifier"
+        if SKLEARN_LT_1_6:
+            # TODO remove for sklearn>=1.6
+            return self._estimator_type == "classifier"
+        return self.__sklearn_tags__().estimator_type == "classifier"
+
     def _check_params(self):
         """Make sure parameters are sane."""
         if self.l1_ratios is not None:
@@ -810,20 +810,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 f"{self.SUPPORTED_PENALTIES}. "
                 f"Got {self.penalty}."
             )
-        if self.loss is not None and self.loss not in self.SUPPORTED_LOSSES:
-            raise ValueError(
-                f"'loss' parameter must be one of {self.SUPPORTED_LOSSES}. "
-                f"Got {self.loss}."
-            )
-        if (
-            self.loss is not None
-            and not self.is_classif
-            and (self.loss == "logistic")
-        ):
-            raise ValueError(
-                "'logistic' loss is only available for classification "
-                "problems."
-            )
+        if self._is_classification:
+            self._validate_loss(self.loss)
 
     def _set_coef_and_intercept(self, w):
         """Set the loadings vector (coef) and the intercept of the fitted \
@@ -833,10 +821,22 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         if self.w_.ndim == 1:
             self.w_ = self.w_[np.newaxis, :]
         self.coef_ = self.w_[:, :-1]
-        if self.is_classif:
+        if self._is_classification:
             self.intercept_ = self.w_[:, -1]
         else:
             self._set_intercept(self.Xmean_, self.ymean_, self.Xstd_)
+
+    def _return_loss_value(self):
+        """Set loss value for instances where it is not defined.
+
+        For SpaceNetRegressor it is always "mse".
+        """
+        loss = getattr(self, "loss", None)
+        if loss is None:
+            loss = "logistic"
+            if not self._is_classification:
+                loss = "mse"
+        return loss
 
     def fit(self, X, y):
         """Fit the learner.
@@ -881,10 +881,10 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             ["csr", "csc", "coo"],
             dtype=float,
             multi_output=True,
-            y_numeric=not self.is_classif,
+            y_numeric=not self._is_classification,
         )
 
-        if not self.is_classif and np.all(np.diff(y) == 0.0):
+        if not self._is_classification and np.all(np.diff(y) == 0.0):
             raise ValueError(
                 "The given input y must have at least 2 targets"
                 " to do regression analysis. You provided only"
@@ -907,20 +907,16 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             alphas, collections.abc.Iterable
         ):
             alphas = [alphas]
-        if self.loss is not None:
-            loss = self.loss
-        elif self.is_classif:
-            loss = "logistic"
-        else:
-            loss = "mse"
+
+        loss = self._return_loss_value()
 
         # set backend solver
         if self.penalty.lower() == "graph-net":
-            if not self.is_classif or loss == "mse":
+            if loss == "mse":
                 solver = graph_net_squared_loss
             else:
                 solver = graph_net_logistic
-        elif not self.is_classif or loss == "mse":
+        elif loss == "mse":
             solver = partial(tvl1_solver, loss="mse")
         else:
             solver = partial(tvl1_solver, loss="logistic")
@@ -930,7 +926,9 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
         if case1 or case2:
             self.cv_ = list(
-                check_cv(self.cv, y=y, classifier=self.is_classif).split(X, y)
+                check_cv(
+                    self.cv, y=y, classifier=self._is_classification
+                ).split(X, y)
             )
         else:
             # no cross-validation needed, user supplied all params
@@ -938,10 +936,16 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         n_folds = len(self.cv_)
 
         # number of problems to solve
-        y = self._binarize_y(y) if self.is_classif else y[:, np.newaxis]
+        y = (
+            self._binarize_y(y)
+            if self._is_classification
+            else y[:, np.newaxis]
+        )
 
         n_problems = (
-            self.n_classes_ if self.is_classif and self.n_classes_ > 2 else 1
+            self.n_classes_
+            if self._is_classification and self.n_classes_ > 2
+            else 1
         )
 
         # standardize y
@@ -983,7 +987,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 solver_params,
                 n_alphas=self.n_alphas,
                 eps=self.eps,
-                is_classif=self.loss == "logistic",
+                is_classif=self._is_classification,
                 key=(cls, fold),
                 debias=self.debias,
                 verbose=self.verbose,
@@ -1006,7 +1010,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.best_model_params_ = np.array(self.best_model_params_)
         self.alpha_grids_ = np.array(self.alpha_grids_)
         self.ymean_ /= n_folds
-        if not self.is_classif:
+        if not self._is_classification:
             self.all_coef_ = np.array(self.all_coef_)
             w = w[0]
             self.ymean_ = self.ymean_[0]
@@ -1063,7 +1067,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             )
 
         # handle regression (least-squared loss)
-        if not self.is_classif:
+        if not self._is_classification:
             return LinearRegression.predict(self, X)
 
         # prediction proper
@@ -1231,6 +1235,8 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     """
 
+    SUPPORTED_LOSSES: ClassVar[tuple[str, ...]] = ("mse", "logistic")
+
     def __init__(
         self,
         penalty="graph-net",
@@ -1259,7 +1265,6 @@ class SpaceNetClassifier(BaseSpaceNet):
     ):
         super().__init__(
             penalty=penalty,
-            is_classif=True,
             l1_ratios=l1_ratios,
             alphas=alphas,
             n_alphas=n_alphas,
@@ -1279,12 +1284,20 @@ class SpaceNetClassifier(BaseSpaceNet):
             fit_intercept=fit_intercept,
             standardize=standardize,
             screening_percentile=screening_percentile,
-            loss=loss,
             target_affine=target_affine,
             verbose=verbose,
         )
+        self.loss = loss
+
         # TODO (sklearn  >= 1.6.0) remove
         self._estimator_type = "classifier"
+
+    def _validate_loss(self, value):
+        if value is not None and value not in self.SUPPORTED_LOSSES:
+            raise ValueError(
+                f"'loss' parameter must be one of {self.SUPPORTED_LOSSES}. "
+                f"Got {value}."
+            )
 
     def _binarize_y(self, y):
         """Encode target classes as -1 and 1.
@@ -1554,7 +1567,6 @@ class SpaceNetRegressor(BaseSpaceNet):
     ):
         super().__init__(
             penalty=penalty,
-            is_classif=False,
             l1_ratios=l1_ratios,
             alphas=alphas,
             n_alphas=n_alphas,
