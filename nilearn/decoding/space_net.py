@@ -631,12 +631,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         Best model parameters (alpha, l1_ratio) saved for the different
         cross-validation folds.
 
-    classes_ : ndarray of labels (`n_classes_`)
-        Labels of the classes (for classification problems)
-
-    n_classes_ : int
-        Number of classes (for classification problems)
-
     coef_ : ndarray, shape\
         (1, n_features) for 2 class classification problems\
         (i.e n_classes = 2)\

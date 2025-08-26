@@ -273,8 +273,13 @@ class NiftiSpheresMasker(BaseMasker):
     %(dtype)s
 
     %(memory)s
+
     %(memory_level1)s
+
     %(verbose0)s
+
+    reports : boolean, default=True
+         If set to True, data is saved in order to produce a report.
 
     %(clean_args)s
         .. versionadded:: 0.12.0
@@ -283,7 +288,13 @@ class NiftiSpheresMasker(BaseMasker):
 
     Attributes
     ----------
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     %(nifti_mask_img_)s
+
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int`
         The number of seeds in the masker.
@@ -292,9 +303,6 @@ class NiftiSpheresMasker(BaseMasker):
 
     seeds_ : :obj:`list` of :obj:`list`
         The coordinates of the seeds in the masker.
-
-    reports : boolean, default=True
-         If set to True, data is saved in order to produce a report.
 
     See Also
     --------
