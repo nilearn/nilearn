@@ -34,4 +34,4 @@ Changes
 
 - :bdg-dark:`Code` Move ``nilearn.plotting.img_plotting`` under ``nilearn.plotting.image`` (:gh:`5481` by `Hande Gözükan`_).
 
-- :bdg-dark:`Code` Decoding estimators do not inherit from sklearn ``ClassifierMixin`` and ``RegressorMixing`` anymore. It is recommended to rely on an estimator tags (accessible via the ``'__sklearn_tags__()'`` special method) to know more about the characteristics of an instance  (:gh:`5595` by `Rémi Gau`_).
+- :bdg-dark:`Code` Decoding estimators do not inherit from sklearn ``ClassifierMixin`` and ``RegressorMixing`` anymore. It is recommended to rely on estimator tags (accessible via the ``'__sklearn_tags__()'`` special method) to know more about the characteristics of an instance  (:gh:`5595` by `Rémi Gau`_).
