@@ -237,16 +237,7 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
 
     This function computes the facecolors.
     """
-    if bg_map is None:
-        bg_data = np.ones(n_vertices) * 0.5
-    else:
-        bg_data = np.copy(load_surf_data(bg_map))
-        if bg_data.shape[0] != n_vertices:
-            raise ValueError(
-                "The bg_map does not have the same number "
-                "of vertices as the mesh."
-            )
-
+    bg_data = get_bg_data(bg_map, n_vertices)
     bg_faces = np.mean(bg_data[faces], axis=1)
     # scale background map if need be
     bg_vmin, bg_vmax = np.min(bg_faces), np.max(bg_faces)
