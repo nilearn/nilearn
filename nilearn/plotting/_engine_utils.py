@@ -1,3 +1,7 @@
+"""Module for utility functions importing from `matplotlib` and used by
+multiple modules in nilearn.plotting package.
+"""
+
 from warnings import warn
 
 import matplotlib.pyplot as plt
