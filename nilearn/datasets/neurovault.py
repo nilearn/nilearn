@@ -1563,8 +1563,7 @@ def _download_image_nii_file(image_info, collection, download_params):
         logger.log(
             "Resampling...",
         )
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
+        # TODO (nilearn >= 0.13.0) force_resample=True
         im_resampled = resample_img(
             img=tmp_path,
             target_affine=STD_AFFINE,
@@ -1804,8 +1803,7 @@ def _scroll_local(download_params):
             image, collection = _update(image, collection, download_params)
             if download_params["resample"]:
                 if not Path(image["resampled_absolute_path"]).is_file():
-                    # TODO switch to force_resample=True
-                    # when bumping to version > 0.13
+                    # TODO (nilearn  >= 0.13.0) force_resample=True
                     im_resampled = resample_img(
                         img=image["absolute_path"],
                         target_affine=STD_AFFINE,

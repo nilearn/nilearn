@@ -766,7 +766,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6) remove if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
@@ -1283,7 +1283,7 @@ class SpaceNetClassifier(BaseSpaceNet):
             target_affine=target_affine,
             verbose=verbose,
         )
-        # TODO (sklearn  >= 1.6) remove
+        # TODO (sklearn  >= 1.6.0) remove
         self._estimator_type = "classifier"
 
     def _binarize_y(self, y):
@@ -1334,7 +1334,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6) remove if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
         if SKLEARN_LT_1_6:
@@ -1578,7 +1578,7 @@ class SpaceNetRegressor(BaseSpaceNet):
             verbose=verbose,
         )
 
-        # TODO (sklearn  >= 1.6) remove
+        # TODO (sklearn  >= 1.6.0) remove
         self._estimator_type = "regressor"
 
     def _more_tags(self):
@@ -1594,7 +1594,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6) remove if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
         if SKLEARN_LT_1_6:

@@ -438,7 +438,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6) remove if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -564,7 +564,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     @property
     def nifti_maps_masker_(self):
-        # TODO: remove in 0.13
+        # TODO (nilearn >= 0.13.0) remove
         warnings.warn(
             message="The 'nifti_maps_masker_' attribute is deprecated "
             "and will be removed in Nilearn 0.13.0.\n"

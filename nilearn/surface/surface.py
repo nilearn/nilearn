@@ -842,7 +842,7 @@ def vol_to_surf(
                 img,
                 interpolation="nearest",
                 copy=False,
-                force_resample=False,  # TODO update to True in 0.13.0
+                force_resample=False,  # TODO (nilearn >= 0.13.0) set to True
                 copy_header=True,
             )
         )

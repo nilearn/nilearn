@@ -1967,7 +1967,7 @@ def plot_carpet(
             img,
             interpolation="nearest",
             copy_header=True,
-            force_resample=False,  # TODO change to True in 0.13.0
+            force_resample=False,  # TODO (nilearn  >= 0.13.0) change to True
         )
         atlas_bin = math_img(
             f"img != {background_label}",

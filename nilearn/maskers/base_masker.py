@@ -291,7 +291,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6) remove if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -513,7 +513,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def _sanitize_cleaning_parameters(self):
         """Make sure that cleaning parameters are passed via clean_args.
 
-        TODO remove when bumping to nilearn >0.13
+        TODO (nilearn >= 0.13.0) remove
         """
         if hasattr(self, "clean_kwargs"):
             if self.clean_kwargs:
@@ -554,7 +554,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6) remove if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 

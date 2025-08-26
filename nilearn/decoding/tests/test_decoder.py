@@ -1077,8 +1077,7 @@ def test_decoder_multiclass_warnings(multiclass_data):
 def test_decoder_tags_classification():
     """Check value returned by _more_tags."""
     model = Decoder()
-    # TODO
-    # remove if block when bumping sklearn_version to > 1.5
+    # TODO (sklearn >= 1.6.0) remove if block
     if SKLEARN_LT_1_6:
         assert model.__sklearn_tags__()["require_y"] is True
     else:

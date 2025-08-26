@@ -41,7 +41,7 @@ def test_percentile_range(rng, canica_data_single_img):
         canica.fit(canica_data_single_img)
 
 
-# TODO remove skipif when dropping python 3.9
+# TODO (python >= 3.10) remove skipif when dropping python 3.9
 @pytest.mark.skipif(
     sys.version_info[1] == 9,
     reason="fails only on MacOS with python 3.9",

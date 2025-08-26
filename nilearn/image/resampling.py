@@ -467,7 +467,7 @@ def resample_img(
     from .image import new_img_like  # avoid circular imports
 
     force_resample = _check_force_resample(force_resample)
-    # TODO: remove this warning in 0.13.0
+    # TODO (nilearn >= 0.13.0) remove this warning
     check_copy_header(copy_header)
 
     _check_resample_img_inputs(target_shape, target_affine, interpolation)
@@ -881,8 +881,7 @@ def reorder_img(img, resample=None, copy_header=False):
         # Identify the voxel size using a QR decomposition of the affine
         Q, R = np.linalg.qr(affine[:3, :3])
         target_affine = np.diag(np.abs(np.diag(R))[np.abs(Q).argmax(axis=1)])
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
+        # TODO (nilearn >= 0.13.0) force_resample=True
         return resample_img(
             img,
             target_affine=target_affine,

@@ -676,7 +676,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6) remove if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 

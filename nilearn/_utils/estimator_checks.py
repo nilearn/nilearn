@@ -378,7 +378,7 @@ def return_expected_failed_checks(
             ),
         }
         if accept_niimg_input(estimator):
-            # TODO remove when bumping to nilearn 0.13.0
+            # TODO (nilearn >= 0.13.0) remove
             expected_failed_checks |= {
                 "check_do_not_raise_errors_in_init_or_set_params": (
                     "Deprecation cycle started to fix."

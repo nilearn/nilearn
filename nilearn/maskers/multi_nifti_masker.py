@@ -208,7 +208,7 @@ class MultiNiftiMasker(NiftiMasker):
         reports=True,
         cmap="gray",
         clean_args=None,
-        **kwargs,  # TODO remove when bumping to nilearn >0.13
+        **kwargs,  # TODO (nilearn >= 0.13.0) remove
     ):
         super().__init__(
             # Mask is provided or computed
@@ -233,7 +233,7 @@ class MultiNiftiMasker(NiftiMasker):
             reports=reports,
             cmap=cmap,
             clean_args=clean_args,
-            # TODO remove when bumping to nilearn >0.13
+            # TODO (nilearn >= 0.13.0) remove
             **kwargs,
         )
         self.n_jobs = n_jobs
@@ -244,7 +244,7 @@ class MultiNiftiMasker(NiftiMasker):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO (sklearn  >= 1.6) remove if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -360,8 +360,7 @@ class MultiNiftiMasker(NiftiMasker):
         # Resampling: allows the user to change the affine, the shape or both.
         mask_logger("resample_mask", verbose=self.verbose)
 
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
+        # TODO (nilearn >= 0.13.0) force_resample=True
         self.mask_img_ = self._cache(resample_img)(
             self.mask_img_,
             target_affine=self.target_affine,
@@ -392,8 +391,7 @@ class MultiNiftiMasker(NiftiMasker):
         ):
             resampl_imgs = None
             if imgs is not None:
-                # TODO switch to force_resample=True
-                # when bumping to version > 0.13
+                # TODO (nilearn >= 0.13.0) force_resample=True
                 resampl_imgs = self._cache(resample_img)(
                     imgs,
                     target_affine=self.affine_,
@@ -473,7 +471,7 @@ class MultiNiftiMasker(NiftiMasker):
             ],
         )
         params["clean_kwargs"] = self.clean_args_
-        # TODO remove in 0.13.0
+        # TODO (nilearn  >= 0.13.0) remove
         if self.clean_kwargs:
             params["clean_kwargs"] = self.clean_kwargs_
 

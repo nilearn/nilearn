@@ -218,8 +218,7 @@ def connected_regions(
 
     if mask_img is not None:
         if not check_same_fov(maps_img, mask_img):
-            # TODO switch to force_resample=True
-            # when bumping to version > 0.13
+            # TODO (nilearn >= 0.13.0) force_resample=True
             mask_img = resample_img(
                 mask_img,
                 target_affine=maps_img.affine,
