@@ -330,8 +330,7 @@ def path_scores(
     mask : 3D arrays of :obj:`bool`
         Mask defining brain regions that we work on.
 
-    alphas : :obj:`list` of :obj:`float`
-        List of regularization parameters being considered.
+    %(alphas)s
 
     train : array or :obj:`list` of :obj:`int`:
         List of indices for the train samples.
@@ -363,7 +362,7 @@ def path_scores(
 
     key: ??? TODO: Add description.
 
-    %(debias)
+    %(debias)s
 
     %(screening_percentile)s
 
@@ -557,11 +556,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : :obj:`float` or :obj:`list` of floats, default=None
-        Choices for the constant that scales the overall regularization term.
-        This parameter is mutually exclusive with the `n_alphas` parameter.
-        If None or list of floats is provided, then the best value will be
-        selected by cross-validation.
+    %(alphas)s
 
     n_alphas : :obj:`int`, default=10
         Generate this number of alphas per regularization path.
@@ -617,7 +612,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    %(debias)
+    %(debias)s
 
     positive : bool, default=False
         When set to ``True``, forces the coefficients to be positive.
@@ -1037,11 +1032,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : :obj:`float` or :obj:`list` of floats, default=None
-        Choices for the constant that scales the overall regularization term.
-        This parameter is mutually exclusive with the `n_alphas` parameter.
-        If None or list of floats is provided, then the best value will be
-        selected by cross-validation.
+    %(alphas)s
 
     n_alphas : :obj:`int`, default=10
         Generate this number of alphas per regularization path.
@@ -1095,7 +1086,13 @@ class SpaceNetClassifier(BaseSpaceNet):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    %(debias)
+    %(debias)s
+
+    positive : bool, default=False
+        When set to ``True``, forces the coefficients to be positive.
+        This option is only supported for dense arrays.
+
+        .. versionadded:: 0.12.1dev
 
     %(spacenet_fit_attributes)s
 
@@ -1136,6 +1133,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         fit_intercept=True,
         screening_percentile=20,
         debias=False,
+        positive=False,
     ):
         super().__init__(
             penalty=penalty,
@@ -1162,6 +1160,7 @@ class SpaceNetClassifier(BaseSpaceNet):
             loss=loss,
             target_affine=target_affine,
             verbose=verbose,
+            positive=positive,
         )
         # TODO remove for sklearn>=1.6
         self._estimator_type = "classifier"
@@ -1292,11 +1291,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : :obj:`float` or :obj:`list` of floats or None, default=None
-        Choices for the constant that scales the overall regularization term.
-        This parameter is mutually exclusive with the `n_alphas` parameter.
-        If None or list of floats is provided, then the best value will be
-        selected by cross-validation.
+    %(alphas)s
 
     n_alphas : :obj:`int`, default=10
         Generate this number of alphas per regularization path.
@@ -1350,7 +1345,13 @@ class SpaceNetRegressor(BaseSpaceNet):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    %(debias)
+    %(debias)s
+
+    positive : bool, default=False
+    When set to ``True``, forces the coefficients to be positive.
+    This option is only supported for dense arrays.
+
+    .. versionadded:: 0.12.1dev
 
     %(spacenet_fit_attributes)s
 
@@ -1384,6 +1385,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         fit_intercept=True,
         screening_percentile=20,
         debias=False,
+        positive=False,
     ):
         super().__init__(
             penalty=penalty,
@@ -1409,6 +1411,7 @@ class SpaceNetRegressor(BaseSpaceNet):
             screening_percentile=screening_percentile,
             target_affine=target_affine,
             verbose=verbose,
+            positive=positive,
         )
 
         # TODO remove for sklearn>=1.6

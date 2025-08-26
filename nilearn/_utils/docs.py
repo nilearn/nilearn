@@ -28,6 +28,15 @@ docdict = {}
 # Parameters definitions
 #
 
+# alphas
+docdict["alphas"] = """
+alphas : :obj:`float` or :obj:`list` of :obj:`float` or None, default=None
+    Choices for the constant that scales the overall regularization term.
+    This parameter is mutually exclusive with the `n_alphas` parameter.
+    If None or list of floats is provided, then the best value will be
+    selected by cross-validation.
+"""
+
 # annotate
 docdict["annotate"] = """
 annotate : :obj:`bool`, default=True
