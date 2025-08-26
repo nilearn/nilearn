@@ -245,10 +245,7 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
     bg_data = get_bg_data(bg_map, n_vertices)
     bg_faces = np.mean(bg_data[faces], axis=1)
     # scale background map if need be
-    bg_vmin, bg_vmax = np.min(bg_faces), np.max(bg_faces)
-    if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_faces = bg_norm(bg_faces)
+    bg_faces = _normalize_bg_data(bg_faces)
 
     if darkness is not None:
         bg_faces *= darkness
