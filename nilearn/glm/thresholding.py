@@ -132,8 +132,7 @@ def cluster_level_inference(
         Level of control on the true positive rate, aka true discovery
         proportion.
 
-    verbose : :obj:`int` or :obj:`bool`, default=0
-        Verbosity mode.
+    %(verbose0)s
 
     Returns
     -------

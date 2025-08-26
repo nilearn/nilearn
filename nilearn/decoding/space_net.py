@@ -582,12 +582,17 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a NiftiMasker.
+
     %(target_affine)s
         An important use-case of this parameter is for downsampling the
         input data to a coarser resolution (to speed of the model fit).
+
     %(target_shape)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
     %(screening_percentile)s
@@ -600,15 +605,19 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
 
-    max_iter : :obj:`int`, default=200
-        Defines the iterations for the solver.
+    %(max_iter)s
 
     tol : :obj:`float`, default=5e-4
         Defines the tolerance for convergence for the backend FISTA solver.
+
     %(verbose)s
+
     %(n_jobs)s
+
     %(memory)s
+
     %(memory_level1)s
+
     cv : :obj:`int`, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -624,74 +633,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
         .. versionadded:: 0.12.0
 
-    Attributes
-    ----------
-    all_coef_ : ndarray, shape (n_l1_ratios, n_folds, n_features)
-        Coefficients for all folds and features.
+    %(spacenet_fit_attributes)s
 
-    alpha_grids_ : ndarray, shape (n_folds, n_alphas)
-        Alpha values considered for selection of the best ones
-        (saved in `best_model_params_`)
-
-    best_model_params_ : ndarray, shape (n_folds, n_parameter)
-        Best model parameters (alpha, l1_ratio) saved for the different
-        cross-validation folds.
-
-    coef_ : ndarray, shape\
-        (1, n_features) for 2 class classification problems\
-        (i.e n_classes = 2)\
-        (n_classes, n_features) for n_classes > 2
-        Coefficient of the features in the decision function.
-
-    coef_img_ : nifti image
-        Masked model coefficients
-
-    mask_ : ndarray 3D
-        An array contains values of the mask image.
-
-    masker_ : instance of NiftiMasker
-        The nifti masker used to mask the data.
-
-    mask_img_ : Nifti like image
-        The mask of the data. If no mask was supplied by the user,
-        this attribute is the mask image computed automatically from the
-        data `X`.
-
-    memory_ : joblib memory cache
-
-    intercept_ : narray, shape
-        (1,) for 2 class classification problems (i.e n_classes = 2)
-        (n_classes,) for n_classes > 2
-        Intercept (a.k.a. bias) added to the decision function.
-        It is available only when parameter intercept is set to True.
-
-    cv_ : list of pairs of lists
-        Each pair is the list of indices for the train and test samples
-        for the corresponding fold.
-
-    cv_scores_ : ndarray, shape (n_folds, n_alphas)\
-        or (n_l1_ratios, n_folds, n_alphas)
-        Scores (misclassification) for each alpha, and on each fold
-
-    screening_percentile_ : float
-        Screening percentile corrected according to volume of mask,
-        relative to the volume of standard brain.
-
-    w_ : ndarray, shape
-        (1, n_features + 1) for 2 class classification problems
-        (i.e n_classes = 2)
-        (n_classes, n_features + 1) for n_classes > 2, and (n_features,)
-        for regression
-        Model weights
-
-    ymean_ : array, shape (n_samples,)
-        Mean of prediction targets
-
-    Xmean_ : array, shape (n_features,)
-        Mean of X across samples
-
-    Xstd_ : array, shape (n_features,)
-        Standard deviation of X across samples
     """
 
     SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
@@ -1120,10 +1063,15 @@ class SpaceNetClassifier(BaseSpaceNet):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
+
     %(target_affine)s
+
     %(target_shape)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
     %(screening_percentile)s
@@ -1136,15 +1084,19 @@ class SpaceNetClassifier(BaseSpaceNet):
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
 
-    max_iter : :obj:`int`, default=200
-        Defines the iterations for the solver.
+    %(max_iter)s
 
     tol : :obj:`float`, default=1e-4.
         Defines the tolerance for convergence.
+
     %(verbose)s
+
     %(n_jobs)s
+
     %(memory)s
+
     %(memory_level1)s
+
     cv : :obj:`int`, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -1154,78 +1106,13 @@ class SpaceNetClassifier(BaseSpaceNet):
     debias : :obj:`bool`, default=False
         If set, then the estimated weights maps will be debiased.
 
-    Attributes
-    ----------
-    all_coef_ : ndarray, shape (n_l1_ratios, n_folds, n_features)
-        Coefficients for all folds and features.
-
-    alpha_grids_ : ndarray, shape (n_folds, n_alphas)
-        Alpha values considered for selection of the best ones
-        (saved in `best_model_params_`)
-
-    best_model_params_ : ndarray, shape (n_folds, n_parameter)
-        Best model parameters (alpha, l1_ratio) saved for the different
-        cross-validation folds.
+    %(spacenet_fit_attributes)s
 
     classes_ : ndarray of labels (`n_classes_`)
         Labels of the classes
 
     n_classes_ : int
         Number of classes
-
-    coef_ : ndarray, shape
-        (1, n_features) for 2 class classification problems (i.e n_classes = 2)
-        (n_classes, n_features) for n_classes > 2
-        Coefficient of the features in the decision function.
-
-    coef_img_ : nifti image
-        Masked model coefficients
-
-    mask_ : ndarray 3D
-        An array contains values of the mask image.
-
-    masker_ : instance of NiftiMasker
-        The nifti masker used to mask the data.
-
-    mask_img_ : Nifti like image
-        The mask of the data. If no mask was supplied by the user,
-        this attribute is the mask image computed automatically from the
-        data `X`.
-
-    memory_ : joblib memory cache
-
-    intercept_ : narray, shape
-        (1, ) for 2 class classification problems (i.e n_classes = 2)
-        (n_classes, ) for n_classes > 2
-        Intercept (a.k.a. bias) added to the decision function.
-        It is available only when parameter intercept is set to True.
-
-    cv_ : list of pairs of lists
-        Each pair is the list of indices for the train and test
-        samples for the corresponding fold.
-
-    cv_scores_ : ndarray, shape (n_folds, n_alphas)\
-        or (n_l1_ratios, n_folds, n_alphas)
-        Scores (misclassification) for each alpha, and on each fold
-
-    screening_percentile_ : float
-        Screening percentile corrected according to volume of mask,
-        relative to the volume of standard brain.
-
-    w_ : ndarray, shape
-        (1, n_features + 1) for 2 class classification problems
-        (i.e n_classes = 2)
-        (n_classes, n_features + 1) for n_classes > 2
-        Model weights
-
-    ymean_ : array, shape (n_samples,)
-        Mean of prediction targets
-
-    Xmean_ : array, shape (n_features,)
-        Mean of X across samples
-
-    Xstd_ : array, shape (n_features,)
-        Standard deviation of X across samples
 
     See Also
     --------
@@ -1432,10 +1319,15 @@ class SpaceNetRegressor(BaseSpaceNet):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
+
     %(target_affine)s
+
     %(target_shape)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
     %(screening_percentile)s
@@ -1448,15 +1340,19 @@ class SpaceNetRegressor(BaseSpaceNet):
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
 
-    max_iter : :obj:`int`, default=200
-        Defines the iterations for the solver.
+    %(max_iter)s
 
     tol : :obj:`float`, default=1e-4
         Defines the tolerance for convergence.
+
     %(verbose)s
+
     %(n_jobs)s
+
     %(memory)s
+
     %(memory_level1)s
+
     cv : :obj:`int`, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
@@ -1466,64 +1362,7 @@ class SpaceNetRegressor(BaseSpaceNet):
     debias : :obj:`bool`, default=False
         If set, then the estimated weights maps will be debiased.
 
-    Attributes
-    ----------
-    all_coef_ : ndarray, shape (n_l1_ratios, n_folds, n_features)
-        Coefficients for all folds and features.
-
-    alpha_grids_ : ndarray, shape (n_folds, n_alphas)
-        Alpha values considered for selection of the best ones
-        (saved in `best_model_params_`)
-
-    best_model_params_ : ndarray, shape (n_folds, n_parameter)
-        Best model parameters (alpha, l1_ratio) saved for the different
-        cross-validation folds.
-
-    coef_ : ndarray, shape (n_features,)
-        Coefficient of the features in the decision function.
-
-    coef_img_ : nifti image
-        Masked model coefficients
-
-    mask_ : ndarray 3D
-        An array contains values of the mask image.
-
-    masker_ : instance of NiftiMasker
-        The nifti masker used to mask the data.
-
-    mask_img_ : Nifti like image
-        The mask of the data. If no mask was supplied by the user, this
-        attribute is the mask image computed automatically from the data `X`.
-
-    memory_ : joblib memory cache
-
-    intercept_ : narray, shape (1)
-        Intercept (a.k.a. bias) added to the decision function.
-        It is available only when parameter intercept is set to True.
-
-    cv_ : list of pairs of lists
-        Each pair is the list of indices for the train and test
-        samples for the corresponding fold.
-
-    cv_scores_ : ndarray, shape (n_folds, n_alphas)\
-        or (n_l1_ratios, n_folds, n_alphas)
-        Scores (misclassification) for each alpha, and on each fold
-
-    screening_percentile_ : :obj:`float`
-        Screening percentile corrected according to volume of mask,
-        relative to the volume of standard brain.
-
-    w_ : ndarray, shape (n_features,)
-        Model weights
-
-    ymean_ : array, shape (n_samples,)
-        Mean of prediction targets
-
-    Xmean_ : array, shape (n_features,)
-        Mean of X across samples
-
-    Xstd_ : array, shape (n_features,)
-        Standard deviation of X across samples
+    %(spacenet_fit_attributes)s
 
     See Also
     --------

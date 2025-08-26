@@ -132,8 +132,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         Raise an error if the matrix is not symmetric positive definite of the
         same shape as the elements of matrices.
 
-    max_iter : int, default=10
-        Maximal number of iterations.
+    %(max_iter10)s
 
     tol : positive float or None, default=1e-7
         The tolerance to declare convergence: if the gradient norm goes below

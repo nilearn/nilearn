@@ -1030,11 +1030,6 @@ def check_img_estimator_doc_attributes(estimator) -> None:
     - Fitted attributes (ending with a "_") should be documented.
     - All documented fitted attributes should exist after fit.
     """
-    if isinstance(estimator, BaseSpaceNet):
-        # TODO
-        # check BaseSpaceNet estimators later
-        return
-
     doc = NumpyDocString(estimator.__doc__)
     for section in ["Parameters", "Attributes"]:
         if section not in doc:
@@ -1056,6 +1051,11 @@ def check_img_estimator_doc_attributes(estimator) -> None:
         if param not in documented_parameters and param != "clean_kwargs"
     ]
     if undocumented_parameters:
+        # warnings.warn(
+        #     "Missing docstring for "
+        #     f"[{', '.join(undocumented_parameters)}] "
+        #     f"in estimator {estimator.__class__.__name__}."
+        # )
         raise ValueError(
             "Missing docstring for "
             f"[{', '.join(undocumented_parameters)}] "
