@@ -10,14 +10,16 @@ from nilearn._utils.helpers import (
     is_matplotlib_installed,
     is_plotly_installed,
 )
+from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.surface._utils import (
     _check_hemisphere_is_valid,
     _check_view_is_valid,
     check_surface_plotting_inputs,
+    get_bg_data,
     get_faces_on_edge,
     get_surface_backend,
 )
-from nilearn.surface import InMemoryMesh, load_surf_mesh
+from nilearn.surface import InMemoryMesh, load_surf_data, load_surf_mesh
 from nilearn.surface.utils import assert_surface_mesh_equal
 
 
@@ -206,6 +208,34 @@ def test_check_surface_plotting_hemi_error(surf_img_1d, surf_mesh):
         check_surface_plotting_inputs(
             surf_map=surf_img_1d, surf_mesh=surf_mesh, hemi="foo"
         )
+
+
+def test_get_bg_data():
+    """Test nilearn.plotting.surface._utils.get_bg_data for valid inputs."""
+    bg_data = get_bg_data(None, 5)
+    assert np.allclose(bg_data, np.array([0.5, 0.5, 0.5, 0.5, 0.5]))
+
+    fsaverage = fetch_surf_fsaverage()
+    bg_map = np.sign(load_surf_data(fsaverage["curv_left"]))
+    bg_data = get_bg_data(bg_map, len(bg_map))
+
+    assert np.allclose(bg_data, load_surf_data(bg_map))
+
+
+def test_bg_data_error():
+    """Test nilearn.plotting.surface._utils.get_bg_data for invalid inputs."""
+    fsaverage = fetch_surf_fsaverage()
+    bg_map = np.sign(load_surf_data(fsaverage["curv_left"]))
+
+    with pytest.raises(
+        ValueError, match="The bg_map does not have the same number"
+    ):
+        get_bg_data(bg_map, len(bg_map) + 1)
+
+    with pytest.raises(
+        ValueError, match="The bg_map does not have the same number"
+    ):
+        get_bg_data(bg_map, len(bg_map) - 1)
 
 
 def test_get_faces_on_edge_matplotlib(in_memory_mesh):
