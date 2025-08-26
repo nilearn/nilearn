@@ -1330,7 +1330,7 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     eps : :obj:`float`, default=1e-3
         Length of the path. For example, ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3`
+        ``alpha_min / alpha_max = 1e-3``
 
     cv : :obj:`int`, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
@@ -1351,7 +1351,9 @@ class SpaceNetRegressor(BaseSpaceNet):
 
         .. versionadded:: 0.12.1dev
 
+
     %(spacenet_fit_attributes)s
+
 
     See Also
     --------
