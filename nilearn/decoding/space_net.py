@@ -363,8 +363,7 @@ def path_scores(
 
     key: ??? TODO: Add description.
 
-    debias : :obj:`bool`, default=False
-        If set, then the estimated weights maps will be debiased.
+    %(debias)
 
     %(screening_percentile)s
 
@@ -551,12 +550,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     penalty : :obj:`str`, default='graph-net'
         Penalty to used in the model. Can be 'graph-net' or 'tv-l1'.
 
-    loss : :obj:`str`, default=None
-        Loss to be used in the model. Must be an one of "mse", or "logistic".
-
-    is_classif : :obj:`bool`, default=False
-        Flag telling whether the learning task is classification or regression.
-
     l1_ratios : :obj:`float` or :obj:`list` of floats in the interval [0, 1]; \
         default=0.5
         Constant that mixes L1 and spatial prior terms in penalization.
@@ -624,8 +617,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias : :obj:`bool`, default=False
-        If set, then the estimated weights maps will be debiased.
+    %(debias)
 
     positive : bool, default=False
         When set to ``True``, forces the coefficients to be positive.
@@ -1103,8 +1095,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias : :obj:`bool`, default=False
-        If set, then the estimated weights maps will be debiased.
+    %(debias)
 
     %(spacenet_fit_attributes)s
 
@@ -1359,8 +1350,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias : :obj:`bool`, default=False
-        If set, then the estimated weights maps will be debiased.
+    %(debias)
 
     %(spacenet_fit_attributes)s
 

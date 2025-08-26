@@ -314,6 +314,12 @@ darkness : :obj:`float` between 0 and 1, optional
 """
 
 # data_dir
+docdict["debias"] = """
+debias : :obj:`bool`, default=False
+    If set, then the estimated weights maps will be debiased.
+"""
+
+# data_dir
 docdict["data_dir"] = """
 data_dir : :obj:`pathlib.Path` or :obj:`str` or None, optional
     Path where data should be downloaded.
