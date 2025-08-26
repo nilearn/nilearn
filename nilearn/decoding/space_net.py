@@ -614,7 +614,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
     %(debias)s
 
-    positive : bool, default=False
+    positive : :obj:`bool`, default=False
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
@@ -1096,7 +1096,7 @@ class SpaceNetClassifier(BaseSpaceNet):
 
     %(debias)s
 
-    positive : bool, default=False
+    positive : :obj:`bool`, default=False
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
@@ -1364,7 +1364,7 @@ class SpaceNetRegressor(BaseSpaceNet):
 
     %(debias)s
 
-    positive : bool, default=False
+    positive : :obj:`bool`, default=False
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 

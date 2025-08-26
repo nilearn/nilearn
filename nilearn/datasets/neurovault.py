@@ -1196,6 +1196,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
     return target_file
 
 
+@fill_doc
 def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     """Load Neurosynth data from disk into an (n images, voc size) matrix.
 

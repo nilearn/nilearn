@@ -11,6 +11,7 @@ import numpy as np
 from scipy import linalg
 
 from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 
 
 def _check_lipschitz_continuous(
@@ -58,6 +59,7 @@ def _check_lipschitz_continuous(
                 raise RuntimeError(f"Counter example: ({x}, {y})")
 
 
+@fill_doc
 def mfista(
     f1_grad,
     f2_prox,
