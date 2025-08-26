@@ -158,6 +158,8 @@ def _get_vertexcolor(
 
     # scale background map if need be
     bg_data = _normalize_bg_data(bg_data)
+
+    # TODO (nilearn >= 0.13.0) remove
     bg_data = _apply_darkness(bg_data, darkness)
 
     bg_colors = plt.get_cmap("Greys")(bg_data)
@@ -252,16 +254,8 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
     # scale background map if need be
     bg_faces = _normalize_bg_data(bg_faces)
 
-    if darkness is not None:
-        bg_faces *= darkness
-        warn(
-            (
-                "The `darkness` parameter will be deprecated in release 0.13. "
-                "We recommend setting `darkness` to None"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
+    # TODO (nilearn >= 0.13.0) remove
+    bg_faces = _apply_darkness(bg_faces, darkness)
 
     face_colors = plt.cm.gray_r(bg_faces)
 
