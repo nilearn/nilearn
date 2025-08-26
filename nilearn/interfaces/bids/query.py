@@ -319,6 +319,7 @@ def parse_bids_filename(img_path, legacy=True):
     suffix, extension = parts[-1].split(".", 1)
 
     if legacy:
+        # TODO (nilearn >= 0.13.0)
         warn(
             (
                 "For versions >= 0.13.0 this function will always return "

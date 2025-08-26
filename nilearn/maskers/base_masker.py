@@ -518,6 +518,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if hasattr(self, "clean_kwargs"):
             if self.clean_kwargs:
                 tmp = [", ".join(list(self.clean_kwargs))]
+                # TODO (nilearn >= 0.13.0)
                 warnings.warn(
                     f"You passed some kwargs to {self.__class__.__name__}: "
                     f"{tmp}. "

@@ -265,6 +265,7 @@ class Contrast:
 
         .. deprecated:: 0.10.3
         """
+        # TODO (nilearn >= 0.13.0) deprecate
         attrib_deprecation_msg = (
             'The attribute "contrast_type" '
             "will be removed in 0.13.0 release of Nilearn. "
@@ -576,6 +577,7 @@ def compute_fixed_effects(
             fixed_fx_z_score_img,
         )
 
+    # TODO (nilearn >= 0.13.0)
     warn(
         category=DeprecationWarning,
         message="The behavior of this function will be "

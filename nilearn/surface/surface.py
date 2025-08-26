@@ -820,7 +820,7 @@ def vol_to_surf(
             f"{tuple(sampling_schemes.keys())}"
         )
 
-    # deprecate nearest interpolation in 0.13.0
+    # TODO (nilearn 0.13.0) deprecate nearest interpolation
     if interpolation == "nearest":
         warnings.warn(
             "The 'nearest' interpolation method will be deprecated in 0.13.0. "

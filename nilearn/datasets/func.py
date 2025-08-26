@@ -2362,6 +2362,7 @@ def fetch_language_localizer_demo_dataset(
 
     file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
     if legacy_output:
+        # TODO (nilearn >= 0.13.0)
         warnings.warn(
             category=DeprecationWarning,
             stacklevel=find_stack_level(),

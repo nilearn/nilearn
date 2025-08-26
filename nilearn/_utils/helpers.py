@@ -334,6 +334,7 @@ def check_copy_header(copy_header):
 
     """
     if not copy_header:
+        # TODO (nilearn 0.13.0)
         copy_header_default = (
             "From release 0.13.0 onwards, this function will, by default, "
             "copy the header of the input image to the output. "

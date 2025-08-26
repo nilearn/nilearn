@@ -2132,6 +2132,7 @@ def plot_img_comparison(
     """Redirect to plot_img_comparison."""
     from nilearn.plotting.img_comparison import plot_img_comparison
 
+    # TODO (nilearn >= 0.13.1)
     warnings.warn(
         (
             "The 'plot_img_comparison' has been moved to  "

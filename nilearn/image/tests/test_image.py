@@ -1505,6 +1505,7 @@ def test_binarize_img_no_userwarning(img_4d_rand_eye):
     ],
 )
 def test_warning_copy_header_false(request, func, input_img):
+    # TODO (nilearn 0.13.0)
     # Use the request fixture to get the actual fixture value
     actual_input_img = request.getfixturevalue(input_img)
     with pytest.warns(FutureWarning, match="From release 0.13.0 onwards*"):

@@ -336,6 +336,7 @@ def _resample_one_img(
 
 
 def _check_force_resample(force_resample):
+    # TODO (nilearn 0.13.0)
     if force_resample is None:
         force_resample = False
         warnings.warn(

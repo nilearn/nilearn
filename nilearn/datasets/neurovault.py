@@ -2927,6 +2927,7 @@ def fetch_neurovault_motor_task(
     """
     check_params(locals())
 
+    # TODO (nilearn >= 0.13.1)
     warnings.warn(
         (
             "The 'fetch_neurovault_motor_task' function will be removed "
