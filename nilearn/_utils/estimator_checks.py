@@ -142,7 +142,7 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
     valid : bool, default=True
         Whether to return only the valid checks or not.
     """
-    # TODO remove this function when dropping sklearn 1.5
+    # TODO (sklearn >= 1.6) remove this function
     if not SKLEARN_LT_1_6:  # pragma: no cover
         raise RuntimeError(
             "Use dedicated sklearn utilities to test estimators."
@@ -627,7 +627,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
     else:
         tags = estimator.__sklearn_tags__()
 
-    # TODO remove first if when dropping sklearn 1.5
+    # TODO (sklearn >= 1.6) simplify
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
         requires_y = isinstance(estimator, _BaseDecoder)
@@ -747,7 +747,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
 
 def get_tag(estimator: BaseEstimator, tag: str) -> bool:
     tags = estimator.__sklearn_tags__()
-    # TODO remove first if when dropping sklearn 1.5
+    # TODO (sklearn >= 1.6) simplify
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
         return tag in tags["X_types"]

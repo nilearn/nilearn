@@ -609,12 +609,12 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     @property
     def _is_classification(self) -> bool:
-        # TODO remove for sklearn>=1.6
+        # TODO (sklearn  >= 1.6) remove
         # this private method can probably be removed
         # when dropping sklearn>=1.5 and replaced by just:
         #   self.__sklearn_tags__().estimator_type == "classifier"
         if SKLEARN_LT_1_6:
-            # TODO remove for sklearn>=1.6
+            # TODO (sklearn  >= 1.6) remove
             return self._estimator_type == "classifier"
         return self.__sklearn_tags__().estimator_type == "classifier"
 
@@ -1095,7 +1095,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6) remove
         """
         return self.__sklearn_tags__()
 
@@ -1105,9 +1105,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
@@ -1301,13 +1299,13 @@ class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
             verbose=verbose,
             n_jobs=n_jobs,
         )
-        # TODO remove for sklearn>=1.6
+        # TODO (sklearn  >= 1.6) remove
         self._estimator_type = "classifier"
 
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6) remove
         """
         return self.__sklearn_tags__()
 
@@ -1317,9 +1315,7 @@ class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
         if SKLEARN_LT_1_6:
@@ -1481,13 +1477,13 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
             n_jobs=n_jobs,
         )
 
-        # TODO remove for sklearn>=1.6
+        # TODO (sklearn  >= 1.6) remove
         self._estimator_type = "regressor"
 
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6) remove
         """
         return self.__sklearn_tags__()
 
@@ -1497,9 +1493,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
         if SKLEARN_LT_1_6:
@@ -1690,7 +1684,7 @@ class FREMRegressor(_BaseDecoder):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6) remove
         """
         return self.__sklearn_tags__()
 
@@ -1700,9 +1694,7 @@ class FREMRegressor(_BaseDecoder):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
         if SKLEARN_LT_1_6:
@@ -1909,7 +1901,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6) remove
         """
         return self.__sklearn_tags__()
 
@@ -1919,9 +1911,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
         if SKLEARN_LT_1_6:
