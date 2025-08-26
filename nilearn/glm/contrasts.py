@@ -55,6 +55,7 @@ def expression_to_contrast_vector(expression, design_columns):
     return contrast_vector
 
 
+# TODO (nilearn >= 0.13.0)
 @rename_parameters(
     replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
 )
@@ -216,6 +217,7 @@ class Contrast:
         The maximum degrees of freedom of the residuals.
     """
 
+    # TODO (nilearn >= 0.13.0)
     @rename_parameters(
         replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
     )

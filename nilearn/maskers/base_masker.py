@@ -378,6 +378,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
+    # TODO (nilearn >= 0.13.0)
     @fill_doc
     @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit_transform(
@@ -625,6 +626,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return mask_img_
 
+    # TODO (nilearn >= 0.13.0)
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
@@ -701,6 +703,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # implemented in children classes
         raise NotImplementedError()
 
+    # TODO (nilearn >= 0.13.0)
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.0"
     )

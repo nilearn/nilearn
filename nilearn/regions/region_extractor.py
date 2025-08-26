@@ -508,6 +508,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.extractor = extractor
         self.smoothing_fwhm = smoothing_fwhm
 
+    # TODO (nilearn >= 0.13.0)
     @fill_doc
     @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit(self, imgs=None, y=None):

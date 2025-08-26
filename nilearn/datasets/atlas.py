@@ -2386,6 +2386,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     )
 
 
+# TODO (nilearn >= 0.13.1)
 @rename_parameters(
     replacement_params={"version": "atlas_type"}, end_version="0.13.1"
 )

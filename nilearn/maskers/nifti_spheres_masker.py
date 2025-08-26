@@ -542,6 +542,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         return embedded_images
 
+    # TODO (nilearn >= 0.13.0)
     @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit(
         self,
