@@ -27,6 +27,7 @@ from nilearn.plotting.surface._utils import (
     check_engine_params,
     check_surf_map,
     check_surface_plotting_inputs,
+    get_bg_data,
     get_faces_on_edge,
     sanitize_hemi_view,
 )
@@ -130,11 +131,7 @@ def _get_vertexcolor(
     darkness=None,
 ):
     """Get the color of the vertices."""
-    if bg_map is None:
-        bg_data = np.ones(len(surf_map)) * 0.5
-        bg_vmin, bg_vmax = 0, 1
-    else:
-        bg_data = np.copy(load_surf_data(bg_map))
+    bg_data = get_bg_data(bg_map, len(surf_map))
 
     # scale background map if need be
     bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
