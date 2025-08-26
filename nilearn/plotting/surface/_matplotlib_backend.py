@@ -142,10 +142,7 @@ def _get_vertexcolor(
     bg_data = get_bg_data(bg_map, len(surf_map))
 
     # scale background map if need be
-    bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
-    if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_data = bg_norm(bg_data)
+    bg_data = _normalize_bg_data(bg_data)
 
     if darkness is not None:
         bg_data *= darkness
