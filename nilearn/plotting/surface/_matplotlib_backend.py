@@ -158,17 +158,7 @@ def _get_vertexcolor(
 
     # scale background map if need be
     bg_data = _normalize_bg_data(bg_data)
-
-    if darkness is not None:
-        bg_data *= darkness
-        warn(
-            (
-                "The `darkness` parameter will be deprecated in release 0.13. "
-                "We recommend setting `darkness` to None"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
+    bg_data = _apply_darkness(bg_data, darkness)
 
     bg_colors = plt.get_cmap("Greys")(bg_data)
 
