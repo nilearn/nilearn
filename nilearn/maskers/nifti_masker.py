@@ -179,12 +179,12 @@ class NiftiMasker(BaseMasker):
 
     %(standardize_confounds)s
 
+    %(detrend)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
-
-    %(detrend)s
 
     %(low_pass)s
 
@@ -241,15 +241,16 @@ class NiftiMasker(BaseMasker):
 
     Attributes
     ----------
-    mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image`
-        The mask of the data, or the one computed from ``imgs`` passed to fit.
-        If a ``mask_img`` is passed at masker construction,
-        then ``mask_img_`` is the resulting binarized version of it
-        where each voxel is ``True`` if all values across samples
-        (for example across timepoints) is finite value different from 0.
-
     affine_ : 4x4 :obj:`numpy.ndarray`
         Affine of the transformed image.
+
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
+    %(nifti_mask_img_)s
+
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
@@ -284,8 +285,8 @@ class NiftiMasker(BaseMasker):
         mask_strategy="background",
         mask_args=None,
         dtype=None,
-        memory_level=1,
         memory=None,
+        memory_level=1,
         verbose=0,
         reports=True,
         cmap="gray",

@@ -105,13 +105,13 @@ class NiftiMapsMasker(BaseMasker):
         no resampling: if shapes and affines do not match, a ValueError is
         raised.
 
+    %(keep_masked_maps)s
+
     %(memory)s
 
     %(memory_level)s
 
     %(verbose0)s
-
-    %(keep_masked_maps)s
 
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
@@ -127,10 +127,16 @@ class NiftiMapsMasker(BaseMasker):
 
     Attributes
     ----------
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The maps mask of the data.
 
     %(nifti_mask_img_)s
+
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int`
         The number of overlapping maps in the mask.
