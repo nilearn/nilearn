@@ -95,13 +95,15 @@ def fetch_haxby(
             Paths to nifti with face-responsive brain regions.
 
         - 'mask_face_little': :obj:`list` of :obj:`str`.
-            Spatially more constrained version of the above.
+            Paths to nifti with face-responsive brain regions.
+            Spatially more constrained version of  ``mask_face``.
 
         - 'mask_house': :obj:`list` of :obj:`str`.
             Paths to nifti with house-responsive brain regions.
 
         - 'mask_house_little': :obj:`list` of :obj:`str`.
-            Spatially more constrained version of the above.
+            Paths to nifti with house-responsive brain regions.
+            Spatially more constrained version of ``mask_house``.
 
         - 't_r': :obj:`float`
             Repetition time of the functional data.
@@ -2866,13 +2868,13 @@ def fetch_spm_auditory(
         Dictionary-like object, the interest attributes are:
 
         - 'anat': :obj:`list` of :obj:`str`.
-            Path to anat image
+            Paths to anat images
 
         - 'func': :obj:`list` of :obj:`str`.
-            Path to functional image
+            Paths to functional images
 
         - 'events': :obj:`list` of :obj:`str`.
-            Path to events.tsv file
+            Paths to events.tsv files
 
         - 'description': :obj:`str`.
             Data description
