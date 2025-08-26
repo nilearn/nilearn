@@ -609,6 +609,20 @@ You can also use the ``rng`` fixture.
 
           # the rest of the test
 
+Reporting
+---------
+
+Nilearn can generate HTML reports
+to get an overview of the result of fitting a masker or a GLM.
+
+Nilearn uses the `tempita templating engine <https://github.com/TurboGears/tempita>`_
+to render those reports. The HTML template for those reports can be found in:
+``nilearn/reporting/data/html``.
+
+All reports uses the `pure CSS <https://pure-css.github.io/>`_ framework
+and any extra CSS can be found in ``nilearn/reporting/data/css``.
+
+
 Documentation
 -------------
 
