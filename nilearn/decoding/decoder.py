@@ -553,6 +553,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     %(verbose0)s
 
+    %(base_decoder_fit_attributes)s
+
     See Also
     --------
     nilearn.decoding.Decoder: Classification strategies for Neuroimaging,
@@ -641,8 +643,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         %(groups)s
 
-        %(base_decoder_fit_attributes)s
-
         """
         check_params(self.__dict__)
         self.estimator_ = _check_estimator(self.estimator)
@@ -719,21 +719,24 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             / 10000
         )
         if n_final_features < 50:
-            screening_percentile_msg = ""
-            if self.screening_percentile_ < 100:
-                screening_percentile_msg = (
-                    "Consider raising 'screening_percentile'"
-                )
-            clustering_percentile_msg = ""
-            if (
+            extra_msg = ""
+            screening_percentile_lt_100 = self.screening_percentile_ < 100
+            clustering_percentile_lt_100 = (
                 hasattr(self, "clustering_percentile")
                 and self._clustering_percentile < 100
-            ):
-                clustering_percentile_msg = " and / or 'clustering_percentile'"
+            )
+            if screening_percentile_lt_100 or clustering_percentile_lt_100:
+                extra_msg = "Consider raising "
+            if screening_percentile_lt_100:
+                extra_msg += "'screening_percentile' "
+                if clustering_percentile_lt_100:
+                    extra_msg += "and / or"
+            if clustering_percentile_lt_100:
+                extra_msg += "'clustering_percentile'"
             warning_msg = (
                 "The decoding model will be trained only "
                 f"on {n_final_features} features. "
-                f"{screening_percentile_msg}{clustering_percentile_msg}."
+                f"{extra_msg}."
             )
             warnings.warn(
                 warning_msg, UserWarning, stacklevel=find_stack_level()
@@ -764,29 +767,31 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             parallel_fit_outputs, y, n_problems
         )
 
+        classes_ = self.classes_ if self._is_classification else self._classes_
+
         # Build the final model (the aggregated one)
         if not isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
             self.coef_ = np.vstack(
                 [
                     np.mean(coefs[class_index], axis=0)
-                    for class_index in self.classes_
+                    for class_index in classes_
                 ]
             )
             self.std_coef_ = np.vstack(
                 [
                     np.std(coefs[class_index], axis=0)
-                    for class_index in self.classes_
+                    for class_index in classes_
                 ]
             )
             self.intercept_ = np.hstack(
                 [
                     np.mean(intercepts[class_index], axis=0)
-                    for class_index in self.classes_
+                    for class_index in classes_
                 ]
             )
 
             self.coef_img_, self.std_coef_img_ = self._output_image(
-                self.classes_, self.coef_, self.std_coef_
+                classes_, self.coef_, self.std_coef_
             )
 
             if self._is_classification and (self.n_classes_ == 2):
@@ -801,7 +806,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             self.dummy_output_ = np.vstack(
                 [
                     np.mean(self.dummy_output_[class_index], axis=0)
-                    for class_index in self.classes_
+                    for class_index in classes_
                 ]
             )
             if self._is_classification and (self.n_classes_ == 2):
@@ -903,6 +908,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             class would be predicted.
         """
         check_is_fitted(self)
+
         if not isinstance(X, np.ndarray):
             check_compatibility_mask_and_images(self.mask_img_, X)
 
@@ -976,7 +982,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         cv_scores = {}
         self.cv_params_ = {}
         self.dummy_output_ = {}
-        classes = self.classes_
+        classes = self.classes_ if self._is_classification else self._classes_
 
         for (
             class_index,
@@ -1211,12 +1217,6 @@ class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
 
     %(target_shape)s
 
-    %(low_pass)s
-
-    %(high_pass)s
-
-    %(t_r)s
-
     %(mask_strategy)s
 
         .. note::
@@ -1230,6 +1230,12 @@ class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
 
         Default='background'.
 
+    %(low_pass)s
+
+    %(high_pass)s
+
+    %(t_r)s
+
     %(memory)s
 
     %(memory_level)s
@@ -1237,6 +1243,14 @@ class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
     %(n_jobs)s
 
     %(verbose0)s
+
+    %(base_decoder_fit_attributes)s
+
+    classes_ : ndarray of labels (`n_classes_`)
+        Labels of the classes
+
+    n_classes_ : int
+        number of classes
 
     See Also
     --------
@@ -1388,12 +1402,6 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
 
     %(target_shape)s
 
-    %(low_pass)s
-
-    %(high_pass)s
-
-    %(t_r)s
-
     %(mask_strategy)s
 
         .. note::
@@ -1407,6 +1415,12 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
 
         Default='background'.
 
+    %(low_pass)s
+
+    %(high_pass)s
+
+    %(t_r)s
+
     %(memory)s
 
     %(memory_level)s
@@ -1414,6 +1428,8 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
     %(n_jobs)s
 
     %(verbose0)s
+
+    %(base_decoder_fit_attributes)s
 
     See Also
     --------
@@ -1514,11 +1530,9 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
 
         %(groups)s
 
-        %(base_decoder_fit_attributes)s
-
         """
         check_params(self.__dict__)
-        self.classes_ = ["beta"]
+        self._classes_ = ["beta"]
         return super().fit(X, y, groups=groups)
 
 
@@ -1592,9 +1606,6 @@ class FREMRegressor(_BaseDecoder):
     %(standardize)s
     %(target_affine)s
     %(target_shape)s
-    %(low_pass)s
-    %(high_pass)s
-    %(t_r)s
     %(mask_strategy)s
 
         .. note::
@@ -1607,10 +1618,15 @@ class FREMRegressor(_BaseDecoder):
             :func:`nilearn.masking.compute_brain_mask`.
 
         Default='background'.
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
     %(verbose0)s
+
+    %(base_decoder_fit_attributes)s
 
     References
     ----------
@@ -1718,11 +1734,9 @@ class FREMRegressor(_BaseDecoder):
 
         %(groups)s
 
-        %(base_decoder_fit_attributes)s
-
         """
         check_params(self.__dict__)
-        self.classes_ = ["beta"]
+        self._classes_ = ["beta"]
         super().fit(X, y, groups=groups)
         return self
 
@@ -1802,9 +1816,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
     %(standardize)s
     %(target_affine)s
     %(target_shape)s
-    %(low_pass)s
-    %(high_pass)s
-    %(t_r)s
+
     %(mask_strategy)s
 
         .. note::
@@ -1817,10 +1829,22 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             :func:`nilearn.masking.compute_brain_mask`.
 
         Default='background'.
+
+    %(low_pass)s
+    %(high_pass)s
+    %(t_r)s
     %(memory)s
     %(memory_level)s
     %(n_jobs)s
     %(verbose0)s
+
+    %(base_decoder_fit_attributes)s
+
+    classes_ : ndarray of labels (`n_classes_`)
+        Labels of the classes
+
+    n_classes_ : int
+        number of classes
 
     References
     ----------
