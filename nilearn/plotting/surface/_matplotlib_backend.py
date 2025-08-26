@@ -129,6 +129,21 @@ def _normalize_bg_data(bg_data):
     return bg_data
 
 
+# TODO (nilearn >= 0.13.0) remove
+def _apply_darkness(data, darkness):
+    if darkness is not None:
+        data *= darkness
+        warn(
+            (
+                "The `darkness` parameter will be deprecated in release 0.13. "
+                "We recommend setting `darkness` to None"
+            ),
+            DeprecationWarning,
+            stacklevel=find_stack_level(),
+        )
+    return data
+
+
 def _get_vertexcolor(
     surf_map,
     cmap,
