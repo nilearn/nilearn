@@ -1091,6 +1091,13 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             )
         return scores.ravel() if scores.shape[1] == 1 else scores
 
+    def _more_tags(self):
+        """Return estimator tags.
+
+        TODO remove when bumping sklearn_version > 1.5
+        """
+        return self.__sklearn_tags__()
+
     def __sklearn_tags__(self):
         """Return estimator tags.
 
@@ -1271,21 +1278,6 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             verbose=verbose,
             n_jobs=n_jobs,
         )
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        return super().__sklearn_tags__()
 
     def decision_function(self, X):
         """Predict class labels for samples in X.
@@ -1843,21 +1835,6 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         )
 
         self.clustering_percentile = clustering_percentile
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        return super().__sklearn_tags__()
 
     def decision_function(self, X):
         """Predict class labels for samples in X.
