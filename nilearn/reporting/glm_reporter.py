@@ -19,6 +19,7 @@ from typing import Union
 
 import numpy as np
 import pandas as pd
+import tempita
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import logger
@@ -30,7 +31,6 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._version import __version__
-from nilearn.externals import tempita
 from nilearn.glm import threshold_stats_img
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (

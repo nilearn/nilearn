@@ -2,9 +2,9 @@ import warnings
 
 import numpy as np
 import pandas as pd
+import tempita
 from matplotlib import pyplot as plt
 
-from nilearn.externals import tempita
 from nilearn.plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
@@ -25,7 +25,7 @@ def generate_design_matrices_figures(
     - convert it to bytes for insertion into HTML report
     - save it to disk if the appropriate "output" was passed
 
-    design_matrices_dict is a dict-like (tempita.bunc)
+    design_matrices_dict is a dict-like (tempita.bunch)
     that contains the figure (as bytes or relative path).
     A tempita bunch is used to facilitate injecting its content
     into HTML templates.

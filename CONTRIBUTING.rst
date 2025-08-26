@@ -613,7 +613,7 @@ Reporting
 ---------
 
 Nilearn can generate HTML reports
-to get an overview of the result of fitting a masker or a GLM.
+to get an overview of the result of a fitted masker or GLM.
 
 Nilearn uses the `tempita templating engine <https://github.com/TurboGears/tempita>`_
 to render those reports. The HTML template for those reports can be found in:

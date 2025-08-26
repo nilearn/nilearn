@@ -5,12 +5,12 @@ import warnings
 from string import Template
 
 import pandas as pd
+import tempita
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
-from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.reporting._utils import (
     dataframe_to_html,

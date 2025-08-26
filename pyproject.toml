@@ -30,6 +30,7 @@ dependencies = [
     "requests>=2.25.0",
     "scikit-learn>=1.4.0",
     "scipy>=1.8.0",
+    'tempita>=0.6.0',
     "packaging"
 ]
 description = "Statistical learning for neuroimaging in Python"
@@ -141,7 +142,6 @@ warn_unreachable = true
 [[tool.mypy.overrides]]
 ignore_errors = true
 module = [
-    "nilearn.externals.*",
     "nilearn._version"
 ]
 
@@ -163,7 +163,8 @@ module = [
     "scipy.*",
     "sklearn.*",
     "statsmodels.*",
-    "svg.*"
+    "svg.*",
+    "tempita.*"
 ]
 
 [tool.pytest.ini_options]
@@ -176,7 +177,6 @@ xfail_strict = true
 
 [tool.ruff]
 exclude = [
-    "nilearn/externals/*",
     "nilearn/_version.py"
 ]
 indent-width = 4

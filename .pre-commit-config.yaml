@@ -10,7 +10,6 @@ ci:
 exclude: |
     (?x)^(
         nilearn/datasets/tests/data/localizer_behavioural.tsv
-        | nilearn/externals/.*
         | nilearn/plotting/data/js/.*js
         | nilearn/_version.py
         | asv_benchmarks/asv.conf.json
