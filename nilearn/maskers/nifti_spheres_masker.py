@@ -277,7 +277,7 @@ class NiftiSpheresMasker(BaseMasker):
 
     %(verbose0)s
 
-    reports : boolean, default=True
+    reports : :obj:`bool`, default=True
          If set to True, data is saved in order to produce a report.
 
     %(clean_args)s

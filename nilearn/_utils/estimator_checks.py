@@ -1039,11 +1039,6 @@ def check_img_estimator_doc_attributes(estimator) -> None:
     - Fitted attributes (ending with a "_") should be documented.
     - All documented fitted attributes should exist after fit.
     """
-    if isinstance(estimator, BaseSpaceNet):
-        # TODO
-        # check BaseSpaceNet estimators later
-        return
-
     doc = NumpyDocString(estimator.__doc__)
     for section in ["Parameters", "Attributes"]:
         if section not in doc:

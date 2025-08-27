@@ -948,8 +948,7 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
     timeout : float, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
-    verbose : int, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     Returns
     -------
@@ -1055,8 +1054,7 @@ def _scroll_server_results(
     timeout : float, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
-    verbose : int, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     Yields
     ------
@@ -1119,8 +1117,7 @@ def _yield_from_url_list(url_list, timeout=_DEFAULT_TIME_OUT, verbose=3):
     timeout : float, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
-    verbose : int, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     Yields
     ------
@@ -1157,8 +1154,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
     temp_dir : pathlib.Path
         Location of sandbox directory used by ``fetch_single_file``.
 
-    verbose : int, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     Returns
     -------
@@ -1200,6 +1196,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
     return target_file
 
 
+@fill_doc
 def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     """Load Neurosynth data from disk into an (n images, voc size) matrix.
 
@@ -1214,8 +1211,7 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
         is supposed to contain the Neurosynth response for a
         particular image).
 
-    verbose : :obj:`int`, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     Keyword arguments are passed on to
     ``sklearn.feature_extraction.DictVectorizer``.
@@ -2603,8 +2599,7 @@ def fetch_neurovault(
     timeout : float, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
-    verbose : :obj:`int`, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     kwarg_image_filters
         Keyword arguments are understood to be filter terms for
@@ -2819,8 +2814,7 @@ def fetch_neurovault_ids(
     timeout : float, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
-    verbose : :obj:`int`, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     Returns
     -------

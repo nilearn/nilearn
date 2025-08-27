@@ -9,6 +9,7 @@ import numpy as np
 from scipy.ndimage import label
 from scipy.stats import norm
 
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn.image import get_data, math_img, threshold_img
@@ -109,6 +110,7 @@ def fdr_threshold(z_vals, alpha):
     return z_vals_[pos][-1] - 1.0e-12 if pos.any() else np.inf
 
 
+@fill_doc
 def cluster_level_inference(
     stat_img, mask_img=None, threshold=3.0, alpha=0.05, verbose=0
 ):
@@ -132,8 +134,7 @@ def cluster_level_inference(
         Level of control on the true positive rate, aka true discovery
         proportion.
 
-    verbose : :obj:`int` or :obj:`bool`, default=0
-        Verbosity mode.
+    %(verbose0)s
 
     Returns
     -------
