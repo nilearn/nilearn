@@ -1412,4 +1412,4 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         return X, y
 
     def _adapt_weights_y_mean_all_coef(self, w):
-        return w[0], self.y_mean_[0], np.array(self.all_coef_)
+        return w[0], self.ymean_[0], np.array(self.all_coef_)
