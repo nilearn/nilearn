@@ -249,6 +249,7 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
         penalty="tv-l1",
         max_iter=10,
         debias=debias,
+        verbose=0,
     ).fit(X, y)
 
 
@@ -362,6 +363,7 @@ def test_graph_net_classifier_score():
         tol=1e-10,
         standardize=False,
         screening_percentile=100.0,
+        verbose=0,
     ).fit(X_, y)
 
     accuracy = gnc.score(X_, y)

@@ -33,7 +33,7 @@ class _ClassifierMixin:
         if self.n_classes_ > 2:
             return self.n_classes_
         else:
-            return 2
+            return 1
 
     def _binarize_y(self, y):
         """Encode target classes as -1 and 1.

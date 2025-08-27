@@ -755,6 +755,10 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             loss = "logistic"
         return loss
 
+    def _binarize_y(self, y): ...
+
+    def _n_problems(self): ...
+
     def fit(self, X, y):
         """Fit the learner.
 
