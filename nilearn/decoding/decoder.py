@@ -20,7 +20,6 @@ from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
     MultiOutputMixin,
-    RegressorMixin,
     is_classifier,
 )
 from sklearn.dummy import DummyClassifier, DummyRegressor

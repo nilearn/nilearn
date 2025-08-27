@@ -1389,11 +1389,9 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
             positive=positive,
         )
 
-
     def _return_loss_value(self):
         """Return loss value.
 
         For SpaceNetRegressor it is always "mse".
         """
         return "mse"
-
