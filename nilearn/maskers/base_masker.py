@@ -281,7 +281,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -291,9 +291,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -380,6 +378,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
+    # TODO (nilearn >= 0.13.0)
     @fill_doc
     @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit_transform(
@@ -515,11 +514,12 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def _sanitize_cleaning_parameters(self):
         """Make sure that cleaning parameters are passed via clean_args.
 
-        TODO remove when bumping to nilearn >0.13
+        TODO (nilearn >= 0.13.0) remove
         """
         if hasattr(self, "clean_kwargs"):
             if self.clean_kwargs:
                 tmp = [", ".join(list(self.clean_kwargs))]
+                # TODO (nilearn >= 0.13.0)
                 warnings.warn(
                     f"You passed some kwargs to {self.__class__.__name__}: "
                     f"{tmp}. "
@@ -546,7 +546,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -556,8 +556,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -627,6 +626,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return mask_img_
 
+    # TODO (nilearn >= 0.13.0)
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
@@ -703,6 +703,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # implemented in children classes
         raise NotImplementedError()
 
+    # TODO (nilearn >= 0.13.0)
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.0"
     )

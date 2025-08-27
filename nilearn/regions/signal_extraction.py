@@ -168,6 +168,7 @@ def _get_labels_data(
 
     if keep_masked_labels:
         labels = list(np.unique(labels_data))
+        # TODO (nilearn >= 0.13.0)
         warnings.warn(
             'Applying "mask_img" before '
             "signal extraction may result in empty region signals in the "
@@ -328,6 +329,7 @@ def img_to_signals_labels(
         )
         return signals, labels, masked_atlas
     else:
+        # TODO (nilearn >= 0.14.0)
         warnings.warn(
             'After version 0.13. "img_to_signals_labels" will also return the '
             '"masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
@@ -488,6 +490,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
         )
         maps_mask = as_ndarray(maps_mask, dtype=bool)
         if keep_masked_maps:
+            # TODO (nilearn >= 0.13.0)
             warnings.warn(
                 'Applying "mask_img" before '
                 "signal extraction may result in empty region signals in the "

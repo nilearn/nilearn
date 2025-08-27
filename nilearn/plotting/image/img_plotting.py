@@ -1967,7 +1967,7 @@ def plot_carpet(
             img,
             interpolation="nearest",
             copy_header=True,
-            force_resample=False,  # TODO change to True in 0.13.0
+            force_resample=False,  # TODO (nilearn  >= 0.13.0) change to True
         )
         atlas_bin = math_img(
             f"img != {background_label}",
@@ -2132,6 +2132,7 @@ def plot_img_comparison(
     """Redirect to plot_img_comparison."""
     from nilearn.plotting.img_comparison import plot_img_comparison
 
+    # TODO (nilearn >= 0.13.1)
     warnings.warn(
         (
             "The 'plot_img_comparison' has been moved to  "

@@ -854,7 +854,7 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
         fetch_atlas_pauli_2017("junk for testing", data_dir)
 
 
-# TODO: remove this test after release 0.13.0
+# TODO (nilearn >= 0.13.0) remove this test
 def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
     """Tests nilearn.datasets.atlas.fetch_atlas_pauli_2017 to receive
     DepricationWarning upon use of deprecated version parameter and its

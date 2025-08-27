@@ -451,7 +451,7 @@ def check_params(fn_dict):
         type_to_check = TYPE_MAPS[k]
         value = fn_dict[k]
 
-        # TODO update when dropping python 3.9
+        # TODO (python 3.10) update when dropping python 3.9
         error_msg = (
             f"'{k}' should be of type '{type_to_check}'.\nGot: '{type(value)}'"
         )
