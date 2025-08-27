@@ -55,6 +55,7 @@ def expression_to_contrast_vector(expression, design_columns):
     return contrast_vector
 
 
+# TODO (nilearn >= 0.13.0)
 @rename_parameters(
     replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
 )
@@ -216,6 +217,7 @@ class Contrast:
         The maximum degrees of freedom of the residuals.
     """
 
+    # TODO (nilearn >= 0.13.0)
     @rename_parameters(
         replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
     )
@@ -265,6 +267,7 @@ class Contrast:
 
         .. deprecated:: 0.10.3
         """
+        # TODO (nilearn >= 0.13.0) deprecate
         attrib_deprecation_msg = (
             'The attribute "contrast_type" '
             "will be removed in 0.13.0 release of Nilearn. "
@@ -576,6 +579,7 @@ def compute_fixed_effects(
             fixed_fx_z_score_img,
         )
 
+    # TODO (nilearn >= 0.13.0)
     warn(
         category=DeprecationWarning,
         message="The behavior of this function will be "

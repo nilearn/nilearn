@@ -631,6 +631,7 @@ def test_vol_to_surf_nearest_deprecation(img_labels):
     """Test deprecation warning for nearest interpolation method in
     vol_to_surf.
     """
+    # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
     mesh = flat_mesh(5, 7)
     with pytest.warns(
         FutureWarning, match="interpolation method will be deprecated"

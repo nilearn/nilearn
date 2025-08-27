@@ -2362,6 +2362,7 @@ def fetch_language_localizer_demo_dataset(
 
     file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
     if legacy_output:
+        # TODO (nilearn >= 0.13.0)
         warnings.warn(
             category=DeprecationWarning,
             stacklevel=find_stack_level(),
@@ -2798,6 +2799,7 @@ def _download_spm_auditory_data(data_dir):
         return fetch_spm_auditory(data_dir=data_dir, data_name="")
 
 
+# (nilearn >= 0.13.0) remove subject_id
 @fill_doc
 @remove_parameters(
     removed_params=["subject_id"],
@@ -3005,6 +3007,7 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     return events
 
 
+# (nilearn >= 0.13.0) remove subject_id
 @fill_doc
 @remove_parameters(
     removed_params=["subject_id"],

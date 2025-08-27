@@ -745,7 +745,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -755,9 +755,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
@@ -1291,7 +1289,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         )
         self.loss = loss
 
-        # TODO remove for sklearn>=1.6
+        # TODO (sklearn  >= 1.6.0) remove
         self._estimator_type = "classifier"
 
     def _validate_loss(self, value):
@@ -1339,7 +1337,7 @@ class SpaceNetClassifier(BaseSpaceNet):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -1349,9 +1347,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
         if SKLEARN_LT_1_6:
@@ -1594,13 +1590,13 @@ class SpaceNetRegressor(BaseSpaceNet):
             verbose=verbose,
         )
 
-        # TODO remove for sklearn>=1.6
+        # TODO (sklearn  >= 1.6.0) remove
         self._estimator_type = "regressor"
 
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -1610,9 +1606,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
         if SKLEARN_LT_1_6:

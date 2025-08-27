@@ -76,6 +76,7 @@ def load_sample_motor_activation_image():
     """
     from .func import load_sample_motor_activation_image as tmp
 
+    # TODO (nilearn >= 0.13.0)
     warn(
         f"{_GENERAL_MESSAGE}"
         "Please import this function from 'nilearn.datasets.func' instead.",
