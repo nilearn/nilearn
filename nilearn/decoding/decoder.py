@@ -16,6 +16,7 @@ from collections.abc import Iterable
 
 import numpy as np
 from joblib import Parallel, delayed
+from nibabel import Nifti1Image
 from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
@@ -816,7 +817,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "coef_") and hasattr(self, "masker_")
 
-    def _prep_input_post_fit(self, X):
+    def _prep_input_post_fit(self, X) -> np.ndarray:
         """Apply masker transform if X is niimg-like or surface image.
 
         For backwards compatibility,
@@ -824,6 +825,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         """
         if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
             check_compatibility_mask_and_images(self.mask_img_, X)
+            if isinstance(X, Nifti1Image):
+                X = check_niimg(X)
             X = self.masker_.transform(X)
         return X
 
@@ -920,11 +923,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         # Prediction for dummy estimator is different from others as there is
         # no fitted coefficient
         if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
-            if isinstance(X, SurfaceImage):
-                n_samples = X.data.shape[1] if len(X.data.shape) == 2 else 1
-            else:
-                X = check_niimg(X)
-                n_samples = np.shape(X)[-1]
+            n_samples = X.shape[0]
             scores = self._predict_dummy(n_samples)
         else:
             scores = self._decision_function(X)
