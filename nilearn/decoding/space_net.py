@@ -13,6 +13,7 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy import stats
 from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
+from sklearn.base import is_classifier, is_regressor
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model._base import _preprocess_data as center_data
@@ -769,17 +770,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         tags.input_tags = InputTags(niimg_like=True, surf_img=False)
         return tags
 
-    @property
-    def _is_classification(self) -> bool:
-        # TODO remove for sklearn>=1.6
-        # this private method can probably be removed
-        # when dropping sklearn>=1.5 and replaced by just:
-        #   self.__sklearn_tags__().estimator_type == "classifier"
-        if SKLEARN_LT_1_6:
-            # TODO remove for sklearn>=1.6
-            return self._estimator_type == "classifier"
-        return self.__sklearn_tags__().estimator_type == "classifier"
-
     def _check_params(self):
         """Make sure parameters are sane."""
         if self.l1_ratios is not None:
@@ -810,7 +800,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 f"{self.SUPPORTED_PENALTIES}. "
                 f"Got {self.penalty}."
             )
-        if self._is_classification:
+        if is_classifier(self):
             self._validate_loss(self.loss)
 
     def _set_coef_and_intercept(self, w):
@@ -821,7 +811,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         if self.w_.ndim == 1:
             self.w_ = self.w_[np.newaxis, :]
         self.coef_ = self.w_[:, :-1]
-        if self._is_classification:
+        if is_classifier(self):
             self.intercept_ = self.w_[:, -1]
         else:
             self._set_intercept(self.Xmean_, self.ymean_, self.Xstd_)
@@ -834,7 +824,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         loss = getattr(self, "loss", None)
         if loss is None:
             loss = "logistic"
-            if not self._is_classification:
+            if is_regressor(self):
                 loss = "mse"
         return loss
 
@@ -881,10 +871,10 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             ["csr", "csc", "coo"],
             dtype=float,
             multi_output=True,
-            y_numeric=not self._is_classification,
+            y_numeric=is_regressor(self),
         )
 
-        if not self._is_classification and np.all(np.diff(y) == 0.0):
+        if is_regressor(self) and np.all(np.diff(y) == 0.0):
             raise ValueError(
                 "The given input y must have at least 2 targets"
                 " to do regression analysis. You provided only"
@@ -926,9 +916,9 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
         if case1 or case2:
             self.cv_ = list(
-                check_cv(
-                    self.cv, y=y, classifier=self._is_classification
-                ).split(X, y)
+                check_cv(self.cv, y=y, classifier=is_classifier(self)).split(
+                    X, y
+                )
             )
         else:
             # no cross-validation needed, user supplied all params
@@ -936,15 +926,11 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         n_folds = len(self.cv_)
 
         # number of problems to solve
-        y = (
-            self._binarize_y(y)
-            if self._is_classification
-            else y[:, np.newaxis]
-        )
+        y = self._binarize_y(y) if is_classifier(self) else y[:, np.newaxis]
 
         n_problems = (
             self.n_classes_
-            if self._is_classification and self.n_classes_ > 2
+            if is_classifier(self) and self.n_classes_ > 2
             else 1
         )
 
@@ -987,7 +973,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 solver_params,
                 n_alphas=self.n_alphas,
                 eps=self.eps,
-                is_classif=self._is_classification,
+                is_classif=is_classifier(self),
                 key=(cls, fold),
                 debias=self.debias,
                 verbose=self.verbose,
@@ -1010,7 +996,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.best_model_params_ = np.array(self.best_model_params_)
         self.alpha_grids_ = np.array(self.alpha_grids_)
         self.ymean_ /= n_folds
-        if not self._is_classification:
+        if is_regressor(self):
             self.all_coef_ = np.array(self.all_coef_)
             w = w[0]
             self.ymean_ = self.ymean_[0]
@@ -1067,7 +1053,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             )
 
         # handle regression (least-squared loss)
-        if not self._is_classification:
+        if is_regressor(self):
             return LinearRegression.predict(self, X)
 
         # prediction proper
