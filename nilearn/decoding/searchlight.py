@@ -70,10 +70,7 @@ def search_light(
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator or None, default=None
-        A cross-validation generator. If None, a 3-fold cross
-        validation is used or 3-fold stratified cross-validation
-        when y is supplied.
+    %(cvNone_3)s
 
     %(n_jobs_all)s
 

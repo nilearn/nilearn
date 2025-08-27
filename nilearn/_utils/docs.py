@@ -326,6 +326,7 @@ cv : cross-validation generator, :obj:`int` or None, default={}
 docdict["cv10"] = cv.format(10, 10)
 docdict["cv30"] = cv.format(30, 30)
 docdict["cv8_5"] = cv.format(8, 5)
+docdict["cvNone_3"] = cv.format("None", 3)
 
 # darkness
 docdict["darkness"] = """
