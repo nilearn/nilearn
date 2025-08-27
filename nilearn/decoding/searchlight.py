@@ -70,7 +70,7 @@ def search_light(
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator, default=None
+    cv : cross-validation generator or None, default=None
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
@@ -174,7 +174,7 @@ def _group_iter_search_light(
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator, optional
+    cv : cross-validation generator or None, default=None
         A cross-validation generator. If None, a 3-fold cross validation is
         used or 3-fold stratified cross-validation when y is supplied.
 
@@ -266,7 +266,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator, optional
+    cv : cross-validation generator or None, default=None
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
@@ -343,7 +343,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -353,9 +353,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
 
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
@@ -386,7 +384,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     @property
     def _estimator_type(self):
-        # TODO rm sklearn>=1.6
+        # TODO (sklearn >= 1.6.0) remove
         if self.estimator == "svr":
             return "regressor"
         elif self.estimator == "svc":

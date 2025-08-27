@@ -1,6 +1,6 @@
 """Utility to check dostrings.
 
-- checks donstrings of functions, classes and methods
+- checks docstrings of functions, classes and methods
 - checks for:
     - find missing :obj:`` in doc string type
     - if a function of class definition uses the fill_doc decorator properly

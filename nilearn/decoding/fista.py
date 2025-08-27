@@ -11,6 +11,7 @@ import numpy as np
 from scipy import linalg
 
 from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 
 
 def _check_lipschitz_continuous(
@@ -58,6 +59,7 @@ def _check_lipschitz_continuous(
                 raise RuntimeError(f"Counter example: ({x}, {y})")
 
 
+@fill_doc
 def mfista(
     f1_grad,
     f2_prox,
@@ -122,11 +124,9 @@ def mfista(
         Function called on every iteration. If it returns True, then the loop
         breaks.
 
-    max_iter : :obj:`int`, default=1000
-        Maximum number of iterations for the solver.
+    %(max_iter1000)s
 
-    verbose : :obj:`int`, default=2
-        Indicate the level of verbosity.
+    %(verbose2)s
 
     Returns
     -------

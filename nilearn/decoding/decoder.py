@@ -19,9 +19,7 @@ from joblib import Parallel, delayed
 from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
-    ClassifierMixin,
     MultiOutputMixin,
-    RegressorMixin,
 )
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
@@ -56,6 +54,7 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.maskers import SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
@@ -607,12 +606,12 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     @property
     def _is_classification(self) -> bool:
-        # TODO remove for sklearn>=1.6
+        # TODO (sklearn  >= 1.6.0) remove
         # this private method can probably be removed
         # when dropping sklearn>=1.5 and replaced by just:
         #   self.__sklearn_tags__().estimator_type == "classifier"
         if SKLEARN_LT_1_6:
-            # TODO remove for sklearn>=1.6
+            # TODO (sklearn  >= 1.6.0) remove
             return self._estimator_type == "classifier"
         return self.__sklearn_tags__().estimator_type == "classifier"
 
@@ -1098,7 +1097,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -1108,9 +1107,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
@@ -1126,29 +1123,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
 
 @fill_doc
-class _ClassifierMixin:
-    def decision_function(self, X):
-        """Predict class labels for samples in X.
-
-        Parameters
-        ----------
-        X : Niimg-like, :obj:`list` of either \
-            Niimg-like objects or :obj:`str` or path-like
-            See :ref:`extracting_data`.
-            Data on prediction is to be made. If this is a list,
-            the affine is considered the same for all.
-
-        Returns
-        -------
-        y_pred : :class:`numpy.ndarray`, shape (n_samples,)
-            Predicted class label per sample.
-        """
-        check_is_fitted(self)
-        return self._decision_function(X)
-
-
-@fill_doc
-class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
+class Decoder(_ClassifierMixin, _BaseDecoder):
     """A wrapper for popular classification strategies in neuroimaging.
 
     The `Decoder` object supports classification methods.
@@ -1297,40 +1272,29 @@ class Decoder(_ClassifierMixin, ClassifierMixin, _BaseDecoder):
             verbose=verbose,
             n_jobs=n_jobs,
         )
-        # TODO remove for sklearn>=1.6
-        self._estimator_type = "classifier"
 
-    def _more_tags(self):
-        """Return estimator tags.
+    def decision_function(self, X):
+        """Predict class labels for samples in X.
 
-        TODO remove when bumping sklearn_version > 1.5
+        Parameters
+        ----------
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like
+            See :ref:`extracting_data`.
+            Data on prediction is to be made. If this is a list,
+            the affine is considered the same for all.
+
+        Returns
+        -------
+        y_pred : :class:`numpy.ndarray`, shape (n_samples,)
+            Predicted class label per sample.
         """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            return tags
-
-        from sklearn.utils import ClassifierTags
-
-        tags.estimator_type = "classifier"
-        tags.classifier_tags = ClassifierTags()
-
-        return tags
+        check_is_fitted(self)
+        return self._decision_function(X)
 
 
 @fill_doc
-class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
+class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
     """A wrapper for popular regression strategies in neuroimaging.
 
     The `DecoderRegressor` object supports regression methods.
@@ -1470,13 +1434,10 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
             n_jobs=n_jobs,
         )
 
-        # TODO remove for sklearn>=1.6
-        self._estimator_type = "regressor"
-
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -1486,20 +1447,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            tags["multioutput"] = True
-            return tags
-        from sklearn.utils import RegressorTags
-
-        tags.estimator_type = "regressor"
-        tags.regressor_tags = RegressorTags()
-
-        return tags
+        return super().__sklearn_tags__()
 
     @fill_doc
     def fit(self, X, y, groups=None):
@@ -1526,7 +1474,7 @@ class DecoderRegressor(MultiOutputMixin, RegressorMixin, _BaseDecoder):
 
 
 @fill_doc
-class FREMRegressor(_BaseDecoder):
+class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
     """State of the art :term:`decoding` scheme applied \
        to usual regression estimators.
 
@@ -1668,13 +1616,10 @@ class FREMRegressor(_BaseDecoder):
 
         self.clustering_percentile = clustering_percentile
 
-        # TODO remove after sklearn>=1.6
-        self._estimator_type = "regressor"
-
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -1684,21 +1629,7 @@ class FREMRegressor(_BaseDecoder):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            tags["multioutput"] = True
-            return tags
-
-        from sklearn.utils import RegressorTags
-
-        tags.estimator_type = "regressor"
-        tags.regressor_tags = RegressorTags()
-
-        return tags
+        return super().__sklearn_tags__()
 
     @fill_doc
     def fit(self, X, y, groups=None):
@@ -1882,33 +1813,21 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
 
         self.clustering_percentile = clustering_percentile
 
-        # TODO remove after sklearn>=1.6
-        self._estimator_type = "classifier"
+    def decision_function(self, X):
+        """Predict class labels for samples in X.
 
-    def _more_tags(self):
-        """Return estimator tags.
+        Parameters
+        ----------
+        X : Niimg-like, :obj:`list` of either \
+            Niimg-like objects or :obj:`str` or path-like
+            See :ref:`extracting_data`.
+            Data on prediction is to be made. If this is a list,
+            the affine is considered the same for all.
 
-        TODO remove when bumping sklearn_version > 1.5
+        Returns
+        -------
+        y_pred : :class:`numpy.ndarray`, shape (n_samples,)
+            Predicted class label per sample.
         """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            return tags
-
-        from sklearn.utils import ClassifierTags
-
-        tags.estimator_type = "classifier"
-        tags.classifier_tags = ClassifierTags()
-
-        return tags
+        check_is_fitted(self)
+        return self._decision_function(X)

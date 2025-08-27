@@ -28,6 +28,15 @@ docdict = {}
 # Parameters definitions
 #
 
+# alphas
+docdict["alphas"] = """
+alphas : :obj:`float` or :obj:`list` of :obj:`float` or None, default=None
+    Choices for the constant that scales the overall regularization term.
+    This parameter is mutually exclusive with the `n_alphas` parameter.
+    If None or list of floats is provided, then the best value will be
+    selected by cross-validation.
+"""
+
 # annotate
 docdict["annotate"] = """
 annotate : :obj:`bool`, default=True
@@ -328,6 +337,12 @@ darkness : :obj:`float` between 0 and 1, optional
     - `0.5` indicates that the background values
         are reduced by half before being applied.
 
+"""
+
+# data_dir
+docdict["debias"] = """
+debias : :obj:`bool`, default=False
+    If set, then the estimated weights maps will be debiased.
 """
 
 # data_dir
@@ -725,6 +740,17 @@ docdict["masker_kwargs_"] = docdict["masker_kwargs"].replace(
     "kwargs : dict",
     "clean_kwargs_ : dict",
 )
+
+verbose = """
+max_iter : :obj:`int`, default={}
+    Maximum number of iterations for the solver.
+"""
+docdict["max_iter"] = verbose.format(200)
+docdict["max_iter10"] = verbose.format(10)
+docdict["max_iter50"] = verbose.format(50)
+docdict["max_iter100"] = verbose.format(100)
+docdict["max_iter1000"] = verbose.format(1000)
+docdict["max_iter1000"] = verbose.format(5000)
 
 # memory
 docdict["memory"] = """
@@ -1279,6 +1305,8 @@ verbose : :obj:`int`, default={}
 """
 docdict["verbose"] = verbose.format(1)
 docdict["verbose0"] = verbose.format(0)
+docdict["verbose2"] = verbose.format(2)
+docdict["verbose3"] = verbose.format(3)
 
 # view
 docdict["view"] = """
@@ -1483,6 +1511,83 @@ std_coef_img_ : :obj:`dict` of Nifti1Image
     In the case of a regression,
     it contains a single Nifti1Image at the key 'beta'.
     Ignored if Dummy estimators are provided.
+"""
+
+docdict["spacenet_fit_attributes"] = """
+Attributes
+----------
+all_coef_ : ndarray, shape (n_l1_ratios, n_folds, n_features)
+    Coefficients for all folds and features.
+
+alpha_grids_ : ndarray, shape (n_folds, n_alphas)
+    Alpha values considered for selection of the best ones
+    (saved in `best_model_params_`)
+
+best_model_params_ : ndarray, shape (n_folds, n_parameter)
+    Best model parameters (alpha, l1_ratio) saved for the different
+    cross-validation folds.
+
+coef_ : ndarray, shape\
+    (1, n_features) for 2 class classification problems\
+    (i.e n_classes = 2)\
+    (n_classes, n_features) for n_classes > 2
+    Coefficient of the features in the decision function.
+
+coef_img_ : nifti image
+    Masked model coefficients
+
+cv_ : list of pairs of lists
+    Each pair is the list of indices for the train and test samples
+    for the corresponding fold.
+
+cv_scores_ : ndarray, shape (n_folds, n_alphas)\
+    or (n_l1_ratios, n_folds, n_alphas)
+    Scores (misclassification) for each alpha, and on each fold
+
+intercept_ : narray, shape
+    (1,) for 2 class classification problems (i.e n_classes = 2)
+    (n_classes,) for n_classes > 2
+    Intercept (a.k.a. bias) added to the decision function.
+    It is available only when parameter intercept is set to True.
+
+mask_ : ndarray 3D
+    An array contains values of the mask image.
+
+masker_ : instance of NiftiMasker
+    The nifti masker used to mask the data.
+
+mask_img_ : Nifti like image
+    The mask of the data. If no mask was supplied by the user,
+    this attribute is the mask image computed automatically from the
+    data `X`.
+
+memory_ : joblib memory cache
+
+n_elements_ : :obj:`int`
+    The number of features in the mask.
+
+    .. versionadded:: 0.12.1dev
+
+screening_percentile_ : float
+    Screening percentile corrected according to volume of mask,
+    relative to the volume of standard brain.
+
+w_ : ndarray, shape
+    (1, n_features + 1) for 2 class classification problems
+    (i.e n_classes = 2)
+    (n_classes, n_features + 1) for n_classes > 2, and (n_features,)
+    for regression
+    Model weights
+
+Xmean_ : array, shape (n_features,)
+    Mean of X across samples
+
+Xstd_ : array, shape (n_features,)
+    Standard deviation of X across samples
+
+ymean_ : array, shape (n_samples,)
+    Mean of prediction targets
+
 """
 
 # dataset description

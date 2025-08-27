@@ -22,8 +22,7 @@ def check_memory(memory, verbose=0):
         Used to cache the masking process.
         If a str is given, it is the path to the caching directory.
 
-    verbose : int, default=0
-        Verbosity level.
+    %(verbose0)s
 
     Returns
     -------
