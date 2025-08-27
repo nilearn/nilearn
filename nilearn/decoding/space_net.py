@@ -3,6 +3,7 @@
 For example: TV-L1, Graph-Net, etc
 """
 
+import abc
 import collections
 import time
 import warnings
@@ -755,9 +756,15 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             loss = "logistic"
         return loss
 
-    def _binarize_y(self, y): ...
+    @abc.abstractmethod
+    def _n_problems(self):
+        # implemented in mixin classes
+        raise NotImplementedError()
 
-    def _n_problems(self): ...
+    @abc.abstractmethod
+    def _binarize_y(self, y):
+        # implemented in mixin classes
+        raise NotImplementedError()
 
     def fit(self, X, y):
         """Fit the learner.

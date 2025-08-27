@@ -7,7 +7,10 @@ from numpy.testing import assert_almost_equal
 from scipy import linalg
 
 from nilearn.decoding._objective_functions import divergence, gradient
-from nilearn.decoding.space_net import BaseSpaceNet
+from nilearn.decoding.space_net import (
+    SpaceNetClassifier,
+    SpaceNetRegressor,
+)
 from nilearn.decoding.space_net_solvers import (
     _graph_net_adjoint_data_function,
     _graph_net_data_function,
@@ -234,14 +237,15 @@ def test_logistic_derivative_lipschitz_constant(rng):
         assert gradient_difference <= lipschitz_constant * point_difference
 
 
+@pytest.mark.parametrize("estimator", [SpaceNetRegressor, SpaceNetClassifier])
 @pytest.mark.parametrize("l1_ratio", np.linspace(0.1, 1, 3))
-def test_max_alpha_squared_loss(l1_ratio):
+def test_max_alpha_squared_loss(estimator, l1_ratio):
     """Tests that models with L1 regularization over the theoretical bound \
     are full of zeros, for logistic regression.
     """
     X, y, _, _, mask_, X_ = _make_data()
 
-    reg = BaseSpaceNet(
+    reg = estimator(
         mask=mask_,
         max_iter=10,
         penalty="graph-net",
@@ -254,7 +258,8 @@ def test_max_alpha_squared_loss(l1_ratio):
     assert_almost_equal(reg.coef_, 0.0)
 
 
-def test_tikhonov_regularization_vs_graph_net():
+@pytest.mark.parametrize("estimator", [SpaceNetRegressor, SpaceNetClassifier])
+def test_tikhonov_regularization_vs_graph_net(estimator):
     """Test one of the extreme cases of Graph-Net.
 
     That is, with l1_ratio = 0 (pure Smooth),
@@ -269,7 +274,7 @@ def test_tikhonov_regularization_vs_graph_net():
         sp.linalg.pinv(np.dot(X.T, X) + y.size * np.dot(G.T, G)),
         np.dot(X.T, y),
     )
-    graph_net = BaseSpaceNet(
+    graph_net = estimator(
         mask=mask_,
         alphas=1.0 * X.shape[0],
         l1_ratios=0.0,

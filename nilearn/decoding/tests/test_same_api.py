@@ -20,7 +20,6 @@ from nilearn.decoding._objective_functions import (
     squared_loss_grad,
 )
 from nilearn.decoding.space_net import (
-    BaseSpaceNet,
     SpaceNetClassifier,
     SpaceNetRegressor,
 )
@@ -152,8 +151,17 @@ def test_graph_net_and_tvl1_same_for_pure_l1(max_iter=100, decimal=2):
     assert_array_almost_equal(a, b, decimal=decimal)
 
 
-@pytest.mark.parametrize("standardize", [True, False])
-def test_graph_net_and_tvl1_same_for_pure_l1_base_space_net(
+@pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
+@pytest.mark.parametrize(
+    "estimator, standardize",
+    [
+        (SpaceNetRegressor, True),
+        (SpaceNetRegressor, False),
+        (SpaceNetClassifier, True),
+    ],
+)
+def test_graph_net_and_tvl1_same_for_pure_l1_spacenet(
+    estimator,
     affine_eye,
     standardize,
     max_iter=100,
@@ -175,7 +183,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_base_space_net(
     mask = Nifti1Image(mask.astype(np.float64), affine_eye)
     X = Nifti1Image(X.astype(np.float64), affine_eye)
 
-    sl = BaseSpaceNet(
+    sl = estimator(
         alphas=alpha,
         l1_ratios=1.0,
         mask=mask,
@@ -184,7 +192,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_base_space_net(
         standardize=standardize,
         verbose=0,
     ).fit(X, y)
-    tvl1 = BaseSpaceNet(
+    tvl1 = estimator(
         alphas=alpha,
         l1_ratios=1.0,
         mask=mask,
@@ -225,9 +233,17 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
     assert_array_almost_equal(a, b, decimal=decimal)
 
 
-@pytest.mark.parametrize("standardize", [True, False])
+@pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
+@pytest.mark.parametrize(
+    "estimator, standardize",
+    [
+        (SpaceNetRegressor, True),
+        (SpaceNetRegressor, False),
+        (SpaceNetClassifier, True),
+    ],
+)
 def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
-    standardize, max_iter=20, decimal=2
+    estimator, standardize, max_iter=20, decimal=2
 ):
     """Check graph_net_solver and tvl1_solver should give same results \
     when l1_ratio = 1.
@@ -238,7 +254,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
     alpha = 1.0 / X.shape[0]
     X_, mask_ = to_niimgs(X, (2, 2, 2))
 
-    sl = SpaceNetClassifier(
+    sl = estimator(
         alphas=alpha,
         l1_ratios=1.0,
         max_iter=max_iter,
@@ -247,7 +263,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
         standardize=standardize,
         verbose=0,
     ).fit(X_, y)
-    tvl1 = SpaceNetClassifier(
+    tvl1 = estimator(
         alphas=alpha,
         l1_ratios=1.0,
         max_iter=max_iter,
@@ -260,8 +276,9 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic_spacenet_classifier(
     assert_array_almost_equal(sl.coef_[0], tvl1.coef_[0], decimal=decimal)
 
 
+@pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
 @pytest.mark.parametrize("standardize", [True, False])
-def test_graph_net_and_tv_same_for_pure_l1_another_test(
+def test_graph_net_and_tv_same_for_pure_l1_spacenet_regressor(
     standardize, decimal=1
 ):
     """Check that graph_net_solver and tvl1_solver give same results \
@@ -274,7 +291,7 @@ def test_graph_net_and_tv_same_for_pure_l1_another_test(
     l1_ratio = 1.0
     max_iter = 20
 
-    sl = BaseSpaceNet(
+    sl = SpaceNetRegressor(
         alphas=alpha,
         l1_ratios=l1_ratio,
         penalty="graph-net",
@@ -283,7 +300,7 @@ def test_graph_net_and_tv_same_for_pure_l1_another_test(
         standardize=standardize,
         verbose=0,
     ).fit(X, y)
-    tvl1 = BaseSpaceNet(
+    tvl1 = SpaceNetRegressor(
         alphas=alpha,
         l1_ratios=l1_ratio,
         penalty="tv-l1",

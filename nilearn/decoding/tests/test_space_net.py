@@ -30,7 +30,6 @@ from nilearn._utils.param_validation import (
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.decoding.space_net import (
-    BaseSpaceNet,
     SpaceNetClassifier,
     SpaceNetRegressor,
     _crop_mask,
@@ -242,7 +241,7 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
 
     alphas = [0.1, 1.0]
 
-    BaseSpaceNet(
+    SpaceNetRegressor(
         mask=mask,
         alphas=alphas,
         l1_ratios=l1_ratio,
@@ -254,7 +253,8 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
 
 
 @pytest.mark.parametrize("l1_ratio", [-2, 2])
-def test_base_estimator_invalid_l1_ratio(rng, l1_ratio):
+@pytest.mark.parametrize("estimator", [SpaceNetClassifier, SpaceNetRegressor])
+def test_base_estimator_invalid_l1_ratio(rng, l1_ratio, estimator):
     """Check that 0 < L1 ratio < 1."""
     dim = (4, 4, 4)
     W_init = np.zeros(dim)
@@ -267,7 +267,7 @@ def test_base_estimator_invalid_l1_ratio(rng, l1_ratio):
     X, _ = to_niimgs(X, dim)
 
     with pytest.raises(ValueError, match="l1_ratio must be in the interval"):
-        BaseSpaceNet(l1_ratios=l1_ratio).fit(X, y)
+        estimator(l1_ratios=l1_ratio).fit(X, y)
 
 
 def test_space_net_classifier_invalid_loss(rng):
@@ -312,7 +312,8 @@ def test_space_net_classifier_invalid_loss(rng):
 
 
 @pytest.mark.parametrize("penalty_wrong_case", ["Graph-Net", "TV-L1"])
-def test_string_params_case(rng, penalty_wrong_case):
+@pytest.mark.parametrize("estimator", [SpaceNetClassifier, SpaceNetRegressor])
+def test_string_params_case(rng, penalty_wrong_case, estimator):
     """Check value of penalty."""
     dim = (4, 4, 4)
     W_init = np.zeros(dim)
@@ -324,7 +325,7 @@ def test_string_params_case(rng, penalty_wrong_case):
     y = np.dot(X, W_init.ravel())
     X, _ = to_niimgs(X, dim)
     with pytest.raises(ValueError, match="'penalty' parameter .* be one of"):
-        BaseSpaceNet(penalty=penalty_wrong_case).fit(X, y)
+        estimator(penalty=penalty_wrong_case).fit(X, y)
 
 
 @pytest.mark.parametrize("l1_ratio", [0.01, 0.5, 0.99])
@@ -341,7 +342,7 @@ def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
     alpha = 1.0
     X, mask = to_niimgs(X, dim)
 
-    BaseSpaceNet(
+    SpaceNetRegressor(
         mask=mask,
         alphas=alpha,
         l1_ratios=l1_ratio,
@@ -423,7 +424,7 @@ def test_lasso_vs_graph_net():
     X, mask = to_niimgs(X_, [size] * 3)
 
     lasso = Lasso(max_iter=100, tol=1e-8)
-    graph_net = BaseSpaceNet(
+    graph_net = SpaceNetRegressor(
         mask=mask,
         alphas=1.0 * X_.shape[0],
         l1_ratios=1,
@@ -551,9 +552,7 @@ def test_targets_in_y_space_net_regressor():
 
 
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
-@pytest.mark.parametrize(
-    "model", [BaseSpaceNet, SpaceNetRegressor, SpaceNetClassifier]
-)
+@pytest.mark.parametrize("model", [SpaceNetRegressor, SpaceNetClassifier])
 def test_space_net_not_implemented_surface_objects(
     surf_mask_dim, surf_mask_1d, surf_mask_2d, surf_img_2d, model
 ):
