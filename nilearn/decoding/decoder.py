@@ -37,7 +37,6 @@ from sklearn.model_selection import (
     StratifiedShuffleSplit,
     check_cv,
 )
-from sklearn.preprocessing import LabelBinarizer
 from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
@@ -673,12 +672,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
-        y = self._binarize_y(y) if is_classifier(self) else y[:, np.newaxis]
-
-        if is_classifier(self) and self.n_classes_ > 2:
-            n_problems = self.n_classes_
-        else:
-            n_problems = 1
+        y = self._binarize_y(y)
+        n_problems = self._n_problems()
 
         # Check if the size of the mask image and the number of features allow
         # to perform feature screening.
@@ -1039,19 +1034,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             std_coef_img[class_index] = self.masker_.inverse_transform(std)
 
         return coef_img, std_coef_img
-
-    def _binarize_y(self, y):
-        """Encode target classes as -1 and 1.
-
-        Helper function invoked just before fitting a classifier.
-        """
-        y = np.array(y)
-
-        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
-        y = self._enc.fit_transform(y)
-        self.classes_ = self._enc.classes_
-        self.n_classes_ = len(self.classes_)
-        return y
 
     def _predict_dummy(self, n_samples):
         """Non-sparse scikit-learn based prediction steps for classification \

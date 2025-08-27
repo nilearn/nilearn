@@ -19,7 +19,6 @@ from sklearn.linear_model import LinearRegression
 from sklearn.linear_model._base import _preprocess_data as center_data
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import check_cv
-from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot
@@ -853,14 +852,10 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             self.cv_ = [(np.arange(n_samples), [])]
         n_folds = len(self.cv_)
 
-        # number of problems to solve
-        y = self._binarize_y(y) if is_classifier(self) else y[:, np.newaxis]
-
-        n_problems = (
-            self.n_classes_
-            if is_classifier(self) and self.n_classes_ > 2
-            else 1
-        )
+        # Define the number problems to solve. In case of classification this
+        # number corresponds to the number of binary problems to solve
+        y = self._binarize_y(y)
+        n_problems = self._n_problems()
 
         # standardize y
         self.ymean_ = np.zeros(y.shape[0])
@@ -1166,20 +1161,6 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     def _set_intercept(self):
         self.intercept_ = self.w_[:, -1]
-
-    def _binarize_y(self, y):
-        """Encode target classes as -1 and 1.
-
-        Helper function invoked just before fitting a classifier.
-        """
-        y = np.array(y)
-
-        # encode target classes as -1 and 1
-        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
-        y = self._enc.fit_transform(y)
-        self.classes_ = self._enc.classes_
-        self.n_classes_ = len(self.classes_)
-        return y
 
     def score(self, X, y):
         """Return the mean accuracy on the given test data and labels.
