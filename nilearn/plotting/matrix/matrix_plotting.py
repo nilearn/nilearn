@@ -265,6 +265,7 @@ def plot_matrix(
     return display
 
 
+# TODO (nilearn >= 0.13.0)
 @fill_doc
 @rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_contrast_matrix(
@@ -336,6 +337,7 @@ def plot_contrast_matrix(
     return save_figure_if_needed(axes, output_file)
 
 
+# TODO (nilearn >= 0.13.0)
 @fill_doc
 @rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_design_matrix(

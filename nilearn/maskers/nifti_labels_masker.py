@@ -222,7 +222,7 @@ class NiftiLabelsMasker(BaseMasker):
         reports=True,
         cmap="CMRmap_r",
         clean_args=None,
-        **kwargs,  # TODO remove when bumping to nilearn >0.13
+        **kwargs,  # TODO (nilearn >= 0.13.0) remove
     ):
         self.labels_img = labels_img
         self.background_label = background_label
@@ -247,7 +247,7 @@ class NiftiLabelsMasker(BaseMasker):
         self.dtype = dtype
         self.clean_args = clean_args
 
-        # TODO remove when bumping to nilearn >0.13
+        # TODO (nilearn >= 0.13.0) remove
         self.clean_kwargs = kwargs
 
         # Parameters for resampling
@@ -623,8 +623,7 @@ class NiftiLabelsMasker(BaseMasker):
         ):
             mask_logger("resample_mask", verbose=self.verbose)
 
-            # TODO switch to force_resample=True
-            # when bumping to version > 0.13
+            # TODO (nilearn >= 0.13.0) force_resample=True
             self.mask_img_ = self._cache(resample_img, func_memory_level=2)(
                 self.mask_img_,
                 interpolation="nearest",
@@ -817,7 +816,7 @@ class NiftiLabelsMasker(BaseMasker):
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
         params["clean_kwargs"] = self.clean_args_
-        # TODO remove in 0.13.0
+        # TODO (nilearn  >= 0.13.0) remove
         if self.clean_kwargs:
             params["clean_kwargs"] = self.clean_kwargs_
 

@@ -1534,6 +1534,7 @@ def test_handle_scrubbed_volumes_with_extrapolation():
 
     # Test cubic spline interpolation (enabled extrapolation) in the
     # very first n=5 samples of generated signal
+    # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
     extrapolate_warning = (
         "By default the cubic spline interpolator extrapolates "
         "the out-of-bounds censored volumes in the data run. This "

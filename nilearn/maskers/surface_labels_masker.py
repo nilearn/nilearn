@@ -277,6 +277,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         return region_ids_
 
+    # TODO (nilearn >= 0.13.0)
     @fill_doc
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.0"

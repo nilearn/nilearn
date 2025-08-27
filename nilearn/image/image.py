@@ -414,7 +414,7 @@ def crop_img(
         *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
 
     """
-    # TODO: remove this warning in 0.13.0
+    # TODO (nilearn >= 0.13.0) remove this warning
     check_copy_header(copy_header)
 
     img = check_niimg(img)
@@ -468,8 +468,7 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
         mean_data = mean_data.mean(axis=-1)
     else:
         mean_data = mean_data.copy()
-    # TODO switch to force_resample=True
-    # when bumping to version > 0.13
+    # TODO (nilearn >= 0.13.0) force_resample=True
     mean_data = resampling.resample_img(
         Nifti1Image(mean_data, affine),
         target_affine=target_affine,
@@ -575,7 +574,7 @@ def mean_img(
         all_means = concat_imgs([_compute_surface_mean(x) for x in imgs])
         return _compute_surface_mean(all_means)
 
-    # TODO: remove this warning in 0.13.0
+    # TODO (nilearn >= 0.13.0) remove this warning
     check_copy_header(copy_header)
 
     imgs = stringify_path(imgs)
@@ -1089,7 +1088,7 @@ def threshold_img(
         cluster_threshold = 0
 
     if isinstance(img, NiimgLike):
-        # TODO: remove this warning in 0.13.0
+        # TODO (nilearn >= 0.13.0) remove this warning
         check_copy_header(copy_header)
 
         img = check_niimg(img)
@@ -1107,8 +1106,7 @@ def threshold_img(
         if isinstance(mask_img, NiimgLike):
             mask_img = check_niimg_3d(mask_img)
             if not check_same_fov(img, mask_img):
-                # TODO switch to force_resample=True
-                # when bumping to version > 0.13
+                # TODO (nilearn >= 0.13.0) force_resample=True
                 mask_img = resample_img(
                     mask_img,
                     target_affine=affine,

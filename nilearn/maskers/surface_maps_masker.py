@@ -157,6 +157,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
+    # TODO (nilearn >= 0.13.0)
     @fill_doc
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.0"

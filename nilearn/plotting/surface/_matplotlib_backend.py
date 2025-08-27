@@ -144,6 +144,7 @@ def _get_vertexcolor(
 
     if darkness is not None:
         bg_data *= darkness
+        # TODO (nilearn >= 0.13.0)
         warn(
             (
                 "The `darkness` parameter will be deprecated in release 0.13. "
@@ -259,6 +260,7 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
 
     if darkness is not None:
         bg_faces *= darkness
+        # TODO (nilearn >= 0.13.0)
         warn(
             (
                 "The `darkness` parameter will be deprecated in release 0.13. "

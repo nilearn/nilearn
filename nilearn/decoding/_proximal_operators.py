@@ -118,8 +118,7 @@ def prox_tvl1(
         specified, this specifies a stopping criterion on x, rather than
         the dual gap.
 
-    max_iter : int, optional
-        Maximal number of iterations used for the optimization.
+    %(max_iter)s
 
     val_min : None or float, optional
         An optional lower bound constraint on the reconstructed image.
@@ -127,8 +126,7 @@ def prox_tvl1(
     val_max : None or float, optional
         An optional upper bound constraint on the reconstructed image.
 
-    verbose : int or bool, optional
-        If True or 1, print the dual gap of the optimization
+    %(verbose)s
 
     fista : bool, optional
         If True, uses a FISTA loop to perform the optimization.
@@ -318,11 +316,9 @@ def prox_tvl1_with_intercept(
     init : ndarray, shape (w_size - 1,), default=None
         Initialization vector for the prox.
 
-    max_iter : int
-        Maximum number of iterations for the solver.
+    %(max_iter5000)s
 
-    verbose : int or bool, optional
-        If True or 1, print the dual gap of the optimization
+    %(verbose)s
 
     dgap_tol : float
         Dual-gap tolerance for TV-L1 prox operator approximation loop.
