@@ -807,17 +807,19 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
         X, y = self._check_x_y(X, y)
 
-        # misc
         self.Xmean_ = X.mean(axis=0)
+
         self.Xstd_ = X.std(axis=0)
         self.Xstd_[self.Xstd_ < 1e-8] = 1
+
         self.mask_img_ = self.masker_.mask_img_
+
         self.mask_ = get_data(self.mask_img_).astype(bool)
-        n_samples, _ = X.shape
-        y = np.array(y).copy()
+
         l1_ratios = self.l1_ratios
         if not isinstance(l1_ratios, collections.abc.Iterable):
             l1_ratios = [l1_ratios]
+
         alphas = self.alphas
         if alphas is not None and not isinstance(
             alphas, collections.abc.Iterable
@@ -837,6 +839,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         else:
             solver = partial(tvl1_solver, loss="logistic")
 
+        y = np.array(y).copy()
+
         # generate fold indices
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
         case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
@@ -848,6 +852,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             )
         else:
             # no cross-validation needed, user supplied all params
+            n_samples, _ = X.shape
             self.cv_ = [(np.arange(n_samples), [])]
 
         # Define the number problems to solve. In case of classification this
