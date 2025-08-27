@@ -634,6 +634,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
     else:
         requires_y = getattr(tags.target_tags, "required", False)
 
+    yield (clone(estimator), check_tags)
     yield (clone(estimator), check_transformer_set_output)
 
     if isinstance(estimator, CacheMixin):
@@ -875,6 +876,14 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
 
 
 # ------------------ GENERIC CHECKS ------------------
+
+
+def check_tags(estimator):
+    """Check tags are the same with old and new methods.
+
+    TODO (sklearn >= 1.6) remove this check when bumping sklearn above 1.5
+    """
+    assert estimator._more_tags() == estimator.__sklearn_tags__()
 
 
 def _check_mask_img_(estimator):
