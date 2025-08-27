@@ -310,7 +310,7 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
 
 """
 
-# darkness
+# cross-validation
 cv = """
 cv : cross-validation generator, :obj:`int` or None, default={}
     A cross-validation generator.
