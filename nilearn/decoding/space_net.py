@@ -927,9 +927,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.best_model_params_ = np.array(self.best_model_params_)
         self.alpha_grids_ = np.array(self.alpha_grids_)
 
-        w, self.ymean_, self.all_coef_ = self._adapt_weights_y_mean_all_coef(
-            w, n_folds
-        )
+        self.ymean_ /= n_folds
+        w, self.ymean_, self.all_coef_ = self._adapt_weights_y_mean_all_coef(w)
 
         # bagging: average best weights maps over folds
         w /= n_folds
@@ -951,8 +950,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
         return self
 
-    def _adapt_weights_y_mean_all_coef(self, w, n_folds):
-        return w, self.ymean_ / n_folds, self.all_coef_
+    def _adapt_weights_y_mean_all_coef(self, w):
+        return w, self.ymean_, self.all_coef_
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "masker_")
@@ -1387,6 +1386,5 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         """
         return "mse"
 
-    def _adapt_weights_y_mean_all_coef(self, w, n_folds):
-        w, y_mean_, all_coef_ = super()._adapt_weights_and_y_means_(w, n_folds)
-        return w[0], y_mean_[0], np.array(all_coef_)
+    def _adapt_weights_y_mean_all_coef(self, w):
+        return w[0], self.y_mean_[0], np.array(self.all_coef_)
