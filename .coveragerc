@@ -2,6 +2,5 @@
 branch = True
 parallel = True
 omit =
-    */nilearn/externals/*
     */nilearn/datasets/data/convert_templates.py
     */nilearn/plotting/glass_brain_files/*

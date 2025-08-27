@@ -17,8 +17,6 @@ ignore: # A list of paths or files which Sourcery will ignore.
 -   examples
 -   maint_tools
 -   nilearn/_version.py
--   nilearn/externals/tempita/
--   nilearn/externals/tempita/__init__.py
 -   nilearn/plotting/data/js/*.js
 
 rule_settings:
