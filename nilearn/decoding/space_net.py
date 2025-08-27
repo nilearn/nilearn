@@ -792,9 +792,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 "Running space net on surface objects is not supported."
             )
 
-        # misc
-        self._check_params()
-
         self._fit_cache()
 
         tic = time.time()
@@ -930,11 +927,9 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.best_model_params_ = np.array(self.best_model_params_)
         self.alpha_grids_ = np.array(self.alpha_grids_)
 
-        self.ymean_ /= n_folds
-        if is_regressor(self):
-            self.all_coef_ = np.array(self.all_coef_)
-            w = w[0]
-            self.ymean_ = self.ymean_[0]
+        w, self.ymean_, self.all_coef_ = self._adapt_weights_y_mean_all_coef(
+            w, n_folds
+        )
 
         # bagging: average best weights maps over folds
         w /= n_folds
@@ -955,6 +950,9 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         )
 
         return self
+
+    def _adapt_weights_y_mean_all_coef(self, w, n_folds):
+        return w, self.ymean_ / n_folds, self.all_coef_
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "masker_")
@@ -1388,3 +1386,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         For SpaceNetRegressor it is always "mse".
         """
         return "mse"
+
+    def _adapt_weights_y_mean_all_coef(self, w, n_folds):
+        w, y_mean_, all_coef_ = super()._adapt_weights_and_y_means_(w, n_folds)
+        return w[0], y_mean_[0], np.array(all_coef_)
