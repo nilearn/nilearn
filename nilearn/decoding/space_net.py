@@ -800,8 +800,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 f"{self.SUPPORTED_PENALTIES}. "
                 f"Got {self.penalty}."
             )
-        if is_classifier(self):
-            self._validate_loss(self.loss)
 
     def _set_coef_and_intercept(self, w):
         """Set the loadings vector (coef) and the intercept of the fitted \
@@ -811,21 +809,16 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         if self.w_.ndim == 1:
             self.w_ = self.w_[np.newaxis, :]
         self.coef_ = self.w_[:, :-1]
-        if is_classifier(self):
-            self.intercept_ = self.w_[:, -1]
-        else:
-            self._set_intercept(self.Xmean_, self.ymean_, self.Xstd_)
+        self._set_intercept()
+
+    def _set_intercept(self):
+        super()._set_intercept(self.Xmean_, self.ymean_, self.Xstd_)
 
     def _return_loss_value(self):
-        """Set loss value for instances where it is not defined.
-
-        For SpaceNetRegressor it is always "mse".
-        """
+        """Set loss value for instances where it is not defined."""
         loss = getattr(self, "loss", None)
         if loss is None:
             loss = "logistic"
-            if is_regressor(self):
-                loss = "mse"
         return loss
 
     def fit(self, X, y):
@@ -1285,6 +1278,13 @@ class SpaceNetClassifier(BaseSpaceNet):
                 f"Got {value}."
             )
 
+    def _check_params(self):
+        super()._check_params()
+        self._validate_loss(self.loss)
+
+    def _set_intercept(self):
+        self.intercept_ = self.w_[:, -1]
+
     def _binarize_y(self, y):
         """Encode target classes as -1 and 1.
 
@@ -1605,3 +1605,10 @@ class SpaceNetRegressor(BaseSpaceNet):
         tags.regressor_tags = RegressorTags()
 
         return tags
+
+    def _return_loss_value(self):
+        """Return loss value.
+
+        For SpaceNetRegressor it is always "mse".
+        """
+        return "mse"
