@@ -108,6 +108,7 @@ if SKLEARN_LT_1_6:
     def test_check_estimator_sklearn_invalid(estimator, check, name):
         """Check compliance with sklearn estimators."""
         check(estimator)
+
 else:
 
     @parametrize_with_checks(

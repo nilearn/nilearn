@@ -4,8 +4,7 @@ from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 class _ClassifierMixin:
-    # TODO remove for sklearn>=1.6
-    _estimator_type = "classifier"
+    _estimator_type = "classifier"  # TODO (sklearn >= 1.6) remove
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -13,9 +12,8 @@ class _ClassifierMixin:
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn >= 1.6) get rid of if block
+        # when bumping sklearn_version > 1.5
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
         if SKLEARN_LT_1_6:
@@ -30,8 +28,7 @@ class _ClassifierMixin:
 
 
 class _RegressorMixin:
-    # TODO remove for sklearn>=1.6
-    _estimator_type = "regressor"
+    _estimator_type = "regressor"  # TODO (sklearn >= 1.6) remove
 
     def __sklearn_tags__(self):
         """Return estimator tags.
@@ -39,9 +36,8 @@ class _RegressorMixin:
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn >= 1.6) get rid of if block
+        # when bumping sklearn_version > 1.5
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         tags = super().__sklearn_tags__()
         if SKLEARN_LT_1_6:
