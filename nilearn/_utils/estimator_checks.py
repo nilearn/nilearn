@@ -634,6 +634,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
     else:
         requires_y = getattr(tags.target_tags, "required", False)
 
+    yield (clone(estimator), check_tags)
     yield (clone(estimator), check_transformer_set_output)
 
     if isinstance(estimator, CacheMixin):
@@ -877,6 +878,14 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
 # ------------------ GENERIC CHECKS ------------------
 
 
+def check_tags(estimator):
+    """Check tags are the same with old and new methods.
+
+    TODO (sklearn >= 1.6) remove this check when bumping sklearn above 1.5
+    """
+    assert estimator._more_tags() == estimator.__sklearn_tags__()
+
+
 def _check_mask_img_(estimator):
     if accept_niimg_input(estimator):
         assert isinstance(estimator.mask_img_, Nifti1Image)
@@ -1030,11 +1039,6 @@ def check_img_estimator_doc_attributes(estimator) -> None:
     - Fitted attributes (ending with a "_") should be documented.
     - All documented fitted attributes should exist after fit.
     """
-    if isinstance(estimator, BaseSpaceNet):
-        # TODO
-        # check BaseSpaceNet estimators later
-        return
-
     doc = NumpyDocString(estimator.__doc__)
     for section in ["Parameters", "Attributes"]:
         if section not in doc:
