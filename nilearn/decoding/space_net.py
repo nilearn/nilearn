@@ -850,7 +850,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         else:
             # no cross-validation needed, user supplied all params
             self.cv_ = [(np.arange(n_samples), [])]
-        n_folds = len(self.cv_)
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
@@ -863,6 +862,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             y = y[:, 0]
 
         # scores & mean weights map over all folds
+        n_folds = len(self.cv_)
         self.cv_scores_ = [[] for _ in range(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
@@ -918,6 +918,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.cv_scores_ = np.array(self.cv_scores_)
         self.best_model_params_ = np.array(self.best_model_params_)
         self.alpha_grids_ = np.array(self.alpha_grids_)
+
         self.ymean_ /= n_folds
         if is_regressor(self):
             self.all_coef_ = np.array(self.all_coef_)
