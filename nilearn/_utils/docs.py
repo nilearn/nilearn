@@ -302,6 +302,23 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
 """
 
 # darkness
+cv = """
+cv : cross-validation generator, :obj:`int` or None, default={}
+    A cross-validation generator.
+    See: https://scikit-learn.org/stable/modules/cross_validation.html.
+    If None is passed, cv={} will be used.
+    It can be an integer, in which case it is the number of folds in a
+    KFold using :class:`~sklearn.model_selection.StratifiedKFold`
+    when groups is None in the ``fit`` method for this class.
+    If groups is specified but ``cv``
+    is not set to custom CV splitter, default is
+    :class:`~sklearn.model_selection.LeaveOneGroupOut`.
+"""
+docdict["cv10"] = cv.format(10, 10)
+docdict["cv30"] = cv.format(30, 30)
+docdict["cv8_5"] = cv.format(8, 5)
+
+# darkness
 docdict["darkness"] = """
 darkness : :obj:`float` between 0 and 1, optional
     Specifying the darkness of the background image:

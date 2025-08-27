@@ -603,11 +603,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     %(n_jobs)s
     %(memory)s
     %(memory_level1)s
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+
+    %(cv8_5)s
 
     debias : :obj:`bool`, default=False
         If set, then the estimated weights maps will be debiased.
@@ -1149,11 +1146,8 @@ class SpaceNetClassifier(BaseSpaceNet):
     %(n_jobs)s
     %(memory)s
     %(memory_level1)s
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+
+    %(cv8_5)s
 
     debias : :obj:`bool`, default=False
         If set, then the estimated weights maps will be debiased.
@@ -1470,11 +1464,8 @@ class SpaceNetRegressor(BaseSpaceNet):
     %(n_jobs)s
     %(memory)s
     %(memory_level1)s
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+
+    %(cv8_5)s
 
     debias : :obj:`bool`, default=False
         If set, then the estimated weights maps will be debiased.
