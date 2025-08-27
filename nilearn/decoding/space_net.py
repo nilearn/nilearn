@@ -766,6 +766,11 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         # implemented in mixin classes
         raise NotImplementedError()
 
+    @abc.abstractmethod
+    def _check_x_y(self, X, y):
+        # implemented in children classes
+        raise NotImplementedError()
+
     def fit(self, X, y):
         """Fit the learner.
 
@@ -800,21 +805,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.masker_.memory_level = self.memory_level
         X = self.masker_.fit_transform(X)
 
-        X, y = check_X_y(
-            X,
-            y,
-            ["csr", "csc", "coo"],
-            dtype=float,
-            multi_output=True,
-            y_numeric=is_regressor(self),
-        )
-
-        if is_regressor(self) and np.all(np.diff(y) == 0.0):
-            raise ValueError(
-                "The given input y must have at least 2 targets"
-                " to do regression analysis. You provided only"
-                f" one target {np.unique(y)}"
-            )
+        X, y = self._check_x_y(X, y)
 
         # misc
         self.Xmean_ = X.mean(axis=0)
@@ -1168,6 +1159,16 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         super()._check_params()
         self._validate_loss(self.loss)
 
+    def _check_x_y(self, X, y):
+        return check_X_y(
+            X,
+            y,
+            ["csr", "csc", "coo"],
+            dtype=float,
+            multi_output=True,
+            y_numeric=False,
+        )
+
     def _set_intercept(self):
         self.intercept_ = self.w_[:, -1]
 
@@ -1385,6 +1386,25 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         For SpaceNetRegressor it is always "mse".
         """
         return "mse"
+
+    def _check_x_y(self, X, y):
+        X, y = check_X_y(
+            X,
+            y,
+            ["csr", "csc", "coo"],
+            dtype=float,
+            multi_output=True,
+            y_numeric=True,
+        )
+
+        if np.all(np.diff(y) == 0.0):
+            raise ValueError(
+                "The given input y must have at least 2 targets"
+                " to do regression analysis. You provided only"
+                f" one target {np.unique(y)}"
+            )
+
+        return X, y
 
     def _adapt_weights_y_mean_all_coef(self, w):
         return w[0], self.y_mean_[0], np.array(self.all_coef_)
