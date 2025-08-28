@@ -2,7 +2,6 @@
 
 import warnings
 from copy import copy as copy_object
-from functools import partial
 
 import numpy as np
 from joblib import Memory
@@ -54,11 +53,11 @@ def _get_mask_strategy(strategy):
     elif strategy == "epi":
         return compute_epi_mask
     elif strategy == "whole-brain-template":
-        return partial(compute_brain_mask, mask_type="whole-brain")
+        return _make_brain_mask_func("whole-brain")
     elif strategy == "gm-template":
-        return _partial_compute_brain_mask_gm
+        return _make_brain_mask_func("gm")
     elif strategy == "wm-template":
-        return partial(compute_brain_mask, mask_type="wm")
+        return _make_brain_mask_func("wm")
     else:
         raise ValueError(
             f"Unknown value of mask_strategy '{strategy}'. "
@@ -67,20 +66,33 @@ def _get_mask_strategy(strategy):
             "'gm-template', and "
             "'wm-template'."
         )
+
+def _make_brain_mask_func(mask_type):
+    """Generate a compute_brain_mask function adapted for each mask.
     
-def _partial_compute_brain_mask_gm(target_img,
-    threshold,
-    connected,
-    opening,
-    memory,
-    verbose):
-    return compute_brain_mask_gm(target_img,
-    threshold,
-    connected,
-    opening,
-    memory,
-    verbose,
-    mask_type="gm")
+    This is done instead of using functools.partial because
+    joblib does not play well with partials.
+
+    See: https://github.com/nilearn/nilearn/issues/5527
+    """
+    def _compute(
+        target_img,
+        threshold=0.5,
+        connected=True,
+        opening=2,
+        memory=None,
+        verbose=0,
+    ):
+        return compute_brain_mask(
+            target_img,
+            threshold,
+            connected,
+            opening,
+            memory,
+            verbose,
+            mask_type=mask_type,
+        )
+    return _compute
 
 
 def filter_and_mask(

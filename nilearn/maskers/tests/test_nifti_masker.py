@@ -335,10 +335,9 @@ def expected_mask(mask_args):
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
-@pytest.mark.parametrize("mask_args", [{}])
-def test_compute_brain_mask_empty_mask_error(strategy, mask_args):
+def test_compute_brain_mask_empty_mask_error(strategy):
     """Check masker raise error when estimated mask is empty."""
-    masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
+    masker = NiftiMasker(mask_strategy=strategy, mask_args={})
 
     img, _ = data_gen.generate_random_img((9, 9, 5))
 
@@ -350,10 +349,9 @@ def test_compute_brain_mask_empty_mask_error(strategy, mask_args):
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
-@pytest.mark.parametrize("mask_args", [{"threshold": 0.0}])
-def test_compute_brain_mask(strategy, expected_mask, mask_args):
+def test_compute_brain_mask(strategy, expected_mask):
     """Check masker for template masking strategy."""
-    masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
+    masker = NiftiMasker(mask_strategy=strategy, mask_args={"threshold": 0.0})
     img, _ = data_gen.generate_random_img((9, 9, 5))
 
     masker.fit(img)
@@ -364,8 +362,7 @@ def test_compute_brain_mask(strategy, expected_mask, mask_args):
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
-@pytest.mark.parametrize("mask_args", [{"threshold": 0.0}])
-def test_no_warning_partial_joblib(strategy, mask_args):
+def test_no_warning_partial_joblib(strategy):
     """Check no warning thrown by joblib regarding masking strategy.
 
     Regression test for:
@@ -373,7 +370,7 @@ def test_no_warning_partial_joblib(strategy, mask_args):
     """
     masker = NiftiMasker(
         mask_strategy=strategy,
-        mask_args=mask_args,
+        mask_args={"threshold": 0.0},
         memory="nilearn_cache",
         memory_level=1,
     )
