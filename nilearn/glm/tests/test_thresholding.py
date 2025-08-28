@@ -420,7 +420,7 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
         result.data.parts["right"], np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
     )
 
-    
+
 @pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_deprecation_threshold(surf_img_1d, height_control, threshold):
@@ -466,4 +466,3 @@ def test_deprecation_threshold_cluster_level_inference(
         assert n_warnings == 1
     else:
         assert n_warnings == 0
-

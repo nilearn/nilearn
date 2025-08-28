@@ -233,7 +233,6 @@ def make_glm_report(
         height_control=height_control,
     )
 
-
     unique_id = str(uuid.uuid4()).replace("-", "")
 
     title = f"<br>{title}" if title else ""
