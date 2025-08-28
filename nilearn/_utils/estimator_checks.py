@@ -1885,15 +1885,12 @@ def check_decoder_with_arrays(estimator_orig):
             continue
 
         X, y = generate_data_to_fit(estimator)
-        if method == "score":
-            result_1 = getattr(estimator, method)(X, y)
-        else:
-            result_1 = getattr(estimator, method)(X)
-
         X_as_array = estimator.masker_.transform(X)
         if method == "score":
+            result_1 = getattr(estimator, method)(X, y)
             result_2 = getattr(estimator, method)(X_as_array, y)
         else:
+            result_1 = getattr(estimator, method)(X)
             result_2 = getattr(estimator, method)(X_as_array)
 
         assert_array_equal(result_1, result_2)
