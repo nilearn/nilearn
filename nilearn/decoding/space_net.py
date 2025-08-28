@@ -33,6 +33,7 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -330,8 +331,7 @@ def path_scores(
     mask : 3D arrays of :obj:`bool`
         Mask defining brain regions that we work on.
 
-    alphas : :obj:`list` of :obj:`float`
-        List of regularization parameters being considered.
+    %(alphas)s
 
     train : array or :obj:`list` of :obj:`int`:
         List of indices for the train samples.
@@ -363,8 +363,7 @@ def path_scores(
 
     key: ??? TODO: Add description.
 
-    debias : :obj:`bool`, default=False
-        If set, then the estimated weights maps will be debiased.
+    %(debias)s
 
     %(screening_percentile)s
 
@@ -558,11 +557,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : :obj:`float` or :obj:`list` of floats, default=None
-        Choices for the constant that scales the overall regularization term.
-        This parameter is mutually exclusive with the `n_alphas` parameter.
-        If None or list of floats is provided, then the best value will be
-        selected by cross-validation.
+    %(alphas)s
 
     n_alphas : :obj:`int`, default=10
         Generate this number of alphas per regularization path.
@@ -576,12 +571,17 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a NiftiMasker.
+
     %(target_affine)s
         An important use-case of this parameter is for downsampling the
         input data to a coarser resolution (to speed of the model fit).
+
     %(target_shape)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
     %(screening_percentile)s
@@ -594,98 +594,35 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
 
-    max_iter : :obj:`int`, default=200
-        Defines the iterations for the solver.
+    %(max_iter)s
 
     tol : :obj:`float`, default=5e-4
         Defines the tolerance for convergence for the backend FISTA solver.
+
     %(verbose)s
+
     %(n_jobs)s
+
     %(memory)s
+
     %(memory_level1)s
+
     cv : :obj:`int`, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias : :obj:`bool`, default=False
-        If set, then the estimated weights maps will be debiased.
+    %(debias)s
 
-    positive : bool, default=False
+    positive : :obj:`bool`, default=False
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
         .. versionadded:: 0.12.0
 
-    Attributes
-    ----------
-    all_coef_ : ndarray, shape (n_l1_ratios, n_folds, n_features)
-        Coefficients for all folds and features.
+    %(spacenet_fit_attributes)s
 
-    alpha_grids_ : ndarray, shape (n_folds, n_alphas)
-        Alpha values considered for selection of the best ones
-        (saved in `best_model_params_`)
-
-    best_model_params_ : ndarray, shape (n_folds, n_parameter)
-        Best model parameters (alpha, l1_ratio) saved for the different
-        cross-validation folds.
-
-    coef_ : ndarray, shape\
-        (1, n_features) for 2 class classification problems\
-        (i.e n_classes = 2)\
-        (n_classes, n_features) for n_classes > 2
-        Coefficient of the features in the decision function.
-
-    coef_img_ : nifti image
-        Masked model coefficients
-
-    mask_ : ndarray 3D
-        An array contains values of the mask image.
-
-    masker_ : instance of NiftiMasker
-        The nifti masker used to mask the data.
-
-    mask_img_ : Nifti like image
-        The mask of the data. If no mask was supplied by the user,
-        this attribute is the mask image computed automatically from the
-        data `X`.
-
-    memory_ : joblib memory cache
-
-    intercept_ : narray, shape
-        (1,) for 2 class classification problems (i.e n_classes = 2)
-        (n_classes,) for n_classes > 2
-        Intercept (a.k.a. bias) added to the decision function.
-        It is available only when parameter intercept is set to True.
-
-    cv_ : list of pairs of lists
-        Each pair is the list of indices for the train and test samples
-        for the corresponding fold.
-
-    cv_scores_ : ndarray, shape (n_folds, n_alphas)\
-        or (n_l1_ratios, n_folds, n_alphas)
-        Scores (misclassification) for each alpha, and on each fold
-
-    screening_percentile_ : float
-        Screening percentile corrected according to volume of mask,
-        relative to the volume of standard brain.
-
-    w_ : ndarray, shape
-        (1, n_features + 1) for 2 class classification problems
-        (i.e n_classes = 2)
-        (n_classes, n_features + 1) for n_classes > 2, and (n_features,)
-        for regression
-        Model weights
-
-    ymean_ : array, shape (n_samples,)
-        Mean of prediction targets
-
-    Xmean_ : array, shape (n_features,)
-        Mean of X across samples
-
-    Xstd_ : array, shape (n_features,)
-        Standard deviation of X across samples
     """
 
     SUPPORTED_PENALTIES: ClassVar[tuple[str, ...]] = ("graph-net", "tv-l1")
@@ -708,7 +645,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         memory_level=1,
         standardize=True,
         verbose=1,
-        mask_args=None,
         n_jobs=1,
         eps=1e-3,
         cv=8,
@@ -739,13 +675,12 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.t_r = t_r
         self.target_affine = target_affine
         self.target_shape = target_shape
-        self.mask_args = mask_args
         self.positive = positive
 
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -755,9 +690,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
@@ -1082,7 +1015,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
 
 @fill_doc
-class SpaceNetClassifier(BaseSpaceNet):
+class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
     """Classification learners with sparsity and spatial priors.
 
     `SpaceNetClassifier` implements Graph-Net and TV-L1
@@ -1106,130 +1039,75 @@ class SpaceNetClassifier(BaseSpaceNet):
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : :obj:`float` or :obj:`list` of floats, default=None
-        Choices for the constant that scales the overall regularization term.
-        This parameter is mutually exclusive with the `n_alphas` parameter.
-        If None or list of floats is provided, then the best value will be
-        selected by cross-validation.
+    %(alphas)s
 
     n_alphas : :obj:`int`, default=10
         Generate this number of alphas per regularization path.
         This parameter is mutually exclusive with the `alphas` parameter.
 
-    eps : :obj:`float`, default=1e-3
-        Length of the path. For example, ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``.
-
     mask : filename, niimg, NiftiMasker instance, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
+
     %(target_affine)s
+
     %(target_shape)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
-    %(screening_percentile)s
+    %(max_iter)s
+
+    tol : :obj:`float`, default=1e-4.
+        Defines the tolerance for convergence.
+
+    %(memory)s
+
+    %(memory_level1)s
 
     standardize : :obj:`bool`, default=True
         If set, then we'll center the data (X, y) have mean zero along axis 0.
         This is here because nearly all linear models will want their data
         to be centered.
 
-    fit_intercept : :obj:`bool`, default=True
-        Fit or not an intercept.
-
-    max_iter : :obj:`int`, default=200
-        Defines the iterations for the solver.
-
-    tol : :obj:`float`, default=1e-4.
-        Defines the tolerance for convergence.
     %(verbose)s
+
     %(n_jobs)s
-    %(memory)s
-    %(memory_level1)s
+
+    eps : :obj:`float`, default=1e-3
+        Length of the path. For example, ``eps=1e-3`` means that
+        ``alpha_min / alpha_max = 1e-3``.
+
     cv : :obj:`int`, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias : :obj:`bool`, default=False
-        If set, then the estimated weights maps will be debiased.
+    fit_intercept : :obj:`bool`, default=True
+        Fit or not an intercept.
 
-    Attributes
-    ----------
-    all_coef_ : ndarray, shape (n_l1_ratios, n_folds, n_features)
-        Coefficients for all folds and features.
+    %(screening_percentile)s
 
-    alpha_grids_ : ndarray, shape (n_folds, n_alphas)
-        Alpha values considered for selection of the best ones
-        (saved in `best_model_params_`)
+    %(debias)s
 
-    best_model_params_ : ndarray, shape (n_folds, n_parameter)
-        Best model parameters (alpha, l1_ratio) saved for the different
-        cross-validation folds.
+    positive : :obj:`bool`, default=False
+        When set to ``True``, forces the coefficients to be positive.
+        This option is only supported for dense arrays.
+
+        .. versionadded:: 0.12.1dev
+
+    %(spacenet_fit_attributes)s
 
     classes_ : ndarray of labels (`n_classes_`)
         Labels of the classes
 
     n_classes_ : int
         Number of classes
-
-    coef_ : ndarray, shape
-        (1, n_features) for 2 class classification problems (i.e n_classes = 2)
-        (n_classes, n_features) for n_classes > 2
-        Coefficient of the features in the decision function.
-
-    coef_img_ : nifti image
-        Masked model coefficients
-
-    mask_ : ndarray 3D
-        An array contains values of the mask image.
-
-    masker_ : instance of NiftiMasker
-        The nifti masker used to mask the data.
-
-    mask_img_ : Nifti like image
-        The mask of the data. If no mask was supplied by the user,
-        this attribute is the mask image computed automatically from the
-        data `X`.
-
-    memory_ : joblib memory cache
-
-    intercept_ : narray, shape
-        (1, ) for 2 class classification problems (i.e n_classes = 2)
-        (n_classes, ) for n_classes > 2
-        Intercept (a.k.a. bias) added to the decision function.
-        It is available only when parameter intercept is set to True.
-
-    cv_ : list of pairs of lists
-        Each pair is the list of indices for the train and test
-        samples for the corresponding fold.
-
-    cv_scores_ : ndarray, shape (n_folds, n_alphas)\
-        or (n_l1_ratios, n_folds, n_alphas)
-        Scores (misclassification) for each alpha, and on each fold
-
-    screening_percentile_ : float
-        Screening percentile corrected according to volume of mask,
-        relative to the volume of standard brain.
-
-    w_ : ndarray, shape
-        (1, n_features + 1) for 2 class classification problems
-        (i.e n_classes = 2)
-        (n_classes, n_features + 1) for n_classes > 2
-        Model weights
-
-    ymean_ : array, shape (n_samples,)
-        Mean of prediction targets
-
-    Xmean_ : array, shape (n_features,)
-        Mean of X across samples
-
-    Xstd_ : array, shape (n_features,)
-        Standard deviation of X across samples
 
     See Also
     --------
@@ -1264,6 +1142,7 @@ class SpaceNetClassifier(BaseSpaceNet):
         fit_intercept=True,
         screening_percentile=20,
         debias=False,
+        positive=False,
     ):
         super().__init__(
             penalty=penalty,
@@ -1288,10 +1167,11 @@ class SpaceNetClassifier(BaseSpaceNet):
             screening_percentile=screening_percentile,
             target_affine=target_affine,
             verbose=verbose,
+            positive=positive,
         )
         self.loss = loss
 
-        # TODO remove for sklearn>=1.6
+        # TODO (sklearn  >= 1.6.0) remove
         self._estimator_type = "classifier"
 
     def _validate_loss(self, value):
@@ -1336,34 +1216,6 @@ class SpaceNetClassifier(BaseSpaceNet):
         check_is_fitted(self)
         return accuracy_score(y, self.predict(X))
 
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            return tags
-
-        from sklearn.utils import ClassifierTags
-
-        tags.estimator_type = "classifier"
-        tags.classifier_tags = ClassifierTags()
-
-        return tags
-
     def decision_function(self, X):
         """Predict confidence scores for samples.
 
@@ -1406,7 +1258,7 @@ class SpaceNetClassifier(BaseSpaceNet):
 
 
 @fill_doc
-class SpaceNetRegressor(BaseSpaceNet):
+class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
     """Regression learners with sparsity and spatial priors.
 
     `SpaceNetRegressor` implements Graph-Net and TV-L1 priors / penalties
@@ -1427,116 +1279,71 @@ class SpaceNetRegressor(BaseSpaceNet):
         parameter, the sparser the estimated weights map. If list is provided,
         then the best value will be selected by cross-validation.
 
-    alphas : :obj:`float` or :obj:`list` of floats or None, default=None
-        Choices for the constant that scales the overall regularization term.
-        This parameter is mutually exclusive with the `n_alphas` parameter.
-        If None or list of floats is provided, then the best value will be
-        selected by cross-validation.
+    %(alphas)s
 
     n_alphas : :obj:`int`, default=10
         Generate this number of alphas per regularization path.
-        This parameter is mutually exclusive with the `alphas` parameter.
-
-    eps : :obj:`float`, default=1e-3
-        Length of the path. For example, ``eps=1e-3`` means that
-        ``alpha_min / alpha_max = 1e-3``
+        This parameter is mutually exclusive with the `alphas` parameter.`
 
     mask : filename, niimg, NiftiMasker instance, default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is it will be computed
         automatically by a MultiNiftiMasker with default parameters.
+
     %(target_affine)s
+
     %(target_shape)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
-    %(screening_percentile)s
+    %(max_iter)s
+
+    tol : :obj:`float`, default=1e-4
+        Defines the tolerance for convergence.
+
+    %(memory)s
+
+    %(memory_level1)s
 
     standardize : :obj:`bool`, default=True
         If set, then we'll center the data (X, y) have mean zero along axis 0.
         This is here because nearly all linear models will want their data
         to be centered.
 
-    fit_intercept : :obj:`bool`, default=True
-        Fit or not an intercept.
-
-    max_iter : :obj:`int`, default=200
-        Defines the iterations for the solver.
-
-    tol : :obj:`float`, default=1e-4
-        Defines the tolerance for convergence.
     %(verbose)s
+
     %(n_jobs)s
-    %(memory)s
-    %(memory_level1)s
+
+    eps : :obj:`float`, default=1e-3
+        Length of the path. For example, ``eps=1e-3`` means that
+        ``alpha_min / alpha_max = 1e-3``
+
     cv : :obj:`int`, a cv generator instance, or None, default=8
         The input specifying which cross-validation generator to use.
         It can be an integer, in which case it is the number of folds in a
         KFold, None, in which case 3 fold is used, or another object, that
         will then be used as a cv generator.
 
-    debias : :obj:`bool`, default=False
-        If set, then the estimated weights maps will be debiased.
+    fit_intercept : :obj:`bool`, default=True
+        Fit or not an intercept.
 
-    Attributes
-    ----------
-    all_coef_ : ndarray, shape (n_l1_ratios, n_folds, n_features)
-        Coefficients for all folds and features.
+    %(screening_percentile)s
 
-    alpha_grids_ : ndarray, shape (n_folds, n_alphas)
-        Alpha values considered for selection of the best ones
-        (saved in `best_model_params_`)
+    %(debias)s
 
-    best_model_params_ : ndarray, shape (n_folds, n_parameter)
-        Best model parameters (alpha, l1_ratio) saved for the different
-        cross-validation folds.
+    positive : :obj:`bool`, default=False
+        When set to ``True``, forces the coefficients to be positive.
+        This option is only supported for dense arrays.
 
-    coef_ : ndarray, shape (n_features,)
-        Coefficient of the features in the decision function.
+        .. versionadded:: 0.12.1dev
 
-    coef_img_ : nifti image
-        Masked model coefficients
 
-    mask_ : ndarray 3D
-        An array contains values of the mask image.
+    %(spacenet_fit_attributes)s
 
-    masker_ : instance of NiftiMasker
-        The nifti masker used to mask the data.
-
-    mask_img_ : Nifti like image
-        The mask of the data. If no mask was supplied by the user, this
-        attribute is the mask image computed automatically from the data `X`.
-
-    memory_ : joblib memory cache
-
-    intercept_ : narray, shape (1)
-        Intercept (a.k.a. bias) added to the decision function.
-        It is available only when parameter intercept is set to True.
-
-    cv_ : list of pairs of lists
-        Each pair is the list of indices for the train and test
-        samples for the corresponding fold.
-
-    cv_scores_ : ndarray, shape (n_folds, n_alphas)\
-        or (n_l1_ratios, n_folds, n_alphas)
-        Scores (misclassification) for each alpha, and on each fold
-
-    screening_percentile_ : :obj:`float`
-        Screening percentile corrected according to volume of mask,
-        relative to the volume of standard brain.
-
-    w_ : ndarray, shape (n_features,)
-        Model weights
-
-    ymean_ : array, shape (n_samples,)
-        Mean of prediction targets
-
-    Xmean_ : array, shape (n_features,)
-        Mean of X across samples
-
-    Xstd_ : array, shape (n_features,)
-        Standard deviation of X across samples
 
     See Also
     --------
@@ -1568,6 +1375,7 @@ class SpaceNetRegressor(BaseSpaceNet):
         fit_intercept=True,
         screening_percentile=20,
         debias=False,
+        positive=False,
     ):
         super().__init__(
             penalty=penalty,
@@ -1592,36 +1400,5 @@ class SpaceNetRegressor(BaseSpaceNet):
             screening_percentile=screening_percentile,
             target_affine=target_affine,
             verbose=verbose,
+            positive=positive,
         )
-
-        # TODO remove for sklearn>=1.6
-        self._estimator_type = "regressor"
-
-    def _more_tags(self):
-        """Return estimator tags.
-
-        TODO remove when bumping sklearn_version > 1.5
-        """
-        return self.__sklearn_tags__()
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        # see https://github.com/scikit-learn/scikit-learn/pull/29677
-        tags = super().__sklearn_tags__()
-        if SKLEARN_LT_1_6:
-            tags["multioutput"] = True
-            return tags
-
-        from sklearn.utils import RegressorTags
-
-        tags.estimator_type = "regressor"
-        tags.regressor_tags = RegressorTags()
-
-        return tags

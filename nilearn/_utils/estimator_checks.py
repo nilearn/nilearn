@@ -142,7 +142,7 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
     valid : bool, default=True
         Whether to return only the valid checks or not.
     """
-    # TODO remove this function when dropping sklearn 1.5
+    # TODO (sklearn >= 1.6.0) remove this function
     if not SKLEARN_LT_1_6:  # pragma: no cover
         raise RuntimeError(
             "Use dedicated sklearn utilities to test estimators."
@@ -378,7 +378,7 @@ def return_expected_failed_checks(
             ),
         }
         if accept_niimg_input(estimator):
-            # TODO remove when bumping to nilearn 0.13.0
+            # TODO (nilearn >= 0.13.0) remove
             expected_failed_checks |= {
                 "check_do_not_raise_errors_in_init_or_set_params": (
                     "Deprecation cycle started to fix."
@@ -627,13 +627,14 @@ def nilearn_check_generator(estimator: BaseEstimator):
     else:
         tags = estimator.__sklearn_tags__()
 
-    # TODO remove first if when dropping sklearn 1.5
+    # TODO (sklearn >= 1.6.0) simplify
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
         requires_y = isinstance(estimator, _BaseDecoder)
     else:
         requires_y = getattr(tags.target_tags, "required", False)
 
+    yield (clone(estimator), check_tags)
     yield (clone(estimator), check_transformer_set_output)
 
     if isinstance(estimator, CacheMixin):
@@ -747,7 +748,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
 
 def get_tag(estimator: BaseEstimator, tag: str) -> bool:
     tags = estimator.__sklearn_tags__()
-    # TODO remove first if when dropping sklearn 1.5
+    # TODO (sklearn >= 1.6.0) simplify
     #  for sklearn >= 1.6 tags are always a dataclass
     if isinstance(tags, dict) and "X_types" in tags:
         return tag in tags["X_types"]
@@ -875,6 +876,14 @@ def fit_estimator(estimator: BaseEstimator) -> BaseEstimator:
 
 
 # ------------------ GENERIC CHECKS ------------------
+
+
+def check_tags(estimator):
+    """Check tags are the same with old and new methods.
+
+    TODO (sklearn >= 1.6) remove this check when bumping sklearn above 1.5
+    """
+    assert estimator._more_tags() == estimator.__sklearn_tags__()
 
 
 def _check_mask_img_(estimator):
@@ -1030,11 +1039,6 @@ def check_img_estimator_doc_attributes(estimator) -> None:
     - Fitted attributes (ending with a "_") should be documented.
     - All documented fitted attributes should exist after fit.
     """
-    if isinstance(estimator, BaseSpaceNet):
-        # TODO
-        # check BaseSpaceNet estimators later
-        return
-
     doc = NumpyDocString(estimator.__doc__)
     for section in ["Parameters", "Attributes"]:
         if section not in doc:
@@ -1048,7 +1052,7 @@ def check_img_estimator_doc_attributes(estimator) -> None:
     documented_parameters = {
         param.name: param.type for param in doc["Parameters"]
     }
-    # TODO in 0.13.0
+    # TODO (nilearn >= 0.13.0)
     # remove the 'and param != "clean_kwargs"'
     undocumented_parameters = [
         param
@@ -2670,7 +2674,7 @@ def check_masker_transform_resampling(estimator) -> None:
 def check_masker_shelving(estimator):
     """Check behavior when shelving masker."""
     if os.name == "nt" and sys.version_info[1] == 9:
-        # TODO
+        # TODO (python >= 3.10)
         # rare failure of this test on python 3.9 on windows
         # this works for python 3.13
         # skipping for now: let's check again if this keeps failing
@@ -2939,7 +2943,7 @@ def check_nifti_masker_clean_error(estimator):
     """Nifti maskers cannot be given cleaning parameters \
         via both clean_args and kwargs simultaneously.
 
-    TODO remove after nilearn 0.13.0
+    TODO (nilearn >= 0.13.0) remove
     """
     input_img = _img_4d_rand_eye_medium()
 
@@ -2962,7 +2966,7 @@ def check_nifti_masker_clean_warning(estimator):
 
         But this still affects the transformed signal.
 
-    TODO remove after nilearn 0.13.0
+    TODO (nilearn >= 0.13.0) remove
     """
     input_img = _img_4d_rand_eye_medium()
 

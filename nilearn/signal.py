@@ -95,6 +95,7 @@ def standardize_signal(
             signals /= std
 
         elif (standardize == "zscore") or (standardize is True):
+            # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
             std_strategy_default = (
                 "The default strategy for standardize is currently 'zscore' "
                 "which incorrectly uses population std to calculate sample "
@@ -895,6 +896,7 @@ def _censor_signals(signals, confounds, sample_mask):
 def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
     """Interpolate censored volumes in signals/confounds."""
     if extrapolate:
+        # TODO (nilearn 0.13.0)
         extrapolate_default = (
             "By default the cubic spline interpolator extrapolates "
             "the out-of-bounds censored volumes in the data run. This "

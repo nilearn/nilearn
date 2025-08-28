@@ -65,6 +65,7 @@ def data(rng, shape):
 
 def test_resample_deprecation_force_resample(data, shape, affine_eye):
     """Test change of value of force_resample."""
+    # TODO (nilearn 0.13.0)
     affine_eye[:3, -1] = 0.5 * np.array(shape[:3])
 
     with pytest.warns(FutureWarning, match="force_resample"):
@@ -1109,6 +1110,7 @@ def test_reorder_img_copied_header(img_4d_mni_tr2):
 def test_warning_copy_header_false(request, func, input_img):
     # Use the request fixture to get the actual fixture value
     actual_input_img = request.getfixturevalue(input_img)
+    # TODO (nilearn 0.13.0)
     with pytest.warns(FutureWarning, match="From release 0.13.0 onwards*"):
         func(actual_input_img, copy_header=False)
 

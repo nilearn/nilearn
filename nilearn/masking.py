@@ -704,7 +704,7 @@ def compute_brain_mask(
         template,
         target_img,
         copy_header=True,
-        force_resample=False,  # TODO set to True in 0.13.0
+        force_resample=False,  # TODO (nilearn >= 0.13.0) update to True
     )
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")

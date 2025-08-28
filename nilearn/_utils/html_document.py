@@ -241,6 +241,7 @@ class HTMLDocument:
         with Path(file_name).open("wb") as f:
             f.write(self.get_standalone().encode("utf-8"))
 
+    # (nilearn >= 0.13.0) remove temp_file_lifetime
     @remove_parameters(
         removed_params=["temp_file_lifetime"],
         reason=(

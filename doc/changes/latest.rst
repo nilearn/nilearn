@@ -44,3 +44,7 @@ Changes
 - :bdg-dark:`Code` Resampling of maps by :class:`~nilearn.maskers.NiftiMapsMasker` is now done with a linear instead of a continuous interpolation  (:gh:`5519` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Move ``nilearn.plotting.img_plotting`` under ``nilearn.plotting.image`` (:gh:`5481` by `Hande Gözükan`_).
+
+- :bdg-danger:`Deprecation` From Nilearn >= 0.15, the default value of ``threshold`` will be changed to ``scipy.stats.norm.isf(0.001)`` (``3.09023...``) in :func:`~glm.threshold_stats_img`, :func:`~glm.cluster_level_inference`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report`, :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5601` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Decoding estimators do not inherit from sklearn ``ClassifierMixin`` and ``RegressorMixing`` anymore. It is recommended to rely on estimator tags (accessible via the ``'__sklearn_tags__()'`` special method) to know more about the characteristics of an instance  (:gh:`5595` by `Rémi Gau`_).

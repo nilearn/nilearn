@@ -173,7 +173,6 @@ def _get_vertexcolor(
 
     # TODO (nilearn >= 0.13.0) remove
     bg_data = _apply_darkness(bg_data, darkness)
-
     bg_colors = plt.get_cmap("Greys")(bg_data)
 
     # select vertices which are filtered out by the threshold
@@ -268,7 +267,6 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
 
     # TODO (nilearn >= 0.13.0) remove
     bg_faces = _apply_darkness(bg_faces, darkness)
-
     face_colors = plt.cm.gray_r(bg_faces)
 
     # set alpha if in auto mode

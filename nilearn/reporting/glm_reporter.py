@@ -10,6 +10,7 @@ make_glm_report(model, contrasts):
 """
 
 import datetime
+import inspect
 import uuid
 import warnings
 from html import escape
@@ -31,7 +32,10 @@ from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._version import __version__
 from nilearn.externals import tempita
-from nilearn.glm import threshold_stats_img
+from nilearn.glm.thresholding import (
+    threshold_stats_img,
+    warn_default_threshold,
+)
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (
     dataframe_to_html,
@@ -212,6 +216,14 @@ def make_glm_report(
             UserWarning,
             stacklevel=find_stack_level(),
         )
+
+    parameters = dict(**inspect.signature(make_glm_report).parameters)
+    warn_default_threshold(
+        threshold,
+        parameters["threshold"].default,
+        3.0,
+        height_control=height_control,
+    )
 
     unique_id = str(uuid.uuid4()).replace("-", "")
 
@@ -653,6 +665,19 @@ def _make_stat_maps_contrast_clusters(
         # and _stat_map_to_png
         # Necessary to avoid :
         # https://github.com/nilearn/nilearn/issues/4192
+
+        # We silence further warnings about threshold:
+        #   it would throw one per contrast and
+        #   and also because threshold_stats_img and make_glm_report
+        #   have different defaults.
+        # TODO (nilearn>=0.15)
+        # remove
+        warnings.filterwarnings(
+            "ignore",
+            category=FutureWarning,
+            message=".*default 'threshold' will be set.*",
+        )
+
         thresholded_img, threshold = threshold_stats_img(
             stat_img=stat_map_img,
             threshold=threshold,

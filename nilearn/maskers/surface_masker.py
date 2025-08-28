@@ -200,6 +200,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 )
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
+    # TODO (nilearn >= 0.13.0)
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
