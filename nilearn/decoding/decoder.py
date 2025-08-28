@@ -838,7 +838,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         ----------
         X : Niimg-like, :obj:`~nilearn.surface.SurfaceImage`, \
             :obj:`list` of Niimg-like objects \
-            or :obj:`~nilearn.surface.SurfaceImage`, or \
+            or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`, or \
             {array-like, sparse matrix}, shape = (n_samples, n_features)
             See :ref:`extracting_data`.
             Data on which prediction is to be made.
@@ -870,7 +870,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         ----------
         X : Niimg-like, :obj:`~nilearn.surface.SurfaceImage`, \
             :obj:`list` of Niimg-like objects \
-            or :obj:`~nilearn.surface.SurfaceImage`, or \
+            or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`, or \
             {array-like, sparse matrix}, shape = (n_samples, n_features)
             See :ref:`extracting_data`.
             Data on prediction is to be made.
@@ -905,7 +905,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         ----------
         X : Niimg-like, :obj:`~nilearn.surface.SurfaceImage`, \
             :obj:`list` of Niimg-like objects \
-            or :obj:`~nilearn.surface.SurfaceImage`, or \
+            or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`, or \
             {array-like, sparse matrix}, shape = (n_samples, n_features)
             See :ref:`extracting_data`.
             Data on which prediction is to be made.
@@ -1289,7 +1289,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         ----------
         X : Niimg-like, :obj:`~nilearn.surface.SurfaceImage`, \
             :obj:`list` of Niimg-like objects \
-            or :obj:`~nilearn.surface.SurfaceImage`, or \
+            or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`, or \
             {array-like, sparse matrix}, shape = (n_samples, n_features)
             See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
