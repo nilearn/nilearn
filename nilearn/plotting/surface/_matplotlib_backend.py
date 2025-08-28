@@ -122,6 +122,18 @@ def _adjust_plot_roi_params(params):
 
 
 def _normalize_bg_data(data):
+    """Normalize specified ``data`` and return.
+
+    Parameters
+    ----------
+    data : :obj:`numpy.ndarray`
+        An array containing surface data
+
+    Returns
+    -------
+    data : :obj:`numpy.ndarray`
+        An array containing surface data
+    """
     vmin, vmax = np.min(data), np.max(data)
     if vmin < 0 or vmax > 1:
         norm = Normalize(vmin=vmin, vmax=vmax)
