@@ -121,12 +121,12 @@ def _adjust_plot_roi_params(params):
         params["cbar_tick_format"] = "%i"
 
 
-def _normalize_bg_data(bg_data):
-    bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
-    if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_data = bg_norm(bg_data)
-    return bg_data
+def _normalize_bg_data(data):
+    vmin, vmax = np.min(data), np.max(data)
+    if vmin < 0 or vmax > 1:
+        norm = Normalize(vmin=vmin, vmax=vmax)
+        data = norm(data)
+    return data
 
 
 # TODO (nilearn >= 0.13.0) remove
