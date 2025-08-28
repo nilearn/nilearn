@@ -56,7 +56,7 @@ def _get_mask_strategy(strategy):
     elif strategy == "whole-brain-template":
         return partial(compute_brain_mask, mask_type="whole-brain")
     elif strategy == "gm-template":
-        return partial(compute_brain_mask, mask_type="gm")
+        return _partial_compute_brain_mask_gm
     elif strategy == "wm-template":
         return partial(compute_brain_mask, mask_type="wm")
     else:
@@ -67,6 +67,20 @@ def _get_mask_strategy(strategy):
             "'gm-template', and "
             "'wm-template'."
         )
+    
+def _partial_compute_brain_mask_gm(target_img,
+    threshold,
+    connected,
+    opening,
+    memory,
+    verbose):
+    return compute_brain_mask_gm(target_img,
+    threshold,
+    connected,
+    opening,
+    memory,
+    verbose,
+    mask_type="gm")
 
 
 def filter_and_mask(
