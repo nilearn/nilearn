@@ -305,6 +305,19 @@ def threshold_stats_img(
         )
 
     parameters = dict(**inspect.signature(threshold_stats_img).parameters)
+    if height_control is not None and float(threshold) != float(
+        parameters["threshold"].default
+    ):
+        warnings.warn(
+            (
+                f"'{threshold=}' will not be used with '{height_control=}'. "
+                "'threshold' is only used when 'height_control=None'. "
+                f"Set 'threshold' to '{parameters['threshold'].default}' "
+                "to avoid this warning."
+            ),
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
     warn_default_threshold(
         threshold,
         parameters["threshold"].default,
