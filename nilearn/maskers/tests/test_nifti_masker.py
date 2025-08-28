@@ -349,9 +349,12 @@ def test_compute_brain_mask_empty_mask_error(strategy):
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
-def test_compute_brain_mask(strategy, expected_mask):
+# We parametrize mask_args to make it accessible
+# to the expected_mask fixture.
+@pytest.mark.parametrize("mask_args", [{"threshold": 0.0}])
+def test_compute_brain_mask(strategy, expected_mask, mask_args):
     """Check masker for template masking strategy."""
-    masker = NiftiMasker(mask_strategy=strategy, mask_args={"threshold": 0.0})
+    masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
     img, _ = data_gen.generate_random_img((9, 9, 5))
 
     masker.fit(img)
