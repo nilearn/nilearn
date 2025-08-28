@@ -92,7 +92,7 @@ def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
 
 
 def get_colorbar_and_data_ranges(
-    stat_map_data,
+    data,
     vmin=None,
     vmax=None,
     symmetric_cbar=True,
@@ -104,8 +104,8 @@ def get_colorbar_and_data_ranges(
 
     Parameters
     ----------
-    stat_map_data : :class:`np.ndarray`
-        The statistical map data
+    data : :class:`np.ndarray`
+        The data
 
     vmin : :obj:`float`, default=None
         min value for data to consider
@@ -126,25 +126,19 @@ def get_colorbar_and_data_ranges(
         vmax = None
 
     # avoid dealing with masked_array:
-    if hasattr(stat_map_data, "_mask"):
-        stat_map_data = np.asarray(
-            stat_map_data[np.logical_not(stat_map_data._mask)]
-        )
+    if hasattr(data, "_mask"):
+        data = np.asarray(data[np.logical_not(data._mask)])
 
     if force_min_stat_map_value is None:
-        stat_map_min = np.nanmin(stat_map_data)
+        data_min = np.nanmin(data)
     else:
-        stat_map_min = force_min_stat_map_value
-    stat_map_max = np.nanmax(stat_map_data)
+        data_min = force_min_stat_map_value
+    data_max = np.nanmax(data)
 
     if symmetric_cbar == "auto":
         if vmin is None or vmax is None:
-            min_value = (
-                stat_map_min if vmin is None else max(vmin, stat_map_min)
-            )
-            max_value = (
-                stat_map_max if vmax is None else min(stat_map_max, vmax)
-            )
+            min_value = data_min if vmin is None else max(vmin, data_min)
+            max_value = data_max if vmax is None else min(data_max, vmax)
             symmetric_cbar = min_value < 0 < max_value
         else:
             symmetric_cbar = np.isclose(vmin, -vmax)
@@ -152,7 +146,7 @@ def get_colorbar_and_data_ranges(
     # check compatibility between vmin, vmax and symmetric_cbar
     if symmetric_cbar:
         if vmin is None and vmax is None:
-            vmax = max(-stat_map_min, stat_map_max)
+            vmax = max(-data_min, data_max)
             vmin = -vmax
         elif vmin is None:
             vmin = -vmax
@@ -166,8 +160,8 @@ def get_colorbar_and_data_ranges(
         cbar_vmax = vmax
     # set colorbar limits
     else:
-        negative_range = stat_map_max <= 0
-        positive_range = stat_map_min >= 0
+        negative_range = data_max <= 0
+        positive_range = data_min >= 0
         if positive_range:
             cbar_vmin = 0 if vmin is None else vmin
             cbar_vmax = vmax
@@ -181,9 +175,9 @@ def get_colorbar_and_data_ranges(
 
     # set vmin/vmax based on data if they are not already set
     if vmin is None:
-        vmin = stat_map_min
+        vmin = data_min
     if vmax is None:
-        vmax = stat_map_max
+        vmax = data_max
 
     return cbar_vmin, cbar_vmax, float(vmin), float(vmax)
 
