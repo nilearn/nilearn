@@ -90,8 +90,7 @@ def apply_mask_and_get_affinity(
     elif mask_img is not None:
         affine = niimg.affine
         mask_img = check_niimg_3d(mask_img)
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
+        # TODO (nilearn >= 0.13.0) force_resample=True
         mask_img = resample_img(
             mask_img,
             target_affine=affine,
@@ -273,8 +272,13 @@ class NiftiSpheresMasker(BaseMasker):
     %(dtype)s
 
     %(memory)s
+
     %(memory_level1)s
+
     %(verbose0)s
+
+    reports : :obj:`bool`, default=True
+         If set to True, data is saved in order to produce a report.
 
     %(clean_args)s
         .. versionadded:: 0.12.0
@@ -283,7 +287,13 @@ class NiftiSpheresMasker(BaseMasker):
 
     Attributes
     ----------
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     %(nifti_mask_img_)s
+
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int`
         The number of seeds in the masker.
@@ -292,9 +302,6 @@ class NiftiSpheresMasker(BaseMasker):
 
     seeds_ : :obj:`list` of :obj:`list`
         The coordinates of the seeds in the masker.
-
-    reports : boolean, default=True
-         If set to True, data is saved in order to produce a report.
 
     See Also
     --------
@@ -535,6 +542,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         return embedded_images
 
+    # TODO (nilearn >= 0.13.0)
     @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit(
         self,
@@ -570,8 +578,7 @@ class NiftiSpheresMasker(BaseMasker):
         if imgs is not None:
             if self.reports:
                 if self.mask_img_ is not None:
-                    # TODO switch to force_resample=True
-                    # when bumping to version > 0.13
+                    # TODO (nilearn  >= 0.13.0) force_resample=True
                     resampl_imgs = self._cache(resample_img)(
                         imgs,
                         target_affine=self.mask_img_.affine,
@@ -685,7 +692,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         params = get_params(NiftiSpheresMasker, self)
         params["clean_kwargs"] = self.clean_args_
-        # TODO remove in 0.13.0
+        # TODO (nilearn  >= 0.13.0) remove
         if self.clean_kwargs:
             params["clean_kwargs"] = self.clean_kwargs_
 

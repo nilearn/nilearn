@@ -381,7 +381,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     %(verbose0)s
 
-    %(base_decomposition_attributes)s
+    %(base_decomposition_fit_attributes)s
     """
 
     def __init__(
@@ -428,7 +428,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -438,8 +438,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -565,7 +564,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     @property
     def nifti_maps_masker_(self):
-        # TODO: remove in 0.13
+        # TODO (nilearn >= 0.13.0) remove
         warnings.warn(
             message="The 'nifti_maps_masker_' attribute is deprecated "
             "and will be removed in Nilearn 0.13.0.\n"

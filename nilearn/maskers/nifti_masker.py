@@ -180,12 +180,12 @@ class NiftiMasker(BaseMasker):
 
     %(standardize_confounds)s
 
+    %(detrend)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
-
-    %(detrend)s
 
     %(low_pass)s
 
@@ -242,15 +242,16 @@ class NiftiMasker(BaseMasker):
 
     Attributes
     ----------
-    mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image`
-        The mask of the data, or the one computed from ``imgs`` passed to fit.
-        If a ``mask_img`` is passed at masker construction,
-        then ``mask_img_`` is the resulting binarized version of it
-        where each voxel is ``True`` if all values across samples
-        (for example across timepoints) is finite value different from 0.
-
     affine_ : 4x4 :obj:`numpy.ndarray`
         Affine of the transformed image.
+
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
+    %(nifti_mask_img_)s
+
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
@@ -285,13 +286,13 @@ class NiftiMasker(BaseMasker):
         mask_strategy="background",
         mask_args=None,
         dtype=None,
-        memory_level=1,
         memory=None,
+        memory_level=1,
         verbose=0,
         reports=True,
         cmap="gray",
         clean_args=None,
-        **kwargs,  # TODO remove when bumping to nilearn >0.13
+        **kwargs,  # TODO (nilearn >= 0.13.0) remove
     ):
         # Mask is provided or computed
         self.mask_img = mask_img
@@ -316,7 +317,7 @@ class NiftiMasker(BaseMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        # TODO remove when bumping to nilearn >0.13
+        # TODO (nilearn >= 0.13.0) remove
         self.clean_kwargs = kwargs
 
     def generate_report(self):
@@ -491,8 +492,7 @@ class NiftiMasker(BaseMasker):
         # Resampling: allows the user to change the affine, the shape or both
         mask_logger("resample_mask", verbose=self.verbose)
 
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
+        # TODO (nilearn >= 0.13.0) force_resample=True
         self.mask_img_ = self._cache(resample_img)(
             self.mask_img_,
             target_affine=self.target_affine,
@@ -522,8 +522,7 @@ class NiftiMasker(BaseMasker):
             (self.target_affine is not None) and self.reports
         ):
             if imgs is not None:
-                # TODO switch to force_resample=True
-                # when bumping to version > 0.13
+                # TODO (nilearn >= 0.13.0) force_resample=True
                 resampl_imgs = self._cache(resample_img)(
                     imgs,
                     target_affine=self.affine_,
@@ -587,7 +586,7 @@ class NiftiMasker(BaseMasker):
             ],
         )
         params["clean_kwargs"] = self.clean_args_
-        # TODO remove in 0.13.0
+        # TODO (nilearn  >= 0.13.0) remove
         if self.clean_kwargs:
             params["clean_kwargs"] = self.clean_kwargs_
 

@@ -186,6 +186,8 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         To disable convergence detection based on inertia, set
         max_no_improvement to None.
 
+    %(verbose0)s
+
     random_state : :obj:`int`, RandomState instance or None, default=0
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
@@ -196,12 +198,13 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         inverse_transform() will apply inversed scaling to yield an image with
         same l2-norm as input.
 
-    %(verbose0)s
-
     Attributes
     ----------
     labels_ : ndarray, shape = [n_features]
         cluster labels for each feature.
+
+    n_features_in_ : :obj:`int`
+        Number of features seen during fit.
 
     sizes_ : ndarray, shape = [n_features]
         It contains the size of each cluster.
@@ -231,7 +234,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -241,9 +244,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -352,7 +353,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
-        # TODO simplify when dropping sklearn 1.5
+        # TODO (sklearn >= 1.6.0) simplify
         if SKLEARN_LT_1_6:
             X = check_array(
                 X, estimator=self, ensure_min_features=self.n_features_in_

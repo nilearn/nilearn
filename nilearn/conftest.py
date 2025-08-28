@@ -131,6 +131,7 @@ def close_all():
 def suppress_specific_warning():
     """Ignore internal deprecation warnings."""
     with warnings.catch_warnings():
+        # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
         messages = (
             "The `darkness` parameter will be deprecated.*|"
             "In release 0.13, this fetcher will return a dictionary.*|"

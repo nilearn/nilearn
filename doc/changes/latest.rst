@@ -11,7 +11,6 @@ NEW
 Fixes
 -----
 
-
 - :bdg-info:`Plotting` Plots of thresholded statistical maps included in GLM reports now take into account the ``two_sided`` parameter (:gh:`5578` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` :func:`~nilearn.reporting.get_clusters_table` can now handle negative ``stat_threshold`` when ``two_sided=False`` (:gh:`5578` by `Rémi Gau`_).
@@ -28,6 +27,15 @@ Fixes
 
 - :bdg-dark:`Code` Enforce consistent ``dtype`` for all parts of :class:`~nilearn.surface.SurfaceImage` and :class:`~nilearn.surface.PolyData` (:gh:`5530` by `Rémi Gau`_).
 
+- :bdg-success:`API` The ``is_classif`` public attribute has been removed for :class:`~decoding.SpaceNetClassifier` and :class:`~decoding.DecoderRegressor` as it is a characteristic of the estimator that must not be changed. Accessing an equivalent characteristic can be done via the estimator's tags (``__sklearn_tags__()``) (:gh:`5594` by `Rémi Gau`_).
+
+- :bdg-success:`API` The ``is_classification`` public attribute has been removed for :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMClassifier` and  :class:`~decoding.FREMRegressor` as it is a characteristic of the estimator that must not be changed. Accessing an equivalent characteristic can be done via the estimator's tags (``__sklearn_tags__()``) (:gh:`5557` by `Rémi Gau`_).
+
+- :bdg-success:`API` The ``loss`` public attribute has been removed for :class:`~decoding.SpaceNetRegressor` it can only be ``'mse'`` and should not be changed (:gh:`5594` by `Rémi Gau`_).
+
+- :bdg-success:`API` The ``clustering_percentile`` public attribute has been removed for :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` as it is only relevant for :class:`~decoding.FREMClassifier` and  :class:`~decoding.FREMRegressor` (:gh:`5557` by `Rémi Gau`_).
+
+
 Enhancements
 ------------
 
@@ -42,3 +50,7 @@ Changes
 - :bdg-dark:`Code` Resampling of maps by :class:`~nilearn.maskers.NiftiMapsMasker` is now done with a linear instead of a continuous interpolation  (:gh:`5519` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Move ``nilearn.plotting.img_plotting`` under ``nilearn.plotting.image`` (:gh:`5481` by `Hande Gözükan`_).
+
+- :bdg-danger:`Deprecation` From Nilearn >= 0.15, the default value of ``threshold`` will be changed to ``scipy.stats.norm.isf(0.001)`` (``3.09023...``) in :func:`~glm.threshold_stats_img`, :func:`~glm.cluster_level_inference`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report`, :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5601` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Decoding estimators do not inherit from sklearn ``ClassifierMixin`` and ``RegressorMixing`` anymore. It is recommended to rely on estimator tags (accessible via the ``'__sklearn_tags__()'`` special method) to know more about the characteristics of an instance  (:gh:`5595` by `Rémi Gau`_).
