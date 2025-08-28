@@ -3,6 +3,10 @@
 import numpy as np
 from sklearn.preprocessing import LabelBinarizer
 
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.param_validation import (
+    check_params,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
@@ -74,6 +78,30 @@ class _RegressorMixin:
         tags.regressor_tags = RegressorTags()
 
         return tags
+
+    @fill_doc
+    def fit(self, X, y, groups=None):
+        """Fit the decoder (learner).
+
+        Parameters
+        ----------
+        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
+            See :ref:`extracting_data`.
+            Data on which model is to be fitted.
+            If this is a list,
+            the affine is considered the same for all.
+
+        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
+            The dependent variable (age, sex, IQ, yes/no, etc.).
+            Target variable to predict.
+            Must have exactly as many elements as the input images.
+
+        %(groups)s
+
+        """
+        check_params(self.__dict__)
+        self._classes_ = ["beta"]
+        return super().fit(X, y, groups=groups)
 
     def _n_problems(self):
         return 1

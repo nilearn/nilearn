@@ -621,13 +621,14 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         ----------
         X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
             See :ref:`extracting_data`.
-            Data on which model is to be fitted. If this is a list,
+            Data on which model is to be fitted.
+            If this is a list,
             the affine is considered the same for all.
 
         y : numpy.ndarray of shape=(n_samples) or list of length n_samples
             The dependent variable (age, sex, IQ, yes/no, etc.).
-            Target variable to predict. Must have exactly as many elements as
-            3D images in niimg.
+            Target variable to predict.
+            Must have exactly as many elements as the input images.
 
         %(groups)s
 
@@ -1428,29 +1429,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         """
         return super().__sklearn_tags__()
 
-    @fill_doc
-    def fit(self, X, y, groups=None):
-        """Fit the decoder (learner).
-
-        Parameters
-        ----------
-        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
-            See :ref:`extracting_data`.
-            Data on which model is to be fitted. If this is a list,
-            the affine is considered the same for all.
-
-        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
-            The dependent variable (age, sex, IQ, yes/no, etc.).
-            Target variable to predict. Must have exactly as many elements as
-            3D images in niimg.
-
-        %(groups)s
-
-        """
-        check_params(self.__dict__)
-        self._classes_ = ["beta"]
-        return super().fit(X, y, groups=groups)
-
 
 @fill_doc
 class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
@@ -1614,30 +1592,6 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
         return super().__sklearn_tags__()
-
-    @fill_doc
-    def fit(self, X, y, groups=None):
-        """Fit the decoder (learner).
-
-        Parameters
-        ----------
-        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
-            See :ref:`extracting_data`.
-            Data on which model is to be fitted. If this is a list,
-            the affine is considered the same for all.
-
-        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
-            The dependent variable (age, sex, IQ, yes/no, etc.).
-            Target variable to predict. Must have exactly as many elements as
-            3D images in niimg.
-
-        %(groups)s
-
-        """
-        check_params(self.__dict__)
-        self._classes_ = ["beta"]
-        super().fit(X, y, groups=groups)
-        return self
 
 
 @fill_doc

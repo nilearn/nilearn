@@ -778,8 +778,10 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         ----------
         X : :obj:`list` of Niimg-like objects
             See :ref:`extracting_data`.
-            Data on which model is to be fitted. If this is a list,
+            Data on which model is to be fitted.
+            If this is a list,
             the affine is considered the same for all.
+            Must have exactly as many elements as the input images.
 
         y : array or :obj:`list` of length n_samples
             The dependent variable (age, sex, QI, etc.).
@@ -1413,3 +1415,27 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
 
     def _adapt_weights_y_mean_all_coef(self, w):
         return w[0], self.ymean_[0], np.array(self.all_coef_)
+
+    def fit(self, X, y):
+        """Fit the learner.
+
+        Parameters
+        ----------
+        X : :obj:`list` of Niimg-like objects
+            See :ref:`extracting_data`.
+            Data on which model is to be fitted.
+            If this is a list,
+            the affine is considered the same for all.
+            Must have exactly as many elements as the input images.
+
+        y : array or :obj:`list` of length n_samples
+            The dependent variable (age, sex, QI, etc.).
+
+        Notes
+        -----
+        self : `SpaceNet` object
+            Model selection is via cross-validation with bagging.
+        """
+        # duplicated from BaseSpaceNet to not rely on the API / docstring
+        # from RegressorMixin
+        return super().fit(X, y)
