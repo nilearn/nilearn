@@ -1438,4 +1438,4 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         """
         # duplicated from BaseSpaceNet to not rely on the API / docstring
         # from RegressorMixin
-        return super().fit(X, y)
+        return BaseSpaceNet.fit(self, X, y)
