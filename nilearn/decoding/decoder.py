@@ -747,7 +747,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             parallel_fit_outputs, y, n_problems
         )
 
-        classes_ = self.classes_ if is_classifier(self) else self._classes_
+        classes_ = self._get_classes()
 
         # Build the final model (the aggregated one)
         if not isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
@@ -962,7 +962,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         cv_scores = {}
         self.cv_params_ = {}
         self.dummy_output_ = {}
-        classes = self.classes_ if is_classifier(self) else self._classes_
+        classes_ = self._get_classes()
 
         for (
             class_index,
@@ -972,28 +972,28 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             scores,
             dummy_output,
         ) in parallel_fit_outputs:
-            coefs.setdefault(classes[class_index], []).append(coef)
-            intercepts.setdefault(classes[class_index], []).append(intercept)
+            coefs.setdefault(classes_[class_index], []).append(coef)
+            intercepts.setdefault(classes_[class_index], []).append(intercept)
 
-            cv_scores.setdefault(classes[class_index], []).append(scores)
+            cv_scores.setdefault(classes_[class_index], []).append(scores)
 
-            self.cv_params_.setdefault(classes[class_index], {})
+            self.cv_params_.setdefault(classes_[class_index], {})
             if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
-                self.dummy_output_.setdefault(classes[class_index], []).append(
-                    dummy_output
-                )
+                self.dummy_output_.setdefault(
+                    classes_[class_index], []
+                ).append(dummy_output)
             else:
-                self.dummy_output_.setdefault(classes[class_index], []).append(
-                    None
-                )
+                self.dummy_output_.setdefault(
+                    classes_[class_index], []
+                ).append(None)
             for k in params:
-                self.cv_params_[classes[class_index]].setdefault(k, []).append(
-                    params[k]
-                )
+                self.cv_params_[classes_[class_index]].setdefault(
+                    k, []
+                ).append(params[k])
 
             if (n_problems <= 2) and is_classifier(self):
                 # Binary classification
-                other_class = np.setdiff1d(classes, classes[class_index])[0]
+                other_class = np.setdiff1d(classes_, classes_[class_index])[0]
                 if coef is not None:
                     coefs.setdefault(other_class, []).append(-coef)
                     intercepts.setdefault(other_class, []).append(-intercept)
@@ -1003,7 +1003,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
                 cv_scores.setdefault(other_class, []).append(scores)
                 self.cv_params_[other_class] = self.cv_params_[
-                    classes[class_index]
+                    classes_[class_index]
                 ]
                 if isinstance(
                     self.estimator_, (DummyClassifier, DummyRegressor)

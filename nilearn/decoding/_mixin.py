@@ -48,6 +48,9 @@ class _ClassifierMixin:
         self.n_classes_ = len(self.classes_)
         return y
 
+    def _get_classes(self):
+        return self.classes_
+
 
 class _RegressorMixin:
     _estimator_type = "regressor"  # TODO (sklearn >= 1.6) remove
@@ -77,3 +80,6 @@ class _RegressorMixin:
 
     def _binarize_y(self, y):
         return y[:, np.newaxis]
+
+    def _get_classes(self):
+        return self._classes_

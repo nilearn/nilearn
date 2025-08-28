@@ -14,7 +14,7 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy import stats
 from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
-from sklearn.base import is_classifier, is_regressor
+from sklearn.base import is_classifier
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model._base import _preprocess_data as center_data
@@ -980,17 +980,17 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 f"expecting {self.n_elements_}."
             )
 
-        # handle regression (least-squared loss)
-        if is_regressor(self):
-            return LinearRegression.predict(self, X)
-
         # prediction proper
-        scores = self.decision_function(X)
-        if len(scores.shape) == 1:
-            indices = (scores > 0).astype(int)
+        if is_classifier(self):
+            scores = self.decision_function(X)
+            if len(scores.shape) == 1:
+                indices = (scores > 0).astype(int)
+            else:
+                indices = scores.argmax(axis=1)
+            return self.classes_[indices]
         else:
-            indices = scores.argmax(axis=1)
-        return self.classes_[indices]
+            # handle regression (least-squared loss)
+            return LinearRegression.predict(self, X)
 
 
 @fill_doc
