@@ -1,5 +1,7 @@
 """Test the multi_nifti_masker module."""
+
 import warnings
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -194,6 +196,7 @@ def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
 
     np.testing.assert_array_equal(get_data(masker.mask_img_), mask_ref)
     np.testing.assert_array_equal(get_data(masker2.mask_img_), mask_ref)
+
 
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]

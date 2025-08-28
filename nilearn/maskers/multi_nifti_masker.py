@@ -5,7 +5,6 @@ on multi subject MRI data.
 import collections.abc
 import itertools
 import warnings
-from functools import partial
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -61,14 +60,16 @@ def _get_mask_strategy(strategy):
             "'gm-template', and 'wm-template'."
         )
 
+
 def _make_brain_mask_func(mask_type):
     """Generate a compute_brain_mask function adapted for each mask.
-    
+
     This is done instead of using functools.partial because
     joblib does not play well with partials.
 
     See: https://github.com/nilearn/nilearn/issues/5527
     """
+
     def _compute(
         target_imgs,
         threshold=0.5,
@@ -88,7 +89,9 @@ def _make_brain_mask_func(mask_type):
             mask_type=mask_type,
             **kwargs,
         )
+
     return _compute
+
 
 @fill_doc
 class MultiNiftiMasker(NiftiMasker):
