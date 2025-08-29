@@ -635,7 +635,7 @@ docdict["masker_lut"] = """lut : :obj:`pandas.DataFrame` or :obj:`str` \
         Formatted according to 'dseg.tsv' format from
         `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_.
 
-        warning::
+        .. warning::
 
             If a region exist in the atlas image
             but is missing from its associated LUT,

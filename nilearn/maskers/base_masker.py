@@ -266,7 +266,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         copy : :obj:`bool`, default=True
             Indicates whether a copy is returned or not.
@@ -350,7 +350,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------
@@ -398,7 +398,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------

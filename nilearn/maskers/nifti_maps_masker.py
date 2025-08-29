@@ -97,7 +97,9 @@ class NiftiMapsMasker(BaseMasker):
     %(dtype)s.
 
     resampling_target : {"data", "mask", "maps", None}, default="data"
-        Gives which image gives the final shape/size. For example, if
+        Gives which image gives the final shape/size.
+
+        For example, if
         `resampling_target` is "mask" then maps_img and images provided to
         fit() are resampled to the shape and affine of mask_img. "None" means
         no resampling: if shapes and affines do not match, a ValueError is
@@ -229,34 +231,34 @@ class NiftiMapsMasker(BaseMasker):
                          or :class:`~numpy.ndarray`, or "all", default=10
             Indicates which maps will be displayed in the HTML report.
 
-                - If "all": All maps will be displayed in the report.
+            - If "all": All maps will be displayed in the report.
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report("all")
+                masker.generate_report("all")
 
-                .. warning:
-                    If there are too many maps, this might be time and
-                    memory consuming, and will result in very heavy
-                    reports.
+            .. warning:
+                If there are too many maps, this might be time and
+                memory consuming, and will result in very heavy
+                reports.
 
-                - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
-                  the indices of the maps to be displayed in the report. For
-                  example, the following code will generate a report with maps
-                  6, 3, and 12, displayed in this specific order:
+            - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
+                the indices of the maps to be displayed in the report. For
+                example, the following code will generate a report with maps
+                6, 3, and 12, displayed in this specific order:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report([6, 3, 12])
+                masker.generate_report([6, 3, 12])
 
-                - If an :obj:`int`: This will only display the first n maps,
-                  n being the value of the parameter. By default, the report
-                  will only contain the first 10 maps. Example to display the
-                  first 16 maps:
+            - If an :obj:`int`: This will only display the first n maps,
+                n being the value of the parameter. By default, the report
+                will only contain the first 10 maps. Example to display the
+                first 16 maps:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report(16)
+                masker.generate_report(16)
 
         Returns
         -------
@@ -541,7 +543,7 @@ class NiftiMapsMasker(BaseMasker):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------
@@ -569,7 +571,7 @@ class NiftiMapsMasker(BaseMasker):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------

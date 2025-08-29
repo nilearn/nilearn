@@ -384,7 +384,9 @@ class RegionExtractor(NiftiMapsMasker):
     %(dtype)s
 
     resampling_target : {"data", "mask", "maps", None}, default="data"
-        Gives which image gives the final shape/size. For example, if
+        Gives which image gives the final shape/size.
+
+        For example, if
         `resampling_target` is "mask" then maps_img and images provided to
         fit() are resampled to the shape and affine of mask_img. "None" means
         no resampling: if shapes and affines do not match, a ValueError is

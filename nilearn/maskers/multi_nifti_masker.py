@@ -422,7 +422,7 @@ class MultiNiftiMasker(NiftiMasker):
 
         %(sample_mask_multi)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         copy : :obj:`bool`, default=True
             If True, guarantees that output array has no memory in common with

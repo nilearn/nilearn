@@ -372,35 +372,35 @@ class NiftiSpheresMasker(BaseMasker):
                             or :class:`~numpy.ndarray`, or "all", default="all"
             Indicates which spheres will be displayed in the HTML report.
 
-                - If "all": All spheres will be displayed in the report.
+            - If "all": All spheres will be displayed in the report.
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report("all")
+                masker.generate_report("all")
 
-                .. warning::
+            .. warning::
 
-                    If there are too many spheres, this might be time and
-                    memory consuming, and will result in very heavy
-                    reports.
+                If there are too many spheres, this might be time and
+                memory consuming, and will result in very heavy
+                reports.
 
-                - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
-                  the indices of the spheres to be displayed in the report.
-                  For example, the following code will generate a report with
-                  spheres 6, 3, and 12, displayed in this specific order:
+            - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
+                the indices of the spheres to be displayed in the report.
+                For example, the following code will generate a report with
+                spheres 6, 3, and 12, displayed in this specific order:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report([6, 3, 12])
+                masker.generate_report([6, 3, 12])
 
-                - If an :obj:`int`: This will only display the first n
-                  spheres, n being the value of the parameter. By default,
-                  the report will only contain the first 10 spheres.
-                  Example to display the first 16 spheres:
+            - If an :obj:`int`: This will only display the first n
+                spheres, n being the value of the parameter. By default,
+                the report will only contain the first 10 spheres.
+                Example to display the first 16 spheres:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report(16)
+                masker.generate_report(16)
 
         Returns
         -------
@@ -652,7 +652,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------
@@ -681,7 +681,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------

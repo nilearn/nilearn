@@ -205,11 +205,11 @@ class NiftiMasker(BaseMasker):
 
     %(mask_strategy)s
 
-            .. note::
-                Depending on this value, the mask will be computed from
-                :func:`nilearn.masking.compute_background_mask`,
-                :func:`nilearn.masking.compute_epi_mask`, or
-                :func:`nilearn.masking.compute_brain_mask`.
+        .. note::
+            Depending on this value, the mask will be computed from
+            :func:`nilearn.masking.compute_background_mask`,
+            :func:`nilearn.masking.compute_epi_mask`, or
+            :func:`nilearn.masking.compute_brain_mask`.
 
         Default='background'.
 
