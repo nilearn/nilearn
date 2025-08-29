@@ -422,13 +422,21 @@ This atlas defines its regions using maps. The path to the corresponding
 file is given in the ``maps_img`` argument.
 
 One important thing that happens transparently during the execution of
-:meth:`NiftiMasker.fit_transform` is resampling. Initially, the images
+:meth:`NiftiMapsMasker.fit_transform` is resampling. Initially, the images
 and the atlas do typically not have the same shape nor the same affine.
 Casting them into the same format is required for successful signal extraction
 The keyword argument ``resampling_target`` specifies which format
 (i.e., dimensions and affine) the data should be resampled to.
 See the reference documentation for :class:`NiftiMapsMasker` for every
 possible option.
+
+.. warning::
+
+    :class:`NiftiMapsMasker` does the data extraction
+    via least square regression, such that ``maps @ x = data``.
+    If you want to extract data from a map in another way (mean, max...),
+    you should use :class:`NiftiLabelsMasker`
+    on a thresholded map.
 
 .. topic:: **Examples**
 
