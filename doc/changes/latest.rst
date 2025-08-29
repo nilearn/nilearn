@@ -29,6 +29,7 @@ Fixes
 
 - :bdg-success:`API` The ``clustering_percentile`` public attribute has been removed for :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` as it is only relevant for :class:`~decoding.FREMClassifier` and  :class:`~decoding.FREMRegressor` (:gh:`5557` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Fix bug that occurred when plotting surfaces with matplotlib in rare cases where ``vmin==vmax`` and when a colorbar was requested (:gh:`5616` by `Rémi Gau`_).
 
 Enhancements
 ------------
@@ -44,5 +45,7 @@ Changes
 - :bdg-dark:`Code` Resampling of maps by :class:`~nilearn.maskers.NiftiMapsMasker` is now done with a linear instead of a continuous interpolation  (:gh:`5519` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Move ``nilearn.plotting.img_plotting`` under ``nilearn.plotting.image`` (:gh:`5481` by `Hande Gözükan`_).
+
+- :bdg-danger:`Deprecation` From Nilearn >= 0.15, the default value of ``threshold`` will be changed to ``scipy.stats.norm.isf(0.001)`` (``3.09023...``) in :func:`~glm.threshold_stats_img`, :func:`~glm.cluster_level_inference`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report`, :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5601` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Decoding estimators do not inherit from sklearn ``ClassifierMixin`` and ``RegressorMixing`` anymore. It is recommended to rely on estimator tags (accessible via the ``'__sklearn_tags__()'`` special method) to know more about the characteristics of an instance  (:gh:`5595` by `Rémi Gau`_).

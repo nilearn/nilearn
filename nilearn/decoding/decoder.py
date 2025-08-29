@@ -16,6 +16,7 @@ from collections.abc import Iterable
 
 import numpy as np
 from joblib import Parallel, delayed
+from nibabel import Nifti1Image
 from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
@@ -798,15 +799,29 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "coef_") and hasattr(self, "masker_")
 
+    def _prep_input_post_fit(self, X) -> np.ndarray:
+        """Apply masker transform if X is niimg-like or surface image.
+
+        For backwards compatibility,
+        decoders can accept both images and arrays after fit.
+        """
+        if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
+            check_compatibility_mask_and_images(self.mask_img_, X)
+            if isinstance(X, Nifti1Image):
+                X = check_niimg(X)
+            X = self.masker_.transform(X)
+        return X
+
     def score(self, X, y, *args):
         """Compute the prediction score using the scoring \
         metric defined by the scoring attribute.
 
         Parameters
         ----------
-        X : Niimg-like, :obj:`list` Niimg-like objects,
-            :obj:`nilearn.surface.SurfaceImage`, \
-            or :obj:`list` of :obj:`nilearn.surface.SurfaceImage`
+        X : Niimg-like, :obj:`~nilearn.surface.SurfaceImage`, \
+            :obj:`list` of Niimg-like objects \
+            or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`, or \
+            {array-like, sparse matrix}, shape = (n_samples, n_features)
             See :ref:`extracting_data`.
             Data on which prediction is to be made.
 
@@ -823,7 +838,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         """
         check_is_fitted(self)
-        check_compatibility_mask_and_images(self.mask_img_, X)
+        X = self._prep_input_post_fit(X)
         return self.scorer_(self, X, y, *args)
 
     def _decision_function(self, X) -> np.ndarray:
@@ -835,10 +850,10 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : Niimg-like, :obj:`list` Niimg-like objects,
-            :obj:`nilearn.surface.SurfaceImage`, \
-            :obj:`list` of :obj:`nilearn.surface.SurfaceImage`,
-            or numpy array.
+        X : Niimg-like, :obj:`~nilearn.surface.SurfaceImage`, \
+            :obj:`list` of Niimg-like objects \
+            or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`, or \
+            {array-like, sparse matrix}, shape = (n_samples, n_features)
             See :ref:`extracting_data`.
             Data on prediction is to be made.
             If this is a list,
@@ -850,12 +865,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             Predicted class label per sample.
         """
         check_is_fitted(self)
-
-        # for backwards compatibility - apply masker transform if X is
-        # niimg-like or a list of strings or surface image
-        if not isinstance(X, np.ndarray) or len(np.shape(X)) == 1:
-            check_compatibility_mask_and_images(self.mask_img_, X)
-            X = self.masker_.transform(X)
+        X = self._prep_input_post_fit(X)
 
         if X.shape[1] != self.n_elements_:
             raise ValueError(
@@ -875,9 +885,10 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : Niimg-like, :obj:`list` Niimg-like objects,
-            :obj:`nilearn.surface.SurfaceImage`, \
-            or :obj:`list` of :obj:`nilearn.surface.SurfaceImage`
+        X : Niimg-like, :obj:`~nilearn.surface.SurfaceImage`, \
+            :obj:`list` of Niimg-like objects \
+            or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`, or \
+            {array-like, sparse matrix}, shape = (n_samples, n_features)
             See :ref:`extracting_data`.
             Data on which prediction is to be made.
 
@@ -889,18 +900,12 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             class would be predicted.
         """
         check_is_fitted(self)
-
-        if not isinstance(X, np.ndarray):
-            check_compatibility_mask_and_images(self.mask_img_, X)
+        X = self._prep_input_post_fit(X)
 
         # Prediction for dummy estimator is different from others as there is
         # no fitted coefficient
         if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
-            if isinstance(X, SurfaceImage):
-                n_samples = X.data.shape[1] if len(X.data.shape) == 2 else 1
-            else:
-                X = check_niimg(X)
-                n_samples = np.shape(X)[-1]
+            n_samples = X.shape[0]
             scores = self._predict_dummy(n_samples)
         else:
             scores = self._decision_function(X)
@@ -1251,8 +1256,10 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
         Parameters
         ----------
-        X : Niimg-like, :obj:`list` of either \
-            Niimg-like objects or :obj:`str` or path-like
+        X : Niimg-like, :obj:`~nilearn.surface.SurfaceImage`, \
+            :obj:`list` of Niimg-like objects \
+            or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`, or \
+            {array-like, sparse matrix}, shape = (n_samples, n_features)
             See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.

@@ -2,6 +2,7 @@
 first level contrasts or directly on fitted first level models.
 """
 
+import inspect
 import operator
 import time
 from pathlib import Path
@@ -35,6 +36,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
+from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import concat_imgs, iter_img, mean_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.mass_univariate import permuted_ols
@@ -887,6 +889,14 @@ class SecondLevelModel(BaseGLM):
 
         """
         from nilearn.reporting.glm_reporter import make_glm_report
+
+        sig = inspect.signature(SecondLevelModel.generate_report).parameters
+        warn_default_threshold(
+            threshold,
+            sig["threshold"].default,
+            3.09,
+            height_control=height_control,
+        )
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data = {
