@@ -578,9 +578,9 @@ def _plot_surf(
 
             # in rare cases where plotting an image of zeroes
             # this avoids a matplolib error
-            if cbar_vmax == cbar_vmin == 0:
-                cbar_vmax = 1
-                cbar_vmin = -1
+            if cbar_vmax == cbar_vmin:
+                cbar_vmax += 1
+                cbar_vmin += -1
 
             ticks = _get_ticks(
                 cbar_vmin, cbar_vmax, cbar_tick_format, threshold
