@@ -661,6 +661,8 @@ def check_region_names_after_fit(
 
 def check_lut(masker: NiftiLabelsMasker, expected_lut: pd.DataFrame):
     """Check content of the look up table."""
+    if isinstance(masker.lut, pd.DataFrame):
+        assert list(masker.lut.columns) == list(masker.lut_.columns)
     assert masker.background_label in masker.lut_["index"].to_list()
     assert "Background" in masker.lut_["name"].to_list()
     pd.testing.assert_series_equal(

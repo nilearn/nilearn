@@ -13,7 +13,7 @@ Fixes
 
 - :bdg-success:`API` Add a dummy ``y`` parameter to :meth:`~nilearn.decomposition.CanICA.score` and :meth:`~nilearn.decomposition.DictLearning.score` for compatibility with scikit-learn API (:gh:`5565` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Fix several issues in :class:`~nilearn.maskers.NiftiLabelsMasker` and :class:`~nilearn.maskers.SurfaceLabelsMasker` that lead to invalid ``region_names_``, ``region_ids_`` or look-up-table content (:gh:`5492` by `Rémi Gau`_).
+- :bdg-dark:`Code` Fix several issues in :class:`~nilearn.maskers.NiftiLabelsMasker` and :class:`~nilearn.maskers.SurfaceLabelsMasker` that lead to invalid ``region_names_``, ``region_ids_`` or look-up-table content (:gh:`5492`, :gh:`5614`  by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Align ``symmetric_cmap`` behavior for ``plotly`` backend in :func:`~nilearn.plotting.plot_surf` function with ``matplotlib`` backend (:gh:`5492` by `Hande Gözükan`_).
 
