@@ -512,7 +512,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
     if is_regressor(estimator):
         expected_failed_checks |= {
             "check_regressors_no_decision_function": (
-                "replaced by check_img_regressors_no_decision_function"
+                "replaced by check_img_regressor_no_decision_function"
             ),
             "check_regressor_data_not_an_array": (
                 "not applicable for image input"
@@ -590,11 +590,12 @@ def nilearn_check_generator(estimator: BaseEstimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
             yield (clone(estimator), check_decoder_compatibility_mask_image)
-            yield (clone(estimator), check_decoders_with_surface_data)
+            yield (clone(estimator), check_decoder_with_surface_data)
+            yield (clone(estimator), check_decoder_with_arrays)
             if is_regressor(estimator):
                 yield (
                     clone(estimator),
-                    check_img_regressors_no_decision_function,
+                    check_img_regressor_no_decision_function,
                 )
 
     if is_masker(estimator):
@@ -1738,7 +1739,7 @@ def check_decoder_compatibility_mask_image(estimator_orig):
 
 
 @ignore_warnings()
-def check_decoders_with_surface_data(estimator_orig):
+def check_decoder_with_surface_data(estimator_orig):
     """Test fit and other methods with surface image."""
     if isinstance(estimator_orig, SearchLight):
         # note searchlight does not fit Surface data
@@ -1777,7 +1778,7 @@ def check_decoders_with_surface_data(estimator_orig):
 
 
 @ignore_warnings
-def check_img_regressors_no_decision_function(regressor_orig):
+def check_img_regressor_no_decision_function(regressor_orig):
     """Check that regressors don't have some method, attributes.
 
     replaces sklearn check_regressors_no_decision_function
@@ -1792,6 +1793,35 @@ def check_img_regressors_no_decision_function(regressor_orig):
         assert not hasattr(regressor, attr), (
             f"'{regressor.__class__.__name__}' should not have '{attr}'"
         )
+
+
+@ignore_warnings
+def check_decoder_with_arrays(estimator_orig):
+    """Check that several methods of decoders work with ndarray and images.
+
+    Test for backward compatibility.
+    """
+    estimator = clone(estimator_orig)
+    estimator = fit_estimator(estimator)
+
+    for method in [
+        "decision_function",
+        "predict",
+        "score",
+    ]:
+        if not hasattr(estimator, method):
+            continue
+
+        X, y = generate_data_to_fit(estimator)
+        X_as_array = estimator.masker_.transform(X)
+        if method == "score":
+            result_1 = getattr(estimator, method)(X, y)
+            result_2 = getattr(estimator, method)(X_as_array, y)
+        else:
+            result_1 = getattr(estimator, method)(X)
+            result_2 = getattr(estimator, method)(X_as_array)
+
+        assert_array_equal(result_1, result_2)
 
 
 # ------------------ MASKER CHECKS ------------------

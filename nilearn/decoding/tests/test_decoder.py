@@ -1096,18 +1096,6 @@ def test_decoder_tags_regression():
 
 
 @ignore_warnings
-def test_decoder_decision_function(binary_classification_data):
-    """Test decision_function with ndarray. Test for backward compatibility."""
-    X, y, mask = binary_classification_data
-
-    model = Decoder(mask=mask)
-    model.fit(X, y)
-    X = model.masker_.transform(X)
-    assert X.shape[1] == model.coef_.shape[1]
-    model.decision_function(X)
-
-
-@ignore_warnings
 @pytest.mark.timeout(0)
 def test_decoder_strings_filepaths_input(
     tiny_binary_classification_data, tmp_path
