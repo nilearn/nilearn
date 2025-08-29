@@ -60,7 +60,6 @@ class OrthoProjector(OrthoSlicer):
         It does not make sense to draw crosses for the position of
         the cuts since we are taking the max along one axis.
         """
-        pass
 
     def _check_inputs_add_graph(
         self,

@@ -305,7 +305,6 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
-        ...
 
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.

@@ -461,7 +461,6 @@ class GlassBrainAxes(BaseAxes):
         the position of the cuts \
         since we are taking the max along one axis.
         """
-        pass
 
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
         """Plot markers.
