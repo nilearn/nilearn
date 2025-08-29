@@ -29,6 +29,7 @@ Fixes
 
 - :bdg-success:`API` The ``clustering_percentile`` public attribute has been removed for :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` as it is only relevant for :class:`~decoding.FREMClassifier` and  :class:`~decoding.FREMRegressor` (:gh:`5557` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Fix bug that occurred when plotting surfaces with matplotlib in rare cases where ``vmin==vmax`` and when a colorbar was requested (:gh:`5616` by `Rémi Gau`_).
 
 Enhancements
 ------------
