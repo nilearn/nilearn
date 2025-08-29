@@ -142,6 +142,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     resampling_target : {"data", "labels", None}, default="data"
         Gives which image gives the final shape/size.
+
         For example, if ``resampling_target`` is ``"data"``,
         the atlas is resampled to the shape of the data if needed.
         If it is ``"labels"`` then mask_img and images provided to fit()
@@ -288,7 +289,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     @property
     def region_names_(self) -> dict[int, str]:
-        """Return a dictionary containing the region names corresponding \n
+        """Return a dictionary containing the region names corresponding \
             to each column in the array returned by `transform`.
 
         The region names correspond to the labels provided
@@ -314,8 +315,8 @@ class NiftiLabelsMasker(BaseMasker):
 
     @property
     def region_ids_(self) -> dict[Union[str, int], int]:
-        """Return dictionary containing the region ids corresponding \n
-           to each column in the array \n
+        """Return dictionary containing the region ids corresponding \
+           to each column in the array \
            returned by `transform`.
 
         The region id corresponding to ``region_signal[:,i]``
@@ -690,7 +691,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------

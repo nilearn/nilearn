@@ -161,7 +161,7 @@ def save_glm_to_bids(
     model : :obj:`~nilearn.glm.first_level.FirstLevelModel` or \
             :obj:`~nilearn.glm.second_level.SecondLevelModel`
 
-            .. versionadded:: 0.12.0
+        .. versionadded:: 0.12.0
 
     Warnings
     --------
