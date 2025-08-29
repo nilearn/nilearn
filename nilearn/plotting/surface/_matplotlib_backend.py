@@ -134,7 +134,7 @@ def _normalize_bg_data(data):
     data : :obj:`numpy.ndarray`
         An array containing normalized surface data
     """
-    vmin, vmax = np.min(data), np.max(data)
+    vmin, vmax = np.nanmin(data), np.nanmax(data)
     if vmin < 0 or vmax > 1:
         norm = Normalize(vmin=vmin, vmax=vmax)
         data = norm(data)
