@@ -2,7 +2,7 @@ import traceback
 
 import pytest
 
-from nilearn.decoding.space_net import BaseSpaceNet
+from nilearn.decoding.space_net import SpaceNetClassifier, SpaceNetRegressor
 
 
 @pytest.mark.parametrize("penalty", ["graph-net", "tv-l1"])
@@ -20,12 +20,13 @@ from nilearn.decoding.space_net import BaseSpaceNet
         "alphas",
     ],
 )
-def test_get_params(penalty, param):
+@pytest.mark.parametrize("estimator", [SpaceNetClassifier, SpaceNetRegressor])
+def test_get_params(penalty, param, estimator):
     # Issue #12 (on github) reported that our objects
     # get_params() methods returned empty dicts.
 
     kwargs = {}
-    m = BaseSpaceNet(
+    m = estimator(
         mask="dummy",
         penalty=penalty,
         **kwargs,

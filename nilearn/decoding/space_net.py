@@ -3,6 +3,7 @@
 For example: TV-L1, Graph-Net, etc
 """
 
+import abc
 import collections
 import time
 import warnings
@@ -13,12 +14,12 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy import stats
 from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
+from sklearn.base import is_classifier
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model._base import _preprocess_data as center_data
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import check_cv
-from sklearn.preprocessing import LabelBinarizer
 from sklearn.utils import check_array, check_X_y
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot
@@ -704,17 +705,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         tags.input_tags = InputTags(niimg_like=True, surf_img=False)
         return tags
 
-    @property
-    def _is_classification(self) -> bool:
-        # TODO remove for sklearn>=1.6
-        # this private method can probably be removed
-        # when dropping sklearn>=1.5 and replaced by just:
-        #   self.__sklearn_tags__().estimator_type == "classifier"
-        if SKLEARN_LT_1_6:
-            # TODO remove for sklearn>=1.6
-            return self._estimator_type == "classifier"
-        return self.__sklearn_tags__().estimator_type == "classifier"
-
     def _check_params(self):
         """Make sure parameters are sane."""
         if self.l1_ratios is not None:
@@ -745,8 +735,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 f"{self.SUPPORTED_PENALTIES}. "
                 f"Got {self.penalty}."
             )
-        if self._is_classification:
-            self._validate_loss(self.loss)
 
     def _set_coef_and_intercept(self, w):
         """Set the loadings vector (coef) and the intercept of the fitted \
@@ -756,22 +744,32 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         if self.w_.ndim == 1:
             self.w_ = self.w_[np.newaxis, :]
         self.coef_ = self.w_[:, :-1]
-        if self._is_classification:
-            self.intercept_ = self.w_[:, -1]
-        else:
-            self._set_intercept(self.Xmean_, self.ymean_, self.Xstd_)
+        self._set_intercept()
+
+    def _set_intercept(self):
+        super()._set_intercept(self.Xmean_, self.ymean_, self.Xstd_)
 
     def _return_loss_value(self):
-        """Set loss value for instances where it is not defined.
-
-        For SpaceNetRegressor it is always "mse".
-        """
+        """Set loss value for instances where it is not defined."""
         loss = getattr(self, "loss", None)
         if loss is None:
             loss = "logistic"
-            if not self._is_classification:
-                loss = "mse"
         return loss
+
+    @abc.abstractmethod
+    def _n_problems(self):
+        # implemented in mixin classes
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def _binarize_y(self, y):
+        # implemented in mixin classes
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def _check_x_y(self, X, y):
+        # implemented in children classes
+        raise NotImplementedError()
 
     def fit(self, X, y):
         """Fit the learner.
@@ -780,8 +778,10 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         ----------
         X : :obj:`list` of Niimg-like objects
             See :ref:`extracting_data`.
-            Data on which model is to be fitted. If this is a list,
+            Data on which model is to be fitted.
+            If this is a list,
             the affine is considered the same for all.
+            Must have exactly as many elements as the input images.
 
         y : array or :obj:`list` of length n_samples
             The dependent variable (age, sex, QI, etc.).
@@ -799,9 +799,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 "Running space net on surface objects is not supported."
             )
 
-        # misc
-        self._check_params()
-
         self._fit_cache()
 
         tic = time.time()
@@ -810,33 +807,21 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.masker_.memory_level = self.memory_level
         X = self.masker_.fit_transform(X)
 
-        X, y = check_X_y(
-            X,
-            y,
-            ["csr", "csc", "coo"],
-            dtype=float,
-            multi_output=True,
-            y_numeric=not self._is_classification,
-        )
+        X, y = self._check_x_y(X, y)
 
-        if not self._is_classification and np.all(np.diff(y) == 0.0):
-            raise ValueError(
-                "The given input y must have at least 2 targets"
-                " to do regression analysis. You provided only"
-                f" one target {np.unique(y)}"
-            )
-
-        # misc
         self.Xmean_ = X.mean(axis=0)
+
         self.Xstd_ = X.std(axis=0)
         self.Xstd_[self.Xstd_ < 1e-8] = 1
+
         self.mask_img_ = self.masker_.mask_img_
+
         self.mask_ = get_data(self.mask_img_).astype(bool)
-        n_samples, _ = X.shape
-        y = np.array(y).copy()
+
         l1_ratios = self.l1_ratios
         if not isinstance(l1_ratios, collections.abc.Iterable):
             l1_ratios = [l1_ratios]
+
         alphas = self.alphas
         if alphas is not None and not isinstance(
             alphas, collections.abc.Iterable
@@ -856,32 +841,26 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         else:
             solver = partial(tvl1_solver, loss="logistic")
 
+        y = np.array(y).copy()
+
         # generate fold indices
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
         case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
         if case1 or case2:
             self.cv_ = list(
-                check_cv(
-                    self.cv, y=y, classifier=self._is_classification
-                ).split(X, y)
+                check_cv(self.cv, y=y, classifier=is_classifier(self)).split(
+                    X, y
+                )
             )
         else:
             # no cross-validation needed, user supplied all params
+            n_samples, _ = X.shape
             self.cv_ = [(np.arange(n_samples), [])]
-        n_folds = len(self.cv_)
 
-        # number of problems to solve
-        y = (
-            self._binarize_y(y)
-            if self._is_classification
-            else y[:, np.newaxis]
-        )
-
-        n_problems = (
-            self.n_classes_
-            if self._is_classification and self.n_classes_ > 2
-            else 1
-        )
+        # Define the number problems to solve. In case of classification this
+        # number corresponds to the number of binary problems to solve
+        y = self._binarize_y(y)
+        n_problems = self._n_problems()
 
         # standardize y
         self.ymean_ = np.zeros(y.shape[0])
@@ -889,6 +868,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             y = y[:, 0]
 
         # scores & mean weights map over all folds
+        n_folds = len(self.cv_)
         self.cv_scores_ = [[] for _ in range(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
@@ -922,7 +902,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 solver_params,
                 n_alphas=self.n_alphas,
                 eps=self.eps,
-                is_classif=self._is_classification,
+                is_classif=is_classifier(self),
                 key=(cls, fold),
                 debias=self.debias,
                 verbose=self.verbose,
@@ -944,11 +924,9 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         self.cv_scores_ = np.array(self.cv_scores_)
         self.best_model_params_ = np.array(self.best_model_params_)
         self.alpha_grids_ = np.array(self.alpha_grids_)
+
         self.ymean_ /= n_folds
-        if not self._is_classification:
-            self.all_coef_ = np.array(self.all_coef_)
-            w = w[0]
-            self.ymean_ = self.ymean_[0]
+        w, self.ymean_, self.all_coef_ = self._adapt_weights_y_mean_all_coef(w)
 
         # bagging: average best weights maps over folds
         w /= n_folds
@@ -969,6 +947,9 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         )
 
         return self
+
+    def _adapt_weights_y_mean_all_coef(self, w):
+        return w, self.ymean_, self.all_coef_
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "masker_")
@@ -1002,17 +983,17 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 f"expecting {self.n_elements_}."
             )
 
-        # handle regression (least-squared loss)
-        if not self._is_classification:
-            return LinearRegression.predict(self, X)
-
         # prediction proper
-        scores = self.decision_function(X)
-        if len(scores.shape) == 1:
-            indices = (scores > 0).astype(int)
+        if is_classifier(self):
+            scores = self.decision_function(X)
+            if len(scores.shape) == 1:
+                indices = (scores > 0).astype(int)
+            else:
+                indices = scores.argmax(axis=1)
+            return self.classes_[indices]
         else:
-            indices = scores.argmax(axis=1)
-        return self.classes_[indices]
+            # handle regression (least-squared loss)
+            return LinearRegression.predict(self, X)
 
 
 @fill_doc
@@ -1182,19 +1163,22 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
                 f"Got {value}."
             )
 
-    def _binarize_y(self, y):
-        """Encode target classes as -1 and 1.
+    def _check_params(self):
+        super()._check_params()
+        self._validate_loss(self.loss)
 
-        Helper function invoked just before fitting a classifier.
-        """
-        y = np.array(y)
+    def _check_x_y(self, X, y):
+        return check_X_y(
+            X,
+            y,
+            ["csr", "csc", "coo"],
+            dtype=float,
+            multi_output=True,
+            y_numeric=False,
+        )
 
-        # encode target classes as -1 and 1
-        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
-        y = self._enc.fit_transform(y)
-        self.classes_ = self._enc.classes_
-        self.n_classes_ = len(self.classes_)
-        return y
+    def _set_intercept(self):
+        self.intercept_ = self.w_[:, -1]
 
     def score(self, X, y):
         """Return the mean accuracy on the given test data and labels.
@@ -1402,3 +1386,56 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
             verbose=verbose,
             positive=positive,
         )
+
+    def _return_loss_value(self):
+        """Return loss value.
+
+        For SpaceNetRegressor it is always "mse".
+        """
+        return "mse"
+
+    def _check_x_y(self, X, y):
+        X, y = check_X_y(
+            X,
+            y,
+            ["csr", "csc", "coo"],
+            dtype=float,
+            multi_output=True,
+            y_numeric=True,
+        )
+
+        if np.all(np.diff(y) == 0.0):
+            raise ValueError(
+                "The given input y must have at least 2 targets"
+                " to do regression analysis. You provided only"
+                f" one target {np.unique(y)}"
+            )
+
+        return X, y
+
+    def _adapt_weights_y_mean_all_coef(self, w):
+        return w[0], self.ymean_[0], np.array(self.all_coef_)
+
+    def fit(self, X, y):
+        """Fit the learner.
+
+        Parameters
+        ----------
+        X : :obj:`list` of Niimg-like objects
+            See :ref:`extracting_data`.
+            Data on which model is to be fitted.
+            If this is a list,
+            the affine is considered the same for all.
+            Must have exactly as many elements as the input images.
+
+        y : array or :obj:`list` of length n_samples
+            The dependent variable (age, sex, QI, etc.).
+
+        Notes
+        -----
+        self : `SpaceNet` object
+            Model selection is via cross-validation with bagging.
+        """
+        # duplicated from BaseSpaceNet to not rely on the API / docstring
+        # from RegressorMixin
+        return BaseSpaceNet.fit(self, X, y)
