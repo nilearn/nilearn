@@ -27,6 +27,7 @@ from nilearn.plotting.surface._utils import (
     check_engine_params,
     check_surf_map,
     check_surface_plotting_inputs,
+    get_bg_data,
     get_faces_on_edge,
     sanitize_hemi_view,
 )
@@ -120,6 +121,41 @@ def _adjust_plot_roi_params(params):
         params["cbar_tick_format"] = "%i"
 
 
+def _normalize_bg_data(data):
+    """Normalize specified ``data`` and return.
+
+    Parameters
+    ----------
+    data : :obj:`numpy.ndarray`
+        An array containing surface data
+
+    Returns
+    -------
+    data : :obj:`numpy.ndarray`
+        An array containing normalized surface data
+    """
+    vmin, vmax = np.nanmin(data), np.nanmax(data)
+    if vmin < 0 or vmax > 1:
+        norm = Normalize(vmin=vmin, vmax=vmax)
+        data = norm(data)
+    return data
+
+
+# TODO (nilearn >= 0.13.0) remove
+def _apply_darkness(data, darkness):
+    if darkness is not None:
+        data *= darkness
+        warn(
+            (
+                "The `darkness` parameter will be deprecated in release 0.13. "
+                "We recommend setting `darkness` to None"
+            ),
+            DeprecationWarning,
+            stacklevel=find_stack_level(),
+        )
+    return data
+
+
 def _get_vertexcolor(
     surf_map,
     cmap,
@@ -130,30 +166,13 @@ def _get_vertexcolor(
     darkness=None,
 ):
     """Get the color of the vertices."""
-    if bg_map is None:
-        bg_data = np.ones(len(surf_map)) * 0.5
-        bg_vmin, bg_vmax = 0, 1
-    else:
-        bg_data = np.copy(load_surf_data(bg_map))
+    bg_data = get_bg_data(bg_map, len(surf_map))
 
     # scale background map if need be
-    bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
-    if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_data = bg_norm(bg_data)
+    bg_data = _normalize_bg_data(bg_data)
 
-    if darkness is not None:
-        bg_data *= darkness
-        # TODO (nilearn >= 0.13.0)
-        warn(
-            (
-                "The `darkness` parameter will be deprecated in release 0.13. "
-                "We recommend setting `darkness` to None"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
-
+    # TODO (nilearn >= 0.13.0) remove
+    bg_data = _apply_darkness(bg_data, darkness)
     bg_colors = plt.get_cmap("Greys")(bg_data)
 
     # select vertices which are filtered out by the threshold
@@ -241,35 +260,13 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
 
     This function computes the facecolors.
     """
-    if bg_map is None:
-        bg_data = np.ones(n_vertices) * 0.5
-    else:
-        bg_data = np.copy(load_surf_data(bg_map))
-        if bg_data.shape[0] != n_vertices:
-            raise ValueError(
-                "The bg_map does not have the same number "
-                "of vertices as the mesh."
-            )
-
+    bg_data = get_bg_data(bg_map, n_vertices)
     bg_faces = np.mean(bg_data[faces], axis=1)
     # scale background map if need be
-    bg_vmin, bg_vmax = np.min(bg_faces), np.max(bg_faces)
-    if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_faces = bg_norm(bg_faces)
+    bg_faces = _normalize_bg_data(bg_faces)
 
-    if darkness is not None:
-        bg_faces *= darkness
-        # TODO (nilearn >= 0.13.0)
-        warn(
-            (
-                "The `darkness` parameter will be deprecated in release 0.13. "
-                "We recommend setting `darkness` to None"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
-
+    # TODO (nilearn >= 0.13.0) remove
+    bg_faces = _apply_darkness(bg_faces, darkness)
     face_colors = plt.cm.gray_r(bg_faces)
 
     # set alpha if in auto mode
