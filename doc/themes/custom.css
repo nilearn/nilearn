@@ -190,3 +190,9 @@ img.math {
     filter: invert(1);
   }
 }
+
+/* Hide Binder launch badge in footer  as we have it in header*/
+/* .binder-badge
+{
+  display: none;
+} */
