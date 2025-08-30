@@ -340,6 +340,10 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
+    %(dtype)s
+
+        ..versionadded:: 0.12.1dev
+
     %(target_affine)s
 
         .. note::
@@ -396,6 +400,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         target_affine=None,
         target_shape=None,
         mask_strategy="epi",
@@ -416,6 +421,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.target_affine = target_affine
         self.target_shape = target_shape
         self.mask_strategy = mask_strategy
@@ -522,6 +528,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             _warn_ignored_surface_masker_params(self)
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         self.masker_.memory_level = self.memory_level
+        self.masker_.dtype = self.dtype
 
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
@@ -548,13 +555,14 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         # and inverse_transform
         if isinstance(self.masker_, SurfaceMasker):
             self.maps_masker_ = SurfaceMapsMasker(
-                self.components_img_, self.masker_.mask_img_
+                self.components_img_, self.masker_.mask_img_, dtype=self.dtype
             )
         else:
             self.maps_masker_ = NiftiMapsMasker(
                 self.components_img_,
                 self.masker_.mask_img_,
                 resampling_target="maps",
+                dtype=self.dtype,
             )
         self.maps_masker_.fit()
 

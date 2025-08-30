@@ -5,8 +5,9 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Header, Nifti1Image, load
 
-from nilearn._utils import niimg, testing
-from nilearn._utils.niimg import load_niimg
+from nilearn._utils.niimg import img_data_dtype, load_niimg
+from nilearn._utils.numpy_conversions import get_target_dtype
+from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data, new_img_like
 
 
@@ -29,7 +30,7 @@ def test_new_img_like_side_effect(img1):
 def test_get_target_dtype(affine_eye):
     img = Nifti1Image(np.ones((2, 2, 2), dtype=np.float64), affine=affine_eye)
     assert get_data(img).dtype.kind == "f"
-    dtype_kind_float = niimg._get_target_dtype(
+    dtype_kind_float = get_target_dtype(
         get_data(img).dtype, target_dtype="auto"
     )
     assert dtype_kind_float == np.float32
@@ -40,7 +41,7 @@ def test_get_target_dtype(affine_eye):
     data = np.ones((2, 2, 2), dtype=np.int64)
     img2 = Nifti1Image(data, affine=affine_eye, header=hdr)
     assert get_data(img2).dtype.kind == img2.get_data_dtype().kind == "i"
-    dtype_kind_int = niimg._get_target_dtype(
+    dtype_kind_int = get_target_dtype(
         get_data(img2).dtype, target_dtype="auto"
     )
     assert dtype_kind_int == np.int32
@@ -73,19 +74,15 @@ def test_img_data_dtype(rng, affine_eye, tmp_path):
             loaded = load(tmp_path / "test.nii")
             # To verify later that sometimes these differ meaningfully
             dtype_matches.append(
-                loaded.get_data_dtype() == niimg.img_data_dtype(loaded)
+                loaded.get_data_dtype() == img_data_dtype(loaded)
             )
-            assert np.array(loaded.dataobj).dtype == niimg.img_data_dtype(
-                loaded
-            )
+            assert np.array(loaded.dataobj).dtype == img_data_dtype(loaded)
     # Verify that the distinction is worth making
     assert any(dtype_matches)
     assert not all(dtype_matches)
 
 
 def test_load_niimg(img1, tmp_path):
-    filename = testing.write_imgs_to_path(
-        img1, file_path=tmp_path, create_files=True
-    )
+    filename = write_imgs_to_path(img1, file_path=tmp_path, create_files=True)
     filename = Path(filename)
     load_niimg(filename)
