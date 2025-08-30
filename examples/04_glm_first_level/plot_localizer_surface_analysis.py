@@ -84,13 +84,22 @@ surface_image = SurfaceImage.from_volume(
 # Here we use an :term:`HRF` model
 # containing the Glover model and its time derivative
 # The drift model is implicitly a cosine basis with a period cutoff at 128s.
+#
+# We cache some results on disk with 'memory= output_dir / "tmp"'
+# to avoid recomputing things when generating a GLM report at the end.
+from pathlib import Path
+
 from nilearn.glm.first_level import FirstLevelModel
+
+output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
+output_dir.mkdir(exist_ok=True, parents=True)
 
 glm = FirstLevelModel(
     t_r=t_r,
     slice_time_ref=slice_time_ref,
     hrf_model="glover + derivative",
     minimize_memory=False,
+    memory=output_dir / "tmp",
 ).fit(run_imgs=surface_image, events=data.events)
 
 # %%
@@ -204,12 +213,7 @@ show()
 
 # %%
 # Or we can save as an html file.
-from pathlib import Path
-
 from nilearn.interfaces.bids import save_glm_to_bids
-
-output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
-output_dir.mkdir(exist_ok=True, parents=True)
 
 save_glm_to_bids(
     glm,
