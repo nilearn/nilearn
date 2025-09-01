@@ -254,8 +254,6 @@ class BoundingBoxError(ValueError):
     matrix does not contain any of the original data.
     """
 
-    pass
-
 
 ###############################################################################
 # Resampling

@@ -978,7 +978,8 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
         Parameters
         ----------
-        X : :obj:`list` of Niimg-like objects or numpy array
+        X : Niimg-like, :obj:`list` Niimg-like objects or \
+            {array-like, sparse matrix}, shape = (n_samples, n_features)
             See :ref:`extracting_data`.
             Data on prediction is to be made. If this is a list,
             the affine is considered the same for all.
@@ -1200,8 +1201,8 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
         Parameters
         ----------
-        X : :obj:`list` of Niimg-like objects
-            See :ref:`extracting_data`.
+        X : Niimg-like, :obj:`list` Niimg-like objects or \
+            {array-like, sparse matrix}, shape = (n_samples, n_features)
             Data on which model is to be fitted. If this is a list,
             the affine is considered the same for all.
 
@@ -1224,8 +1225,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
         Parameters
         ----------
-        X : Niimg-like, :obj:`list` of either \
-            Niimg-like objects or :obj:`str` or path-like or \
+        X : Niimg-like, :obj:`list` Niimg-like objects or \
             {array-like, sparse matrix}, shape = (n_samples, n_features)
             Samples.
 

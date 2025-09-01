@@ -266,7 +266,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         copy : :obj:`bool`, default=True
             Indicates whether a copy is returned or not.
@@ -305,7 +305,6 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
-        ...
 
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
@@ -350,7 +349,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------
@@ -398,7 +397,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------

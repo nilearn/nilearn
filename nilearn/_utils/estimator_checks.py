@@ -248,11 +248,8 @@ def return_expected_failed_checks(
     # that accept images as input
     assert accept_niimg_input(estimator) or accept_surf_img_input(estimator)
 
-    if isinstance(estimator, (_BaseDecoder, SearchLight)):
+    if isinstance(estimator, (_BaseDecoder, SearchLight, BaseSpaceNet)):
         return expected_failed_checks_decoders(estimator)
-
-    if isinstance(estimator, (BaseSpaceNet)):
-        return expected_failed_checks_spacenet(estimator)
 
     # keeping track of some of those in
     # https://github.com/nilearn/nilearn/issues/4538
@@ -449,6 +446,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
+        "check_estimators_overwrite_params": (
+            "replaced by check_img_estimator_overwrite_params"
+        ),
         "check_estimators_pickle": "replaced by check_img_estimator_pickle",
         "check_fit_check_is_fitted": (
             "replaced by check_img_estimator_fit_check_is_fitted"
@@ -456,11 +456,15 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_fit_idempotent": (
             "replaced by check_img_estimator_fit_idempotent"
         ),
+        "check_fit_score_takes_y": (
+            "replaced by check_img_estimator_fit_score_takes_y"
+        ),
         "check_methods_sample_order_invariance": (
             "replaced by check_nilearn_methods_sample_order_invariance"
         ),
-        "check_fit_score_takes_y": (
-            "replaced by check_img_estimator_fit_score_takes_y"
+        "check_n_features_in": "replaced by check_img_estimator_n_elements",
+        "check_n_features_in_after_fitting": (
+            "replaced by check_img_estimator_n_elements"
         ),
         "check_pipeline_consistency": (
             "replaced by check_img_estimator_pipeline_consistency"
@@ -471,10 +475,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_supervised_y_no_nan": (
             "replaced by check_supervised_img_estimator_y_no_nan"
         ),
-        "check_n_features_in": "replaced by check_img_estimator_n_elements",
-        "check_n_features_in_after_fitting": (
-            "replaced by check_img_estimator_n_elements"
-        ),
         # Those are skipped for now they fail
         # for unknown reasons
         # most often because sklearn inputs expect a numpy array
@@ -483,12 +483,16 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         # has not yet been created.
         "check_estimators_dtypes": "TODO",
         "check_estimators_nan_inf": "TODO",
-        "check_estimators_overwrite_params": "TODO",
         "check_methods_subset_invariance": "TODO",
         "check_positive_only_tag_during_fit": "TODO",
         "check_readonly_memmap_input": "TODO",
         "check_supervised_y_2d": "TODO",
     }
+
+    if isinstance(estimator, BaseSpaceNet):
+        expected_failed_checks |= {
+            "check_non_transformer_estimators_n_iter": ("TODO")
+        }
 
     if is_classifier(estimator):
         expected_failed_checks |= {
@@ -500,11 +504,15 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
             "check_classifiers_regression_target": "TODO",
             "check_classifiers_train": "TODO",
         }
+        if isinstance(estimator, BaseSpaceNet):
+            expected_failed_checks |= {
+                "check_classifier_multioutput": ("TODO")
+            }
 
     if is_regressor(estimator):
         expected_failed_checks |= {
             "check_regressors_no_decision_function": (
-                "replaced by check_img_regressors_no_decision_function"
+                "replaced by check_img_regressor_no_decision_function"
             ),
             "check_regressor_data_not_an_array": (
                 "not applicable for image input"
@@ -519,86 +527,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
             "check_transformer_data_not_an_array": "TODO",
             "check_transformer_general": "TODO",
             "check_transformer_preserve_dtypes": "TODO",
-        }
-
-    expected_failed_checks |= unapplicable_checks()
-
-    return expected_failed_checks
-
-
-def expected_failed_checks_spacenet(estimator) -> dict[str, str]:
-    expected_failed_checks = {
-        # the following have Nilearn replacement for masker and/or glm
-        # but not for decoders
-        "check_estimators_empty_data_messages": (
-            "not implemented for nifti data performance reasons"
-        ),
-        "check_dont_overwrite_parameters": (
-            "replaced by check_img_estimator_dont_overwrite_parameters"
-        ),
-        "check_estimators_fit_returns_self": (
-            "replaced by check_fit_returns_self"
-        ),
-        "check_estimators_overwrite_params": (
-            "replaced by check_img_estimator_overwrite_params"
-        ),
-        "check_estimators_pickle": "replaced by check_img_estimator_pickle",
-        "check_fit_check_is_fitted": (
-            "replaced by check_img_estimator_fit_check_is_fitted"
-        ),
-        "check_n_features_in": "replaced by check_img_estimator_n_elements",
-        "check_n_features_in_after_fitting": (
-            "replaced by check_img_estimator_n_elements"
-        ),
-        "check_requires_y_none": (
-            "replaced by check_img_estimator_requires_y_none"
-        ),
-        "check_supervised_y_no_nan": (
-            "replaced by check_supervised_img_estimator_y_no_nan"
-        ),
-        # Those are skipped for now they fail
-        # for unknown reasons
-        # most often because sklearn inputs expect a numpy array
-        # that errors with maskers,
-        # or because a suitable nilearn replacement
-        # has not yet been created.
-        "check_dict_unchanged": (
-            "replaced by check_img_estimator_dict_unchanged"
-        ),
-        "check_estimators_dtypes": "TODO",
-        "check_estimators_nan_inf": "TODO",
-        "check_fit_idempotent": "TODO",
-        "check_fit_score_takes_y": "TODO",
-        "check_methods_sample_order_invariance": "TODO",
-        "check_methods_subset_invariance": "TODO",
-        "check_non_transformer_estimators_n_iter": "TODO",
-        "check_positive_only_tag_during_fit": "TODO",
-        "check_pipeline_consistency": "TODO",
-        "check_readonly_memmap_input": "TODO",
-        "check_supervised_y_2d": "TODO",
-    }
-
-    if is_classifier(estimator):
-        expected_failed_checks |= {
-            "check_classifier_data_not_an_array": (
-                "not applicable for image input"
-            ),
-            "check_classifier_multioutput": "TODO",
-            "check_classifiers_classes": "TODO",
-            "check_classifiers_one_label": "TODO",
-            "check_classifiers_regression_target": "TODO",
-            "check_classifiers_train": "TODO",
-        }
-
-    if is_regressor(estimator):
-        expected_failed_checks |= {
-            "check_regressor_data_not_an_array": (
-                "not applicable for image input"
-            ),
-            "check_regressor_multioutput": "TODO",
-            "check_regressors_int": "TODO",
-            "check_regressors_train": "TODO",
-            "check_regressors_no_decision_function": "TODO",
         }
 
     expected_failed_checks |= unapplicable_checks()
@@ -662,11 +590,12 @@ def nilearn_check_generator(estimator: BaseEstimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
             yield (clone(estimator), check_decoder_compatibility_mask_image)
-            yield (clone(estimator), check_decoders_with_surface_data)
+            yield (clone(estimator), check_decoder_with_surface_data)
+            yield (clone(estimator), check_decoder_with_arrays)
             if is_regressor(estimator):
                 yield (
                     clone(estimator),
-                    check_img_regressors_no_decision_function,
+                    check_img_regressor_no_decision_function,
                 )
 
     if is_masker(estimator):
@@ -1512,7 +1441,6 @@ def check_img_estimator_pickle(estimator_orig):
 def check_img_estimator_pipeline_consistency(estimator_orig):
     """Check pipeline consistency for nilearn estimators.
 
-
     Substitute for sklearn check_pipeline_consistency.
     """
     estimator = clone(estimator_orig)
@@ -1810,7 +1738,7 @@ def check_decoder_compatibility_mask_image(estimator_orig):
 
 
 @ignore_warnings()
-def check_decoders_with_surface_data(estimator_orig):
+def check_decoder_with_surface_data(estimator_orig):
     """Test fit and other methods with surface image."""
     if isinstance(estimator_orig, SearchLight):
         # note searchlight does not fit Surface data
@@ -1849,7 +1777,7 @@ def check_decoders_with_surface_data(estimator_orig):
 
 
 @ignore_warnings
-def check_img_regressors_no_decision_function(regressor_orig):
+def check_img_regressor_no_decision_function(regressor_orig):
     """Check that regressors don't have some method, attributes.
 
     replaces sklearn check_regressors_no_decision_function
@@ -1864,6 +1792,35 @@ def check_img_regressors_no_decision_function(regressor_orig):
         assert not hasattr(regressor, attr), (
             f"'{regressor.__class__.__name__}' should not have '{attr}'"
         )
+
+
+@ignore_warnings
+def check_decoder_with_arrays(estimator_orig):
+    """Check that several methods of decoders work with ndarray and images.
+
+    Test for backward compatibility.
+    """
+    estimator = clone(estimator_orig)
+    estimator = fit_estimator(estimator)
+
+    for method in [
+        "decision_function",
+        "predict",
+        "score",
+    ]:
+        if not hasattr(estimator, method):
+            continue
+
+        X, y = generate_data_to_fit(estimator)
+        X_as_array = estimator.masker_.transform(X)
+        if method == "score":
+            result_1 = getattr(estimator, method)(X, y)
+            result_2 = getattr(estimator, method)(X_as_array, y)
+        else:
+            result_1 = getattr(estimator, method)(X)
+            result_2 = getattr(estimator, method)(X_as_array)
+
+        assert_array_equal(result_1, result_2)
 
 
 # ------------------ MASKER CHECKS ------------------
