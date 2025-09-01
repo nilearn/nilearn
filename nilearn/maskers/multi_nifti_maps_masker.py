@@ -72,9 +72,9 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
     resampling_target : {"data", "mask", "maps", None}, default="data"
         Gives which image gives the final shape/size:
 
-        - ``"data"`` means the atlas is resampled to the shape of the data if
+        - ``"data"`` means that the atlas is resampled to the shape of the data if
           needed
-        - ``"mask"`` means the ``maps_img`` and images provided
+        - ``"mask"`` means that the ``maps_img`` and images provided
           to ``fit()`` are
           resampled to the shape and affine of ``mask_img``
         - ``"maps"`` means the ``mask_img`` and images provided
