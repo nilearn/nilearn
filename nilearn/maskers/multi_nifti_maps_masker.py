@@ -81,7 +81,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
           to ``fit()`` are
           resampled to the shape and affine of ``maps_img``
         - ``None`` means no resampling: if shapes and affines do not match,
-          a ValueError is raised.
+          a ``ValueError`` is raised.
 
     %(keep_masked_maps)s
 
