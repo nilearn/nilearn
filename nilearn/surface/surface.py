@@ -1355,7 +1355,7 @@ class PolyData:
         dtype to enforce on the data.
         If ``None`` the original dtype if used.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
     Examples
     --------
@@ -1891,7 +1891,7 @@ class SurfaceImage:
         dtype to enforce on the data.
         If ``None`` the original dtype is used.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
     Attributes
     ----------
