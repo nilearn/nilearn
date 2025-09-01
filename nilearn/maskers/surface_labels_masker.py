@@ -221,7 +221,10 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     @property
     def labels_(self) -> list[Union[int, float]]:
-        """Return list of labels of the regions."""
+        """Return list of labels of the regions.
+
+        The background label is included if present in the image.
+        """
         check_is_fitted(self)
         lut = self.lut_
         return lut["index"].to_list()
@@ -352,7 +355,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self.lut_ = generate_lut(
             self.labels_img_, self.background_label, self.lut, self.labels
         )
-        self.lut_ = self.lut_.sort_values("index").reset_index(drop=True)
 
         if self.clean_args is None:
             self.clean_args_ = {}

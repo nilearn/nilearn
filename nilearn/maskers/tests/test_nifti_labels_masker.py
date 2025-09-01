@@ -615,10 +615,6 @@ def check_region_names_after_fit(
     assert len(masker.region_names_) == n_regions
     assert len(list(masker.region_ids_.items())) == n_regions + 1
 
-    # for coverage
-    masker.labels_  # noqa: B018
-    masker._region_id_name  # noqa: B018
-
     # resampling may drop some labels so we do not check the region names
     # in this case
     if not resampling:
@@ -799,7 +795,6 @@ def test_regions_id_names_lut(affine_eye, shape_3d_default):
 
     expected_region_ids_ = {"background": 0.0, 0: 1.0, 1: 2.0}
     assert masker.region_ids_ == expected_region_ids_
-
     assert masker.region_names_ == {0: "A", 1: "B"}
 
     # Background is not returned by 'region_names_'
@@ -814,18 +809,24 @@ def test_regions_id_names_lut(affine_eye, shape_3d_default):
     # fitted lut now includes background
     expected_lut = pd.DataFrame(
         columns=["index", "name"],
-        data=[[0.0, "Background"], [2.0, "B"], [1.0, "A"]],
+        data=[
+            [0.0, "Background"],
+            [1.0, "A"],
+            [2.0, "B"],
+        ],
     )
     check_lut(masker, expected_lut)
 
 
-def test_regions_id_names_lut_too_few(affine_eye):
+def test_regions_id_names_lut_too_few(affine_eye, shape_3d_default):
     """Check passing LUT with too few entries."""
     atlas = np.zeros((8, 8, 8))
     atlas[4, 4, 3:5] = 1
     atlas[4, 4, 5:7] = 6
     atlas[4, 3, 5:7] = 10
     atlas = Nifti1Image(atlas, affine_eye)
+
+    n_expected_regions = 3
 
     # Too few entries
     # we are skipping region with index 6
@@ -836,16 +837,28 @@ def test_regions_id_names_lut_too_few(affine_eye):
 
     masker = NiftiLabelsMasker(atlas, lut=lut).fit()
 
-    expected_region_ids_ = {"background": 0.0, 0: 1.0, 1: 10.0, 2: 6.0}
+    expected_region_ids_ = {"background": 0.0, 0: 1.0, 1: 6.0, 2: 10.0}
     assert masker.region_ids_ == expected_region_ids_
 
-    assert masker.region_names_ == {0: "A", 1: "B", 2: "unknown"}
+    assert masker.region_names_ == {0: "A", 1: "unknown", 2: "B"}
 
     expected_lut = pd.DataFrame(
         columns=["index", "name"],
-        data=[[0.0, "Background"], [1.0, "A"], [10.0, "B"], [6.0, "unknown"]],
+        data=[[0.0, "Background"], [1.0, "A"], [6.0, "unknown"], [10.0, "B"]],
     )
     check_lut(masker, expected_lut)
+
+    fmri_img, _ = generate_random_img(shape_3d_default, affine=affine_eye)
+    signals = masker.fit_transform(fmri_img)
+
+    assert signals.shape[0] == masker.n_elements_ == n_expected_regions
+
+    assert len(masker.region_names_) == n_expected_regions
+
+    # Background is included in list of labels
+    n_expected_labels = n_expected_regions + 1
+    assert len(masker.labels_) == n_expected_labels
+    assert len(masker.region_ids_) == n_expected_labels
 
 
 def test_regions_id_names_lut_too_many_entries(affine_eye):
@@ -1208,9 +1221,9 @@ def test_no_background(n_regions, img_labels, shape_3d_default, affine_eye):
     assert 999 not in masker.lut_["index"].to_list()
     assert 999 not in masker._lut_["index"].to_list()
 
-    expected_n_regions = n_regions + 1
-    assert masker.n_elements_ == expected_n_regions
-    assert signal.shape[0] == expected_n_regions
-    assert len(masker.labels_) == expected_n_regions
-    assert len(masker.region_ids_) == expected_n_regions
-    assert len(masker.region_names_) == expected_n_regions
+    n_expected_regions = n_regions + 1
+    assert masker.n_elements_ == n_expected_regions
+    assert signal.shape[0] == n_expected_regions
+    assert len(masker.labels_) == n_expected_regions
+    assert len(masker.region_ids_) == n_expected_regions
+    assert len(masker.region_names_) == n_expected_regions

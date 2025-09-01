@@ -279,7 +279,10 @@ class NiftiLabelsMasker(BaseMasker):
 
     @property
     def labels_(self) -> list[Union[int, float]]:
-        """Return list of labels of the regions."""
+        """Return list of labels of the regions.
+
+        The background label is included if present in the image.
+        """
         check_is_fitted(self)
         lut = self.lut_
         if hasattr(self, "_lut_"):
@@ -852,7 +855,7 @@ class NiftiLabelsMasker(BaseMasker):
         if self.background_label in labels:
             desired_order = [self.background_label, *ids]
 
-        mask = mask = self.lut_["index"].isin(desired_order)
+        mask = self.lut_["index"].isin(desired_order)
         self._lut_ = self._lut_[mask]
         self._lut_ = sanitize_look_up_table(
             self._lut_, atlas=np.array(desired_order)
