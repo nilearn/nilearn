@@ -15,7 +15,6 @@ from nilearn._utils.helpers import (
     constrained_layout_kwargs,
     is_matplotlib_installed,
     is_plotly_installed,
-    rename_parameters,
 )
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
@@ -157,11 +156,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-    # TODO (nilearn >= 0.13.0)
     @fill_doc
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.0"
-    )
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 

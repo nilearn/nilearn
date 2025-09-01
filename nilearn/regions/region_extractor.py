@@ -10,7 +10,6 @@ from scipy.stats import scoreatpercentile
 
 from nilearn import masking
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import (
@@ -515,9 +514,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.extractor = extractor
         self.smoothing_fwhm = smoothing_fwhm
 
-    # TODO (nilearn >= 0.13.0)
     @fill_doc
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
