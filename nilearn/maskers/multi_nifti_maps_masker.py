@@ -102,13 +102,9 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
     %(clean_args)s
 
-    %(masker_kwargs)s
-
     Attributes
     ----------
     %(clean_args_)s
-
-    %(masker_kwargs_)s
 
     maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The maps mask of the data.
@@ -162,7 +158,6 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         cmap="CMRmap_r",
         n_jobs=1,
         clean_args=None,
-        **kwargs,
     ):
         self.n_jobs = n_jobs
         super().__init__(
@@ -186,7 +181,6 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             reports=reports,
             cmap=cmap,
             clean_args=clean_args,
-            **kwargs,
         )
 
     def __sklearn_tags__(self):

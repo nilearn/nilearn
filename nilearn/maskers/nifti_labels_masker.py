@@ -170,13 +170,9 @@ class NiftiLabelsMasker(BaseMasker):
     %(clean_args)s
         .. versionadded:: 0.12.0
 
-    %(masker_kwargs)s
-
     Attributes
     ----------
     %(clean_args_)s
-
-    %(masker_kwargs_)s
 
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
@@ -223,7 +219,6 @@ class NiftiLabelsMasker(BaseMasker):
         reports=True,
         cmap="CMRmap_r",
         clean_args=None,
-        **kwargs,  # TODO (nilearn >= 0.13.0) remove
     ):
         self.labels_img = labels_img
         self.background_label = background_label
@@ -247,9 +242,6 @@ class NiftiLabelsMasker(BaseMasker):
         self.t_r = t_r
         self.dtype = dtype
         self.clean_args = clean_args
-
-        # TODO (nilearn >= 0.13.0) remove
-        self.clean_kwargs = kwargs
 
         # Parameters for resampling
         self.resampling_target = resampling_target
@@ -818,9 +810,6 @@ class NiftiLabelsMasker(BaseMasker):
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
         params["clean_kwargs"] = self.clean_args_
-        # TODO (nilearn  >= 0.13.0) remove
-        if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs_
 
         region_signals, (ids, masked_atlas) = self._cache(
             filter_and_extract,

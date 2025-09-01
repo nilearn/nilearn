@@ -374,16 +374,6 @@ def return_expected_failed_checks(
                 "replaced by check_img_estimator_n_elements"
             ),
         }
-        if accept_niimg_input(estimator):
-            # TODO (nilearn >= 0.13.0) remove
-            expected_failed_checks |= {
-                "check_do_not_raise_errors_in_init_or_set_params": (
-                    "Deprecation cycle started to fix."
-                ),
-                "check_no_attributes_set_in_init": (
-                    "Deprecation cycle started to fix."
-                ),
-            }
 
         if isinstance(estimator, (RegionExtractor)) and SKLEARN_MINOR >= 6:
             expected_failed_checks.pop(
@@ -635,8 +625,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
             yield (clone(estimator), check_masker_with_confounds)
 
         if accept_niimg_input(estimator):
-            yield (clone(estimator), check_nifti_masker_clean_error)
-            yield (clone(estimator), check_nifti_masker_clean_warning)
             yield (clone(estimator), check_nifti_masker_dtype)
             yield (clone(estimator), check_nifti_masker_fit_transform)
             yield (clone(estimator), check_nifti_masker_fit_transform_5d)
@@ -2893,52 +2881,6 @@ def check_nifti_masker_fit_transform_5d(estimator):
         assert all(isinstance(x, np.ndarray) for x in signal)
         assert len(signal) == n_subject
         assert all(x.ndim == 2 for x in signal)
-
-
-@ignore_warnings()
-def check_nifti_masker_clean_error(estimator):
-    """Nifti maskers cannot be given cleaning parameters \
-        via both clean_args and kwargs simultaneously.
-
-    TODO (nilearn >= 0.13.0) remove
-    """
-    input_img = _img_4d_rand_eye_medium()
-
-    estimator.t_r = 2.0
-    estimator.high_pass = 1 / 128
-    estimator.clean_kwargs = {"clean__filter": "cosine"}
-    estimator.clean_args = {"filter": "cosine"}
-
-    error_msg = (
-        "Passing arguments via 'kwargs' "
-        "is mutually exclusive with using 'clean_args'"
-    )
-    with pytest.raises(ValueError, match=error_msg):
-        estimator.fit(input_img)
-
-
-def check_nifti_masker_clean_warning(estimator):
-    """Nifti maskers raise warning if cleaning parameters \
-        passed via kwargs.
-
-        But this still affects the transformed signal.
-
-    TODO (nilearn >= 0.13.0) remove
-    """
-    input_img = _img_4d_rand_eye_medium()
-
-    signal = estimator.fit_transform(input_img)
-
-    estimator.t_r = 2.0
-    estimator.high_pass = 1 / 128
-    estimator.clean_kwargs = {"clean__filter": "cosine"}
-
-    with pytest.warns(DeprecationWarning, match="You passed some kwargs"):
-        estimator.fit(input_img)
-
-    detrended_signal = estimator.transform(input_img)
-
-    assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
 
 
 @ignore_warnings()
