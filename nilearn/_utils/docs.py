@@ -599,9 +599,11 @@ keep_masked_maps : :obj:`bool`, optional
 
     .. deprecated:: 0.10.2
 
-        The 'True' option for ``keep_masked_maps`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_maps`` parameter will be removed in 0.15.
+    .. versionchanged:: 0.13.0dev
+
+        ``keep_masked_maps`` is deprecated.
+        The default value was change to 'False' in 0.13.0.
+        The ``keep_masked_maps`` parameter will be removed in 0.15.
 
 """
 

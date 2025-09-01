@@ -519,9 +519,11 @@ def test_signal_extraction_with_maps_and_labels(
     maps_img = Nifti1Image(maps_data, labeled_regions.affine)
 
     # Extract signals from maps and labels: results must be identical.
-    maps_signals, maps_labels = img_to_signals_maps(fmri_img, maps_img)
+    maps_signals, maps_labels = img_to_signals_maps(
+        fmri_img, maps_img, keep_masked_maps=True
+    )
     labels_signals, labels_labels = img_to_signals_labels(
-        imgs=fmri_img, labels_img=labeled_regions
+        imgs=fmri_img, labels_img=labeled_regions, keep_masked_labels=True
     )
     assert_almost_equal(maps_signals, labels_signals)
 
@@ -530,10 +532,13 @@ def test_signal_extraction_with_maps_and_labels(
         labels_data, labeled_regions.affine
     )
     labels_signals, labels_labels = img_to_signals_labels(
-        imgs=fmri_img, labels_img=labeled_regions, mask_img=mask_img
+        imgs=fmri_img,
+        labels_img=labeled_regions,
+        mask_img=mask_img,
+        keep_masked_labels=True,
     )
     maps_signals, maps_labels = img_to_signals_maps(
-        fmri_img, maps_img, mask_img=mask_img
+        fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True
     )
 
     assert_almost_equal(maps_signals, labels_signals)
@@ -659,7 +664,7 @@ def test_img_to_signals_maps_warnings(
         "3 maps.",
     ):
         maps_signals, maps_labels = img_to_signals_maps(
-            fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=False
+            fmri_img, maps_img, mask_img=mask_img
         )
 
     # only 3 regions must be kept, others must be removed
@@ -671,17 +676,10 @@ def test_img_to_signals_maps_warnings(
     # keeping the masked labels
     # test if the warning is raised
 
-    # TODO (nilearn >= 0.13.0)
+    # TODO (nilearn >= 0.15.0)
     with pytest.warns(
         DeprecationWarning,
-        match='Applying "mask_img" before '
-        "signal extraction may result in empty region signals in the "
-        "output. These are currently kept. "
-        "Starting from version 0.13, the default behavior will be "
-        "changed to remove them by setting "
-        '"keep_masked_maps=False". '
-        '"keep_masked_maps" parameter will be removed '
-        "in version 0.15.",
+        match='"keep_masked_maps" parameter will be removed',
     ):
         maps_signals, maps_labels = img_to_signals_maps(
             fmri_img, maps_img, mask_img=mask_img, keep_masked_maps=True

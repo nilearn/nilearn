@@ -430,7 +430,7 @@ def signals_to_img_labels(
 
 
 @fill_doc
-def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
+def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
     """Extract region signals from image.
 
     This function is applicable to regions defined by maps.
@@ -450,6 +450,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
         Mask to apply to regions before extracting signals.
         Every point outside the mask is considered
         as background (i.e. outside of any region).
+
     %(keep_masked_maps)s
 
     Returns
@@ -490,16 +491,14 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
         )
         maps_mask = as_ndarray(maps_mask, dtype=bool)
         if keep_masked_maps:
-            # TODO (nilearn >= 0.13.0)
+            # TODO (nilearn >= 0.15.0)
             warnings.warn(
                 'Applying "mask_img" before '
                 "signal extraction may result in empty region signals in the "
-                "output. These are currently kept. "
-                "Starting from version 0.13, the default behavior will be "
-                "changed to remove them by setting "
-                '"keep_masked_maps=False". '
+                "output. These are currently kept.\n"
                 '"keep_masked_maps" parameter will be removed '
-                "in version 0.15.",
+                "in version 0.15. "
+                'Set "keep_masked_maps=False" to silence this warning.',
                 DeprecationWarning,
                 stacklevel=find_stack_level(),
             )
