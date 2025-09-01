@@ -4,7 +4,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from nilearn._utils import stringify_path
+from nilearn._utils.helpers import stringify_path
 
 
 def check_and_load_tables(tables_to_check, var_name):
@@ -158,7 +158,7 @@ def make_stat_maps(
 
     %(first_level_contrast)s
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
 
     Returns
     -------

@@ -1,7 +1,5 @@
 """Benchmarks for masker objects under nilearn.maskers module."""
 
-# ruff: noqa: RUF012
-
 from ..common import Benchmark
 from ..utils import apply_mask, load
 
@@ -13,7 +11,7 @@ class NiftiMaskerBenchmark(Benchmark):
     """
 
     # try different combinations of parameters for the NiftiMasker object
-    param_names = ["smoothing_fwhm", "detrend"]
+    param_names = ("smoothing_fwhm", "detrend")
     params = (
         [None, 6],
         [False, True],

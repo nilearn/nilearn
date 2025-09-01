@@ -26,7 +26,11 @@ from nilearn._version import __version__
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 sys.path.insert(0, str(Path("sphinxext").absolute()))
+
+# See https://www.sphinx-doc.org/en/master/usage/extensions/linkcode.html
 from github_link import make_linkcode_resolve
+
+linkcode_resolve = make_linkcode_resolve
 
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, str(Path("..").absolute()))
@@ -62,8 +66,6 @@ autodoc_default_options = {
     "inherited-members": True,
     "undoc-members": True,
     "member-order": "bysource",
-    #  We cannot have __init__: it causes duplicated entries
-    #  'special-members': '__init__',
 }
 
 # Get rid of spurious warnings due to some interaction between
@@ -190,6 +192,11 @@ linkcheck_ignore = [
     "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
     "http://brainomics.cea.fr/localizer/",
     "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
+    (
+        "https://www.info.gouv.fr/"
+        "organisation/"  # codespell:ignore organisation
+        "secretariat-general-pour-l-investissement-sgpi"
+    ),
     "https://pkgs.org/search/.*",
     # ignore nilearn github issues mostly for the sake of speed
     # given that there many of those in our changelog
@@ -452,14 +459,6 @@ def touch_example_backreferences(
 def setup(app):
     app.connect("autodoc-process-docstring", touch_example_backreferences)
 
-
-# The following is used by sphinx.ext.linkcode to provide links to github
-linkcode_resolve = make_linkcode_resolve(
-    "nilearn",
-    "https://github.com/nilearn/"
-    "nilearn/blob/{revision}/"
-    "{package}/{path}#L{lineno}",
-)
 
 # -- sphinxext.opengraph configuration -------------------------------------
 ogp_site_url = "https://nilearn.github.io/"

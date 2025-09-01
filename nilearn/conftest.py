@@ -126,6 +126,7 @@ def close_all():
 def suppress_specific_warning():
     """Ignore internal deprecation warnings."""
     with warnings.catch_warnings():
+        # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
         messages = (
             "The `darkness` parameter will be deprecated.*|"
             "In release 0.13, this fetcher will return a dictionary.*|"
@@ -475,13 +476,13 @@ def img_atlas(shape_3d_default, affine_mni):
 
 
 def _n_regions():
-    """Return a default numher of regions for maps."""
+    """Return a default number of regions for maps."""
     return 9
 
 
 @pytest.fixture
 def n_regions():
-    """Return a default numher of regions for maps."""
+    """Return a default number of regions for maps."""
     return _n_regions()
 
 
@@ -595,9 +596,9 @@ def _make_surface_img(n_samples=1):
     for i, (key, val) in enumerate(mesh.parts.items()):
         data_shape = (val.n_vertices, n_samples)
         data_part = (
-            np.arange(np.prod(data_shape)).reshape(data_shape[::-1]) + 1.0
+            np.arange(np.prod(data_shape)).reshape(data_shape[::-1])
         ) * 10**i
-        data[key] = data_part.T
+        data[key] = data_part.astype(float).T
     return SurfaceImage(mesh, data)
 
 
@@ -636,8 +637,7 @@ def _make_surface_mask(n_zeros=4):
     return SurfaceImage(mesh, data)
 
 
-@pytest.fixture
-def surf_mask_1d():
+def _surf_mask_1d():
     """Create a sample surface mask using the sample mesh.
     This will create a mask with n_zeros zeros (default is 4) and the
     rest ones.
@@ -649,6 +649,17 @@ def surf_mask_1d():
     mask.data.parts["right"] = np.squeeze(mask.data.parts["right"])
 
     return mask
+
+
+@pytest.fixture
+def surf_mask_1d():
+    """Create a sample surface mask using the sample mesh.
+    This will create a mask with n_zeros zeros (default is 4) and the
+    rest ones.
+
+    The shape of the data will be (n_vertices,).
+    """
+    return _surf_mask_1d()
 
 
 @pytest.fixture

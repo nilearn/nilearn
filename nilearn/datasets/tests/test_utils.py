@@ -624,7 +624,7 @@ def test_naive_ftp_adapter():
 def test_load_sample_motor_activation_image():
     """Test deprecation utils.load_sample_motor_activation_image.
 
-    Remove when when version >= 0.13.
+    # TODO (nilearn >= 0.13.0) remove
     """
     with pytest.warns(
         DeprecationWarning,

@@ -285,6 +285,11 @@ authors:
     affiliation: Inria, Saclay, France
     email: g.lemaitre58@gmail.com
     orcid: https://orcid.org/0000-0002-0897-6791
+  - given-names: Gustav
+    family-names: Magnusson
+    website: https://github.com/gurraburra
+    affiliation: Linköping University, Linköping
+    orcid: https://orcid.org/0000-0002-1668-2021
   - given-names: Hande
     family-names: Gözükan
     website: https://github.com/hndgzkn
@@ -340,7 +345,7 @@ authors:
     orcid: https://orcid.org/0000-0003-1661-2856
   - given-names: Jean
     family-names: Kossaifi
-    website: http://jeankossaifi.com/
+    website: https://jeankossaifi.com/
     affiliation: Imperial College London, London, UK
   - given-names: Jean-Rémi
     family-names: King
@@ -523,7 +528,7 @@ authors:
     email: mwaskom+www@gmail.com
   - given-names: Michelle
     family-names: Wang
-    website: https://github.com/michellewang
+    website: https://michellewang.github.io
     affiliation: Origami lab, McGill University, Montréal, Canada
   - given-names: Mohammad
     family-names: Torabi
@@ -597,7 +602,7 @@ authors:
     affiliation: Zurich, Switzerland
   - given-names: Pierre
     family-names: Bellec
-    website: https://github.com/pbellec
+    website: https://github.com/lunebellec
     affiliation: Psychology Department, University of Montréal, Montréal, Canada
     orcid: https://orcid.org/0000-0002-9111-0699
     email: pierre.bellec@gmail.com
@@ -605,6 +610,10 @@ authors:
     family-names: Glaser
     website: https://pierreglaser.github.io/
     affiliation: Gatsby Computational Neuroscience Unit, University College London, London, UK
+  - given-names: Pierre-Louis
+    family-names: Barbarant
+    website: https://github.com/pbarbarant
+    affiliation: Inria, Saclay, France
   - given-names: Pierre-Olivier
     family-names: Quirion
     website: https://github.com/poquirion

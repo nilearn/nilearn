@@ -6,10 +6,12 @@ import warnings
 import numpy as np
 from scipy.ndimage import center_of_mass, find_objects, label
 
-from nilearn._utils import as_ndarray, check_niimg_3d, check_niimg_4d
 from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import largest_connected_component
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
+from nilearn._utils.numpy_conversions import as_ndarray
 
 # Local imports
 from nilearn.image import get_data, iter_img, reorder_img
@@ -66,7 +68,8 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
     if np.all(data == 0.0):
         warnings.warn(
             "Given img is empty. "
-            f"Returning default cut_coords={DEFAULT_CUT_COORDS} instead."
+            f"Returning default cut_coords={DEFAULT_CUT_COORDS} instead.",
+            stacklevel=find_stack_level(),
         )
         x_map, y_map, z_map = DEFAULT_CUT_COORDS
         return np.asarray(
@@ -107,7 +110,8 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
             warnings.warn(
                 "Could not determine cut coords: "
                 "Provided mask is empty. "
-                "Returning center of mass instead."
+                "Returning center of mass instead.",
+                stacklevel=find_stack_level(),
             )
             cut_coords = center_of_mass(np.abs(my_map)) + offset
             x_map, y_map, z_map = cut_coords
@@ -124,7 +128,8 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         warnings.warn(
             "Could not determine cut coords: "
             "All values were masked. "
-            "Returning center of mass of unmasked data instead."
+            "Returning center of mass of unmasked data instead.",
+            stacklevel=find_stack_level(),
         )
         # Call center of mass on initial data since my_map is zero.
         # Therefore, do not add offset to cut_coords.
@@ -149,7 +154,8 @@ def find_xyz_cut_coords(img, mask_img=None, activation_threshold=None):
         warnings.warn(
             "Could not determine cut coords: "
             "All voxels were masked by the thresholding. "
-            "Returning the center of mass instead."
+            "Returning the center of mass instead.",
+            stacklevel=find_stack_level(),
         )
         cut_coords = center_of_mass(np.abs(my_map)) + offset
         x_map, y_map, z_map = cut_coords
@@ -262,7 +268,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
             "A non-diagonal affine is found in the given "
             "image. Reordering the image to get diagonal affine "
             "for finding cuts in the slices.",
-            stacklevel=2,
+            stacklevel=find_stack_level(),
         )
         # resample is set to avoid issues with an image having a non-diagonal
         # affine and rotation.
@@ -285,7 +291,8 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
     if n_cuts > this_shape:
         warnings.warn(
             "Too many cuts requested for the data: "
-            f"n_cuts={n_cuts}, data size={this_shape}."
+            f"n_cuts={n_cuts}, data size={this_shape}.",
+            stacklevel=find_stack_level(),
         )
         return _transform_cut_coords(np.arange(this_shape), direction, affine)
 

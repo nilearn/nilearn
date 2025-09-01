@@ -7,17 +7,14 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy.ndimage import binary_dilation, binary_erosion
 
-from nilearn._utils import (
-    as_ndarray,
-    check_niimg,
-    check_niimg_3d,
-    fill_doc,
-    logger,
-)
+from nilearn._utils import logger
 from nilearn._utils.cache_mixin import cache
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import get_border_data, largest_connected_component
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets import (
     load_mni152_gm_template,
@@ -540,7 +537,7 @@ def compute_background_mask(
     )
 
     if np.isnan(get_border_data(data, border_size)).any():
-        # We absolutely need to catter for NaNs as a background:
+        # We absolutely need to cater for NaNs as a background:
         # SPM does that by default
         mask = np.logical_not(np.isnan(data))
     else:
@@ -707,7 +704,7 @@ def compute_brain_mask(
         template,
         target_img,
         copy_header=True,
-        force_resample=False,  # TODO set to True in 0.13.0
+        force_resample=False,  # TODO (nilearn >= 0.13.0) update to True
     )
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")
@@ -1053,8 +1050,7 @@ def unmask(X, mask_img, order="F"):
     # Handle lists. This can be a list of other lists / arrays, or a list or
     # numbers. In the latter case skip.
     if isinstance(X, list) and not isinstance(X[0], numbers.Number):
-        ret = [unmask(x, mask_img, order=order) for x in X]
-        return ret
+        return [unmask(x, mask_img, order=order) for x in X]
 
     # The code after this block assumes that X is an ndarray; ensure this
     X = np.asanyarray(X)

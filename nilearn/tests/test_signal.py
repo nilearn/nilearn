@@ -589,6 +589,22 @@ def test_clean_kwargs(kwarg_set):
     assert np.any(np.not_equal(base_filtered, test_filtered))
 
 
+@pytest.mark.parametrize("cast_to", [int, float, np.int32, np.float32])
+def test_clean_t_r_type(cast_to):
+    """Check that several types are supported for TR.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5545.
+    """
+    n_samples = 34
+    n_features = 501
+    x_orig = generate_signals_plus_trends(
+        n_features=n_features, n_samples=n_samples
+    )
+
+    t_r, high_pass, low_pass = cast_to(1.8), 0.01, 0.08
+    clean(x_orig, t_r=t_r, low_pass=low_pass, high_pass=high_pass)
+
+
 def test_clean_frequencies():
     """Check several values for low and high pass."""
     sx1 = np.sin(np.linspace(0, 100, 2000))
@@ -1396,9 +1412,7 @@ def test_sample_mask_across_runs():
 
     sample_mask_sep = [np.arange(20), np.arange(20)]
     scrub_index = [[6, 7, 8], [10, 11, 12]]
-    sample_mask_sep = [
-        np.delete(sm, si) for sm, si in zip(sample_mask_sep, scrub_index)
-    ]
+    sample_mask_sep = list(map(np.delete, sample_mask_sep, scrub_index))
 
     scrub_sep_mask = clean(
         signals, confounds=confounds, sample_mask=sample_mask_sep, runs=runs
@@ -1437,9 +1451,7 @@ def test_clean_sample_mask_error():
 
     sample_mask_sep = [np.arange(20), np.arange(20)]
     scrub_index = [[6, 7, 8], [10, 11, 12]]
-    sample_mask_sep = [
-        np.delete(sm, si) for sm, si in zip(sample_mask_sep, scrub_index)
-    ]
+    sample_mask_sep = list(map(np.delete, sample_mask_sep, scrub_index))
 
     # 1D sample mask with runs labels
     with pytest.raises(
@@ -1522,6 +1534,7 @@ def test_handle_scrubbed_volumes_with_extrapolation():
 
     # Test cubic spline interpolation (enabled extrapolation) in the
     # very first n=5 samples of generated signal
+    # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
     extrapolate_warning = (
         "By default the cubic spline interpolator extrapolates "
         "the out-of-bounds censored volumes in the data run. This "

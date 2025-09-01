@@ -25,7 +25,7 @@ def assert_polydata_equal(data_1, data_2):
             )
 
 
-def assert_polymesh_equal(mesh_1, mesh_2):
+def assert_polymesh_equal(mesh_1, mesh_2) -> None:
     """Check that 2 PolyMeshes are equal."""
     assert_polymesh_have_same_keys(mesh_1, mesh_2)
     for key in mesh_1.parts:
@@ -43,7 +43,7 @@ def assert_polymesh_have_same_keys(mesh_1, mesh_2):
         )
 
 
-def check_polymesh_equal(mesh_1, mesh_2):
+def check_polymesh_equal(mesh_1, mesh_2) -> None:
     """Check polymesh at-least have same number of vertices if not equal."""
     try:
         assert_polymesh_equal(mesh_1, mesh_2)
@@ -66,7 +66,7 @@ def assert_same_number_vertices(mesh_1, mesh_2):
         )
 
 
-def assert_surface_mesh_equal(mesh_1, mesh_2):
+def assert_surface_mesh_equal(mesh_1, mesh_2) -> None:
     """Check that 2 SurfaceMeshes are equal."""
     if not np.array_equal(mesh_1.coordinates, mesh_2.coordinates):
         raise MeshDimensionError("Meshes do not have the same coordinates.")
@@ -74,7 +74,7 @@ def assert_surface_mesh_equal(mesh_1, mesh_2):
         raise MeshDimensionError("Meshes do not have the same faces.")
 
 
-def assert_surface_image_equal(img_1, img_2):
+def assert_surface_image_equal(img_1, img_2) -> None:
     """Check that 2 SurfaceImages are equal."""
     assert_polymesh_equal(img_1.mesh, img_2.mesh)
     assert_polydata_equal(img_1.data, img_2.data)

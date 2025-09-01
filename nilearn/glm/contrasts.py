@@ -8,7 +8,8 @@ import numpy as np
 import pandas as pd
 import scipy.stats as sps
 
-from nilearn._utils import logger, rename_parameters
+from nilearn._utils import logger
+from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker, SurfaceMasker
@@ -54,6 +55,7 @@ def expression_to_contrast_vector(expression, design_columns):
     return contrast_vector
 
 
+# TODO (nilearn >= 0.13.0)
 @rename_parameters(
     replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
 )
@@ -215,6 +217,7 @@ class Contrast:
         The maximum degrees of freedom of the residuals.
     """
 
+    # TODO (nilearn >= 0.13.0)
     @rename_parameters(
         replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
     )
@@ -264,6 +267,7 @@ class Contrast:
 
         .. deprecated:: 0.10.3
         """
+        # TODO (nilearn >= 0.13.0) deprecate
         attrib_deprecation_msg = (
             'The attribute "contrast_type" '
             "will be removed in 0.13.0 release of Nilearn. "
@@ -416,7 +420,7 @@ class Contrast:
     def __add__(self, other):
         """Add two contrast, Yields an new Contrast instance.
 
-        This should be used only on indepndent contrasts.
+        This should be used only on independent contrasts.
         """
         if self.stat_type != other.stat_type:
             raise ValueError(
@@ -566,14 +570,7 @@ def compute_fixed_effects(
     fixed_fx_variance_img = masker.inverse_transform(fixed_fx_variance)
     fixed_fx_stat_img = masker.inverse_transform(fixed_fx_stat)
     fixed_fx_z_score_img = masker.inverse_transform(fixed_fx_z_score)
-    warn(
-        category=DeprecationWarning,
-        message="The behavior of this function will be "
-        "changed in release 0.13 to have an additional"
-        "return value 'fixed_fx_z_score_img'  by default. "
-        "Please set return_z_score to True.",
-        stacklevel=find_stack_level(),
-    )
+
     if return_z_score:
         return (
             fixed_fx_contrast_img,
@@ -581,8 +578,17 @@ def compute_fixed_effects(
             fixed_fx_stat_img,
             fixed_fx_z_score_img,
         )
-    else:
-        return fixed_fx_contrast_img, fixed_fx_variance_img, fixed_fx_stat_img
+
+    # TODO (nilearn >= 0.13.0)
+    warn(
+        category=DeprecationWarning,
+        message="The behavior of this function will be "
+        "changed in release 0.13 to have an additional "
+        "return value 'fixed_fx_z_score_img' by default. "
+        "Please set return_z_score to True.",
+        stacklevel=find_stack_level(),
+    )
+    return fixed_fx_contrast_img, fixed_fx_variance_img, fixed_fx_stat_img
 
 
 def _compute_fixed_effects_params(

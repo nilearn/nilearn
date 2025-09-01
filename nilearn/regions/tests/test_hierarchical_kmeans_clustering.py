@@ -1,9 +1,15 @@
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_fake_fmri
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+    return_expected_failed_checks,
+)
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
     HierarchicalKMeans,
@@ -13,33 +19,47 @@ from nilearn.regions.hierarchical_kmeans_clustering import (
 from nilearn.surface import SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
 
-expected_failed_checks = {
-    "check_clusterer_compute_labels_predict": "TODO",
-}
+# IMPORTANT
+# keeping the n_clusters low (< 3) to make it easier
+# to run sklearn checks
+ESTIMATORS_TO_CHECK = [HierarchicalKMeans(n_clusters=2)]
+
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[HierarchicalKMeans(n_clusters=8)],
-    ),
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[HierarchicalKMeans(n_clusters=8)],
-        valid=False,
-        expected_failed_checks=expected_failed_checks,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
     check(estimator)
 
 

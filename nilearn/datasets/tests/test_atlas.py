@@ -804,6 +804,7 @@ def _get_small_fake_talairach():
     return serialize_niimg(img, gzipped=False)
 
 
+@pytest.mark.timeout(0)
 def test_fetch_atlas_talairach(tmp_path, request_mocker):
     request_mocker.url_mapping["*talairach.nii"] = _get_small_fake_talairach()
     level_values = np.ones((81, 3)) * [0, 1, 2]
@@ -853,7 +854,7 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
         fetch_atlas_pauli_2017("junk for testing", data_dir)
 
 
-# TODO: remove this test after release 0.13.0
+# TODO (nilearn >= 0.13.0) remove this test
 def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
     """Tests nilearn.datasets.atlas.fetch_atlas_pauli_2017 to receive
     DepricationWarning upon use of deprecated version parameter and its

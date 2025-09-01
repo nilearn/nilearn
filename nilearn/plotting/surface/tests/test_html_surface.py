@@ -14,17 +14,13 @@ from nilearn.plotting.surface.html_surface import (
     _fill_html_template,
     _full_brain_info,
     _one_mesh_info,
-    colorscale,
     full_brain_info,
-    get_vertexcolor,
     one_mesh_info,
     view_img_on_surf,
     view_surf,
 )
-from nilearn.plotting.tests.test_js_plotting_utils import (
-    check_colors,
-    check_html,
-)
+from nilearn.plotting.tests.test_engine_utils import check_colors
+from nilearn.plotting.tests.test_js_plotting_utils import check_html
 from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
     load_surf_data,
@@ -35,111 +31,6 @@ from nilearn.surface.surface import (
 @pytest.fixture(scope="session")
 def mni152_template_res_2():
     return datasets.load_mni152_template(resolution=2)
-
-
-def test_get_vertexcolor():
-    """Test get_vertexcolor."""
-    fsaverage = fetch_surf_fsaverage()
-    mesh = load_surf_mesh(fsaverage["pial_left"])
-    surf_map = np.arange(len(mesh.coordinates))
-    colors = colorscale("jet", surf_map, 10)
-
-    vertexcolors = get_vertexcolor(
-        surf_map,
-        colors["cmap"],
-        colors["norm"],
-        absolute_threshold=colors["abs_threshold"],
-        bg_map=fsaverage["sulc_left"],
-    )
-
-    assert len(vertexcolors) == len(mesh.coordinates)
-
-    vertexcolors = get_vertexcolor(
-        surf_map,
-        colors["cmap"],
-        colors["norm"],
-        absolute_threshold=colors["abs_threshold"],
-    )
-
-    assert len(vertexcolors) == len(mesh.coordinates)
-
-
-def test_get_vertexcolor_bg_map():
-    """Test get_vertexcolor with background map."""
-    fsaverage = fetch_surf_fsaverage()
-    mesh = load_surf_mesh(fsaverage["pial_left"])
-    surf_map = np.arange(len(mesh.coordinates))
-    colors = colorscale("jet", surf_map, 10)
-
-    # Surface map whose value in each vertex is
-    # 1 if this vertex's curv > 0
-    # 0 if this vertex's curv is 0
-    # -1 if this vertex's curv < 0
-    bg_map = np.sign(load_surf_data(fsaverage["curv_left"]))
-    bg_min, bg_max = np.min(bg_map), np.max(bg_map)
-    assert bg_min < 0 or bg_max > 1
-
-    vertexcolors_auto_normalized = get_vertexcolor(
-        surf_map,
-        colors["cmap"],
-        colors["norm"],
-        absolute_threshold=colors["abs_threshold"],
-        bg_map=bg_map,
-    )
-
-    assert len(vertexcolors_auto_normalized) == len(mesh.coordinates)
-
-    # Manually set values of background map between 0 and 1
-    bg_map_normalized = (bg_map - bg_min) / (bg_max - bg_min)
-    assert np.min(bg_map_normalized) == 0 and np.max(bg_map_normalized) == 1
-
-    vertexcolors_manually_normalized = get_vertexcolor(
-        surf_map,
-        colors["cmap"],
-        colors["norm"],
-        absolute_threshold=colors["abs_threshold"],
-        bg_map=bg_map_normalized,
-    )
-
-    assert len(vertexcolors_manually_normalized) == len(mesh.coordinates)
-    assert vertexcolors_manually_normalized == vertexcolors_auto_normalized
-
-    # Scale background map between 0.25 and 0.75
-    bg_map_scaled = bg_map_normalized / 2 + 0.25
-    assert np.min(bg_map_scaled) == 0.25 and np.max(bg_map_scaled) == 0.75
-
-    vertexcolors_manually_rescaled = get_vertexcolor(
-        surf_map,
-        colors["cmap"],
-        colors["norm"],
-        absolute_threshold=colors["abs_threshold"],
-        bg_map=bg_map_scaled,
-    )
-
-    assert len(vertexcolors_manually_rescaled) == len(mesh.coordinates)
-    assert vertexcolors_manually_rescaled != vertexcolors_auto_normalized
-
-
-def test_get_vertexcolor_deprecation():
-    """Check deprecation warning."""
-    fsaverage = fetch_surf_fsaverage()
-    mesh = load_surf_mesh(fsaverage["pial_left"])
-    surf_map = np.arange(len(mesh.coordinates))
-    colors = colorscale("jet", surf_map, 10)
-
-    with pytest.warns(
-        DeprecationWarning,
-        match=(
-            "The `darkness` parameter will be deprecated in release 0.13. "
-            "We recommend setting `darkness` to None"
-        ),
-    ):
-        get_vertexcolor(
-            surf_map,
-            colors["cmap"],
-            colors["norm"],
-            darkness=0.5,
-        )
 
 
 def test_check_mesh():
@@ -177,6 +68,7 @@ def test_one_mesh_info():
     assert not info["full_brain_mesh"]
     check_colors(info["colorscale"])
 
+    # TODO (nilearn >= 0.13.0)
     with pytest.warns(
         DeprecationWarning,
         match="one_mesh_info is a private function and is renamed "
@@ -214,6 +106,7 @@ def test_full_brain_info(mni152_template_res_2):
             mesh.faces
         )
 
+    # TODO (nilearn >= 0.13.0)
     with pytest.warns(
         DeprecationWarning,
         match="full_brain_info is a private function and is renamed to "

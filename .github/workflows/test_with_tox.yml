@@ -45,7 +45,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Get repo
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
             with:
                 ref: ${{ github.event.pull_request.head.sha }}
         -   name: Check head git commit message
@@ -82,6 +82,7 @@ jobs:
                 -   description: oldest dependencies - no plotting
                     py: '3.10'
                     os: macos-latest
+
                     env: min
                 -   description: oldest dependencies - no plotly
                     py: '3.10'
@@ -90,7 +91,7 @@ jobs:
 
         steps:
 
-        -   uses: actions/checkout@v4
+        -   uses: actions/checkout@v5
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v6
         -   name: Setup python

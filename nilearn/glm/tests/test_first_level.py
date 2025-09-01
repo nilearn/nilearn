@@ -1,3 +1,5 @@
+"""Test related to first level model."""
+
 import itertools
 import shutil
 import string
@@ -17,6 +19,7 @@ from numpy.testing import (
     assert_array_less,
 )
 from sklearn.cluster import KMeans
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
@@ -25,7 +28,12 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_fmri_data_and_design,
 )
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+    return_expected_failed_checks,
+)
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
     FirstLevelModel,
@@ -51,26 +59,44 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
 from nilearn.surface.utils import assert_polymesh_equal
 
+ESTIMATORS_TO_CHECK = [FirstLevelModel()]
+
+if SKLEARN_LT_1_6:
+
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
+    )
+    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
 
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(estimator=[FirstLevelModel()]),
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
-def test_check_estimator(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
-@pytest.mark.xfail(reason="invalid checks should fail")
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    check_estimator(
-        estimator=[FirstLevelModel()],
-        valid=False,
-    ),
-)
-def test_check_estimator_invalid(estimator, check, name):  # noqa: ARG001
-    """Check compliance with sklearn estimators."""
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
     check(estimator)
 
 
@@ -134,6 +160,7 @@ def test_glm_fit_valid_mask_img(shape_4d_default):
     assert isinstance(z1, Nifti1Image)
 
 
+@pytest.mark.timeout(0)
 def test_explicit_fixed_effects(shape_3d_default):
     """Test the fixed effects performed manually/explicitly."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3
@@ -161,11 +188,9 @@ def test_explicit_fixed_effects(shape_3d_default):
     contrasts = [dic1["effect_size"], dic2["effect_size"]]
     variance = [dic1["effect_variance"], dic2["effect_variance"]]
 
-    (
-        fixed_fx_contrast,
-        fixed_fx_variance,
-        fixed_fx_stat,
-    ) = compute_fixed_effects(contrasts, variance, mask)
+    (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _) = (
+        compute_fixed_effects(contrasts, variance, mask, return_z_score=True)
+    )
 
     assert_almost_equal(
         get_data(fixed_fx_contrast), get_data(fixed_fx_dic["effect_size"])
@@ -186,15 +211,20 @@ def test_explicit_fixed_effects(shape_3d_default):
             "from the number of variance images"
         ),
     ):
-        compute_fixed_effects(contrasts * 2, variance, mask)
+        compute_fixed_effects(
+            contrasts * 2, variance, mask, return_z_score=True
+        )
 
     # ensure that not providing the right number of dofs
     with pytest.raises(
         ValueError, match="degrees of freedom .* differs .* contrast images"
     ):
-        compute_fixed_effects(contrasts, variance, mask, dofs=[100])
+        compute_fixed_effects(
+            contrasts, variance, mask, dofs=[100], return_z_score=True
+        )
 
 
+@pytest.mark.timeout(0)
 def test_explicit_fixed_effects_without_mask(shape_3d_default):
     """Test the fixed effects performed manually/explicitly with no mask."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3
@@ -242,7 +272,7 @@ def test_explicit_fixed_effects_without_mask(shape_3d_default):
 
 def test_high_level_glm_with_data(shape_3d_default):
     """High level test of GLM."""
-    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
+    shapes, rk = [(*shape_3d_default, 5)], 3
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
     )
@@ -257,9 +287,38 @@ def test_high_level_glm_with_data(shape_3d_default):
     assert get_data(z_image).std() < 3.0
 
 
+def test_glm_target_shape_affine(shape_3d_default, affine_eye):
+    """Check that target shape and affine are applied."""
+    shapes, rk = [(*shape_3d_default, 5)], 3
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes, rk=rk
+    )
+
+    model_1 = FirstLevelModel(mask_img=None).fit(
+        fmri_data, design_matrices=design_matrices
+    )
+
+    assert model_1.masker_.mask_img_.shape == shape_3d_default
+
+    z_image = model_1.compute_contrast(np.eye(rk)[1])
+
+    assert z_image.shape == shape_3d_default
+
+    model_2 = FirstLevelModel(
+        mask_img=None, target_shape=(10, 11, 12), target_affine=affine_eye
+    ).fit(fmri_data, design_matrices=design_matrices)
+    assert model_2.masker_.mask_img_.shape != shape_3d_default
+    assert model_2.masker_.mask_img_.shape == (10, 11, 12)
+
+    z_image = model_2.compute_contrast(np.eye(rk)[1])
+
+    assert z_image.shape != shape_3d_default
+    assert z_image.shape == (10, 11, 12)
+
+
 def test_high_level_glm_with_data_with_mask(shape_3d_default):
     """Test GLM can be run with mask."""
-    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
+    shapes, rk = [(*shape_3d_default, 5)], 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
     )
@@ -336,7 +395,7 @@ def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
 
 def test_high_level_glm_with_paths(tmp_path, shape_3d_default):
     """Test GLM can be run with files."""
-    shapes, rk = [(*shape_3d_default, 5), (*shape_3d_default, 6)], 3
+    shapes, rk = [(*shape_3d_default, 5)], 3
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
         shapes, rk, file_path=tmp_path
     )
@@ -424,7 +483,7 @@ def test_high_level_glm_different_design_matrices_formulas():
     formula = f"{cols_formula[0]}-{cols_formula[1]}"
 
     with pytest.warns(
-        UserWarning, match="One contrast given, assuming it for all 2 runs"
+        RuntimeWarning, match="The same contrast will be used for all"
     ):
         multi_run_model.compute_contrast(formula, output_type="effect_size")
 
@@ -450,7 +509,7 @@ def test_compute_contrast_num_contrasts(shape_4d_default):
     multi_run_model.compute_contrast([np.eye(rk)[1]] * 3)
 
     with pytest.warns(
-        UserWarning, match="One contrast given, assuming it for all 3 runs"
+        RuntimeWarning, match="The same contrast will be used for all"
     ):
         multi_run_model.compute_contrast([np.eye(rk)[1]])
 
@@ -786,6 +845,42 @@ def test_fmri_inputs_errors(shape_4d_default):
         match="The provided events data has no onset column.",
     ):
         FirstLevelModel(mask_img=None, t_r=1.0).fit(fmri_data, design_matrices)
+
+
+@pytest.mark.parametrize(
+    "to_ignore",
+    [{"slice_time_ref": 0.5}, {"t_r": 2}, {"hrf_model": "fir"}],
+)
+def test_parameter_attributes_ignored_with_design_matrix(
+    shape_4d_default, to_ignore
+):
+    """Warn some parameters/attributes are ignored when using design matrix.
+
+    Test that the warning is thrown if events are passed with design matrix.
+    Also test with some of the non default value for some attributes
+    """
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )
+
+    fmri_data = fmri_data[0]
+    design_matrices = design_matrices[0]
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        FirstLevelModel().fit([fmri_data], design_matrices=[design_matrices])
+    assert not warning_list
+
+    with pytest.warns(UserWarning, match="If design matrices are supplied"):
+        FirstLevelModel().fit(
+            [fmri_data],
+            design_matrices=[design_matrices],
+            events=basic_paradigm(),
+        )
+
+    with pytest.warns(UserWarning, match="If design matrices are supplied"):
+        FirstLevelModel(**to_ignore).fit(
+            [fmri_data], design_matrices=[design_matrices]
+        )
 
 
 def test_fmri_inputs_errors_confounds(shape_4d_default):
@@ -1433,9 +1528,6 @@ def test_glm_sample_mask(shape_4d_default):
     assert model.predicted[0].shape[-1] == shape_4d_default[3] - 3
 
 
-"""Test the first level model on BIDS datasets."""
-
-
 def _inputs_for_new_bids_dataset():
     n_sub = 2
     n_ses = 2
@@ -1999,18 +2091,6 @@ def test_first_level_from_bids_mismatch_run_index(tmp_path_factory):
         )
 
 
-def test_first_level_from_bids_deprecated_slice_time_default(bids_dataset):
-    """Catch deprecation warning slice_time_ref defaults to None."""
-    with pytest.deprecated_call(match="slice_time_ref will default to None."):
-        first_level_from_bids(
-            dataset_path=bids_dataset,
-            task_label="main",
-            space_label="MNI",
-            img_filters=[("desc", "preproc")],
-            slice_time_ref=0,
-        )
-
-
 def test_slice_time_ref_warning_only_when_not_provided(bids_dataset):
     """Catch warning when slice_time_ref is not provided."""
     with pytest.warns() as record:
@@ -2296,14 +2376,14 @@ def test_error_flm_surface_mask_volume_image(
     img, des = surface_glm_data(5)
     model = FirstLevelModel(mask_img=surf_mask_1d)
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model.fit(img_4d_rand_eye, design_matrices=des)
 
     masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker)
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model.fit(img_4d_rand_eye, design_matrices=des)
 
@@ -2316,14 +2396,14 @@ def test_error_flm_volume_mask_surface_image(surface_glm_data):
     img, des = surface_glm_data(5)
     model = FirstLevelModel(mask_img=mask)
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model.fit(img, design_matrices=des)
 
     masker = NiftiMasker().fit(mask)
     model = FirstLevelModel(mask_img=masker)
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model.fit(img, design_matrices=des)
 
@@ -2352,10 +2432,7 @@ def test_flm_with_surface_masker_with_mask(
     model.fit(img, design_matrices=des)
 
     assert isinstance(model.masker_.mask_img_, SurfaceImage)
-    if surf_mask_dim == 1:
-        assert model.masker_.mask_img_.shape == (9,)
-    else:
-        assert model.masker_.mask_img_.shape == (9,)
+    assert model.masker_.mask_img_.shape == (9,)
     assert isinstance(model.masker_, SurfaceMasker)
 
 
@@ -2383,11 +2460,7 @@ def test_flm_compute_contrast_with_surface_data(surface_glm_data):
 def test_flm_get_element_wise_model_attribute_with_surface_data(
     surface_glm_data,
 ):
-    """Smoke test 'voxel wise' attribute with surface data.
-
-    TODO: rename the private function _get_element_wise_model_attribute
-    to work for both voxel and vertex
-    """
+    """Smoke test 'voxel wise' attribute with surface data."""
     img, _ = surface_glm_data(5)
     masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker, t_r=2.0, minimize_memory=False)
@@ -2471,9 +2544,12 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
     surf_mask_ = masker.mask_img_
     for mask in [SurfaceMasker(mask_img=masker.mask_img_), surf_mask_, None]:
         outputs = compute_fixed_effects(
-            [effect, effect], [variance, variance], mask=mask
+            [effect, effect],
+            [variance, variance],
+            mask=mask,
+            return_z_score=True,
         )
-        assert len(outputs) == 3
+        assert len(outputs) == 4
         for output in outputs:
             assert isinstance(output, SurfaceImage)
 

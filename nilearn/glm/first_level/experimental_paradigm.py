@@ -45,7 +45,7 @@ def check_events(events):
         Per-event onset time (in seconds)
 
     duration : array of shape (n_events,), dtype='f'
-        Per-event durantion, (in seconds)
+        Per-event duration, (in seconds)
         defaults to zeros(n_events) when no duration is provided
 
     modulation : array of shape (n_events,), dtype='f'

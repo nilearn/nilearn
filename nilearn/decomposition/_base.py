@@ -4,13 +4,16 @@ Utilities for masking and dimension reduction of group data
 """
 
 import glob
+import inspect
 import itertools
 import warnings
 from math import ceil
 from pathlib import Path
+from string import Template
 
 import numpy as np
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
+from nibabel import Nifti1Image
 from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.linear_model import LinearRegression
@@ -19,17 +22,58 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
-from nilearn._utils import fill_doc, logger
-from nilearn._utils.cache_mixin import CacheMixin, cache
+from nilearn._utils import logger
+from nilearn._utils.cache_mixin import CacheMixin
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import NiftiMapsMasker, SurfaceMapsMasker, SurfaceMasker
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
+
+
+def _warn_ignored_surface_masker_params(estimator):
+    """Warn about parameters that are ignored by SurfaceMasker.
+
+    Only raise warning if parameters are different
+    from the default value in the estimator __init__ signature.
+
+    Parameters
+    ----------
+    estimator : _BaseDecomposition
+        The estimator to check for ignored parameters.
+    """
+    params_to_ignore = ["mask_strategy", "target_affine", "target_shape"]
+
+    tmp = dict(**inspect.signature(estimator.__init__).parameters)
+
+    ignored_params = []
+    for param in params_to_ignore:
+        if param in tmp:
+            if (
+                tmp[param].default is None
+                and getattr(estimator, param) is not None
+            ):
+                # this should catch when user passes a numpy array
+                ignored_params.append(param)
+            elif getattr(estimator, param) != tmp[param].default:
+                ignored_params.append(param)
+
+    if ignored_params:
+        warnings.warn(
+            Template(
+                "The following parameters are not relevant when the input "
+                "images and mask are SurfaceImages: "
+                "${params}. They will be ignored."
+            ).substitute(params=", ".join(ignored_params)),
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
 
 
 def _fast_svd(X, n_components, random_state=None):
@@ -99,8 +143,6 @@ def _mask_and_reduce(
     reduction_ratio="auto",
     n_components=None,
     random_state=None,
-    memory_level=0,
-    memory=None,
     n_jobs=1,
 ):
     """Mask and reduce provided 4D images with given masker.
@@ -112,12 +154,13 @@ def _mask_and_reduce(
 
     Parameters
     ----------
-    masker : NiftiMasker or MultiNiftiMasker or
-    :obj:`~nilearn.maskers.SurfaceMasker`
+    masker : :obj:`~nilearn.maskers.NiftiMasker` or \
+        :obj:`~nilearn.maskers.MultiNiftiMasker` or \
+        :obj:`~nilearn.maskers.SurfaceMasker`
         Instance used to mask provided data.
 
-    imgs : list of 4D Niimg-like objects or list of
-    :obj:`~nilearn.surface.SurfaceImage`
+    imgs : list of 4D Niimg-like objects or list of \
+        :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
         List of subject data to mask, reduce and stack.
 
@@ -137,14 +180,6 @@ def _mask_and_reduce(
     %(random_state)s
         default=0
 
-    memory_level : integer, default=0
-        Integer indicating the level of memorization. The higher, the more
-        function calls are cached.
-
-    memory : joblib.Memory, default=None
-        Used to cache the function calls.
-        If ``None`` is passed will default to ``Memory(location=None)``.
-
     n_jobs : integer, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
@@ -155,8 +190,6 @@ def _mask_and_reduce(
         Concatenation of reduced data.
 
     """
-    if memory is None:
-        memory = Memory(location=None)
     if not hasattr(imgs, "__iter__"):
         imgs = [imgs]
 
@@ -193,8 +226,6 @@ def _mask_and_reduce(
             confound,
             reduction_ratio=reduction_ratio,
             n_samples=n_samples,
-            memory=memory,
-            memory_level=memory_level,
             random_state=random_state,
         )
         for img, confound in zip(imgs, confounds)
@@ -228,12 +259,13 @@ def _mask_and_reduce_single(
     confound,
     reduction_ratio=None,
     n_samples=None,
-    memory=None,
-    memory_level=0,
     random_state=None,
 ):
     """Implement multiprocessing from MaskReducer."""
+    if confound is not None and not isinstance(confound, list):
+        confound = [confound]
     this_data = masker.transform(img, confound)
+    this_data = np.atleast_2d(this_data)
     # Now get rid of the img as fast as possible, to free a
     # reference count on it, and possibly free the corresponding
     # data
@@ -247,9 +279,9 @@ def _mask_and_reduce_single(
     else:
         n_samples = ceil(data_n_samples * reduction_ratio)
 
-    U, S, V = cache(
-        _fast_svd, memory, memory_level=memory_level, func_memory_level=3
-    )(this_data.T, n_samples, random_state=random_state)
+    U, S, V = masker._cache(_fast_svd, func_memory_level=3)(
+        this_data.T, n_samples, random_state=random_state
+    )
     U = U.T.copy()
     U = U * S[:, np.newaxis]
     return U
@@ -266,18 +298,21 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     Parameters
     ----------
     n_components : int, default=20
-        Number of components to extract, for each 4D-Niimage
+        Number of components to extract,
+        for each 4D-Niimage or each 2D surface image
 
     %(random_state)s
 
-    mask : Niimg-like object or MultiNiftiMasker instance or
+    mask : Niimg-like object,  :obj:`~nilearn.maskers.MultiNiftiMasker` or
            :obj:`~nilearn.surface.SurfaceImage` or
            :obj:`~nilearn.maskers.SurfaceMasker` object, optional
         Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given, it will be computed
-        automatically by a MultiNiftiMasker for Niimg-like objects with default
-        parameters and no mask will be used for SurfaceImage objects.
+        then its mask will be used. If no mask is given, for Nifti images,
+        it will be computed automatically by a MultiNiftiMasker with default
+        parameters; for surface images, all the vertices will be used.
+
     %(smoothing_fwhm)s
+
     standardize : boolean, default=True
         If standardize is True, the time-series are centered and normed:
         their mean is put to 0 and their variance to 1 in the time dimension.
@@ -317,13 +352,11 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     %(mask_strategy)s
 
-        .. note::
-             Depending on this value, the mask will be computed from
-             :func:`nilearn.masking.compute_background_mask`,
-             :func:`nilearn.masking.compute_epi_mask`, or
-             :func:`nilearn.masking.compute_brain_mask`.
-
         Default='epi'.
+        .. note::
+
+          These strategies are only relevant for Nifti images and the parameter
+          is ignored for SurfaceImage objects.
 
     mask_args : dict, optional
         If mask is None, these are additional parameters passed to
@@ -348,13 +381,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     %(verbose0)s
 
-    Attributes
-    ----------
-    mask_img_ : Niimg-like object :obj:`~nilearn.surface.SurfaceImage`
-        See :ref:`extracting_data`.
-        The mask of the data. If no mask was given at masker creation, contains
-        the automatically computed mask.
-
+    %(base_decomposition_fit_attributes)s
     """
 
     def __init__(
@@ -401,7 +428,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -411,31 +438,32 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags()
+            return tags(surf_img=True, niimg_like=True)
 
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags()
+        tags.input_tags = InputTags(surf_img=True, niimg_like=True)
         return tags
 
+    @fill_doc
     def fit(self, imgs, y=None, confounds=None):
         """Compute the mask and the components across subjects.
 
         Parameters
         ----------
-        imgs : list of Niimg-like objects or
-        list of :obj:`~nilearn.surface.SurfaceImage`
+        imgs : list of Niimg-like objects or \
+               list of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data on which the mask is calculated. If this is a list,
             the affine (for Niimg-like objects) and mesh (for SurfaceImages)
             is considered the same for all
+
+        %(y_dummy)s
 
         confounds : list of CSV file paths, numpy.ndarrays
             or pandas DataFrames, optional.
@@ -473,16 +501,27 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             # Common error that arises from a null glob. Capture
             # it early and raise a helpful message
             raise ValueError(
-                "Need one or more Niimg-like objects as input, "
+                "Need one or more Niimg-like or SurfaceImage "
+                "objects as input, "
                 "an empty list was given."
             )
 
-        masker_type = "nii"
+        if confounds is not None and len(confounds) != len(imgs):
+            raise ValueError(
+                f"Number of confounds ({len(confounds)=}) "
+                f"must match number of images ({len(imgs)=})."
+            )
+
+        self._fit_cache()
+
+        masker_type = "multi_nii"
         if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
             isinstance(x, SurfaceImage) for x in imgs
         ):
             masker_type = "surface"
+            _warn_ignored_surface_masker_params(self)
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
+        self.masker_.memory_level = self.memory_level
 
         # Avoid warning with imgs != None
         # if masker_ has been provided a mask_img
@@ -501,8 +540,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             confounds=confounds,
             n_components=self.n_components,
             random_state=self.random_state,
-            memory=self.memory,
-            memory_level=max(0, self.memory_level + 1),
             n_jobs=self.n_jobs,
         )
         self._raw_fit(data)
@@ -521,11 +558,13 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             )
         self.maps_masker_.fit()
 
+        self.n_elements_ = self.maps_masker_.n_elements_
+
         return self
 
     @property
     def nifti_maps_masker_(self):
-        # TODO: remove in 0.13
+        # TODO (nilearn >= 0.13.0) remove
         warnings.warn(
             message="The 'nifti_maps_masker_' attribute is deprecated "
             "and will be removed in Nilearn 0.13.0.\n"
@@ -564,8 +603,20 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         check_is_fitted(self)
 
         # XXX: dealing properly with 4D/ list of 4D data?
+        if isinstance(imgs, (str, Path)):
+            imgs = check_niimg(imgs)
+
+        if isinstance(imgs, (SurfaceImage, Nifti1Image)):
+            imgs = [imgs]
+
         if confounds is None:
-            confounds = [None] * len(imgs)
+            confounds = list(itertools.repeat(None, len(imgs)))
+        elif len(confounds) != len(imgs):
+            raise ValueError(
+                f"Number of confounds ({len(confounds)=}) "
+                f"must match number of images ({len(imgs)=})."
+            )
+
         return [
             self.maps_masker_.transform(img, confounds=confound)
             for img, confound in zip(imgs, confounds)
@@ -591,6 +642,12 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         check_is_fitted(self)
 
         # XXX: dealing properly with 2D/ list of 2D data?
+        if not isinstance(loadings, list):
+            raise TypeError(
+                "'loadings' must be a list of numpy arrays. "
+                f"Got: {loadings.__class__.__name__}"
+            )
+
         return [
             self.maps_masker_.inverse_transform(loading)
             for loading in loadings
@@ -610,7 +667,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             data, self.components_, per_component=per_component
         )
 
-    def score(self, imgs, confounds=None, per_component=False):
+    def score(self, imgs, y=None, confounds=None, per_component=False):
         """Score function based on explained variance on imgs.
 
         Should only be used by DecompositionEstimator derived classes
@@ -621,6 +678,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data to be scored
+
+        %(y_dummy)s
 
         confounds : CSV file path or numpy.ndarray
             or pandas DataFrame, optional
@@ -639,6 +698,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             is squeezed if the number of subjects is one
 
         """
+        del y
         check_is_fitted(self)
 
         data = _mask_and_reduce(
@@ -649,6 +709,15 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             random_state=self.random_state,
         )
         return self._raw_score(data, per_component=per_component)
+
+    def set_output(self, *, transform=None):
+        """Set the output container when ``"transform"`` is called.
+
+        .. warning::
+
+            This has not been implemented yet.
+        """
+        raise NotImplementedError()
 
 
 def _explained_variance(X, components, per_component=True):

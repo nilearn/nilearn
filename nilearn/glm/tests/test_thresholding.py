@@ -1,5 +1,7 @@
 """Test the thresholding utilities."""
 
+import warnings
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -12,7 +14,7 @@ from nilearn.glm import (
     fdr_threshold,
     threshold_stats_img,
 )
-from nilearn.glm.thresholding import _compute_hommel_value
+from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD, _compute_hommel_value
 from nilearn.image import get_data
 
 
@@ -97,10 +99,14 @@ def test_threshold_stats_img_no_height_control(
 
     # without a map
     th_map, threshold = threshold_stats_img(
-        None, None, threshold=3.0, height_control=None, cluster_threshold=0
+        None,
+        None,
+        threshold=DEFAULT_Z_THRESHOLD,
+        height_control=None,
+        cluster_threshold=0,
     )
 
-    assert threshold == 3.0
+    assert threshold == DEFAULT_Z_THRESHOLD
     assert th_map is None
 
 
@@ -196,33 +202,26 @@ def test_hommel(alpha, expected):
     assert _compute_hommel_value(z, alpha=alpha) == expected
 
 
-def test_all_resolution_inference(data_norm_isf, affine_eye):
+@pytest.mark.parametrize(
+    "kwargs, expected",
+    [
+        (
+            {"threshold": DEFAULT_Z_THRESHOLD, "verbose": 1},
+            8,
+        ),  # standard case (also test verbose)
+        ({"threshold": 6}, 0),  # high threshold
+        ({"threshold": [3, 6]}, 8),  # list of thresholds
+    ],
+)
+def test_all_resolution_inference(data_norm_isf, affine_eye, kwargs, expected):
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
 
-    # standard case
-    th_map = cluster_level_inference(stat_img, threshold=3, alpha=0.05)
+    th_map = cluster_level_inference(stat_img, alpha=0.05, **kwargs)
     vals = get_data(th_map)
 
-    assert np.sum(vals > 0) == 8
-
-    # high threshold
-    th_map = cluster_level_inference(stat_img, threshold=6, alpha=0.05)
-    vals = get_data(th_map)
-
-    assert np.sum(vals > 0) == 0
-
-    # list of thresholds
-    th_map = cluster_level_inference(stat_img, threshold=[3, 6], alpha=0.05)
-    vals = get_data(th_map)
-
-    assert np.sum(vals > 0) == 8
-
-    # verbose mode
-    th_map = cluster_level_inference(
-        stat_img, threshold=3, alpha=0.05, verbose=1
-    )
+    assert np.sum(vals > 0) == expected
 
 
 def test_all_resolution_inference_with_mask(
@@ -233,7 +232,10 @@ def test_all_resolution_inference_with_mask(
     stat_img = Nifti1Image(data, affine_eye)
 
     th_map = cluster_level_inference(
-        stat_img, mask_img=img_3d_ones_eye, threshold=3, alpha=0.05
+        stat_img,
+        mask_img=img_3d_ones_eye,
+        threshold=DEFAULT_Z_THRESHOLD,
+        alpha=0.05,
     )
     vals = get_data(th_map)
 
@@ -276,7 +278,9 @@ def test_all_resolution_inference_errors(alpha, data_norm_isf, affine_eye):
     stat_img = Nifti1Image(data, affine_eye)
 
     with pytest.raises(ValueError, match="alpha should be between 0 and 1"):
-        cluster_level_inference(stat_img, threshold=3, alpha=alpha)
+        cluster_level_inference(
+            stat_img, threshold=DEFAULT_Z_THRESHOLD, alpha=alpha
+        )
 
 
 @pytest.mark.parametrize("control", ["fdr", "bonferroni"])
@@ -316,7 +320,11 @@ def test_all_resolution_inference_height_control(
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_threshold_stats_img_surface(surf_img_1d, height_control):
     """Smoke test threshold_stats_img works on surface."""
-    threshold_stats_img(surf_img_1d, height_control=height_control)
+    threshold_stats_img(
+        surf_img_1d,
+        height_control=height_control,
+        threshold=DEFAULT_Z_THRESHOLD,
+    )
 
 
 def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
@@ -324,3 +332,50 @@ def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
     threshold_stats_img(
         surf_img_1d, height_control="bonferroni", mask_img=surf_mask_1d
     )
+
+
+@pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
+@pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
+def test_deprecation_threshold(surf_img_1d, height_control, threshold):
+    """Check warning thrown when threshold==old threshold.
+
+    # TODO (nilearn >= 0.15)
+    # remove
+    """
+    with warnings.catch_warnings(record=True) as warning_list:
+        threshold_stats_img(
+            surf_img_1d, height_control=height_control, threshold=threshold
+        )
+
+    n_warnings = len(
+        [x for x in warning_list if issubclass(x.category, FutureWarning)]
+    )
+    if height_control is None and threshold == 3.0:
+        assert n_warnings == 1
+    else:
+        assert n_warnings == 0
+
+
+@pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
+def test_deprecation_threshold_cluster_level_inference(
+    threshold, affine_eye, data_norm_isf
+):
+    """Check cluster_level_inference warns when threshold==old threshold .
+
+    # TODO (nilearn >= 0.15)
+    # remove
+    """
+    data = data_norm_isf
+    data[3, 6, 7] = 10
+    stat_img = Nifti1Image(data, affine_eye)
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        cluster_level_inference(stat_img, threshold=threshold)
+
+    n_warnings = len(
+        [x for x in warning_list if issubclass(x.category, FutureWarning)]
+    )
+    if threshold == 3.0:
+        assert n_warnings == 1
+    else:
+        assert n_warnings == 0

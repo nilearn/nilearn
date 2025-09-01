@@ -123,15 +123,15 @@ Refer to :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_spm_multimodal_fac
 
 The activation maps from these 3 contrasts is presented below:
 
-.. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_spm_multimodal_faces_001.png
+.. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_spm_multimodal_faces_002.png
      :target: ../auto_examples/04_glm_first_level/plot_spm_multimodal_faces.html
      :scale: 60
 
-.. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_spm_multimodal_faces_002.png
+.. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_spm_multimodal_faces_003.png
     :target: ../auto_examples/04_glm_first_level/plot_spm_multimodal_faces.html
     :scale: 60
 
-.. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_spm_multimodal_faces_003.png
+.. image:: ../auto_examples/04_glm_first_level/images/sphx_glr_plot_spm_multimodal_faces_004.png
      :target: ../auto_examples/04_glm_first_level/plot_spm_multimodal_faces.html
      :scale: 60
 

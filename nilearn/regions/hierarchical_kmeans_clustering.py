@@ -8,7 +8,7 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
@@ -186,6 +186,8 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         To disable convergence detection based on inertia, set
         max_no_improvement to None.
 
+    %(verbose0)s
+
     random_state : :obj:`int`, RandomState instance or None, default=0
         Determines random number generation for centroid initialization and
         random reassignment. Use an int to make the randomness deterministic.
@@ -196,12 +198,13 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         inverse_transform() will apply inversed scaling to yield an image with
         same l2-norm as input.
 
-    %(verbose0)s
-
     Attributes
     ----------
     labels_ : ndarray, shape = [n_features]
         cluster labels for each feature.
+
+    n_features_in_ : :obj:`int`
+        Number of features seen during fit.
 
     sizes_ : ndarray, shape = [n_features]
         It contains the size of each cluster.
@@ -231,7 +234,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -241,20 +244,19 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags()
+            return tags(niimg_like=False)
 
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags()
+        tags.input_tags = InputTags(niimg_like=False)
         return tags
 
+    @fill_doc
     def fit(self, X, y=None):
         """Compute clustering of the data.
 
@@ -262,21 +264,37 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         ----------
         X : ndarray, shape = [n_samples, n_features]
             Training data.
-        y : Ignored
+
+        %(y_dummy)s
 
         Returns
         -------
         self
         """
         del y
-        X = check_array(
-            X, ensure_min_features=2, ensure_min_samples=2, estimator=self
-        )
+        if SKLEARN_LT_1_6:
+            X = check_array(
+                X, ensure_min_features=2, ensure_min_samples=2, estimator=self
+            )
+            self.n_features_in_ = X.shape[1]
+
+        else:
+            from sklearn.utils.validation import validate_data
+
+            X = validate_data(
+                self,
+                X=X,
+                ensure_min_features=2,
+                ensure_min_samples=2,
+                reset=True,
+            )
+
         # Transpose the data so that we can cluster features (voxels)
         # and input them as samples to the sklearn's clustering algorithm
         # This is because sklearn's clustering algorithm does clustering
         # on samples and not on features
         X = X.T
+
         # n_features for the sklearn's clustering algorithm would be the
         # number of samples in the input data
         n_features = X.shape[1]
@@ -313,6 +331,7 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
     def __sklearn_is_fitted__(self):
         return hasattr(self, "labels_")
 
+    @fill_doc
     def transform(
         self,
         X,
@@ -325,12 +344,24 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         X : ndarray, shape = [n_samples, n_features]
             Data to transform with the fitted clustering.
 
+        %(y_dummy)s
+
         Returns
         -------
         X_red : ndarray, shape = [n_samples, n_clusters]
             Data reduced with agglomerated signal for each cluster
         """
         check_is_fitted(self)
+
+        # TODO (sklearn >= 1.6.0) simplify
+        if SKLEARN_LT_1_6:
+            X = check_array(
+                X, estimator=self, ensure_min_features=self.n_features_in_
+            )
+        else:
+            from sklearn.utils.validation import validate_data
+
+            X = validate_data(self, X=X, reset=False)
 
         # Transpose the data so that we can cluster features (voxels)
         # and input them as samples to the sklearn's clustering algorithm
@@ -376,3 +407,12 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         X_inv = X_red[inverse, ...]
         X_inv = X_inv.T
         return X_inv
+
+    def set_output(self, *, transform=None):
+        """Set the output container when ``"transform"`` is called.
+
+        .. warning::
+
+            This has not been implemented yet.
+        """
+        raise NotImplementedError()

@@ -92,6 +92,8 @@ glm = FirstLevelModel(
     high_pass=0.008,
     smoothing_fwhm=4,
     memory="nilearn_cache",
+    memory_level=1,
+    verbose=1,
 )
 
 # %%
@@ -180,6 +182,7 @@ decoder = Decoder(
     standardize=False,
     screening_percentile=5,
     cv=LeaveOneGroupOut(),
+    verbose=1,
 )
 decoder.fit(z_maps, conditions_label, groups=run_label)
 

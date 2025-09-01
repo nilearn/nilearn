@@ -16,14 +16,15 @@ from nibabel import Nifti1Image, spatialimages
 from numpy.testing import assert_array_equal
 
 import nilearn as ni
-from nilearn._utils import (
+from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.niimg import repr_niimgs
+from nilearn._utils.niimg_conversions import (
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,
-    repr_niimgs,
+    check_same_fov,
+    iter_check_niimg,
 )
-from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.niimg_conversions import check_same_fov, iter_check_niimg
 from nilearn._utils.testing import (
     assert_memory_less_than,
     with_memory_profiler,
@@ -102,7 +103,7 @@ def test_check_same_fov(affine_eye):
 
 def test_check_niimg_3d(affine_eye, img_3d_zeros_eye, tmp_path):
     # check error for non-forced but necessary resampling
-    with pytest.raises(TypeError, match="nibabel format"):
+    with pytest.raises(TypeError, match="input should be a NiftiLike object"):
         check_niimg(0)
 
     # check error for non-forced but necessary resampling
@@ -136,7 +137,7 @@ def test_check_niimg_3d(affine_eye, img_3d_zeros_eye, tmp_path):
 
 
 def test_check_niimg_4d_errors(affine_eye, img_3d_zeros_eye, shape_3d_default):
-    with pytest.raises(TypeError, match="nibabel format"):
+    with pytest.raises(TypeError, match="input should be a NiftiLike object"):
         check_niimg_4d(0)
 
     with pytest.raises(TypeError, match="empty object"):

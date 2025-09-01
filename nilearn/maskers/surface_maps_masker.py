@@ -9,9 +9,8 @@ from scipy import linalg
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils import fill_doc, logger
-from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     constrained_layout_kwargs,
     is_matplotlib_installed,
@@ -24,9 +23,11 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
-from nilearn.maskers.base_masker import _BaseSurfaceMasker
+from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import (
     SurfaceImage,
+    at_least_2d,
+    check_surf_img,
     get_data,
 )
 from nilearn.surface.utils import check_polymesh_equal
@@ -92,6 +93,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    %(clean_args_)s
+
     maps_img_ : :obj:`~nilearn.surface.SurfaceImage`
         The same as the input `maps_img`, kept solely for consistency
         across maskers.
@@ -104,9 +107,10 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         where each vertex is ``True`` if all values across samples
         (for example across timepoints) is finite value different from 0.
 
+    memory_ : joblib memory cache
+
     n_elements_ : :obj:`int`
         The number of regions in the maps image.
-
 
     See Also
     --------
@@ -153,8 +157,10 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
+    # TODO (nilearn >= 0.13.0)
+    @fill_doc
     @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
+        replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
@@ -164,9 +170,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         imgs : :obj:`~nilearn.surface.SurfaceImage` object or None, \
                default=None
 
-        y : None
-            This parameter is unused.
-            It is solely included for scikit-learn compatibility.
+        %(y_dummy)s
 
         Returns
         -------
@@ -174,6 +178,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+        if imgs is not None:
+            self._check_imgs(imgs)
 
         if self.maps_img is None:
             raise ValueError(
@@ -181,10 +187,13 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 "For example, masker = SurfaceMapsMasker(maps_img=maps_img)"
             )
 
-        logger.log(
-            msg=f"loading regions from {self.maps_img.__repr__()}",
-            verbose=self.verbose,
-        )
+        if imgs is not None:
+            check_surf_img(imgs)
+
+        self._fit_cache()
+
+        mask_logger("load_regions", self.maps_img, verbose=self.verbose)
+
         # check maps_img data is 2D
         self.maps_img.data._check_ndims(2, "maps_img")
         self.maps_img_ = self.maps_img
@@ -194,8 +203,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.mask_img_ = self._load_mask(imgs)
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
-
-        self._shelving = False
 
         # initialize reporting content and data
         if not self.reports:
@@ -226,6 +233,13 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             "images": None,  # we will update image in transform
         }
 
+        if self.clean_args is None:
+            self.clean_args_ = {}
+        else:
+            self.clean_args_ = self.clean_args
+
+        mask_logger("fit_done", verbose=self.verbose)
+
         return self
 
     def __sklearn_is_fitted__(self):
@@ -240,8 +254,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         imgs : imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
               iterable of :obj:`~nilearn.surface.SurfaceImage`
             Images to process.
-            Mesh and data for both hemispheres/parts. The data for each \
-            hemisphere is of shape (n_vertices_per_hemisphere, n_timepoints).
+            Mesh and data for both hemispheres/parts.
 
         %(confounds)s
 
@@ -249,15 +262,15 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         Returns
         -------
-        region_signals: :obj:`numpy.ndarray`
-            Signal for each region as provided in the maps (via `maps_img`).
-            shape: (n_timepoints, n_regions)
+        %(signals_transform_surface)s
         """
+        check_is_fitted(self)
+
         check_compatibility_mask_and_images(self.maps_img, imgs)
 
-        imgs.data._check_ndims(2, "imgs")
-
         check_polymesh_equal(self.maps_img.mesh, imgs.mesh)
+
+        imgs = at_least_2d(imgs)
 
         img_data = np.concatenate(
             list(imgs.data.parts.values()), axis=0
@@ -269,53 +282,31 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             get_data(self.mask_img_) if self.mask_img_ is not None else None
         )
 
-        parameters = get_params(
-            self.__class__,
-            self,
-        )
-        if self.clean_args is None:
-            self.clean_args = {}
-        parameters["clean_args"] = self.clean_args
+        parameters = get_params(self.__class__, self)
+        parameters["clean_args"] = self.clean_args_
 
         # apply mask if provided
         # and then extract signal via least square regression
+        mask_logger("extracting", verbose=self.verbose)
         if mask_data is not None:
-            region_signals = cache(
-                linalg.lstsq,
-                memory=self.memory,
-                func_memory_level=2,
-                memory_level=self.memory_level,
-                shelve=self._shelving,
-            )(
+            region_signals = self._cache(linalg.lstsq, func_memory_level=2)(
                 maps_data[mask_data.flatten(), :],
                 img_data[mask_data.flatten(), :],
             )[0].T
         # if no mask, directly extract signal
         else:
-            region_signals = cache(
-                linalg.lstsq,
-                memory=self.memory,
-                func_memory_level=2,
-                memory_level=self.memory_level,
-                shelve=self._shelving,
-            )(maps_data, img_data)[0].T
+            region_signals = self._cache(linalg.lstsq, func_memory_level=2)(
+                maps_data, img_data
+            )[0].T
 
-        parameters = get_params(
-            self.__class__,
-            self,
-        )
-        if self.clean_args is None:
-            self.clean_args = {}
-        parameters["clean_args"] = self.clean_args
+        mask_logger("cleaning", verbose=self.verbose)
+
+        parameters = get_params(self.__class__, self)
+
+        parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
-        region_signals = cache(
-            signal.clean,
-            memory=self.memory,
-            func_memory_level=2,
-            memory_level=self.memory_level,
-            shelve=self._shelving,
-        )(
+        region_signals = self._cache(signal.clean, func_memory_level=2)(
             region_signals,
             detrend=parameters["detrend"],
             standardize=parameters["standardize"],
@@ -330,25 +321,23 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         return region_signals
 
+    @fill_doc
     def inverse_transform(self, region_signals):
         """Compute :term:`vertex` signals from region signals.
 
         Parameters
         ----------
-        region_signals: :obj:`numpy.ndarray`
-            Signal for each region as provided in the maps (via `maps_img`).
-            shape: (n_timepoints, n_regions)
+        %(region_signals_inv_transform)s
 
         Returns
         -------
-        vertex_signals: :obj:`~nilearn.surface.SurfaceImage`
-            Signal for each vertex projected on the mesh of the `maps_img`.
-            The data for each hemisphere is of shape
-            (n_vertices_per_hemisphere, n_timepoints).
+        %(img_inv_transform_surface)s
         """
         check_is_fitted(self)
 
-        self._check_signal_shape(region_signals)
+        return_1D = region_signals.ndim < 2
+
+        region_signals = self._check_array(region_signals)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
@@ -361,7 +350,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 f"but got {region_signals.shape[1]}."
             )
 
-        logger.log("computing image from signals", verbose=self.verbose)
+        mask_logger("inverse_transform", verbose=self.verbose)
+
         # project region signals back to vertices
         if mask_data is not None:
             # vertices that are not in the mask will have a signal of 0
@@ -392,7 +382,13 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             ],
         }
 
-        return SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
+        imgs = SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
+
+        if return_1D:
+            for k, v in imgs.data.parts.items():
+                imgs.data.parts[k] = v.squeeze()
+
+        return imgs
 
     def generate_report(self, displayed_maps=10, engine="matplotlib"):
         """Generate an HTML report for the current ``SurfaceMapsMasker``
@@ -407,34 +403,34 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                          or :class:`~numpy.ndarray`, or "all", default=10
             Indicates which maps will be displayed in the HTML report.
 
-                - If "all": All maps will be displayed in the report.
+            - If "all": All maps will be displayed in the report.
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report("all")
+                masker.generate_report("all")
 
-                .. warning:
-                    If there are too many maps, this might be time and
-                    memory consuming, and will result in very heavy
-                    reports.
+            .. warning:
+                If there are too many maps, this might be time and
+                memory consuming, and will result in very heavy
+                reports.
 
-                - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
-                  the indices of the maps to be displayed in the report. For
-                  example, the following code will generate a report with maps
-                  6, 3, and 12, displayed in this specific order:
+            - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
+                the indices of the maps to be displayed in the report. For
+                example, the following code will generate a report with maps
+                6, 3, and 12, displayed in this specific order:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report([6, 3, 12])
+                masker.generate_report([6, 3, 12])
 
-                - If an :obj:`int`: This will only display the first n maps,
-                  n being the value of the parameter. By default, the report
-                  will only contain the first 10 maps. Example to display the
-                  first 16 maps:
+            - If an :obj:`int`: This will only display the first n maps,
+                n being the value of the parameter. By default, the report
+                will only contain the first 10 maps. Example to display the
+                first 16 maps:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report(16)
+                masker.generate_report(16)
 
         engine : :obj:`str`, default="matplotlib"
             The plotting engine to use for the report. Can be either
@@ -591,6 +587,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 threshold=threshold,
                 hemi="both",
                 cmap=self.cmap,
+                darkness=None,
             ).get_iframe(width=500)
         elif self._report_content["engine"] == "matplotlib":
             # TODO: possibly allow to generate a report with other views
@@ -618,5 +615,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                         colorbar=False,
                         threshold=threshold,
                         bg_on_data=True,
+                        darkness=None,
                     )
         return fig

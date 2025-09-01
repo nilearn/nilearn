@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 from warnings import warn
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 
 
@@ -279,9 +279,9 @@ def parse_bids_filename(img_path, legacy=True):
     legacy : :obj:`bool`, default=True
         Whether to return a dictionary that uses BIDS terms (``False``)
         or the legacy content for the output (``True``).
-        ``False`` will become the default in version >= 0.13.2.
+        ``False`` will become the default in version >= 0.13.0.
 
-        .. versionadded :: 0.11.2dev
+        .. versionadded :: 0.12.0
 
     Returns
     -------
@@ -319,9 +319,10 @@ def parse_bids_filename(img_path, legacy=True):
     suffix, extension = parts[-1].split(".", 1)
 
     if legacy:
+        # TODO (nilearn >= 0.13.0)
         warn(
             (
-                "For versions >= 0.13.2 this function will always return "
+                "For versions >= 0.13.0 this function will always return "
                 "a dictionary that uses BIDS terms as keys. "
                 "Set 'legacy=False' to start using this new behavior."
             ),
