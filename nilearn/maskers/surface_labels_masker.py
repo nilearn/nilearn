@@ -263,7 +263,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         index = self.labels_
 
-        region_ids_: dict[str | int, int | float] = {}
+        region_ids_: dict[Union[str, int], Union[int, float]] = {}
         if self.background_label in index:
             index.pop(index.index(self.background_label))
             region_ids_["background"] = self.background_label
