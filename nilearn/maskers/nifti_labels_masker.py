@@ -279,8 +279,11 @@ class NiftiLabelsMasker(BaseMasker):
         )
 
     @property
-    def labels_(self) -> list[str]:
-        """Return list of labels of the regions."""
+    def labels_(self) -> list[Union[int, float]]:
+        """Return list of labels of the regions.
+
+        The background label is included if present in the image.
+        """
         check_is_fitted(self)
         lut = self.lut_
         if hasattr(self, "_lut_"):
@@ -300,21 +303,16 @@ class NiftiLabelsMasker(BaseMasker):
         .. versionadded:: 0.10.3
         """
         check_is_fitted(self)
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
-        tmp = lut.loc[lut["index"] != self.background_label, "name"].to_dict()
-        region_names_ = {}
-        for key, value in tmp.items():
-            if key == 0:
-                # in case background_label is not 0
-                region_names_[key] = value
-            else:
-                region_names_[key - 1] = value
-        return region_names_
+
+        index = self.labels_
+        valid_ids = [id for id in index if id != self.background_label]
+
+        sub_df = self.lut_[self.lut_["index"].isin(valid_ids)]
+
+        return sub_df["name"].reset_index(drop=True).to_dict()
 
     @property
-    def region_ids_(self) -> dict[Union[str, int], int]:
+    def region_ids_(self) -> dict[Union[str, int], Union[int, float]]:
         """Return dictionary containing the region ids corresponding \
            to each column in the array \
            returned by `transform`.
@@ -327,20 +325,14 @@ class NiftiLabelsMasker(BaseMasker):
         """
         check_is_fitted(self)
 
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
+        index = self.labels_
 
-        tmp = lut["index"].to_dict()
-        region_ids_: dict[Union[str, int], int] = {}
-        for key, value in list(tmp.items()):
-            if value == self.background_label:
-                region_ids_["background"] = value
-            elif key == 0:
-                # in case background_label is not 0
-                region_ids_[key] = value
-            else:
-                region_ids_[key - 1] = value
+        region_ids_: dict[Union[str, int], Union[int, float]] = {}
+        if self.background_label in index:
+            index.pop(index.index(self.background_label))
+            region_ids_["background"] = self.background_label
+        for i, id in enumerate(index):
+            region_ids_[i] = id  # noqa : PERF403
 
         return region_ids_
 
@@ -687,6 +679,15 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
 
+        region_ids_: dict[str | int, int | float] = {}
+        if self.background_label in index:
+            index.pop(index.index(self.background_label))
+            region_ids_["background"] = self.background_label
+        for i, id in enumerate(index):
+            region_ids_[i] = id  # noqa : PERF403
+
+        return region_ids_
+
         %(confounds)s
 
         %(sample_mask)s
@@ -849,8 +850,13 @@ class NiftiLabelsMasker(BaseMasker):
         # and whose rows are sorted according
         # to the columns in the region_signals array.
         self._lut_ = self.lut_.copy()
-        desired_order = [self.background_label, *ids]
-        mask = mask = self.lut_["index"].isin(desired_order)
+
+        labels = set(np.unique(safe_get_data(self.labels_img_)))
+        desired_order = [*ids]
+        if self.background_label in labels:
+            desired_order = [self.background_label, *ids]
+
+        mask = self.lut_["index"].isin(desired_order)
         self._lut_ = self._lut_[mask]
         self._lut_ = sanitize_look_up_table(
             self._lut_, atlas=np.array(desired_order)

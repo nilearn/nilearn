@@ -841,4 +841,8 @@ def generate_lut(labels_img, background_label, lut=None, labels=None):
         }
         lut = pd.concat([pd.DataFrame([first_row]), lut], ignore_index=True)
 
-    return sanitize_look_up_table(lut, atlas=labels_img)
+    return (
+        sanitize_look_up_table(lut, atlas=labels_img)
+        .sort_values("index")
+        .reset_index(drop=True)
+    )
