@@ -97,7 +97,7 @@ class NiftiMapsMasker(BaseMasker):
     %(dtype)s.
 
     resampling_target : {"data", "mask", "maps", None}, default="data"
-        Gives which image gives the final shape/size.
+        Defines which image gives the final shape/size.
 
         For example, if
         `resampling_target` is "mask" then maps_img and images provided to
@@ -231,7 +231,7 @@ class NiftiMapsMasker(BaseMasker):
                          or :class:`~numpy.ndarray`, or "all", default=10
             Indicates which maps will be displayed in the HTML report.
 
-            - If "all": All maps will be displayed in the report.
+            - If ``"all"``: All maps will be displayed in the report.
 
             .. code-block:: python
 
