@@ -5,7 +5,6 @@ on multi subject MRI data.
 import collections.abc
 import itertools
 import warnings
-from functools import partial
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -24,35 +23,38 @@ from nilearn.maskers.base_masker import (
     mask_logger,
     prepare_confounds_multimaskers,
 )
-from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
+from nilearn.maskers.nifti_masker import (
+    NiftiMasker,
+    _make_brain_mask_func,
+    filter_and_mask,
+)
 from nilearn.masking import (
     compute_multi_background_mask,
-    compute_multi_brain_mask,
     compute_multi_epi_mask,
     load_mask_img,
 )
 from nilearn.typing import NiimgLike
 
 
-def _get_mask_strategy(strategy):
+def _get_mask_strategy(strategy: str):
     """Return the mask computing method based on a provided strategy."""
     if strategy == "background":
         return compute_multi_background_mask
     elif strategy == "epi":
         return compute_multi_epi_mask
     elif strategy == "whole-brain-template":
-        return partial(compute_multi_brain_mask, mask_type="whole-brain")
+        return _make_brain_mask_func("whole-brain", multi=True)
     elif strategy == "gm-template":
-        return partial(compute_multi_brain_mask, mask_type="gm")
+        return _make_brain_mask_func("gm", multi=True)
     elif strategy == "wm-template":
-        return partial(compute_multi_brain_mask, mask_type="wm")
+        return _make_brain_mask_func("wm", multi=True)
     elif strategy == "template":
         warnings.warn(
             "Masking strategy 'template' is deprecated. "
             "Please use 'whole-brain-template' instead.",
             stacklevel=find_stack_level(),
         )
-        return partial(compute_multi_brain_mask, mask_type="whole-brain")
+        return _make_brain_mask_func("whole-brain")
     else:
         raise ValueError(
             f"Unknown value of mask_strategy '{strategy}'. "
