@@ -1441,7 +1441,6 @@ def check_img_estimator_pickle(estimator_orig):
 def check_img_estimator_pipeline_consistency(estimator_orig):
     """Check pipeline consistency for nilearn estimators.
 
-
     Substitute for sklearn check_pipeline_consistency.
     """
     estimator = clone(estimator_orig)
