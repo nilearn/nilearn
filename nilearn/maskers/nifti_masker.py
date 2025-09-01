@@ -93,6 +93,7 @@ def _make_brain_mask_func(mask_type: str, multi: bool = False):
         opening=2,
         memory=None,
         verbose=0,
+        **kwargs,
     ):
         if multi:
             return compute_multi_brain_mask(
@@ -103,6 +104,7 @@ def _make_brain_mask_func(mask_type: str, multi: bool = False):
                 memory,
                 verbose,
                 mask_type=mask_type,
+                **kwargs,
             )
 
         return compute_brain_mask(
