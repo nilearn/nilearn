@@ -677,7 +677,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         y : None
             This parameter is unused. It is solely included for scikit-learn
-            compatibility.        index = self.labels_
+            compatibility.
 
         region_ids_: dict[str | int, int | float] = {}
         if self.background_label in index:
