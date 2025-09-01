@@ -141,14 +141,14 @@ class NiftiLabelsMasker(BaseMasker):
     %(dtype)s
 
     resampling_target : {"data", "labels", None}, default="data"
-        Gives which image gives the final shape/size.
+        Defines which image gives the final shape/size.
 
-        For example, if ``resampling_target`` is ``"data"``,
-        the atlas is resampled to the shape of the data if needed.
-        If it is ``"labels"`` then mask_img and images provided to fit()
-        are resampled to the shape and affine of labels_img.
-        ``"None"`` means no resampling:
-        if shapes and affines do not match, a ValueError is raised.
+        - ``"data"`` means the atlas is resampled
+          to the shape of the data if needed.
+        - ``"labels"`` means that the ``mask_img`` and images provided
+          to ``fit()`` are resampled to the shape and affine of ``labels_img``.
+        - ``"None"`` means no resampling:
+          if shapes and affines do not match, a :obj:`ValueError` is raised.
 
     %(memory)s
 
