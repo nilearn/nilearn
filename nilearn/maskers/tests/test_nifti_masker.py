@@ -5,6 +5,8 @@ not the underlying functions used (e.g. clean()). See test_masking.py and
 test_signal.py for this.
 """
 
+import warnings
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -333,10 +335,9 @@ def expected_mask(mask_args):
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
-@pytest.mark.parametrize("mask_args", [{}])
-def test_compute_brain_mask_empty_mask_error(strategy, mask_args):
+def test_compute_brain_mask_empty_mask_error(strategy):
     """Check masker raise error when estimated mask is empty."""
-    masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
+    masker = NiftiMasker(mask_strategy=strategy, mask_args={})
 
     img, _ = data_gen.generate_random_img((9, 9, 5))
 
@@ -348,6 +349,8 @@ def test_compute_brain_mask_empty_mask_error(strategy, mask_args):
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
+# We parametrize mask_args to make it accessible
+# to the expected_mask fixture.
 @pytest.mark.parametrize("mask_args", [{"threshold": 0.0}])
 def test_compute_brain_mask(strategy, expected_mask, mask_args):
     """Check masker for template masking strategy."""
@@ -357,6 +360,31 @@ def test_compute_brain_mask(strategy, expected_mask, mask_args):
     masker.fit(img)
 
     np.testing.assert_array_equal(get_data(masker.mask_img_), expected_mask)
+
+
+@pytest.mark.parametrize(
+    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+)
+def test_no_warning_partial_joblib(strategy):
+    """Check no warning thrown by joblib regarding masking strategy.
+
+    Regression test for:
+    https://github.com/nilearn/nilearn/issues/5527
+    """
+    masker = NiftiMasker(
+        mask_strategy=strategy,
+        mask_args={"threshold": 0.0},
+        memory="nilearn_cache",
+        memory_level=1,
+    )
+    img, _ = data_gen.generate_random_img((9, 9, 5))
+    with warnings.catch_warnings(record=True) as warning_list:
+        masker.fit(img)
+
+    assert not any(
+        "Cannot inspect object functools.partial" in str(x)
+        for x in warning_list
+    )
 
 
 def test_filter_and_mask_error(affine_eye):
