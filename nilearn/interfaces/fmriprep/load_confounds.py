@@ -103,7 +103,7 @@ def load_confounds(
     motion="full",
     scrub=5,
     fd_threshold=0.5,
-    std_dvars_threshold=3,
+    std_dvars_threshold=1.5,
     wm_csf="basic",
     global_signal="basic",
     compcor="anat_combined",
@@ -213,15 +213,15 @@ def load_confounds(
 
     fd_threshold : :obj:`float`, default=0.5
 
-        .. versionchanged:: 0.13.0
+        .. versionchanged:: 0.13.0dev
            The default was changed from ``0.2`` to ``0.5``.
 
         Framewise displacement threshold for scrub in mm.
 
-    std_dvars_threshold : :obj:`float`, default=3
+    std_dvars_threshold : :obj:`float`, default=1.5
 
-        .. deprecated:: 0.10.3
-           The default value will be changed to 1.5 in 0.13.0
+        .. versionchanged:: 0.13.0dev
+           The default value will be changed from ``3.0`` to ``1.5``.
 
         Standardized DVARS threshold for scrub.
         The default threshold matching :term:`fMRIPrep`.
@@ -310,19 +310,6 @@ def load_confounds(
 
     """
     _check_strategy(strategy)
-    if "scrub" in strategy and std_dvars_threshold == 3:
-        # TODO (nilearn >= 0.13.0)
-        std_dvars_threshold_default = (
-            "The default parameter for std_dvars_threshold is currently 3 "
-            "which is inconsistent with the fMRIPrep default of 1.5. "
-            "In release 0.13.0, "
-            "the default strategy will be replaced by 1.5."
-        )
-        warnings.warn(
-            category=DeprecationWarning,
-            message=std_dvars_threshold_default,
-            stacklevel=find_stack_level(),
-        )
     # load confounds per image provided
     img_files, flag_single = sanitize_confounds(img_files)
     confounds_out = []
