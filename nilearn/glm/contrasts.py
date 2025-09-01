@@ -472,7 +472,6 @@ def compute_fixed_effects(
     mask=None,
     precision_weighted=False,
     dofs=None,
-    return_z_score=False,
 ):
     """Compute the fixed effects, given images of effects and variance.
 
@@ -500,9 +499,6 @@ def compute_fixed_effects(
         when ``None``,
         it is assumed that the degrees of freedom are 100 per input.
 
-    return_z_score : :obj:`bool`, default=False
-        Whether ``fixed_fx_z_score_img`` should be output or not.
-
     Returns
     -------
     fixed_fx_contrast_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
@@ -516,11 +512,6 @@ def compute_fixed_effects(
 
     fixed_fx_z_score_img : Nifti1Image, optional
         The fixed effects corresponding z-transform
-
-    Warns
-    -----
-    DeprecationWarning
-        Starting in version 0.13, fixed_fx_z_score_img will always be returned
 
     """
     n_runs = len(contrast_imgs)
@@ -571,24 +562,12 @@ def compute_fixed_effects(
     fixed_fx_stat_img = masker.inverse_transform(fixed_fx_stat)
     fixed_fx_z_score_img = masker.inverse_transform(fixed_fx_z_score)
 
-    if return_z_score:
-        return (
-            fixed_fx_contrast_img,
-            fixed_fx_variance_img,
-            fixed_fx_stat_img,
-            fixed_fx_z_score_img,
-        )
-
-    # TODO (nilearn >= 0.13.0)
-    warn(
-        category=DeprecationWarning,
-        message="The behavior of this function will be "
-        "changed in release 0.13 to have an additional "
-        "return value 'fixed_fx_z_score_img' by default. "
-        "Please set return_z_score to True.",
-        stacklevel=find_stack_level(),
+    return (
+        fixed_fx_contrast_img,
+        fixed_fx_variance_img,
+        fixed_fx_stat_img,
+        fixed_fx_z_score_img,
     )
-    return fixed_fx_contrast_img, fixed_fx_variance_img, fixed_fx_stat_img
 
 
 def _compute_fixed_effects_params(
