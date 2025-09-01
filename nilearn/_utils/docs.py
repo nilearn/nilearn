@@ -571,7 +571,7 @@ imgs : :obj:`list` of Niimg-like objects
 
 # keep_masked_labels
 docdict["keep_masked_labels"] = """
-keep_masked_labels : :obj:`bool`, default=True
+keep_masked_labels : :obj:`bool`, default=False
     When a mask is supplied through the "mask_img" parameter, some
     atlas regions may lie entirely outside of the brain mask, resulting
     in empty time series for those regions.
@@ -582,9 +582,9 @@ keep_masked_labels : :obj:`bool`, default=True
 
     .. deprecated:: 0.10.2
 
-        The 'True' option for ``keep_masked_labels`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_labels`` parameter will be removed in 0.15.
+    .. changed:: 0.13.0dev
+
+        The ``keep_masked_labels`` parameter will be removed in 0.15.
 
 """
 

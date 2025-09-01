@@ -352,7 +352,8 @@ def test_signals_extraction_with_labels_without_mask(
 
     # and back
     signals_r, labels_r = img_to_signals_labels(
-        imgs=data_img, labels_img=labels_img
+        imgs=data_img,
+        labels_img=labels_img,
     )
 
     assert_almost_equal(signals_r, signals)
@@ -594,15 +595,7 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     # test if the warning is raised
 
     with pytest.warns(
-        DeprecationWarning,
-        match='Applying "mask_img" before '
-        "signal extraction may result in empty region signals in "
-        "the output. These are currently kept. "
-        "Starting from version 0.13, the default behavior will be "
-        "changed to remove them by setting "
-        '"keep_masked_labels=False". '
-        '"keep_masked_labels" parameter will be removed '
-        "in version 0.15.",
+        DeprecationWarning, '"keep_masked_labels" parameter will be removed '
     ):
         labels_signals, labels_labels = img_to_signals_labels(
             imgs=fmri_img,

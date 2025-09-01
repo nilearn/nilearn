@@ -219,7 +219,7 @@ class NiftiLabelsMasker(BaseMasker):
         memory_level=1,
         verbose=0,
         strategy="mean",
-        keep_masked_labels=True,
+        keep_masked_labels=False,
         reports=True,
         cmap="CMRmap_r",
         clean_args=None,

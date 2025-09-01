@@ -224,7 +224,7 @@ def img_to_signals_labels(
     background_label=0,
     order="F",
     strategy="mean",
-    keep_masked_labels=True,
+    keep_masked_labels=False,
     return_masked_atlas=False,
 ):
     """Extract region signals from image.
@@ -262,8 +262,14 @@ def img_to_signals_labels(
 
     return_masked_atlas : :obj:`bool`, default=False
         If True, the masked atlas is returned.
-        deprecated in version 0.13, to be removed in 0.15.
-        after 0.13, the masked atlas will always be returned.
+
+        .. versionchanged :: 0.13.0dev
+
+            Default changed to False.
+
+        .. deprecated ::
+
+            This parameter will be removed in versions >= 0.15.0
 
     Returns
     -------

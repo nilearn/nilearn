@@ -151,7 +151,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         memory_level=1,
         verbose=0,
         strategy="mean",
-        keep_masked_labels=True,
+        keep_masked_labels=False,
         reports=True,
         cmap="CMRmap_r",
         n_jobs=1,
