@@ -15,21 +15,7 @@ HIGHLIGHTS
 Fixes
 -----
 
-- :bdg-info:`Plotting` Plots of thresholded statistical maps included in GLM reports now take into account the ``two_sided`` parameter (:gh:`5578` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` :func:`~nilearn.reporting.get_clusters_table` can now handle negative ``stat_threshold`` when ``two_sided=False`` (:gh:`5578` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` :func:`~nilearn.reporting.make_glm_report` and :func:`~nilearn.glm.threshold_stats_img` will now warn users when they try to use ``threshold`` with ``height_control`` other than ``None`` (:gh:`5578` by `Rémi Gau`_).
-
 - :bdg-success:`API` Add a dummy ``y`` parameter to :meth:`~nilearn.decomposition.CanICA.score` and :meth:`~nilearn.decomposition.DictLearning.score` for compatibility with scikit-learn API (:gh:`5565` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Fix several issues in :class:`~nilearn.maskers.NiftiLabelsMasker` and :class:`~nilearn.maskers.SurfaceLabelsMasker` that lead to invalid ``region_names_``, ``region_ids_`` or look-up-table content (:gh:`5492`, :gh:`5614`  by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Align ``symmetric_cmap`` behavior for ``plotly`` backend in :func:`~nilearn.plotting.plot_surf` function with ``matplotlib`` backend (:gh:`5492` by `Hande Gözükan`_).
-
-- :bdg-dark:`Code` Fix type of ``t_r`` to support numpy dtypes for python < 3.10 (:gh:`5550` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Enforce consistent ``dtype`` for all parts of :class:`~nilearn.surface.SurfaceImage` and :class:`~nilearn.surface.PolyData` (:gh:`5530` by `Rémi Gau`_).
 
 - :bdg-success:`API` The ``is_classif`` public attribute has been removed for :class:`~decoding.SpaceNetClassifier` and :class:`~decoding.DecoderRegressor` as it is a characteristic of the estimator that must not be changed. Accessing an equivalent characteristic can be done via the estimator's tags (``__sklearn_tags__()``) (:gh:`5594` by `Rémi Gau`_).
 
@@ -39,7 +25,7 @@ Fixes
 
 - :bdg-success:`API` The ``clustering_percentile`` public attribute has been removed for :class:`~decoding.Decoder` and :class:`~decoding.DecoderRegressor` as it is only relevant for :class:`~decoding.FREMClassifier` and  :class:`~decoding.FREMRegressor` (:gh:`5557` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Fix several issues in :class:`~nilearn.maskers.NiftiLabelsMasker` and :class:`~nilearn.maskers.SurfaceLabelsMasker` that lead to invalid ``region_names_``, ``region_ids_`` or look-up-table content (:gh:`5492` by `Rémi Gau`_).
+- :bdg-dark:`Code` Fix several issues in :class:`~nilearn.maskers.NiftiLabelsMasker` and :class:`~nilearn.maskers.SurfaceLabelsMasker` that lead to invalid ``region_names_``, ``region_ids_`` or look-up-table content (:gh:`5492`, :gh:`5614`  by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Align ``symmetric_cmap`` behavior for ``plotly`` backend in :func:`~nilearn.plotting.plot_surf` function with ``matplotlib`` backend (:gh:`5492` by `Hande Gözükan`_).
 
@@ -47,7 +33,14 @@ Fixes
 
 - :bdg-dark:`Code` Enforce consistent ``dtype`` for all parts of :class:`~nilearn.surface.SurfaceImage` and :class:`~nilearn.surface.PolyData` (:gh:`5530` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` :func:`~nilearn.reporting.get_clusters_table` can now handle negative ``stat_threshold`` when ``two_sided=False`` (:gh:`5578` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` :func:`~nilearn.reporting.make_glm_report` and :func:`~nilearn.glm.threshold_stats_img` will now warn users when they try to use ``threshold`` with ``height_control`` other than ``None`` (:gh:`5578` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Fix bug that occurred when plotting surfaces with matplotlib in rare cases where ``vmin==vmax`` and when a colorbar was requested (:gh:`5616` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Plots of thresholded statistical maps included in GLM reports now take into account the ``two_sided`` parameter (:gh:`5578` by `Rémi Gau`_).
+
 
 Enhancements
 ------------
