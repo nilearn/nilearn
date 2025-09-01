@@ -102,7 +102,7 @@ def load_confounds(
     strategy=("motion", "high_pass", "wm_csf"),
     motion="full",
     scrub=5,
-    fd_threshold=0.2,
+    fd_threshold=0.5,
     std_dvars_threshold=3,
     wm_csf="basic",
     global_signal="basic",
@@ -211,10 +211,10 @@ def load_confounds(
         remove time frames based on excessive framewise displacement and
         DVARS only.
 
-    fd_threshold : :obj:`float`, default=0.2
+    fd_threshold : :obj:`float`, default=0.5
 
-        .. deprecated:: 0.10.3
-           The default value will be changed to 0.5 in 0.13.0
+        .. versionchanged:: 0.13.0
+           The default was changed from ``0.2`` to ``0.5``.
 
         Framewise displacement threshold for scrub in mm.
 
@@ -310,19 +310,6 @@ def load_confounds(
 
     """
     _check_strategy(strategy)
-    if "scrub" in strategy and fd_threshold == 0.2:
-        # TODO (nilearn >= 0.13.0)
-        fd_threshold_default = (
-            "The default parameter for fd_threshold is currently 0.2 "
-            "which is inconsistent with the fMRIPrep default of 0.5. "
-            "In release 0.13.0, "
-            "the default strategy will be replaced by 0.5."
-        )
-        warnings.warn(
-            category=DeprecationWarning,
-            message=fd_threshold_default,
-            stacklevel=find_stack_level(),
-        )
     if "scrub" in strategy and std_dvars_threshold == 3:
         # TODO (nilearn >= 0.13.0)
         std_dvars_threshold_default = (

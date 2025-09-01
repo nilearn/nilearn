@@ -2374,7 +2374,7 @@ def _check_kwargs_load_confounds(**kwargs):
         "strategy": ("motion", "high_pass", "wm_csf"),
         "motion": "full",
         "scrub": 5,
-        "fd_threshold": 0.2,
+        "fd_threshold": 0.5,
         "std_dvars_threshold": 3,
         "wm_csf": "basic",
         "global_signal": "basic",

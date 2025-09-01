@@ -183,8 +183,6 @@ confounds_scrub, sample_mask = load_confounds(
     strategy=["high_pass", "motion", "wm_csf", "scrub"],
     motion="basic",
     wm_csf="basic",
-    scrub=5,
-    fd_threshold=0.5,
     std_dvars_threshold=1.5,
 )
 

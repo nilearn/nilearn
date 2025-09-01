@@ -26,7 +26,7 @@ preset_strategies = {
         "motion": "full",
         "wm_csf": "full",
         "scrub": 5,
-        "fd_threshold": 0.2,  # updated here and doc to 0.5 in v0.13
+        "fd_threshold": 0.5,
         "std_dvars_threshold": 3,  # updated here and doc to 1.5 in v0.13
         "global_signal": None,
         "demean": True,
