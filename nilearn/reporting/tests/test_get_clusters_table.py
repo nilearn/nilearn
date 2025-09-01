@@ -1,6 +1,9 @@
+from copy import deepcopy
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
+from numpy.testing import assert_array_equal
 
 from nilearn.image import get_data
 from nilearn.reporting.get_clusters_table import (
@@ -126,6 +129,8 @@ def test_get_clusters_table_negative_threshold(shape, affine_eye):
     data[4:6, 7:9, 8:10] = -5.0
     stat_img = Nifti1Image(data, affine_eye)
 
+    data_orig = deepcopy(data)
+
     clusters_table = get_clusters_table(
         stat_img,
         stat_threshold=-1,
@@ -135,6 +140,10 @@ def test_get_clusters_table_negative_threshold(shape, affine_eye):
 
     expected_n_cluster = 1
     assert len(clusters_table) == expected_n_cluster
+
+    # sanity check that any sign flip done by get_clusters_table
+    # leaves the original data untouched.
+    assert_array_equal(stat_img.get_fdata(), data_orig)
 
 
 def test_get_clusters_table_more(shape, affine_eye, tmp_path):
