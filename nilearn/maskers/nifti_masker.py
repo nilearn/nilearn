@@ -25,6 +25,7 @@ from nilearn.masking import (
     compute_background_mask,
     compute_brain_mask,
     compute_epi_mask,
+    compute_multi_brain_mask,
     load_mask_img,
 )
 
@@ -46,7 +47,7 @@ class _ExtractionFunctor:
         )
 
 
-def _get_mask_strategy(strategy):
+def _get_mask_strategy(strategy: str):
     """Return the mask computing method based on a provided strategy."""
     if strategy == "background":
         return compute_background_mask
@@ -68,13 +69,21 @@ def _get_mask_strategy(strategy):
         )
 
 
-def _make_brain_mask_func(mask_type):
+def _make_brain_mask_func(mask_type: str, multi: bool = False):
     """Generate a compute_brain_mask function adapted for each mask.
 
     This is done instead of using functools.partial because
     joblib does not play well with partials.
 
     See: https://github.com/nilearn/nilearn/issues/5527
+
+    Parameters
+    ----------
+    mask_type : str
+        Type of masking function to return.
+
+    multi : bool
+        Whether to return functions for multimasker or not.
     """
 
     def _compute(
@@ -85,6 +94,17 @@ def _make_brain_mask_func(mask_type):
         memory=None,
         verbose=0,
     ):
+        if multi:
+            return compute_multi_brain_mask(
+                target_img,
+                threshold,
+                connected,
+                opening,
+                memory,
+                verbose,
+                mask_type=mask_type,
+            )
+
         return compute_brain_mask(
             target_img,
             threshold,

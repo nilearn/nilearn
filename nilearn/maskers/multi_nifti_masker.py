@@ -23,28 +23,31 @@ from nilearn.maskers.base_masker import (
     mask_logger,
     prepare_confounds_multimaskers,
 )
-from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
+from nilearn.maskers.nifti_masker import (
+    NiftiMasker,
+    _make_brain_mask_func,
+    filter_and_mask,
+)
 from nilearn.masking import (
     compute_multi_background_mask,
-    compute_multi_brain_mask,
     compute_multi_epi_mask,
     load_mask_img,
 )
 from nilearn.typing import NiimgLike
 
 
-def _get_mask_strategy(strategy):
+def _get_mask_strategy(strategy: str):
     """Return the mask computing method based on a provided strategy."""
     if strategy == "background":
         return compute_multi_background_mask
     elif strategy == "epi":
         return compute_multi_epi_mask
     elif strategy == "whole-brain-template":
-        return _make_brain_mask_func("whole-brain")
+        return _make_brain_mask_func("whole-brain", multi=True)
     elif strategy == "gm-template":
-        return _make_brain_mask_func("gm")
+        return _make_brain_mask_func("gm", multi=True)
     elif strategy == "wm-template":
-        return _make_brain_mask_func("wm")
+        return _make_brain_mask_func("wm", multi=True)
     elif strategy == "template":
         warnings.warn(
             "Masking strategy 'template' is deprecated. "
@@ -59,38 +62,6 @@ def _get_mask_strategy(strategy):
             "'epi', 'whole-brain-template', "
             "'gm-template', and 'wm-template'."
         )
-
-
-def _make_brain_mask_func(mask_type):
-    """Generate a compute_brain_mask function adapted for each mask.
-
-    This is done instead of using functools.partial because
-    joblib does not play well with partials.
-
-    See: https://github.com/nilearn/nilearn/issues/5527
-    """
-
-    def _compute(
-        target_imgs,
-        threshold=0.5,
-        connected=True,
-        opening=2,
-        memory=None,
-        verbose=0,
-        **kwargs,
-    ):
-        return compute_multi_brain_mask(
-            target_imgs,
-            threshold,
-            connected,
-            opening,
-            memory,
-            verbose,
-            mask_type=mask_type,
-            **kwargs,
-        )
-
-    return _compute
 
 
 @fill_doc
