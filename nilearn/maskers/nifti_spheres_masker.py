@@ -90,14 +90,12 @@ def apply_mask_and_get_affinity(
     elif mask_img is not None:
         affine = niimg.affine
         mask_img = check_niimg_3d(mask_img)
-        # TODO (nilearn >= 0.13.0) force_resample=True
         mask_img = resample_img(
             mask_img,
             target_affine=affine,
             target_shape=niimg.shape[:3],
             interpolation="nearest",
             copy_header=True,
-            force_resample=False,
         )
         mask, _ = load_mask_img(mask_img)
         mask_coords = list(zip(*np.where(mask != 0)))
@@ -578,14 +576,12 @@ class NiftiSpheresMasker(BaseMasker):
         if imgs is not None:
             if self.reports:
                 if self.mask_img_ is not None:
-                    # TODO (nilearn  >= 0.13.0) force_resample=True
                     resampl_imgs = self._cache(resample_img)(
                         imgs,
                         target_affine=self.mask_img_.affine,
                         copy=False,
                         interpolation="nearest",
                         copy_header=True,
-                        force_resample=False,
                     )
                 else:
                     resampl_imgs = imgs

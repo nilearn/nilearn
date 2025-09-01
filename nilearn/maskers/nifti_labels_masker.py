@@ -616,14 +616,12 @@ class NiftiLabelsMasker(BaseMasker):
         ):
             mask_logger("resample_mask", verbose=self.verbose)
 
-            # TODO (nilearn >= 0.13.0) force_resample=True
             self.mask_img_ = self._cache(resample_img, func_memory_level=2)(
                 self.mask_img_,
                 interpolation="nearest",
                 target_shape=ref_img.shape[:3],
                 target_affine=ref_img.affine,
                 copy_header=True,
-                force_resample=False,
             )
 
             # Just check that the mask is valid

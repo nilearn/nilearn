@@ -543,7 +543,6 @@ class NiftiMasker(BaseMasker):
         # Resampling: allows the user to change the affine, the shape or both
         mask_logger("resample_mask", verbose=self.verbose)
 
-        # TODO (nilearn >= 0.13.0) force_resample=True
         self.mask_img_ = self._cache(resample_img)(
             self.mask_img_,
             target_affine=self.target_affine,
@@ -551,7 +550,6 @@ class NiftiMasker(BaseMasker):
             copy=False,
             interpolation="nearest",
             copy_header=True,
-            force_resample=False,
         )
 
         if self.target_affine is not None:  # resample image to target affine
@@ -573,14 +571,12 @@ class NiftiMasker(BaseMasker):
             (self.target_affine is not None) and self.reports
         ):
             if imgs is not None:
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 resampl_imgs = self._cache(resample_img)(
                     imgs,
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
                     copy_header=True,
-                    force_resample=False,
                 )
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
             else:  # imgs not provided to fit

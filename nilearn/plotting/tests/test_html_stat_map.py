@@ -388,7 +388,6 @@ def test_view_img_3d_warnings(params, warning_msg):
         mni,
         target_affine=3 * np.eye(3),
         copy_header=True,
-        force_resample=True,
     )
 
     # Should not raise warnings
@@ -414,7 +413,6 @@ def test_view_img_3d_warnings_more():
         mni,
         target_affine=3 * np.eye(3),
         copy_header=True,
-        force_resample=True,
     )
 
     with pytest.warns(
@@ -451,7 +449,6 @@ def test_view_img_4d_warnings(params):
         mni,
         target_affine=3 * np.eye(3),
         copy_header=True,
-        force_resample=True,
     )
     img_4d = image.new_img_like(img, get_data(img)[:, :, :, np.newaxis])
     assert len(img_4d.shape) == 4
