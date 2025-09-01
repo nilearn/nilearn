@@ -198,34 +198,6 @@ def test_compute_facecolors():
     )
 
 
-def test_compute_facecolors_deprecation():
-    """Test warning deprecation."""
-    fsaverage = fetch_surf_fsaverage()
-    mesh = load_surf_mesh(fsaverage["pial_left"])
-    alpha = "auto"
-    # Surface map whose value in each vertex is
-    # 1 if this vertex's curv > 0
-    # 0 if this vertex's curv is 0
-    # -1 if this vertex's curv < 0
-    bg_map = np.sign(load_surf_data(fsaverage["curv_left"]))
-    bg_min, bg_max = np.min(bg_map), np.max(bg_map)
-    assert bg_min < 0 or bg_max > 1
-    with pytest.warns(
-        DeprecationWarning,
-        match=(
-            "The `darkness` parameter will be deprecated in release 0.13. "
-            "We recommend setting `darkness` to None"
-        ),
-    ):
-        _compute_facecolors(
-            bg_map,
-            mesh.faces,
-            len(mesh.coordinates),
-            0.5,
-            alpha,
-        )
-
-
 def test_get_vertexcolor():
     """Test get_vertexcolor."""
     fsaverage = fetch_surf_fsaverage()
@@ -307,25 +279,3 @@ def test_get_vertexcolor_bg_map():
 
     assert len(vertexcolors_manually_rescaled) == len(mesh.coordinates)
     assert vertexcolors_manually_rescaled != vertexcolors_auto_normalized
-
-
-def test_get_vertexcolor_deprecation():
-    """Check deprecation warning."""
-    fsaverage = fetch_surf_fsaverage()
-    mesh = load_surf_mesh(fsaverage["pial_left"])
-    surf_map = np.arange(len(mesh.coordinates))
-    colors = colorscale("jet", surf_map, 10)
-
-    with pytest.warns(
-        DeprecationWarning,
-        match=(
-            "The `darkness` parameter will be deprecated in release 0.13. "
-            "We recommend setting `darkness` to None"
-        ),
-    ):
-        _get_vertexcolor(
-            surf_map,
-            colors["cmap"],
-            colors["norm"],
-            darkness=0.5,
-        )

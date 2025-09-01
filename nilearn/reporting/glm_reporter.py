@@ -912,7 +912,6 @@ def _stat_map_to_png(
             bg_map=bg_img,
             surf_mesh=surf_mesh,
             cmap=cmap,
-            darkness=None,
             symmetric_cbar=symmetric_cbar,
             vmin=vmin,
             vmax=vmax,

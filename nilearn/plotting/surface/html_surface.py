@@ -51,7 +51,6 @@ def _one_mesh_info(
     bg_map=None,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     vmax=None,
     vmin=None,
 ):
@@ -79,7 +78,6 @@ def _one_mesh_info(
         absolute_threshold=colors["abs_threshold"],
         bg_map=bg_map,
         bg_on_data=bg_on_data,
-        darkness=darkness,
     )
     info["cmin"], info["cmax"] = float(colors["vmin"]), float(colors["vmax"])
     info["black_bg"] = black_bg
@@ -97,7 +95,6 @@ def one_mesh_info(
     bg_map=None,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     vmax=None,
     vmin=None,
 ):
@@ -119,7 +116,6 @@ def one_mesh_info(
         bg_map=bg_map,
         symmetric_cmap=symmetric_cmap,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmax=vmax,
         vmin=vmin,
     )
@@ -147,7 +143,6 @@ def _full_brain_info(
     black_bg=False,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     vmax=None,
     vmin=None,
     vol_to_surf_kwargs=None,
@@ -199,7 +194,6 @@ def _full_brain_info(
             absolute_threshold=colors["abs_threshold"],
             bg_map=bg_map,
             bg_on_data=bg_on_data,
-            darkness=darkness,
         )
 
     # also add info for both hemispheres
@@ -232,7 +226,6 @@ def _full_brain_info(
             mesh["curv_left"], mesh["curv_right"]
         ),
         bg_on_data=bg_on_data,
-        darkness=darkness,
     )
     info["cmin"], info["cmax"] = float(colors["vmin"]), float(colors["vmax"])
     info["black_bg"] = black_bg
@@ -249,7 +242,6 @@ def full_brain_info(
     black_bg=False,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     vmax=None,
     vmin=None,
     vol_to_surf_kwargs=None,
@@ -271,7 +263,6 @@ def full_brain_info(
         black_bg=black_bg,
         symmetric_cmap=symmetric_cmap,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmax=vmax,
         vmin=vmin,
         vol_to_surf_kwargs=vol_to_surf_kwargs,
@@ -301,7 +292,6 @@ def view_img_on_surf(
     vmin=None,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     colorbar=True,
     colorbar_height=0.5,
     colorbar_fontsize=25,
@@ -341,9 +331,6 @@ def view_img_on_surf(
         white background.
 
     %(bg_on_data)s
-
-    %(darkness)s
-        Default=1.
 
     vmax : :obj:`float` or None, default=None
         upper bound for the colorbar. if None, use the absolute max of the
@@ -410,7 +397,6 @@ def view_img_on_surf(
         vmax=vmax,
         vmin=vmin,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         symmetric_cmap=symmetric_cmap,
         vol_to_surf_kwargs=vol_to_surf_kwargs,
     )
@@ -434,7 +420,6 @@ def view_surf(
     vmax=None,
     vmin=None,
     bg_on_data=False,
-    darkness=0.7,
     symmetric_cmap=True,
     colorbar=True,
     colorbar_height=0.5,
@@ -474,9 +459,6 @@ def view_surf(
         .. versionadded:: 0.11.0
 
     %(bg_on_data)s
-
-    %(darkness)s
-        Default=1.
 
     threshold : :obj:`str`, number or None, default=None
         If None, no thresholding.
@@ -557,7 +539,6 @@ def view_surf(
         black_bg=black_bg,
         bg_map=bg_map,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         symmetric_cmap=symmetric_cmap,
         vmax=vmax,
         vmin=vmin,

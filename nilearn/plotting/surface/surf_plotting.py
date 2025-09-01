@@ -53,7 +53,6 @@ def plot_surf(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     cbar_vmin=None,
@@ -165,9 +164,6 @@ def plot_surf(
 
     %(bg_on_data)s
 
-    %(darkness)s
-        Default=1.
-
     %(vmin)s
 
     %(vmax)s
@@ -272,7 +268,6 @@ def plot_surf(
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmin=vmin,
         vmax=vmax,
         cbar_vmin=cbar_vmin,
@@ -386,11 +381,6 @@ def plot_surf_contours(
     )
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
-    if "darkness" not in kwargs:
-        # TODO (nilearn >= 0.13.0) remove when darkness is removed
-        # added now to prevent some extra warnings
-        kwargs["darkness"] = None
-
     backend = get_surface_backend(DEFAULT_ENGINE)
     fig = backend._plot_surf_contours(
         surf_mesh=surf_mesh,
@@ -424,7 +414,6 @@ def plot_surf_stat_map(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     symmetric_cbar="auto",
@@ -525,13 +514,6 @@ def plot_surf_stat_map(
 
     %(bg_on_data)s
 
-    %(darkness)s
-        Default=1.
-
-        .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
-
     %(vmin)s
 
     %(vmax)s
@@ -617,7 +599,6 @@ def plot_surf_stat_map(
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmin=vmin,
         vmax=vmax,
         cbar_vmin=cbar_vmin,
@@ -824,7 +805,6 @@ def plot_surf_roi(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     cbar_tick_format="auto",
@@ -928,13 +908,6 @@ def plot_surf_roi(
             ``matplotlib`` engine.
 
     %(bg_on_data)s
-
-    %(darkness)s
-        Default=1.
-
-        .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
 
     %(vmin)s
 
@@ -1060,7 +1033,6 @@ def plot_surf_roi(
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmin=vmin,
         vmax=vmax,
         cbar_tick_format=params["cbar_tick_format"],

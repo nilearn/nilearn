@@ -454,7 +454,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
                     cmap=self.cmap,
                     vmin=vmin,
                     vmax=vmax,
-                    darkness=None,
                 )
 
                 colors = None
