@@ -2297,9 +2297,7 @@ def _reduce_confounds(regressors, keep_confounds):
 
 
 @fill_doc
-def fetch_language_localizer_demo_dataset(
-    data_dir=None, verbose=1, legacy_output=True
-):
+def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     """Download language localizer demo dataset.
 
     Parameters
@@ -2307,17 +2305,6 @@ def fetch_language_localizer_demo_dataset(
     %(data_dir)s
 
     %(verbose)s
-
-    legacy_output : :obj:`bool`, default=True
-
-        .. versionadded:: 0.10.3
-        .. deprecated::0.10.3
-
-            Starting from version 0.13.0
-            the ``legacy_ouput`` argument will be removed
-            and the fetcher will always return
-            a :obj:`sklearn.utils.Bunch`.
-
 
     Returns
     -------
@@ -2330,16 +2317,6 @@ def fetch_language_localizer_demo_dataset(
           Absolute paths of downloaded files on disk
 
         - ``'description'`` : :obj:`str`, dataset description
-
-    .. warning::
-
-        LEGACY OUTPUT:
-
-        **data_dir** : :obj:`str`
-            Path to downloaded dataset.
-
-        **downloaded_files** : :obj:`list` of :obj:`str`
-            Absolute paths of downloaded files on disk
 
     """
     check_params(locals())
@@ -2361,19 +2338,6 @@ def fetch_language_localizer_demo_dataset(
         uncompress_file(downloaded_files[0])
 
     file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
-    if legacy_output:
-        # TODO (nilearn >= 0.13.0)
-        warnings.warn(
-            category=DeprecationWarning,
-            stacklevel=find_stack_level(),
-            message=(
-                "From version 0.13.0 this fetcher"
-                "will always return a Bunch.\n"
-                "Use `legacy_output=False` "
-                "to start switch to this new behavior."
-            ),
-        )
-        return str(data_dir), sorted(file_list)
 
     description = get_dataset_descr("language_localizer_demo")
     return Bunch(
