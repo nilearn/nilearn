@@ -127,6 +127,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     %(verbose0)s
 
+    %(strategy)s
+
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
 
@@ -138,10 +140,16 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    %(clean_args_)s
+
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image after fitting.
         If a mask_img was used,
         then masked vertices will have the background value.
+
+    lut_ : :obj:`pandas.DataFrame`
+        Look-up table derived from the ``labels`` or ``lut``
+        or from the values of the label image.
 
     mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage` or None.
         The mask of the data.
@@ -151,9 +159,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         where each vertex is ``True`` if all values across samples
         (for example across timepoints) is finite value different from 0.
 
-    lut_ : :obj:`pandas.DataFrame`
-        Look-up table derived from the ``labels`` or ``lut``
-        or from the values of the label image.
+    memory_ : joblib memory cache
+
     """
 
     def __init__(
@@ -214,15 +221,18 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     @property
     def labels_(self) -> list[Union[int, float]]:
-        """Return list of labels of the regions."""
+        """Return list of labels of the regions.
+
+        The background label is included if present in the image.
+        """
         check_is_fitted(self)
         lut = self.lut_
         return lut["index"].to_list()
 
     @property
     def region_names_(self) -> dict[int, str]:
-        """Return a dictionary containing the region names corresponding \n
-            to each column in the array returned by `transform`.
+        """Return a dictionary containing the region names corresponding \
+           to each column in the array returned by `transform`.
 
         The region names correspond to the labels provided
         in labels in input.
@@ -232,21 +242,18 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         .. versionadded:: 0.12.0
         """
         check_is_fitted(self)
-        lut = self.lut_
-        tmp = lut.loc[lut["index"] != self.background_label, "name"].to_dict()
-        region_names_ = {}
-        for key, value in tmp.items():
-            if key == 0:
-                # in case background_label is not 0
-                region_names_[key] = value
-            else:
-                region_names_[key - 1] = value
-        return region_names_
+
+        index = self.labels_
+        valid_ids = [id for id in index if id != self.background_label]
+
+        sub_df = self.lut_[self.lut_["index"].isin(valid_ids)]
+
+        return sub_df["name"].reset_index(drop=True).to_dict()
 
     @property
-    def region_ids_(self) -> dict[Union[str, int], int]:
-        """Return dictionary containing the region ids corresponding \n
-           to each column in the array \n
+    def region_ids_(self) -> dict[Union[str, int], Union[int, float]]:
+        """Return dictionary containing the region ids corresponding \
+           to each column in the array \
            returned by `transform`.
 
         The region id corresponding to ``region_signal[:,i]``
@@ -256,20 +263,19 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         .. versionadded:: 0.12.0
         """
         check_is_fitted(self)
-        lut = self.lut_
-        tmp = lut["index"].to_dict()
-        region_ids_: dict[Union[str, int], int] = {}
-        for key, value in tmp.items():
-            if value == self.background_label:
-                region_ids_["background"] = value
-            elif key == 0:
-                # in case background_label is not 0
-                region_ids_[key] = value
-            else:
-                region_ids_[key - 1] = value
+
+        index = self.labels_
+
+        region_ids_: dict[Union[str, int], Union[int, float]] = {}
+        if self.background_label in index:
+            index.pop(index.index(self.background_label))
+            region_ids_["background"] = self.background_label
+        for i, id in enumerate(index):
+            region_ids_[i] = id  # noqa : PERF403
 
         return region_ids_
 
+    # TODO (nilearn >= 0.13.0)
     @fill_doc
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.0"
@@ -349,7 +355,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self.lut_ = generate_lut(
             self.labels_img_, self.background_label, self.lut, self.labels
         )
-        self.lut_ = self.lut_.sort_values("index").reset_index()
 
         if self.clean_args is None:
             self.clean_args_ = {}

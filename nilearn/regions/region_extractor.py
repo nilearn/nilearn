@@ -9,18 +9,16 @@ from scipy.ndimage import label
 from scipy.stats import scoreatpercentile
 
 from nilearn import masking
-from nilearn._utils import (
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import rename_parameters
+from nilearn._utils.ndimage import peak_local_max
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import (
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,
-    fill_doc,
+    check_same_fov,
 )
-from nilearn._utils.helpers import (
-    rename_parameters,
-)
-from nilearn._utils.ndimage import peak_local_max
-from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_same_fov
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.segmentation import random_walker
 from nilearn.image.image import (
@@ -220,8 +218,7 @@ def connected_regions(
 
     if mask_img is not None:
         if not check_same_fov(maps_img, mask_img):
-            # TODO switch to force_resample=True
-            # when bumping to version > 0.13
+            # TODO (nilearn >= 0.13.0) force_resample=True
             mask_img = resample_img(
                 mask_img,
                 target_affine=maps_img.affine,
@@ -331,6 +328,7 @@ class RegionExtractor(NiftiMapsMasker):
         .. versionadded:: 0.11.1
 
     %(extractor)s
+
     %(smoothing_fwhm)s
         Use this parameter to smooth an image
         to extract most sparser regions.
@@ -347,6 +345,7 @@ class RegionExtractor(NiftiMapsMasker):
             otherwise extraction will fail.
 
         Default=6mm.
+
     %(standardize_false)s
 
         .. note::
@@ -354,6 +353,11 @@ class RegionExtractor(NiftiMapsMasker):
             Passed to :class:`~nilearn.maskers.NiftiMapsMasker`.
 
     %(standardize_confounds)s
+
+    high_variance_confounds : :obj:`bool`, default=False
+        If True, high variance confounds are computed on provided image with
+        :func:`nilearn.image.high_variance_confounds` and default parameters
+        and regressed out.
 
     %(detrend)s
 
@@ -377,15 +381,66 @@ class RegionExtractor(NiftiMapsMasker):
         .. note::
             Passed to :func:`nilearn.signal.clean`.
 
+    %(dtype)s
+
+    resampling_target : {"data", "mask", "maps", None}, default="data"
+        Defines which image gives the final shape/size.
+
+        - ``"data"`` means that the atlas is resampled
+          to the shape of the data if needed
+        - ``"mask"`` means that the ``maps_img`` and images provided
+          to ``fit()`` are
+          resampled to the shape and affine of ``mask_img``
+        - ``"maps"`` means the ``mask_img`` and images provided
+          to ``fit()`` are
+          resampled to the shape and affine of ``maps_img``
+        - ``None`` means no resampling: if shapes and affines do not match,
+          a :obj:`ValueError` is raised.
+
+    %(keep_masked_maps)s
+
     %(memory)s
+
     %(memory_level)s
+
     %(verbose0)s
+
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+    %(cmap)s
+        default="CMRmap_r"
+        Only relevant for the report figures.
+
+    allow_overlap : True
+        If False, an error is raised if the maps overlaps
+        (ie at least two maps have a non-zero value for the same voxel).
+
+    %(clean_args)s
+        .. versionadded:: 0.12.1dev
 
     Attributes
     ----------
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     index_ : :class:`numpy.ndarray`
         Array of list of indices where each index value is assigned to
         each separate region of its corresponding family of brain maps.
+
+    maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
+        The maps mask of the data.
+
+    %(nifti_mask_img_)s
+
+    memory_ : joblib memory cache
+
+    n_elements_ : :obj:`int`
+        The number of overlapping maps in the mask.
+        This is equivalent to the number of volumes in the mask image.
+
+        .. versionadded:: 0.9.2
 
     regions_img_ : :class:`nibabel.nifti1.Nifti1Image`
         List of separated regions with each region lying on an
@@ -414,13 +469,21 @@ class RegionExtractor(NiftiMapsMasker):
         smoothing_fwhm=6,
         standardize=False,
         standardize_confounds=True,
+        high_variance_confounds=False,
         detrend=False,
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
+        resampling_target="data",
+        keep_masked_maps=True,
         memory=None,
         memory_level=0,
         verbose=0,
+        reports=True,
+        cmap="CMRmap_r",
+        allow_overlap=True,
+        clean_args=None,
     ):
         super().__init__(
             maps_img=maps_img,
@@ -428,13 +491,21 @@ class RegionExtractor(NiftiMapsMasker):
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
             standardize_confounds=standardize_confounds,
+            high_variance_confounds=high_variance_confounds,
             detrend=detrend,
             low_pass=low_pass,
             high_pass=high_pass,
             t_r=t_r,
+            dtype=dtype,
+            resampling_target=resampling_target,
+            keep_masked_maps=keep_masked_maps,
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
+            reports=reports,
+            cmap=cmap,
+            clean_args=clean_args,
+            allow_overlap=allow_overlap,
         )
         self.maps_img = maps_img
         self.min_region_size = min_region_size
@@ -444,6 +515,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.extractor = extractor
         self.smoothing_fwhm = smoothing_fwhm
 
+    # TODO (nilearn >= 0.13.0)
     @fill_doc
     @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit(self, imgs=None, y=None):

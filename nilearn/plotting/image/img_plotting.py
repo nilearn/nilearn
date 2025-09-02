@@ -7,6 +7,7 @@ Only matplotlib is required.
 
 import collections.abc
 import functools
+import inspect
 import numbers
 import warnings
 
@@ -20,17 +21,14 @@ from matplotlib.gridspec import GridSpecFromSubplotSpec
 from matplotlib.ticker import MaxNLocator
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import (
-    as_ndarray,
-    check_niimg_3d,
-    check_niimg_4d,
-    compare_version,
-    fill_doc,
-    logger,
-)
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn.image import (
     get_data,
@@ -1118,6 +1116,21 @@ def plot_prob_atlas(
         threshold = [threshold] * n_maps
 
     filled = view_type.startswith("filled")
+    tmp = dict(**inspect.signature(plot_prob_atlas).parameters)
+    kwargs_contour = {}
+    if not filled:
+        kwargs_contour = {"linewidths": linewidths}
+    elif linewidths != tmp["linewidths"].default:
+        # only throw warning if the user has changed
+        # from the default linewidths
+        # otherwise this function will always
+        # throw a warning any time the user tries to plot filled contours
+        warnings.warn(
+            f"'linewidths' is not supported by {view_type}=",
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
+
     transparency = alpha
     for map_img, color, thr in zip(iter_img(maps_img), color_list, threshold):
         data = get_data(map_img)
@@ -1139,11 +1152,11 @@ def plot_prob_atlas(
             display.add_contours(
                 map_img,
                 levels=[thr],
-                linewidths=linewidths,
                 colors=[color],
                 filled=filled,
                 transparency=transparency,
                 linestyles="solid",
+                **kwargs_contour,
             )
     if colorbar:
         display._colorbar = True
@@ -1954,7 +1967,7 @@ def plot_carpet(
             img,
             interpolation="nearest",
             copy_header=True,
-            force_resample=False,  # TODO change to True in 0.13.0
+            force_resample=False,  # TODO (nilearn  >= 0.13.0) change to True
         )
         atlas_bin = math_img(
             f"img != {background_label}",
@@ -2119,6 +2132,7 @@ def plot_img_comparison(
     """Redirect to plot_img_comparison."""
     from nilearn.plotting.img_comparison import plot_img_comparison
 
+    # TODO (nilearn >= 0.13.1)
     warnings.warn(
         (
             "The 'plot_img_comparison' has been moved to  "

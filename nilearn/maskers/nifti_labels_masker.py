@@ -141,13 +141,14 @@ class NiftiLabelsMasker(BaseMasker):
     %(dtype)s
 
     resampling_target : {"data", "labels", None}, default="data"
-        Gives which image gives the final shape/size.
-        For example, if ``resampling_target`` is ``"data"``,
-        the atlas is resampled to the shape of the data if needed.
-        If it is ``"labels"`` then mask_img and images provided to fit()
-        are resampled to the shape and affine of labels_img.
-        ``"None"`` means no resampling:
-        if shapes and affines do not match, a ValueError is raised.
+        Defines which image gives the final shape/size.
+
+        - ``"data"`` means the atlas is resampled
+          to the shape of the data if needed.
+        - ``"labels"`` means that the ``mask_img`` and images provided
+          to ``fit()`` are resampled to the shape and affine of ``labels_img``.
+        - ``"None"`` means no resampling:
+          if shapes and affines do not match, a :obj:`ValueError` is raised.
 
     %(memory)s
 
@@ -173,7 +174,9 @@ class NiftiLabelsMasker(BaseMasker):
 
     Attributes
     ----------
-    %(nifti_mask_img_)s
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
 
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
@@ -182,13 +185,10 @@ class NiftiLabelsMasker(BaseMasker):
         Look-up table derived from the ``labels`` or ``lut``
         or from the values of the label image.
 
-    region_atlas_ : Niimg-like object
-        Regions definition as labels.
-        The labels correspond to the indices in ``region_ids_``.
-        The region in ``region_atlas_`` that takes the value ``region_ids_[i]``
-        is used to compute the signal in ``region_signal[:,i]``.
+    %(nifti_mask_img_)s
 
-        .. versionadded:: 0.10.3
+    memory_ : joblib memory cache
+
 
     See Also
     --------
@@ -223,7 +223,7 @@ class NiftiLabelsMasker(BaseMasker):
         reports=True,
         cmap="CMRmap_r",
         clean_args=None,
-        **kwargs,  # TODO remove when bumping to nilearn >0.13
+        **kwargs,  # TODO (nilearn >= 0.13.0) remove
     ):
         self.labels_img = labels_img
         self.background_label = background_label
@@ -248,7 +248,7 @@ class NiftiLabelsMasker(BaseMasker):
         self.dtype = dtype
         self.clean_args = clean_args
 
-        # TODO remove when bumping to nilearn >0.13
+        # TODO (nilearn >= 0.13.0) remove
         self.clean_kwargs = kwargs
 
         # Parameters for resampling
@@ -279,8 +279,11 @@ class NiftiLabelsMasker(BaseMasker):
         )
 
     @property
-    def labels_(self) -> list[str]:
-        """Return list of labels of the regions."""
+    def labels_(self) -> list[Union[int, float]]:
+        """Return list of labels of the regions.
+
+        The background label is included if present in the image.
+        """
         check_is_fitted(self)
         lut = self.lut_
         if hasattr(self, "_lut_"):
@@ -289,7 +292,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     @property
     def region_names_(self) -> dict[int, str]:
-        """Return a dictionary containing the region names corresponding \n
+        """Return a dictionary containing the region names corresponding \
             to each column in the array returned by `transform`.
 
         The region names correspond to the labels provided
@@ -300,23 +303,18 @@ class NiftiLabelsMasker(BaseMasker):
         .. versionadded:: 0.10.3
         """
         check_is_fitted(self)
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
-        tmp = lut.loc[lut["index"] != self.background_label, "name"].to_dict()
-        region_names_ = {}
-        for key, value in tmp.items():
-            if key == 0:
-                # in case background_label is not 0
-                region_names_[key] = value
-            else:
-                region_names_[key - 1] = value
-        return region_names_
+
+        index = self.labels_
+        valid_ids = [id for id in index if id != self.background_label]
+
+        sub_df = self.lut_[self.lut_["index"].isin(valid_ids)]
+
+        return sub_df["name"].reset_index(drop=True).to_dict()
 
     @property
-    def region_ids_(self) -> dict[Union[str, int], int]:
-        """Return dictionary containing the region ids corresponding \n
-           to each column in the array \n
+    def region_ids_(self) -> dict[Union[str, int], Union[int, float]]:
+        """Return dictionary containing the region ids corresponding \
+           to each column in the array \
            returned by `transform`.
 
         The region id corresponding to ``region_signal[:,i]``
@@ -327,20 +325,14 @@ class NiftiLabelsMasker(BaseMasker):
         """
         check_is_fitted(self)
 
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
+        index = self.labels_
 
-        tmp = lut["index"].to_dict()
-        region_ids_: dict[Union[str, int], int] = {}
-        for key, value in list(tmp.items()):
-            if value == self.background_label:
-                region_ids_["background"] = value
-            elif key == 0:
-                # in case background_label is not 0
-                region_ids_[key] = value
-            else:
-                region_ids_[key - 1] = value
+        region_ids_: dict[Union[str, int], Union[int, float]] = {}
+        if self.background_label in index:
+            index.pop(index.index(self.background_label))
+            region_ids_["background"] = self.background_label
+        for i, id in enumerate(index):
+            region_ids_[i] = id  # noqa : PERF403
 
         return region_ids_
 
@@ -624,8 +616,7 @@ class NiftiLabelsMasker(BaseMasker):
         ):
             mask_logger("resample_mask", verbose=self.verbose)
 
-            # TODO switch to force_resample=True
-            # when bumping to version > 0.13
+            # TODO (nilearn >= 0.13.0) force_resample=True
             self.mask_img_ = self._cache(resample_img, func_memory_level=2)(
                 self.mask_img_,
                 interpolation="nearest",
@@ -688,11 +679,20 @@ class NiftiLabelsMasker(BaseMasker):
             This parameter is unused. It is solely included for scikit-learn
             compatibility.
 
+        region_ids_: dict[str | int, int | float] = {}
+        if self.background_label in index:
+            index.pop(index.index(self.background_label))
+            region_ids_["background"] = self.background_label
+        for i, id in enumerate(index):
+            region_ids_[i] = id  # noqa : PERF403
+
+        return region_ids_
+
         %(confounds)s
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------
@@ -721,7 +721,18 @@ class NiftiLabelsMasker(BaseMasker):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
+
+        Attributes
+        ----------
+        region_atlas_ : Niimg-like object
+            Regions definition as labels.
+            The labels correspond to the indices in ``region_ids_``.
+            The region in ``region_atlas_``
+            that takes the value ``region_ids_[i]``
+            is used to compute the signal in ``region_signal[:, i]``.
+
+            .. versionadded:: 0.10.3
 
         Returns
         -------
@@ -807,7 +818,7 @@ class NiftiLabelsMasker(BaseMasker):
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
         params["clean_kwargs"] = self.clean_args_
-        # TODO remove in 0.13.0
+        # TODO (nilearn  >= 0.13.0) remove
         if self.clean_kwargs:
             params["clean_kwargs"] = self.clean_kwargs_
 
@@ -839,8 +850,13 @@ class NiftiLabelsMasker(BaseMasker):
         # and whose rows are sorted according
         # to the columns in the region_signals array.
         self._lut_ = self.lut_.copy()
-        desired_order = [self.background_label, *ids]
-        mask = mask = self.lut_["index"].isin(desired_order)
+
+        labels = set(np.unique(safe_get_data(self.labels_img_)))
+        desired_order = [*ids]
+        if self.background_label in labels:
+            desired_order = [self.background_label, *ids]
+
+        mask = self.lut_["index"].isin(desired_order)
         self._lut_ = self._lut_[mask]
         self._lut_ = sanitize_look_up_table(
             self._lut_, atlas=np.array(desired_order)

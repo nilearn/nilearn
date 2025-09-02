@@ -81,6 +81,7 @@ style = [
 # For running unit and docstring tests
 test = [
     "coverage",
+    "numpydoc>=1.8.0",
     "pytest>=6.0.0",
     "pytest-cov",
     "pytest-csv",
@@ -156,6 +157,7 @@ module = [
     "mpl_toolkits.*",
     "nibabel.*",
     "nilearn._version",
+    "numpydoc.*",
     "packaging.*",
     "plotly.*",
     "pytest.*",
@@ -201,12 +203,10 @@ ignore = [
     "D301",
     "E741",
     "ERA001",
-    "FURB105",
     "PD901",  # https://github.com/astral-sh/ruff/issues/7710
     "N803",
     "N806",
     "PERF203",
-    "PIE790",
     "PLR2004",
     "PTH207",
     "UP038",  # https://github.com/astral-sh/ruff/issues/7871
@@ -280,11 +280,22 @@ max-complexity = 23
 "nilearn/glm/tests/test_thresholding.py" = ["D103"]
 "nilearn/glm/tests/test_utils.py" = ["D103"]
 "nilearn/image/**/{tests}/*" = ["D103"]  # 75 errors to fix
-"nilearn/plotting/**/{tests}/*" = ["D103"]  # 123 errors to fix
+"nilearn/plotting/displays/tests/test_edge_detect.py" = ["D103"]
+"nilearn/plotting/image/tests/test_img_plotting.py" = ["D103"]
+"nilearn/plotting/matrix/tests/test_matrix_plotting.py" = ["D103"]
+"nilearn/plotting/matrix/tests/test_utils.py" = ["D103"]
+"nilearn/plotting/surface/tests/conftest.py" = ["D103"]
+"nilearn/plotting/surface/tests/test_html_surface.py" = ["D103"]
+"nilearn/plotting/surface/tests/test_surf_plotting.py" = ["D103"]
+"nilearn/plotting/surface/tests/test_utils.py" = ["D103"]
+"nilearn/plotting/tests/test_baseline_comparisons.py" = ["D103"]
+"nilearn/plotting/tests/test_cm.py" = ["D103"]
+"nilearn/plotting/tests/test_find_cuts.py" = ["D103"]
+"nilearn/plotting/tests/test_html_connectome.py" = ["D103"]
+"nilearn/plotting/tests/test_html_stat_map.py" = ["D103"]
+"nilearn/plotting/tests/test_img_comparisons.py" = ["D103"]
 "nilearn/regions/**/{tests}/*" = ["D103"]  # 64 errors to fix
-"nilearn/reporting/tests/test_glm_reporter.py" = ["D103"]
 "nilearn/reporting/tests/test_html_report.py" = ["D103"]
-"nilearn/reporting/tests/test_reporting.py" = ["D103"]
 "nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
 
 [tool.ruff.lint.pydocstyle]
@@ -298,4 +309,4 @@ max-branches = 22
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 8
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 93
+max-statements = 96

@@ -16,8 +16,7 @@ from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
 from sklearn.exceptions import EfficiencyWarning
 
-from nilearn import _utils
-from nilearn._utils import stringify_path
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
@@ -821,7 +820,7 @@ def vol_to_surf(
             f"{tuple(sampling_schemes.keys())}"
         )
 
-    # deprecate nearest interpolation in 0.13.0
+    # TODO (nilearn 0.13.0) deprecate nearest interpolation
     if interpolation == "nearest":
         warnings.warn(
             "The 'nearest' interpolation method will be deprecated in 0.13.0. "
@@ -836,14 +835,14 @@ def vol_to_surf(
     img = load_img(img)
 
     if mask_img is not None:
-        mask_img = _utils.check_niimg(mask_img)
+        mask_img = check_niimg(mask_img)
         mask = get_vol_data(
             resample_to_img(
                 mask_img,
                 img,
                 interpolation="nearest",
                 copy=False,
-                force_resample=False,  # TODO update to True in 0.13.0
+                force_resample=False,  # TODO (nilearn >= 0.13.0) set to True
                 copy_header=True,
             )
         )
@@ -852,7 +851,7 @@ def vol_to_surf(
 
     original_dimension = len(img.shape)
 
-    img = _utils.check_niimg(img, atleast_4d=True)
+    img = check_niimg(img, atleast_4d=True)
 
     frames = np.rollaxis(get_vol_data(img), -1)
 

@@ -9,7 +9,7 @@ from matplotlib.lines import Line2D
 from matplotlib.patches import FancyArrow
 from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn.image import coord_transform
 from nilearn.plotting.displays._utils import coords_3d_to_2d
@@ -461,7 +461,6 @@ class GlassBrainAxes(BaseAxes):
         the position of the cuts \
         since we are taking the max along one axis.
         """
-        pass
 
     def _add_markers(self, marker_coords, marker_color, marker_size, **kwargs):
         """Plot markers.

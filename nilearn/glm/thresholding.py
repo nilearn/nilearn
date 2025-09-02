@@ -3,17 +3,45 @@ cluster-level in brain imaging: cluster-level thresholding, false \
 discovery rate control, false discovery proportion in clusters.
 """
 
+import inspect
 import warnings
 
 import numpy as np
 from scipy.ndimage import label
 from scipy.stats import norm
 
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn.image import get_data, math_img, threshold_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
+
+DEFAULT_Z_THRESHOLD = norm.isf(0.001)
+
+
+def warn_default_threshold(
+    threshold, current_default, old_default, height_control=None
+):
+    """Throw deprecation warning Z threshold.
+
+    TODO (nilearn>=0.15)
+    Can be removed.
+    """
+    if height_control is None and threshold == current_default == old_default:
+        print(f"{threshold=} {current_default=} {old_default=}")
+        warnings.warn(
+            category=FutureWarning,
+            message=(
+                "From nilearn version>=0.15, "
+                "the default 'threshold' will be set to "
+                f"{DEFAULT_Z_THRESHOLD}."
+                "If you want to silence this warning, "
+                "set the threshold to "
+                "'nilearn.glm.thresholding.DEFAULT_Z_THRESHOLD'."
+            ),
+            stacklevel=find_stack_level(),
+        )
 
 
 def _compute_hommel_value(z_vals, alpha, verbose=0):
@@ -109,6 +137,7 @@ def fdr_threshold(z_vals, alpha):
     return z_vals_[pos][-1] - 1.0e-12 if pos.any() else np.inf
 
 
+@fill_doc
 def cluster_level_inference(
     stat_img, mask_img=None, threshold=3.0, alpha=0.05, verbose=0
 ):
@@ -132,8 +161,7 @@ def cluster_level_inference(
         Level of control on the true positive rate, aka true discovery
         proportion.
 
-    verbose : :obj:`int` or :obj:`bool`, default=0
-        Verbosity mode.
+    %(verbose0)s
 
     Returns
     -------
@@ -149,6 +177,9 @@ def cluster_level_inference(
         verbose = 0
     if verbose is True:
         verbose = 1
+
+    parameters = dict(**inspect.signature(cluster_level_inference).parameters)
+    warn_default_threshold(threshold, parameters["threshold"].default, 3.0)
 
     if not isinstance(threshold, list):
         threshold = [threshold]
@@ -218,6 +249,35 @@ def threshold_stats_img(
        Desired threshold in z-scale.
        This is used only if height_control is None.
 
+       .. note::
+
+            - When ``two_sided`` is True:
+
+              ``'threshold'`` cannot be negative.
+
+              The given value should be within the range of minimum and maximum
+              intensity of the input image.
+              All intensities in the interval ``[-threshold, threshold]``
+              will be set to zero.
+
+            - When ``two_sided`` is False:
+
+              - If the threshold is negative:
+
+                It should be greater than the minimum intensity
+                of the input data.
+                All intensities greater than or equal
+                to the specified threshold will be set to zero.
+                All other intensities keep their original values.
+
+              - If the threshold is positive:
+
+                It should be less than the maximum intensity
+                of the input data.
+                All intensities less than or equal
+                to the specified threshold will be set to zero.
+                All other intensities keep their original values.
+
     height_control : :obj:`str`, or None, default='fpr'
         False positive control meaning of cluster forming
         threshold: None|'fpr'|'fdr'|'bonferroni'
@@ -263,6 +323,27 @@ def threshold_stats_img(
             f"'height_control' should be one of {height_control_methods}. \n"
             f"Got: '{height_control_methods}'"
         )
+
+    parameters = dict(**inspect.signature(threshold_stats_img).parameters)
+    if height_control is not None and float(threshold) != float(
+        parameters["threshold"].default
+    ):
+        warnings.warn(
+            (
+                f"'{threshold=}' will not be used with '{height_control=}'. "
+                "'threshold' is only used when 'height_control=None'. "
+                f"Set 'threshold' to '{parameters['threshold'].default}' "
+                "to avoid this warning."
+            ),
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
+    warn_default_threshold(
+        threshold,
+        parameters["threshold"].default,
+        3.0,
+        height_control=height_control,
+    )
 
     # if two-sided, correct alpha by a factor of 2
     alpha_ = alpha / 2 if two_sided else alpha

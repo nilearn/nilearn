@@ -5,60 +5,56 @@ on multi subject MRI data.
 import collections.abc
 import itertools
 import warnings
-from functools import partial
 
 import numpy as np
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import (
-    fill_doc,
-    stringify_path,
-)
-from nilearn._utils.class_inspect import (
-    get_params,
-)
+from nilearn._utils.class_inspect import get_params
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.image import (
-    resample_img,
-)
+from nilearn.image import resample_img
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     mask_logger,
     prepare_confounds_multimaskers,
 )
-from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
+from nilearn.maskers.nifti_masker import (
+    NiftiMasker,
+    _make_brain_mask_func,
+    filter_and_mask,
+)
 from nilearn.masking import (
     compute_multi_background_mask,
-    compute_multi_brain_mask,
     compute_multi_epi_mask,
     load_mask_img,
 )
 from nilearn.typing import NiimgLike
 
 
-def _get_mask_strategy(strategy):
+def _get_mask_strategy(strategy: str):
     """Return the mask computing method based on a provided strategy."""
     if strategy == "background":
         return compute_multi_background_mask
     elif strategy == "epi":
         return compute_multi_epi_mask
     elif strategy == "whole-brain-template":
-        return partial(compute_multi_brain_mask, mask_type="whole-brain")
+        return _make_brain_mask_func("whole-brain", multi=True)
     elif strategy == "gm-template":
-        return partial(compute_multi_brain_mask, mask_type="gm")
+        return _make_brain_mask_func("gm", multi=True)
     elif strategy == "wm-template":
-        return partial(compute_multi_brain_mask, mask_type="wm")
+        return _make_brain_mask_func("wm", multi=True)
     elif strategy == "template":
         warnings.warn(
             "Masking strategy 'template' is deprecated. "
             "Please use 'whole-brain-template' instead.",
             stacklevel=find_stack_level(),
         )
-        return partial(compute_multi_brain_mask, mask_type="whole-brain")
+        return _make_brain_mask_func("whole-brain")
     else:
         raise ValueError(
             f"Unknown value of mask_strategy '{strategy}'. "
@@ -87,18 +83,22 @@ class MultiNiftiMasker(NiftiMasker):
         Optional parameters can be set using mask_args and mask_strategy to
         fine tune the mask extraction.
 
+    runs : :obj:`numpy.ndarray`, optional
+        Add a run level to the preprocessing. Each run will be
+        detrended independently. Must be a 1D array of n_samples elements.
+
     %(smoothing_fwhm)s
 
     %(standardize_maskers)s
 
     %(standardize_confounds)s
 
+    %(detrend)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
-
-    %(detrend)s
 
     %(low_pass)s
 
@@ -143,12 +143,26 @@ class MultiNiftiMasker(NiftiMasker):
 
     %(verbose0)s
 
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+    %(cmap)s
+        default="gray"
+        Only relevant for the report figures.
+
     %(clean_args)s
 
     %(masker_kwargs)s
 
     Attributes
     ----------
+    affine_ : 4x4 :obj:`numpy.ndarray`
+        Affine of the transformed image.
+
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image`
         The mask of the data, or the one computed from ``imgs`` passed to fit.
         If a ``mask_img`` is passed at masker construction,
@@ -156,8 +170,7 @@ class MultiNiftiMasker(NiftiMasker):
         where each voxel is ``True`` if all values across samples
         (for example across timepoints) is finite value different from 0.
 
-    affine_ : 4x4 :obj:`numpy.ndarray`
-        Affine of the transformed image.
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
@@ -176,6 +189,7 @@ class MultiNiftiMasker(NiftiMasker):
     def __init__(
         self,
         mask_img=None,
+        runs=None,
         smoothing_fwhm=None,
         standardize=False,
         standardize_confounds=True,
@@ -193,13 +207,15 @@ class MultiNiftiMasker(NiftiMasker):
         memory_level=0,
         n_jobs=1,
         verbose=0,
-        cmap="CMRmap_r",
+        reports=True,
+        cmap="gray",
         clean_args=None,
-        **kwargs,  # TODO remove when bumping to nilearn >0.13
+        **kwargs,  # TODO (nilearn >= 0.13.0) remove
     ):
         super().__init__(
             # Mask is provided or computed
             mask_img=mask_img,
+            runs=runs,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
             standardize_confounds=standardize_confounds,
@@ -216,9 +232,10 @@ class MultiNiftiMasker(NiftiMasker):
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
+            reports=reports,
             cmap=cmap,
             clean_args=clean_args,
-            # TODO remove when bumping to nilearn >0.13
+            # TODO (nilearn >= 0.13.0) remove
             **kwargs,
         )
         self.n_jobs = n_jobs
@@ -229,9 +246,7 @@ class MultiNiftiMasker(NiftiMasker):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -347,8 +362,7 @@ class MultiNiftiMasker(NiftiMasker):
         # Resampling: allows the user to change the affine, the shape or both.
         mask_logger("resample_mask", verbose=self.verbose)
 
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
+        # TODO (nilearn >= 0.13.0) force_resample=True
         self.mask_img_ = self._cache(resample_img)(
             self.mask_img_,
             target_affine=self.target_affine,
@@ -379,8 +393,7 @@ class MultiNiftiMasker(NiftiMasker):
         ):
             resampl_imgs = None
             if imgs is not None:
-                # TODO switch to force_resample=True
-                # when bumping to version > 0.13
+                # TODO (nilearn >= 0.13.0) force_resample=True
                 resampl_imgs = self._cache(resample_img)(
                     imgs,
                     target_affine=self.affine_,
@@ -411,7 +424,7 @@ class MultiNiftiMasker(NiftiMasker):
 
         %(sample_mask_multi)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         copy : :obj:`bool`, default=True
             If True, guarantees that output array has no memory in common with
@@ -460,7 +473,7 @@ class MultiNiftiMasker(NiftiMasker):
             ],
         )
         params["clean_kwargs"] = self.clean_args_
-        # TODO remove in 0.13.0
+        # TODO (nilearn  >= 0.13.0) remove
         if self.clean_kwargs:
             params["clean_kwargs"] = self.clean_kwargs_
 

@@ -22,11 +22,13 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
-from nilearn._utils import check_niimg, fill_doc, logger
+from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -379,7 +381,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     %(verbose0)s
 
-    %(base_decomposition_attributes)s
+    %(base_decomposition_fit_attributes)s
     """
 
     def __init__(
@@ -426,7 +428,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -436,8 +438,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -563,7 +564,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     @property
     def nifti_maps_masker_(self):
-        # TODO: remove in 0.13
+        # TODO (nilearn >= 0.13.0) remove
         warnings.warn(
             message="The 'nifti_maps_masker_' attribute is deprecated "
             "and will be removed in Nilearn 0.13.0.\n"
@@ -666,7 +667,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             data, self.components_, per_component=per_component
         )
 
-    def score(self, imgs, confounds=None, per_component=False):
+    def score(self, imgs, y=None, confounds=None, per_component=False):
         """Score function based on explained variance on imgs.
 
         Should only be used by DecompositionEstimator derived classes
@@ -677,6 +678,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data to be scored
+
+        %(y_dummy)s
 
         confounds : CSV file path or numpy.ndarray
             or pandas DataFrame, optional
@@ -695,6 +698,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             is squeezed if the number of subjects is one
 
         """
+        del y
         check_is_fitted(self)
 
         data = _mask_and_reduce(

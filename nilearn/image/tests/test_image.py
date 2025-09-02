@@ -836,7 +836,7 @@ def test_input_in_threshold_img(
     threshold = 0.5
 
     # setting copy_header to True to avoid warnings
-    # TODO remove when bumping to nilearn > 0.13
+    # TODO (nilearn >= 0.13.0) remove
     copy_header = True
 
     vol_img, _ = generate_maps(shape_3d_default, n_regions=2)
@@ -880,7 +880,7 @@ def test_input_in_threshold_img_several_timepoints(
     threshold = 0.5
 
     # setting copy_header to True to avoid warnings
-    # TODO remove when bumping to nilearn > 0.13
+    # TODO (nilearn >= 0.13.0) remove
     copy_header = True
     thr_img = threshold_img(
         img_4d_rand_eye, threshold=0.5, copy_header=copy_header
@@ -932,12 +932,12 @@ def test_input_in_threshold_img_errors(
     # incompatible inputs raise errors
     with pytest.raises(
         TypeError,
-        match="Mask and images to fit must be of compatible types.",
+        match="Mask and input images must be of compatible types.",
     ):
         threshold_img(vol_img, threshold=1, mask_img=surf_mask_1d)
     with pytest.raises(
         TypeError,
-        match="Mask and images to fit must be of compatible types.",
+        match="Mask and input images must be of compatible types.",
     ):
         threshold_img(surf_img_1d, threshold=1, mask_img=vol_mask)
 
@@ -959,7 +959,7 @@ def test_validity_threshold_value_in_threshold_img(
        raise Exceptions.
     """
     # setting copy_header to True to avoid warnings
-    # TODO remove when bumping to nilearn > 0.13
+    # TODO (nilearn >= 0.13.0) remove
     copy_header = True
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
 
@@ -1001,7 +1001,7 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
        raise Exceptions.
     """
     # setting copy_header to True to avoid warnings
-    # TODO remove when bumping to nilearn > 0.13
+    # TODO (nilearn >= 0.13.0) remove
     copy_header = True
 
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
@@ -1026,7 +1026,7 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
 def test_threshold_img(affine_eye):
     """Smoke test for threshold_img with valid threshold inputs."""
     # setting copy_header to True to avoid warnings
-    # TODO remove when bumping to nilearn > 0.13
+    # TODO (nilearn >= 0.13.0) remove
     copy_header = True
 
     shape = (10, 20, 30)
@@ -1505,6 +1505,7 @@ def test_binarize_img_no_userwarning(img_4d_rand_eye):
     ],
 )
 def test_warning_copy_header_false(request, func, input_img):
+    # TODO (nilearn 0.13.0)
     # Use the request fixture to get the actual fixture value
     actual_input_img = request.getfixturevalue(input_img)
     with pytest.warns(FutureWarning, match="From release 0.13.0 onwards*"):

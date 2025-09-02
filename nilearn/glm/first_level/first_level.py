@@ -23,7 +23,8 @@ from scipy.linalg import toeplitz
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
@@ -50,6 +51,7 @@ from nilearn.glm.regression import (
     RegressionResults,
     SimpleRegressionResults,
 )
+from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids.query import (
@@ -447,15 +449,37 @@ class FirstLevelModel(BaseGLM):
 
     Attributes
     ----------
-    labels_ : array of shape (n_voxels,),
-        a map of values on voxels used to identify the corresponding model
+    design_matrices_ : :obj:`list` of :obj:`pandas.DataFrame`
+        Design matrices used to fit the GLM.
+
+    fir_delays_ : array of shape(n_onsets), :obj:`list`
+
+    labels_ : array of shape ``(n_elements_,)``
+        a map of values on voxels / vertices
+        used to identify the corresponding model
+
+    masker_ :  :obj:`~nilearn.maskers.NiftiMasker` or \
+            :obj:`~nilearn.maskers.SurfaceMasker`
+        Masker used to filter and mask data during fit.
+        If :obj:`~nilearn.maskers.NiftiMasker`
+        or :obj:`~nilearn.maskers.SurfaceMasker` is given in
+        ``mask_img`` parameter, this is a copy of it.
+        Otherwise, a masker is created using the value of ``mask_img`` and
+        other NiftiMasker/SurfaceMasker
+        related parameters as initialization.
+
+    memory_ : joblib memory cache
+
+    n_elements_ : :obj:`int`
+        The number of voxels or vertices in the mask.
+
+        .. versionadded:: 0.12.1dev
 
     results_ : :obj:`dict`,
         with keys corresponding to the different labels values.
         Values are SimpleRegressionResults corresponding to the voxels,
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
-
     """
 
     def __str__(self):
@@ -717,7 +741,7 @@ class FirstLevelModel(BaseGLM):
 
     def _create_all_designs(
         self, run_imgs, events, confounds, design_matrices
-    ):
+    ) -> list[pd.DataFrame]:
         """Build experimental design of all runs."""
         if design_matrices is not None:
             return design_matrices
@@ -739,7 +763,9 @@ class FirstLevelModel(BaseGLM):
 
         return design_matrices
 
-    def _create_single_design(self, n_scans, events, confounds, run_idx):
+    def _create_single_design(
+        self, n_scans, events, confounds, run_idx
+    ) -> pd.DataFrame:
         """Build experimental design of a single run.
 
         Parameters
@@ -1266,6 +1292,8 @@ class FirstLevelModel(BaseGLM):
 
             self.masker_ = self.mask_img
 
+        self.n_elements_ = self.masker_.n_elements_
+
     @fill_doc
     def generate_report(
         self,
@@ -1306,6 +1334,16 @@ class FirstLevelModel(BaseGLM):
 
         """
         from nilearn.reporting.glm_reporter import make_glm_report
+
+        parameters = inspect.signature(
+            FirstLevelModel.generate_report
+        ).parameters
+        warn_default_threshold(
+            threshold,
+            parameters["threshold"].default,
+            3.09,
+            height_control=height_control,
+        )
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data = {
