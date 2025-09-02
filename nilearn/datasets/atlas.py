@@ -13,12 +13,15 @@ import pandas as pd
 from nibabel import freesurfer, load
 from sklearn.utils import Bunch
 
-from nilearn._utils import check_niimg, fill_doc, logger, rename_parameters
+from nilearn._utils import logger
 from nilearn._utils.bids import (
     check_look_up_table,
     generate_atlas_look_up_table,
 )
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
@@ -334,6 +337,7 @@ def fetch_atlas_craddock_2012(
             atlas_type=atlas_type,
         )
 
+    # TODO (nilearn >= 0.13.0)
     warnings.warn(
         category=DeprecationWarning,
         message=(
@@ -1233,6 +1237,7 @@ def fetch_atlas_smith_2009(
             atlas_type=atlas_type,
         )
 
+    # TODO (nilearn >= 0.13.0)
     warnings.warn(
         category=DeprecationWarning,
         message=(
@@ -1293,9 +1298,9 @@ def fetch_atlas_yeo_2011(
         - 17 networks parcellation.
 
         If ``thickness`` is not None, this will default to ``7``.
-        The default will be set to ``7`` in version 0.13.2.
+        The default will be set to ``7`` in version 0.13.0.
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
 
     thickness : {"thin", "thick", None}, default = None
         If not None,
@@ -1305,9 +1310,9 @@ def fetch_atlas_yeo_2011(
         - ``"thin"``: parcellation fitted to thin cortex segmentations.
 
         If ``n_networks`` is not None, this will default to ``"thick"``.
-        The default will be set to ``"thick"`` in version 0.13.2.
+        The default will be set to ``"thick"`` in version 0.13.0.
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
 
     Returns
     -------
@@ -1398,10 +1403,11 @@ def fetch_atlas_yeo_2011(
     atlas_type = "deterministic"
 
     if n_networks is None and thickness is None:
+        # TODO (nilearn >= 0.13.0)
         warnings.warn(
             category=DeprecationWarning,
             message=(
-                deprecation_message.format(version="0.13.2")
+                deprecation_message.format(version="0.13.0")
                 + (
                     "To suppress this warning, "
                     "Please use the parameters 'n_networks' and 'thickness' "
@@ -1637,6 +1643,7 @@ def fetch_atlas_aal(
                 "Starting in version 0.13, the default fetched mask will be"
                 "AAL 3v2 instead."
             )
+            # TODO (nilearn >= 0.13.0)
             warnings.warn(
                 message, DeprecationWarning, stacklevel=find_stack_level()
             )
@@ -1844,6 +1851,7 @@ def fetch_atlas_basc_multiscale_2015(
             template=f"MNI152{version}",
         )
 
+    # TODO (nilearn >= 0.13.0)
     warnings.warn(
         category=DeprecationWarning,
         message=(
@@ -2378,6 +2386,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     )
 
 
+# TODO (nilearn >= 0.13.1)
 @rename_parameters(
     replacement_params={"version": "atlas_type"}, end_version="0.13.1"
 )
@@ -2442,8 +2451,9 @@ def fetch_atlas_pauli_2017(
     """
     check_params(locals())
 
-    # TODO: remove this part after release 0.13.0
+    # TODO (nilearn >= 0.13.0) remove this part
     if atlas_type in ("prob", "det"):
+        # TODO (nilearn >= 0.13.0)
         atlas_type_values = (
             "The possible values for atlas_type are currently 'prob' and"
             " 'det'. From release 0.13.0 onwards, atlas_type will accept only"

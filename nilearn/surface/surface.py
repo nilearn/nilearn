@@ -16,8 +16,7 @@ from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
 from sklearn.exceptions import EfficiencyWarning
 
-from nilearn import _utils
-from nilearn._utils import stringify_path
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.path_finding import resolve_globbing
@@ -646,7 +645,7 @@ def vol_to_surf(
         - 'nearest':
             Use the intensity of the nearest voxel.
 
-            .. versionchanged:: 0.11.2.dev
+            .. versionchanged:: 0.12.0
 
                 The 'nearest' interpolation method will be removed in
                 version 0.13.0. It is recommended to use 'linear' for
@@ -661,7 +660,7 @@ def vol_to_surf(
             when the image is a
             :term:`deterministic atlas<Deterministic atlas>`.
 
-            .. versionadded:: 0.11.2.dev
+            .. versionadded:: 0.12.0
 
         For one image, the speed difference is small, 'linear' takes about x1.5
         more time. For many images, 'nearest' scales much better, up to x20
@@ -821,7 +820,7 @@ def vol_to_surf(
             f"{tuple(sampling_schemes.keys())}"
         )
 
-    # deprecate nearest interpolation in 0.13.0
+    # TODO (nilearn 0.13.0) deprecate nearest interpolation
     if interpolation == "nearest":
         warnings.warn(
             "The 'nearest' interpolation method will be deprecated in 0.13.0. "
@@ -836,14 +835,14 @@ def vol_to_surf(
     img = load_img(img)
 
     if mask_img is not None:
-        mask_img = _utils.check_niimg(mask_img)
+        mask_img = check_niimg(mask_img)
         mask = get_vol_data(
             resample_to_img(
                 mask_img,
                 img,
                 interpolation="nearest",
                 copy=False,
-                force_resample=False,  # TODO update to True in 0.13.0
+                force_resample=False,  # TODO (nilearn >= 0.13.0) set to True
                 copy_header=True,
             )
         )
@@ -852,7 +851,7 @@ def vol_to_surf(
 
     original_dimension = len(img.shape)
 
-    img = _utils.check_niimg(img, atleast_4d=True)
+    img = check_niimg(img, atleast_4d=True)
 
     frames = np.rollaxis(get_vol_data(img), -1)
 
@@ -1352,6 +1351,12 @@ class PolyData:
             the typical shape of the
             data for a hemisphere is ``(n_vertices, n_time_points)``.
 
+    dtype : DTypeLike object, default=None
+        dtype to enforce on the data.
+        If ``None`` the original dtype if used.
+
+        .. versionadded:: 0.12.1dev
+
     Examples
     --------
     >>> import numpy as np
@@ -1372,7 +1377,7 @@ class PolyData:
     ValueError: Cannot create an empty PolyData. ...
     """
 
-    def __init__(self, left=None, right=None):
+    def __init__(self, left=None, right=None, dtype=None):
         if left is None and right is None:
             raise ValueError(
                 "Cannot create an empty PolyData. "
@@ -1386,6 +1391,7 @@ class PolyData:
                     param = load_surf_data(param)
                 parts[hemi] = param
         self.parts = parts
+        self._set_data_dtype(dtype)
 
         self._check_parts()
 
@@ -1404,6 +1410,13 @@ class PolyData:
                 f"Data arrays for keys 'left' and 'right' "
                 "have incompatible shapes: "
                 f"{parts['left'].shape} and {parts['right'].shape}"
+            )
+
+        if parts["left"].dtype != parts["right"].dtype:
+            raise TypeError(
+                "All parts should have same dtype. "
+                f"Got {parts['left'].dtype=} and {parts['right'].dtype=}. "
+                "You can fix this by passing a 'dtype' at instantiation."
             )
 
     @property
@@ -1491,6 +1504,11 @@ class PolyData:
             data = self.parts["right"]
 
         _data_to_gifti(data, filename)
+
+    def _set_data_dtype(self, dtype):
+        if dtype is not None:
+            for h, v in self.parts.items():
+                self.parts[h] = v.astype(dtype)
 
 
 def at_least_2d(input):
@@ -1869,12 +1887,11 @@ class SurfaceImage:
            :obj:`pathlib.Path`
            Data for the both hemispheres.
 
-    squeeze_on_save : :obj:`bool` or None, default=None
-            If ``True`` axes of length one from the data
-            will be removed before saving them to file.
-            If ``None`` is passed,
-            then the value will be set to ``True``
-            if any of the data parts is one dimensional.
+    dtype : DTypeLike object, default=None
+        dtype to enforce on the data.
+        If ``None`` the original dtype is used.
+
+        .. versionadded:: 0.12.1dev
 
     Attributes
     ----------
@@ -1882,19 +1899,21 @@ class SurfaceImage:
         shape of the surface data array
     """
 
-    def __init__(self, mesh, data):
+    def __init__(self, mesh, data, dtype=None):
         """Create a SurfaceImage instance."""
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
 
         if not isinstance(data, (PolyData, dict)):
             raise TypeError(
-                f"'data' must be one of[PolyData, dict].\nGot {type(data)}"
+                "'data' must be one of [PolyData, dict].\n"
+                f"Got {data.__class__.__name__}"
             )
 
         if isinstance(data, PolyData):
             self.data = data
-        elif isinstance(data, dict):
-            self.data = PolyData(**data)
+            self.data._set_data_dtype(dtype)
+        else:
+            self.data = PolyData(**data, dtype=dtype)
 
         _check_data_and_mesh_compat(self.mesh, self.data)
 

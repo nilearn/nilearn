@@ -19,10 +19,8 @@ from nilearn.plotting.surface.html_surface import (
     view_img_on_surf,
     view_surf,
 )
-from nilearn.plotting.tests.test_js_plotting_utils import (
-    check_colors,
-    check_html,
-)
+from nilearn.plotting.tests.test_engine_utils import check_colors
+from nilearn.plotting.tests.test_js_plotting_utils import check_html
 from nilearn.surface.surface import (
     check_mesh_is_fsaverage,
     load_surf_data,
@@ -70,6 +68,7 @@ def test_one_mesh_info():
     assert not info["full_brain_mesh"]
     check_colors(info["colorscale"])
 
+    # TODO (nilearn >= 0.13.0)
     with pytest.warns(
         DeprecationWarning,
         match="one_mesh_info is a private function and is renamed "
@@ -107,6 +106,7 @@ def test_full_brain_info(mni152_template_res_2):
             mesh.faces
         )
 
+    # TODO (nilearn >= 0.13.0)
     with pytest.warns(
         DeprecationWarning,
         match="full_brain_info is a private function and is renamed to "

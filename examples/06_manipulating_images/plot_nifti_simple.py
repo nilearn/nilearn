@@ -31,7 +31,7 @@ nifti_masker = NiftiMasker(
     standardize="zscore_sample",
     mask_strategy="epi",
     memory="nilearn_cache",
-    memory_level=2,
+    memory_level=1,
     smoothing_fwhm=8,
 )
 nifti_masker.fit(func_filename)
@@ -66,7 +66,9 @@ fmri_masked = nifti_masker.transform(func_filename)
 from sklearn.decomposition import FastICA
 
 n_components = 10
-ica = FastICA(n_components=n_components, random_state=42)
+ica = FastICA(
+    n_components=n_components, random_state=42, tol=0.001, max_iter=2000
+)
 components_masked = ica.fit_transform(fmri_masked.T).T
 
 # %%

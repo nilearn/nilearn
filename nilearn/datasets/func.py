@@ -20,8 +20,11 @@ from scipy.io import loadmat
 from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
-from nilearn._utils import check_niimg, fill_doc, logger, remove_parameters
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import remove_parameters
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     ALLOWED_MESH_TYPES,
@@ -2359,6 +2362,7 @@ def fetch_language_localizer_demo_dataset(
 
     file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
     if legacy_output:
+        # TODO (nilearn >= 0.13.0)
         warnings.warn(
             category=DeprecationWarning,
             stacklevel=find_stack_level(),
@@ -2795,6 +2799,7 @@ def _download_spm_auditory_data(data_dir):
         return fetch_spm_auditory(data_dir=data_dir, data_name="")
 
 
+# (nilearn >= 0.13.0) remove subject_id
 @fill_doc
 @remove_parameters(
     removed_params=["subject_id"],
@@ -3002,6 +3007,7 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     return events
 
 
+# (nilearn >= 0.13.0) remove subject_id
 @fill_doc
 @remove_parameters(
     removed_params=["subject_id"],
@@ -3029,7 +3035,7 @@ def fetch_spm_multimodal_fmri(
 
     subject_id : :obj:`str`, default=None
 
-        .. deprecated:: 0.11.2
+        .. deprecated:: 0.12.0
 
             Will be removed in version ``0.13.0``.
 

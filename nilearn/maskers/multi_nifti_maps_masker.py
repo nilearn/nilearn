@@ -5,7 +5,7 @@ import itertools
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers.base_masker import prepare_confounds_multimaskers
@@ -47,38 +47,47 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
     allow_overlap : :obj:`bool`, default=True
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
+
     %(smoothing_fwhm)s
+
     %(standardize_maskers)s
+
     %(standardize_confounds)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
+
     %(detrend)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
     %(dtype)s
 
     resampling_target : {"data", "mask", "maps", None}, default="data"
-        Gives which image gives the final shape/size:
+        Defines which image gives the final shape/size:
 
-            - "data" means the atlas is resampled to the shape of the data if
-              needed
-            - "mask" means the maps_img and images provided to fit() are
-              resampled to the shape and affine of mask_img
-            - "maps" means the mask_img and images provided to fit() are
-              resampled to the shape and affine of maps_img
-            - None means no resampling: if shapes and affines do not match,
-              a ValueError is raised.
+        - ``"data"`` means that the atlas is resampled
+          to the shape of the data if needed
+        - ``"mask"`` means that the ``maps_img`` and images provided
+          to ``fit()`` are
+          resampled to the shape and affine of ``mask_img``
+        - ``"maps"`` means the ``mask_img`` and images provided
+          to ``fit()`` are
+          resampled to the shape and affine of ``maps_img``
+        - ``None`` means no resampling: if shapes and affines do not match,
+          a :obj:`ValueError` is raised.
 
+    %(keep_masked_maps)s
 
     %(memory)s
 
     %(memory_level)s
-
-    %(n_jobs)s
 
     %(verbose0)s
 
@@ -89,16 +98,24 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         default="CMRmap_r"
         Only relevant for the report figures.
 
+    %(n_jobs)s
+
     %(clean_args)s
 
     %(masker_kwargs)s
 
     Attributes
     ----------
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The maps mask of the data.
 
     %(nifti_mask_img_)s
+
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int`
         The number of overlapping maps in the mask.
@@ -137,6 +154,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
+        keep_masked_maps=True,
         memory=None,
         memory_level=0,
         verbose=0,
@@ -164,6 +182,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
+            keep_masked_maps=keep_masked_maps,
             reports=reports,
             cmap=cmap,
             clean_args=clean_args,
@@ -176,9 +195,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -222,7 +239,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             imgs_list,
             ensure_ndim=None,
             atleast_4d=False,
-            memory=self.memory,
+            memory=self.memory_,
             memory_level=self.memory_level,
         )
 

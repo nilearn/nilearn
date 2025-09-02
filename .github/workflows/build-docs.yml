@@ -5,7 +5,8 @@
 # - check the quality of the doc strings
 # - get datasets from cache or from source
 # - build doc and upload it as artifact
-# - on `main` (or on github release): trigger hosting of dev (or stable) doc on https://github.com/nilearn//nilearn.github.io.git
+# - on ``main`` (or on github release): trigger hosting of dev (or stable) doc on https://github.com/nilearn//nilearn.github.io.git
+# - on ``main`` when triggered by schedule or manually via the github UI, this workflow will also attempt to do a full build of the documentation on the latest supported python and dependencies
 #
 # .. admonition:: Control via commit message
 #    :class: tip
@@ -114,7 +115,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
 
         -   name: Check whether the citation metadata from CITATION.cff is valid
             uses: citation-file-format/cffconvert-github-action@2.0.0
@@ -126,7 +127,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v6
         -   uses: actions/setup-python@v5
@@ -148,7 +149,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Get repo
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
             with:
                 ref: ${{ github.event.pull_request.head.sha }}
         -   name: Check head git commit message
@@ -166,7 +167,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -203,7 +204,7 @@ jobs:
 
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -221,7 +222,7 @@ jobs:
                 python -m pip install .
 
         -   name: Download build type
-            uses: actions/download-artifact@v4
+            uses: actions/download-artifact@v5
             with:
                 name: build_type
         -   name: Verify build type
@@ -301,18 +302,27 @@ jobs:
     # Steps to build the documentation.
     build_docs:
         needs: [get_data]
-        # This prevents this workflow from running on a fork.
-        # To test this workflow on a fork, uncomment the following line.
         runs-on: ubuntu-latest
+
+        strategy:
+            fail-fast: false
+            matrix:
+                py: [3.13]
+                env: [doc_latest]
+                include:
+                -   py: 3.9
+                    env: doc
+
         defaults:
             run:
                 shell: bash -el {0}
 
         steps:
+
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
             with:
-        # If pull request, checkout HEAD commit with all commit history
+                # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
         -   name: Merge with upstream
@@ -347,10 +357,10 @@ jobs:
         -   name: Setup python
             uses: actions/setup-python@v5
             with:
-                python-version: ${{ env.MIN_PYTHON_VERSION }}
+                python-version: ${{ matrix.py }}
 
         -   name: Download build type
-            uses: actions/download-artifact@v4
+            uses: actions/download-artifact@v5
             with:
                 name: build_type
 
@@ -361,6 +371,7 @@ jobs:
             run: tox c
 
         # Run the doc build
+        #
         # We let tox handle creating virtual env and install dependencies.
         # If no data is restored in previous steps,
         # the data will be downloaded during the build
@@ -368,13 +379,14 @@ jobs:
         # no data is downloaded for partial builds).
         -   name: Build docs
             id: build-docs
+            if: ${{ matrix.env == 'doc' ||  matrix.env == 'doc_latest' && contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) }}
             run: |
                 set -o pipefail;
                 export PATTERN=$(cat pattern.txt)
                 tox run \
                     --colored yes \
                     --list-dependencies \
-                    -e doc -- $(cat build.txt) 2>&1 | tee log.txt;
+                    -e  ${{ matrix.env }} -- $(cat build.txt) 2>&1 | tee log.txt;
 
         -   name: Check for unreplaced argument in docstrings
             if: always()
@@ -388,17 +400,17 @@ jobs:
                 ./build_tools/github/warning_in_doc_check.sh
 
         -   name: Upload doc checks
-            if: steps.build-docs.outcome == 'success'
+            if: always()
             uses: actions/upload-artifact@v4
             with:
-                name: doc_checks
+                name: ${{ matrix.env }}_checks
                 path: doc/tmp
 
         -   name: Upload documentation
             if: steps.build-docs.outcome == 'success'
             uses: actions/upload-artifact@v4
             with:
-                name: doc
+                name: ${{ matrix.env }}
                 path: doc/_build/html
 
     deploy_on_main:
@@ -407,7 +419,7 @@ jobs:
         if: ${{ contains(fromJSON('["push", "workflow_dispatch", "schedule", "release"]'), github.event_name)}}
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
             with:
                 fetch-depth: 0
 
@@ -422,7 +434,7 @@ jobs:
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
 
-        -   uses: actions/download-artifact@v4
+        -   uses: actions/download-artifact@v5
             with:
                 name: doc
                 path: doc/_build/html

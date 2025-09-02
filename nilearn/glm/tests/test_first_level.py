@@ -484,7 +484,7 @@ def test_high_level_glm_different_design_matrices_formulas():
     formula = f"{cols_formula[0]}-{cols_formula[1]}"
 
     with pytest.warns(
-        UserWarning, match="One contrast given, assuming it for all 2 runs"
+        RuntimeWarning, match="The same contrast will be used for all"
     ):
         multi_run_model.compute_contrast(formula, output_type="effect_size")
 
@@ -510,7 +510,7 @@ def test_compute_contrast_num_contrasts(shape_4d_default):
     multi_run_model.compute_contrast([np.eye(rk)[1]] * 3)
 
     with pytest.warns(
-        UserWarning, match="One contrast given, assuming it for all 3 runs"
+        RuntimeWarning, match="The same contrast will be used for all"
     ):
         multi_run_model.compute_contrast([np.eye(rk)[1]])
 
@@ -2377,14 +2377,14 @@ def test_error_flm_surface_mask_volume_image(
     img, des = surface_glm_data(5)
     model = FirstLevelModel(mask_img=surf_mask_1d)
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model.fit(img_4d_rand_eye, design_matrices=des)
 
     masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker)
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model.fit(img_4d_rand_eye, design_matrices=des)
 
@@ -2397,14 +2397,14 @@ def test_error_flm_volume_mask_surface_image(surface_glm_data):
     img, des = surface_glm_data(5)
     model = FirstLevelModel(mask_img=mask)
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model.fit(img, design_matrices=des)
 
     masker = NiftiMasker().fit(mask)
     model = FirstLevelModel(mask_img=masker)
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model.fit(img, design_matrices=des)
 

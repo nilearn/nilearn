@@ -47,10 +47,10 @@ def plot_matrices(cov, prec, title, labels):
 # %%
 # Fetching datasets
 # ------------------
-from nilearn import datasets
+from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 
-msdl_atlas_dataset = datasets.fetch_atlas_msdl()
-rest_dataset = datasets.fetch_development_fmri(n_subjects=n_subjects)
+msdl_atlas_dataset = fetch_atlas_msdl()
+rest_dataset = fetch_development_fmri(n_subjects=n_subjects)
 
 # print basic information on the dataset
 print(
@@ -75,7 +75,7 @@ masker = NiftiMapsMasker(
     standardize_confounds=True,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=2,
+    verbose=1,
 )
 
 subject_time_series = []

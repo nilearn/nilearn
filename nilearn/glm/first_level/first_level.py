@@ -10,6 +10,7 @@ from __future__ import annotations
 import csv
 import inspect
 import time
+import warnings
 from collections.abc import Iterable
 from pathlib import Path
 from warnings import warn
@@ -22,8 +23,8 @@ from scipy.linalg import toeplitz
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger
-from nilearn._utils.cache_mixin import check_memory
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
@@ -50,6 +51,7 @@ from nilearn.glm.regression import (
     RegressionResults,
     SimpleRegressionResults,
 )
+from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids.query import (
@@ -88,8 +90,8 @@ def mean_scaling(Y, axis=0):
     if (mean == 0).any():
         warn(
             "Mean values of 0 observed. "
-            "The data have probably been centered."
-            "Scaling might not work as expected",
+            "The data have probably been centered. "
+            "Scaling might not work as expected.",
             UserWarning,
             stacklevel=find_stack_level(),
         )
@@ -452,15 +454,37 @@ class FirstLevelModel(BaseGLM):
 
     Attributes
     ----------
-    labels_ : array of shape (n_voxels,),
-        a map of values on voxels used to identify the corresponding model
+    design_matrices_ : :obj:`list` of :obj:`pandas.DataFrame`
+        Design matrices used to fit the GLM.
+
+    fir_delays_ : array of shape(n_onsets), :obj:`list`
+
+    labels_ : array of shape ``(n_elements_,)``
+        a map of values on voxels / vertices
+        used to identify the corresponding model
+
+    masker_ :  :obj:`~nilearn.maskers.NiftiMasker` or \
+            :obj:`~nilearn.maskers.SurfaceMasker`
+        Masker used to filter and mask data during fit.
+        If :obj:`~nilearn.maskers.NiftiMasker`
+        or :obj:`~nilearn.maskers.SurfaceMasker` is given in
+        ``mask_img`` parameter, this is a copy of it.
+        Otherwise, a masker is created using the value of ``mask_img`` and
+        other NiftiMasker/SurfaceMasker
+        related parameters as initialization.
+
+    memory_ : joblib memory cache
+
+    n_elements_ : :obj:`int`
+        The number of voxels or vertices in the mask.
+
+        .. versionadded:: 0.12.1dev
 
     results_ : :obj:`dict`,
         with keys corresponding to the different labels values.
         Values are SimpleRegressionResults corresponding to the voxels,
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
-
     """
 
     def __str__(self):
@@ -695,8 +719,8 @@ class FirstLevelModel(BaseGLM):
         if self.signal_scaling is not False:
             Y, _ = mean_scaling(Y, self.signal_scaling)
 
-        if self.memory:
-            mem_glm = self.memory.cache(run_glm, ignore=["n_jobs"])
+        if self.memory_:
+            mem_glm = self._cache(run_glm, ignore=["n_jobs"])
         else:
             mem_glm = run_glm
 
@@ -727,7 +751,7 @@ class FirstLevelModel(BaseGLM):
 
     def _create_all_designs(
         self, run_imgs, events, confounds, design_matrices
-    ):
+    ) -> list[pd.DataFrame]:
         """Build experimental design of all runs."""
         if design_matrices is not None:
             return design_matrices
@@ -749,7 +773,9 @@ class FirstLevelModel(BaseGLM):
 
         return design_matrices
 
-    def _create_single_design(self, n_scans, events, confounds, run_idx):
+    def _create_single_design(
+        self, n_scans, events, confounds, run_idx
+    ) -> pd.DataFrame:
         """Build experimental design of a single run.
 
         Parameters
@@ -943,7 +969,7 @@ class FirstLevelModel(BaseGLM):
         else:
             self.fir_delays_ = self.fir_delays
 
-        self.memory = check_memory(self.memory)
+        self._fit_cache()
 
         if self.signal_scaling not in {False, 1, (0, 1)}:
             raise ValueError(
@@ -1088,10 +1114,15 @@ class FirstLevelModel(BaseGLM):
         if n_contrasts == 1 and self._n_runs_ > 1:
             warn(
                 (
-                    "One contrast given, "
-                    f"assuming it for all {self._n_runs_} runs"
+                    f"The same contrast will be used for all {n_runs} runs. "
+                    "If the design matrices are not the same for all runs, "
+                    "(for example with different column names "
+                    "or column order across runs) "
+                    "you should pass contrast as an expression using "
+                    "the name of the conditions "
+                    "as they appear in the design matrices."
                 ),
-                category=UserWarning,
+                category=RuntimeWarning,
                 stacklevel=find_stack_level(),
             )
             con_vals = con_vals * self._n_runs_
@@ -1276,17 +1307,26 @@ class FirstLevelModel(BaseGLM):
             self.masker_ = check_embedded_masker(
                 self, masker_type, ignore=["high_pass"]
             )
+            self.masker_.memory_level = self.memory_level
 
             if isinstance(self.masker_, NiftiMasker):
                 self.masker_.mask_strategy = "epi"
 
             if not self.design_only:
-                self.masker_.fit(run_img)
+
+              with warnings.catch_warnings():
+                  # ignore warning in case the masker
+                  # was initialized with a mask image
+                  warnings.simplefilter("ignore")
+
+                  self.masker_.fit(run_img)
 
         else:
             check_is_fitted(self.mask_img)
 
             self.masker_ = self.mask_img
+
+        self.n_elements_ = self.masker_.n_elements_
 
     @fill_doc
     def generate_report(
@@ -1328,6 +1368,16 @@ class FirstLevelModel(BaseGLM):
 
         """
         from nilearn.reporting.glm_reporter import make_glm_report
+
+        parameters = inspect.signature(
+            FirstLevelModel.generate_report
+        ).parameters
+        warn_default_threshold(
+            threshold,
+            parameters["threshold"].default,
+            3.09,
+            height_control=height_control,
+        )
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data = {

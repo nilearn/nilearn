@@ -14,7 +14,8 @@ from nibabel import Nifti1Image, gifti
 from scipy.ndimage import binary_dilation
 
 from nilearn import datasets, image, maskers, masking
-from nilearn._utils import as_ndarray, logger
+from nilearn._utils import logger
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn.interfaces.bids.utils import (
     bids_entities,
     check_bids_label,
@@ -655,7 +656,7 @@ def generate_group_sparse_gaussian_graphs(
     density=0.1,
     random_state=0,
     verbose=0,
-):
+) -> tuple[list[np.ndarray], list[np.ndarray], np.ndarray]:
     """Generate signals drawn from a sparse Gaussian graphical model.
 
     Parameters

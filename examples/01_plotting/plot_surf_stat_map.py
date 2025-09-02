@@ -190,7 +190,9 @@ is_excluded = np.isin(
 for i, exclude_this_vertex in enumerate(is_excluded):
     if exclude_this_vertex:
         continue
-    y = surf_img_nki.data.parts[hemisphere][i, ...]
+    y = surf_img_nki.data.parts[hemisphere][i, ...].astype(
+        seed_timeseries.dtype
+    )
     results[hemisphere][i] = pearsonr(seed_timeseries, y)[0]
 
 stat_map_surf = SurfaceImage(

@@ -121,7 +121,7 @@ def save_glm_to_bids(
 
     %(first_level_contrast)s
 
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
 
     contrast_types : None or :obj:`dict` of :obj:`str`, default=None
         An optional dictionary mapping some
@@ -161,7 +161,7 @@ def save_glm_to_bids(
     model : :obj:`~nilearn.glm.first_level.FirstLevelModel` or \
             :obj:`~nilearn.glm.second_level.SecondLevelModel`
 
-            .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
 
     Warnings
     --------
