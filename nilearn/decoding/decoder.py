@@ -376,7 +376,7 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
     return new_param_grid
 
 
-def _check_estimator(estimator, estimator_args=None):
+def _check_estimator(estimator, estimator_args=None, verbose=0):
     """Check requested estimator.
 
     If an actual estimator instance was passed, we allow it but warn the user.
@@ -408,6 +408,8 @@ def _check_estimator(estimator, estimator_args=None):
     # "params" cannot be overridden so we use them last
     # to update the parameter of the estimator
     params |= estimator_config["params"]
+
+    params["verbose"] = verbose - 1
 
     estimator = estimator_config["estimator"](**params)
 
@@ -726,7 +728,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             {} if self.estimator_args is None else self.estimator_args
         )
         self.estimator_ = _check_estimator(
-            self.estimator, estimator_args=self.estimator_args_
+            self.estimator,
+            estimator_args=self.estimator_args_,
+            verbose=self.verbose - 1,
         )
 
         self._fit_cache()
