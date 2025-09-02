@@ -157,7 +157,6 @@ def test_compute_facecolors():
         bg_map,
         mesh.faces,
         len(mesh.coordinates),
-        None,
         alpha,
     )
 
@@ -171,7 +170,6 @@ def test_compute_facecolors():
         bg_map_normalized,
         mesh.faces,
         len(mesh.coordinates),
-        None,
         alpha,
     )
 
@@ -188,7 +186,6 @@ def test_compute_facecolors():
         bg_map_scaled,
         mesh.faces,
         len(mesh.coordinates),
-        None,
         alpha,
     )
 
