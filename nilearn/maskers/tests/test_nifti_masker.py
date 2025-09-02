@@ -362,6 +362,23 @@ def test_compute_brain_mask(strategy, expected_mask, mask_args):
     np.testing.assert_array_equal(get_data(masker.mask_img_), expected_mask)
 
 
+def test_invalid_mask_arg_for_strategy():
+    """Pass mask_args specific to epi strategy should not fail.
+
+    But a warning should be thrown.
+    """
+    masker = NiftiMasker(
+        mask_strategy="background",
+        mask_args={"lower_cutoff": 0.1, "ensure_finite": False},
+    )
+    img, _ = data_gen.generate_random_img((9, 9, 5))
+
+    with pytest.warns(
+        UserWarning, match="The following arguments are not supported by"
+    ):
+        masker.fit(img)
+
+
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )

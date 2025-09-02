@@ -733,7 +733,6 @@ def compute_multi_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-    **kwargs,
 ):
     """Compute the whole-brain, grey-matter or white-matter mask \
     for a list of images.
@@ -769,14 +768,6 @@ def compute_multi_brain_mask(
     %(memory)s
 
     %(verbose0)s
-
-    .. note::
-        Argument not used but kept to fit the API
-
-    **kwargs : optional arguments
-        Arguments such as 'target_affine' are used in the call of other
-        masking strategies, which then would raise an error for this function
-        which does not need such arguments.
 
     Returns
     -------

@@ -3,6 +3,7 @@ on multi subject MRI data.
 """
 
 import collections.abc
+import inspect
 import itertools
 import warnings
 
@@ -322,16 +323,36 @@ class MultiNiftiMasker(NiftiMasker):
             ):
                 imgs = [imgs]
 
-            mask_args = self.mask_args if self.mask_args is not None else {}
             compute_mask = _get_mask_strategy(self.mask_strategy)
-            self.mask_img_ = self._cache(
-                compute_mask,
-                ignore=["n_jobs", "verbose", "memory"],
-            )(
+
+            # add extra argument to pass
+            # to the mask computing function
+            # depending if they are supported.
+            signature = dict(**inspect.signature(compute_mask).parameters)
+            mask_args = {}
+            for arg in ["n_jobs", "target_shape", "target_affine"]:
+                if arg in signature and getattr(self, arg) is not None:
+                    mask_args[arg] = getattr(self, arg)
+            if self.mask_args:
+                skipped_args = []
+                for arg in self.mask_args:
+                    if arg in signature:
+                        mask_args[arg] = self.mask_args.get(arg)
+                    else:
+                        skipped_args.append(arg)
+                if skipped_args:
+                    warnings.warn(
+                        (
+                            "The following arguments are not supported by"
+                            f"the masking strategy '{self.mask_strategy}': "
+                            f"{skipped_args}"
+                        ),
+                        UserWarning,
+                        stacklevel=find_stack_level(),
+                    )
+
+            self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs,
-                target_affine=self.target_affine,
-                target_shape=self.target_shape,
-                n_jobs=self.n_jobs,
                 memory=self.memory_,
                 verbose=max(0, self.verbose - 1),
                 **mask_args,

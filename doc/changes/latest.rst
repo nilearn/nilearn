@@ -11,6 +11,8 @@ NEW
 Fixes
 -----
 
+- :bdg-dark:`Code` Explicitly ignore unsupported parameters for the masking strategies used by :class:`~nilearn.maskers.NiftiMasker` and :class:`~nilearn.maskers.MultiNiftiMasker` (:gh:`5637` by `Rémi Gau`_).
+
 - :bdg-info:`Plotting` Plots of thresholded statistical maps included in GLM reports now take into account the ``two_sided`` parameter (:gh:`5578` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` :func:`~nilearn.reporting.get_clusters_table` can now handle negative ``stat_threshold`` when ``two_sided=False`` (:gh:`5578` by `Rémi Gau`_).
