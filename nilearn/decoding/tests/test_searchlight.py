@@ -122,29 +122,6 @@ def test_searchlight_small_radius():
     assert sl.scores_[2, 2, 2] == 1.0
 
 
-@pytest.mark.parametrize("verbose", [1, 2])
-def test_searchlight_verbose(verbose):
-    """Check verbose parameter.
-
-    verbose = 1: only messages from SearchLight
-    verbose = 2: also messages from embedded masker
-    """
-    frames = 30
-    data_img, cond, mask_img = _make_searchlight_test_data(frames)
-    cv, _ = define_cross_validation()
-
-    sl = searchlight.SearchLight(
-        mask_img,
-        process_mask_img=mask_img,
-        radius=0.5,
-        n_jobs=1,
-        scoring="accuracy",
-        cv=cv,
-        verbose=verbose,
-    )
-    sl.fit(data_img, y=cond)
-
-
 def test_searchlight_mask_far_from_signal(affine_eye):
     frames = 30
     data_img, cond, mask_img = _make_searchlight_test_data(frames)

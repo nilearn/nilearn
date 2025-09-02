@@ -593,6 +593,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
             yield (clone(estimator), check_decoder_with_surface_data)
             yield (clone(estimator), check_decoder_with_arrays)
             yield (clone(estimator), check_decoder_estimator_args)
+            yield (clone(estimator), check_decoder_verbose)
             if is_regressor(estimator):
                 yield (
                     clone(estimator),
@@ -1834,6 +1835,22 @@ def check_decoder_estimator_args(estimator_orig):
         # TODO: something to fix?
         return
     assert estimator.estimator_.max_iter == 5000
+
+
+@ignore_warnings
+def check_decoder_verbose(estimator_orig):
+    """Smoke test verbose parameter.
+
+    verbose = 1: only messages from the estimator
+    verbose > 1: also messages from embedded
+                  nilearn masker / sklearn estimator
+
+    TODO: apply to GLM
+    """
+    for verbose in [1, 2]:
+        estimator = clone(estimator_orig)
+        estimator.verbose = verbose
+        estimator = fit_estimator(estimator)
 
 
 # ------------------ MASKER CHECKS ------------------
