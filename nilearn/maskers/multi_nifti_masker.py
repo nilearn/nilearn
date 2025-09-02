@@ -331,12 +331,12 @@ class MultiNiftiMasker(NiftiMasker):
             signature = dict(**inspect.signature(compute_mask).parameters)
             mask_args = {}
             for arg in ["n_jobs", "target_shape", "target_affine"]:
-                if arg in sig and getattr(self, arg) is not None:
+                if arg in signature and getattr(self, arg) is not None:
                     mask_args[arg] = getattr(self, arg)
             if self.mask_args:
                 skipped_args = []
                 for arg in self.mask_args:
-                    if arg in sig:
+                    if arg in signature:
                         mask_args[arg] = self.mask_args.get(arg)
                     else:
                         skipped_args.append(arg)
