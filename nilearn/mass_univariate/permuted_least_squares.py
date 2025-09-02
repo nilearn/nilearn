@@ -926,7 +926,7 @@ def _sanitize_inputs_permuted_ols(
             message=(
                 'The ``"output_type"`` parameter for "permuted_ols" is '
                 "deprecated. "
-                "It will removed in version 0.13.\n"
+                "It will be removed in version 0.15.\n"
                 'Change its value to "dict" to silence this warning.'
             ),
             stacklevel=find_stack_level(),
