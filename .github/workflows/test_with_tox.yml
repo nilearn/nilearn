@@ -84,7 +84,7 @@ jobs:
                     # TODO revert to latest when dropping py 3.9 and bumping matplotlib
                     os: macos-14
                     env: min
-                -   description: oldest dependencies - no plotly
+                -   description: oldest dependencies
                     py: '3.9'
                     # TODO revert to latest when dropping py 3.9 and bumping matplotlib
                     os: macos-14
