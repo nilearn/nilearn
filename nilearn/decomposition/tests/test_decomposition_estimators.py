@@ -23,7 +23,6 @@ from nilearn.decomposition.tests.conftest import (
 )
 
 ESTIMATORS_TO_CHECK = [
-    _MultiPCA(verbose=0),
     DictLearning(verbose=0),
     CanICA(verbose=0),
 ]
@@ -67,7 +66,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-@pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_fit_errors(
     data_type, decomposition_images, estimator, decomposition_mask_img
@@ -125,7 +124,7 @@ def test_fit_errors(
 
 
 @pytest.mark.timeout(0)
-@pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_masker_attributes_with_fit(
     data_type,
@@ -161,7 +160,7 @@ def test_masker_attributes_with_fit(
 
 
 @pytest.mark.timeout(0)
-@pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform(
     data_type,  # noqa: ARG001
@@ -194,7 +193,7 @@ def test_transform(
 
 
 @pytest.mark.timeout(0)
-@pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform_confounds(
     data_type,
@@ -232,7 +231,7 @@ def test_transform_confounds(
     )
 
 
-@pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform_single_image(
     data_type,  # noqa: ARG001
@@ -259,7 +258,7 @@ def test_transform_single_image(
     assert isinstance(signals, list)
 
 
-@pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform_errors(
     data_type,  # noqa: ARG001
@@ -285,7 +284,7 @@ def test_transform_errors(
         est.transform(canica_data, confounds=confounds)
 
 
-@pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_pass_masker_arg_to_estimator(
     data_type, affine_eye, canica_data, estimator
@@ -319,13 +318,21 @@ def test_pass_masker_arg_to_estimator(
 
 
 @pytest.mark.timeout(0)
-@pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
-@pytest.mark.parametrize("data_type", ["nifti"])
-def test_nifti_maps_masker_(canica_data_single_img, estimator):
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
+@pytest.mark.parametrize("data_type", ["nifti", "surface"])
+def test_nifti_maps_masker_(
+    data_type,  # noqa: ARG001
+    canica_data,
+    estimator,
+):
     """Check deprecation of nifti_maps_masker_."""
-    est = estimator()
+    est = estimator(
+        n_components=3,
+        random_state=RANDOM_STATE,
+        smoothing_fwhm=None,
+    )
 
-    est.fit(canica_data_single_img)
+    est.fit(canica_data)
 
     with pytest.deprecated_call(
         match="The 'nifti_maps_masker_' attribute is deprecated"
@@ -371,7 +378,7 @@ def test_with_confounds(
     )
 
 
-@pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_single_subject_score(canica_data_single_img, data_type, estimator):
     """Check content of scores after fitting."""
@@ -406,7 +413,7 @@ def test_single_subject_score(canica_data_single_img, data_type, estimator):
 
 
 @pytest.mark.timeout(0)
-@pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_single_subject_file(
     data_type, canica_data_single_img, estimator, tmp_path
@@ -444,7 +451,7 @@ def test_single_subject_file(
 
 
 @pytest.mark.timeout(0)
-@pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
+@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti"])
 @pytest.mark.parametrize("n_subjects", [1, 3])
 def test_with_globbing_patterns(

@@ -9,14 +9,16 @@ import warnings
 
 import numpy as np
 import scipy.linalg
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 from sklearn.base import BaseEstimator
 from sklearn.covariance import empirical_covariance
 from sklearn.model_selection import check_cv
 from sklearn.utils import check_array
 from sklearn.utils.extmath import fast_logdet
 
-from nilearn._utils import CacheMixin, fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.cache_mixin import CacheMixin
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
@@ -167,8 +169,7 @@ def group_sparse_covariance(
         number of samples, sensible values lie in the [0, 1] range(zero is
         no regularization: output is not sparse)
 
-    max_iter : :obj:`int`, default=50
-        maximum number of iterations.
+    %(max_iter50)s
 
     tol : positive :obj:`float` or None, default=0.001
         The tolerance to declare convergence: if the duality gap goes below
@@ -561,9 +562,8 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         The tolerance to declare convergence: if the dual gap goes below
         this value, iterations are stopped.
 
-    max_iter : :obj:`int`, default=10
-        maximum number of iterations. The default value is rather
-        conservative.
+    %(max_iter10)s
+        The default value is rather conservative.
 
     %(verbose0)s
 
@@ -575,6 +575,11 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
     ----------
     covariances_ : numpy.ndarray, shape (n_features, n_features, n_subjects)
         empirical covariance matrices.
+
+    memory_ : joblib memory cache
+
+    n_features_in_ : :obj:`int`
+        Number of features seen during fit.
 
     precisions_ : numpy.ndarraye, shape (n_features, n_features, n_subjects)
         precisions matrices estimated using the group-sparse algorithm.
@@ -605,7 +610,7 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -670,8 +675,7 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
                 ensure_min_samples=2,
             )
 
-        if self.memory is None:
-            self.memory = Memory(location=None)
+        self._fit_cache()
 
         logger.log("Computing covariance matrices", verbose=self.verbose)
         self.covariances_, n_samples = empirical_covariances(
@@ -1047,8 +1051,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
         tolerance used during the final optimization for determining precision
         matrices value.
 
-    max_iter : :obj:`int`, default=100
-        maximum number of iterations in the final optimization.
+    %(max_iter100)s
 
     %(verbose0)s
 
@@ -1128,7 +1131,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 

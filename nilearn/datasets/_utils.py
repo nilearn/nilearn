@@ -17,7 +17,8 @@ from pathlib import Path
 import numpy as np
 import requests
 
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 
 from .utils import get_data_dirs

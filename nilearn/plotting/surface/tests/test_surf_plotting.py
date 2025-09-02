@@ -630,6 +630,24 @@ def test_plot_surf_stat_map_vmax(plt, engine, in_memory_mesh, bg_map):
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, vmax=5, engine=engine)
 
 
+@pytest.mark.parametrize("colorbar", [True, False])
+def test_plot_surf_stat_map_error_vmax_equal_vmin(
+    plt, engine, in_memory_mesh, bg_map, colorbar
+):
+    """Smoke test when vmax == vmin.
+
+    Make sure matplotlib does not raise error.
+    """
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=bg_map,
+        vmin=5,
+        vmax=5,
+        engine=engine,
+        colorbar=colorbar,
+    )
+
+
 def test_plot_surf_stat_map_colormap(plt, engine, in_memory_mesh, bg_map):
     """Smoke test when colormap is specified to
     nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.

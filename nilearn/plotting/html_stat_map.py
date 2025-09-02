@@ -13,17 +13,18 @@ from matplotlib.image import imsave
 from nibabel.affines import apply_affine
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_threshold
 from nilearn.datasets import load_mni152_template
 from nilearn.image import get_data, new_img_like, reorder_img, resample_to_img
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
-from nilearn.plotting.img_plotting import load_anat
+from nilearn.plotting.image.utils import load_anat
 from nilearn.plotting.js_plotting_utils import get_html_template
 
 
@@ -284,7 +285,7 @@ def _resample_stat_map(
         bg_img,
         interpolation=resampling_interpolation,
         copy_header=True,
-        force_resample=False,  # TODO set to True in 0.13.0
+        force_resample=False,  # TODO (nilearn >= 0.13.0) update to True
     )
     mask_img = resample_to_img(
         mask_img,
@@ -292,7 +293,7 @@ def _resample_stat_map(
         fill_value=1,
         interpolation="nearest",
         copy_header=True,
-        force_resample=False,  # TODO set to True in 0.13.0
+        force_resample=False,  # TODO (nilearn >= 0.13.0) update to True
     )
 
     return stat_map_img, mask_img

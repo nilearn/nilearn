@@ -7,7 +7,7 @@ import pytest
 from joblib import Memory
 
 import nilearn
-from nilearn._utils import CacheMixin, cache_mixin
+from nilearn._utils.cache_mixin import CacheMixin, cache, check_memory
 
 
 def _get_subdirs(top_dir):
@@ -29,12 +29,12 @@ def test_check_memory(tmp_path):
     mem_temp = Memory(location=str(tmp_path))
 
     for mem in [None, mem_none]:
-        memory = cache_mixin.check_memory(mem, verbose=0)
+        memory = check_memory(mem, verbose=0)
         assert memory, Memory
         assert memory.location == mem_none.location
 
     for mem in [str(tmp_path), mem_temp]:
-        memory = cache_mixin.check_memory(mem, verbose=0)
+        memory = check_memory(mem, verbose=0)
         assert memory.location == mem_temp.location
         assert memory, Memory
 
@@ -47,6 +47,7 @@ class CacheMixinTest(CacheMixin):
         self.memory_level = memory_level
 
     def run(self):
+        self._fit_cache()
         self._cache(f)
 
 
@@ -115,18 +116,18 @@ def test_cache_memory_level(tmp_path):
         / "f"
     )
 
-    cache_mixin.cache(f, Memory(location=None))(2)
+    cache(f, Memory(location=None))(2)
     assert len(_get_subdirs(joblib_dir)) == 0
 
     mem = Memory(location=str(tmp_path), verbose=0)
 
-    cache_mixin.cache(f, mem, func_memory_level=2, memory_level=1)(2)
+    cache(f, mem, func_memory_level=2, memory_level=1)(2)
     assert len(_get_subdirs(joblib_dir)) == 0
 
-    cache_mixin.cache(f, mem, func_memory_level=2, memory_level=3)(2)
+    cache(f, mem, func_memory_level=2, memory_level=3)(2)
     assert len(_get_subdirs(joblib_dir)) == 1
 
-    cache_mixin.cache(f, mem)(3)
+    cache(f, mem)(3)
     assert len(_get_subdirs(joblib_dir)) == 2
 
 
@@ -141,9 +142,9 @@ def test_cache_shelving(tmp_path):
         / "f"
     )
     mem = Memory(location=str(tmp_path), verbose=0)
-    res = cache_mixin.cache(f, mem, shelve=True)(2)
+    res = cache(f, mem, shelve=True)(2)
     assert res.get() == 2
     assert len(_get_subdirs(joblib_dir)) == 1
-    res = cache_mixin.cache(f, mem, shelve=True)(2)
+    res = cache(f, mem, shelve=True)(2)
     assert res.get() == 2
     assert len(_get_subdirs(joblib_dir)) == 1

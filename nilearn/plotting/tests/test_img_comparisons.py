@@ -22,7 +22,9 @@ def _mask():
 
 
 def test_deprecation_function_moved(matplotlib_pyplot, img_3d_mni):
-    from nilearn.plotting.img_plotting import plot_img_comparison as old_fn
+    from nilearn.plotting.image.img_plotting import (
+        plot_img_comparison as old_fn,
+    )
 
     with pytest.warns(DeprecationWarning, match="moved"):
         old_fn(
@@ -248,7 +250,7 @@ def test_plot_bland_altman_incompatible_errors(
     surf_img_1d, surf_mask_1d, img_3d_rand_eye, img_3d_ones_eye
 ):
     """Check error for bland altman plots incompatible mask and images."""
-    error_msg = "Mask and images to fit must be of compatible types."
+    error_msg = "Mask and input images must be of compatible types."
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(
             img_3d_rand_eye, img_3d_rand_eye, masker=SurfaceMasker()

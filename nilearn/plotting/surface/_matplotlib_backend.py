@@ -11,7 +11,7 @@ from warnings import warn
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import compare_version
+from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import adjust_cmap, to_color_strings
@@ -120,14 +120,27 @@ def _adjust_plot_roi_params(params):
         params["cbar_tick_format"] = "%i"
 
 
-def _normalize_bg_data(bg_data):
-    bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
-    if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_data = bg_norm(bg_data)
-    return bg_data
+def _normalize_bg_data(data):
+    """Normalize specified ``data`` and return.
+
+    Parameters
+    ----------
+    data : :obj:`numpy.ndarray`
+        An array containing surface data
+
+    Returns
+    -------
+    data : :obj:`numpy.ndarray`
+        An array containing normalized surface data
+    """
+    vmin, vmax = np.nanmin(data), np.nanmax(data)
+    if vmin < 0 or vmax > 1:
+        norm = Normalize(vmin=vmin, vmax=vmax)
+        data = norm(data)
+    return data
 
 
+# TODO (nilearn >= 0.13.0) remove
 def _apply_darkness(data, darkness):
     if darkness is not None:
         data *= darkness
@@ -156,8 +169,9 @@ def _get_vertexcolor(
 
     # scale background map if need be
     bg_data = _normalize_bg_data(bg_data)
-    bg_data = _apply_darkness(bg_data, darkness)
 
+    # TODO (nilearn >= 0.13.0) remove
+    bg_data = _apply_darkness(bg_data, darkness)
     bg_colors = plt.get_cmap("Greys")(bg_data)
 
     # select vertices which are filtered out by the threshold
@@ -234,8 +248,9 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
     bg_faces = np.mean(bg_data[faces], axis=1)
     # scale background map if need be
     bg_faces = _normalize_bg_data(bg_faces)
-    bg_faces = _apply_darkness(bg_faces, darkness)
 
+    # TODO (nilearn >= 0.13.0) remove
+    bg_faces = _apply_darkness(bg_faces, darkness)
     face_colors = plt.cm.gray_r(bg_faces)
 
     # set alpha if in auto mode

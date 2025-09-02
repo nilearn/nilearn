@@ -245,7 +245,6 @@ def test_max_alpha_squared_loss(l1_ratio):
         mask=mask_,
         max_iter=10,
         penalty="graph-net",
-        is_classif=False,
         verbose=0,
     )
 
