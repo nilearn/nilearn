@@ -375,11 +375,6 @@ def return_expected_failed_checks(
             ),
         }
 
-        if isinstance(estimator, (RegionExtractor)) and SKLEARN_MINOR >= 6:
-            expected_failed_checks.pop(
-                "check_do_not_raise_errors_in_init_or_set_params"
-            )
-
     return expected_failed_checks
 
 
