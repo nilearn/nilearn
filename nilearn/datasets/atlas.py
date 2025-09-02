@@ -1092,7 +1092,7 @@ def fetch_atlas_smith_2009(
     resume=True,
     verbose=1,
     mirror="origin",
-    dimension=None,
+    dimension=10,
     resting=True,
 ):
     """Download and load the Smith :term:`ICA` and BrainMap \
@@ -1165,14 +1165,6 @@ def fetch_atlas_smith_2009(
 
         - %(template)s
 
-    Warns
-    -----
-    DeprecationWarning
-        If a dimension input is provided, the current behavior
-        (returning multiple maps) is deprecated.
-        Starting in version 0.13, one map will be returned in a 'maps' dict key
-        depending on the dimension and resting value.
-
     References
     ----------
     .. footbibliography::
@@ -1224,42 +1216,17 @@ def fetch_atlas_smith_2009(
 
     fdescr = get_dataset_descr(dataset_name)
 
-    if dimension:
-        key = f"{'rsn' if resting else 'bm'}{dimension}"
-        key_index = list(files).index(key)
+    key = f"{'rsn' if resting else 'bm'}{dimension}"
+    key_index = list(files).index(key)
 
-        file = [(files[key], url[key_index] + files[key], {})]
-        data = fetch_files(data_dir, file, resume=resume, verbose=verbose)
+    file = [(files[key], url[key_index] + files[key], {})]
+    data = fetch_files(data_dir, file, resume=resume, verbose=verbose)
 
-        return Atlas(
-            maps=data[0],
-            description=fdescr,
-            atlas_type=atlas_type,
-        )
-
-    # TODO (nilearn >= 0.13.0)
-    warnings.warn(
-        category=DeprecationWarning,
-        message=(
-            deprecation_message.format(version="0.13")
-            + (
-                "To suppress this warning, "
-                "Please use the parameters 'dimension' and 'resting' "
-                "to specify the exact atlas image you want."
-            )
-        ),
-        stacklevel=find_stack_level(),
+    return Atlas(
+        maps=data[0],
+        description=fdescr,
+        atlas_type=atlas_type,
     )
-
-    keys = list(files.keys())
-    files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
-    files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    params = dict(zip(keys, files_))
-
-    params["description"] = fdescr
-    params["atlas_type"] = atlas_type
-
-    return Bunch(**params)
 
 
 @fill_doc
@@ -1268,8 +1235,8 @@ def fetch_atlas_yeo_2011(
     url=None,
     resume=True,
     verbose=1,
-    n_networks=None,
-    thickness=None,
+    n_networks=7,
+    thickness="thick",
 ):
     """Download and return file names for the Yeo 2011 :term:`parcellation`.
 
@@ -1290,88 +1257,34 @@ def fetch_atlas_yeo_2011(
     %(resume)s
     %(verbose)s
 
-    n_networks : {7, 17, None}, default = None
-        If not None,
-        then only specific version of the atlas is returned:
+    n_networks : {7, 17}, default = 7
+        Specify the version of the atlas that is returned:
 
         - 7 networks parcellation,
         - 17 networks parcellation.
 
-        If ``thickness`` is not None, this will default to ``7``.
-        The default will be set to ``7`` in version 0.13.0.
-
         .. versionadded:: 0.12.0
 
-    thickness : {"thin", "thick", None}, default = None
-        If not None,
-        then only specific version of the atlas is returned:
+        .. versionchanged:: 0.13.0
+
+          The default was changed to 7.
+
+    thickness : {"thin", "thick"}, default = "thick"
+        Specific the version of the atlas that is returned:
 
         - ``"thick"``: parcellation fitted to thick cortex segmentations,
         - ``"thin"``: parcellation fitted to thin cortex segmentations.
 
-        If ``n_networks`` is not None, this will default to ``"thick"``.
-        The default will be set to ``"thick"`` in version 0.13.0.
-
         .. versionadded:: 0.12.0
+
+        .. versionchanged:: 0.13.0
+
+          The default was changed to "thick".
 
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object.
-
-        If ``n_networks`` and ``thickness`` are None, keys are:
-
-        - 'thin_7': :obj:`str`
-            Path to nifti file containing the
-            7 networks :term:`parcellation` fitted to thin template cortex
-            segmentations.
-            The image contains integer values which can be
-            interpreted as the indices in ``colors_7``.
-
-        - 'thick_7': :obj:`str`
-            Path to nifti file containing the
-            7 networks :term:`parcellation` fitted to thick template cortex
-            segmentations.
-            The image contains integer values which can be
-            interpreted as the indices in ``colors_7``.
-
-        - 'thin_17': :obj:`str`
-            Path to nifti file containing the
-            17 networks :term:`parcellation` fitted to thin template cortex
-            segmentations.
-            The image contains integer values which can be
-            interpreted as the indices in ``colors_17``.
-
-        - 'thick_17': :obj:`str`
-            Path to nifti file containing the
-            17 networks :term:`parcellation` fitted to thick template cortex
-            segmentations.
-            The image contains integer values which can be
-            interpreted as the indices in ``colors_17``.
-
-        - 'colors_7': :obj:`str`
-            Path to colormaps text file for
-            7 networks :term:`parcellation`.
-            This file maps :term:`voxel` integer
-            values from ``data.thin_7`` and ``data.tick_7`` to network names.
-
-        - 'colors_17': :obj:`str`
-            Path to colormaps text file for
-            17 networks :term:`parcellation`.
-            This file maps :term:`voxel` integer
-            values from ``data.thin_17`` and ``data.tick_17``
-            to network names.
-
-        - 'anat': :obj:`str`
-            Path to nifti file containing the anatomy image.
-
-        - %(description)s
-
-        - %(template)s
-
-        - %(atlas_type)s
-
-        otherwise the keys are:
 
         - 'anat': :obj:`str`
             Path to nifti file containing the anatomy image.
@@ -1402,35 +1315,12 @@ def fetch_atlas_yeo_2011(
 
     atlas_type = "deterministic"
 
-    if n_networks is None and thickness is None:
-        # TODO (nilearn >= 0.13.0)
-        warnings.warn(
-            category=DeprecationWarning,
-            message=(
-                deprecation_message.format(version="0.13.0")
-                + (
-                    "To suppress this warning, "
-                    "Please use the parameters 'n_networks' and 'thickness' "
-                    "to specify the exact atlas image you want."
-                )
-            ),
-            stacklevel=find_stack_level(),
+    if n_networks not in (7, 17):
+        raise ValueError(f"'n_networks' must be 7 or 17. Got {n_networks=}")
+    if thickness not in ("thin", "thick"):
+        raise ValueError(
+            f"'thickness' must be 'thin' or 'thick'. Got {thickness=}"
         )
-
-    if n_networks is not None:
-        if n_networks not in (7, 17):
-            raise ValueError(
-                f"'n_networks' must be 7 or 17. Got {n_networks=}"
-            )
-        if thickness is None:
-            thickness = "thick"
-    if thickness is not None:
-        if thickness not in ("thin", "thick"):
-            raise ValueError(
-                f"'thickness' must be 'thin' or 'thick'. Got {thickness=}"
-            )
-        if n_networks is None:
-            n_networks = 7
 
     if url is None:
         url = (
@@ -1480,31 +1370,26 @@ def fetch_atlas_yeo_2011(
         ]
     )
 
-    if n_networks and thickness:
-        lut_file = (
-            params["colors_7"] if n_networks == 7 else params["colors_17"]
-        )
-        lut = pd.read_csv(
-            lut_file,
-            sep="\\s+",
-            names=["index", "name", "r", "g", "b", "fs"],
-            header=0,
-        )
-        lut = _update_lut_freesurder(lut)
+    lut_file = params["colors_7"] if n_networks == 7 else params["colors_17"]
+    lut = pd.read_csv(
+        lut_file,
+        sep="\\s+",
+        names=["index", "name", "r", "g", "b", "fs"],
+        header=0,
+    )
+    lut = _update_lut_freesurder(lut)
 
-        maps = params[f"{thickness}_{n_networks}"]
+    maps = params[f"{thickness}_{n_networks}"]
 
-        return Atlas(
-            maps=maps,
-            labels=lut.name.to_list(),
-            description=fdescr,
-            template="MNI152NLin6Asym",
-            lut=lut,
-            atlas_type=atlas_type,
-            anat=params["anat"],
-        )
-
-    return Bunch(**params)
+    return Atlas(
+        maps=maps,
+        labels=lut.name.to_list(),
+        description=fdescr,
+        template="MNI152NLin6Asym",
+        lut=lut,
+        atlas_type=atlas_type,
+        anat=params["anat"],
+    )
 
 
 def _update_lut_freesurder(lut):
