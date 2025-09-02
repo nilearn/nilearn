@@ -10,7 +10,7 @@
 HIGHLIGHTS
 ----------
 
-- This is mostly a bug fix release that also removes a few public attributes from some classes for better compatibilitywith scikit-learn, and to avoid some edge cases bugs.
+- This is mostly a bug fix release that also removes a few public attributes from some classes for better compatibility with scikit-learn, and to avoid some edge cases bugs.
 
 Fixes
 -----
