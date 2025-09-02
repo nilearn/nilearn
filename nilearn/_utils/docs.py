@@ -1462,7 +1462,7 @@ memory_ : joblib memory cache
 n_elements_ : :obj:`int`
     The number of voxels or vertices in the mask.
 
-    .. versionadded:: 0.12.1dev
+    .. versionadded:: 0.12.1
 
 n_outputs_ : :obj:`int`
     Number of outputs (column-wise)
@@ -1549,7 +1549,7 @@ memory_ : joblib memory cache
 n_elements_ : :obj:`int`
     The number of features in the mask.
 
-    .. versionadded:: 0.12.1dev
+    .. versionadded:: 0.12.1
 
 screening_percentile_ : float
     Screening percentile corrected according to volume of mask,

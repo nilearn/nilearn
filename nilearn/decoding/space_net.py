@@ -1100,7 +1100,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
     %(spacenet_fit_attributes)s
 
@@ -1339,7 +1339,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
 
     %(spacenet_fit_attributes)s
