@@ -885,14 +885,15 @@ def _stat_map_to_png(
 
     cmap = DEFAULT_DIVERGING_CMAP
 
-    plot_kwargs = {}
+    # plot_kwargs = {}
+    plot_kwargs = {"threshold": abs(threshold)}
     if two_sided:
         symmetric_cbar = True
         vmin = vmax = None
         # when two sided, passing the threshold
         # allows to hide the thresholded values in the colorbar
         # TODO: this does not (yet) work well with one sided plots
-        plot_kwargs = {"threshold": threshold}
+        # plot_kwargs = {"threshold": threshold}
 
     else:
         symmetric_cbar = False
@@ -913,7 +914,7 @@ def _stat_map_to_png(
             cmap = "Blues_r"
 
     if isinstance(stat_img, SurfaceImage):
-        plot_kwargs["threshold"] = threshold
+        # plot_kwargs["threshold"] = threshold
 
         if not two_sided and threshold < 0:
             # we cannot use negative threshold in plot_surf_stat_map
@@ -921,7 +922,7 @@ def _stat_map_to_png(
             # and we relabel the colorbar later
             for k, v in stat_img.data.parts.items():
                 stat_img.data.parts[k] = -v
-            plot_kwargs["threshold"] = -threshold
+            # plot_kwargs["threshold"] = -threshold
             (vmin, vmax) = (-vmax, -vmin)
             cmap = "Blues"
 
