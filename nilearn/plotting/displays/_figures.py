@@ -117,12 +117,12 @@ class PlotlySurfaceFigure(SurfaceFigure):
             self.figure.show(renderer=renderer)
             return self.figure
 
-    def savefig(self, filename=None, **savefig_kwargs):  # noqa: ARG002
+    def savefig(self, output_file=None, **savefig_kwargs):  # noqa: ARG002
         """Save the figure to file.
 
         Parameters
         ----------
-        filename : :obj:`str` or ``None``, optional
+        output_file : :obj:`str` or ``None``, optional
             Path to output file.
 
         savefig_kwargs:
@@ -131,10 +131,10 @@ class PlotlySurfaceFigure(SurfaceFigure):
             raise ImportError(
                 "`kaleido` is required to save plotly figures to disk."
             )
-        self._check_output_file(output_file=filename)
+        self._check_output_file(output_file=output_file)
         if self.figure is not None:
-            if filename is not None:
-                self.output_file = filename
+            if output_file is not None:
+                self.output_file = output_file
             self.figure.write_image(self.output_file)
 
     def add_contours(
