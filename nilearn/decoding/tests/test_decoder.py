@@ -68,7 +68,6 @@ from nilearn.decoding import (
     FREMRegressor,
 )
 from nilearn.decoding.decoder import (
-    SUPPORTED_ESTIMATORS,
     _BaseDecoder,
     _check_estimator,
     _check_param_grid,
@@ -1280,9 +1279,7 @@ def test_frem_decoder_fit_surface(
     "classifier_penalty",
     ["svc_l1", "svc_l2", "logistic_l1", "logistic_l2", "ridge_classifier"],
 )
-def test_decoder_vs_sklearn(
-    classifier_penalty, strings_to_sklearn=SUPPORTED_ESTIMATORS
-):
+def test_decoder_vs_sklearn(classifier_penalty):
     """Compare scores from nilearn Decoder with sklearn classifiers."""
     X, y, mask = _make_multiclass_classification_test_data(
         n_samples=100, dim=10
@@ -1292,7 +1289,7 @@ def test_decoder_vs_sklearn(
     # with 10 splits
     cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
     # default scoring is accuracy
-    scorer = check_scoring(strings_to_sklearn[classifier_penalty], "accuracy")
+    scorer = check_scoring(_check_estimator(classifier_penalty), "accuracy")
 
     ## nilearn decoding
     nilearn_decoder = Decoder(
@@ -1310,7 +1307,7 @@ def test_decoder_vs_sklearn(
     masker = NiftiMasker(mask_img=mask, standardize=True)
     X_transformed = masker.fit_transform(X)
 
-    sklearn_classifier = strings_to_sklearn[classifier_penalty]
+    sklearn_classifier = _check_estimator(classifier_penalty)
     scores_sklearn = {c: [] for c in range(n_classes)}
     # convert multiclass to n_classes binary classifications
     label_binarizer = LabelBinarizer()
@@ -1372,9 +1369,7 @@ def _set_best_hyperparameters(
 
 @ignore_warnings
 @pytest.mark.parametrize("regressor", ["svr", "lasso", "ridge"])
-def test_regressor_vs_sklearn(
-    regressor, strings_to_sklearn=SUPPORTED_ESTIMATORS
-):
+def test_regressor_vs_sklearn(regressor):
     """Compare scores from nilearn DecoderRegressor with sklearn regressors."""
     X, y, mask = _make_regression_test_data(n_samples=100, dim=10)
     # for regression default cv in nilearn is KFold with 10 splits
@@ -1382,7 +1377,7 @@ def test_regressor_vs_sklearn(
     # to reduce variability in the test
     cv = KFold(n_splits=10, shuffle=True, random_state=42)
     # r2 is the default scoring for regression
-    scorer = check_scoring(strings_to_sklearn[regressor], "r2")
+    scorer = check_scoring(_check_estimator(regressor), "r2")
 
     ## nilearn decoding
     nilearn_regressor = DecoderRegressor(
@@ -1400,7 +1395,7 @@ def test_regressor_vs_sklearn(
     masker = NiftiMasker(mask_img=mask, standardize=True)
     X_transformed = masker.fit_transform(X)
 
-    sklearn_regressor = strings_to_sklearn[regressor]
+    sklearn_regressor = _check_estimator(regressor)
     scores_sklearn = []
 
     for count, (train_idx, test_idx) in enumerate(cv.split(X_transformed, y)):
