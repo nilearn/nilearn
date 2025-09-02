@@ -885,15 +885,10 @@ def _stat_map_to_png(
 
     cmap = DEFAULT_DIVERGING_CMAP
 
-    # plot_kwargs = {}
     plot_kwargs = {"threshold": abs(threshold)}
     if two_sided:
         symmetric_cbar = True
         vmin = vmax = None
-        # when two sided, passing the threshold
-        # allows to hide the thresholded values in the colorbar
-        # TODO: this does not (yet) work well with one sided plots
-        # plot_kwargs = {"threshold": threshold}
 
     else:
         symmetric_cbar = False
@@ -914,16 +909,13 @@ def _stat_map_to_png(
             cmap = "Blues_r"
 
     if isinstance(stat_img, SurfaceImage):
-        # plot_kwargs["threshold"] = threshold
-
         if not two_sided and threshold < 0:
             # we cannot use negative threshold in plot_surf_stat_map
             # so we flip the sign of the image, the colormap, the threshold
             # and we relabel the colorbar later
             for k, v in stat_img.data.parts.items():
                 stat_img.data.parts[k] = -v
-            # plot_kwargs["threshold"] = -threshold
-            (vmin, vmax) = (-vmax, -vmin)
+            # (vmin, vmax) = (-vmax, -vmin)
             cmap = "Blues"
 
         surf_mesh = bg_img.mesh if bg_img else None
@@ -935,8 +927,8 @@ def _stat_map_to_png(
             cmap=cmap,
             darkness=None,
             symmetric_cbar=symmetric_cbar,
-            vmin=vmin,
-            vmax=vmax,
+            # vmin=vmin,
+            # vmax=vmax,
             **plot_kwargs,
         )
 
@@ -951,8 +943,8 @@ def _stat_map_to_png(
                 display_mode=display_mode,
                 cmap=cmap,
                 symmetric_cbar=symmetric_cbar,
-                vmin=vmin,
-                vmax=vmax,
+                # vmin=vmin,
+                # vmax=vmax,
                 draw_cross=False,
                 **plot_kwargs,
             )
@@ -963,8 +955,8 @@ def _stat_map_to_png(
                 plot_abs=False,
                 symmetric_cbar=symmetric_cbar,
                 cmap=cmap,
-                vmin=vmin,
-                vmax=vmax,
+                # vmin=vmin,
+                # vmax=vmax,
                 **plot_kwargs,
             )
         else:
