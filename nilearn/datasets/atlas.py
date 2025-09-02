@@ -1370,7 +1370,7 @@ def _update_lut_freesurder(lut):
 
 @fill_doc
 def fetch_atlas_aal(
-    version="SPM12", data_dir=None, url=None, resume=True, verbose=1
+    version="3v2", data_dir=None, url=None, resume=True, verbose=1
 ):
     """Download and returns the AAL template for :term:`SPM` 12.
 
@@ -1401,9 +1401,14 @@ def fetch_atlas_aal(
 
     Parameters
     ----------
-    version : {'3v2', 'SPM12', 'SPM5', 'SPM8'}, default='SPM12'
+    version : {'3v2', 'SPM12', 'SPM5', 'SPM8'}, default='3v2'
         The version of the AAL atlas. Must be 'SPM5', 'SPM8', 'SPM12', or '3v2'
         for the latest SPM12 version of AAL3 software.
+
+        .. versionchanged:: 0.13.0dev
+
+          The default was changed to '3v2'.
+
     %(data_dir)s
     %(url)s
     %(resume)s
@@ -1449,12 +1454,6 @@ def fetch_atlas_aal(
 
         - %(atlas_type)s
 
-
-    Warns
-    -----
-    DeprecationWarning
-        Starting in version 0.13, the default fetched mask will be AAL 3v2.
-
     References
     ----------
     .. footbibliography::
@@ -1486,15 +1485,6 @@ def fetch_atlas_aal(
             filenames = [
                 (Path("aal", "atlas", f), url, opts) for f in basenames
             ]
-            message = (
-                "Starting in version 0.13, the default fetched mask will be"
-                "AAL 3v2 instead."
-            )
-            # TODO (nilearn >= 0.13.0)
-            warnings.warn(
-                message, DeprecationWarning, stacklevel=find_stack_level()
-            )
-
         elif version == "3v2":
             url = f"{base_url}wp-content/uploads/AAL3v2_for_SPM12.tar.gz"
             basenames = ("AAL3v1.nii", "AAL3v1.xml")
