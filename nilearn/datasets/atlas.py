@@ -206,7 +206,7 @@ def fetch_atlas_craddock_2012(
     url=None,
     resume=True,
     verbose=1,
-    homogeneity=None,
+    homogeneity="spatial",
     grp_mean=True,
 ):
     """Download and return file names \
@@ -231,8 +231,9 @@ def fetch_atlas_craddock_2012(
 
     %(verbose)s
 
-    homogeneity : :obj:`str`,  default=None
+    homogeneity : :obj:`str`,  default='spatial'
         The choice of the homogeneity ('spatial' or 'temporal' or 'random')
+
     grp_mean : :obj:`bool`, default=True
         The choice of the :term:`parcellation` (with group_mean or without)
 
@@ -292,74 +293,35 @@ def fetch_atlas_craddock_2012(
 
     dataset_name = "craddock_2012"
 
-    keys = (
-        "scorr_mean",
-        "tcorr_mean",
-        "scorr_2level",
-        "tcorr_2level",
-        "random",
-    )
-    filenames = [
-        ("scorr05_mean_all.nii.gz", url, opts),
-        ("tcorr05_mean_all.nii.gz", url, opts),
-        ("scorr05_2level_all.nii.gz", url, opts),
-        ("tcorr05_2level_all.nii.gz", url, opts),
-        ("random_all.nii.gz", url, opts),
-    ]
-
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
-    sub_files = fetch_files(
-        data_dir, filenames, resume=resume, verbose=verbose
-    )
-
     fdescr = get_dataset_descr(dataset_name)
 
-    if homogeneity:
-        if homogeneity in ["spatial", "temporal"]:
-            if grp_mean:
-                filename = [
-                    (homogeneity[0] + "corr05_mean_all.nii.gz", url, opts)
-                ]
-            else:
-                filename = [
-                    (homogeneity[0] + "corr05_2level_all.nii.gz", url, opts)
-                ]
-        else:
-            filename = [("random_all.nii.gz", url, opts)]
-        data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
-
-        return Atlas(
-            maps=data[0],
-            description=fdescr,
-            atlas_type=atlas_type,
+    allowed_homogeneity = {"spatial", "temporal", "random"}
+    if homogeneity not in allowed_homogeneity:
+        raise ValueError(
+            f"'homogeneity' must be one of {allowed_homogeneity}. "
+            f"Got {homogeneity=}."
         )
 
-    # TODO (nilearn >= 0.13.0)
-    warnings.warn(
-        category=DeprecationWarning,
-        message=(
-            deprecation_message.format(version="0.13")
-            + (
-                "To suppress this warning, "
-                "Please use the parameters 'homogeneity' and 'grp_mean' "
-                "to specify the exact atlas image you want."
-            )
-        ),
-        stacklevel=find_stack_level(),
-    )
+    if homogeneity in ["spatial", "temporal"]:
+        if grp_mean:
+            filename = [(homogeneity[0] + "corr05_mean_all.nii.gz", url, opts)]
+        else:
+            filename = [
+                (homogeneity[0] + "corr05_2level_all.nii.gz", url, opts)
+            ]
+    else:
+        filename = [("random_all.nii.gz", url, opts)]
+    data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
 
-    params = dict(
-        [
-            ("description", fdescr),
-            *list(zip(keys, sub_files)),
-        ]
+    return Atlas(
+        maps=data[0],
+        description=fdescr,
+        atlas_type=atlas_type,
     )
-    params["atlas_type"] = atlas_type
-
-    return Bunch(**params)
 
 
 @fill_doc
