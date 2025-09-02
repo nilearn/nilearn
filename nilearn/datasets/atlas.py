@@ -3,7 +3,6 @@
 import json
 import re
 import shutil
-import warnings
 from pathlib import Path
 from tempfile import mkdtemp
 from xml.etree import ElementTree
@@ -20,7 +19,6 @@ from nilearn._utils.bids import (
 )
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import rename_parameters
-from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
@@ -2235,37 +2233,12 @@ def fetch_atlas_pauli_2017(
 
         - %(atlas_type)s
 
-
-    Warns
-    -----
-    DeprecationWarning
-        The possible values for atlas_type are currently 'prob' and 'det'. From
-    release 0.13.0 onwards, atlas_type will accept only 'probabilistic' or
-    'deterministic' as value.
-
     References
     ----------
     .. footbibliography::
 
     """
     check_params(locals())
-
-    # TODO (nilearn >= 0.13.0) remove this part
-    if atlas_type in ("prob", "det"):
-        # TODO (nilearn >= 0.13.0)
-        atlas_type_values = (
-            "The possible values for atlas_type are currently 'prob' and"
-            " 'det'. From release 0.13.0 onwards, atlas_type will accept only"
-            " 'probabilistic' or 'deterministic' as value."
-        )
-        warnings.warn(
-            category=DeprecationWarning,
-            message=atlas_type_values,
-            stacklevel=find_stack_level(),
-        )
-        atlas_type = (
-            "probabilistic" if atlas_type == "prob" else "deterministic"
-        )
 
     if atlas_type not in {"probabilistic", "deterministic"}:
         raise NotImplementedError(
