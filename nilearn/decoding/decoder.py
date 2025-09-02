@@ -10,6 +10,7 @@ Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
 
+import inspect
 import itertools
 import warnings
 from collections.abc import Iterable
@@ -409,7 +410,9 @@ def _check_estimator(estimator, estimator_args=None, verbose=0):
     # to update the parameter of the estimator
     params |= estimator_config["params"]
 
-    params["verbose"] = verbose - 1
+    sig = inspect.signature(estimator_config["estimator"]).parameters
+    if "verbose" in sig:
+        params["verbose"] = (verbose - 1) > 0
 
     estimator = estimator_config["estimator"](**params)
 

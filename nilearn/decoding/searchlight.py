@@ -465,7 +465,9 @@ class SearchLight(TransformerMixin, BaseEstimator):
         estimator = self.estimator
         if estimator == "svc":
             estimator = ESTIMATOR_CATALOG[estimator](
-                dual=True, **self.estimator_args_
+                dual=True,
+                verbose=(self.verbose - 1) > 0,
+                **self.estimator_args_,
             )
         elif isinstance(estimator, str):
             estimator = ESTIMATOR_CATALOG[estimator](**self.estimator_args_)

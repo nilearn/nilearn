@@ -110,7 +110,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
         new_masker_params["memory_level"] = 0
 
     if hasattr(estimator, "verbose"):
-        new_masker_params["verbose"] = estimator.verbose
+        new_masker_params["verbose"] = estimator.verbose - 1
     else:
         warnings.warn(
             warning_msg.substitute(attribute="verbose", default_value="0"),
