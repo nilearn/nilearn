@@ -1538,7 +1538,7 @@ def fetch_atlas_basc_multiscale_2015(
     url=None,
     resume=True,
     verbose=1,
-    resolution=None,
+    resolution=7,
     version="sym",
 ):
     """Download and load multiscale functional brain parcellations.
