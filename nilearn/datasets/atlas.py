@@ -1589,10 +1589,14 @@ def fetch_atlas_basc_multiscale_2015(
 
     %(verbose)s
 
-    resolution : :obj:`int`, default=None
+    resolution : :obj:`int`, default=7
         Number of networks in the dictionary.
-        Valid resolutions  available are
+        Valid resolutions available are
         {7, 12, 20, 36, 64, 122, 197, 325, 444}
+
+        .. versionchanged: 0.13.0dev
+
+          Default changed to ``7``.
 
     version : {'sym', 'asym'}, default='sym'
         Available versions are 'sym' or 'asym'.
@@ -1604,9 +1608,8 @@ def fetch_atlas_basc_multiscale_2015(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, Keys are:
 
-        - "scale007", "scale012", "scale020", "scale036", "scale064", \
-          "scale122", "scale197", "scale325", "scale444": :obj:`str`
-            Path to Nifti file of various scales of brain parcellations.
+        - maps: :obj:`str`
+            Path to Nifti file of the brain parcellation.
             Images have shape ``(53, 64, 52)`` and contain consecutive integer
             values from 0 to the selected number of networks (scale).
 
@@ -1617,14 +1620,6 @@ def fetch_atlas_basc_multiscale_2015(
         - %(template)s
 
         - %(atlas_type)s
-
-    Warns
-    -----
-    DeprecationWarning
-        If a resolution input is provided, the current behavior
-        (returning multiple maps) is deprecated.
-        Starting in version 0.13, one map will be returned in a 'maps' dict key
-        depending on the resolution and version value.
 
     References
     ----------
@@ -1648,22 +1643,17 @@ def fetch_atlas_basc_multiscale_2015(
             f"Please choose one among them {versions}."
         )
 
+    allowed_resolutions = {7, 12, 20, 36, 64, 122, 197, 325, 444}
+    if resolution not in allowed_resolutions:
+        raise ValueError(
+            f"Requested {resolution=} not available. "
+            f"Valid options: {allowed_resolutions}"
+        )
+
     file_number = "1861819" if version == "sym" else "1861820"
     url = f"https://ndownloader.figshare.com/files/{file_number}"
 
     opts = {"uncompress": True}
-
-    keys = [
-        "scale007",
-        "scale012",
-        "scale020",
-        "scale036",
-        "scale064",
-        "scale122",
-        "scale197",
-        "scale325",
-        "scale444",
-    ]
 
     dataset_name = "basc_multiscale_2015"
     data_dir = get_dataset_dir(
@@ -1673,57 +1663,29 @@ def fetch_atlas_basc_multiscale_2015(
     folder_name = Path(f"template_cambridge_basc_multiscale_nii_{version}")
     fdescr = get_dataset_descr(dataset_name)
 
-    if resolution:
-        basename = (
-            "template_cambridge_basc_multiscale_"
-            + version
-            + f"_scale{resolution:03}"
-            + ".nii.gz"
-        )
-
-        filename = [(folder_name / basename, url, opts)]
-
-        data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
-
-        labels = ["Background"] + [str(x) for x in range(1, resolution + 1)]
-
-        return Atlas(
-            maps=data[0],
-            labels=labels,
-            description=fdescr,
-            lut=generate_atlas_look_up_table(
-                "fetch_atlas_basc_multiscale_2015", name=labels
-            ),
-            atlas_type=atlas_type,
-            template=f"MNI152{version}",
-        )
-
-    # TODO (nilearn >= 0.13.0)
-    warnings.warn(
-        category=DeprecationWarning,
-        message=(
-            deprecation_message.format(version="0.13")
-            + (
-                "To suppress this warning, "
-                "Please use the parameters 'resolution' and 'version' "
-                "to specify the exact atlas image you want."
-            )
-        ),
-        stacklevel=find_stack_level(),
+    basename = (
+        "template_cambridge_basc_multiscale_"
+        + version
+        + f"_scale{resolution:03}"
+        + ".nii.gz"
     )
 
-    basenames = [
-        "template_cambridge_basc_multiscale_" + version + "_" + key + ".nii.gz"
-        for key in keys
-    ]
-    filenames = [(folder_name / basename, url, opts) for basename in basenames]
-    data = fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
+    filename = [(folder_name / basename, url, opts)]
 
-    params = dict(zip(keys, data))
-    params["description"] = fdescr
-    params["atlas_type"] = atlas_type
+    data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
 
-    return Bunch(**params)
+    labels = ["Background"] + [str(x) for x in range(1, resolution + 1)]
+
+    return Atlas(
+        maps=data[0],
+        labels=labels,
+        description=fdescr,
+        lut=generate_atlas_look_up_table(
+            "fetch_atlas_basc_multiscale_2015", name=labels
+        ),
+        atlas_type=atlas_type,
+        template=f"MNI152{version}",
+    )
 
 
 @fill_doc
