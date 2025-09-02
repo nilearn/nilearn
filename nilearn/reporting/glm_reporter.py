@@ -911,11 +911,10 @@ def _stat_map_to_png(
     if isinstance(stat_img, SurfaceImage):
         if not two_sided and threshold < 0:
             # we cannot use negative threshold in plot_surf_stat_map
-            # so we flip the sign of the image, the colormap, the threshold
+            # so we flip the sign of the image, the colormap
             # and we relabel the colorbar later
             for k, v in stat_img.data.parts.items():
                 stat_img.data.parts[k] = -v
-            # (vmin, vmax) = (-vmax, -vmin)
             cmap = "Blues"
 
         surf_mesh = bg_img.mesh if bg_img else None
@@ -927,8 +926,6 @@ def _stat_map_to_png(
             cmap=cmap,
             darkness=None,
             symmetric_cbar=symmetric_cbar,
-            # vmin=vmin,
-            # vmax=vmax,
             **plot_kwargs,
         )
 
@@ -943,8 +940,6 @@ def _stat_map_to_png(
                 display_mode=display_mode,
                 cmap=cmap,
                 symmetric_cbar=symmetric_cbar,
-                # vmin=vmin,
-                # vmax=vmax,
                 draw_cross=False,
                 **plot_kwargs,
             )
@@ -955,8 +950,6 @@ def _stat_map_to_png(
                 plot_abs=False,
                 symmetric_cbar=symmetric_cbar,
                 cmap=cmap,
-                # vmin=vmin,
-                # vmax=vmax,
                 **plot_kwargs,
             )
         else:
