@@ -161,12 +161,32 @@ def make_glm_report(
 
         .. note::
 
-            - Negative threshold are not allowed when ``two_sided=True``.
+            - When ``two_sided`` is True:
 
-            - Negative threshold are allowed when ``two_sided=False``.
-                In this case, the results would be the same
-                as using a positive threshold
-                and multiplying the image by ``-1``.
+              ``'threshold'`` cannot be negative.
+
+              The given value should be within the range of minimum and maximum
+              intensity of the input image.
+              All intensities in the interval ``[-threshold, threshold]``
+              will be set to zero.
+
+            - When ``two_sided`` is False:
+
+              - If the threshold is negative:
+
+                It should be greater than the minimum intensity
+                of the input data.
+                All intensities greater than or equal
+                to the specified threshold will be set to zero.
+                All other intensities keep their original values.
+
+              - If the threshold is positive:
+
+                It should be less than the maximum intensity
+                of the input data.
+                All intensities less than or equal
+                to the specified threshold will be set to zero.
+                All other intensities keep their original values.
 
     alpha : :obj:`float`, default=0.001
         Number controlling the thresholding (either a p-value or q-value).
