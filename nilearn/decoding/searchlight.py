@@ -345,7 +345,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         self.scoring = scoring
         self.cv = cv
         self.verbose = verbose
-        estimator_args = estimator_args
+        self.estimator_args = estimator_args
 
     def _more_tags(self):
         """Return estimator tags.
