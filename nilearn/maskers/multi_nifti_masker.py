@@ -328,7 +328,7 @@ class MultiNiftiMasker(NiftiMasker):
             # add extra argument to pass
             # to the mask computing function
             # depending if they are supported.
-            sig = dict(**inspect.signature(compute_mask).parameters)
+            signature = dict(**inspect.signature(compute_mask).parameters)
             mask_args = {}
             for arg in ["n_jobs", "target_shape", "target_affine"]:
                 if arg in sig and getattr(self, arg) is not None:
