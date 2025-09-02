@@ -885,7 +885,6 @@ def _stat_map_to_png(
 
     cmap = DEFAULT_DIVERGING_CMAP
 
-    plot_kwargs = {"threshold": abs(threshold)}
     if two_sided:
         symmetric_cbar = True
         vmin = vmax = None
@@ -926,7 +925,7 @@ def _stat_map_to_png(
             cmap=cmap,
             darkness=None,
             symmetric_cbar=symmetric_cbar,
-            **plot_kwargs,
+            threshold=abs(threshold),
         )
 
         x_label_color = "black"
@@ -941,7 +940,7 @@ def _stat_map_to_png(
                 cmap=cmap,
                 symmetric_cbar=symmetric_cbar,
                 draw_cross=False,
-                **plot_kwargs,
+                threshold=abs(threshold),
             )
         elif plot_type == "glass":
             stat_map_plot = plot_glass_brain(
@@ -950,7 +949,7 @@ def _stat_map_to_png(
                 plot_abs=False,
                 symmetric_cbar=symmetric_cbar,
                 cmap=cmap,
-                **plot_kwargs,
+                threshold=abs(threshold),
             )
         else:
             raise ValueError(

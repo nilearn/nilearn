@@ -406,7 +406,7 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
     surf_img_1d.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
     surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
 
-    # two sided, with threshold = 0
+    # one sided, with threshold = 0
     result, _ = threshold_stats_img(
         surf_img_1d, height_control=None, threshold=0, two_sided=False
     )
@@ -416,7 +416,7 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
         result.data.parts["right"], np.asarray([2.0, 0, 6.0, 8.0, 0.0])
     )
 
-    # one sided, with threshold = 0
+    # two sided, with threshold = 0
     result, _ = threshold_stats_img(
         surf_img_1d, height_control=None, threshold=0, two_sided=True
     )
