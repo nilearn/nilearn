@@ -133,7 +133,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
             )
         self._check_output_file(output_file=filename)
         if self.figure is not None:
-            self.output_file = filename
+            if filename is not None:
+                self.output_file = filename
             self.figure.write_image(self.output_file)
 
     def add_contours(
