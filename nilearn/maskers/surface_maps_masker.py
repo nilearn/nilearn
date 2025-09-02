@@ -21,6 +21,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
@@ -75,6 +76,10 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     %(high_pass)s
 
     %(t_r)s
+
+    %(dtype)s
+
+        ..versionadded:: 0.12.1dev
 
     %(memory)s
 
@@ -132,6 +137,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         verbose=0,
@@ -150,6 +156,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
@@ -272,9 +279,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         imgs = at_least_2d(imgs)
 
-        img_data = np.concatenate(
-            list(imgs.data.parts.values()), axis=0
-        ).astype(np.float32)
+        img_data = np.concatenate(list(imgs.data.parts.values()), axis=0)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)
@@ -318,6 +323,16 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
             sample_mask=sample_mask,
             **parameters["clean_args"],
         )
+
+        input_type = (
+            imgs.data._dtype
+            if isinstance(imgs, SurfaceImage)
+            else imgs[0].data._dtype
+        )
+        target_dtype = get_target_dtype(input_type, self.dtype)
+        if target_dtype is None:
+            target_dtype = imgs.data._dtype
+        region_signals = region_signals.astype(target_dtype)
 
         return region_signals
 
@@ -384,11 +399,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         imgs = SurfaceImage(mesh=self.maps_img.mesh, data=vertex_signals)
 
-        if return_1D:
-            for k, v in imgs.data.parts.items():
-                imgs.data.parts[k] = v.squeeze()
-
-        return imgs
+        return self._post_process_inverse_transform(
+            region_signals, imgs, return_1D
+        )
 
     def generate_report(self, displayed_maps=10, engine="matplotlib"):
         """Generate an HTML report for the current ``SurfaceMapsMasker``

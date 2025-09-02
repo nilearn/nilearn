@@ -25,6 +25,8 @@ Fixes
 
 - :bdg-dark:`Code` Fix type of ``t_r`` to support numpy dtypes for python < 3.10 (:gh:`5550` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Ensure that estimators that accept images can work will several datatypes as input and that their methods can output arrays or images of the requested datatype (:gh:`5511` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Enforce consistent ``dtype`` for all parts of :class:`~nilearn.surface.SurfaceImage` and :class:`~nilearn.surface.PolyData` (:gh:`5530` by `Rémi Gau`_).
 
 - :bdg-success:`API` The ``is_classif`` public attribute has been removed for :class:`~decoding.SpaceNetClassifier` and :class:`~decoding.DecoderRegressor` as it is a characteristic of the estimator that must not be changed. Accessing an equivalent characteristic can be done via the estimator's tags (``__sklearn_tags__()``) (:gh:`5594` by `Rémi Gau`_).

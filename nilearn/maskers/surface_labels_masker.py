@@ -19,6 +19,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.numpy_conversions import get_target_dtype
 from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
@@ -121,6 +122,10 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
     %(t_r)s
 
+    %(dtype)s
+
+        ..versionadded:: 0.12.1dev
+
     %(memory)s
 
     %(memory_level1)s
@@ -178,6 +183,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         low_pass=None,
         high_pass=None,
         t_r=None,
+        dtype=None,
         memory=None,
         memory_level=1,
         verbose=0,
@@ -199,6 +205,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         self.low_pass = low_pass
         self.high_pass = high_pass
         self.t_r = t_r
+        self.dtype = dtype
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
@@ -495,6 +502,16 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             **parameters["clean_args"],
         )
 
+        input_type = (
+            imgs.data._dtype
+            if isinstance(imgs, SurfaceImage)
+            else imgs[0].data._dtype
+        )
+        target_dtype = get_target_dtype(input_type, self.dtype)
+        if target_dtype is None:
+            target_dtype = imgs.data._dtype
+        region_signals = region_signals.astype(target_dtype)
+
         return region_signals
 
     @fill_doc
@@ -524,11 +541,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             self.background_label,
         )
 
-        if return_1D:
-            for k, v in imgs.data.parts.items():
-                imgs.data.parts[k] = v.squeeze()
-
-        return imgs
+        return self._post_process_inverse_transform(signals, imgs, return_1D)
 
     def generate_report(self):
         """Generate a report."""

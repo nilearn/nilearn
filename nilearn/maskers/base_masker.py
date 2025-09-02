@@ -11,6 +11,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from joblib import Memory
+from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
@@ -32,7 +33,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.numpy_conversions import csv_to_array
+from nilearn._utils.numpy_conversions import csv_to_array, get_target_dtype
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     concat_imgs,
@@ -465,6 +466,9 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # internal structures of the header: remove the memmaped array
         with contextlib.suppress(Exception):
             img._header._structarr = np.array(img._header._structarr).copy()
+
+        img = self._set_inverse_transform_output_dtype(X, img)
+
         return img
 
     def _check_array(
@@ -537,6 +541,17 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 for k, v in self.clean_kwargs.items()
                 if k.startswith("clean__")
             }
+
+    def _set_inverse_transform_output_dtype(
+        self, input: np.ndarray, output: Nifti1Image
+    ) -> Nifti1Image:
+        """Set dtype for data to return for inverse_transform."""
+        target_dtype = get_target_dtype(input.dtype, self.dtype)
+        if target_dtype is None:
+            target_dtype = input.dtype
+        output = new_img_like(output, output.get_fdata().astype(target_dtype))
+        output.set_data_dtype(target_dtype)
+        return output
 
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
@@ -695,6 +710,19 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         )
 
         return signals.squeeze() if return_1D else signals
+
+    def _post_process_inverse_transform(
+        self, input: np.ndarray, output: SurfaceImage, return_1D: bool
+    ) -> SurfaceImage:
+        """Set dtype and squeeze data to return for inverse_transform."""
+        target_dtype = get_target_dtype(input.dtype, self.dtype)
+        if target_dtype is None:
+            target_dtype = input.dtype
+        output.data._set_dtype(target_dtype)
+        if return_1D:
+            for k, v in output.data.parts.items():
+                output.data.parts[k] = v.squeeze()
+        return output
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
