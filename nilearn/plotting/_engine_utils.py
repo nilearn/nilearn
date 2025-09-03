@@ -17,23 +17,19 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
 
 
-def threshold_cmap(cmap, vmin, vmax, threshold):
+def threshold_cmap(cmap, norm, threshold):
     """Normalize and threshold the specified colormap according to specified
     vmin, vmax, threshold values.
 
     Parameters
     ----------
     %(cmap)s
-    vmin : :obj:`float`  or obj:`int`
-        Should not be None
-    vmax : :obj:`float`  or obj:`int`
-        Should not be None
+    norm : :class:`mpl.colors.Normalize`
+        Norm to be used to normalize threshold
     threshold : :obj:`float`  or obj:`int`
         Should be non-negative
     """
     cmap = plt.get_cmap(cmap)
-    norm = Normalize(vmin=vmin, vmax=vmax)
-
     cmaplist = [cmap(i) for i in range(cmap.N)]
 
     if threshold is not None:
@@ -41,6 +37,7 @@ def threshold_cmap(cmap, vmin, vmax, threshold):
         istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
         istop = int(norm(threshold, clip=True) * (cmap.N - 1))
 
+        # update values under threshold to be gray
         for i in range(istart, istop):
             cmaplist[i] = (0.5, 0.5, 0.5, 1.0)  # just an average gray color
 
@@ -86,10 +83,11 @@ def colorscale(
     if threshold is not None:
         threshold = check_threshold(threshold, values, fast_abs_percentile)
 
-    our_cmap, norm = threshold_cmap(cmap, vmin, vmax, threshold)
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    thrs_cmap = threshold_cmap(cmap, norm, threshold)
 
     x = np.linspace(0, 1, 100)
-    rgb = our_cmap(x, bytes=True)[:, :3]
+    rgb = thrs_cmap(x, bytes=True)[:, :3]
     rgb = np.array(rgb, dtype=int)
     colors = [
         [np.round(i, 3), f"rgb({col[0]}, {col[1]}, {col[2]})"]
@@ -99,7 +97,7 @@ def colorscale(
         "colors": colors,
         "vmin": vmin,
         "vmax": vmax,
-        "cmap": our_cmap,
+        "cmap": thrs_cmap,
         "norm": norm,
         "abs_threshold": threshold,
     }

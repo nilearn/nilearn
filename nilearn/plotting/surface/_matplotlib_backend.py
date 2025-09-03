@@ -233,9 +233,10 @@ def _colorbar_from_array(
     )
     if threshold is None:
         threshold = 0.0
-    our_cmap, norm = threshold_cmap(cmap, vmin, vmax, threshold)
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    thrs_cmap = threshold_cmap(cmap, norm, threshold)
 
-    sm = ScalarMappable(cmap=our_cmap, norm=norm)
+    sm = ScalarMappable(cmap=thrs_cmap, norm=norm)
 
     # fake up the array of the scalar mappable.
     sm._A = []
