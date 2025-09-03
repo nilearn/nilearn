@@ -54,7 +54,10 @@ def adjust_cmap(cmap, vmin, vmax, threshold):
 def colorscale(
     cmap, values, threshold=None, symmetric_cmap=True, vmax=None, vmin=None
 ):
-    """Normalize a cmap, put it in plotly format, get threshold and range."""
+    """Calculate colorbar ranges, adjust and normalize cmap depending on
+    specified vmin, vmax, and threshold values. Return the results as dict to
+    be used in plotly.
+    """
     abs_values = np.abs(values)
 
     if (
