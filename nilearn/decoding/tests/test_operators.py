@@ -16,7 +16,7 @@ def test_prox_l1_nonexpansiveness(rng, n_features=10):
     # We should have ||s(a) - s(b)||^2 <= ||a - b||^2 - ||p(a) - p(b)||^2
     # for all a and b (this is strong non-expansiveness
     for (a, b), (pa, pb), (sa, sb) in zip(
-        *[itertools.product(z[0], z[0]) for z in [x, p, s]]
+        *[itertools.product(z[0], z[0]) for z in [x, p, s]], strict=False
     ):
         assert (sa - sb) ** 2 <= (a - b) ** 2 - (pa - pb) ** 2
 

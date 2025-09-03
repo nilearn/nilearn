@@ -19,8 +19,9 @@ To expand the functionality of check_params you need to:
 from __future__ import annotations
 
 import pathlib
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable, Literal, TypeAlias
+from typing import Literal, TypeAlias
 
 import numpy as np
 from joblib.memory import Memory
