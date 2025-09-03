@@ -368,7 +368,7 @@ def test_resampling_error_checks(tmp_path, force_resample, data, affine_eye):
         )
 
     # Invalid interpolation
-    with pytest.raises(ValueError, match="interpolation must be one of"):
+    with pytest.raises(ValueError, match="'interpolation' must be one of"):
         resample_img(
             img,
             target_shape=target_shape,
@@ -1038,7 +1038,7 @@ def test_reorder_img_error_interpolation(affine_eye, rng):
     affine[1, 0] = 0.1
     ref_img = Nifti1Image(data, affine)
 
-    with pytest.raises(ValueError, match="interpolation must be one of"):
+    with pytest.raises(ValueError, match="'interpolation' must be one of"):
         reorder_img(
             ref_img, resample="an_invalid_interpolation", copy_header=True
         )
