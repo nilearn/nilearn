@@ -1051,7 +1051,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
     def _output_image(self, classes, coefs, std_coef):
         coef_img = {}
         std_coef_img = {}
-        for class_index, coef, std in zip(classes, coefs, std_coef):
+        for class_index, coef, std in zip(
+            classes, coefs, std_coef, strict=False
+        ):
             coef_img[class_index] = self.masker_.inverse_transform(coef)
             std_coef_img[class_index] = self.masker_.inverse_transform(std)
 

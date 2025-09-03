@@ -63,7 +63,7 @@ def colorscale(
     rgb = np.array(rgb, dtype=int)
     colors = [
         [np.round(i, 3), f"rgb({col[0]}, {col[1]}, {col[2]})"]
-        for i, col in zip(x, rgb)
+        for i, col in zip(x, rgb, strict=False)
     ]
     return {
         "colors": colors,

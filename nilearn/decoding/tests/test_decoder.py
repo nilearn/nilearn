@@ -467,7 +467,7 @@ def test_parallel_fit(rand_x_y):
         )
 
     # check that every element of the output tuple is the same for both tries
-    for a, b in zip(outputs[0], outputs[1]):
+    for a, b in zip(outputs[0], outputs[1], strict=False):
         if isinstance(a, np.ndarray):
             assert_array_almost_equal(a, b)
         else:

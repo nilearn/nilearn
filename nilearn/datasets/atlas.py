@@ -351,7 +351,7 @@ def fetch_atlas_craddock_2012(
     params = dict(
         [
             ("description", fdescr),
-            *list(zip(keys, sub_files)),
+            *list(zip(keys, sub_files, strict=False)),
         ]
     )
     params["atlas_type"] = atlas_type
@@ -936,7 +936,7 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     new_atlas = atlas_data.copy()
     # Assumes that the background label is zero.
     new_names = [names[0]]
-    for label, name in zip(labels[1:], names[1:]):
+    for label, name in zip(labels[1:], names[1:], strict=False):
         new_label += 1
         left_elements = (left_atlas == label).sum()
         right_elements = (right_atlas == label).sum()
@@ -1239,9 +1239,9 @@ def fetch_atlas_smith_2009(
     )
 
     keys = list(files.keys())
-    files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
+    files = [(f, u + f, {}) for f, u in zip(files.values(), url, strict=False)]
     files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    params = dict(zip(keys, files_))
+    params = dict(zip(keys, files_, strict=False))
 
     params["description"] = fdescr
     params["atlas_type"] = atlas_type
@@ -1457,7 +1457,7 @@ def fetch_atlas_yeo_2011(
         [
             ("description", fdescr),
             ("atlas_type", atlas_type),
-            *list(zip(keys, sub_files)),
+            *list(zip(keys, sub_files, strict=False)),
         ]
     )
 
@@ -1844,7 +1844,7 @@ def fetch_atlas_basc_multiscale_2015(
     filenames = [(folder_name / basename, url, opts) for basename in basenames]
     data = fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
 
-    params = dict(zip(keys, data))
+    params = dict(zip(keys, data, strict=False))
     params["description"] = fdescr
     params["atlas_type"] = atlas_type
 
@@ -1897,7 +1897,10 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
     # We add the ROI number to its name, since names are not unique
     names = out_csv["name"]
     numbers = out_csv["number"]
-    labels = [f"{name} {number}" for (name, number) in zip(names, numbers)]
+    labels = [
+        f"{name} {number}"
+        for (name, number) in zip(names, numbers, strict=False)
+    ]
     params = {
         "rois": out_csv[["x", "y", "z"]],
         "labels": labels,
@@ -2108,7 +2111,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         ("rsn_indices", labels),
         ("networks", networks),
         ("template", "MNI152"),
-        *list(zip(keys, sub_files)),
+        *list(zip(keys, sub_files, strict=False)),
     ]
     return Bunch(**dict(params))
 
@@ -2240,7 +2243,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         verbose=verbose,
     )
     for level_name, old_level_labels in zip(
-        _TALAIRACH_LEVELS, np.asarray(labels).T
+        _TALAIRACH_LEVELS, np.asarray(labels).T, strict=False
     ):
         logger.log(level_name, verbose=verbose)
         # level with most regions, ba, has 72 regions
