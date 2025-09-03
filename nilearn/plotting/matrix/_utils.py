@@ -4,6 +4,7 @@ import numpy as np
 from scipy.cluster.hierarchy import leaves_list, linkage, optimal_leaf_ordering
 
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm.contrasts import expression_to_contrast_vector
 
 VALID_REORDER_VALUES = (True, False, "single", "complete", "average")
@@ -105,10 +106,7 @@ def sanitize_tri(tri, allowed_values=None):
     """Help for plot_matrix."""
     if allowed_values is None:
         allowed_values = VALID_TRI_VALUES
-    if tri not in allowed_values:
-        raise ValueError(
-            f"Parameter tri needs to be one of: {', '.join(allowed_values)}."
-        )
+    check_parameter_in_allowed(tri, allowed_values, "tri")
 
 
 def reorder_matrix(mat, labels, reorder):

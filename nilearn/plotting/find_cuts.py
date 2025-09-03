@@ -12,6 +12,7 @@ from nilearn._utils.ndimage import largest_connected_component
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn._utils.numpy_conversions import as_ndarray
+from nilearn._utils.param_validation import check_parameter_in_allowed
 
 # Local imports
 from nilearn.image import get_data, iter_img, reorder_img
@@ -256,10 +257,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
 
     """
     # misc
-    if direction not in "xyz":
-        raise ValueError(
-            f"'direction' must be one of 'x', 'y', or 'z'. Got '{direction}'"
-        )
+    check_parameter_in_allowed(direction, ("x", "y", "z"), "direction")
     axis = "xyz".index(direction)
     img = check_niimg_3d(img)
     affine = img.affine
@@ -423,11 +421,10 @@ def find_parcellation_cut_coords(
 
     """
     # check label_hemisphere input
-    if label_hemisphere not in ["left", "right"]:
-        raise ValueError(
-            f"Invalid label_hemisphere name:{label_hemisphere}.\n"
-            "Should be one of these 'left' or 'right'."
-        )
+    check_parameter_in_allowed(
+        label_hemisphere, ["left", "right"], "label_hemisphere"
+    )
+
     # Grab data and affine
     labels_img = reorder_img(check_niimg_3d(labels_img), copy_header=True)
     labels_data = get_data(labels_img)

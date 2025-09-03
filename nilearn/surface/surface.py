@@ -19,6 +19,7 @@ from sklearn.exceptions import EfficiencyWarning
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.path_finding import resolve_globbing
 
 
@@ -299,8 +300,7 @@ def _sample_locations(
             {"inner_mesh": inner_mesh},
         ),
     }
-    if kind not in projectors:
-        raise ValueError(f'"kind" must be one of {tuple(projectors.keys())}')
+    check_parameter_in_allowed(kind, tuple(projectors.keys()), "kind")
     projector, extra_kwargs = projectors[kind]
     # let the projector choose the default for n_points
     # (for example a ball probably needs more than a line)
@@ -814,11 +814,9 @@ def vol_to_surf(
         "nearest": _nearest_voxel_sampling,
         "nearest_most_frequent": _nearest_most_frequent,
     }
-    if interpolation not in sampling_schemes:
-        raise ValueError(
-            "'interpolation' should be one of "
-            f"{tuple(sampling_schemes.keys())}"
-        )
+    check_parameter_in_allowed(
+        interpolation, tuple(sampling_schemes.keys()), "interpolation"
+    )
 
     # TODO (nilearn 0.13.0) deprecate nearest interpolation
     if interpolation == "nearest":

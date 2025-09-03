@@ -16,6 +16,7 @@ from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import iter_check_niimg
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
 from nilearn.maskers.surface_labels_masker import signals_to_surf_img_labels
@@ -427,11 +428,7 @@ class Parcellations(_MultiPCA):
                 "Parcellation method is specified as None. "
                 f"Please select one of the method in {valid_methods}"
             )
-        if self.method not in valid_methods:
-            raise ValueError(
-                f"The method you have selected is not implemented "
-                f"'{self.method}'. Valid methods are in {valid_methods}"
-            )
+        check_parameter_in_allowed(self.method, valid_methods, "method")
 
         # we delay importing Ward or AgglomerativeClustering and same
         # time import plotting module before that.

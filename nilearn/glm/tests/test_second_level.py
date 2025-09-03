@@ -34,7 +34,6 @@ from nilearn.glm.second_level.second_level import (
     _check_first_level_contrast,
     _check_input_as_first_level_model,
     _check_n_rows_desmat_vs_n_effect_maps,
-    _check_output_type,
     _check_second_level_input,
     _infer_effect_maps,
     _process_second_level_input_as_dataframe,
@@ -411,12 +410,6 @@ def test_check_second_level_input_design_matrix(shape_4d_default):
         "require a design matrix to be provided",
     ):
         _check_second_level_input(fmri_data[0], None)
-
-
-def test_check_output_type():
-    _check_output_type(int, [str, int, float])
-    with pytest.raises(ValueError, match="output_type must be one of"):
-        _check_output_type("foo", [str, int, float])
 
 
 def test_check_confounds():

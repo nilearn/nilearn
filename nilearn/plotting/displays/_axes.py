@@ -11,6 +11,7 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.image import coord_transform
 from nilearn.plotting.displays._utils import coords_3d_to_2d
 from nilearn.plotting.glass_brain import plot_brain_schematics
@@ -306,8 +307,9 @@ class CutAxes(BaseAxes):
 
         """
         coords = [0, 0, 0]
-        if self.direction not in ["x", "y", "z"]:
-            raise ValueError(f"Invalid value for direction {self.direction}")
+        check_parameter_in_allowed(
+            self.direction, ["x", "y", "z"], "direction"
+        )
         coords["xyz".index(self.direction)] = self.coord
         x_map, y_map, z_map = (
             int(np.round(c))
