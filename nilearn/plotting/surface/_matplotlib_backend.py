@@ -689,7 +689,7 @@ def _plot_surf_contours(
     roi = load_surf_data(roi_map)
 
     patch_list = []
-    for level, color, label in zip(levels, colors, labels):
+    for level, color, label in zip(levels, colors, labels, strict=False):
         roi_indices = np.where(roi == level)[0]
         faces_outside = get_faces_on_edge(faces, roi_indices)
         # Fix: Matplotlib version 3.3.2 to 3.3.3
