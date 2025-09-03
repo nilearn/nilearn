@@ -16,6 +16,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
 from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
 from nilearn._utils.numpy_conversions import as_ndarray
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.image.image import copy_img, crop_img
 
 ###############################################################################
@@ -695,11 +696,9 @@ def _check_resample_img_inputs(target_shape, target_affine, interpolation):
         )
 
     allowed_interpolations = ("continuous", "linear", "nearest")
-    if interpolation not in allowed_interpolations:
-        raise ValueError(
-            f"interpolation must be one of {allowed_interpolations}.\n"
-            f" Got '{interpolation}' instead."
-        )
+    check_parameter_in_allowed(
+        interpolation, allowed_interpolations, "interpolation"
+    )
 
 
 def _get_resampled_data_dtype(data, interpolation, A):

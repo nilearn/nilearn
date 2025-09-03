@@ -22,6 +22,7 @@ from nilearn._utils.niimg_conversions import (
     check_same_fov,
 )
 from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
     check_params,
     check_reduction_strategy,
 )
@@ -532,12 +533,11 @@ class NiftiLabelsMasker(BaseMasker):
         del y
         check_params(self.__dict__)
         check_reduction_strategy(self.strategy)
-
-        if self.resampling_target not in ("labels", "data", None):
-            raise ValueError(
-                "invalid value for 'resampling_target' "
-                f"parameter: {self.resampling_target}"
-            )
+        check_parameter_in_allowed(
+            self.resampling_target,
+            ("labels", "data", None),
+            "resampling_target",
+        )
 
         self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args

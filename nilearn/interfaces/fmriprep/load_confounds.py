@@ -5,6 +5,7 @@ import warnings
 import pandas as pd
 
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.interfaces.fmriprep import load_confounds_components as components
 from nilearn.interfaces.fmriprep.load_confounds_utils import (
     MissingConfoundError,
@@ -74,8 +75,7 @@ def _check_strategy(strategy):
                 "will not have additional effect.",
                 stacklevel=find_stack_level(),
             )
-        if conf not in all_confounds:
-            raise ValueError(f"{conf} is not a supported type of confounds.")
+        check_parameter_in_allowed(conf, all_confounds)
 
     # high pass filtering must be present if using fmriprep compcor outputs
     if ("compcor" in strategy) and ("high_pass" not in strategy):
