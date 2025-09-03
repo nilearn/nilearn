@@ -15,14 +15,12 @@ from matplotlib.colors import (
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
-
-
-def normalize(vmin=None, vmax=None, clip=False):
-    return Normalize(vmin, vmax, clip)
+from nilearn.plotting._utils import check_threshold_not_negative
 
 
 def threshold_cmap(cmap, norm, threshold):
-    """Normalize and threshold the specified colormap.
+    """Normalize threshold value, and use it to threshold the specified
+    colormap.
 
     Parameters
     ----------
@@ -30,12 +28,18 @@ def threshold_cmap(cmap, norm, threshold):
     norm : :class:`mpl.colors.Normalize`
         Norm to be used to normalize threshold
     threshold : :obj:`float`  or obj:`int`
-        Should be non-negative
+        A positive value to be used as threshold
+
+    Raises
+    ------
+    ValueError
+        If the specified ``threshold`` is negative.
     """
     cmap = plt.get_cmap(cmap)
     cmaplist = [cmap(i) for i in range(cmap.N)]
 
     if threshold is not None:
+        check_threshold_not_negative(threshold)
         # set colors to gray for absolute values < threshold
         istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
         istop = int(norm(threshold, clip=True) * (cmap.N - 1))
