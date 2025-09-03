@@ -1,7 +1,6 @@
 """Utilities to check for valid parameters."""
 
 import numbers
-import sys
 import warnings
 
 import numpy as np
@@ -451,14 +450,10 @@ def check_params(fn_dict):
         type_to_check = TYPE_MAPS[k]
         value = fn_dict[k]
 
-        # TODO (python 3.10) update when dropping python 3.9
         error_msg = (
             f"'{k}' should be of type '{type_to_check}'.\nGot: '{type(value)}'"
         )
-        if sys.version_info[1] > 9:
-            if not isinstance(value, type_to_check):
-                raise TypeError(error_msg)
-        elif value is not None and not isinstance(value, type_to_check):
+        if not isinstance(value, type_to_check):
             raise TypeError(error_msg)
 
 
