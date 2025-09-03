@@ -17,6 +17,10 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
 
 
+def normalize(vmin=None, vmax=None, clip=False):
+    return Normalize(vmin, vmax, clip)
+
+
 def threshold_cmap(cmap, norm, threshold):
     """Normalize and threshold the specified colormap.
 
