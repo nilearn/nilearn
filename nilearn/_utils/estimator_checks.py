@@ -166,6 +166,15 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
                 yield e, check, check.func.__name__
 
 
+# some checks would fail on sklearn 1.6.1 on older python
+# see https://github.com/scikit-learn-contrib/imbalanced-learn/issues/1131
+IS_SKLEARN_1_6_1_on_py_lt_3_13 = (
+    SKLEARN_MINOR == 6
+    and parse(sklearn_version).release[2] == 1
+    and sys.version_info[1] < 13
+)
+
+
 def return_expected_failed_checks(
     estimator: BaseEstimator,
 ) -> dict[str, str]:
@@ -350,6 +359,8 @@ def return_expected_failed_checks(
         }
         if SKLEARN_MINOR >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
+        if not IS_SKLEARN_1_6_1_on_py_lt_3_13 and SKLEARN_MINOR >= 5:
+            expected_failed_checks.pop("check_estimator_sparse_array")
 
     if isinstance(estimator, (MultiNiftiMasker)) and SKLEARN_MINOR >= 6:
         expected_failed_checks.pop("check_estimator_sparse_tag")
