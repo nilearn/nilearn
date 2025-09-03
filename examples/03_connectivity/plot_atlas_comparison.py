@@ -144,7 +144,9 @@ label_image_right = new_img_like(label_image, right_hemi, labels_affine)
 # Then, create a masker object, compute a connectivity matrix and
 # plot the results for each hemisphere:
 
-for hemi, img in zip(["right", "left"], [label_image_right, label_image_left]):
+for hemi, img in zip(
+    ["right", "left"], [label_image_right, label_image_left], strict=False
+):
     masker = MultiNiftiLabelsMasker(
         labels_img=img,
         standardize="zscore_sample",

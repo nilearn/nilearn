@@ -35,6 +35,7 @@ def main():
     for column, title in zip(
         ["subpackage", "module", "id_no_param", "id"],
         ["Subpackage", "Module", "Test", "Parametrization"],
+        strict=False,
     ):
         durations = tests_data.groupby(column)["duration"].sum().reset_index()
         durations = durations.sort_values(by="duration", ascending=True)

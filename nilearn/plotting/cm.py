@@ -94,7 +94,7 @@ def _concat_cmap(cmap1, cmap2):
             cdict[c] = []
         ps = _np.linspace(0, 1, 10)
         colors = cmap1(ps)
-        for p, (r, g, b, _) in zip(ps, colors):
+        for p, (r, g, b, _) in zip(ps, colors, strict=False):
             cdict["red"].append((0.5 * p, r, r))
             cdict["green"].append((0.5 * p, g, g))
             cdict["blue"].append((0.5 * p, b, b))
@@ -106,7 +106,7 @@ def _concat_cmap(cmap1, cmap2):
     else:
         ps = _np.linspace(0, 1, 10)
         colors = cmap2(ps)
-        for p, (r, g, b, _) in zip(ps, colors):
+        for p, (r, g, b, _) in zip(ps, colors, strict=False):
             cdict["red"].append((0.5 * (1 + p), r, r))
             cdict["green"].append((0.5 * (1 + p), g, g))
             cdict["blue"].append((0.5 * (1 + p), b, b))
@@ -337,7 +337,7 @@ def replace_inside(outer_cmap, inner_cmap, vmin, vmax):
             this_cdict["red"] = []
             this_cdict["green"] = []
             this_cdict["blue"] = []
-            for p, (r, g, b, _) in zip(ps, colors):
+            for p, (r, g, b, _) in zip(ps, colors, strict=False):
                 this_cdict["red"].append((p, r, r))
                 this_cdict["green"].append((p, g, g))
                 this_cdict["blue"].append((p, b, b))

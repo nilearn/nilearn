@@ -2,7 +2,6 @@
 
 import warnings
 from copy import deepcopy
-from typing import Union
 
 import numpy as np
 from scipy import ndimage
@@ -219,7 +218,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         return len(lut[lut["index"] != self.background_label])
 
     @property
-    def labels_(self) -> list[Union[int, float]]:
+    def labels_(self) -> list[int | float]:
         """Return list of labels of the regions.
 
         The background label is included if present in the image.
@@ -250,7 +249,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         return sub_df["name"].reset_index(drop=True).to_dict()
 
     @property
-    def region_ids_(self) -> dict[Union[str, int], Union[int, float]]:
+    def region_ids_(self) -> dict[str | int, int | float]:
         """Return dictionary containing the region ids corresponding \
            to each column in the array \
            returned by `transform`.
@@ -265,7 +264,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         index = self.labels_
 
-        region_ids_: dict[Union[str, int], Union[int, float]] = {}
+        region_ids_: dict[str | int, int | float] = {}
         if self.background_label in index:
             index.pop(index.index(self.background_label))
             region_ids_["background"] = self.background_label
@@ -591,8 +590,8 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
         )
         axes = np.atleast_2d(axes)
 
-        for ax_row, view in zip(axes, views):
-            for ax, hemi in zip(ax_row, hemispheres):
+        for ax_row, view in zip(axes, views, strict=False):
+            for ax, hemi in zip(ax_row, hemispheres, strict=False):
                 if img:
                     plot_surf(
                         surf_map=img,

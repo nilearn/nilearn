@@ -84,7 +84,7 @@ def test_matrix_plotting_with_labels_and_different_tri(mat, labels, tri):
     assert ax._axes.get_title() == "Title"
     for axis in [ax._axes.xaxis, ax._axes.yaxis]:
         assert len(axis.majorTicks) == len(labels)
-        for tick, label in zip(axis.majorTicks, labels):
+        for tick, label in zip(axis.majorTicks, labels, strict=False):
             assert tick.label1.get_text() == label
 
 

@@ -166,15 +166,6 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
                 yield e, check, check.func.__name__
 
 
-# some checks would fail on sklearn 1.6.1 on older python
-# see https://github.com/scikit-learn-contrib/imbalanced-learn/issues/1131
-IS_SKLEARN_1_6_1_on_py_3_9 = (
-    SKLEARN_MINOR == 6
-    and parse(sklearn_version).release[2] == 1
-    and sys.version_info[1] < 10
-)
-
-
 def return_expected_failed_checks(
     estimator: BaseEstimator,
 ) -> dict[str, str]:
@@ -359,8 +350,6 @@ def return_expected_failed_checks(
         }
         if SKLEARN_MINOR >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
-        if not IS_SKLEARN_1_6_1_on_py_3_9 and SKLEARN_MINOR >= 5:
-            expected_failed_checks.pop("check_estimator_sparse_array")
 
     if isinstance(estimator, (MultiNiftiMasker)) and SKLEARN_MINOR >= 6:
         expected_failed_checks.pop("check_estimator_sparse_tag")
@@ -866,7 +855,7 @@ def check_img_estimator_fit_check_is_fitted(estimator):
         "predict",
     ]
     method_input = [_img_3d_rand(), _img_3d_rand(), [_img_3d_rand()], signals]
-    for meth, input in zip(methods_to_check, method_input):
+    for meth, input in zip(methods_to_check, method_input, strict=False):
         method = getattr(estimator, meth, None)
         if method is None:
             continue
@@ -1145,7 +1134,7 @@ def check_img_estimator_cache_warning(estimator) -> None:
         estimator.mask_img = mask_img
 
     # ensure warnings are NOT thrown
-    for memory, memory_level in zip([None, "tmp"], [0, 1]):
+    for memory, memory_level in zip([None, "tmp"], [0, 1], strict=False):
         estimator = clone(estimator)
         estimator.memory = memory
         estimator.memory_level = memory_level
@@ -1406,7 +1395,7 @@ def check_img_estimator_pickle(estimator_orig):
             signal = [signal]
         input_data.append(signal)
 
-    for method, input in zip(check_methods, input_data):
+    for method, input in zip(check_methods, input_data, strict=False):
         if hasattr(estimator, method):
             result["input"] = input
             if method == "score":
@@ -1414,7 +1403,7 @@ def check_img_estimator_pickle(estimator_orig):
             else:
                 result[method] = getattr(estimator, method)(input)
 
-    for method, input in zip(check_methods, input_data):
+    for method, input in zip(check_methods, input_data, strict=False):
         if method not in result:
             continue
 
@@ -3038,7 +3027,7 @@ def check_multi_nifti_masker_shelving(estimator):
 
         epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])
 
-        for e_shelved, e in zip(epis_shelved, epis):
+        for e_shelved, e in zip(epis_shelved, epis, strict=False):
             e_shelved = e_shelved.get()
             assert_array_equal(e_shelved, e)
 
@@ -3067,7 +3056,9 @@ def check_multi_masker_with_confounds(estimator):
         confounds=[array, array],
     )
 
-    for signal_1, signal_2 in zip(signals_list_1, signals_list_2):
+    for signal_1, signal_2 in zip(
+        signals_list_1, signals_list_2, strict=False
+    ):
         assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
 
     # should also work with a single 4D image (has no __iter__ )
@@ -3076,7 +3067,9 @@ def check_multi_masker_with_confounds(estimator):
         _img_4d_rand_eye_medium(),
         confounds=[array],
     )
-    for signal_1, signal_2 in zip(signals_list_1, signals_list_2):
+    for signal_1, signal_2 in zip(
+        signals_list_1, signals_list_2, strict=False
+    ):
         assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
 
     # Mismatch n imgs and n confounds
@@ -3118,7 +3111,7 @@ def check_multi_masker_transformer_sample_mask(estimator):
         sample_mask=[sample_mask1, sample_mask2],
     )
 
-    for ts, n_scrub in zip(signals_list, [n_scrub1, n_scrub2]):
+    for ts, n_scrub in zip(signals_list, [n_scrub1, n_scrub2], strict=False):
         assert ts.shape[0] == length - n_scrub
 
     # should also work with a single 4D image (has no __iter__ )
@@ -3170,7 +3163,7 @@ def check_multi_masker_transformer_high_variance_confounds(estimator):
 
     signal_hvc = estimator.fit_transform([input_img, input_img])
 
-    for s1, s2 in zip(signal, signal_hvc):
+    for s1, s2 in zip(signal, signal_hvc, strict=False):
         assert_raises(AssertionError, assert_array_equal, s1, s2)
 
     with TemporaryDirectory() as tmp_dir:
@@ -3196,7 +3189,7 @@ def check_multi_masker_transformer_high_variance_confounds(estimator):
                 [input_img, input_img], confounds=confounds
             )
 
-            for s1, s2 in zip(signal_c, signal_c_hvc):
+            for s1, s2 in zip(signal_c, signal_c_hvc, strict=False):
                 assert_raises(AssertionError, assert_array_equal, s1, s2)
 
 
