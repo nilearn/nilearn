@@ -16,7 +16,6 @@ HIGHLIGHTS
  | **Minimum supported versions of the following packages have been bumped up:**
  | - matplotlib -- 3.8.0
 
-
 NEW
 ---
 
