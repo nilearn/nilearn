@@ -55,10 +55,6 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.param_validation import (
-    _get_mask_extent,
-    check_feature_screening,
-)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _rng
 from nilearn.decoding import (
@@ -66,6 +62,10 @@ from nilearn.decoding import (
     DecoderRegressor,
     FREMClassifier,
     FREMRegressor,
+)
+from nilearn.decoding._utils import (
+    _get_mask_extent,
+    check_feature_screening,
 )
 from nilearn.decoding.decoder import (
     SUPPORTED_ESTIMATORS,
