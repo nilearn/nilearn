@@ -202,9 +202,7 @@ def _colorbar_from_array(
     symmetric_cbar=True,
     cmap=DEFAULT_DIVERGING_CMAP,
 ):
-    """Generate a custom colorbar for an array.
-
-    Internal function used by plot_img_on_surf
+    """Generate a custom colorbar for the specified ``array``.
 
     array : :class:`np.ndarray`
         Any 3D array.
