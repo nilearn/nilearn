@@ -18,8 +18,7 @@ from nilearn._utils.param_validation import check_threshold
 
 
 def threshold_cmap(cmap, norm, threshold):
-    """Normalize and threshold the specified colormap according to specified
-    vmin, vmax, threshold values.
+    """Normalize and threshold the specified colormap.
 
     Parameters
     ----------
