@@ -1207,15 +1207,15 @@ def test_second_level_contrast_computation_errors(rng):
         model.compute_contrast(cnull)
 
     # passing wrong parameters
-    with pytest.raises(ValueError, match="Allowed types are .*'t', 'F'"):
+    with pytest.raises(ValueError, match="'stat_type' must be one of"):
         model.compute_contrast(
             second_level_contrast=c1, second_level_stat_type=""
         )
-    with pytest.raises(ValueError, match="Allowed types are .*'t', 'F'"):
+    with pytest.raises(ValueError, match="'stat_type' must be one of"):
         model.compute_contrast(
             second_level_contrast=c1, second_level_stat_type=[]
         )
-    with pytest.raises(ValueError, match="output_type must be one of "):
+    with pytest.raises(ValueError, match="'output_type' must be one of "):
         model.compute_contrast(second_level_contrast=c1, output_type="")
 
     # check that passing no explicit contrast when the design

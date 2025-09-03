@@ -189,7 +189,7 @@ def test_threshold_stats_img_errors(img_3d_rand_eye):
             None, None, alpha=0.05, height_control="bonferroni"
         )
 
-    with pytest.raises(ValueError, match="'height_control' should be one of"):
+    with pytest.raises(ValueError, match="'height_control' must be one of"):
         threshold_stats_img(None, None, alpha=0.05, height_control="plop")
 
     with pytest.raises(

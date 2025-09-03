@@ -228,9 +228,7 @@ def test_multi_nifti_maps_masker_resampling_error(
         masker.fit()
 
     masker = MultiNiftiMapsMasker(maps33_img, resampling_target="invalid")
-    with pytest.raises(
-        ValueError, match="invalid value for 'resampling_target' parameter:"
-    ):
+    with pytest.raises(ValueError, match="'resampling_target' must be one of"):
         masker.fit()
 
 
