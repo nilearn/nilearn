@@ -17,6 +17,40 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
 
 
+def adjust_cmap(cmap, vmin, vmax, threshold):
+    """Normalize and adjust the specified colormap according to specified vmin,
+    vmax, threshold values.
+
+    Parameters
+    ----------
+    %(cmap)s
+    vmin : :obj:`float`  or obj:`int`
+        Should not be None
+    vmax : :obj:`float`  or obj:`int`
+        Should not be None
+    threshold : :obj:`float`  or obj:`int`
+        Should be non-negative
+    """
+    cmap_ = plt.get_cmap(cmap)
+    norm = Normalize(vmin=vmin, vmax=vmax)
+
+    cmaplist = [cmap_(i) for i in range(cmap_.N)]
+
+    if threshold is not None:
+        # set colors to gray for absolute values < threshold
+        istart = int(norm(-threshold, clip=True) * (cmap.N_ - 1))
+        istop = int(norm(threshold, clip=True) * (cmap_.N - 1))
+
+        for i in range(istart, istop):
+            cmaplist[i] = (0.5, 0.5, 0.5, 1.0)
+
+    our_cmap = LinearSegmentedColormap.from_list(
+        "Custom cmap", cmaplist, cmap_.N
+    )
+
+    return our_cmap, norm
+
+
 def colorscale(
     cmap, values, threshold=None, symmetric_cmap=True, vmax=None, vmin=None
 ):
