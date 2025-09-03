@@ -15,7 +15,7 @@ from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn.image import get_data
 from nilearn.plotting import cm
-from nilearn.plotting._engine_utils import adjust_cmap, to_color_strings
+from nilearn.plotting._engine_utils import threshold_cmap, to_color_strings
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
@@ -233,7 +233,7 @@ def _colorbar_from_array(
     )
     if threshold is None:
         threshold = 0.0
-    our_cmap, norm = adjust_cmap(cmap, vmin, vmax, threshold)
+    our_cmap, norm = threshold_cmap(cmap, vmin, vmax, threshold)
 
     sm = ScalarMappable(cmap=our_cmap, norm=norm)
 

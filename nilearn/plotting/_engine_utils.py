@@ -17,9 +17,9 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
 
 
-def adjust_cmap(cmap, vmin, vmax, threshold):
-    """Normalize and adjust the specified colormap according to specified vmin,
-    vmax, threshold values.
+def threshold_cmap(cmap, vmin, vmax, threshold):
+    """Normalize and threshold the specified colormap according to specified
+    vmin, vmax, threshold values.
 
     Parameters
     ----------
@@ -31,21 +31,21 @@ def adjust_cmap(cmap, vmin, vmax, threshold):
     threshold : :obj:`float`  or obj:`int`
         Should be non-negative
     """
-    cmap_ = plt.get_cmap(cmap)
+    cmap = plt.get_cmap(cmap)
     norm = Normalize(vmin=vmin, vmax=vmax)
 
-    cmaplist = [cmap_(i) for i in range(cmap_.N)]
+    cmaplist = [cmap(i) for i in range(cmap.N)]
 
     if threshold is not None:
         # set colors to gray for absolute values < threshold
-        istart = int(norm(-threshold, clip=True) * (cmap_.N - 1))
-        istop = int(norm(threshold, clip=True) * (cmap_.N - 1))
+        istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
+        istop = int(norm(threshold, clip=True) * (cmap.N - 1))
 
         for i in range(istart, istop):
             cmaplist[i] = (0.5, 0.5, 0.5, 1.0)  # just an average gray color
 
     our_cmap = LinearSegmentedColormap.from_list(
-        "Custom cmap", cmaplist, cmap_.N
+        "Custom cmap", cmaplist, cmap.N
     )
 
     return our_cmap, norm
@@ -86,7 +86,7 @@ def colorscale(
     if threshold is not None:
         threshold = check_threshold(threshold, values, fast_abs_percentile)
 
-    our_cmap, norm = adjust_cmap(cmap, vmin, vmax, threshold)
+    our_cmap, norm = threshold_cmap(cmap, vmin, vmax, threshold)
 
     x = np.linspace(0, 1, 100)
     rgb = our_cmap(x, bytes=True)[:, :3]
