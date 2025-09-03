@@ -229,7 +229,7 @@ def test_as_ndarray_more():
     assert not are_arrays_identical(arr1[0], arr2[0])
 
     # Unhandled cases
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         as_ndarray("test_string")
     with pytest.raises(ValueError):
         as_ndarray([], order="invalid")
