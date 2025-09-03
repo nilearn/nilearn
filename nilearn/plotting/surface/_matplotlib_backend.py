@@ -15,7 +15,7 @@ from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn.image import get_data
 from nilearn.plotting import cm
-from nilearn.plotting._engine_utils import to_color_strings
+from nilearn.plotting._engine_utils import adjust_cmap, to_color_strings
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
@@ -231,20 +231,10 @@ def _colorbar_from_array(
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
     )
-    norm = Normalize(vmin=vmin, vmax=vmax)
-    cmaplist = [cmap(i) for i in range(cmap.N)]
-
     if threshold is None:
         threshold = 0.0
+    our_cmap, norm = adjust_cmap(cmap, vmin, vmax, threshold)
 
-    # set colors to gray for absolute values < threshold
-    istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
-    istop = int(norm(threshold, clip=True) * (cmap.N - 1))
-    for i in range(istart, istop):
-        cmaplist[i] = (0.5, 0.5, 0.5, 1.0)
-    our_cmap = LinearSegmentedColormap.from_list(
-        "Custom cmap", cmaplist, cmap.N
-    )
     sm = plt.cm.ScalarMappable(cmap=our_cmap, norm=norm)
 
     # fake up the array of the scalar mappable.
