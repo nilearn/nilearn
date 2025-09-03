@@ -416,7 +416,7 @@ class RegionExtractor(NiftiMapsMasker):
         (ie at least two maps have a non-zero value for the same voxel).
 
     %(clean_args)s
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
     Attributes
     ----------
