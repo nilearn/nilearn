@@ -22,7 +22,10 @@ from sklearn.utils import Bunch
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image import resample_img
 
 from ._utils import (
@@ -2275,11 +2278,11 @@ def _read_download_params(
     """Create a dictionary containing download information."""
     download_params = {"verbose": verbose}
     download_mode = download_mode.lower()
-    if download_mode not in ["overwrite", "download_new", "offline"]:
-        raise ValueError(
-            "Supported download modes are: overwrite, download_new, offline. "
-            f"Got {download_mode}."
-        )
+    check_parameter_in_allowed(
+        download_mode,
+        ["overwrite", "download_new", "offline"],
+        "download_mode",
+    )
     download_params["download_mode"] = download_mode
     if collection_terms is None:
         collection_terms = {}

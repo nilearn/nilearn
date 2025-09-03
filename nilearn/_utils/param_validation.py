@@ -3,6 +3,8 @@
 import numbers
 import sys
 import warnings
+from collections.abc import Iterable
+from typing import Any
 
 import numpy as np
 from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
@@ -478,9 +480,16 @@ def check_reduction_strategy(strategy: str):
         "standard_deviation",
         "variance",
     }
+    check_parameter_in_allowed(
+        strategy, available_reduction_strategies, "strategy"
+    )
 
-    if strategy not in available_reduction_strategies:
+
+def check_parameter_in_allowed(
+    parameter: Any, allowed: Iterable[Any], parameter_name: str
+):
+    if parameter not in allowed:
         raise ValueError(
-            f"Invalid strategy '{strategy}'. "
-            f"Valid strategies are {available_reduction_strategies}."
+            f"'{parameter_name}' must be one of {allowed}.\n"
+            f"'{parameter}' was provided."
         )

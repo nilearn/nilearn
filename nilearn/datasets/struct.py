@@ -12,7 +12,10 @@ from sklearn.utils import Bunch
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.datasets._utils import (
     ALLOWED_DATA_TYPES,
     ALLOWED_MESH_TYPES,
@@ -1106,17 +1109,8 @@ def load_fsaverage_data(
         SurfaceImage with the freesurfer mesh and data.
     """
     check_params(locals())
-
-    if mesh_type not in ALLOWED_MESH_TYPES:
-        raise ValueError(
-            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
-            f"Got: {mesh_type=}."
-        )
-    if data_type not in ALLOWED_DATA_TYPES:
-        raise ValueError(
-            f"'data_type' must be one of {ALLOWED_DATA_TYPES}.\n"
-            f"Got: {data_type=}."
-        )
+    check_parameter_in_allowed(mesh_type, ALLOWED_MESH_TYPES, "mesh_type")
+    check_parameter_in_allowed(data_type, ALLOWED_DATA_TYPES, "data_type")
 
     fsaverage = load_fsaverage(mesh=mesh, data_dir=data_dir)
     fsaverage_data = fetch_surf_fsaverage(mesh=mesh, data_dir=data_dir)

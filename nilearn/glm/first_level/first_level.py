@@ -33,6 +33,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
     check_params,
     check_run_sample_masks,
 )
@@ -953,10 +954,9 @@ class FirstLevelModel(BaseGLM):
 
         self._fit_cache()
 
-        if self.signal_scaling not in {False, 1, (0, 1)}:
-            raise ValueError(
-                'signal_scaling must be "False", "0", "1" or "(0, 1)"'
-            )
+        check_parameter_in_allowed(
+            self.signal_scaling, {False, 1, (0, 1)}, "signal_scaling"
+        )
         if self.signal_scaling in [0, 1, (0, 1)]:
             self.standardize = False
 
@@ -1125,8 +1125,7 @@ class FirstLevelModel(BaseGLM):
             "effect_variance",
             "all",  # must be the final entry!
         ]
-        if output_type not in valid_types:
-            raise ValueError(f"output_type must be one of {valid_types}")
+        check_parameter_in_allowed(output_type, valid_types, "output_type")
         contrast = compute_fixed_effect_contrast(
             self.labels_, self.results_, con_vals, stat_type
         )
@@ -1180,9 +1179,7 @@ class FirstLevelModel(BaseGLM):
         possible_attributes = [
             prop for prop in all_attributes if "__" not in prop
         ]
-        if attribute not in possible_attributes:
-            msg = f"attribute must be one of: {possible_attributes}"
-            raise ValueError(msg)
+        check_parameter_in_allowed(attribute, possible_attributes)
 
         if self.minimize_memory:
             raise ValueError(
@@ -2360,11 +2357,9 @@ def _check_args_first_level_from_bids(
                 "Filters in img_filters must be (str, str). "
                 f"Got {filter_} instead."
             )
-        if filter_[0] not in supported_filters:
-            raise ValueError(
-                f"Entity {filter_[0]} for {filter_} is not a possible filter. "
-                f"Only {supported_filters} are allowed."
-            )
+        check_parameter_in_allowed(
+            filter_[0], supported_filters, f"{filter_[0]} for {filter_}"
+        )
         check_bids_label(filter_[1])
 
 

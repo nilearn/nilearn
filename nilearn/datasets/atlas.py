@@ -22,7 +22,10 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
@@ -147,17 +150,11 @@ def fetch_atlas_difumo(
         1024: "34792",
     }
     valid_dimensions = [64, 128, 256, 512, 1024]
+    check_parameter_in_allowed(dimension, valid_dimensions, "dimension")
     valid_resolution_mm = [2, 3]
-    if dimension not in valid_dimensions:
-        raise ValueError(
-            f"Requested dimension={dimension} is not available. "
-            f"Valid options: {valid_dimensions}"
-        )
-    if resolution_mm not in valid_resolution_mm:
-        raise ValueError(
-            f"Requested resolution_mm={resolution_mm} is not available. "
-            f"Valid options: {valid_resolution_mm}"
-        )
+    check_parameter_in_allowed(
+        resolution_mm, valid_resolution_mm, "resolution_mm"
+    )
 
     url = f"https://osf.io/{dic[dimension]}/download"
     opts = {"uncompress": True}
@@ -586,12 +583,7 @@ def fetch_atlas_harvard_oxford(
         "sub-prob-1mm",
         "sub-prob-2mm",
     ]
-    if atlas_name not in atlases:
-        atlases = "\n".join(atlases)
-        raise ValueError(
-            f"Invalid atlas name: {atlas_name}. "
-            f"Please choose an atlas among:\n{atlases}"
-        )
+    check_parameter_in_allowed(atlas_name, atlases, "atlas_name")
 
     atlas_type = "probabilistic" if "-prob-" in atlas_name else "deterministic"
 
@@ -752,12 +744,7 @@ def fetch_atlas_juelich(
         "prob-1mm",
         "prob-2mm",
     ]
-    if atlas_name not in atlases:
-        atlases = "\n".join(atlases)
-        raise ValueError(
-            f"Invalid atlas name: {atlas_name}. "
-            f"Please choose an atlas among:\n{atlases}"
-        )
+    check_parameter_in_allowed(atlas_name, atlases, "atlas_name")
 
     atlas_type = (
         "probabilistic" if atlas_name.startswith("prob-") else "deterministic"
@@ -1418,17 +1405,11 @@ def fetch_atlas_yeo_2011(
         )
 
     if n_networks is not None:
-        if n_networks not in (7, 17):
-            raise ValueError(
-                f"'n_networks' must be 7 or 17. Got {n_networks=}"
-            )
+        check_parameter_in_allowed(n_networks, (7, 17), "n_networks")
         if thickness is None:
             thickness = "thick"
     if thickness is not None:
-        if thickness not in ("thin", "thick"):
-            raise ValueError(
-                f"'thickness' must be 'thin' or 'thick'. Got {thickness=}"
-            )
+        check_parameter_in_allowed(thickness, ("thin", "thick"), "thickness")
         if n_networks is None:
             n_networks = 7
 
@@ -1622,11 +1603,7 @@ def fetch_atlas_aal(
     atlas_type = "deterministic"
 
     versions = ["SPM5", "SPM8", "SPM12", "3v2"]
-    if version not in versions:
-        raise ValueError(
-            f"The version of AAL requested '{version}' does not exist."
-            f"Please choose one among {versions}."
-        )
+    check_parameter_in_allowed(version, versions, "version")
 
     dataset_name = f"aal_{version}"
     opts = {"uncompress": True}
@@ -1794,12 +1771,7 @@ def fetch_atlas_basc_multiscale_2015(
     atlas_type = "deterministic"
 
     versions = ["sym", "asym"]
-    if version not in versions:
-        raise ValueError(
-            f"The version of Brain parcellations requested '{version}' "
-            "does not exist. "
-            f"Please choose one among them {versions}."
-        )
+    check_parameter_in_allowed(version, versions, "version")
 
     file_number = "1861819" if version == "sym" else "1861820"
     url = f"https://ndownloader.figshare.com/files/{file_number}"
@@ -2361,8 +2333,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     atlas_type = "deterministic"
 
-    if level_name not in _TALAIRACH_LEVELS:
-        raise ValueError(f'"level_name" should be one of {_TALAIRACH_LEVELS}')
+    check_parameter_in_allowed(level_name, _TALAIRACH_LEVELS, "level_name")
     talairach_dir = get_dataset_dir(
         "talairach_atlas", data_dir=data_dir, verbose=verbose
     )
@@ -2468,10 +2439,9 @@ def fetch_atlas_pauli_2017(
             "probabilistic" if atlas_type == "prob" else "deterministic"
         )
 
-    if atlas_type not in {"probabilistic", "deterministic"}:
-        raise NotImplementedError(
-            f"{atlas_type} is not a valid type for the Pauli atlas"
-        )
+    check_parameter_in_allowed(
+        atlas_type, {"probabilistic", "deterministic"}, "atlas_type"
+    )
 
     url_maps = "https://osf.io/w8zq2/download"
     filename = "pauli_2017_prob.nii.gz"
@@ -2585,23 +2555,15 @@ def fetch_atlas_schaefer_2018(
     atlas_type = "deterministic"
 
     valid_n_rois = list(range(100, 1100, 100))
+    check_parameter_in_allowed(n_rois, valid_n_rois, "n_rois")
     valid_yeo_networks = [7, 17]
+    check_parameter_in_allowed(
+        yeo_networks, valid_yeo_networks, "yeo_networks"
+    )
     valid_resolution_mm = [1, 2]
-    if n_rois not in valid_n_rois:
-        raise ValueError(
-            f"Requested n_rois={n_rois} not available. "
-            f"Valid options: {valid_n_rois}"
-        )
-    if yeo_networks not in valid_yeo_networks:
-        raise ValueError(
-            f"Requested yeo_networks={yeo_networks} not available. "
-            f"Valid options: {valid_yeo_networks}"
-        )
-    if resolution_mm not in valid_resolution_mm:
-        raise ValueError(
-            f"Requested resolution_mm={resolution_mm} not available. "
-            f"Valid options: {valid_resolution_mm}"
-        )
+    check_parameter_in_allowed(
+        resolution_mm, valid_resolution_mm, "resolution_mm"
+    )
 
     if base_url is None:
         base_url = (

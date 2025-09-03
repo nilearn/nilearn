@@ -65,7 +65,7 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
         raise ValueError(f"Invalid value for 'order': {order!s}")
 
     if not isinstance(arr, (np.memmap, np.ndarray, list, tuple)):
-        raise ValueError(f"Type not handled: {arr.__class__}")
+        raise TypeError(f"Type not handled: {arr.__class__}")
 
     # the cases where we have to create a copy of the underlying array
     if isinstance(arr, (np.memmap, list, tuple)) or (

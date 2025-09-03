@@ -25,7 +25,10 @@ from nilearn._utils.masker_validation import (
     check_embedded_masker,
 )
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_contrast,
@@ -288,11 +291,6 @@ def _check_first_level_contrast(second_level_input, first_level_contrast):
             "It corresponds to the second_level_contrast argument "
             "of the compute_contrast method of FirstLevelModel."
         )
-
-
-def _check_output_type(output_type, valid_types):
-    if output_type not in valid_types:
-        raise ValueError(f"output_type must be one of {valid_types}")
 
 
 def _check_design_matrix(design_matrix):
@@ -723,7 +721,7 @@ class SecondLevelModel(BaseGLM):
             "effect_variance",
             "all",
         ]
-        _check_output_type(output_type, valid_types)
+        check_parameter_in_allowed(output_type, valid_types, "output_type")
 
         # Get effect_maps appropriate for chosen contrast
         effect_maps = _infer_effect_maps(
