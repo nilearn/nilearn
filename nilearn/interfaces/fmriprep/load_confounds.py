@@ -75,7 +75,7 @@ def _check_strategy(strategy):
                 "will not have additional effect.",
                 stacklevel=find_stack_level(),
             )
-        check_parameter_in_allowed(conf, all_confounds)
+        check_parameter_in_allowed(conf, all_confounds, "confounds")
 
     # high pass filtering must be present if using fmriprep compcor outputs
     if ("compcor" in strategy) and ("high_pass" not in strategy):

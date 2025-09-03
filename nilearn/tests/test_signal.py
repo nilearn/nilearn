@@ -329,7 +329,7 @@ def test_standardize_error(rng):
     a = rng.random((n_samples, n_features))
     a += np.linspace(0, 2.0, n_features)
 
-    with pytest.raises(ValueError, match="no valid standardize strategy"):
+    with pytest.raises(ValueError, match="'standardize' must be one of"):
         standardize_signal(a, standardize="foo")
 
     # test warning for strategy that will be removed
