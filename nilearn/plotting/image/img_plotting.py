@@ -1502,6 +1502,7 @@ def plot_glass_brain(
 
     if stat_map_img:
         stat_map_img = check_niimg_3d(stat_map_img, dtype="auto")
+        vmin_force = vmin
         if plot_abs:
             if vmin is not None and vmin < 0:
                 warnings.warn(
@@ -1509,16 +1510,13 @@ def plot_glass_brain(
                     category=UserWarning,
                     stacklevel=find_stack_level(),
                 )
-            force_min_stat_map_value = 0
-        else:
-            force_min_stat_map_value = None
+            vmin_force = 0
 
         cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
             safe_get_data(stat_map_img, ensure_finite=True),
-            vmin=vmin,
+            vmin=vmin_force,
             vmax=vmax,
             symmetric_cbar=symmetric_cbar,
-            force_min_stat_map_value=force_min_stat_map_value,
         )
     else:
         cbar_vmin, cbar_vmax = None, None
