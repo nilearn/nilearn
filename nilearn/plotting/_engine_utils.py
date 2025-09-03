@@ -38,7 +38,7 @@ def adjust_cmap(cmap, vmin, vmax, threshold):
 
     if threshold is not None:
         # set colors to gray for absolute values < threshold
-        istart = int(norm(-threshold, clip=True) * (cmap.N_ - 1))
+        istart = int(norm(-threshold, clip=True) * (cmap_.N - 1))
         istop = int(norm(threshold, clip=True) * (cmap_.N - 1))
 
         for i in range(istart, istop):
