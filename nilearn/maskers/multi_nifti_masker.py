@@ -3,9 +3,9 @@ on multi subject MRI data.
 """
 
 import collections.abc
+import inspect
 import itertools
 import warnings
-from functools import partial
 
 import numpy as np
 from joblib import Parallel, delayed
@@ -24,35 +24,38 @@ from nilearn.maskers.base_masker import (
     mask_logger,
     prepare_confounds_multimaskers,
 )
-from nilearn.maskers.nifti_masker import NiftiMasker, filter_and_mask
+from nilearn.maskers.nifti_masker import (
+    NiftiMasker,
+    _make_brain_mask_func,
+    filter_and_mask,
+)
 from nilearn.masking import (
     compute_multi_background_mask,
-    compute_multi_brain_mask,
     compute_multi_epi_mask,
     load_mask_img,
 )
 from nilearn.typing import NiimgLike
 
 
-def _get_mask_strategy(strategy):
+def _get_mask_strategy(strategy: str):
     """Return the mask computing method based on a provided strategy."""
     if strategy == "background":
         return compute_multi_background_mask
     elif strategy == "epi":
         return compute_multi_epi_mask
     elif strategy == "whole-brain-template":
-        return partial(compute_multi_brain_mask, mask_type="whole-brain")
+        return _make_brain_mask_func("whole-brain", multi=True)
     elif strategy == "gm-template":
-        return partial(compute_multi_brain_mask, mask_type="gm")
+        return _make_brain_mask_func("gm", multi=True)
     elif strategy == "wm-template":
-        return partial(compute_multi_brain_mask, mask_type="wm")
+        return _make_brain_mask_func("wm", multi=True)
     elif strategy == "template":
         warnings.warn(
             "Masking strategy 'template' is deprecated. "
             "Please use 'whole-brain-template' instead.",
             stacklevel=find_stack_level(),
         )
-        return partial(compute_multi_brain_mask, mask_type="whole-brain")
+        return _make_brain_mask_func("whole-brain")
     else:
         raise ValueError(
             f"Unknown value of mask_strategy '{strategy}'. "
@@ -320,16 +323,36 @@ class MultiNiftiMasker(NiftiMasker):
             ):
                 imgs = [imgs]
 
-            mask_args = self.mask_args if self.mask_args is not None else {}
             compute_mask = _get_mask_strategy(self.mask_strategy)
-            self.mask_img_ = self._cache(
-                compute_mask,
-                ignore=["n_jobs", "verbose", "memory"],
-            )(
+
+            # add extra argument to pass
+            # to the mask computing function
+            # depending if they are supported.
+            signature = dict(**inspect.signature(compute_mask).parameters)
+            mask_args = {}
+            for arg in ["n_jobs", "target_shape", "target_affine"]:
+                if arg in signature and getattr(self, arg) is not None:
+                    mask_args[arg] = getattr(self, arg)
+            if self.mask_args:
+                skipped_args = []
+                for arg in self.mask_args:
+                    if arg in signature:
+                        mask_args[arg] = self.mask_args.get(arg)
+                    else:
+                        skipped_args.append(arg)
+                if skipped_args:
+                    warnings.warn(
+                        (
+                            "The following arguments are not supported by"
+                            f"the masking strategy '{self.mask_strategy}': "
+                            f"{skipped_args}"
+                        ),
+                        UserWarning,
+                        stacklevel=find_stack_level(),
+                    )
+
+            self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs,
-                target_affine=self.target_affine,
-                target_shape=self.target_shape,
-                n_jobs=self.n_jobs,
                 memory=self.memory_,
                 verbose=max(0, self.verbose - 1),
                 **mask_args,

@@ -58,6 +58,25 @@ def data_norm_isf():
     )
 
 
+@pytest.mark.parametrize("height_control", [None, "fpr", "fdr", "bonferroni"])
+def test_threshold_stats_img_warn_threshold_unused(
+    data_norm_isf, affine_eye, height_control
+):
+    """Warn if non default threshold used with height_control != None."""
+    data = data_norm_isf
+    data[2:4, 5:7, 6:8] = 5.0
+    stat_img = Nifti1Image(data, affine_eye)
+
+    with warnings.catch_warnings(record=True) as warnings_list:
+        threshold_stats_img(
+            stat_img,
+            threshold=2,
+            height_control=height_control,
+        )
+    if height_control is not None:
+        assert any("will not be used with" in str(x) for x in warnings_list)
+
+
 def test_threshold_stats_img_no_height_control(
     data_norm_isf, img_3d_ones_eye, affine_eye
 ):
@@ -161,7 +180,7 @@ def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
     assert th_map is None
 
 
-def test_threshold_stats_img_errors():
+def test_threshold_stats_img_errors(img_3d_rand_eye):
     with pytest.raises(ValueError, match="'stat_img' cannot be None"):
         threshold_stats_img(None, None, alpha=0.05, height_control="fdr")
 
@@ -172,6 +191,18 @@ def test_threshold_stats_img_errors():
 
     with pytest.raises(ValueError, match="'height_control' should be one of"):
         threshold_stats_img(None, None, alpha=0.05, height_control="plop")
+
+    with pytest.raises(
+        ValueError, match="should not be a negative value when two_sided=True."
+    ):
+        threshold_stats_img(
+            img_3d_rand_eye, height_control=None, threshold=-2, two_sided=True
+        )
+    # but this is OK because threshodld is only used
+    # when height_control=None
+    threshold_stats_img(
+        img_3d_rand_eye, height_control="fdr", threshold=-2, two_sided=True
+    )
 
 
 @pytest.mark.parametrize(
@@ -331,6 +362,68 @@ def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
     """Smoke test threshold_stats_img works on surface with a mask."""
     threshold_stats_img(
         surf_img_1d, height_control="bonferroni", mask_img=surf_mask_1d
+    )
+
+
+def test_threshold_stats_img_surface_output(surf_img_1d):
+    """Check output threshold_stats_img surface with no height_control."""
+    surf_img_1d.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
+    surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
+
+    # two sided
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, threshold=2
+    )
+
+    assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
+    assert_equal(
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+    )
+
+    # one sided positive
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, threshold=3, two_sided=False
+    )
+
+    assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 4.0]))
+    assert_equal(
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+    )
+
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, threshold=-0.5, two_sided=False
+    )
+
+    # one sided negative
+    assert_equal(result.data.parts["left"], np.asarray([0.0, -1.0, 0.0, 0.0]))
+    assert_equal(
+        result.data.parts["right"], np.asarray([0.0, -2.0, 0.0, 0.0, 0.0])
+    )
+
+
+def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
+    """Check output threshold_stats_img height_control=None, threshold=0."""
+    surf_img_1d.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
+    surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
+
+    # one sided, with threshold = 0
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, threshold=0, two_sided=False
+    )
+
+    assert_equal(result.data.parts["left"], np.asarray([1.0, 0, 3.0, 4.0]))
+    assert_equal(
+        result.data.parts["right"], np.asarray([2.0, 0, 6.0, 8.0, 0.0])
+    )
+
+    # two sided, with threshold = 0
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, threshold=0, two_sided=True
+    )
+
+    assert_equal(result.data.parts["left"], np.asarray([1.0, -1.0, 3.0, 4.0]))
+    assert_equal(
+        result.data.parts["right"], np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
     )
 
 
