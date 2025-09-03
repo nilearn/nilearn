@@ -12,7 +12,6 @@ from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
-    constrained_layout_kwargs,
     is_matplotlib_installed,
     is_plotly_installed,
     rename_parameters,
@@ -598,7 +597,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 len(hemispheres),
                 subplot_kw={"projection": "3d"},
                 figsize=(20, 20),
-                **constrained_layout_kwargs(),
+                layout="constrained",
             )
             axes = np.atleast_2d(axes)
             for ax_row, view in zip(axes, views):
