@@ -44,7 +44,7 @@ def threshold_cmap(cmap, norm, threshold):
         "Custom cmap", cmaplist, cmap.N
     )
 
-    return our_cmap, norm
+    return our_cmap
 
 
 def colorscale(
