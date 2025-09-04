@@ -50,7 +50,14 @@ from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_imgs_equal
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._utils.tags import (
+    SKLEARN_LT_1_6,
+    accept_niimg_input,
+    accept_surf_img_input,
+    is_glm,
+    is_masker,
+    is_multimasker,
+)
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
     _affine_eye,
@@ -673,36 +680,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
     if is_glm(estimator):
         yield (clone(estimator), check_glm_dtypes)
         yield (clone(estimator), check_glm_empty_data_messages)
-
-
-def get_tag(estimator: BaseEstimator, tag: str) -> bool:
-    tags = estimator.__sklearn_tags__()
-    # TODO (sklearn >= 1.6.0) simplify
-    #  for sklearn >= 1.6 tags are always a dataclass
-    if isinstance(tags, dict) and "X_types" in tags:
-        return tag in tags["X_types"]
-    else:
-        return getattr(tags.input_tags, tag, False)
-
-
-def is_masker(estimator: BaseEstimator) -> bool:
-    return get_tag(estimator, "masker")
-
-
-def is_multimasker(estimator: BaseEstimator) -> bool:
-    return get_tag(estimator, "multi_masker")
-
-
-def is_glm(estimator: BaseEstimator) -> bool:
-    return get_tag(estimator, "glm")
-
-
-def accept_niimg_input(estimator: BaseEstimator) -> bool:
-    return get_tag(estimator, "niimg_like")
-
-
-def accept_surf_img_input(estimator: BaseEstimator) -> bool:
-    return get_tag(estimator, "surf_img")
 
 
 def _not_fitted_error_message(estimator):
