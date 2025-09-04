@@ -37,7 +37,7 @@ available_filters = ("butterworth", "cosine")
 def standardize_signal(
     signals,
     detrend=False,
-    standardize="zscore",
+    standardize="zscore_sample",
 ):
     """Center and standardize a given signal (time is along first axis).
 
@@ -49,20 +49,11 @@ def standardize_signal(
     detrend : :obj:`bool`, default=False
         If detrending of timeseries is requested.
 
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, \
-                  default='zscore'
-        Strategy to standardize the signal:
+    %(standardize_signal)s
 
-            - 'zscore_sample': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance. Uses sample std.
-            - 'zscore': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance. Uses population std
-              by calling :obj:`numpy.std` with N - ``ddof=0``.
-            - 'psc':  Timeseries are shifted to zero mean value and scaled
-              to percent signal change (as compared to original mean signal).
-            - True: The signal is z-scored (same as option `zscore`).
-              Timeseries are shifted to zero mean and scaled to unit variance.
-            - False: Do not standardize the data.
+            .. versionchanged :: nilearn 0.13.0dev
+
+              The default was changed to ``'zscore_sample'``.
 
 
     Returns
@@ -106,7 +97,7 @@ def standardize_signal(
                 "'zscore_sample' instead."
             )
             warnings.warn(
-                category=DeprecationWarning,
+                category=FutureWarning,
                 message=std_strategy_default,
                 stacklevel=find_stack_level(),
             )
@@ -556,7 +547,7 @@ def clean(
     signals,
     runs=None,
     detrend=True,
-    standardize="zscore",
+    standardize="zscore_sample",
     sample_mask=None,
     confounds=None,
     standardize_confounds=True,
@@ -663,25 +654,12 @@ def clean(
 
     %(high_pass)s
     %(detrend)s
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, \
-                  default="zscore"
-        Strategy to standardize the signal:
 
-        - 'zscore_sample':
-          The signal is z-scored.
-          Timeseries are shifted to zero mean and scaled to unit variance.
-          Uses sample std.
-        - 'zscore':
-          The signal is z-scored.
-          Timeseries are shifted to zero mean and scaled to unit variance.
-          Uses population std by calling :obj:`numpy.std` with N - ``ddof=0``.
-        - 'psc':
-          Timeseries are shifted to zero mean value and scaled
-          to percent signal change (as compared to original mean signal).
-        - True:
-          The signal is z-scored (same as option `zscore`).
-          Timeseries are shifted to zero mean and scaled to unit variance.
-        - False: Do not standardize the data.
+    %(standardize_signal)s
+
+        .. versionchanged :: nilearn 0.13.0dev
+
+            The default was changed to ``'zscore_sample'``.
 
     %(standardize_confounds)s
 
@@ -809,10 +787,9 @@ def clean(
 
     # Remove confounds
     if confounds is not None:
-        confounds = standardize_signal(
-            confounds, standardize=standardize_confounds, detrend=False
-        )
-        if not standardize_confounds:
+        if standardize_confounds:
+            confounds = standardize_signal(confounds, detrend=False)
+        else:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on standardize_signal as it removes any
             # constant contribution to confounds.

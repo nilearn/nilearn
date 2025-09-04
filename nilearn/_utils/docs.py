@@ -1102,6 +1102,9 @@ standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
     - ``False``: Do not standardize the data.
 
 """
+docdict["standardize_signal"] = docdict["standardize_maskers"].replace(
+    "default=False", "default='zscore_sample'"
+)
 
 # standardize_confounds
 docdict["standardize_confounds"] = """

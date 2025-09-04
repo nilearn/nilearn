@@ -2200,7 +2200,6 @@ def check_masker_transformer_sample_mask(estimator):
     assert_array_equal(signal_2, signal_5)
 
 
-@ignore_warnings()
 def check_masker_with_confounds(estimator):
     """Test fit_transform with confounds.
 
@@ -2231,9 +2230,13 @@ def check_masker_with_confounds(estimator):
     confounds_path = nilearn_dir() / "tests" / "data" / "spm_confounds.txt"
 
     for confounds in [array, dataframe, confounds_path, str(confounds_path)]:
-        signal_2 = estimator.fit_transform(input_img, confounds=confounds)
+        with warnings.catch_warnings(record=True) as warning_list:
+            signal_2 = estimator.fit_transform(input_img, confounds=confounds)
 
         assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
+        assert not any(
+            issubclass(x.category, FutureWarning) for x in warning_list
+        )
 
     with TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
