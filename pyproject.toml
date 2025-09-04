@@ -126,6 +126,25 @@ packages = ["nilearn"]
 [tool.hatch.version]
 source = "vcs"
 
+[tool.importlinter]
+root_package = "nilearn"
+
+[[tool.importlinter.contracts]]
+ignore_imports = [
+    "nilearn.maskers.tests.* -> nilearn._utils.estimator_checks",  # allowed in tests
+    "nilearn._utils.masker_validation -> nilearn.glm.*",
+    "nilearn.interfaces.bids.glm -> nilearn.glm",
+    "nilearn._utils.glm -> nilearn.glm.second_level",
+    "nilearn.plotting.matrix.* -> nilearn.glm.**",
+    "nilearn.signal -> nilearn.glm.first_level.design_matrix"
+]
+layers = [
+    "nilearn.glm : nilearn.decoding",
+    "nilearn.maskers"
+]
+name = "glm and decoding can import from maskers and each other"
+type = "layers"
+
 [tool.mypy]
 allow_redefinition = false
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]

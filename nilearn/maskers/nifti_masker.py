@@ -1,5 +1,6 @@
 """Transformer used to apply basic transformations on MRI data."""
 
+import inspect
 import warnings
 from copy import copy as copy_object
 
@@ -93,7 +94,6 @@ def _make_brain_mask_func(mask_type: str, multi: bool = False):
         opening=2,
         memory=None,
         verbose=0,
-        **kwargs,
     ):
         if multi:
             return compute_multi_brain_mask(
@@ -104,7 +104,6 @@ def _make_brain_mask_func(mask_type: str, multi: bool = False):
                 memory,
                 verbose,
                 mask_type=mask_type,
-                **kwargs,
             )
 
         return compute_brain_mask(
@@ -501,11 +500,34 @@ class NiftiMasker(BaseMasker):
                     f"{self.__class__.__name__}.fit() "
                     "if no mask is passed to mask_img."
                 )
-            mask_args = self.mask_args if self.mask_args is not None else {}
 
             mask_logger("compute_mask", verbose=self.verbose)
 
             compute_mask = _get_mask_strategy(self.mask_strategy)
+
+            # add extra argument to pass
+            # to the mask computing function
+            # depending if they are supported.
+            sig = dict(**inspect.signature(compute_mask).parameters)
+            mask_args = {}
+            if self.mask_args:
+                skipped_args = []
+                for arg in self.mask_args:
+                    if arg in sig:
+                        mask_args[arg] = self.mask_args.get(arg)
+                    else:
+                        skipped_args.append(arg)
+                if skipped_args:
+                    warnings.warn(
+                        (
+                            "The following arguments are not supported by"
+                            f"the masking strategy '{self.mask_strategy}': "
+                            f"{skipped_args}"
+                        ),
+                        UserWarning,
+                        stacklevel=find_stack_level(),
+                    )
+
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs, verbose=max(0, self.verbose - 1), **mask_args
             )
