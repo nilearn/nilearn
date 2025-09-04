@@ -29,12 +29,12 @@ def test_tvl1_from_gradient(rng, alpha, l1_ratio, size=5, n_samples=10):
 
 
 def test_tvl1_objective_raises_value_error_if_invalid_loss():
-    with pytest.raises(ValueError, match="mse' or 'logistic"):
+    with pytest.raises(ValueError, match="'loss' must be one of"):
         _tvl1_objective(None, None, None, None, None, None, loss="invalidloss")
 
 
 def test_tvl1_solver_raises_value_error_if_invalid_loss():
-    with pytest.raises(ValueError, match="mse' or 'logistic"):
+    with pytest.raises(ValueError, match="'loss' must be one of"):
         tvl1_solver(
             np.array([[1]]), None, None, None, None, loss="invalidloss"
         )

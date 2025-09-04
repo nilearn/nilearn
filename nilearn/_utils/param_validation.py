@@ -295,7 +295,7 @@ def check_reduction_strategy(strategy: str):
 
 
 def check_parameter_in_allowed(
-    parameter: Any, allowed: Iterable[Any], parameter_name: str | None = None
+    parameter: Any, allowed: Iterable[Any], parameter_name: str
 ):
     if parameter not in allowed:
         raise ValueError(

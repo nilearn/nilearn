@@ -1411,7 +1411,7 @@ def test_first_level_residuals_errors(shape_4d_default):
     model.fit(fmri_data, design_matrices=design_matrices)
 
     # For coverage
-    with pytest.raises(ValueError, match="'attribute' must be one of"):
+    with pytest.raises(ValueError, match="must be one of"):
         model._get_element_wise_model_attribute("foo", True)
 
 
@@ -1873,7 +1873,7 @@ def test_first_level_from_bids_validation_space_label(
         ("foo", TypeError, "'img_filters' must be a list"),
         ([(1, 2)], TypeError, "Filters in img"),
         ([("desc", "*/-")], ValueError, "bids labels must be alphanumeric."),
-        ([("foo", "bar")], ValueError, "is not a possible filter."),
+        ([("foo", "bar")], ValueError, "must be one of"),
     ],
 )
 def test_first_level_from_bids_validation_img_filter(

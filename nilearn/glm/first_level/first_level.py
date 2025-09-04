@@ -1179,7 +1179,7 @@ class FirstLevelModel(BaseGLM):
         possible_attributes = [
             prop for prop in all_attributes if "__" not in prop
         ]
-        check_parameter_in_allowed(attribute, possible_attributes)
+        check_parameter_in_allowed(attribute, possible_attributes, attribute)
 
         if self.minimize_memory:
             raise ValueError(
@@ -2358,7 +2358,7 @@ def _check_args_first_level_from_bids(
                 f"Got {filter_} instead."
             )
         check_parameter_in_allowed(
-            filter_[0], supported_filters, f"{filter_[0]} for {filter_}"
+            filter_[0], supported_filters, f"{filter_[0]} in {filter_}"
         )
         check_bids_label(filter_[1])
 
