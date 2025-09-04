@@ -320,7 +320,8 @@ def make_glm_report(
             and not isinstance(bg_img, SurfaceImage)
         ):
             raise TypeError(
-                f"'bg_img' must a SurfaceImage instance. Got {type(bg_img)=}"
+                "'bg_img' must a SurfaceImage instance. "
+                f"Got {bg_img.__class__.__name__}"
             )
 
         mask_plot = _mask_to_plot(model, bg_img, cut_coords)

@@ -1464,7 +1464,7 @@ def _check_slice_time_ref(slice_time_ref):
     if not isinstance(slice_time_ref, (float, int)):
         raise TypeError(
             "'slice_time_ref' must be a float or an integer. "
-            f"Got {type(slice_time_ref)} instead."
+            f"Got {slice_time_ref.__class__.__name__} instead."
         )
     if slice_time_ref < 0 or slice_time_ref > 1:
         raise ValueError(
@@ -2322,7 +2322,7 @@ def _check_args_first_level_from_bids(
     if not isinstance(derivatives_folder, str):
         raise TypeError(
             "'derivatives_folder' must be a string. "
-            f"Got {type(derivatives_folder)} instead."
+            f"Got {derivatives_folder.__class__.__name__} instead."
         )
     derivatives_folder = dataset_path / derivatives_folder
     if not derivatives_folder.exists():

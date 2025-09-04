@@ -219,7 +219,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             if not isinstance(v, (str, np.ndarray, list)):
                 raise TypeError(
                     "contrast definitions must be strings or array_likes, "
-                    f"not {type(v)}"
+                    f"not {v.__class__.__name__}"
                 )
 
         entities = {

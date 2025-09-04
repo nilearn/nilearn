@@ -485,7 +485,7 @@ def check_type_fetcher(data):
                 assert isinstance(v, str)
                 assert v != ""
             if not check_type_fetcher(v):
-                raise TypeError(f"Found {k} : {type(v)}")
+                raise TypeError(f"Found {k} : {v.__class__.__name__}")
     elif isinstance(data, (set, list, tuple)):
         for v in data:
             if not check_type_fetcher(v):

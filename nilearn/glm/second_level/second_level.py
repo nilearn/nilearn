@@ -301,7 +301,7 @@ def _check_design_matrix(design_matrix):
         raise TypeError(
             "'design_matrix' must be a "
             "str, pathlib.Path or a pandas.DataFrame.\n"
-            f"Got {type(design_matrix)}"
+            f"Got {design_matrix.__class__.__name__}"
         )
 
 

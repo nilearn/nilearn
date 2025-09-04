@@ -57,7 +57,7 @@ def _check_strategy(strategy):
     if (not isinstance(strategy, tuple)) and (not isinstance(strategy, list)):
         raise ValueError(
             "strategy needs to be a tuple or list of strings"
-            f" A {type(strategy)} was provided instead."
+            f" A {strategy.__class__.__name__} was provided instead."
         )
 
     if len(strategy) == 0:

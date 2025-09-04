@@ -606,7 +606,7 @@ class NiftiSpheresMasker(BaseMasker):
             if not hasattr(seed, "__len__"):
                 raise ValueError(
                     f"{error}Seed #{i} is not a valid triplet of coordinates. "
-                    f"It is of type {type(seed)}."
+                    f"It is of type {seed.__class__.__name__}."
                 )
             # Convert to list because it is easier to process
             seed = (

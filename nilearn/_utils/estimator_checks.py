@@ -707,7 +707,7 @@ def accept_surf_img_input(estimator: BaseEstimator) -> bool:
 
 def _not_fitted_error_message(estimator):
     return (
-        f"This {type(estimator).__name__} instance is not fitted yet. "
+        f"This {estimator.__class__.__name__} instance is not fitted yet. "
         "Call 'fit' with appropriate arguments before using this estimator."
     )
 

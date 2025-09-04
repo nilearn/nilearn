@@ -1133,7 +1133,7 @@ def check_mesh_is_fsaverage(mesh):
     if not isinstance(mesh, Mapping):
         raise TypeError(
             "The mesh should be a str or a dictionary, "
-            f"you provided: {type(mesh).__name__}."
+            f"you provided: {mesh.__class__.__name__}."
         )
     missing = {
         "pial_left",

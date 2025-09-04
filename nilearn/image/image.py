@@ -1070,7 +1070,7 @@ def threshold_img(
     if not isinstance(img, (*NiimgLike, SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(img)=}."
+            f"Got {img.__class__.__name__}."
         )
 
     if mask_img is not None:
@@ -1943,6 +1943,6 @@ def get_indices_from_image(image) -> np.ndarray:
         raise TypeError(
             "Image to extract indices from must be one of: "
             "Niimg-Like, SurfaceIamge, numpy array. "
-            f"Got {type(image)}"
+            f"Got {image.__class__.__name__}"
         )
     return np.unique(data)
