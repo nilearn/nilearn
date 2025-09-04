@@ -96,6 +96,7 @@ def get_colorbar_and_data_ranges(
     vmin=None,
     vmax=None,
     symmetric_cbar=True,
+    force_min_stat_map_value=None,
 ):
     """Set colormap and colorbar limits.
 
@@ -114,6 +115,9 @@ def get_colorbar_and_data_ranges(
 
     symmetric_cbar : :obj:`bool`, default=True
         Whether to use a symmetric colorbar
+
+    force_min_stat_map_value : :obj:`int`, default=None
+        The value to force as minimum value for the colorbar
     """
     # handle invalid vmin/vmax inputs
     if (not isinstance(vmin, Number)) or (not np.isfinite(vmin)):
@@ -125,7 +129,10 @@ def get_colorbar_and_data_ranges(
     if hasattr(data, "_mask"):
         data = np.asarray(data[np.logical_not(data._mask)])
 
-    data_min = np.nanmin(data)
+    if force_min_stat_map_value is None:
+        data_min = np.nanmin(data)
+    else:
+        data_min = force_min_stat_map_value
     data_max = np.nanmax(data)
 
     if symmetric_cbar == "auto":

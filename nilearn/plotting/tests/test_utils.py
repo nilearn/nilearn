@@ -195,12 +195,13 @@ def test_get_colorbar_and_data_ranges_masked(
     )
 
 
-def test_get_colorbar_and_data_ranges_forced_min_value(data_pos_neg):
-    """Test for get_colorbar_and_data_ranges with forced min value."""
+def test_get_colorbar_and_data_ranges_force_min_stat_map_value(data_pos_neg):
+    """Test for get_colorbar_and_data_ranges with force_min_stat_map_value."""
     expected_results = (0, None, 0, 3)
     assert expected_results == get_colorbar_and_data_ranges(
         data_pos_neg,
-        vmin=0,
+        vmin=None,
         vmax=None,
         symmetric_cbar="auto",
+        force_min_stat_map_value=0,
     )
