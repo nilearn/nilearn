@@ -10,7 +10,7 @@ from pathlib import Path
 from nilearn import __version__
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.glm import coerce_to_dict, make_stat_maps
+from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn.surface import SurfaceImage
@@ -299,8 +299,7 @@ def save_glm_to_bids(
     _generate_model_metadata(metadata_file, model)
 
     logger.log("Saving contrast-level statistical maps...", verbose=verbose)
-    statistical_maps = make_stat_maps(
-        model,
+    statistical_maps = model._make_stat_maps(
         contrasts,
         output_type="all",
         first_level_contrast=first_level_contrast,
