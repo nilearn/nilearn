@@ -805,7 +805,9 @@ def _get_atlas_data_and_labels(
     This function downloads the atlas image and labels.
     """
     check_parameter_in_allowed(
-        atlas_source, ["Juelich", "HarvardOxford", "atlas_source"]
+        atlas_source,
+        ["Juelich", "HarvardOxford", "atlas_source"],
+        "atlas_source",
     )
     if atlas_source == "Juelich":
         url = "https://www.nitrc.org/frs/download.php/12096/Juelich.tgz"

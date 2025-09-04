@@ -644,11 +644,10 @@ def test_ica_aroma(tmp_path, fmriprep_version):
     assert conf.size == 0
 
     # invalid combination of strategy and option
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(ValueError, match="'ica_aroma' must be one of"):
         conf, _ = load_confounds(
             regular_nii, strategy=("ica_aroma",), ica_aroma="invalid"
         )
-    assert "Current input: invalid" in exc_info.value.args[0]
 
 
 @pytest.mark.parametrize(

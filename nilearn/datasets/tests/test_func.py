@@ -255,7 +255,7 @@ def test_fetch_localizer_contrasts_errors(
     tmp_path,
     localizer_mocker,  # noqa: ARG001
 ):
-    with pytest.raises(ValueError, match="should be a list of strings"):
+    with pytest.raises(TypeError, match="should be a list of strings"):
         func.fetch_localizer_contrasts(
             "checkerboard",
             n_subjects=2,

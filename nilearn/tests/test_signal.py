@@ -748,9 +748,7 @@ def test_clean_errros(signals):
     ):
         clean(signals, filter="not_implemented")
 
-    with pytest.raises(
-        ValueError, match="'ensure_finite' must be boolean type True or False"
-    ):
+    with pytest.raises(ValueError, match="'ensure_finite' must be one of"):
         clean(signals, ensure_finite=None)
 
     # test boolean is not given to signal.clean

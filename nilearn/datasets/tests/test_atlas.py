@@ -124,7 +124,7 @@ def test_downloader(tmp_path, request_mocker):
 
 def test_fetch_atlas_source():
     # specify non-existing atlas source
-    with pytest.raises(ValueError, match="Atlas source"):
+    with pytest.raises(ValueError, match="'atlas_source' must be one of"):
         atlas._get_atlas_data_and_labels("new_source", "not_inside")
 
 

@@ -275,7 +275,7 @@ def test_non_supported_estimator_error(rand_x_y, estimator):
     X, Y = rand_x_y
 
     with pytest.raises(
-        ValueError, match="Invalid estimator. The supported estimators are:"
+        TypeError, match="Invalid estimator. The supported estimators are:"
     ):
         _check_param_grid(estimator, X, Y, None)
 

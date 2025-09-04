@@ -415,7 +415,7 @@ def test_check_second_level_input_design_matrix(shape_4d_default):
 def test_check_confounds():
     _check_confounds(None)  # Should not do anything
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         _check_confounds("foo")
     with pytest.raises(
@@ -769,15 +769,15 @@ def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
     # test first_level_conditions, confounds, and design
     flms = [flm, flm, flm]
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         SecondLevelModel().fit(second_level_input=flms, confounds=["", []])
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         SecondLevelModel().fit(second_level_input=flms, confounds=[])
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         SecondLevelModel().fit(
             second_level_input=flms, confounds=confounds["conf1"]
