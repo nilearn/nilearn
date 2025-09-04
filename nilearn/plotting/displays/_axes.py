@@ -79,7 +79,7 @@ class BaseAxes:
         kwargs["alpha"] = transparency
 
         check_parameter_in_allowed(
-            self.direction, ["y", "xlr", "z"], "direction"
+            self.direction, ["y", "x", "l", "r", "z"], "direction"
         )
 
         if self.direction == "y":
