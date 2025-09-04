@@ -788,7 +788,9 @@ def clean(
     # Remove confounds
     if confounds is not None:
         if standardize_confounds:
-            confounds = standardize_signal(confounds, detrend=False)
+            confounds = standardize_signal(
+                confounds, detrend=False, standardize="zscore_sample"
+            )
         else:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on standardize_signal as it removes any
