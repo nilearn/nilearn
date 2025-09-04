@@ -25,6 +25,7 @@ from numpy.testing import (
 )
 from numpydoc.docscrape import NumpyDocString
 from packaging.version import parse
+from scipy import __version__ as scipy_version
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import BaseEstimator, is_classifier, is_regressor
@@ -359,7 +360,11 @@ def return_expected_failed_checks(
         }
         if SKLEARN_MINOR >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
-        if not IS_SKLEARN_1_6_1_on_py_lt_3_13 and SKLEARN_MINOR >= 5:
+        if (
+            not IS_SKLEARN_1_6_1_on_py_lt_3_13
+            and SKLEARN_MINOR >= 5
+            and scipy_version != "1.8.0"
+        ):
             expected_failed_checks.pop("check_estimator_sparse_array")
 
     if isinstance(estimator, (MultiNiftiMasker)) and SKLEARN_MINOR >= 6:
