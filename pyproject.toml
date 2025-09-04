@@ -133,8 +133,7 @@ root_package = "nilearn"
 ignore_imports = [
     "nilearn.maskers.tests.* -> nilearn._utils.estimator_checks",  # allowed in tests
     "nilearn.interfaces.bids.glm -> nilearn.glm",
-    "nilearn.plotting.matrix.* -> nilearn.glm.**",
-    "nilearn.signal -> nilearn.glm.first_level.design_matrix"
+    "nilearn.plotting.matrix.* -> nilearn.glm.**"
 ]
 layers = [
     "nilearn.glm : nilearn.decoding",

@@ -20,7 +20,6 @@ from nilearn._utils.data_gen import basic_paradigm
 from nilearn.glm.first_level.design_matrix import (
     _convolve_regressors,
     check_design_matrix,
-    create_cosine_drift,
     make_first_level_design_matrix,
     make_second_level_design_matrix,
 )
@@ -80,17 +79,6 @@ def n_frames():
 def frame_times(n_frames):
     t_r = 1.0
     return np.linspace(0, (n_frames - 1) * t_r, n_frames)
-
-
-def test_cosine_drift():
-    # add something so that when the tests are launched
-    # from a different directory
-    spm_drifts = DESIGN_MATRIX["cosbf_dt_1_nt_20_hcut_0p1"]
-    frame_times = np.arange(20)
-    high_pass_frequency = 0.1
-    nilearn_drifts = create_cosine_drift(high_pass_frequency, frame_times)
-    assert_almost_equal(spm_drifts[:, 1:], nilearn_drifts[:, :-2])
-    # nilearn_drifts is placing the constant at the end [:, : - 1]
 
 
 def test_design_matrix_no_experimental_paradigm(frame_times):

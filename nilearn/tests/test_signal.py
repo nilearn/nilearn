@@ -10,8 +10,8 @@ from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
 from pandas import read_csv
 
 from nilearn._utils.exceptions import AllVolumesRemovedError
+from nilearn._utils.glm import create_cosine_drift
 from nilearn.conftest import _rng
-from nilearn.glm.first_level.design_matrix import create_cosine_drift
 from nilearn.signal import (
     _censor_signals,
     _create_cosine_drift_terms,
