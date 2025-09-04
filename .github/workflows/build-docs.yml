@@ -310,7 +310,7 @@ jobs:
                 py: [3.13]
                 env: [doc_latest]
                 include:
-                -   py: 3.9
+                -   py: 3.10
                     env: doc
 
         defaults:
