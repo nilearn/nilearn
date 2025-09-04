@@ -15,7 +15,7 @@ from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn.image import get_data
 from nilearn.plotting import cm
-from nilearn.plotting._engine_utils import to_color_strings
+from nilearn.plotting._engine_utils import threshold_cmap, to_color_strings
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
@@ -38,7 +38,7 @@ try:
     from matplotlib import __version__ as mpl_version
     from matplotlib.cm import ScalarMappable
     from matplotlib.colorbar import make_axes
-    from matplotlib.colors import LinearSegmentedColormap, Normalize, to_rgba
+    from matplotlib.colors import Normalize, to_rgba
     from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
     from matplotlib.patches import Patch
     from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -202,9 +202,7 @@ def _colorbar_from_array(
     symmetric_cbar=True,
     cmap=DEFAULT_DIVERGING_CMAP,
 ):
-    """Generate a custom colorbar for an array.
-
-    Internal function used by plot_img_on_surf
+    """Generate a custom colorbar for the specified ``array``.
 
     array : :class:`np.ndarray`
         Any 3D array.
@@ -233,21 +231,12 @@ def _colorbar_from_array(
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
     )
-    norm = Normalize(vmin=vmin, vmax=vmax)
-    cmaplist = [cmap(i) for i in range(cmap.N)]
-
     if threshold is None:
         threshold = 0.0
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    thrs_cmap = threshold_cmap(cmap, norm, threshold)
 
-    # set colors to gray for absolute values < threshold
-    istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
-    istop = int(norm(threshold, clip=True) * (cmap.N - 1))
-    for i in range(istart, istop):
-        cmaplist[i] = (0.5, 0.5, 0.5, 1.0)
-    our_cmap = LinearSegmentedColormap.from_list(
-        "Custom cmap", cmaplist, cmap.N
-    )
-    sm = plt.cm.ScalarMappable(cmap=our_cmap, norm=norm)
+    sm = ScalarMappable(cmap=thrs_cmap, norm=norm)
 
     # fake up the array of the scalar mappable.
     sm._A = []
@@ -345,32 +334,6 @@ def _get_bounds(data, vmin=None, vmax=None):
         vmin = -1
 
     return vmin, vmax
-
-
-def _get_cmap(cmap, vmin, vmax, cbar_tick_format, threshold=None):
-    """Help for plot_surf with matplotlib engine.
-
-    This function returns the colormap.
-    """
-    our_cmap = plt.get_cmap(cmap)
-    norm = Normalize(vmin=vmin, vmax=vmax)
-    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-    if threshold is not None:
-        if cbar_tick_format == "%i" and int(threshold) != threshold:
-            warn(
-                "You provided a non integer threshold "
-                "but configured the colorbar to use integer formatting.",
-                stacklevel=find_stack_level(),
-            )
-        # set colors to gray for absolute values < threshold
-        istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
-        istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
-        for i in range(istart, istop):
-            cmaplist[i] = (0.5, 0.5, 0.5, 1.0)
-    our_cmap = LinearSegmentedColormap.from_list(
-        "Custom cmap", cmaplist, our_cmap.N
-    )
-    return our_cmap, norm
 
 
 def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
@@ -582,13 +545,20 @@ def _plot_surf(
             ticks = _get_ticks(
                 cbar_vmin, cbar_vmax, cbar_tick_format, threshold
             )
-            our_cmap, norm = _get_cmap(
-                cmap, vmin, vmax, cbar_tick_format, threshold
-            )
-            bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
+            if threshold is not None and (
+                cbar_tick_format == "%i" and int(threshold) != threshold
+            ):
+                warn(
+                    "You provided a non integer threshold "
+                    "but configured the colorbar to use integer formatting.",
+                    stacklevel=find_stack_level(),
+                )
+            norm = Normalize(vmin, vmax)
+            thrs_cmap = threshold_cmap(cmap, norm, threshold)
+            bounds = np.linspace(cbar_vmin, cbar_vmax, thrs_cmap.N)
 
             # we need to create a proxy mappable
-            proxy_mappable = ScalarMappable(cmap=our_cmap, norm=norm)
+            proxy_mappable = ScalarMappable(cmap=thrs_cmap, norm=norm)
             proxy_mappable.set_array(surf_map_faces)
             figure._colorbar_ax, _ = make_axes(
                 axes,
