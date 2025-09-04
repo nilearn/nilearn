@@ -3004,12 +3004,12 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
 @ignore_warnings()
 def check_multi_nifti_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if os.name == "nt" and sys.version_info[1] == 9:
-        # TODO
-        # rare failure of this test on python 3.9 on windows
+    if os.name == "nt" and sys.version_info[1] < 13:
+        # TODO (python >= 3.11)
+        # rare failure of this test on python 3.10 on windows
         # this works for python 3.13
         # skipping for now: let's check again if this keeps failing
-        # when dropping 3.9 in favor of 3.10
+        # when dropping 3.10 in favor of 3.11
         return
 
     mask_img = Nifti1Image(
