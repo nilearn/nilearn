@@ -131,16 +131,24 @@ root_package = "nilearn"
 
 [[tool.importlinter.contracts]]
 ignore_imports = [
-    "nilearn.maskers.tests.* -> nilearn._utils.estimator_checks",  # allowed in tests
+    "nilearn.*.tests.* -> nilearn._utils.estimator_checks",  # allowed in tests
+    "nilearn._utils.estimator_checks -> nilearn.glm.*",  # allowed in tests
+    "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
+    "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.interfaces.bids.glm -> nilearn.glm",
     "nilearn.plotting.matrix.* -> nilearn.glm.**"
 ]
+# glm, decoding, connectome, decomposition:
+# - cannot import from each other
+# - but can import from maskers, image, surface, plotting
+# maskers, image, surface, plotting:
+# - can import from each other
 layers = [
-    "nilearn.glm : nilearn.decoding",
-    "nilearn.maskers",
+    "nilearn.glm | nilearn.decoding | nilearn.connectome | nilearn.decomposition",
+    "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting",
     "nilearn.typing"
 ]
-name = "glm and decoding can import from maskers and each other"
+name = "main architecture"
 type = "layers"
 
 [tool.mypy]
