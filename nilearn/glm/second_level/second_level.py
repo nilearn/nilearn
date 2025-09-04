@@ -261,7 +261,7 @@ def _check_confounds(confounds):
     """Check confounds type."""
     if confounds is not None:
         if not isinstance(confounds, pd.DataFrame):
-            raise ValueError("confounds must be a pandas DataFrame")
+            raise TypeError("confounds must be a pandas DataFrame")
         if "subject_label" not in confounds.columns:
             raise ValueError(
                 "confounds DataFrame must contain column 'subject_label'"

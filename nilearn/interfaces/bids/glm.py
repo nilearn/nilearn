@@ -13,6 +13,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.surface import SurfaceImage
 
 
@@ -219,14 +220,8 @@ def save_glm_to_bids(
     tmp.pop("contrasts")
     report_kwargs = {k: v.default for k, v in tmp.items()}
     for key in kwargs:
-        if key not in report_kwargs:
-            raise ValueError(
-                f"Extra key-word arguments must be one of: "
-                f"{report_kwargs}\n"
-                f"Got: {key}"
-            )
-        else:
-            report_kwargs[key] = kwargs[key]
+        check_parameter_in_allowed(key, report_kwargs, "Extra key-word")
+        report_kwargs[key] = kwargs[key]
 
     contrasts = coerce_to_dict(contrasts)
 

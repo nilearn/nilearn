@@ -307,6 +307,7 @@ class Contrast:
         self.baseline = baseline
 
         # Case: one-dimensional contrast ==> t or t**2
+        check_parameter_in_allowed(self.stat_type, ["F", "t"], "stat_type")
         if self.stat_type == "F":
             stat = (
                 np.sum((self.effect - baseline) ** 2, 0)
@@ -318,8 +319,7 @@ class Contrast:
             stat = (self.effect - baseline) / np.sqrt(
                 np.maximum(self.variance, self.tiny)
             )
-        else:
-            raise ValueError("Unknown statistic type")
+
         self.stat_ = stat.ravel()
         return self.stat_
 

@@ -1921,7 +1921,7 @@ def copy_img(img):
         copy of input (data, affine and header)
     """
     if not isinstance(img, spatialimages.SpatialImage):
-        raise ValueError("Input value is not an image")
+        raise TypeError("Input value is not an image")
     return new_img_like(
         img,
         safe_get_data(img, copy_data=True),
