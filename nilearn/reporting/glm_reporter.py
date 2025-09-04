@@ -29,6 +29,7 @@ from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm.thresholding import (
@@ -930,6 +931,7 @@ def _stat_map_to_png(
         x_label_color = "black"
 
     else:
+        check_parameter_in_allowed(plot_type, ["slice", "glass"], plot_type)
         if plot_type == "slice":
             stat_map_plot = plot_stat_map(
                 stat_img,
@@ -949,11 +951,6 @@ def _stat_map_to_png(
                 symmetric_cbar=symmetric_cbar,
                 cmap=cmap,
                 threshold=abs(threshold),
-            )
-        else:
-            raise ValueError(
-                "Invalid plot type provided. "
-                "Acceptable options are 'slice' or 'glass'."
             )
 
         x_label_color = "white" if plot_type == "slice" else "black"

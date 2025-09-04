@@ -175,7 +175,7 @@ def _default_param_grid(estimator, X, y):
             LassoCV,
         ),
     ):
-        raise ValueError(
+        raise TypeError(
             "Invalid estimator. The supported estimators are:"
             f" {list(SUPPORTED_ESTIMATORS.keys())}"
         )

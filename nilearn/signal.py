@@ -1177,11 +1177,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
 
 def _sanitize_signals(signals, ensure_finite):
     """Ensure signals are in the correct state."""
-    if not isinstance(ensure_finite, bool):
-        raise ValueError(
-            "'ensure_finite' must be boolean type True or False "
-            f"but you provided ensure_finite={ensure_finite}"
-        )
+    check_parameter_in_allowed(ensure_finite, [True, False], "ensure_finite")
     signals = signals.copy()
     if not isinstance(signals, np.ndarray):
         signals = as_ndarray(signals)

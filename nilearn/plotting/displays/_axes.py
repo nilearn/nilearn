@@ -78,6 +78,10 @@ class BaseAxes:
             )
         kwargs["alpha"] = transparency
 
+        check_parameter_in_allowed(
+            self.direction, ["y", "xlr", "z"], "direction"
+        )
+
         if self.direction == "y":
             (xmin, xmax), (_, _), (zmin, zmax) = data_bounds
             (xmin_, xmax_), (_, _), (zmin_, zmax_) = bounding_box
@@ -87,8 +91,7 @@ class BaseAxes:
         elif self.direction == "z":
             (xmin, xmax), (zmin, zmax), (_, _) = data_bounds
             (xmin_, xmax_), (zmin_, zmax_), (_, _) = bounding_box
-        else:
-            raise ValueError(f"Invalid value for direction {self.direction}")
+
         ax = self.ax
         # Here we need to do a copy to avoid having the image changing as
         # we change the data

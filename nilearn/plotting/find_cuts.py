@@ -277,7 +277,7 @@ def find_cut_slices(img, direction="z", n_cuts=7, spacing="auto"):
     this_shape = orig_data.shape[axis]
 
     if not isinstance(n_cuts, numbers.Number):
-        raise ValueError(
+        raise TypeError(
             "The number of cuts (n_cuts) must be an integer "
             "greater than or equal to 1. "
             f"You provided a value of n_cuts={n_cuts}."

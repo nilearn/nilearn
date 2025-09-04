@@ -804,12 +804,14 @@ def _get_atlas_data_and_labels(
 
     This function downloads the atlas image and labels.
     """
+    check_parameter_in_allowed(
+        atlas_source, ["Juelich", "HarvardOxford", "atlas_source"]
+    )
     if atlas_source == "Juelich":
         url = "https://www.nitrc.org/frs/download.php/12096/Juelich.tgz"
     elif atlas_source == "HarvardOxford":
         url = "https://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz"
-    else:
-        raise ValueError(f"Atlas source {atlas_source} is not valid.")
+
     # For practical reasons, we mimic the FSL data directory here.
     data_dir = get_dataset_dir("fsl", data_dir=data_dir, verbose=verbose)
     opts = {"uncompress": True}
@@ -1175,6 +1177,7 @@ def fetch_atlas_smith_2009(
     atlas_type = "probabilistic"
 
     if url is None:
+        check_parameter_in_allowed(mirror, ["origin", "nitrc"], "mirror")
         if mirror == "origin":
             url = "https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/"
         elif mirror == "nitrc":
@@ -1186,11 +1189,6 @@ def fetch_atlas_smith_2009(
                 "https://www.nitrc.org/frs/download.php/7728/",
                 "https://www.nitrc.org/frs/download.php/7727/",
             ]
-        else:
-            raise ValueError(
-                f'Unknown mirror "{mirror!s}". '
-                'Mirror must be "origin" or "nitrc"'
-            )
 
     files = {
         "rsn20": "rsn20.nii.gz",
