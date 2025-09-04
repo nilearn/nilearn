@@ -140,12 +140,12 @@ ignore_imports = [
 ]
 # glm, decoding, connectome, decomposition:
 # - cannot import from each other
-# - but can import from maskers, image, surface, plotting
-# maskers, image, surface, plotting:
+# - but can import from maskers, image, surface, plotting, masking, signal
+# maskers, image, surface, plotting, masking, signal:
 # - can import from each other
 layers = [
     "nilearn.glm | nilearn.decoding | nilearn.connectome | nilearn.decomposition",
-    "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting",
+    "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting : nilearn.masking : nilearn.signal",
     "nilearn.typing"
 ]
 name = "main architecture"
