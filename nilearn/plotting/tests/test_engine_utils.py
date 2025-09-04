@@ -2,8 +2,18 @@ import re
 
 import numpy as np
 import pytest
+from matplotlib.colors import Normalize
 
-from nilearn.plotting._engine_utils import colorscale, to_color_strings
+from nilearn.plotting._engine_utils import (
+    colorscale,
+    threshold_cmap,
+    to_color_strings,
+)
+
+pytest.importorskip(
+    "matplotlib",
+    reason="Matplotlib is not installed; required to run the tests!",
+)
 
 
 def check_colors(colors):
@@ -38,6 +48,33 @@ def expected_abs_threshold(threshold):
         if isinstance(threshold, str)
         else abs(threshold)
     )
+
+
+@pytest.mark.parametrize(
+    "threshold, min_th, max_th",
+    [(1, 63, 127), (3, 0, 191), (5, 0, 255), (0, 95, 95)],
+)
+def test_threshold_cmap(threshold, min_th, max_th):
+    """Test nilearn.plotting._engine_utils.threshold_cmap function for valid
+    threshold values.
+    """
+    norm = Normalize(-3, 5)
+    cmap = "RdBu"
+    thrs_cmap = threshold_cmap(cmap, norm, threshold)
+
+    for i in range(min_th, max_th):
+        assert thrs_cmap(i) == (0.5, 0.5, 0.5, 1.0)
+
+
+def test_threshold_cmap_invalid():
+    """Test nilearn.plotting._engine_utils.threshold_cmap function for negative
+    threshold.
+    """
+    threshold = -1
+    norm = Normalize(-3, 5)
+    cmap = "RdBu"
+    with pytest.raises(ValueError, match="Threshold should be a"):
+        threshold_cmap(cmap, norm, threshold)
 
 
 @pytest.mark.parametrize("threshold", ["0%", "50%", "99%", 0.5, 7.25])
