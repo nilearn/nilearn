@@ -89,7 +89,7 @@ def test_base_axes_exceptions():
         axes.transform_to_2d(None, None)
     with pytest.raises(NotImplementedError, match="'draw_position' should be"):
         axes.draw_position(None, None)
-    with pytest.raises(ValueError, match="Invalid value for direction"):
+    with pytest.raises(ValueError, match="'direction' must be one of"):
         axes.draw_2d(None, None, None)
 
 

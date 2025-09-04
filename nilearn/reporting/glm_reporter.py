@@ -932,7 +932,7 @@ def _stat_map_to_png(
         x_label_color = "black"
 
     else:
-        check_parameter_in_allowed(plot_type, ["slice", "glass"], plot_type)
+        check_parameter_in_allowed(plot_type, ["slice", "glass"], "plot_type")
         if plot_type == "slice":
             stat_map_plot = plot_stat_map(
                 stat_img,

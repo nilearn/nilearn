@@ -73,7 +73,7 @@ def test_plot_roi_no_int_64_warning(matplotlib_pyplot, recwarn):
 
 def test_plot_roi_view_type_error(matplotlib_pyplot):
     """Test error message for invalid view_type."""
-    with pytest.raises(ValueError, match="'view type' must be one of"):
+    with pytest.raises(ValueError, match="'view_type' must be one of"):
         demo_plot_roi(view_type="flled")
 
 
