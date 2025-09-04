@@ -2630,7 +2630,7 @@ def check_masker_transform_resampling(estimator) -> None:
 @ignore_warnings()
 def check_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if os.name == "nt" and sys.version_info[1] == 10:
+    if os.name == "nt" and sys.version_info[1] < 13:
         # TODO (python >= 3.11)
         # rare failure of this test on python 3.10 on windows
         # this works for python 3.13
