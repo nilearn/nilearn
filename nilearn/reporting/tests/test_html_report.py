@@ -512,7 +512,7 @@ def test_generate_report_engine_error(surf_maps_img, surf_img_2d):
     masker.fit_transform(surf_img_2d(10))
     with pytest.raises(
         ValueError,
-        match="should be either 'matplotlib' or 'plotly'",
+        match="'engine' must be one of",
     ):
         masker.generate_report(engine="invalid")
 

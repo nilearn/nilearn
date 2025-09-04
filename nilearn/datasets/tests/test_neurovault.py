@@ -872,10 +872,7 @@ def test_fetch_neurovault_ids(tmp_path):
 
 def test_fetch_neurovault_ids_error():
     """Test fetch_neurovault_ids errors."""
-    with pytest.raises(
-        ValueError,
-        match="Supported download modes are: overwrite, download_new, offline",
-    ):
+    with pytest.raises(ValueError, match="'mode' must be one of"):
         fetch_neurovault_ids(mode="bad")
 
 

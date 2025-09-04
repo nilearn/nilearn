@@ -146,7 +146,7 @@ def test_fetch_haxby(tmp_path, request_mocker):
     assert "stimuli" in haxby
 
     subjects = ["a", 8]
-    message = "You provided invalid subject id {0} in a list"
+    message = "'subject id' must be one of"
 
     for sub_id in subjects:
         with pytest.raises(ValueError, match=message.format(sub_id)):
@@ -474,7 +474,7 @@ def test_fetch_mixed_gambles(tmp_path, n_subjects):
 def test_check_parameters_megatrawls_datasets():
     # testing whether the function raises the same error message
     # if invalid input parameters are provided
-    message = "Invalid {0} input is provided: {1}."
+    message = "'{0}' must be one of"
 
     for invalid_input_dim in [1, 5, 30]:
         with pytest.raises(
@@ -759,7 +759,7 @@ def test_fetch_development_fmri_invalid_n_subjects():
 
 
 def test_fetch_development_fmri_exception():
-    with pytest.raises(ValueError, match="Wrong value for age_group"):
+    with pytest.raises(ValueError, match="'age_group' must be one of"):
         func._filter_func_regressors_by_participants(
             participants="junk", age_group="junk for test"
         )

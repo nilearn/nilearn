@@ -249,7 +249,7 @@ def test_img_to_signals_labels_bad_mask_input(
 def test_img_to_signals_labels_error_strategy(
     img_4d_zeros_eye, img_3d_zeros_eye
 ):
-    with pytest.raises(ValueError, match="Invalid strategy"):
+    with pytest.raises(ValueError, match="'strategy' must be one of"):
         img_to_signals_labels(
             imgs=img_4d_zeros_eye, labels_img=img_3d_zeros_eye, strategy="foo"
         )

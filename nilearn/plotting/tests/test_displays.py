@@ -100,7 +100,7 @@ def test_cut_axes_exception(affine_eye):
     axes = CutAxes(None, "foo", 2)
     assert axes.direction == "foo"
     assert axes.coord == 2
-    with pytest.raises(ValueError, match="Invalid value for direction"):
+    with pytest.raises(ValueError, match="'direction' must be one of"):
         axes.transform_to_2d(None, affine_eye)
 
 

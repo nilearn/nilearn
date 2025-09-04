@@ -189,8 +189,8 @@ def fsl_fetcher(name):
 )
 def test_fetch_atlas_fsl_errors(prob, fsl_fetcher, tmp_path):
     # specify non-existing atlas item
-    with pytest.raises(ValueError, match="Invalid atlas name"):
-        fsl_fetcher("not_inside")
+    with pytest.raises(ValueError, match="'atlas_name' must be one of"):
+        fsl_fetcher(atlas_name="not_inside")
     # Choose a probabilistic atlas with symmetric split
     with pytest.raises(ValueError, match="Region splitting"):
         fsl_fetcher(prob, data_dir=str(tmp_path), symmetric_split=True)
@@ -522,12 +522,10 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
 
 def test_fetch_atlas_yeo_2011_error(tmp_path):
     """Raise errors when the wrong values are passed."""
-    with pytest.raises(ValueError, match="'n_networks' must be 7 or 17."):
+    with pytest.raises(ValueError, match="'n_networks' must be one of"):
         fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0, n_networks=10)
 
-    with pytest.raises(
-        ValueError, match="'thickness' must be 'thin' or 'thick'."
-    ):
+    with pytest.raises(ValueError, match="'thickness' must be one of"):
         fetch_atlas_yeo_2011(
             data_dir=tmp_path, verbose=0, thickness="dead_parot"
         )
@@ -634,9 +632,7 @@ def test_fetch_atlas_aal(
 
 
 def test_fetch_atlas_aal_version_error(tmp_path):
-    with pytest.raises(
-        ValueError, match="The version of AAL requested 'FLS33'"
-    ):
+    with pytest.raises(ValueError, match="'version' must be one of"):
         fetch_atlas_aal(version="FLS33", data_dir=tmp_path, verbose=0)
 
 
@@ -681,9 +677,7 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path):
 
 
 def test_fetch_atlas_basc_multiscale_2015_error(tmp_path):
-    with pytest.raises(
-        ValueError, match="The version of Brain parcellations requested 'aym'"
-    ):
+    with pytest.raises(ValueError, match="'version' must be one of"):
         fetch_atlas_basc_multiscale_2015(
             version="aym", data_dir=tmp_path, verbose=0
         )
@@ -850,8 +844,10 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
     validate_atlas(data)
     assert load(data.maps).shape[-1] == 16
 
-    with pytest.raises(NotImplementedError):
-        fetch_atlas_pauli_2017("junk for testing", data_dir)
+    with pytest.raises(ValueError, match="'atlas_type' must be one of"):
+        fetch_atlas_pauli_2017(
+            atlas_type="junk for testing", data_dir=data_dir
+        )
 
 
 # TODO (nilearn >= 0.13.0) remove this test

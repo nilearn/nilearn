@@ -2281,7 +2281,7 @@ def _read_download_params(
     check_parameter_in_allowed(
         download_mode,
         ["overwrite", "download_new", "offline"],
-        "download_mode",
+        "mode",
     )
     download_params["download_mode"] = download_mode
     if collection_terms is None:
