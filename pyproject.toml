@@ -132,7 +132,7 @@ root_package = "nilearn"
 [[tool.importlinter.contracts]]
 ignore_imports = [
     "nilearn.maskers.tests.* -> nilearn._utils.estimator_checks",  # allowed in tests
-    "nilearn.interfaces.bids.glm -> nilearn.glm",
+    # "nilearn.interfaces.bids.glm -> nilearn.glm",
     "nilearn._utils.glm -> nilearn.glm.second_level",
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
     "nilearn.signal -> nilearn.glm.first_level.design_matrix"
