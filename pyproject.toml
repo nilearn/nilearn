@@ -15,7 +15,6 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -40,13 +39,11 @@ license-files = ["LICENSE"]
 maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
 name = "nilearn"
 readme = "README.rst"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
-dev = [
-    "nilearn[plotting,doc,style,test]"
-]
+dev = ["nilearn[plotting,doc,style,test]"]
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
@@ -70,14 +67,13 @@ plotly = ["nilearn[plotting]"]
 # Kaleido version is pinned for windows due to bug
 # See https://github.com/plotly/Kaleido/issues/134 for more detail
 plotting = [
-    "matplotlib>=3.3.0",
-    "plotly>=5.0.0,!=6.1.0",
+    "matplotlib>=3.8.0",
+    "plotly>=5.0.0,!=6.1.0 ; platform_system != 'Windows'",
     "kaleido ; platform_system != 'Windows'",
+    "plotly>=5.0.0,<6.1.0 ; platform_system == 'Windows'",
     "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
 ]
-style = [
-    'tox'
-]
+style = ['tox']
 # For running unit and docstring tests
 test = [
     "coverage",
@@ -160,10 +156,7 @@ warn_unreachable = true
 
 [[tool.mypy.overrides]]
 ignore_errors = true
-module = [
-    "nilearn.externals.*",
-    "nilearn._version"
-]
+module = ["nilearn.externals.*", "nilearn._version"]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
@@ -196,9 +189,13 @@ minversion = "6.0"
 xfail_strict = true
 
 [tool.ruff]
-exclude = [
-    "nilearn/externals/*",
-    "nilearn/_version.py"
+extend-exclude = ["nilearn/externals/*", "doc/auto_examples/*", "nilearn/_version.py"]
+include = [
+    "pyproject.toml",
+    "nilearn/**/*.py",
+    "examples/**/*.py",
+    "maint_tools/**/*.py",
+    "doc/**/*.py"
 ]
 indent-width = 4
 line-length = 79

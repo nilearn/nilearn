@@ -308,7 +308,7 @@ def test_geometric_mean_properties():
 
     # Generic
     assert isinstance(spds, list)
-    for spd, input_spd in zip(spds, input_spds):
+    for spd, input_spd in zip(spds, input_spds, strict=False):
         assert_array_equal(spd, input_spd)
     assert is_spd(gmean, decimal=7)
 
@@ -702,7 +702,7 @@ def _assert_connectivity_tangent(connectivities, conn_measure, covs):
         also produces a positive-definite matrix
     """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         assert_array_almost_equal(
             estimated_covariance_matrix, estimated_covariance_matrix.T
@@ -731,7 +731,7 @@ def _assert_connectivity_precision(connectivities, covs):
       is close to the identity matrix.
     """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         assert is_spd(estimated_covariance_matrix, decimal=7)
         assert_array_almost_equal(
@@ -754,7 +754,7 @@ def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
     should be close to the true covariance matrix.
     """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         assert is_spd(estimated_covariance_matrix, decimal=7)
 
@@ -774,7 +774,7 @@ def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
 
 def _assert_connectivity_partial_correlation(connectivities, covs):
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         precision_matrix = linalg.inv(true_covariance_matrix)
 

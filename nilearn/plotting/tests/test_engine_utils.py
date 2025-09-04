@@ -19,7 +19,7 @@ pytest.importorskip(
 def check_colors(colors):
     """Perform several checks on colors obtained from function colorscale."""
     assert len(colors) == 100
-    val, cstring = zip(*colors)
+    val, cstring = zip(*colors, strict=False)
     assert np.allclose(np.linspace(0, 1, 100), val, atol=1e-3)
     assert val[0] == 0
     assert val[-1] == 1

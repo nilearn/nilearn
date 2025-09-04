@@ -352,7 +352,8 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     # Download dataset files
 
     archives = [
-        url + f"{int(ni)}/adhd40_{ii}.tgz" for ni, ii in zip(nitrc_ids, ids)
+        url + f"{int(ni)}/adhd40_{ii}.tgz"
+        for ni, ii in zip(nitrc_ids, ids, strict=False)
     ]
     functionals = [
         f"data/{i}/{i}_rest_tshift_RPI_voreg_mni.nii.gz" for i in ids
@@ -361,14 +362,14 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     functionals = fetch_files(
         data_dir,
-        zip(functionals, archives, (opts,) * n_subjects),
+        zip(functionals, archives, (opts,) * n_subjects, strict=False),
         resume=resume,
         verbose=verbose,
     )
 
     confounds = fetch_files(
         data_dir,
-        zip(confounds, archives, (opts,) * n_subjects),
+        zip(confounds, archives, (opts,) * n_subjects, strict=False),
         resume=resume,
         verbose=verbose,
     )
@@ -1916,7 +1917,8 @@ def load_nki(
 
     images = []
     for i, (left, right) in enumerate(
-        zip(nki_dataset["func_left"], nki_dataset["func_right"]), start=1
+        zip(nki_dataset["func_left"], nki_dataset["func_right"], strict=False),
+        start=1,
     ):
         logger.log(f"Loading subject {i} of {n_subjects}.", verbose=verbose)
 
@@ -2713,7 +2715,7 @@ def fetch_openneuro_dataset(
 
     # download the files
     downloaded = []
-    for file_spec, file_dir in zip(files_spec, files_dir):
+    for file_spec, file_dir in zip(files_spec, files_dir, strict=False):
         # Timeout errors are common in the s3 connection so we try to avoid
         # failure of the dataset download for a transient instability
         success = False
@@ -2776,7 +2778,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     )
     files = fetch_files(data_dir, filenames, verbose=verbose)
 
-    params = dict(list(zip(options, files)))
+    params = dict(list(zip(options, files, strict=False)))
     data = Bunch(**params)
 
     description = get_dataset_descr(dataset_name)

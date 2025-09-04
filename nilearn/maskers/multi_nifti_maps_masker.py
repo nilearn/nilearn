@@ -257,7 +257,9 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         region_signals = Parallel(n_jobs=n_jobs)(
             delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sms)
-            for imgs, cfs, sms in zip(niimg_iter, confounds, sample_mask)
+            for imgs, cfs, sms in zip(
+                niimg_iter, confounds, sample_mask, strict=False
+            )
         )
         return region_signals
 

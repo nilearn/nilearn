@@ -115,7 +115,7 @@ print("Done, plotting results.")
 # ----------------
 
 for index, (ic_map, ic_terms) in enumerate(
-    zip(ica_maps, term_weights_for_components)
+    zip(ica_maps, term_weights_for_components, strict=False)
 ):
     if -ic_map.min() > ic_map.max():
         # Flip the map's sign for prettiness

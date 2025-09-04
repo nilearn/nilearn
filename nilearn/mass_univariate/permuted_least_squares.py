@@ -790,7 +790,7 @@ def permuted_ols(
         cmfwe_h0_parts,
         tfce_scores_as_ranks_parts,
         h0_tfce_parts,
-    ) = zip(*ret)
+    ) = zip(*ret, strict=False)
 
     # Voxel-level FWE
     vfwe_h0 = np.hstack(h0_vfwe_parts)
