@@ -15,49 +15,55 @@ from matplotlib.colors import (
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
+from nilearn.plotting._utils import get_colorbar_and_data_ranges
+
+
+def adjust_cmap(cmap, vmin, vmax, threshold):
+    """Normalize and adjust the specified colormap according to specified vmin,
+    vmax, threshold values.
+
+    Parameters
+    ----------
+    %(cmap)s
+    vmin : :obj:`float`  or obj:`int`
+        Should not be None
+    vmax : :obj:`float`  or obj:`int`
+        Should not be None
+    threshold : :obj:`float`  or obj:`int`
+        Should be non-negative
+    """
+    our_cmap = plt.get_cmap(cmap)
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
+
+    if threshold is not None:
+        # set colors to gray for absolute values < threshold
+        istart = int(norm(-threshold, clip=True) * (our_cmap.N - 1))
+        istop = int(norm(threshold, clip=True) * (our_cmap.N - 1))
+        for i in range(istart, istop):
+            cmaplist[i] = (0.5, 0.5, 0.5, 1.0)
+
+    our_cmap = LinearSegmentedColormap.from_list(
+        "Custom cmap", cmaplist, our_cmap.N
+    )
+    return our_cmap, norm
 
 
 def colorscale(
     cmap, values, threshold=None, symmetric_cmap=True, vmax=None, vmin=None
 ):
-    """Normalize a cmap, put it in plotly format, get threshold and range."""
-    cmap = plt.get_cmap(cmap)
-    abs_values = np.abs(values)
-
-    if (
-        symmetric_cmap
-        and vmin is not None
-        and vmax is not None
-        and vmin != -vmax
-    ):
-        warn(
-            f"Specified {vmin=} and {vmax=} values do not create a symmetric"
-            " colorbar. The values will be modified to be symmetric.",
-            stacklevel=find_stack_level(),
-        )
-    if vmax is None:
-        vmax = abs_values.max()
-    if vmin is None:
-        vmin = values.min()
-    # cast to float to avoid TypeError if vmax/vmin is a numpy boolean
-    vmax = float(vmax)
-    vmin = float(vmin)
-
-    if symmetric_cmap:
-        vmax = max(abs(vmin), abs(vmax))
-        vmin = -vmax
-    norm = Normalize(vmin=vmin, vmax=vmax)
-    cmaplist = [cmap(i) for i in range(cmap.N)]
-    abs_threshold = None
-    if threshold is not None:
-        abs_threshold = check_threshold(threshold, values, fast_abs_percentile)
-        istart = int(norm(-abs_threshold, clip=True) * (cmap.N - 1))
-        istop = int(norm(abs_threshold, clip=True) * (cmap.N - 1))
-        for i in range(istart, istop):
-            cmaplist[i] = (0.5, 0.5, 0.5, 1.0)  # just an average gray color
-    our_cmap = LinearSegmentedColormap.from_list(
-        "Custom cmap", cmaplist, cmap.N
+    """Calculate colorbar ranges, adjust and normalize cmap depending on
+    specified vmin, vmax, and threshold values. Return the results as dict to
+    be used in plotly.
+    """
+    _, _, vmin, vmax = get_colorbar_and_data_ranges(
+        values, vmin, vmax, symmetric_cmap
     )
+
+    if threshold is not None:
+        threshold = check_threshold(threshold, values, fast_abs_percentile)
+    our_cmap, norm = adjust_cmap(cmap, vmin, vmax, threshold)
+
     x = np.linspace(0, 1, 100)
     rgb = our_cmap(x, bytes=True)[:, :3]
     rgb = np.array(rgb, dtype=int)
@@ -71,7 +77,7 @@ def colorscale(
         "vmax": vmax,
         "cmap": our_cmap,
         "norm": norm,
-        "abs_threshold": abs_threshold,
+        "abs_threshold": threshold,
     }
 
 

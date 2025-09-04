@@ -790,7 +790,6 @@ def plot_img_on_surf(
     fig = backend._plot_img_on_surf(
         surf,
         surf_mesh=surf_mesh,
-        stat_map=stat_map,
         texture=texture,
         hemis=hemis,
         modes=modes,
