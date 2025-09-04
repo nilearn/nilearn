@@ -49,6 +49,19 @@ class OwningClass(BaseEstimator):
         self.verbose = verbose
         self.dummy = dummy
 
+    def __sklearn_tags__(self):
+        # TODO (sklearn  >= 1.6.0) remove if block
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(surf_img=True, niimg_like=False)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = BaseEstimator().__sklearn_tags__()
+        tags.input_tags = InputTags(surf_img=True, niimg_like=False)
+        return tags
+
 
 class DummyEstimator:
     def __init__(self, **kwargs):
