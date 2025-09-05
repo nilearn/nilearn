@@ -535,7 +535,7 @@ class BaseSlicer:
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
         ims = []
         to_iterate_over = zip(
-            self.axes.values(), data_2d_list, transparency_list
+            self.axes.values(), data_2d_list, transparency_list, strict=False
         )
         threshold = float(threshold) if threshold else None
         for display_ax, data_2d, transparency_2d in to_iterate_over:
@@ -2125,11 +2125,15 @@ class MosaicSlicer(BaseSlicer):
         coords = {}
         if img is None or img is False:
             bounds = ((-40, 40), (-30, 30), (-30, 75))
-            for direction, n_cuts in zip(sorted(cut_displayed), cut_coords):
+            for direction, n_cuts in zip(
+                sorted(cut_displayed), cut_coords, strict=False
+            ):
                 lower, upper = bounds["xyz".index(direction)]
                 coords[direction] = np.linspace(lower, upper, n_cuts).tolist()
         else:
-            for direction, n_cuts in zip(sorted(cut_displayed), cut_coords):
+            for direction, n_cuts in zip(
+                sorted(cut_displayed), cut_coords, strict=False
+            ):
                 coords[direction] = find_cut_slices(
                     img, direction=direction, n_cuts=n_cuts
                 )

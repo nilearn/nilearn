@@ -352,7 +352,7 @@ def test_smooth_img(affine_eye, tmp_path):
 
         assert isinstance(out, list)
         assert len(out) == 2
-        for o, s, l in zip(out, shapes, lengths):
+        for o, s, l in zip(out, shapes, lengths, strict=False):
             assert o.shape == (*s, l)
 
         # Single image as input
@@ -1641,7 +1641,7 @@ def test_largest_cc_img(create_files, tmp_path):
 
     assert isinstance(out, list)
     assert len(out) == 2
-    for o, s in zip(out, shapes):
+    for o, s in zip(out, shapes, strict=False):
         assert o.shape == (s)
 
     # Single image as input
@@ -1675,7 +1675,7 @@ def test_largest_cc_img_non_native_endian_type(create_files, tmp_path):
 
     assert isinstance(out, list)
     assert len(out) == 2
-    for o, s in zip(out, shapes):
+    for o, s in zip(out, shapes, strict=False):
         assert o.shape == (s)
 
     # Single image as input
