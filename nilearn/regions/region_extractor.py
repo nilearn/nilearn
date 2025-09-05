@@ -19,7 +19,10 @@ from nilearn._utils.niimg_conversions import (
     check_niimg_4d,
     check_same_fov,
 )
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn._utils.segmentation import random_walker
 from nilearn.image.image import (
     concat_imgs,
@@ -208,13 +211,9 @@ def connected_regions(
     min_region_size = min_region_size / np.abs(np.linalg.det(affine[:3, :3]))
 
     allowed_extract_types = ["connected_components", "local_regions"]
-    if extract_type not in allowed_extract_types:
-        message = (
-            "'extract_type' should be given "
-            f"either of these {allowed_extract_types} "
-            f"You provided extract_type='{extract_type}'"
-        )
-        raise ValueError(message)
+    check_parameter_in_allowed(
+        extract_type, allowed_extract_types, "extract_type"
+    )
 
     if mask_img is not None:
         if not check_same_fov(maps_img, mask_img):
@@ -540,12 +539,11 @@ class RegionExtractor(NiftiMapsMasker):
             check_niimg(imgs)
 
         list_of_strategies = ["ratio_n_voxels", "img_value", "percentile"]
-        if self.thresholding_strategy not in list_of_strategies:
-            message = (
-                "'thresholding_strategy' should be "
-                f"either of these {list_of_strategies}"
-            )
-            raise ValueError(message)
+        check_parameter_in_allowed(
+            self.thresholding_strategy,
+            list_of_strategies,
+            "thresholding_strategy",
+        )
 
         if self.threshold is None or isinstance(self.threshold, str):
             raise ValueError(

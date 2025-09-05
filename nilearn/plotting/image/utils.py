@@ -154,7 +154,7 @@ def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
         if dim != "auto" and not isinstance(dim, numbers.Number):
             raise ValueError(
                 "The input given for 'dim' needs to be a float. "
-                f"You provided dim={dim} in {type(dim)}."
+                f"You provided dim={dim} in {dim.__class__.__name__}."
             )
         vmean = 0.5 * (vmin + vmax)
         ptp = 0.5 * (vmax - vmin)

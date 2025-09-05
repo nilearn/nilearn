@@ -5,6 +5,7 @@ from math import sqrt
 import numpy as np
 
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.masking import unmask_from_to_3d_array
 
 from ._objective_functions import (
@@ -451,10 +452,7 @@ def _tvl1_objective(X, y, w, alpha, l1_ratio, mask, loss="mse"):
         Value of TV-L1 penalty.
     """
     loss = loss.lower()
-    if loss not in ["mse", "logistic"]:
-        raise ValueError(
-            f"loss must be one of 'mse' or 'logistic'; got '{loss}'"
-        )
+    check_parameter_in_allowed(loss, ["mse", "logistic"], "loss")
 
     if loss == "mse":
         out = squared_loss(X, y, w)
@@ -546,11 +544,7 @@ def tvl1_solver(
         Solver information, for warm start.
 
     """
-    # sanitize loss
-    if loss not in ["mse", "logistic"]:
-        raise ValueError(
-            f"'{loss}' loss not implemented. Should be 'mse' or 'logistic"
-        )
+    check_parameter_in_allowed(loss, ["mse", "logistic"], "loss")
 
     # shape of image box
     flat_mask = mask.ravel()

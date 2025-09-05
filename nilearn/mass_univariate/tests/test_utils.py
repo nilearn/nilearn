@@ -113,9 +113,7 @@ def test_null_to_p_float_2_tailed(test_values, expected_p_value, null):
 
 def test_null_to_p_float_error(null):
     """Check invalid alternative parameter."""
-    with pytest.raises(
-        ValueError, match='Argument "alternative" must be one of'
-    ):
+    with pytest.raises(ValueError, match="'alternative' must be one"):
         _utils.null_to_p(9, null, alternative="raise")
 
 

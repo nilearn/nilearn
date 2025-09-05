@@ -11,6 +11,7 @@ import scipy.stats as sps
 from nilearn._utils import logger
 from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -101,12 +102,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
     if stat_type is None:
         stat_type = "t" if dim == 1 else "F"
 
-    acceptable_stat_types = ["t", "F"]
-    if stat_type not in acceptable_stat_types:
-        raise ValueError(
-            f"'{stat_type}' is not a known contrast type. "
-            f"Allowed types are {acceptable_stat_types}."
-        )
+    check_parameter_in_allowed(stat_type, ["t", "F"], "stat_type")
 
     if stat_type == "t":
         effect_ = np.zeros(labels.size)
@@ -251,10 +247,9 @@ class Contrast:
                 "Automatically converted multi-dimensional t to F contrast"
             )
             stat_type = "F"
-        if stat_type not in ["t", "F"]:
-            raise ValueError(
-                f"{stat_type} is not a valid stat_type. Should be t or F"
-            )
+
+        check_parameter_in_allowed(stat_type, ["t", "F"], "stat_type")
+
         self.stat_type = stat_type
         self.stat_ = None
         self.p_value_ = None
@@ -312,6 +307,7 @@ class Contrast:
         self.baseline = baseline
 
         # Case: one-dimensional contrast ==> t or t**2
+        check_parameter_in_allowed(self.stat_type, ["F", "t"], "stat_type")
         if self.stat_type == "F":
             stat = (
                 np.sum((self.effect - baseline) ** 2, 0)
@@ -323,8 +319,7 @@ class Contrast:
             stat = (self.effect - baseline) / np.sqrt(
                 np.maximum(self.variance, self.tiny)
             )
-        else:
-            raise ValueError("Unknown statistic type")
+
         self.stat_ = stat.ravel()
         return self.stat_
 

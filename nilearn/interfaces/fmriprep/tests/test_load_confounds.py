@@ -330,14 +330,14 @@ def test_load_single_confounds_file(tmp_path, fmriprep_version):
 
 
 @pytest.mark.parametrize(
-    "strategy,message",
+    "strategy, message",
     [
         (
             ["string"],
-            "not a supported type of confounds.",
+            "must be one of.",
         ),
         ("error", "tuple or list of strings"),
-        ((0,), "not a supported type of confounds."),
+        ((0,), "must be one of."),
         (("compcor",), "high_pass"),
     ],
 )
@@ -345,9 +345,8 @@ def test_check_strategy(strategy, message):
     """Check that flawed strategy options \
     generate meaningful error messages.
     """
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(ValueError, match=message):
         _check_strategy(strategy=strategy)
-    assert message in exc_info.value.args[0]
 
 
 SUFFIXES = np.array(["", "_derivative1", "_power2", "_derivative1_power2"])
@@ -645,11 +644,10 @@ def test_ica_aroma(tmp_path, fmriprep_version):
     assert conf.size == 0
 
     # invalid combination of strategy and option
-    with pytest.raises(ValueError) as exc_info:
+    with pytest.raises(ValueError, match="'ica_aroma' must be one of"):
         conf, _ = load_confounds(
             regular_nii, strategy=("ica_aroma",), ica_aroma="invalid"
         )
-    assert "Current input: invalid" in exc_info.value.args[0]
 
 
 @pytest.mark.parametrize(

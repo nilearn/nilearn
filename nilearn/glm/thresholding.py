@@ -13,6 +13,7 @@ from scipy.stats import norm
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.image import get_data, math_img, threshold_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -318,11 +319,9 @@ def threshold_stats_img(
         "bonferroni",
         None,
     ]
-    if height_control not in height_control_methods:
-        raise ValueError(
-            f"'height_control' should be one of {height_control_methods}. \n"
-            f"Got: '{height_control_methods}'"
-        )
+    check_parameter_in_allowed(
+        height_control, height_control_methods, "height_control"
+    )
 
     parameters = dict(**inspect.signature(threshold_stats_img).parameters)
     if height_control is not None and float(threshold) != float(
