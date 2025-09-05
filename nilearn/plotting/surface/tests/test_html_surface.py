@@ -98,7 +98,7 @@ def test_full_brain_info(mni152_template_res_2):
 
     # TODO (nilearn >= 0.13.0)
     with pytest.warns(
-        DeprecationWarning,
+        FutureWarning,
         match="full_brain_info is a private function and is renamed to "
         "_full_brain_info. Using the deprecated name will raise an error "
         "in release 0.13",

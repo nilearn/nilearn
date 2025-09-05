@@ -311,7 +311,7 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
                 f' being replaced by "{new_key}" due to a change in the'
                 " choice of underlying scikit-learn estimator. In a future"
                 " version, this will result in an error.",
-                DeprecationWarning,
+                FutureWarning,
                 stacklevel=find_stack_level(),
             )
             param_grid_item[new_key] = param_grid_item.pop(key_to_replace)

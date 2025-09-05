@@ -823,7 +823,7 @@ def test_cluster_level_parameters_warnings(cluster_level_design, masker):
     # masker is defined, but threshold is not.
     # no cluster-level inference is performed, but there's a warning.
     with pytest.warns(
-        DeprecationWarning,
+        FutureWarning,
         match='"legacy" output structure for "permuted_ols" is deprecated',
     ):
         out = permuted_ols(

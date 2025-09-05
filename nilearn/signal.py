@@ -106,7 +106,7 @@ def standardize_signal(
                 "'zscore_sample' instead."
             )
             warnings.warn(
-                category=DeprecationWarning,
+                category=FutureWarning,
                 message=std_strategy_default,
                 stacklevel=find_stack_level(),
             )

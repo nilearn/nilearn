@@ -1,7 +1,5 @@
 """Configuration and extra fixtures for pytest."""
 
-import warnings
-
 import nibabel
 import numpy as np
 import pandas as pd
@@ -125,25 +123,6 @@ def close_all():
         import matplotlib.pyplot as plt
 
         plt.close("all")  # takes < 1 us so just always do it
-
-
-@pytest.fixture(autouse=True)
-def suppress_specific_warning():
-    """Ignore internal deprecation warnings."""
-    with warnings.catch_warnings():
-        # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
-        messages = (
-            "The `darkness` parameter will be deprecated.*|"
-            "In release 0.13, this fetcher will return a dictionary.*|"
-            "The default strategy for standardize.*|"
-            "The 'fetch_bids_langloc_dataset' function will be removed.*|"
-        )
-        warnings.filterwarnings(
-            "ignore",
-            message=messages,
-            category=DeprecationWarning,
-        )
-        yield
 
 
 # ------------------------   RNG   ------------------------#

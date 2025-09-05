@@ -2938,7 +2938,7 @@ def check_nifti_masker_clean_warning(estimator):
     estimator.high_pass = 1 / 128
     estimator.clean_kwargs = {"clean__filter": "cosine"}
 
-    with pytest.warns(DeprecationWarning, match="You passed some kwargs"):
+    with pytest.warns(FutureWarning, match="You passed some kwargs"):
         estimator.fit(input_img)
 
     detrended_signal = estimator.transform(input_img)

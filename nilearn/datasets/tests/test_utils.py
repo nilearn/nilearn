@@ -629,7 +629,7 @@ def test_load_sample_motor_activation_image():
     # TODO (nilearn >= 0.13.0) remove
     """
     with pytest.warns(
-        DeprecationWarning,
+        FutureWarning,
         match="Please import this function from 'nilearn.datasets.func'",
     ):
         utils.load_sample_motor_activation_image()

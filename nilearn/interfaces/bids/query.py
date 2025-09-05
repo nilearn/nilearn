@@ -326,7 +326,7 @@ def parse_bids_filename(img_path, legacy=True):
                 "a dictionary that uses BIDS terms as keys. "
                 "Set 'legacy=False' to start using this new behavior."
             ),
-            DeprecationWarning,
+            FutureWarning,
             stacklevel=find_stack_level(),
         )
 

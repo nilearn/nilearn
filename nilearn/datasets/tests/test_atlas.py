@@ -500,7 +500,7 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     request_mocker.url_mapping["*Yeo_JNeurophysiol11_MNI152*"] = yeo_data
 
     with pytest.warns(
-        DeprecationWarning, match="the parameters 'n_networks' and 'thickness'"
+        FutureWarning, match="the parameters 'n_networks' and 'thickness'"
     ):
         dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
 
@@ -870,7 +870,7 @@ def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
     request_mocker.url_mapping["*osf.io/w8zq2/*"] = prob_atlas
     data_dir = str(tmp_path / "pauli_2017")
 
-    with pytest.warns(DeprecationWarning, match='The parameter "version"'):
+    with pytest.warns(FutureWarning, match='The parameter "version"'):
         data = fetch_atlas_pauli_2017(
             version="probabilistic", data_dir=data_dir
         )
@@ -878,14 +878,14 @@ def test_fetch_atlas_pauli_2017_deprecated_values(tmp_path, request_mocker):
         assert load(data.maps).shape[-1] == 16
 
     with pytest.warns(
-        DeprecationWarning, match="The possible values for atlas_type"
+        FutureWarning, match="The possible values for atlas_type"
     ):
         data = fetch_atlas_pauli_2017("det", data_dir)
 
         assert len(data.labels) == 17
 
     with pytest.warns(
-        DeprecationWarning, match="The possible values for atlas_type"
+        FutureWarning, match="The possible values for atlas_type"
     ):
         data = fetch_atlas_pauli_2017("prob", data_dir)
 

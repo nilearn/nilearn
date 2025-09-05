@@ -80,7 +80,7 @@ def load_sample_motor_activation_image():
     warn(
         f"{_GENERAL_MESSAGE}"
         "Please import this function from 'nilearn.datasets.func' instead.",
-        DeprecationWarning,
+        FutureWarning,
         stacklevel=find_stack_level(),
     )
     return tmp()
