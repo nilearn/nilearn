@@ -29,3 +29,5 @@ Changes
 -------
 
 - :bdg-danger:`Deprecation` The attribute ``nifti_maps_masker_`` was removed from :class:`~decomposition.CanICA` and :class:`~decomposition.DictLearning`. Use ``maps_masker_`` instead. (:gh:`5626` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The default for ``keep_masked_maps`` and ``keep_masked_labels`` was changed from ``True`` to ``False`` in :class:`~maskers.NiftiMapsMasker`, :class:`~maskers.MultiNiftiMapsMasker`, :class:`~maskers.NiftiLabelsMasker`, :class:`~maskers.MultiNiftiLabelsMasker`, :class:`~regions.RegionExtractor` and :func:`~regions.img_to_signals_labels`. These parameters will be removed in Nilearn>=0.15.0 (:gh:`5632` by `Rémi Gau`_).

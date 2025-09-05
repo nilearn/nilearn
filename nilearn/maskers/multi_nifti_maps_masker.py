@@ -154,7 +154,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        keep_masked_maps=True,
+        keep_masked_maps=False,
         memory=None,
         memory_level=0,
         verbose=0,

@@ -305,7 +305,10 @@ def test_nifti_labels_masker_report(
 ):
     """Check content nifti label masker."""
     masker = NiftiLabelsMasker(
-        img_labels, labels=labels, mask_img=img_mask_eye
+        img_labels,
+        labels=labels,
+        mask_img=img_mask_eye,
+        keep_masked_labels=True,
     )
     masker.fit_transform(img_3d_rand_eye)
     report = masker.generate_report()
