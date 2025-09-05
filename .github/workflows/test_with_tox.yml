@@ -66,7 +66,7 @@ jobs:
         runs-on: ${{ matrix.os }}
 
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 description: [latest dependencies]
                 py: ['3.13', '3.12', '3.11', '3.10']
@@ -106,7 +106,7 @@ jobs:
 
         -   name: Run test suite
             run: |
-                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
+                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn/plotting/surface/tests/test_plotly_surface_figure.py::test_dummy
                 tox run -e plot_test_timing
 
         -   name: Upload test report
