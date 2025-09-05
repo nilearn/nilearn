@@ -145,7 +145,10 @@ print(f"{conditions.shape=}")
 from nilearn.decoding import Decoder
 
 decoder = Decoder(
-    estimator="svc", mask=mask_filename, standardize="zscore_sample"
+    estimator="svc",
+    mask=mask_filename,
+    standardize="zscore_sample",
+    screening_percentile=100,
 )
 
 # %%
@@ -189,7 +192,10 @@ conditions_train = conditions[:-30]
 conditions_test = conditions[-30:]
 
 decoder = Decoder(
-    estimator="svc", mask=mask_filename, standardize="zscore_sample"
+    estimator="svc",
+    mask=mask_filename,
+    standardize="zscore_sample",
+    screening_percentile=100,
 )
 decoder.fit(fmri_niimgs_train, conditions_train)
 
@@ -216,7 +222,10 @@ cv = KFold(n_splits=5)
 
 for fold, (train, test) in enumerate(cv.split(conditions), start=1):
     decoder = Decoder(
-        estimator="svc", mask=mask_filename, standardize="zscore_sample"
+        estimator="svc",
+        mask=mask_filename,
+        standardize="zscore_sample",
+        screening_percentile=100,
     )
     decoder.fit(index_img(fmri_niimgs, train), conditions[train])
     prediction = decoder.predict(index_img(fmri_niimgs, test))
@@ -242,6 +251,7 @@ decoder = Decoder(
     standardize="zscore_sample",
     cv=n_folds,
     scoring="accuracy",
+    screening_percentile=100,
 )
 decoder.fit(fmri_niimgs, conditions)
 
@@ -278,7 +288,11 @@ from sklearn.model_selection import LeaveOneGroupOut
 cv = LeaveOneGroupOut()
 
 decoder = Decoder(
-    estimator="svc", mask=mask_filename, standardize="zscore_sample", cv=cv
+    estimator="svc",
+    mask=mask_filename,
+    standardize="zscore_sample",
+    cv=cv,
+    screening_percentile=100,
 )
 decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
@@ -348,6 +362,7 @@ dummy_decoder = Decoder(
     mask=mask_filename,
     cv=cv,
     standardize="zscore_sample",
+    screening_percentile=100,
 )
 dummy_decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
