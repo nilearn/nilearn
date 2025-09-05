@@ -332,12 +332,6 @@ def test_standardize_error(rng):
     with pytest.raises(ValueError, match="no valid standardize strategy"):
         standardize_signal(a, standardize="foo")
 
-    # test warning for strategy that will be removed
-    with pytest.warns(
-        DeprecationWarning, match="default strategy for standardize"
-    ):
-        standardize_signal(a, standardize="zscore")
-
 
 def test_standardize(rng):
     """Test starndardize_signal with several options."""
@@ -823,7 +817,7 @@ def test_clean_confounds_detrending():
     assert (abs(coeffs) < 1000.0 * EPS).all()  # trend removed
 
 
-def test_clean_standardize_trye_false():
+def test_clean_standardize_true_false():
     """Check difference between standardize False and True."""
     signals, _, _ = generate_signals(n_features=41, n_confounds=5, length=45)
 
