@@ -1132,7 +1132,9 @@ def plot_prob_atlas(
         )
 
     transparency = alpha
-    for map_img, color, thr in zip(iter_img(maps_img), color_list, threshold):
+    for map_img, color, thr in zip(
+        iter_img(maps_img), color_list, threshold, strict=False
+    ):
         data = get_data(map_img)
         # To threshold or choose the level of the contours
         thr = check_threshold(
@@ -1821,7 +1823,9 @@ def plot_markers(
         if isinstance(node_size, collections.abc.Iterable):
             node_size = [
                 size
-                for ok_retain, size in zip(retained_nodes, node_size)
+                for ok_retain, size in zip(
+                    retained_nodes, node_size, strict=False
+                )
                 if ok_retain
             ]
 

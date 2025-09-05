@@ -588,7 +588,9 @@ class GlassBrainAxes(BaseAxes):
             line_coords = np.array(line_coords)[relevant_lines]
             line_values = line_values[relevant_lines]
 
-        for start_end_point_3d, line_value in zip(line_coords, line_values):
+        for start_end_point_3d, line_value in zip(
+            line_coords, line_values, strict=False
+        ):
             start_end_point_2d = coords_3d_to_2d(
                 start_end_point_3d, self.direction
             )

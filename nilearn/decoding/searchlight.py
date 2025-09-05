@@ -287,7 +287,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
     scores_ : numpy.ndarray
         3D array containing searchlight scores for each voxel, aligned
