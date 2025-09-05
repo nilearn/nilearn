@@ -74,7 +74,7 @@ def test_check_embedded_masker_defaults():
     assert isinstance(dummy.masker.memory, Memory)
     assert dummy.masker.memory.location is None
     assert dummy.masker.memory_level == 0
-    assert dummy.masker.verbose == 1
+    assert dummy.masker.verbose == 0
 
 
 def test_check_embedded_masker():

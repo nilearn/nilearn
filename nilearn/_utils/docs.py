@@ -386,6 +386,12 @@ dtype : dtype like, "auto" or None, default=None
     if dtype is discrete and float32 if it is continuous.
 """
 
+# estimator_args
+docdict["estimator_args"] = """
+estimator_args : dict[str, Any] or None, default=None
+    Extra parameters to pass to the sklearn learn estimators.
+"""
+
 # extractor / extract_type
 docdict["extractor"] = """
 extractor : {"local_regions", "connected_components"}, default="local_regions"
@@ -1446,6 +1452,9 @@ dummy_output_ : ndarray, shape=(n_classes, 2) \
     Returns None if non-dummy estimators are provided.
 
 estimator_ : Estimator object used during decoding.
+
+estimator_args_ : dict[str, Any]
+    Extra parameters passed to the sklearn learn estimators.
 
 intercept_ : ndarray, shape (nclasses,)
     Intercept (also known as bias) added to the decision function.
