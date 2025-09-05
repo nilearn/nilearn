@@ -129,7 +129,9 @@ def plot_img_comparison(
 
     corrs = []
 
-    for i, (ref_img, src_img) in enumerate(zip(ref_imgs, src_imgs)):
+    for i, (ref_img, src_img) in enumerate(
+        zip(ref_imgs, src_imgs, strict=False)
+    ):
         if axes is None:
             fig, (ax1, ax2) = plt.subplots(
                 1,
