@@ -276,7 +276,7 @@ class Contrast:
             'Please use the attribute "stat_type" instead.'
         )
         warn(
-            category=DeprecationWarning,
+            category=FutureWarning,
             message=attrib_deprecation_msg,
             stacklevel=find_stack_level(),
         )
@@ -521,7 +521,7 @@ def compute_fixed_effects(
 
     Warns
     -----
-    DeprecationWarning
+    FutureWarning
         Starting in version 0.13, fixed_fx_z_score_img will always be returned
 
     """
@@ -583,7 +583,7 @@ def compute_fixed_effects(
 
     # TODO (nilearn >= 0.13.0)
     warn(
-        category=DeprecationWarning,
+        category=FutureWarning,
         message="The behavior of this function will be "
         "changed in release 0.13 to have an additional "
         "return value 'fixed_fx_z_score_img' by default. "

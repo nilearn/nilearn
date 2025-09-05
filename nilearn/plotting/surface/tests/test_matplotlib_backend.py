@@ -211,7 +211,7 @@ def test_compute_facecolors_deprecation():
     bg_min, bg_max = np.min(bg_map), np.max(bg_map)
     assert bg_min < 0 or bg_max > 1
     with pytest.warns(
-        DeprecationWarning,
+        FutureWarning,
         match=(
             "The `darkness` parameter will be deprecated in release 0.13. "
             "We recommend setting `darkness` to None"
@@ -317,7 +317,7 @@ def test_get_vertexcolor_deprecation():
     colors = colorscale("jet", surf_map, 10)
 
     with pytest.warns(
-        DeprecationWarning,
+        FutureWarning,
         match=(
             "The `darkness` parameter will be deprecated in release 0.13. "
             "We recommend setting `darkness` to None"

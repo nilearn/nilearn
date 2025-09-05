@@ -2147,7 +2147,7 @@ def plot_img_comparison(
             "from 'nilearn.plotting.img_comparison' "
             "to silence this warning."
         ),
-        DeprecationWarning,
+        FutureWarning,
         stacklevel=find_stack_level(),
     )
 

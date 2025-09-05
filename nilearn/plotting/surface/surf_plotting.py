@@ -1007,7 +1007,7 @@ def plot_surf_roi(
                 "Negative values in roi_map will no longer be allowed in"
                 " Nilearn version 0.13"
             ),
-            DeprecationWarning,
+            FutureWarning,
             stacklevel=find_stack_level(),
         )
 
@@ -1034,7 +1034,7 @@ def plot_surf_roi(
                 "Non-integer values in roi_map will no longer be allowed "
                 "in Nilearn version 0.13"
             ),
-            DeprecationWarning,
+            FutureWarning,
             stacklevel=find_stack_level(),
         )
     if isinstance(cmap, pd.DataFrame):

@@ -1151,5 +1151,5 @@ def test_timeout_error(capsys, request_mocker):
 
 def test_fetch_neurovault_motor_task():
     """Test deprecation fetch_neurovault_motor_task."""
-    with pytest.warns(DeprecationWarning, match="will be removed"):
+    with pytest.warns(FutureWarning, match="will be removed"):
         neurovault.fetch_neurovault_motor_task(verbose=0)

@@ -178,7 +178,7 @@ def _get_labels_data(
             '"keep_masked_labels=False". '
             '"keep_masked_labels" parameter will be removed '
             "in version 0.15.",
-            DeprecationWarning,
+            FutureWarning,
             stacklevel=find_stack_level(),
         )
 
@@ -335,7 +335,7 @@ def img_to_signals_labels(
             '"masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
             "used to toggle this behavior. In version 0.15, "
             '"return_masked_atlas" parameter will be removed.',
-            DeprecationWarning,
+            FutureWarning,
             stacklevel=find_stack_level(),
         )
         return signals, labels
@@ -500,7 +500,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
                 '"keep_masked_maps=False". '
                 '"keep_masked_maps" parameter will be removed '
                 "in version 0.15.",
-                DeprecationWarning,
+                FutureWarning,
                 stacklevel=find_stack_level(),
             )
         else:

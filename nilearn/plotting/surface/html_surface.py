@@ -219,7 +219,7 @@ def full_brain_info(
 ):
     """Deprecate public function. See _full_brain_info."""
     warn(
-        category=DeprecationWarning,
+        category=FutureWarning,
         message="full_brain_info is a private function and is renamed to "
         "_full_brain_info. Using the deprecated name will raise an error "
         "in release 0.13",

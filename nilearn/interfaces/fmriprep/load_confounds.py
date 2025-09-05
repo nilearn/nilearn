@@ -319,7 +319,7 @@ def load_confounds(
             "the default strategy will be replaced by 0.5."
         )
         warnings.warn(
-            category=DeprecationWarning,
+            category=FutureWarning,
             message=fd_threshold_default,
             stacklevel=find_stack_level(),
         )
@@ -332,7 +332,7 @@ def load_confounds(
             "the default strategy will be replaced by 1.5."
         )
         warnings.warn(
-            category=DeprecationWarning,
+            category=FutureWarning,
             message=std_dvars_threshold_default,
             stacklevel=find_stack_level(),
         )

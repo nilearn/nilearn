@@ -524,7 +524,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
                     f"{tmp}. "
                     "This behavior is deprecated "
                     "and will be removed in version >0.13.",
-                    DeprecationWarning,
+                    FutureWarning,
                     stacklevel=find_stack_level(),
                 )
                 if self.clean_args:

@@ -2366,7 +2366,7 @@ def fetch_language_localizer_demo_dataset(
     if legacy_output:
         # TODO (nilearn >= 0.13.0)
         warnings.warn(
-            category=DeprecationWarning,
+            category=FutureWarning,
             stacklevel=find_stack_level(),
             message=(
                 "From version 0.13.0 this fetcher"
@@ -2418,7 +2418,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
             "as 'fetch_language_localizer_demo_dataset'.\n"
             "Please use 'fetch_language_localizer_demo_dataset' instead.'"
         ),
-        DeprecationWarning,
+        FutureWarning,
         stacklevel=find_stack_level(),
     )
     url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"

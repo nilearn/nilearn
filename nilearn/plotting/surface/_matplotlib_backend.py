@@ -150,7 +150,7 @@ def _apply_darkness(data, darkness):
                 "The `darkness` parameter will be deprecated in release 0.13. "
                 "We recommend setting `darkness` to None"
             ),
-            DeprecationWarning,
+            FutureWarning,
             stacklevel=find_stack_level(),
         )
     return data

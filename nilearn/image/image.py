@@ -1437,7 +1437,7 @@ def binarize_img(
             'The current default behavior for the "two_sided" argument '
             'is  "True". This behavior will be changed to "False" in '
             "version 0.13.",
-            DeprecationWarning,
+            FutureWarning,
             stacklevel=find_stack_level(),
         )
 

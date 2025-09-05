@@ -333,9 +333,7 @@ def test_standardize_error(rng):
         standardize_signal(a, standardize="foo")
 
     # test warning for strategy that will be removed
-    with pytest.warns(
-        DeprecationWarning, match="default strategy for standardize"
-    ):
+    with pytest.warns(FutureWarning, match="default strategy for standardize"):
         standardize_signal(a, standardize="zscore")
 
 

@@ -269,7 +269,7 @@ def fetch_atlas_craddock_2012(
 
     Warns
     -----
-    DeprecationWarning
+    FutureWarning
         If an homogeneity input is provided, the current behavior
         (returning multiple maps) is deprecated.
         Starting in version 0.13, one map will be returned in a 'maps' dict key
@@ -339,7 +339,7 @@ def fetch_atlas_craddock_2012(
 
     # TODO (nilearn >= 0.13.0)
     warnings.warn(
-        category=DeprecationWarning,
+        category=FutureWarning,
         message=(
             deprecation_message.format(version="0.13")
             + (
@@ -1167,7 +1167,7 @@ def fetch_atlas_smith_2009(
 
     Warns
     -----
-    DeprecationWarning
+    FutureWarning
         If a dimension input is provided, the current behavior
         (returning multiple maps) is deprecated.
         Starting in version 0.13, one map will be returned in a 'maps' dict key
@@ -1239,7 +1239,7 @@ def fetch_atlas_smith_2009(
 
     # TODO (nilearn >= 0.13.0)
     warnings.warn(
-        category=DeprecationWarning,
+        category=FutureWarning,
         message=(
             deprecation_message.format(version="0.13")
             + (
@@ -1405,7 +1405,7 @@ def fetch_atlas_yeo_2011(
     if n_networks is None and thickness is None:
         # TODO (nilearn >= 0.13.0)
         warnings.warn(
-            category=DeprecationWarning,
+            category=FutureWarning,
             message=(
                 deprecation_message.format(version="0.13.0")
                 + (
@@ -1605,7 +1605,7 @@ def fetch_atlas_aal(
 
     Warns
     -----
-    DeprecationWarning
+    FutureWarning
         Starting in version 0.13, the default fetched mask will be AAL 3v2.
 
     References
@@ -1645,7 +1645,7 @@ def fetch_atlas_aal(
             )
             # TODO (nilearn >= 0.13.0)
             warnings.warn(
-                message, DeprecationWarning, stacklevel=find_stack_level()
+                message, FutureWarning, stacklevel=find_stack_level()
             )
 
         elif version == "3v2":
@@ -1773,7 +1773,7 @@ def fetch_atlas_basc_multiscale_2015(
 
     Warns
     -----
-    DeprecationWarning
+    FutureWarning
         If a resolution input is provided, the current behavior
         (returning multiple maps) is deprecated.
         Starting in version 0.13, one map will be returned in a 'maps' dict key
@@ -1853,7 +1853,7 @@ def fetch_atlas_basc_multiscale_2015(
 
     # TODO (nilearn >= 0.13.0)
     warnings.warn(
-        category=DeprecationWarning,
+        category=FutureWarning,
         message=(
             deprecation_message.format(version="0.13")
             + (
@@ -2442,7 +2442,7 @@ def fetch_atlas_pauli_2017(
 
     Warns
     -----
-    DeprecationWarning
+    FutureWarning
         The possible values for atlas_type are currently 'prob' and 'det'. From
     release 0.13.0 onwards, atlas_type will accept only 'probabilistic' or
     'deterministic' as value.
@@ -2463,7 +2463,7 @@ def fetch_atlas_pauli_2017(
             " 'probabilistic' or 'deterministic' as value."
         )
         warnings.warn(
-            category=DeprecationWarning,
+            category=FutureWarning,
             message=atlas_type_values,
             stacklevel=find_stack_level(),
         )

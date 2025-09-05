@@ -26,7 +26,7 @@ def test_deprecation_function_moved(matplotlib_pyplot, img_3d_mni):
         plot_img_comparison as old_fn,
     )
 
-    with pytest.warns(DeprecationWarning, match="moved"):
+    with pytest.warns(FutureWarning, match="moved"):
         old_fn(
             img_3d_mni,
             img_3d_mni,

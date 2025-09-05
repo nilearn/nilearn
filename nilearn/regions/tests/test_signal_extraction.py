@@ -589,7 +589,7 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     # test if the warning is raised
 
     with pytest.warns(
-        DeprecationWarning,
+        FutureWarning,
         match='Applying "mask_img" before '
         "signal extraction may result in empty region signals in "
         "the output. These are currently kept. "
@@ -613,7 +613,7 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     # test return_masked_atlas deprecation warning
     # TODO (nilearn >= 0.13.0)
     with pytest.warns(
-        DeprecationWarning,
+        FutureWarning,
         match='After version 0.13. "img_to_signals_labels" will also return '
         'the "masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
         "used to toggle this behavior. In version 0.15, "
@@ -673,7 +673,7 @@ def test_img_to_signals_maps_warnings(
 
     # TODO (nilearn >= 0.13.0)
     with pytest.warns(
-        DeprecationWarning,
+        FutureWarning,
         match='Applying "mask_img" before '
         "signal extraction may result in empty region signals in the "
         "output. These are currently kept. "
