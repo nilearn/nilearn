@@ -310,18 +310,6 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
 
 """
 
-# darkness
-docdict["darkness"] = """
-darkness : :obj:`float` between 0 and 1, optional
-    Specifying the darkness of the background image:
-
-    - `1` indicates that the original values of the background are used
-
-    - `0.5` indicates that the background values
-        are reduced by half before being applied.
-
-"""
-
 # data_dir
 docdict["debias"] = """
 debias : :obj:`bool`, default=False

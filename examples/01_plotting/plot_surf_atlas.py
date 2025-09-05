@@ -62,7 +62,6 @@ plot_surf_roi(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     title="Destrieux parcellation on sulcal surface",
-    darkness=None,
 )
 
 # %%
@@ -77,7 +76,6 @@ for view in ["lateral", "posterior", "ventral"]:
         bg_map=fsaverage_sulcal,
         bg_on_data=True,
         title=f"Destrieux parcellation on inflated surface\n{view} view",
-        darkness=None,
     )
 
 show()
@@ -93,7 +91,6 @@ plot_surf_roi(
     view=(elev, azim),
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    darkness=None,
     title="Arbitrary view of Destrieux parcellation",
 )
 
@@ -151,7 +148,6 @@ view = view_surf(
     surf_map=destrieux_atlas,
     cmap="gist_ncar",
     symmetric_cmap=False,
-    darkness=None,
 )
 # In a Jupyter notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
