@@ -8,7 +8,8 @@ import numpy as np
 import pandas as pd
 import scipy.stats as sps
 
-from nilearn._utils import logger, rename_parameters
+from nilearn._utils import logger
+from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker, SurfaceMasker
@@ -54,6 +55,7 @@ def expression_to_contrast_vector(expression, design_columns):
     return contrast_vector
 
 
+# TODO (nilearn >= 0.13.0)
 @rename_parameters(
     replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
 )
@@ -157,7 +159,9 @@ def compute_fixed_effect_contrast(labels, results, con_vals, stat_type=None):
     """
     contrast = None
     n_contrasts = 0
-    for i, (lab, res, con_val) in enumerate(zip(labels, results, con_vals)):
+    for i, (lab, res, con_val) in enumerate(
+        zip(labels, results, con_vals, strict=False)
+    ):
         if np.all(con_val == 0):
             warn(
                 f"Contrast for run {int(i)} is null.",
@@ -215,6 +219,7 @@ class Contrast:
         The maximum degrees of freedom of the residuals.
     """
 
+    # TODO (nilearn >= 0.13.0)
     @rename_parameters(
         replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
     )
@@ -264,6 +269,7 @@ class Contrast:
 
         .. deprecated:: 0.10.3
         """
+        # TODO (nilearn >= 0.13.0) deprecate
         attrib_deprecation_msg = (
             'The attribute "contrast_type" '
             "will be removed in 0.13.0 release of Nilearn. "
@@ -575,6 +581,7 @@ def compute_fixed_effects(
             fixed_fx_z_score_img,
         )
 
+    # TODO (nilearn >= 0.13.0)
     warn(
         category=DeprecationWarning,
         message="The behavior of this function will be "

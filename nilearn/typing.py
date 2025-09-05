@@ -20,8 +20,8 @@ from __future__ import annotations
 
 import pathlib
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Callable
 
 import numpy as np
 from joblib.memory import Memory
@@ -46,7 +46,7 @@ Tfce = bool
 TwoSidedTest = bool
 
 
-# TODO update when dropping python 3.9
+# TODO (python >= 3.10) update when dropping python 3.9
 if sys.version_info[1] < 10:
     BorderSize = (int, np.integer)
     DataDir = (str, pathlib.Path)

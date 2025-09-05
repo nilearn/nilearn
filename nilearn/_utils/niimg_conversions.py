@@ -144,7 +144,7 @@ def iter_check_niimg(
         check_niimg, check_niimg_3d, check_niimg_4d
 
     """
-    if memory is None:
+    if memory is None:  # TODO (nilearn  >= 0.13.0) force_resample=True
         memory = Memory(location=None)
     # If niimgs is a string, use glob to expand it to the matching filenames.
     niimgs = resolve_globbing(niimgs)
@@ -198,7 +198,8 @@ def iter_check_niimg(
                     target_affine=ref_fov[0],
                     target_shape=ref_fov[1],
                     copy_header=True,
-                    force_resample=False,  # TODO update to True in 0.13.0
+                    force_resample=False,  # TODO (nilearn >= 0.13.0)
+                    # set to True
                 )
             yield niimg
         except DimensionError as exc:

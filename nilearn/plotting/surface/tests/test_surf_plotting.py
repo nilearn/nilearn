@@ -217,6 +217,24 @@ def test_plot_surf_error(plt, engine, rng, in_memory_mesh):
         )
 
 
+def test_plot_surf_tick_format_warning_matplotlib(
+    matplotlib_pyplot, in_memory_mesh, bg_map
+):
+    """Test if nilearn.plotting.surface.surf_plotting.plot_surf warns when
+    threshold value is float but tick format is integer.
+    """
+    with pytest.warns(
+        UserWarning, match="You provided a non integer threshold"
+    ):
+        plot_surf(
+            in_memory_mesh,
+            surf_map=bg_map,
+            engine="matplotlib",
+            threshold=0.5,
+            cbar_tick_format="%i",
+        )
+
+
 @pytest.mark.parametrize(
     "kwargs", [{"symmetric_cmap": True}, {"title_font_size": 18}]
 )
@@ -628,6 +646,24 @@ def test_plot_surf_stat_map_vmax(plt, engine, in_memory_mesh, bg_map):
     nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
     """
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, vmax=5, engine=engine)
+
+
+@pytest.mark.parametrize("colorbar", [True, False])
+def test_plot_surf_stat_map_error_vmax_equal_vmin(
+    plt, engine, in_memory_mesh, bg_map, colorbar
+):
+    """Smoke test when vmax == vmin.
+
+    Make sure matplotlib does not raise error.
+    """
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=bg_map,
+        vmin=5,
+        vmax=5,
+        engine=engine,
+        colorbar=colorbar,
+    )
 
 
 def test_plot_surf_stat_map_colormap(plt, engine, in_memory_mesh, bg_map):

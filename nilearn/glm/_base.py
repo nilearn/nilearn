@@ -8,7 +8,7 @@ from nibabel.onetime import auto_attr
 from sklearn.base import BaseEstimator
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import CacheMixin
+from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -86,7 +86,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -96,8 +96,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -413,6 +412,7 @@ def _generate_statistical_maps(
                 "p_value",
             ],
             ["effect", stat_type, "variance", "z", "p"],
+            strict=False,
         ):
             fields["entities"]["stat"] = stat_label
             tmp[key] = create_bids_filename(fields, entities_to_include)
@@ -469,6 +469,7 @@ def _generate_model_level_mapping(
         for key, stat_label in zip(
             ["residuals", "r_square"],
             ["errorts", "rsquared"],
+            strict=False,
         ):
             fields["entities"]["stat"] = stat_label
             tmp[key] = create_bids_filename(fields, entities_to_include)
@@ -508,6 +509,7 @@ def _generate_design_matrices_dict(
             for key, suffix in zip(
                 ["design_matrix", "correlation_matrix"],
                 ["design", "corrdesign"],
+                strict=False,
             ):
                 fields["extension"] = extension
                 fields["suffix"] = suffix
