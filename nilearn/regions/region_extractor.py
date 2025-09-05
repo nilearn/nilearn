@@ -695,7 +695,7 @@ def connected_label_regions(
 
     new_labels_data = np.zeros(labels_data.shape, dtype=np.int32)
     current_max_label = 0
-    for label_id, name in zip(unique_labels, this_labels):
+    for label_id, name in zip(unique_labels, this_labels, strict=False):
         this_label_mask = labels_data == label_id
         # Extract regions assigned to each label id
         if connect_diag:

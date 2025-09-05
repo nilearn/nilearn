@@ -2,7 +2,6 @@
 
 import warnings
 from copy import deepcopy
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -271,7 +270,7 @@ class NiftiLabelsMasker(BaseMasker):
         )
 
     @property
-    def labels_(self) -> list[Union[int, float]]:
+    def labels_(self) -> list[int | float]:
         """Return list of labels of the regions.
 
         The background label is included if present in the image.
@@ -304,7 +303,7 @@ class NiftiLabelsMasker(BaseMasker):
         return sub_df["name"].reset_index(drop=True).to_dict()
 
     @property
-    def region_ids_(self) -> dict[Union[str, int], Union[int, float]]:
+    def region_ids_(self) -> dict[str | int, int | float]:
         """Return dictionary containing the region ids corresponding \
            to each column in the array \
            returned by `transform`.
@@ -319,7 +318,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         index = self.labels_
 
-        region_ids_: dict[Union[str, int], Union[int, float]] = {}
+        region_ids_: dict[str | int, int | float] = {}
         if self.background_label in index:
             index.pop(index.index(self.background_label))
             region_ids_["background"] = self.background_label

@@ -100,7 +100,7 @@ def apply_mask_and_get_affinity(
             force_resample=False,
         )
         mask, _ = load_mask_img(mask_img)
-        mask_coords = list(zip(*np.where(mask != 0)))
+        mask_coords = list(zip(*np.where(mask != 0), strict=False))
 
         X = apply_mask_fmri(niimg, mask_img)
 
@@ -129,7 +129,7 @@ def apply_mask_and_get_affinity(
         except ValueError:
             nearests.append(None)
 
-    mask_coords = np.asarray(list(zip(*mask_coords)))
+    mask_coords = np.asarray(list(zip(*mask_coords, strict=False)))
     mask_coords = coord_transform(
         mask_coords[0], mask_coords[1], mask_coords[2], affine
     )

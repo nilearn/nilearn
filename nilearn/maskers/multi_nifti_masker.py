@@ -510,7 +510,9 @@ class MultiNiftiMasker(NiftiMasker):
                 dtype=self.dtype,
                 sample_mask=sms,
             )
-            for imgs, cfs, sms in zip(niimg_iter, confounds, sample_mask)
+            for imgs, cfs, sms in zip(
+                niimg_iter, confounds, sample_mask, strict=False
+            )
         )
         return data
 
