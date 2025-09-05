@@ -16,7 +16,6 @@ import warnings
 from html import escape
 from pathlib import Path
 from string import Template
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -161,12 +160,32 @@ def make_glm_report(
 
         .. note::
 
-            - Negative threshold are not allowed when ``two_sided=True``.
+            - When ``two_sided`` is True:
 
-            - Negative threshold are allowed when ``two_sided=False``.
-                In this case, the results would be the same
-                as using a positive threshold
-                and multiplying the image by ``-1``.
+              ``'threshold'`` cannot be negative.
+
+              The given value should be within the range of minimum and maximum
+              intensity of the input image.
+              All intensities in the interval ``[-threshold, threshold]``
+              will be set to zero.
+
+            - When ``two_sided`` is False:
+
+              - If the threshold is negative:
+
+                It should be greater than the minimum intensity
+                of the input data.
+                All intensities greater than or equal
+                to the specified threshold will be set to zero.
+                All other intensities keep their original values.
+
+              - If the threshold is positive:
+
+                It should be less than the maximum intensity
+                of the input data.
+                All intensities less than or equal
+                to the specified threshold will be set to zero.
+                All other intensities keep their original values.
 
     alpha : :obj:`float`, default=0.001
         Number controlling the thresholding (either a p-value or q-value).
@@ -472,7 +491,7 @@ def make_glm_report(
     return report
 
 
-def _turn_into_full_path(bunch, dir: Path) -> Union[str, tempita.bunch]:
+def _turn_into_full_path(bunch, dir: Path) -> str | tempita.bunch:
     """Recursively turns str values of a dict into path.
 
     Used to turn relative paths into full paths.
@@ -865,14 +884,9 @@ def _stat_map_to_png(
 
     cmap = DEFAULT_DIVERGING_CMAP
 
-    plot_kwargs = {}
     if two_sided:
         symmetric_cbar = True
         vmin = vmax = None
-        # when two sided, passing the threshold
-        # allows to hide the thresholded values in the colorbar
-        # TODO: this does not (yet) work well with one sided plots
-        plot_kwargs = {"threshold": threshold}
 
     else:
         symmetric_cbar = False
@@ -893,16 +907,12 @@ def _stat_map_to_png(
             cmap = "Blues_r"
 
     if isinstance(stat_img, SurfaceImage):
-        plot_kwargs["threshold"] = threshold
-
         if not two_sided and threshold < 0:
             # we cannot use negative threshold in plot_surf_stat_map
-            # so we flip the sign of the image, the colormap, the threshold
+            # so we flip the sign of the image, the colormap
             # and we relabel the colorbar later
             for k, v in stat_img.data.parts.items():
                 stat_img.data.parts[k] = -v
-            plot_kwargs["threshold"] = -threshold
-            (vmin, vmax) = (-vmax, -vmin)
             cmap = "Blues"
 
         surf_mesh = bg_img.mesh if bg_img else None
@@ -914,9 +924,7 @@ def _stat_map_to_png(
             cmap=cmap,
             darkness=None,
             symmetric_cbar=symmetric_cbar,
-            vmin=vmin,
-            vmax=vmax,
-            **plot_kwargs,
+            threshold=abs(threshold),
         )
 
         x_label_color = "black"
@@ -930,10 +938,8 @@ def _stat_map_to_png(
                 display_mode=display_mode,
                 cmap=cmap,
                 symmetric_cbar=symmetric_cbar,
-                vmin=vmin,
-                vmax=vmax,
                 draw_cross=False,
-                **plot_kwargs,
+                threshold=abs(threshold),
             )
         elif plot_type == "glass":
             stat_map_plot = plot_glass_brain(
@@ -942,9 +948,7 @@ def _stat_map_to_png(
                 plot_abs=False,
                 symmetric_cbar=symmetric_cbar,
                 cmap=cmap,
-                vmin=vmin,
-                vmax=vmax,
-                **plot_kwargs,
+                threshold=abs(threshold),
             )
         else:
             raise ValueError(

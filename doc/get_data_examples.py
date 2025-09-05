@@ -92,6 +92,7 @@ def main(args=sys.argv) -> None:
                 "left button press (auditory cue)",
             ],
             [16, 16, 16, 94],
+            strict=False,
         ):
             datasets.fetch_localizer_contrasts(
                 contrasts=[contrast],
