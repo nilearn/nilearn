@@ -217,6 +217,24 @@ def test_plot_surf_error(plt, engine, rng, in_memory_mesh):
         )
 
 
+def test_plot_surf_tick_format_warning_matplotlib(
+    matplotlib_pyplot, in_memory_mesh, bg_map
+):
+    """Test if nilearn.plotting.surface.surf_plotting.plot_surf warns when
+    threshold value is float but tick format is integer.
+    """
+    with pytest.warns(
+        UserWarning, match="You provided a non integer threshold"
+    ):
+        plot_surf(
+            in_memory_mesh,
+            surf_map=bg_map,
+            engine="matplotlib",
+            threshold=0.5,
+            cbar_tick_format="%i",
+        )
+
+
 @pytest.mark.parametrize(
     "kwargs", [{"symmetric_cmap": True}, {"title_font_size": 18}]
 )

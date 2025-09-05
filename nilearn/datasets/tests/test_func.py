@@ -506,6 +506,7 @@ def test_fetch_megatrawls_netmats(tmp_path):
             "3T_Q1-Q6related468_MSMsulc_d100_ts3",
             "3T_Q1-Q6related468_MSMsulc_d300_ts2",
         ],
+        strict=False,
     ):
         files_dir = tmp_path / "Megatrawls" / folder
         files_dir.mkdir(parents=True, exist_ok=True)
