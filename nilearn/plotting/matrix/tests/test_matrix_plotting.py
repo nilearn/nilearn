@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from nilearn._utils.helpers import constrained_layout_kwargs
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
@@ -276,7 +275,7 @@ def test_show_contrast_matrix_axes():
         frame_times, drift_model="polynomial", drift_order=3
     )
     contrast = np.ones(4)
-    fig, ax = plt.subplots(**constrained_layout_kwargs())
+    fig, ax = plt.subplots(layout="constrained")
 
     plot_contrast_matrix(contrast, dmtx, axes=ax)
 

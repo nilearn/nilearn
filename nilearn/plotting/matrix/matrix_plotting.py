@@ -9,7 +9,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.helpers import constrained_layout_kwargs, rename_parameters
+from nilearn._utils.helpers import rename_parameters
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.plotting._utils import save_figure_if_needed
@@ -111,7 +111,7 @@ def _sanitize_figure_and_axes(figure, axes):
             if hasattr(fig, "set_layout_engine"):  # can be removed w/mpl 3.5
                 fig.set_layout_engine("constrained")
         else:
-            fig = plt.figure(figsize=figure, **constrained_layout_kwargs())
+            fig = plt.figure(figsize=figure, layout="constrained")
         axes = plt.gca()
         own_fig = True
     elif axes is None:
@@ -119,7 +119,7 @@ def _sanitize_figure_and_axes(figure, axes):
             1,
             1,
             figsize=(7, 5),
-            **constrained_layout_kwargs(),
+            layout="constrained",
         )
         own_fig = True
     else:
@@ -315,7 +315,7 @@ def plot_contrast_matrix(
                 0.4 * n_columns_design_matrix,
                 1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
             ),
-            **constrained_layout_kwargs(),
+            layout="constrained",
         )
 
     maxval = np.max(np.abs(contrast_def))
@@ -383,7 +383,7 @@ def plot_design_matrix(
             fig_height = 10
         _, axes = plt.subplots(
             figsize=(1 + 0.23 * len(names), fig_height),
-            **constrained_layout_kwargs(),
+            layout="constrained",
         )
 
     axes.imshow(X, interpolation="nearest", aspect="auto")
@@ -445,8 +445,8 @@ def plot_event(model_event, cmap=None, output_file=None, **fig_kwargs):
         model_event[i] = event_copy
 
     n_runs = len(model_event)
-    if "layout" not in fig_kwargs and "constrained_layout" not in fig_kwargs:
-        fig_kwargs.update(**constrained_layout_kwargs())
+    if "layout" not in fig_kwargs:
+        fig_kwargs.update(layout="constrained")
     figure, axes = plt.subplots(1, 1, **fig_kwargs)
 
     # input validation
