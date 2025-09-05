@@ -431,26 +431,30 @@ class SurfaceMasker(_BaseSurfaceMasker):
             background_data = mean_img(background_data)
             vmin, vmax = background_data.data._get_min_max()
 
-        views = ["lateral", "medial"]
-        hemispheres = ["left", "right"]
+        hem_view = {
+            "left": ["lateral", "medial"],
+            "right": ["lateral", "medial"],
+            "both": ["anterior", "posterior"],
+        }
 
         fig, axes = plt.subplots(
-            len(views),
-            len(hemispheres),
+            len(next(iter(hem_view.values()))),
+            len(hem_view.keys()),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
             **constrained_layout_kwargs(),
         )
+
         axes = np.atleast_2d(axes)
 
-        for ax_row, view in zip(axes, views, strict=False):
-            for ax, hemi in zip(ax_row, hemispheres, strict=False):
+        for j, (hemi, views) in enumerate(hem_view.items()):
+            for i, view in enumerate(views):
                 plot_surf(
                     surf_map=background_data,
                     hemi=hemi,
                     view=view,
                     figure=fig,
-                    axes=ax,
+                    axes=axes[i, j],
                     cmap=self.cmap,
                     vmin=vmin,
                     vmax=vmax,
@@ -458,7 +462,19 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 )
 
                 colors = None
-                n_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
+                if hemi in ["left", "right"]:
+                    n_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
+                else:
+                    n_regions = len(
+                        np.unique(
+                            np.concatenate(
+                                [
+                                    self.mask_img_.data.parts["left"],
+                                    self.mask_img_.data.parts["right"],
+                                ]
+                            )
+                        )
+                    )
                 if n_regions == 1:
                     colors = "b"
                 elif n_regions == 2:
@@ -469,7 +485,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
                     hemi=hemi,
                     view=view,
                     figure=fig,
-                    axes=ax,
+                    axes=axes[i, j],
                     colors=colors,
                 )
 
