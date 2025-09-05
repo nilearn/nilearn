@@ -132,8 +132,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         Raise an error if the matrix is not symmetric positive definite of the
         same shape as the elements of matrices.
 
-    max_iter : int, default=10
-        Maximal number of iterations.
+    %(max_iter10)s
 
     tol : positive float or None, default=1e-7
         The tolerance to declare convergence: if the gradient norm goes below
@@ -424,8 +423,12 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         correlation matrices). For other values for "kind", it is the
         mean of the corresponding matrices
 
-    whitening_ : numpy.ndarray
+    n_features_in_ : :obj:`int`
+        Number of features seen during fit.
+
+    whitening_ : numpy.ndarray or None
         The inverted square-rooted geometric mean of the covariance matrices.
+        Only set when for ``kind=="tangent"``
 
     References
     ----------
@@ -450,7 +453,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -460,9 +463,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         # see https://github.com/scikit-learn/scikit-learn/pull/29677
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
@@ -603,10 +604,11 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 # Fight numerical instabilities: make symmetric
                 self.mean_ = self.mean_ + self.mean_.T
                 self.mean_ *= 0.5
+                self.whitening_ = None
 
         # Compute the vector we return on transform
         if do_transform:
-            # TODO simplify when dropping sklearn 1.5
+            # TODO (sklearn >= 1.6.0) simplify
             if SKLEARN_LT_1_6:
                 for x in X:
                     check_array(

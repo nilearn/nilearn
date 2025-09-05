@@ -9,14 +9,15 @@ import warnings
 from pathlib import Path
 
 import numpy as np
-from joblib import Memory
 from nibabel import Nifti1Image
 from scipy.sparse import coo_matrix, csgraph, dia_matrix
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
 
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.cache_mixin import check_memory
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -50,7 +51,7 @@ def _compute_weights(X, mask_img):
         shape: (n_edges,).
 
     """
-    n_samples, n_features = X.shape
+    n_samples, _ = X.shape
 
     mask = get_data(mask_img).astype("bool")
     shape = mask.shape
@@ -665,7 +666,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -675,9 +676,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -765,11 +764,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
             check_is_fitted(self.mask_img)
             self.mask_img_ = self.mask_img.mask_img_
 
-        self.memory_ = self.memory
-        if self.memory is None or isinstance(self.memory, str):
-            self.memory_ = Memory(
-                location=self.memory, verbose=max(0, self.verbose - 1)
-            )
+        self.memory_ = check_memory(self.memory, self.verbose)
 
         if self.n_clusters <= 0:
             raise ValueError(
@@ -791,9 +786,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
                 stacklevel=find_stack_level(),
             )
 
-        n_components, labels = self.memory_.cache(
-            recursive_neighbor_agglomeration
-        )(
+        _, labels = self.memory_.cache(recursive_neighbor_agglomeration)(
             X,
             self.mask_img_,
             self.n_clusters,
@@ -837,7 +830,7 @@ class ReNA(ClusterMixin, TransformerMixin, BaseEstimator):
         """
         check_is_fitted(self)
 
-        # TODO simplify when dropping sklearn 1.5
+        # TODO (sklearn >= 1.6.0) simplify
         if SKLEARN_LT_1_6:
             X = check_array(
                 X,

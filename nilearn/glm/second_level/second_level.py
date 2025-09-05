@@ -2,6 +2,7 @@
 first level contrasts or directly on fitted first level models.
 """
 
+import inspect
 import operator
 import time
 from pathlib import Path
@@ -15,8 +16,8 @@ from nibabel.funcs import four_to_three
 from sklearn.base import clone
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger
-from nilearn._utils.cache_mixin import check_memory
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
@@ -35,6 +36,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
+from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import concat_imgs, iter_img, mean_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.mass_univariate import permuted_ols
@@ -494,6 +496,50 @@ class SecondLevelModel(BaseGLM):
         necessary for contrast computation and would only be useful for
         further inspection of model details. This has an important impact
         on memory consumption.
+
+    Attributes
+    ----------
+    confounds_ : :obj:`pandas.DataFrame` or None
+        Confounds used to fit the GLM.
+
+    design_matrix_ : :obj:`pandas.DataFrame`
+        Design matrix used to fit the GLM.
+
+    labels_ : array of shape ``(n_elements_,)``
+        a map of values on voxels / vertices
+        used to identify the corresponding model
+
+    masker_ :  :obj:`~nilearn.maskers.NiftiMasker` or \
+            :obj:`~nilearn.maskers.SurfaceMasker`
+        Masker used to filter and mask data during fit.
+        If :obj:`~nilearn.maskers.NiftiMasker`
+        or :obj:`~nilearn.maskers.SurfaceMasker` is given in
+        ``mask_img`` parameter, this is a copy of it.
+        Otherwise, a masker is created using the value of ``mask_img`` and
+        other NiftiMasker/SurfaceMasker
+        related parameters as initialization.
+
+    memory_ : joblib memory cache
+
+    n_elements_ : :obj:`int`
+        The number of voxels or vertices in the mask.
+
+        .. versionadded:: 0.12.1
+
+    results_ : :obj:`dict`,
+        with keys corresponding to the different labels values.
+        Values are SimpleRegressionResults corresponding
+        to the voxels or vertices,
+        if minimize_memory is True,
+        RegressionResults if minimize_memory is False
+
+    second_level_input_ : :obj:`list` of \
+        :class:`~nilearn.glm.first_level.FirstLevelModel` objects or \
+        :class:`pandas.DataFrame` or \
+        :obj:`list` of 3D Niimg-like objects or \
+        :obj:`list` of :class:`~nilearn.surface.SurfaceImage` objects or \
+        :obj:`pandas.Series` of Niimg-like objects.
+        Input used to fit the GLM.
     """
 
     def __str__(self):
@@ -544,14 +590,13 @@ class SecondLevelModel(BaseGLM):
         self.labels_ = None
         self.results_ = None
 
-        self.memory = check_memory(self.memory)
+        self._fit_cache()
 
         # check second_level_input
         _check_second_level_input(
             second_level_input, design_matrix, confounds=confounds
         )
 
-        # check confounds
         _check_confounds(confounds)
 
         if isinstance(second_level_input, pd.DataFrame):
@@ -603,6 +648,8 @@ class SecondLevelModel(BaseGLM):
         self.masker_.memory_level = self.memory_level
 
         self.masker_.fit(sample_map)
+
+        self.n_elements_ = self.masker_.n_elements_
 
         # Report progress
         logger.log(
@@ -687,7 +734,7 @@ class SecondLevelModel(BaseGLM):
 
         # Fit an Ordinary Least Squares regression for parametric statistics
         Y = self.masker_.transform(effect_maps)
-        if self.memory:
+        if self.memory_:
             mem_glm = self._cache(run_glm, ignore=["n_jobs"])
         else:
             mem_glm = run_glm
@@ -706,7 +753,7 @@ class SecondLevelModel(BaseGLM):
         self.results_ = results
 
         # We compute contrast object
-        if self.memory:
+        if self.memory_:
             mem_contrast = self._cache(compute_contrast)
         else:
             mem_contrast = compute_contrast
@@ -842,6 +889,14 @@ class SecondLevelModel(BaseGLM):
 
         """
         from nilearn.reporting.glm_reporter import make_glm_report
+
+        sig = inspect.signature(SecondLevelModel.generate_report).parameters
+        warn_default_threshold(
+            threshold,
+            sig["threshold"].default,
+            3.09,
+            height_control=height_control,
+        )
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data = {
@@ -1121,7 +1176,11 @@ def non_parametric_inference(
     tested_var = np.dot(design_matrix, contrast)
 
     # Remove tested var from remaining var names
-    var_names = [var for var, mask in zip(var_names, column_mask) if not mask]
+    var_names = [
+        var
+        for var, mask in zip(var_names, column_mask, strict=False)
+        if not mask
+    ]
 
     # Obtain confounding vars
     # No other vars in design matrix by default

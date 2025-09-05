@@ -131,7 +131,6 @@ def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
 
     # Plot mesh with background
     plot_surf(in_memory_mesh, bg_map=bg_map, engine=engine)
-    plot_surf(in_memory_mesh, bg_map=bg_map, darkness=0.5, engine=engine)
     plot_surf(
         in_memory_mesh,
         bg_map=bg_map,
@@ -215,6 +214,24 @@ def test_plot_surf_error(plt, engine, rng, in_memory_mesh):
             in_memory_mesh,
             surf_map=rng.standard_normal(size=(in_memory_mesh.n_vertices, 2)),
             engine=engine,
+        )
+
+
+def test_plot_surf_tick_format_warning_matplotlib(
+    matplotlib_pyplot, in_memory_mesh, bg_map
+):
+    """Test if nilearn.plotting.surface.surf_plotting.plot_surf warns when
+    threshold value is float but tick format is integer.
+    """
+    with pytest.warns(
+        UserWarning, match="You provided a non integer threshold"
+    ):
+        plot_surf(
+            in_memory_mesh,
+            surf_map=bg_map,
+            engine="matplotlib",
+            threshold=0.5,
+            cbar_tick_format="%i",
         )
 
 
@@ -631,6 +648,24 @@ def test_plot_surf_stat_map_vmax(plt, engine, in_memory_mesh, bg_map):
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, vmax=5, engine=engine)
 
 
+@pytest.mark.parametrize("colorbar", [True, False])
+def test_plot_surf_stat_map_error_vmax_equal_vmin(
+    plt, engine, in_memory_mesh, bg_map, colorbar
+):
+    """Smoke test when vmax == vmin.
+
+    Make sure matplotlib does not raise error.
+    """
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=bg_map,
+        vmin=5,
+        vmax=5,
+        engine=engine,
+        colorbar=colorbar,
+    )
+
+
 def test_plot_surf_stat_map_colormap(plt, engine, in_memory_mesh, bg_map):
     """Smoke test when colormap is specified to
     nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
@@ -1044,47 +1079,40 @@ def test_plot_img_on_surf_hemispheres_and_orientations(
     plot_img_on_surf(img_3d_mni, hemispheres=hemispheres, views=views)
 
 
-@pytest.mark.timeout(0)
-def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni):
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {
+            "colorbar": True,
+            "vmin": -5,
+            "vmax": 5,
+            "threshold": 3,
+        },
+        {
+            "colorbar": True,
+            "vmin": -1,
+            "vmax": 5,
+            "symmetric_cbar": False,
+            "threshold": 3,
+        },
+        {"colorbar": False},
+        {
+            "colorbar": False,
+            "cmap": "roy_big_bl",
+        },
+        {
+            "colorbar": True,
+            "cmap": "roy_big_bl",
+            "vmax": 2,
+        },
+    ],
+)
+def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni, kwargs):
     """Smoke test for nilearn.plotting.surface.plot_img_on_surf colorbar
     parameter.
     """
     plot_img_on_surf(
-        img_3d_mni,
-        hemispheres=["right"],
-        views=["lateral"],
-        colorbar=True,
-        vmin=-5,
-        vmax=5,
-        threshold=3,
-    )
-    plot_img_on_surf(
-        img_3d_mni,
-        hemispheres=["right"],
-        views=["lateral"],
-        colorbar=True,
-        vmin=-1,
-        vmax=5,
-        symmetric_cbar=False,
-        threshold=3,
-    )
-    plot_img_on_surf(
-        img_3d_mni, hemispheres=["right"], views=["lateral"], colorbar=False
-    )
-    plot_img_on_surf(
-        img_3d_mni,
-        hemispheres=["right"],
-        views=["lateral"],
-        colorbar=False,
-        cmap="roy_big_bl",
-    )
-    plot_img_on_surf(
-        img_3d_mni,
-        hemispheres=["right"],
-        views=["lateral"],
-        colorbar=True,
-        cmap="roy_big_bl",
-        vmax=2,
+        img_3d_mni, hemispheres=["right"], views=["lateral"], **kwargs
     )
 
 

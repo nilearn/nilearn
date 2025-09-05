@@ -1085,7 +1085,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     )
 
     # Calculate uncorrected cluster sizes
-    df = len(Y) - X.shape[1]  # noqa: PD901
+    df = len(Y) - X.shape[1]
     neg_log_pval = -np.log10(stats.t.sf(get_data(out["t"]), df=df))
     logp_unc = new_img_like(out["t"], neg_log_pval)
     logp_unc_cluster_sizes = list(
@@ -1497,7 +1497,7 @@ def test_second_level_input_with_wrong_mask(
     model = SecondLevelModel(mask_img=img_mask_mni)
 
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 
@@ -1507,7 +1507,7 @@ def test_second_level_input_with_wrong_mask(
     model = SecondLevelModel(mask_img=surf_mask_1d)
 
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 

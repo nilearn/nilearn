@@ -35,7 +35,7 @@ from warnings import warn
 import numpy as np
 import pandas as pd
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params

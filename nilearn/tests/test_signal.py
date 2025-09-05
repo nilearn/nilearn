@@ -518,11 +518,11 @@ def test_clean_t_r(rng):
     )
     random_tr_list1 = np.round(rng.uniform(size=3) * 10, decimals=2)
     random_tr_list2 = np.round(rng.uniform(size=3) * 10, decimals=2)
-    for tr1, tr2 in zip(random_tr_list1, random_tr_list2):
+    for tr1, tr2 in zip(random_tr_list1, random_tr_list2, strict=False):
         low_pass_freq_list = tr1 * np.array([1.0 / 100, 1.0 / 110])
         high_pass_freq_list = tr1 * np.array([1.0 / 210, 1.0 / 190])
         for low_cutoff, high_cutoff in zip(
-            low_pass_freq_list, high_pass_freq_list
+            low_pass_freq_list, high_pass_freq_list, strict=False
         ):
             det_one_tr = clean(
                 x_orig, t_r=tr1, low_pass=low_cutoff, high_pass=high_cutoff
@@ -587,6 +587,22 @@ def test_clean_kwargs(kwarg_set):
 
     # Check that results are **not** the same.
     assert np.any(np.not_equal(base_filtered, test_filtered))
+
+
+@pytest.mark.parametrize("cast_to", [int, float, np.int32, np.float32])
+def test_clean_t_r_type(cast_to):
+    """Check that several types are supported for TR.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5545.
+    """
+    n_samples = 34
+    n_features = 501
+    x_orig = generate_signals_plus_trends(
+        n_features=n_features, n_samples=n_samples
+    )
+
+    t_r, high_pass, low_pass = cast_to(1.8), 0.01, 0.08
+    clean(x_orig, t_r=t_r, low_pass=low_pass, high_pass=high_pass)
 
 
 def test_clean_frequencies():
@@ -1396,9 +1412,7 @@ def test_sample_mask_across_runs():
 
     sample_mask_sep = [np.arange(20), np.arange(20)]
     scrub_index = [[6, 7, 8], [10, 11, 12]]
-    sample_mask_sep = [
-        np.delete(sm, si) for sm, si in zip(sample_mask_sep, scrub_index)
-    ]
+    sample_mask_sep = list(map(np.delete, sample_mask_sep, scrub_index))
 
     scrub_sep_mask = clean(
         signals, confounds=confounds, sample_mask=sample_mask_sep, runs=runs
@@ -1437,9 +1451,7 @@ def test_clean_sample_mask_error():
 
     sample_mask_sep = [np.arange(20), np.arange(20)]
     scrub_index = [[6, 7, 8], [10, 11, 12]]
-    sample_mask_sep = [
-        np.delete(sm, si) for sm, si in zip(sample_mask_sep, scrub_index)
-    ]
+    sample_mask_sep = list(map(np.delete, sample_mask_sep, scrub_index))
 
     # 1D sample mask with runs labels
     with pytest.raises(
@@ -1522,6 +1534,7 @@ def test_handle_scrubbed_volumes_with_extrapolation():
 
     # Test cubic spline interpolation (enabled extrapolation) in the
     # very first n=5 samples of generated signal
+    # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
     extrapolate_warning = (
         "By default the cubic spline interpolator extrapolates "
         "the out-of-bounds censored volumes in the data run. This "

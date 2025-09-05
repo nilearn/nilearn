@@ -5,13 +5,12 @@ brain regions.
 import warnings
 
 import numpy as np
-from joblib import Memory
 from scipy import linalg
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils import fill_doc
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
     constrained_layout_kwargs,
     is_matplotlib_installed,
@@ -94,6 +93,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    %(clean_args_)s
+
     maps_img_ : :obj:`~nilearn.surface.SurfaceImage`
         The same as the input `maps_img`, kept solely for consistency
         across maskers.
@@ -106,9 +107,10 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         where each vertex is ``True`` if all values across samples
         (for example across timepoints) is finite value different from 0.
 
+    memory_ : joblib memory cache
+
     n_elements_ : :obj:`int`
         The number of regions in the maps image.
-
 
     See Also
     --------
@@ -155,6 +157,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
+    # TODO (nilearn >= 0.13.0)
     @fill_doc
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.0"
@@ -187,8 +190,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if imgs is not None:
             check_surf_img(imgs)
 
-        if self.memory is None:
-            self.memory = Memory(location=None)
+        self._fit_cache()
 
         mask_logger("load_regions", self.maps_img, verbose=self.verbose)
 
@@ -201,8 +203,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.mask_img_ = self._load_mask(imgs)
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
-
-        self._shelving = False
 
         # initialize reporting content and data
         if not self.reports:
@@ -289,21 +289,15 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         # and then extract signal via least square regression
         mask_logger("extracting", verbose=self.verbose)
         if mask_data is not None:
-            region_signals = self._cache(
-                linalg.lstsq,
-                func_memory_level=2,
-                shelve=self._shelving,
-            )(
+            region_signals = self._cache(linalg.lstsq, func_memory_level=2)(
                 maps_data[mask_data.flatten(), :],
                 img_data[mask_data.flatten(), :],
             )[0].T
         # if no mask, directly extract signal
         else:
-            region_signals = self._cache(
-                linalg.lstsq,
-                func_memory_level=2,
-                shelve=self._shelving,
-            )(maps_data, img_data)[0].T
+            region_signals = self._cache(linalg.lstsq, func_memory_level=2)(
+                maps_data, img_data
+            )[0].T
 
         mask_logger("cleaning", verbose=self.verbose)
 
@@ -312,11 +306,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         parameters["clean_args"] = self.clean_args_
 
         # signal cleaning here
-        region_signals = self._cache(
-            signal.clean,
-            func_memory_level=2,
-            shelve=self._shelving,
-        )(
+        region_signals = self._cache(signal.clean, func_memory_level=2)(
             region_signals,
             detrend=parameters["detrend"],
             standardize=parameters["standardize"],
@@ -413,34 +403,34 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                          or :class:`~numpy.ndarray`, or "all", default=10
             Indicates which maps will be displayed in the HTML report.
 
-                - If "all": All maps will be displayed in the report.
+            - If "all": All maps will be displayed in the report.
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report("all")
+                masker.generate_report("all")
 
-                .. warning:
-                    If there are too many maps, this might be time and
-                    memory consuming, and will result in very heavy
-                    reports.
+            .. warning:
+                If there are too many maps, this might be time and
+                memory consuming, and will result in very heavy
+                reports.
 
-                - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
-                  the indices of the maps to be displayed in the report. For
-                  example, the following code will generate a report with maps
-                  6, 3, and 12, displayed in this specific order:
+            - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
+                the indices of the maps to be displayed in the report. For
+                example, the following code will generate a report with maps
+                6, 3, and 12, displayed in this specific order:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report([6, 3, 12])
+                masker.generate_report([6, 3, 12])
 
-                - If an :obj:`int`: This will only display the first n maps,
-                  n being the value of the parameter. By default, the report
-                  will only contain the first 10 maps. Example to display the
-                  first 16 maps:
+            - If an :obj:`int`: This will only display the first n maps,
+                n being the value of the parameter. By default, the report
+                will only contain the first 10 maps. Example to display the
+                first 16 maps:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report(16)
+                masker.generate_report(16)
 
         engine : :obj:`str`, default="matplotlib"
             The plotting engine to use for the report. Can be either
@@ -597,6 +587,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 threshold=threshold,
                 hemi="both",
                 cmap=self.cmap,
+                darkness=None,
             ).get_iframe(width=500)
         elif self._report_content["engine"] == "matplotlib":
             # TODO: possibly allow to generate a report with other views
@@ -610,8 +601,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 **constrained_layout_kwargs(),
             )
             axes = np.atleast_2d(axes)
-            for ax_row, view in zip(axes, views):
-                for ax, hemi in zip(ax_row, hemispheres):
+            for ax_row, view in zip(axes, views, strict=False):
+                for ax, hemi in zip(ax_row, hemispheres, strict=False):
                     # very low threshold to only make 0 values transparent
                     plot_surf(
                         surf_map=roi,

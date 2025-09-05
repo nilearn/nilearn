@@ -10,10 +10,10 @@ from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import LinearSegmentedColormap, ListedColormap
 from matplotlib.transforms import Bbox
 
-from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
-from nilearn._utils.niimg_conversions import _check_fov
+from nilearn._utils.niimg_conversions import _check_fov, check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
@@ -418,6 +418,14 @@ class BaseSlicer:
                     # should be given as (lower, upper).
                     levels.append(np.inf)
 
+            if "linewidths" in kwargs:
+                warnings.warn(
+                    "'linewidths' is not supported for filled contours",
+                    UserWarning,
+                    stacklevel=find_stack_level(),
+                )
+                kwargs.pop("linewidths")
+
             self._map_show(img, type="contourf", threshold=threshold, **kwargs)
 
         plt.draw_if_interactive()
@@ -488,6 +496,7 @@ class BaseSlicer:
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = get_mask_bounds(
                 new_img_like(img, not_mask, affine)
             )
+
         elif hasattr(data, "mask") and isinstance(data.mask, np.ndarray):
             not_mask = np.logical_not(data.mask)
             xmin_, xmax_, ymin_, ymax_, zmin_, zmax_ = get_mask_bounds(
@@ -526,7 +535,7 @@ class BaseSlicer:
         bounding_box = (xmin_, xmax_), (ymin_, ymax_), (zmin_, zmax_)
         ims = []
         to_iterate_over = zip(
-            self.axes.values(), data_2d_list, transparency_list
+            self.axes.values(), data_2d_list, transparency_list, strict=False
         )
         threshold = float(threshold) if threshold else None
         for display_ax, data_2d, transparency_2d in to_iterate_over:
@@ -1762,7 +1771,6 @@ class BaseStackedSlicer(BaseSlicer):
             Extra keyword arguments are passed to function
             :func:`matplotlib.pyplot.axhline`.
         """
-        pass
 
 
 class XSlicer(BaseStackedSlicer):
@@ -2118,11 +2126,15 @@ class MosaicSlicer(BaseSlicer):
         coords = {}
         if img is None or img is False:
             bounds = ((-40, 40), (-30, 30), (-30, 75))
-            for direction, n_cuts in zip(sorted(cut_displayed), cut_coords):
+            for direction, n_cuts in zip(
+                sorted(cut_displayed), cut_coords, strict=False
+            ):
                 lower, upper = bounds["xyz".index(direction)]
                 coords[direction] = np.linspace(lower, upper, n_cuts).tolist()
         else:
-            for direction, n_cuts in zip(sorted(cut_displayed), cut_coords):
+            for direction, n_cuts in zip(
+                sorted(cut_displayed), cut_coords, strict=False
+            ):
                 coords[direction] = find_cut_slices(
                     img, direction=direction, n_cuts=n_cuts
                 )
@@ -2263,7 +2275,6 @@ class MosaicSlicer(BaseSlicer):
             Extra keyword arguments are passed to function
             :func:`matplotlib.pyplot.axhline`.
         """
-        pass
 
 
 SLICERS = {

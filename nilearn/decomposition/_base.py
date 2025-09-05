@@ -12,7 +12,7 @@ from pathlib import Path
 from string import Template
 
 import numpy as np
-from joblib import Memory, Parallel, delayed
+from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -22,11 +22,13 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import randomized_svd, svd_flip
 
 import nilearn
-from nilearn._utils import check_niimg, fill_doc, logger
-from nilearn._utils.cache_mixin import CacheMixin, cache
+from nilearn._utils import logger
+from nilearn._utils.cache_mixin import CacheMixin
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -141,8 +143,6 @@ def _mask_and_reduce(
     reduction_ratio="auto",
     n_components=None,
     random_state=None,
-    memory_level=0,
-    memory=None,
     n_jobs=1,
 ):
     """Mask and reduce provided 4D images with given masker.
@@ -180,14 +180,6 @@ def _mask_and_reduce(
     %(random_state)s
         default=0
 
-    memory_level : integer, default=0
-        Integer indicating the level of memorization. The higher, the more
-        function calls are cached.
-
-    memory : joblib.Memory, default=None
-        Used to cache the function calls.
-        If ``None`` is passed will default to ``Memory(location=None)``.
-
     n_jobs : integer, default=1
         The number of CPUs to use to do the computation. -1 means
         'all CPUs', -2 'all CPUs but one', and so on.
@@ -198,8 +190,6 @@ def _mask_and_reduce(
         Concatenation of reduced data.
 
     """
-    if memory is None:
-        memory = Memory(location=None)
     if not hasattr(imgs, "__iter__"):
         imgs = [imgs]
 
@@ -236,11 +226,9 @@ def _mask_and_reduce(
             confound,
             reduction_ratio=reduction_ratio,
             n_samples=n_samples,
-            memory=memory,
-            memory_level=memory_level,
             random_state=random_state,
         )
-        for img, confound in zip(imgs, confounds)
+        for img, confound in zip(imgs, confounds, strict=False)
     )
 
     subject_n_samples = [subject_data.shape[0] for subject_data in data_list]
@@ -271,8 +259,6 @@ def _mask_and_reduce_single(
     confound,
     reduction_ratio=None,
     n_samples=None,
-    memory=None,
-    memory_level=0,
     random_state=None,
 ):
     """Implement multiprocessing from MaskReducer."""
@@ -293,9 +279,9 @@ def _mask_and_reduce_single(
     else:
         n_samples = ceil(data_n_samples * reduction_ratio)
 
-    U, S, V = cache(
-        _fast_svd, memory, memory_level=memory_level, func_memory_level=3
-    )(this_data.T, n_samples, random_state=random_state)
+    U, S, V = masker._cache(_fast_svd, func_memory_level=3)(
+        this_data.T, n_samples, random_state=random_state
+    )
     U = U.T.copy()
     U = U * S[:, np.newaxis]
     return U
@@ -395,7 +381,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     %(verbose0)s
 
-    %(base_decomposition_attributes)s
+    %(base_decomposition_fit_attributes)s
     """
 
     def __init__(
@@ -442,7 +428,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -452,8 +438,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -527,6 +512,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                 f"must match number of images ({len(imgs)=})."
             )
 
+        self._fit_cache()
+
         masker_type = "multi_nii"
         if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
             isinstance(x, SurfaceImage) for x in imgs
@@ -553,8 +540,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             confounds=confounds,
             n_components=self.n_components,
             random_state=self.random_state,
-            memory=self.memory,
-            memory_level=max(0, self.memory_level + 1),
             n_jobs=self.n_jobs,
         )
         self._raw_fit(data)
@@ -576,18 +561,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
         self.n_elements_ = self.maps_masker_.n_elements_
 
         return self
-
-    @property
-    def nifti_maps_masker_(self):
-        # TODO: remove in 0.13
-        warnings.warn(
-            message="The 'nifti_maps_masker_' attribute is deprecated "
-            "and will be removed in Nilearn 0.13.0.\n"
-            "Please use 'maps_masker_' instead.",
-            category=FutureWarning,
-            stacklevel=find_stack_level(),
-        )
-        return self.maps_masker_
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "components_")
@@ -634,7 +607,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         return [
             self.maps_masker_.transform(img, confounds=confound)
-            for img, confound in zip(imgs, confounds)
+            for img, confound in zip(imgs, confounds, strict=False)
         ]
 
     def inverse_transform(self, loadings):
@@ -682,7 +655,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             data, self.components_, per_component=per_component
         )
 
-    def score(self, imgs, confounds=None, per_component=False):
+    def score(self, imgs, y=None, confounds=None, per_component=False):
         """Score function based on explained variance on imgs.
 
         Should only be used by DecompositionEstimator derived classes
@@ -693,6 +666,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
                :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`
             See :ref:`extracting_data`.
             Data to be scored
+
+        %(y_dummy)s
 
         confounds : CSV file path or numpy.ndarray
             or pandas DataFrame, optional
@@ -711,6 +686,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
             is squeezed if the number of subjects is one
 
         """
+        del y
         check_is_fitted(self)
 
         data = _mask_and_reduce(

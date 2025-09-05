@@ -10,7 +10,9 @@ from sklearn.base import clone
 from sklearn.feature_extraction import image
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import iter_check_niimg
@@ -476,7 +478,7 @@ class Parcellations(_MultiPCA):
                 n_clusters=self.n_parcels,
                 scaling=self.scaling,
                 n_iter=self.n_iter,
-                memory=self.memory,
+                memory=self.memory_,
                 memory_level=self.memory_level,
                 verbose=max(0, self.verbose - 1),
             )
@@ -500,7 +502,7 @@ class Parcellations(_MultiPCA):
                 n_clusters=self.n_parcels,
                 connectivity=connectivity,
                 linkage=self.method,
-                memory=self.memory,
+                memory=self.memory_,
             )
 
             labels = self._cache(_estimator_fit, func_memory_level=1)(
@@ -577,7 +579,7 @@ class Parcellations(_MultiPCA):
                 low_pass=self.low_pass,
                 high_pass=self.high_pass,
                 t_r=self.t_r,
-                memory=self.memory,
+                memory=self.memory_,
                 memory_level=self.memory_level,
                 verbose=self.verbose,
             )
@@ -593,7 +595,7 @@ class Parcellations(_MultiPCA):
                 high_pass=self.high_pass,
                 t_r=self.t_r,
                 resampling_target="data",
-                memory=self.memory,
+                memory=self.memory_,
                 memory_level=self.memory_level,
                 verbose=self.verbose,
             )
@@ -602,7 +604,7 @@ class Parcellations(_MultiPCA):
             delayed(
                 self._cache(_labels_masker_extraction, func_memory_level=2)
             )(img, masker, confound)
-            for img, confound in zip(imgs_list, confounds)
+            for img, confound in zip(imgs_list, confounds, strict=False)
         )
 
         return region_signals[0] if single_subject else region_signals
