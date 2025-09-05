@@ -1203,7 +1203,8 @@ class FirstLevelModel(BaseGLM):
 
         if self.design_only:
             raise RuntimeError(
-                "Cannot get_element_wise_model_attribute on 'design_only' models."
+                "Cannot get_element_wise_model_attribute "
+                "on 'design_only' models."
             )
 
         all_attributes = dict(vars(RegressionResults)).keys()
@@ -1313,13 +1314,12 @@ class FirstLevelModel(BaseGLM):
                 self.masker_.mask_strategy = "epi"
 
             if not self.design_only:
+                with warnings.catch_warnings():
+                    # ignore warning in case the masker
+                    # was initialized with a mask image
+                    warnings.simplefilter("ignore")
 
-              with warnings.catch_warnings():
-                  # ignore warning in case the masker
-                  # was initialized with a mask image
-                  warnings.simplefilter("ignore")
-
-                  self.masker_.fit(run_img)
+                    self.masker_.fit(run_img)
 
         else:
             check_is_fitted(self.mask_img)

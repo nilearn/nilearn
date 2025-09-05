@@ -74,7 +74,8 @@ def _check_second_level_input(
     elif second_level_input is None:
         if design_matrix is None:
             raise TypeError(
-                "'second_level_input' and 'design_matrix' cannot both be None for design only models."
+                "'second_level_input' and 'design_matrix' "
+                "cannot both be None for design only models."
             )
         return
 
@@ -836,7 +837,8 @@ class SecondLevelModel(BaseGLM):
         check_is_fitted(self)
         if self.design_only:
             raise RuntimeError(
-                "Cannot get_element_wise_model_attribute on 'design_only' models."
+                "Cannot get_element_wise_model_attribute "
+                "on 'design_only' models."
             )
         # check if valid attribute is being accessed.
         all_attributes = dict(vars(RegressionResults)).keys()
