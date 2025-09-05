@@ -553,7 +553,9 @@ def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
             [
                 np.linspace(b, a, n_points)
                 for (a, b) in zip(
-                    inner.coordinates.ravel(), outer.coordinates.ravel()
+                    inner.coordinates.ravel(),
+                    outer.coordinates.ravel(),
+                    strict=False,
                 )
             ]
         )

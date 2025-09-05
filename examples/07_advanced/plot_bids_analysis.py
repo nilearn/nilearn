@@ -118,7 +118,9 @@ nrows = ceil(len(models) / ncols)
 
 fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(10, 12))
 axes = np.atleast_2d(axes)
-model_and_args = zip(models, models_run_imgs, models_events, models_confounds)
+model_and_args = zip(
+    models, models_run_imgs, models_events, models_confounds, strict=False
+)
 for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
     # fit the GLM
     model.fit(imgs, events, confounds)
