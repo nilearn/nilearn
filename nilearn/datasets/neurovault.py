@@ -2398,7 +2398,7 @@ def _result_list_to_bunch(result_list, download_params):
     if not result_list:
         images_meta, collections_meta = [], []
     else:
-        images_meta, collections_meta = zip(*result_list)
+        images_meta, collections_meta = zip(*result_list, strict=False)
         images_meta = list(images_meta)
         collections_meta = list(collections_meta)
 

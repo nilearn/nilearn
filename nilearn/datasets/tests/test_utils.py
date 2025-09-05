@@ -310,7 +310,8 @@ def test_filter_columns():
     value2 = strings[value1 % 3]
 
     values = np.asarray(
-        list(zip(value1, value2)), dtype=[("INT", int), ("STR", "S1")]
+        list(zip(value1, value2, strict=False)),
+        dtype=[("INT", int), ("STR", "S1")],
     )
 
     f = _utils.filter_columns(values, {"INT": (23, 46)})
@@ -323,7 +324,8 @@ def test_filter_columns():
 
     value1 = value1 % 2
     values = np.asarray(
-        list(zip(value1, value2)), dtype=[("INT", int), ("STR", b"S1")]
+        list(zip(value1, value2, strict=False)),
+        dtype=[("INT", int), ("STR", b"S1")],
     )
 
     # No filter
