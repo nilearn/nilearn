@@ -697,33 +697,6 @@ mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
 
 """
 
-# kwargs for Maskers
-docdict["masker_kwargs"] = """
-kwargs : dict
-    Keyword arguments to be passed to functions called within the masker.
-    Kwargs prefixed with `'clean__'` will be passed to
-    :func:`~nilearn.signal.clean`.
-    Within :func:`~nilearn.signal.clean`, kwargs prefixed with
-    `'butterworth__'` will be passed to the Butterworth filter
-    (i.e., `clean__butterworth__`).
-
-    .. deprecated:: 0.12.0
-
-    .. admonition:: Use ``clean_args`` instead!
-       :class: important
-
-       It is recommended to pass parameters to use for data cleaning
-       via :obj:`dict` to the ``clean_args`` parameter.
-
-       Passing parameters via "kwargs" is mutually exclusive
-       with passing cleaning parameters via ``clean_args``.
-"""
-
-docdict["masker_kwargs_"] = docdict["masker_kwargs"].replace(
-    "kwargs : dict",
-    "clean_kwargs_ : dict",
-)
-
 verbose = """
 max_iter : :obj:`int`, default={}
     Maximum number of iterations for the solver.

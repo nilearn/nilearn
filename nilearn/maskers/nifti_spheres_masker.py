@@ -283,13 +283,9 @@ class NiftiSpheresMasker(BaseMasker):
     %(clean_args)s
         .. versionadded:: 0.12.0
 
-    %(masker_kwargs)s
-
     Attributes
     ----------
     %(clean_args_)s
-
-    %(masker_kwargs_)s
 
     %(nifti_mask_img_)s
 
@@ -330,7 +326,6 @@ class NiftiSpheresMasker(BaseMasker):
         verbose=0,
         reports=True,
         clean_args=None,
-        **kwargs,
     ):
         self.seeds = seeds
         self.mask_img = mask_img
@@ -350,7 +345,6 @@ class NiftiSpheresMasker(BaseMasker):
         self.t_r = t_r
         self.dtype = dtype
         self.clean_args = clean_args
-        self.clean_kwargs = kwargs
 
         # Parameters for joblib
         self.memory = memory
@@ -692,9 +686,6 @@ class NiftiSpheresMasker(BaseMasker):
 
         params = get_params(NiftiSpheresMasker, self)
         params["clean_kwargs"] = self.clean_args_
-        # TODO (nilearn  >= 0.13.0) remove
-        if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs_
 
         signals, _ = self._cache(
             filter_and_extract, ignore=["verbose", "memory", "memory_level"]

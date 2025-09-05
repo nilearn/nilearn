@@ -516,22 +516,6 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         TODO (nilearn >= 0.13.0) remove
         """
         if hasattr(self, "clean_kwargs"):
-            if self.clean_kwargs:
-                tmp = [", ".join(list(self.clean_kwargs))]
-                # TODO (nilearn >= 0.13.0)
-                warnings.warn(
-                    f"You passed some kwargs to {self.__class__.__name__}: "
-                    f"{tmp}. "
-                    "This behavior is deprecated "
-                    "and will be removed in version >0.13.",
-                    DeprecationWarning,
-                    stacklevel=find_stack_level(),
-                )
-                if self.clean_args:
-                    raise ValueError(
-                        "Passing arguments via 'kwargs' "
-                        "is mutually exclusive with using 'clean_args'"
-                    )
             self.clean_kwargs_ = {
                 k[7:]: v
                 for k, v in self.clean_kwargs.items()

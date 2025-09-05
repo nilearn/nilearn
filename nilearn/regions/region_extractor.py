@@ -423,8 +423,6 @@ class RegionExtractor(NiftiMapsMasker):
     ----------
     %(clean_args_)s
 
-    %(masker_kwargs_)s
-
     index_ : :class:`numpy.ndarray`
         Array of list of indices where each index value is assigned to
         each separate region of its corresponding family of brain maps.
