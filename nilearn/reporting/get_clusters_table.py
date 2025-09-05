@@ -142,7 +142,7 @@ def _cluster_nearest_neighbor(ijk, labels_index, labeled):
     labels = labeled[labeled > 0]
     clusters_ijk = np.array(labeled.nonzero()).T
     nbrs = np.zeros_like(ijk)
-    for ii, (lab, point) in enumerate(zip(labels_index, ijk)):
+    for ii, (lab, point) in enumerate(zip(labels_index, ijk, strict=False)):
         lab_ijk = clusters_ijk[labels == lab]
         dist = np.linalg.norm(lab_ijk - point, axis=1)
         nbrs[ii] = lab_ijk[np.argmin(dist)]

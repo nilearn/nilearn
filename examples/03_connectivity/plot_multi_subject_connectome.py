@@ -82,7 +82,7 @@ subject_time_series = []
 func_filenames = rest_dataset.func
 confound_filenames = rest_dataset.confounds
 for func_filename, confound_filename in zip(
-    func_filenames, confound_filenames
+    func_filenames, confound_filenames, strict=False
 ):
     print(f"Processing file {func_filename}")
 

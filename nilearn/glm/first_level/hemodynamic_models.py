@@ -454,7 +454,7 @@ def _sample_condition(
     t_onset = np.minimum(
         np.searchsorted(frame_times_high_res, onsets), tmax - 1
     )
-    for t, v in zip(t_onset, values):
+    for t, v in zip(t_onset, values, strict=False):
         regressor[t] += v
     t_offset = np.minimum(
         np.searchsorted(frame_times_high_res, onsets + durations), tmax - 1
@@ -465,7 +465,7 @@ def _sample_condition(
         if t < (tmax - 1) and t == t_onset[i]:
             t_offset[i] += 1
 
-    for t, v in zip(t_offset, values):
+    for t, v in zip(t_offset, values, strict=False):
         regressor[t] -= v
     regressor = np.cumsum(regressor)
 
