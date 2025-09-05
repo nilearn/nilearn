@@ -4,12 +4,12 @@ from string import Template
 
 import numpy as np
 
+from nilearn._utils.cache_mixin import check_memory
+from nilearn._utils.class_inspect import get_params
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.tags import is_glm
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike
-
-from .cache_mixin import check_memory
-from .class_inspect import get_params
 
 
 def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
@@ -49,8 +49,6 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
         New masker
 
     """
-    from nilearn.glm.first_level import FirstLevelModel
-    from nilearn.glm.second_level import SecondLevelModel
     from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
 
     if masker_type == "surface":
@@ -63,7 +61,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     estimator_params = get_params(masker_type, estimator, ignore=ignore)
 
     mask = getattr(estimator, "mask", None)
-    if isinstance(estimator, (FirstLevelModel, SecondLevelModel)):
+    if is_glm(estimator):
         mask = getattr(estimator, "mask_img", None)
 
     if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):

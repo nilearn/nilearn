@@ -1,8 +1,17 @@
+from pathlib import Path
+
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import (
+    assert_almost_equal,
+)
 
-from nilearn._utils.glm import check_and_load_tables, coerce_to_dict
+from nilearn._utils.glm import (
+    check_and_load_tables,
+    coerce_to_dict,
+    create_cosine_drift,
+)
 
 
 def test_img_table_checks():
@@ -80,3 +89,20 @@ def test_coerce_to_dict_with_arrays(input, output):
     assert actual_output.keys() == output.keys()
     for key in actual_output:
         assert np.array_equal(actual_output[key], output[key])
+
+
+# load the spm file to test cosine basis
+my_path = Path(__file__).parents[2] / "glm" / "tests"
+full_path_design_matrix_file = my_path / "spm_dmtx.npz"
+DESIGN_MATRIX = np.load(full_path_design_matrix_file)
+
+
+def test_cosine_drift():
+    # add something so that when the tests are launched
+    # from a different directory
+    spm_drifts = DESIGN_MATRIX["cosbf_dt_1_nt_20_hcut_0p1"]
+    frame_times = np.arange(20)
+    high_pass_frequency = 0.1
+    nilearn_drifts = create_cosine_drift(high_pass_frequency, frame_times)
+    assert_almost_equal(spm_drifts[:, 1:], nilearn_drifts[:, :-2])
+    # nilearn_drifts is placing the constant at the end [:, : - 1]

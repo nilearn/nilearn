@@ -17,6 +17,7 @@ from sklearn.utils import as_float_array, gen_even_slices
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.exceptions import AllVolumesRemovedError
+from nilearn._utils.glm import create_cosine_drift
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
@@ -922,8 +923,6 @@ def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
 
 def _create_cosine_drift_terms(signals, confounds, high_pass, t_r):
     """Create cosine drift terms, append to confounds regressors."""
-    from nilearn.glm.first_level.design_matrix import create_cosine_drift
-
     frame_times = np.arange(signals.shape[0]) * t_r
     # remove constant, as the signal is mean centered
     cosine_drift = create_cosine_drift(high_pass, frame_times)[:, :-1]
