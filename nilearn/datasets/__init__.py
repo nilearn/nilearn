@@ -23,7 +23,6 @@ from .atlas import (
 from .func import (
     fetch_abide_pcp,
     fetch_adhd,
-    fetch_bids_langloc_dataset,
     fetch_development_fmri,
     fetch_ds000030_urls,
     fetch_fiac_first_level,
@@ -91,7 +90,6 @@ __all__ = [
     "fetch_atlas_surf_destrieux",
     "fetch_atlas_talairach",
     "fetch_atlas_yeo_2011",
-    "fetch_bids_langloc_dataset",
     "fetch_coords_dosenbach_2010",
     "fetch_coords_power_2011",
     "fetch_coords_seitzman_2018",
