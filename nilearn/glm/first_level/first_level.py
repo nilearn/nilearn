@@ -252,7 +252,7 @@ def run_glm(
         )
 
         # Converting the key to a string is required for AR(N>1) cases
-        results = dict(zip(unique_labels, ar_result))
+        results = dict(zip(unique_labels, ar_result, strict=False))
         del unique_labels
         del ar_result
 
@@ -473,7 +473,7 @@ class FirstLevelModel(BaseGLM):
     n_elements_ : :obj:`int`
         The number of voxels or vertices in the mask.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
     results_ : :obj:`dict`,
         with keys corresponding to the different labels values.
@@ -1109,7 +1109,7 @@ class FirstLevelModel(BaseGLM):
 
         # Translate formulas to vectors
         for cidx, (con, design_mat) in enumerate(
-            zip(con_vals, self.design_matrices_)
+            zip(con_vals, self.design_matrices_, strict=False)
         ):
             design_columns = design_mat.columns.tolist()
             if isinstance(con, str):
@@ -1197,7 +1197,7 @@ class FirstLevelModel(BaseGLM):
         output = []
 
         for design_matrix, labels, results in zip(
-            self.design_matrices_, self.labels_, self.results_
+            self.design_matrices_, self.labels_, self.results_, strict=False
         ):
             if result_as_time_series:
                 voxelwise_attribute = np.zeros(
@@ -2058,7 +2058,7 @@ def _get_processed_imgs(
         assert len(imgs_left) == len(imgs_right)
 
         imgs = []
-        for data_left, data_right in zip(imgs_left, imgs_right):
+        for data_left, data_right in zip(imgs_left, imgs_right, strict=False):
             # make sure that filenames only differ by hemisphere
             assert (
                 Path(data_left).stem.replace("hemi-L", "hemi-R")

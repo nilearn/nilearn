@@ -6,7 +6,6 @@ import pathlib
 import warnings
 from collections.abc import Iterable, Mapping
 from pathlib import Path
-from typing import Union
 
 import numpy as np
 import sklearn.cluster
@@ -1355,7 +1354,7 @@ class PolyData:
         dtype to enforce on the data.
         If ``None`` the original dtype if used.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
     Examples
     --------
@@ -1385,7 +1384,7 @@ class PolyData:
             )
 
         parts = {}
-        for hemi, param in zip(["left", "right"], [left, right]):
+        for hemi, param in zip(["left", "right"], [left, right], strict=False):
             if param is not None:
                 if not isinstance(param, np.ndarray):
                     param = load_surf_data(param)
@@ -1891,7 +1890,7 @@ class SurfaceImage:
         dtype to enforce on the data.
         If ``None`` the original dtype is used.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
     Attributes
     ----------
@@ -2002,7 +2001,7 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
-def check_surf_img(img: Union[SurfaceImage, Iterable[SurfaceImage]]) -> None:
+def check_surf_img(img: SurfaceImage | Iterable[SurfaceImage]) -> None:
     """Validate SurfaceImage.
 
     Equivalent to check_niimg for volumes.

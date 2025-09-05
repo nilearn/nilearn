@@ -64,6 +64,7 @@ for func_file, confound_file, phenotype in zip(
     development_dataset.func,
     development_dataset.confounds,
     development_dataset.phenotypic["Child_Adult"],
+    strict=False,
 ):
     time_series = masker.fit_transform(func_file, confounds=confound_file)
     pooled_subjects.append(time_series)
@@ -110,7 +111,9 @@ from matplotlib import pyplot as plt
 
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 vmax = np.absolute(correlation_matrices).max()
-for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
+for i, (matrix, ax) in enumerate(
+    zip(correlation_matrices, axes, strict=False)
+):
     plot_matrix(
         matrix,
         tri="lower",
@@ -148,7 +151,9 @@ partial_correlation_matrices = partial_correlation_measure.fit_transform(
 
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 vmax = np.absolute(partial_correlation_matrices).max()
-for i, (matrix, ax) in enumerate(zip(partial_correlation_matrices, axes)):
+for i, (matrix, ax) in enumerate(
+    zip(partial_correlation_matrices, axes, strict=False)
+):
     plot_matrix(
         matrix,
         tri="lower",
@@ -188,7 +193,7 @@ tangent_matrices = tangent_measure.fit_transform(children)
 # directly reflect individual brain connections. For instance negative
 # coefficients can not be interpreted as anticorrelated regions.
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
-for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
+for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes, strict=False)):
     plot_matrix(
         matrix,
         tri="lower",

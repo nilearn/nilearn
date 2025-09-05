@@ -524,7 +524,7 @@ class SecondLevelModel(BaseGLM):
     n_elements_ : :obj:`int`
         The number of voxels or vertices in the mask.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
     results_ : :obj:`dict`,
         with keys corresponding to the different labels values.
@@ -1176,7 +1176,11 @@ def non_parametric_inference(
     tested_var = np.dot(design_matrix, contrast)
 
     # Remove tested var from remaining var names
-    var_names = [var for var, mask in zip(var_names, column_mask) if not mask]
+    var_names = [
+        var
+        for var, mask in zip(var_names, column_mask, strict=False)
+        if not mask
+    ]
 
     # Obtain confounding vars
     # No other vars in design matrix by default
