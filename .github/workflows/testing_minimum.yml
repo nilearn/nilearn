@@ -13,7 +13,6 @@ name: test minimal version of each dependency
 
 
 on:
-    pull_request:
     push:
         branches:
         -   main
