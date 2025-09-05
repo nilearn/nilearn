@@ -1,5 +1,8 @@
 import numpy as np
 import pytest
+from sklearn.model_selection import (
+    KFold,
+)
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
@@ -197,3 +200,20 @@ def test_group_sparse_covariance_errors(rng):
         ValueError, match="All subjects must have the same number of features."
     ):
         group_sparse_covariance([np.ones((2, 2)), np.ones((2, 3))], alpha)
+
+
+@pytest.mark.parametrize("cv", [None, 3, KFold(n_splits=4)])
+def test_group_sparse_covariance_cross_validation(rng, cv):
+    signals, _, _ = generate_group_sparse_gaussian_graphs(
+        density=0.1,
+        n_subjects=5,
+        n_features=10,
+        min_n_samples=100,
+        max_n_samples=151,
+        random_state=rng,
+    )
+
+    gsc = GroupSparseCovarianceCV(verbose=0, cv=cv)
+    gsc.fit(signals)
+
+    assert gsc.cv_scores_.shape[1]
