@@ -63,20 +63,6 @@ def data(rng, shape):
     return rng.random(shape)
 
 
-def test_resample_deprecation_force_resample(data, shape, affine_eye):
-    """Test change of value of force_resample."""
-    # TODO (nilearn 0.13.0)
-    affine_eye[:3, -1] = 0.5 * np.array(shape[:3])
-
-    with pytest.warns(FutureWarning, match="force_resample"):
-        resample_img(
-            Nifti1Image(data, affine_eye),
-            target_affine=affine_eye,
-            interpolation="nearest",
-            force_resample=None,
-        )
-
-
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_identity_resample(data, force_resample, shape, affine_eye):
     """Test resampling with an identity affine."""

@@ -590,7 +590,6 @@ class BaseSlicer:
                     transparency,
                     img.affine,
                     img.shape,
-                    force_resample=True,
                     copy_header=True,
                     interpolation=resampling_interpolation,
                 )

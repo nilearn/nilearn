@@ -479,21 +479,18 @@ class NiftiMapsMasker(BaseMasker):
             ):
                 mask_logger("resample_regions", verbose=self.verbose)
 
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 self.maps_img_ = self._cache(resample_img)(
                     self.maps_img_,
                     interpolation="linear",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                     copy_header=True,
-                    force_resample=False,
                 )
             if self.mask_img_ is not None and not check_same_fov(
                 ref_img, self.mask_img_
             ):
                 mask_logger("resample_mask", verbose=self.verbose)
 
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 self.mask_img_ = resample_img(
                     self.mask_img_,
                     target_affine=ref_img.affine,
@@ -501,7 +498,6 @@ class NiftiMapsMasker(BaseMasker):
                     interpolation="nearest",
                     copy=True,
                     copy_header=True,
-                    force_resample=False,
                 )
 
                 # Just check that the mask is valid
@@ -625,14 +621,12 @@ class NiftiMapsMasker(BaseMasker):
                     ),
                     stacklevel=find_stack_level(),
                 )
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 maps_img_ = self._cache(resample_img)(
                     self.maps_img_,
                     interpolation="linear",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                     copy_header=True,
-                    force_resample=False,
                 )
 
             if self.mask_img_ is not None and not check_same_fov(
@@ -648,14 +642,12 @@ class NiftiMapsMasker(BaseMasker):
                     ),
                     stacklevel=find_stack_level(),
                 )
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 mask_img_ = self._cache(resample_img)(
                     self.mask_img_,
                     interpolation="nearest",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                     copy_header=True,
-                    force_resample=False,
                 )
 
             # Remove imgs_ from memory before loading the same image
