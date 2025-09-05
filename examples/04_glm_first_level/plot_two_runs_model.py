@@ -64,12 +64,16 @@ design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 # before fitting it to the data.
 # Note that a brain mask was provided in the dataset,
 # so that is what we will use.
+#
+# We cache some results on disk with 'memory= output_dir / "tmp"'
+# to avoid recomputing things when generating a GLM report at the end.
 from nilearn.glm.first_level import FirstLevelModel
 
 fmri_glm = FirstLevelModel(
     mask_img=data["mask"],
     smoothing_fwhm=5,
     minimize_memory=True,
+    memory=output_dir / "tmp",
 )
 
 # %%
