@@ -1,7 +1,6 @@
 """Fixtures for decomposition tests."""
 
 import warnings
-from typing import Union
 
 import numpy as np
 import pytest
@@ -54,7 +53,7 @@ def decomposition_mask_img(
     decomposition_mesh: PolyMesh,
     affine_eye: np.ndarray,
     shape_3d_large,
-) -> Union[SurfaceImage, Nifti1Image]:
+) -> SurfaceImage | Nifti1Image:
     """Return a mask for decomposition."""
     if data_type == "surface":
         mask_data = {
@@ -89,10 +88,10 @@ def decomposition_mask_img(
 
 @pytest.fixture
 def decomposition_masker(
-    decomposition_mask_img: Union[SurfaceImage, Nifti1Image],
+    decomposition_mask_img: SurfaceImage | Nifti1Image,
     img_3d_ones_eye: Nifti1Image,
     data_type: str,
-) -> Union[SurfaceMasker, MultiNiftiMasker]:
+) -> SurfaceMasker | MultiNiftiMasker:
     """Return the proper masker for test with volume of surface.
 
     Use detrend=True to check how masker parameters are passed to estimators.
@@ -123,7 +122,7 @@ def _decomposition_img(
     shape=None,
     affine=None,
     with_activation: bool = True,
-) -> Union[SurfaceImage, Nifti1Image]:
+) -> SurfaceImage | Nifti1Image:
     """Return a single image for decomposition."""
     if data_type == "surface":
         data = {
@@ -185,7 +184,7 @@ def decomposition_img(
     shape_3d_large,
     affine_eye,
     with_activation: bool = True,
-) -> Union[SurfaceImage, Nifti1Image]:
+) -> SurfaceImage | Nifti1Image:
     """Return a single image for decomposition."""
     return _decomposition_img(
         data_type,
@@ -206,7 +205,7 @@ def canica_data(
     decomposition_mesh,
     data_type: str,
     n_subjects=N_SUBJECTS,
-) -> Union[list[Nifti1Image], list[SurfaceImage]]:
+) -> list[Nifti1Image] | list[SurfaceImage]:
     """Create a "multi-subject" dataset."""
     if data_type == "nifti":
         return _make_volume_data_from_components(

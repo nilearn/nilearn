@@ -189,7 +189,9 @@ def test_check_niimg_4d(affine_eye, img_3d_zeros_eye, shape_3d_default):
         [img_3d_zeros_eye, img_3d_zeros_eye], return_iterator=True
     )
     img_3d_iterator_2 = check_niimg_4d(img_3d_iterator_1, return_iterator=True)
-    for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
+    for img_1, img_2 in zip(
+        img_3d_iterator_1, img_3d_iterator_2, strict=False
+    ):
         assert get_data(img_1).shape == shape_3d_default
         assert_array_equal(get_data(img_1), get_data(img_2))
         assert_array_equal(img_1.affine, img_2.affine)
@@ -198,7 +200,9 @@ def test_check_niimg_4d(affine_eye, img_3d_zeros_eye, shape_3d_default):
         [img_3d_zeros_eye, img_3d_zeros_eye], return_iterator=True
     )
     img_3d_iterator_2 = check_niimg_4d(img_4d_1, return_iterator=True)
-    for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
+    for img_1, img_2 in zip(
+        img_3d_iterator_1, img_3d_iterator_2, strict=False
+    ):
         assert get_data(img_1).shape == shape_3d_default
         assert_array_equal(get_data(img_1), get_data(img_2))
         assert_array_equal(img_1.affine, img_2.affine)

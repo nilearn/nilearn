@@ -86,6 +86,12 @@ repos:
     -   id: ruff-format
         # args: [--diff]
 
+    # check imports contracts
+-   repo: https://github.com/seddonym/import-linter
+    rev: v2.3
+    hooks:
+    -   id: import-linter
+        args: [--verbose]
 
 -   repo: https://github.com/PyCQA/doc8
     rev: v2.0.0
