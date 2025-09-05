@@ -15,8 +15,9 @@ from scipy import signal as sp_signal
 from scipy.interpolate import CubicSpline
 from sklearn.utils import as_float_array, gen_even_slices
 
-from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.exceptions import AllVolumesRemovedError
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import (
@@ -30,7 +31,7 @@ __all__ = [
     "high_variance_confounds",
 ]
 
-availiable_filters = ["butterworth", "cosine"]
+available_filters = ("butterworth", "cosine")
 
 
 def standardize_signal(
@@ -94,6 +95,7 @@ def standardize_signal(
             signals /= std
 
         elif (standardize == "zscore") or (standardize is True):
+            # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
             std_strategy_default = (
                 "The default strategy for standardize is currently 'zscore' "
                 "which incorrectly uses population std to calculate sample "
@@ -542,7 +544,7 @@ def high_variance_confounds(
 def _ensure_float(data):
     """Make sure that data is a float type."""
     if data.dtype.kind != "f":
-        if data.dtype.itemsize == "8":
+        if data.dtype.itemsize == 8:
             data = data.astype(np.float64)
         else:
             data = data.astype(np.float32)
@@ -894,6 +896,7 @@ def _censor_signals(signals, confounds, sample_mask):
 def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
     """Interpolate censored volumes in signals/confounds."""
     if extrapolate:
+        # TODO (nilearn 0.13.0)
         extrapolate_default = (
             "By default the cubic spline interpolator extrapolates "
             "the out-of-bounds censored volumes in the data run. This "
@@ -1139,7 +1142,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
                 stacklevel=find_stack_level(),
             )
         return False
-    elif filter in availiable_filters:
+    elif filter in available_filters:
         if filter == "cosine" and not all(
             isinstance(item, (float, int)) for item in [t_r, high_pass]
         ):

@@ -9,10 +9,10 @@ import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils import constrained_layout_kwargs, fill_doc
-from nilearn._utils.cache_mixin import cache
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
+    constrained_layout_kwargs,
     rename_parameters,
 )
 from nilearn._utils.logger import find_stack_level
@@ -21,8 +21,8 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
-from nilearn.maskers.base_masker import _BaseSurfaceMasker
-from nilearn.surface.surface import SurfaceImage, at_least_2d
+from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
+from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -73,12 +73,16 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    %(clean_args_)s
+
     mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage`
         The mask of the data, or the one computed from ``imgs`` passed to fit.
         If a ``mask_img`` is passed at masker construction,
         then ``mask_img_`` is the resulting binarized version of it
         where each vertex is ``True`` if all values across samples
         (for example across timepoints) is finite value different from 0.
+
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int` or None
         number of vertices included in mask
@@ -118,7 +122,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
-        self._shelving = False
         # content to inject in the HTML template
         self._report_content = {
             "description": (
@@ -174,12 +177,17 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 "if no mask is passed to mask_img."
             )
 
+        mask_logger("compute_mask", verbose=self.verbose)
+
         img = deepcopy(img)
         if not isinstance(img, list):
             img = [img]
         img = concat_imgs(img)
 
         img = at_least_2d(img)
+
+        check_surf_img(img)
+
         mask_data = {}
         for part, v in img.data.parts.items():
             # mask out vertices with NaN or infinite values
@@ -192,8 +200,9 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 )
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
+    # TODO (nilearn >= 0.13.0)
     @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
+        replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
     @fill_doc
     def fit(self, imgs=None, y=None):
@@ -215,6 +224,11 @@ class SurfaceMasker(_BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+        if imgs is not None:
+            self._check_imgs(imgs)
+
+        self._fit_cache()
+
         self._fit_mask_img(imgs)
         assert self.mask_img_ is not None
 
@@ -241,7 +255,11 @@ class SurfaceMasker(_BaseSurfaceMasker):
             }
 
         if self.clean_args is None:
-            self.clean_args = {}
+            self.clean_args_ = {}
+        else:
+            self.clean_args_ = self.clean_args
+
+        mask_logger("fit_done", verbose=self.verbose)
 
         return self
 
@@ -272,22 +290,14 @@ class SurfaceMasker(_BaseSurfaceMasker):
         """
         check_is_fitted(self)
 
-        parameters = get_params(
-            self.__class__,
-            self,
-            ignore=[
-                "mask_img",
-            ],
-        )
-
-        parameters["clean_args"] = self.clean_args
-
         check_compatibility_mask_and_images(self.mask_img_, imgs)
 
         check_polymesh_equal(self.mask_img_.mesh, imgs.mesh)
 
         if self.reports:
             self._reporting_data["images"] = imgs
+
+        mask_logger("extracting", verbose=self.verbose)
 
         output = np.empty((1, self.n_elements_))
         if len(imgs.shape) == 2:
@@ -296,14 +306,14 @@ class SurfaceMasker(_BaseSurfaceMasker):
             mask = self.mask_img_.data.parts[part_name].ravel()
             output[:, start:stop] = imgs.data.parts[part_name][mask].T
 
+        mask_logger("cleaning", verbose=self.verbose)
+
+        parameters = get_params(self.__class__, self, ignore=["mask_img"])
+
+        parameters["clean_args"] = self.clean_args_
+
         # signal cleaning here
-        output = cache(
-            signal.clean,
-            memory=self.memory,
-            func_memory_level=2,
-            memory_level=self.memory_level,
-            shelve=self._shelving,
-        )(
+        output = self._cache(signal.clean, func_memory_level=2)(
             output,
             detrend=parameters["detrend"],
             standardize=parameters["standardize"],
@@ -337,6 +347,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
         # do not run sklearn_check as they may cause some failure
         # with some GLM inputs
         signals = self._check_array(signals, sklearn_check=False)
+
+        mask_logger("inverse_transform", verbose=self.verbose)
 
         data = {}
         for part_name, mask in self.mask_img_.data.parts.items():
@@ -431,8 +443,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
         )
         axes = np.atleast_2d(axes)
 
-        for ax_row, view in zip(axes, views):
-            for ax, hemi in zip(ax_row, hemispheres):
+        for ax_row, view in zip(axes, views, strict=False):
+            for ax, hemi in zip(ax_row, hemispheres, strict=False):
                 plot_surf(
                     surf_map=background_data,
                     hemi=hemi,
@@ -442,6 +454,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
                     cmap=self.cmap,
                     vmin=vmin,
                     vmax=vmax,
+                    darkness=None,
                 )
 
                 colors = None

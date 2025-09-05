@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_array_equal
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
@@ -12,6 +13,7 @@ from nilearn._utils.data_gen import (
 from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
+    return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _img_labels
@@ -39,7 +41,18 @@ if SKLEARN_LT_1_6:
         """Check compliance with sklearn estimators."""
         check(estimator)
 
+else:
 
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
@@ -51,6 +64,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+@pytest.mark.timeout(0)
 def test_multi_nifti_labels_masker(
     affine_eye, n_regions, shape_3d_default, length, img_labels
 ):
@@ -166,15 +180,27 @@ def test_multi_nifti_labels_masker_errors_resampling(
         masker.fit()
 
 
-def test_multi_nifti_labels_masker_reduction_strategies(affine_eye):
+@pytest.mark.parametrize("test_values", [[-2.0, -1.0, 0.0, 1.0, 2]])
+@pytest.mark.parametrize(
+    "strategy, fn",
+    [
+        ("mean", np.mean),
+        ("median", np.median),
+        ("sum", np.sum),
+        ("minimum", np.min),
+        ("maximum", np.max),
+        ("standard_deviation", np.std),
+        ("variance", np.var),
+    ],
+)
+def test_multi_nifti_labels_masker_reduction_strategies(
+    affine_eye, test_values, strategy, fn
+):
     """Tests strategies of MultiNiftiLabelsMasker.
 
-    1. whether the usage of different reduction strategies work
-    2. whether unrecognized strategies raise a ValueError
-    3. whether the default option is backwards compatible (calls "mean")
+    - whether the usage of different reduction strategies work
+    - whether the default option is backwards compatible (calls "mean")
     """
-    test_values = [-2.0, -1.0, 0.0, 1.0, 2]
-
     img_data = np.array([[test_values, test_values]])
 
     labels_data = np.array([[[0, 0, 0, 0, 0], [1, 1, 1, 1, 1]]], dtype=np.int8)
@@ -182,24 +208,16 @@ def test_multi_nifti_labels_masker_reduction_strategies(affine_eye):
     img = Nifti1Image(img_data, affine_eye)
     labels = Nifti1Image(labels_data, affine_eye)
 
-    # What MultiNiftiLabelsMasker should return for each reduction strategy?
-    expected_results = {
-        "mean": np.mean(test_values),
-        "median": np.median(test_values),
-        "sum": np.sum(test_values),
-        "minimum": np.min(test_values),
-        "maximum": np.max(test_values),
-        "standard_deviation": np.std(test_values),
-        "variance": np.var(test_values),
-    }
+    masker = MultiNiftiLabelsMasker(labels, strategy=strategy)
+    # Here passing [img, img] within a list because it is multiple subjects
+    # with a 3D object.
+    results = masker.fit_transform([img, img])
 
-    for strategy, expected_result in expected_results.items():
-        masker = MultiNiftiLabelsMasker(labels, strategy=strategy)
-        # Here passing [img, img] within a list because it is multiple subjects
-        # with a 3D object.
-        results = masker.fit_transform([img, img])
-        for result in results:
-            assert result.squeeze() == expected_result
+    # What MultiNiftiLabelsMasker should return for each reduction strategy?
+    expected_result = fn(test_values)
+
+    for r in results:
+        assert r.squeeze() == expected_result
 
     default_masker = MultiNiftiLabelsMasker(labels)
     assert default_masker.strategy == "mean"

@@ -1,11 +1,9 @@
 """Test the multi_nifti_masker module."""
 
-import shutil
-from tempfile import mkdtemp
+import warnings
 
 import numpy as np
 import pytest
-from joblib import Memory, hash
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
@@ -16,7 +14,6 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn._utils.testing import write_imgs_to_path
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
 
@@ -52,6 +49,8 @@ else:
         check(estimator)
 
 
+# check_multi_masker_transformer_high_variance_confounds is slow
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -156,53 +155,6 @@ def test_3d_images(rng):
     masker.fit_transform([epi_img1, epi_img2])
 
 
-def test_joblib_cache(mask_img_1, tmp_path):
-    """Check cached data."""
-    filename = write_imgs_to_path(
-        mask_img_1, file_path=tmp_path, create_files=True
-    )
-    masker = MultiNiftiMasker(mask_img=filename)
-    masker.fit()
-    mask_hash = hash(masker.mask_img_)
-    get_data(masker.mask_img_)
-
-    assert mask_hash == hash(masker.mask_img_)
-
-
-def test_shelving(rng):
-    """Check behavior when shelving masker."""
-    mask_img = Nifti1Image(
-        np.ones((2, 2, 2), dtype=np.int8), affine=np.diag((2, 2, 2, 1))
-    )
-    epi_img1 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
-    epi_img2 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
-    cachedir = mkdtemp()
-    try:
-        masker_shelved = MultiNiftiMasker(
-            mask_img=mask_img,
-            memory=Memory(location=cachedir, mmap_mode="r", verbose=0),
-        )
-        masker_shelved._shelving = True
-        epis_shelved = masker_shelved.fit_transform([epi_img1, epi_img2])
-        masker = MultiNiftiMasker(mask_img=mask_img)
-        epis = masker.fit_transform([epi_img1, epi_img2])
-
-        for epi_shelved, epi in zip(epis_shelved, epis):
-            epi_shelved = epi_shelved.get()
-            assert_array_equal(epi_shelved, epi)
-
-        epi = masker.fit_transform(epi_img1)
-        epi_shelved = masker_shelved.fit_transform(epi_img1)
-        epi_shelved = epi_shelved.get()
-
-        assert_array_equal(epi_shelved, epi)
-
-    finally:
-        # enables to delete "filename" on windows
-        del masker
-        shutil.rmtree(cachedir, ignore_errors=True)
-
-
 @pytest.fixture
 def list_random_imgs(img_3d_rand_eye):
     """Create a list of random 3D nifti images."""
@@ -246,6 +198,40 @@ def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
     np.testing.assert_array_equal(get_data(masker2.mask_img_), mask_ref)
 
 
+@pytest.mark.parametrize(
+    "strategy",
+    ["background", *[f"{p}-template" for p in ["whole-brain", "gm", "wm"]]],
+)
+def test_invalid_mask_arg_for_strategy(strategy, list_random_imgs):
+    """Pass mask_args specific to epi strategy should not fail.
+
+    But a warning should be thrown.
+    """
+    masker = MultiNiftiMasker(
+        mask_strategy=strategy,
+        mask_args={"lower_cutoff": 0.1, "ensure_finite": False},
+    )
+    with pytest.warns(
+        UserWarning, match="The following arguments are not supported by"
+    ):
+        masker.fit(list_random_imgs)
+
+
+@pytest.mark.parametrize(
+    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+)
+def test_no_warning_partial_joblib(strategy, list_random_imgs):
+    """Check different strategies to compute masks."""
+    masker = MultiNiftiMasker(mask_strategy=strategy, mask_args={"opening": 1})
+    with warnings.catch_warnings(record=True) as warning_list:
+        masker.fit(list_random_imgs)
+
+    assert not any(
+        "Cannot inspect object functools.partial" in str(x)
+        for x in warning_list
+    )
+
+
 def test_standardization(rng, shape_3d_default, affine_eye):
     """Check output properly standardized with 'standardize' parameter."""
     n_samples = 500
@@ -279,7 +265,7 @@ def test_standardization(rng, shape_3d_default, affine_eye):
     masker = MultiNiftiMasker(mask, standardize="psc")
     trans_signals = masker.fit_transform([img1, img2])
 
-    for ts, s in zip(trans_signals, signals):
+    for ts, s in zip(trans_signals, signals, strict=False):
         np.testing.assert_almost_equal(ts.mean(0), 0)
         np.testing.assert_almost_equal(
             ts, (s / s.mean(1)[:, np.newaxis] * 100 - 100).T

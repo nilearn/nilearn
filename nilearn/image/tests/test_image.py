@@ -352,7 +352,7 @@ def test_smooth_img(affine_eye, tmp_path):
 
         assert isinstance(out, list)
         assert len(out) == 2
-        for o, s, l in zip(out, shapes, lengths):
+        for o, s, l in zip(out, shapes, lengths, strict=False):
             assert o.shape == (*s, l)
 
         # Single image as input
@@ -619,7 +619,6 @@ def test_index_img():
         *range(fourth_dim_size),
         slice(2, 8, 2),
         [1, 2, 3, 2],
-        [],
         (np.arange(fourth_dim_size) % 3) == 1,
     ]
     for i in tested_indices:
@@ -669,6 +668,7 @@ def test_iter_img_3d_imag_error(affine_eye):
         iter_img(img_3d)
 
 
+@pytest.mark.timeout(0)
 def test_iter_img(tmp_path):
     img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
 
@@ -836,7 +836,7 @@ def test_input_in_threshold_img(
     threshold = 0.5
 
     # setting copy_header to True to avoid warnings
-    # TODO remove when bumping to nilearn > 0.13
+    # TODO (nilearn >= 0.13.0) remove
     copy_header = True
 
     vol_img, _ = generate_maps(shape_3d_default, n_regions=2)
@@ -880,7 +880,7 @@ def test_input_in_threshold_img_several_timepoints(
     threshold = 0.5
 
     # setting copy_header to True to avoid warnings
-    # TODO remove when bumping to nilearn > 0.13
+    # TODO (nilearn >= 0.13.0) remove
     copy_header = True
     thr_img = threshold_img(
         img_4d_rand_eye, threshold=0.5, copy_header=copy_header
@@ -932,12 +932,12 @@ def test_input_in_threshold_img_errors(
     # incompatible inputs raise errors
     with pytest.raises(
         TypeError,
-        match="Mask and images to fit must be of compatible types.",
+        match="Mask and input images must be of compatible types.",
     ):
         threshold_img(vol_img, threshold=1, mask_img=surf_mask_1d)
     with pytest.raises(
         TypeError,
-        match="Mask and images to fit must be of compatible types.",
+        match="Mask and input images must be of compatible types.",
     ):
         threshold_img(surf_img_1d, threshold=1, mask_img=vol_mask)
 
@@ -959,7 +959,7 @@ def test_validity_threshold_value_in_threshold_img(
        raise Exceptions.
     """
     # setting copy_header to True to avoid warnings
-    # TODO remove when bumping to nilearn > 0.13
+    # TODO (nilearn >= 0.13.0) remove
     copy_header = True
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
 
@@ -1001,7 +1001,7 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
        raise Exceptions.
     """
     # setting copy_header to True to avoid warnings
-    # TODO remove when bumping to nilearn > 0.13
+    # TODO (nilearn >= 0.13.0) remove
     copy_header = True
 
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
@@ -1026,7 +1026,7 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
 def test_threshold_img(affine_eye):
     """Smoke test for threshold_img with valid threshold inputs."""
     # setting copy_header to True to avoid warnings
-    # TODO remove when bumping to nilearn > 0.13
+    # TODO (nilearn >= 0.13.0) remove
     copy_header = True
 
     shape = (10, 20, 30)
@@ -1505,6 +1505,7 @@ def test_binarize_img_no_userwarning(img_4d_rand_eye):
     ],
 )
 def test_warning_copy_header_false(request, func, input_img):
+    # TODO (nilearn 0.13.0)
     # Use the request fixture to get the actual fixture value
     actual_input_img = request.getfixturevalue(input_img)
     with pytest.warns(FutureWarning, match="From release 0.13.0 onwards*"):
@@ -1558,6 +1559,71 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     assert_almost_equal(get_data(data_img_), get_data(data_img_mask_))
 
 
+def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
+    """Test clean on surface image.
+
+    - check that clean returns image of same shape, geometry
+      but different data
+    - with mask should only clean the included vertices
+    - 1D image should raise error.
+    - check sample mask can be passed as a kwarg and used correctly
+    """
+    length = 50
+    imgs = surf_img_2d(length)
+
+    cleaned_img = clean_img(
+        imgs, detrend=True, standardize=False, low_pass=0.1, t_r=1.0
+    )
+
+    assert cleaned_img.shape == imgs.shape
+    assert_polymesh_equal(cleaned_img.mesh, imgs.mesh)
+    with pytest.raises(ValueError, match="not equal"):
+        assert_surface_image_equal(cleaned_img, imgs)
+
+    cleaned_img_with_mask = clean_img(
+        imgs,
+        detrend=True,
+        standardize=False,
+        low_pass=0.1,
+        t_r=1.0,
+        mask_img=surf_mask_1d,
+    )
+    with pytest.raises(ValueError, match="not equal"):
+        assert_surface_image_equal(cleaned_img_with_mask, cleaned_img)
+
+    # Checks that output with full mask and without is equal
+    full_mask = new_img_like(
+        surf_mask_1d,
+        data={k: np.ones(v.shape) for k, v in surf_mask_1d.data.parts.items()},
+    )
+    cleaned_img_with_full_mask = clean_img(
+        imgs,
+        detrend=True,
+        standardize=False,
+        low_pass=0.1,
+        t_r=1.0,
+        mask_img=full_mask,
+    )
+    assert_surface_image_equal(cleaned_img, cleaned_img_with_full_mask)
+
+    # 1D fails
+    with pytest.raises(ValueError, match="should be 2D"):
+        clean_img(surf_img_1d, detrend=True)
+
+    sample_mask = np.arange(length - 1)
+
+    # check sample mask can be passed as a kwarg and used correctly
+    cleaned_img = clean_img(
+        imgs,
+        detrend=True,
+        standardize=False,
+        low_pass=0.1,
+        t_r=1.0,
+        clean__sample_mask=sample_mask,
+    )
+    assert cleaned_img.shape[-1] == length - 1
+
+
 @pytest.mark.parametrize("create_files", [True, False])
 def test_largest_cc_img(create_files, tmp_path):
     """Check the extraction of the largest connected component, for niftis.
@@ -1576,7 +1642,7 @@ def test_largest_cc_img(create_files, tmp_path):
 
     assert isinstance(out, list)
     assert len(out) == 2
-    for o, s in zip(out, shapes):
+    for o, s in zip(out, shapes, strict=False):
         assert o.shape == (s)
 
     # Single image as input
@@ -1610,7 +1676,7 @@ def test_largest_cc_img_non_native_endian_type(create_files, tmp_path):
 
     assert isinstance(out, list)
     assert len(out) == 2
-    for o, s in zip(out, shapes):
+    for o, s in zip(out, shapes, strict=False):
         assert o.shape == (s)
 
     # Single image as input

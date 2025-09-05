@@ -11,7 +11,10 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.exceptions import MeshDimensionError
-from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
+from nilearn._utils.helpers import (
+    is_kaleido_installed,
+    is_plotly_installed,
+)
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting import (
     plot_img_on_surf,
@@ -45,6 +48,42 @@ def test_check_surface_plotting_inputs_error_mesh_and_data_none(fn):
         fn(None, None)
 
 
+@pytest.mark.parametrize(
+    "fn",
+    [
+        plot_surf,
+        plot_surf_stat_map,
+        plot_img_on_surf,
+        plot_surf_roi,
+    ],
+)
+def test_check_surface_plotting_inputs_error_negative_threshold(
+    fn, in_memory_mesh
+):
+    """Fail if negative threshold is passed."""
+    with pytest.raises(ValueError, match="Threshold should be a"):
+        fn(in_memory_mesh, threshold=-1)
+
+
+@pytest.mark.parametrize(
+    "fn",
+    [
+        plot_surf,
+        plot_surf_contours,
+        plot_surf_stat_map,
+        plot_surf_roi,
+    ],
+)
+@pytest.mark.parametrize("hemi", ["left", "right", "both"])
+def test_check_surface_plotting_inputs_single_hemi_data(
+    in_memory_mesh, fn, hemi
+):
+    """Smoke test when single hemi data is passed."""
+    parcellation = np.zeros((in_memory_mesh.n_vertices,))
+    parcellation[in_memory_mesh.faces[3]] = 1
+    fn(in_memory_mesh, parcellation, hemi=hemi)
+
+
 def test_check_surface_plotting_inputs_errors():
     """Fail if mesh is None and data is not a SurfaceImage."""
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
@@ -73,6 +112,7 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
+@pytest.mark.timeout(0)
 def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
     """Test nilearn.plotting.surface.surf_plotting.plot_surf function with
     available engine backends.
@@ -91,7 +131,6 @@ def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
 
     # Plot mesh with background
     plot_surf(in_memory_mesh, bg_map=bg_map, engine=engine)
-    plot_surf(in_memory_mesh, bg_map=bg_map, darkness=0.5, engine=engine)
     plot_surf(
         in_memory_mesh,
         bg_map=bg_map,
@@ -175,6 +214,24 @@ def test_plot_surf_error(plt, engine, rng, in_memory_mesh):
             in_memory_mesh,
             surf_map=rng.standard_normal(size=(in_memory_mesh.n_vertices, 2)),
             engine=engine,
+        )
+
+
+def test_plot_surf_tick_format_warning_matplotlib(
+    matplotlib_pyplot, in_memory_mesh, bg_map
+):
+    """Test if nilearn.plotting.surface.surf_plotting.plot_surf warns when
+    threshold value is float but tick format is integer.
+    """
+    with pytest.warns(
+        UserWarning, match="You provided a non integer threshold"
+    ):
+        plot_surf(
+            in_memory_mesh,
+            surf_map=bg_map,
+            engine="matplotlib",
+            threshold=0.5,
+            cbar_tick_format="%i",
         )
 
 
@@ -373,14 +430,6 @@ def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
     figure, axes = matplotlib_pyplot.subplots()
     with pytest.raises(AttributeError, match="the projection must be '3d'"):
         plot_surf_stat_map(stat_map=surf_img_1d, axes=axes)
-
-
-def test_plot_surf_contours_warning_hemi(in_memory_mesh):
-    """Test warning that hemi will be ignored."""
-    parcellation = np.zeros((in_memory_mesh.n_vertices,))
-    parcellation[in_memory_mesh.faces[3]] = 1
-    with pytest.warns(UserWarning, match="This value will be ignored"):
-        plot_surf_contours(in_memory_mesh, parcellation, hemi="left")
 
 
 def test_plot_surf_contours(
@@ -599,6 +648,24 @@ def test_plot_surf_stat_map_vmax(plt, engine, in_memory_mesh, bg_map):
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, vmax=5, engine=engine)
 
 
+@pytest.mark.parametrize("colorbar", [True, False])
+def test_plot_surf_stat_map_error_vmax_equal_vmin(
+    plt, engine, in_memory_mesh, bg_map, colorbar
+):
+    """Smoke test when vmax == vmin.
+
+    Make sure matplotlib does not raise error.
+    """
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=bg_map,
+        vmin=5,
+        vmax=5,
+        engine=engine,
+        colorbar=colorbar,
+    )
+
+
 def test_plot_surf_stat_map_colormap(plt, engine, in_memory_mesh, bg_map):
     """Smoke test when colormap is specified to
     nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
@@ -638,6 +705,52 @@ def test_plot_surf_stat_map_colorbar_tick(plotly, in_memory_mesh, bg_map):
         cbar_tick_format="%.2g",
         engine="plotly",
     )
+
+
+@pytest.mark.parametrize("symmetric_cmap", [True, False, None])
+def test_plot_surf_stat_map_symmetric_cmap_plotly(
+    plotly, in_memory_mesh, bg_map, symmetric_cmap
+):
+    """Smoke test when symmetric_cmap with plotly engine is specified to
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
+    """
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=bg_map,
+        symmetric_cmap=symmetric_cmap,
+        engine="plotly",
+    )
+
+
+def test_plot_surf_stat_map_symmetric_cmap_matplotlib(
+    matplotlib_pyplot, in_memory_mesh, bg_map
+):
+    """Smoke test when symmetric_cmap is specified as None for matplotlib
+    engine to nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
+    """
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=bg_map,
+        symmetric_cmap=None,
+        engine="matplotlib",
+    )
+
+
+@pytest.mark.parametrize("symmetric_cmap", [True, False])
+def test_plot_surf_stat_map_symmetric_cmap_matplotlib_error(
+    matplotlib_pyplot, in_memory_mesh, bg_map, symmetric_cmap
+):
+    """Test if
+    nilearn.plotting.surface.surf_plotting.plot_surf_stat_map raises error when
+    True or False is specified as symmetric_cmap for matplotlib engine.
+    """
+    with pytest.warns(UserWarning, match="'symmetric_cmap' is not implement"):
+        plot_surf_stat_map(
+            in_memory_mesh,
+            stat_map=bg_map,
+            symmetric_cmap=symmetric_cmap,
+            engine="matplotlib",
+        )
 
 
 def test_plot_surf_stat_map_matplotlib_specific(
@@ -966,46 +1079,40 @@ def test_plot_img_on_surf_hemispheres_and_orientations(
     plot_img_on_surf(img_3d_mni, hemispheres=hemispheres, views=views)
 
 
-def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni):
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {
+            "colorbar": True,
+            "vmin": -5,
+            "vmax": 5,
+            "threshold": 3,
+        },
+        {
+            "colorbar": True,
+            "vmin": -1,
+            "vmax": 5,
+            "symmetric_cbar": False,
+            "threshold": 3,
+        },
+        {"colorbar": False},
+        {
+            "colorbar": False,
+            "cmap": "roy_big_bl",
+        },
+        {
+            "colorbar": True,
+            "cmap": "roy_big_bl",
+            "vmax": 2,
+        },
+    ],
+)
+def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni, kwargs):
     """Smoke test for nilearn.plotting.surface.plot_img_on_surf colorbar
     parameter.
     """
     plot_img_on_surf(
-        img_3d_mni,
-        hemispheres=["right"],
-        views=["lateral"],
-        colorbar=True,
-        vmin=-5,
-        vmax=5,
-        threshold=3,
-    )
-    plot_img_on_surf(
-        img_3d_mni,
-        hemispheres=["right"],
-        views=["lateral"],
-        colorbar=True,
-        vmin=-1,
-        vmax=5,
-        symmetric_cbar=False,
-        threshold=3,
-    )
-    plot_img_on_surf(
-        img_3d_mni, hemispheres=["right"], views=["lateral"], colorbar=False
-    )
-    plot_img_on_surf(
-        img_3d_mni,
-        hemispheres=["right"],
-        views=["lateral"],
-        colorbar=False,
-        cmap="roy_big_bl",
-    )
-    plot_img_on_surf(
-        img_3d_mni,
-        hemispheres=["right"],
-        views=["lateral"],
-        colorbar=True,
-        cmap="roy_big_bl",
-        vmax=2,
+        img_3d_mni, hemispheres=["right"], views=["lateral"], **kwargs
     )
 
 

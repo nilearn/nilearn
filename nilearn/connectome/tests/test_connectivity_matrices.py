@@ -43,12 +43,6 @@ N_FEATURES = 49
 N_SUBJECTS = 5
 
 
-@parametrize_with_checks(estimators=[EmpiricalCovariance(), LedoitWolf()])
-def test_check_estimator_sklearn(estimator, check):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
-
-
 ESTIMATORS_TO_CHECK = [
     ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
 ]
@@ -59,12 +53,14 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         (check_estimator(estimators=ESTIMATORS_TO_CHECK)),
     )
-    def test_check_estimator_sklearn_valid(
-        estimator,
-        check,
-        name,  # noqa: ARG001
-    ):
+    def test_check_estimator_sklearn_valid(estimator, check, name):
         """Check compliance with sklearn estimators."""
+        if name == "check_estimators_fit_returns_self":
+            # "check_estimators_fit_returns_self" fails with sklearn 1.4
+            # whether passed as a valid or invalid check
+            # so we are skipping it.
+            # Note it passes fine with later sklearn versions
+            pytest.skip("ignored for older sklearn")
         check(estimator)
 
     @pytest.mark.xfail(reason="invalid checks should fail")
@@ -312,7 +308,7 @@ def test_geometric_mean_properties():
 
     # Generic
     assert isinstance(spds, list)
-    for spd, input_spd in zip(spds, input_spds):
+    for spd, input_spd in zip(spds, input_spds, strict=False):
         assert_array_equal(spd, input_spd)
     assert is_spd(gmean, decimal=7)
 
@@ -625,11 +621,6 @@ def test_connectivity_measure_errors():
     # Raising error for input subjects not iterable
     conn_measure = ConnectivityMeasure()
 
-    with pytest.raises(
-        ValueError, match="'subjects' input argument must be an iterable"
-    ):
-        conn_measure.fit(1.0)
-
     # input subjects not 2D numpy.ndarrays
     with pytest.raises(
         ValueError, match="Each subject must be 2D numpy.ndarray."
@@ -676,6 +667,30 @@ def test_connectivity_measure_generic(
         assert is_spd(covs[k], decimal=7)
 
 
+@pytest.mark.parametrize(
+    "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
+)
+@pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
+def test_connectivity_measure_generic_3d_array(kind, cov_estimator, signals):
+    """Ensure ConnectivityMeasure accepts 3D arrays or tuple of 2D arrays."""
+    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+
+    signals_as_array = np.asarray(
+        [_signals(n_subjects=1)[0] for _ in range(5)]
+    ).squeeze()
+    assert signals_as_array.ndim == 3
+
+    connectivities = conn_measure.fit_transform(signals_as_array)
+
+    assert isinstance(connectivities, np.ndarray)
+
+    signals_as_tuple = tuple(x for x in signals)
+
+    connectivities = conn_measure.fit_transform(signals_as_tuple)
+
+    assert isinstance(connectivities, np.ndarray)
+
+
 def _assert_connectivity_tangent(connectivities, conn_measure, covs):
     """Check output value properties for tangent connectivity measure \
     that they have the expected relationship \
@@ -687,7 +702,7 @@ def _assert_connectivity_tangent(connectivities, conn_measure, covs):
         also produces a positive-definite matrix
     """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         assert_array_almost_equal(
             estimated_covariance_matrix, estimated_covariance_matrix.T
@@ -716,7 +731,7 @@ def _assert_connectivity_precision(connectivities, covs):
       is close to the identity matrix.
     """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         assert is_spd(estimated_covariance_matrix, decimal=7)
         assert_array_almost_equal(
@@ -739,7 +754,7 @@ def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
     should be close to the true covariance matrix.
     """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         assert is_spd(estimated_covariance_matrix, decimal=7)
 
@@ -759,7 +774,7 @@ def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
 
 def _assert_connectivity_partial_correlation(connectivities, covs):
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         precision_matrix = linalg.inv(true_covariance_matrix)
 
@@ -971,6 +986,14 @@ def test_confounds_connectome_measure():
 
 
 def test_confounds_connectome_measure_errors(signals):
+    """Check proper errors raised for wrong inputs."""
+    # Raising error for input signals are not iterable
+    conn_measure = ConnectivityMeasure(vectorize=True)
+    msg = "is not iterable"
+
+    with pytest.raises(TypeError, match=msg):
+        conn_measure._check_input(X=1.0)
+
     # Generate signals and compute covariances and apply confounds while
     # computing covariances
     signals, confounds = _signals()
@@ -979,15 +1002,15 @@ def test_confounds_connectome_measure_errors(signals):
     conn_measure = ConnectivityMeasure(vectorize=True)
     msg = "'confounds' input argument must be an iterable"
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure._check_input(X=signals, confounds=1.0)
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure._fit_transform(
             X=signals, do_fit=True, do_transform=True, confounds=1.0
         )
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure.fit_transform(X=signals, y=None, confounds=1.0)
 
     # Raising error for input confounds are given but not vectorize=True

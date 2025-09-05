@@ -36,6 +36,7 @@ from nilearn.surface.surface import (
     _vertex_outer_normals,
     check_mesh_and_data,
     check_mesh_is_fsaverage,
+    check_surf_img,
     extract_data,
     get_data,
     load_surf_data,
@@ -46,7 +47,7 @@ from nilearn.surface.surface import (
 datadir = Path(__file__).resolve().parent / "data"
 
 
-def flat_mesh(x_s, y_s, z=0):
+def flat_mesh(x_s: int, y_s: int, z=0) -> InMemoryMesh:
     """Create a flat horizontal mesh."""
     x, y = np.mgrid[:x_s, :y_s]
     x, y = x.ravel(), y.ravel()
@@ -552,7 +553,9 @@ def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
             [
                 np.linspace(b, a, n_points)
                 for (a, b) in zip(
-                    inner.coordinates.ravel(), outer.coordinates.ravel()
+                    inner.coordinates.ravel(),
+                    outer.coordinates.ravel(),
+                    strict=False,
                 )
             ]
         )
@@ -630,6 +633,7 @@ def test_vol_to_surf_nearest_deprecation(img_labels):
     """Test deprecation warning for nearest interpolation method in
     vol_to_surf.
     """
+    # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
     mesh = flat_mesh(5, 7)
     with pytest.warns(
         FutureWarning, match="interpolation method will be deprecated"
@@ -1217,3 +1221,41 @@ def test_get_data_ensure_finite(surf_img_1d, ensure_finite):
     else:
         data_from_image = get_data(surf_img_1d, ensure_finite=ensure_finite)
         assert np.logical_not(np.all(np.isfinite(data_from_image)))
+
+
+def test_check_surf_img(surf_img_1d, surf_img_2d):
+    """Check that surface image are properly validated."""
+    check_surf_img(surf_img_1d)
+    check_surf_img(surf_img_2d())
+
+    data = {
+        part: np.empty(0).reshape((surf_img_1d.data.parts[part].shape[0], 0))
+        for part in surf_img_1d.data.parts
+    }
+    imgs = SurfaceImage(surf_img_1d.mesh, data)
+    with pytest.raises(ValueError, match="empty"):
+        check_surf_img(imgs)
+
+
+def test_check_surf_img_dtype(surf_img_1d):
+    """Check dtype of SurfaceImage can be set at init."""
+    data = {
+        "left": np.ones(surf_img_1d.data.parts["left"].shape, dtype="float32"),
+        "right": np.ones(surf_img_1d.data.parts["right"].shape, dtype="int32"),
+    }
+    new_img = SurfaceImage(surf_img_1d.mesh, data, dtype=np.int32)
+
+    for k in surf_img_1d.data.parts:
+        assert new_img.data.parts[k].dtype != surf_img_1d.data.parts[k].dtype
+        assert new_img.data.parts[k].dtype == np.int32
+
+
+def test_check_surf_img_dtype_error(surf_img_1d):
+    """Check that both hemispheres must have same dtype."""
+    data = {
+        "left": np.ones(surf_img_1d.data.parts["left"].shape, dtype="float32"),
+        "right": np.ones(surf_img_1d.data.parts["right"].shape, dtype="int32"),
+    }
+
+    with pytest.raises(TypeError, match="All parts should have same dtype."):
+        SurfaceImage(surf_img_1d.mesh, data)

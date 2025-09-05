@@ -7,9 +7,8 @@ from pathlib import Path
 from joblib import Memory
 
 import nilearn
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-
-from .helpers import stringify_path
 
 MEMORY_CLASSES = (Memory,)
 
@@ -23,8 +22,7 @@ def check_memory(memory, verbose=0):
         Used to cache the masking process.
         If a str is given, it is the path to the caching directory.
 
-    verbose : int, default=0
-        Verbosity level.
+    %(verbose0)s
 
     Returns
     -------
@@ -195,6 +193,14 @@ class CacheMixin:
 
     """
 
+    def _fit_cache(self):
+        """Set attributes during estimator fit."""
+        verbose = getattr(self, "verbose", 0)
+        self.memory_ = check_memory(self.memory, verbose=verbose)
+
+        if getattr(self, "_shelving", None) is None:
+            self._shelving = False
+
     def _cache(self, func, func_memory_level=1, shelve=False, **kwargs):
         """Return a joblib.Memory object.
 
@@ -213,10 +219,6 @@ class CacheMixin:
             The memory_level from which caching must be enabled for the wrapped
             function.
 
-        shelve : bool, default=False
-            Whether to return a joblib MemorizedResult, callable by a .get()
-            method, instead of the return value of func.
-
         Returns
         -------
         mem : joblib.MemorizedFunc, wrapped in _ShelvedFunc if shelving
@@ -226,19 +228,11 @@ class CacheMixin:
             For consistency, a callable object is always returned.
 
         """
-        verbose = getattr(self, "verbose", 0)
-
-        # Creates attributes if they don't exist
-        # This is to make creating them in __init__() optional.
-        if not hasattr(self, "memory_level"):
-            self.memory_level = 0
-        if not hasattr(self, "memory"):
-            self.memory = Memory(location=None, verbose=verbose)
-        self.memory = check_memory(self.memory, verbose=verbose)
-
+        if not hasattr(self, "memory_") or self.memory_ is None:
+            self._fit_cache()
         # If cache level is 0 but a memory object has been provided, set
         # memory_level to 1 with a warning.
-        if self.memory_level == 0 and self.memory.location is not None:
+        if self.memory_level == 0 and self.memory_.location is not None:
             warnings.warn(
                 "memory_level is currently set to 0 but "
                 "a Memory object has been provided. "
@@ -249,7 +243,7 @@ class CacheMixin:
 
         return cache(
             func,
-            self.memory,
+            self.memory_,
             func_memory_level=func_memory_level,
             memory_level=self.memory_level,
             shelve=shelve,

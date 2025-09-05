@@ -24,7 +24,7 @@ def test_plot_prob_atlas(matplotlib_pyplot, params, affine_eye, rng):
     Tests different combinations of parameters `view_type`, `threshold`,
     and `colorbar`.
     """
-    data_rng = rng.normal(size=(6, 8, 10, 5))
+    data_rng = rng.normal(size=(6, 8, 10, 2))
     plot_prob_atlas(Nifti1Image(data_rng, affine_eye), **params)
 
 

@@ -18,9 +18,9 @@ from numpy.testing import (
     assert_equal,
 )
 
-from nilearn import _utils
 from nilearn._utils import testing
 from nilearn._utils.exceptions import DimensionError
+from nilearn._utils.niimg import is_binary_niimg
 from nilearn.image import get_data
 from nilearn.image.image import crop_img
 from nilearn.image.resampling import (
@@ -65,6 +65,7 @@ def data(rng, shape):
 
 def test_resample_deprecation_force_resample(data, shape, affine_eye):
     """Test change of value of force_resample."""
+    # TODO (nilearn 0.13.0)
     affine_eye[:3, -1] = 0.5 * np.array(shape[:3])
 
     with pytest.warns(FutureWarning, match="force_resample"):
@@ -441,7 +442,7 @@ def test_resampling_warning_binary_image(affine_eye, rng, force_resample):
     rot = rotation(0, np.pi / 4)
     img_binary = Nifti1Image(data_binary, affine_eye)
 
-    assert _utils.niimg.is_binary_niimg(img_binary)
+    assert is_binary_niimg(img_binary)
 
     with pytest.warns(Warning, match="Resampling binary images with"):
         resample_img(
@@ -1109,6 +1110,7 @@ def test_reorder_img_copied_header(img_4d_mni_tr2):
 def test_warning_copy_header_false(request, func, input_img):
     # Use the request fixture to get the actual fixture value
     actual_input_img = request.getfixturevalue(input_img)
+    # TODO (nilearn 0.13.0)
     with pytest.warns(FutureWarning, match="From release 0.13.0 onwards*"):
         func(actual_input_img, copy_header=False)
 
@@ -1281,7 +1283,7 @@ def test_get_mask_bounds(data, affine_eye):
 
 
 def test_get_mask_bounds_error(data, affine_eye):
-    with pytest.raises(TypeError, match="Data given cannot be loaded because"):
+    with pytest.raises(TypeError, match="input should be a NiftiLike object"):
         get_mask_bounds(None)
 
     with pytest.raises(

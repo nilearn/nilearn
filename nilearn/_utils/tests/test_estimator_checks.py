@@ -9,8 +9,8 @@ ignores modules whose name starts with an underscore.
 import pytest
 
 from nilearn._utils.estimator_checks import (
-    check_estimator_has_sklearn_is_fitted,
-    check_masker_dict_unchanged,
+    check_img_estimator_dict_unchanged,
+    check_img_estimator_fit_check_is_fitted,
 )
 from nilearn.maskers.base_masker import BaseMasker
 
@@ -19,7 +19,7 @@ def test_check_estimator_has_sklearn_is_fitted():
     """Check errors are thrown for unfitted estimator.
 
     Check that before fitting
-    - estimlator has a __sklearn_is_fitted__ method that returns false
+    - estimator has a __sklearn_is_fitted__ method that returns false
     - running sklearn check_is_fitted on masker throws an error
     """
 
@@ -30,7 +30,7 @@ def test_check_estimator_has_sklearn_is_fitted():
     with pytest.raises(
         TypeError, match="must have __sklearn_is_fitted__ method"
     ):
-        check_estimator_has_sklearn_is_fitted(DummyEstimator())
+        check_img_estimator_fit_check_is_fitted(DummyEstimator())
 
     class DummyEstimator:
         def __init__(self):
@@ -40,7 +40,7 @@ def test_check_estimator_has_sklearn_is_fitted():
             return True
 
     with pytest.raises(ValueError, match="must return False before fit"):
-        check_estimator_has_sklearn_is_fitted(DummyEstimator())
+        check_img_estimator_fit_check_is_fitted(DummyEstimator())
 
 
 def test_check_masker_dict_unchanged():
@@ -62,7 +62,7 @@ def test_check_masker_dict_unchanged():
     with pytest.raises(
         ValueError, match="Estimator changes '__dict__' keys during transform."
     ):
-        check_masker_dict_unchanged(estimator)
+        check_img_estimator_dict_unchanged(estimator)
 
     class DummyEstimator(BaseMasker):
         """Estimator with a transform method that modifies an attribute."""
@@ -83,4 +83,4 @@ def test_check_masker_dict_unchanged():
     with pytest.raises(
         ValueError, match="Estimator changes the following '__dict__' keys"
     ):
-        check_masker_dict_unchanged(estimator)
+        check_img_estimator_dict_unchanged(estimator)

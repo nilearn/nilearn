@@ -7,12 +7,10 @@ import contextlib
 import warnings
 
 import numpy as np
-from joblib import Memory
 from scipy import sparse
 from sklearn import neighbors
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import logger
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
@@ -29,11 +27,12 @@ from nilearn._utils.niimg_conversions import (
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
-from nilearn.maskers._utils import (
-    compute_middle_image,
-    sanitize_cleaning_parameters,
+from nilearn.maskers._utils import compute_middle_image
+from nilearn.maskers.base_masker import (
+    BaseMasker,
+    filter_and_extract,
+    mask_logger,
 )
-from nilearn.maskers.base_masker import BaseMasker, filter_and_extract
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
 
 
@@ -91,8 +90,7 @@ def apply_mask_and_get_affinity(
     elif mask_img is not None:
         affine = niimg.affine
         mask_img = check_niimg_3d(mask_img)
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
+        # TODO (nilearn >= 0.13.0) force_resample=True
         mask_img = resample_img(
             mask_img,
             target_affine=affine,
@@ -102,11 +100,11 @@ def apply_mask_and_get_affinity(
             force_resample=False,
         )
         mask, _ = load_mask_img(mask_img)
-        mask_coords = list(zip(*np.where(mask != 0)))
+        mask_coords = list(zip(*np.where(mask != 0), strict=False))
 
         X = apply_mask_fmri(niimg, mask_img)
 
-    elif niimg is not None:
+    else:
         affine = niimg.affine
         if np.isnan(np.sum(safe_get_data(niimg))):
             warnings.warn(
@@ -120,9 +118,6 @@ def apply_mask_and_get_affinity(
 
         mask_coords = list(np.ndindex(niimg.shape[:3]))
 
-    else:
-        raise ValueError("Either a niimg or a mask_img must be provided.")
-
     # For each seed, get coordinates of nearest voxel
     nearests = []
     for sx, sy, sz in seeds:
@@ -134,7 +129,7 @@ def apply_mask_and_get_affinity(
         except ValueError:
             nearests.append(None)
 
-    mask_coords = np.asarray(list(zip(*mask_coords)))
+    mask_coords = np.asarray(list(zip(*mask_coords, strict=False)))
     mask_coords = coord_transform(
         mask_coords[0], mask_coords[1], mask_coords[2], affine
     )
@@ -277,17 +272,28 @@ class NiftiSpheresMasker(BaseMasker):
     %(dtype)s
 
     %(memory)s
+
     %(memory_level1)s
+
     %(verbose0)s
 
+    reports : :obj:`bool`, default=True
+         If set to True, data is saved in order to produce a report.
+
     %(clean_args)s
-        .. versionadded:: 0.11.2dev
+        .. versionadded:: 0.12.0
 
     %(masker_kwargs)s
 
     Attributes
     ----------
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
+
     %(nifti_mask_img_)s
+
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int`
         The number of seeds in the masker.
@@ -296,9 +302,6 @@ class NiftiSpheresMasker(BaseMasker):
 
     seeds_ : :obj:`list` of :obj:`list`
         The coordinates of the seeds in the masker.
-
-    reports : boolean, default=True
-         If set to True, data is saved in order to produce a report.
 
     See Also
     --------
@@ -369,35 +372,35 @@ class NiftiSpheresMasker(BaseMasker):
                             or :class:`~numpy.ndarray`, or "all", default="all"
             Indicates which spheres will be displayed in the HTML report.
 
-                - If "all": All spheres will be displayed in the report.
+            - If "all": All spheres will be displayed in the report.
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report("all")
+                masker.generate_report("all")
 
-                .. warning::
+            .. warning::
 
-                    If there are too many spheres, this might be time and
-                    memory consuming, and will result in very heavy
-                    reports.
+                If there are too many spheres, this might be time and
+                memory consuming, and will result in very heavy
+                reports.
 
-                - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
-                  the indices of the spheres to be displayed in the report.
-                  For example, the following code will generate a report with
-                  spheres 6, 3, and 12, displayed in this specific order:
+            - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
+                the indices of the spheres to be displayed in the report.
+                For example, the following code will generate a report with
+                spheres 6, 3, and 12, displayed in this specific order:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report([6, 3, 12])
+                masker.generate_report([6, 3, 12])
 
-                - If an :obj:`int`: This will only display the first n
-                  spheres, n being the value of the parameter. By default,
-                  the report will only contain the first 10 spheres.
-                  Example to display the first 16 spheres:
+            - If an :obj:`int`: This will only display the first n
+                spheres, n being the value of the parameter. By default,
+                the report will only contain the first 10 spheres.
+                Example to display the first 16 spheres:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report(16)
+                masker.generate_report(16)
 
         Returns
         -------
@@ -508,7 +511,7 @@ class NiftiSpheresMasker(BaseMasker):
         display = plotting.plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
         )
-        embeded_images = [embed_img(display)]
+        embedded_images = [embed_img(display)]
         display.close()
         for idx, seed in enumerate(seeds):
             regions_summary["seed number"].append(idx)
@@ -528,18 +531,19 @@ class NiftiSpheresMasker(BaseMasker):
                     marker_color="g",
                     marker_size=20 * radius,
                 )
-                embeded_images.append(embed_img(display))
+                embedded_images.append(embed_img(display))
                 display.close()
 
-        assert len(embeded_images) == len(
+        assert len(embedded_images) == len(
             self._report_content["displayed_maps"]
         )
 
         self._report_content["summary"] = regions_summary
 
-        return embeded_images
+        return embedded_images
 
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
+    # TODO (nilearn >= 0.13.0)
+    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit(
         self,
         imgs=None,
@@ -559,7 +563,8 @@ class NiftiSpheresMasker(BaseMasker):
             "warning_message": None,
         }
 
-        self = sanitize_cleaning_parameters(self)
+        self._sanitize_cleaning_parameters()
+        self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         error = (
             "Seeds must be a list of triplets of coordinates in "
@@ -568,14 +573,12 @@ class NiftiSpheresMasker(BaseMasker):
 
         self.mask_img_ = self._load_mask(imgs)
 
-        if self.memory is None:
-            self.memory = Memory(location=None)
+        self._fit_cache()
 
         if imgs is not None:
             if self.reports:
                 if self.mask_img_ is not None:
-                    # TODO switch to force_resample=True
-                    # when bumping to version > 0.13
+                    # TODO (nilearn  >= 0.13.0) force_resample=True
                     resampl_imgs = self._cache(resample_img)(
                         imgs,
                         target_affine=self.mask_img_.affine,
@@ -627,6 +630,8 @@ class NiftiSpheresMasker(BaseMasker):
 
         self.n_elements_ = len(self.seeds_)
 
+        mask_logger("fit_done", verbose=self.verbose)
+
         return self
 
     @fill_doc
@@ -647,7 +652,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------
@@ -676,7 +681,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------
@@ -686,10 +691,10 @@ class NiftiSpheresMasker(BaseMasker):
         check_is_fitted(self)
 
         params = get_params(NiftiSpheresMasker, self)
-        params["clean_kwargs"] = self.clean_args
-        # TODO remove in 0.13.2
+        params["clean_kwargs"] = self.clean_args_
+        # TODO (nilearn  >= 0.13.0) remove
         if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs
+            params["clean_kwargs"] = self.clean_kwargs_
 
         signals, _ = self._cache(
             filter_and_extract, ignore=["verbose", "memory", "memory_level"]
@@ -708,7 +713,7 @@ class NiftiSpheresMasker(BaseMasker):
             sample_mask=sample_mask,
             dtype=self.dtype,
             # Caching
-            memory=self.memory,
+            memory=self.memory_,
             memory_level=self.memory_level,
             # kwargs
             verbose=self.verbose,
@@ -735,7 +740,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         region_signals = self._check_array(region_signals)
 
-        logger.log("computing image from signals", verbose=self.verbose)
+        mask_logger("inverse_transform", verbose=self.verbose)
 
         if self.mask_img_ is not None:
             mask = check_niimg_3d(self.mask_img_)

@@ -45,9 +45,13 @@ if is_matplotlib_installed():
     if compare_version(
         matplotlib.__version__, ">", OPTIONAL_MATPLOTLIB_MIN_VERSION
     ):
+        # the tests that compare plotted figures
+        # against their expected baseline is only run
+        # with the oldest version of matplolib
         collect_ignore.extend(
             [
                 "plotting/tests/test_baseline_comparisons.py",
+                "reporting/tests/test_baseline_comparisons.py",
             ]
         )
 
@@ -58,6 +62,7 @@ else:
             "plotting",
             "reporting/html_report.py",
             "reporting/tests/test_html_report.py",
+            "reporting/tests/test_baseline_comparisons.py",
         ]
     )
     matplotlib = None  # type: ignore[assignment]
@@ -126,6 +131,7 @@ def close_all():
 def suppress_specific_warning():
     """Ignore internal deprecation warnings."""
     with warnings.catch_warnings():
+        # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
         messages = (
             "The `darkness` parameter will be deprecated.*|"
             "In release 0.13, this fetcher will return a dictionary.*|"
@@ -475,13 +481,13 @@ def img_atlas(shape_3d_default, affine_mni):
 
 
 def _n_regions():
-    """Return a default numher of regions for maps."""
+    """Return a default number of regions for maps."""
     return 9
 
 
 @pytest.fixture
 def n_regions():
-    """Return a default numher of regions for maps."""
+    """Return a default number of regions for maps."""
     return _n_regions()
 
 
@@ -739,7 +745,7 @@ def _flip_surf_img_parts(poly_obj):
     """Flip hemispheres of a surface image data or mesh."""
     keys = list(poly_obj.parts.keys())
     keys = [keys[-1]] + keys[:-1]
-    return dict(zip(keys, poly_obj.parts.values()))
+    return dict(zip(keys, poly_obj.parts.values(), strict=False))
 
 
 @pytest.fixture

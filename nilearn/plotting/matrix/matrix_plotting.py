@@ -1,7 +1,5 @@
 """Miscellaneous matrix plotting utilities."""
 
-import warnings
-
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import numpy as np
@@ -9,28 +7,139 @@ import pandas as pd
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import (
-    constrained_layout_kwargs,
-    fill_doc,
-    rename_parameters,
-)
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.logger import find_stack_level
-from nilearn.glm.contrasts import expression_to_contrast_vector
+from nilearn._utils.helpers import constrained_layout_kwargs, rename_parameters
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.plotting._utils import save_figure_if_needed
-from nilearn.plotting.matrix._matplotlib_backend import (
-    _configure_axis,
-    _configure_grid,
-    _fit_axes,
-    _sanitize_inputs_plot_matrix,
-    _sanitize_tri,
-)
 from nilearn.plotting.matrix._utils import (
-    _mask_matrix,
-    _reorder_matrix,
+    mask_matrix,
+    pad_contrast_matrix,
+    reorder_matrix,
+    sanitize_labels,
+    sanitize_reorder,
+    sanitize_tri,
 )
+
+
+def _configure_axis(
+    axes, labels, label_size, x_label_rotation, y_label_rotation
+):
+    """Help for plot_matrix."""
+    if not labels:
+        axes.xaxis.set_major_formatter(plt.NullFormatter())
+        axes.yaxis.set_major_formatter(plt.NullFormatter())
+    else:
+        axes.set_xticks(np.arange(len(labels)))
+        axes.set_xticklabels(labels, size=label_size)
+        for label in axes.get_xticklabels():
+            label.set_ha("right")
+            label.set_rotation(x_label_rotation)
+        axes.set_yticks(np.arange(len(labels)))
+        axes.set_yticklabels(labels, size=label_size)
+        for label in axes.get_yticklabels():
+            label.set_ha("right")
+            label.set_va("top")
+            label.set_rotation(y_label_rotation)
+
+
+def _configure_grid(axes, tri, size):
+    """Help for plot_matrix."""
+    # Different grids for different layouts
+    if tri == "lower":
+        for i in range(size):
+            # Correct for weird mis-sizing
+            i = 1.001 * i
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i + 0.5], color="gray")
+            axes.plot([i + 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
+    elif tri == "diag":
+        for i in range(size):
+            # Correct for weird mis-sizing
+            i = 1.001 * i
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, i - 0.5], color="gray")
+            axes.plot([i + 0.5, -0.5], [i - 0.5, i - 0.5], color="gray")
+    else:
+        for i in range(size):
+            # Correct for weird mis-sizing
+            i = 1.001 * i
+            axes.plot([i + 0.5, i + 0.5], [size - 0.5, -0.5], color="gray")
+            axes.plot([size - 0.5, -0.5], [i + 0.5, i + 0.5], color="gray")
+
+
+def _fit_axes(axes):
+    """Help for plot_matrix.
+
+    This function redimensions the given axes to have
+    labels fitting.
+    """
+    fig = axes.get_figure()
+    renderer = fig.canvas.get_renderer()
+    ylabel_width = (
+        axes.yaxis.get_tightbbox(renderer)
+        .transformed(axes.figure.transFigure.inverted())
+        .width
+    )
+    if axes.get_position().xmin < 1.1 * ylabel_width:
+        # we need to move it over
+        new_position = axes.get_position()
+        new_position.x0 = 1.1 * ylabel_width  # pad a little
+        axes.set_position(new_position)
+
+    xlabel_height = (
+        axes.xaxis.get_tightbbox(renderer)
+        .transformed(axes.figure.transFigure.inverted())
+        .height
+    )
+    if axes.get_position().ymin < 1.1 * xlabel_height:
+        # we need to move it over
+        new_position = axes.get_position()
+        new_position.y0 = 1.1 * xlabel_height  # pad a little
+        axes.set_position(new_position)
+
+
+def _sanitize_figure_and_axes(figure, axes):
+    """Help for plot_matrix."""
+    if axes is not None and figure is not None:
+        raise ValueError(
+            "Parameters figure and axes cannot be specified together. "
+            f"You gave 'figure={figure}, axes={axes}'."
+        )
+    if figure is not None:
+        if isinstance(figure, plt.Figure):
+            fig = figure
+            if hasattr(fig, "set_layout_engine"):  # can be removed w/mpl 3.5
+                fig.set_layout_engine("constrained")
+        else:
+            fig = plt.figure(figsize=figure, **constrained_layout_kwargs())
+        axes = plt.gca()
+        own_fig = True
+    elif axes is None:
+        fig, axes = plt.subplots(
+            1,
+            1,
+            figsize=(7, 5),
+            **constrained_layout_kwargs(),
+        )
+        own_fig = True
+    else:
+        fig = axes.figure
+        own_fig = False
+    return fig, axes, own_fig
+
+
+def _sanitize_inputs_plot_matrix(
+    mat_shape, tri, labels, reorder, figure, axes
+):
+    """Help for plot_matrix.
+
+    This function makes sure the inputs to plot_matrix are valid.
+    """
+    sanitize_tri(tri)
+    labels = sanitize_labels(mat_shape, labels)
+    reorder = sanitize_reorder(reorder)
+    fig, axes, own_fig = _sanitize_figure_and_axes(figure, axes)
+    return labels, reorder, fig, axes, own_fig
 
 
 @fill_doc
@@ -124,9 +233,9 @@ def plot_matrix(
         mat.shape, tri, labels, reorder, figure, axes
     )
     if reorder:
-        mat, labels = _reorder_matrix(mat, labels, reorder)
+        mat, labels = reorder_matrix(mat, labels, reorder)
     if tri != "full":
-        mat = _mask_matrix(mat, tri)
+        mat = mask_matrix(mat, tri)
     display = axes.imshow(
         mat, aspect="equal", interpolation="nearest", cmap=cmap, **kwargs
     )
@@ -156,6 +265,7 @@ def plot_matrix(
     return display
 
 
+# TODO (nilearn >= 0.13.0)
 @fill_doc
 @rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_contrast_matrix(
@@ -227,54 +337,7 @@ def plot_contrast_matrix(
     return save_figure_if_needed(axes, output_file)
 
 
-def pad_contrast_matrix(contrast_def, design_matrix):
-    """Pad contrasts with zeros.
-
-    Parameters
-    ----------
-    contrast_def : :class:`numpy.ndarray`
-        Contrast to be padded
-
-    design_matrix : :class:`pandas.DataFrame`
-        Design matrix to use.
-
-    Returns
-    -------
-    axes : :class:`numpy.ndarray`
-        Padded contrast
-
-    """
-    design_column_names = design_matrix.columns.tolist()
-    if isinstance(contrast_def, str):
-        contrast_def = expression_to_contrast_vector(
-            contrast_def, design_column_names
-        )
-    n_columns_design_matrix = len(design_column_names)
-    n_columns_contrast_def = (
-        contrast_def.shape[0]
-        if contrast_def.ndim == 1
-        else contrast_def.shape[1]
-    )
-    horizontal_padding = n_columns_design_matrix - n_columns_contrast_def
-    if horizontal_padding == 0:
-        return contrast_def
-    warnings.warn(
-        (
-            f"Contrasts will be padded with {horizontal_padding} "
-            "column(s) of zeros."
-        ),
-        category=UserWarning,
-        stacklevel=find_stack_level(),
-    )
-    contrast_def = np.pad(
-        contrast_def,
-        ((0, 0), (0, horizontal_padding)),
-        "constant",
-        constant_values=(0, 0),
-    )
-    return contrast_def
-
-
+# TODO (nilearn >= 0.13.0)
 @fill_doc
 @rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_design_matrix(
@@ -530,7 +593,7 @@ def plot_design_matrix_correlation(
             "removing drift and constant regressors."
         )
 
-    _sanitize_tri(tri, allowed_values=("full", "diag"))
+    sanitize_tri(tri, allowed_values=("full", "diag"))
 
     mat = design_matrix.corr()
 

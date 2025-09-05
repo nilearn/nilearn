@@ -3,26 +3,26 @@
 import json
 from warnings import warn
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting import cm
+from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
-    colorscale,
     get_html_template,
     mesh_to_plotly,
-    to_color_strings,
 )
 from nilearn.plotting.surface._utils import (
+    DEFAULT_ENGINE,
     DEFAULT_HEMI,
     check_surface_plotting_inputs,
+    get_surface_backend,
 )
 from nilearn.surface import (
     PolyMesh,
@@ -40,60 +40,6 @@ from nilearn.surface.surface import (
 
 class SurfaceView(HTMLDocument):  # noqa: D101
     pass
-
-
-def get_vertexcolor(
-    surf_map,
-    cmap,
-    norm,
-    absolute_threshold=None,
-    bg_map=None,
-    bg_on_data=None,
-    darkness=None,
-):
-    """Get the color of the vertices."""
-    if bg_map is None:
-        bg_data = np.ones(len(surf_map)) * 0.5
-        bg_vmin, bg_vmax = 0, 1
-    else:
-        bg_data = np.copy(load_surf_data(bg_map))
-
-    # scale background map if need be
-    bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
-    if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_data = bg_norm(bg_data)
-
-    if darkness is not None:
-        bg_data *= darkness
-        warn(
-            (
-                "The `darkness` parameter will be deprecated in release 0.13. "
-                "We recommend setting `darkness` to None"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
-
-    bg_colors = plt.get_cmap("Greys")(bg_data)
-
-    # select vertices which are filtered out by the threshold
-    if absolute_threshold is None:
-        under_threshold = np.zeros_like(surf_map, dtype=bool)
-    else:
-        under_threshold = np.abs(surf_map) < absolute_threshold
-
-    surf_colors = cmap(norm(surf_map).data)
-    # set transparency of voxels under threshold to 0
-    surf_colors[under_threshold, 3] = 0
-    if bg_on_data:
-        # if need be, set transparency of voxels above threshold to 0.7
-        # so that background map becomes visible
-        surf_colors[~under_threshold, 3] = 0.7
-
-    vertex_colors = cm.mix_colormaps(surf_colors, bg_colors)
-
-    return to_color_strings(vertex_colors)
 
 
 def _one_mesh_info(
@@ -125,7 +71,8 @@ def _one_mesh_info(
         vmin=vmin,
     )
     info = {"inflated_both": mesh_to_plotly(surf_mesh)}
-    info["vertexcolor_both"] = get_vertexcolor(
+    backend = get_surface_backend(DEFAULT_ENGINE)
+    info["vertexcolor_both"] = backend._get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
@@ -139,43 +86,6 @@ def _one_mesh_info(
     info["full_brain_mesh"] = False
     info["colorscale"] = colors["colors"]
     return info
-
-
-def one_mesh_info(
-    surf_map,
-    surf_mesh,
-    threshold=None,
-    cmap=DEFAULT_DIVERGING_CMAP,
-    black_bg=False,
-    bg_map=None,
-    symmetric_cmap=True,
-    bg_on_data=False,
-    darkness=0.7,
-    vmax=None,
-    vmin=None,
-):
-    """Deprecate public function. See _one_mesh_info."""
-    warn(
-        category=DeprecationWarning,
-        message="one_mesh_info is a private function and is renamed "
-        "to _one_mesh_info. Using the deprecated name will "
-        "raise an error in release 0.13",
-        stacklevel=find_stack_level(),
-    )
-
-    return _one_mesh_info(
-        surf_map,
-        surf_mesh,
-        threshold=threshold,
-        cmap=cmap,
-        black_bg=black_bg,
-        bg_map=bg_map,
-        symmetric_cmap=symmetric_cmap,
-        bg_on_data=bg_on_data,
-        darkness=darkness,
-        vmax=vmax,
-        vmin=vmin,
-    )
 
 
 def _get_combined_curvature_map(mesh_left, mesh_right):
@@ -244,7 +154,8 @@ def _full_brain_info(
         info[f"pial_{hemi}"] = mesh_to_plotly(mesh[f"pial_{hemi}"])
         info[f"inflated_{hemi}"] = mesh_to_plotly(mesh[f"infl_{hemi}"])
 
-        info[f"vertexcolor_{hemi}"] = get_vertexcolor(
+        backend = get_surface_backend(DEFAULT_ENGINE)
+        info[f"vertexcolor_{hemi}"] = backend._get_vertexcolor(
             surf_map,
             colors["cmap"],
             colors["norm"],
@@ -274,7 +185,8 @@ def _full_brain_info(
                     )
                 )
             )
-    info["vertexcolor_both"] = get_vertexcolor(
+    backend = get_surface_backend(DEFAULT_ENGINE)
+    info["vertexcolor_both"] = backend._get_vertexcolor(
         get_data(surface_maps),
         colors["cmap"],
         colors["norm"],

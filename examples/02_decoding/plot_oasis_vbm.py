@@ -191,13 +191,16 @@ data = variance_threshold.fit_transform(gm_maps_masked)
 from nilearn.mass_univariate import permuted_ols
 
 # This can be changed to use more CPUs.
-neg_log_pvals, t_scores_original_data, _ = permuted_ols(
+output = permuted_ols(
     age,
     data,  # + intercept as a covariate by default
     n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
     verbose=1,  # display progress bar
     n_jobs=2,
+    output_type="dict",
 )
+neg_log_pvals = output["logp_max_t"]
+t_scores_original_data = output["t"]
 signed_neg_log_pvals = neg_log_pvals * np.sign(t_scores_original_data)
 signed_neg_log_pvals_unmasked = nifti_masker.inverse_transform(
     variance_threshold.inverse_transform(signed_neg_log_pvals)

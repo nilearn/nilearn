@@ -11,7 +11,7 @@ from queue import Empty, Queue
 from socketserver import TCPServer
 from threading import Thread
 
-from nilearn._utils import remove_parameters
+from nilearn._utils.helpers import remove_parameters
 from nilearn._utils.logger import find_stack_level
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
@@ -42,7 +42,7 @@ def _open_in_browser(content):
         def log_message(self, *args):
             del args
 
-        def do_GET(self):  # noqa: N802
+        def do_GET(self):
             if not self.path.endswith("index.html"):
                 self.send_error(HTTPStatus.NOT_FOUND, "File not found")
                 return
@@ -241,6 +241,7 @@ class HTMLDocument:
         with Path(file_name).open("wb") as f:
             f.write(self.get_standalone().encode("utf-8"))
 
+    # (nilearn >= 0.13.0) remove temp_file_lifetime
     @remove_parameters(
         removed_params=["temp_file_lifetime"],
         reason=(

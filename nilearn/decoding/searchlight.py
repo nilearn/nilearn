@@ -6,6 +6,7 @@ in the neighborhood of each location of a domain.
 
 import time
 import warnings
+from copy import deepcopy
 
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
@@ -13,9 +14,12 @@ from sklearn import svm
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
+from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import check_niimg_3d, check_niimg_4d, fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import new_img_like
@@ -53,7 +57,7 @@ def search_light(
         object to use to fit the data
 
     A : scipy sparse matrix.
-        adjacency matrix. Defines for each feature the neigbhoring features
+        adjacency matrix. Defines for each feature the neighboring features
         following a given structure of the data.
 
     groups : array-like, default=None
@@ -66,7 +70,7 @@ def search_light(
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator, default=None
+    cv : cross-validation generator or None, default=None
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
@@ -170,7 +174,7 @@ def _group_iter_search_light(
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator, optional
+    cv : cross-validation generator or None, default=None
         A cross-validation generator. If None, a 3-fold cross validation is
         used or 3-fold stratified cross-validation when y is supplied.
 
@@ -262,7 +266,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator, optional
+    cv : cross-validation generator or None, default=None
         A cross-validation generator. If None, a 3-fold cross
         validation is used or 3-fold stratified cross-validation
         when y is supplied.
@@ -271,6 +275,20 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     Attributes
     ----------
+    mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
+        Mask computed by the masker object.
+
+    masked_scores_ : numpy.ndarray
+        1D array containing the searchlight scores corresponding
+        to the masked region only.
+
+        .. versionadded:: 0.11.0
+
+    n_elements_ : :obj:`int`
+        The number of voxels in the mask.
+
+        .. versionadded:: 0.12.1
+
     scores_ : numpy.ndarray
         3D array containing searchlight scores for each voxel, aligned
          with the mask.
@@ -282,12 +300,6 @@ class SearchLight(TransformerMixin, BaseEstimator):
          searchlight computation.
 
          .. versionadded:: 0.11.0
-
-    masked_scores_ : numpy.ndarray
-        1D array containing the searchlight scores corresponding
-        to the masked region only.
-
-        .. versionadded:: 0.11.0
 
     Notes
     -----
@@ -331,7 +343,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -341,20 +353,43 @@ class SearchLight(TransformerMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
 
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
             return tags()
 
+        from sklearn.utils import ClassifierTags, RegressorTags
+
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags()
+        tags.input_tags = InputTags(surf_img=False)
+
+        if self.estimator == "svr":
+            if SKLEARN_LT_1_6:
+                tags["multioutput"] = True
+                return tags
+            tags.estimator_type = "regressor"
+            tags.regressor_tags = RegressorTags()
+
+        elif self.estimator == "svc":
+            if SKLEARN_LT_1_6:
+                return tags
+            tags.estimator_type = "classifier"
+            tags.classifier_tags = ClassifierTags()
+
         return tags
+
+    @property
+    def _estimator_type(self):
+        # TODO (sklearn >= 1.6.0) remove
+        if self.estimator == "svr":
+            return "regressor"
+        elif self.estimator == "svc":
+            return "classifier"
+        return ""
 
     def fit(self, imgs, y, groups=None):
         """Fit the searchlight.
@@ -378,10 +413,17 @@ class SearchLight(TransformerMixin, BaseEstimator):
         # check if image is 4D
         imgs = check_niimg_4d(imgs)
 
+        check_array(y, ensure_2d=False, dtype=None)
+
         # Get the seeds
-        if self.mask_img is not None:
-            self.mask_img = check_niimg_3d(self.mask_img)
-        process_mask_img = self.process_mask_img or self.mask_img
+        self.mask_img_ = deepcopy(self.mask_img)
+        if self.mask_img_ is not None:
+            self.mask_img_ = check_niimg_3d(self.mask_img_)
+
+        if self.process_mask_img is not None:
+            check_niimg_3d(self.process_mask_img)
+
+        process_mask_img = self.process_mask_img or self.mask_img_
 
         # Compute world coordinates of the seeds
         process_mask, process_mask_affine = masking.load_mask_img(
@@ -389,6 +431,9 @@ class SearchLight(TransformerMixin, BaseEstimator):
         )
 
         self.process_mask_ = process_mask
+
+        self.n_elements_ = process_mask.ravel().sum()
+
         process_mask_coords = np.where(process_mask != 0)
         process_mask_coords = coord_transform(
             process_mask_coords[0],
@@ -403,7 +448,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
             imgs,
             self.radius,
             True,
-            mask_img=self.mask_img,
+            mask_img=self.mask_img_,
         )
 
         estimator = self.estimator
@@ -432,6 +477,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         return (
             hasattr(self, "scores_")
             and hasattr(self, "process_mask_")
+            and hasattr(self, "mask_img_")
             and self.scores_ is not None
             and self.process_mask_ is not None
         )
@@ -440,10 +486,21 @@ class SearchLight(TransformerMixin, BaseEstimator):
     def scores_img_(self):
         """Convert the 3D scores array into a NIfTI image."""
         check_is_fitted(self)
-        return new_img_like(self.mask_img, self.scores_)
+        return new_img_like(self.mask_img_, self.scores_)
 
     def transform(self, imgs):
-        """Apply the fitted searchlight on new images."""
+        """Apply the fitted searchlight on new images.
+
+        Parameters
+        ----------
+        imgs : Niimg-like object
+            See :ref:`extracting_data`.
+            4D image.
+
+        Returns
+        -------
+        result : np.ndarray
+        """
         check_is_fitted(self)
 
         imgs = check_niimg_4d(imgs)
@@ -453,7 +510,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
             imgs,
             self.radius,
             True,
-            mask_img=self.mask_img,
+            mask_img=self.mask_img_,
         )
 
         estimator = self.estimator
@@ -478,6 +535,29 @@ class SearchLight(TransformerMixin, BaseEstimator):
         reshaped_result = np.abs(reshaped_result)
 
         return reshaped_result
+
+    def fit_transform(self, imgs, y, groups=None):
+        """Fit the searchlight and applies to the input image.
+
+        Parameters
+        ----------
+        imgs : Niimg-like object
+            See :ref:`extracting_data`.
+            4D image.
+
+        y : 1D array-like
+            Target variable to predict. Must have exactly as many elements as
+            3D images in imgs.
+
+        groups : array-like, default=None
+            group label for each sample for cross validation. Must have
+            exactly as many elements as 3D images in imgs.
+
+        Returns
+        -------
+        result : np.ndarray
+        """
+        return self.fit(imgs, y, groups=groups).transform(imgs)
 
     def set_output(self, *, transform=None):
         """Set the output container when ``"transform"`` is called.

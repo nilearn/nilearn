@@ -13,7 +13,8 @@ from scipy.ndimage import generate_binary_structure, label
 from sklearn.utils import check_random_state
 
 from nilearn import image
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.masking import apply_mask
@@ -791,7 +792,7 @@ def permuted_ols(
         cmfwe_h0_parts,
         tfce_scores_as_ranks_parts,
         h0_tfce_parts,
-    ) = zip(*ret)
+    ) = zip(*ret, strict=False)
 
     # Voxel-level FWE
     vfwe_h0 = np.hstack(h0_vfwe_parts)
@@ -921,6 +922,7 @@ def _sanitize_inputs_permuted_ols(
         output_type = "dict"
 
     if output_type == "legacy":
+        # TODO (nilearn >= 0.13.0)
         warnings.warn(
             category=DeprecationWarning,
             message=(

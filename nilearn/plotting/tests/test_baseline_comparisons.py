@@ -40,7 +40,7 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
-from nilearn.plotting.img_plotting import MNI152TEMPLATE
+from nilearn.plotting.image.utils import MNI152TEMPLATE
 
 PLOTTING_FUNCS_3D = {
     plot_img,
@@ -143,6 +143,7 @@ def test_plot_functions_vmax(plot_func, vmax):
     return plot_func(load_sample_motor_activation_image(), vmax=vmax)
 
 
+@pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plotting_func", PLOTTING_FUNCS_3D)
 def test_plotting_functions_radiological_view(plotting_func):
     """Test for radiological view.
@@ -163,9 +164,13 @@ def test_plot_carpet_default_params(img_4d_mni, img_3d_ones_mni):
     return plot_carpet(img_4d_mni, mask_img=img_3d_ones_mni)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.mpl_image_compare
 def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
     """Smoke-test for plot_prob_atlas with default arguments."""
+    # TODO (nilearn >= 0.13.0)
+    # using only 2 regions to speed up the test
+    # maps = generate_maps(shape_3d_default, n_regions=2, affine=affine_mni)
     return plot_prob_atlas(img_4d_mni, bg_img=img_3d_mni)
 
 

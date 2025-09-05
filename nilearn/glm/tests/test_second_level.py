@@ -568,6 +568,7 @@ def test_high_level_glm_with_paths_errors():
         SecondLevelModel(mask_img=masker, verbose=1).fit(Y, design_matrix=X)
 
 
+@pytest.mark.timeout(0)
 def test_high_level_non_parametric_inference_with_paths(tmp_path):
     mask_file, fmri_files, _ = write_fake_fmri_data_and_design(
         (SHAPE,), file_path=tmp_path
@@ -1022,6 +1023,7 @@ def test_non_parametric_inference_tfce():
     assert get_data(out["logp_max_tfce"]).shape == shapes[0][:3]
 
 
+@pytest.mark.timeout(0)
 def test_non_parametric_inference_cluster_level():
     """Test non-parametric inference with cluster-level inference."""
     func_img, mask = fake_fmri_data()
@@ -1048,6 +1050,7 @@ def test_non_parametric_inference_cluster_level():
     assert get_data(out["logp_max_t"]).shape == SHAPE[:3]
 
 
+@pytest.mark.timeout(0)
 def test_non_parametric_inference_cluster_level_with_covariates(
     shape_3d_default,
     rng,
@@ -1082,7 +1085,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     )
 
     # Calculate uncorrected cluster sizes
-    df = len(Y) - X.shape[1]  # noqa: PD901
+    df = len(Y) - X.shape[1]
     neg_log_pval = -np.log10(stats.t.sf(get_data(out["t"]), df=df))
     logp_unc = new_img_like(out["t"], neg_log_pval)
     logp_unc_cluster_sizes = list(
@@ -1132,6 +1135,7 @@ def test_non_parametric_inference_cluster_level_with_single_covariates(
     )
 
 
+@pytest.mark.timeout(0)
 def test_second_level_contrast_computation_smoke():
     """Smoke test for different contrasts in fixed effects."""
     func_img, mask = fake_fmri_data()
@@ -1152,6 +1156,7 @@ def test_second_level_contrast_computation_smoke():
     model.compute_contrast()
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "output_type",
     [
@@ -1492,7 +1497,7 @@ def test_second_level_input_with_wrong_mask(
     model = SecondLevelModel(mask_img=img_mask_mni)
 
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 
@@ -1502,7 +1507,7 @@ def test_second_level_input_with_wrong_mask(
     model = SecondLevelModel(mask_img=surf_mask_1d)
 
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 

@@ -5,9 +5,7 @@ not the underlying functions used (e.g. clean()). See test_masking.py and
 test_signal.py for this.
 """
 
-import shutil
-from pathlib import Path
-from tempfile import mkdtemp
+import warnings
 
 import numpy as np
 import pytest
@@ -15,7 +13,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils import data_gen, exceptions, testing
+from nilearn._utils import data_gen, exceptions
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.estimator_checks import (
     check_estimator,
@@ -267,37 +265,6 @@ def test_sessions(affine_eye):
         masker.fit_transform(data_img)
 
 
-def test_joblib_cache(tmp_path, mask_img_1):
-    """Test using joblib cache."""
-    from joblib import Memory, hash
-
-    filename = testing.write_imgs_to_path(
-        mask_img_1,
-        file_path=tmp_path,
-        create_files=True,
-    )
-    masker = NiftiMasker(mask_img=filename)
-    masker.fit()
-    mask_hash = hash(masker.mask_img_)
-    get_data(masker.mask_img_)
-    assert mask_hash == hash(masker.mask_img_)
-
-    # Test a tricky issue with memmapped joblib.memory that makes
-    # imgs return by inverse_transform impossible to save
-    cachedir = Path(mkdtemp())
-    try:
-        masker.memory = Memory(location=cachedir, mmap_mode="r", verbose=0)
-        X = masker.transform(mask_img_1)
-        # inverse_transform a first time, so that the result is cached
-        out_img = masker.inverse_transform(X)
-        out_img = masker.inverse_transform(X)
-        out_img.to_filename(cachedir / "test.nii")
-    finally:
-        # enables to delete "filename" on windows
-        del masker
-        shutil.rmtree(cachedir, ignore_errors=True)
-
-
 def test_mask_strategy_errors_warnings(img_fmri):
     """Check that mask_strategy errors are raised."""
     # Error with unknown mask_strategy
@@ -305,16 +272,6 @@ def test_mask_strategy_errors_warnings(img_fmri):
     masker = NiftiMasker(mask_strategy="oops", mask_args={"threshold": 0.0})
     with pytest.raises(
         ValueError, match="Unknown value of mask_strategy 'oops'"
-    ):
-        masker.fit(img_fmri)
-
-    # Warning with deprecated 'template' strategy,
-    # plus an exception because there's no resulting mask
-    masker = NiftiMasker(
-        mask_strategy="template", mask_args={"threshold": 0.0}
-    )
-    with pytest.warns(
-        UserWarning, match="Masking strategy 'template' is deprecated."
     ):
         masker.fit(img_fmri)
 
@@ -378,10 +335,9 @@ def expected_mask(mask_args):
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
-@pytest.mark.parametrize("mask_args", [{}])
-def test_compute_brain_mask_empty_mask_error(strategy, mask_args):
+def test_compute_brain_mask_empty_mask_error(strategy):
     """Check masker raise error when estimated mask is empty."""
-    masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
+    masker = NiftiMasker(mask_strategy=strategy, mask_args={})
 
     img, _ = data_gen.generate_random_img((9, 9, 5))
 
@@ -389,9 +345,12 @@ def test_compute_brain_mask_empty_mask_error(strategy, mask_args):
         masker.fit(img)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
+# We parametrize mask_args to make it accessible
+# to the expected_mask fixture.
 @pytest.mark.parametrize("mask_args", [{"threshold": 0.0}])
 def test_compute_brain_mask(strategy, expected_mask, mask_args):
     """Check masker for template masking strategy."""
@@ -401,6 +360,48 @@ def test_compute_brain_mask(strategy, expected_mask, mask_args):
     masker.fit(img)
 
     np.testing.assert_array_equal(get_data(masker.mask_img_), expected_mask)
+
+
+def test_invalid_mask_arg_for_strategy():
+    """Pass mask_args specific to epi strategy should not fail.
+
+    But a warning should be thrown.
+    """
+    masker = NiftiMasker(
+        mask_strategy="background",
+        mask_args={"lower_cutoff": 0.1, "ensure_finite": False},
+    )
+    img, _ = data_gen.generate_random_img((9, 9, 5))
+
+    with pytest.warns(
+        UserWarning, match="The following arguments are not supported by"
+    ):
+        masker.fit(img)
+
+
+@pytest.mark.parametrize(
+    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+)
+def test_no_warning_partial_joblib(strategy):
+    """Check no warning thrown by joblib regarding masking strategy.
+
+    Regression test for:
+    https://github.com/nilearn/nilearn/issues/5527
+    """
+    masker = NiftiMasker(
+        mask_strategy=strategy,
+        mask_args={"threshold": 0.0},
+        memory="nilearn_cache",
+        memory_level=1,
+    )
+    img, _ = data_gen.generate_random_img((9, 9, 5))
+    with warnings.catch_warnings(record=True) as warning_list:
+        masker.fit(img)
+
+    assert not any(
+        "Cannot inspect object functools.partial" in str(x)
+        for x in warning_list
+    )
 
 
 def test_filter_and_mask_error(affine_eye):

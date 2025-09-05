@@ -14,7 +14,8 @@ from nibabel import Nifti1Image, gifti
 from scipy.ndimage import binary_dilation
 
 from nilearn import datasets, image, maskers, masking
-from nilearn._utils import as_ndarray, logger
+from nilearn._utils import logger
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn.interfaces.bids.utils import (
     bids_entities,
     check_bids_label,
@@ -277,7 +278,7 @@ def generate_labeled_regions(
         n_voxels, n_regions, random_state=random_state
     )
     # replace weights with labels
-    for n, row in zip(labels, regions):
+    for n, row in zip(labels, regions, strict=False):
         row[row > 0] = n
     data = np.zeros(shape, dtype=dtype)
     data[np.ones(shape, dtype=bool)] = regions.sum(axis=0).T
@@ -642,7 +643,7 @@ def _generate_signals_from_precisions(
     mean = np.zeros(precisions[0].shape[0])
     signals.extend(
         rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n,))
-        for n, prec in zip(n_samples, precisions)
+        for n, prec in zip(n_samples, precisions, strict=False)
     )
     return signals
 
@@ -655,7 +656,7 @@ def generate_group_sparse_gaussian_graphs(
     density=0.1,
     random_state=0,
     verbose=0,
-):
+) -> tuple[list[np.ndarray], list[np.ndarray], np.ndarray]:
     """Generate signals drawn from a sparse Gaussian graphical model.
 
     Parameters
@@ -1162,7 +1163,7 @@ def _mock_bids_dataset(
         func_path = subses_dir / "func"
         func_path.mkdir(parents=True, exist_ok=True)
 
-        for task, n_run in zip(tasks, n_runs):
+        for task, n_run in zip(tasks, n_runs, strict=False):
             for run in _listify(n_run):
                 if entities:
                     for key in entities:
@@ -1265,7 +1266,7 @@ def _mock_bids_derivatives(
         func_path = subses_dir / "func"
         func_path.mkdir(parents=True, exist_ok=True)
 
-        for task, n_run in zip(tasks, n_runs):
+        for task, n_run in zip(tasks, n_runs, strict=False):
             for run in _listify(n_run):
                 if entities:
                     for key in entities:

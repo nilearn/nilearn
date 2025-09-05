@@ -20,7 +20,7 @@ from nilearn.plotting import (
     plot_roi,
     plot_stat_map,
 )
-from nilearn.plotting.img_plotting import MNI152TEMPLATE
+from nilearn.plotting.image.utils import MNI152TEMPLATE
 
 ALL_PLOTTING_FUNCS = {
     plot_img,
@@ -77,7 +77,6 @@ def test_plot_functions_invalid_threshold(plot_func, img_3d_mni, tmp_path):
     """Test plot functions for negative threshold value."""
     filename = tmp_path / "temp.png"
 
-    """Tests plot_img for negative threshold."""
     with pytest.raises(
         ValueError, match="Threshold should be a non-negative number!"
     ):

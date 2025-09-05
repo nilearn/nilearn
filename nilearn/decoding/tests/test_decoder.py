@@ -24,7 +24,6 @@ from sklearn import clone
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.exceptions import ConvergenceWarning
 from sklearn.linear_model import (
     LassoCV,
     LogisticRegressionCV,
@@ -46,7 +45,10 @@ from sklearn.model_selection import (
 )
 from sklearn.preprocessing import LabelBinarizer, StandardScaler
 from sklearn.svm import SVR, LinearSVC
-from sklearn.utils.estimator_checks import parametrize_with_checks
+from sklearn.utils.estimator_checks import (
+    ignore_warnings,
+    parametrize_with_checks,
+)
 
 from nilearn._utils.estimator_checks import (
     check_estimator,
@@ -82,13 +84,11 @@ ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 
 ESTIMATORS_TO_CHECK = [
-    DecoderRegressor(),
-    FREMRegressor(),
     Decoder(),
-    _BaseDecoder(),
+    DecoderRegressor(),
     FREMClassifier(),
+    FREMRegressor(),
 ]
-
 
 if SKLEARN_LT_1_6:
 
@@ -108,6 +108,7 @@ if SKLEARN_LT_1_6:
     def test_check_estimator_sklearn_invalid(estimator, check, name):
         """Check compliance with sklearn estimators."""
         check(estimator)
+
 else:
 
     @parametrize_with_checks(
@@ -243,6 +244,7 @@ def test_check_param_grid_classification(rand_x_y, classifier, param):
     assert list(param_grid.keys()) == list(param)
 
 
+@ignore_warnings
 @pytest.mark.parametrize(
     "param_grid_input",
     [
@@ -287,6 +289,7 @@ def test_check_parameter_grid_is_empty(rand_x_y):
     assert param_grid == {}
 
 
+@ignore_warnings
 @pytest.mark.parametrize(
     "param_grid",
     [
@@ -464,13 +467,14 @@ def test_parallel_fit(rand_x_y):
         )
 
     # check that every element of the output tuple is the same for both tries
-    for a, b in zip(outputs[0], outputs[1]):
+    for a, b in zip(outputs[0], outputs[1], strict=False):
         if isinstance(a, np.ndarray):
             assert_array_almost_equal(a, b)
         else:
             assert a == b
 
 
+@ignore_warnings
 @pytest.mark.parametrize(
     "param_values",
     (
@@ -543,6 +547,7 @@ def test_parallel_fit_builtin_cv(
     assert isinstance(best_param[fitted_param_name], numbers.Number)
 
 
+@ignore_warnings
 def test_decoder_param_grid_sequence(binary_classification_data):
     X, y, _ = binary_classification_data
     n_cv_folds = 10
@@ -568,6 +573,7 @@ def test_decoder_param_grid_sequence(binary_classification_data):
             assert len(param_list) == n_cv_folds
 
 
+@ignore_warnings
 def test_decoder_binary_classification_with_masker_object(
     binary_classification_data,
 ):
@@ -582,6 +588,7 @@ def test_decoder_binary_classification_with_masker_object(
     assert accuracy_score(y, y_pred) > 0.95
 
 
+@ignore_warnings
 def test_decoder_binary_classification_with_logistic_model(
     binary_classification_data,
 ):
@@ -595,6 +602,7 @@ def test_decoder_binary_classification_with_logistic_model(
     assert accuracy_score(y, y_pred) > 0.95
 
 
+@ignore_warnings
 @pytest.mark.parametrize("screening_percentile", [100, 20, None])
 def test_decoder_binary_classification_screening(
     binary_classification_data, screening_percentile
@@ -608,6 +616,7 @@ def test_decoder_binary_classification_screening(
     assert accuracy_score(y, y_pred) > 0.95
 
 
+@ignore_warnings
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
 def test_decoder_binary_classification_clustering(
     binary_classification_data, clustering_percentile
@@ -627,6 +636,7 @@ def test_decoder_binary_classification_clustering(
     assert accuracy_score(y, y_pred) > 0.9
 
 
+@ignore_warnings
 @pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
 def test_decoder_binary_classification_cross_validation(
     binary_classification_data, cv, rng
@@ -646,6 +656,7 @@ def test_decoder_binary_classification_cross_validation(
     assert accuracy_score(y, y_pred) > 0.9
 
 
+@ignore_warnings
 def test_decoder_dummy_classifier(binary_classification_data):
     n_samples = N_SAMPLES
     X, y, mask = binary_classification_data
@@ -663,6 +674,7 @@ def test_decoder_dummy_classifier(binary_classification_data):
     assert np.sum(y_pred == 1.0) / n_samples - proportion < 0.05
 
 
+@ignore_warnings
 def test_decoder_dummy_classifier_with_callable(binary_classification_data):
     X, y, mask = binary_classification_data
 
@@ -677,6 +689,7 @@ def test_decoder_dummy_classifier_with_callable(binary_classification_data):
     assert model.score(X, y) == accuracy_score(y, y_pred)
 
 
+@ignore_warnings
 def test_decoder_dummy_classifier_strategy_prior():
     X, y, mask = _make_binary_classification_test_data(n_samples=300)
 
@@ -691,6 +704,7 @@ def test_decoder_dummy_classifier_strategy_prior():
     assert roc_auc_score(y, y_pred) == 0.5
 
 
+@ignore_warnings
 def test_decoder_dummy_classifier_strategy_most_frequent():
     X, y, mask = _make_binary_classification_test_data(n_samples=300)
 
@@ -711,6 +725,7 @@ def test_decoder_dummy_classifier_strategy_most_frequent():
     assert model.cv_scores_ is not None
 
 
+@ignore_warnings
 def test_decoder_dummy_classifier_roc_scoring(binary_classification_data):
     X, y, mask = binary_classification_data
 
@@ -720,6 +735,7 @@ def test_decoder_dummy_classifier_roc_scoring(binary_classification_data):
     assert np.mean(model.cv_scores_[0]) >= 0.45
 
 
+@ignore_warnings
 def test_decoder_error_not_implemented(tiny_binary_classification_data):
     X, y, mask = tiny_binary_classification_data
 
@@ -733,6 +749,7 @@ def test_decoder_error_not_implemented(tiny_binary_classification_data):
         model.fit(X, y)
 
 
+@ignore_warnings
 def test_decoder_error_unknown_scoring_metrics(
     tiny_binary_classification_data,
 ):
@@ -749,6 +766,7 @@ def test_decoder_error_unknown_scoring_metrics(
         model.fit(X, y)
 
 
+@ignore_warnings
 def test_decoder_dummy_classifier_default_scoring():
     X, y, _ = _make_binary_classification_test_data()
 
@@ -763,6 +781,7 @@ def test_decoder_dummy_classifier_default_scoring():
     assert model.score(X, y) > 0.5
 
 
+@ignore_warnings
 def test_decoder_classification_string_label():
     iris = load_iris()
     X, y = iris.data, iris.target
@@ -777,6 +796,7 @@ def test_decoder_classification_string_label():
     assert accuracy_score(y_str, y_pred) > 0.95
 
 
+@ignore_warnings
 @pytest.mark.parametrize("screening_percentile", [100, 20, 1, None])
 @pytest.mark.parametrize("estimator", ESTIMATOR_REGRESSION)
 def test_decoder_regression_screening(
@@ -795,6 +815,7 @@ def test_decoder_regression_screening(
     assert r2_score(y, y_pred) > 0.95
 
 
+@ignore_warnings
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
 @pytest.mark.parametrize("estimator", ESTIMATOR_REGRESSION)
 def test_decoder_regression_clustering(
@@ -817,6 +838,7 @@ def test_decoder_regression_clustering(
     assert model.score(X, y) == r2_score(y, y_pred)
 
 
+@ignore_warnings
 def test_decoder_dummy_regression(regression_data):
     X, y, mask = regression_data
 
@@ -835,6 +857,7 @@ def test_decoder_dummy_regression(regression_data):
     assert model.score(X, y) == r2_score(y, y_pred)
 
 
+@ignore_warnings
 def test_decoder_dummy_regression_default_scoring_metric_is_r2(
     regression_data,
 ):
@@ -850,6 +873,7 @@ def test_decoder_dummy_regression_default_scoring_metric_is_r2(
     assert model.score(X, y) == r2_score(y, y_pred)
 
 
+@ignore_warnings
 def test_decoder_dummy_regression_other_strategy(regression_data):
     """Chexk that decoder object use other strategy for dummy regressor."""
     X, y, mask = regression_data
@@ -870,6 +894,7 @@ def test_decoder_dummy_regression_other_strategy(regression_data):
     assert model.cv_scores_ is not None
 
 
+@ignore_warnings
 def test_decoder_multiclass_classification_masker(multiclass_data):
     X, y, _ = multiclass_data
 
@@ -880,6 +905,7 @@ def test_decoder_multiclass_classification_masker(multiclass_data):
     assert accuracy_score(y, y_pred) > 0.95
 
 
+@ignore_warnings
 def test_decoder_multiclass_classification_masker_dummy_classifier(
     multiclass_data,
 ):
@@ -897,6 +923,7 @@ def test_decoder_multiclass_classification_masker_dummy_classifier(
     assert model.score(X, y) == accuracy_score(y, y_pred)
 
 
+@ignore_warnings
 @pytest.mark.parametrize("screening_percentile", [100, 20, None])
 def test_decoder_multiclass_classification_screening(
     multiclass_data, screening_percentile
@@ -910,6 +937,7 @@ def test_decoder_multiclass_classification_screening(
     assert accuracy_score(y, y_pred) > 0.95
 
 
+@ignore_warnings
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
 @pytest.mark.parametrize("estimator", ["svc_l2", "svc_l1"])
 def test_decoder_multiclass_classification_clustering(
@@ -931,6 +959,7 @@ def test_decoder_multiclass_classification_clustering(
     assert accuracy_score(y, y_pred) > 0.9
 
 
+@ignore_warnings
 @pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
 def test_decoder_multiclass_classification_cross_validation(
     multiclass_data, cv
@@ -1016,6 +1045,7 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
             model.fit(X, y)
 
 
+@ignore_warnings
 def test_decoder_multiclass_warnings(multiclass_data):
     X, y, _ = multiclass_data
     groups = _rng(0).binomial(2, 0.3, size=len(y))
@@ -1033,7 +1063,9 @@ def test_decoder_multiclass_warnings(multiclass_data):
 
     # Check that warning is raised when n_features is lower than 50 after
     # screening and clustering for FREM
-    with pytest.warns(UserWarning, match=".*screening_percentile parameters"):
+    with pytest.warns(
+        UserWarning, match=".*decoding model will be trained only.*"
+    ):
         model = FREMClassifier(
             clustering_percentile=10,
             screening_percentile=10,
@@ -1046,8 +1078,7 @@ def test_decoder_multiclass_warnings(multiclass_data):
 def test_decoder_tags_classification():
     """Check value returned by _more_tags."""
     model = Decoder()
-    # TODO
-    # remove if block when bumping sklearn_version to > 1.5
+    # TODO (sklearn >= 1.6.0) remove if block
     if SKLEARN_LT_1_6:
         assert model.__sklearn_tags__()["require_y"] is True
     else:
@@ -1064,17 +1095,8 @@ def test_decoder_tags_regression():
         assert model.__sklearn_tags__().target_tags.multi_output is True
 
 
-def test_decoder_decision_function(binary_classification_data):
-    """Test decision_function with ndarray. Test for backward compatibility."""
-    X, y, mask = binary_classification_data
-
-    model = Decoder(mask=mask)
-    model.fit(X, y)
-    X = model.masker_.transform(X)
-    assert X.shape[1] == model.coef_.shape[1]
-    model.decision_function(X)
-
-
+@ignore_warnings
+@pytest.mark.timeout(0)
 def test_decoder_strings_filepaths_input(
     tiny_binary_classification_data, tmp_path
 ):
@@ -1091,23 +1113,6 @@ def test_decoder_strings_filepaths_input(
     model.fit(X_paths, y)
     model.predict(X_paths)
     model.score(X_paths, y)
-
-
-def test_decoder_decision_function_raises_value_error(
-    binary_classification_data,
-):
-    """Test decision_function raises value error."""
-    X, y, _ = binary_classification_data
-
-    model = Decoder(mask=NiftiMasker())
-    model.fit(X, y)
-    X = model.masker_.transform(X)
-    X = np.delete(X, 0, axis=1)
-
-    with pytest.raises(
-        ValueError, match=f"X has {X.shape[1]} features per sample"
-    ):
-        model.decision_function(X)
 
 
 # ------------------------ surface tests ------------------------------------ #
@@ -1127,7 +1132,6 @@ def _make_surface_reg_data(rng, surf_img_2d, n_samples=50):
     return surf_img_2d(n_samples), y
 
 
-@pytest.mark.filterwarnings("ignore:Overriding provided")
 def test_decoder_apply_mask_surface(_make_surface_class_data):
     """Test _apply_mask on surface image."""
     X, _ = _make_surface_class_data
@@ -1138,13 +1142,11 @@ def test_decoder_apply_mask_surface(_make_surface_class_data):
     assert type(model.mask_img_).__name__ == "SurfaceImage"
 
 
-@pytest.mark.filterwarnings("ignore:Overriding provided")
-@pytest.mark.filterwarnings("ignore:After clustering")
+@ignore_warnings
 def test_decoder_screening_percentile_surface_default(
     _make_surface_class_data,
 ):
     """Test default screening percentile with surface image."""
-    warnings.simplefilter("ignore", ConvergenceWarning)
     X, y = _make_surface_class_data
 
     model = Decoder(mask=SurfaceMasker())
@@ -1152,12 +1154,10 @@ def test_decoder_screening_percentile_surface_default(
     assert model.screening_percentile_ == 20
 
 
-@pytest.mark.filterwarnings("ignore:Overriding provided")
-@pytest.mark.filterwarnings("ignore:After clustering")
+@ignore_warnings
 @pytest.mark.parametrize("perc", [None, 100, 0])
 def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
     """Test passing screening percentile with surface image."""
-    warnings.simplefilter("ignore", ConvergenceWarning)
     X, y = _make_surface_class_data
 
     model = Decoder(mask=SurfaceMasker(), screening_percentile=perc)
@@ -1168,9 +1168,9 @@ def test_decoder_screening_percentile_surface(perc, _make_surface_class_data):
         assert model.screening_percentile_ == perc
 
 
+@ignore_warnings
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
-@pytest.mark.filterwarnings("ignore:After clustering and screening")
-def test_decoder_adjust_screening_lessthan_mask_surface(
+def test_decoder_adjust_screening_less_than_mask_surface(
     surf_mask_dim,
     surf_mask_1d,
     surf_mask_2d,
@@ -1199,9 +1199,9 @@ def test_decoder_adjust_screening_lessthan_mask_surface(
     )
 
 
+@ignore_warnings
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
-@pytest.mark.filterwarnings("ignore:After clustering and screening")
-def test_decoder_adjust_screening_greaterthan_mask_surface(
+def test_decoder_adjust_screening_greater_than_mask_surface(
     surf_mask_dim,
     surf_mask_1d,
     surf_mask_2d,
@@ -1228,78 +1228,9 @@ def test_decoder_adjust_screening_greaterthan_mask_surface(
     assert adjusted == 100
 
 
-@pytest.mark.parametrize("mask", [None, SurfaceMasker()])
-@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
-def test_decoder_fit_surface(decoder, _make_surface_class_data, mask):
-    """Test fit for surface image."""
-    warnings.simplefilter("ignore", ConvergenceWarning)
-    X, y = _make_surface_class_data
-    model = decoder(mask=mask)
-    model.fit(X, y)
-
-    assert model.coef_ is not None
-
-
-@pytest.mark.filterwarnings("ignore:After clustering and screening")
-@pytest.mark.parametrize("surf_mask_dim", [1, 2])
-@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
-def test_decoder_fit_surface_with_mask_image(
-    _make_surface_class_data,
-    decoder,
-    surf_mask_dim,
-    surf_mask_1d,
-    surf_mask_2d,
-):
-    """Test fit for surface image."""
-    warnings.simplefilter("ignore", ConvergenceWarning)
-    X, y = _make_surface_class_data
-    surf_mask = surf_mask_1d if surf_mask_dim == 1 else surf_mask_2d()
-    model = decoder(mask=surf_mask)
-    model.fit(X, y)
-
-    assert model.coef_ is not None
-
-
-@pytest.mark.filterwarnings("ignore:Overriding provided")
-@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
-def test_decoder_error_incompatible_surface_mask_and_volume_data(
-    decoder, surf_mask_1d, tiny_binary_classification_data
-):
-    """Test error when fitting volume data with a surface mask."""
-    data_volume, y, _ = tiny_binary_classification_data
-    model = decoder(mask=surf_mask_1d)
-
-    with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
-    ):
-        model.fit(data_volume, y)
-
-    model = decoder(mask=SurfaceMasker())
-
-    with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
-    ):
-        model.fit(data_volume, y)
-
-
-@pytest.mark.parametrize("decoder", [_BaseDecoder, Decoder, DecoderRegressor])
-def test_decoder_error_incompatible_surface_data_and_volume_mask(
-    _make_surface_class_data, decoder, tiny_binary_classification_data
-):
-    """Test error when fiting for surface data with a volume mask."""
-    data_surface, y = _make_surface_class_data
-    _, _, mask = tiny_binary_classification_data
-    model = decoder(mask=mask)
-
-    with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
-    ):
-        model.fit(data_surface, y)
-
-
+@ignore_warnings
 def test_decoder_predict_score_surface(_make_surface_class_data):
     """Test classification predict and scoring for surface image."""
-    warnings.simplefilter("ignore", ConvergenceWarning)
     X, y = _make_surface_class_data
     model = Decoder(mask=SurfaceMasker())
     model.fit(X, y)
@@ -1312,9 +1243,7 @@ def test_decoder_predict_score_surface(_make_surface_class_data):
     assert 0.3 < acc < 0.7
 
 
-@pytest.mark.filterwarnings("ignore:Overriding provided")
-@pytest.mark.filterwarnings("ignore:After clustering and screening")
-@pytest.mark.filterwarnings("ignore:Solver terminated early")
+@ignore_warnings
 def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
     """Test regression predict and scoring for surface image."""
     X, y = _make_surface_reg_data
@@ -1329,10 +1258,7 @@ def test_decoder_regressor_predict_score_surface(_make_surface_reg_data):
     assert r2 <= 0
 
 
-@pytest.mark.filterwarnings("ignore:After clustering and screening")
-@pytest.mark.filterwarnings("ignore:divide by zero encountered in divide")
-@pytest.mark.filterwarnings("ignore:Liblinear failed to converge")
-@pytest.mark.filterwarnings("ignore:Solver terminated early")
+@ignore_warnings
 @pytest.mark.parametrize("frem", [FREMRegressor, FREMClassifier])
 def test_frem_decoder_fit_surface(
     frem,
@@ -1348,6 +1274,8 @@ def test_frem_decoder_fit_surface(
 # ------------------------ test decoder vs sklearn -------------------------- #
 
 
+@ignore_warnings
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "classifier_penalty",
     ["svc_l1", "svc_l2", "logistic_l1", "logistic_l2", "ridge_classifier"],
@@ -1442,6 +1370,7 @@ def _set_best_hyperparameters(
     return sklearn_classifier
 
 
+@ignore_warnings
 @pytest.mark.parametrize("regressor", ["svr", "lasso", "ridge"])
 def test_regressor_vs_sklearn(
     regressor, strings_to_sklearn=SUPPORTED_ESTIMATORS
