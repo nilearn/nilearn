@@ -604,7 +604,7 @@ class Parcellations(_MultiPCA):
             delayed(
                 self._cache(_labels_masker_extraction, func_memory_level=2)
             )(img, masker, confound)
-            for img, confound in zip(imgs_list, confounds)
+            for img, confound in zip(imgs_list, confounds, strict=False)
         )
 
         return region_signals[0] if single_subject else region_signals

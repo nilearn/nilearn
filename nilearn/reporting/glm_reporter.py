@@ -16,7 +16,6 @@ import warnings
 from html import escape
 from pathlib import Path
 from string import Template
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -490,7 +489,7 @@ def make_glm_report(
     return report
 
 
-def _turn_into_full_path(bunch, dir: Path) -> Union[str, tempita.bunch]:
+def _turn_into_full_path(bunch, dir: Path) -> str | tempita.bunch:
     """Recursively turns str values of a dict into path.
 
     Used to turn relative paths into full paths.

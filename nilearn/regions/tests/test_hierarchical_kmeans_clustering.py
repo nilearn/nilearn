@@ -159,7 +159,9 @@ def test_hierarchical_k_means_clustering_scaling():
     X_compress_scaled = hkmeans_scaled.inverse_transform(X_red_scaled)
 
     assert_array_almost_equal(
-        np.asarray([np.sqrt(s) * a for s, a in zip(sizes, X_red.T)]).T,
+        np.asarray(
+            [np.sqrt(s) * a for s, a in zip(sizes, X_red.T, strict=False)]
+        ).T,
         X_red_scaled,
     )
     assert_array_almost_equal(X_compress, X_compress_scaled)

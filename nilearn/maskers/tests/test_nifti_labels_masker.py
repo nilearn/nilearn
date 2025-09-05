@@ -6,7 +6,6 @@ test_masking.py and test_signal.py for details.
 """
 
 from copy import deepcopy
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -580,7 +579,7 @@ def check_region_names_after_fit(
     masker: NiftiLabelsMasker,
     signals: np.ndarray,
     region_names: list[str],
-    background: Union[str, None],
+    background: str | None,
     resampling: bool = False,
 ):
     """Perform several checks on the expected attributes of the masker.

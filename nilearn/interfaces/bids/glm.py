@@ -317,7 +317,9 @@ def save_glm_to_bids(
             if model._is_volume_glm():
                 img.to_filename(out_dir / filename)
             else:
-                for label, hemi in zip(["L", "R"], ["left", "right"]):
+                for label, hemi in zip(
+                    ["L", "R"], ["left", "right"], strict=False
+                ):
                     density = img.mesh.parts[hemi].n_vertices
                     img.data.to_filename(
                         out_dir
@@ -407,7 +409,7 @@ def _write_mask(model):
         # need to convert mask from book to a type that's gifti friendly
 
         mask = deepcopy(model.masker_.mask_img_)
-        for label, hemi in zip(["L", "R"], ["left", "right"]):
+        for label, hemi in zip(["L", "R"], ["left", "right"], strict=False):
             mask.data.parts[hemi] = mask.data.parts[hemi].astype("uint8")
             density = mask.mesh.parts[hemi].n_vertices
             mask.data.to_filename(
@@ -428,7 +430,9 @@ def _write_model_level_statistical_maps(model, out_dir):
             if model._is_volume_glm():
                 stat_map_to_save.to_filename(out_dir / map_name)
             else:
-                for label, hemi in zip(["L", "R"], ["left", "right"]):
+                for label, hemi in zip(
+                    ["L", "R"], ["left", "right"], strict=False
+                ):
                     density = stat_map_to_save.mesh.parts[hemi].n_vertices
                     stat_map_to_save.data.to_filename(
                         out_dir
