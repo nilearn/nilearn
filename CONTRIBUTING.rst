@@ -977,8 +977,10 @@ Then, change to the ``asv_benchmarks`` directory:
 
       cd asv_benchmarks
 
-To run a specific benchmark on the current HEAD of your clone of the
-repository, use the following command:
+To run a specific set of benchmark matching a specific regex
+(for example containing ``load_img``)
+on the current HEAD of your clone of the repository,
+use the following command:
 
 .. code-block:: bash
 
@@ -988,18 +990,35 @@ This will measure both time taken and peak memory usage of the
 :func:`nilearn.image.load_img` function.
 
 You can also track the performance of a specific benchmark over, say,
-5 commits, until release 0.10.0, like this:
+5 equally spaced commits, until release 0.10.0, like this:
 
 .. code-block:: bash
 
       asv run 0.10.0..main -b load_img --steps 5
 
-You can also compare the performance of loading an image using
-:func:`nilearn.image.load_img` vs. :func:`nibabel.loadsave.load`:
+There is also a ```hashestobenchmark.txt`` file with the shasum of the git tag of several
+of the last versions of nilearn that will allow you to run
+the benchmarks only for those versions by doing:
 
 .. code-block:: bash
 
-      asv run -b compare_load
+      asv run -b load_img HASHFILE:hashestobenchmark.txt
+
+If you want to update this file you can use
+to list the shasum of all tags
+that you can then edit to only keep the versions
+you want to run your benchmarks on.
+
+.. code-block:: bash
+
+      git show-ref --tags > hashestobenchmark.txt
+
+Once you have run you benchmarks, you can view the results with:
+
+.. code-block:: bash
+
+      asv publish
+      asv preview
 
 For more information on how to use asv, please refer to the
 `asv documentation <https://asv.readthedocs.io/en/stable/>`_.
