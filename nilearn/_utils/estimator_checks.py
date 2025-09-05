@@ -25,6 +25,7 @@ from numpy.testing import (
 )
 from numpydoc.docscrape import NumpyDocString
 from packaging.version import parse
+from scipy import __version__ as scipy_version
 from sklearn import __version__ as sklearn_version
 from sklearn import clone
 from sklearn.base import BaseEstimator, is_classifier, is_regressor
@@ -359,7 +360,11 @@ def return_expected_failed_checks(
         }
         if SKLEARN_MINOR >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
-        if not IS_SKLEARN_1_6_1_on_py_lt_3_13 and SKLEARN_MINOR >= 5:
+        if (
+            not IS_SKLEARN_1_6_1_on_py_lt_3_13
+            and SKLEARN_MINOR >= 5
+            and scipy_version != "1.8.0"
+        ):
             expected_failed_checks.pop("check_estimator_sparse_array")
 
     if isinstance(estimator, (MultiNiftiMasker)) and SKLEARN_MINOR >= 6:
@@ -2630,7 +2635,7 @@ def check_masker_transform_resampling(estimator) -> None:
 @ignore_warnings()
 def check_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if os.name == "nt" and sys.version_info[1] == 10:
+    if os.name == "nt" and sys.version_info[1] < 13:
         # TODO (python >= 3.11)
         # rare failure of this test on python 3.10 on windows
         # this works for python 3.13
@@ -3004,12 +3009,12 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
 @ignore_warnings()
 def check_multi_nifti_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if os.name == "nt" and sys.version_info[1] == 9:
-        # TODO
-        # rare failure of this test on python 3.9 on windows
+    if os.name == "nt" and sys.version_info[1] < 13:
+        # TODO (python >= 3.11)
+        # rare failure of this test on python 3.10 on windows
         # this works for python 3.13
         # skipping for now: let's check again if this keeps failing
-        # when dropping 3.9 in favor of 3.10
+        # when dropping 3.10 in favor of 3.11
         return
 
     mask_img = Nifti1Image(

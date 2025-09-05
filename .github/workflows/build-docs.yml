@@ -307,10 +307,10 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                py: [3.13]
+                py: ['3.13']
                 env: [doc_latest]
                 include:
-                -   py: 3.10
+                -   py: '3.10'
                     env: doc
 
         defaults:
