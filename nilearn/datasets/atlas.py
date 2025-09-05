@@ -1076,7 +1076,7 @@ def fetch_atlas_smith_2009(
         potentially higher bandwidth.
 
     dimension : :obj:`int`, default=None
-        Number of dimensions in the dictionary. Valid resolutions
+        Number of dimensions in the dictionary. Valid dimension
         available are {10, 20, 70}.
 
     resting : :obj:`bool`, default=True
@@ -1087,37 +1087,11 @@ def fetch_atlas_smith_2009(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - ``'rsn20'``: :obj:`str`
-            Path to nifti file containing
-            the 20-dimensional :term:`ICA`, resting-:term:`fMRI` components.
-            The shape of the image is ``(91, 109, 91, 20)``.
-
-        - ``'rsn10'``: :obj:`str`
-            Path to nifti file containing
-            the 10 well-matched maps from the 20 maps obtained as for 'rsn20',
-            as shown in :footcite:t:`Smith2009b`.
-            The shape of the image is ``(91, 109, 91, 10)``.
-
-        - ``'bm20'``: :obj:`str`
-            Path to nifti file containing
-            the 20-dimensional :term:`ICA`, BrainMap components.
-            The shape of the image is ``(91, 109, 91, 20)``.
-
-        - ``'bm10'``: :obj:`str`
-            Path to nifti file containing
-            the 10 well-matched maps from the 20 maps obtained as for 'bm20',
-            as shown in :footcite:t:`Smith2009b`.
-            The shape of the image is ``(91, 109, 91, 10)``.
-
-        - ``'rsn70'``: :obj:`str`
-            Path to nifti file containing
-            the 70-dimensional :term:`ICA`, resting-:term:`fMRI` components.
-            The shape of the image is ``(91, 109, 91, 70)``.
-
-        - ``'bm70'``: :obj:`str`
-            Path to nifti file containing
-            the 70-dimensional :term:`ICA`, BrainMap components.
-            The shape of the image is ``(91, 109, 91, 70)``.
+        - ``maps``: :obj:`str`
+            Path to nifti file containing the requested resting fMRI or
+            or BrainMap components image with the number of requested
+            dimenensions.
+            The shape of the image is ``(91, 109, 91, dimension)``.
 
         - %(description)s
 
