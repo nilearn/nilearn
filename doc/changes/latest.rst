@@ -35,3 +35,5 @@ Changes
 - :bdg-danger:`Deprecation` The default for the parameter ``dimension`` of :func:`~datasets.fetch_atlas_smith_2009` was changed from ``None`` to ``10``. The only allowed values for this parameter must now be one of ``10``, ``20`` or ``70``. The fetcher now only returns a single map under the key ``maps`` for the requested ``dimension`` and ``resting`` (:gh:`5640` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter ``legacy_output`` of :func:`~datasets.fetch_language_localizer_demo_dataset` has been removed. The fetcher now always returns a Scikit-Learn Bunch (:gh:`5640` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The function ``nilearn.datasets.fetch_bids_langloc_dataset`` has been removed. Use :func:`~datasets.fetch_language_localizer_demo_dataset` instead. (:gh:`5640` by `Rémi Gau`_).

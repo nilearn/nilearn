@@ -2348,63 +2348,6 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
 
 
 @fill_doc
-def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
-    """Download language localizer example :term:`bids<BIDS>` dataset.
-
-    .. deprecated:: 0.10.3
-
-        This fetcher function will be removed as it returns the same data
-        as :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`.
-
-        Please use
-        :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`
-        instead.
-
-    Parameters
-    ----------
-    %(data_dir)s
-    %(verbose)s
-
-    Returns
-    -------
-    data_dir : :obj:`str`
-        Path to downloaded dataset.
-
-    downloaded_files : :obj:`list` of :obj:`str`
-        Absolute paths of downloaded files on disk.
-    """
-    check_params(locals())
-
-    warnings.warn(
-        (
-            "The 'fetch_bids_langloc_dataset' function will be removed "
-            "in version 0.13.0 as it returns the same data "
-            "as 'fetch_language_localizer_demo_dataset'.\n"
-            "Please use 'fetch_language_localizer_demo_dataset' instead.'"
-        ),
-        DeprecationWarning,
-        stacklevel=find_stack_level(),
-    )
-    url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"
-    dataset_name = "bids_langloc_example"
-    main_folder = "bids_langloc_dataset"
-    data_dir = get_dataset_dir(
-        dataset_name, data_dir=data_dir, verbose=verbose
-    )
-
-    # The files_spec needed for fetch_files
-    files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
-    if not (data_dir / main_folder).exists():
-        downloaded_files = fetch_files(
-            data_dir, files_spec, resume=True, verbose=verbose
-        )
-        uncompress_file(downloaded_files[0])
-    main_path = data_dir / main_folder
-    file_list = [str(path) for path in main_path.rglob("*") if path.is_file()]
-    return str(data_dir / main_folder), sorted(file_list)
-
-
-@fill_doc
 def fetch_ds000030_urls(data_dir=None, verbose=1):
     """Fetch URLs for files from the ds000030 :term:`BIDS` dataset.
 
