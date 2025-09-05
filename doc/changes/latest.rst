@@ -25,6 +25,9 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Add tedana support for load_confounds and testing for tedana load_confounds support (:gh:`5410` by `Milton Camacho`_).
+
+
 Changes
 -------
 
