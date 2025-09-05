@@ -32,4 +32,3 @@ Changes
 :func:`~plotting.plot_surf_stat_map` and :func:`~plotting.plot_surf_roi` (:gh:`5625` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The attribute ``nifti_maps_masker_`` was removed from :class:`~decomposition.CanICA` and :class:`~decomposition.DictLearning`. Use ``maps_masker_`` instead. (:gh:`5626` by `Rémi Gau`_).
-
