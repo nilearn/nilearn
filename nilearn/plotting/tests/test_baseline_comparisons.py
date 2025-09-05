@@ -296,6 +296,33 @@ def test_plot_surf_surface(plot_func, view, hemi):
 
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
+@pytest.mark.parametrize(
+    "view",
+    [
+        "anterior",
+        "posterior",
+        "dorsal",
+        "ventral",
+    ],
+)
+@pytest.mark.parametrize("hemi", ["left", "right", "both"])
+def test_plot_surf_surface_plotly(plot_func, view, hemi):
+    """Test surface plotting functions with views and hemispheres using plotly
+    backend.
+    """
+    surf_img = load_fsaverage_data()
+    return plot_func(
+        surf_img.mesh,
+        surf_img,
+        engine="plotly",
+        view=view,
+        hemi=hemi,
+        title=f"{view=}, {hemi=}",
+    )
+
+
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
 def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
@@ -305,6 +332,24 @@ def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
         surf_img.mesh,
         surf_img,
         engine="matplotlib",
+        colorbar=colorbar,
+        cbar_tick_format=cbar_tick_format,
+    )
+
+
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
+@pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
+def test_plot_surf_surface_colorbar_plotly(
+    plot_func, colorbar, cbar_tick_format
+):
+    """Test surface plotting functions with colorbars using plotly backend."""
+    surf_img = load_fsaverage_data()
+    return plot_func(
+        surf_img.mesh,
+        surf_img,
+        engine="plotly",
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
     )

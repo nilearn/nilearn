@@ -82,9 +82,8 @@ jobs:
                 -   description: oldest dependencies - no plotting
                     py: '3.10'
                     os: macos-latest
-
                     env: min
-                -   description: oldest dependencies - no plotly
+                -   description: oldest dependencies
                     py: '3.10'
                     os: macos-latest
                     env: plot_min
