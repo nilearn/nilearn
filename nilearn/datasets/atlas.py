@@ -1187,7 +1187,7 @@ def fetch_atlas_smith_2009(
         description=fdescr,
         atlas_type=atlas_type,
     )
- 
+
 
 @fill_doc
 def fetch_atlas_yeo_2011(
