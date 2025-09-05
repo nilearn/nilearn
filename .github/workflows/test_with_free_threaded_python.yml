@@ -34,7 +34,7 @@ jobs:
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 env: [plotting]
         steps:
-        -   uses: actions/checkout@v4
+        -   uses: actions/checkout@v5
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v6
         -   name: Setup python

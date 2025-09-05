@@ -68,11 +68,15 @@ def pad_array(array, pad_sizes):
     padded = np.zeros(new_shape, dtype=array.dtype)
     source_slices = [
         slice(max(-lp, 0), min(s + up, s))
-        for lp, up, s in zip(lower_paddings, upper_paddings, array.shape)
+        for lp, up, s in zip(
+            lower_paddings, upper_paddings, array.shape, strict=False
+        )
     ]
     target_slices = [
         slice(max(lp, 0), min(s - up, s))
-        for lp, up, s in zip(lower_paddings, upper_paddings, new_shape)
+        for lp, up, s in zip(
+            lower_paddings, upper_paddings, new_shape, strict=False
+        )
     ]
 
     padded[tuple(target_slices)] = array[tuple(source_slices)].copy()

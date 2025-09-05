@@ -2,8 +2,19 @@
 
 .. include:: names.rst
 
-0.12.1.dev
+0.13.0.dev
 ==========
+
+HIGHLIGHTS
+----------
+
+.. warning::
+
+ | **Support for Python 3.9 has been dropped.**
+ | **We recommend upgrading to Python 3.12 or above.**
+ |
+ | **Minimum supported versions of the following packages have been bumped up:**
+ | - matplotlib -- 3.8.0
 
 NEW
 ---
@@ -11,20 +22,10 @@ NEW
 Fixes
 -----
 
-- :bdg-dark:`Code` Fix several issues in :class:`~nilearn.maskers.NiftiLabelsMasker` and :class:`~nilearn.maskers.SurfaceLabelsMasker` that lead to invalid ``region_names_``, ``region_ids_`` or look-up-table content (:gh:`5492` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Align ``symmetric_cmap`` behavior for ``plotly`` backend in :func:`~nilearn.plotting.plot_surf` function with ``matplotlib`` backend (:gh:`5492` by `Hande Gözükan`_).
-- :bdg-dark:`Code` Fix type of ``t_r`` to support numpy dtypes for python < 3.10 (:gh:`5550` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Enforce consistent ``dtype`` for all parts of :class:`~nilearn.surface.SurfaceImage` and :class:`~nilearn.surface.PolyData` (:gh:`5530` by `Rémi Gau`_).
-
-
 Enhancements
 ------------
 
 Changes
 -------
 
-- :bdg-dark:`Code` Resampling of maps by :class:`~nilearn.maskers.NiftiMapsMasker` is now done with a linear instead of a continuous interpolation  (:gh:`5519` by `Rémi Gau`_).
-
-- :bdg-dark:`Code` Move ``nilearn.plotting.img_plotting`` under ``nilearn.plotting.image`` (:gh:`5481` by `Hande Gözükan`_).
+- :bdg-danger:`Deprecation` The attribute ``nifti_maps_masker_`` was removed from :class:`~decomposition.CanICA` and :class:`~decomposition.DictLearning`. Use ``maps_masker_`` instead. (:gh:`5626` by `Rémi Gau`_).

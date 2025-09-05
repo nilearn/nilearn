@@ -10,7 +10,9 @@ from sklearn.base import clone
 from sklearn.feature_extraction import image
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import iter_check_niimg
@@ -602,7 +604,7 @@ class Parcellations(_MultiPCA):
             delayed(
                 self._cache(_labels_masker_extraction, func_memory_level=2)
             )(img, masker, confound)
-            for img, confound in zip(imgs_list, confounds)
+            for img, confound in zip(imgs_list, confounds, strict=False)
         )
 
         return region_signals[0] if single_subject else region_signals

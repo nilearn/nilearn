@@ -45,7 +45,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Get repo
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
             with:
                 ref: ${{ github.event.pull_request.head.sha }}
         -   name: Check head git commit message
@@ -69,7 +69,7 @@ jobs:
             fail-fast: false
             matrix:
                 description: [latest dependencies]
-                py: ['3.13', '3.12', '3.11', '3.10', '3.9']
+                py: ['3.13', '3.12', '3.11', '3.10']
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 env: [plotting]
                 include:
@@ -80,19 +80,18 @@ jobs:
                 # Using macos on the following as tests run faster on macos.
                 # As 'no plotting' run fewer tests, this allows to fail event faster if using macos.
                 -   description: oldest dependencies - no plotting
-                    py: '3.9'
-                    # TODO revert to latest when dropping py 3.9 and bumping matplotlib
-                    os: macos-14
+                    py: '3.10'
+                    os: macos-latest
+
                     env: min
                 -   description: oldest dependencies - no plotly
-                    py: '3.9'
-                    # TODO revert to latest when dropping py 3.9 and bumping matplotlib
-                    os: macos-14
+                    py: '3.10'
+                    os: macos-latest
                     env: plot_min
 
         steps:
 
-        -   uses: actions/checkout@v4
+        -   uses: actions/checkout@v5
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v6
         -   name: Setup python

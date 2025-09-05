@@ -28,6 +28,15 @@ docdict = {}
 # Parameters definitions
 #
 
+# alphas
+docdict["alphas"] = """
+alphas : :obj:`float` or :obj:`list` of :obj:`float` or None, default=None
+    Choices for the constant that scales the overall regularization term.
+    This parameter is mutually exclusive with the `n_alphas` parameter.
+    If None or list of floats is provided, then the best value will be
+    selected by cross-validation.
+"""
+
 # annotate
 docdict["annotate"] = """
 annotate : :obj:`bool`, default=True
@@ -217,6 +226,10 @@ clean_args : :obj:`dict` or None, default=None
     kwargs prefixed with ``'butterworth__'``
     will be passed to the Butterworth filter.
 """
+docdict["clean_args_"] = docdict["clean_args"].replace(
+    "clean_args : :obj:`dict` or None, default=None",
+    "clean_args_ : :obj:`dict`",
+)
 
 # cmap
 docdict["cmap"] = """
@@ -307,6 +320,12 @@ darkness : :obj:`float` between 0 and 1, optional
     - `0.5` indicates that the background values
         are reduced by half before being applied.
 
+"""
+
+# data_dir
+docdict["debias"] = """
+debias : :obj:`bool`, default=False
+    If set, then the estimated weights maps will be debiased.
 """
 
 # data_dir
@@ -616,7 +635,7 @@ docdict["masker_lut"] = """lut : :obj:`pandas.DataFrame` or :obj:`str` \
         Formatted according to 'dseg.tsv' format from
         `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_.
 
-        warning::
+        .. warning::
 
             If a region exist in the atlas image
             but is missing from its associated LUT,
@@ -699,6 +718,22 @@ kwargs : dict
        Passing parameters via "kwargs" is mutually exclusive
        with passing cleaning parameters via ``clean_args``.
 """
+
+docdict["masker_kwargs_"] = docdict["masker_kwargs"].replace(
+    "kwargs : dict",
+    "clean_kwargs_ : dict",
+)
+
+verbose = """
+max_iter : :obj:`int`, default={}
+    Maximum number of iterations for the solver.
+"""
+docdict["max_iter"] = verbose.format(200)
+docdict["max_iter10"] = verbose.format(10)
+docdict["max_iter50"] = verbose.format(50)
+docdict["max_iter100"] = verbose.format(100)
+docdict["max_iter1000"] = verbose.format(1000)
+docdict["max_iter1000"] = verbose.format(5000)
 
 # memory
 docdict["memory"] = """
@@ -893,6 +928,32 @@ sample_mask : :obj:`list` of sample_mask, default=None
     This parameter is passed to :func:`nilearn.signal.clean`.
 """
 
+docdict["screening_percentile"] = """
+screening_percentile : int, float, \
+                       in the closed interval [0, 100], or None, \
+                       default=20
+        Percentile value for ANOVA univariate feature selection.
+        If ``None`` is passed, it will be set to ``100``.
+        A value of ``100`` means "keep all features".
+        This percentile is expressed
+        with respect to the volume of either a standard (MNI152) brain
+        (if ``mask_img_`` is a 3D volume)
+        or a the number of vertices in the mask mesh
+        (if ``mask_img_`` is a SurfaceImage).
+        This means that the
+        ``screening_percentile`` is corrected at runtime by premultiplying it
+        with the ratio of volume of the
+        standard brain to the volume of the mask of the data.
+
+        .. note::
+
+            If the mask used is too small
+            compared to the total brain volume / surface,
+            then all its elements (voxels / vertices)
+            may be included even for very small ``screening_percentile``.
+
+"""
+
 # second_level_contrast
 docdict["second_level_contrast"] = """
 second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
@@ -919,7 +980,7 @@ confounds : :obj:`pandas.DataFrame` or None, default=None
     and at least one confound.
 """
 
-# second_level_confounds
+# second_level_design_matrix
 docdict["second_level_design_matrix"] = """
 design_matrix : :obj:`pandas.DataFrame`, :obj:`str` or \
                 or :obj:`pathlib.Path` to a CSV or TSV file, \
@@ -1227,6 +1288,8 @@ verbose : :obj:`int`, default={}
 """
 docdict["verbose"] = verbose.format(1)
 docdict["verbose0"] = verbose.format(0)
+docdict["verbose2"] = verbose.format(2)
+docdict["verbose3"] = verbose.format(3)
 
 # view
 docdict["view"] = """
@@ -1276,141 +1339,238 @@ docdict["atlas_type"] = """'atlas_type' : :obj:`str`
         Type of atlas.
         See :term:`Probabilistic atlas` and :term:`Deterministic atlas`."""
 
-docdict["base_decomposition_attributes"] = """
-        Attributes
-        ----------
-        mask_img_ : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
-            See :ref:`extracting_data`.
-            The mask of the data.
-            If no mask was given at masker creation :
+docdict["base_decomposition_fit_attributes"] = """
+Attributes
+----------
+maps_masker_ : instance of NiftiMapsMasker or SurfaceMapsMasker
+    This masker was initialized with
+    ``components_img_``, ``masker_.mask_img_``
+    and is the masker used
+    when calliing transform and inverse_transform.
 
-            - for Nifti images, this contains automatically computed mask
-              via the selected ``mask_strategy``.
+mask_img_ : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+    See :ref:`extracting_data`.
+    The mask of the data.
+    If no mask was given at masker creation :
 
-            - for SurfaceImage objects, this mask encompasses all vertices of
-              the input images.
-        """
+    - for Nifti images, this contains automatically computed mask
+        via the selected ``mask_strategy``.
 
-docdict["multi_pca_attributes"] = """
-        masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
-                :obj:`~nilearn.maskers.SurfaceMasker`
-            Masker used to filter and mask data as first step.
-            If :obj:`~nilearn.maskers.MultiNiftiMasker`
-            or :obj:`~nilearn.maskers.SurfaceMasker` is given in
-            ``mask`` parameter, this is a copy of it.
-            Otherwise, a masker is created using the value of ``mask`` and
-            other NiftiMasker/SurfaceMasker
-            related parameters as initialization.
+    - for SurfaceImage objects, this mask encompasses all vertices of
+        the input images.
 
-        components_ : 2D numpy array (n_components x n-voxels or n-vertices)
-            Array of masked extracted components.
+"""
 
-            .. note::
+docdict["multi_pca_fit_attributes"] = """
+components_ : 2D numpy array (n_components x n-voxels or n-vertices)
+    Array of masked extracted components.
 
-                Use attribute ``components_img_``
-                rather than manually unmasking
-                ``components_`` with ``masker_`` attribute.
+    .. note::
 
-        components_img_ : 4D Nifti image \
-                          or 2D :obj:`~nilearn.surface.SurfaceImage`
-            The image giving the extracted components.
-            Each 3D Nifti image or 1D SurfaceImage is a component.
+        Use attribute ``components_img_``
+        rather than manually unmasking
+        ``components_`` with ``masker_`` attribute.
 
-            .. versionadded:: 0.4.1
+components_img_ : 4D Nifti image \
+                    or 2D :obj:`~nilearn.surface.SurfaceImage`
+    The image giving the extracted components.
+    Each 3D Nifti image or 1D SurfaceImage is a component.
 
-        variance_ : numpy array (n_components,)
-            The amount of variance explained
-            by each of the selected components.
-        """
+    .. versionadded:: 0.4.1
+
+masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
+        :obj:`~nilearn.maskers.SurfaceMasker`
+    Masker used to filter and mask data as first step.
+    If :obj:`~nilearn.maskers.MultiNiftiMasker`
+    or :obj:`~nilearn.maskers.SurfaceMasker` is given in
+    ``mask`` parameter, this is a copy of it.
+    Otherwise, a masker is created using the value of ``mask`` and
+    other NiftiMasker/SurfaceMasker
+    related parameters as initialization.
+
+memory_ : joblib memory cache
+
+n_elements_ : :obj:`int`
+    The number of components.
+
+"""
 
 docdict["base_decoder_fit_attributes"] = """
-        Attributes
-        ----------
-        masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
-            The masker used to mask the data.
+Attributes
+----------
+coef_ : numpy.ndarray, shape=(n_classes, n_features)
+    Contains the mean of the models weight vector across
+    fold for each class. Returns None for Dummy estimators.
 
-        mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
-            Mask computed by the masker object.
+coef_img_ : :obj:`dict` of Nifti1Image
+    Dictionary containing ``coef_`` with class names as keys,
+    and ``coef_`` transformed in Nifti1Images as values.
+    In the case of a regression,
+    it contains a single Nifti1Image at the key 'beta'.
+    Ignored if Dummy estimators are provided.
 
-        classes_ : numpy.ndarray
-            Classes to predict. For classification only.
+cv_ : :obj:`list` of pairs of lists
+    List of the (n_folds,) folds.
+    For the corresponding fold,
+    each pair is composed of two lists of indices,
+    one for the train samples and one for the test samples.
 
-        screening_percentile_ : :obj:`float`
-            Screening percentile corrected according to volume of mask,
-            relative to the volume of standard brain.
+cv_params_ : :obj:`dict` of :obj:`list`
+    Best point in the parameter grid for each tested fold
+    in the inner cross validation loop.
+    The grid is empty
+    when Dummy estimators are provided.
 
-        coef_ : numpy.ndarray, shape=(n_classes, n_features)
-            Contains the mean of the models weight vector across
-            fold for each class. Returns None for Dummy estimators.
+    .. note::
 
-        coef_img_ : :obj:`dict` of Nifti1Image
-            Dictionary containing ``coef_`` with class names as keys,
-            and ``coef_`` transformed in Nifti1Images as values.
-            In the case of a regression,
-            it contains a single Nifti1Image at the key 'beta'.
-            Ignored if Dummy estimators are provided.
+        If the estimator used its built-in cross-validation,
+        this will include an additional key
+        for the single best value estimated
+        by the built-in cross-validation
+        ('best_C' for LogisticRegressionCV
+        and 'best_alpha' for RidgeCV/RidgeClassifierCV/LassoCV),
+        in addition to the input list of values.
 
-        intercept_ : ndarray, shape (nclasses,)
-            Intercept (also known as bias) added to the decision function.
-            Ignored if Dummy estimators are provided.
+cv_scores_ : :obj:`dict`, (classes, n_folds)
+    Scores (misclassification) for each parameter, and on each fold
 
-        cv_ : :obj:`list` of pairs of lists
-            List of the (n_folds,) folds.
-            For the corresponding fold,
-            each pair is composed of two lists of indices,
-            one for the train samples and one for the test samples.
+dummy_output_ : ndarray, shape=(n_classes, 2) \
+                or shape=(1, 1) for regression
+    Contains dummy estimator attributes after class predictions
+    using strategies of :class:`sklearn.dummy.DummyClassifier`
+    (class_prior)
+    and  :class:`sklearn.dummy.DummyRegressor` (constant)
+    from scikit-learn.
+    This attribute is necessary for estimating class predictions
+    after fit.
+    Returns None if non-dummy estimators are provided.
 
-        std_coef_ : numpy.ndarray, shape=(n_classes, n_features)
-            Contains the standard deviation of the models weight vector across
-            fold for each class.
-            Note that folds are not independent,
-            see
-            https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
-            Ignored if Dummy estimators are provided.
+estimator_ : Estimator object used during decoding.
 
-        std_coef_img_ : :obj:`dict` of Nifti1Image
-            Dictionary containing `std_coef_` with class names as keys,
-            and `coef_` transformed in Nifti1Image as values.
-            In the case of a regression,
-            it contains a single Nifti1Image at the key 'beta'.
-            Ignored if Dummy estimators are provided.
+intercept_ : ndarray, shape (nclasses,)
+    Intercept (also known as bias) added to the decision function.
+    Ignored if Dummy estimators are provided.
 
-        cv_params_ : :obj:`dict` of :obj:`list`
-            Best point in the parameter grid for each tested fold
-            in the inner cross validation loop.
-            The grid is empty
-            when Dummy estimators are provided.
+mask_img_ : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
+    Mask computed by the masker object.
 
-            .. note::
+masker_ : instance of NiftiMasker, MultiNiftiMasker, or SurfaceMasker
+    The masker used to mask the data.
 
-                If the estimator used its built-in cross-validation,
-                this will include an additional key
-                for the single best value estimated
-                by the built-in cross-validation
-                ('best_C' for LogisticRegressionCV
-                and 'best_alpha' for RidgeCV/RidgeClassifierCV/LassoCV),
-                in addition to the input list of values.
+memory_ : joblib memory cache
 
-        scorer_ : function
-            Scorer function used on the held out data to choose the best
-            parameters for the model.
+n_elements_ : :obj:`int`
+    The number of voxels or vertices in the mask.
 
-        cv_scores_ : :obj:`dict`, (classes, n_folds)
-            Scores (misclassification) for each parameter, and on each fold
+    .. versionadded:: 0.12.1
 
-        n_outputs_ : :obj:`int`
-            Number of outputs (column-wise)
+n_outputs_ : :obj:`int`
+    Number of outputs (column-wise)
 
-        dummy_output_ : ndarray, shape=(n_classes, 2) \
-                       or shape=(1, 1) for regression
-            Contains dummy estimator attributes after class predictions
-            using strategies of :class:`sklearn.dummy.DummyClassifier`
-            (class_prior)
-            and  :class:`sklearn.dummy.DummyRegressor` (constant)
-            from scikit-learn.
-            This attribute is necessary for estimating class predictions
-            after fit.
-            Returns None if non-dummy estimators are provided.
+scorer_ : function
+    Scorer function used on the held out data to choose the best
+    parameters for the model.
+
+screening_percentile_ : :obj:`float`
+    Percentile value for ANOVA univariate feature selection.
+    A value of 100 means 'keep all features'.
+    This percentile is expressed
+    with respect to the volume of either a standard (MNI152) brain
+    (if mask_img is a 3D volume)
+    or a the number of vertices in the mask mesh
+    (if mask_img is a SurfaceImage).
+
+std_coef_ : numpy.ndarray, shape=(n_classes, n_features)
+    Contains the standard deviation of the models weight vector across
+    fold for each class.
+    Note that folds are not independent,
+    see
+    https://scikit-learn.org/stable/modules/cross_validation.html#cross-validation-iterators-for-grouped-data
+    Ignored if Dummy estimators are provided.
+
+std_coef_img_ : :obj:`dict` of Nifti1Image
+    Dictionary containing `std_coef_` with class names as keys,
+    and `coef_` transformed in Nifti1Image as values.
+    In the case of a regression,
+    it contains a single Nifti1Image at the key 'beta'.
+    Ignored if Dummy estimators are provided.
+"""
+
+docdict["spacenet_fit_attributes"] = """
+Attributes
+----------
+all_coef_ : ndarray, shape (n_l1_ratios, n_folds, n_features)
+    Coefficients for all folds and features.
+
+alpha_grids_ : ndarray, shape (n_folds, n_alphas)
+    Alpha values considered for selection of the best ones
+    (saved in `best_model_params_`)
+
+best_model_params_ : ndarray, shape (n_folds, n_parameter)
+    Best model parameters (alpha, l1_ratio) saved for the different
+    cross-validation folds.
+
+coef_ : ndarray, shape\
+    (1, n_features) for 2 class classification problems\
+    (i.e n_classes = 2)\
+    (n_classes, n_features) for n_classes > 2
+    Coefficient of the features in the decision function.
+
+coef_img_ : nifti image
+    Masked model coefficients
+
+cv_ : list of pairs of lists
+    Each pair is the list of indices for the train and test samples
+    for the corresponding fold.
+
+cv_scores_ : ndarray, shape (n_folds, n_alphas)\
+    or (n_l1_ratios, n_folds, n_alphas)
+    Scores (misclassification) for each alpha, and on each fold
+
+intercept_ : narray, shape
+    (1,) for 2 class classification problems (i.e n_classes = 2)
+    (n_classes,) for n_classes > 2
+    Intercept (a.k.a. bias) added to the decision function.
+    It is available only when parameter intercept is set to True.
+
+mask_ : ndarray 3D
+    An array contains values of the mask image.
+
+masker_ : instance of NiftiMasker
+    The nifti masker used to mask the data.
+
+mask_img_ : Nifti like image
+    The mask of the data. If no mask was supplied by the user,
+    this attribute is the mask image computed automatically from the
+    data `X`.
+
+memory_ : joblib memory cache
+
+n_elements_ : :obj:`int`
+    The number of features in the mask.
+
+    .. versionadded:: 0.12.1
+
+screening_percentile_ : float
+    Screening percentile corrected according to volume of mask,
+    relative to the volume of standard brain.
+
+w_ : ndarray, shape
+    (1, n_features + 1) for 2 class classification problems
+    (i.e n_classes = 2)
+    (n_classes, n_features + 1) for n_classes > 2, and (n_features,)
+    for regression
+    Model weights
+
+Xmean_ : array, shape (n_features,)
+    Mean of X across samples
+
+Xstd_ : array, shape (n_features,)
+    Standard deviation of X across samples
+
+ymean_ : array, shape (n_samples,)
+    Mean of prediction targets
+
 """
 
 # dataset description

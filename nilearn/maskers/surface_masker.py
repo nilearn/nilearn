@@ -9,9 +9,10 @@ import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils import constrained_layout_kwargs, fill_doc
 from nilearn._utils.class_inspect import get_params
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
+    constrained_layout_kwargs,
     rename_parameters,
 )
 from nilearn._utils.logger import find_stack_level
@@ -72,12 +73,16 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    %(clean_args_)s
+
     mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage`
         The mask of the data, or the one computed from ``imgs`` passed to fit.
         If a ``mask_img`` is passed at masker construction,
         then ``mask_img_`` is the resulting binarized version of it
         where each vertex is ``True`` if all values across samples
         (for example across timepoints) is finite value different from 0.
+
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int` or None
         number of vertices included in mask
@@ -195,6 +200,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 )
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
+    # TODO (nilearn >= 0.13.0)
     @rename_parameters(
         replacement_params={"img": "imgs"}, end_version="0.13.0"
     )
@@ -437,8 +443,8 @@ class SurfaceMasker(_BaseSurfaceMasker):
         )
         axes = np.atleast_2d(axes)
 
-        for ax_row, view in zip(axes, views):
-            for ax, hemi in zip(ax_row, hemispheres):
+        for ax_row, view in zip(axes, views, strict=False):
+            for ax, hemi in zip(ax_row, hemispheres, strict=False):
                 plot_surf(
                     surf_map=background_data,
                     hemi=hemi,
