@@ -562,18 +562,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         return self
 
-    @property
-    def nifti_maps_masker_(self):
-        # TODO (nilearn >= 0.13.0) remove
-        warnings.warn(
-            message="The 'nifti_maps_masker_' attribute is deprecated "
-            "and will be removed in Nilearn 0.13.0.\n"
-            "Please use 'maps_masker_' instead.",
-            category=FutureWarning,
-            stacklevel=find_stack_level(),
-        )
-        return self.maps_masker_
-
     def __sklearn_is_fitted__(self):
         return hasattr(self, "components_")
 
