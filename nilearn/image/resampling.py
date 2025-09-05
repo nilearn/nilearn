@@ -408,7 +408,7 @@ def resample_img(
     copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
 
-        .. versionadded:: 0.11.0
+        .. versionadded:: nilearn 0.11.0
 
         This parameter will be set to True by default in 0.13.0.
 
@@ -755,7 +755,7 @@ def resample_to_img(
 
     No registration is performed: the image should already be aligned.
 
-    .. versionadded:: 0.2.4
+    .. versionadded:: nilearn 0.2.4
 
     Parameters
     ----------
@@ -797,7 +797,7 @@ def resample_to_img(
     copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
 
-        .. versionadded:: 0.11.0
+        .. versionadded:: nilearn 0.11.0
 
         This parameter will be set to True by default in 0.13.0.
 
@@ -860,7 +860,7 @@ def reorder_img(img, resample=None, copy_header=False):
     copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
 
-        .. versionadded:: 0.11.0
+        .. versionadded:: nilearn 0.11.0
 
         This parameter will be set to True by default in 0.13.0.
     """

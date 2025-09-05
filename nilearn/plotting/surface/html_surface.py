@@ -434,7 +434,7 @@ def view_surf(
         and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
         Otherwise a warning will be displayed.
 
-        .. versionadded:: 0.11.0
+        .. versionadded:: nilearn 0.11.0
 
     %(bg_on_data)s
 

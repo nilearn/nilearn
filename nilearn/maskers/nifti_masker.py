@@ -286,7 +286,7 @@ class NiftiMasker(BaseMasker):
         Only relevant for the report figures.
 
     %(clean_args)s
-        .. versionadded:: 0.12.0
+        .. versionadded:: nilearn 0.12.0
 
     %(masker_kwargs)s
 
@@ -306,7 +306,7 @@ class NiftiMasker(BaseMasker):
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: nilearn 0.9.2
 
     See Also
     --------

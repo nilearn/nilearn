@@ -124,7 +124,7 @@ def load_confounds(
     directory from the 1.2.x series. The `compcor` noise component requires
     1.4.x series or above.
 
-    .. versionadded:: 0.9.0
+    .. versionadded:: nilearn 0.9.0
 
     Parameters
     ----------
@@ -213,14 +213,14 @@ def load_confounds(
 
     fd_threshold : :obj:`float`, default=0.2
 
-        .. deprecated:: 0.10.3
+        .. deprecated:: nilearn 0.10.3
            The default value will be changed to 0.5 in 0.13.0
 
         Framewise displacement threshold for scrub in mm.
 
     std_dvars_threshold : :obj:`float`, default=3
 
-        .. deprecated:: 0.10.3
+        .. deprecated:: nilearn 0.10.3
            The default value will be changed to 1.5 in 0.13.0
 
         Standardized DVARS threshold for scrub.

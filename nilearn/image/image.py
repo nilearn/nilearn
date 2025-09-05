@@ -331,7 +331,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=False):
         Whether to copy the header of the input image to the output.
         If None, the default behavior is to not copy the header.
 
-        .. versionadded:: 0.11.0
+        .. versionadded:: nilearn 0.11.0
 
         This parameter will be set to True by default in 0.13.0.
 
@@ -401,7 +401,7 @@ def crop_img(
     copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
 
-        .. versionadded:: 0.11.0
+        .. versionadded:: nilearn 0.11.0
 
         This parameter will be set to True by default in 0.13.0.
 
@@ -550,7 +550,7 @@ def mean_img(
         Whether to copy the header of the input image to the output.
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
-        .. versionadded:: 0.11.0
+        .. versionadded:: nilearn 0.11.0
 
         This parameter will be set to True by default in 0.13.0.
 
@@ -799,7 +799,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         Data to be stored in the image. If data dtype is a boolean, then data
         is cast to 'uint8' by default.
 
-        .. versionchanged:: 0.9.2
+        .. versionchanged:: nilearn 0.9.2
             Changed default dtype casting of booleans from 'int8' to 'uint8'.
 
         If ``ref_niimg`` is a Niimg-like object,
@@ -987,12 +987,12 @@ def threshold_img(
 
         The score is calculated only on the non-negative values of data.
 
-    .. versionadded:: 0.2
+    .. versionadded:: nilearn 0.2
 
-    .. versionchanged:: 0.9.0
+    .. versionchanged:: nilearn 0.9.0
         New ``cluster_threshold`` and ``two_sided`` parameters added.
 
-    .. versionchanged:: 0.12.0
+    .. versionchanged:: nilearn 0.12.0
         Add support for SurfaceImage.
 
     Parameters
@@ -1015,13 +1015,13 @@ def threshold_img(
 
         Not implemented for SurfaceImage.
 
-        .. versionadded:: 0.9.0
+        .. versionadded:: nilearn 0.9.0
 
     two_sided : :obj:`bool`, default=True
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-        .. versionadded:: 0.9.0
+        .. versionadded:: nilearn 0.9.0
 
     mask_img : Niimg-like object or a :obj:`~nilearn.surface.SurfaceImage` \
         or None, default=None
@@ -1037,7 +1037,7 @@ def threshold_img(
 
         Not applicable for SurfaceImage.
 
-        .. versionadded:: 0.11.0
+        .. versionadded:: nilearn 0.11.0
 
         This parameter will be set to True by default in 0.13.0.
 
@@ -1213,7 +1213,7 @@ def _apply_threshold(img_data, two_sided, cutoff_threshold):
 def math_img(formula, copy_header_from=None, **imgs):
     """Interpret a numpy based string formula using niimg in named parameters.
 
-    .. versionadded:: 0.2.3
+    .. versionadded:: nilearn 0.2.3
 
     Parameters
     ----------
@@ -1230,7 +1230,7 @@ def math_img(formula, copy_header_from=None, **imgs):
 
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
-        .. versionadded:: 0.10.4
+        .. versionadded:: nilearn 0.10.4
 
     imgs : images (:class:`~nibabel.nifti1.Nifti1Image` or file names \
            or :obj:`~nilearn.surface.SurfaceImage` object)
@@ -1276,7 +1276,7 @@ def math_img(formula, copy_header_from=None, **imgs):
     but might have different header information, specifically the TR value,
     see :gh:`2645`.
 
-    .. versionadded:: 0.10.4
+    .. versionadded:: nilearn 0.10.4
 
     We can also copy the header from one of the input images using
     ``copy_header_from``::
@@ -1371,7 +1371,7 @@ def binarize_img(
 ):
     """Binarize an image such that its values are either 0 or 1.
 
-    .. versionadded:: 0.8.1
+    .. versionadded:: nilearn 0.8.1
 
     Parameters
     ----------
@@ -1398,14 +1398,14 @@ def binarize_img(
         If `True`, threshold is applied to the absolute value of the image.
         If `False`, threshold is applied to the original value of the image.
 
-        .. versionadded:: 0.10.3
+        .. versionadded:: nilearn 0.10.3
 
     copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
 
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
-        .. versionadded:: 0.11.0
+        .. versionadded:: nilearn 0.11.0
 
         This parameter will be set to True by default in 0.13.0.
 
@@ -1488,7 +1488,7 @@ def clean_img(
     orthogonally to temporal filters (low- and/or high-pass filters), if both
     are specified.
 
-    .. versionadded:: 0.2.5
+    .. versionadded:: nilearn 0.2.5
 
     Parameters
     ----------
@@ -1663,7 +1663,7 @@ def clean_img(
 def load_img(img, wildcards=True, dtype=None):
     """Load a Niimg-like object from filenames or list of filenames.
 
-    .. versionadded:: 0.2.5
+    .. versionadded:: nilearn 0.2.5
 
     Parameters
     ----------
@@ -1864,7 +1864,7 @@ def concat_imgs(
 def largest_connected_component_img(imgs):
     """Return the largest connected component of an image or list of images.
 
-    .. versionadded:: 0.3.1
+    .. versionadded:: nilearn 0.3.1
 
     Parameters
     ----------

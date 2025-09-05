@@ -82,7 +82,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
 
     contrast_type :
 
-        .. deprecated:: 0.10.3
+        .. deprecated:: nilearn 0.10.3
 
             Use ``stat_type`` instead (see above).
 
@@ -208,7 +208,7 @@ class Contrast:
 
     contrast_type :
 
-        .. deprecated:: 0.10.3
+        .. deprecated:: nilearn 0.10.3
 
             Use ``stat_type`` instead (see above).
 
@@ -267,7 +267,7 @@ class Contrast:
     def contrast_type(self):
         """Return value of stat_type.
 
-        .. deprecated:: 0.10.3
+        .. deprecated:: nilearn 0.10.3
         """
         # TODO (nilearn >= 0.13.0) deprecate
         attrib_deprecation_msg = (
