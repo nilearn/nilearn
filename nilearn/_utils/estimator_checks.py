@@ -1852,7 +1852,7 @@ def check_decoder_verbose(estimator_orig):
 
     TODO: apply to GLM
     """
-    for verbose in [1, 2]:
+    for verbose in [0, 1, 2]:
         estimator = clone(estimator_orig)
         estimator.verbose = verbose
         estimator = fit_estimator(estimator)

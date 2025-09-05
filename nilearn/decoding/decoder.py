@@ -45,7 +45,7 @@ from sklearn.utils.validation import check_is_fitted, check_X_y
 
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
     check_embedded_masker,
@@ -829,6 +829,11 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             )
             warnings.warn(
                 warning_msg, UserWarning, stacklevel=find_stack_level()
+            )
+        elif self.verbose > 0:
+            log(
+                "The decoding model will be trained "
+                f"on {n_final_features} features. "
             )
 
         parallel = Parallel(n_jobs=self.n_jobs, verbose=2 * self.verbose)
