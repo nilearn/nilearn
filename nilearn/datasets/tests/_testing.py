@@ -51,28 +51,6 @@ from nilearn.surface.surface import PolyMesh, SurfaceImage
 
 
 @pytest.fixture(autouse=True)
-def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
-    """Monkeypatch user home directory and NILEARN_DATA env variable.
-
-    This ensures that tests that use nilearn.datasets will not load datasets
-    already present on the current machine, or write in the user's home or
-    nilearn data directory.
-
-    This fixture uses 'autouse' and is imported in conftest.py to make sure it
-    is used by every test, even those that do not explicitly ask for it.
-
-    """
-    home_dir = tmp_path_factory.mktemp("temp_nilearn_home")
-    monkeypatch.setenv("HOME", str(home_dir))
-    monkeypatch.setenv("USERPROFILE", str(home_dir))
-    data_dir = home_dir / "nilearn_data"
-    data_dir.mkdir()
-    monkeypatch.setenv("NILEARN_DATA", str(data_dir))
-    shared_data_dir = home_dir / "nilearn_shared_data"
-    monkeypatch.setenv("NILEARN_SHARED_DATA", str(shared_data_dir))
-
-
-@pytest.fixture(autouse=True)
 def request_mocker(monkeypatch):
     """Monkeypatch requests and urllib functions for sending requests.
 

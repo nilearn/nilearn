@@ -7,21 +7,16 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
+from scipy.signal import get_window
 
 from nilearn import image
-from nilearn._utils.data_gen import (
-    generate_fake_fmri,
-    generate_labeled_regions,
-    generate_maps,
-)
 from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
 from nilearn.datasets.tests._testing import (
     request_mocker,  # noqa: F401
-    temp_nilearn_data_dir,  # noqa: F401
 )
-from nilearn.surface import (
+from nilearn.surface.surface import (
     InMemoryMesh,
     PolyMesh,
     SurfaceImage,
@@ -144,6 +139,28 @@ def suppress_specific_warning():
             category=DeprecationWarning,
         )
         yield
+
+
+@pytest.fixture(autouse=True)
+def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
+    """Monkeypatch user home directory and NILEARN_DATA env variable.
+
+    This ensures that tests that use nilearn.datasets will not load datasets
+    already present on the current machine, or write in the user's home or
+    nilearn data directory.
+
+    This fixture uses 'autouse' and is imported in conftest.py to make sure it
+    is used by every test, even those that do not explicitly ask for it.
+
+    """
+    home_dir = tmp_path_factory.mktemp("temp_nilearn_home")
+    monkeypatch.setenv("HOME", str(home_dir))
+    monkeypatch.setenv("USERPROFILE", str(home_dir))
+    data_dir = home_dir / "nilearn_data"
+    data_dir.mkdir()
+    monkeypatch.setenv("NILEARN_DATA", str(data_dir))
+    shared_data_dir = home_dir / "nilearn_shared_data"
+    monkeypatch.setenv("NILEARN_SHARED_DATA", str(shared_data_dir))
 
 
 # ------------------------   RNG   ------------------------#
@@ -491,13 +508,70 @@ def n_regions():
     return _n_regions()
 
 
+def _region_time_series(n_voxels, n_regions):
+    """Generate some regions as timeseries.
+
+    Adapted from
+    - nilearn._utils.data_gen.generate_regions_ts
+    that we do not import to avoid circular import
+    and avoid using nilearn code to test nilearn code.
+    """
+    assert n_voxels > n_regions
+
+    # Compute region boundaries indices.
+    # Start at 1 to avoid getting an empty region
+    boundaries = np.zeros(n_regions + 1)
+    boundaries[-1] = n_voxels
+    boundaries[1:-1] = _rng().permutation(np.arange(1, n_voxels))[
+        : n_regions - 1
+    ]
+    boundaries.sort()
+
+    overlap = 0
+    window = "boxcar"
+    regions = np.zeros((n_regions, n_voxels), order="C")
+    overlap_end = int((overlap + 1) / 2.0)
+    overlap_start = int(overlap / 2.0)
+    for n in range(len(boundaries) - 1):
+        start = int(max(0, boundaries[n] - overlap_start))
+        end = int(min(n_voxels, boundaries[n + 1] + overlap_end))
+        win = get_window(window, end - start)
+        win /= win.mean()  # unity mean
+        regions[n, start:end] = win
+
+    return regions
+
+
 def _img_maps(n_regions=None):
-    """Generate a default map image."""
+    """Generate a default map image.
+
+    Adapted from
+    - nilearn._utils.data_gen.generate_maps
+    that we do not import to avoid circular import
+    and avoid using nilearn code to test nilearn code.
+    """
     if n_regions is None:
         n_regions = _n_regions()
-    return generate_maps(
-        shape=_shape_3d_default(), n_regions=n_regions, affine=_affine_eye()
-    )[0]
+
+    shape = _shape_3d_default()
+    affine = _affine_eye()
+
+    mask = np.zeros(shape, dtype=np.int8)
+    border = 1
+    mask[border:-border, border:-border, border:-border] = 1
+
+    n_voxels = mask.sum()
+
+    regions = _region_time_series(n_voxels, n_regions)
+
+    mask = mask.astype(bool)
+
+    data = np.zeros(
+        (*mask.shape, regions.shape[0]), dtype=regions.dtype, order="F"
+    )
+    data[mask, :] = regions.T
+
+    return Nifti1Image(data, affine)
 
 
 @pytest.fixture
@@ -509,13 +583,30 @@ def img_maps():
 def _img_labels():
     """Generate fixture for default label image.
 
+    Adapted from
+    - nilearn._utils.data_gen.generate_labeled_regions
+    that we do not import to avoid circular import
+    and avoid using nilearn code to test nilearn code.
+
     DO NOT CHANGE n_regions (some tests expect this value).
     """
-    return generate_labeled_regions(
-        shape=_shape_3d_default(),
-        affine=_affine_eye(),
-        n_regions=_n_regions(),
-    )
+    shape = _shape_3d_default()
+    affine = _affine_eye()
+    n_regions = _n_regions()
+
+    n_voxels = shape[0] * shape[1] * shape[2]
+    n_regions += 1
+    labels = range(n_regions)
+
+    regions = _region_time_series(n_voxels, n_regions)
+
+    # replace weights with labels
+    for n, row in zip(labels, regions):
+        row[row > 0] = n
+    data = np.zeros(shape, dtype="int32")
+    data[np.ones(shape, dtype=bool)] = regions.sum(axis=0).T
+
+    return Nifti1Image(data, affine)
 
 
 @pytest.fixture
@@ -531,11 +622,30 @@ def length():
 
 
 @pytest.fixture
-def img_fmri(shape_3d_default, affine_eye, length):
-    """Return a default length for fmri images."""
-    return generate_fake_fmri(
-        shape_3d_default, affine=affine_eye, length=length
-    )[0]
+def img_fmri(shape_3d_default, affine_eye, length, rng):
+    """Return a default length for fmri images.
+
+    Adapted from nilearn._utils.data_gen.generate_fake_fmri
+    that we do not import to avoid circular import
+    and avoid using nilearn code to test nilearn code.
+    """
+    full_shape = (*shape_3d_default, length)
+    fmri = np.zeros(full_shape)
+
+    # Fill central voxels timeseries with random signals
+    width = [s // 2 for s in shape_3d_default]
+    shift = [s // 4 for s in shape_3d_default]
+
+    signals = rng.integers(256, size=([*width, length]))
+
+    fmri[
+        shift[0] : shift[0] + width[0],
+        shift[1] : shift[1] + width[1],
+        shift[2] : shift[2] + width[2],
+        :,
+    ] = signals
+
+    return Nifti1Image(fmri, affine_eye)
 
 
 # ------------------------ SURFACE ------------------------#
