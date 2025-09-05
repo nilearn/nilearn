@@ -88,10 +88,9 @@ def _get_neurovault_data():
     image_names = [
         hashlib.sha1(bytes(img_id)).hexdigest()[:4] for img_id in image_ids
     ]
-    images["file"] = [
-        url.format(col_id, img_name)
-        for (col_id, img_name) in zip(images["collection_id"], image_names)
-    ]
+    images["file"] = list(
+        map(url.format, images["collection_id"], image_names)
+    )
 
     collections = collections.set_index("id", drop=False)
     images = images.set_index("id", drop=False)
@@ -248,10 +247,12 @@ def _neurovault(match, request):  # noqa: ARG001
 
 @pytest.fixture(autouse=True)
 def neurovault_mocker(request_mocker):
+    """Mock neurovault fetcher."""
     request_mocker.url_mapping["*neurovault.org*"] = _neurovault
 
 
 def test_remove_none_strings():
+    """Test _remove_none_strings."""
     info = {
         "a": "None / Other",
         "b": "",
@@ -274,7 +275,7 @@ def test_remove_none_strings():
 
 
 def test_append_filters_to_query():
-    "Test _append_filters_to_query."
+    """Test _append_filters_to_query."""
     query = neurovault._append_filters_to_query(
         neurovault._NEUROVAULT_COLLECTIONS_URL, {"DOI": 17}
     )
@@ -288,14 +289,14 @@ def test_append_filters_to_query():
 
 
 def test_get_batch():
-    "Test _get_batch."
+    """Test _get_batch."""
     batch = neurovault._get_batch(neurovault._NEUROVAULT_COLLECTIONS_URL)
     assert "results" in batch
     assert "count" in batch
 
 
 def test_get_batch_error(tmp_path):
-    "Test _get_batch errors."
+    """Test _get_batch errors."""
     with pytest.raises(requests.RequestException):
         neurovault._get_batch("http://")
     with pytest.raises(ValueError):
@@ -313,7 +314,7 @@ def test_get_batch_error(tmp_path):
 
 
 def test_scroll_server_results():
-    "Test _scroll_server_results."
+    """Test _scroll_server_results."""
     result = list(
         neurovault._scroll_server_results(
             neurovault._NEUROVAULT_COLLECTIONS_URL, max_results=6, batch_size=3
@@ -338,7 +339,7 @@ def test_scroll_server_results():
 
 
 def test_is_null():
-    "Test IsNull."
+    """Test IsNull."""
     is_null = neurovault.IsNull()
 
     assert is_null != "a"
@@ -347,7 +348,7 @@ def test_is_null():
 
 
 def test_not_null():
-    "Test NotNull."
+    """Test NotNull."""
     not_null = neurovault.NotNull()
 
     assert not_null == "a"
@@ -356,7 +357,7 @@ def test_not_null():
 
 
 def test_not_equal():
-    "Test NotEqual."
+    """Test NotEqual."""
     not_equal = neurovault.NotEqual("a")
 
     assert not_equal == "b"
@@ -367,7 +368,7 @@ def test_not_equal():
 
 
 def test_order_comp():
-    "Test lt, gt, goe, loe."
+    """Test lt, gt, goe, loe."""
     geq = neurovault.GreaterOrEqual("2016-07-12T11:29:12.263046Z")
 
     assert geq == "2016-08-12T11:29:12.263046Z"
@@ -395,7 +396,7 @@ def test_order_comp():
 
 
 def test_is_in():
-    "Test IsIn."
+    """Test IsIn."""
     is_in = neurovault.IsIn(0, 1)
 
     assert is_in == 0
@@ -409,7 +410,7 @@ def test_is_in():
 
 
 def test_not_in():
-    "Test NotIn."
+    """Test NotIn."""
     not_in = neurovault.NotIn(0, 1)
 
     assert not_in != 0
@@ -418,7 +419,7 @@ def test_not_in():
 
 
 def test_contains():
-    "Test Contains."
+    """Test Contains."""
     contains = neurovault.Contains("a", 0)
 
     assert contains != 10
@@ -434,7 +435,7 @@ def test_contains():
 
 
 def test_not_contains():
-    "Test NotContains."
+    """Test NotContains."""
     not_contains = neurovault.NotContains("ab")
 
     assert not_contains is not None
@@ -446,7 +447,7 @@ def test_not_contains():
 
 
 def test_pattern():
-    "Test Pattern."
+    """Test Pattern."""
     # Python std lib doc poker hand example
     pattern_0 = neurovault.Pattern(r"[0-9akqj]{5}$")
 
@@ -463,7 +464,7 @@ def test_pattern():
 
 
 def test_result_filter():
-    "Test ResultFilter IsIn NotIn."
+    """Test ResultFilter IsIn NotIn."""
     filter_0 = neurovault.ResultFilter(
         query_terms={"a": 0}, callable_filter=lambda d: len(d) < 5, b=1
     )
@@ -502,7 +503,7 @@ def test_result_filter():
 
 
 def test_result_filter_combinations():
-    "Test ResultFilter AND OR XOR NOT."
+    """Test ResultFilter AND OR XOR NOT."""
     filter_0 = neurovault.ResultFilter(a=0, b=1)
     filter_1 = neurovault.ResultFilter(c=2, d=3)
 
@@ -548,7 +549,7 @@ def test_result_filter_combinations():
 
 
 def test_simple_download(tmp_path):
-    "Test _simple_download."
+    """Test _simple_download."""
     downloaded_file = neurovault._simple_download(
         "https://neurovault.org/media/images/35/Fig3B_zstat1.nii.gz",
         tmp_path / "image_35.nii.gz",
@@ -558,7 +559,7 @@ def test_simple_download(tmp_path):
 
 
 def test_simple_download_error(tmp_path, request_mocker):
-    "Test _simple_download error."
+    """Test _simple_download error."""
     request_mocker.url_mapping["*"] = requests.RequestException()
 
     with pytest.raises(requests.RequestException):
@@ -570,14 +571,16 @@ def test_simple_download_error(tmp_path, request_mocker):
 
 
 def test_neurosynth_words_vectorized(tmp_path):
-    "Test neurosynth_words_vectorized."
+    """Test neurosynth_words_vectorized."""
     n_im = 5
     words_files = [tmp_path / f"words_for_image_{i}.json" for i in range(n_im)]
     words = [str(i) for i in range(n_im)]
     for i, file_name in enumerate(words_files):
         word_weights = np.zeros(n_im)
         word_weights[i] = 1
-        words_dict = {"data": {"values": dict(zip(words, word_weights))}}
+        words_dict = {
+            "data": {"values": dict(zip(words, word_weights, strict=False))}
+        }
         with file_name.open("wb") as words_file:
             words_file.write(json.dumps(words_dict).encode("utf-8"))
 
@@ -588,7 +591,7 @@ def test_neurosynth_words_vectorized(tmp_path):
 
 
 def test_neurosynth_words_vectorized_warning(tmp_path):
-    "Test neurosynth_words_vectorized warning."
+    """Test neurosynth_words_vectorized warning."""
     with pytest.warns(UserWarning):
         neurovault.neurosynth_words_vectorized(
             ((tmp_path, "no_words_here.json"),)
@@ -596,7 +599,7 @@ def test_neurosynth_words_vectorized_warning(tmp_path):
 
 
 def test_write_read_metadata(tmp_path):
-    "Test _write_metadata and _add_absolute_paths."
+    """Test _write_metadata and _add_absolute_paths."""
     metadata = {
         "relative_path": "collection_1",
         "absolute_path": Path("tmp", "collection_1"),
@@ -618,7 +621,7 @@ def test_write_read_metadata(tmp_path):
 
 
 def test_add_absolute_paths():
-    "Test _add_absolute_paths."
+    """Test _add_absolute_paths."""
     meta = {
         "col_relative_path": "collection_1",
         "col_absolute_path": Path("dir_0", "neurovault", "collection_1"),
@@ -650,7 +653,7 @@ def test_add_absolute_paths():
 
 
 def test_json_add_collection_dir(tmp_path):
-    "Test _json_add_collection_dir."
+    """Test _json_add_collection_dir."""
     coll_dir = tmp_path / "collection_1"
     coll_dir.mkdir()
     coll_file_name = coll_dir / "collection_1.json"
@@ -664,7 +667,7 @@ def test_json_add_collection_dir(tmp_path):
 
 
 def test_json_add_im_files_paths(tmp_path):
-    "Test _json_add_im_files_paths."
+    """Test _json_add_im_files_paths."""
     coll_dir = tmp_path / "collection_1"
     coll_dir.mkdir()
     im_file_name = coll_dir / "image_1.json"
@@ -678,7 +681,7 @@ def test_json_add_im_files_paths(tmp_path):
 
 
 def test_split_terms():
-    "Test _split_terms."
+    """Test _split_terms."""
     terms, server_terms = neurovault._split_terms(
         {
             "DOI": neurovault.NotNull(),
@@ -693,7 +696,7 @@ def test_split_terms():
 
 
 def test_move_unknown_terms_to_local_filter():
-    "Test _move_unknown_terms_to_local_filter."
+    """Test _move_unknown_terms_to_local_filter."""
     terms, new_filter = neurovault._move_unknown_terms_to_local_filter(
         {"a": 0, "b": 1}, neurovault.ResultFilter(), ("a",)
     )
@@ -704,7 +707,7 @@ def test_move_unknown_terms_to_local_filter():
 
 
 def test_move_col_id():
-    "Test _move_col_id."
+    """Test _move_col_id."""
     im_terms, col_terms = neurovault._move_col_id(
         {"collection_id": 1, "not_mni": False}, {}
     )
@@ -959,6 +962,7 @@ def test_fetch_neurovault_ids_overwrite(tmp_path):
 def test_should_download_resampled_images_only_if_no_previous_download(
     tmp_path,
 ):
+    """Test download only resampled original."""
     collections, _ = _get_neurovault_data()
 
     sample_collection = collections.iloc[0]
@@ -984,6 +988,7 @@ def test_should_download_resampled_images_only_if_no_previous_download(
 def test_download_original_images_along_resamp_images_if_previously_downloaded(
     tmp_path,
 ):
+    """Test download original data even if resampled data is here."""
     collections, _ = _get_neurovault_data()
 
     sample_collection = collections.iloc[0]
@@ -1032,6 +1037,7 @@ def test_download_original_images_along_resamp_images_if_previously_downloaded(
 def test_download_resamp_images_along_original_images_if_previously_downloaded(
     tmp_path,
 ):
+    """Test download resampled data even if non resampled data is here."""
     collections, _ = _get_neurovault_data()
 
     sample_collection = collections.iloc[0]
@@ -1144,5 +1150,6 @@ def test_timeout_error(capsys, request_mocker):
 
 
 def test_fetch_neurovault_motor_task():
+    """Test deprecation fetch_neurovault_motor_task."""
     with pytest.warns(DeprecationWarning, match="will be removed"):
         neurovault.fetch_neurovault_motor_task(verbose=0)

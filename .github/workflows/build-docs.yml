@@ -104,7 +104,7 @@ env:
     BROWSER: /usr/bin/firefox
     DISPLAY: :99.0
     NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
-    MIN_PYTHON_VERSION: '3.9'
+    MIN_PYTHON_VERSION: '3.10'
     HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
 jobs:
@@ -115,7 +115,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
 
         -   name: Check whether the citation metadata from CITATION.cff is valid
             uses: citation-file-format/cffconvert-github-action@2.0.0
@@ -127,7 +127,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v6
         -   uses: actions/setup-python@v5
@@ -149,7 +149,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Get repo
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
             with:
                 ref: ${{ github.event.pull_request.head.sha }}
         -   name: Check head git commit message
@@ -167,7 +167,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -204,7 +204,7 @@ jobs:
 
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -222,7 +222,7 @@ jobs:
                 python -m pip install .
 
         -   name: Download build type
-            uses: actions/download-artifact@v4
+            uses: actions/download-artifact@v5
             with:
                 name: build_type
         -   name: Verify build type
@@ -307,10 +307,10 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                py: [3.13]
+                py: ['3.13']
                 env: [doc_latest]
                 include:
-                -   py: 3.9
+                -   py: '3.10'
                     env: doc
 
         defaults:
@@ -320,7 +320,7 @@ jobs:
         steps:
 
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
@@ -360,7 +360,7 @@ jobs:
                 python-version: ${{ matrix.py }}
 
         -   name: Download build type
-            uses: actions/download-artifact@v4
+            uses: actions/download-artifact@v5
             with:
                 name: build_type
 
@@ -419,7 +419,7 @@ jobs:
         if: ${{ contains(fromJSON('["push", "workflow_dispatch", "schedule", "release"]'), github.event_name)}}
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
             with:
                 fetch-depth: 0
 
@@ -434,7 +434,7 @@ jobs:
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
 
-        -   uses: actions/download-artifact@v4
+        -   uses: actions/download-artifact@v5
             with:
                 name: doc
                 path: doc/_build/html

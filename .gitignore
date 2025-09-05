@@ -56,6 +56,7 @@ maint_tools/*_runs_timing.*
 
 # coverage
 .coverage
+.coverage*
 coverage
 coverage.xml
 nosetests_coverage/

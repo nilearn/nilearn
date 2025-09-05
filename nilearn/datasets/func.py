@@ -20,8 +20,11 @@ from scipy.io import loadmat
 from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
-from nilearn._utils import check_niimg, fill_doc, logger, remove_parameters
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import remove_parameters
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets._utils import (
     ALLOWED_MESH_TYPES,
@@ -349,7 +352,8 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     # Download dataset files
 
     archives = [
-        url + f"{int(ni)}/adhd40_{ii}.tgz" for ni, ii in zip(nitrc_ids, ids)
+        url + f"{int(ni)}/adhd40_{ii}.tgz"
+        for ni, ii in zip(nitrc_ids, ids, strict=False)
     ]
     functionals = [
         f"data/{i}/{i}_rest_tshift_RPI_voreg_mni.nii.gz" for i in ids
@@ -358,14 +362,14 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     functionals = fetch_files(
         data_dir,
-        zip(functionals, archives, (opts,) * n_subjects),
+        zip(functionals, archives, (opts,) * n_subjects, strict=False),
         resume=resume,
         verbose=verbose,
     )
 
     confounds = fetch_files(
         data_dir,
-        zip(confounds, archives, (opts,) * n_subjects),
+        zip(confounds, archives, (opts,) * n_subjects, strict=False),
         resume=resume,
         verbose=verbose,
     )
@@ -1913,7 +1917,8 @@ def load_nki(
 
     images = []
     for i, (left, right) in enumerate(
-        zip(nki_dataset["func_left"], nki_dataset["func_right"]), start=1
+        zip(nki_dataset["func_left"], nki_dataset["func_right"], strict=False),
+        start=1,
     ):
         logger.log(f"Loading subject {i} of {n_subjects}.", verbose=verbose)
 
@@ -2359,6 +2364,7 @@ def fetch_language_localizer_demo_dataset(
 
     file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
     if legacy_output:
+        # TODO (nilearn >= 0.13.0)
         warnings.warn(
             category=DeprecationWarning,
             stacklevel=find_stack_level(),
@@ -2709,7 +2715,7 @@ def fetch_openneuro_dataset(
 
     # download the files
     downloaded = []
-    for file_spec, file_dir in zip(files_spec, files_dir):
+    for file_spec, file_dir in zip(files_spec, files_dir, strict=False):
         # Timeout errors are common in the s3 connection so we try to avoid
         # failure of the dataset download for a transient instability
         success = False
@@ -2772,7 +2778,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     )
     files = fetch_files(data_dir, filenames, verbose=verbose)
 
-    params = dict(list(zip(options, files)))
+    params = dict(list(zip(options, files, strict=False)))
     data = Bunch(**params)
 
     description = get_dataset_descr(dataset_name)
@@ -2795,6 +2801,7 @@ def _download_spm_auditory_data(data_dir):
         return fetch_spm_auditory(data_dir=data_dir, data_name="")
 
 
+# (nilearn >= 0.13.0) remove subject_id
 @fill_doc
 @remove_parameters(
     removed_params=["subject_id"],
@@ -3002,6 +3009,7 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     return events
 
 
+# (nilearn >= 0.13.0) remove subject_id
 @fill_doc
 @remove_parameters(
     removed_params=["subject_id"],

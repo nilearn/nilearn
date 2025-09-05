@@ -54,7 +54,9 @@ data_masked = masker.fit_transform(func_filename)
 from sklearn.decomposition import FastICA
 
 n_components = 10
-ica = FastICA(n_components=n_components, random_state=42)
+ica = FastICA(
+    n_components=n_components, random_state=42, max_iter=2000, tol=0.01
+)
 components_masked = ica.fit_transform(data_masked.T).T
 
 # Normalize estimated components, for thresholding to make sense

@@ -16,15 +16,8 @@ from scipy.ndimage import gaussian_filter1d, generate_binary_structure, label
 from scipy.stats import scoreatpercentile
 
 from nilearn import signal
-from nilearn._utils import (
-    as_ndarray,
-    check_niimg,
-    check_niimg_3d,
-    check_niimg_4d,
-    fill_doc,
-    logger,
-    repr_niimgs,
-)
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import (
     check_copy_header,
@@ -34,12 +27,16 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import _get_data, safe_get_data
+from nilearn._utils.niimg import _get_data, repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import (
     _index_img,
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
     check_same_fov,
     iter_check_niimg,
 )
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.surface.surface import (
@@ -417,7 +414,7 @@ def crop_img(
         *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
 
     """
-    # TODO: remove this warning in 0.13.0
+    # TODO (nilearn >= 0.13.0) remove this warning
     check_copy_header(copy_header)
 
     img = check_niimg(img)
@@ -443,7 +440,7 @@ def crop_img(
         start = np.maximum(start - 1, 0)
         end = np.minimum(end + 1, data.shape[:3])
 
-    slices = [slice(s, e) for s, e in zip(start, end)][:3]
+    slices = list(map(slice, start, end))[:3]
     cropped_im = _crop_img_to(img, slices, copy=copy, copy_header=copy_header)
     return (cropped_im, tuple(slices)) if return_offset else cropped_im
 
@@ -471,8 +468,7 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
         mean_data = mean_data.mean(axis=-1)
     else:
         mean_data = mean_data.copy()
-    # TODO switch to force_resample=True
-    # when bumping to version > 0.13
+    # TODO (nilearn >= 0.13.0) force_resample=True
     mean_data = resampling.resample_img(
         Nifti1Image(mean_data, affine),
         target_affine=target_affine,
@@ -578,7 +574,7 @@ def mean_img(
         all_means = concat_imgs([_compute_surface_mean(x) for x in imgs])
         return _compute_surface_mean(all_means)
 
-    # TODO: remove this warning in 0.13.0
+    # TODO (nilearn >= 0.13.0) remove this warning
     check_copy_header(copy_header)
 
     imgs = stringify_path(imgs)
@@ -794,12 +790,20 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
     ref_niimg : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
         Reference image. The new image will be of the same type.
 
-    data : :class:`numpy.ndarray`
+    data : :class:`numpy.ndarray`, :obj:`~nilearn.surface.PolyData`, \
+           or :obj:`dict` of  \
+           :obj:`numpy.ndarray`, \
+           :obj:`str`, \
+           :obj:`pathlib.Path`
+
         Data to be stored in the image. If data dtype is a boolean, then data
         is cast to 'uint8' by default.
 
         .. versionchanged:: 0.9.2
             Changed default dtype casting of booleans from 'int8' to 'uint8'.
+
+        If ``ref_niimg`` is a Niimg-like object,
+        then data must be a :class:`numpy.ndarray`.
 
     affine : 4x4 :class:`numpy.ndarray`, default=None
         Transformation matrix.
@@ -948,7 +952,7 @@ def threshold_img(
 
         The given value should be within the range of minimum and maximum
         intensity of the input image.
-        All instensities in the interval ``[-threshold, threshold]`` will be
+        All intensities in the interval ``[-threshold, threshold]`` will be
         set to zero.
 
       - When ``two_sided`` is False:
@@ -958,14 +962,14 @@ def threshold_img(
           It should be greater than the minimum intensity of the input data.
           All intensities greater than or equal to the specified threshold will
           be set to zero.
-          All other instensities keep their original values.
+          All other intensities keep their original values.
 
         - If the threshold is positive:
 
           then it should be less than the maximum intensity of the input data.
           All intensities less than or equal to the specified threshold will be
           set to zero.
-          All other instensities keep their original values.
+          All other intensities keep their original values.
 
     - If threshold is :obj:`str`:
 
@@ -1084,7 +1088,7 @@ def threshold_img(
         cluster_threshold = 0
 
     if isinstance(img, NiimgLike):
-        # TODO: remove this warning in 0.13.0
+        # TODO (nilearn >= 0.13.0) remove this warning
         check_copy_header(copy_header)
 
         img = check_niimg(img)
@@ -1102,8 +1106,7 @@ def threshold_img(
         if isinstance(mask_img, NiimgLike):
             mask_img = check_niimg_3d(mask_img)
             if not check_same_fov(img, mask_img):
-                # TODO switch to force_resample=True
-                # when bumping to version > 0.13
+                # TODO (nilearn >= 0.13.0) force_resample=True
                 mask_img = resample_img(
                     mask_img,
                     target_affine=affine,
@@ -1429,13 +1432,14 @@ def binarize_img(
      >>> img = binarize_img(anatomical_image, copy_header=True)
 
     """
-    warnings.warn(
-        'The current default behavior for the "two_sided" argument '
-        'is  "True". This behavior will be changed to "False" in '
-        "version 0.13.",
-        DeprecationWarning,
-        stacklevel=find_stack_level(),
-    )
+    if two_sided is True:
+        warnings.warn(
+            'The current default behavior for the "two_sided" argument '
+            'is  "True". This behavior will be changed to "False" in '
+            "version 0.13.",
+            DeprecationWarning,
+            stacklevel=find_stack_level(),
+        )
 
     return math_img(
         "img.astype(bool).astype('int8')",
@@ -1841,6 +1845,7 @@ def concat_imgs(
                 memory=memory,
                 memory_level=memory_level,
             ),
+            strict=False,
         )
     ):
         nii_str = (
@@ -1923,3 +1928,21 @@ def copy_img(img):
         img.affine.copy(),
         copy_header=True,
     )
+
+
+def get_indices_from_image(image) -> np.ndarray:
+    """Return unique values in a label image."""
+    if isinstance(image, NiimgLike):
+        img = check_niimg(image)
+        data = safe_get_data(img)
+    elif isinstance(image, SurfaceImage):
+        data = get_surface_data(image)
+    elif isinstance(image, np.ndarray):
+        data = image
+    else:
+        raise TypeError(
+            "Image to extract indices from must be one of: "
+            "Niimg-Like, SurfaceIamge, numpy array. "
+            f"Got {type(image)}"
+        )
+    return np.unique(data)

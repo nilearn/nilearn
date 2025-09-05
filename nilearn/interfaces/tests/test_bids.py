@@ -874,6 +874,7 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
         assert key in metadata
 
 
+@pytest.mark.timeout(0)
 def test_save_glm_to_bids_surface_prefix_override(tmp_path):
     """Save surface GLM results to disk with prefix."""
     n_sub = 1

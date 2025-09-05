@@ -1,6 +1,6 @@
 """Fixtures for decomposition tests."""
 
-from typing import Union
+import warnings
 
 import numpy as np
 import pytest
@@ -18,6 +18,19 @@ N_SUBJECTS = 3
 # are changed
 N_SAMPLES = 5
 N_COMPONENTS = 4
+
+
+@pytest.fixture(autouse=True)
+def suppress_specific_decoding_warning():
+    """Ignore internal decoding warnings."""
+    with warnings.catch_warnings():
+        messages = "Objective did not converge.*|"
+        warnings.filterwarnings(
+            "ignore",
+            message=messages,
+            category=UserWarning,
+        )
+        yield
 
 
 def _decomposition_mesh() -> PolyMesh:
@@ -40,7 +53,7 @@ def decomposition_mask_img(
     decomposition_mesh: PolyMesh,
     affine_eye: np.ndarray,
     shape_3d_large,
-) -> Union[SurfaceImage, Nifti1Image]:
+) -> SurfaceImage | Nifti1Image:
     """Return a mask for decomposition."""
     if data_type == "surface":
         mask_data = {
@@ -75,41 +88,31 @@ def decomposition_mask_img(
 
 @pytest.fixture
 def decomposition_masker(
-    decomposition_mask_img: Union[SurfaceImage, Nifti1Image],
+    decomposition_mask_img: SurfaceImage | Nifti1Image,
     img_3d_ones_eye: Nifti1Image,
     data_type: str,
-) -> Union[SurfaceMasker, MultiNiftiMasker]:
-    """Return the proper masker for test with volume of surface."""
+) -> SurfaceMasker | MultiNiftiMasker:
+    """Return the proper masker for test with volume of surface.
+
+    Use detrend=True to check how masker parameters are passed to estimators.
+    """
     if data_type == "surface":
-        return SurfaceMasker(mask_img=decomposition_mask_img).fit()
-    return MultiNiftiMasker(mask_img=img_3d_ones_eye).fit()
+        return SurfaceMasker(
+            mask_img=decomposition_mask_img, standardize=True
+        ).fit()
+    return MultiNiftiMasker(mask_img=img_3d_ones_eye, standardize=True).fit()
 
 
-def _decomposition_images_surface(
-    rng, decomposition_mesh, with_activation
-) -> list[SurfaceImage]:
-    surf_imgs = []
-    for _ in range(N_SUBJECTS):
-        data = {
-            "left": rng.standard_normal(
-                size=(
-                    decomposition_mesh.parts["left"].coordinates.shape[0],
-                    N_SAMPLES,
-                )
-            ),
-            "right": rng.standard_normal(
-                size=(
-                    decomposition_mesh.parts["right"].coordinates.shape[0],
-                    N_SAMPLES,
-                )
-            ),
-        }
-        if with_activation:
-            data["left"][2:4, :] += 10
-            data["right"][2:4, :] += 10
-        surf_imgs.append(SurfaceImage(mesh=decomposition_mesh, data=data))
-
-    return surf_imgs
+def _decomposition_images_surface(rng, decomposition_mesh, with_activation):
+    return [
+        _decomposition_img(
+            "surface",
+            rng=rng,
+            mesh=decomposition_mesh,
+            with_activation=with_activation,
+        )
+        for _ in range(N_SUBJECTS)
+    ]
 
 
 def _decomposition_img(
@@ -119,7 +122,7 @@ def _decomposition_img(
     shape=None,
     affine=None,
     with_activation: bool = True,
-) -> Union[SurfaceImage, Nifti1Image]:
+) -> SurfaceImage | Nifti1Image:
     """Return a single image for decomposition."""
     if data_type == "surface":
         data = {
@@ -181,7 +184,7 @@ def decomposition_img(
     shape_3d_large,
     affine_eye,
     with_activation: bool = True,
-) -> Union[SurfaceImage, Nifti1Image]:
+) -> SurfaceImage | Nifti1Image:
     """Return a single image for decomposition."""
     return _decomposition_img(
         data_type,
@@ -202,7 +205,7 @@ def canica_data(
     decomposition_mesh,
     data_type: str,
     n_subjects=N_SUBJECTS,
-) -> Union[list[Nifti1Image], list[SurfaceImage]]:
+) -> list[Nifti1Image] | list[SurfaceImage]:
     """Create a "multi-subject" dataset."""
     if data_type == "nifti":
         return _make_volume_data_from_components(

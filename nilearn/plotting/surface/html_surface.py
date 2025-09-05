@@ -6,14 +6,15 @@ from warnings import warn
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting import cm
+from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
-    colorscale,
     get_html_template,
     mesh_to_plotly,
 )
@@ -85,43 +86,6 @@ def _one_mesh_info(
     info["full_brain_mesh"] = False
     info["colorscale"] = colors["colors"]
     return info
-
-
-def one_mesh_info(
-    surf_map,
-    surf_mesh,
-    threshold=None,
-    cmap=DEFAULT_DIVERGING_CMAP,
-    black_bg=False,
-    bg_map=None,
-    symmetric_cmap=True,
-    bg_on_data=False,
-    darkness=0.7,
-    vmax=None,
-    vmin=None,
-):
-    """Deprecate public function. See _one_mesh_info."""
-    warn(
-        category=DeprecationWarning,
-        message="one_mesh_info is a private function and is renamed "
-        "to _one_mesh_info. Using the deprecated name will "
-        "raise an error in release 0.13",
-        stacklevel=find_stack_level(),
-    )
-
-    return _one_mesh_info(
-        surf_map,
-        surf_mesh,
-        threshold=threshold,
-        cmap=cmap,
-        black_bg=black_bg,
-        bg_map=bg_map,
-        symmetric_cmap=symmetric_cmap,
-        bg_on_data=bg_on_data,
-        darkness=darkness,
-        vmax=vmax,
-        vmin=vmin,
-    )
 
 
 def _get_combined_curvature_map(mesh_left, mesh_right):

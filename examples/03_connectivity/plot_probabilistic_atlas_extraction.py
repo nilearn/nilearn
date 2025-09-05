@@ -28,8 +28,10 @@ only the 20% edges with the highest values.
 from nilearn.datasets import fetch_atlas_msdl, fetch_development_fmri
 
 atlas = fetch_atlas_msdl()
+
 # Loading atlas image stored in 'maps'
 atlas_filename = atlas["maps"]
+
 # Loading atlas data stored in 'labels'
 labels = atlas["labels"]
 
@@ -51,7 +53,8 @@ masker = NiftiMapsMasker(
     standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
-    verbose=5,
+    memory_level=1,
+    verbose=1,
 )
 time_series = masker.fit_transform(data.func[0], confounds=data.confounds)
 
@@ -88,6 +91,7 @@ from nilearn.plotting import plot_connectome, plot_matrix, show
 # Mask out the major diagonal
 np.fill_diagonal(correlation_matrix, 0)
 plot_matrix(correlation_matrix, labels=labels, vmax=0.8, vmin=-0.8)
+
 # %%
 # And now display the corresponding graph
 # ---------------------------------------

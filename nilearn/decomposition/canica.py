@@ -9,7 +9,7 @@ from scipy.stats import scoreatpercentile
 from sklearn.decomposition import fastica
 from sklearn.utils import check_random_state
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn.decomposition._multi_pca import _MultiPCA
 
@@ -40,18 +40,6 @@ class CanICA(_MultiPCA):
         Indicate if a Canonical Correlation Analysis must be run after the
         PCA.
 
-    standardize : :obj:`bool`, default=True
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
-
-    standardize_confounds : :obj:`bool`, default=True
-        If standardize_confounds is True, the confounds are zscored:
-        their mean is put to 0 and their variance to 1 in the time dimension.
-
-    detrend : :obj:`bool`, default=True
-        If detrend is True, the time-series will be detrended before
-        components extraction.
-
     threshold : None, 'auto' or :obj:`float`, default='auto'
         If None, no thresholding is applied. If 'auto',
         then we apply a thresholding that will keep the n_voxels,
@@ -66,15 +54,11 @@ class CanICA(_MultiPCA):
 
     %(random_state)s
 
-    %(target_affine)s
+    %(standardize)s
 
-        .. note::
-            This parameter is passed to :func:`nilearn.image.resample_img`.
+    %(standardize_confounds)s
 
-    %(target_shape)s
-
-        .. note::
-            This parameter is passed to :func:`nilearn.image.resample_img`.
+    %(detrend)s
 
     %(low_pass)s
 
@@ -87,6 +71,17 @@ class CanICA(_MultiPCA):
             This parameter is passed to :func:`nilearn.image.resample_img`.
 
     %(t_r)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+
+    %(target_affine)s
+
+        .. note::
+            This parameter is passed to :func:`nilearn.image.resample_img`.
+
+    %(target_shape)s
 
         .. note::
             This parameter is passed to :func:`nilearn.image.resample_img`.
@@ -114,9 +109,13 @@ class CanICA(_MultiPCA):
 
     %(verbose0)s
 
-    %(base_decomposition_attributes)s
+    %(base_decomposition_fit_attributes)s
 
-    %(multi_pca_attributes)s
+    %(multi_pca_fit_attributes)s
+
+    variance_ : numpy array (n_components,)
+        The amount of variance explained
+        by each of the selected components.
 
     References
     ----------
