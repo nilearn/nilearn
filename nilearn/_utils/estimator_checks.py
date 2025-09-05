@@ -360,7 +360,6 @@ def return_expected_failed_checks(
         }
         if SKLEARN_MINOR >= 6:
             expected_failed_checks.pop("check_estimator_sparse_tag")
-
         if (
             not IS_SKLEARN_1_6_1_on_py_lt_3_13
             and SKLEARN_MINOR >= 5
