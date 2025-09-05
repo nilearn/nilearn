@@ -5,7 +5,9 @@ and importing them will fail if pytest is not installed.
 """
 
 import inspect
+import os
 import pickle
+import sys
 import warnings
 from copy import deepcopy
 from pathlib import Path
