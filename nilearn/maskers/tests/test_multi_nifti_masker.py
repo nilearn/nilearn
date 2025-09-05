@@ -265,7 +265,7 @@ def test_standardization(rng, shape_3d_default, affine_eye):
     masker = MultiNiftiMasker(mask, standardize="psc")
     trans_signals = masker.fit_transform([img1, img2])
 
-    for ts, s in zip(trans_signals, signals):
+    for ts, s in zip(trans_signals, signals, strict=False):
         np.testing.assert_almost_equal(ts.mean(0), 0)
         np.testing.assert_almost_equal(
             ts, (s / s.mean(1)[:, np.newaxis] * 100 - 100).T

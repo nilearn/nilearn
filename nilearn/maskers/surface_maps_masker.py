@@ -600,8 +600,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 **constrained_layout_kwargs(),
             )
             axes = np.atleast_2d(axes)
-            for ax_row, view in zip(axes, views):
-                for ax, hemi in zip(ax_row, hemispheres):
+            for ax_row, view in zip(axes, views, strict=False):
+                for ax, hemi in zip(ax_row, hemispheres, strict=False):
                     # very low threshold to only make 0 values transparent
                     plot_surf(
                         surf_map=roi,
