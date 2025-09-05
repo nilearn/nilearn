@@ -228,7 +228,7 @@ def _mask_and_reduce(
             n_samples=n_samples,
             random_state=random_state,
         )
-        for img, confound in zip(imgs, confounds)
+        for img, confound in zip(imgs, confounds, strict=False)
     )
 
     subject_n_samples = [subject_data.shape[0] for subject_data in data_list]
@@ -562,18 +562,6 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         return self
 
-    @property
-    def nifti_maps_masker_(self):
-        # TODO (nilearn >= 0.13.0) remove
-        warnings.warn(
-            message="The 'nifti_maps_masker_' attribute is deprecated "
-            "and will be removed in Nilearn 0.13.0.\n"
-            "Please use 'maps_masker_' instead.",
-            category=FutureWarning,
-            stacklevel=find_stack_level(),
-        )
-        return self.maps_masker_
-
     def __sklearn_is_fitted__(self):
         return hasattr(self, "components_")
 
@@ -619,7 +607,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         return [
             self.maps_masker_.transform(img, confounds=confound)
-            for img, confound in zip(imgs, confounds)
+            for img, confound in zip(imgs, confounds, strict=False)
         ]
 
     def inverse_transform(self, loadings):

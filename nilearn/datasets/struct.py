@@ -157,7 +157,9 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = get_dataset_descr(dataset_name)
 
-    params = dict([("description", fdescr), *list(zip(keys, sub_files))])
+    params = dict(
+        [("description", fdescr), *list(zip(keys, sub_files, strict=False))]
+    )
     return Bunch(**params)
 
 

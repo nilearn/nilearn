@@ -325,7 +325,7 @@ def test_fetch_atlas_craddock_2012_legacy(tmp_path, request_mocker):
     ]
 
     assert request_mocker.url_count == 1
-    for key, fn in zip(keys, filenames):
+    for key, fn in zip(keys, filenames, strict=False):
         assert bunch[key] == str(tmp_path / "craddock_2012" / fn)
 
 
@@ -349,7 +349,7 @@ def test_fetch_atlas_smith_2009(tmp_path, request_mocker):
     ]
 
     assert request_mocker.url_count == 6
-    for key, fn in zip(keys, filenames):
+    for key, fn in zip(keys, filenames, strict=False):
         assert bunch[key] == str(tmp_path / "smith_2009" / fn)
 
 
@@ -537,7 +537,7 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
     resolutions = [2, 3]  # Valid resolution values
     dimensions = [64, 128, 256, 512, 1024]  # Valid dimension values
     dimension_urls = ["pqu9r", "wjvd5", "3vrct", "9b76y", "34792"]
-    url_mapping = dict(zip(dimensions, dimension_urls))
+    url_mapping = dict(zip(dimensions, dimension_urls, strict=False))
     for url_count, dim in enumerate(dimensions, start=2):
         url = f"*osf.io/{url_mapping[dim]}/*"
         labels = pd.DataFrame(
@@ -758,7 +758,7 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
 
     validate_atlas(bunch)
     assert request_mocker.url_count == 1
-    for key, fn in zip(keys, filenames):
+    for key, fn in zip(keys, filenames, strict=False):
         assert bunch[key] == str(
             tmp_path / "allen_rsn_2011" / "allen_rsn_2011" / fn
         )

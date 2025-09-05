@@ -123,6 +123,7 @@ for i, (best_c, best_penalty, best_dual, cv_score) in enumerate(
         decoder.cv_params_["shoe"]["penalty"],
         decoder.cv_params_["shoe"]["dual"],
         decoder.cv_scores_["shoe"],
+        strict=False,
     )
 ):
     print(
