@@ -29,3 +29,5 @@ Changes
 -------
 
 - :bdg-danger:`Deprecation` The attribute ``nifti_maps_masker_`` was removed from :class:`~decomposition.CanICA` and :class:`~decomposition.DictLearning`. Use ``maps_masker_`` instead. (:gh:`5626` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The default to ``force_resample`` was set to True in :func:`~image.resample_img` (:gh:`5635` by `Rémi Gau`_).
