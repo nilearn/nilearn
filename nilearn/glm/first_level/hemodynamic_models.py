@@ -98,7 +98,7 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. deprecated:: nilearn 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -132,7 +132,7 @@ def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. deprecated:: nilearn 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -213,7 +213,7 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. deprecated:: nilearn 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -253,7 +253,7 @@ def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. deprecated:: nilearn 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -337,7 +337,7 @@ def spm_dispersion_derivative(
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. deprecated:: nilearn 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -378,7 +378,7 @@ def glover_dispersion_derivative(
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. deprecated:: nilearn 0.11.0
 
             Use ``t_r`` instead (see above).
 

@@ -218,7 +218,7 @@ def plot_matrix(
         .. note::
             This option is only available with SciPy >= 1.0.0.
 
-        .. versionadded:: 0.4.1
+        .. versionadded:: nilearn 0.4.1
 
     kwargs : extra keyword arguments, optional
         Extra keyword arguments are sent to pylab.imshow.
@@ -534,7 +534,7 @@ def plot_design_matrix_correlation(
 
     The drift and constant regressors are omitted from the plot.
 
-    .. versionadded:: 0.11.0
+    .. versionadded:: nilearn 0.11.0
 
     Parameters
     ----------

@@ -580,7 +580,7 @@ keep_masked_labels : :obj:`bool`, default=True
     zeros only. If False, the empty labels will be removed from the
     output, ensuring no empty time series are present.
 
-    .. deprecated:: 0.10.2
+    .. deprecated:: nilearn 0.10.2
 
         The 'True' option for ``keep_masked_labels`` is deprecated.
         The default value will change to 'False' in 0.13,
@@ -597,7 +597,7 @@ keep_masked_maps : :obj:`bool`, optional
     invalid maps will be removed from the trimmed atlas, resulting in
     no empty time series in the output.
 
-    .. deprecated:: 0.10.2
+    .. deprecated:: nilearn 0.10.2
 
         The 'True' option for ``keep_masked_maps`` is deprecated.
         The default value will change to 'False' in 0.13,
@@ -676,14 +676,14 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
       data's field of view. Uses
       :func:`nilearn.masking.compute_brain_mask` with ``mask_type="gm"``.
 
-      .. versionadded:: 0.8.1
+      .. versionadded:: nilearn 0.8.1
 
     - ``"wm-template"``: This will extract the white matter part of your
       data by resampling the corresponding MNI152 template for your
       data's field of view. Uses
       :func:`nilearn.masking.compute_brain_mask` with ``mask_type="wm"``.
 
-      .. versionadded:: 0.8.1
+      .. versionadded:: nilearn 0.8.1
 """
 
 # mask_type
@@ -707,7 +707,7 @@ kwargs : dict
     `'butterworth__'` will be passed to the Butterworth filter
     (i.e., `clean__butterworth__`).
 
-    .. deprecated:: 0.12.0
+    .. deprecated:: nilearn 0.12.0
 
     .. admonition:: Use ``clean_args`` instead!
        :class: important
@@ -1184,7 +1184,7 @@ tfce : :obj:`bool`, default=False
        The number of thresholds used in the TFCE procedure
        will set between 10 and 1000.
 
-       .. versionadded:: 0.12.0
+       .. versionadded:: nilearn 0.12.0
 
     .. warning::
 
@@ -1224,7 +1224,7 @@ transparency : :obj:`float` between 0 and 1, \
     If an image is passed, voxel-wise alpha blending will be applied,
     by relying on the absolute value of ``transparency`` at each voxel.
 
-    .. versionadded:: 0.12.0
+    .. versionadded:: nilearn 0.12.0
 """
 
 # transparency
@@ -1253,7 +1253,7 @@ transparency_range : :obj:`tuple` or :obj:`list` of 2 non-negative numbers, \
     if ``None`` is passed,
     this will be set to ``[0, max(abs(transparency))]``.
 
-    .. versionadded:: 0.12.0
+    .. versionadded:: nilearn 0.12.0
 """
 
 # upper_cutoff
@@ -1376,7 +1376,7 @@ components_img_ : 4D Nifti image \
     The image giving the extracted components.
     Each 3D Nifti image or 1D SurfaceImage is a component.
 
-    .. versionadded:: 0.4.1
+    .. versionadded:: nilearn 0.4.1
 
 masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
         :obj:`~nilearn.maskers.SurfaceMasker`
@@ -1462,7 +1462,7 @@ memory_ : joblib memory cache
 n_elements_ : :obj:`int`
     The number of voxels or vertices in the mask.
 
-    .. versionadded:: 0.12.1
+    .. versionadded:: nilearn 0.12.1
 
 n_outputs_ : :obj:`int`
     Number of outputs (column-wise)
@@ -1549,7 +1549,7 @@ memory_ : joblib memory cache
 n_elements_ : :obj:`int`
     The number of features in the mask.
 
-    .. versionadded:: 0.12.1
+    .. versionadded:: nilearn 0.12.1
 
 screening_percentile_ : float
     Screening percentile corrected according to volume of mask,

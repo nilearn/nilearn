@@ -1715,7 +1715,7 @@ def fetch_surf_nki_enhanced(
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
-    .. versionadded:: 0.3
+    .. versionadded:: nilearn 0.3
 
     Parameters
     ----------
@@ -1857,7 +1857,7 @@ def load_nki(
 ):
     """Load NKI enhanced surface data into a surface object.
 
-    .. versionadded:: 0.11.0
+    .. versionadded:: nilearn 0.11.0
 
     Parameters
     ----------
@@ -2097,7 +2097,7 @@ def fetch_development_fmri(
     Please cite :footcite:t:`Richardson2018`
     if you are using this dataset.
 
-    .. versionadded:: 0.5.2
+    .. versionadded:: nilearn 0.5.2
 
     Parameters
     ----------
@@ -2312,7 +2312,7 @@ def fetch_language_localizer_demo_dataset(
 
     legacy_output : :obj:`bool`, default=True
 
-        .. versionadded:: 0.10.3
+        .. versionadded:: nilearn 0.10.3
         .. deprecated::0.10.3
 
             Starting from version 0.13.0
@@ -2387,7 +2387,7 @@ def fetch_language_localizer_demo_dataset(
 def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     """Download language localizer example :term:`bids<BIDS>` dataset.
 
-    .. deprecated:: 0.10.3
+    .. deprecated:: nilearn 0.10.3
 
         This fetcher function will be removed as it returns the same data
         as :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`.
@@ -2444,7 +2444,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
 def fetch_ds000030_urls(data_dir=None, verbose=1):
     """Fetch URLs for files from the ds000030 :term:`BIDS` dataset.
 
-    .. versionadded:: 0.9.2
+    .. versionadded:: nilearn 0.9.2
 
     This dataset is version 1.0.4 of the "UCLA Consortium for
     Neuropsychiatric Phenomics LA5c" dataset
@@ -3037,7 +3037,7 @@ def fetch_spm_multimodal_fmri(
 
     subject_id : :obj:`str`, default=None
 
-        .. deprecated:: 0.12.0
+        .. deprecated:: nilearn 0.12.0
 
             Will be removed in version ``0.13.0``.
 

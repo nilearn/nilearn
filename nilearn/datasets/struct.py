@@ -178,7 +178,7 @@ def load_mni152_template(resolution=None):
     ----------
     %(resolution)s
 
-        .. versionadded:: 0.8.1
+        .. versionadded:: nilearn 0.8.1
 
     Returns
     -------
@@ -237,7 +237,7 @@ def load_mni152_gm_template(resolution=None):
 
     %(templateflow)s
 
-    .. versionadded:: 0.8.1
+    .. versionadded:: nilearn 0.8.1
 
     Parameters
     ----------
@@ -298,7 +298,7 @@ def load_mni152_wm_template(resolution=None):
 
     %(templateflow)s
 
-    .. versionadded:: 0.8.1
+    .. versionadded:: nilearn 0.8.1
 
     Parameters
     ----------
@@ -357,13 +357,13 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     %(templateflow)s
 
-    .. versionadded:: 0.2.5
+    .. versionadded:: nilearn 0.2.5
 
     Parameters
     ----------
     %(resolution)s
 
-        .. versionadded:: 0.8.1
+        .. versionadded:: nilearn 0.8.1
 
     threshold : :obj:`float`, default=0.2
         Values of the MNI152 T1 template above this threshold will be included.
@@ -402,7 +402,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     %(templateflow)s
 
-    .. versionadded:: 0.8.1
+    .. versionadded:: nilearn 0.8.1
 
     Parameters
     ----------
@@ -456,7 +456,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     %(templateflow)s
 
-    .. versionadded:: 0.8.1
+    .. versionadded:: nilearn 0.8.1
 
     Parameters
     ----------
@@ -509,7 +509,7 @@ def fetch_icbm152_brain_gm_mask(
 
      %(templateflow)s
 
-    .. versionadded:: 0.2.5
+    .. versionadded:: nilearn 0.2.5
 
     Parameters
     ----------
@@ -526,7 +526,7 @@ def fetch_icbm152_brain_gm_mask(
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
 
-        .. versionadded:: 0.8.1
+        .. versionadded:: nilearn 0.8.1
 
     %(verbose)s
 
@@ -1027,7 +1027,7 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
 def load_fsaverage(mesh="fsaverage5", data_dir=None):
     """Load fsaverage for both hemispheres as PolyMesh objects.
 
-    .. versionadded:: 0.11.0
+    .. versionadded:: nilearn 0.11.0
 
     Parameters
     ----------
@@ -1077,7 +1077,7 @@ def load_fsaverage_data(
 ):
     """Return freesurfer data on an fsaverage mesh as a SurfaceImage.
 
-    .. versionadded:: 0.11.0
+    .. versionadded:: nilearn 0.11.0
 
     Parameters
     ----------

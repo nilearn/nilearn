@@ -42,7 +42,7 @@ class DictLearning(_BaseDecomposition):
 
     See :footcite:t:`Mensch2016`.
 
-    .. versionadded:: 0.2
+    .. versionadded:: nilearn 0.2
 
     Parameters
     ----------

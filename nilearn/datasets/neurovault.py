@@ -2881,7 +2881,7 @@ def fetch_neurovault_motor_task(
     """Fetch left vs right button press \
        group :term:`contrast` map from :term:`Neurovault`.
 
-    .. deprecated:: 0.12.0
+    .. deprecated:: nilearn 0.12.0
 
         This fetcher function will be removed in version>0.13.1.
 

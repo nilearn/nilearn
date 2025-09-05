@@ -281,7 +281,7 @@ class NiftiSpheresMasker(BaseMasker):
          If set to True, data is saved in order to produce a report.
 
     %(clean_args)s
-        .. versionadded:: 0.12.0
+        .. versionadded:: nilearn 0.12.0
 
     %(masker_kwargs)s
 
@@ -298,7 +298,7 @@ class NiftiSpheresMasker(BaseMasker):
     n_elements_ : :obj:`int`
         The number of seeds in the masker.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: nilearn 0.9.2
 
     seeds_ : :obj:`list` of :obj:`list`
         The coordinates of the seeds in the masker.
@@ -652,7 +652,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. versionadded:: nilearn 0.8.0
 
         Returns
         -------
@@ -681,7 +681,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. versionadded:: nilearn 0.8.0
 
         Returns
         -------

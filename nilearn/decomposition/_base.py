@@ -293,7 +293,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     Handles mask logic, provides transform and inverse_transform methods
 
-     .. versionadded:: 0.2
+     .. versionadded:: nilearn 0.2
 
     Parameters
     ----------
