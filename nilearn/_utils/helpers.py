@@ -347,13 +347,3 @@ def check_copy_header(copy_header):
             message=copy_header_default,
             stacklevel=find_stack_level(),
         )
-
-
-# TODO (matplotlib >= 3.5.0) This can be removed
-def constrained_layout_kwargs():
-    import matplotlib
-
-    if compare_version(matplotlib.__version__, ">=", "3.5"):
-        return {"layout": "constrained"}
-    else:
-        return {"constrained_layout": True}
