@@ -98,7 +98,7 @@ def test_check_surface_plotting_inputs_errors():
 
 def test_plot_surf_engine_error(in_memory_mesh):
     """Test error if unknown engine is specified."""
-    with pytest.raises(ValueError, match="Unknown plotting engine"):
+    with pytest.raises(ValueError, match="'engine' must be one of"):
         plot_surf(in_memory_mesh, engine="foo")
 
 
