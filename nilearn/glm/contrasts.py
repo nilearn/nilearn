@@ -9,8 +9,8 @@ import pandas as pd
 import scipy.stats as sps
 
 from nilearn._utils import logger
-from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm._utils import pad_contrast, z_score
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -55,10 +55,6 @@ def expression_to_contrast_vector(expression, design_columns):
     return contrast_vector
 
 
-# TODO (nilearn >= 0.13.0)
-@rename_parameters(
-    replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
-)
 def compute_contrast(labels, regression_result, con_val, stat_type=None):
     """Compute the specified :term:`contrast` given an estimated glm.
 
@@ -80,12 +76,6 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
         If None, then defaults to 't' for 1D `con_val`
         and 'F' for 2D `con_val`.
 
-    contrast_type :
-
-        .. deprecated:: 0.10.3
-
-            Use ``stat_type`` instead (see above).
-
     Returns
     -------
     con : Contrast instance,
@@ -101,12 +91,7 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
     if stat_type is None:
         stat_type = "t" if dim == 1 else "F"
 
-    acceptable_stat_types = ["t", "F"]
-    if stat_type not in acceptable_stat_types:
-        raise ValueError(
-            f"'{stat_type}' is not a known contrast type. "
-            f"Allowed types are {acceptable_stat_types}."
-        )
+    check_parameter_in_allowed(stat_type, ["t", "F"], "stat_type")
 
     if stat_type == "t":
         effect_ = np.zeros(labels.size)
@@ -206,12 +191,6 @@ class Contrast:
     stat_type : {'t', 'F'}, default='t'
         Specification of the :term:`contrast` type.
 
-    contrast_type :
-
-        .. deprecated:: 0.10.3
-
-            Use ``stat_type`` instead (see above).
-
     tiny : :obj:`float`, default=DEF_TINY
         Small quantity used to avoid numerical underflows.
 
@@ -219,10 +198,6 @@ class Contrast:
         The maximum degrees of freedom of the residuals.
     """
 
-    # TODO (nilearn >= 0.13.0)
-    @rename_parameters(
-        replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
-    )
     def __init__(
         self,
         effect,
@@ -251,10 +226,9 @@ class Contrast:
                 "Automatically converted multi-dimensional t to F contrast"
             )
             stat_type = "F"
-        if stat_type not in ["t", "F"]:
-            raise ValueError(
-                f"{stat_type} is not a valid stat_type. Should be t or F"
-            )
+
+        check_parameter_in_allowed(stat_type, ["t", "F"], "stat_type")
+
         self.stat_type = stat_type
         self.stat_ = None
         self.p_value_ = None
@@ -262,25 +236,6 @@ class Contrast:
         self.baseline = 0
         self.tiny = tiny
         self.dofmax = dofmax
-
-    @property
-    def contrast_type(self):
-        """Return value of stat_type.
-
-        .. deprecated:: 0.10.3
-        """
-        # TODO (nilearn >= 0.13.0) deprecate
-        attrib_deprecation_msg = (
-            'The attribute "contrast_type" '
-            "will be removed in 0.13.0 release of Nilearn. "
-            'Please use the attribute "stat_type" instead.'
-        )
-        warn(
-            category=DeprecationWarning,
-            message=attrib_deprecation_msg,
-            stacklevel=find_stack_level(),
-        )
-        return self.stat_type
 
     def effect_size(self):
         """Make access to summary statistics more straightforward \
@@ -312,6 +267,7 @@ class Contrast:
         self.baseline = baseline
 
         # Case: one-dimensional contrast ==> t or t**2
+        check_parameter_in_allowed(self.stat_type, ["F", "t"], "stat_type")
         if self.stat_type == "F":
             stat = (
                 np.sum((self.effect - baseline) ** 2, 0)
@@ -323,8 +279,7 @@ class Contrast:
             stat = (self.effect - baseline) / np.sqrt(
                 np.maximum(self.variance, self.tiny)
             )
-        else:
-            raise ValueError("Unknown statistic type")
+
         self.stat_ = stat.ravel()
         return self.stat_
 

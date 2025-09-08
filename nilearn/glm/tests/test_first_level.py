@@ -1275,7 +1275,7 @@ def test_first_level_contrast_computation_errors(shape_4d_default):
     with pytest.raises(ValueError, match=match):
         model.compute_contrast([])
 
-    match = "output_type must be one of "
+    match = "'output_type' must be one of "
     with pytest.raises(ValueError, match=match):
         model.compute_contrast(c1, "", "")
     with pytest.raises(ValueError, match=match):
@@ -1332,7 +1332,7 @@ def test_first_level_with_no_signal_scaling(affine_eye):
     fmri_data = [Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye)]
 
     # Check error with invalid signal_scaling values
-    with pytest.raises(ValueError, match="signal_scaling must be"):
+    with pytest.raises(ValueError, match="'signal_scaling' must be one of"):
         flm = FirstLevelModel(
             mask_img=False, noise_model="ols", signal_scaling="foo"
         )
@@ -1404,7 +1404,7 @@ def test_first_level_residuals_errors(shape_4d_default):
     model.fit(fmri_data, design_matrices=design_matrices)
 
     # For coverage
-    with pytest.raises(ValueError, match="attribute must be one of"):
+    with pytest.raises(ValueError, match="must be one of"):
         model._get_element_wise_model_attribute("foo", True)
 
 
@@ -1866,7 +1866,7 @@ def test_first_level_from_bids_validation_space_label(
         ("foo", TypeError, "'img_filters' must be a list"),
         ([(1, 2)], TypeError, "Filters in img"),
         ([("desc", "*/-")], ValueError, "bids labels must be alphanumeric."),
-        ([("foo", "bar")], ValueError, "is not a possible filter."),
+        ([("foo", "bar")], ValueError, "must be one of"),
     ],
 )
 def test_first_level_from_bids_validation_img_filter(

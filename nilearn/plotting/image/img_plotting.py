@@ -29,7 +29,11 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn._utils.param_validation import check_params, check_threshold
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+    check_threshold,
+)
 from nilearn.image import (
     get_data,
     iter_img,
@@ -863,12 +867,8 @@ def plot_roi(
     check_threshold_not_negative(threshold)
 
     valid_view_types = ["continuous", "contours"]
-    if view_type not in valid_view_types:
-        raise ValueError(
-            f"Unknown view type: {view_type}. "
-            f"Valid view types are {valid_view_types}."
-        )
-    elif view_type == "contours":
+    check_parameter_in_allowed(view_type, valid_view_types, "view_type")
+    if view_type == "contours":
         img = roi_img
         roi_img = None
 
@@ -1073,11 +1073,7 @@ def plot_prob_atlas(
     n_maps = maps_img.shape[3]
 
     valid_view_types = ["auto", "contours", "filled_contours", "continuous"]
-    if view_type not in valid_view_types:
-        raise ValueError(
-            f"Unknown view type: {view_type}. "
-            f"Valid view types are {valid_view_types}."
-        )
+    check_parameter_in_allowed(view_type, valid_view_types, "view_type")
 
     cmap = plt.get_cmap(cmap)
     color_list = cmap(np.linspace(0, 1, n_maps))
