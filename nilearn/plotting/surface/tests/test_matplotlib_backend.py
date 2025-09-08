@@ -276,4 +276,3 @@ def test_get_vertexcolor_bg_map():
 
     assert len(vertexcolors_manually_rescaled) == len(mesh.coordinates)
     assert vertexcolors_manually_rescaled != vertexcolors_auto_normalized
-
