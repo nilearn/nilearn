@@ -134,14 +134,20 @@ ignore_imports = [
     "nilearn.interfaces.bids.glm -> nilearn.glm",
     "nilearn.plotting.matrix.* -> nilearn.glm.**"
 ]
-# glm, decoding, connectome, decomposition:
+# 1. glm, decoding, connectome, decomposition:
 # - cannot import from each other
-# - but can import from maskers, image, surface, plotting, masking
-# maskers, image, surface, plotting, masking:
+# - but can import from any lower layers
+# 2. mass_univariate:
+# - can import from any lower layers
+# 3. maskers, image, surface, plotting, masking:
 # - can import from each other
-# - can import from signal
+# - can import from any liwer layers
+# 4. signal:
+# - can import from any lower layers
+# TODO: not yet included are reporting, datasets, regions
 layers = [
     "nilearn.glm | nilearn.decoding | nilearn.connectome | nilearn.decomposition",
+    "nilearn.mass_univariate",
     "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting : nilearn.masking",
     "nilearn.signal",
     "nilearn.typing"

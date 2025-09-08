@@ -1942,7 +1942,7 @@ def get_indices_from_image(image) -> np.ndarray:
     else:
         raise TypeError(
             "Image to extract indices from must be one of: "
-            "Niimg-Like, SurfaceIamge, numpy array. "
+            "Niimg-Like, SurfaceImage, numpy array. "
             f"Got {image.__class__.__name__}"
         )
     return np.unique(data)
