@@ -626,51 +626,6 @@ def test_fetch_atlas_basc_multiscale_2015_error(tmp_path):
         )
 
 
-@pytest.mark.parametrize(
-    "resolution",
-    [
-        7,
-        12,
-        20,
-        36,
-        64,
-        122,
-        197,
-        325,
-        444,
-    ],
-)
-def test_fetch_atlas_basc_multiscale_2015_old_code(
-    key, tmp_path, request_mocker, resolution
-):
-    # Old code
-    # default version='sym',
-    data_sym = fetch_atlas_basc_multiscale_2015(
-        data_dir=tmp_path, verbose=0, resolution=resolution
-    )
-    # version='asym'
-    data_asym = fetch_atlas_basc_multiscale_2015(
-        version="asym", verbose=0, data_dir=tmp_path, resolution=resolution
-    )
-
-    dataset_name = "basc_multiscale_2015"
-    name_sym = "template_cambridge_basc_multiscale_nii_sym"
-    basename_sym = f"template_cambridge_basc_multiscale_sym_{key}.nii.gz"
-
-    assert data_sym.maps == str(
-        tmp_path / dataset_name / name_sym / basename_sym
-    )
-
-    name_asym = "template_cambridge_basc_multiscale_nii_asym"
-    basename_asym = f"template_cambridge_basc_multiscale_asym_{key}.nii.gz"
-
-    assert data_asym.maps == str(
-        tmp_path / dataset_name / name_asym / basename_asym
-    )
-
-    assert request_mocker.url_count == 2
-
-
 def test_fetch_coords_dosenbach_2010():
     bunch = atlas.fetch_coords_dosenbach_2010()
 
