@@ -22,10 +22,7 @@ from nilearn._utils.bids import (
 )
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import (
-    rename_parameters,
-    stringify_path,
-)
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -33,6 +30,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     concat_imgs,
@@ -232,12 +230,11 @@ def mask_logger(step, img=None, verbose=0):
         "load_data": f"Loading data from {repr}",
         "load_mask": f"Loading mask from {repr}",
         "load_regions": f"Loading regions from {repr}",
-        "resample_mask": "Resamping mask",
+        "resample_mask": "Resampling mask",
         "resample_regions": "Resampling regions",
     }
 
-    if step not in messages:
-        raise ValueError(f"Unknown step: {step}")
+    check_parameter_in_allowed(step, messages.keys(), "step")
 
     if step in ["load_mask", "load_data"] and repr is None:
         return
@@ -377,9 +374,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
-    # TODO (nilearn >= 0.13.0)
     @fill_doc
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit_transform(
         self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
     ):
@@ -609,10 +604,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return mask_img_
 
-    # TODO (nilearn >= 0.13.0)
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.0"
-    )
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
@@ -686,10 +677,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # implemented in children classes
         raise NotImplementedError()
 
-    # TODO (nilearn >= 0.13.0)
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.0"
-    )
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.

@@ -79,7 +79,7 @@ def load_mask_img(mask_img, allow_empty=False):
     if not isinstance(mask_img, (*NiimgLike, SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(mask_img)=}."
+            f"Got {mask_img.__class__.__name__}."
         )
 
     if isinstance(mask_img, NiimgLike):
