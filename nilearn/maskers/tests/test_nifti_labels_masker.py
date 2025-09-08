@@ -267,7 +267,7 @@ def test_nifti_labels_masker_reduction_strategies_error(affine_eye):
 
     labels = Nifti1Image(labels_data, affine_eye)
 
-    with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
+    with pytest.raises(ValueError, match="'strategy' must be one of"):
         masker = NiftiLabelsMasker(labels, strategy="TESTRAISE")
         masker.fit()
 
@@ -276,14 +276,14 @@ def test_nifti_labels_masker_resampling_errors(img_labels):
     """Test errors of resampling in NiftiLabelsMasker."""
     with pytest.raises(
         ValueError,
-        match="invalid value for 'resampling_target' parameter: mask",
+        match="'resampling_target' must be one of",
     ):
         masker = NiftiLabelsMasker(img_labels, resampling_target="mask")
         masker.fit()
 
     with pytest.raises(
         ValueError,
-        match="invalid value for 'resampling_target' parameter: invalid",
+        match="'resampling_target' must be one of",
     ):
         masker = NiftiLabelsMasker(
             img_labels,
