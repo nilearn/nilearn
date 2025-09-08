@@ -387,7 +387,6 @@ def resample_img(
     force_resample : :obj:`bool`, default=True
         False is intended for testing,
         this prevents the use of a padding optimization.
-        Will be set to ``True`` if ``None`` is passed.
 
         .. versionchanged:: 0.13.0dev
 
@@ -453,12 +452,12 @@ def resample_img(
     """
     from .image import new_img_like  # avoid circular imports
 
-    if force_resample is None:
-        force_resample = True
     # TODO (nilearn >= 0.13.0) remove this warning
     check_copy_header(copy_header)
 
-    _check_resample_img_inputs(target_shape, target_affine, interpolation)
+    _check_resample_img_inputs(
+        target_shape, target_affine, interpolation, force_resample
+    )
 
     img = stringify_path(img)
     img = check_niimg(img)
@@ -663,7 +662,9 @@ def _resampling_not_needed(img, target_affine, target_shape):
     )
 
 
-def _check_resample_img_inputs(target_shape, target_affine, interpolation):
+def _check_resample_img_inputs(
+    target_shape, target_affine, interpolation, force_resample
+):
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
     if target_shape is not None and target_affine is None:
@@ -689,6 +690,12 @@ def _check_resample_img_inputs(target_shape, target_affine, interpolation):
     check_parameter_in_allowed(
         interpolation, allowed_interpolations, "interpolation"
     )
+
+    if not isinstance(force_resample, bool):
+        raise TypeError(
+            "'force_resample' must be a boolean."
+            f"Got: {force_resample.__class__.__name__}"
+        )
 
 
 def _get_resampled_data_dtype(data, interpolation, A):
@@ -735,7 +742,7 @@ def resample_to_img(
     order="F",
     clip=False,
     fill_value=0,
-    force_resample=None,
+    force_resample=True,
     copy_header=False,
 ):
     """Resample a Niimg-like source image on a target Niimg-like image.
@@ -775,11 +782,9 @@ def resample_to_img(
     fill_value : :obj:`float`, default=0
         Use a fill value for points outside of input volume.
 
-    force_resample : :obj:`bool`, default=None
+    force_resample : :obj:`bool`, default=True
         False is intended for testing,
         this prevents the use of a padding optimization.
-        Will be set to ``False`` if ``None`` is passed.
-        The default value will be set to ``True`` for Nilearn >=0.13.0.
 
     copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.

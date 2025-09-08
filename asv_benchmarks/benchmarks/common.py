@@ -39,7 +39,6 @@ class Benchmark:
             atlas_path,
             concat,
             interpolation="nearest",
-            force_resample=True,
         )
         for idx in range(1, n_masks + 1):
             mask = resampled_atlas.get_fdata() == idx

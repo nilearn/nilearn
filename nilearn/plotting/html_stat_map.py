@@ -285,7 +285,6 @@ def _resample_stat_map(
         bg_img,
         interpolation=resampling_interpolation,
         copy_header=True,
-        force_resample=False,  # TODO (nilearn >= 0.13.0) update to True
     )
     mask_img = resample_to_img(
         mask_img,
@@ -293,7 +292,6 @@ def _resample_stat_map(
         fill_value=1,
         interpolation="nearest",
         copy_header=True,
-        force_resample=False,  # TODO (nilearn >= 0.13.0) update to True
     )
 
     return stat_map_img, mask_img
