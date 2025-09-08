@@ -15,7 +15,6 @@ from nilearn._utils.helpers import (
     stringify_path,
     transfer_deprecated_param_vals,
 )
-from nilearn._utils.testing import on_windows_with_old_mpl_and_new_numpy
 
 
 def _mock_args_for_testing_replace_parameter():
@@ -36,10 +35,6 @@ def _mock_args_for_testing_replace_parameter():
 
 
 @pytest.mark.skipif(
-    on_windows_with_old_mpl_and_new_numpy(),
-    reason="Old matplotlib not compatible with numpy 2.0 on windows.",
-)
-@pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
 )
@@ -57,10 +52,6 @@ def test_should_raise_custom_warning_if_mpl_not_installed():
         set_mpl_backend(warning)
 
 
-@pytest.mark.skipif(
-    on_windows_with_old_mpl_and_new_numpy(),
-    reason="Old matplotlib not compatible with numpy 2.0 on windows.",
-)
 @pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
