@@ -202,9 +202,7 @@ def test_check_surface_plotting_hemi_both_mesh_none(surf_img_1d):
 
 def test_check_surface_plotting_hemi_error(surf_img_1d, surf_mesh):
     """Test that an error is raised when hemi is not valid."""
-    with pytest.raises(
-        ValueError, match="hemi must be one of 'left', 'right' or 'both'"
-    ):
+    with pytest.raises(ValueError, match="'hemi' must be one of"):
         check_surface_plotting_inputs(
             surf_map=surf_img_1d, surf_mesh=surf_mesh, hemi="foo"
         )
@@ -274,5 +272,5 @@ def test_get_surface_backend_unknown_error():
     """Tests to see if get_surface_backend raises error when the specified
     backend is not implemented.
     """
-    with pytest.raises(ValueError, match="Unknown plotting engine"):
+    with pytest.raises(ValueError, match="'engine' must be one of"):
         get_surface_backend("unknown")

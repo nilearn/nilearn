@@ -80,10 +80,5 @@ def test_sanitize_tri(tri):
 
 @pytest.mark.parametrize("tri", [None, "foo", 2])
 def test_sanitize_tri_error(tri):
-    with pytest.raises(
-        ValueError,
-        match=(
-            f"Parameter tri needs to be one of: {', '.join(VALID_TRI_VALUES)}"
-        ),
-    ):
+    with pytest.raises(ValueError, match="'tri' must be one of"):
         sanitize_tri(tri)
