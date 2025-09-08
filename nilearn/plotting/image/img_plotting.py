@@ -1962,12 +1962,7 @@ def plot_carpet(
     if is_atlas:
         background_label = 0
 
-        atlas_img_res = resample_to_img(
-            mask_img,
-            img,
-            interpolation="nearest",
-            copy_header=True,
-        )
+        atlas_img_res = resample_to_img(mask_img, img, interpolation="nearest")
         atlas_bin = math_img(
             f"img != {background_label}",
             img=atlas_img_res,

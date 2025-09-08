@@ -283,6 +283,14 @@ confounds : :obj:`list` of confounds, default=None
     Must be of same length than imgs.
 """
 
+# copy_header
+docdict["copy_header"] = """
+copy_header : :obj:`bool`, default=True
+    Indicated if the header of the reference image
+    should be used to create the new image.
+    Ignored for :obj:`~nilearn.surface.SurfaceImage`.
+"""
+
 # cut_coords
 docdict["cut_coords"] = """
 cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional

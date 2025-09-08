@@ -221,7 +221,6 @@ def connected_regions(
                 target_affine=maps_img.affine,
                 target_shape=maps_img.shape[:3],
                 interpolation="nearest",
-                copy_header=True,
             )
         mask_data, _ = masking.load_mask_img(mask_img)
         # Set as 0 to the values which are outside of the mask
@@ -561,7 +560,6 @@ class RegionExtractor(NiftiMapsMasker):
                     copy=True,
                     threshold=self.threshold,
                     two_sided=self.two_sided,
-                    copy_header=True,
                 )
 
         # connected component extraction

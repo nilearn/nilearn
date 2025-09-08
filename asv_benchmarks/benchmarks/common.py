@@ -46,6 +46,5 @@ class Benchmark:
                 resampled_atlas,
                 mask,
                 affine=resampled_atlas.affine,
-                copy_header=True,
             )
             mask_img.to_filename(f"mask_{idx}.nii.gz")

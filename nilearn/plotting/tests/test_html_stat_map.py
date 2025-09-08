@@ -384,11 +384,7 @@ def test_view_img_3d_warnings(params, warning_msg):
     mni = datasets.load_mni152_template(resolution=2)
 
     # Create a fake functional image by resample the template
-    img = image.resample_img(
-        mni,
-        target_affine=3 * np.eye(3),
-        copy_header=True,
-    )
+    img = image.resample_img(mni, target_affine=3 * np.eye(3))
 
     # Should not raise warnings
     with warnings.catch_warnings(record=True) as w:
@@ -409,11 +405,7 @@ def test_view_img_3d_warnings_more():
     mni = datasets.load_mni152_template(resolution=2)
 
     # Create a fake functional image by resample the template
-    img = image.resample_img(
-        mni,
-        target_affine=3 * np.eye(3),
-        copy_header=True,
-    )
+    img = image.resample_img(mni, target_affine=3 * np.eye(3))
 
     with pytest.warns(
         UserWarning,
@@ -445,11 +437,7 @@ def test_view_img_4d_warnings(params):
     mni = datasets.load_mni152_template(resolution=2)
 
     # Create a fake functional image by resample the template
-    img = image.resample_img(
-        mni,
-        target_affine=3 * np.eye(3),
-        copy_header=True,
-    )
+    img = image.resample_img(mni, target_affine=3 * np.eye(3))
     img_4d = image.new_img_like(img, get_data(img)[:, :, :, np.newaxis])
     assert len(img_4d.shape) == 4
 

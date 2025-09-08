@@ -302,12 +302,12 @@ def smooth_img(imgs, fwhm):
         filtered = smooth_array(
             get_data(img), affine, fwhm=fwhm, ensure_finite=True, copy=True
         )
-        ret.append(new_img_like(img, filtered, affine, copy_header=True))
+        ret.append(new_img_like(img, filtered, affine))
 
     return ret[0] if single_img else ret
 
 
-def _crop_img_to(img, slices, copy=True, copy_header=False):
+def _crop_img_to(img, slices, copy=True, copy_header=True):
     """Crops an image to a smaller size.
 
     Crop `img` to size indicated by slices and adjust affine accordingly.
@@ -327,13 +327,9 @@ def _crop_img_to(img, slices, copy=True, copy_header=False):
     copy : :obj:`bool`, default=True
         Specifies whether cropped data is to be copied or not.
 
-    copy_header : :obj:`bool`
-        Whether to copy the header of the input image to the output.
-        If None, the default behavior is to not copy the header.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -368,7 +364,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=False):
 
 
 def crop_img(
-    img, rtol=1e-8, copy=True, pad=True, return_offset=False, copy_header=False
+    img, rtol=1e-8, copy=True, pad=True, return_offset=False, copy_header=True
 ):
     """Crops an image as much as possible.
 
@@ -398,12 +394,9 @@ def crop_img(
     return_offset : :obj:`bool`, default=False
         Specifies whether to return a tuple of the removed padding.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -473,7 +466,6 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
         target_affine=target_affine,
         target_shape=target_shape,
         copy=False,
-        copy_header=True,
     )
     affine = mean_data.affine
     mean_data = get_data(mean_data)
@@ -511,7 +503,7 @@ def mean_img(
     target_shape=None,
     verbose=0,
     n_jobs=1,
-    copy_header=False,
+    copy_header=True,
 ):
     """Compute the mean over images.
 
@@ -544,13 +536,9 @@ def mean_img(
         'all CPUs').
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
-        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -644,12 +632,10 @@ def swap_img_hemispheres(img):
     img = check_niimg_3d(img)
 
     # get nifti in x-y-z order
-    img = reorder_img(img, copy_header=True)
+    img = reorder_img(img)
 
     # create swapped nifti object
-    out_img = new_img_like(
-        img, get_data(img)[::-1], img.affine, copy_header=True
-    )
+    out_img = new_img_like(img, get_data(img)[::-1], img.affine)
 
     return out_img
 
@@ -780,7 +766,7 @@ def _downcast_from_int64_if_possible(data):
     return data
 
 
-def new_img_like(ref_niimg, data, affine=None, copy_header=False):
+def new_img_like(ref_niimg, data, affine=None, copy_header=True):
     """Create a new image of the same class as the reference image.
 
     Parameters
@@ -807,10 +793,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         Transformation matrix.
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
-    copy_header : :obj:`bool`, default=False
-        Indicated if the header of the reference image should be used to
-        create the new image.
-        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
+    %(copy_header)s
 
     Returns
     -------
@@ -935,7 +918,7 @@ def threshold_img(
     two_sided=True,
     mask_img=None,
     copy=True,
-    copy_header=False,
+    copy_header=True,
 ):
     """Threshold the given input image, mostly statistical or atlas images.
 
@@ -1030,14 +1013,9 @@ def threshold_img(
         If True, input array is not modified. True by default: the filtering
         is not performed in-place.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
-
-        Not applicable for SurfaceImage.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -1109,7 +1087,6 @@ def threshold_img(
                     target_affine=affine,
                     target_shape=img.shape[:3],
                     interpolation="nearest",
-                    copy_header=True,
                 )
             mask_data, _ = load_mask_img(mask_img)
 
@@ -1359,11 +1336,11 @@ def math_img(formula, copy_header_from=None, **imgs):
             "The result of the formula has a different number of "
             "dimensions than the image to copy the header from."
         )
-    return new_img_like(niimg, result, niimg.affine, copy_header=True)
+    return new_img_like(niimg, result, niimg.affine)
 
 
 def binarize_img(
-    img, threshold=0.0, mask_img=None, two_sided=True, copy_header=False
+    img, threshold=0.0, mask_img=None, two_sided=True, copy_header=True
 ):
     """Binarize an image such that its values are either 0 or 1.
 
@@ -1396,14 +1373,9 @@ def binarize_img(
 
         .. versionadded:: 0.10.3
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
-
-        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -1425,7 +1397,7 @@ def binarize_img(
     Now we binarize it, generating a pseudo brainmask::
 
      >>> from nilearn.image import binarize_img
-     >>> img = binarize_img(anatomical_image, copy_header=True)
+     >>> img = binarize_img(anatomical_image)
 
     """
     if two_sided is True:
@@ -1644,13 +1616,9 @@ def clean_img(
         imgs_ = masking.unmask(data, mask_img)
     elif "sample_mask" in clean_kwargs:
         sample_shape = imgs_.shape[:3] + clean_kwargs["sample_mask"].shape
-        imgs_ = new_img_like(
-            imgs_, data.T.reshape(sample_shape), copy_header=True
-        )
+        imgs_ = new_img_like(imgs_, data.T.reshape(sample_shape))
     else:
-        imgs_ = new_img_like(
-            imgs_, data.T.reshape(imgs_.shape), copy_header=True
-        )
+        imgs_ = new_img_like(imgs_, data.T.reshape(imgs_.shape))
 
     return imgs_
 
@@ -1852,9 +1820,7 @@ def concat_imgs(
         data[..., cur_4d_index : cur_4d_index + size] = _get_data(niimg)
         cur_4d_index += size
 
-    return new_img_like(
-        first_niimg, data, first_niimg.affine, copy_header=True
-    )
+    return new_img_like(first_niimg, data, first_niimg.affine)
 
 
 def largest_connected_component_img(imgs):
@@ -1896,9 +1862,7 @@ def largest_connected_component_img(imgs):
         img = check_niimg_3d(img)
         affine = img.affine
         largest_component = largest_connected_component(safe_get_data(img))
-        ret.append(
-            new_img_like(img, largest_component, affine, copy_header=True)
-        )
+        ret.append(new_img_like(img, largest_component, affine))
 
     return ret[0] if single_img else ret
 
@@ -1919,10 +1883,7 @@ def copy_img(img):
     if not isinstance(img, spatialimages.SpatialImage):
         raise TypeError("Input value is not an image")
     return new_img_like(
-        img,
-        safe_get_data(img, copy_data=True),
-        img.affine.copy(),
-        copy_header=True,
+        img, safe_get_data(img, copy_data=True), img.affine.copy()
     )
 
 

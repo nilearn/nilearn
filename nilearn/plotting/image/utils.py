@@ -36,7 +36,7 @@ class _MNI152Template(SpatialImage):
     def load(self):
         if self.data is None:
             anat_img = load_mni152_template(resolution=2)
-            anat_img = reorder_img(anat_img, copy_header=True)
+            anat_img = reorder_img(anat_img)
             data = get_data(anat_img)
             data = data.astype(np.float64)
             anat_mask = binary_fill_holes(data > np.finfo(float).eps)

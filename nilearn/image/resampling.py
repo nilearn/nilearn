@@ -345,7 +345,7 @@ def resample_img(
     clip=True,
     fill_value=0,
     force_resample=True,
-    copy_header=False,
+    copy_header=True,
 ):
     """Resample a Niimg-like object.
 
@@ -392,12 +392,9 @@ def resample_img(
 
             Default changed to True.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -573,9 +570,7 @@ def resample_img(
 
         # ... special case: can be solved with padding alone
         # crop source image and keep N voxels offset before/after volume
-        cropped_img, offsets = crop_img(
-            img, pad=False, return_offset=True, copy_header=True
-        )
+        cropped_img, offsets = crop_img(img, pad=False, return_offset=True)
 
         # TODO: flip axes that are flipped
         # TODO: un-shuffle permuted dimensions
@@ -743,7 +738,7 @@ def resample_to_img(
     clip=False,
     fill_value=0,
     force_resample=True,
-    copy_header=False,
+    copy_header=True,
 ):
     """Resample a Niimg-like source image on a target Niimg-like image.
 
@@ -786,12 +781,9 @@ def resample_to_img(
         False is intended for testing,
         this prevents the use of a padding optimization.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -826,7 +818,7 @@ def resample_to_img(
     )
 
 
-def reorder_img(img, resample=None, copy_header=False):
+def reorder_img(img, resample=None, copy_header=True):
     """Return an image with the affine diagonal (by permuting axes).
 
     The orientation of the new image will be RAS (Right, Anterior, Superior).
@@ -847,12 +839,10 @@ def reorder_img(img, resample=None, copy_header=False):
         be passed as the 'interpolation' argument into
         resample_img.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
 
-        This parameter will be set to True by default in 0.13.0.
     """
     from .image import new_img_like
 
@@ -873,10 +863,7 @@ def reorder_img(img, resample=None, copy_header=False):
         Q, R = np.linalg.qr(affine[:3, :3])
         target_affine = np.diag(np.abs(np.diag(R))[np.abs(Q).argmax(axis=1)])
         return resample_img(
-            img,
-            target_affine=target_affine,
-            interpolation=resample,
-            copy_header=True,
+            img, target_affine=target_affine, interpolation=resample
         )
 
     axis_numbers = np.argmax(np.abs(A), axis=0)

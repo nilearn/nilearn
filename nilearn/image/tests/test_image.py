@@ -417,7 +417,7 @@ def test_crop_img():
     affine = np.diag((4, 3, 2, 1))
     img = Nifti1Image(data, affine=affine)
 
-    cropped_img = crop_img(img, copy_header=True)
+    cropped_img = crop_img(img)
 
     # correction for padding with "-1"
     # check that correct part was extracted:
@@ -433,12 +433,9 @@ def test_crop_img_copied_header(img_4d_mni_tr2):
     data[0:4, 0:4, 0:4, :] = 1
     # replace the img_4d_mni_tr2 values with data
     img_4d_mni_tr2_zero_padded = new_img_like(
-        img_4d_mni_tr2,
-        data=data,
-        affine=img_4d_mni_tr2.affine,
-        copy_header=True,
+        img_4d_mni_tr2, data=data, affine=img_4d_mni_tr2.affine
     )
-    cropped_img = crop_img(img_4d_mni_tr2_zero_padded, copy_header=True)
+    cropped_img = crop_img(img_4d_mni_tr2_zero_padded)
     # only dim[1:4] should be different
     assert (
         cropped_img.header["dim"][1:4]
@@ -472,7 +469,7 @@ def test_crop_threshold_tolerance(affine_eye):
     data[3, 3, 3] = 1e-12
     img = Nifti1Image(data, affine=affine_eye)
 
-    cropped_img = crop_img(img, copy_header=True)
+    cropped_img = crop_img(img)
 
     assert cropped_img.shape == active_shape
 
@@ -483,14 +480,14 @@ def test_mean_img(images_to_mean, tmp_path):
 
     truth = _mean_ground_truth(images_to_mean)
 
-    img = mean_img(images_to_mean, copy_header=True)
+    img = mean_img(images_to_mean)
 
     assert_array_equal(img.affine, affine)
     assert_array_equal(get_data(img), truth)
 
     # Test with files
     imgs = testing.write_imgs_to_path(*images_to_mean, file_path=tmp_path)
-    img = mean_img(imgs, copy_header=True)
+    img = mean_img(imgs)
 
     assert_array_equal(img.affine, affine)
     if X64:
@@ -517,14 +514,10 @@ def test_mean_img_resample(rng):
 
     target_affine = affine[:, [1, 0, 2, 3]]  # permutation of axes
 
-    mean_img_with_resampling = mean_img(
-        img, target_affine=target_affine, copy_header=True
-    )
+    mean_img_with_resampling = mean_img(img, target_affine=target_affine)
 
     resampled_mean_image = resample_img(
-        mean_img_to_resample,
-        target_affine=target_affine,
-        copy_header=True,
+        mean_img_to_resample, target_affine=target_affine
     )
 
     assert_array_equal(
@@ -749,7 +742,7 @@ def test_new_img_like_mgz():
     ref_img = load(img_filename)
     data = np.ones(get_data(ref_img).shape, dtype=bool)
     affine = ref_img.affine
-    new_img_like(ref_img, data, affine, copy_header=False)
+    new_img_like(ref_img, data, affine)
 
 
 def test_new_img_like():
@@ -824,7 +817,7 @@ def test_new_img_like_int64(shape_3d_default):
     data[:] = 2**40
 
     with pytest.warns(UserWarning, match=r".*64.*too large.*"):
-        new_img = new_img_like(img, data, copy_header=True)
+        new_img = new_img_like(img, data)
     assert get_data(new_img).dtype == "int64"
 
 
@@ -1167,7 +1160,6 @@ def test_threshold_img_with_mask(
         mask_img=mask_img,
         threshold=threshold,
         two_sided=two_sided,
-        copy_header=True,
     )
 
     img_data = thr_img.get_fdata()
@@ -1196,7 +1188,6 @@ def test_threshold_img_with_cluster_threshold(
         threshold=threshold,
         two_sided=two_sided,
         cluster_threshold=cluster_threshold,
-        copy_header=True,
     )
 
     assert np.array_equal(np.unique(thr_img.get_fdata()), np.array(expected))
@@ -1211,7 +1202,6 @@ def test_threshold_img_threshold_n_clusters(stat_img_test_data):
         threshold=2,
         two_sided=True,
         cluster_threshold=5,
-        copy_header=True,
     )
 
     assert np.sum(thr_img.get_fdata() == 4) == 8
@@ -1244,7 +1234,7 @@ def test_threshold_img_copy_volume(img_4d_ones_eye):
     """Test the behavior of threshold_img's copy parameter."""
     threshold = 1
     # Check that copy does not mutate. It returns modified copy.
-    thr_img = threshold_img(img_4d_ones_eye, threshold, copy_header=True)
+    thr_img = threshold_img(img_4d_ones_eye, threshold)
 
     # Original img_ones should have all ones.
     assert_array_equal(get_data(img_4d_ones_eye), np.ones(_shape_4d_default()))
@@ -1254,9 +1244,7 @@ def test_threshold_img_copy_volume(img_4d_ones_eye):
     # Check that not copying does mutate.
     img_to_mutate = img_4d_ones_eye
 
-    thr_img = threshold_img(
-        img_to_mutate, threshold, copy=False, copy_header=True
-    )
+    thr_img = threshold_img(img_to_mutate, threshold, copy=False)
 
     # Check that original mutates
     assert_array_equal(get_data(img_to_mutate), np.zeros(_shape_4d_default()))
@@ -1419,12 +1407,12 @@ def test_math_img_copied_header_data_values_changed(
 
 def test_binarize_img(img_4d_rand_eye):
     # Test that all output values are 1.
-    img1 = binarize_img(img_4d_rand_eye, copy_header=True)
+    img1 = binarize_img(img_4d_rand_eye)
 
     assert_array_equal(np.unique(img1.dataobj), np.array([1]))
 
     # Test that it works with threshold
-    img2 = binarize_img(img_4d_rand_eye, threshold=0.5, copy_header=True)
+    img2 = binarize_img(img_4d_rand_eye, threshold=0.5)
 
     assert_array_equal(np.unique(img2.dataobj), np.array([0, 1]))
     # Test that manual binarization equals binarize_img results.
@@ -1460,12 +1448,8 @@ def test_binarize_negative_img(img_4d_rand_eye, rng):
     img_data[neg_mask] *= -1
     img = new_img_like(img_4d_rand_eye, img_data)
     # Binarize using original and absolute values
-    img_original = binarize_img(
-        img, threshold=0, two_sided=False, copy_header=True
-    )
-    img_absolute = binarize_img(
-        img, threshold=0, two_sided=True, copy_header=True
-    )
+    img_original = binarize_img(img, threshold=0, two_sided=False)
+    img_absolute = binarize_img(img, threshold=0, two_sided=True)
     # Check that all values are 1 for absolute valued threshold
     assert_array_equal(np.unique(img_absolute.dataobj), np.array([1]))
     # Check that binarized image contains 0 and 1 for original threshold
@@ -1492,26 +1476,6 @@ def test_binarize_img_no_userwarning(img_4d_rand_eye):
     with warnings.catch_warnings():
         warnings.simplefilter("error", category=UserWarning)
         binarize_img(img_4d_rand_eye)
-
-
-@pytest.mark.parametrize(
-    "func, input_img",
-    [
-        (binarize_img, "img_4d_mni_tr2"),
-        (crop_img, "img_4d_mni_tr2"),
-        (mean_img, "img_4d_mni_tr2"),
-        (threshold_img, "img_4d_mni_tr2"),
-    ],
-)
-def test_warning_copy_header_false(request, func, input_img):
-    # TODO (nilearn 0.13.0)
-    # Use the request fixture to get the actual fixture value
-    actual_input_img = request.getfixturevalue(input_img)
-    with pytest.warns(FutureWarning, match="From release 0.13.0 onwards*"):
-        if func is threshold_img:
-            func(actual_input_img, threshold=0.5, copy_header=False)
-        else:
-            func(actual_input_img, copy_header=False)
 
 
 def test_clean_img(affine_eye, shape_3d_default, rng):
@@ -1703,7 +1667,7 @@ def test_new_img_like_mgh_image(affine_eye, shape_3d_default):
     data = np.zeros(shape_3d_default, dtype=np.uint8)
     niimg = MGHImage(dataobj=data, affine=affine_eye)
 
-    new_img_like(niimg, data.astype(float), niimg.affine, copy_header=True)
+    new_img_like(niimg, data.astype(float), niimg.affine)
 
 
 @pytest.mark.parametrize("image", [MGHImage, AnalyzeImage])
