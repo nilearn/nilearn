@@ -8,6 +8,7 @@ import numpy as np
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.plotting._utils import DEFAULT_ENGINE
 from nilearn.surface import (
     PolyMesh,
@@ -48,6 +49,7 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
     :class:`~nilearn.plotting.surface._plotly_backend`.
         The backend module for the specified engine.
     """
+    check_parameter_in_allowed(engine, ["matplotlib", "plotly"], "engine")
     if engine == "matplotlib":
         if is_matplotlib_installed():
             import nilearn.plotting.surface._matplotlib_backend as backend
@@ -63,12 +65,7 @@ def get_surface_backend(engine=DEFAULT_ENGINE):
             raise ImportError(
                 "Using engine='plotly' requires that ``plotly`` is installed."
             )
-    else:
-        raise ValueError(
-            f"Unknown plotting engine {engine}. "
-            "Please use either 'matplotlib' or "
-            "'plotly'."
-        )
+
     return backend
 
 
@@ -242,7 +239,9 @@ def _get_hemi(surf_mesh, hemi):
         - If ``hemi='both'``, returns :obj:`~nilearn.surface.InMemoryMesh`
     """
     if not isinstance(surf_mesh, PolyMesh):
-        raise ValueError("mesh should be of type PolyMesh.")
+        raise TypeError("mesh should be of type PolyMesh.")
+
+    check_parameter_in_allowed(hemi, ["both", "left", "right"], "hemi")
 
     if hemi == "both":
         return combine_hemispheres_meshes(surf_mesh)
@@ -254,8 +253,6 @@ def _get_hemi(surf_mesh, hemi):
                 f"{hemi=} does not exist in mesh. Available hemispheres are:"
                 f"{surf_mesh.parts.keys()}."
             )
-    else:
-        raise ValueError("hemi must be one of 'left', 'right' or 'both'.")
 
 
 @fill_doc
