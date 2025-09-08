@@ -9,9 +9,9 @@ import numpy as np
 from nibabel.spatialimages import SpatialImage
 from scipy.ndimage import binary_fill_holes
 
-from nilearn._utils import check_niimg_3d
 from nilearn._utils.ndimage import get_border_data
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn.datasets import load_mni152_template
 from nilearn.image import get_data, new_img_like
 from nilearn.image.resampling import reorder_img
@@ -154,7 +154,7 @@ def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
         if dim != "auto" and not isinstance(dim, numbers.Number):
             raise ValueError(
                 "The input given for 'dim' needs to be a float. "
-                f"You provided dim={dim} in {type(dim)}."
+                f"You provided dim={dim} in {dim.__class__.__name__}."
             )
         vmean = 0.5 * (vmin + vmax)
         ptp = 0.5 * (vmax - vmin)

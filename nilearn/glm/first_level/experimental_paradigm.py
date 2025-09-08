@@ -85,7 +85,7 @@ def check_events(events):
     if not isinstance(events, pd.DataFrame):
         raise TypeError(
             "Events should be a Pandas DataFrame. "
-            f"A {type(events)} was provided instead."
+            f"A {events.__class__.__name__} was provided instead."
         )
 
     events = _check_columns(events)

@@ -23,14 +23,14 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
-                python-version: ['3.9']
+                python-version: ['3.10']
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and latest package versions
         defaults:
             run:
                 shell: bash
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v4
+            uses: actions/checkout@v5
         -   name: Setup python
             uses: actions/setup-python@v5
             with:

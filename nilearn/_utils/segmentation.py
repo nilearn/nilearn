@@ -362,8 +362,7 @@ def _solve_cg(lap_sparse, B, tol):
     lap_sparse = lap_sparse.tocsc()
     X = [
         cg(lap_sparse, -b_i.todense(), rtol=tol, atol=0)[0]
-        # TODO
-        # when support scipy to >= 1.12
+        # TODO (scipy to >= 1.12.0)
         # See https://github.com/nilearn/nilearn/pull/4394
         if compare_version(__version__, ">=", "1.12")
         else cg(lap_sparse, -b_i.todense(), tol=tol, atol="legacy")[0]

@@ -34,7 +34,6 @@ from nilearn.glm.second_level.second_level import (
     _check_first_level_contrast,
     _check_input_as_first_level_model,
     _check_n_rows_desmat_vs_n_effect_maps,
-    _check_output_type,
     _check_second_level_input,
     _infer_effect_maps,
     _process_second_level_input_as_dataframe,
@@ -413,16 +412,10 @@ def test_check_second_level_input_design_matrix(shape_4d_default):
         _check_second_level_input(fmri_data[0], None)
 
 
-def test_check_output_type():
-    _check_output_type(int, [str, int, float])
-    with pytest.raises(ValueError, match="output_type must be one of"):
-        _check_output_type("foo", [str, int, float])
-
-
 def test_check_confounds():
     _check_confounds(None)  # Should not do anything
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         _check_confounds("foo")
     with pytest.raises(
@@ -776,15 +769,15 @@ def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
     # test first_level_conditions, confounds, and design
     flms = [flm, flm, flm]
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         SecondLevelModel().fit(second_level_input=flms, confounds=["", []])
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         SecondLevelModel().fit(second_level_input=flms, confounds=[])
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         SecondLevelModel().fit(
             second_level_input=flms, confounds=confounds["conf1"]
@@ -1214,15 +1207,15 @@ def test_second_level_contrast_computation_errors(rng):
         model.compute_contrast(cnull)
 
     # passing wrong parameters
-    with pytest.raises(ValueError, match="Allowed types are .*'t', 'F'"):
+    with pytest.raises(ValueError, match="'stat_type' must be one of"):
         model.compute_contrast(
             second_level_contrast=c1, second_level_stat_type=""
         )
-    with pytest.raises(ValueError, match="Allowed types are .*'t', 'F'"):
+    with pytest.raises(ValueError, match="'stat_type' must be one of"):
         model.compute_contrast(
             second_level_contrast=c1, second_level_stat_type=[]
         )
-    with pytest.raises(ValueError, match="output_type must be one of "):
+    with pytest.raises(ValueError, match="'output_type' must be one of "):
         model.compute_contrast(second_level_contrast=c1, output_type="")
 
     # check that passing no explicit contrast when the design
@@ -1497,7 +1490,7 @@ def test_second_level_input_with_wrong_mask(
     model = SecondLevelModel(mask_img=img_mask_mni)
 
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 
@@ -1507,7 +1500,7 @@ def test_second_level_input_with_wrong_mask(
     model = SecondLevelModel(mask_img=surf_mask_1d)
 
     with pytest.raises(
-        TypeError, match="Mask and images to fit must be of compatible types."
+        TypeError, match="Mask and input images must be of compatible types."
     ):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 

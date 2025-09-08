@@ -11,12 +11,14 @@ import numpy as np
 from nibabel import Nifti1Image
 from scipy import linalg, ndimage
 
-from nilearn import _utils, masking
+from nilearn import masking
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_reduction_strategy
-
-from .._utils.niimg import safe_get_data
-from ..image import new_img_like
+from nilearn.image import new_img_like
 
 INF = 1000 * np.finfo(np.float32).eps
 
@@ -39,7 +41,7 @@ def _check_shape_compatibility(img1, img2, dim=None):
 
     """
     if dim is None:
-        img2 = _utils.check_niimg_3d(img2)
+        img2 = check_niimg_3d(img2)
         if img1.shape[:3] != img2.shape:
             raise ValueError("Images have incompatible shapes.")
     elif img1.shape[:dim] != img2.shape[:dim]:
@@ -99,7 +101,7 @@ def _check_shape_and_affine_compatibility(img1, img2=None, dim=None):
     _check_shape_compatibility(img1, img2, dim=dim)
 
     if dim is None:
-        img2 = _utils.check_niimg_3d(img2)
+        img2 = check_niimg_3d(img2)
     _check_affine_equality(img1, img2)
 
     return True
@@ -166,6 +168,7 @@ def _get_labels_data(
 
     if keep_masked_labels:
         labels = list(np.unique(labels_data))
+        # TODO (nilearn >= 0.13.0)
         warnings.warn(
             'Applying "mask_img" before '
             "signal extraction may result in empty region signals in the "
@@ -182,7 +185,7 @@ def _get_labels_data(
     # Consider only data within the mask
     use_mask = _check_shape_and_affine_compatibility(target_img, mask_img, dim)
     if use_mask:
-        mask_img = _utils.check_niimg_3d(mask_img)
+        mask_img = check_niimg_3d(mask_img)
         mask_data = safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
         labels_before_mask = {int(label) for label in np.unique(labels_data)}
@@ -213,7 +216,7 @@ def _get_labels_data(
 
 
 # FIXME: naming scheme is not really satisfying. Any better idea appreciated.
-@_utils.fill_doc
+@fill_doc
 def img_to_signals_labels(
     imgs,
     labels_img,
@@ -286,13 +289,13 @@ def img_to_signals_labels(
         e.g. clusters
 
     """
-    labels_img = _utils.check_niimg_3d(labels_img)
+    labels_img = check_niimg_3d(labels_img)
 
     check_reduction_strategy(strategy)
 
     # TODO: Make a special case for list of strings
     # (load one image at a time).
-    imgs = _utils.check_niimg_4d(imgs)
+    imgs = check_niimg_4d(imgs)
     labels, labels_data = _get_labels_data(
         imgs,
         labels_img,
@@ -326,6 +329,7 @@ def img_to_signals_labels(
         )
         return signals, labels, masked_atlas
     else:
+        # TODO (nilearn >= 0.14.0)
         warnings.warn(
             'After version 0.13. "img_to_signals_labels" will also return the '
             '"masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
@@ -388,7 +392,7 @@ def signals_to_img_labels(
         images e.g. clusters
 
     """
-    labels_img = _utils.check_niimg_3d(labels_img)
+    labels_img = check_niimg_3d(labels_img)
 
     labels, labels_data = _get_labels_data(
         labels_img,
@@ -425,7 +429,7 @@ def signals_to_img_labels(
     return new_img_like(labels_img, data, labels_img.affine)
 
 
-@_utils.fill_doc
+@fill_doc
 def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
     """Extract region signals from image.
 
@@ -466,8 +470,8 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
         maps e.g. ICA
 
     """
-    maps_img = _utils.check_niimg_4d(maps_img)
-    imgs = _utils.check_niimg_4d(imgs)
+    maps_img = check_niimg_4d(maps_img)
+    imgs = check_niimg_4d(imgs)
 
     _check_shape_and_affine_compatibility(imgs, maps_img, 3)
 
@@ -477,15 +481,16 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
 
     use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
     if use_mask:
-        mask_img = _utils.check_niimg_3d(mask_img)
+        mask_img = check_niimg_3d(mask_img)
         labels_before_mask = {int(label) for label in labels}
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
             safe_get_data(mask_img, ensure_finite=True),
             keep_empty=keep_masked_maps,
         )
-        maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
+        maps_mask = as_ndarray(maps_mask, dtype=bool)
         if keep_masked_maps:
+            # TODO (nilearn >= 0.13.0)
             warnings.warn(
                 'Applying "mask_img" before '
                 "signal extraction may result in empty region signals in the "
@@ -557,20 +562,20 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
     nilearn.maskers.NiftiMapsMasker
 
     """
-    maps_img = _utils.check_niimg_4d(maps_img)
+    maps_img = check_niimg_4d(maps_img)
     maps_data = safe_get_data(maps_img, ensure_finite=True)
 
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
 
     use_mask = _check_shape_and_affine_compatibility(maps_img, mask_img)
     if use_mask:
-        mask_img = _utils.check_niimg_3d(mask_img)
+        mask_img = check_niimg_3d(mask_img)
         maps_data, maps_mask, _ = _trim_maps(
             maps_data,
             safe_get_data(mask_img, ensure_finite=True),
             keep_empty=True,
         )
-        maps_mask = _utils.as_ndarray(maps_mask, dtype=bool)
+        maps_mask = as_ndarray(maps_mask, dtype=bool)
         assert maps_mask.shape == maps_data.shape[:3]
 
     data = np.dot(region_signals, maps_data[maps_mask, :].T)
@@ -622,7 +627,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
 
     """
     maps = maps.copy()
-    sums = abs(maps[_utils.as_ndarray(mask, dtype=bool), :]).sum(axis=0)
+    sums = abs(maps[as_ndarray(mask, dtype=bool), :]).sum(axis=0)
 
     n_regions = maps.shape[-1] if keep_empty else (sums > 0).sum()
     trimmed_maps = np.zeros(
@@ -633,7 +638,7 @@ def _trim_maps(maps, mask, keep_empty=False, order="F"):
 
     # iterate on maps
     p = 0
-    mask = _utils.as_ndarray(mask, dtype=bool, order="C")
+    mask = as_ndarray(mask, dtype=bool, order="C")
     for n, _ in enumerate(np.rollaxis(maps, -1)):
         if not keep_empty and sums[n] == 0:
             continue

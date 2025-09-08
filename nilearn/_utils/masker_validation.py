@@ -165,8 +165,8 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
         run_imgs = [run_imgs]
 
     msg = (
-        "Mask and images to fit must be of compatible types.\n"
-        f"Got mask of type: {type(mask_img)}, "
+        "Mask and input images must be of compatible types.\n"
+        f"Got mask of type: {mask_img.__class__.__name__}, "
         f"and images of type: {[type(x) for x in run_imgs]}"
     )
 

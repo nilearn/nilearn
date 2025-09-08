@@ -15,20 +15,22 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
 
-from nilearn._utils import logger, repr_niimgs
+from nilearn._utils import logger
+from nilearn._utils.bids import (
+    generate_atlas_look_up_table,
+    sanitize_look_up_table,
+)
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import (
-    rename_parameters,
-    stringify_path,
-)
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     concat_imgs,
@@ -37,6 +39,7 @@ from nilearn.image import (
     resample_img,
     smooth_img,
 )
+from nilearn.image.image import get_indices_from_image
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
@@ -227,12 +230,11 @@ def mask_logger(step, img=None, verbose=0):
         "load_data": f"Loading data from {repr}",
         "load_mask": f"Loading mask from {repr}",
         "load_regions": f"Loading regions from {repr}",
-        "resample_mask": "Resamping mask",
+        "resample_mask": "Resampling mask",
         "resample_regions": "Resampling regions",
     }
 
-    if step not in messages:
-        raise ValueError(f"Unknown step: {step}")
+    check_parameter_in_allowed(step, messages.keys(), "step")
 
     if step in ["load_mask", "load_data"] and repr is None:
         return
@@ -261,7 +263,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         copy : :obj:`bool`, default=True
             Indicates whether a copy is returned or not.
@@ -276,7 +278,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -286,9 +288,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -302,7 +302,6 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
-        ...
 
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
@@ -347,7 +346,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------
@@ -376,7 +375,6 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         )
 
     @fill_doc
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit_transform(
         self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
     ):
@@ -394,7 +392,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------
@@ -510,11 +508,12 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def _sanitize_cleaning_parameters(self):
         """Make sure that cleaning parameters are passed via clean_args.
 
-        TODO remove when bumping to nilearn >0.13
+        TODO (nilearn >= 0.13.0) remove
         """
         if hasattr(self, "clean_kwargs"):
             if self.clean_kwargs:
                 tmp = [", ".join(list(self.clean_kwargs))]
+                # TODO (nilearn >= 0.13.0)
                 warnings.warn(
                     f"You passed some kwargs to {self.__class__.__name__}: "
                     f"{tmp}. "
@@ -541,7 +540,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -551,8 +550,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -622,9 +620,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return mask_img_
 
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.0"
-    )
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
@@ -698,9 +693,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # implemented in children classes
         raise NotImplementedError()
 
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.0"
-    )
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
@@ -763,3 +755,81 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             This has not been implemented yet.
         """
         raise NotImplementedError()
+
+
+def generate_lut(labels_img, background_label, lut=None, labels=None):
+    """Generate a look up table if one was not provided.
+
+    Also sanitize its content if necessary.
+
+    Parameters
+    ----------
+    labels_img : Nifti1Image | SurfaceImage
+
+    background_label : int | float
+
+    lut : Optional[str, Path, pd.DataFrame]
+
+    labels : Optional[list[str]]
+    """
+    labels_present = get_indices_from_image(labels_img)
+    add_background_to_lut = (
+        None if background_label not in labels_present else background_label
+    )
+
+    if lut is not None:
+        if isinstance(lut, (str, Path)):
+            lut = pd.read_table(lut, sep=None, engine="python")
+
+    elif labels:
+        lut = generate_atlas_look_up_table(
+            function=None,
+            name=deepcopy(labels),
+            index=labels_img,
+            background_label=add_background_to_lut,
+        )
+
+    else:
+        lut = generate_atlas_look_up_table(
+            function=None,
+            index=labels_img,
+            background_label=add_background_to_lut,
+        )
+
+    assert isinstance(lut, pd.DataFrame)
+
+    # passed labels or lut may not include background label
+    # because of poor data standardization
+    # so we need to update the lut accordingly
+    mask_background_index = lut["index"] == background_label
+    if (mask_background_index).any():
+        # Ensure background is the first row with name "Background"
+        # Shift the 'name' column down by one
+        # if background row was not named properly
+        first_rows = lut[mask_background_index]
+        other_rows = lut[~mask_background_index]
+        lut = pd.concat([first_rows, other_rows], ignore_index=True)
+
+        mask_background_name = lut["name"] == "Background"
+        if not (mask_background_name).any():
+            lut["name"] = lut["name"].shift(1)
+
+        lut.loc[0, "name"] = "Background"
+
+    else:
+        first_row = {
+            "name": "Background",
+            "index": background_label,
+            "color": "FFFFFF",
+        }
+        first_row = {
+            col: first_row[col] if col in lut else np.nan
+            for col in lut.columns
+        }
+        lut = pd.concat([pd.DataFrame([first_row]), lut], ignore_index=True)
+
+    return (
+        sanitize_look_up_table(lut, atlas=labels_img)
+        .sort_values("index")
+        .reset_index(drop=True)
+    )

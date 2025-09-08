@@ -6,21 +6,6 @@ import warnings
 from importlib import import_module
 from pathlib import Path
 
-from nilearn._utils.helpers import (  # noqa: F401
-    compare_version,
-    constrained_layout_kwargs,
-    remove_parameters,
-    rename_parameters,
-    stringify_path,
-)
-
-from .cache_mixin import CacheMixin
-from .docs import fill_doc
-from .logger import compose_err_msg
-from .niimg import load_niimg, repr_niimgs
-from .niimg_conversions import check_niimg, check_niimg_3d, check_niimg_4d
-from .numpy_conversions import as_ndarray
-
 
 def all_modules(modules_to_ignore=None, modules_to_consider=None):
     """Get a list of all modules from nilearn.
@@ -199,20 +184,4 @@ def all_classes(
     return all_classes
 
 
-__all__ = [
-    "CacheMixin",
-    "all_classes",
-    "all_functions",
-    "as_ndarray",
-    "check_niimg",
-    "check_niimg_3d",
-    "check_niimg_4d",
-    "compare_version",
-    "compose_err_msg",
-    "fill_doc",
-    "load_niimg",
-    "remove_parameters",
-    "rename_parameters",
-    "repr_niimgs",
-    "stringify_path",
-]
+__all__ = ["all_classes", "all_functions"]

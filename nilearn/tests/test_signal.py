@@ -329,7 +329,7 @@ def test_standardize_error(rng):
     a = rng.random((n_samples, n_features))
     a += np.linspace(0, 2.0, n_features)
 
-    with pytest.raises(ValueError, match="no valid standardize strategy"):
+    with pytest.raises(ValueError, match="'standardize' must be one of"):
         standardize_signal(a, standardize="foo")
 
     # test warning for strategy that will be removed
@@ -518,11 +518,11 @@ def test_clean_t_r(rng):
     )
     random_tr_list1 = np.round(rng.uniform(size=3) * 10, decimals=2)
     random_tr_list2 = np.round(rng.uniform(size=3) * 10, decimals=2)
-    for tr1, tr2 in zip(random_tr_list1, random_tr_list2):
+    for tr1, tr2 in zip(random_tr_list1, random_tr_list2, strict=False):
         low_pass_freq_list = tr1 * np.array([1.0 / 100, 1.0 / 110])
         high_pass_freq_list = tr1 * np.array([1.0 / 210, 1.0 / 190])
         for low_cutoff, high_cutoff in zip(
-            low_pass_freq_list, high_pass_freq_list
+            low_pass_freq_list, high_pass_freq_list, strict=False
         ):
             det_one_tr = clean(
                 x_orig, t_r=tr1, low_pass=low_cutoff, high_pass=high_cutoff
@@ -748,9 +748,7 @@ def test_clean_errros(signals):
     ):
         clean(signals, filter="not_implemented")
 
-    with pytest.raises(
-        ValueError, match="'ensure_finite' must be boolean type True or False"
-    ):
+    with pytest.raises(ValueError, match="'ensure_finite' must be one of"):
         clean(signals, ensure_finite=None)
 
     # test boolean is not given to signal.clean
@@ -1534,6 +1532,7 @@ def test_handle_scrubbed_volumes_with_extrapolation():
 
     # Test cubic spline interpolation (enabled extrapolation) in the
     # very first n=5 samples of generated signal
+    # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
     extrapolate_warning = (
         "By default the cubic spline interpolator extrapolates "
         "the out-of-bounds censored volumes in the data run. This "

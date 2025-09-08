@@ -5,6 +5,7 @@ import warnings
 import pandas as pd
 
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.interfaces.fmriprep import load_confounds_components as components
 from nilearn.interfaces.fmriprep.load_confounds_utils import (
     MissingConfoundError,
@@ -56,7 +57,7 @@ def _check_strategy(strategy):
     if (not isinstance(strategy, tuple)) and (not isinstance(strategy, list)):
         raise ValueError(
             "strategy needs to be a tuple or list of strings"
-            f" A {type(strategy)} was provided instead."
+            f" A {strategy.__class__.__name__} was provided instead."
         )
 
     if len(strategy) == 0:
@@ -74,8 +75,7 @@ def _check_strategy(strategy):
                 "will not have additional effect.",
                 stacklevel=find_stack_level(),
             )
-        if conf not in all_confounds:
-            raise ValueError(f"{conf} is not a supported type of confounds.")
+        check_parameter_in_allowed(conf, all_confounds, "confounds")
 
     # high pass filtering must be present if using fmriprep compcor outputs
     if ("compcor" in strategy) and ("high_pass" not in strategy):
@@ -311,6 +311,7 @@ def load_confounds(
     """
     _check_strategy(strategy)
     if "scrub" in strategy and fd_threshold == 0.2:
+        # TODO (nilearn >= 0.13.0)
         fd_threshold_default = (
             "The default parameter for fd_threshold is currently 0.2 "
             "which is inconsistent with the fMRIPrep default of 0.5. "
@@ -323,6 +324,7 @@ def load_confounds(
             stacklevel=find_stack_level(),
         )
     if "scrub" in strategy and std_dvars_threshold == 3:
+        # TODO (nilearn >= 0.13.0)
         std_dvars_threshold_default = (
             "The default parameter for std_dvars_threshold is currently 3 "
             "which is inconsistent with the fMRIPrep default of 1.5. "

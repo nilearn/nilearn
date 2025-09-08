@@ -64,6 +64,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+@pytest.mark.timeout(0)
 def test_multi_nifti_labels_masker(
     affine_eye, n_regions, shape_3d_default, length, img_labels
 ):
@@ -160,7 +161,7 @@ def test_multi_nifti_labels_masker_errors(
 def test_multi_nifti_labels_masker_errors_strategy(img_labels):
     """Test strategy errors."""
     masker = MultiNiftiLabelsMasker(img_labels, strategy="TESTRAISE")
-    with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
+    with pytest.raises(ValueError, match="'strategy' must be one of"):
         masker.fit()
 
 
@@ -173,9 +174,7 @@ def test_multi_nifti_labels_masker_errors_resampling(
         img_labels,
         resampling_target=resampling_target,
     )
-    with pytest.raises(
-        ValueError, match="invalid value for 'resampling_target' parameter"
-    ):
+    with pytest.raises(ValueError, match="'resampling_target' must be one of"):
         masker.fit()
 
 

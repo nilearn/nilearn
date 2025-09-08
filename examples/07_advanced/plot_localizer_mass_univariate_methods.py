@@ -66,7 +66,7 @@ fmri_masked = nifti_masker.fit_transform(contrast_map_filenames)
 # Anova (parametric F-scores)
 from sklearn.feature_selection import f_regression
 
-_, pvals_anova = f_regression(fmri_masked, tested_var, center=True)
+_, pvals_anova = f_regression(fmri_masked, tested_var.ravel(), center=True)
 pvals_anova *= fmri_masked.shape[1]
 pvals_anova[np.isnan(pvals_anova)] = 1
 pvals_anova[pvals_anova > 1] = 1
@@ -96,7 +96,6 @@ ols_outputs = permuted_ols(
     n_perm=100,  # 100 for the sake of time. Ideally, this should be 10000.
     verbose=1,  # display progress bar
     n_jobs=2,  # can be changed to use more CPUs
-    output_type="dict",
 )
 neg_log_pvals_permuted_ols_unmasked = nifti_masker.inverse_transform(
     ols_outputs["logp_max_t"][0, :]  # select first regressor

@@ -13,13 +13,19 @@ import pandas as pd
 from nibabel import freesurfer, load
 from sklearn.utils import Bunch
 
-from nilearn._utils import check_niimg, fill_doc, logger, rename_parameters
+from nilearn._utils import logger
 from nilearn._utils.bids import (
     check_look_up_table,
     generate_atlas_look_up_table,
 )
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
@@ -144,17 +150,11 @@ def fetch_atlas_difumo(
         1024: "34792",
     }
     valid_dimensions = [64, 128, 256, 512, 1024]
+    check_parameter_in_allowed(dimension, valid_dimensions, "dimension")
     valid_resolution_mm = [2, 3]
-    if dimension not in valid_dimensions:
-        raise ValueError(
-            f"Requested dimension={dimension} is not available. "
-            f"Valid options: {valid_dimensions}"
-        )
-    if resolution_mm not in valid_resolution_mm:
-        raise ValueError(
-            f"Requested resolution_mm={resolution_mm} is not available. "
-            f"Valid options: {valid_resolution_mm}"
-        )
+    check_parameter_in_allowed(
+        resolution_mm, valid_resolution_mm, "resolution_mm"
+    )
 
     url = f"https://osf.io/{dic[dimension]}/download"
     opts = {"uncompress": True}
@@ -334,6 +334,7 @@ def fetch_atlas_craddock_2012(
             atlas_type=atlas_type,
         )
 
+    # TODO (nilearn >= 0.13.0)
     warnings.warn(
         category=DeprecationWarning,
         message=(
@@ -350,7 +351,7 @@ def fetch_atlas_craddock_2012(
     params = dict(
         [
             ("description", fdescr),
-            *list(zip(keys, sub_files)),
+            *list(zip(keys, sub_files, strict=False)),
         ]
     )
     params["atlas_type"] = atlas_type
@@ -582,12 +583,7 @@ def fetch_atlas_harvard_oxford(
         "sub-prob-1mm",
         "sub-prob-2mm",
     ]
-    if atlas_name not in atlases:
-        atlases = "\n".join(atlases)
-        raise ValueError(
-            f"Invalid atlas name: {atlas_name}. "
-            f"Please choose an atlas among:\n{atlases}"
-        )
+    check_parameter_in_allowed(atlas_name, atlases, "atlas_name")
 
     atlas_type = "probabilistic" if "-prob-" in atlas_name else "deterministic"
 
@@ -748,12 +744,7 @@ def fetch_atlas_juelich(
         "prob-1mm",
         "prob-2mm",
     ]
-    if atlas_name not in atlases:
-        atlases = "\n".join(atlases)
-        raise ValueError(
-            f"Invalid atlas name: {atlas_name}. "
-            f"Please choose an atlas among:\n{atlases}"
-        )
+    check_parameter_in_allowed(atlas_name, atlases, "atlas_name")
 
     atlas_type = (
         "probabilistic" if atlas_name.startswith("prob-") else "deterministic"
@@ -813,12 +804,16 @@ def _get_atlas_data_and_labels(
 
     This function downloads the atlas image and labels.
     """
+    check_parameter_in_allowed(
+        atlas_source,
+        ["Juelich", "HarvardOxford", "atlas_source"],
+        "atlas_source",
+    )
     if atlas_source == "Juelich":
         url = "https://www.nitrc.org/frs/download.php/12096/Juelich.tgz"
     elif atlas_source == "HarvardOxford":
         url = "https://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz"
-    else:
-        raise ValueError(f"Atlas source {atlas_source} is not valid.")
+
     # For practical reasons, we mimic the FSL data directory here.
     data_dir = get_dataset_dir("fsl", data_dir=data_dir, verbose=verbose)
     opts = {"uncompress": True}
@@ -945,7 +940,7 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     new_atlas = atlas_data.copy()
     # Assumes that the background label is zero.
     new_names = [names[0]]
-    for label, name in zip(labels[1:], names[1:]):
+    for label, name in zip(labels[1:], names[1:], strict=False):
         new_label += 1
         left_elements = (left_atlas == label).sum()
         right_elements = (right_atlas == label).sum()
@@ -1184,6 +1179,7 @@ def fetch_atlas_smith_2009(
     atlas_type = "probabilistic"
 
     if url is None:
+        check_parameter_in_allowed(mirror, ["origin", "nitrc"], "mirror")
         if mirror == "origin":
             url = "https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/"
         elif mirror == "nitrc":
@@ -1195,11 +1191,6 @@ def fetch_atlas_smith_2009(
                 "https://www.nitrc.org/frs/download.php/7728/",
                 "https://www.nitrc.org/frs/download.php/7727/",
             ]
-        else:
-            raise ValueError(
-                f'Unknown mirror "{mirror!s}". '
-                'Mirror must be "origin" or "nitrc"'
-            )
 
     files = {
         "rsn20": "rsn20.nii.gz",
@@ -1233,6 +1224,7 @@ def fetch_atlas_smith_2009(
             atlas_type=atlas_type,
         )
 
+    # TODO (nilearn >= 0.13.0)
     warnings.warn(
         category=DeprecationWarning,
         message=(
@@ -1247,9 +1239,9 @@ def fetch_atlas_smith_2009(
     )
 
     keys = list(files.keys())
-    files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
+    files = [(f, u + f, {}) for f, u in zip(files.values(), url, strict=False)]
     files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    params = dict(zip(keys, files_))
+    params = dict(zip(keys, files_, strict=False))
 
     params["description"] = fdescr
     params["atlas_type"] = atlas_type
@@ -1398,6 +1390,7 @@ def fetch_atlas_yeo_2011(
     atlas_type = "deterministic"
 
     if n_networks is None and thickness is None:
+        # TODO (nilearn >= 0.13.0)
         warnings.warn(
             category=DeprecationWarning,
             message=(
@@ -1412,17 +1405,11 @@ def fetch_atlas_yeo_2011(
         )
 
     if n_networks is not None:
-        if n_networks not in (7, 17):
-            raise ValueError(
-                f"'n_networks' must be 7 or 17. Got {n_networks=}"
-            )
+        check_parameter_in_allowed(n_networks, (7, 17), "n_networks")
         if thickness is None:
             thickness = "thick"
     if thickness is not None:
-        if thickness not in ("thin", "thick"):
-            raise ValueError(
-                f"'thickness' must be 'thin' or 'thick'. Got {thickness=}"
-            )
+        check_parameter_in_allowed(thickness, ("thin", "thick"), "thickness")
         if n_networks is None:
             n_networks = 7
 
@@ -1470,7 +1457,7 @@ def fetch_atlas_yeo_2011(
         [
             ("description", fdescr),
             ("atlas_type", atlas_type),
-            *list(zip(keys, sub_files)),
+            *list(zip(keys, sub_files, strict=False)),
         ]
     )
 
@@ -1616,11 +1603,7 @@ def fetch_atlas_aal(
     atlas_type = "deterministic"
 
     versions = ["SPM5", "SPM8", "SPM12", "3v2"]
-    if version not in versions:
-        raise ValueError(
-            f"The version of AAL requested '{version}' does not exist."
-            f"Please choose one among {versions}."
-        )
+    check_parameter_in_allowed(version, versions, "version")
 
     dataset_name = f"aal_{version}"
     opts = {"uncompress": True}
@@ -1637,6 +1620,7 @@ def fetch_atlas_aal(
                 "Starting in version 0.13, the default fetched mask will be"
                 "AAL 3v2 instead."
             )
+            # TODO (nilearn >= 0.13.0)
             warnings.warn(
                 message, DeprecationWarning, stacklevel=find_stack_level()
             )
@@ -1787,12 +1771,7 @@ def fetch_atlas_basc_multiscale_2015(
     atlas_type = "deterministic"
 
     versions = ["sym", "asym"]
-    if version not in versions:
-        raise ValueError(
-            f"The version of Brain parcellations requested '{version}' "
-            "does not exist. "
-            f"Please choose one among them {versions}."
-        )
+    check_parameter_in_allowed(version, versions, "version")
 
     file_number = "1861819" if version == "sym" else "1861820"
     url = f"https://ndownloader.figshare.com/files/{file_number}"
@@ -1844,6 +1823,7 @@ def fetch_atlas_basc_multiscale_2015(
             template=f"MNI152{version}",
         )
 
+    # TODO (nilearn >= 0.13.0)
     warnings.warn(
         category=DeprecationWarning,
         message=(
@@ -1864,7 +1844,7 @@ def fetch_atlas_basc_multiscale_2015(
     filenames = [(folder_name / basename, url, opts) for basename in basenames]
     data = fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
 
-    params = dict(zip(keys, data))
+    params = dict(zip(keys, data, strict=False))
     params["description"] = fdescr
     params["atlas_type"] = atlas_type
 
@@ -1917,7 +1897,10 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
     # We add the ROI number to its name, since names are not unique
     names = out_csv["name"]
     numbers = out_csv["number"]
-    labels = [f"{name} {number}" for (name, number) in zip(names, numbers)]
+    labels = [
+        f"{name} {number}"
+        for (name, number) in zip(names, numbers, strict=False)
+    ]
     params = {
         "rois": out_csv[["x", "y", "z"]],
         "labels": labels,
@@ -2128,7 +2111,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         ("rsn_indices", labels),
         ("networks", networks),
         ("template", "MNI152"),
-        *list(zip(keys, sub_files)),
+        *list(zip(keys, sub_files, strict=False)),
     ]
     return Bunch(**dict(params))
 
@@ -2260,7 +2243,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         verbose=verbose,
     )
     for level_name, old_level_labels in zip(
-        _TALAIRACH_LEVELS, np.asarray(labels).T
+        _TALAIRACH_LEVELS, np.asarray(labels).T, strict=False
     ):
         logger.log(level_name, verbose=verbose)
         # level with most regions, ba, has 72 regions
@@ -2353,8 +2336,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     atlas_type = "deterministic"
 
-    if level_name not in _TALAIRACH_LEVELS:
-        raise ValueError(f'"level_name" should be one of {_TALAIRACH_LEVELS}')
+    check_parameter_in_allowed(level_name, _TALAIRACH_LEVELS, "level_name")
     talairach_dir = get_dataset_dir(
         "talairach_atlas", data_dir=data_dir, verbose=verbose
     )
@@ -2378,6 +2360,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     )
 
 
+# TODO (nilearn >= 0.13.1)
 @rename_parameters(
     replacement_params={"version": "atlas_type"}, end_version="0.13.1"
 )
@@ -2442,8 +2425,9 @@ def fetch_atlas_pauli_2017(
     """
     check_params(locals())
 
-    # TODO: remove this part after release 0.13.0
+    # TODO (nilearn >= 0.13.0) remove this part
     if atlas_type in ("prob", "det"):
+        # TODO (nilearn >= 0.13.0)
         atlas_type_values = (
             "The possible values for atlas_type are currently 'prob' and"
             " 'det'. From release 0.13.0 onwards, atlas_type will accept only"
@@ -2458,10 +2442,9 @@ def fetch_atlas_pauli_2017(
             "probabilistic" if atlas_type == "prob" else "deterministic"
         )
 
-    if atlas_type not in {"probabilistic", "deterministic"}:
-        raise NotImplementedError(
-            f"{atlas_type} is not a valid type for the Pauli atlas"
-        )
+    check_parameter_in_allowed(
+        atlas_type, {"probabilistic", "deterministic"}, "atlas_type"
+    )
 
     url_maps = "https://osf.io/w8zq2/download"
     filename = "pauli_2017_prob.nii.gz"
@@ -2575,23 +2558,15 @@ def fetch_atlas_schaefer_2018(
     atlas_type = "deterministic"
 
     valid_n_rois = list(range(100, 1100, 100))
+    check_parameter_in_allowed(n_rois, valid_n_rois, "n_rois")
     valid_yeo_networks = [7, 17]
+    check_parameter_in_allowed(
+        yeo_networks, valid_yeo_networks, "yeo_networks"
+    )
     valid_resolution_mm = [1, 2]
-    if n_rois not in valid_n_rois:
-        raise ValueError(
-            f"Requested n_rois={n_rois} not available. "
-            f"Valid options: {valid_n_rois}"
-        )
-    if yeo_networks not in valid_yeo_networks:
-        raise ValueError(
-            f"Requested yeo_networks={yeo_networks} not available. "
-            f"Valid options: {valid_yeo_networks}"
-        )
-    if resolution_mm not in valid_resolution_mm:
-        raise ValueError(
-            f"Requested resolution_mm={resolution_mm} not available. "
-            f"Valid options: {valid_resolution_mm}"
-        )
+    check_parameter_in_allowed(
+        resolution_mm, valid_resolution_mm, "resolution_mm"
+    )
 
     if base_url is None:
         base_url = (

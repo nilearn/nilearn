@@ -15,11 +15,13 @@ from scipy import signal as sp_signal
 from scipy.interpolate import CubicSpline
 from sklearn.utils import as_float_array, gen_even_slices
 
-from nilearn._utils import fill_doc, stringify_path
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.exceptions import AllVolumesRemovedError
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
     check_params,
     check_run_sample_masks,
 )
@@ -69,8 +71,11 @@ def standardize_signal(
     std_signals : :class:`numpy.ndarray`
         Copy of signals, standardized.
     """
-    if standardize not in [True, False, "psc", "zscore", "zscore_sample"]:
-        raise ValueError(f"{standardize} is no valid standardize strategy.")
+    check_parameter_in_allowed(
+        standardize,
+        allowed=[True, False, "psc", "zscore", "zscore_sample"],
+        parameter_name="standardize",
+    )
 
     signals = _detrend(signals, inplace=False) if detrend else signals.copy()
 
@@ -94,6 +99,7 @@ def standardize_signal(
             signals /= std
 
         elif (standardize == "zscore") or (standardize is True):
+            # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
             std_strategy_default = (
                 "The default strategy for standardize is currently 'zscore' "
                 "which incorrectly uses population std to calculate sample "
@@ -894,6 +900,7 @@ def _censor_signals(signals, confounds, sample_mask):
 def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
     """Interpolate censored volumes in signals/confounds."""
     if extrapolate:
+        # TODO (nilearn 0.13.0)
         extrapolate_default = (
             "By default the cubic spline interpolator extrapolates "
             "the out-of-bounds censored volumes in the data run. This "
@@ -1170,11 +1177,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
 
 def _sanitize_signals(signals, ensure_finite):
     """Ensure signals are in the correct state."""
-    if not isinstance(ensure_finite, bool):
-        raise ValueError(
-            "'ensure_finite' must be boolean type True or False "
-            f"but you provided ensure_finite={ensure_finite}"
-        )
+    check_parameter_in_allowed(ensure_finite, [True, False], "ensure_finite")
     signals = signals.copy()
     if not isinstance(signals, np.ndarray):
         signals = as_ndarray(signals)

@@ -5,9 +5,7 @@ import itertools
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import (
-    fill_doc,
-)
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers.base_masker import prepare_confounds_multimaskers
@@ -76,20 +74,18 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     %(dtype)s
 
     resampling_target : {"data", "labels", None}, default="data"
-        Gives which image gives the final shape/size:
+        Defines which image gives the final shape/size:
 
-            - "data" means the atlas is resampled to the
-              shape of the data if needed
-            - "labels" means en mask_img and images provided to fit() are
-              resampled to the shape and affine of maps_img
-            - None means no resampling: if shapes and affines do not match, a
-              ValueError is raised
+        - ``"data"`` means the atlas is resampled
+          to the shape of the data if needed.
+        - ``"labels"`` means that the ``mask_img`` and images provided
+          to ``fit()`` are resampled to the shape and affine of ``labels_img``.
+        - ``"None"`` means no resampling:
+          if shapes and affines do not match, a :obj:`ValueError` is raised.
 
     %(memory)s
 
     %(memory_level1)s
-
-    %(n_jobs)s
 
     %(verbose0)s
 
@@ -100,16 +96,32 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
 
+    %(cmap)s
+        default="CMRmap_r"
+        Only relevant for the report figures.
+
+    %(n_jobs)s
+
     %(clean_args)s
 
     %(masker_kwargs)s
 
     Attributes
     ----------
-    %(nifti_mask_img_)s
+    %(clean_args_)s
+
+    %(masker_kwargs_)s
 
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
+
+    lut_ : :obj:`pandas.DataFrame`
+        Look-up table derived from the ``labels`` or ``lut``
+        or from the values of the label image.
+
+    %(nifti_mask_img_)s
+
+    memory_ : joblib memory cache
 
     See Also
     --------
@@ -141,6 +153,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         strategy="mean",
         keep_masked_labels=True,
         reports=True,
+        cmap="CMRmap_r",
         n_jobs=1,
         clean_args=None,
         **kwargs,
@@ -167,6 +180,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             verbose=verbose,
             strategy=strategy,
             reports=reports,
+            cmap=cmap,
             clean_args=clean_args,
             keep_masked_labels=keep_masked_labels,
             **kwargs,
@@ -178,9 +192,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -241,7 +253,9 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
         region_signals = Parallel(n_jobs=n_jobs)(
             delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sms)
-            for imgs, cfs, sms in zip(niimg_iter, confounds, sample_mask)
+            for imgs, cfs, sms in zip(
+                niimg_iter, confounds, sample_mask, strict=False
+            )
         )
         return region_signals
 

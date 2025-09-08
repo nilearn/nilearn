@@ -20,9 +20,15 @@ from scipy.io import loadmat
 from scipy.io.matlab import MatReadError
 from sklearn.utils import Bunch
 
-from nilearn._utils import check_niimg, fill_doc, logger, remove_parameters
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import remove_parameters
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.datasets._utils import (
     ALLOWED_MESH_TYPES,
     PACKAGE_DIRECTORY,
@@ -120,12 +126,9 @@ def fetch_haxby(
 
     if subjects is not None and isinstance(subjects, (list, tuple)):
         for sub_id in subjects:
-            if sub_id not in [1, 2, 3, 4, 5, 6]:
-                raise ValueError(
-                    f"You provided invalid subject id {sub_id} in a "
-                    "list. Subjects must be selected in "
-                    "[1, 2, 3, 4, 5, 6]"
-                )
+            check_parameter_in_allowed(
+                sub_id, [1, 2, 3, 4, 5, 6], "subject id"
+            )
 
     dataset_name = "haxby2001"
     data_dir = get_dataset_dir(
@@ -349,7 +352,8 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     # Download dataset files
 
     archives = [
-        url + f"{int(ni)}/adhd40_{ii}.tgz" for ni, ii in zip(nitrc_ids, ids)
+        url + f"{int(ni)}/adhd40_{ii}.tgz"
+        for ni, ii in zip(nitrc_ids, ids, strict=False)
     ]
     functionals = [
         f"data/{i}/{i}_rest_tshift_RPI_voreg_mni.nii.gz" for i in ids
@@ -358,14 +362,14 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     functionals = fetch_files(
         data_dir,
-        zip(functionals, archives, (opts,) * n_subjects),
+        zip(functionals, archives, (opts,) * n_subjects, strict=False),
         resume=resume,
         verbose=verbose,
     )
 
     confounds = fetch_files(
         data_dir,
-        zip(confounds, archives, (opts,) * n_subjects),
+        zip(confounds, archives, (opts,) * n_subjects, strict=False),
         resume=resume,
         verbose=verbose,
     )
@@ -911,7 +915,7 @@ def fetch_localizer_contrasts(
 def _check_inputs_fetch_localizer_contrasts(contrasts):
     """Check that requested contrast name exists."""
     if isinstance(contrasts, str):
-        raise ValueError(
+        raise TypeError(
             "Contrasts should be a list of strings, but "
             f'a single string was given: "{contrasts}"'
         )
@@ -1534,27 +1538,17 @@ def fetch_megatrawls_netmats(
     url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
     opts = {"uncompress": True}
 
-    error_message = (
-        "Invalid {0} input is provided: {1}, choose one of them {2}"
-    )
     # standard dataset terms
     dimensionalities = [25, 50, 100, 200, 300]
-    if dimensionality not in dimensionalities:
-        raise ValueError(
-            error_message.format(
-                "dimensionality", dimensionality, dimensionalities
-            )
-        )
+    check_parameter_in_allowed(
+        dimensionality, dimensionalities, "dimensionality"
+    )
+
     timeseries_methods = ["multiple_spatial_regression", "eigen_regression"]
-    if timeseries not in timeseries_methods:
-        raise ValueError(
-            error_message.format("timeseries", timeseries, timeseries_methods)
-        )
+    check_parameter_in_allowed(timeseries, timeseries_methods, "timeseries")
+
     output_matrices_names = ["full_correlation", "partial_correlation"]
-    if matrices not in output_matrices_names:
-        raise ValueError(
-            error_message.format("matrices", matrices, output_matrices_names)
-        )
+    check_parameter_in_allowed(matrices, output_matrices_names, "matrices")
 
     dataset_name = "Megatrawls"
     data_dir = get_dataset_dir(
@@ -1894,12 +1888,7 @@ def load_nki(
     see the :ref:`dataset description <nki_dataset>`.
     """
     check_params(locals())
-
-    if mesh_type not in ALLOWED_MESH_TYPES:
-        raise ValueError(
-            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
-            f"Got: {mesh_type}."
-        )
+    check_parameter_in_allowed(mesh_type, ALLOWED_MESH_TYPES, "mesh_type")
 
     fsaverage = load_fsaverage(mesh=mesh, data_dir=data_dir)
 
@@ -1913,7 +1902,8 @@ def load_nki(
 
     images = []
     for i, (left, right) in enumerate(
-        zip(nki_dataset["func_left"], nki_dataset["func_right"]), start=1
+        zip(nki_dataset["func_left"], nki_dataset["func_right"], strict=False),
+        start=1,
     ):
         logger.log(f"Loading subject {i} of {n_subjects}.", verbose=verbose)
 
@@ -2226,11 +2216,7 @@ def fetch_development_fmri(
 def _filter_func_regressors_by_participants(participants, age_group):
     """Filter functional and regressors based on participants."""
     valid_age_groups = ("both", "child", "adult")
-    if age_group not in valid_age_groups:
-        raise ValueError(
-            f"Wrong value for age_group={age_group}. "
-            f"Valid arguments are: {valid_age_groups}"
-        )
+    check_parameter_in_allowed(age_group, valid_age_groups, "age_group")
 
     child_adult = participants["Child_Adult"].to_list()
 
@@ -2359,6 +2345,7 @@ def fetch_language_localizer_demo_dataset(
 
     file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
     if legacy_output:
+        # TODO (nilearn >= 0.13.0)
         warnings.warn(
             category=DeprecationWarning,
             stacklevel=find_stack_level(),
@@ -2709,7 +2696,7 @@ def fetch_openneuro_dataset(
 
     # download the files
     downloaded = []
-    for file_spec, file_dir in zip(files_spec, files_dir):
+    for file_spec, file_dir in zip(files_spec, files_dir, strict=False):
         # Timeout errors are common in the s3 connection so we try to avoid
         # failure of the dataset download for a transient instability
         success = False
@@ -2772,7 +2759,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     )
     files = fetch_files(data_dir, filenames, verbose=verbose)
 
-    params = dict(list(zip(options, files)))
+    params = dict(list(zip(options, files, strict=False)))
     data = Bunch(**params)
 
     description = get_dataset_descr(dataset_name)
@@ -2795,6 +2782,7 @@ def _download_spm_auditory_data(data_dir):
         return fetch_spm_auditory(data_dir=data_dir, data_name="")
 
 
+# (nilearn >= 0.13.0) remove subject_id
 @fill_doc
 @remove_parameters(
     removed_params=["subject_id"],
@@ -3002,6 +2990,7 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     return events
 
 
+# (nilearn >= 0.13.0) remove subject_id
 @fill_doc
 @remove_parameters(
     removed_params=["subject_id"],

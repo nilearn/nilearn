@@ -249,7 +249,7 @@ def test_img_to_signals_labels_bad_mask_input(
 def test_img_to_signals_labels_error_strategy(
     img_4d_zeros_eye, img_3d_zeros_eye
 ):
-    with pytest.raises(ValueError, match="Invalid strategy"):
+    with pytest.raises(ValueError, match="'strategy' must be one of"):
         img_to_signals_labels(
             imgs=img_4d_zeros_eye, labels_img=img_3d_zeros_eye, strategy="foo"
         )
@@ -611,6 +611,7 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     assert len(labels_labels) == 8
 
     # test return_masked_atlas deprecation warning
+    # TODO (nilearn >= 0.13.0)
     with pytest.warns(
         DeprecationWarning,
         match='After version 0.13. "img_to_signals_labels" will also return '
@@ -669,6 +670,8 @@ def test_img_to_signals_maps_warnings(
     # containing only 3 regions, and
     # keeping the masked labels
     # test if the warning is raised
+
+    # TODO (nilearn >= 0.13.0)
     with pytest.warns(
         DeprecationWarning,
         match='Applying "mask_img" before '

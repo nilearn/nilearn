@@ -36,7 +36,7 @@ if SKLEARN_LT_1_6:
 
         See also: InputTags
 
-        TODO remove when dropping sklearn 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         X_types = kwargs.get("X_types", [])
         X_types.append("2darray")
