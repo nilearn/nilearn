@@ -297,7 +297,7 @@ def test_automatic_t2f_conversion():
 def test_invalid_contrast_type():
     effect = np.ones((1, 3))
     variance = np.ones(1)
-    with pytest.raises(ValueError, match="is not a valid stat_type."):
+    with pytest.raises(ValueError, match="'stat_type' must be one of"):
         Contrast(effect, variance, stat_type="foo")
 
 

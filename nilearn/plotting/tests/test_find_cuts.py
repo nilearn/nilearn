@@ -452,12 +452,8 @@ def test_find_parcellation_cut_coords_non_trivial_affine():
 
 
 def test_find_parcellation_cut_coords_error(img_3d_mni):
-    """Test error with wrong label_hemisphere name with 'lft'."""
-    error_msg = (
-        "Invalid label_hemisphere name:lft.\nShould be one of "
-        "these 'left' or 'right'."
-    )
-    with pytest.raises(ValueError, match=error_msg):
+    """Test error with wrong label_hemisphere."""
+    with pytest.raises(ValueError, match="'label_hemisphere' must be one of"):
         find_parcellation_cut_coords(
             labels_img=img_3d_mni, label_hemisphere="lft"
         )

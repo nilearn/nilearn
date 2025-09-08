@@ -324,13 +324,13 @@ def test_plot_design_matrix_correlation_errors(mat):
     with pytest.raises(ValueError, match="dataframe cannot be empty."):
         plot_design_matrix_correlation(pd.DataFrame())
 
-    with pytest.raises(ValueError, match="cmap must be one of"):
+    with pytest.raises(ValueError, match="'cmap' must be one of"):
         plot_design_matrix_correlation(pd.DataFrame(mat), cmap="foo")
 
     dmtx = pd.DataFrame(
         {"event_1": [0, 1], "constant": [1, 1], "drift_1": [0, 1]}
     )
-    with pytest.raises(ValueError, match="tri needs to be one of"):
+    with pytest.raises(ValueError, match="'tri' must be one of"):
         plot_design_matrix_correlation(dmtx, tri="lower")
 
     dmtx = pd.DataFrame({"constant": [1, 1], "drift_1": [0, 1]})
