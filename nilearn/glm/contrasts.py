@@ -237,7 +237,6 @@ class Contrast:
         self.tiny = tiny
         self.dofmax = dofmax
 
-
     def effect_size(self):
         """Make access to summary statistics more straightforward \
         when computing contrasts.
