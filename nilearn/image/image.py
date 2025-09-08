@@ -19,10 +19,7 @@ from nilearn import signal
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.helpers import (
-    check_copy_header,
-    stringify_path,
-)
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -407,8 +404,7 @@ def crop_img(
         *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
 
     """
-    # TODO (nilearn >= 0.13.0) remove this warning
-    check_copy_header(copy_header)
+    check_params(locals())
 
     img = check_niimg(img)
     data = get_data(img)
@@ -550,6 +546,7 @@ def mean_img(
     nilearn.image.math_img : For more general operations on images.
 
     """
+    check_params(locals())
     is_iterable = isinstance(imgs, collections.abc.Iterable)
     is_surface_img = isinstance(imgs, SurfaceImage) or (
         is_iterable and all(isinstance(x, SurfaceImage) for x in imgs)
@@ -559,9 +556,6 @@ def mean_img(
             imgs = [imgs]
         all_means = concat_imgs([_compute_surface_mean(x) for x in imgs])
         return _compute_surface_mean(all_means)
-
-    # TODO (nilearn >= 0.13.0) remove this warning
-    check_copy_header(copy_header)
 
     imgs = stringify_path(imgs)
     is_str = isinstance(imgs, str)
@@ -1043,6 +1037,8 @@ def threshold_img(
     from nilearn.image.resampling import resample_img
     from nilearn.masking import load_mask_img
 
+    check_params(locals())
+
     if not isinstance(img, (*NiimgLike, SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
@@ -1064,9 +1060,6 @@ def threshold_img(
         cluster_threshold = 0
 
     if isinstance(img, NiimgLike):
-        # TODO (nilearn >= 0.13.0) remove this warning
-        check_copy_header(copy_header)
-
         img = check_niimg(img)
         img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
         affine = img.affine

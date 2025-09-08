@@ -11,12 +11,15 @@ from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import check_copy_header, stringify_path
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
 from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image.image import copy_img, crop_img
 
 ###############################################################################
@@ -449,8 +452,7 @@ def resample_img(
     """
     from .image import new_img_like  # avoid circular imports
 
-    # TODO (nilearn >= 0.13.0) remove this warning
-    check_copy_header(copy_header)
+    check_params(locals())
 
     _check_resample_img_inputs(
         target_shape, target_affine, interpolation, force_resample
@@ -846,7 +848,7 @@ def reorder_img(img, resample=None, copy_header=True):
     """
     from .image import new_img_like
 
-    check_copy_header(copy_header)
+    check_params(locals())
     img = check_niimg(img)
     # The copy is needed in order not to modify the input img affine
     # see https://github.com/nilearn/nilearn/issues/325 for a concrete bug

@@ -173,6 +173,7 @@ TYPE_MAPS = {
     "bg_on_data": nilearn_typing.BgOnData,
     "colorbar": nilearn_typing.ColorBar,
     "connected": nilearn_typing.Connected,
+    "copy_header": nilearn_typing.CopyHeader,
     "data_dir": nilearn_typing.DataDir,
     "draw_cross": nilearn_typing.DrawCross,
     "detrend": nilearn_typing.Detrend,

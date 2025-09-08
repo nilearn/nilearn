@@ -33,6 +33,7 @@ Annotate = bool
 BgOnData = bool
 ColorBar = bool
 Connected = bool
+CopyHeader = bool
 Detrend = bool
 DrawCross = bool
 KeepMaskedLabels = bool
