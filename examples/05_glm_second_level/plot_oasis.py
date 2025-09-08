@@ -75,7 +75,6 @@ mask_img = resample_to_img(
     gray_matter_map_filenames[0],
     interpolation="nearest",
     copy_header=True,
-    force_resample=True,
 )
 
 # %%
