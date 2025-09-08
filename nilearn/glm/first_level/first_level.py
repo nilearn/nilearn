@@ -61,7 +61,7 @@ from nilearn.interfaces.bids.query import (
 )
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
-from nilearn.maskers import SurfaceMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
@@ -1263,9 +1263,6 @@ class FirstLevelModel(BaseGLM):
         run_img : Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object
             Used for setting up the masker object.
         """
-        # Local import to prevent circular imports
-        from nilearn.maskers import NiftiMasker
-
         masker_type = "nii"
         # all elements of X should be of the similar type by now
         # so we can only check the first one
