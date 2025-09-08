@@ -16,7 +16,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
-    check_params,
+    check_params
 )
 
 
