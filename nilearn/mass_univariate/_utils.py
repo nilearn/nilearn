@@ -7,6 +7,7 @@ from scipy import linalg
 from scipy.ndimage import label
 
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 
 
 def calculate_tfce(
@@ -190,11 +191,9 @@ def null_to_p(test_values, null_array, alternative="two-sided"):
     This function assumes that the null distribution for two-sided tests is
     symmetric around zero.
     """
-    if alternative not in {"two-sided", "larger", "smaller"}:
-        raise ValueError(
-            'Argument "alternative" must be one of '
-            '["two-sided", "larger", "smaller"]'
-        )
+    check_parameter_in_allowed(
+        alternative, {"two-sided", "larger", "smaller"}, "alternative"
+    )
 
     return_first = isinstance(test_values, (float, int))
     test_values = np.atleast_1d(test_values)

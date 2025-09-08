@@ -107,7 +107,6 @@ output = permuted_ols(
     two_sided_test=True,
     verbose=1,  # display progress bar
     n_jobs=2,  # can be changed to use more CPUs
-    output_type="dict",
 )
 neg_log_pvals = output["logp_max_t"]
 t_scores_original_data = output["t"]

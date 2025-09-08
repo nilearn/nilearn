@@ -171,9 +171,7 @@ def test_threshold_maps_ratio_3d(map_img_3d):
 def test_invalids_extract_types_in_connected_regions(
     dummy_map, invalid_extract_type
 ):
-    valid_names = ["connected_components", "local_regions"]
-    message = f"'extract_type' should be {valid_names}"
-    with pytest.raises(ValueError, match=message):
+    with pytest.raises(ValueError, match="'extract_type' must be one of"):
         connected_regions(dummy_map, extract_type=invalid_extract_type)
 
 
@@ -249,8 +247,7 @@ def test_invalid_threshold_strategies(dummy_map):
     )
 
     with pytest.raises(
-        ValueError,
-        match="'thresholding_strategy' should be ",
+        ValueError, match="'thresholding_strategy' must be one of"
     ):
         extract_strategy_check.fit()
 

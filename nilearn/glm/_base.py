@@ -212,14 +212,14 @@ class BaseGLM(CacheMixin, BaseEstimator):
         contrasts = coerce_to_dict(contrasts)
         for k, v in contrasts.items():
             if not isinstance(k, str):
-                raise ValueError(
+                raise TypeError(
                     f"contrast names must be strings, not {type(k)}"
                 )
 
             if not isinstance(v, (str, np.ndarray, list)):
-                raise ValueError(
+                raise TypeError(
                     "contrast definitions must be strings or array_likes, "
-                    f"not {type(v)}"
+                    f"not {v.__class__.__name__}"
                 )
 
         entities = {

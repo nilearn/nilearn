@@ -25,10 +25,8 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.param_validation import (
-    adjust_screening_percentile,
-)
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.decoding.space_net import (
     BaseSpaceNet,
     SpaceNetClassifier,
@@ -298,7 +296,7 @@ def test_space_net_classifier_invalid_loss(rng):
         verbose=0,
     ).fit(X_, y)
 
-    with pytest.raises(ValueError, match="'loss' parameter must be one of"):
+    with pytest.raises(ValueError, match="'loss' must be one of"):
         SpaceNetClassifier(
             mask=mask,
             alphas=alphas,
@@ -322,7 +320,7 @@ def test_string_params_case(rng, penalty_wrong_case):
     X += rng.standard_normal((n, p))
     y = np.dot(X, W_init.ravel())
     X, _ = to_niimgs(X, dim)
-    with pytest.raises(ValueError, match="'penalty' parameter .* be one of"):
+    with pytest.raises(ValueError, match="'penalty' must be one of"):
         BaseSpaceNet(penalty=penalty_wrong_case).fit(X, y)
 
 

@@ -1867,7 +1867,7 @@ def test_iterator_generator(img_3d_rand_eye):
 
 
 def test_copy_img():
-    with pytest.raises(ValueError, match="Input value is not an image"):
+    with pytest.raises(TypeError, match="Input value is not an image"):
         copy_img(3)
 
 
