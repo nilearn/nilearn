@@ -1233,9 +1233,9 @@ def fetch_atlas_yeo_2011(
 
     """
     check_params(locals())
-    
+
     atlas_type = "deterministic"
-    
+
     check_parameter_in_allowed(n_networks, (7, 17), "n_networks")
     check_parameter_in_allowed(thickness, ("thin", "thick"), "thickness")
 
