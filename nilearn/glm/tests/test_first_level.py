@@ -189,7 +189,7 @@ def test_explicit_fixed_effects(shape_3d_default):
     variance = [dic1["effect_variance"], dic2["effect_variance"]]
 
     (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _) = (
-        compute_fixed_effects(contrasts, variance, mask, return_z_score=True)
+        compute_fixed_effects(contrasts, variance, mask)
     )
 
     assert_almost_equal(
@@ -211,17 +211,13 @@ def test_explicit_fixed_effects(shape_3d_default):
             "from the number of variance images"
         ),
     ):
-        compute_fixed_effects(
-            contrasts * 2, variance, mask, return_z_score=True
-        )
+        compute_fixed_effects(contrasts * 2, variance, mask)
 
     # ensure that not providing the right number of dofs
     with pytest.raises(
         ValueError, match="degrees of freedom .* differs .* contrast images"
     ):
-        compute_fixed_effects(
-            contrasts, variance, mask, dofs=[100], return_z_score=True
-        )
+        compute_fixed_effects(contrasts, variance, mask, dofs=[100])
 
 
 @pytest.mark.timeout(0)
@@ -253,12 +249,9 @@ def test_explicit_fixed_effects_without_mask(shape_3d_default):
     variance = [dic1["effect_variance"], dic2["effect_variance"]]
 
     # test without mask variable
-    (
-        fixed_fx_contrast,
-        fixed_fx_variance,
-        fixed_fx_stat,
-        _,
-    ) = compute_fixed_effects(contrasts, variance, return_z_score=True)
+    (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _) = (
+        compute_fixed_effects(contrasts, variance)
+    )
     assert_almost_equal(
         get_data(fixed_fx_contrast), get_data(fixed_fx_dic["effect_size"])
     )
@@ -2544,10 +2537,7 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
     surf_mask_ = masker.mask_img_
     for mask in [SurfaceMasker(mask_img=masker.mask_img_), surf_mask_, None]:
         outputs = compute_fixed_effects(
-            [effect, effect],
-            [variance, variance],
-            mask=mask,
-            return_z_score=True,
+            [effect, effect], [variance, variance], mask=mask
         )
         assert len(outputs) == 4
         for output in outputs:
