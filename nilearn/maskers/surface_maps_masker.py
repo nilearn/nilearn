@@ -21,7 +21,10 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import (
@@ -452,11 +455,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if not is_matplotlib_installed():
             return generate_report(self)
 
-        if engine not in ["plotly", "matplotlib"]:
-            raise ValueError(
-                "Parameter ``engine`` should be either 'matplotlib' or "
-                "'plotly'."
-            )
+        check_parameter_in_allowed(engine, ["plotly", "matplotlib"], "engine")
 
         # switch to matplotlib if plotly is selected but not installed
         if engine == "plotly" and not is_plotly_installed():

@@ -33,6 +33,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import (
     concat_imgs,
@@ -232,12 +233,11 @@ def mask_logger(step, img=None, verbose=0):
         "load_data": f"Loading data from {repr}",
         "load_mask": f"Loading mask from {repr}",
         "load_regions": f"Loading regions from {repr}",
-        "resample_mask": "Resamping mask",
+        "resample_mask": "Resampling mask",
         "resample_regions": "Resampling regions",
     }
 
-    if step not in messages:
-        raise ValueError(f"Unknown step: {step}")
+    check_parameter_in_allowed(step, messages.keys(), "step")
 
     if step in ["load_mask", "load_data"] and repr is None:
         return
