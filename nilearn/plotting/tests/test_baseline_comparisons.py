@@ -10,6 +10,7 @@ import pandas as pd
 import pytest
 from matplotlib import pyplot as plt
 
+from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.datasets import (
     load_fsaverage_data,
     load_mni152_template,
@@ -294,6 +295,10 @@ def test_plot_surf_surface(plot_func, view, hemi):
     )
 
 
+@pytest.mark.skipif(
+    not (is_plotly_installed() and is_kaleido_installed),
+    reason="This test requires plotly to be installed",
+)
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize(
@@ -337,6 +342,10 @@ def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
     )
 
 
+@pytest.mark.skipif(
+    not (is_plotly_installed() and is_kaleido_installed),
+    reason="This test requires plotly to be installed",
+)
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])
