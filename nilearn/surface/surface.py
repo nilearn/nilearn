@@ -804,8 +804,8 @@ def vol_to_surf(
 
     """
     # avoid circular import
-    from nilearn.image import get_data as get_vol_data
-    from nilearn.image import load_img
+    from nilearn.image.image import get_data as get_vol_data
+    from nilearn.image.image import load_img
     from nilearn.image.resampling import resample_to_img
 
     sampling_schemes = {
@@ -946,7 +946,7 @@ def load_surf_data(surf_data):
 
     """
     # avoid circular import
-    from nilearn.image import get_data as get_vol_data
+    from nilearn.image.image import get_data as get_vol_data
 
     # if the input is a filename, load it
     surf_data = stringify_path(surf_data)

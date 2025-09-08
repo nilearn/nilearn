@@ -13,7 +13,7 @@ from nilearn._utils.helpers import constrained_layout_kwargs, rename_parameters
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
-from nilearn.plotting._utils import save_figure_if_needed
+from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.matrix._utils import (
     mask_matrix,
     pad_contrast_matrix,
