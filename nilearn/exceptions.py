@@ -1,4 +1,4 @@
-"""Custom warnings and errors used acrossnilearn."""
+"""Custom warnings and errors used across Nilearn."""
 
 __all__ = [
     "NotImplementedWarning",
