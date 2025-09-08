@@ -25,7 +25,10 @@ from nilearn._utils.masker_validation import (
     check_embedded_masker,
 )
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_contrast,
@@ -258,7 +261,7 @@ def _check_confounds(confounds):
     """Check confounds type."""
     if confounds is not None:
         if not isinstance(confounds, pd.DataFrame):
-            raise ValueError("confounds must be a pandas DataFrame")
+            raise TypeError("confounds must be a pandas DataFrame")
         if "subject_label" not in confounds.columns:
             raise ValueError(
                 "confounds DataFrame must contain column 'subject_label'"
@@ -290,11 +293,6 @@ def _check_first_level_contrast(second_level_input, first_level_contrast):
         )
 
 
-def _check_output_type(output_type, valid_types):
-    if output_type not in valid_types:
-        raise ValueError(f"output_type must be one of {valid_types}")
-
-
 def _check_design_matrix(design_matrix):
     """Check design_matrix type."""
     if design_matrix is not None and not isinstance(
@@ -303,7 +301,7 @@ def _check_design_matrix(design_matrix):
         raise TypeError(
             "'design_matrix' must be a "
             "str, pathlib.Path or a pandas.DataFrame.\n"
-            f"Got {type(design_matrix)}"
+            f"Got {design_matrix.__class__.__name__}"
         )
 
 
@@ -524,7 +522,7 @@ class SecondLevelModel(BaseGLM):
     n_elements_ : :obj:`int`
         The number of voxels or vertices in the mask.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
     results_ : :obj:`dict`,
         with keys corresponding to the different labels values.
@@ -723,7 +721,7 @@ class SecondLevelModel(BaseGLM):
             "effect_variance",
             "all",
         ]
-        _check_output_type(output_type, valid_types)
+        check_parameter_in_allowed(output_type, valid_types, "output_type")
 
         # Get effect_maps appropriate for chosen contrast
         effect_maps = _infer_effect_maps(
@@ -1176,7 +1174,11 @@ def non_parametric_inference(
     tested_var = np.dot(design_matrix, contrast)
 
     # Remove tested var from remaining var names
-    var_names = [var for var, mask in zip(var_names, column_mask) if not mask]
+    var_names = [
+        var
+        for var, mask in zip(var_names, column_mask, strict=False)
+        if not mask
+    ]
 
     # Obtain confounding vars
     # No other vars in design matrix by default
@@ -1202,7 +1204,6 @@ def non_parametric_inference(
         masker=masker,
         threshold=threshold,
         tfce=tfce,
-        output_type="dict",
     )
     neg_log10_vfwe_pvals_img = masker.inverse_transform(
         np.ravel(outputs["logp_max_t"])

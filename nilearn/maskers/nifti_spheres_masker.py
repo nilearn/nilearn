@@ -13,10 +13,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import (
-    is_matplotlib_installed,
-    rename_parameters,
-)
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import (
@@ -100,7 +97,7 @@ def apply_mask_and_get_affinity(
             force_resample=False,
         )
         mask, _ = load_mask_img(mask_img)
-        mask_coords = list(zip(*np.where(mask != 0)))
+        mask_coords = list(zip(*np.where(mask != 0), strict=False))
 
         X = apply_mask_fmri(niimg, mask_img)
 
@@ -129,7 +126,7 @@ def apply_mask_and_get_affinity(
         except ValueError:
             nearests.append(None)
 
-    mask_coords = np.asarray(list(zip(*mask_coords)))
+    mask_coords = np.asarray(list(zip(*mask_coords, strict=False)))
     mask_coords = coord_transform(
         mask_coords[0], mask_coords[1], mask_coords[2], affine
     )
@@ -372,35 +369,35 @@ class NiftiSpheresMasker(BaseMasker):
                             or :class:`~numpy.ndarray`, or "all", default="all"
             Indicates which spheres will be displayed in the HTML report.
 
-                - If "all": All spheres will be displayed in the report.
+            - If "all": All spheres will be displayed in the report.
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report("all")
+                masker.generate_report("all")
 
-                .. warning::
+            .. warning::
 
-                    If there are too many spheres, this might be time and
-                    memory consuming, and will result in very heavy
-                    reports.
+                If there are too many spheres, this might be time and
+                memory consuming, and will result in very heavy
+                reports.
 
-                - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
-                  the indices of the spheres to be displayed in the report.
-                  For example, the following code will generate a report with
-                  spheres 6, 3, and 12, displayed in this specific order:
+            - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
+                the indices of the spheres to be displayed in the report.
+                For example, the following code will generate a report with
+                spheres 6, 3, and 12, displayed in this specific order:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report([6, 3, 12])
+                masker.generate_report([6, 3, 12])
 
-                - If an :obj:`int`: This will only display the first n
-                  spheres, n being the value of the parameter. By default,
-                  the report will only contain the first 10 spheres.
-                  Example to display the first 16 spheres:
+            - If an :obj:`int`: This will only display the first n
+                spheres, n being the value of the parameter. By default,
+                the report will only contain the first 10 spheres.
+                Example to display the first 16 spheres:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report(16)
+                masker.generate_report(16)
 
         Returns
         -------
@@ -542,8 +539,6 @@ class NiftiSpheresMasker(BaseMasker):
 
         return embedded_images
 
-    # TODO (nilearn >= 0.13.0)
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit(
         self,
         imgs=None,
@@ -606,7 +601,7 @@ class NiftiSpheresMasker(BaseMasker):
             if not hasattr(seed, "__len__"):
                 raise ValueError(
                     f"{error}Seed #{i} is not a valid triplet of coordinates. "
-                    f"It is of type {type(seed)}."
+                    f"It is of type {seed.__class__.__name__}."
                 )
             # Convert to list because it is easier to process
             seed = (
@@ -652,7 +647,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------
@@ -681,7 +676,7 @@ class NiftiSpheresMasker(BaseMasker):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. versionadded:: 0.8.0
 
         Returns
         -------

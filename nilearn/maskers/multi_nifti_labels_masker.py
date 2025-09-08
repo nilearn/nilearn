@@ -74,14 +74,14 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
     %(dtype)s
 
     resampling_target : {"data", "labels", None}, default="data"
-        Gives which image gives the final shape/size:
+        Defines which image gives the final shape/size:
 
-            - "data" means the atlas is resampled to the
-              shape of the data if needed
-            - "labels" means en mask_img and images provided to fit() are
-              resampled to the shape and affine of maps_img
-            - None means no resampling: if shapes and affines do not match, a
-              ValueError is raised
+        - ``"data"`` means the atlas is resampled
+          to the shape of the data if needed.
+        - ``"labels"`` means that the ``mask_img`` and images provided
+          to ``fit()`` are resampled to the shape and affine of ``labels_img``.
+        - ``"None"`` means no resampling:
+          if shapes and affines do not match, a :obj:`ValueError` is raised.
 
     %(memory)s
 
@@ -253,7 +253,9 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
         region_signals = Parallel(n_jobs=n_jobs)(
             delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sms)
-            for imgs, cfs, sms in zip(niimg_iter, confounds, sample_mask)
+            for imgs, cfs, sms in zip(
+                niimg_iter, confounds, sample_mask, strict=False
+            )
         )
         return region_signals
 

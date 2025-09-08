@@ -352,7 +352,7 @@ def test_smooth_img(affine_eye, tmp_path):
 
         assert isinstance(out, list)
         assert len(out) == 2
-        for o, s, l in zip(out, shapes, lengths):
+        for o, s, l in zip(out, shapes, lengths, strict=False):
             assert o.shape == (*s, l)
 
         # Single image as input
@@ -1642,7 +1642,7 @@ def test_largest_cc_img(create_files, tmp_path):
 
     assert isinstance(out, list)
     assert len(out) == 2
-    for o, s in zip(out, shapes):
+    for o, s in zip(out, shapes, strict=False):
         assert o.shape == (s)
 
     # Single image as input
@@ -1676,7 +1676,7 @@ def test_largest_cc_img_non_native_endian_type(create_files, tmp_path):
 
     assert isinstance(out, list)
     assert len(out) == 2
-    for o, s in zip(out, shapes):
+    for o, s in zip(out, shapes, strict=False):
         assert o.shape == (s)
 
     # Single image as input
@@ -1867,7 +1867,7 @@ def test_iterator_generator(img_3d_rand_eye):
 
 
 def test_copy_img():
-    with pytest.raises(ValueError, match="Input value is not an image"):
+    with pytest.raises(TypeError, match="Input value is not an image"):
         copy_img(3)
 
 

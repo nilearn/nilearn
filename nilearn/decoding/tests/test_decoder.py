@@ -55,10 +55,6 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
-from nilearn._utils.param_validation import (
-    _get_mask_extent,
-    check_feature_screening,
-)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _rng
 from nilearn.decoding import (
@@ -66,6 +62,10 @@ from nilearn.decoding import (
     DecoderRegressor,
     FREMClassifier,
     FREMRegressor,
+)
+from nilearn.decoding._utils import (
+    _get_mask_extent,
+    check_feature_screening,
 )
 from nilearn.decoding.decoder import (
     SUPPORTED_ESTIMATORS,
@@ -275,7 +275,7 @@ def test_non_supported_estimator_error(rand_x_y, estimator):
     X, Y = rand_x_y
 
     with pytest.raises(
-        ValueError, match="Invalid estimator. The supported estimators are:"
+        TypeError, match="Invalid estimator. The supported estimators are:"
     ):
         _check_param_grid(estimator, X, Y, None)
 
@@ -467,7 +467,7 @@ def test_parallel_fit(rand_x_y):
         )
 
     # check that every element of the output tuple is the same for both tries
-    for a, b in zip(outputs[0], outputs[1]):
+    for a, b in zip(outputs[0], outputs[1], strict=False):
         if isinstance(a, np.ndarray):
             assert_array_almost_equal(a, b)
         else:

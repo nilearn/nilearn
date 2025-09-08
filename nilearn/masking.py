@@ -79,7 +79,7 @@ def load_mask_img(mask_img, allow_empty=False):
     if not isinstance(mask_img, (*NiimgLike, SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(mask_img)=}."
+            f"Got {mask_img.__class__.__name__}."
         )
 
     if isinstance(mask_img, NiimgLike):
@@ -733,7 +733,6 @@ def compute_multi_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-    **kwargs,
 ):
     """Compute the whole-brain, grey-matter or white-matter mask \
     for a list of images.
@@ -769,14 +768,6 @@ def compute_multi_brain_mask(
     %(memory)s
 
     %(verbose0)s
-
-    .. note::
-        Argument not used but kept to fit the API
-
-    **kwargs : optional arguments
-        Arguments such as 'target_affine' are used in the call of other
-        masking strategies, which then would raise an error for this function
-        which does not need such arguments.
 
     Returns
     -------

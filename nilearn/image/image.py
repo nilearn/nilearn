@@ -952,7 +952,7 @@ def threshold_img(
 
         The given value should be within the range of minimum and maximum
         intensity of the input image.
-        All instensities in the interval ``[-threshold, threshold]`` will be
+        All intensities in the interval ``[-threshold, threshold]`` will be
         set to zero.
 
       - When ``two_sided`` is False:
@@ -962,14 +962,14 @@ def threshold_img(
           It should be greater than the minimum intensity of the input data.
           All intensities greater than or equal to the specified threshold will
           be set to zero.
-          All other instensities keep their original values.
+          All other intensities keep their original values.
 
         - If the threshold is positive:
 
           then it should be less than the maximum intensity of the input data.
           All intensities less than or equal to the specified threshold will be
           set to zero.
-          All other instensities keep their original values.
+          All other intensities keep their original values.
 
     - If threshold is :obj:`str`:
 
@@ -1070,7 +1070,7 @@ def threshold_img(
     if not isinstance(img, (*NiimgLike, SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(img)=}."
+            f"Got {img.__class__.__name__}."
         )
 
     if mask_img is not None:
@@ -1845,6 +1845,7 @@ def concat_imgs(
                 memory=memory,
                 memory_level=memory_level,
             ),
+            strict=False,
         )
     ):
         nii_str = (
@@ -1920,7 +1921,7 @@ def copy_img(img):
         copy of input (data, affine and header)
     """
     if not isinstance(img, spatialimages.SpatialImage):
-        raise ValueError("Input value is not an image")
+        raise TypeError("Input value is not an image")
     return new_img_like(
         img,
         safe_get_data(img, copy_data=True),
@@ -1942,6 +1943,6 @@ def get_indices_from_image(image) -> np.ndarray:
         raise TypeError(
             "Image to extract indices from must be one of: "
             "Niimg-Like, SurfaceIamge, numpy array. "
-            f"Got {type(image)}"
+            f"Got {image.__class__.__name__}"
         )
     return np.unique(data)
