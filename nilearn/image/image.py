@@ -360,6 +360,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
     return new_img_like(img, cropped_data, new_affine, copy_header=copy_header)
 
 
+@fill_doc
 def crop_img(
     img, rtol=1e-8, copy=True, pad=True, return_offset=False, copy_header=True
 ):
@@ -760,6 +761,7 @@ def _downcast_from_int64_if_possible(data):
     return data
 
 
+@fill_doc
 def new_img_like(ref_niimg, data, affine=None, copy_header=True):
     """Create a new image of the same class as the reference image.
 
@@ -905,6 +907,7 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     return arr
 
 
+@fill_doc
 def threshold_img(
     img,
     threshold,
@@ -1332,6 +1335,7 @@ def math_img(formula, copy_header_from=None, **imgs):
     return new_img_like(niimg, result, niimg.affine)
 
 
+@fill_doc
 def binarize_img(
     img, threshold=0.0, mask_img=None, two_sided=True, copy_header=True
 ):

@@ -731,6 +731,7 @@ def _get_resampled_data_dtype(data, interpolation, A):
     return resampled_data_dtype
 
 
+@fill_doc
 def resample_to_img(
     source_img,
     target_img,
@@ -820,6 +821,7 @@ def resample_to_img(
     )
 
 
+@fill_doc
 def reorder_img(img, resample=None, copy_header=True):
     """Return an image with the affine diagonal (by permuting axes).
 
