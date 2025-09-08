@@ -18,17 +18,25 @@ from nilearn._utils.param_validation import check_threshold
 from nilearn.plotting._utils import check_threshold_not_negative
 
 
-def threshold_cmap(cmap, norm, threshold):
+def threshold_cmap(
+    cmap, norm, threshold, threshold_color=(0.5, 0.5, 0.5, 1.0)
+):
     """Normalize threshold value, and use it to threshold the specified
     colormap.
 
     Parameters
     ----------
     %(cmap)s
+
     norm : :class:`mpl.colors.Normalize`
         Norm to be used to normalize threshold
+
     threshold : :obj:`float`  or obj:`int`
         A positive value to be used as threshold
+
+    threshold_color: :obj:`tuple`, default=(0.5, 0.5, 0.5, 1.0)
+        Color to be used for thresholded values. Default value is an average
+        gray color.
 
     Raises
     ------
@@ -44,9 +52,9 @@ def threshold_cmap(cmap, norm, threshold):
         istart = int(norm(-threshold, clip=True) * (cmap.N - 1))
         istop = int(norm(threshold, clip=True) * (cmap.N - 1))
 
-        # update values under threshold to be gray
+        # update values under threshold to be threshold_color
         for i in range(istart, istop):
-            cmaplist[i] = (0.5, 0.5, 0.5, 1.0)  # just an average gray color
+            cmaplist[i] = threshold_color
 
     our_cmap = LinearSegmentedColormap.from_list(
         "Custom cmap", cmaplist, cmap.N
