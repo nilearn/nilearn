@@ -21,6 +21,7 @@ from nilearn._utils.niimg_conversions import (
     check_same_fov,
 )
 from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
     check_params,
     check_reduction_strategy,
 )
@@ -531,12 +532,11 @@ class NiftiLabelsMasker(BaseMasker):
         del y
         check_params(self.__dict__)
         check_reduction_strategy(self.strategy)
-
-        if self.resampling_target not in ("labels", "data", None):
-            raise ValueError(
-                "invalid value for 'resampling_target' "
-                f"parameter: {self.resampling_target}"
-            )
+        check_parameter_in_allowed(
+            self.resampling_target,
+            ("labels", "data", None),
+            "resampling_target",
+        )
 
         self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
@@ -652,10 +652,10 @@ class NiftiLabelsMasker(BaseMasker):
         labels = self.labels
         if not isinstance(labels, list):
             raise TypeError(
-                f"'labels' must be a list. Got: {type(labels)}",
+                f"'labels' must be a list. Got: {labels.__class__.__name__}",
             )
         if not all(isinstance(x, str) for x in labels):
-            types_labels = {type(x) for x in labels}
+            types_labels = {x.__class__.__name__ for x in labels}
             raise TypeError(
                 "All elements of 'labels' must be a string.\n"
                 f"Got a list of {types_labels}",

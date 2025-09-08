@@ -77,7 +77,7 @@ PAGES_TO_COLLECT = range(1, 30)
 UPDATE_TSV = True
 
 # used by set_python_version to filter jobs by their python version
-EXPECTED_PYTHON_VERSIONS = ["3.9", "3.10", "3.11", "3.12", "3.13", "3.13t"]
+EXPECTED_PYTHON_VERSIONS = ["3.10", "3.11", "3.12", "3.13", "3.13t"]
 
 
 def main(args=sys.argv) -> None:
