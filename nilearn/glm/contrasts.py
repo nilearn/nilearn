@@ -9,7 +9,6 @@ import pandas as pd
 import scipy.stats as sps
 
 from nilearn._utils import logger
-from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm._utils import pad_contrast, z_score
@@ -56,10 +55,6 @@ def expression_to_contrast_vector(expression, design_columns):
     return contrast_vector
 
 
-# TODO (nilearn >= 0.13.0)
-@rename_parameters(
-    replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
-)
 def compute_contrast(labels, regression_result, con_val, stat_type=None):
     """Compute the specified :term:`contrast` given an estimated glm.
 
@@ -80,12 +75,6 @@ def compute_contrast(labels, regression_result, con_val, stat_type=None):
         Type of the :term:`contrast`.
         If None, then defaults to 't' for 1D `con_val`
         and 'F' for 2D `con_val`.
-
-    contrast_type :
-
-        .. deprecated:: 0.10.3
-
-            Use ``stat_type`` instead (see above).
 
     Returns
     -------
@@ -202,12 +191,6 @@ class Contrast:
     stat_type : {'t', 'F'}, default='t'
         Specification of the :term:`contrast` type.
 
-    contrast_type :
-
-        .. deprecated:: 0.10.3
-
-            Use ``stat_type`` instead (see above).
-
     tiny : :obj:`float`, default=DEF_TINY
         Small quantity used to avoid numerical underflows.
 
@@ -215,10 +198,6 @@ class Contrast:
         The maximum degrees of freedom of the residuals.
     """
 
-    # TODO (nilearn >= 0.13.0)
-    @rename_parameters(
-        replacement_params={"contrast_type": "stat_type"}, end_version="0.13.0"
-    )
     def __init__(
         self,
         effect,
@@ -257,25 +236,6 @@ class Contrast:
         self.baseline = 0
         self.tiny = tiny
         self.dofmax = dofmax
-
-    @property
-    def contrast_type(self):
-        """Return value of stat_type.
-
-        .. deprecated:: 0.10.3
-        """
-        # TODO (nilearn >= 0.13.0) deprecate
-        attrib_deprecation_msg = (
-            'The attribute "contrast_type" '
-            "will be removed in 0.13.0 release of Nilearn. "
-            'Please use the attribute "stat_type" instead.'
-        )
-        warn(
-            category=DeprecationWarning,
-            message=attrib_deprecation_msg,
-            stacklevel=find_stack_level(),
-        )
-        return self.stat_type
 
     def effect_size(self):
         """Make access to summary statistics more straightforward \
@@ -469,7 +429,6 @@ def compute_fixed_effects(
     mask=None,
     precision_weighted=False,
     dofs=None,
-    return_z_score=False,
 ):
     """Compute the fixed effects, given images of effects and variance.
 
@@ -497,9 +456,6 @@ def compute_fixed_effects(
         when ``None``,
         it is assumed that the degrees of freedom are 100 per input.
 
-    return_z_score : :obj:`bool`, default=False
-        Whether ``fixed_fx_z_score_img`` should be output or not.
-
     Returns
     -------
     fixed_fx_contrast_img : Nifti1Image or :obj:`~nilearn.surface.SurfaceImage`
@@ -513,11 +469,6 @@ def compute_fixed_effects(
 
     fixed_fx_z_score_img : Nifti1Image, optional
         The fixed effects corresponding z-transform
-
-    Warns
-    -----
-    DeprecationWarning
-        Starting in version 0.13, fixed_fx_z_score_img will always be returned
 
     """
     n_runs = len(contrast_imgs)
@@ -568,24 +519,12 @@ def compute_fixed_effects(
     fixed_fx_stat_img = masker.inverse_transform(fixed_fx_stat)
     fixed_fx_z_score_img = masker.inverse_transform(fixed_fx_z_score)
 
-    if return_z_score:
-        return (
-            fixed_fx_contrast_img,
-            fixed_fx_variance_img,
-            fixed_fx_stat_img,
-            fixed_fx_z_score_img,
-        )
-
-    # TODO (nilearn >= 0.13.0)
-    warn(
-        category=DeprecationWarning,
-        message="The behavior of this function will be "
-        "changed in release 0.13 to have an additional "
-        "return value 'fixed_fx_z_score_img' by default. "
-        "Please set return_z_score to True.",
-        stacklevel=find_stack_level(),
+    return (
+        fixed_fx_contrast_img,
+        fixed_fx_variance_img,
+        fixed_fx_stat_img,
+        fixed_fx_z_score_img,
     )
-    return fixed_fx_contrast_img, fixed_fx_variance_img, fixed_fx_stat_img
 
 
 def _compute_fixed_effects_params(
