@@ -25,14 +25,11 @@ from nilearn._utils.masker_validation import (
     check_embedded_masker,
 )
 from nilearn._utils.niimg_conversions import check_niimg
-
-from nilearn.exceptions import NotImplementedWarning
-
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_contrast,
