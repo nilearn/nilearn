@@ -90,7 +90,7 @@ report = model.generate_report(
     plot_type="glass",
     title="reference model",
 )
-report.open_in_browser()
+report
 
 
 # %%
@@ -107,4 +107,4 @@ report = model.generate_report(
     plot_type="glass",
     title="with parametric modulation",
 )
-report.open_in_browser()
+report
