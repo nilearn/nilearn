@@ -6,7 +6,6 @@ test_masking.py and test_signal.py for details.
 """
 
 from copy import deepcopy
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -268,7 +267,7 @@ def test_nifti_labels_masker_reduction_strategies_error(affine_eye):
 
     labels = Nifti1Image(labels_data, affine_eye)
 
-    with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
+    with pytest.raises(ValueError, match="'strategy' must be one of"):
         masker = NiftiLabelsMasker(labels, strategy="TESTRAISE")
         masker.fit()
 
@@ -277,14 +276,14 @@ def test_nifti_labels_masker_resampling_errors(img_labels):
     """Test errors of resampling in NiftiLabelsMasker."""
     with pytest.raises(
         ValueError,
-        match="invalid value for 'resampling_target' parameter: mask",
+        match="'resampling_target' must be one of",
     ):
         masker = NiftiLabelsMasker(img_labels, resampling_target="mask")
         masker.fit()
 
     with pytest.raises(
         ValueError,
-        match="invalid value for 'resampling_target' parameter: invalid",
+        match="'resampling_target' must be one of",
     ):
         masker = NiftiLabelsMasker(
             img_labels,
@@ -580,7 +579,7 @@ def check_region_names_after_fit(
     masker: NiftiLabelsMasker,
     signals: np.ndarray,
     region_names: list[str],
-    background: Union[str, None],
+    background: str | None,
     resampling: bool = False,
 ):
     """Perform several checks on the expected attributes of the masker.

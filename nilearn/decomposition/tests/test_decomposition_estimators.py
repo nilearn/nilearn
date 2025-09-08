@@ -317,29 +317,6 @@ def test_pass_masker_arg_to_estimator(
     check_decomposition_estimator(est, data_type)
 
 
-@pytest.mark.timeout(0)
-@pytest.mark.parametrize("estimator", [CanICA, DictLearning])
-@pytest.mark.parametrize("data_type", ["nifti", "surface"])
-def test_nifti_maps_masker_(
-    data_type,  # noqa: ARG001
-    canica_data,
-    estimator,
-):
-    """Check deprecation of nifti_maps_masker_."""
-    est = estimator(
-        n_components=3,
-        random_state=RANDOM_STATE,
-        smoothing_fwhm=None,
-    )
-
-    est.fit(canica_data)
-
-    with pytest.deprecated_call(
-        match="The 'nifti_maps_masker_' attribute is deprecated"
-    ):
-        est.nifti_maps_masker_  # noqa: B018
-
-
 # TODO passing confounds does not affect output with CanICA, DictLearning
 # @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
 @pytest.mark.parametrize("estimator", [_MultiPCA])

@@ -50,12 +50,10 @@ from nilearn._utils.masker_validation import (
     check_embedded_masker,
 )
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import (
-    check_feature_screening,
-    check_params,
-)
+from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
+from nilearn.decoding._utils import check_feature_screening
 from nilearn.maskers import SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
@@ -177,7 +175,7 @@ def _default_param_grid(estimator, X, y):
             LassoCV,
         ),
     ):
-        raise ValueError(
+        raise TypeError(
             "Invalid estimator. The supported estimators are:"
             f" {list(SUPPORTED_ESTIMATORS.keys())}"
         )
@@ -1053,7 +1051,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
     def _output_image(self, classes, coefs, std_coef):
         coef_img = {}
         std_coef_img = {}
-        for class_index, coef, std in zip(classes, coefs, std_coef):
+        for class_index, coef, std in zip(
+            classes, coefs, std_coef, strict=False
+        ):
             coef_img[class_index] = self.masker_.inverse_transform(coef)
             std_coef_img[class_index] = self.masker_.inverse_transform(std)
 

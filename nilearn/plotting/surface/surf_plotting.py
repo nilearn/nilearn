@@ -508,7 +508,7 @@ def plot_surf_stat_map(
         When using matplotlib as engine,
         `avg_method` will default to ``"mean"`` if ``None`` is passed.
 
-        .. versionadded:: 0.10.3dev
+        .. versionadded:: 0.10.3
 
     %(threshold)s
         Default=None

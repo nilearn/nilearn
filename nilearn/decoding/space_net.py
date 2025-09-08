@@ -29,11 +29,12 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.param_validation import (
-    adjust_screening_percentile,
+    check_parameter_in_allowed,
     check_params,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
+from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
 from nilearn.masking import unmask_from_to_3d_array
@@ -739,12 +740,9 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 "screening_percentile should be in the interval [0, 100]. "
                 f"Got {self.screening_percentile:g}."
             )
-        if self.penalty not in self.SUPPORTED_PENALTIES:
-            raise ValueError(
-                "'penalty' parameter must be one of "
-                f"{self.SUPPORTED_PENALTIES}. "
-                f"Got {self.penalty}."
-            )
+        check_parameter_in_allowed(
+            self.penalty, self.SUPPORTED_PENALTIES, "penalty"
+        )
         if self._is_classification:
             self._validate_loss(self.loss)
 
@@ -1100,7 +1098,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
     %(spacenet_fit_attributes)s
 
@@ -1176,11 +1174,8 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         self._estimator_type = "classifier"
 
     def _validate_loss(self, value):
-        if value is not None and value not in self.SUPPORTED_LOSSES:
-            raise ValueError(
-                f"'loss' parameter must be one of {self.SUPPORTED_LOSSES}. "
-                f"Got {value}."
-            )
+        if value is not None:
+            check_parameter_in_allowed(value, self.SUPPORTED_LOSSES, "loss")
 
     def _binarize_y(self, y):
         """Encode target classes as -1 and 1.
@@ -1339,7 +1334,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
 
     %(spacenet_fit_attributes)s

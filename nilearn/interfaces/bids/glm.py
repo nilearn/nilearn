@@ -13,6 +13,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict, make_stat_maps
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.surface import SurfaceImage
 
 
@@ -219,14 +220,8 @@ def save_glm_to_bids(
     tmp.pop("contrasts")
     report_kwargs = {k: v.default for k, v in tmp.items()}
     for key in kwargs:
-        if key not in report_kwargs:
-            raise ValueError(
-                f"Extra key-word arguments must be one of: "
-                f"{report_kwargs}\n"
-                f"Got: {key}"
-            )
-        else:
-            report_kwargs[key] = kwargs[key]
+        check_parameter_in_allowed(key, report_kwargs, "Extra key-word")
+        report_kwargs[key] = kwargs[key]
 
     contrasts = coerce_to_dict(contrasts)
 
@@ -318,7 +313,9 @@ def save_glm_to_bids(
             if model._is_volume_glm():
                 img.to_filename(out_dir / filename)
             else:
-                for label, hemi in zip(["L", "R"], ["left", "right"]):
+                for label, hemi in zip(
+                    ["L", "R"], ["left", "right"], strict=False
+                ):
                     density = img.mesh.parts[hemi].n_vertices
                     img.data.to_filename(
                         out_dir
@@ -408,7 +405,7 @@ def _write_mask(model):
         # need to convert mask from book to a type that's gifti friendly
 
         mask = deepcopy(model.masker_.mask_img_)
-        for label, hemi in zip(["L", "R"], ["left", "right"]):
+        for label, hemi in zip(["L", "R"], ["left", "right"], strict=False):
             mask.data.parts[hemi] = mask.data.parts[hemi].astype("uint8")
             density = mask.mesh.parts[hemi].n_vertices
             mask.data.to_filename(
@@ -429,7 +426,9 @@ def _write_model_level_statistical_maps(model, out_dir):
             if model._is_volume_glm():
                 stat_map_to_save.to_filename(out_dir / map_name)
             else:
-                for label, hemi in zip(["L", "R"], ["left", "right"]):
+                for label, hemi in zip(
+                    ["L", "R"], ["left", "right"], strict=False
+                ):
                     density = stat_map_to_save.mesh.parts[hemi].n_vertices
                     stat_map_to_save.data.to_filename(
                         out_dir

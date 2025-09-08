@@ -111,7 +111,7 @@ z_scores = []
 z_scores_left = []
 z_scores_right = []
 for i, (first_level_glm, fmri_img, confound, event) in enumerate(
-    zip(models, run_imgs, confounds, events)
+    zip(models, run_imgs, confounds, events, strict=False)
 ):
     print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
 

@@ -2,7 +2,6 @@
 
 import warnings
 from copy import deepcopy
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -22,6 +21,7 @@ from nilearn._utils.niimg_conversions import (
     check_same_fov,
 )
 from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
     check_params,
     check_reduction_strategy,
 )
@@ -279,7 +279,7 @@ class NiftiLabelsMasker(BaseMasker):
         )
 
     @property
-    def labels_(self) -> list[Union[int, float]]:
+    def labels_(self) -> list[int | float]:
         """Return list of labels of the regions.
 
         The background label is included if present in the image.
@@ -312,7 +312,7 @@ class NiftiLabelsMasker(BaseMasker):
         return sub_df["name"].reset_index(drop=True).to_dict()
 
     @property
-    def region_ids_(self) -> dict[Union[str, int], Union[int, float]]:
+    def region_ids_(self) -> dict[str | int, int | float]:
         """Return dictionary containing the region ids corresponding \
            to each column in the array \
            returned by `transform`.
@@ -327,7 +327,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         index = self.labels_
 
-        region_ids_: dict[Union[str, int], Union[int, float]] = {}
+        region_ids_: dict[str | int, int | float] = {}
         if self.background_label in index:
             index.pop(index.index(self.background_label))
             region_ids_["background"] = self.background_label
@@ -532,12 +532,11 @@ class NiftiLabelsMasker(BaseMasker):
         del y
         check_params(self.__dict__)
         check_reduction_strategy(self.strategy)
-
-        if self.resampling_target not in ("labels", "data", None):
-            raise ValueError(
-                "invalid value for 'resampling_target' "
-                f"parameter: {self.resampling_target}"
-            )
+        check_parameter_in_allowed(
+            self.resampling_target,
+            ("labels", "data", None),
+            "resampling_target",
+        )
 
         self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
@@ -655,10 +654,10 @@ class NiftiLabelsMasker(BaseMasker):
         labels = self.labels
         if not isinstance(labels, list):
             raise TypeError(
-                f"'labels' must be a list. Got: {type(labels)}",
+                f"'labels' must be a list. Got: {labels.__class__.__name__}",
             )
         if not all(isinstance(x, str) for x in labels):
-            types_labels = {type(x) for x in labels}
+            types_labels = {x.__class__.__name__ for x in labels}
             raise TypeError(
                 "All elements of 'labels' must be a string.\n"
                 f"Got a list of {types_labels}",

@@ -6,7 +6,6 @@ import pathlib
 import warnings
 from collections.abc import Iterable, Mapping
 from pathlib import Path
-from typing import Union
 
 import numpy as np
 import sklearn.cluster
@@ -19,6 +18,7 @@ from sklearn.exceptions import EfficiencyWarning
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.path_finding import resolve_globbing
 
 
@@ -299,8 +299,7 @@ def _sample_locations(
             {"inner_mesh": inner_mesh},
         ),
     }
-    if kind not in projectors:
-        raise ValueError(f'"kind" must be one of {tuple(projectors.keys())}')
+    check_parameter_in_allowed(kind, tuple(projectors.keys()), "kind")
     projector, extra_kwargs = projectors[kind]
     # let the projector choose the default for n_points
     # (for example a ball probably needs more than a line)
@@ -814,11 +813,9 @@ def vol_to_surf(
         "nearest": _nearest_voxel_sampling,
         "nearest_most_frequent": _nearest_most_frequent,
     }
-    if interpolation not in sampling_schemes:
-        raise ValueError(
-            "'interpolation' should be one of "
-            f"{tuple(sampling_schemes.keys())}"
-        )
+    check_parameter_in_allowed(
+        interpolation, tuple(sampling_schemes.keys()), "interpolation"
+    )
 
     # TODO (nilearn 0.13.0) deprecate nearest interpolation
     if interpolation == "nearest":
@@ -1136,7 +1133,7 @@ def check_mesh_is_fsaverage(mesh):
     if not isinstance(mesh, Mapping):
         raise TypeError(
             "The mesh should be a str or a dictionary, "
-            f"you provided: {type(mesh).__name__}."
+            f"you provided: {mesh.__class__.__name__}."
         )
     missing = {
         "pial_left",
@@ -1355,7 +1352,7 @@ class PolyData:
         dtype to enforce on the data.
         If ``None`` the original dtype if used.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
     Examples
     --------
@@ -1385,7 +1382,7 @@ class PolyData:
             )
 
         parts = {}
-        for hemi, param in zip(["left", "right"], [left, right]):
+        for hemi, param in zip(["left", "right"], [left, right], strict=False):
             if param is not None:
                 if not isinstance(param, np.ndarray):
                     param = load_surf_data(param)
@@ -1891,7 +1888,7 @@ class SurfaceImage:
         dtype to enforce on the data.
         If ``None`` the original dtype is used.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.12.1
 
     Attributes
     ----------
@@ -2002,7 +1999,7 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
-def check_surf_img(img: Union[SurfaceImage, Iterable[SurfaceImage]]) -> None:
+def check_surf_img(img: SurfaceImage | Iterable[SurfaceImage]) -> None:
     """Validate SurfaceImage.
 
     Equivalent to check_niimg for volumes.

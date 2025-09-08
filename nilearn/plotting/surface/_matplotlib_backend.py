@@ -14,7 +14,7 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn.plotting import cm
-from nilearn.plotting._engine_utils import adjust_cmap, to_color_strings
+from nilearn.plotting._engine_utils import threshold_cmap, to_color_strings
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
@@ -213,9 +213,6 @@ def _get_colorbar(
         If a number is given, it is used to threshold the colorbar.
         Absolute values lower than threshold are shown in gray.
 
-    kwargs : :obj:`dict`
-        Extra arguments passed to get_colorbar_and_data_ranges.
-
     cmap : :obj:`str`, default='cold_hot'
         The name of a matplotlib or nilearn colormap.
 
@@ -223,9 +220,10 @@ def _get_colorbar(
     """
     if threshold is None:
         threshold = 0.0
+    norm = Normalize(vmin=vmin, vmax=vmax)
+    thrs_cmap = threshold_cmap(cmap, norm, threshold)
 
-    our_cmap, norm = adjust_cmap(cmap, vmin, vmax, threshold)
-    sm = ScalarMappable(cmap=our_cmap, norm=norm)
+    sm = ScalarMappable(cmap=thrs_cmap, norm=norm)
 
     if sm_array == []:
         # TODO check if this can be replaced by None, this was set as empty
@@ -236,7 +234,7 @@ def _get_colorbar(
     else:
         sm.set_array(sm_array)
 
-    return sm, our_cmap
+    return sm, thrs_cmap
 
 
 def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
@@ -447,14 +445,7 @@ def _plot_surf(
     cbar_tick_format = (
         "%.2g" if cbar_tick_format == "auto" else cbar_tick_format
     )
-    if threshold is not None and (
-        cbar_tick_format == "%i" and int(threshold) != threshold
-    ):
-        warn(
-            "You provided a non integer threshold "
-            "but configured the colorbar to use integer formatting.",
-            stacklevel=find_stack_level(),
-        )
+
     # Leave space for colorbar
     figsize = [4.7, 5] if colorbar else [4, 5]
 
@@ -539,6 +530,22 @@ def _plot_surf(
             scalar_mappable, our_cmap = _get_colorbar(
                 vmin, vmax, threshold, cmap, surf_map_faces
             )
+            if threshold is not None and (
+                cbar_tick_format == "%i" and int(threshold) != threshold
+            ):
+                warn(
+                    "You provided a non integer threshold "
+                    "but configured the colorbar to use integer formatting.",
+                    stacklevel=find_stack_level(),
+                )
+            norm = Normalize(vmin, vmax)
+            thrs_cmap = threshold_cmap(cmap, norm, threshold)
+            bounds = np.linspace(cbar_vmin, cbar_vmax, thrs_cmap.N)
+
+            # we need to create a proxy mappable
+            proxy_mappable = ScalarMappable(cmap=thrs_cmap, norm=norm)
+            proxy_mappable.set_array(surf_map_faces)
+
             figure._colorbar_ax, _ = make_axes(
                 axes,
                 location="right",
@@ -650,7 +657,7 @@ def _plot_surf_contours(
     roi = load_surf_data(roi_map)
 
     patch_list = []
-    for level, color, label in zip(levels, colors, labels):
+    for level, color, label in zip(levels, colors, labels, strict=False):
         roi_indices = np.where(roi == level)[0]
         faces_outside = get_faces_on_edge(faces, roi_indices)
         # Fix: Matplotlib version 3.3.2 to 3.3.3

@@ -13,10 +13,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import (
-    is_matplotlib_installed,
-    rename_parameters,
-)
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import (
@@ -100,7 +97,7 @@ def apply_mask_and_get_affinity(
             force_resample=False,
         )
         mask, _ = load_mask_img(mask_img)
-        mask_coords = list(zip(*np.where(mask != 0)))
+        mask_coords = list(zip(*np.where(mask != 0), strict=False))
 
         X = apply_mask_fmri(niimg, mask_img)
 
@@ -129,7 +126,7 @@ def apply_mask_and_get_affinity(
         except ValueError:
             nearests.append(None)
 
-    mask_coords = np.asarray(list(zip(*mask_coords)))
+    mask_coords = np.asarray(list(zip(*mask_coords, strict=False)))
     mask_coords = coord_transform(
         mask_coords[0], mask_coords[1], mask_coords[2], affine
     )
@@ -542,8 +539,6 @@ class NiftiSpheresMasker(BaseMasker):
 
         return embedded_images
 
-    # TODO (nilearn >= 0.13.0)
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit(
         self,
         imgs=None,
@@ -606,7 +601,7 @@ class NiftiSpheresMasker(BaseMasker):
             if not hasattr(seed, "__len__"):
                 raise ValueError(
                     f"{error}Seed #{i} is not a valid triplet of coordinates. "
-                    f"It is of type {type(seed)}."
+                    f"It is of type {seed.__class__.__name__}."
                 )
             # Convert to list because it is easier to process
             seed = (

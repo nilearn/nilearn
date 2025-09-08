@@ -15,13 +15,15 @@ from nilearn._utils.helpers import (
     constrained_layout_kwargs,
     is_matplotlib_installed,
     is_plotly_installed,
-    rename_parameters,
 )
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import (
@@ -157,11 +159,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-    # TODO (nilearn >= 0.13.0)
     @fill_doc
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.0"
-    )
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -452,11 +450,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if not is_matplotlib_installed():
             return generate_report(self)
 
-        if engine not in ["plotly", "matplotlib"]:
-            raise ValueError(
-                "Parameter ``engine`` should be either 'matplotlib' or "
-                "'plotly'."
-            )
+        check_parameter_in_allowed(engine, ["plotly", "matplotlib"], "engine")
 
         # switch to matplotlib if plotly is selected but not installed
         if engine == "plotly" and not is_plotly_installed():
@@ -601,8 +595,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 **constrained_layout_kwargs(),
             )
             axes = np.atleast_2d(axes)
-            for ax_row, view in zip(axes, views):
-                for ax, hemi in zip(ax_row, hemispheres):
+            for ax_row, view in zip(axes, views, strict=False):
+                for ax, hemi in zip(ax_row, hemispheres, strict=False):
                     # very low threshold to only make 0 values transparent
                     plot_surf(
                         surf_map=roi,

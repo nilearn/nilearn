@@ -1070,7 +1070,7 @@ def threshold_img(
     if not isinstance(img, (*NiimgLike, SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(img)=}."
+            f"Got {img.__class__.__name__}."
         )
 
     if mask_img is not None:
@@ -1845,6 +1845,7 @@ def concat_imgs(
                 memory=memory,
                 memory_level=memory_level,
             ),
+            strict=False,
         )
     ):
         nii_str = (
@@ -1920,7 +1921,7 @@ def copy_img(img):
         copy of input (data, affine and header)
     """
     if not isinstance(img, spatialimages.SpatialImage):
-        raise ValueError("Input value is not an image")
+        raise TypeError("Input value is not an image")
     return new_img_like(
         img,
         safe_get_data(img, copy_data=True),
@@ -1942,6 +1943,6 @@ def get_indices_from_image(image) -> np.ndarray:
         raise TypeError(
             "Image to extract indices from must be one of: "
             "Niimg-Like, SurfaceIamge, numpy array. "
-            f"Got {type(image)}"
+            f"Got {image.__class__.__name__}"
         )
     return np.unique(data)

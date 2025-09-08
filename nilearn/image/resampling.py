@@ -16,6 +16,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
 from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
 from nilearn._utils.numpy_conversions import as_ndarray
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.image.image import copy_img, crop_img
 
 ###############################################################################
@@ -194,7 +195,7 @@ def get_bounds(shape, affine):
         ]
     ).T
     box = np.dot(affine, box)[:3]
-    return list(zip(box.min(axis=-1), box.max(axis=-1)))
+    return list(zip(box.min(axis=-1), box.max(axis=-1), strict=False))
 
 
 def get_mask_bounds(img):
@@ -596,13 +597,15 @@ def resample_img(
         # translation, b.
         indices = [
             (int(off.start - dim_b), int(off.stop - dim_b))
-            for off, dim_b in zip(offsets[:3], b[:3])
+            for off, dim_b in zip(offsets[:3], b[:3], strict=False)
         ]
 
         # If image are not fully overlapping, place only portion of image.
         slices = [
             slice(np.max((0, index[0])), np.min((dimsize, index[1])))
-            for dimsize, index in zip(resampled_data.shape, indices)
+            for dimsize, index in zip(
+                resampled_data.shape, indices, strict=False
+            )
         ]
         slices = tuple(slices)
 
@@ -695,11 +698,9 @@ def _check_resample_img_inputs(target_shape, target_affine, interpolation):
         )
 
     allowed_interpolations = ("continuous", "linear", "nearest")
-    if interpolation not in allowed_interpolations:
-        raise ValueError(
-            f"interpolation must be one of {allowed_interpolations}.\n"
-            f" Got '{interpolation}' instead."
-        )
+    check_parameter_in_allowed(
+        interpolation, allowed_interpolations, "interpolation"
+    )
 
 
 def _get_resampled_data_dtype(data, interpolation, A):

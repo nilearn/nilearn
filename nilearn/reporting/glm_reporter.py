@@ -16,7 +16,6 @@ import warnings
 from html import escape
 from pathlib import Path
 from string import Template
-from typing import Union
 
 import numpy as np
 import pandas as pd
@@ -30,6 +29,7 @@ from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm.thresholding import (
@@ -320,7 +320,8 @@ def make_glm_report(
             and not isinstance(bg_img, SurfaceImage)
         ):
             raise TypeError(
-                f"'bg_img' must a SurfaceImage instance. Got {type(bg_img)=}"
+                "'bg_img' must a SurfaceImage instance. "
+                f"Got {bg_img.__class__.__name__}"
             )
 
         mask_plot = _mask_to_plot(model, bg_img, cut_coords)
@@ -492,7 +493,7 @@ def make_glm_report(
     return report
 
 
-def _turn_into_full_path(bunch, dir: Path) -> Union[str, tempita.bunch]:
+def _turn_into_full_path(bunch, dir: Path) -> str | tempita.bunch:
     """Recursively turns str values of a dict into path.
 
     Used to turn relative paths into full paths.
@@ -931,6 +932,7 @@ def _stat_map_to_png(
         x_label_color = "black"
 
     else:
+        check_parameter_in_allowed(plot_type, ["slice", "glass"], "plot_type")
         if plot_type == "slice":
             stat_map_plot = plot_stat_map(
                 stat_img,
@@ -950,11 +952,6 @@ def _stat_map_to_png(
                 symmetric_cbar=symmetric_cbar,
                 cmap=cmap,
                 threshold=abs(threshold),
-            )
-        else:
-            raise ValueError(
-                "Invalid plot type provided. "
-                "Acceptable options are 'slice' or 'glass'."
             )
 
         x_label_color = "white" if plot_type == "slice" else "black"

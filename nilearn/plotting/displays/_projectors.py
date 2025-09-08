@@ -261,7 +261,8 @@ class OrthoProjector(OrthoSlicer):
             non_zero_indices = adjacency_matrix.nonzero()
 
         line_coords = [
-            node_coords[list(index)] for index in zip(*non_zero_indices)
+            node_coords[list(index)]
+            for index in zip(*non_zero_indices, strict=False)
         ]
 
         adjacency_matrix_values = adjacency_matrix[non_zero_indices]
