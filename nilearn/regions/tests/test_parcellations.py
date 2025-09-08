@@ -53,7 +53,7 @@ def test_errors_raised_in_check_parameters_fit(method, test_image):
     """Test whether an error is raised or not given a false method type."""
     with pytest.raises(
         ValueError,
-        match=(f"The method you have selected is not implemented '{method}'"),
+        match=("'method' must be one of"),
     ):
         Parcellations(method=method, verbose=0).fit(test_image)
 
