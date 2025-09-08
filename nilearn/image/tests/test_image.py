@@ -525,7 +525,6 @@ def test_mean_img_resample(rng):
         mean_img_to_resample,
         target_affine=target_affine,
         copy_header=True,
-        force_resample=True,
     )
 
     assert_array_equal(

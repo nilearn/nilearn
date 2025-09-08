@@ -8,7 +8,6 @@ from numpy.testing import assert_almost_equal
 from nilearn._utils.data_gen import generate_random_img
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.html_document import WIDTH_DEFAULT, HTMLDocument
-from nilearn._utils.testing import on_windows_with_old_mpl_and_new_numpy
 from nilearn.conftest import _img_maps
 from nilearn.image import get_data
 from nilearn.maskers import (
@@ -600,10 +599,6 @@ def test_generate_report_before_transform_warn(surf_maps_img):
         masker.generate_report()
 
 
-@pytest.mark.skipif(
-    on_windows_with_old_mpl_and_new_numpy(),
-    reason="Old matplotlib not compatible with numpy 2.0 on windows.",
-)
 def test_generate_report_plotly_out_figure_type(
     plotly, surf_maps_img, surf_img_2d
 ):

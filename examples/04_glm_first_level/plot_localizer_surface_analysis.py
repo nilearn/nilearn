@@ -197,7 +197,6 @@ for contrast_id, contrast_val in contrasts.items():
         title=contrast_id,
         threshold=threshold,
         bg_map=fsaverage_data,
-        darkness=None,
     )
 
 show()

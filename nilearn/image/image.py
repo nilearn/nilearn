@@ -468,14 +468,12 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
         mean_data = mean_data.mean(axis=-1)
     else:
         mean_data = mean_data.copy()
-    # TODO (nilearn >= 0.13.0) force_resample=True
     mean_data = resampling.resample_img(
         Nifti1Image(mean_data, affine),
         target_affine=target_affine,
         target_shape=target_shape,
         copy=False,
         copy_header=True,
-        force_resample=False,
     )
     affine = mean_data.affine
     mean_data = get_data(mean_data)
@@ -1106,14 +1104,12 @@ def threshold_img(
         if isinstance(mask_img, NiimgLike):
             mask_img = check_niimg_3d(mask_img)
             if not check_same_fov(img, mask_img):
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 mask_img = resample_img(
                     mask_img,
                     target_affine=affine,
                     target_shape=img.shape[:3],
                     interpolation="nearest",
                     copy_header=True,
-                    force_resample=False,
                 )
             mask_data, _ = load_mask_img(mask_img)
 

@@ -95,7 +95,7 @@ jobs:
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v6
         -   name: Setup python
-            uses: actions/setup-python@v5
+            uses: actions/setup-python@v6
             with:
                 python-version: ${{ matrix.py }}
                 allow-prereleases: true

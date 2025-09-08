@@ -12,7 +12,6 @@ from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
-    constrained_layout_kwargs,
     is_matplotlib_installed,
     is_plotly_installed,
 )
@@ -581,7 +580,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 threshold=threshold,
                 hemi="both",
                 cmap=self.cmap,
-                darkness=None,
             ).get_iframe(width=500)
         elif self._report_content["engine"] == "matplotlib":
             # TODO: possibly allow to generate a report with other views
@@ -592,7 +590,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 len(hemispheres),
                 subplot_kw={"projection": "3d"},
                 figsize=(20, 20),
-                **constrained_layout_kwargs(),
+                layout="constrained",
             )
             axes = np.atleast_2d(axes)
             for ax_row, view in zip(axes, views, strict=False):
@@ -609,6 +607,5 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                         colorbar=False,
                         threshold=threshold,
                         bg_on_data=True,
-                        darkness=None,
                     )
         return fig

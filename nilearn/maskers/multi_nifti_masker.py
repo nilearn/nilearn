@@ -153,16 +153,12 @@ class MultiNiftiMasker(NiftiMasker):
 
     %(clean_args)s
 
-    %(masker_kwargs)s
-
     Attributes
     ----------
     affine_ : 4x4 :obj:`numpy.ndarray`
         Affine of the transformed image.
 
     %(clean_args_)s
-
-    %(masker_kwargs_)s
 
     mask_img_ : A 3D binary :obj:`nibabel.nifti1.Nifti1Image`
         The mask of the data, or the one computed from ``imgs`` passed to fit.
@@ -211,7 +207,6 @@ class MultiNiftiMasker(NiftiMasker):
         reports=True,
         cmap="gray",
         clean_args=None,
-        **kwargs,  # TODO (nilearn >= 0.13.0) remove
     ):
         super().__init__(
             # Mask is provided or computed
@@ -236,8 +231,6 @@ class MultiNiftiMasker(NiftiMasker):
             reports=reports,
             cmap=cmap,
             clean_args=clean_args,
-            # TODO (nilearn >= 0.13.0) remove
-            **kwargs,
         )
         self.n_jobs = n_jobs
 
@@ -383,7 +376,6 @@ class MultiNiftiMasker(NiftiMasker):
         # Resampling: allows the user to change the affine, the shape or both.
         mask_logger("resample_mask", verbose=self.verbose)
 
-        # TODO (nilearn >= 0.13.0) force_resample=True
         self.mask_img_ = self._cache(resample_img)(
             self.mask_img_,
             target_affine=self.target_affine,
@@ -391,7 +383,6 @@ class MultiNiftiMasker(NiftiMasker):
             interpolation="nearest",
             copy=False,
             copy_header=True,
-            force_resample=False,
         )
 
         if self.target_affine is not None:
@@ -414,14 +405,12 @@ class MultiNiftiMasker(NiftiMasker):
         ):
             resampl_imgs = None
             if imgs is not None:
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 resampl_imgs = self._cache(resample_img)(
                     imgs,
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
                     copy_header=True,
-                    force_resample=False,
                 )
 
             self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]
@@ -494,9 +483,6 @@ class MultiNiftiMasker(NiftiMasker):
             ],
         )
         params["clean_kwargs"] = self.clean_args_
-        # TODO (nilearn  >= 0.13.0) remove
-        if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs_
 
         func = self._cache(
             filter_and_mask,
