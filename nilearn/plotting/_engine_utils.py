@@ -56,11 +56,7 @@ def threshold_cmap(
         for i in range(istart, istop):
             cmaplist[i] = threshold_color
 
-    our_cmap = LinearSegmentedColormap.from_list(
-        "Custom cmap", cmaplist, cmap.N
-    )
-
-    return our_cmap
+    return LinearSegmentedColormap.from_list("Custom cmap", cmaplist, cmap.N)
 
 
 def colorscale(
