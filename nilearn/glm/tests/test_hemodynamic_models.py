@@ -45,13 +45,6 @@ def expected_length(t_r):
 
 
 @pytest.mark.parametrize("hrf_model", HRF_MODELS)
-def test_hrf_tr_deprecation(hrf_model):
-    """Test that using tr throws a warning."""
-    with pytest.deprecated_call(match='"tr" will be removed in'):
-        hrf_model(tr=2)
-
-
-@pytest.mark.parametrize("hrf_model", HRF_MODELS)
 @pytest.mark.parametrize("t_r", [2, 3])
 def test_hrf_norm_and_length(
     hrf_model, t_r, expected_integral, expected_length

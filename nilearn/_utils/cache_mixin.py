@@ -156,7 +156,7 @@ def cache(
             raise TypeError(
                 "'memory' argument must be a string or a "
                 "joblib.Memory object. "
-                f"{memory} {type(memory)} was given."
+                f"{memory} {memory.__class__.__name__} was given."
             )
         if (
             memory.location is None

@@ -22,6 +22,7 @@ from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
     check_params,
     check_run_sample_masks,
 )
@@ -71,8 +72,11 @@ def standardize_signal(
     std_signals : :class:`numpy.ndarray`
         Copy of signals, standardized.
     """
-    if standardize not in [True, False, "psc", "zscore", "zscore_sample"]:
-        raise ValueError(f"{standardize} is no valid standardize strategy.")
+    check_parameter_in_allowed(
+        standardize,
+        allowed=[True, False, "psc", "zscore", "zscore_sample"],
+        parameter_name="standardize",
+    )
 
     signals = _detrend(signals, inplace=False) if detrend else signals.copy()
 
@@ -1172,11 +1176,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
 
 def _sanitize_signals(signals, ensure_finite):
     """Ensure signals are in the correct state."""
-    if not isinstance(ensure_finite, bool):
-        raise ValueError(
-            "'ensure_finite' must be boolean type True or False "
-            f"but you provided ensure_finite={ensure_finite}"
-        )
+    check_parameter_in_allowed(ensure_finite, [True, False], "ensure_finite")
     signals = signals.copy()
     if not isinstance(signals, np.ndarray):
         signals = as_ndarray(signals)
