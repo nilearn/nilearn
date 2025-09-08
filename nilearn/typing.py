@@ -21,7 +21,7 @@ from __future__ import annotations
 import pathlib
 from collections.abc import Callable
 from pathlib import Path
-from typing import Literal, TypeAlias
+from typing import TypeAlias
 
 import numpy as np
 from joblib.memory import Memory
@@ -73,9 +73,7 @@ TargetAffine: TypeAlias = ndarray | None
 # about using a generic and would prefer "list[int]" to "list".
 TargetShape: TypeAlias = tuple | list | None
 
-Threshold: TypeAlias = (
-    float | int | np.floating | np.integer | Literal["auto"] | None
-)
+Threshold: TypeAlias = float | int | np.floating | np.integer | str | None
 
 Tfce: TypeAlias = bool
 Title: TypeAlias = str | None
