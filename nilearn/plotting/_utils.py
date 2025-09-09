@@ -55,7 +55,7 @@ def save_figure_if_needed(fig, output_file):
     return None
 
 
-def get_cbar_ticks(vmin, vmax, threshold, n_ticks=5):
+def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
     """Return an array of ``n_ticks`` tick values to be used for the
     colorbar.
 
