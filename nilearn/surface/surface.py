@@ -635,7 +635,7 @@ def vol_to_surf(
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node. Ignored if `inner_mesh` is provided.
 
-    interpolation : {'linear', 'nearest', 'nearest_most_frequent'}, \
+    interpolation : {'linear', 'nearest_most_frequent'}, \
                     default='linear'
         How the image intensity is measured at a sample point.
 

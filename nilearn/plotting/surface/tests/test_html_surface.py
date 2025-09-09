@@ -207,7 +207,7 @@ def test_view_img_on_surf(tmp_path, mni152_template_res_2):
         vol_to_surf_kwargs={
             "n_samples": 1,
             "radius": 0.0,
-            "interpolation": "nearest",
+            "interpolation": "nearest_most_frequent",
         },
     )
     check_html(tmp_path, html)
