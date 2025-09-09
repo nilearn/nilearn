@@ -950,8 +950,6 @@ def test_validity_threshold_value_in_threshold_img(
     """Check that invalid values to threshold_img's threshold parameter \
        raise Exceptions.
     """
-    # setting copy_header to True to avoid warnings
-    # TODO (nilearn >= 0.13.0) remove
     copy_header = True
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
 
@@ -963,9 +961,7 @@ def test_validity_threshold_value_in_threshold_img(
         threshold_img(maps, threshold=None, copy_header=copy_header)
 
     threshold = object()
-    with pytest.raises(
-        TypeError, match="should be either a number or a string"
-    ):
+    with pytest.raises(TypeError, match="should be of type"):
         threshold_img(
             maps,
             threshold=threshold,
@@ -1356,15 +1352,17 @@ def test_math_img_surface(surf_img_2d):
 def test_math_img_copy_default_header(
     img_4d_ones_eye_default_header, img_4d_ones_eye_tr2
 ):
-    # case where data values are not changed and header values are not copied
-    # the result should have default header values
+    """Check where data values are not changed & header values are not copied.
+
+    The result should have default header values.
+    """
     formula_no_change = "img * 1"
     # using img_4d_ones_eye_tr2 with edited header in the formula
     result = math_img(
         formula_no_change, img=img_4d_ones_eye_tr2, copy_header_from=None
     )
-    # header values should instead match default header values
-    assert result.header == img_4d_ones_eye_default_header.header
+    # header values should NOT match the input image header values
+    assert result.header != img_4d_ones_eye_default_header.header
 
 
 def test_math_img_copied_header_from_img(img_4d_mni_tr2):

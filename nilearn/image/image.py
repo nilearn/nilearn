@@ -1191,11 +1191,12 @@ def math_img(formula, copy_header_from=None, **imgs):
         The mathematical formula to apply to image internal data. It can use
         numpy imported as 'np'.
 
-    copy_header_from : :obj:`str`, default=None
+    copy_header_from : :obj:`str` or None, default=None
         Takes the variable name of one of the images in the formula.
         The header of this image will be copied to the result of the formula.
         Note that the result image and the image to copy the header from,
-        should have the same number of dimensions. If None, the default
+        should have the same number of dimensions.
+        If None, the default
         :class:`~nibabel.nifti1.Nifti1Header` is used.
 
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
@@ -1323,7 +1324,7 @@ def math_img(formula, copy_header_from=None, **imgs):
         raise
 
     if copy_header_from is None:
-        return new_img_like(niimg, result, niimg.affine)
+        return new_img_like(niimg, result, niimg.affine, copy_header=False)
     niimg = check_niimg(imgs[copy_header_from])
     # only copy the header if the result and the input image to copy the
     # header from have the same shape
