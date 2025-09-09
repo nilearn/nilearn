@@ -267,7 +267,7 @@ def img_to_signals_labels(
 
             Default changed to False.
 
-        .. deprecated ::
+        .. deprecated:: 0.13.0dev
 
             This parameter will be removed in versions >= 0.15.0
 
