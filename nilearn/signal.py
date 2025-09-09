@@ -21,6 +21,7 @@ from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
     check_parameter_in_allowed,
     check_params,
     check_run_sample_masks,
@@ -1029,10 +1030,9 @@ def sanitize_confounds(n_time, confounds):
     if confounds is None:
         return confounds
 
-    if not isinstance(confounds, (list, tuple, str, np.ndarray, pd.DataFrame)):
-        raise TypeError(
-            f"confounds keyword has an unhandled type: {confounds.__class__}"
-        )
+    check_is_of_allowed_type(
+        confounds, (list, tuple, str, np.ndarray, pd.DataFrame), "confounds"
+    )
 
     if not isinstance(confounds, (list, tuple)):
         confounds = (confounds,)

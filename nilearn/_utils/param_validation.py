@@ -122,10 +122,9 @@ def check_threshold(
 
 def check_run_sample_masks(n_runs, sample_masks):
     """Check that number of sample_mask matches number of runs."""
-    if not isinstance(sample_masks, (list, tuple, np.ndarray)):
-        raise TypeError(
-            f"sample_mask has an unhandled type: {sample_masks.__class__}"
-        )
+    check_is_of_allowed_type(
+        sample_masks, (list, tuple, np.ndarray), "sample_masks"
+    )
 
     if isinstance(sample_masks, np.ndarray):
         sample_masks = (sample_masks,)
@@ -261,11 +260,18 @@ def check_params(fn_dict):
         type_to_check = TYPE_MAPS[k]
         value = fn_dict[k]
 
-        error_msg = (
-            f"'{k}' should be of type '{type_to_check}'.\nGot: '{type(value)}'"
-        )
-        if not isinstance(value, type_to_check):
-            raise TypeError(error_msg)
+        check_is_of_allowed_type(value, type_to_check, k)
+
+
+def check_is_of_allowed_type(
+    value: Any, type_to_check: tuple[Any], parameter_name: str
+):
+    error_msg = (
+        f"'{parameter_name}' must be of type '{type_to_check}'.\n"
+        f"Got: '{value.__class__.__name__}'"
+    )
+    if not isinstance(value, type_to_check):
+        raise TypeError(error_msg)
 
 
 def check_reduction_strategy(strategy: str):

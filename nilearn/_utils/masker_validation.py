@@ -4,12 +4,12 @@ from string import Template
 
 import numpy as np
 
+from nilearn._utils.cache_mixin import check_memory
+from nilearn._utils.class_inspect import get_params
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike
-
-from .cache_mixin import check_memory
-from .class_inspect import get_params
 
 
 def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
@@ -174,12 +174,7 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
     surface_type = (SurfaceImage, SurfaceMasker)
     all_allowed_types = (*volumetric_type, *surface_type)
 
-    if not isinstance(mask_img, all_allowed_types):
-        raise TypeError(
-            "\nMask should be of type: "
-            f"{[x.__name__ for x in all_allowed_types]}.\n"
-            f"Got : '{mask_img.__class__.__name__}'"
-        )
+    check_is_of_allowed_type(mask_img, all_allowed_types, "mask")
 
     if isinstance(mask_img, volumetric_type) and any(
         not isinstance(x, NiimgLike) for x in run_imgs
