@@ -219,12 +219,10 @@ def load_mni152_template(resolution=None):
     # Resample template according to the pre-specified resolution, if different
     # than 1
     if resolution != 1:
-        # TODO (nilearn >= 0.13.0) force_resample=True
         new_brain_template = resampling.resample_img(
             new_brain_template,
             np.eye(3) * resolution,
             copy_header=True,
-            force_resample=False,
         )
 
     return new_brain_template
@@ -279,12 +277,10 @@ def load_mni152_gm_template(resolution=None):
     # Resample template according to the pre-specified resolution, if different
     # than 1
     if resolution != 1:
-        # TODO (nilearn >= 0.13.0) force_resample=True
         new_gm_template = resampling.resample_img(
             new_gm_template,
             np.eye(3) * resolution,
             copy_header=True,
-            force_resample=False,
         )
 
     return new_gm_template
@@ -340,12 +336,10 @@ def load_mni152_wm_template(resolution=None):
     # Resample template according to the pre-specified resolution, if different
     # than 1
     if resolution != 1:
-        # TODO (nilearn >= 0.13.0) force_resample=True
         new_wm_template = resampling.resample_img(
             new_wm_template,
             np.eye(3) * resolution,
             copy_header=True,
-            force_resample=False,
         )
 
     return new_wm_template
