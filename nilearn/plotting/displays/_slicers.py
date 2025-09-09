@@ -747,11 +747,7 @@ class BaseSlicer:
                 cmap, norm, offset, (*self._brain_color, 0.0)
             )
 
-        # edge case where the data has a single value
-        # yields a cryptic matplotlib error message
-        # when trying to plot the color bar
-        n_ticks = 5 if cbar_vmin != cbar_vmax else 1
-        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks)
+        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks=5)
         bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
         self._cbar = ColorbarBase(
