@@ -86,12 +86,13 @@ repos:
     -   id: ruff-format
         # args: [--diff]
 
-    # check imports contracts
--   repo: https://github.com/seddonym/import-linter
-    rev: v2.4
+-   repo: local
     hooks:
-    -   id: import-linter
-        args: [--verbose]
+    -   id: lint_imports
+        name: Lint imports
+        entry: lint-imports    # Adapt with custom arguments, if need be.
+        language: system
+        pass_filenames: false
 
 -   repo: https://github.com/PyCQA/doc8
     rev: v2.0.0
