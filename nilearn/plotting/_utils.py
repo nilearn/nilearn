@@ -55,7 +55,7 @@ def save_figure_if_needed(fig, output_file):
     return None
 
 
-def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
+def get_cbar_ticks(vmin, vmax, threshold, n_ticks=5):
     """Help for BaseSlicer."""
     # edge case where the data has a single value yields
     # a cryptic matplotlib error message when trying to plot the color bar
@@ -71,8 +71,8 @@ def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
     # If the threshold is very small compared to vmax,
     # we use a simple linspace as the result would be very difficult to see.
     ticks = np.linspace(vmin, vmax, n_ticks)
-    if offset is not None and offset / vmax > 0.12:
-        diff = [abs(abs(tick) - offset) for tick in ticks]
+    if threshold is not None and threshold / vmax > 0.12:
+        diff = [abs(abs(tick) - threshold) for tick in ticks]
         # Edge case where the thresholds are exactly
         # at the same distance to 4 ticks
         if diff.count(min(diff)) == 4:
@@ -84,7 +84,7 @@ def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
             if 0 in ticks[idx_closest]:
                 idx_closest = np.sort(np.argpartition(diff, 3)[:3])
                 idx_closest = idx_closest[[0, 2]]
-        ticks[idx_closest] = [-offset, offset]
+        ticks[idx_closest] = [-threshold, threshold]
     if len(ticks) > 0 and ticks[0] < vmin:
         ticks[0] = vmin
 
