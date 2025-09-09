@@ -570,7 +570,7 @@ keep_masked_labels : :obj:`bool`, default=False
 
     .. deprecated:: 0.10.2
 
-    .. changed:: 0.13.0dev
+    .. versionchanged:: 0.13.0dev
 
         The ``keep_masked_labels`` parameter will be removed in 0.15.
 
@@ -589,8 +589,6 @@ keep_masked_maps : :obj:`bool`, optional
 
     .. versionchanged:: 0.13.0dev
 
-        ``keep_masked_maps`` is deprecated.
-        The default value was change to 'False' in 0.13.0.
         The ``keep_masked_maps`` parameter will be removed in 0.15.
 
 """
