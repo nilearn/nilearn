@@ -104,13 +104,9 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
     %(clean_args)s
 
-    %(masker_kwargs)s
-
     Attributes
     ----------
     %(clean_args_)s
-
-    %(masker_kwargs_)s
 
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
@@ -156,7 +152,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
         cmap="CMRmap_r",
         n_jobs=1,
         clean_args=None,
-        **kwargs,
     ):
         self.n_jobs = n_jobs
         super().__init__(
@@ -183,7 +178,6 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
             cmap=cmap,
             clean_args=clean_args,
             keep_masked_labels=keep_masked_labels,
-            **kwargs,
         )
 
     def __sklearn_tags__(self):
