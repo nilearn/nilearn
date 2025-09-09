@@ -86,13 +86,14 @@ repos:
     -   id: ruff-format
         # args: [--diff]
 
--   repo: local
+    # check imports contracts
+-   repo: https://github.com/seddonym/import-linter
+    # issue with v2.4 in pre-commit CI
+    # https://github.com/seddonym/import-linter/issues/283
+    rev: v2.3
     hooks:
-    -   id: lint_imports
-        name: Lint imports
-        entry: lint-imports    # Adapt with custom arguments, if need be.
-        language: system
-        pass_filenames: false
+    -   id: import-linter
+        args: [--verbose]
 
 -   repo: https://github.com/PyCQA/doc8
     rev: v2.0.0
