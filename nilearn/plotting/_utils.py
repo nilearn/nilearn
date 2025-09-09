@@ -56,7 +56,27 @@ def save_figure_if_needed(fig, output_file):
 
 
 def get_cbar_ticks(vmin, vmax, threshold, n_ticks=5):
-    """Help for BaseSlicer."""
+    """Return an array of ``n_ticks`` tick values to be used for the
+    colorbar.
+
+    Parameters
+    ----------
+    vmin: :obj:`float`
+        minimum value for the colorbar
+    vmax: :obj:`float`
+        maximum value for the colorbar
+    threshold: :obj:`float` or :obj:`int`
+        if threshold is specified, -threshold and threshold is expected to
+    appear on the colorbar
+    n_ticks: :obj:`int`
+        number of tick values to return
+
+    Returns
+    -------
+    :class:`~numpy.ndarray`
+        an array with ``n_ticks`` elements if ``vmin`` != ``vmax``, else array
+    with one element.
+    """
     # edge case where the data has a single value yields
     # a cryptic matplotlib error message when trying to plot the color bar
     if vmin == vmax:
