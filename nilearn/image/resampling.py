@@ -452,10 +452,8 @@ def resample_img(
     """
     from .image import new_img_like  # avoid circular imports
 
-    check_params(locals())
-
     _check_resample_img_inputs(
-        target_shape, target_affine, interpolation, force_resample
+        target_shape, target_affine, interpolation, force_resample, copy_header
     )
 
     img = stringify_path(img)
@@ -660,7 +658,7 @@ def _resampling_not_needed(img, target_affine, target_shape):
 
 
 def _check_resample_img_inputs(
-    target_shape, target_affine, interpolation, force_resample
+    target_shape, target_affine, interpolation, force_resample, copy_header
 ):
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
@@ -692,6 +690,12 @@ def _check_resample_img_inputs(
         raise TypeError(
             "'force_resample' must be a boolean."
             f"Got: {force_resample.__class__.__name__}"
+        )
+
+    if not isinstance(copy_header, bool):
+        raise TypeError(
+            "'copy_header' must be a boolean."
+            f"Got: {copy_header.__class__.__name__}"
         )
 
 
