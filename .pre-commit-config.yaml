@@ -76,7 +76,7 @@ repos:
             )$
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.11
+    rev: v0.12.12
     hooks:
     # Run the linter.
     -   id: ruff-check
@@ -88,6 +88,8 @@ repos:
 
     # check imports contracts
 -   repo: https://github.com/seddonym/import-linter
+    # issue with v2.4 in pre-commit CI
+    # https://github.com/seddonym/import-linter/issues/283
     rev: v2.3
     hooks:
     -   id: import-linter
