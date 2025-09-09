@@ -984,7 +984,8 @@ def threshold_img(
         maximum intensity of the data.
         If `two_sided` is True, threshold cannot be negative.
         If threshold is :obj:`str`,
-        the given string should be within the range of "0%" to "100%".
+        the given string should be
+        within the range of ``"0%%"`` to ``"100%%"``.
 
     cluster_threshold : :obj:`float`, default=0
         Cluster size threshold, in voxels. In the returned thresholded map,
@@ -1353,11 +1354,11 @@ def binarize_img(
         voxels which have intensities greater than this value will be kept.
         The given value should be within the range of minimum and
         maximum intensity of the input image.
-        If string, it should finish with percent sign e.g. "80%" and we
+        If string, it should finish with percent sign e.g. "80%%" and we
         threshold based on the score obtained using this percentile on
         the image data. The voxels which have intensities greater than
         this score will be kept. The given string should be
-        within the range of "0%" to "100%".
+        within the range of "0%%" to "100%%".
 
     mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`, \
                default=None
