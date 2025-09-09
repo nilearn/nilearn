@@ -522,7 +522,7 @@ class SecondLevelModel(BaseGLM):
     n_elements_ : :obj:`int`
         The number of voxels or vertices in the mask.
 
-        .. versionadded:: 0.12.1
+        .. versionadded:: nilearn 0.12.1
 
     results_ : :obj:`dict`,
         with keys corresponding to the different labels values.
@@ -960,7 +960,7 @@ def non_parametric_inference(
 
     %(first_level_contrast)s
 
-        .. versionadded:: 0.9.0
+        .. versionadded:: nilearn 0.9.0
 
     %(second_level_mask)s
 
@@ -991,7 +991,7 @@ def non_parametric_inference(
         This is only used for cluster-level inference.
         If None, no cluster-level inference will be performed.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: nilearn 0.9.2
 
         .. warning::
 
@@ -1004,7 +1004,7 @@ def non_parametric_inference(
 
     %(tfce)s
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: nilearn 0.9.2
 
         .. warning::
 
@@ -1027,7 +1027,7 @@ def non_parametric_inference(
         .. note::
             This is returned if ``tfce`` is True or ``threshold`` is not None.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: nilearn 0.9.2
 
         Here are the keys:
 

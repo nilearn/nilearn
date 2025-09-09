@@ -319,7 +319,7 @@ class MultiNiftiLabelsMasker(NiftiLabelsMasker):
 
         %(sample_mask_multi)s
 
-            .. versionadded:: 0.8.0
+            .. versionadded:: nilearn 0.8.0
 
         Returns
         -------

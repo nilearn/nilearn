@@ -26,7 +26,7 @@ from nilearn.surface.utils import check_polymesh_equal
 class SurfaceMasker(_BaseSurfaceMasker):
     """Extract data from a :obj:`~nilearn.surface.SurfaceImage`.
 
-    .. versionadded:: 0.11.0
+    .. versionadded:: nilearn 0.11.0
 
     Parameters
     ----------

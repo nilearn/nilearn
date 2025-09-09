@@ -168,7 +168,7 @@ class NiftiLabelsMasker(BaseMasker):
         Only relevant for the report figures.
 
     %(clean_args)s
-        .. versionadded:: 0.12.0
+        .. versionadded:: nilearn 0.12.0
 
     Attributes
     ----------
@@ -292,7 +292,7 @@ class NiftiLabelsMasker(BaseMasker):
         The region name corresponding to ``region_signal[:,i]``
         is ``region_names_[i]``.
 
-        .. versionadded:: 0.10.3
+        .. versionadded:: nilearn 0.10.3
         """
         check_is_fitted(self)
 
@@ -313,7 +313,7 @@ class NiftiLabelsMasker(BaseMasker):
         is ``region_ids_[i]``.
         ``region_ids_['background']`` is the background label.
 
-        .. versionadded:: 0.10.3
+        .. versionadded:: nilearn 0.10.3
         """
         check_is_fitted(self)
 
@@ -336,7 +336,7 @@ class NiftiLabelsMasker(BaseMasker):
         in the fitted label image,
         minus the background value.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: nilearn 0.9.2
         """
         check_is_fitted(self)
         lut = self.lut_
@@ -681,7 +681,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. versionadded:: nilearn 0.8.0
 
         Returns
         -------
@@ -710,7 +710,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. versionadded:: nilearn 0.8.0
 
         Attributes
         ----------
@@ -721,7 +721,7 @@ class NiftiLabelsMasker(BaseMasker):
             that takes the value ``region_ids_[i]``
             is used to compute the signal in ``region_signal[:, i]``.
 
-            .. versionadded:: 0.10.3
+            .. versionadded:: nilearn 0.10.3
 
         Returns
         -------
@@ -890,7 +890,7 @@ class NiftiLabelsMasker(BaseMasker):
 
         Any mask given at initialization is taken into account.
 
-        .. versionchanged:: 0.9.2
+        .. versionchanged:: nilearn 0.9.2
 
             This method now supports 1D arrays, which will produce 3D images.
 

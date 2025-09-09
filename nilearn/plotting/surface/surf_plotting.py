@@ -66,7 +66,7 @@ def plot_surf(
 ):
     """Plot surfaces with optional background and data.
 
-    .. versionadded:: 0.3
+    .. versionadded:: nilearn 0.3
 
     Parameters
     ----------
@@ -99,7 +99,7 @@ def plot_surf(
 
     engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
-        .. versionadded:: 0.9.0
+        .. versionadded:: nilearn 0.9.0
 
         Selects which plotting engine will be used by ``plot_surf``.
         Currently, only ``matplotlib`` and ``plotly`` are supported.
@@ -129,9 +129,9 @@ def plot_surf(
         When using ``plotly`` as engine, ``symmetric_cmap`` will default to
         `False` if `None` is passed.
 
-        .. versionadded:: 0.9.0
+        .. versionadded:: nilearn 0.9.0
 
-        .. versionchanged:: 0.12.0
+        .. versionchanged:: nilearn 0.12.0
             Default value changed to None.
 
     %(colorbar)s
@@ -190,7 +190,7 @@ def plot_surf(
         - `'%%.2g'` (scientific notation) with ``matplotlib`` engine.
         - `'.1f'` (rounded floats) with ``plotly`` engine.
 
-        .. versionadded:: 0.7.1
+        .. versionadded:: nilearn 0.7.1
 
     %(title)s
 
@@ -204,7 +204,7 @@ def plot_surf(
         When using ``plotly`` as engine, ``title_font_size`` will default to
         `18` if `None` is passed.
 
-        .. versionadded:: 0.9.0
+        .. versionadded:: nilearn 0.9.0
 
     %(output_file)s
 
@@ -329,7 +329,7 @@ def plot_surf_contours(
         and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
         Otherwise a warning will be displayed.
 
-        .. versionadded:: 0.11.0
+        .. versionadded:: nilearn 0.11.0
 
     levels : :obj:`list` of :obj:`int`, or None, default=None
         A list of indices of the regions that are to be outlined.
@@ -427,7 +427,7 @@ def plot_surf_stat_map(
 ):
     """Plot a stats map on a surface :term:`mesh` with optional background.
 
-    .. versionadded:: 0.3
+    .. versionadded:: nilearn 0.3
 
     Parameters
     ----------
@@ -460,7 +460,7 @@ def plot_surf_stat_map(
 
     engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
-        .. versionadded:: 0.9.0
+        .. versionadded:: nilearn 0.9.0
 
         Selects which plotting engine will be used by ``plot_surf_stat_map``.
         Currently, only ``matplotlib`` and ``plotly`` are supported.
@@ -497,7 +497,7 @@ def plot_surf_stat_map(
         When using matplotlib as engine,
         `avg_method` will default to ``"mean"`` if ``None`` is passed.
 
-        .. versionadded:: 0.10.3
+        .. versionadded:: nilearn 0.10.3
 
     %(threshold)s
         Default=None
@@ -526,14 +526,14 @@ def plot_surf_stat_map(
             - '%%.2g' (scientific notation) with ``matplotlib`` engine.
             - '.1f' (rounded floats) with ``plotly`` engine.
 
-        .. versionadded:: 0.7.1
+        .. versionadded:: nilearn 0.7.1
 
     %(title)s
 
     title_font_size : :obj:`int`, default=None
         Size of the title font (only implemented for the plotly engine).
 
-        .. versionadded:: 0.9.0
+        .. versionadded:: nilearn 0.9.0
 
     %(output_file)s
 
@@ -817,7 +817,7 @@ def plot_surf_roi(
 ):
     """Plot ROI on a surface :term:`mesh` with optional background.
 
-    .. versionadded:: 0.3
+    .. versionadded:: nilearn 0.3
 
     Parameters
     ----------
@@ -856,7 +856,7 @@ def plot_surf_roi(
 
     engine : {'matplotlib', 'plotly'}, default='matplotlib'
 
-        .. versionadded:: 0.9.0
+        .. versionadded:: nilearn 0.9.0
 
         Selects which plotting engine will be used by ``plot_surf_roi``.
         Currently, only ``matplotlib`` and ``plotly`` are supported.
@@ -919,14 +919,14 @@ def plot_surf_roi(
             - "%%i" for ``matplotlib`` engine.
             - "." for ``plotly`` engine.
 
-        .. versionadded:: 0.7.1
+        .. versionadded:: nilearn 0.7.1
 
     %(title)s
 
     title_font_size : :obj:`int`, default=None
         Size of the title font (only implemented for the plotly engine).
 
-        .. versionadded:: 0.9.0
+        .. versionadded:: nilearn 0.9.0
 
     %(output_file)s
 

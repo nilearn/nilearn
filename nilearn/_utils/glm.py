@@ -154,11 +154,11 @@ def make_stat_maps(
     output_type : :obj:`str`, default='z_score'
         The type of statistical map to retain from the contrast.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: nilearn 0.9.2
 
     %(first_level_contrast)s
 
-        .. versionadded:: 0.12.0
+        .. versionadded:: nilearn 0.12.0
 
     Returns
     -------

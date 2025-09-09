@@ -39,7 +39,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     """Extract data from a SurfaceImage, using maps of potentially overlapping
     brain regions.
 
-    .. versionadded:: 0.11.1
+    .. versionadded:: nilearn 0.11.1
 
     Parameters
     ----------

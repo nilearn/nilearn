@@ -117,7 +117,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         The number of overlapping maps in the mask.
         This is equivalent to the number of volumes in the mask image.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: nilearn 0.9.2
 
     Notes
     -----
@@ -323,7 +323,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         %(sample_mask_multi)s
 
-            .. versionadded:: 0.8.0
+            .. versionadded:: nilearn 0.8.0
 
         Returns
         -------

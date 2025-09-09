@@ -129,7 +129,7 @@ class NiftiMapsMasker(BaseMasker):
         Only relevant for the report figures.
 
     %(clean_args)s
-        .. versionadded:: 0.12.0
+        .. versionadded:: nilearn 0.12.0
 
 
     Attributes
@@ -147,7 +147,7 @@ class NiftiMapsMasker(BaseMasker):
         The number of overlapping maps in the mask.
         This is equivalent to the number of volumes in the mask image.
 
-        .. versionadded:: 0.9.2
+        .. versionadded:: nilearn 0.9.2
 
     Notes
     -----
@@ -540,7 +540,7 @@ class NiftiMapsMasker(BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. versionadded:: nilearn 0.8.0
 
         Returns
         -------
@@ -568,7 +568,7 @@ class NiftiMapsMasker(BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. versionadded:: nilearn 0.8.0
 
         Returns
         -------

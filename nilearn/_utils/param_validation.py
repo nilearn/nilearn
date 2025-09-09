@@ -44,7 +44,7 @@ def check_threshold(
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-        .. versionadded:: 0.12.0
+        .. versionadded:: nilearn 0.12.0
 
     Returns
     -------

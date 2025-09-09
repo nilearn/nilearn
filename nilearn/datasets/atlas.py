@@ -87,7 +87,7 @@ def fetch_atlas_difumo(
     over a with range of experimental conditions.
     See :footcite:t:`Dadi2020`.
 
-    .. versionadded:: 0.7.1
+    .. versionadded:: nilearn 0.7.1
 
     Notes
     -----
@@ -652,7 +652,7 @@ def fetch_atlas_juelich(
     specified by your FSL installed path given in `data_dir` argument.
     See documentation for details.
 
-    .. versionadded:: 0.8.1
+    .. versionadded:: nilearn 0.8.1
 
     .. note::
 
@@ -1287,7 +1287,7 @@ def fetch_atlas_yeo_2011(
         If ``thickness`` is not None, this will default to ``7``.
         The default will be set to ``7`` in version 0.13.0.
 
-        .. versionadded:: 0.12.0
+        .. versionadded:: nilearn 0.12.0
 
     thickness : {"thin", "thick", None}, default = None
         If not None,
@@ -1299,7 +1299,7 @@ def fetch_atlas_yeo_2011(
         If ``n_networks`` is not None, this will default to ``"thick"``.
         The default will be set to ``"thick"`` in version 0.13.0.
 
-        .. versionadded:: 0.12.0
+        .. versionadded:: nilearn 0.12.0
 
     Returns
     -------
@@ -1707,7 +1707,7 @@ def fetch_atlas_basc_multiscale_2015(
     :term:`fMRI`: finding homotopic regions simply consists of flipping the
     x-axis of the template.
 
-    .. versionadded:: 0.2.3
+    .. versionadded:: nilearn 0.2.3
 
     Parameters
     ----------
@@ -1924,7 +1924,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
 
     See :footcite:t:`Seitzman2020`.
 
-    .. versionadded:: 0.5.1
+    .. versionadded:: nilearn 0.5.1
 
     Parameters
     ----------
@@ -2128,7 +2128,7 @@ def fetch_atlas_surf_destrieux(
     This atlas returns 76 labels per hemisphere based on sulco-gryal patterns
     as distributed with Freesurfer in fsaverage5 surface space.
 
-    .. versionadded:: 0.3
+    .. versionadded:: nilearn 0.3
 
     Parameters
     ----------
@@ -2294,7 +2294,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     :footcite:t:`Lancaster2000`,
     and :footcite:t:`Lancaster1997`.
 
-    .. versionadded:: 0.4.0
+    .. versionadded:: nilearn 0.4.0
 
     Parameters
     ----------
@@ -2490,7 +2490,7 @@ def fetch_atlas_schaefer_2018(
 ):
     """Download and return file names for the Schaefer 2018 parcellation.
 
-    .. versionadded:: 0.5.1
+    .. versionadded:: nilearn 0.5.1
 
     This function returns a :term:`Deterministic atlas`, and the provided
     images are in MNI152 space.

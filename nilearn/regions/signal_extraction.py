@@ -351,7 +351,7 @@ def signals_to_img_labels(
 
     labels_img, mask_img must have the same shapes and affines.
 
-    .. versionchanged:: 0.9.2
+    .. versionchanged:: nilearn 0.9.2
         Support 1D signals.
 
     Parameters
