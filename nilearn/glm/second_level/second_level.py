@@ -29,6 +29,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_contrast,
@@ -636,7 +637,7 @@ class SecondLevelModel(BaseGLM):
             warn(
                 "Parameter 'smoothing_fwhm' is not "
                 "yet supported for surface data.",
-                UserWarning,
+                NotImplementedWarning,
                 stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = None
@@ -1101,7 +1102,7 @@ def non_parametric_inference(
         warn(
             "Parameter 'smoothing_fwhm' is not "
             "yet supported for surface data.",
-            UserWarning,
+            NotImplementedWarning,
             stacklevel=find_stack_level(),
         )
         smoothing_fwhm = None
@@ -1115,7 +1116,7 @@ def non_parametric_inference(
                 "for surface data.\n"
                 f"Setting {tfce=} and {threshold=}."
             ),
-            UserWarning,
+            NotImplementedWarning,
             stacklevel=find_stack_level(),
         )
 

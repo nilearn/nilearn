@@ -32,6 +32,7 @@ from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.image import (
     concat_imgs,
     high_variance_confounds,
@@ -638,7 +639,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             warnings.warn(
                 "Parameter smoothing_fwhm "
                 "is not yet supported for surface data",
-                UserWarning,
+                NotImplementedWarning,
                 stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = None

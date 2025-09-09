@@ -25,8 +25,12 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` Add a NotImplementedWarning (:gh:`5508` by `Rémi Gau`_).
+
 Changes
 -------
+
+- :bdg-danger:`Deprecation` The attribute ``nifti_maps_masker_`` was removed from :class:`~decomposition.CanICA` and :class:`~decomposition.DictLearning`. Use ``maps_masker_`` instead (:gh:`5626` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Extra key-words arguments (``kwargs``) have been removed from the constructor of all the Nifti maskers. Any extra-parameters to pass to the call to :func:`~image.clean_img` done by ``transform`` must be done via the parameter ``clean_args`` (:gh:`5628` by `Rémi Gau`_).
 
