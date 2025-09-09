@@ -1024,7 +1024,7 @@ def test_first_level_from_bids_set_repetition_time_warnings(tmp_path):
 @pytest.mark.parametrize(
     "t_r, error_type, error_msg",
     [
-        ("not a number", TypeError, "must be a float"),
+        ("not a number", TypeError, "must be of type"),
         (-1, ValueError, "positive"),
     ],
 )
@@ -1075,7 +1075,7 @@ def test_first_level_from_bids_set_slice_timing_ref_warnings(tmp_path):
 @pytest.mark.parametrize(
     "slice_time_ref, error_type, error_msg",
     [
-        ("not a number", TypeError, "must be a float"),
+        ("not a number", TypeError, "must be of type"),
         (2, ValueError, "between 0 and 1"),
     ],
 )
@@ -1784,7 +1784,7 @@ def test_first_level_from_bids_no_duplicate_sub_labels(bids_dataset):
 
 def test_first_level_from_bids_validation_input_dataset_path():
     """Raise error when dataset_path is invalid."""
-    with pytest.raises(TypeError, match="must be a string or pathlike"):
+    with pytest.raises(TypeError, match="must be of type"):
         first_level_from_bids(
             dataset_path=2,
             task_label="main",
@@ -1798,7 +1798,7 @@ def test_first_level_from_bids_validation_input_dataset_path():
             space_label="MNI",
             slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
-    with pytest.raises(TypeError, match="derivatives_.* must be a string"):
+    with pytest.raises(TypeError, match="derivatives_.* must be of type"):
         first_level_from_bids(
             dataset_path=Path(),
             task_label="main",
@@ -1825,7 +1825,7 @@ def test_first_level_from_bids_validation_task_label(
 @pytest.mark.parametrize(
     "sub_labels, error_type, error_msg",
     [
-        ("42", TypeError, "must be a list"),
+        ("42", TypeError, "must be of type"),
         (["1", 1], TypeError, "must be string"),
         ([1], TypeError, "must be string"),
     ],
@@ -1863,7 +1863,7 @@ def test_first_level_from_bids_validation_space_label(
 @pytest.mark.parametrize(
     "img_filters, error_type,match",
     [
-        ("foo", TypeError, "'img_filters' must be a list"),
+        ("foo", TypeError, "'img_filters' must be of type"),
         ([(1, 2)], TypeError, "Filters in img"),
         ([("desc", "*/-")], ValueError, "bids labels must be alphanumeric."),
         ([("foo", "bar")], ValueError, "must be one of"),
