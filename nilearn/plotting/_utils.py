@@ -75,7 +75,7 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
     -------
     :class:`~numpy.ndarray`
         an array with ``n_ticks`` elements if ``vmin`` != ``vmax``, else array
-    with one element.
+        with one element.
     """
     # edge case where the data has a single value yields
     # a cryptic matplotlib error message when trying to plot the color bar
