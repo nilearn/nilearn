@@ -82,7 +82,11 @@ def test_multi_nifti_maps_masker(
     )
 
     masker = MultiNiftiMapsMasker(
-        img_maps, mask_img=mask11_img, resampling_target=None
+        img_maps,
+        mask_img=mask11_img,
+        resampling_target=None,
+        keep_masked_maps=True,
+        verbose=0,
     )
 
     signals11 = masker.fit_transform(fmri11_img)
@@ -248,7 +252,11 @@ def test_multi_nifti_maps_masker_resampling_to_mask(
     maps33_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
 
     masker = MultiNiftiMapsMasker(
-        maps33_img, mask_img=mask22_img, resampling_target="mask"
+        maps33_img,
+        mask_img=mask22_img,
+        resampling_target="mask",
+        keep_masked_maps=True,
+        verbose=0,
     )
 
     signals = masker.fit_transform([img_fmri, img_fmri])
@@ -283,7 +291,11 @@ def test_multi_nifti_maps_masker_resampling_to_maps(
     maps33_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
 
     masker = MultiNiftiMapsMasker(
-        maps33_img, mask_img=mask22_img, resampling_target="maps"
+        maps33_img,
+        mask_img=mask22_img,
+        resampling_target="maps",
+        keep_masked_maps=True,
+        verbose=0,
     )
 
     signals = masker.fit_transform([img_fmri, img_fmri])
@@ -316,7 +328,11 @@ def test_multi_nifti_maps_masker_resampling_clipped_mask(
     maps33_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
 
     masker = MultiNiftiMapsMasker(
-        maps33_img, mask_img=mask22_img, resampling_target="maps"
+        maps33_img,
+        mask_img=mask22_img,
+        resampling_target="maps",
+        keep_masked_maps=True,
+        verbose=0,
     )
 
     signals = masker.fit_transform([img_fmri, img_fmri])

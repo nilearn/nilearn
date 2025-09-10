@@ -42,6 +42,8 @@ Changes
 
 - :bdg-danger:`Deprecation` The attribute ``nifti_maps_masker_`` was removed from :class:`~decomposition.CanICA` and :class:`~decomposition.DictLearning`. Use ``maps_masker_`` instead. (:gh:`5626` by `Rémi Gau`_).
 
+- :bdg-danger:`Deprecation` The default for ``keep_masked_maps`` and ``keep_masked_labels`` was changed from ``True`` to ``False`` in :class:`~maskers.NiftiMapsMasker`, :class:`~maskers.MultiNiftiMapsMasker`, :class:`~maskers.NiftiLabelsMasker`, :class:`~maskers.MultiNiftiLabelsMasker`, :class:`~regions.RegionExtractor` and :func:`~regions.img_to_signals_labels`. These parameters will be removed in Nilearn>=0.15.0 (:gh:`5632` by `Rémi Gau`_).
+
 - :bdg-danger:`Deprecation`  In the ``scrubbing`` strategy used by :func:`~interfaces.fmriprep.load_confounds`, the default value of ``fd_threshold`` was changed from ``0.2`` to ``0.5`` and that of ``std_dvars_threshold`` was changed from ``3.0`` to ``1.5`` to better match the values used by fmriprep (:gh:`5633` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The default for the parameter ``homogeneity`` of :func:`~datasets.fetch_atlas_craddock_2012` was changed from ``None`` to ``'spatial'``. The only allowed values for this parameter must now be one of ``'spatial'``, ``'temporal'`` or ``'random'``. The fetcher now only returns a single map under the key ``maps`` for the requested ``homogeneity`` and ``grp_mean`` (:gh:`5640` by `Rémi Gau`_).
