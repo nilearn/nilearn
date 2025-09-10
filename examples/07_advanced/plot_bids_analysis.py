@@ -32,7 +32,7 @@ from nilearn import plotting
 # confounds.tsv files.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
-data = fetch_language_localizer_demo_dataset(legacy_output=False)
+data = fetch_language_localizer_demo_dataset()
 
 # %%
 # Here is the location of the dataset on disk.

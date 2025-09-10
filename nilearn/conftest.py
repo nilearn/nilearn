@@ -19,6 +19,7 @@ from nilearn.datasets.tests._testing import (
     request_mocker,  # noqa: F401
     temp_nilearn_data_dir,  # noqa: F401
 )
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.surface import (
     InMemoryMesh,
     PolyMesh,
@@ -123,7 +124,6 @@ def close_all():
         import matplotlib.pyplot as plt
 
         plt.close("all")  # takes < 1 us so just always do it
-
 
 # ------------------------   RNG   ------------------------#
 

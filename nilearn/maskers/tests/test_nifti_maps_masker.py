@@ -271,7 +271,10 @@ def test_nifti_maps_masker_resampling_to_mask(
 
     # Target: mask
     masker = NiftiMapsMasker(
-        maps33_img, mask_img=mask22_img, resampling_target="mask"
+        maps33_img,
+        mask_img=mask22_img,
+        resampling_target="mask",
+        keep_masked_maps=True,
     )
 
     signals = masker.fit_transform(img_fmri)
@@ -305,7 +308,10 @@ def test_nifti_maps_masker_resampling_to_maps(
     maps33_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
 
     masker = NiftiMapsMasker(
-        maps33_img, mask_img=mask22_img, resampling_target="maps"
+        maps33_img,
+        mask_img=mask22_img,
+        resampling_target="maps",
+        keep_masked_maps=True,
     )
 
     signals = masker.fit_transform(img_fmri)
@@ -339,7 +345,10 @@ def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
     maps33_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
 
     masker = NiftiMapsMasker(
-        maps33_img, mask_img=mask22_img, resampling_target="maps"
+        maps33_img,
+        mask_img=mask22_img,
+        resampling_target="maps",
+        keep_masked_maps=True,
     )
 
     signals = masker.fit_transform(fmri11_img)
