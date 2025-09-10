@@ -65,7 +65,7 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
         minimum value for the colorbar
     vmax: :obj:`float`
         maximum value for the colorbar
-    threshold: :obj:`float` or :obj:`int`
+    threshold: :obj:`float`, :obj:`int` or None
         if threshold is specified, -threshold and threshold is expected to
     appear on the colorbar
     n_ticks: :obj:`int`
