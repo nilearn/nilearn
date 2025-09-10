@@ -313,9 +313,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     %(smoothing_fwhm)s
 
-    standardize : boolean, default=True
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+    %(standardize)s
 
     standardize_confounds : boolean, default=True
         If standardize_confounds is True, the confounds are z-scored:

@@ -587,10 +587,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
     %(screening_percentile)s
 
-    standardize : :obj:`bool`, default=True
-        If set, then the data (X, y) are centered to have mean zero along
-        axis 0. This is here because nearly all linear models will want
-        their data to be centered.
+    %(standardize)s
 
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
@@ -1068,10 +1065,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     %(memory_level1)s
 
-    standardize : :obj:`bool`, default=True
-        If set, then we'll center the data (X, y) have mean zero along axis 0.
-        This is here because nearly all linear models will want their data
-        to be centered.
+    %(standardize)s
 
     %(verbose)s
 
@@ -1304,10 +1298,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
 
     %(memory_level1)s
 
-    standardize : :obj:`bool`, default=True
-        If set, then we'll center the data (X, y) have mean zero along axis 0.
-        This is here because nearly all linear models will want their data
-        to be centered.
+    %(standardize)s
 
     %(verbose)s
 
