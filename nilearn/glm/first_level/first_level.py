@@ -2309,7 +2309,7 @@ def _check_args_first_level_from_bids(
     if not dataset_path.exists():
         raise ValueError(f"'dataset_path' does not exist:\n{dataset_path}")
 
-    check_is_of_allowed_type(derivatives_folder, str, "derivatives_folder")
+    check_is_of_allowed_type(derivatives_folder, (str,), "derivatives_folder")
     derivatives_folder = dataset_path / derivatives_folder
     if not derivatives_folder.exists():
         raise ValueError(
@@ -2322,11 +2322,11 @@ def _check_args_first_level_from_bids(
     if space_label is not None:
         check_bids_label(space_label)
 
-    check_is_of_allowed_type(sub_labels, list, "sub_labels")
+    check_is_of_allowed_type(sub_labels, (list,), "sub_labels")
     for sub_label_ in sub_labels:
         check_bids_label(sub_label_)
 
-    check_is_of_allowed_type(img_filters, list, "img_filters")
+    check_is_of_allowed_type(img_filters, (list,), "img_filters")
     supported_filters = [
         *bids_entities()["raw"],
         *bids_entities()["derivatives"],
