@@ -130,6 +130,7 @@ def filter_and_mask(
     sample_mask=None,
     copy=True,
     dtype=None,
+    sklearn_output_config=None,
 ):
     """Extract representative time series using given mask.
 
@@ -192,7 +193,7 @@ def filter_and_mask(
     # earlier)
     # Optionally: 'doctor_nan', remove voxels with NaNs, other option
     # for later: some form of imputation
-    if temp_imgs.ndim == 3:
+    if temp_imgs.ndim == 3 and sklearn_output_config is None:
         data = data.squeeze()
     return data
 
@@ -649,6 +650,8 @@ class NiftiMasker(BaseMasker):
         )
         params["clean_kwargs"] = self.clean_args_
 
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+
         data = self._cache(
             filter_and_mask,
             ignore=[
@@ -669,6 +672,7 @@ class NiftiMasker(BaseMasker):
             sample_mask=sample_mask,
             copy=copy,
             dtype=self.dtype,
+            sklearn_output_config=sklearn_output_config,
         )
 
         return data

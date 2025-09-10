@@ -11,7 +11,11 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from joblib import Memory
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import (
+    BaseEstimator,
+    ClassNamePrefixFeaturesOutMixin,
+    TransformerMixin,
+)
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
 
@@ -244,7 +248,12 @@ def mask_logger(step, img=None, verbose=0):
 
 
 @fill_doc
-class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class BaseMasker(
+    TransformerMixin,
+    ClassNamePrefixFeaturesOutMixin,
+    CacheMixin,
+    BaseEstimator,
+):
     """Base class for NiftiMaskers."""
 
     @abc.abstractmethod
@@ -300,6 +309,10 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(masker=True)
         return tags
+
+    @property
+    def _n_features_out(self):
+        return self.n_elements_
 
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
@@ -498,13 +511,37 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         return signals
 
     def set_output(self, *, transform=None):
-        """Set the output container when ``"transform"`` is called.
+        """Set output container.
 
-        .. warning::
+        See :ref:`sphx_glr_auto_examples_miscellaneous_plot_set_output.py`
+        for an example on how to use the API.
 
-            This has not been implemented yet.
+        Parameters
+        ----------
+        transform : {"default", "pandas", "polars"}, default=None
+            Configure output of `transform` and `fit_transform`.
+
+            - `"default"`: Default output format of a transformer
+            - `"pandas"`: DataFrame output
+            - `"polars"`: Polars output
+            - `None`: Transform configuration is unchanged
+
+            .. versionadded:: 1.4
+                `"polars"` option was added.
+
+        Returns
+        -------
+        self : estimator instance
+            Estimator instance.
         """
-        raise NotImplementedError()
+        if transform is None:
+            return self
+
+        if not hasattr(self, "_sklearn_output_config"):
+            self._sklearn_output_config = {}
+
+        self._sklearn_output_config["transform"] = transform
+        return self
 
     def _sanitize_cleaning_parameters(self):
         """Make sure that cleaning parameters are passed via clean_args.
