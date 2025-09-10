@@ -1,8 +1,12 @@
+"""Mixin classes for maskers."""
+
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 class _MultiMixin:
+    """Mixin class to add common MultiMasker functionalities."""
+
     def __sklearn_tags__(self):
         """Return estimator tags.
 
@@ -28,13 +32,13 @@ class _MultiMixin:
 
         Parameters
         ----------
-        imgs : Niimg-like object, or a :obj:`list` of Niimg-like objects
+        imgs : Image object, or a :obj:`list` of Image objects
             See :ref:`extracting_data`.
             Data to be preprocessed
 
         y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
+            This parameter is unused.
+            It is solely included for scikit-learn compatibility.
 
         %(confounds_multi)s
 
