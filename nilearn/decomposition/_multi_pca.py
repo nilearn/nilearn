@@ -55,7 +55,7 @@ class _MultiPCA(_BaseDecomposition):
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    %(standardize_maskers_false)s
+    %(standardize_false)s
 
     standardize_confounds : boolean, default=True
         If standardize_confounds is True, the confounds are z-scored:

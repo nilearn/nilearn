@@ -407,7 +407,7 @@ class FirstLevelModel(BaseGLM):
 
     %(memory_level)s
 
-    %(standardize_maskers_false)s
+    %(standardize_false)s
 
     signal_scaling : False, :obj:`int` or (int, int), default=0
         If not False, fMRI signals are

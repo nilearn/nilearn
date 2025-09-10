@@ -1920,7 +1920,7 @@ def plot_carpet(
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.
 
-    %(standardize)s
+    %(standardize_true)s
 
         .. note::
 

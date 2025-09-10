@@ -1508,7 +1508,7 @@ def clean_img(
         If detrending should be applied on timeseries
         (before confound removal).
 
-    %(standardize)s
+    %(standardize_true)s
 
     confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of \
         Confounds timeseries. default=None

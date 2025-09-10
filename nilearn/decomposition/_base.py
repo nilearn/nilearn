@@ -313,7 +313,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     %(smoothing_fwhm)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     standardize_confounds : boolean, default=True
         If standardize_confounds is True, the confounds are z-scored:

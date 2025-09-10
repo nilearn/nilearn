@@ -35,7 +35,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_maskers_false)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 

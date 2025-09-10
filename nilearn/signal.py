@@ -50,7 +50,7 @@ def standardize_signal(
     detrend : :obj:`bool`, default=False
         If detrending of timeseries is requested.
 
-    %(standardize_maskers_zscore)s
+    %(standardize_zscore)s
 
     Returns
     -------
@@ -654,7 +654,7 @@ def clean(
     %(high_pass)s
     %(detrend)s
 
-    %(standardize_maskers_zscore)s
+    %(standardize_zscore)s
 
     %(standardize_confounds)s
 

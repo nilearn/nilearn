@@ -587,7 +587,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
     %(screening_percentile)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
@@ -1065,7 +1065,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     %(memory_level1)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(verbose)s
 
@@ -1298,7 +1298,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
 
     %(memory_level1)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(verbose)s
 

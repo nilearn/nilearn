@@ -401,7 +401,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
 
-    %(standardize)s
+    %(standardize_true)s
 
         .. note::
 

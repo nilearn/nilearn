@@ -1034,16 +1034,6 @@ smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
 
 # standardize
 standardize = """
-standardize : :obj:`bool`, default={}
-    If `standardize` is `True`, the data are centered and normed:
-    their mean is put to 0 and their variance is put to 1
-    in the time dimension.
-"""
-docdict["standardize"] = standardize.format("True")
-
-
-# standardize as used within maskers module
-standardize_maskers = """
 standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
     Strategy to standardize the signal:
 
@@ -1065,8 +1055,9 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
     - ``False``: Do not standardize the data.
 
 """
-docdict["standardize_maskers_false"] = standardize.format("False")
-docdict["standardize_maskers_zscore"] = standardize.format("zscore")
+docdict["standardize_true"] = standardize.format("True")
+docdict["standardize_false"] = standardize.format("False")
+docdict["standardize_zscore"] = standardize.format("zscore")
 
 # standardize_confounds
 docdict["standardize_confounds"] = """
