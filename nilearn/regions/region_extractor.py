@@ -216,14 +216,12 @@ def connected_regions(
 
     if mask_img is not None:
         if not check_same_fov(maps_img, mask_img):
-            # TODO (nilearn >= 0.13.0) force_resample=True
             mask_img = resample_img(
                 mask_img,
                 target_affine=maps_img.affine,
                 target_shape=maps_img.shape[:3],
                 interpolation="nearest",
                 copy_header=True,
-                force_resample=False,
             )
         mask_data, _ = masking.load_mask_img(mask_img)
         # Set as 0 to the values which are outside of the mask
@@ -421,8 +419,6 @@ class RegionExtractor(NiftiMapsMasker):
     ----------
     %(clean_args_)s
 
-    %(masker_kwargs_)s
-
     index_ : :class:`numpy.ndarray`
         Array of list of indices where each index value is assigned to
         each separate region of its corresponding family of brain maps.
@@ -474,7 +470,7 @@ class RegionExtractor(NiftiMapsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        keep_masked_maps=True,
+        keep_masked_maps=False,
         memory=None,
         memory_level=0,
         verbose=0,
