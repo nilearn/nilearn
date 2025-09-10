@@ -1066,6 +1066,9 @@ deprecation_notice = """
 """
 
 docdict["standardize_false"] = standardize.format("False")
+# TODO (nilearn >= 0.14.0)
+# create a single  standardize_zscore_sample
+# with the updated deprecation notice
 docdict["standardize_true"] = standardize.format("True") + deprecation_notice
 docdict["standardize_zscore"] = (
     standardize.format("zscore") + deprecation_notice
