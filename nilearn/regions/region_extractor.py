@@ -342,7 +342,7 @@ class RegionExtractor(NiftiMapsMasker):
 
         Default=6mm.
 
-    %(standardize_false)s
+    %(standardize_maskers_false)s
 
         .. note::
             Recommended to set to True if signals are not already standardized.

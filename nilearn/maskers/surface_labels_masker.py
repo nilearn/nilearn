@@ -99,7 +99,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_maskers)s
+    %(standardize_maskers_false)s
 
     %(standardize_confounds)s
 

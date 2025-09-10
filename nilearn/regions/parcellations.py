@@ -239,7 +239,7 @@ class Parcellations(_MultiPCA):
         SurfaceImage.
     %(smoothing_fwhm)s
         Default=4.0.
-    %(standardize_false)s
+    %(standardize_maskers_false)s
     %(detrend)s
 
         .. note::
