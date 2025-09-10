@@ -141,7 +141,7 @@ ignore_imports = [
 # - can import from any lower layers
 # 3. maskers, image, surface, plotting, masking:
 # - can import from each other
-# - can import from any liwer layers
+# - can import from any lower layers
 # 4. signal:
 # - can import from any lower layers
 # TODO: not yet included are reporting, datasets, regions
