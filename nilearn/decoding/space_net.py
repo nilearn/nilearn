@@ -706,6 +706,18 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         tags.input_tags = InputTags(niimg_like=True, surf_img=False)
         return tags
 
+    # TODO: try to extract into children classes
+    @property
+    def _is_classification(self) -> bool:
+        # TODO remove for sklearn>=1.6
+        # this private method can probably be removed
+        # when dropping sklearn>=1.5 and replaced by just:
+        #   self.__sklearn_tags__().estimator_type == "classifier"
+        if SKLEARN_LT_1_6:
+            # TODO remove for sklearn>=1.6
+            return self._estimator_type == "classifier"
+        return self.__sklearn_tags__().estimator_type == "classifier"
+
     def _check_params(self):
         """Make sure parameters are sane."""
         if self.l1_ratios is not None:

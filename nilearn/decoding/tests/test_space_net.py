@@ -323,7 +323,7 @@ def test_string_params_case(rng, penalty_wrong_case, estimator):
     y = np.dot(X, W_init.ravel())
     X, _ = to_niimgs(X, dim)
     with pytest.raises(ValueError, match="'penalty' must be one of"):
-        BaseSpaceNet(penalty=penalty_wrong_case).fit(X, y)
+        estimator(penalty=penalty_wrong_case).fit(X, y)
 
 
 @pytest.mark.parametrize("l1_ratio", [0.01, 0.5, 0.99])
