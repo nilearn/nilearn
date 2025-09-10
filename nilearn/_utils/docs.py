@@ -1055,9 +1055,22 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
     - ``False``: Do not standardize the data.
 
 """
-docdict["standardize_true"] = standardize.format("True")
+# TODO (nilearn >= 0.14.0) update to ..versionchanged
+deprecation_notice = """
+
+    .. deprecated:: 0.10.1
+
+        The default will be changed to ``'zscore_sample'``
+        in version 0.14.0.
+
+"""
+
 docdict["standardize_false"] = standardize.format("False")
-docdict["standardize_zscore"] = standardize.format("zscore")
+docdict["standardize_true"] = standardize.format("True") + deprecation_notice
+docdict["standardize_zscore"] = (
+    standardize.format("zscore") + deprecation_notice
+)
+
 
 # standardize_confounds
 docdict["standardize_confounds"] = """

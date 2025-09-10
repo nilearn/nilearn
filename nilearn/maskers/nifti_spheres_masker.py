@@ -253,7 +253,9 @@ class NiftiSpheresMasker(BaseMasker):
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
     %(smoothing_fwhm)s
+
     %(standardize_false)s
+
     %(standardize_confounds)s
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
