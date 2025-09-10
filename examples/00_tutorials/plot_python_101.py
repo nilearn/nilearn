@@ -8,7 +8,6 @@ try:
 except ImportError:
     raise RuntimeError("This script needs the matplotlib library")
 
-
 # %%
 # A simple example of basic Python numerics and how to plot it.
 
