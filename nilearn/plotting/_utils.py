@@ -56,8 +56,8 @@ def save_figure_if_needed(fig, output_file):
 
 
 def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
-    """Return an array of ``n_ticks`` tick values to be used for the
-    colorbar.
+    """Return an array of evenly spaced ``n_ticks`` tick values to be used for
+    the colorbar.
 
     Parameters
     ----------
@@ -66,8 +66,8 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
     vmax: :obj:`float`
         maximum value for the colorbar
     threshold: :obj:`float`, :obj:`int` or None
-        if threshold is specified, -threshold and threshold is expected to
-    appear on the colorbar
+        if threshold is not None, ``-threshold`` and ``threshold`` values are
+    replaced with the closest tick values
     n_ticks: :obj:`int`
         number of tick values to return
 
