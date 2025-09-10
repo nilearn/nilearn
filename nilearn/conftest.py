@@ -133,10 +133,7 @@ def suppress_specific_warning():
     """Ignore internal deprecation warnings."""
     with warnings.catch_warnings():
         # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
-        messages = (
-            "In release 0.13, this fetcher will return a dictionary.*|"
-            "The default strategy for standardize.*|"
-        )
+        messages = "In release 0.13, this fetcher will return a dictionary.*|"
         warnings.filterwarnings(
             "ignore",
             message=messages,
