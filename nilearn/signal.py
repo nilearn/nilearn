@@ -57,6 +57,7 @@ def standardize_signal(
     std_signals : :class:`numpy.ndarray`
         Copy of signals, standardized.
     """
+    check_params(locals())
     check_parameter_in_allowed(
         standardize,
         allowed=[True, False, "psc", "zscore", "zscore_sample"],

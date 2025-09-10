@@ -1571,6 +1571,7 @@ def clean_img(
         nilearn.signal.clean
 
     """
+    check_params(locals())
     # Avoid circular import
     from .. import masking
 
