@@ -1621,7 +1621,7 @@ def test_create_cosine_drift_terms():
 
 
 # load the spm file to test cosine basis
-my_path = Path(__file__).parents[2] / "glm" / "tests"
+my_path = Path(__file__).parents[1] / "glm" / "tests"
 full_path_design_matrix_file = my_path / "spm_dmtx.npz"
 DESIGN_MATRIX = np.load(full_path_design_matrix_file)
 
