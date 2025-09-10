@@ -1298,7 +1298,7 @@ def test_decoder_vs_sklearn(
     nilearn_decoder = Decoder(
         estimator=classifier_penalty,
         mask=mask,
-        standardize=True,
+        standardize="zscore_sample",
         cv=cv,
         scoring=scorer,
         screening_percentile=100,  # disable screening
@@ -1307,7 +1307,7 @@ def test_decoder_vs_sklearn(
     scores_nilearn = nilearn_decoder.cv_scores_
 
     ## start decoding with sklearn
-    masker = NiftiMasker(mask_img=mask, standardize=True)
+    masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 
     sklearn_classifier = strings_to_sklearn[classifier_penalty]
@@ -1388,7 +1388,7 @@ def test_regressor_vs_sklearn(
     nilearn_regressor = DecoderRegressor(
         estimator=regressor,
         mask=mask,
-        standardize=True,
+        standardize="zscore_sample",
         cv=cv,
         scoring=scorer,
         screening_percentile=100,  # disable screening
@@ -1397,7 +1397,7 @@ def test_regressor_vs_sklearn(
     scores_nilearn = nilearn_regressor.cv_scores_["beta"]
 
     ## start decoding with sklearn
-    masker = NiftiMasker(mask_img=mask, standardize=True)
+    masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 
     sklearn_regressor = strings_to_sklearn[regressor]
