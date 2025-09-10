@@ -510,39 +510,6 @@ class BaseMasker(
 
         return signals
 
-    def set_output(self, *, transform=None):
-        """Set output container.
-
-        See :ref:`sphx_glr_auto_examples_miscellaneous_plot_set_output.py`
-        for an example on how to use the API.
-
-        Parameters
-        ----------
-        transform : {"default", "pandas", "polars"}, default=None
-            Configure output of `transform` and `fit_transform`.
-
-            - `"default"`: Default output format of a transformer
-            - `"pandas"`: DataFrame output
-            - `"polars"`: Polars output
-            - `None`: Transform configuration is unchanged
-
-            .. versionadded:: 1.4
-                `"polars"` option was added.
-
-        Returns
-        -------
-        self : estimator instance
-            Estimator instance.
-        """
-        if transform is None:
-            return self
-
-        if not hasattr(self, "_sklearn_output_config"):
-            self._sklearn_output_config = {}
-
-        self._sklearn_output_config["transform"] = transform
-        return self
-
     def _sanitize_cleaning_parameters(self):
         """Make sure that cleaning parameters are passed via clean_args.
 
