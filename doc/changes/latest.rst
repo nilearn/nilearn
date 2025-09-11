@@ -25,7 +25,10 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Add tedana support for load_confounds and testing for tedana load_confounds support (:gh:`5410` by `Milton Camacho`_).
+
 - :bdg-success:`API` Add a NotImplementedWarning (:gh:`5508` by `Rémi Gau`_).
+
 
 Changes
 -------
