@@ -449,7 +449,7 @@ def _generate_filename_surface_file(filename, hemi, den=None):
         create_bids_filename,
     )
 
-    fields = parse_bids_filename(filename, legacy=False)
+    fields = parse_bids_filename(filename)
     fields["prefix"] = None
 
     fields["entities"]["hemi"] = hemi

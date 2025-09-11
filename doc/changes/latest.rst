@@ -69,3 +69,5 @@ Changes
 - :bdg-danger:`Deprecation` The parameter ``contrast_type`` of  :func:`~glm.compute_contrast` and :class:`~glm.Contrast` has been replaced by ``stat_type`` (:gh:`5630` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The value ``'nearest'`` for the parameter ``interpolation`` of :func:`~surface.vol_to_surf` is no longer allowed. Use ``'nearest_most_frequent'`` instead (:gh:`5662` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` :func:`~interfaces.bids.parse_bids_filename` will now always return a dictionary with the keys ``'file_path'``, ``'file_basename'``, ``'extension'``, ``'suffix'`` and ``'entities'`` (:gh:`5663` by `Rémi Gau`_).
