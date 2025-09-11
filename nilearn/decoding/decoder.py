@@ -627,7 +627,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         y : numpy.ndarray of shape=(n_samples) or list of length n_samples
             The dependent variable (age, sex, IQ, yes/no, etc.).
             Target variable to predict.
-            Must have exactly as many elements as the input images.
+            Must have exactly as many samples as the input images.
 
         %(groups)s
 
