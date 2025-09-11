@@ -131,8 +131,10 @@ ignore_imports = [
     "nilearn._utils.estimator_checks -> nilearn.glm.*",  # allowed in tests
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
+    "nilearn.reporting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.interfaces.bids.glm -> nilearn.glm",
-    "nilearn.plotting.matrix.* -> nilearn.glm.**"
+    "nilearn.plotting.matrix.* -> nilearn.glm.**",
+    "nilearn.reporting.glm_reporter -> nilearn.glm.thresholding"
 ]
 # 1. glm, decoding, connectome, decomposition:
 # - cannot import from each other
@@ -148,7 +150,7 @@ ignore_imports = [
 layers = [
     "nilearn.glm | nilearn.decoding | nilearn.connectome | nilearn.decomposition",
     "nilearn.mass_univariate",
-    "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting : nilearn.masking",
+    "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting : nilearn.masking : nilearn.reporting",
     "nilearn.signal",
     "nilearn.typing"
 ]
