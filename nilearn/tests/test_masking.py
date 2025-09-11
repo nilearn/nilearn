@@ -732,6 +732,45 @@ def test_intersect_masks(
     assert_array_equal(mask_abc, get_data(mask_abc_))
 
 
+def test_intersect_masks_errors(affine_eye, surf_img_1d):
+    """Test errors of intersect_masks."""
+    affine_b = affine_eye * 2
+
+    shape_a = (2, 2, 2)
+    shape_b = (3, 3, 3)
+
+    shape_a_affine_a = Nifti1Image(np.ones(shape_a), affine_eye)
+    shape_a_affine_b = Nifti1Image(np.ones(shape_a), affine_b)
+    shape_b_affine_a = Nifti1Image(np.ones(shape_b), affine_eye)
+    shape_b_affine_b = Nifti1Image(np.ones(shape_b), affine_b)
+
+    with pytest.raises(ValueError, match="No mask provided for intersection"):
+        intersect_masks([])
+    with pytest.raises(
+        ValueError, match="The threshold should be greater than 0"
+    ):
+        intersect_masks([shape_a_affine_a, shape_a_affine_a], threshold=-1)
+    with pytest.raises(
+        ValueError, match="The threshold should be smaller than 1"
+    ):
+        intersect_masks([shape_a_affine_a, shape_a_affine_a], threshold=2)
+    with pytest.raises(
+        TypeError, match="All masks must be a 3D Niimg-like object."
+    ):
+        intersect_masks([shape_a_affine_a, surf_img_1d])
+    with pytest.raises(
+        ValueError, match="Following field of view errors were detected"
+    ):
+        intersect_masks(
+            [
+                shape_a_affine_a,
+                shape_a_affine_b,
+                shape_b_affine_a,
+                shape_b_affine_b,
+            ]
+        )
+
+
 def test_compute_multi_epi_mask(affine_eye):
     """Test resampling done with compute_multi_epi_mask."""
     mask_a = np.zeros((4, 4, 1), dtype=bool)
