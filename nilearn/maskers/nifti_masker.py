@@ -6,6 +6,7 @@ from copy import copy as copy_object
 
 import numpy as np
 from joblib import Memory
+from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.class_inspect import get_params
@@ -199,7 +200,7 @@ def filter_and_mask(
 
 
 @fill_doc
-class NiftiMasker(BaseMasker):
+class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,

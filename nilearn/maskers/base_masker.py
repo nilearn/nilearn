@@ -13,7 +13,6 @@ import pandas as pd
 from joblib import Memory
 from sklearn.base import (
     BaseEstimator,
-    ClassNamePrefixFeaturesOutMixin,
     TransformerMixin,
 )
 from sklearn.utils.estimator_checks import check_is_fitted
@@ -250,7 +249,6 @@ def mask_logger(step, img=None, verbose=0):
 @fill_doc
 class BaseMasker(
     TransformerMixin,
-    ClassNamePrefixFeaturesOutMixin,
     CacheMixin,
     BaseEstimator,
 ):

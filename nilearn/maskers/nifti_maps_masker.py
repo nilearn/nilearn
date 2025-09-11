@@ -4,6 +4,7 @@ import warnings
 from copy import deepcopy
 
 import numpy as np
+from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.class_inspect import get_params
@@ -45,7 +46,7 @@ class _ExtractionFunctor:
 
 
 @fill_doc
-class NiftiMapsMasker(BaseMasker):
+class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     """Class for extracting data from Niimg-like objects \
        using maps of potentially overlapping brain regions.
 
