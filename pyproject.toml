@@ -141,7 +141,7 @@ ignore_imports = [
 # - but can import from any lower layers
 # 2. mass_univariate:
 # - can import from any lower layers
-# 3. maskers, image, surface, plotting, masking:
+# 3. maskers, image, surface, plotting, masking, datasets, reporting:
 # - can import from each other
 # - can import from any lower layers
 # 4. signal:
