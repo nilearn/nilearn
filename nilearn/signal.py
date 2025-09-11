@@ -91,7 +91,7 @@ def standardize_signal(
                 "The default strategy for standardize is currently 'zscore' "
                 "which incorrectly uses population std to calculate sample "
                 "zscores. The new strategy 'zscore_sample' corrects this "
-                "behavior by using the sample std. In release 0.14, the "
+                "behavior by using the sample std. In release 0.14.0, the "
                 "default strategy will be replaced by the new strategy and "
                 "the 'zscore' option will be removed. Please use "
                 "'zscore_sample' instead."
@@ -783,9 +783,33 @@ def clean(
 
     # Remove confounds
     if confounds is not None:
-        confounds = standardize_signal(
-            confounds, standardize=standardize_confounds, detrend=False
+        # TODO (nilearn >= 0.14.0)
+        # - remove DeprecationWarning
+        # - remove warnings.filterwarnings
+        # - remove comment below
+        # The following call to standardize_signal relies on the default of
+        # standardize (True) which will throw a FutureWarning
+        # that contains some actions they cannot perform
+        # as users cannot affect this call.
+        # This can be confusing because if they call clean with
+        # standardize="zscore_sample", they will get a warning to set
+        # standardize to "zscore_sample"!!!
+        # So we ignore the FutureWarning
+        # and instead throw a DeprecationWarning that's only for devs.
+        std_strategy_default = (
+            "From release 0.14.0, confounds will be standardized "
+            "using the sample std instead of the population std."
         )
+        warnings.warn(
+            category=DeprecationWarning,
+            message=std_strategy_default,
+            stacklevel=find_stack_level(),
+        )
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=FutureWarning)
+            confounds = standardize_signal(
+                confounds, standardize=standardize_confounds, detrend=False
+            )
         if not standardize_confounds:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on standardize_signal as it removes any
