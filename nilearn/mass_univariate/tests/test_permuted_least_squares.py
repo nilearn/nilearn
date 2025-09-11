@@ -802,7 +802,7 @@ def test_cluster_level_parameters_warnings(cluster_level_design, masker):
     # no cluster-level inference is performed, but there's a warning.
     with pytest.warns(
         FutureWarning,
-        match='"legacy" output structure for "permuted_ols" is deprecated',
+        match='"output_type".*is deprecated',
     ):
         out = permuted_ols(
             tested_var,

@@ -96,14 +96,7 @@ def test_full_brain_info(mni152_template_res_2):
             mesh.faces
         )
 
-    # TODO (nilearn >= 0.13.0)
-    with pytest.warns(
-        FutureWarning,
-        match="full_brain_info is a private function and is renamed to "
-        "_full_brain_info. Using the deprecated name will raise an error "
-        "in release 0.13",
-    ):
-        full_brain_info(mni152_template_res_2)
+    full_brain_info(mni152_template_res_2)
 
 
 def test_fill_html_template(tmp_path, mni152_template_res_2):
