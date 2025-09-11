@@ -81,8 +81,8 @@ fig, axes = plt.subplots(
 )
 axes = np.atleast_2d(axes)
 
-for view, ax_row in zip(views, axes):
-    for ax, hemi in zip(ax_row, hemispheres):
+for view, ax_row in zip(views, axes, strict=False):
+    for ax, hemi in zip(ax_row, hemispheres, strict=False):
         if hemi == "both" and view == "lateral":
             view = "left"
         elif hemi == "both" and view == "medial":
@@ -101,7 +101,6 @@ for view, ax_row in zip(views, axes):
             vmax=vmax,
             bg_map=fsaverage_sulcal,
             cmap="seismic",
-            darkness=None,
         )
 fig.set_size_inches(12, 8)
 
@@ -218,7 +217,6 @@ plot_surf(
     bg_on_data=True,
     cmap="inferno",
     vmin=0,
-    darkness=None,
 )
 show()
 
@@ -248,6 +246,5 @@ plot_surf(
     threshold=1e-6,
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    darkness=None,
 )
 show()

@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 from warnings import warn
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 
 _GENERAL_MESSAGE = (
@@ -76,6 +76,7 @@ def load_sample_motor_activation_image():
     """
     from .func import load_sample_motor_activation_image as tmp
 
+    # TODO (nilearn >= 0.13.0)
     warn(
         f"{_GENERAL_MESSAGE}"
         "Please import this function from 'nilearn.datasets.func' instead.",

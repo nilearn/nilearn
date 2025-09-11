@@ -282,7 +282,6 @@ def _plot_surf(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     cbar_vmin=None,
@@ -347,7 +346,6 @@ def _plot_surf(
             absolute_threshold=colors["abs_threshold"],
             bg_map=bg_data,
             bg_on_data=bg_on_data,
-            darkness=darkness,
         )
     else:
         if bg_data is None:

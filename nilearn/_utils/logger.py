@@ -44,8 +44,8 @@ def log(
     msg : str
         Message to display.
 
-    verbose : int, default=1
-        Current verbosity level. Message is displayed if this value is greater
+    %(verbose)s
+        Message is displayed if this value is greater
         or equal to msg_level.
 
     object_classes : tuple of type, default=(BaseEstimator, )

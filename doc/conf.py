@@ -379,7 +379,7 @@ copybutton_prompt_text = ">>> "
 
 trim_doctests_flags = True
 
-_python_doc_base = "https://docs.python.org/3.9"
+_python_doc_base = "https://docs.python.org/3.10"
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {

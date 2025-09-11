@@ -98,7 +98,7 @@ def test_check_surface_plotting_inputs_errors():
 
 def test_plot_surf_engine_error(in_memory_mesh):
     """Test error if unknown engine is specified."""
-    with pytest.raises(ValueError, match="Unknown plotting engine"):
+    with pytest.raises(ValueError, match="'engine' must be one of"):
         plot_surf(in_memory_mesh, engine="foo")
 
 
@@ -214,6 +214,24 @@ def test_plot_surf_error(plt, engine, rng, in_memory_mesh):
             in_memory_mesh,
             surf_map=rng.standard_normal(size=(in_memory_mesh.n_vertices, 2)),
             engine=engine,
+        )
+
+
+def test_plot_surf_tick_format_warning_matplotlib(
+    matplotlib_pyplot, in_memory_mesh, bg_map
+):
+    """Test if nilearn.plotting.surface.surf_plotting.plot_surf warns when
+    threshold value is float but tick format is integer.
+    """
+    with pytest.warns(
+        UserWarning, match="You provided a non integer threshold"
+    ):
+        plot_surf(
+            in_memory_mesh,
+            surf_map=bg_map,
+            engine="matplotlib",
+            threshold=0.5,
+            cbar_tick_format="%i",
         )
 
 
@@ -594,7 +612,6 @@ def test_plot_surf_stat_map_with_background(
         stat_map=bg_map,
         bg_map=bg_map,
         bg_on_data=True,
-        darkness=0.5,
         engine=engine,
     )
 
@@ -628,6 +645,24 @@ def test_plot_surf_stat_map_vmax(plt, engine, in_memory_mesh, bg_map):
     nilearn.plotting.surface.surf_plotting.plot_surf_stat_map.
     """
     plot_surf_stat_map(in_memory_mesh, stat_map=bg_map, vmax=5, engine=engine)
+
+
+@pytest.mark.parametrize("colorbar", [True, False])
+def test_plot_surf_stat_map_error_vmax_equal_vmin(
+    plt, engine, in_memory_mesh, bg_map, colorbar
+):
+    """Smoke test when vmax == vmin.
+
+    Make sure matplotlib does not raise error.
+    """
+    plot_surf_stat_map(
+        in_memory_mesh,
+        stat_map=bg_map,
+        vmin=5,
+        vmax=5,
+        engine=engine,
+        colorbar=colorbar,
+    )
 
 
 def test_plot_surf_stat_map_colormap(plt, engine, in_memory_mesh, bg_map):
@@ -986,7 +1021,6 @@ def test_plot_surf_roi_default_arguments(
         roi_map=surface_image_roi,
         engine=engine,
         symmetric_cmap=symmetric_cmap,
-        darkness=None,  # to avoid deprecation warning
         cmap="RdYlBu_r",
         avg_method=avg_method,
     )

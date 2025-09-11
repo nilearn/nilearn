@@ -76,7 +76,7 @@ repos:
             )$
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.8
+    rev: v0.12.12
     hooks:
     # Run the linter.
     -   id: ruff-check
@@ -86,6 +86,13 @@ repos:
     -   id: ruff-format
         # args: [--diff]
 
+    # check imports contracts
+-   repo: https://github.com/seddonym/import-linter
+    rev: v2.4
+    hooks:
+    -   id: import-linter
+        args: [--verbose]
+        language: python
 
 -   repo: https://github.com/PyCQA/doc8
     rev: v2.0.0

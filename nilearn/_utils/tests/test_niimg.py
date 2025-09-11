@@ -5,7 +5,8 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Header, Nifti1Image, load
 
-from nilearn._utils import load_niimg, niimg, testing
+from nilearn._utils import niimg, testing
+from nilearn._utils.niimg import load_niimg
 from nilearn.image import get_data, new_img_like
 
 

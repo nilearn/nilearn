@@ -13,7 +13,8 @@ from scipy.ndimage import generate_binary_structure, label
 from sklearn.utils import check_random_state
 
 from nilearn import image
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.masking import apply_mask
@@ -306,7 +307,7 @@ def permuted_ols(
     masker=None,
     tfce=False,
     threshold=None,
-    output_type="legacy",
+    output_type="dict",
 ):
     """Massively univariate group analysis with permuted OLS.
 
@@ -400,26 +401,24 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    output_type : {'legacy', 'dict'}, default="legacy"
+    output_type : {'legacy', 'dict'}, default="dict"
         Determines how outputs should be returned.
         The two options are:
 
         -   'legacy': return a pvals, score_orig_data, and h0_fmax.
-            This option is the default, but it is deprecated until 0.13,
-            when the default will be changed to 'dict'.
-            It will be removed in 0.15.
         -   'dict': return a dictionary containing output arrays.
-            This option will be made the default in 0.13.
             Additionally, if ``tfce`` is True or ``threshold`` is not None,
             ``output_type`` will automatically be set to 'dict'.
 
         .. deprecated:: 0.9.2
 
-            The default value for this parameter will change from 'legacy' to
-            'dict' in 0.13, and the parameter will be removed completely in
-            0.15.
+            This parameter will be removed completely in nilearn>= 0.15.
 
         .. versionadded:: 0.9.2
+
+        .. versionchanged:: 0.13.0dev
+
+            The default was changed to ``'dict'``.
 
     Returns
     -------
@@ -791,7 +790,7 @@ def permuted_ols(
         cmfwe_h0_parts,
         tfce_scores_as_ranks_parts,
         h0_tfce_parts,
-    ) = zip(*ret)
+    ) = zip(*ret, strict=False)
 
     # Voxel-level FWE
     vfwe_h0 = np.hstack(h0_vfwe_parts)
@@ -921,13 +920,14 @@ def _sanitize_inputs_permuted_ols(
         output_type = "dict"
 
     if output_type == "legacy":
+        # TODO (nilearn >= 0.13.0)
         warnings.warn(
             category=DeprecationWarning,
             message=(
-                'The "legacy" output structure for "permuted_ols" is '
+                'The ``"output_type"`` parameter for "permuted_ols" is '
                 "deprecated. "
-                'The default output structure will be changed to "dict" '
-                "in version 0.13."
+                "It will be removed in version 0.15.\n"
+                'Change its value to "dict" to silence this warning.'
             ),
             stacklevel=find_stack_level(),
         )

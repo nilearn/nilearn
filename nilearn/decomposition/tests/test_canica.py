@@ -1,7 +1,5 @@
 """Test CanICA."""
 
-import sys
-
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
@@ -25,6 +23,7 @@ def test_threshold_bound_error(canica_data_single_img):
         canica.fit(canica_data_single_img)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_percentile_range(rng, canica_data_single_img):
     """Test that a warning is given when thresholds are stressed."""
@@ -41,11 +40,6 @@ def test_percentile_range(rng, canica_data_single_img):
         canica.fit(canica_data_single_img)
 
 
-# TODO remove skipif when dropping python 3.9
-@pytest.mark.skipif(
-    sys.version_info[1] == 9,
-    reason="fails only on MacOS with python 3.9",
-)
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_canica_square_img(
     decomposition_mask_img, canica_components, canica_data

@@ -553,7 +553,9 @@ def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
             [
                 np.linspace(b, a, n_points)
                 for (a, b) in zip(
-                    inner.coordinates.ravel(), outer.coordinates.ravel()
+                    inner.coordinates.ravel(),
+                    outer.coordinates.ravel(),
+                    strict=False,
                 )
             ]
         )
@@ -625,17 +627,6 @@ def test_vol_to_surf_nearest_most_frequent(img_labels):
 
     uniques_surf = np.unique(mesh_labels)
     assert set(uniques_surf) <= set(uniques_vol)
-
-
-def test_vol_to_surf_nearest_deprecation(img_labels):
-    """Test deprecation warning for nearest interpolation method in
-    vol_to_surf.
-    """
-    mesh = flat_mesh(5, 7)
-    with pytest.warns(
-        FutureWarning, match="interpolation method will be deprecated"
-    ):
-        vol_to_surf(img_labels, mesh, interpolation="nearest")
 
 
 def test_masked_indices():

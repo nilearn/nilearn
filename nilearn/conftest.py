@@ -21,6 +21,7 @@ from nilearn.datasets.tests._testing import (
     request_mocker,  # noqa: F401
     temp_nilearn_data_dir,  # noqa: F401
 )
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.surface import (
     InMemoryMesh,
     PolyMesh,
@@ -45,9 +46,13 @@ if is_matplotlib_installed():
     if compare_version(
         matplotlib.__version__, ">", OPTIONAL_MATPLOTLIB_MIN_VERSION
     ):
+        # the tests that compare plotted figures
+        # against their expected baseline is only run
+        # with the oldest version of matplolib
         collect_ignore.extend(
             [
                 "plotting/tests/test_baseline_comparisons.py",
+                "reporting/tests/test_baseline_comparisons.py",
             ]
         )
 
@@ -58,6 +63,7 @@ else:
             "plotting",
             "reporting/html_report.py",
             "reporting/tests/test_html_report.py",
+            "reporting/tests/test_baseline_comparisons.py",
         ]
     )
     matplotlib = None  # type: ignore[assignment]
@@ -126,16 +132,19 @@ def close_all():
 def suppress_specific_warning():
     """Ignore internal deprecation warnings."""
     with warnings.catch_warnings():
+        # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
         messages = (
-            "The `darkness` parameter will be deprecated.*|"
             "In release 0.13, this fetcher will return a dictionary.*|"
             "The default strategy for standardize.*|"
-            "The 'fetch_bids_langloc_dataset' function will be removed.*|"
         )
         warnings.filterwarnings(
             "ignore",
             message=messages,
             category=DeprecationWarning,
+        )
+        warnings.filterwarnings(
+            "ignore",
+            category=NotImplementedWarning,
         )
         yield
 
@@ -739,7 +748,7 @@ def _flip_surf_img_parts(poly_obj):
     """Flip hemispheres of a surface image data or mesh."""
     keys = list(poly_obj.parts.keys())
     keys = [keys[-1]] + keys[:-1]
-    return dict(zip(keys, poly_obj.parts.values()))
+    return dict(zip(keys, poly_obj.parts.values(), strict=False))
 
 
 @pytest.fixture

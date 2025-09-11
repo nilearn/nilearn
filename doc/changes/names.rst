@@ -135,7 +135,7 @@
 
 .. _Javier Rasero: https://jrasero.github.io/
 
-.. _Jean Kossaifi: http://jeankossaifi.com/
+.. _Jean Kossaifi: https://jeankossaifi.com/
 
 .. _Jean-Rémi King: https://github.com/kingjr
 

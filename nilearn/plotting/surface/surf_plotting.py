@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
@@ -53,7 +53,6 @@ def plot_surf(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     cbar_vmin=None,
@@ -165,9 +164,6 @@ def plot_surf(
 
     %(bg_on_data)s
 
-    %(darkness)s
-        Default=1.
-
     %(vmin)s
 
     %(vmax)s
@@ -272,7 +268,6 @@ def plot_surf(
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmin=vmin,
         vmax=vmax,
         cbar_vmin=cbar_vmin,
@@ -386,11 +381,6 @@ def plot_surf_contours(
     )
     check_extensions(roi_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
 
-    if "darkness" not in kwargs:
-        # TODO remove in 0.13.0 when darkness is removed
-        # added now to prevent some extra warnings
-        kwargs["darkness"] = None
-
     backend = get_surface_backend(DEFAULT_ENGINE)
     fig = backend._plot_surf_contours(
         surf_mesh=surf_mesh,
@@ -424,7 +414,6 @@ def plot_surf_stat_map(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     symmetric_cbar="auto",
@@ -508,7 +497,7 @@ def plot_surf_stat_map(
         When using matplotlib as engine,
         `avg_method` will default to ``"mean"`` if ``None`` is passed.
 
-        .. versionadded:: 0.10.3dev
+        .. versionadded:: 0.10.3
 
     %(threshold)s
         Default=None
@@ -524,13 +513,6 @@ def plot_surf_stat_map(
             ``matplotlib`` engine.
 
     %(bg_on_data)s
-
-    %(darkness)s
-        Default=1.
-
-        .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
 
     %(vmin)s
 
@@ -617,7 +599,6 @@ def plot_surf_stat_map(
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmin=vmin,
         vmax=vmax,
         cbar_vmin=cbar_vmin,
@@ -824,7 +805,6 @@ def plot_surf_roi(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     cbar_tick_format="auto",
@@ -929,13 +909,6 @@ def plot_surf_roi(
 
     %(bg_on_data)s
 
-    %(darkness)s
-        Default=1.
-
-        .. note::
-            This option is currently only implemented for the
-            ``matplotlib`` engine.
-
     %(vmin)s
 
     %(vmax)s
@@ -1001,7 +974,7 @@ def plot_surf_roi(
             f"{roi.ndim} dimensions"
         )
     if (roi < 0).any():
-        # TODO raise ValueError in release 0.13
+        # TODO (nilearn >= 0.13.0) raise ValueError
         warn(
             (
                 "Negative values in roi_map will no longer be allowed in"
@@ -1028,7 +1001,7 @@ def plot_surf_roi(
         vmax = float(1 + np.nanmax(roi))
 
     if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
-        # TODO raise ValueError in release 0.13
+        # TODO (nilearn >= 0.13.0) raise ValueError
         warn(
             (
                 "Non-integer values in roi_map will no longer be allowed "
@@ -1060,7 +1033,6 @@ def plot_surf_roi(
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmin=vmin,
         vmax=vmax,
         cbar_tick_format=params["cbar_tick_format"],

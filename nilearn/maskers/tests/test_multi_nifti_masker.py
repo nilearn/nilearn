@@ -1,5 +1,7 @@
 """Test the multi_nifti_masker module."""
 
+import warnings
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -196,6 +198,40 @@ def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
     np.testing.assert_array_equal(get_data(masker2.mask_img_), mask_ref)
 
 
+@pytest.mark.parametrize(
+    "strategy",
+    ["background", *[f"{p}-template" for p in ["whole-brain", "gm", "wm"]]],
+)
+def test_invalid_mask_arg_for_strategy(strategy, list_random_imgs):
+    """Pass mask_args specific to epi strategy should not fail.
+
+    But a warning should be thrown.
+    """
+    masker = MultiNiftiMasker(
+        mask_strategy=strategy,
+        mask_args={"lower_cutoff": 0.1, "ensure_finite": False},
+    )
+    with pytest.warns(
+        UserWarning, match="The following arguments are not supported by"
+    ):
+        masker.fit(list_random_imgs)
+
+
+@pytest.mark.parametrize(
+    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+)
+def test_no_warning_partial_joblib(strategy, list_random_imgs):
+    """Check different strategies to compute masks."""
+    masker = MultiNiftiMasker(mask_strategy=strategy, mask_args={"opening": 1})
+    with warnings.catch_warnings(record=True) as warning_list:
+        masker.fit(list_random_imgs)
+
+    assert not any(
+        "Cannot inspect object functools.partial" in str(x)
+        for x in warning_list
+    )
+
+
 def test_standardization(rng, shape_3d_default, affine_eye):
     """Check output properly standardized with 'standardize' parameter."""
     n_samples = 500
@@ -229,7 +265,7 @@ def test_standardization(rng, shape_3d_default, affine_eye):
     masker = MultiNiftiMasker(mask, standardize="psc")
     trans_signals = masker.fit_transform([img1, img2])
 
-    for ts, s in zip(trans_signals, signals):
+    for ts, s in zip(trans_signals, signals, strict=False):
         np.testing.assert_almost_equal(ts.mean(0), 0)
         np.testing.assert_almost_equal(
             ts, (s / s.mean(1)[:, np.newaxis] * 100 - 100).T

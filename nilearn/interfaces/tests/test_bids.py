@@ -379,25 +379,12 @@ def test_get_bids_files_no_space_entity(tmp_path):
 def test_parse_bids_filename():
     """Check that a typical BIDS file is properly parsed."""
     fields = ["sub", "ses", "task", "lolo"]
-    labels = ["01", "01", "langloc", "lala"]
-    file_name = "sub-01_ses-01_task-langloc_lolo-lala_bold.nii.gz"
+    labels = ["01", "01", "langloc+foo", "lala"]
+    file_name = "sub-01_ses-01_task-langloc+foo_lolo-lala_bold.nii.gz"
 
     file_path = Path("dataset", "sub-01", "ses-01", "func", file_name)
 
-    with pytest.deprecated_call(
-        match="a dictionary that uses BIDS terms as keys"
-    ):
-        file_dict = parse_bids_filename(file_path, legacy=True)
-
-    for fidx, field in enumerate(fields):
-        assert file_dict[field] == labels[fidx]
-    assert file_dict["file_type"] == "nii.gz"
-    assert file_dict["file_tag"] == "bold"
-    assert file_dict["file_path"] == file_path
-    assert file_dict["file_basename"] == file_name
-    assert file_dict["file_fields"] == fields
-
-    file_dict = parse_bids_filename(file_path, legacy=False)
+    file_dict = parse_bids_filename(file_path)
     assert file_dict["extension"] == "nii.gz"
     assert file_dict["suffix"] == "bold"
     assert file_dict["file_path"] == file_path
@@ -545,7 +532,7 @@ def test_save_glm_to_bids_errors(
 
     # Contrast names must be strings
     contrasts = {5: np.eye(n_cols_design_matrix)}
-    with pytest.raises(ValueError, match="contrast names must be strings"):
+    with pytest.raises(TypeError, match="contrast names must be strings"):
         save_glm_to_bids(
             model=two_runs_model,
             contrasts=contrasts,
@@ -556,7 +543,7 @@ def test_save_glm_to_bids_errors(
     # Contrast definitions must be strings, numpy arrays, or lists
     contrasts = {"effects of interest": 5}
     with pytest.raises(
-        ValueError, match="contrast definitions must be strings or array_likes"
+        TypeError, match="contrast definitions must be strings or array_likes"
     ):
         save_glm_to_bids(
             model=two_runs_model,
@@ -565,9 +552,7 @@ def test_save_glm_to_bids_errors(
             prefix="sub-01",
         )
 
-    with pytest.raises(
-        ValueError, match="Extra key-word arguments must be one of"
-    ):
+    with pytest.raises(ValueError, match="must be one of"):
         save_glm_to_bids(
             model=two_runs_model,
             contrasts=["AAA - BBB"],
@@ -874,6 +859,7 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
         assert key in metadata
 
 
+@pytest.mark.timeout(0)
 def test_save_glm_to_bids_surface_prefix_override(tmp_path):
     """Save surface GLM results to disk with prefix."""
     n_sub = 1

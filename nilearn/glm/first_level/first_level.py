@@ -23,7 +23,8 @@ from scipy.linalg import toeplitz
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
@@ -32,10 +33,12 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
     check_params,
     check_run_sample_masks,
 )
 from nilearn.datasets import load_fsaverage
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -50,6 +53,7 @@ from nilearn.glm.regression import (
     RegressionResults,
     SimpleRegressionResults,
 )
+from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids.query import (
@@ -250,7 +254,7 @@ def run_glm(
         )
 
         # Converting the key to a string is required for AR(N>1) cases
-        results = dict(zip(unique_labels, ar_result))
+        results = dict(zip(unique_labels, ar_result, strict=False))
         del unique_labels
         del ar_result
 
@@ -447,15 +451,37 @@ class FirstLevelModel(BaseGLM):
 
     Attributes
     ----------
-    labels_ : array of shape (n_voxels,),
-        a map of values on voxels used to identify the corresponding model
+    design_matrices_ : :obj:`list` of :obj:`pandas.DataFrame`
+        Design matrices used to fit the GLM.
+
+    fir_delays_ : array of shape(n_onsets), :obj:`list`
+
+    labels_ : array of shape ``(n_elements_,)``
+        a map of values on voxels / vertices
+        used to identify the corresponding model
+
+    masker_ :  :obj:`~nilearn.maskers.NiftiMasker` or \
+            :obj:`~nilearn.maskers.SurfaceMasker`
+        Masker used to filter and mask data during fit.
+        If :obj:`~nilearn.maskers.NiftiMasker`
+        or :obj:`~nilearn.maskers.SurfaceMasker` is given in
+        ``mask_img`` parameter, this is a copy of it.
+        Otherwise, a masker is created using the value of ``mask_img`` and
+        other NiftiMasker/SurfaceMasker
+        related parameters as initialization.
+
+    memory_ : joblib memory cache
+
+    n_elements_ : :obj:`int`
+        The number of voxels or vertices in the mask.
+
+        .. versionadded:: 0.12.1
 
     results_ : :obj:`dict`,
         with keys corresponding to the different labels values.
         Values are SimpleRegressionResults corresponding to the voxels,
         if minimize_memory is True,
         RegressionResults if minimize_memory is False
-
     """
 
     def __str__(self):
@@ -717,7 +743,7 @@ class FirstLevelModel(BaseGLM):
 
     def _create_all_designs(
         self, run_imgs, events, confounds, design_matrices
-    ):
+    ) -> list[pd.DataFrame]:
         """Build experimental design of all runs."""
         if design_matrices is not None:
             return design_matrices
@@ -739,7 +765,9 @@ class FirstLevelModel(BaseGLM):
 
         return design_matrices
 
-    def _create_single_design(self, n_scans, events, confounds, run_idx):
+    def _create_single_design(
+        self, n_scans, events, confounds, run_idx
+    ) -> pd.DataFrame:
         """Build experimental design of a single run.
 
         Parameters
@@ -927,10 +955,9 @@ class FirstLevelModel(BaseGLM):
 
         self._fit_cache()
 
-        if self.signal_scaling not in {False, 1, (0, 1)}:
-            raise ValueError(
-                'signal_scaling must be "False", "0", "1" or "(0, 1)"'
-            )
+        check_parameter_in_allowed(
+            self.signal_scaling, {False, 1, (0, 1)}, "signal_scaling"
+        )
         if self.signal_scaling in [0, 1, (0, 1)]:
             self.standardize = False
 
@@ -992,7 +1019,7 @@ class FirstLevelModel(BaseGLM):
             self._reporting_data["run_imgs"][run_idx] = {}
             if isinstance(run_img, (str, Path)):
                 self._reporting_data["run_imgs"][run_idx] = (
-                    parse_bids_filename(run_img, legacy=False)
+                    parse_bids_filename(run_img)
                 )
 
             self._fit_single_run(sample_masks, bins, run_img, run_idx)
@@ -1083,7 +1110,7 @@ class FirstLevelModel(BaseGLM):
 
         # Translate formulas to vectors
         for cidx, (con, design_mat) in enumerate(
-            zip(con_vals, self.design_matrices_)
+            zip(con_vals, self.design_matrices_, strict=False)
         ):
             design_columns = design_mat.columns.tolist()
             if isinstance(con, str):
@@ -1099,8 +1126,7 @@ class FirstLevelModel(BaseGLM):
             "effect_variance",
             "all",  # must be the final entry!
         ]
-        if output_type not in valid_types:
-            raise ValueError(f"output_type must be one of {valid_types}")
+        check_parameter_in_allowed(output_type, valid_types, "output_type")
         contrast = compute_fixed_effect_contrast(
             self.labels_, self.results_, con_vals, stat_type
         )
@@ -1154,9 +1180,7 @@ class FirstLevelModel(BaseGLM):
         possible_attributes = [
             prop for prop in all_attributes if "__" not in prop
         ]
-        if attribute not in possible_attributes:
-            msg = f"attribute must be one of: {possible_attributes}"
-            raise ValueError(msg)
+        check_parameter_in_allowed(attribute, possible_attributes, attribute)
 
         if self.minimize_memory:
             raise ValueError(
@@ -1171,7 +1195,7 @@ class FirstLevelModel(BaseGLM):
         output = []
 
         for design_matrix, labels, results in zip(
-            self.design_matrices_, self.labels_, self.results_
+            self.design_matrices_, self.labels_, self.results_, strict=False
         ):
             if result_as_time_series:
                 voxelwise_attribute = np.zeros(
@@ -1229,7 +1253,7 @@ class FirstLevelModel(BaseGLM):
             warn(
                 "Parameter smoothing_fwhm is not "
                 "yet supported for surface data",
-                UserWarning,
+                NotImplementedWarning,
                 stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = 0
@@ -1265,6 +1289,8 @@ class FirstLevelModel(BaseGLM):
             check_is_fitted(self.mask_img)
 
             self.masker_ = self.mask_img
+
+        self.n_elements_ = self.masker_.n_elements_
 
     @fill_doc
     def generate_report(
@@ -1306,6 +1332,16 @@ class FirstLevelModel(BaseGLM):
 
         """
         from nilearn.reporting.glm_reporter import make_glm_report
+
+        parameters = inspect.signature(
+            FirstLevelModel.generate_report
+        ).parameters
+        warn_default_threshold(
+            threshold,
+            parameters["threshold"].default,
+            3.09,
+            height_control=height_control,
+        )
 
         if not hasattr(self, "_reporting_data"):
             self._reporting_data = {
@@ -1429,7 +1465,7 @@ def _check_slice_time_ref(slice_time_ref):
     if not isinstance(slice_time_ref, (float, int)):
         raise TypeError(
             "'slice_time_ref' must be a float or an integer. "
-            f"Got {type(slice_time_ref)} instead."
+            f"Got {slice_time_ref.__class__.__name__} instead."
         )
     if slice_time_ref < 0 or slice_time_ref > 1:
         raise ValueError(
@@ -2020,7 +2056,7 @@ def _get_processed_imgs(
         assert len(imgs_left) == len(imgs_right)
 
         imgs = []
-        for data_left, data_right in zip(imgs_left, imgs_right):
+        for data_left, data_right in zip(imgs_left, imgs_right, strict=False):
             # make sure that filenames only differ by hemisphere
             assert (
                 Path(data_left).stem.replace("hemi-L", "hemi-R")
@@ -2287,7 +2323,7 @@ def _check_args_first_level_from_bids(
     if not isinstance(derivatives_folder, str):
         raise TypeError(
             "'derivatives_folder' must be a string. "
-            f"Got {type(derivatives_folder)} instead."
+            f"Got {derivatives_folder.__class__.__name__} instead."
         )
     derivatives_folder = dataset_path / derivatives_folder
     if not derivatives_folder.exists():
@@ -2322,11 +2358,9 @@ def _check_args_first_level_from_bids(
                 "Filters in img_filters must be (str, str). "
                 f"Got {filter_} instead."
             )
-        if filter_[0] not in supported_filters:
-            raise ValueError(
-                f"Entity {filter_[0]} for {filter_} is not a possible filter. "
-                f"Only {supported_filters} are allowed."
-            )
+        check_parameter_in_allowed(
+            filter_[0], supported_filters, f"{filter_[0]} in {filter_}"
+        )
         check_bids_label(filter_[1])
 
 
@@ -2336,8 +2370,8 @@ def _check_kwargs_load_confounds(**kwargs):
         "strategy": ("motion", "high_pass", "wm_csf"),
         "motion": "full",
         "scrub": 5,
-        "fd_threshold": 0.2,
-        "std_dvars_threshold": 3,
+        "fd_threshold": 0.5,
+        "std_dvars_threshold": 1.5,
         "wm_csf": "basic",
         "global_signal": "basic",
         "compcor": "anat_combined",
@@ -2462,7 +2496,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
     run_check_list = []
 
     for img_ in imgs:
-        parsed_filename = parse_bids_filename(img_, legacy=False)
+        parsed_filename = parse_bids_filename(img_)
         session = parsed_filename["entities"].get("ses")
         run = parsed_filename["entities"].get("run")
 
@@ -2548,7 +2582,7 @@ def _check_bids_events_list(
         *bids_entities()["raw"],
     ]
     for this_img in imgs:
-        parsed_filename = parse_bids_filename(this_img, legacy=False)
+        parsed_filename = parse_bids_filename(this_img)
         extra_filter = [
             (entity, parsed_filename["entities"][entity])
             for entity in parsed_filename["entities"]
