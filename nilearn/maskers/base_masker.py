@@ -61,6 +61,7 @@ def filter_and_extract(
     sample_mask=None,
     copy=True,
     dtype=None,
+    sklearn_output_config=None,
 ):
     """Extract representative time series using given function.
 
@@ -81,7 +82,7 @@ def filter_and_extract(
 
     Returns
     -------
-    signals : 2D numpy array
+    signals : 1D or 2D numpy array
         Signals extracted using the extraction function. It is a scikit-learn
         friendly 2D array with shape n_samples x n_features.
 
@@ -173,7 +174,9 @@ def filter_and_extract(
         **parameters["clean_kwargs"],
     )
 
-    if temp_imgs.ndim == 3:
+    # if we need to output to numpy and input was a 3D img
+    # we return 1D array
+    if temp_imgs.ndim == 3 and sklearn_output_config is None:
         region_signals = region_signals.squeeze()
 
     return region_signals, aux
@@ -676,7 +679,13 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
-        return signals.squeeze() if return_1D else signals
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+
+        return (
+            signals.squeeze()
+            if return_1D and sklearn_output_config is not None
+            else signals
+        )
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
@@ -737,15 +746,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             )
 
         return signals
-
-    def set_output(self, *, transform=None):
-        """Set the output container when ``"transform"`` is called.
-
-        .. warning::
-
-            This has not been implemented yet.
-        """
-        raise NotImplementedError()
 
 
 def generate_lut(labels_img, background_label, lut=None, labels=None):

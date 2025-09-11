@@ -194,6 +194,9 @@ def filter_and_mask(
     # earlier)
     # Optionally: 'doctor_nan', remove voxels with NaNs, other option
     # for later: some form of imputation
+
+    # if we need to output to numpy and input was a 3D img
+    # we return 1D array
     if temp_imgs.ndim == 3 and sklearn_output_config is None:
         data = data.squeeze()
     return data

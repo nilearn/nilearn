@@ -553,7 +553,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
         requires_y = getattr(tags.target_tags, "required", False)
 
     yield (clone(estimator), check_tags)
-    yield (clone(estimator), check_transformer_set_output)
 
     if isinstance(estimator, CacheMixin):
         yield (clone(estimator), check_img_estimator_cache_warning)
@@ -572,6 +571,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_n_elements)
         yield (clone(estimator), check_img_estimator_pipeline_consistency)
         yield (clone(estimator), check_nilearn_methods_sample_order_invariance)
+        yield (clone(estimator), check_img_estimator_set_output)
 
         if requires_y:
             yield (clone(estimator), check_img_estimator_requires_y_none)
@@ -929,11 +929,39 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig):
 
 
 @ignore_warnings()
-def check_transformer_set_output(estimator):
-    """Check that set_ouput throws a not implemented error."""
-    if hasattr(estimator, "transform"):
-        with pytest.raises(NotImplementedError):
-            estimator.set_output(transform="default")
+def check_img_estimator_set_output(estimator_orig):
+    """Check that set_ouput can be used."""
+    if not hasattr(estimator_orig, "transform") or isinstance(
+        estimator_orig, SearchLight
+    ):
+        return
+
+    estimator = clone(estimator_orig)
+
+    estimator = fit_estimator(estimator)
+
+    img, _ = generate_data_to_fit(estimator)
+
+    signal = estimator.transform(img)
+    assert isinstance(signal, np.ndarray)
+
+    estimator.set_output(transform="pandas")
+    signal = estimator.transform(img)
+    assert isinstance(signal, pd.DataFrame)
+
+    estimator.set_output(transform="polars")
+    # if user wants to output to polars,
+    # sklearn will raise error if it's not installed
+    with pytest.raises(ImportError, match="requires polars to be installed"):
+        signal = estimator.transform(img)
+
+    # check on 1D image for estimators that accepts surface
+    if accept_surf_img_input(estimator_orig):
+        estimator = clone(estimator_orig)
+        estimator = fit_estimator(estimator)
+        estimator.set_output(transform="pandas")
+        signal = estimator.transform(img)
+        assert isinstance(signal, pd.DataFrame)
 
 
 @ignore_warnings()

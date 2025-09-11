@@ -809,6 +809,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         params["target_affine"] = target_affine
         params["clean_kwargs"] = self.clean_args_
 
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+
         region_signals, (ids, masked_atlas) = self._cache(
             filter_and_extract,
             ignore=["verbose", "memory", "memory_level"],
@@ -831,6 +833,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             memory=self.memory_,
             memory_level=self.memory_level,
             verbose=self.verbose,
+            sklearn_output_config=sklearn_output_config,
         )
 
         # Create a lut that may be different from the fitted lut_

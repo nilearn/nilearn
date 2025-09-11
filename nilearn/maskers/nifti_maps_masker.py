@@ -683,6 +683,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         params["target_affine"] = target_affine
         params["clean_kwargs"] = self.clean_args_
 
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+
         region_signals, _ = self._cache(
             filter_and_extract,
             ignore=["verbose", "memory", "memory_level"],
@@ -704,6 +706,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             memory_level=self.memory_level,
             # kwargs
             verbose=self.verbose,
+            sklearn_output_config=sklearn_output_config,
         )
         return region_signals
 
