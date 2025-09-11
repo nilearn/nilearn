@@ -9,7 +9,6 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
-from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
@@ -266,9 +265,7 @@ def plot_matrix(
     return display
 
 
-# TODO (nilearn >= 0.13.0)
 @fill_doc
-@rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_contrast_matrix(
     contrast_def, design_matrix, colorbar=True, axes=None, output_file=None
 ):
@@ -338,9 +335,7 @@ def plot_contrast_matrix(
     return save_figure_if_needed(axes, output_file)
 
 
-# TODO (nilearn >= 0.13.0)
 @fill_doc
-@rename_parameters({"ax": "axes"}, end_version="0.13.0")
 def plot_design_matrix(
     design_matrix,
     rescale=True,
