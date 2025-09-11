@@ -1,5 +1,7 @@
 """Mixin classes for maskers."""
 
+import numpy as np
+
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
@@ -53,3 +55,16 @@ class _MultiMixin:
         return self.fit(imgs, y=y).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
+
+
+class _LabelMaskerMixin:
+    def get_feature_names_out(self, input_features=None):
+        """Get output feature names for transformation.
+
+        Parameters
+        ----------
+        input_features :default=None
+            Only for sklearn API compatibility.
+        """
+        del input_features
+        return np.asarray(self.region_names_.values(), dtype=object)

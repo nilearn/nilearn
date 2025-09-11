@@ -19,6 +19,7 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import mean_img
+from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers.base_masker import (
     _BaseSurfaceMasker,
     generate_lut,
@@ -54,7 +55,7 @@ def signals_to_surf_img_labels(
 
 
 @fill_doc
-class SurfaceLabelsMasker(_BaseSurfaceMasker):
+class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
     .. versionadded:: 0.11.0
