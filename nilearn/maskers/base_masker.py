@@ -551,6 +551,10 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         )
         return tags
 
+    @property
+    def _n_features_out(self):
+        return self.n_elements_
+
     def _check_imgs(self, imgs) -> None:
         if not (
             isinstance(imgs, SurfaceImage)
