@@ -558,6 +558,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_cache_warning)
 
     yield (clone(estimator), check_img_estimator_doc_attributes)
+    yield (clone(estimator), check_estimator_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
         yield (clone(estimator), check_fit_returns_self)
@@ -571,7 +572,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_n_elements)
         yield (clone(estimator), check_img_estimator_pipeline_consistency)
         yield (clone(estimator), check_nilearn_methods_sample_order_invariance)
-        yield (clone(estimator), check_img_estimator_set_output)
 
         if requires_y:
             yield (clone(estimator), check_img_estimator_requires_y_none)
@@ -929,7 +929,7 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig):
 
 
 @ignore_warnings()
-def check_img_estimator_set_output(estimator_orig):
+def check_estimator_set_output(estimator_orig):
     """Check that set_ouput can be used."""
     if not hasattr(estimator_orig, "transform") or isinstance(
         estimator_orig, SearchLight

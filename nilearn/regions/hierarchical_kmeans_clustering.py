@@ -3,7 +3,12 @@
 import warnings
 
 import numpy as np
-from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
+from sklearn.base import (
+    BaseEstimator,
+    ClassNamePrefixFeaturesOutMixin,
+    ClusterMixin,
+    TransformerMixin,
+)
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.utils import check_array
 from sklearn.utils.validation import check_is_fitted
@@ -148,7 +153,12 @@ def hierarchical_k_means(
 
 
 @fill_doc
-class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
+class HierarchicalKMeans(
+    ClassNamePrefixFeaturesOutMixin,
+    ClusterMixin,
+    TransformerMixin,
+    BaseEstimator,
+):
     """Hierarchical KMeans.
 
     First clusterize the samples into big clusters. Then clusterize the samples
@@ -407,12 +417,3 @@ class HierarchicalKMeans(ClusterMixin, TransformerMixin, BaseEstimator):
         X_inv = X_red[inverse, ...]
         X_inv = X_inv.T
         return X_inv
-
-    def set_output(self, *, transform=None):
-        """Set the output container when ``"transform"`` is called.
-
-        .. warning::
-
-            This has not been implemented yet.
-        """
-        raise NotImplementedError()
