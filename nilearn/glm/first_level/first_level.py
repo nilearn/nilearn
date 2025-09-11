@@ -38,6 +38,7 @@ from nilearn._utils.param_validation import (
     check_run_sample_masks,
 )
 from nilearn.datasets import load_fsaverage
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_fixed_effect_contrast,
@@ -1018,7 +1019,7 @@ class FirstLevelModel(BaseGLM):
             self._reporting_data["run_imgs"][run_idx] = {}
             if isinstance(run_img, (str, Path)):
                 self._reporting_data["run_imgs"][run_idx] = (
-                    parse_bids_filename(run_img, legacy=False)
+                    parse_bids_filename(run_img)
                 )
 
             self._fit_single_run(sample_masks, bins, run_img, run_idx)
@@ -1291,7 +1292,7 @@ class FirstLevelModel(BaseGLM):
             warn(
                 "Parameter smoothing_fwhm is not "
                 "yet supported for surface data",
-                UserWarning,
+                NotImplementedWarning,
                 stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = 0
@@ -2408,8 +2409,8 @@ def _check_kwargs_load_confounds(**kwargs):
         "strategy": ("motion", "high_pass", "wm_csf"),
         "motion": "full",
         "scrub": 5,
-        "fd_threshold": 0.2,
-        "std_dvars_threshold": 3,
+        "fd_threshold": 0.5,
+        "std_dvars_threshold": 1.5,
         "wm_csf": "basic",
         "global_signal": "basic",
         "compcor": "anat_combined",
@@ -2534,7 +2535,7 @@ def _check_bids_image_list(imgs, sub_label, filters):
     run_check_list = []
 
     for img_ in imgs:
-        parsed_filename = parse_bids_filename(img_, legacy=False)
+        parsed_filename = parse_bids_filename(img_)
         session = parsed_filename["entities"].get("ses")
         run = parsed_filename["entities"].get("run")
 
@@ -2620,7 +2621,7 @@ def _check_bids_events_list(
         *bids_entities()["raw"],
     ]
     for this_img in imgs:
-        parsed_filename = parse_bids_filename(this_img, legacy=False)
+        parsed_filename = parse_bids_filename(this_img)
         extra_filter = [
             (entity, parsed_filename["entities"][entity])
             for entity in parsed_filename["entities"]
