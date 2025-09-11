@@ -943,7 +943,15 @@ def check_estimator_set_output(estimator_orig):
     img, _ = generate_data_to_fit(estimator)
 
     signal = estimator.transform(img)
-    assert isinstance(signal, np.ndarray)
+    if isinstance(estimator, _BaseDecomposition):
+        assert isinstance(signal[0], np.ndarray)
+    else:
+        assert isinstance(signal, np.ndarray)
+
+    if isinstance(estimator, (_BaseDecomposition, ConnectivityMeasure)):
+        with pytest.raises(NotImplementedError):
+            estimator.set_output(transform="pandas")
+        return
 
     estimator.set_output(transform="pandas")
     signal = estimator.transform(img)
