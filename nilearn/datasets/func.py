@@ -2280,9 +2280,7 @@ def _reduce_confounds(regressors, keep_confounds):
 
 
 @fill_doc
-def fetch_language_localizer_demo_dataset(
-    data_dir=None, verbose=1, legacy_output=True
-):
+def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     """Download language localizer demo dataset.
 
     Parameters
@@ -2290,17 +2288,6 @@ def fetch_language_localizer_demo_dataset(
     %(data_dir)s
 
     %(verbose)s
-
-    legacy_output : :obj:`bool`, default=True
-
-        .. versionadded:: 0.10.3
-        .. deprecated::0.10.3
-
-            Starting from version 0.13.0
-            the ``legacy_ouput`` argument will be removed
-            and the fetcher will always return
-            a :obj:`sklearn.utils.Bunch`.
-
 
     Returns
     -------
@@ -2313,16 +2300,6 @@ def fetch_language_localizer_demo_dataset(
           Absolute paths of downloaded files on disk
 
         - ``'description'`` : :obj:`str`, dataset description
-
-    .. warning::
-
-        LEGACY OUTPUT:
-
-        **data_dir** : :obj:`str`
-            Path to downloaded dataset.
-
-        **downloaded_files** : :obj:`list` of :obj:`str`
-            Absolute paths of downloaded files on disk
 
     """
     check_params(locals())
@@ -2344,81 +2321,11 @@ def fetch_language_localizer_demo_dataset(
         uncompress_file(downloaded_files[0])
 
     file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
-    if legacy_output:
-        # TODO (nilearn >= 0.13.0)
-        warnings.warn(
-            category=DeprecationWarning,
-            stacklevel=find_stack_level(),
-            message=(
-                "From version 0.13.0 this fetcher"
-                "will always return a Bunch.\n"
-                "Use `legacy_output=False` "
-                "to start switch to this new behavior."
-            ),
-        )
-        return str(data_dir), sorted(file_list)
 
     description = get_dataset_descr("language_localizer_demo")
     return Bunch(
         data_dir=str(data_dir), func=sorted(file_list), description=description
     )
-
-
-@fill_doc
-def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
-    """Download language localizer example :term:`bids<BIDS>` dataset.
-
-    .. deprecated:: 0.10.3
-
-        This fetcher function will be removed as it returns the same data
-        as :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`.
-
-        Please use
-        :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`
-        instead.
-
-    Parameters
-    ----------
-    %(data_dir)s
-    %(verbose)s
-
-    Returns
-    -------
-    data_dir : :obj:`str`
-        Path to downloaded dataset.
-
-    downloaded_files : :obj:`list` of :obj:`str`
-        Absolute paths of downloaded files on disk.
-    """
-    check_params(locals())
-
-    warnings.warn(
-        (
-            "The 'fetch_bids_langloc_dataset' function will be removed "
-            "in version 0.13.0 as it returns the same data "
-            "as 'fetch_language_localizer_demo_dataset'.\n"
-            "Please use 'fetch_language_localizer_demo_dataset' instead.'"
-        ),
-        DeprecationWarning,
-        stacklevel=find_stack_level(),
-    )
-    url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"
-    dataset_name = "bids_langloc_example"
-    main_folder = "bids_langloc_dataset"
-    data_dir = get_dataset_dir(
-        dataset_name, data_dir=data_dir, verbose=verbose
-    )
-
-    # The files_spec needed for fetch_files
-    files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
-    if not (data_dir / main_folder).exists():
-        downloaded_files = fetch_files(
-            data_dir, files_spec, resume=True, verbose=verbose
-        )
-        uncompress_file(downloaded_files[0])
-    main_path = data_dir / main_folder
-    file_list = [str(path) for path in main_path.rglob("*") if path.is_file()]
-    return str(data_dir / main_folder), sorted(file_list)
 
 
 @fill_doc
