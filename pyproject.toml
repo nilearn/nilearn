@@ -146,11 +146,11 @@ ignore_imports = [
 # - can import from any lower layers
 # 4. signal:
 # - can import from any lower layers
-# TODO: not yet included are reporting, datasets, regions
+# TODO: not yet included are datasets, regions
 layers = [
     "nilearn.glm | nilearn.decoding | nilearn.connectome | nilearn.decomposition",
     "nilearn.mass_univariate",
-    "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting : nilearn.masking : nilearn.reporting",
+    "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting : nilearn.masking : nilearn.reporting : nilearn.datasets",
     "nilearn.signal",
     "nilearn.typing"
 ]

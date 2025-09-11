@@ -16,7 +16,7 @@ from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params
-from nilearn.datasets import (
+from nilearn.datasets.struct import (
     load_mni152_gm_template,
     load_mni152_template,
     load_mni152_wm_template,

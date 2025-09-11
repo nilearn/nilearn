@@ -21,7 +21,7 @@ from nilearn._utils.niimg_conversions import (
     check_niimg_4d,
     safe_get_data,
 )
-from nilearn.datasets import load_mni152_template
+from nilearn.datasets.struct import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers._utils import compute_middle_image

@@ -20,7 +20,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_threshold
-from nilearn.datasets import load_mni152_template
+from nilearn.datasets.struct import load_mni152_template
 from nilearn.image import get_data, new_img_like, reorder_img, resample_to_img
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
