@@ -98,7 +98,7 @@ def test_check_surface_plotting_inputs_errors():
 
 def test_plot_surf_engine_error(in_memory_mesh):
     """Test error if unknown engine is specified."""
-    with pytest.raises(ValueError, match="Unknown plotting engine"):
+    with pytest.raises(ValueError, match="'engine' must be one of"):
         plot_surf(in_memory_mesh, engine="foo")
 
 
@@ -612,7 +612,6 @@ def test_plot_surf_stat_map_with_background(
         stat_map=bg_map,
         bg_map=bg_map,
         bg_on_data=True,
-        darkness=0.5,
         engine=engine,
     )
 
@@ -1022,7 +1021,6 @@ def test_plot_surf_roi_default_arguments(
         roi_map=surface_image_roi,
         engine=engine,
         symmetric_cmap=symmetric_cmap,
-        darkness=None,  # to avoid deprecation warning
         cmap="RdYlBu_r",
         avg_method=avg_method,
     )

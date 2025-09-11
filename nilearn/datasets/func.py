@@ -25,7 +25,10 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import remove_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.datasets._utils import (
     ALLOWED_MESH_TYPES,
     PACKAGE_DIRECTORY,
@@ -123,12 +126,9 @@ def fetch_haxby(
 
     if subjects is not None and isinstance(subjects, (list, tuple)):
         for sub_id in subjects:
-            if sub_id not in [1, 2, 3, 4, 5, 6]:
-                raise ValueError(
-                    f"You provided invalid subject id {sub_id} in a "
-                    "list. Subjects must be selected in "
-                    "[1, 2, 3, 4, 5, 6]"
-                )
+            check_parameter_in_allowed(
+                sub_id, [1, 2, 3, 4, 5, 6], "subject id"
+            )
 
     dataset_name = "haxby2001"
     data_dir = get_dataset_dir(
@@ -915,7 +915,7 @@ def fetch_localizer_contrasts(
 def _check_inputs_fetch_localizer_contrasts(contrasts):
     """Check that requested contrast name exists."""
     if isinstance(contrasts, str):
-        raise ValueError(
+        raise TypeError(
             "Contrasts should be a list of strings, but "
             f'a single string was given: "{contrasts}"'
         )
@@ -1538,27 +1538,17 @@ def fetch_megatrawls_netmats(
     url = "http://www.nitrc.org/frs/download.php/8037/Megatrawls.tgz"
     opts = {"uncompress": True}
 
-    error_message = (
-        "Invalid {0} input is provided: {1}, choose one of them {2}"
-    )
     # standard dataset terms
     dimensionalities = [25, 50, 100, 200, 300]
-    if dimensionality not in dimensionalities:
-        raise ValueError(
-            error_message.format(
-                "dimensionality", dimensionality, dimensionalities
-            )
-        )
+    check_parameter_in_allowed(
+        dimensionality, dimensionalities, "dimensionality"
+    )
+
     timeseries_methods = ["multiple_spatial_regression", "eigen_regression"]
-    if timeseries not in timeseries_methods:
-        raise ValueError(
-            error_message.format("timeseries", timeseries, timeseries_methods)
-        )
+    check_parameter_in_allowed(timeseries, timeseries_methods, "timeseries")
+
     output_matrices_names = ["full_correlation", "partial_correlation"]
-    if matrices not in output_matrices_names:
-        raise ValueError(
-            error_message.format("matrices", matrices, output_matrices_names)
-        )
+    check_parameter_in_allowed(matrices, output_matrices_names, "matrices")
 
     dataset_name = "Megatrawls"
     data_dir = get_dataset_dir(
@@ -1898,12 +1888,7 @@ def load_nki(
     see the :ref:`dataset description <nki_dataset>`.
     """
     check_params(locals())
-
-    if mesh_type not in ALLOWED_MESH_TYPES:
-        raise ValueError(
-            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
-            f"Got: {mesh_type}."
-        )
+    check_parameter_in_allowed(mesh_type, ALLOWED_MESH_TYPES, "mesh_type")
 
     fsaverage = load_fsaverage(mesh=mesh, data_dir=data_dir)
 
@@ -2231,11 +2216,7 @@ def fetch_development_fmri(
 def _filter_func_regressors_by_participants(participants, age_group):
     """Filter functional and regressors based on participants."""
     valid_age_groups = ("both", "child", "adult")
-    if age_group not in valid_age_groups:
-        raise ValueError(
-            f"Wrong value for age_group={age_group}. "
-            f"Valid arguments are: {valid_age_groups}"
-        )
+    check_parameter_in_allowed(age_group, valid_age_groups, "age_group")
 
     child_adult = participants["Child_Adult"].to_list()
 
@@ -2299,9 +2280,7 @@ def _reduce_confounds(regressors, keep_confounds):
 
 
 @fill_doc
-def fetch_language_localizer_demo_dataset(
-    data_dir=None, verbose=1, legacy_output=True
-):
+def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     """Download language localizer demo dataset.
 
     Parameters
@@ -2309,17 +2288,6 @@ def fetch_language_localizer_demo_dataset(
     %(data_dir)s
 
     %(verbose)s
-
-    legacy_output : :obj:`bool`, default=True
-
-        .. versionadded:: 0.10.3
-        .. deprecated::0.10.3
-
-            Starting from version 0.13.0
-            the ``legacy_ouput`` argument will be removed
-            and the fetcher will always return
-            a :obj:`sklearn.utils.Bunch`.
-
 
     Returns
     -------
@@ -2332,16 +2300,6 @@ def fetch_language_localizer_demo_dataset(
           Absolute paths of downloaded files on disk
 
         - ``'description'`` : :obj:`str`, dataset description
-
-    .. warning::
-
-        LEGACY OUTPUT:
-
-        **data_dir** : :obj:`str`
-            Path to downloaded dataset.
-
-        **downloaded_files** : :obj:`list` of :obj:`str`
-            Absolute paths of downloaded files on disk
 
     """
     check_params(locals())
@@ -2363,81 +2321,11 @@ def fetch_language_localizer_demo_dataset(
         uncompress_file(downloaded_files[0])
 
     file_list = [str(path) for path in data_dir.rglob("*") if path.is_file()]
-    if legacy_output:
-        # TODO (nilearn >= 0.13.0)
-        warnings.warn(
-            category=DeprecationWarning,
-            stacklevel=find_stack_level(),
-            message=(
-                "From version 0.13.0 this fetcher"
-                "will always return a Bunch.\n"
-                "Use `legacy_output=False` "
-                "to start switch to this new behavior."
-            ),
-        )
-        return str(data_dir), sorted(file_list)
 
     description = get_dataset_descr("language_localizer_demo")
     return Bunch(
         data_dir=str(data_dir), func=sorted(file_list), description=description
     )
-
-
-@fill_doc
-def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
-    """Download language localizer example :term:`bids<BIDS>` dataset.
-
-    .. deprecated:: 0.10.3
-
-        This fetcher function will be removed as it returns the same data
-        as :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`.
-
-        Please use
-        :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`
-        instead.
-
-    Parameters
-    ----------
-    %(data_dir)s
-    %(verbose)s
-
-    Returns
-    -------
-    data_dir : :obj:`str`
-        Path to downloaded dataset.
-
-    downloaded_files : :obj:`list` of :obj:`str`
-        Absolute paths of downloaded files on disk.
-    """
-    check_params(locals())
-
-    warnings.warn(
-        (
-            "The 'fetch_bids_langloc_dataset' function will be removed "
-            "in version 0.13.0 as it returns the same data "
-            "as 'fetch_language_localizer_demo_dataset'.\n"
-            "Please use 'fetch_language_localizer_demo_dataset' instead.'"
-        ),
-        DeprecationWarning,
-        stacklevel=find_stack_level(),
-    )
-    url = "https://files.osf.io/v1/resources/9q7dv/providers/osfstorage/5888d9a76c613b01fc6acc4e"
-    dataset_name = "bids_langloc_example"
-    main_folder = "bids_langloc_dataset"
-    data_dir = get_dataset_dir(
-        dataset_name, data_dir=data_dir, verbose=verbose
-    )
-
-    # The files_spec needed for fetch_files
-    files_spec = [(f"{main_folder}.zip", url, {"move": f"{main_folder}.zip"})]
-    if not (data_dir / main_folder).exists():
-        downloaded_files = fetch_files(
-            data_dir, files_spec, resume=True, verbose=verbose
-        )
-        uncompress_file(downloaded_files[0])
-    main_path = data_dir / main_folder
-    file_list = [str(path) for path in main_path.rglob("*") if path.is_file()]
-    return str(data_dir / main_folder), sorted(file_list)
 
 
 @fill_doc

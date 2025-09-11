@@ -525,7 +525,6 @@ def test_mean_img_resample(rng):
         mean_img_to_resample,
         target_affine=target_affine,
         copy_header=True,
-        force_resample=True,
     )
 
     assert_array_equal(
@@ -1867,7 +1866,7 @@ def test_iterator_generator(img_3d_rand_eye):
 
 
 def test_copy_img():
-    with pytest.raises(ValueError, match="Input value is not an image"):
+    with pytest.raises(TypeError, match="Input value is not an image"):
         copy_img(3)
 
 

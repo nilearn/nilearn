@@ -100,11 +100,7 @@ def create_masks(fmri_path, n_regions):
     atlas_img = load_img(atlas_path)
 
     resampled_atlas = resample_to_img(
-        atlas_img,
-        fmri_path,
-        interpolation="nearest",
-        copy_header=True,
-        force_resample=True,
+        atlas_img, fmri_path, interpolation="nearest", copy_header=True
     )
 
     mask_paths = []

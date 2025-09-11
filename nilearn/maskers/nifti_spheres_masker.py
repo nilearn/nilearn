@@ -13,10 +13,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import (
-    is_matplotlib_installed,
-    rename_parameters,
-)
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import (
@@ -90,14 +87,12 @@ def apply_mask_and_get_affinity(
     elif mask_img is not None:
         affine = niimg.affine
         mask_img = check_niimg_3d(mask_img)
-        # TODO (nilearn >= 0.13.0) force_resample=True
         mask_img = resample_img(
             mask_img,
             target_affine=affine,
             target_shape=niimg.shape[:3],
             interpolation="nearest",
             copy_header=True,
-            force_resample=False,
         )
         mask, _ = load_mask_img(mask_img)
         mask_coords = list(zip(*np.where(mask != 0), strict=False))
@@ -283,13 +278,9 @@ class NiftiSpheresMasker(BaseMasker):
     %(clean_args)s
         .. versionadded:: 0.12.0
 
-    %(masker_kwargs)s
-
     Attributes
     ----------
     %(clean_args_)s
-
-    %(masker_kwargs_)s
 
     %(nifti_mask_img_)s
 
@@ -330,7 +321,6 @@ class NiftiSpheresMasker(BaseMasker):
         verbose=0,
         reports=True,
         clean_args=None,
-        **kwargs,
     ):
         self.seeds = seeds
         self.mask_img = mask_img
@@ -350,7 +340,6 @@ class NiftiSpheresMasker(BaseMasker):
         self.t_r = t_r
         self.dtype = dtype
         self.clean_args = clean_args
-        self.clean_kwargs = kwargs
 
         # Parameters for joblib
         self.memory = memory
@@ -542,8 +531,6 @@ class NiftiSpheresMasker(BaseMasker):
 
         return embedded_images
 
-    # TODO (nilearn >= 0.13.0)
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit(
         self,
         imgs=None,
@@ -578,14 +565,12 @@ class NiftiSpheresMasker(BaseMasker):
         if imgs is not None:
             if self.reports:
                 if self.mask_img_ is not None:
-                    # TODO (nilearn  >= 0.13.0) force_resample=True
                     resampl_imgs = self._cache(resample_img)(
                         imgs,
                         target_affine=self.mask_img_.affine,
                         copy=False,
                         interpolation="nearest",
                         copy_header=True,
-                        force_resample=False,
                     )
                 else:
                     resampl_imgs = imgs
@@ -606,7 +591,7 @@ class NiftiSpheresMasker(BaseMasker):
             if not hasattr(seed, "__len__"):
                 raise ValueError(
                     f"{error}Seed #{i} is not a valid triplet of coordinates. "
-                    f"It is of type {type(seed)}."
+                    f"It is of type {seed.__class__.__name__}."
                 )
             # Convert to list because it is easier to process
             seed = (
@@ -692,9 +677,6 @@ class NiftiSpheresMasker(BaseMasker):
 
         params = get_params(NiftiSpheresMasker, self)
         params["clean_kwargs"] = self.clean_args_
-        # TODO (nilearn  >= 0.13.0) remove
-        if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs_
 
         signals, _ = self._cache(
             filter_and_extract, ignore=["verbose", "memory", "memory_level"]

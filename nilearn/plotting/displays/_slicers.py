@@ -7,7 +7,7 @@ from typing import ClassVar
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.colorbar import ColorbarBase
-from matplotlib.colors import LinearSegmentedColormap, ListedColormap
+from matplotlib.colors import ListedColormap
 from matplotlib.transforms import Bbox
 
 from nilearn._utils.docs import fill_doc
@@ -17,6 +17,7 @@ from nilearn._utils.niimg_conversions import _check_fov, check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
+from nilearn.plotting._engine_utils import threshold_cmap
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
     get_cbar_ticks,
@@ -590,7 +591,6 @@ class BaseSlicer:
                     transparency,
                     img.affine,
                     img.shape,
-                    force_resample=True,
                     copy_header=True,
                     interpolation=resampling_interpolation,
                 )
@@ -739,26 +739,16 @@ class BaseSlicer:
         self._colorbar_ax = figure.add_axes(lt_wid_top_ht)
         self._colorbar_ax.set_facecolor("w")
 
-        our_cmap = plt.get_cmap(cmap)
-        # edge case where the data has a single value
-        # yields a cryptic matplotlib error message
-        # when trying to plot the color bar
-        n_ticks = 5 if cbar_vmin != cbar_vmax else 1
-        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks)
-        bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
-
-        # some colormap hacking
-        cmaplist = [our_cmap(i) for i in range(our_cmap.N)]
-        transparent_start = int(norm(-offset, clip=True) * (our_cmap.N - 1))
-        transparent_stop = int(norm(offset, clip=True) * (our_cmap.N - 1))
-        for i in range(transparent_start, transparent_stop):
-            cmaplist[i] = (*self._brain_color, 0.0)  # transparent
         if cbar_vmin == cbar_vmax:  # len(np.unique(data)) == 1 ?
             return
         else:
-            our_cmap = LinearSegmentedColormap.from_list(
-                "Custom cmap", cmaplist, our_cmap.N
+            our_cmap = threshold_cmap(
+                cmap, norm, offset, (*self._brain_color, 0.0)
             )
+
+        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks=5)
+        bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
+
         self._cbar = ColorbarBase(
             self._colorbar_ax,
             ticks=ticks,

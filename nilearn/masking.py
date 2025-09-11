@@ -21,6 +21,7 @@ from nilearn.datasets import (
     load_mni152_template,
     load_mni152_wm_template,
 )
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.image import get_data, new_img_like, resampling
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -79,7 +80,7 @@ def load_mask_img(mask_img, allow_empty=False):
     if not isinstance(mask_img, (*NiimgLike, SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(mask_img)=}."
+            f"Got {mask_img.__class__.__name__}."
         )
 
     if isinstance(mask_img, NiimgLike):
@@ -887,7 +888,7 @@ def apply_mask_fmri(
             warnings.warn(
                 "Parameter smoothing_fwhm "
                 "is not yet supported for surface data",
-                UserWarning,
+                NotImplementedWarning,
                 stacklevel=2,
             )
             smoothing_fwhm = True

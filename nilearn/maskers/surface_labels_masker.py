@@ -10,10 +10,6 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import (
-    constrained_layout_kwargs,
-    rename_parameters,
-)
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -274,11 +270,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
 
         return region_ids_
 
-    # TODO (nilearn >= 0.13.0)
     @fill_doc
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.0"
-    )
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -589,7 +581,7 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
             len(hemi_view.keys()),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
-            **constrained_layout_kwargs(),
+            layout="constrained",
         )
 
         axes = np.atleast_2d(axes)
@@ -605,7 +597,6 @@ class SurfaceLabelsMasker(_BaseSurfaceMasker):
                         cmap=self.cmap,
                         vmin=vmin,
                         vmax=vmax,
-                        darkness=None,
                     )
                 plot_surf_contours(
                     roi_map=labels_img,
