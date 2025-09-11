@@ -25,7 +25,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-success:`API` Add a NotImplementedWarning (:gh:`5508` by `Rémi Gau`_).
+- :bdg-success:`API` Add a :class:`~exceptions.NotImplementedWarning` and make :class:`~exceptions.DimensionError`, :class:`~exceptions.AllVolumesRemovedError` and :class:`~exceptions.MeshDimensionError` part of the public API (:gh:`5508`, :gh:`5570` by `Rémi Gau`_).
 
 Changes
 -------

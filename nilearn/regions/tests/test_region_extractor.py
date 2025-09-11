@@ -10,9 +10,9 @@ from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
 )
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _affine_eye, _img_4d_zeros, _shape_3d_large
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.regions import (
     RegionExtractor,

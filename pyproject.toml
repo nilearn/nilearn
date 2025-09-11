@@ -150,7 +150,7 @@ layers = [
     "nilearn.mass_univariate",
     "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting : nilearn.masking",
     "nilearn.signal",
-    "nilearn.typing"
+    "nilearn.typing | nilearn.exceptions"
 ]
 name = "main architecture"
 type = "layers"
