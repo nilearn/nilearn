@@ -25,7 +25,10 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Add anterior and posterior views to SurfaceLabelsMasker and SurfaceMasker (:gh:`5473` by `Chloe Hampson`_).
+
 - :bdg-success:`API` Add a NotImplementedWarning (:gh:`5508` by `Rémi Gau`_).
+
 
 Changes
 -------
