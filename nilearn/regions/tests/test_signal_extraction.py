@@ -610,13 +610,12 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     assert len(labels_labels) == 8
 
     # test return_masked_atlas deprecation warning
-    # TODO (nilearn >= 0.13.0)
+    # TODO (nilearn >= 0.15.0)
     with pytest.warns(
         DeprecationWarning,
-        match='After version 0.13. "img_to_signals_labels" will also return '
-        'the "masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
-        "used to toggle this behavior. In version 0.15, "
-        '"return_masked_atlas" parameter will be removed.',
+        match=(
+            'In version 0.15, "return_masked_atlas" parameter will be removed.'
+        ),
     ):
         img_to_signals_labels(
             imgs=fmri_img,

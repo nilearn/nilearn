@@ -113,7 +113,7 @@ def _get_labels_data(
     mask_img=None,
     background_label=0,
     dim=None,
-    keep_masked_labels=True,
+    keep_masked_labels=False,
 ):
     """Get the label data.
 
@@ -143,6 +143,7 @@ def _get_labels_data(
 
     dim : :obj:`int`, optional
         Integer slices mask for a specific dimension.
+
     %(keep_masked_labels)s
 
     Returns
@@ -168,16 +169,12 @@ def _get_labels_data(
 
     if keep_masked_labels:
         labels = list(np.unique(labels_data))
-        # TODO (nilearn >= 0.13.0)
+        # TODO (nilearn >= 0.15.0)
         warnings.warn(
-            'Applying "mask_img" before '
-            "signal extraction may result in empty region signals in the "
-            "output. These are currently kept. "
-            "Starting from version 0.13, the default behavior will be "
-            "changed to remove them by setting "
-            '"keep_masked_labels=False". '
-            '"keep_masked_labels" parameter will be removed '
-            "in version 0.15.",
+            (
+                "In version 0.15.0, ",
+                '"keep_masked_labels" parameter will be removed.',
+            ),
             DeprecationWarning,
             stacklevel=find_stack_level(),
         )
@@ -335,12 +332,12 @@ def img_to_signals_labels(
         )
         return signals, labels, masked_atlas
     else:
-        # TODO (nilearn >= 0.14.0)
+        # TODO (nilearn >= 0.15.0)
         warnings.warn(
-            'After version 0.13. "img_to_signals_labels" will also return the '
-            '"masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
-            "used to toggle this behavior. In version 0.15, "
-            '"return_masked_atlas" parameter will be removed.',
+            (
+                "In version 0.15, "
+                '"return_masked_atlas" parameter will be removed.'
+            ),
             DeprecationWarning,
             stacklevel=find_stack_level(),
         )
