@@ -247,13 +247,13 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
     return rep
 
 
-def img_data_dtype(niimg):
+def img_data_dtype(img):
     """Determine type of data contained in image.
 
     Based on the information contained in ``niimg.dataobj``, determine the
     dtype of ``np.array(niimg.dataobj).dtype``.
     """
-    dataobj = niimg.dataobj
+    dataobj = img.dataobj
 
     # Neuroimages that scale data should be interpreted as floating point
     if is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (
@@ -263,6 +263,4 @@ def img_data_dtype(niimg):
         return np.float64
 
     # ArrayProxy gained the dtype attribute in nibabel 2.2
-    return (
-        dataobj.dtype if hasattr(dataobj, "dtype") else niimg.get_data_dtype()
-    )
+    return dataobj.dtype if hasattr(dataobj, "dtype") else img.get_data_dtype()
