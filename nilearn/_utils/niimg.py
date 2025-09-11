@@ -110,7 +110,7 @@ def load_niimg(niimg, dtype=None):
     img : image
         A loaded image object.
     """
-    from ..image import new_img_like  # avoid circular imports
+    from nilearn.image.image import new_img_like  # avoid circular imports
 
     niimg = stringify_path(niimg)
     if isinstance(niimg, str):

@@ -94,7 +94,7 @@ def check_imgs_equal(img1, img2) -> bool:
 
 def _index_img(img, index):
     """Helper function for check_niimg_4d."""  # noqa: D401
-    from ..image import new_img_like  # avoid circular imports
+    from nilearn.image.image import new_img_like  # avoid circular imports
 
     return new_img_like(
         img, _get_data(img)[:, :, :, index], img.affine, copy_header=True
@@ -179,7 +179,9 @@ def iter_check_niimg(
                         f"Reference shape:\n{ref_fov[1]!r}\n"
                         f"Image shape:\n{niimg.shape!r}\n"
                     )
-                from nilearn import image  # we avoid a circular import
+                from nilearn.image import (
+                    resample_img,  # we avoid a circular import
+                )
 
                 if resample_to_first_img:
                     warnings.warn(
@@ -189,7 +191,7 @@ def iter_check_niimg(
                         stacklevel=find_stack_level(),
                     )
                 niimg = cache(
-                    image.resample_img,
+                    resample_img,
                     memory,
                     func_memory_level=2,
                     memory_level=memory_level,
@@ -282,7 +284,7 @@ def check_niimg(
         iter_check_niimg, check_niimg_3d, check_niimg_4d
 
     """
-    from ..image import new_img_like  # avoid circular imports
+    from nilearn.image.image import new_img_like  # avoid circular imports
 
     if not (
         isinstance(niimg, (NiimgLike, SpatialImage))
