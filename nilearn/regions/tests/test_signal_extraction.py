@@ -13,9 +13,9 @@ from nilearn._utils.data_gen import (
     generate_maps,
     generate_timeseries,
 )
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _shape_3d_default
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiLabelsMasker
 from nilearn.regions.signal_extraction import (

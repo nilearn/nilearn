@@ -18,7 +18,6 @@ from scipy.stats import scoreatpercentile
 from nilearn import signal
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import (
     check_copy_header,
     stringify_path,
@@ -39,6 +38,7 @@ from nilearn._utils.niimg_conversions import (
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
+from nilearn.exceptions import DimensionError
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -1573,7 +1573,7 @@ def clean_img(
 
     """
     # Avoid circular import
-    from .. import masking
+    from nilearn import masking
 
     # Check if t_r is set, otherwise propose t_r from imgs header
     if (low_pass is not None or high_pass is not None) and t_r is None:
@@ -1938,7 +1938,7 @@ def get_indices_from_image(image) -> np.ndarray:
     else:
         raise TypeError(
             "Image to extract indices from must be one of: "
-            "Niimg-Like, SurfaceIamge, numpy array. "
+            "Niimg-Like, SurfaceImage, numpy array. "
             f"Got {image.__class__.__name__}"
         )
     return np.unique(data)

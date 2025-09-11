@@ -635,23 +635,12 @@ def vol_to_surf(
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node. Ignored if `inner_mesh` is provided.
 
-    interpolation : {'linear', 'nearest', 'nearest_most_frequent'}, \
+    interpolation : {'linear', 'nearest_most_frequent'}, \
                     default='linear'
         How the image intensity is measured at a sample point.
 
         - 'linear':
             Use a trilinear interpolation of neighboring voxels.
-        - 'nearest':
-            Use the intensity of the nearest voxel.
-
-            .. versionchanged:: 0.12.0
-
-                The 'nearest' interpolation method will be removed in
-                version 0.13.0. It is recommended to use 'linear' for
-                statistical maps and
-                :term:`probabilistic atlases<Probabilistic atlas>` and
-                'nearest_most_frequent' for
-                :term:`deterministic atlases<Deterministic atlas>`.
 
         - 'nearest_most_frequent':
             Use the most frequent value in the neighborhood (out of the
@@ -804,30 +793,17 @@ def vol_to_surf(
 
     """
     # avoid circular import
-    from nilearn.image import get_data as get_vol_data
-    from nilearn.image import load_img
+    from nilearn.image.image import get_data as get_vol_data
+    from nilearn.image.image import load_img
     from nilearn.image.resampling import resample_to_img
 
     sampling_schemes = {
         "linear": _interpolation_sampling,
-        "nearest": _nearest_voxel_sampling,
         "nearest_most_frequent": _nearest_most_frequent,
     }
     check_parameter_in_allowed(
         interpolation, tuple(sampling_schemes.keys()), "interpolation"
     )
-
-    # TODO (nilearn 0.13.0) deprecate nearest interpolation
-    if interpolation == "nearest":
-        warnings.warn(
-            "The 'nearest' interpolation method will be deprecated in 0.13.0. "
-            "To disable this warning, select either 'linear' or "
-            "'nearest_most_frequent'. If your image is a deterministic atlas "
-            "'nearest_most_frequent' is recommended. Otherwise, use 'linear'. "
-            "See the documentation for more information.",
-            FutureWarning,
-            stacklevel=find_stack_level(),
-        )
 
     img = load_img(img)
 
@@ -946,7 +922,7 @@ def load_surf_data(surf_data):
 
     """
     # avoid circular import
-    from nilearn.image import get_data as get_vol_data
+    from nilearn.image.image import get_data as get_vol_data
 
     # if the input is a filename, load it
     surf_data = stringify_path(surf_data)

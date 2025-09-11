@@ -9,9 +9,9 @@ from numpy.testing import assert_array_equal, assert_equal
 from sklearn.preprocessing import StandardScaler
 
 from nilearn._utils import data_gen
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _rng
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, high_variance_confounds
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import (
