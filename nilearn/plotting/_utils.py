@@ -82,7 +82,7 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
     if vmin == vmax:
         return np.linspace(vmin, vmax, 1)
 
-    # # edge case where the data has all negative values but vmax is exactly 0
+    # edge case where the data has all negative values but vmax is exactly 0
     vmax_temp = vmax
     if vmax == 0:
         vmax_temp = np.finfo(np.float32).eps
