@@ -506,6 +506,18 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """
         raise NotImplementedError()
 
+    def _sanitize_cleaning_parameters(self):
+        """Make sure that cleaning parameters are passed via clean_args.
+
+        TODO (nilearn >= 0.13.0) remove
+        """
+        if hasattr(self, "clean_kwargs"):
+            self.clean_kwargs_ = {
+                k[7:]: v
+                for k, v in self.clean_kwargs.items()
+                if k.startswith("clean__")
+            }
+
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Class from which all surface maskers should inherit."""
