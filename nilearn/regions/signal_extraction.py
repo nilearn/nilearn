@@ -172,8 +172,8 @@ def _get_labels_data(
         # TODO (nilearn >= 0.15.0)
         warnings.warn(
             (
-                "In version 0.15.0, ",
-                '"keep_masked_labels" parameter will be removed.',
+                "In version 0.15.0, "
+                '"keep_masked_labels" parameter will be removed.'
             ),
             DeprecationWarning,
             stacklevel=find_stack_level(),

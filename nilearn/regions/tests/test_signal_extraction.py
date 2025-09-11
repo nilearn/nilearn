@@ -596,7 +596,7 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
 
     with pytest.warns(
         DeprecationWarning,
-        match='"keep_masked_labels" parameter will be removed ',
+        match='"keep_masked_labels" parameter will be removed.',
     ):
         labels_signals, labels_labels = img_to_signals_labels(
             imgs=fmri_img,
