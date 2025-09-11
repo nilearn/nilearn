@@ -860,7 +860,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         case2 = (alphas is not None) and min(len(l1_ratios), len(alphas)) > 1
         if case1 or case2:
             self.cv_ = list(
-                #TODO try to extract
+                # TODO try to extract
                 check_cv(self.cv, y=y, classifier=is_classifier(self)).split(
                     X, y
                 )
@@ -915,7 +915,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 solver_params,
                 n_alphas=self.n_alphas,
                 eps=self.eps,
-                #TODO try to extract
+                # TODO try to extract
                 is_classif=is_classifier(self),
                 key=(cls, fold),
                 debias=self.debias,

@@ -774,7 +774,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 classes_, self.coef_, self.std_coef_
             )
 
-            #TODO try to extract
+            # TODO try to extract
             if is_classifier(self) and (self.n_classes_ == 2):
                 self.coef_ = self.coef_[0, :][np.newaxis, :]
                 self.intercept_ = self.intercept_[0]
