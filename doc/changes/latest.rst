@@ -52,6 +52,8 @@ Changes
 
 - :bdg-danger:`Deprecation` The default for the parameter ``dimension`` of :func:`~datasets.fetch_atlas_smith_2009` was changed from ``None`` to ``10``. The only allowed values for this parameter must now be one of ``10``, ``20`` or ``70``. The fetcher now only returns a single map under the key ``maps`` for the requested ``dimension`` and ``resting`` (:gh:`5640` by `Rémi Gau`_).
 
+- :bdg-danger:`Deprecation` The default for the parameter ``extrapolate`` of :func:`~signal.clean` was changed from ``True`` to ``False`` (:gh:`5675` by `Rémi Gau`_).
+
 - :bdg-danger:`Deprecation` The default for the parameters ``n_networks`` and ``thickness`` of :func:`~datasets.fetch_atlas_yeo_2011` were changed from ``None`` to ``7`` and ``"thick"``. The only allowed values for ``n_networks`` must now be one of ``7``, ``17``. The only allowed values for ``thickness`` must now be one of ``thin``, ``thick``. The fetcher now only returns a single map under the key ``maps`` for the requested ``n_networks`` and ``thickness`` (:gh:`5640` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter ``legacy_output`` of :func:`~datasets.fetch_language_localizer_demo_dataset` has been removed. The fetcher now always returns a Scikit-Learn Bunch (:gh:`5640` by `Rémi Gau`_).
