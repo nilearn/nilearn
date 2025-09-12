@@ -3326,9 +3326,14 @@ def check_multi_nifti_masker_generate_report_4d_fit(estimator):
     if not is_matplotlib_installed():
         return
 
-    estimator.maps_img = _img_3d_ones()
-    estimator.fit([_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()])
-    with pytest.warns(
-        UserWarning, match="A list of 4D subject images were provided to fit. "
-    ):
-        _generate_report(estimator)
+    if accept_niimg_input(estimator):
+        estimator.maps_img = _img_3d_ones()
+        estimator.fit([_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()])
+        with pytest.warns(
+            UserWarning,
+            match="A list of 4D subject images were provided to fit. ",
+        ):
+            _generate_report(estimator)
+    else:
+        ...
+        # TODO

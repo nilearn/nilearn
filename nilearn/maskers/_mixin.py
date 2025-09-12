@@ -1,7 +1,10 @@
 """Mixin classes for maskers."""
 
+from sklearn.utils.estimator_checks import check_is_fitted
+
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.typing import NiimgLike
 
 
 class _MultiMixin:
@@ -52,4 +55,51 @@ class _MultiMixin:
         """
         return self.fit(imgs, y=y).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
+        )
+
+    @fill_doc
+    def transform(self, imgs, confounds=None, sample_mask=None):
+        """Apply mask, spatial and temporal preprocessing.
+
+        Parameters
+        ----------
+        imgs :Image object, or a :obj:`list` of Image objects
+            See :ref:`extracting_data`.
+            Data to be preprocessed
+
+        %(confounds_multi)s
+
+        %(sample_mask_multi)s
+
+        Returns
+        -------
+        %(signals_transform_multi_nifti)s
+
+        """
+        check_is_fitted(self)
+
+        if not (confounds is None or isinstance(confounds, list)):
+            raise TypeError(
+                "'confounds' must be a None or a list. "
+                f"Got {confounds.__class__.__name__}."
+            )
+        if not (sample_mask is None or isinstance(sample_mask, list)):
+            raise TypeError(
+                "'sample_mask' must be a None or a list. "
+                f"Got {sample_mask.__class__.__name__}."
+            )
+        if isinstance(imgs, NiimgLike):
+            if isinstance(confounds, list):
+                confounds = confounds[0]
+            if isinstance(sample_mask, list):
+                sample_mask = sample_mask[0]
+            return super().transform(
+                imgs, confounds=confounds, sample_mask=sample_mask
+            )
+
+        return self.transform_imgs(
+            imgs,
+            confounds=confounds,
+            sample_mask=sample_mask,
+            n_jobs=self.n_jobs,
         )

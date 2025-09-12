@@ -34,7 +34,6 @@ from nilearn.masking import (
     compute_multi_epi_mask,
     load_mask_img,
 )
-from nilearn.typing import NiimgLike
 
 
 def _get_mask_strategy(strategy: str):
@@ -493,52 +492,3 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             )
         )
         return data
-
-    @fill_doc
-    def transform(self, imgs, confounds=None, sample_mask=None):
-        """Apply mask, spatial and temporal preprocessing.
-
-        Parameters
-        ----------
-        imgs : Niimg-like object, or a :obj:`list` of Niimg-like objects
-            See :ref:`extracting_data`.
-            Data to be preprocessed
-
-        %(confounds_multi)s
-
-        %(sample_mask_multi)s
-
-            .. versionadded:: 0.8.0
-
-        Returns
-        -------
-        %(signals_transform_multi_nifti)s
-
-        """
-        check_is_fitted(self)
-
-        if not (confounds is None or isinstance(confounds, list)):
-            raise TypeError(
-                "'confounds' must be a None or a list. "
-                f"Got {confounds.__class__.__name__}."
-            )
-        if not (sample_mask is None or isinstance(sample_mask, list)):
-            raise TypeError(
-                "'sample_mask' must be a None or a list. "
-                f"Got {sample_mask.__class__.__name__}."
-            )
-        if isinstance(imgs, NiimgLike):
-            if isinstance(confounds, list):
-                confounds = confounds[0]
-            if isinstance(sample_mask, list):
-                sample_mask = sample_mask[0]
-            return super().transform(
-                imgs, confounds=confounds, sample_mask=sample_mask
-            )
-
-        return self.transform_imgs(
-            imgs,
-            confounds=confounds,
-            sample_mask=sample_mask,
-            n_jobs=self.n_jobs,
-        )
