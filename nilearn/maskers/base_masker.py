@@ -11,7 +11,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from joblib import Memory
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import (
+    BaseEstimator,
+    TransformerMixin,
+)
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
 
@@ -58,6 +61,7 @@ def filter_and_extract(
     sample_mask=None,
     copy=True,
     dtype=None,
+    sklearn_output_config=None,
 ):
     """Extract representative time series using given function.
 
@@ -78,7 +82,7 @@ def filter_and_extract(
 
     Returns
     -------
-    signals : 2D numpy array
+    signals : 1D or 2D numpy array
         Signals extracted using the extraction function. It is a scikit-learn
         friendly 2D array with shape n_samples x n_features.
 
@@ -170,7 +174,9 @@ def filter_and_extract(
         **parameters["clean_kwargs"],
     )
 
-    if temp_imgs.ndim == 3:
+    # if we need to output to numpy and input was a 3D img
+    # we return 1D array
+    if temp_imgs.ndim == 3 and sklearn_output_config is None:
         region_signals = region_signals.squeeze()
 
     return region_signals, aux
@@ -244,7 +250,11 @@ def mask_logger(step, img=None, verbose=0):
 
 
 @fill_doc
-class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class BaseMasker(
+    TransformerMixin,
+    CacheMixin,
+    BaseEstimator,
+):
     """Base class for NiftiMaskers."""
 
     @abc.abstractmethod
@@ -300,6 +310,11 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(masker=True)
         return tags
+
+    @property
+    def _n_features_out(self):
+        """Needed by sklearn machinery for set_ouput."""
+        return self.n_elements_
 
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
@@ -497,15 +512,6 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return signals
 
-    def set_output(self, *, transform=None):
-        """Set the output container when ``"transform"`` is called.
-
-        .. warning::
-
-            This has not been implemented yet.
-        """
-        raise NotImplementedError()
-
     def _sanitize_cleaning_parameters(self):
         """Make sure that cleaning parameters are passed via clean_args.
 
@@ -548,6 +554,11 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             surf_img=True, niimg_like=False, masker=True
         )
         return tags
+
+    @property
+    def _n_features_out(self):
+        """Needed by sklearn machinery for set_ouput."""
+        return self.n_elements_
 
     def _check_imgs(self, imgs) -> None:
         if not (
@@ -670,7 +681,13 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
-        return signals.squeeze() if return_1D else signals
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+
+        return (
+            signals.squeeze()
+            if return_1D and sklearn_output_config is not None
+            else signals
+        )
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
@@ -731,15 +748,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             )
 
         return signals
-
-    def set_output(self, *, transform=None):
-        """Set the output container when ``"transform"`` is called.
-
-        .. warning::
-
-            This has not been implemented yet.
-        """
-        raise NotImplementedError()
 
 
 def generate_lut(labels_img, background_label, lut=None, labels=None):
