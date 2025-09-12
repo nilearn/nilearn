@@ -866,17 +866,17 @@ def test_plot_surf_roi_error(engine, rng, in_memory_mesh, surf_roi_data):
 
     # negative value in roi map
     surf_roi_data[0] = -1
-    with pytest.warns(
-        DeprecationWarning,
-        match="Negative values in roi_map will no longer be allowed",
+    with pytest.raises(
+        ValueError,
+        match="Negative values in roi_map",
     ):
         plot_surf_roi(in_memory_mesh, roi_map=surf_roi_data, engine=engine)
 
     # float value in roi map
     surf_roi_data[0] = 1.2
-    with pytest.warns(
-        DeprecationWarning,
-        match="Non-integer values in roi_map will no longer be allowed",
+    with pytest.raises(
+        ValueError,
+        match="Non-integer values in roi_map",
     ):
         plot_surf_roi(in_memory_mesh, roi_map=surf_roi_data, engine=engine)
 

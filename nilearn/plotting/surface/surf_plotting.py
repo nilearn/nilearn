@@ -1,13 +1,10 @@
 """Functions for surface visualization."""
 
-from warnings import warn
-
 import numpy as np
 import pandas as pd
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data
@@ -848,6 +845,10 @@ def plot_surf_roi(
         correct view, `hemi` should have a value corresponding to `roi_map`
         data.
 
+        .. versionchanged :: nilearn 0.13.0dev
+
+            Negative or non-integer values are no longer allowed.
+
     %(bg_map)s
 
     %(hemi)s
@@ -948,6 +949,11 @@ def plot_surf_roi(
     kwargs : :obj:`dict`, optional
         Keyword arguments passed to :func:`nilearn.plotting.plot_surf`.
 
+    Raises
+    ------
+    ValueError
+        If roi image contains negative or non-integer values.
+
     See Also
     --------
     nilearn.datasets.fetch_surf_fsaverage: For surface data object to be
@@ -974,15 +980,7 @@ def plot_surf_roi(
             f"{roi.ndim} dimensions"
         )
     if (roi < 0).any():
-        # TODO (nilearn >= 0.13.0) raise ValueError
-        warn(
-            (
-                "Negative values in roi_map will no longer be allowed in"
-                " Nilearn version 0.13"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
+        raise ValueError("Negative values in roi_map are not allowed.")
 
     mesh = load_surf_mesh(surf_mesh)
     if roi.shape[0] != mesh.n_vertices:
@@ -1001,15 +999,8 @@ def plot_surf_roi(
         vmax = float(1 + np.nanmax(roi))
 
     if not np.array_equal(roi[idx_not_na], roi[idx_not_na].astype(int)):
-        # TODO (nilearn >= 0.13.0) raise ValueError
-        warn(
-            (
-                "Non-integer values in roi_map will no longer be allowed "
-                "in Nilearn version 0.13"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
+        raise ValueError("Non-integer values in roi_map are not allowed.")
+
     if isinstance(cmap, pd.DataFrame):
         cmap = create_colormap_from_lut(cmap)
 
