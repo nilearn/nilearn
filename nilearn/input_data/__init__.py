@@ -23,7 +23,7 @@ message = (
     "Importing from 'nilearn.input_data' will be possible at least until "
     "release 0.13.0. Please import from 'nilearn.maskers' instead."
 )
-warnings.warn(message, DeprecationWarning, stacklevel=find_stack_level())
+warnings.warn(message, FutureWarning, stacklevel=find_stack_level())
 
 
 from nilearn.input_data.base_masker import BaseMasker

@@ -155,7 +155,7 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
             f'Please use the parameter "{replacement_param}" instead.'
         )
         warnings.warn(
-            category=DeprecationWarning,
+            category=FutureWarning,
             message=param_deprecation_msg,
             stacklevel=find_stack_level(),
         )
@@ -220,7 +220,7 @@ def remove_parameters(removed_params, reason, end_version="future"):
                     f"{reason}"
                 )
                 warnings.warn(
-                    category=DeprecationWarning,
+                    category=FutureWarning,
                     message=message,
                     stacklevel=find_stack_level(),
                 )
