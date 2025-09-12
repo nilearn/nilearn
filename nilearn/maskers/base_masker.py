@@ -313,6 +313,7 @@ class BaseMasker(
 
     @property
     def _n_features_out(self):
+        """Needed by sklearn machinery for set_ouput."""
         return self.n_elements_
 
     def fit(self, imgs=None, y=None):
@@ -556,6 +557,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     @property
     def _n_features_out(self):
+        """Needed by sklearn machinery for set_ouput."""
         return self.n_elements_
 
     def _check_imgs(self, imgs) -> None:
