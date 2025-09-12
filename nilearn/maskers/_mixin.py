@@ -56,6 +56,15 @@ class _MultiMixin:
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
+    def set_output(self, *, transform=None):
+        """Set the output container when ``"transform"`` is called.
+
+        .. warning::
+
+            This has not been implemented yet.
+        """
+        raise NotImplementedError()
+
 
 class _LabelMaskerMixin:
     def get_feature_names_out(self, input_features=None):

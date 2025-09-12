@@ -908,8 +908,14 @@ def check_estimator_set_output(estimator_orig):
     ):
         return
 
-    estimator = clone(estimator_orig)
+    if isinstance(
+        estimator_orig, (_BaseDecomposition, ConnectivityMeasure)
+    ) or is_multimasker(estimator_orig):
+        with pytest.raises(NotImplementedError):
+            estimator_orig.set_output(transform="pandas")
+        return
 
+    estimator = clone(estimator_orig)
     estimator = fit_estimator(estimator)
 
     img, _ = generate_data_to_fit(estimator)
@@ -919,11 +925,6 @@ def check_estimator_set_output(estimator_orig):
         assert isinstance(signal[0], np.ndarray)
     else:
         assert isinstance(signal, np.ndarray)
-
-    if isinstance(estimator, (_BaseDecomposition, ConnectivityMeasure)):
-        with pytest.raises(NotImplementedError):
-            estimator.set_output(transform="pandas")
-        return
 
     estimator.set_output(transform="pandas")
     signal = estimator.transform(img)
@@ -2890,11 +2891,12 @@ def check_nifti_masker_fit_transform_5d(estimator):
         assert len(signal) == n_subject
         assert all(x.ndim == 2 for x in signal)
 
+        # TODO
         # check type with set_output
-        estimator.set_output(transform="pandas")
-        signal = estimator.transform(input_5d_img)
-        assert isinstance(signal, list)
-        assert all(isinstance(x, pd.DataFrame) for x in signal)
+        # estimator.set_output(transform="pandas")
+        # signal = estimator.transform(input_5d_img)
+        # assert isinstance(signal, list)
+        # assert all(isinstance(x, pd.DataFrame) for x in signal)
 
 
 @ignore_warnings()
