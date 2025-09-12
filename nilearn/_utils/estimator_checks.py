@@ -50,6 +50,7 @@ from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_imgs_equal
+from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn._utils.tags import (
     SKLEARN_LT_1_6,
     accept_niimg_input,
@@ -156,11 +157,7 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
             "Use dedicated sklearn utilities to test estimators."
         )
 
-    if not isinstance(estimators, list):  # pragma: no cover
-        raise TypeError(
-            "'estimators' should be a list. "
-            f"Got {estimators.__class__.__name__}."
-        )
+    check_is_of_allowed_type(estimators, (list,), "estimators")
 
     for est in estimators:
         expected_failed_checks = return_expected_failed_checks(est)
@@ -534,11 +531,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
 
 
 def nilearn_check_estimator(estimators: list[BaseEstimator]):
-    if not isinstance(estimators, list):  # pragma: no cover
-        raise TypeError(
-            "'estimators' should be a list. "
-            f"Got {estimators.__class__.__name__}."
-        )
+    check_is_of_allowed_type(estimators, (list,), "estimators")
     for est in estimators:
         for e, check in nilearn_check_generator(estimator=est):
             yield e, check, check.__name__

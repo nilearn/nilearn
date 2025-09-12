@@ -701,11 +701,9 @@ def confounds():
     return generate_signals(n_features=41, n_confounds=5, length=45)[2]
 
 
-def test_clean_confounds_errros(signals):
+def test_clean_confounds_errors(signals):
     """Test error handling."""
-    with pytest.raises(
-        TypeError, match="confounds keyword has an unhandled type"
-    ):
+    with pytest.raises(TypeError, match="must be of type"):
         clean(signals, confounds=1)
 
     with pytest.raises(TypeError, match="confound has an unhandled type"):
@@ -1418,7 +1416,7 @@ def test_clean_sample_mask_error():
         clean(signals, sample_mask=sample_mask, runs=runs)
 
     # invalid input for sample_mask
-    with pytest.raises(TypeError, match="unhandled type"):
+    with pytest.raises(TypeError, match="must be of type"):
         clean(signals, sample_mask="not_supported")
 
     # sample_mask too long
