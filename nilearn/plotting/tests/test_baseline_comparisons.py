@@ -288,10 +288,8 @@ def test_plot_surf_surface(plot_func, view, hemi):
     if plot_func == plot_surf_roi:
         # cannot have negative values for roi_map
         surf_img = math_img(
-            "img > 1.7",
-            img=load_fsaverage_data(
-                data_type="thickness", mesh_type="inflated"
-            ),
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
         )
     return plot_func(
         surf_img.mesh,
@@ -313,10 +311,8 @@ def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
     if plot_func == plot_surf_roi:
         # cannot have negative values for roi_map
         surf_img = math_img(
-            "img > 1.7",
-            img=load_fsaverage_data(
-                data_type="thickness", mesh_type="inflated"
-            ),
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
         )
     return plot_func(
         surf_img.mesh,
