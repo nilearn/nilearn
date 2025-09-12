@@ -1920,14 +1920,15 @@ def plot_carpet(
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.
 
-    %(standardize)s
+    %(standardize_true)s
 
         .. note::
 
             Added to control passing value to `standardize` of ``signal.clean``
             to call new behavior since passing "zscore" or True (default) is
-            deprecated. This parameter will be deprecated in version 0.13 and
-            removed in version 0.15.
+            deprecated.
+            This parameter will be changed to "zscore_sample"
+            in version 0.14 and removed in version 0.15.
 
     Returns
     -------

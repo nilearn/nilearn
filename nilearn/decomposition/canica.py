@@ -54,7 +54,7 @@ class CanICA(_MultiPCA):
 
     %(random_state)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(standardize_confounds)s
 

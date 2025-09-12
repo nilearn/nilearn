@@ -54,7 +54,7 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 

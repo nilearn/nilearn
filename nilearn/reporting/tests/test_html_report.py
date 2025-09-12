@@ -391,7 +391,7 @@ def test_4d_reports(img_mask_eye, affine_eye):
     assert "The mask includes" in str(html)
 
     # test .fit_transform method
-    masker = NiftiMasker(mask_img=img_mask_eye, standardize=True)
+    masker = NiftiMasker(mask_img=img_mask_eye, standardize="zscore_sample")
     masker.fit_transform(data_img_4d)
 
     html = masker.generate_report()

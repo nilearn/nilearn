@@ -23,8 +23,8 @@ from nilearn.decomposition.tests.conftest import (
 )
 
 ESTIMATORS_TO_CHECK = [
-    DictLearning(verbose=0),
-    CanICA(verbose=0),
+    DictLearning(verbose=0, standardize="zscore_sample"),
+    CanICA(verbose=0, standardize="zscore_sample"),
 ]
 
 if SKLEARN_LT_1_6:
@@ -72,9 +72,7 @@ def test_fit_errors(
     data_type, decomposition_images, estimator, decomposition_mask_img
 ):
     """Fit fail without the proper arguments."""
-    est = estimator(
-        smoothing_fwhm=None,
-    )
+    est = estimator(smoothing_fwhm=None, standardize="zscore_sample")
 
     # Test if raises an error when empty list of provided.
     with pytest.raises(
@@ -85,9 +83,7 @@ def test_fit_errors(
         est.fit([])
 
     # No mask provided
-    est = estimator(
-        smoothing_fwhm=None,
-    )
+    est = estimator(smoothing_fwhm=None, standardize="zscore_sample")
     # the default mask computation strategy 'epi' will result in an empty mask
     if data_type == "nifti":
         with pytest.raises(
@@ -109,6 +105,7 @@ def test_fit_errors(
         mask=decomposition_mask_img,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     confounds = (
@@ -140,6 +137,7 @@ def test_masker_attributes_with_fit(
         mask=decomposition_mask_img,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
     est.fit(canica_data)
 
@@ -151,6 +149,7 @@ def test_masker_attributes_with_fit(
         mask=decomposition_masker,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     with pytest.warns(UserWarning, match="overriding estimator parameter"):
@@ -172,6 +171,7 @@ def test_transform(
         n_components=3,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     est.fit(canica_data)
@@ -205,6 +205,7 @@ def test_transform_confounds(
         n_components=3,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
     if data_type == "surface" and isinstance(est, DictLearning):
         pytest.skip(
@@ -247,6 +248,7 @@ def test_transform_single_image(
         n_components=3,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     assert not isinstance(canica_data_single_img, list)
@@ -270,6 +272,7 @@ def test_transform_errors(
         n_components=3,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     est.fit(canica_data)
@@ -302,6 +305,7 @@ def test_pass_masker_arg_to_estimator(
         mask_strategy="background",
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     # for surface we should get a warning about target_affine, target_shape
@@ -335,6 +339,7 @@ def test_with_confounds(
         random_state=RANDOM_STATE,
         mask=decomposition_mask_img,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     est.fit(decomposition_images)
@@ -369,6 +374,7 @@ def test_single_subject_score(canica_data_single_img, data_type, estimator):
         n_components=n_components,
         random_state=RANDOM_STATE,
         smoothing_fwhm=None,
+        standardize="zscore_sample",
     )
 
     est.fit(canica_data_single_img)
@@ -400,7 +406,12 @@ def test_single_subject_file(
     Only for nifti as we cannot read surface from file.
     """
     # globbing
-    est = estimator(n_components=4, random_state=RANDOM_STATE)
+    est = estimator(
+        n_components=4,
+        random_state=RANDOM_STATE,
+        standardize="zscore_sample",
+        verbose=0,
+    )
     img = write_imgs_to_path(
         canica_data_single_img,
         file_path=tmp_path,
@@ -442,7 +453,7 @@ def test_with_globbing_patterns(
 
     Only for nifti as we cannot read surface from file.
     """
-    est = estimator(n_components=3)
+    est = estimator(n_components=3, standardize="zscore_sample")
 
     est.fit(canica_data)
 

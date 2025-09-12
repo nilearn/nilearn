@@ -55,9 +55,7 @@ class _MultiPCA(_BaseDecomposition):
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    standardize : boolean, default=False
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+    %(standardize_false)s
 
     standardize_confounds : boolean, default=True
         If standardize_confounds is True, the confounds are z-scored:

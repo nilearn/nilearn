@@ -21,7 +21,7 @@ from __future__ import annotations
 import pathlib
 from collections.abc import Callable
 from pathlib import Path
-from typing import TypeAlias
+from typing import Literal, TypeAlias
 
 import numpy as np
 from joblib.memory import Memory
@@ -64,7 +64,7 @@ Resolution: TypeAlias = int | np.integer | None
 Resume: TypeAlias = bool
 ScreeningPercentile: TypeAlias = float | int | np.floating | np.integer | None
 SmoothingFwhm: TypeAlias = float | int | np.floating | np.integer | None
-Standardize: TypeAlias = bool
+Standardize: TypeAlias = Literal["zscore", "zscore_sample", "psc", True, False]
 StandardizeConfounds: TypeAlias = bool
 TargetAffine: TypeAlias = ndarray | None
 

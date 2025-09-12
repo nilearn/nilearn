@@ -3,7 +3,7 @@
 import numbers
 import warnings
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Literal, get_args, get_origin
 
 import numpy as np
 
@@ -192,6 +192,7 @@ TYPE_MAPS = {
     "resume": nilearn_typing.Resume,
     "screening_percentile": nilearn_typing.ScreeningPercentile,
     "smoothing_fwhm": nilearn_typing.SmoothingFwhm,
+    "standardize": nilearn_typing.Standardize,
     "standardize_confounds": nilearn_typing.StandardizeConfounds,
     "t_r": nilearn_typing.Tr,
     "tfce": nilearn_typing.Tfce,
@@ -261,11 +262,23 @@ def check_params(fn_dict):
         type_to_check = TYPE_MAPS[k]
         value = fn_dict[k]
 
-        error_msg = (
-            f"'{k}' should be of type '{type_to_check}'.\nGot: '{type(value)}'"
-        )
-        if not isinstance(value, type_to_check):
-            raise TypeError(error_msg)
+        if get_origin(type_to_check) is Literal:
+            allowed_values = normalize_type(type_to_check)
+            check_parameter_in_allowed(value, allowed_values, k)
+
+        else:
+            error_msg = (
+                f"'{k}' should be of type '{type_to_check}'.\n"
+                f"Got: '{type(value)}'"
+            )
+            if not isinstance(value, type_to_check):
+                raise TypeError(error_msg)
+
+
+def normalize_type(tp):
+    if get_origin(tp) is Literal:
+        return get_args(tp)  # tuple of literal values
+    return tp
 
 
 def check_reduction_strategy(strategy: str):

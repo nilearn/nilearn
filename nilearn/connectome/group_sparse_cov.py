@@ -750,6 +750,7 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
     # single precision to double will be required or not.
     emp_covs = np.empty((n_features, n_features, n_subjects), order="F")
     for k, s in enumerate(subjects):
+        # TODO should we use sample std?
         if standardize:
             s = s / s.std(axis=0)  # copy on purpose
         M = empirical_covariance(s, assume_centered=assume_centered)

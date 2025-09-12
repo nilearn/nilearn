@@ -81,7 +81,7 @@ repos:
     # Run the linter.
     -   id: ruff-check
         # args: [--statistics]
-        args: [--fix, --show-fixes]
+        args: [--fix, --show-fixes, --unsafe-fixes]
     # Run the formatter.
     -   id: ruff-format
         # args: [--diff]

@@ -1,7 +1,5 @@
 """Configuration and extra fixtures for pytest."""
 
-import warnings
-
 import nibabel
 import numpy as np
 import pandas as pd
@@ -21,7 +19,6 @@ from nilearn.datasets.tests._testing import (
     request_mocker,  # noqa: F401
     temp_nilearn_data_dir,  # noqa: F401
 )
-from nilearn.exceptions import NotImplementedWarning
 from nilearn.surface import (
     InMemoryMesh,
     PolyMesh,
@@ -126,27 +123,6 @@ def close_all():
         import matplotlib.pyplot as plt
 
         plt.close("all")  # takes < 1 us so just always do it
-
-
-@pytest.fixture(autouse=True)
-def suppress_specific_warning():
-    """Ignore internal deprecation warnings."""
-    with warnings.catch_warnings():
-        # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
-        messages = (
-            "In release 0.13, this fetcher will return a dictionary.*|"
-            "The default strategy for standardize.*|"
-        )
-        warnings.filterwarnings(
-            "ignore",
-            message=messages,
-            category=DeprecationWarning,
-        )
-        warnings.filterwarnings(
-            "ignore",
-            category=NotImplementedWarning,
-        )
-        yield
 
 
 # ------------------------   RNG   ------------------------#
