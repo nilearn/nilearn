@@ -323,7 +323,7 @@ def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
     if sys.version_info[1] >= 14:
         tar.extractall(path, members, numeric_owner=numeric_owner, filter=None)
     else:
-        with warnings.catch_warning():
+        with warnings.catch_warnings():
             warnings.filterwarnings(
                 "ignore",
                 category=DeprecationWarning,
