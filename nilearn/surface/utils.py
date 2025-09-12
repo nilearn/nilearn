@@ -4,8 +4,8 @@ from warnings import warn
 
 import numpy as np
 
-from nilearn._utils.exceptions import MeshDimensionError
 from nilearn._utils.logger import find_stack_level
+from nilearn.exceptions import MeshDimensionError
 
 
 def assert_polydata_equal(data_1, data_2):

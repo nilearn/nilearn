@@ -47,12 +47,22 @@ from sklearn.utils.estimator_checks import (
 )
 
 from nilearn._utils.cache_mixin import CacheMixin
-from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_imgs_equal
+
 from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn._utils.tags import SKLEARN_LT_1_6
+
+from nilearn._utils.tags import (
+    SKLEARN_LT_1_6,
+    accept_niimg_input,
+    accept_surf_img_input,
+    is_glm,
+    is_masker,
+    is_multimasker,
+)
+
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
     _affine_eye,
@@ -86,6 +96,7 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_img,
     _decomposition_mesh,
 )
+from nilearn.exceptions import DimensionError, MeshDimensionError
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import get_data, index_img, new_img_like
 from nilearn.maskers import (
@@ -228,8 +239,8 @@ def return_expected_failed_checks(
         estimator, (GroupSparseCovariance, GroupSparseCovarianceCV)
     ):
         expected_failed_checks = {
-            "check_estimator_sparse_array": "TODO",
             "check_estimator_sparse_data": "removed when dropping sklearn 1.4",
+            "check_estimator_sparse_array": "TODO",
             "check_estimator_sparse_matrix": "TODO",
             "check_estimator_sparse_tag": "TODO",
         }
@@ -269,6 +280,9 @@ def return_expected_failed_checks(
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
+        "check_estimators_overwrite_params": (
+            "replaced by check_img_estimator_overwrite_params"
+        ),
         "check_estimators_pickle": "replaced by check_img_estimator_pickle",
         "check_fit_check_is_fitted": (
             "replaced by check_img_estimator_fit_check_is_fitted"
@@ -296,7 +310,6 @@ def return_expected_failed_checks(
         # or because a suitable nilearn replacement
         # has not yet been created.
         "check_estimators_nan_inf": "TODO",
-        "check_estimators_overwrite_params": "TODO",
         "check_methods_subset_invariance": "TODO",
         "check_positive_only_tag_during_fit": "TODO",
         "check_readonly_memmap_input": "TODO",
@@ -654,36 +667,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
     if is_glm(estimator):
         yield (clone(estimator), check_glm_dtypes)
         yield (clone(estimator), check_glm_empty_data_messages)
-
-
-def get_tag(estimator: BaseEstimator, tag: str) -> bool:
-    tags = estimator.__sklearn_tags__()
-    # TODO (sklearn >= 1.6.0) simplify
-    #  for sklearn >= 1.6 tags are always a dataclass
-    if isinstance(tags, dict) and "X_types" in tags:
-        return tag in tags["X_types"]
-    else:
-        return getattr(tags.input_tags, tag, False)
-
-
-def is_masker(estimator: BaseEstimator) -> bool:
-    return get_tag(estimator, "masker")
-
-
-def is_multimasker(estimator: BaseEstimator) -> bool:
-    return get_tag(estimator, "multi_masker")
-
-
-def is_glm(estimator: BaseEstimator) -> bool:
-    return get_tag(estimator, "glm")
-
-
-def accept_niimg_input(estimator: BaseEstimator) -> bool:
-    return get_tag(estimator, "niimg_like")
-
-
-def accept_surf_img_input(estimator: BaseEstimator) -> bool:
-    return get_tag(estimator, "surf_img")
 
 
 def _not_fitted_error_message(estimator):
