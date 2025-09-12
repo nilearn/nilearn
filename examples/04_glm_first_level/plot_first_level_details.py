@@ -65,7 +65,7 @@ fmri_img = data.epi_img
 #
 import pandas as pd
 
-t_r = 2.4
+t_r = data.t_r
 events_file = data["events"]
 events = pd.read_table(events_file)
 events
