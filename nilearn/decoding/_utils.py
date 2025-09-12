@@ -9,6 +9,7 @@ from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
+from nilearn.exceptions import MaskWarning
 from nilearn.surface import SurfaceImage
 
 # Volume of a standard (MNI152) brain mask in mm^3
@@ -86,6 +87,7 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
             f"human brain ({reference_extent} {unit})."
             "This object is probably not tuned to be used on such data.",
             stacklevel=find_stack_level(),
+            category=MaskWarning,
         )
     elif mask_extent < 0.005 * reference_extent:
         warnings.warn(
@@ -93,6 +95,7 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
             "human brain. This object is probably not tuned to "
             "be used on such data.",
             stacklevel=find_stack_level(),
+            category=MaskWarning,
         )
 
     if screening_percentile < 100.0:
