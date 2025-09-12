@@ -932,7 +932,7 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig):
 def check_estimator_set_output(estimator_orig):
     """Check that set_ouput can be used."""
     if not hasattr(estimator_orig, "transform") or isinstance(
-        estimator_orig, SearchLight
+        estimator_orig, (SearchLight, ReNA)
     ):
         return
 
@@ -948,7 +948,7 @@ def check_estimator_set_output(estimator_orig):
     else:
         assert isinstance(signal, np.ndarray)
 
-    if isinstance(estimator, (_BaseDecomposition, ConnectivityMeasure, ReNA)):
+    if isinstance(estimator, (_BaseDecomposition, ConnectivityMeasure)):
         with pytest.raises(NotImplementedError):
             estimator.set_output(transform="pandas")
         return
