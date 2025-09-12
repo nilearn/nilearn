@@ -11,11 +11,10 @@ from sklearn.preprocessing import StandardScaler
 from nilearn._utils import data_gen
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _rng
-from nilearn.exceptions import DimensionError
+from nilearn.exceptions import DimensionError, MaskWarning
 from nilearn.image import get_data, high_variance_confounds
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import (
-    _MaskWarning,
     _unmask_3d,
     _unmask_4d,
     apply_mask,
@@ -264,7 +263,7 @@ def test_compute_epi_mask_errors_warnings(affine_eye):
     mean_image[0, 0, 2] = 1.1
     mean_image = Nifti1Image(mean_image, affine_eye)
 
-    with pytest.warns(_MaskWarning, match="Computed an empty mask"):
+    with pytest.warns(MaskWarning, match="Computed an empty mask"):
         compute_epi_mask(mean_image, exclude_zeros=True)
 
 
@@ -295,7 +294,7 @@ def test_compute_background_mask_errors_warnings(affine_eye):
     mean_image = np.zeros((9, 9, 9))
     mean_image = Nifti1Image(mean_image, affine_eye)
 
-    with pytest.warns(_MaskWarning, match="Computed an empty mask"):
+    with pytest.warns(MaskWarning, match="Computed an empty mask"):
         compute_background_mask(mean_image)
 
 
@@ -325,7 +324,7 @@ def test_compute_brain_mask():
     assert (np.logical_and(gm_data, wm_data) == 0).all()
 
     # Check that we get a useful warning for empty masks
-    with pytest.warns(_MaskWarning):
+    with pytest.warns(MaskWarning):
         compute_brain_mask(img, threshold=1)
 
     # Check that masks obtained from same FOV are the same
@@ -782,7 +781,7 @@ def test_compute_multi_epi_mask(affine_eye):
     mask_b_img = Nifti1Image(mask_b.astype("uint8"), affine_eye / 2.0)
 
     with warnings.catch_warnings():
-        warnings.simplefilter("ignore", _MaskWarning)
+        warnings.simplefilter("ignore", MaskWarning)
         with pytest.raises(
             ValueError, match="cannot convert float NaN to integer"
         ):

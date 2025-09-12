@@ -27,7 +27,14 @@ AuthorizedException = (
 class NotImplementedWarning(UserWarning):
     """Custom warning to warn about not implemented features.
 
-    .. versionadded:: 0.13.0
+    .. versionadded:: 0.13.0dev
+    """
+
+
+class MaskWarning(UserWarning):
+    """A class to always raise warnings.
+
+    .. versionadded:: 0.13.0dev
     """
 
 
