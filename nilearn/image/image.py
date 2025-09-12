@@ -1544,7 +1544,7 @@ def clean_img(
 
     """
     # Avoid circular import
-    from .. import masking
+    from nilearn import masking
 
     # Check if t_r is set, otherwise propose t_r from imgs header
     if (low_pass is not None or high_pass is not None) and t_r is None:
@@ -1898,7 +1898,7 @@ def get_indices_from_image(image) -> np.ndarray:
     else:
         raise TypeError(
             "Image to extract indices from must be one of: "
-            "Niimg-Like, SurfaceIamge, numpy array. "
+            "Niimg-Like, SurfaceImage, numpy array. "
             f"Got {image.__class__.__name__}"
         )
     return np.unique(data)

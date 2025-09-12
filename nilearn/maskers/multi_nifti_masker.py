@@ -17,8 +17,8 @@ from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import resample_img
+from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     mask_logger,
@@ -66,7 +66,7 @@ def _get_mask_strategy(strategy: str):
 
 
 @fill_doc
-class MultiNiftiMasker(NiftiMasker):
+class MultiNiftiMasker(_MultiMixin, NiftiMasker):
     """Applying a mask to extract time-series from multiple Niimg-like objects.
 
     MultiNiftiMasker is useful when dealing with image sets from multiple
@@ -233,24 +233,6 @@ class MultiNiftiMasker(NiftiMasker):
             clean_args=clean_args,
         )
         self.n_jobs = n_jobs
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(masker=True, multi_masker=True)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(masker=True, multi_masker=True)
-        return tags
 
     @fill_doc
     def fit(
@@ -557,33 +539,4 @@ class MultiNiftiMasker(NiftiMasker):
             confounds=confounds,
             sample_mask=sample_mask,
             n_jobs=self.n_jobs,
-        )
-
-    @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
-        """
-        Fit to data, then transform it.
-
-        Parameters
-        ----------
-        imgs : Niimg-like object, or a :obj:`list` of Niimg-like objects
-            See :ref:`extracting_data`.
-            Data to be preprocessed
-
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
-
-        %(confounds_multi)s
-
-        %(sample_mask_multi)s
-
-            .. versionadded:: 0.8.0
-
-        Returns
-        -------
-        %(signals_transform_multi_nifti)s
-        """
-        return self.fit(imgs, y=y).transform(
-            imgs, confounds=confounds, sample_mask=sample_mask
         )

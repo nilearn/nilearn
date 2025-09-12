@@ -21,6 +21,7 @@ from nilearn.datasets.tests._testing import (
     request_mocker,  # noqa: F401
     temp_nilearn_data_dir,  # noqa: F401
 )
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.surface import (
     InMemoryMesh,
     PolyMesh,
@@ -135,12 +136,15 @@ def suppress_specific_warning():
         messages = (
             "In release 0.13, this fetcher will return a dictionary.*|"
             "The default strategy for standardize.*|"
-            "The 'fetch_bids_langloc_dataset' function will be removed.*|"
         )
         warnings.filterwarnings(
             "ignore",
             message=messages,
             category=DeprecationWarning,
+        )
+        warnings.filterwarnings(
+            "ignore",
+            category=NotImplementedWarning,
         )
         yield
 

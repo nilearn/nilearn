@@ -113,7 +113,7 @@ def _get_labels_data(
     mask_img=None,
     background_label=0,
     dim=None,
-    keep_masked_labels=True,
+    keep_masked_labels=False,
 ):
     """Get the label data.
 
@@ -143,6 +143,7 @@ def _get_labels_data(
 
     dim : :obj:`int`, optional
         Integer slices mask for a specific dimension.
+
     %(keep_masked_labels)s
 
     Returns
@@ -168,16 +169,12 @@ def _get_labels_data(
 
     if keep_masked_labels:
         labels = list(np.unique(labels_data))
-        # TODO (nilearn >= 0.13.0)
+        # TODO (nilearn >= 0.15.0)
         warnings.warn(
-            'Applying "mask_img" before '
-            "signal extraction may result in empty region signals in the "
-            "output. These are currently kept. "
-            "Starting from version 0.13, the default behavior will be "
-            "changed to remove them by setting "
-            '"keep_masked_labels=False". '
-            '"keep_masked_labels" parameter will be removed '
-            "in version 0.15.",
+            (
+                "In version 0.15.0, "
+                '"keep_masked_labels" parameter will be removed.'
+            ),
             DeprecationWarning,
             stacklevel=find_stack_level(),
         )
@@ -224,7 +221,7 @@ def img_to_signals_labels(
     background_label=0,
     order="F",
     strategy="mean",
-    keep_masked_labels=True,
+    keep_masked_labels=False,
     return_masked_atlas=False,
 ):
     """Extract region signals from image.
@@ -262,8 +259,14 @@ def img_to_signals_labels(
 
     return_masked_atlas : :obj:`bool`, default=False
         If True, the masked atlas is returned.
-        deprecated in version 0.13, to be removed in 0.15.
-        after 0.13, the masked atlas will always be returned.
+
+        .. versionchanged :: 0.13.0dev
+
+            Default changed to False.
+
+        .. deprecated:: 0.13.0dev
+
+            This parameter will be removed in versions >= 0.15.0
 
     Returns
     -------
@@ -329,12 +332,12 @@ def img_to_signals_labels(
         )
         return signals, labels, masked_atlas
     else:
-        # TODO (nilearn >= 0.14.0)
+        # TODO (nilearn >= 0.15.0)
         warnings.warn(
-            'After version 0.13. "img_to_signals_labels" will also return the '
-            '"masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
-            "used to toggle this behavior. In version 0.15, "
-            '"return_masked_atlas" parameter will be removed.',
+            (
+                "In version 0.15, "
+                '"return_masked_atlas" parameter will be removed.'
+            ),
             DeprecationWarning,
             stacklevel=find_stack_level(),
         )
@@ -430,7 +433,7 @@ def signals_to_img_labels(
 
 
 @fill_doc
-def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
+def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
     """Extract region signals from image.
 
     This function is applicable to regions defined by maps.
@@ -450,6 +453,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
         Mask to apply to regions before extracting signals.
         Every point outside the mask is considered
         as background (i.e. outside of any region).
+
     %(keep_masked_maps)s
 
     Returns
@@ -490,16 +494,14 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=True):
         )
         maps_mask = as_ndarray(maps_mask, dtype=bool)
         if keep_masked_maps:
-            # TODO (nilearn >= 0.13.0)
+            # TODO (nilearn >= 0.15.0)
             warnings.warn(
                 'Applying "mask_img" before '
                 "signal extraction may result in empty region signals in the "
-                "output. These are currently kept. "
-                "Starting from version 0.13, the default behavior will be "
-                "changed to remove them by setting "
-                '"keep_masked_maps=False". '
+                "output. These are currently kept.\n"
                 '"keep_masked_maps" parameter will be removed '
-                "in version 0.15.",
+                "in version 0.15. "
+                'Set "keep_masked_maps=False" to silence this warning.',
                 DeprecationWarning,
                 stacklevel=find_stack_level(),
             )
