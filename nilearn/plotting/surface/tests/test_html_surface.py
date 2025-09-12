@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 
 from nilearn import datasets, image
-from nilearn._utils.exceptions import DimensionError
 from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.plotting.js_plotting_utils import decode
 from nilearn.plotting.surface.html_surface import (
