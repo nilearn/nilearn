@@ -4,8 +4,8 @@ from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.maskers import SurfaceMasker
 from nilearn.maskers._mixin import _MultiMixin
+from nilearn.maskers.surface_masker import SurfaceMasker
 from nilearn.surface.surface import SurfaceImage
 
 
