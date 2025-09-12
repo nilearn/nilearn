@@ -948,7 +948,7 @@ def check_estimator_set_output(estimator_orig):
     else:
         assert isinstance(signal, np.ndarray)
 
-    if isinstance(estimator, (_BaseDecomposition, ConnectivityMeasure)):
+    if isinstance(estimator, (_BaseDecomposition, ConnectivityMeasure, ReNA)):
         with pytest.raises(NotImplementedError):
             estimator.set_output(transform="pandas")
         return
