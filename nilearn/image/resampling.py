@@ -22,7 +22,6 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.image.image import copy_img, crop_img
 
-
 ###############################################################################
 # Affine utils
 
