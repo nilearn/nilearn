@@ -229,6 +229,10 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 for i, x in enumerate(imgs):
                     x.data._check_ndims(1, var_name=f"imgs[{i}]")
 
+        return self._fit(imgs)
+
+    def _fit(self, imgs):
+        """Keep private to call it with MultiSurfaceMasker too."""
         self._fit_cache()
 
         self._fit_mask_img(imgs)
