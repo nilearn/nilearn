@@ -3,6 +3,7 @@
 __all__ = [
     "AllVolumesRemovedError",
     "DimensionError",
+    "MaskWarning",
     "MeshDimensionError",
     "NotImplementedWarning",
 ]
@@ -32,7 +33,7 @@ class NotImplementedWarning(UserWarning):
 
 
 class MaskWarning(UserWarning):
-    """A class to always raise warnings.
+    """Custom warning related to masks.
 
     .. versionadded:: 0.13.0dev
     """
