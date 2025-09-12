@@ -331,32 +331,3 @@ def is_kaleido_installed():
     except ImportError:
         return False
     return True
-
-
-# TODO (nilearn >= 0.13.0) remove
-def check_copy_header(copy_header):
-    """Check the value of the `copy_header` parameter.
-
-    Only being used with `nilearn.image` and resampling functions to warn
-    users that `copy_header` will default to `True` from release 0.13.0
-    onwards.
-
-    Parameters
-    ----------
-    copy_header : :obj:`bool"
-
-    """
-    if not copy_header:
-        # TODO (nilearn 0.13.0)
-        copy_header_default = (
-            "From release 0.13.0 onwards, this function will, by default, "
-            "copy the header of the input image to the output. "
-            "Currently, the header is reset to the default Nifti1Header. "
-            "To suppress this warning and use the new behavior, set "
-            "`copy_header=True`."
-        )
-        warnings.warn(
-            category=FutureWarning,
-            message=copy_header_default,
-            stacklevel=find_stack_level(),
-        )

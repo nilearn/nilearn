@@ -58,7 +58,7 @@ print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 from nilearn.image import mean_img
 from nilearn.plotting import plot_epi, plot_roi, show
 
-plot_epi(mean_img(fmri_filename, copy_header=True))
+plot_epi(mean_img(fmri_filename))
 
 show()
 

@@ -18,9 +18,7 @@ def img1(affine_eye):
 
 def test_new_img_like_side_effect(img1):
     hash1 = joblib.hash(img1)
-    new_img_like(
-        img1, np.ones((2, 2, 2, 2)), img1.affine.copy(), copy_header=True
-    )
+    new_img_like(img1, np.ones((2, 2, 2, 2)), img1.affine.copy())
     hash2 = joblib.hash(img1)
     assert hash1 == hash2
 

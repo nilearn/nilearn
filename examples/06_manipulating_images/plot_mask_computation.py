@@ -42,7 +42,7 @@ print(
 )
 
 miyawaki_filename = miyawaki_dataset.func[0]
-miyawaki_mean_img = image.mean_img(miyawaki_filename, copy_header=True)
+miyawaki_mean_img = image.mean_img(miyawaki_filename)
 plot_epi(miyawaki_mean_img, title="Mean EPI image")
 # %%
 # A NiftiMasker with the default strategy
@@ -77,7 +77,7 @@ from nilearn.image import index_img
 epi_img = index_img(epi_filename, slice(0, 100))
 
 # To display the background
-mean_img = image.mean_img(epi_img, copy_header=True)
+mean_img = image.mean_img(epi_img)
 plot_epi(mean_img, title="Mean EPI image")
 
 # %%

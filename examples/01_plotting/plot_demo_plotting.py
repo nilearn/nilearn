@@ -129,7 +129,7 @@ from nilearn import image
 
 # Compute the voxel_wise mean of functional images across time.
 # Basically reducing the functional image from 4D to 3D
-mean_haxby_img = image.mean_img(haxby_func_filename, copy_header=True)
+mean_haxby_img = image.mean_img(haxby_func_filename)
 
 # Visualizing mean image (3D)
 plotting.plot_epi(mean_haxby_img, title="plot_epi")

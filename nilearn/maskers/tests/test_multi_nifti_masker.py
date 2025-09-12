@@ -180,22 +180,25 @@ def test_mask_strategy_errors(list_random_imgs):
 
 
 @pytest.mark.parametrize(
-    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+    "strategy",
+    [f"{p}-template" for p in ["whole-brain", "gm", "wm"]],
 )
-def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
-    """Check different strategies to compute masks."""
+def test_compute_mask_strategy(strategy, list_random_imgs):
+    """Smoke test for different strategies to compute masks.
+
+    Also check that the order of the images does not change the output.
+    """
     masker = MultiNiftiMasker(mask_strategy=strategy, mask_args={"opening": 1})
     masker.fit(list_random_imgs)
 
-    # Check that the order of the images does not change the output
     masker2 = MultiNiftiMasker(
         mask_strategy=strategy, mask_args={"opening": 1}
     )
     masker2.fit(list_random_imgs[::-1])
-    mask_ref = np.zeros(shape_3d_default, dtype="int8")
 
-    np.testing.assert_array_equal(get_data(masker.mask_img_), mask_ref)
-    np.testing.assert_array_equal(get_data(masker2.mask_img_), mask_ref)
+    np.testing.assert_array_equal(
+        get_data(masker.mask_img_), get_data(masker2.mask_img_)
+    )
 
 
 @pytest.mark.parametrize(

@@ -55,12 +55,7 @@ import matplotlib.pyplot as plt
 from nilearn.image import threshold_img
 
 thresholded_img = threshold_img(
-    image,
-    threshold=2,
-    cluster_threshold=0,
-    two_sided=True,
-    copy=True,
-    copy_header=True,
+    image, threshold=2, cluster_threshold=0, two_sided=True, copy=True
 )
 
 figure_width = 8
@@ -100,12 +95,7 @@ plot_stat_map(
 # This will set all image values below 2 to 0.
 
 thresholded_img = threshold_img(
-    image,
-    threshold=2,
-    cluster_threshold=0,
-    two_sided=False,
-    copy=True,
-    copy_header=True,
+    image, threshold=2, cluster_threshold=0, two_sided=False, copy=True
 )
 
 
@@ -138,12 +128,7 @@ plot_stat_map(
 # This will set all image values above -2 to 0.
 
 thresholded_img = threshold_img(
-    image,
-    threshold=-2,
-    cluster_threshold=0,
-    two_sided=False,
-    copy=True,
-    copy_header=True,
+    image, threshold=-2, cluster_threshold=0, two_sided=False, copy=True
 )
 
 

@@ -96,9 +96,7 @@ def _index_img(img, index):
     """Helper function for check_niimg_4d."""  # noqa: D401
     from nilearn.image.image import new_img_like  # avoid circular imports
 
-    return new_img_like(
-        img, _get_data(img)[:, :, :, index], img.affine, copy_header=True
-    )
+    return new_img_like(img, _get_data(img)[:, :, :, index], img.affine)
 
 
 def iter_check_niimg(
@@ -199,7 +197,6 @@ def iter_check_niimg(
                     niimg,
                     target_affine=ref_fov[0],
                     target_shape=ref_fov[1],
-                    copy_header=True,
                 )
             yield niimg
         except DimensionError as exc:

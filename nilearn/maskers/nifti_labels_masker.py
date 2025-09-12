@@ -612,7 +612,6 @@ class NiftiLabelsMasker(BaseMasker):
                 interpolation="nearest",
                 target_shape=ref_img.shape[:3],
                 target_affine=ref_img.affine,
-                copy_header=True,
             )
 
             # Just check that the mask is valid
@@ -785,8 +784,6 @@ class NiftiLabelsMasker(BaseMasker):
                     interpolation="nearest",
                     target_shape=imgs_.shape[:3],
                     target_affine=imgs_.affine,
-                    copy_header=True,
-                    force_resample=False,
                 )
 
             # Remove imgs_ from memory before loading the same image
@@ -866,8 +863,6 @@ class NiftiLabelsMasker(BaseMasker):
             interpolation="nearest",
             target_shape=imgs_.shape[:3],
             target_affine=imgs_.affine,
-            copy_header=True,
-            force_resample=False,
         )
         labels_after_resampling = set(np.unique(safe_get_data(labels_img_)))
         if labels_diff := labels_before_resampling.difference(

@@ -59,7 +59,6 @@ threshold_img(
     threshold=3.29,
     cluster_threshold=10,
     two_sided=True,
-    copy_header=True,
 )
 
 # %%

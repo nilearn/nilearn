@@ -166,7 +166,7 @@ cut_score[cut_score < 0] = 0
 score_map_img = masker.inverse_transform(cut_score)
 
 thresholded_score_map_img = threshold_img(
-    score_map_img, threshold=1e-6, copy=False, copy_header=True
+    score_map_img, threshold=1e-6, copy=False
 )
 
 

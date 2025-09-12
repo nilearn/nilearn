@@ -24,7 +24,7 @@ print(
 first_epi_file = data.func[0]
 
 # First compute the mean image, from the 4D series of image
-mean_func = image.mean_img(first_epi_file, copy_header=True)
+mean_func = image.mean_img(first_epi_file)
 
 # %%
 # Then we smooth, with a varying amount of smoothing, from none to 20mm

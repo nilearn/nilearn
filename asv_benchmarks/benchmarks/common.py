@@ -39,7 +39,6 @@ class Benchmark:
             atlas_path,
             concat,
             interpolation="nearest",
-            force_resample=True,
         )
         for idx in range(1, n_masks + 1):
             mask = resampled_atlas.get_fdata() == idx
@@ -47,6 +46,5 @@ class Benchmark:
                 resampled_atlas,
                 mask,
                 affine=resampled_atlas.affine,
-                copy_header=True,
             )
             mask_img.to_filename(f"mask_{idx}.nii.gz")

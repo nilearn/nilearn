@@ -813,14 +813,7 @@ def vol_to_surf(
     if mask_img is not None:
         mask_img = check_niimg(mask_img)
         mask = get_vol_data(
-            resample_to_img(
-                mask_img,
-                img,
-                interpolation="nearest",
-                copy=False,
-                force_resample=False,  # TODO (nilearn >= 0.13.0) set to True
-                copy_header=True,
-            )
+            resample_to_img(mask_img, img, interpolation="nearest", copy=False)
         )
     else:
         mask = None
