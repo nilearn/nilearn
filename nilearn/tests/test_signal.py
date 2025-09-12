@@ -301,7 +301,7 @@ def test_butterworth_warnings_hpf_too_low(data_butterworth_single_timeseries):
 
 @pytest.mark.parametrize("high_pass", [0.1, 0.2])
 def test_butterworth_errors(data_butterworth_single_timeseries, high_pass):
-    """Check for high-pass frequency higher than low-pass frequency."""
+    """Check for high-pass frequency higher or equal to low-pass frequency."""
     sampling = 1
     low_pass = 0.1
     with pytest.raises(
