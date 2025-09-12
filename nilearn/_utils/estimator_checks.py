@@ -2890,6 +2890,12 @@ def check_nifti_masker_fit_transform_5d(estimator):
         assert len(signal) == n_subject
         assert all(x.ndim == 2 for x in signal)
 
+        # check type with set_output
+        estimator.set_output(transform="pandas")
+        signal = estimator.transform(input_5d_img)
+        assert isinstance(signal, list)
+        assert all(isinstance(x, pd.DataFrame) for x in signal)
+
 
 @ignore_warnings()
 def check_nifti_masker_fit_transform_files(estimator):

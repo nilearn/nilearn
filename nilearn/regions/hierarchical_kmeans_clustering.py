@@ -358,8 +358,13 @@ class HierarchicalKMeans(
 
         Returns
         -------
-        X_red : ndarray, shape = [n_samples, n_clusters]
-            Data reduced with agglomerated signal for each cluster
+        X_red : : :obj:`numpy.ndarray`, \
+            :obj:`pandas.DataFrame` or \
+            `polars.DataFrame`
+            Data reduced with agglomerated signal for each cluster.
+
+        The type of the output is determined by ``set_output()``:
+        see `the scikit-learn documentation <https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html>`_.
         """
         check_is_fitted(self)
 
