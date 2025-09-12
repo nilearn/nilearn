@@ -50,10 +50,7 @@ from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_imgs_equal
-
 from nilearn._utils.param_validation import check_is_of_allowed_type
-from nilearn._utils.tags import SKLEARN_LT_1_6
-
 from nilearn._utils.tags import (
     SKLEARN_LT_1_6,
     accept_niimg_input,
@@ -62,7 +59,6 @@ from nilearn._utils.tags import (
     is_masker,
     is_multimasker,
 )
-
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
     _affine_eye,
