@@ -16,7 +16,6 @@ from nibabel import Nifti1Image, spatialimages
 from numpy.testing import assert_array_equal
 
 import nilearn as ni
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.niimg import repr_niimgs
 from nilearn._utils.niimg_conversions import (
     check_niimg,
@@ -30,6 +29,7 @@ from nilearn._utils.testing import (
     with_memory_profiler,
     write_imgs_to_path,
 )
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data
 
 

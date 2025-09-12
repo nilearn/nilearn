@@ -32,7 +32,7 @@ def test_generate_atlas_look_up_table_errors():
 
     with pytest.raises(
         TypeError,
-        match="must be one of: Niimg-Like, SurfaceIamge, numpy array.",
+        match="must be one of",
     ):
         generate_atlas_look_up_table(function=None, name=None, index=[1, 2, 3])
 

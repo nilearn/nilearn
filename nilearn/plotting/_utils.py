@@ -1,8 +1,6 @@
 from numbers import Number
-from pathlib import Path
 from warnings import warn
 
-import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn._utils.logger import find_stack_level
@@ -19,60 +17,46 @@ def engine_warning(engine):
     warn(message, stacklevel=find_stack_level())
 
 
-def save_figure_if_needed(fig, output_file):
-    """Save figure if an output file value is given.
-
-    Create output path if required.
+def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
+    """Return an array of evenly spaced ``n_ticks`` tick values to be used for
+    the colorbar.
 
     Parameters
     ----------
-    fig: figure, axes, or display instance
-
-    output_file: str, Path or None
+    vmin: :obj:`float`
+        minimum value for the colorbar
+    vmax: :obj:`float`
+        maximum value for the colorbar
+    threshold: :obj:`float`, :obj:`int` or None
+        if threshold is not None, ``-threshold`` and ``threshold`` values are
+    replaced with the closest tick values
+    n_ticks: :obj:`int`
+        number of tick values to return
 
     Returns
     -------
-    None if ``output_file`` is None, ``fig`` otherwise.
+    :class:`~numpy.ndarray`
+        an array with ``n_ticks`` elements if ``vmin`` != ``vmax``, else array
+        with one element.
     """
-    # avoid circular import
-    from nilearn.plotting.displays import BaseSlicer
-
-    if output_file is None:
-        return fig
-
-    output_file = Path(output_file)
-    output_file.parent.mkdir(exist_ok=True, parents=True)
-
-    if not isinstance(fig, (plt.Figure, BaseSlicer)):
-        fig = fig.figure
-
-    fig.savefig(output_file)
-    if isinstance(fig, plt.Figure):
-        plt.close(fig)
-    else:
-        fig.close()
-
-    return None
-
-
-def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
-    """Help for BaseSlicer."""
     # edge case where the data has a single value yields
     # a cryptic matplotlib error message when trying to plot the color bar
     if vmin == vmax:
         return np.linspace(vmin, vmax, 1)
 
     # edge case where the data has all negative values but vmax is exactly 0
+    vmax_temp = vmax
     if vmax == 0:
-        vmax += np.finfo(np.float32).eps
+        vmax_temp = np.finfo(np.float32).eps
+
+    ticks = np.linspace(vmin, vmax, n_ticks)
 
     # If a threshold is specified, we want two of the tick
     # to correspond to -threshold and +threshold on the colorbar.
     # If the threshold is very small compared to vmax,
     # we use a simple linspace as the result would be very difficult to see.
-    ticks = np.linspace(vmin, vmax, n_ticks)
-    if offset is not None and offset / vmax > 0.12:
-        diff = [abs(abs(tick) - offset) for tick in ticks]
+    if threshold is not None and threshold / vmax_temp > 0.12:
+        diff = [abs(abs(tick) - threshold) for tick in ticks]
         # Edge case where the thresholds are exactly
         # at the same distance to 4 ticks
         if diff.count(min(diff)) == 4:
@@ -84,7 +68,7 @@ def get_cbar_ticks(vmin, vmax, offset, n_ticks=5):
             if 0 in ticks[idx_closest]:
                 idx_closest = np.sort(np.argpartition(diff, 3)[:3])
                 idx_closest = idx_closest[[0, 2]]
-        ticks[idx_closest] = [-offset, offset]
+        ticks[idx_closest] = [-threshold, threshold]
     if len(ticks) > 0 and ticks[0] < vmin:
         ticks[0] = vmin
 
