@@ -54,7 +54,7 @@ masker = NiftiLabelsMasker(
     atlas.maps, lut=atlas.lut, standardize="zscore_sample", verbose=1
 )
 
-#
+# %%
 # Visualize the atlas
 # -------------------
 #
