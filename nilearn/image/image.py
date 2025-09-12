@@ -18,7 +18,6 @@ from scipy.stats import scoreatpercentile
 from nilearn import signal
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
@@ -36,6 +35,7 @@ from nilearn._utils.niimg_conversions import (
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params, check_threshold
 from nilearn._utils.path_finding import resolve_globbing
+from nilearn.exceptions import DimensionError
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
