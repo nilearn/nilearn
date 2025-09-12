@@ -10,12 +10,12 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
-from nilearn._utils.exceptions import MeshDimensionError
 from nilearn._utils.helpers import (
     is_kaleido_installed,
     is_plotly_installed,
 )
 from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.exceptions import MeshDimensionError
 from nilearn.plotting import (
     plot_img_on_surf,
     plot_surf,

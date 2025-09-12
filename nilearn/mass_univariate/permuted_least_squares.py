@@ -920,7 +920,7 @@ def _sanitize_inputs_permuted_ols(
         output_type = "dict"
 
     if output_type == "legacy":
-        # TODO (nilearn >= 0.13.0)
+        # TODO (nilearn >= 0.15.0)
         warnings.warn(
             category=FutureWarning,
             message=(

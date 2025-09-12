@@ -19,8 +19,8 @@ from numpy.testing import (
 )
 
 from nilearn._utils import testing
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.niimg import is_binary_niimg
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.image.image import crop_img
 from nilearn.image.resampling import (

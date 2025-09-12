@@ -9,8 +9,8 @@ from numpy import array_equal
 from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
 from pandas import read_csv
 
-from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn.conftest import _rng
+from nilearn.exceptions import AllVolumesRemovedError
 from nilearn.signal import (
     _censor_signals,
     _create_cosine_drift_terms,
@@ -1488,24 +1488,13 @@ def test_handle_scrubbed_volumes_with_extrapolation():
     scrub_index = np.concatenate((np.arange(5), [10, 20, 30]))
     sample_mask = np.delete(sample_mask, scrub_index)
 
-    # Test cubic spline interpolation (enabled extrapolation) in the
-    # very first n=5 samples of generated signal
-    # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
-    extrapolate_warning = (
-        "By default the cubic spline interpolator extrapolates "
-        "the out-of-bounds censored volumes in the data run. This "
-        "can lead to undesired filtered signal results. Starting in "
-        "version 0.13, the default strategy will be not to extrapolate "
-        "but to discard those volumes at filtering."
+    (
+        extrapolated_signals,
+        extrapolated_confounds,
+        extrapolated_sample_mask,
+    ) = _handle_scrubbed_volumes(
+        signals, confounds, sample_mask, "butterworth", 2.5, True
     )
-    with pytest.warns(FutureWarning, match=extrapolate_warning):
-        (
-            extrapolated_signals,
-            extrapolated_confounds,
-            extrapolated_sample_mask,
-        ) = _handle_scrubbed_volumes(
-            signals, confounds, sample_mask, "butterworth", 2.5, True
-        )
     assert_equal(signals.shape[0], extrapolated_signals.shape[0])
     assert_equal(confounds.shape[0], extrapolated_confounds.shape[0])
     assert_equal(sample_mask, extrapolated_sample_mask)

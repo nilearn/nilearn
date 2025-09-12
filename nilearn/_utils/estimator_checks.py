@@ -47,7 +47,6 @@ from sklearn.utils.estimator_checks import (
 )
 
 from nilearn._utils.cache_mixin import CacheMixin
-from nilearn._utils.exceptions import DimensionError, MeshDimensionError
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_imgs_equal
@@ -92,6 +91,7 @@ from nilearn.decomposition.tests.conftest import (
     _decomposition_img,
     _decomposition_mesh,
 )
+from nilearn.exceptions import DimensionError, MeshDimensionError
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import get_data, index_img, new_img_like
 from nilearn.maskers import (
@@ -238,8 +238,8 @@ def return_expected_failed_checks(
         estimator, (GroupSparseCovariance, GroupSparseCovarianceCV)
     ):
         expected_failed_checks = {
-            "check_estimator_sparse_array": "TODO",
             "check_estimator_sparse_data": "removed when dropping sklearn 1.4",
+            "check_estimator_sparse_array": "TODO",
             "check_estimator_sparse_matrix": "TODO",
             "check_estimator_sparse_tag": "TODO",
         }
@@ -279,6 +279,9 @@ def return_expected_failed_checks(
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
+        "check_estimators_overwrite_params": (
+            "replaced by check_img_estimator_overwrite_params"
+        ),
         "check_estimators_pickle": "replaced by check_img_estimator_pickle",
         "check_fit_check_is_fitted": (
             "replaced by check_img_estimator_fit_check_is_fitted"
@@ -306,7 +309,6 @@ def return_expected_failed_checks(
         # or because a suitable nilearn replacement
         # has not yet been created.
         "check_estimators_nan_inf": "TODO",
-        "check_estimators_overwrite_params": "TODO",
         "check_methods_subset_invariance": "TODO",
         "check_positive_only_tag_during_fit": "TODO",
         "check_readonly_memmap_input": "TODO",
