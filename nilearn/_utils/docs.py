@@ -1601,12 +1601,25 @@ docdict["lut"] = """lut : :obj:`pandas.DataFrame`
         `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
 
 # signals returned Nifti maskers by transform, fit_transform...
-docdict["signals_transform_nifti"] = """signals : :obj:`numpy.ndarray`
+docdict["signals_transform_nifti"] = """signals : :obj:`numpy.ndarray`, \
+            :obj:`pandas.DataFrame` or \
+            :obj:`polars.DataFrame`, \
+            default=:obj:`numpy.ndarray`
         Signal for each :term:`voxel`.
+
+        The type of the output is determined by ``set_output()``:
+        see `the scikit-learn documentation <https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html>`_.
+
         Output shape for :
 
-        - 3D images: (number of elements,) array
-        - 4D images: (number of scans, number of elements) array
+        - For Numpy outputs:
+
+            - 3D images: (number of elements,)
+            - 4D images: (number of scans, number of elements) array
+
+        - For DataFrame outputs:
+
+            - 3D or 4D images: (number of scans, number of elements) array
         """
 # signals returned Mulit Nifti maskers by transform, fit_transform...
 docdict[

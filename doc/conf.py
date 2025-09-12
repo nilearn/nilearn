@@ -393,6 +393,7 @@ intersphinx_mapping = {
     "nistats": ("https://nistats.github.io", None),
     "joblib": ("https://joblib.readthedocs.io/en/latest/", None),
     "plotly": ("https://plotly.com/python-api-reference/", None),
+    "polars": ("https://docs.pola.rs/api/python/stable", None),
 }
 
 extlinks = {
