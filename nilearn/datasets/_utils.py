@@ -7,6 +7,7 @@ import hashlib
 import os
 import pickle
 import shutil
+import sys
 import tarfile
 import time
 import urllib
@@ -318,7 +319,16 @@ def _safe_extract(tar, path=".", members=None, *, numeric_owner=False):
         if not _is_within_directory(path, member_path):
             raise Exception("Attempted Path Traversal in Tar File")
 
-    tar.extractall(path, members, numeric_owner=numeric_owner)
+    # TODO (python >= 3.14) simplify when dropping python 3.14
+    if sys.version_info[1] >= 14:
+        tar.extractall(path, members, numeric_owner=numeric_owner, filter=None)
+    else:
+        with warnings.catch_warning():
+            warnings.filterwarnings(
+                "ignore",
+                category=DeprecationWarning,
+            )
+            tar.extractall(path, members, numeric_owner=numeric_owner)
 
 
 @fill_doc
