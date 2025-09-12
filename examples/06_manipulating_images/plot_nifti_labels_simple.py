@@ -96,8 +96,8 @@ signals = masker.transform(func_filename)
 print(f"{signals.shape=}")
 
 # %%
-# Output to dataframe
-# -------------------
+# Output to dataframe and plot
+# ----------------------------
 #
 # You can use 'set_output()' to decide the output format of 'transform'.
 # If you want to output to a DataFrame, you an choose pandas and polars.
@@ -106,17 +106,6 @@ masker.set_output(transform="pandas")
 signals_df = masker.transform(func_filename)
 print(signals_df.head)
 
-# %%
-# Plot the signals
-# ----------------
-import matplotlib.pyplot as plt
-
-fig = plt.figure(figsize=(15, 5))
-ax = fig.add_subplot(111)
-for label_idx in range(3):
-    ax.plot(
-        signals[:, label_idx], linewidth=2, label=atlas.labels[label_idx + 1]
-    )  # 0 is background
-ax.legend(loc=2)
-ax.set_title("Signals for first 3 regions")
-plt.show()
+signals_df[["Frontal Pole", "Insular Cortex", "Superior Frontal Gyrus"]].plot(
+    title="Signals from 3 regions", figsize=(15, 5)
+)
