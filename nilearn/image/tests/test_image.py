@@ -531,7 +531,7 @@ def test_mean_img_resample(rng):
 
 def test_mean_img_copied_header(img_4d_mni_tr2):
     # Test equality of header fields between input and output
-    result = mean_img(img_4d_mni_tr2, copy_header=True)
+    result = mean_img(img_4d_mni_tr2)
     match_headers_keys(
         result,
         img_4d_mni_tr2,
@@ -759,7 +759,7 @@ def test_new_img_like():
     # test_new_img_like_with_nifti2image_copy_header
     img_nifti2 = Nifti2Image(data, affine=affine)
 
-    img2_nifti2 = new_img_like([img_nifti2], data, copy_header=True)
+    img2_nifti2 = new_img_like([img_nifti2], data)
 
     assert_array_equal(get_data(img_nifti2), get_data(img2_nifti2))
 
@@ -792,9 +792,7 @@ def test_new_img_like_non_iterable_header(rng):
         fake_fmri_data, fake_affine
     )
 
-    assert new_img_like(
-        fake_spatial_image, data=fake_fmri_data, copy_header=True
-    )
+    assert new_img_like(fake_spatial_image, data=fake_fmri_data)
 
 
 @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
@@ -827,41 +825,26 @@ def test_input_in_threshold_img(
     """Check threshold_img only works with surface OR volume."""
     threshold = 0.5
 
-    # setting copy_header to True to avoid warnings
-    # TODO (nilearn >= 0.13.0) remove
-    copy_header = True
-
     vol_img, _ = generate_maps(shape_3d_default, n_regions=2)
     vol_mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
 
     # All of those should be OK
-    thr_img = threshold_img(
-        vol_img, threshold=threshold, mask_img=None, copy_header=copy_header
-    )
+    thr_img = threshold_img(vol_img, threshold=threshold, mask_img=None)
 
     _check_thresholded_output(vol_img, thr_img, threshold)
 
-    thr_img = threshold_img(
-        surf_img_1d,
-        threshold=threshold,
-        mask_img=None,
-        copy_header=copy_header,
-    )
-
-    _check_thresholded_output(surf_img_1d, thr_img, threshold)
+    thr_img = threshold_img(surf_img_1d, threshold=threshold, mask_img=None)
 
     # same but with a mask
     threshold_img(
         vol_img,
         threshold=threshold,
         mask_img=vol_mask,
-        copy_header=copy_header,
     )
     threshold_img(
         surf_img_1d,
         threshold=threshold,
         mask_img=surf_mask_1d,
-        copy_header=copy_header,
     )
 
 
@@ -871,12 +854,7 @@ def test_input_in_threshold_img_several_timepoints(
     """Check threshold_img works with 2D surface OR 4D volume."""
     threshold = 0.5
 
-    # setting copy_header to True to avoid warnings
-    # TODO (nilearn >= 0.13.0) remove
-    copy_header = True
-    thr_img = threshold_img(
-        img_4d_rand_eye, threshold=0.5, copy_header=copy_header
-    )
+    thr_img = threshold_img(img_4d_rand_eye, threshold=0.5)
 
     _check_thresholded_output(img_4d_rand_eye, thr_img, threshold)
 
@@ -950,7 +928,6 @@ def test_validity_threshold_value_in_threshold_img(
     """Check that invalid values to threshold_img's threshold parameter \
        raise Exceptions.
     """
-    copy_header = True
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
 
     # testing to raise same error when threshold=None case
@@ -958,7 +935,7 @@ def test_validity_threshold_value_in_threshold_img(
         TypeError,
         match="threshold should be either a number or a string",
     ):
-        threshold_img(maps, threshold=None, copy_header=copy_header)
+        threshold_img(maps, threshold=None)
 
     threshold = object()
     with pytest.raises(TypeError, match="should be of type"):
@@ -966,7 +943,6 @@ def test_validity_threshold_value_in_threshold_img(
             maps,
             threshold=threshold,
             two_sided=two_sided,
-            copy_header=copy_header,
         )
 
     invalid_threshold_values = ["90t%", "s%", "t", "0.1"]
@@ -979,7 +955,6 @@ def test_validity_threshold_value_in_threshold_img(
             threshold_img(
                 maps,
                 threshold=thr,
-                copy_header=copy_header,
                 two_sided=two_sided,
             )
 
@@ -988,10 +963,6 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
     """Check that negative values to threshold_img's threshold parameter \
        raise Exceptions.
     """
-    # setting copy_header to True to avoid warnings
-    # TODO (nilearn >= 0.13.0) remove
-    copy_header = True
-
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
 
     # invalid threshold values when two_sided=True
@@ -1002,36 +973,27 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
                 maps,
                 threshold=wrong_threshold,
                 two_sided=True,
-                copy_header=copy_header,
             )
 
     with pytest.raises(ValueError, match="should not be a negative"):
-        threshold_img(
-            maps, threshold="-10%", two_sided=False, copy_header=copy_header
-        )
+        threshold_img(maps, threshold="-10%", two_sided=False)
 
 
 def test_threshold_img(affine_eye):
     """Smoke test for threshold_img with valid threshold inputs."""
-    # setting copy_header to True to avoid warnings
-    # TODO (nilearn >= 0.13.0) remove
-    copy_header = True
-
     shape = (10, 20, 30)
     maps, _ = generate_maps(shape, n_regions=4)
     mask_img = Nifti1Image(np.ones((shape), dtype=np.int8), affine_eye)
 
     for img in iter_img(maps):
         # when threshold is a float value
-        threshold_img(img, threshold=0.8, copy_header=copy_header)
+        threshold_img(img, threshold=0.8)
 
         # when we provide mask image
-        threshold_img(
-            img, threshold=1, mask_img=mask_img, copy_header=copy_header
-        )
+        threshold_img(img, threshold=1, mask_img=mask_img)
 
         # when threshold is a percentile
-        threshold_img(img, threshold="2%", copy_header=copy_header)
+        threshold_img(img, threshold="2%")
 
 
 @pytest.mark.parametrize(
@@ -1256,12 +1218,12 @@ def test_isnan_threshold_img_data(affine_eye, shape_3d_default):
 
     maps_img = Nifti1Image(data, affine_eye)
 
-    threshold_img(maps_img, threshold=0.8, copy_header=True)
+    threshold_img(maps_img, threshold=0.8)
 
 
 def test_threshold_img_copied_header(img_4d_mni_tr2):
     # Test equality of header fields between input and output
-    thr_img = threshold_img(img_4d_mni_tr2, threshold=0.5, copy_header=True)
+    thr_img = threshold_img(img_4d_mni_tr2, threshold=0.5)
     # only the min value should be different
     match_headers_keys(
         thr_img,
@@ -1456,7 +1418,7 @@ def test_binarize_negative_img(img_4d_rand_eye, rng):
 
 def test_binarize_img_copied_header(img_4d_mni_tr2):
     # Test equality of header fields between input and output
-    result = binarize_img(img_4d_mni_tr2, threshold=0.5, copy_header=True)
+    result = binarize_img(img_4d_mni_tr2, threshold=0.5)
     # only the min value should be different
     match_headers_keys(
         result,
