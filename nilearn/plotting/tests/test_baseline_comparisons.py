@@ -51,8 +51,6 @@ PLOTTING_FUNCS_3D = {
     plot_glass_brain,
 }
 
-PLOTTING_FUNCS_4D = {plot_prob_atlas, plot_carpet}
-
 SURFACE_FUNCS = {
     plot_surf,
     plot_surf_stat_map,
