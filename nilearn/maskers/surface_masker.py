@@ -298,7 +298,6 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         check_is_fitted(self)
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
-
         check_polymesh_equal(self.mask_img_.mesh, imgs.mesh)
 
         if isinstance(imgs, SurfaceImage) and any(

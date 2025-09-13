@@ -294,6 +294,16 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         if imgs is not None:
             check_surf_img(imgs)
 
+            if isinstance(imgs, SurfaceImage) and any(
+                x.ndim > 2 for x in imgs.data.parts.values()
+            ):
+                raise ValueError(
+                    "should only be SurfaceImage should 1D or 2D."
+                )
+            elif hasattr(imgs, "__iter__"):
+                for i, x in enumerate(imgs):
+                    x.data._check_ndims(1, var_name=f"imgs[{i}]")
+
         check_reduction_strategy(self.strategy)
 
         if self.labels_img is None:
@@ -435,6 +445,14 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         check_compatibility_mask_and_images(self.labels_img_, imgs)
         check_polymesh_equal(self.labels_img_.mesh, imgs.mesh)
+
+        if isinstance(imgs, SurfaceImage) and any(
+            x.ndim > 2 for x in imgs.data.parts.values()
+        ):
+            raise ValueError("should only be SurfaceImage should 1D or 2D.")
+        elif hasattr(imgs, "__iter__"):
+            for i, x in enumerate(imgs):
+                x.data._check_ndims(1, var_name=f"imgs[{i}]")
 
         imgs = at_least_2d(imgs)
         img_data = get_data(imgs)

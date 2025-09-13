@@ -2780,7 +2780,7 @@ def check_surface_masker_list_surf_images(estimator):
     n_sample = 5
     images_to_transform = [
         [_make_surface_img()] * 5,
-        [_make_surface_img(2), _make_surface_img(3)],
+        _make_surface_img(5),
     ]
     for imgs in images_to_transform:
         for mask_img in [None, _surf_mask_1d(), _make_surface_mask()]:
