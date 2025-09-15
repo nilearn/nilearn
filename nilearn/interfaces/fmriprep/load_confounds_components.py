@@ -63,7 +63,7 @@ def _tedana_strategy(classification, mixing, metrics):
     # names: ICA_04 -> ICA_4
     #############################################################
 
-    # 3. Normalize mixing file column names and build a mapping
+    # Normalize mixing file column names and build a mapping
     original_columns = mixing.columns.tolist()
 
     # Map: normalized_name -> original_name
