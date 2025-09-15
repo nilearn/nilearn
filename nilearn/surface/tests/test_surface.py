@@ -629,18 +629,6 @@ def test_vol_to_surf_nearest_most_frequent(img_labels):
     assert set(uniques_surf) <= set(uniques_vol)
 
 
-def test_vol_to_surf_nearest_deprecation(img_labels):
-    """Test deprecation warning for nearest interpolation method in
-    vol_to_surf.
-    """
-    # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
-    mesh = flat_mesh(5, 7)
-    with pytest.warns(
-        FutureWarning, match="interpolation method will be deprecated"
-    ):
-        vol_to_surf(img_labels, mesh, interpolation="nearest")
-
-
 def test_masked_indices():
     mask = np.ones((4, 3, 8))
     mask[:, :, ::2] = 0
@@ -1195,7 +1183,7 @@ def test_get_min_max(surf_img_2d):
 
 def test_extract_data_wrong_input():
     """Check that only SurfaceImage is accepted as input."""
-    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
+    with pytest.raises(TypeError, match="must be of type"):
         extract_data(1, index=1)
 
 

@@ -71,6 +71,19 @@ def set_mpl_backend(message=None):
                 stacklevel=find_stack_level(),
             )
 
+        if new_backend == "agg":
+            warnings.warn(
+                (
+                    f"\nYou are using the '{matplotlib.get_backend()}' "
+                    "matplotlib backend that is non-interactive."
+                    "\nNo figure will be plotted when calling "
+                    "matplotlib.pyplot.show() or nilearn.plotting.show()."
+                    "\nYou can fix this by installing a different backend: "
+                    "for example via\n\tpip install PyQt6"
+                ),
+                stacklevel=find_stack_level(),
+            )
+
 
 def rename_parameters(
     replacement_params,
@@ -347,13 +360,3 @@ def check_copy_header(copy_header):
             message=copy_header_default,
             stacklevel=find_stack_level(),
         )
-
-
-# TODO (matplotlib >= 3.5.0) This can be removed
-def constrained_layout_kwargs():
-    import matplotlib
-
-    if compare_version(matplotlib.__version__, ">=", "3.5"):
-        return {"layout": "constrained"}
-    else:
-        return {"constrained_layout": True}

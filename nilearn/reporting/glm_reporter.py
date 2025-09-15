@@ -23,7 +23,7 @@ import pandas as pd
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.glm import coerce_to_dict, make_stat_maps
+from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
@@ -346,15 +346,13 @@ def make_glm_report(
                 }
             except KeyError:  # pragma: no cover
                 if contrasts is not None:
-                    statistical_maps = make_stat_maps(
-                        model,
+                    statistical_maps = model._make_stat_maps(
                         contrasts,
                         output_type="z_score",
                         first_level_contrast=first_level_contrast,
                     )
         elif contrasts is not None:
-            statistical_maps = make_stat_maps(
-                model,
+            statistical_maps = model._make_stat_maps(
                 contrasts,
                 output_type="z_score",
                 first_level_contrast=first_level_contrast,
@@ -924,7 +922,6 @@ def _stat_map_to_png(
             bg_map=bg_img,
             surf_mesh=surf_mesh,
             cmap=cmap,
-            darkness=None,
             symmetric_cbar=symmetric_cbar,
             threshold=abs(threshold),
         )

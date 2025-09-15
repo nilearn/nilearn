@@ -310,18 +310,6 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
 
 """
 
-# darkness
-docdict["darkness"] = """
-darkness : :obj:`float` between 0 and 1, optional
-    Specifying the darkness of the background image:
-
-    - `1` indicates that the original values of the background are used
-
-    - `0.5` indicates that the background values
-        are reduced by half before being applied.
-
-"""
-
 # data_dir
 docdict["debias"] = """
 debias : :obj:`bool`, default=False
@@ -571,7 +559,7 @@ imgs : :obj:`list` of Niimg-like objects
 
 # keep_masked_labels
 docdict["keep_masked_labels"] = """
-keep_masked_labels : :obj:`bool`, default=True
+keep_masked_labels : :obj:`bool`, default=False
     When a mask is supplied through the "mask_img" parameter, some
     atlas regions may lie entirely outside of the brain mask, resulting
     in empty time series for those regions.
@@ -582,9 +570,9 @@ keep_masked_labels : :obj:`bool`, default=True
 
     .. deprecated:: 0.10.2
 
-        The 'True' option for ``keep_masked_labels`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_labels`` parameter will be removed in 0.15.
+    .. versionchanged:: 0.13.0dev
+
+        The ``keep_masked_labels`` parameter will be removed in 0.15.
 
 """
 
@@ -599,9 +587,9 @@ keep_masked_maps : :obj:`bool`, optional
 
     .. deprecated:: 0.10.2
 
-        The 'True' option for ``keep_masked_maps`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_maps`` parameter will be removed in 0.15.
+    .. versionchanged:: 0.13.0dev
+
+        The ``keep_masked_maps`` parameter will be removed in 0.15.
 
 """
 
@@ -696,33 +684,6 @@ mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
     - ``"wm"``: Computes the white-matter mask.
 
 """
-
-# kwargs for Maskers
-docdict["masker_kwargs"] = """
-kwargs : dict
-    Keyword arguments to be passed to functions called within the masker.
-    Kwargs prefixed with `'clean__'` will be passed to
-    :func:`~nilearn.signal.clean`.
-    Within :func:`~nilearn.signal.clean`, kwargs prefixed with
-    `'butterworth__'` will be passed to the Butterworth filter
-    (i.e., `clean__butterworth__`).
-
-    .. deprecated:: 0.12.0
-
-    .. admonition:: Use ``clean_args`` instead!
-       :class: important
-
-       It is recommended to pass parameters to use for data cleaning
-       via :obj:`dict` to the ``clean_args`` parameter.
-
-       Passing parameters via "kwargs" is mutually exclusive
-       with passing cleaning parameters via ``clean_args``.
-"""
-
-docdict["masker_kwargs_"] = docdict["masker_kwargs"].replace(
-    "kwargs : dict",
-    "clean_kwargs_ : dict",
-)
 
 verbose = """
 max_iter : :obj:`int`, default={}

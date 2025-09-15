@@ -19,9 +19,9 @@ from nilearn.plotting._engine_utils import threshold_cmap, to_color_strings
 from nilearn.plotting._utils import (
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
-    save_figure_if_needed,
 )
 from nilearn.plotting.cm import mix_colormaps
+from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
     check_engine_params,
@@ -141,21 +141,6 @@ def _normalize_bg_data(data):
     return data
 
 
-# TODO (nilearn >= 0.13.0) remove
-def _apply_darkness(data, darkness):
-    if darkness is not None:
-        data *= darkness
-        warn(
-            (
-                "The `darkness` parameter will be deprecated in release 0.13. "
-                "We recommend setting `darkness` to None"
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
-    return data
-
-
 def _get_vertexcolor(
     surf_map,
     cmap,
@@ -163,7 +148,6 @@ def _get_vertexcolor(
     absolute_threshold=None,
     bg_map=None,
     bg_on_data=None,
-    darkness=None,
 ):
     """Get the color of the vertices."""
     bg_data = get_bg_data(bg_map, len(surf_map))
@@ -171,8 +155,6 @@ def _get_vertexcolor(
     # scale background map if need be
     bg_data = _normalize_bg_data(bg_data)
 
-    # TODO (nilearn >= 0.13.0) remove
-    bg_data = _apply_darkness(bg_data, darkness)
     bg_colors = plt.get_cmap("Greys")(bg_data)
 
     # select vertices which are filtered out by the threshold
@@ -244,7 +226,7 @@ def _colorbar_from_array(
     return sm
 
 
-def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
+def _compute_facecolors(bg_map, faces, n_vertices, alpha):
     """Help for plot_surf with matplotlib engine.
 
     This function computes the facecolors.
@@ -254,8 +236,6 @@ def _compute_facecolors(bg_map, faces, n_vertices, darkness, alpha):
     # scale background map if need be
     bg_faces = _normalize_bg_data(bg_faces)
 
-    # TODO (nilearn >= 0.13.0) remove
-    bg_faces = _apply_darkness(bg_faces, darkness)
     face_colors = plt.cm.gray_r(bg_faces)
 
     # set alpha if in auto mode
@@ -425,7 +405,6 @@ def _plot_surf(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     cbar_vmin=None,
@@ -507,9 +486,7 @@ def _plot_surf(
     # reduce viewing distance to remove space around mesh
     axes.set_box_aspect(None, zoom=1.3)
 
-    bg_face_colors = _compute_facecolors(
-        bg_map, faces, coords.shape[0], darkness, alpha
-    )
+    bg_face_colors = _compute_facecolors(bg_map, faces, coords.shape[0], alpha)
     if surf_map is not None:
         surf_map_faces = _compute_surf_map_faces(
             surf_map,
