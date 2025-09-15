@@ -55,9 +55,7 @@ def test_check_events_errors():
     events = basic_paradigm()
     # Errors checkins
     # Wrong type
-    with pytest.raises(
-        TypeError, match="Events should be a Pandas DataFrame."
-    ):
+    with pytest.raises(TypeError, match="must be of type"):
         check_events([])
 
     # Missing onset

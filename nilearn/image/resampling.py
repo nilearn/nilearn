@@ -17,7 +17,7 @@ from nilearn._utils.niimg import _get_data
 from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_parameter_in_allowed
-from nilearn.image.image import copy_img, crop_img
+from nilearn.image.image import copy_img, crop_img, new_img_like
 
 ###############################################################################
 # Affine utils
@@ -451,8 +451,6 @@ def resample_img(
     homogeneous.
 
     """
-    from .image import new_img_like  # avoid circular imports
-
     if force_resample is None:
         force_resample = True
     # TODO (nilearn >= 0.13.0) remove this warning

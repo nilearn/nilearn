@@ -16,6 +16,9 @@ Classes
    :toctree: generated/
    :template: class.rst
 
+   AllVolumesRemovedError
+   DimensionError
+   MeshDimensionError
    NotImplementedWarning
 
 .. autoclasstree:: nilearn.exceptions

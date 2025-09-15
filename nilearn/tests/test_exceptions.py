@@ -1,9 +1,10 @@
 import re
 
-from nilearn._utils.exceptions import DimensionError
+from nilearn.exceptions import DimensionError
 
 
 def test_dimension_error_message():
+    """Check correct error is thrown."""
     error = DimensionError(file_dimension=3, required_dimension=5)
     error.increment_stack_counter()
     error.increment_stack_counter()
