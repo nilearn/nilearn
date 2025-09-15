@@ -50,7 +50,7 @@ def _tedana_strategy(classification, mixing, metrics):
     pandas.DataFrame
         DataFrame of TEDANA regressors.
     """
-    # 1. Get selected components from status table
+    # Get selected components from status table
     selected_metric_components = metrics[
         metrics["classification"].isin(classification)
     ]
