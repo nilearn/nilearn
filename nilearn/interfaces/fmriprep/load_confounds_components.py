@@ -85,7 +85,7 @@ def _tedana_strategy(classification, mixing, metrics):
         for _, row in selected_metric_components.iterrows()
     }
 
-    # 4. Select matched columns (normalized)
+    # Select matched columns (normalized)
     matched_components = [
         c for c in classification_lookup if c in mixing.columns
     ]
