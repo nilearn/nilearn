@@ -91,7 +91,7 @@ def _tedana_strategy(classification, mixing, metrics):
     ]
     selected = mixing[sorted(matched_components)]
 
-    # 5. Rename columns using classification + original name
+    # Rename columns using classification + original name
     # we are prefixing the classification value to the column name
     # regardless of the tedana strategy selected
     renamed_columns = {
