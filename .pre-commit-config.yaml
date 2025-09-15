@@ -76,7 +76,7 @@ repos:
             )$
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.12
+    rev: v0.13.0
     hooks:
     # Run the linter.
     -   id: ruff-check
@@ -88,7 +88,7 @@ repos:
 
     # check imports contracts
 -   repo: https://github.com/seddonym/import-linter
-    rev: v2.4
+    rev: v2.5
     hooks:
     -   id: import-linter
         args: [--verbose]
@@ -101,7 +101,7 @@ repos:
         args: [--config=pyproject.toml, nilearn]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.17.1
+    rev: v1.18.1
     hooks:
     -   id: mypy
         files: nilearn
