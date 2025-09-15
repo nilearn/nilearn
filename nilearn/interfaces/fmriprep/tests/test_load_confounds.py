@@ -651,8 +651,33 @@ def test_ica_aroma(tmp_path, fmriprep_version):
             regular_nii, strategy=("ica_aroma",), ica_aroma="invalid"
         )
 
+def test_tedana_happy_path(tmp_path):
+    """Test TEDANA related file input."""
+    # create a tedana nifti file with no confounds
+    tedana_nii, _ = create_tmp_filepath(
+        tmp_path, image_type="tedana", copy_confounds=True
+    )
 
-def test_tedana(tmp_path):
+    # check that the tedana nifti file loads correctly
+    conf, _ = load_confounds(tedana_nii, strategy=("tedana",))
+    assert conf.size > 0
+
+    # check the different strategies for tedana
+    conf, _ = load_confounds(
+        tedana_nii, strategy=("tedana",), tedana="aggressive"
+    )
+    assert conf.size > 0 and any("rejected" in col for col in conf.columns)
+
+    conf, _ = load_confounds(
+        tedana_nii, strategy=("tedana",), tedana="non-aggressive"
+    )
+    assert (
+        conf.size > 0
+        and any("rejected" in col for col in conf.columns)
+        and any("accepted" in col for col in conf.columns)
+    )
+
+def test_tedana_errors_warnings(tmp_path):
     """Test TEDANA related file input."""
     # create a regular nifti file with no confounds
     regular_nii, _ = create_tmp_filepath(
@@ -678,10 +703,6 @@ def test_tedana(tmp_path):
         in exc_info.value.args[0]
     )
 
-    # check that the tedana nifti file loads correctly
-    conf, _ = load_confounds(tedana_nii, strategy=("tedana",))
-    assert conf.size > 0
-
     # check that combining tedana with other strategies raises an warning
     with pytest.warns(UserWarning, match="TEDANA strategy"):
         conf, _ = load_confounds(
@@ -695,21 +716,6 @@ def test_tedana(tmp_path):
             strategy=("tedana", "high_pass", "ica_aroma", "global_signal"),
             motion="basic",
         )
-
-    # check the different strategies for tedana
-    conf, _ = load_confounds(
-        tedana_nii, strategy=("tedana",), tedana="aggressive"
-    )
-    assert conf.size > 0 and any("rejected" in col for col in conf.columns)
-
-    conf, _ = load_confounds(
-        tedana_nii, strategy=("tedana",), tedana="non-aggressive"
-    )
-    assert (
-        conf.size > 0
-        and any("rejected" in col for col in conf.columns)
-        and any("accepted" in col for col in conf.columns)
-    )
 
     # tedana strategy with invalid option
     with pytest.raises(ValueError) as exc_info:
