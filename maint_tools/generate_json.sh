@@ -1,8 +1,7 @@
 #!/bin/sh
 
 # Quick and dirty script to regenerate the brain schematics JSONs from
-# the SVGs. This script has to be launched from the folder it lives
-# in, i.e. as ./generate_json.sh
+# the SVGs.
 
 for svg_fn in *.svg; do
     echo ----------------------------------------

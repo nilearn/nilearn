@@ -609,6 +609,17 @@ You can also use the ``rng`` fixture.
 
           # the rest of the test
 
+Plotting
+--------
+
+Glass brains
+^^^^^^^^^^^^
+
+The background images for the glass brains are stored in
+``nilearn/plotting/glass_brain_files``.
+Once the SCG files have been modified make sure
+to regenerate the associated JSON files.
+
 Documentation
 -------------
 

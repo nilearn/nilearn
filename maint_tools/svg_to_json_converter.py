@@ -1,7 +1,13 @@
 """SVG to JSON converter.
 
+Leverages off https://github.com/cjlano/svg
+and exports the coordinates of the paths in the svg
+together with a few path attributes (id, stroke-color, stroke-width, etc.)
+
 The main assumption is that the SVG only contains Bezier curves and
-segments. The output JSON is used for plotting glass brain schematics.
+segments.
+
+The output JSON is used for plotting glass brain schematics.
 """
 
 import json
