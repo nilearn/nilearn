@@ -451,7 +451,7 @@ class FirstLevelModel(BaseGLM):
     design_only : :obj:`bool`, default=False
         If True the model is specified but not estimated.
 
-        .. versionadded:: 0.12.1dev
+        .. versionadded:: 0.13.0dev
 
     Attributes
     ----------
@@ -1328,8 +1328,13 @@ class FirstLevelModel(BaseGLM):
             )
             self.smoothing_fwhm = 0
 
-        if not self.design_only:
-            check_compatibility_mask_and_images(self.mask_img, run_img)
+        self.masker_ = None
+        self.n_elements_ = 0
+        if self.design_only:
+            return
+
+        check_compatibility_mask_and_images(self.mask_img, run_img)
+
         if (  # deal with self.mask_img as image, str, path, none
             (not isinstance(self.mask_img, (NiftiMasker, SurfaceMasker)))
             or

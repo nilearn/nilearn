@@ -634,13 +634,6 @@ class SecondLevelModel(BaseGLM):
             second_level_input, self.design_only
         )
 
-        # Report progress
-        t0 = time.time()
-        logger.log(
-            "Fitting second level model. Take a deep breath.\r",
-            verbose=self.verbose,
-        )
-
         # Create and set design matrix, if not given
         if design_matrix is None:
             design_matrix = make_second_level_design_matrix(
@@ -654,30 +647,38 @@ class SecondLevelModel(BaseGLM):
 
         self.masker_ = None
         self.n_elements_ = 0
-        if not self.design_only:
-            masker_type = "nii"
-            if not self._is_volume_glm() or isinstance(
-                sample_map, SurfaceImage
-            ):
-                masker_type = "surface"
+        self._reporting_data = {}
+        if self.design_only:
+            return self
 
-            if masker_type == "surface" and self.smoothing_fwhm is not None:
-                warn(
-                    "Parameter 'smoothing_fwhm' is not "
-                    "yet supported for surface data.",
-                    NotImplementedWarning,
-                    stacklevel=find_stack_level(),
-                )
-                self.smoothing_fwhm = None
+        # Report progress
+        t0 = time.time()
+        logger.log(
+            "Fitting second level model. Take a deep breath.\r",
+            verbose=self.verbose,
+        )
 
-            check_compatibility_mask_and_images(self.mask_img, sample_map)
-            self.masker_ = check_embedded_masker(self, masker_type)
-            self.masker_.memory_level = self.memory_level
+        masker_type = "nii"
+        if not self._is_volume_glm() or isinstance(sample_map, SurfaceImage):
+            masker_type = "surface"
 
-            if sample_map is not None:
-                self.masker_.fit(sample_map)
+        if masker_type == "surface" and self.smoothing_fwhm is not None:
+            warn(
+                "Parameter 'smoothing_fwhm' is not "
+                "yet supported for surface data.",
+                NotImplementedWarning,
+                stacklevel=find_stack_level(),
+            )
+            self.smoothing_fwhm = None
 
-            self.n_elements_ = self.masker_.n_elements_
+        check_compatibility_mask_and_images(self.mask_img, sample_map)
+        self.masker_ = check_embedded_masker(self, masker_type)
+        self.masker_.memory_level = self.memory_level
+
+        if sample_map is not None:
+            self.masker_.fit(sample_map)
+
+        self.n_elements_ = self.masker_.n_elements_
 
         # Report progress
         logger.log(
@@ -685,8 +686,6 @@ class SecondLevelModel(BaseGLM):
             f"{time.time() - t0:0.2f} seconds.\n",
             verbose=self.verbose,
         )
-
-        self._reporting_data = {}
 
         return self
 

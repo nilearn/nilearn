@@ -330,7 +330,7 @@ def make_glm_report(
         # by reading images from disk rarther than recomputing them
         # TODO: the default value should depend on the presence of a mask
         mask_info = {"n_elements": 0, "coverage": 0}
-        if model.masker_.__sklearn_is_fitted__():
+        if not model.design_only and model.masker_.__sklearn_is_fitted__():
             mask_info = {
                 k: v
                 for k, v in model.masker_._report_content.items()
@@ -575,7 +575,7 @@ def _mask_to_plot(model, bg_img, cut_coords):
         return None
 
     # Select mask_img to use for plotting
-    if not model._is_volume_glm():
+    if not model.design_only and not model._is_volume_glm():
         model.masker_._create_figure_for_report()
         fig = plt.gcf()
         mask_plot = figure_to_png_base64(fig)
