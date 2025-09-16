@@ -20,7 +20,7 @@ from nilearn._utils.niimg_conversions import (
 )
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params
-from nilearn.datasets.struct import (
+from nilearn.datasets import (
     load_mni152_gm_template,
     load_mni152_template,
     load_mni152_wm_template,
