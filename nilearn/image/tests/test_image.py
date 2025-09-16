@@ -938,7 +938,7 @@ def test_validity_threshold_value_in_threshold_img(
         threshold_img(maps, threshold=None)
 
     threshold = object()
-    with pytest.raises(TypeError, match="should be of type"):
+    with pytest.raises(TypeError, match="must be of type(s)"):
         threshold_img(
             maps,
             threshold=threshold,
