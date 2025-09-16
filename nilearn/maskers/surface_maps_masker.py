@@ -6,6 +6,7 @@ import warnings
 
 import numpy as np
 from scipy import linalg
+from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
@@ -35,7 +36,7 @@ from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
-class SurfaceMapsMasker(_BaseSurfaceMasker):
+class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     """Extract data from a SurfaceImage, using maps of potentially overlapping
     brain regions.
 
