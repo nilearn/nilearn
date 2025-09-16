@@ -10,7 +10,7 @@ def test_all_modules_error(func):
     with pytest.raises(
         ValueError,
         match=(
-            r"`modules_to_ignore` and `modules_to_consider` cannot "
+            r"'modules_to_ignore' and 'modules_to_consider' cannot "
             r"be both specified."
         ),
     ):
