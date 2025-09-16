@@ -175,7 +175,7 @@ def _get_labels_data(
                 "In version 0.15.0, "
                 '"keep_masked_labels" parameter will be removed.'
             ),
-            DeprecationWarning,
+            FutureWarning,
             stacklevel=find_stack_level(),
         )
 
