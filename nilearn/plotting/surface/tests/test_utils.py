@@ -190,7 +190,7 @@ def test_check_surface_plotting_hemi_both_all_inputs(surf_img_1d, surf_mesh):
 def test_check_surface_plotting_hemi_both_mesh_none(surf_img_1d):
     """Test that hemi="both" works as expected when mesh is not provided."""
     hemi = "both"
-    combined_map, combined_mesh, combined_bg = check_surface_plotting_inputs(
+    _, combined_mesh, _ = check_surface_plotting_inputs(
         surf_map=surf_img_1d,
         surf_mesh=None,
         hemi=hemi,

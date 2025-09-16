@@ -992,10 +992,6 @@ def test_clean_t_r_highpass_float_int(t_r, high_pass):
         ]
     ).T
 
-    # Create confound
-    _, _, confounds = generate_signals(
-        n_features=10, n_confounds=10, length=100
-    )
     clean(
         sx,
         detrend=False,
@@ -1558,9 +1554,11 @@ def test_handle_scrubbed_volumes_exception():
 
     with pytest.raises(
         AllVolumesRemovedError,
-        match="The size of the sample mask is 0. "
-        "All volumes were marked as motion outliers "
-        "can not proceed. ",
+        match=(
+            "The size of the sample mask is 0. "
+            "All volumes were marked as motion outliers "
+            "can not proceed. "
+        ),
     ):
         _handle_scrubbed_volumes(
             signals, confounds, sample_mask, "butterworth", 2.5, True

@@ -427,7 +427,7 @@ def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
 
 def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
     """Test error msg for invalid axes."""
-    figure, axes = matplotlib_pyplot.subplots()
+    _, axes = matplotlib_pyplot.subplots()
     with pytest.raises(AttributeError, match="the projection must be '3d'"):
         plot_surf_stat_map(stat_map=surf_img_1d, axes=axes)
 

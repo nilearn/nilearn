@@ -132,7 +132,7 @@ def test_rename_parameters():
     to replacement parameters and all deprecation warning are raised as
     expected.
     """
-    mock_input, replacement_params = _mock_args_for_testing_replace_parameter()
+    _, replacement_params = _mock_args_for_testing_replace_parameter()
     expected_output = ("dp0", "dp1", "up0", "up1")
     expected_warnings = [
         (
