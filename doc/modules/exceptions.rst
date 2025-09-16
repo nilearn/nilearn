@@ -7,8 +7,20 @@
    :no-members:
    :no-inherited-members:
 
-Classes
--------
+Warnings
+--------
+
+.. currentmodule:: nilearn.exceptions
+
+.. autosummary::
+   :toctree: generated/
+   :template: class.rst
+
+   MaskWarning
+   NotImplementedWarning
+
+Exceptions
+----------
 
 .. currentmodule:: nilearn.exceptions
 
@@ -19,7 +31,6 @@ Classes
    AllVolumesRemovedError
    DimensionError
    MeshDimensionError
-   NotImplementedWarning
 
 .. autoclasstree:: nilearn.exceptions
    :full:
