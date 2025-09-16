@@ -27,6 +27,8 @@ Enhancements
 
 - :bdg-success:`API` Add a :class:`~exceptions.NotImplementedWarning` and make :class:`~exceptions.DimensionError`, :class:`~exceptions.AllVolumesRemovedError` and :class:`~exceptions.MeshDimensionError` part of the public API (:gh:`5508`, :gh:`5570` by `Rémi Gau`_).
 
+- :bdg-success:`API` Add a ``design_only`` parameter to :class:`~glm.first_level.FirstLevelModel` and :class:`~glm.second_level.SecondLevelModel` to be able to only inspect the model specification before fitting if to avoid wasting computation time on a misspecified model (:gh:`54680` by `Rémi Gau`_).
+
 Changes
 -------
 
