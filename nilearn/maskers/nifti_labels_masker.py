@@ -26,6 +26,7 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import get_data, load_img, resample_img
+from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -69,7 +70,7 @@ class _ExtractionFunctor:
 
 
 @fill_doc
-class NiftiLabelsMasker(BaseMasker):
+class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
     """Class for extracting data from Niimg-like objects \
        using labels of non-overlapping brain regions.
 
@@ -122,7 +123,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 
@@ -805,6 +806,8 @@ class NiftiLabelsMasker(BaseMasker):
         params["target_affine"] = target_affine
         params["clean_kwargs"] = self.clean_args_
 
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+
         region_signals, (ids, masked_atlas) = self._cache(
             filter_and_extract,
             ignore=["verbose", "memory", "memory_level"],
@@ -827,6 +830,7 @@ class NiftiLabelsMasker(BaseMasker):
             memory=self.memory_,
             memory_level=self.memory_level,
             verbose=self.verbose,
+            sklearn_output_config=sklearn_output_config,
         )
 
         # Create a lut that may be different from the fitted lut_

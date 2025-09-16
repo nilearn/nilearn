@@ -1183,7 +1183,7 @@ def test_get_min_max(surf_img_2d):
 
 def test_extract_data_wrong_input():
     """Check that only SurfaceImage is accepted as input."""
-    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
+    with pytest.raises(TypeError, match="must be of type"):
         extract_data(1, index=1)
 
 

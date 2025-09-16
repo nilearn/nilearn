@@ -22,10 +22,14 @@ NEW
 Fixes
 -----
 
+- :bdg-primary:`Doc` Update allowed values for the parameter ``standardize`` to match those of :func:`~signal.clean` in :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMClassifier`, :class:`~decoding.FREMRegressor`, :class:`~decoding.SpaceNetClassifier`, :class:`~decoding.SpaceNetRegressor`, :class:`~connectome.ConnectivityMeasure`, :class:`~decomposition.DictLearning`, :class:`~decomposition.CanICA` as well as for all maskers  (:gh:`5668` by `Rémi Gau`_).
+
 Enhancements
 ------------
 
 - :bdg-success:`API` Add a :class:`~exceptions.NotImplementedWarning` and make :class:`~exceptions.DimensionError`, :class:`~exceptions.AllVolumesRemovedError` and :class:`~exceptions.MeshDimensionError` part of the public API (:gh:`5508`, :gh:`5570` by `Rémi Gau`_).
+
+- :bdg-success:`API` Add support for Scikit-Learn ``set_output()`` in several Nilearn feature extractors (nifti and surface non-multi maskers, and :class:`~regions.HierarchicalKMeans`) to allow ``transform()`` to output to either Pandas or Polars dataframe and not just numpy arrays (:gh:`5508` by `Rémi Gau`_).
 
 Changes
 -------
@@ -69,6 +73,8 @@ Changes
 - :bdg-danger:`Deprecation` The parameter ``output_type`` of :func:`~mass_univariate.permuted_ols` was changed from ``legacy`` to ``dict``. The parameter ``output_type`` will be removed in Nilearn >= 0.15.0 (:gh:`5631` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter ``contrast_type`` of  :func:`~glm.compute_contrast` and :class:`~glm.Contrast` has been replaced by ``stat_type`` (:gh:`5630` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` ``roi_map`` for :func:`~plotting.plot_surf_roi` can now only be made of positive integer values (:gh:`5660` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The value ``'nearest'`` for the parameter ``interpolation`` of :func:`~surface.vol_to_surf` is no longer allowed. Use ``'nearest_most_frequent'`` instead (:gh:`5662` by `Rémi Gau`_).
 

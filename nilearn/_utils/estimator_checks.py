@@ -50,6 +50,7 @@ from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_imgs_equal
+from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn._utils.tags import (
     SKLEARN_LT_1_6,
     accept_niimg_input,
@@ -156,11 +157,7 @@ def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
             "Use dedicated sklearn utilities to test estimators."
         )
 
-    if not isinstance(estimators, list):  # pragma: no cover
-        raise TypeError(
-            "'estimators' should be a list. "
-            f"Got {estimators.__class__.__name__}."
-        )
+    check_is_of_allowed_type(estimators, (list,), "estimators")
 
     for est in estimators:
         expected_failed_checks = return_expected_failed_checks(est)
@@ -534,11 +531,7 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
 
 
 def nilearn_check_estimator(estimators: list[BaseEstimator]):
-    if not isinstance(estimators, list):  # pragma: no cover
-        raise TypeError(
-            "'estimators' should be a list. "
-            f"Got {estimators.__class__.__name__}."
-        )
+    check_is_of_allowed_type(estimators, (list,), "estimators")
     for est in estimators:
         for e, check in nilearn_check_generator(estimator=est):
             yield e, check, check.__name__
@@ -562,12 +555,12 @@ def nilearn_check_generator(estimator: BaseEstimator):
         requires_y = getattr(tags.target_tags, "required", False)
 
     yield (clone(estimator), check_tags)
-    yield (clone(estimator), check_transformer_set_output)
 
     if isinstance(estimator, CacheMixin):
         yield (clone(estimator), check_img_estimator_cache_warning)
 
     yield (clone(estimator), check_img_estimator_doc_attributes)
+    yield (clone(estimator), check_estimator_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
         yield (clone(estimator), check_fit_returns_self)
@@ -908,11 +901,48 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig):
 
 
 @ignore_warnings()
-def check_transformer_set_output(estimator):
-    """Check that set_ouput throws a not implemented error."""
-    if hasattr(estimator, "transform"):
+def check_estimator_set_output(estimator_orig):
+    """Check that set_ouput can be used."""
+    if not hasattr(estimator_orig, "transform") or isinstance(
+        estimator_orig, (SearchLight, ReNA)
+    ):
+        return
+
+    if isinstance(
+        estimator_orig, (_BaseDecomposition, ConnectivityMeasure)
+    ) or is_multimasker(estimator_orig):
         with pytest.raises(NotImplementedError):
-            estimator.set_output(transform="default")
+            estimator_orig.set_output(transform="pandas")
+        return
+
+    estimator = clone(estimator_orig)
+    estimator = fit_estimator(estimator)
+
+    img, _ = generate_data_to_fit(estimator)
+
+    signal = estimator.transform(img)
+    if isinstance(estimator, _BaseDecomposition):
+        assert isinstance(signal[0], np.ndarray)
+    else:
+        assert isinstance(signal, np.ndarray)
+
+    estimator.set_output(transform="pandas")
+    signal = estimator.transform(img)
+    assert isinstance(signal, pd.DataFrame)
+
+    estimator.set_output(transform="polars")
+    # if user wants to output to polars,
+    # sklearn will raise error if it's not installed
+    with pytest.raises(ImportError, match="requires polars to be installed"):
+        signal = estimator.transform(img)
+
+    # check on 1D image for estimators that accepts surface
+    if accept_surf_img_input(estimator_orig):
+        estimator = clone(estimator_orig)
+        estimator = fit_estimator(estimator)
+        estimator.set_output(transform="pandas")
+        signal = estimator.transform(img)
+        assert isinstance(signal, pd.DataFrame)
 
 
 @ignore_warnings()
@@ -2860,6 +2890,13 @@ def check_nifti_masker_fit_transform_5d(estimator):
         assert all(isinstance(x, np.ndarray) for x in signal)
         assert len(signal) == n_subject
         assert all(x.ndim == 2 for x in signal)
+
+        # TODO
+        # check type with set_output
+        # estimator.set_output(transform="pandas")
+        # signal = estimator.transform(input_5d_img)
+        # assert isinstance(signal, list)
+        # assert all(isinstance(x, pd.DataFrame) for x in signal)
 
 
 @ignore_warnings()

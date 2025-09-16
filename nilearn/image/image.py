@@ -33,7 +33,11 @@ from nilearn._utils.niimg_conversions import (
     iter_check_niimg,
 )
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn._utils.param_validation import check_params, check_threshold
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+    check_threshold,
+)
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.exceptions import DimensionError
 from nilearn.surface.surface import (
@@ -1479,8 +1483,7 @@ def clean_img(
         If detrending should be applied on timeseries
         (before confound removal).
 
-    standardize : :obj:`bool`, default=True
-        If True, returned signals are set to unit variance.
+    %(standardize_true)s
 
     confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of \
         Confounds timeseries. default=None
@@ -1543,6 +1546,7 @@ def clean_img(
         nilearn.signal.clean
 
     """
+    check_params(locals())
     # Avoid circular import
     from nilearn import masking
 
@@ -1879,8 +1883,7 @@ def copy_img(img):
     img_copy : image
         copy of input (data, affine and header)
     """
-    if not isinstance(img, spatialimages.SpatialImage):
-        raise TypeError("Input value is not an image")
+    check_is_of_allowed_type(img, (spatialimages.SpatialImage,), "img")
     return new_img_like(
         img, safe_get_data(img, copy_data=True), img.affine.copy()
     )

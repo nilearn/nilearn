@@ -90,7 +90,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 
