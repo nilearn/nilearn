@@ -617,8 +617,18 @@ Glass brains
 
 The background images for the glass brains are stored in
 ``nilearn/plotting/glass_brain_files``.
-Once the SCG files have been modified make sure
-to regenerate the associated JSON files.
+Once the SVG file have been modified (or added) make sure
+to regenerate the associated JSON file
+(this will require to make sure that the svg module
+from https://github.com/cjlano/svg
+is in the python path).
+
+.. code-block:: bash
+
+      python maint_tools/svg_to_json_converter.py \
+            nilearn/plotting/glass_brain_files/input.svg \
+            nilearn/plotting/glass_brain_files/output.json
+
 
 Documentation
 -------------
