@@ -16,15 +16,16 @@ from scipy.interpolate import CubicSpline
 from sklearn.utils import as_float_array, gen_even_slices
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.numpy_conversions import as_ndarray, csv_to_array
 from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
     check_parameter_in_allowed,
     check_params,
     check_run_sample_masks,
 )
+from nilearn.exceptions import AllVolumesRemovedError
 
 __all__ = [
     "butterworth",
@@ -569,7 +570,7 @@ def clean(
     high_pass=None,
     t_r=2.5,
     ensure_finite=False,
-    extrapolate=True,
+    extrapolate=False,
     **kwargs,
 ):
     """Improve :term:`SNR` on masked :term:`fMRI` signals.
@@ -693,10 +694,13 @@ def clean(
         If `True`, the non-finite values (NANs and infs) found in the data
         will be replaced by zeros.
 
-    extrapolate : :obj:`bool`, default=True
+    extrapolate : :obj:`bool`, default=False
         If `True` and filter='butterworth', censored volumes in both ends of
         the signal data will be interpolated before filtering. Otherwise, they
         will be discarded from the band-pass filtering process.
+
+        .. versionchanged:: 0.13.0dev
+            Default changed to False.
 
     kwargs : :obj:`dict`
         Keyword arguments to be passed to functions called within ``clean``.
@@ -899,20 +903,6 @@ def _censor_signals(signals, confounds, sample_mask):
 
 def _interpolate_volumes(volumes, sample_mask, t_r, extrapolate):
     """Interpolate censored volumes in signals/confounds."""
-    if extrapolate:
-        # TODO (nilearn 0.13.0)
-        extrapolate_default = (
-            "By default the cubic spline interpolator extrapolates "
-            "the out-of-bounds censored volumes in the data run. This "
-            "can lead to undesired filtered signal results. Starting in "
-            "version 0.13, the default strategy will be not to extrapolate "
-            "but to discard those volumes at filtering."
-        )
-        warnings.warn(
-            category=FutureWarning,
-            message=extrapolate_default,
-            stacklevel=find_stack_level(),
-        )
     frame_times = np.arange(volumes.shape[0]) * t_r
     remained_vol = frame_times[sample_mask]
     remained_x = volumes[sample_mask, :]
@@ -1074,10 +1064,9 @@ def sanitize_confounds(n_time, confounds):
     if confounds is None:
         return confounds
 
-    if not isinstance(confounds, (list, tuple, str, np.ndarray, pd.DataFrame)):
-        raise TypeError(
-            f"confounds keyword has an unhandled type: {confounds.__class__}"
-        )
+    check_is_of_allowed_type(
+        confounds, (list, tuple, str, np.ndarray, pd.DataFrame), "confounds"
+    )
 
     if not isinstance(confounds, (list, tuple)):
         confounds = (confounds,)

@@ -18,7 +18,6 @@ from scipy.stats import scoreatpercentile
 from nilearn import signal
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import (
     check_copy_header,
     stringify_path,
@@ -37,8 +36,13 @@ from nilearn._utils.niimg_conversions import (
     iter_check_niimg,
 )
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn._utils.param_validation import check_params, check_threshold
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+    check_threshold,
+)
 from nilearn._utils.path_finding import resolve_globbing
+from nilearn.exceptions import DimensionError
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -1916,8 +1920,7 @@ def copy_img(img):
     img_copy : image
         copy of input (data, affine and header)
     """
-    if not isinstance(img, spatialimages.SpatialImage):
-        raise TypeError("Input value is not an image")
+    check_is_of_allowed_type(img, (spatialimages.SpatialImage,), "img")
     return new_img_like(
         img,
         safe_get_data(img, copy_data=True),
