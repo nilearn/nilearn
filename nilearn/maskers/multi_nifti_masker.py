@@ -4,7 +4,6 @@ on multi subject MRI data.
 
 import collections.abc
 import inspect
-import itertools
 import warnings
 
 import numpy as np
@@ -22,7 +21,6 @@ from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     mask_logger,
-    prepare_confounds_multimaskers,
 )
 from nilearn.maskers.nifti_masker import (
     NiftiMasker,
@@ -440,15 +438,9 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             memory_level=self.memory_level,
         )
 
-        confounds = prepare_confounds_multimaskers(self, imgs_list, confounds)
+        confounds = self._prepare_confounds(imgs_list, confounds)
 
-        if sample_mask is None:
-            sample_mask = itertools.repeat(None, len(imgs_list))
-        elif len(sample_mask) != len(imgs_list):
-            raise ValueError(
-                f"number of sample_mask ({len(sample_mask)}) unequal to "
-                f"number of images ({len(imgs_list)})."
-            )
+        sample_mask = self._prepare_sample_mask(imgs_list, sample_mask)
 
         # Ignore the mask-computing params: they are not useful and will
         # just invalidate the cache for no good reason

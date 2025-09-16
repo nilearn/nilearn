@@ -30,6 +30,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         t_r=None,
         memory=None,
         memory_level=1,
+        n_jobs=1,
         verbose=0,
         reports=True,
         cmap=DEFAULT_SEQUENTIAL_CMAP,
@@ -68,6 +69,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
             cmap=cmap,
             clean_args=clean_args,
         )
+        self.n_jobs = n_jobs
 
     def _more_tags(self):
         """Return estimator tags.
