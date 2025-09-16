@@ -246,6 +246,7 @@ def test_max_alpha_squared_loss(l1_ratio):
         max_iter=10,
         penalty="graph-net",
         verbose=0,
+        standardize="zscore_sample",
     )
 
     reg.l1_ratios = l1_ratio
