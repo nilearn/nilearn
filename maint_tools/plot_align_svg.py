@@ -1,4 +1,13 @@
 #!/usr/bin/env python
+
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#   "nilearn[plotting]>=0.12",
+#    "PyQt6"
+# ]
+# ///
+
 """The goal of this script is to align the glass brain SVGs on top of the
 anatomy for a slice in each direction..
 
