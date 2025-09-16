@@ -1034,25 +1034,22 @@ smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
 
 # standardize
 standardize = """
-standardize : :obj:`bool`, default={}
-    If `standardize` is `True`, the data are centered and normed:
-    their mean is put to 0 and their variance is put to 1
-    in the time dimension.
-"""
-docdict["standardize"] = standardize.format("True")
-docdict["standardize_false"] = standardize.format("False")
-
-# standardize as used within maskers module
-docdict["standardize_maskers"] = """
-standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
+standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
     Strategy to standardize the signal:
 
-    - ``'zscore_sample'``: The signal is z-scored. Timeseries are shifted
-      to zero mean and scaled to unit variance. Uses sample std.
+    - ``'zscore_sample'``: The signal is z-scored.
+      Timeseries are shifted to zero mean and scaled to unit variance.
+      Uses sample std.
 
-    - ``'zscore'``: The signal is z-scored. Timeseries are shifted
-      to zero mean and scaled to unit variance. Uses population std
-      by calling default :obj:`numpy.std` with N - ``ddof=0``.
+    - ``'zscore'``: The signal is z-scored.
+      Timeseries are shifted to zero mean and scaled to unit variance.
+      Uses population std by calling default
+      :obj:`numpy.std` with N - ``ddof=0``.
+
+      .. deprecated:: 0.10.1
+
+        This option will be removed in Nilearn version 0.14.0.
+        Use ``zscore_sample`` instead.
 
     - ``'psc'``:  Timeseries are shifted to zero mean value and scaled
       to percent signal change (as compared to original mean signal).
@@ -1063,6 +1060,26 @@ standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
     - ``False``: Do not standardize the data.
 
 """
+# TODO (nilearn >= 0.14.0) update to ..versionchanged
+deprecation_notice = """
+
+    .. deprecated:: 0.10.1
+
+        The default will be changed to ``'zscore_sample'``
+        and ``'zscore'`` will be removed in
+        in version 0.14.0.
+
+"""
+
+docdict["standardize_false"] = standardize.format("False")
+# TODO (nilearn >= 0.14.0)
+# create a single  standardize_zscore_sample
+# with the updated deprecation notice
+docdict["standardize_true"] = standardize.format("True") + deprecation_notice
+docdict["standardize_zscore"] = (
+    standardize.format("zscore") + deprecation_notice
+)
+
 
 # standardize_confounds
 docdict["standardize_confounds"] = """
