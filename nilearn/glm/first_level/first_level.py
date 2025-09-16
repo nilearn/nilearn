@@ -878,7 +878,7 @@ class FirstLevelModel(BaseGLM):
                    :obj:`list` or :obj:`tuple` of Niimg-like objects, \
                    SurfaceImage object, \
                    or :obj:`list` or \
-                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`,
+                   :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`, \
                    default=None
             Data on which the :term:`GLM` will be fitted.
             If this is a list, the affine is considered the same for all.
@@ -892,14 +892,14 @@ class FirstLevelModel(BaseGLM):
                 For example, if ``mask_img`` is
                 a :class:`nilearn.maskers.NiftiMasker` instance
                 or a Niimng-like object, then ``run_imgs`` must be a
-                Niimg-like object, \
+                Niimg-like object,
                 a :obj:`list` or a :obj:`tuple` of Niimg-like objects.
                 If ``mask_img`` is
                 a :obj:`~nilearn.maskers.SurfaceMasker`
                 or :obj:`~nilearn.surface.SurfaceImage` instance,
                 then ``run_imgs`` must be a
-                :obj:`~nilearn.surface.SurfaceImage`, \
-                a :obj:`list` or \
+                :obj:`~nilearn.surface.SurfaceImage`,
+                a :obj:`list` or
                 a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`.
 
         events : :obj:`pandas.DataFrame` or :obj:`str` or \
