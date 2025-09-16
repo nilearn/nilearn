@@ -1107,7 +1107,7 @@ def check_mesh_is_fsaverage(mesh):
     check_is_of_allowed_type(mesh, (str, Mapping), "mesh")
     if isinstance(mesh, str):
         # avoid circular imports
-        from nilearn.datasets.struct import fetch_surf_fsaverage
+        from nilearn.datasets import fetch_surf_fsaverage
 
         return fetch_surf_fsaverage(mesh)
 
