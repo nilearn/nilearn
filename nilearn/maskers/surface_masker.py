@@ -221,14 +221,14 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             self._check_imgs(imgs)
 
             if isinstance(imgs, SurfaceImage) and any(
-                x.ndim > 2 for x in imgs.data.parts.values()
+                hemi.ndim > 2 for hemi in imgs.data.parts.values()
             ):
                 raise ValueError(
                     "should only be SurfaceImage should 1D or 2D."
                 )
             elif hasattr(imgs, "__iter__"):
                 for i, x in enumerate(imgs):
-                    x.data._check_ndims(1, var_name=f"imgs[{i}]")
+                    x.data._check_n_samples(1, f"imgs[{i}]")
 
         return self._fit(imgs)
 
@@ -301,12 +301,12 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         check_polymesh_equal(self.mask_img_.mesh, imgs.mesh)
 
         if isinstance(imgs, SurfaceImage) and any(
-            x.ndim > 2 for x in imgs.data.parts.values()
+            hemi.ndim > 2 for hemi in imgs.data.parts.values()
         ):
             raise ValueError("should only be SurfaceImage should 1D or 2D.")
         elif hasattr(imgs, "__iter__"):
             for i, x in enumerate(imgs):
-                x.data._check_ndims(1, var_name=f"imgs[{i}]")
+                x.data._check_n_samples(1, f"imgs[{i}]")
 
         if self.reports:
             self._reporting_data["images"] = imgs

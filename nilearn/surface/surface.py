@@ -1423,7 +1423,21 @@ class PolyData:
         vmax = max(x.max() for x in self.parts.values())
         return vmin, vmax
 
-    def _check_ndims(self, dim, var_name="img"):
+    def _check_n_samples(self, samples: int, var_name="img"):
+        max_n_samples = []
+        for hemi in self.parts.values():
+            if hemi.ndim > 1:
+                max_n_samples.append(hemi.shape[1])
+            else:
+                max_n_samples.append(1)
+        max_n_samples = np.max(max_n_samples)
+        if max_n_samples > samples:
+            raise ValueError(
+                f"Data for each part of {var_name} should be {samples}D. "
+                f"Found: {max_n_samples}."
+            )
+
+    def _check_ndims(self, dim: int, var_name="img"):
         """Check if the data is of a given dimension.
 
         Raise error if not.
