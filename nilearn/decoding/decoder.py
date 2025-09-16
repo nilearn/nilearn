@@ -595,7 +595,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     %(smoothing_fwhm)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(target_affine)s
 
@@ -1285,7 +1285,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(target_affine)s
 
@@ -1465,7 +1465,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(target_affine)s
 
@@ -1660,7 +1660,9 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
     %(smoothing_fwhm)s
-    %(standardize)s
+
+    %(standardize_true)s
+
     %(target_affine)s
     %(target_shape)s
     %(mask_strategy)s
@@ -1857,7 +1859,9 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'; default='roc_auc'
     %(smoothing_fwhm)s
-    %(standardize)s
+
+    %(standardize_true)s
+
     %(target_affine)s
     %(target_shape)s
 

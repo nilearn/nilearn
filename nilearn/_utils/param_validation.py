@@ -1,10 +1,9 @@
 """Utilities to check for valid parameters."""
 
 import numbers
-import sys
 import warnings
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Literal, get_args, get_origin
 
 import numpy as np
 
@@ -123,10 +122,9 @@ def check_threshold(
 
 def check_run_sample_masks(n_runs, sample_masks):
     """Check that number of sample_mask matches number of runs."""
-    if not isinstance(sample_masks, (list, tuple, np.ndarray)):
-        raise TypeError(
-            f"sample_mask has an unhandled type: {sample_masks.__class__}"
-        )
+    check_is_of_allowed_type(
+        sample_masks, (list, tuple, np.ndarray), "sample_masks"
+    )
 
     if isinstance(sample_masks, np.ndarray):
         sample_masks = (sample_masks,)
@@ -193,6 +191,7 @@ TYPE_MAPS = {
     "resume": nilearn_typing.Resume,
     "screening_percentile": nilearn_typing.ScreeningPercentile,
     "smoothing_fwhm": nilearn_typing.SmoothingFwhm,
+    "standardize": nilearn_typing.Standardize,
     "standardize_confounds": nilearn_typing.StandardizeConfounds,
     "t_r": nilearn_typing.Tr,
     "tfce": nilearn_typing.Tfce,
@@ -262,15 +261,26 @@ def check_params(fn_dict):
         type_to_check = TYPE_MAPS[k]
         value = fn_dict[k]
 
-        # TODO (python 3.10) update when dropping python 3.9
-        error_msg = (
-            f"'{k}' should be of type '{type_to_check}'.\nGot: '{type(value)}'"
-        )
-        if sys.version_info[1] > 9:
-            if not isinstance(value, type_to_check):
-                raise TypeError(error_msg)
-        elif value is not None and not isinstance(value, type_to_check):
-            raise TypeError(error_msg)
+        if get_origin(type_to_check) is Literal:
+            allowed_values = get_args(type_to_check)
+            check_parameter_in_allowed(value, allowed_values, k)
+
+        else:
+            check_is_of_allowed_type(value, type_to_check, k)
+
+
+def check_is_of_allowed_type(
+    value: Any, type_to_check: tuple[Any] | Any, parameter_name: str
+):
+    if not isinstance(type_to_check, tuple):
+        type_to_check = (type_to_check,)
+    type_to_check_str = ", ".join([str(x) for x in type_to_check])
+    error_msg = (
+        f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
+        f"Got: '{value.__class__.__name__}'"
+    )
+    if not isinstance(value, type_to_check):
+        raise TypeError(error_msg)
 
 
 def check_reduction_strategy(strategy: str):

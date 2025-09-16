@@ -26,8 +26,8 @@ from nilearn._utils.data_gen import (
     generate_labeled_regions,
     generate_maps,
 )
-from nilearn._utils.exceptions import DimensionError
 from nilearn.conftest import _affine_eye, _img_3d_rand, _rng, _shape_4d_default
+from nilearn.exceptions import DimensionError
 from nilearn.image import (
     binarize_img,
     clean_img,
@@ -525,7 +525,6 @@ def test_mean_img_resample(rng):
         mean_img_to_resample,
         target_affine=target_affine,
         copy_header=True,
-        force_resample=True,
     )
 
     assert_array_equal(
@@ -1531,13 +1530,16 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     )
 
     assert_almost_equal(get_data(data_img_).T.reshape(100, -1), data_flat_)
+
     # if NANs
     data[:, 9, 9] = np.nan
     # if infinity
     data[:, 5, 5] = np.inf
     nan_img = Nifti1Image(data, affine_eye)
 
-    clean_im = clean_img(nan_img, ensure_finite=True)
+    clean_im = clean_img(
+        nan_img, ensure_finite=True, standardize="zscore_sample"
+    )
 
     assert np.any(np.isfinite(get_data(clean_im)))
 
@@ -1551,10 +1553,12 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     # if mask_img
     img, mask_img = generate_fake_fmri(shape=shape_3d_default, length=10)
 
-    data_img_mask_ = clean_img(img, mask_img=mask_img)
+    data_img_mask_ = clean_img(
+        img, mask_img=mask_img, standardize="zscore_sample"
+    )
 
     # Checks that output with full mask and without is equal
-    data_img_ = clean_img(img)
+    data_img_ = clean_img(img, standardize="zscore_sample")
 
     assert_almost_equal(get_data(data_img_), get_data(data_img_mask_))
 
@@ -1731,6 +1735,7 @@ def test_clean_img_sample_mask(img_4d_rand_eye, shape_4d_default):
         img_4d_rand_eye,
         confounds=confounds,
         clean__sample_mask=sample_mask,
+        standardize="zscore_sample",
     )
     assert img.shape == (*shape_4d_default[:3], length - 1)
 
@@ -1752,6 +1757,7 @@ def test_clean_img_sample_mask_mask_img(shape_3d_default):
         confounds=confounds,
         mask_img=mask_img,
         clean__sample_mask=sample_mask,
+        standardize="zscore_sample",
     )
     assert img.shape == (*shape_3d_default, length - 1)
 
@@ -1867,7 +1873,7 @@ def test_iterator_generator(img_3d_rand_eye):
 
 
 def test_copy_img():
-    with pytest.raises(TypeError, match="Input value is not an image"):
+    with pytest.raises(TypeError, match="must be of type"):
         copy_img(3)
 
 

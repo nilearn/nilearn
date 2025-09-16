@@ -79,7 +79,7 @@ def report_flm_adhd_dmn(build_type):
         [pcc_coords],
         radius=10,
         detrend=True,
-        standardize=True,
+        standardize="zscore_sample",
         low_pass=0.1,
         high_pass=0.01,
         t_r=t_r,
@@ -290,7 +290,6 @@ def report_slm_oasis(build_type):
         oasis_dataset.gray_matter_maps[0],
         interpolation="nearest",
         copy_header=True,
-        force_resample=True,
     )
 
     design_matrix = _make_design_matrix_slm_oasis(oasis_dataset, n_subjects)
@@ -520,7 +519,7 @@ def report_multi_nifti_labels_masker(build_type):
         )
         return None
 
-    yeo = fetch_atlas_yeo_2011(thickness="thick", n_networks=17)
+    yeo = fetch_atlas_yeo_2011(n_networks=17)
 
     data = fetch_development_fmri(n_subjects=2)
 
@@ -601,7 +600,7 @@ def report_sphere_masker(build_type):
         pcc_coords,
         radius=10,
         detrend=True,
-        standardize=True,
+        standardize="zscore_sample",
         low_pass=0.1,
         high_pass=0.01,
         t_r=t_r,

@@ -8,7 +8,10 @@ import numpy as np
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_parameter_in_allowed,
+)
 from nilearn.plotting._utils import DEFAULT_ENGINE
 from nilearn.surface import (
     PolyMesh,
@@ -238,9 +241,7 @@ def _get_hemi(surf_mesh, hemi):
           :obj:`numpy.ndarray`.
         - If ``hemi='both'``, returns :obj:`~nilearn.surface.InMemoryMesh`
     """
-    if not isinstance(surf_mesh, PolyMesh):
-        raise TypeError("mesh should be of type PolyMesh.")
-
+    check_is_of_allowed_type(surf_mesh, (PolyMesh,), "surf_mesh")
     check_parameter_in_allowed(hemi, ["both", "left", "right"], "hemi")
 
     if hemi == "both":

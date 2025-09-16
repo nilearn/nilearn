@@ -310,18 +310,6 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
 
 """
 
-# darkness
-docdict["darkness"] = """
-darkness : :obj:`float` between 0 and 1, optional
-    Specifying the darkness of the background image:
-
-    - `1` indicates that the original values of the background are used
-
-    - `0.5` indicates that the background values
-        are reduced by half before being applied.
-
-"""
-
 # data_dir
 docdict["debias"] = """
 debias : :obj:`bool`, default=False
@@ -577,7 +565,7 @@ imgs : :obj:`list` of Niimg-like objects
 
 # keep_masked_labels
 docdict["keep_masked_labels"] = """
-keep_masked_labels : :obj:`bool`, default=True
+keep_masked_labels : :obj:`bool`, default=False
     When a mask is supplied through the "mask_img" parameter, some
     atlas regions may lie entirely outside of the brain mask, resulting
     in empty time series for those regions.
@@ -588,9 +576,9 @@ keep_masked_labels : :obj:`bool`, default=True
 
     .. deprecated:: 0.10.2
 
-        The 'True' option for ``keep_masked_labels`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_labels`` parameter will be removed in 0.15.
+    .. versionchanged:: 0.13.0dev
+
+        The ``keep_masked_labels`` parameter will be removed in 0.15.
 
 """
 
@@ -605,9 +593,9 @@ keep_masked_maps : :obj:`bool`, optional
 
     .. deprecated:: 0.10.2
 
-        The 'True' option for ``keep_masked_maps`` is deprecated.
-        The default value will change to 'False' in 0.13,
-        and the ``keep_masked_maps`` parameter will be removed in 0.15.
+    .. versionchanged:: 0.13.0dev
+
+        The ``keep_masked_maps`` parameter will be removed in 0.15.
 
 """
 
@@ -702,33 +690,6 @@ mask_type : {"whole-brain", "gm", "wm"}, default="whole-brain"
     - ``"wm"``: Computes the white-matter mask.
 
 """
-
-# kwargs for Maskers
-docdict["masker_kwargs"] = """
-kwargs : dict
-    Keyword arguments to be passed to functions called within the masker.
-    Kwargs prefixed with `'clean__'` will be passed to
-    :func:`~nilearn.signal.clean`.
-    Within :func:`~nilearn.signal.clean`, kwargs prefixed with
-    `'butterworth__'` will be passed to the Butterworth filter
-    (i.e., `clean__butterworth__`).
-
-    .. deprecated:: 0.12.0
-
-    .. admonition:: Use ``clean_args`` instead!
-       :class: important
-
-       It is recommended to pass parameters to use for data cleaning
-       via :obj:`dict` to the ``clean_args`` parameter.
-
-       Passing parameters via "kwargs" is mutually exclusive
-       with passing cleaning parameters via ``clean_args``.
-"""
-
-docdict["masker_kwargs_"] = docdict["masker_kwargs"].replace(
-    "kwargs : dict",
-    "clean_kwargs_ : dict",
-)
 
 verbose = """
 max_iter : :obj:`int`, default={}
@@ -1079,25 +1040,22 @@ smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
 
 # standardize
 standardize = """
-standardize : :obj:`bool`, default={}
-    If `standardize` is `True`, the data are centered and normed:
-    their mean is put to 0 and their variance is put to 1
-    in the time dimension.
-"""
-docdict["standardize"] = standardize.format("True")
-docdict["standardize_false"] = standardize.format("False")
-
-# standardize as used within maskers module
-docdict["standardize_maskers"] = """
-standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
+standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
     Strategy to standardize the signal:
 
-    - ``'zscore_sample'``: The signal is z-scored. Timeseries are shifted
-      to zero mean and scaled to unit variance. Uses sample std.
+    - ``'zscore_sample'``: The signal is z-scored.
+      Timeseries are shifted to zero mean and scaled to unit variance.
+      Uses sample std.
 
-    - ``'zscore'``: The signal is z-scored. Timeseries are shifted
-      to zero mean and scaled to unit variance. Uses population std
-      by calling default :obj:`numpy.std` with N - ``ddof=0``.
+    - ``'zscore'``: The signal is z-scored.
+      Timeseries are shifted to zero mean and scaled to unit variance.
+      Uses population std by calling default
+      :obj:`numpy.std` with N - ``ddof=0``.
+
+      .. deprecated:: 0.10.1
+
+        This option will be removed in Nilearn version 0.14.0.
+        Use ``zscore_sample`` instead.
 
     - ``'psc'``:  Timeseries are shifted to zero mean value and scaled
       to percent signal change (as compared to original mean signal).
@@ -1108,6 +1066,26 @@ standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
     - ``False``: Do not standardize the data.
 
 """
+# TODO (nilearn >= 0.14.0) update to ..versionchanged
+deprecation_notice = """
+
+    .. deprecated:: 0.10.1
+
+        The default will be changed to ``'zscore_sample'``
+        and ``'zscore'`` will be removed in
+        in version 0.14.0.
+
+"""
+
+docdict["standardize_false"] = standardize.format("False")
+# TODO (nilearn >= 0.14.0)
+# create a single  standardize_zscore_sample
+# with the updated deprecation notice
+docdict["standardize_true"] = standardize.format("True") + deprecation_notice
+docdict["standardize_zscore"] = (
+    standardize.format("zscore") + deprecation_notice
+)
+
 
 # standardize_confounds
 docdict["standardize_confounds"] = """
@@ -1648,15 +1626,36 @@ docdict["lut"] = """lut : :obj:`pandas.DataFrame`
         Formatted according to 'dseg.tsv' format from
         `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
 
-# signals returned Nifti maskers by transform, fit_transform...
-docdict["signals_transform_nifti"] = """signals : :obj:`numpy.ndarray`
-        Signal for each :term:`voxel`.
+
+signals_transform = """signals : :obj:`numpy.ndarray`, \
+            :obj:`pandas.DataFrame` or \
+            `polars.DataFrame`
+
+        Signal for each element.
+
+        .. versionchanged:: 0.13.0dev
+
+            Added ``set_output`` support.
+
+        The type of the output is determined by ``set_output()``:
+        see `the scikit-learn documentation <https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html>`_.
+
         Output shape for :
 
-        - 3D images: (number of elements,) array
-        - 4D images: (number of scans, number of elements) array
+        - For Numpy outputs:
+
+          - {}D images: (number of elements,)
+          - {}D images: (number of scans, number of elements) array
+
+        - For DataFrame outputs:
+
+          - {}D or {}D images: (number of scans, number of elements) array
         """
-# signals returned Mulit Nifti maskers by transform, fit_transform...
+# signals returned Nifti/Surface maskers by transform, fit_transform...
+docdict["signals_transform_nifti"] = signals_transform.format(3, 4, 3, 4)
+docdict["signals_transform_surface"] = signals_transform.format(1, 2, 1, 2)
+
+# signals returned Multi Nifti maskers by transform, fit_transform...
 docdict[
     "signals_transform_multi_nifti"
 ] = """signals : :obj:`list` of :obj:`numpy.ndarray` or :obj:`numpy.ndarray`
@@ -1669,7 +1668,7 @@ docdict[
         - list of 4D images: list of (number of scans, number of elements)
           array
         """
-# signals returned Mulit Nifti maskers by transform, fit_transform...
+# signals returned Multi Nifti maskers by transform_imgs
 docdict[
     "signals_transform_imgs_multi_nifti"
 ] = """signals : :obj:`list` of :obj:`numpy.ndarray`
@@ -1680,14 +1679,7 @@ docdict[
         - list of 4D images: list of (number of scans, number of elements)
           array
         """
-# signals returned surface maskers by transform, fit_transform...
-docdict["signals_transform_surface"] = """signals : :obj:`numpy.ndarray`
-        Signal for each element.
-        Output shape for :
 
-        - 1D images: (number of elements,) array
-        - 2D images: (number of scans, number of elements) array
-        """
 
 # template
 docdict["template"] = """'template' : :obj:`str`
