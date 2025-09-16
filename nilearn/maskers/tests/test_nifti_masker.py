@@ -34,7 +34,9 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         check_estimator(estimators=ESTIMATORS_TO_CHECK),
     )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+    def test_check_estimator_sklearn_valid(
+        estimator, check, name
+    ):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
         check(estimator)
 
@@ -43,7 +45,9 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
     )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+    def test_check_estimator_sklearn_invalid(
+        estimator, check, name
+    ):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
         check(estimator)
 
@@ -348,11 +352,12 @@ def test_compute_brain_mask_empty_mask_error(strategy):
 
 @pytest.mark.timeout(0)
 @pytest.mark.parametrize(
-    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+    "strategy",
+    [f"{p}-template" for p in ["whole-brain", "gm", "wm"]],
 )
 # We parametrize mask_args to make it accessible
 # to the expected_mask fixture.
-@pytest.mark.parametrize("mask_args", [{"threshold": 0.0}])
+@pytest.mark.parametrize("mask_args", [{"threshold": -0.5}])
 def test_compute_brain_mask(strategy, expected_mask, mask_args):
     """Check masker for template masking strategy."""
     masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)

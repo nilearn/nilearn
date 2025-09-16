@@ -25,7 +25,9 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         check_estimator(estimators=ESTIMATORS_TO_CHECK),
     )
-    def test_check_estimator_sklearn_valid(estimator, check, name):  # noqa: ARG001
+    def test_check_estimator_sklearn_valid(
+        estimator, check, name
+    ):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
         check(estimator)
 
@@ -34,7 +36,9 @@ if SKLEARN_LT_1_6:
         "estimator, check, name",
         check_estimator(estimators=ESTIMATORS_TO_CHECK, valid=False),
     )
-    def test_check_estimator_sklearn_invalid(estimator, check, name):  # noqa: ARG001
+    def test_check_estimator_sklearn_invalid(
+        estimator, check, name
+    ):  # noqa: ARG001
         """Check compliance with sklearn estimators."""
         check(estimator)
 
@@ -180,25 +184,20 @@ def test_mask_strategy_errors(list_random_imgs):
 
 
 @pytest.mark.parametrize(
-    "strategy",
-    [f"{p}-template" for p in ["whole-brain", "gm", "wm"]],
+    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
 )
-def test_compute_mask_strategy(strategy, list_random_imgs):
-    """Smoke test for different strategies to compute masks.
-
-    Also check that the order of the images does not change the output.
-    """
-    masker = MultiNiftiMasker(mask_strategy=strategy, mask_args={"opening": 1})
+def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
+    """Check different strategies to compute masks."""
+    masker = MultiNiftiMasker(mask_strategy=strategy)
     masker.fit(list_random_imgs)
 
-    masker2 = MultiNiftiMasker(
-        mask_strategy=strategy, mask_args={"opening": 1}
-    )
+    # Check that the order of the images does not change the output
+    masker2 = MultiNiftiMasker(mask_strategy=strategy)
     masker2.fit(list_random_imgs[::-1])
+    mask_ref = np.zeros(shape_3d_default, dtype="int8")
 
-    np.testing.assert_array_equal(
-        get_data(masker.mask_img_), get_data(masker2.mask_img_)
-    )
+    np.testing.assert_array_equal(get_data(masker.mask_img_), mask_ref)
+    np.testing.assert_array_equal(get_data(masker2.mask_img_), mask_ref)
 
 
 @pytest.mark.parametrize(
