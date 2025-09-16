@@ -96,7 +96,7 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
     """
     with pytest.raises(
         TypeError,
-        match=(r"`PlotlySurfaceFigure` accepts only plotly Figure objects."),
+        match=(r"'PlotlySurfaceFigure' accepts only plotly Figure objects."),
     ):
         PlotlySurfaceFigure(input_obj)
 
