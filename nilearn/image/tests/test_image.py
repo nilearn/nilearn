@@ -26,8 +26,8 @@ from nilearn._utils.data_gen import (
     generate_labeled_regions,
     generate_maps,
 )
-from nilearn._utils.exceptions import DimensionError
 from nilearn.conftest import _affine_eye, _img_3d_rand, _rng, _shape_4d_default
+from nilearn.exceptions import DimensionError
 from nilearn.image import (
     binarize_img,
     clean_img,
@@ -1873,7 +1873,7 @@ def test_iterator_generator(img_3d_rand_eye):
 
 
 def test_copy_img():
-    with pytest.raises(TypeError, match="Input value is not an image"):
+    with pytest.raises(TypeError, match="must be of type"):
         copy_img(3)
 
 

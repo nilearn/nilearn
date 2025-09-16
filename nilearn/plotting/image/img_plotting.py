@@ -48,9 +48,9 @@ from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
     get_colorbar_and_data_ranges,
-    save_figure_if_needed,
 )
 from nilearn.plotting.displays import get_projector, get_slicer
+from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.image.utils import (
     MNI152TEMPLATE,
     get_cropped_cbar_ticks,

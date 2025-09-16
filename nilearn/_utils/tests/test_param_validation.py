@@ -194,7 +194,7 @@ def test_check_params():
 
     f_with_param_to_check(data_dir="foo")
 
-    with pytest.raises(TypeError, match="'data_dir' should be of type"):
+    with pytest.raises(TypeError, match="'data_dir' must be of type"):
         f_with_param_to_check(data_dir=1)
 
 

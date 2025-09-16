@@ -18,7 +18,10 @@ from sklearn.exceptions import EfficiencyWarning
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_parameter_in_allowed,
+)
 from nilearn._utils.path_finding import resolve_globbing
 
 
@@ -635,23 +638,12 @@ def vol_to_surf(
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node. Ignored if `inner_mesh` is provided.
 
-    interpolation : {'linear', 'nearest', 'nearest_most_frequent'}, \
+    interpolation : {'linear', 'nearest_most_frequent'}, \
                     default='linear'
         How the image intensity is measured at a sample point.
 
         - 'linear':
             Use a trilinear interpolation of neighboring voxels.
-        - 'nearest':
-            Use the intensity of the nearest voxel.
-
-            .. versionchanged:: 0.12.0
-
-                The 'nearest' interpolation method will be removed in
-                version 0.13.0. It is recommended to use 'linear' for
-                statistical maps and
-                :term:`probabilistic atlases<Probabilistic atlas>` and
-                'nearest_most_frequent' for
-                :term:`deterministic atlases<Deterministic atlas>`.
 
         - 'nearest_most_frequent':
             Use the most frequent value in the neighborhood (out of the
@@ -804,30 +796,17 @@ def vol_to_surf(
 
     """
     # avoid circular import
-    from nilearn.image import get_data as get_vol_data
-    from nilearn.image import load_img
+    from nilearn.image.image import get_data as get_vol_data
+    from nilearn.image.image import load_img
     from nilearn.image.resampling import resample_to_img
 
     sampling_schemes = {
         "linear": _interpolation_sampling,
-        "nearest": _nearest_voxel_sampling,
         "nearest_most_frequent": _nearest_most_frequent,
     }
     check_parameter_in_allowed(
         interpolation, tuple(sampling_schemes.keys()), "interpolation"
     )
-
-    # TODO (nilearn 0.13.0) deprecate nearest interpolation
-    if interpolation == "nearest":
-        warnings.warn(
-            "The 'nearest' interpolation method will be deprecated in 0.13.0. "
-            "To disable this warning, select either 'linear' or "
-            "'nearest_most_frequent'. If your image is a deterministic atlas "
-            "'nearest_most_frequent' is recommended. Otherwise, use 'linear'. "
-            "See the documentation for more information.",
-            FutureWarning,
-            stacklevel=find_stack_level(),
-        )
 
     img = load_img(img)
 
@@ -946,7 +925,7 @@ def load_surf_data(surf_data):
 
     """
     # avoid circular import
-    from nilearn.image import get_data as get_vol_data
+    from nilearn.image.image import get_data as get_vol_data
 
     # if the input is a filename, load it
     surf_data = stringify_path(surf_data)
@@ -1125,16 +1104,13 @@ def check_mesh_is_fsaverage(mesh):
     with sufficient entries. Basically ensures that the mesh data is
     Freesurfer-like fsaverage data.
     """
+    check_is_of_allowed_type(mesh, (str, Mapping), "mesh")
     if isinstance(mesh, str):
         # avoid circular imports
         from nilearn.datasets import fetch_surf_fsaverage
 
         return fetch_surf_fsaverage(mesh)
-    if not isinstance(mesh, Mapping):
-        raise TypeError(
-            "The mesh should be a str or a dictionary, "
-            f"you provided: {mesh.__class__.__name__}."
-        )
+
     missing = {
         "pial_left",
         "pial_right",
@@ -2071,8 +2047,7 @@ def extract_data(img, index):
     a dict where each value contains the data extracted
     for each part
     """
-    if not isinstance(img, SurfaceImage):
-        raise TypeError("Input must a be SurfaceImage.")
+    check_is_of_allowed_type(img, (SurfaceImage,), "img")
     mesh = img.mesh
     data = img.data
 

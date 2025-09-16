@@ -9,9 +9,8 @@ from numpy import array_equal
 from numpy.testing import assert_almost_equal, assert_array_equal, assert_equal
 from pandas import read_csv
 
-from nilearn._utils.exceptions import AllVolumesRemovedError
 from nilearn.conftest import _rng
-from nilearn.glm.first_level.design_matrix import create_cosine_drift
+from nilearn.exceptions import AllVolumesRemovedError
 from nilearn.signal import (
     _censor_signals,
     _create_cosine_drift_terms,
@@ -20,6 +19,7 @@ from nilearn.signal import (
     _mean_of_squares,
     butterworth,
     clean,
+    create_cosine_drift,
     high_variance_confounds,
     row_sum_of_squares,
     standardize_signal,
@@ -722,11 +722,9 @@ def confounds():
     return generate_signals(n_features=41, n_confounds=5, length=45)[2]
 
 
-def test_clean_confounds_errros(signals):
+def test_clean_confounds_errors(signals):
     """Test error handling."""
-    with pytest.raises(
-        TypeError, match="confounds keyword has an unhandled type"
-    ):
+    with pytest.raises(TypeError, match="must be of type"):
         clean(signals, confounds=1)
 
     with pytest.raises(TypeError, match="confound has an unhandled type"):
@@ -1415,46 +1413,6 @@ def test_clean_zscore(rng):
         assert_array_equal(cleaned_signals_, cleaned_signals)
 
 
-def test_create_cosine_drift_terms():
-    """Testing cosine filter interface and output."""
-    # fmriprep high pass cutoff is 128s, it's around 0.008 hz
-    t_r, high_pass = 2.5, 0.008
-    signals, _, confounds = generate_signals(
-        n_features=41, n_confounds=5, length=45
-    )
-
-    # Not passing confounds it will return drift terms only
-    frame_times = np.arange(signals.shape[0]) * t_r
-    cosine_drift = create_cosine_drift(high_pass, frame_times)[:, :-1]
-    confounds_with_drift = np.hstack((confounds, cosine_drift))
-
-    cosine_confounds = _create_cosine_drift_terms(
-        signals, confounds, high_pass, t_r
-    )
-    assert_almost_equal(cosine_confounds, np.hstack((confounds, cosine_drift)))
-
-    # Not passing confounds it will return drift terms only
-    drift_terms_only = _create_cosine_drift_terms(
-        signals, None, high_pass, t_r
-    )
-    assert_almost_equal(drift_terms_only, cosine_drift)
-
-    # drift terms in confounds will create warning and no change to confounds
-    with pytest.warns(UserWarning, match="user supplied confounds"):
-        cosine_confounds = _create_cosine_drift_terms(
-            signals, confounds_with_drift, high_pass, t_r
-        )
-    assert_array_equal(cosine_confounds, confounds_with_drift)
-
-    # raise warning if cosine drift term is not created
-    high_pass_fail = 0.002
-    with pytest.warns(UserWarning, match="Cosine filter was not created"):
-        cosine_confounds = _create_cosine_drift_terms(
-            signals, confounds, high_pass_fail, t_r
-        )
-    assert_array_equal(cosine_confounds, confounds)
-
-
 def test_clean_sample_mask():
     """Test sample_mask related feature."""
     signals, _, confounds = generate_signals(
@@ -1558,7 +1516,7 @@ def test_clean_sample_mask_error():
         clean(signals, sample_mask=sample_mask, runs=runs)
 
     # invalid input for sample_mask
-    with pytest.raises(TypeError, match="unhandled type"):
+    with pytest.raises(TypeError, match="must be of type"):
         clean(signals, sample_mask="not_supported")
 
     # sample_mask too long
@@ -1630,24 +1588,13 @@ def test_handle_scrubbed_volumes_with_extrapolation():
     scrub_index = np.concatenate((np.arange(5), [10, 20, 30]))
     sample_mask = np.delete(sample_mask, scrub_index)
 
-    # Test cubic spline interpolation (enabled extrapolation) in the
-    # very first n=5 samples of generated signal
-    # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
-    extrapolate_warning = (
-        "By default the cubic spline interpolator extrapolates "
-        "the out-of-bounds censored volumes in the data run. This "
-        "can lead to undesired filtered signal results. Starting in "
-        "version 0.13, the default strategy will be not to extrapolate "
-        "but to discard those volumes at filtering."
+    (
+        extrapolated_signals,
+        extrapolated_confounds,
+        extrapolated_sample_mask,
+    ) = _handle_scrubbed_volumes(
+        signals, confounds, sample_mask, "butterworth", 2.5, True
     )
-    with pytest.warns(FutureWarning, match=extrapolate_warning):
-        (
-            extrapolated_signals,
-            extrapolated_confounds,
-            extrapolated_sample_mask,
-        ) = _handle_scrubbed_volumes(
-            signals, confounds, sample_mask, "butterworth", 2.5, True
-        )
     assert_equal(signals.shape[0], extrapolated_signals.shape[0])
     assert_equal(confounds.shape[0], extrapolated_confounds.shape[0])
     assert_equal(sample_mask, extrapolated_sample_mask)
@@ -1718,3 +1665,59 @@ def test_handle_scrubbed_volumes_exception():
         _handle_scrubbed_volumes(
             signals, confounds, sample_mask, "butterworth", 2.5, True
         )
+
+
+def test_create_cosine_drift_terms():
+    """Testing cosine filter interface and output."""
+    # fmriprep high pass cutoff is 128s, it's around 0.008 hz
+    t_r, high_pass = 2.5, 0.008
+    signals, _, confounds = generate_signals(
+        n_features=41, n_confounds=5, length=45
+    )
+
+    # Not passing confounds it will return drift terms only
+    frame_times = np.arange(signals.shape[0]) * t_r
+    cosine_drift = create_cosine_drift(high_pass, frame_times)[:, :-1]
+    confounds_with_drift = np.hstack((confounds, cosine_drift))
+
+    cosine_confounds = _create_cosine_drift_terms(
+        signals, confounds, high_pass, t_r
+    )
+    assert_almost_equal(cosine_confounds, np.hstack((confounds, cosine_drift)))
+
+    # Not passing confounds it will return drift terms only
+    drift_terms_only = _create_cosine_drift_terms(
+        signals, None, high_pass, t_r
+    )
+    assert_almost_equal(drift_terms_only, cosine_drift)
+
+    # drift terms in confounds will create warning and no change to confounds
+    with pytest.warns(UserWarning, match="user supplied confounds"):
+        cosine_confounds = _create_cosine_drift_terms(
+            signals, confounds_with_drift, high_pass, t_r
+        )
+    assert_array_equal(cosine_confounds, confounds_with_drift)
+
+    # raise warning if cosine drift term is not created
+    high_pass_fail = 0.002
+    with pytest.warns(UserWarning, match="Cosine filter was not created"):
+        cosine_confounds = _create_cosine_drift_terms(
+            signals, confounds, high_pass_fail, t_r
+        )
+    assert_array_equal(cosine_confounds, confounds)
+
+
+# load the spm file to test cosine basis
+my_path = Path(__file__).parents[1] / "glm" / "tests"
+full_path_design_matrix_file = my_path / "spm_dmtx.npz"
+DESIGN_MATRIX = np.load(full_path_design_matrix_file)
+
+
+def test_cosine_drift():
+    """Check cosine drift created buy nilearn."""
+    spm_drifts = DESIGN_MATRIX["cosbf_dt_1_nt_20_hcut_0p1"]
+    frame_times = np.arange(20)
+    high_pass_frequency = 0.1
+    nilearn_drifts = create_cosine_drift(high_pass_frequency, frame_times)
+    assert_almost_equal(spm_drifts[:, 1:], nilearn_drifts[:, :-2])
+    # nilearn_drifts is placing the constant at the end [:, : - 1]

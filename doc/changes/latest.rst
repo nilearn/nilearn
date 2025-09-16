@@ -27,7 +27,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-success:`API` Add a NotImplementedWarning (:gh:`5508` by `Rémi Gau`_).
+- :bdg-success:`API` Add a :class:`~exceptions.NotImplementedWarning` and make :class:`~exceptions.DimensionError`, :class:`~exceptions.AllVolumesRemovedError` and :class:`~exceptions.MeshDimensionError` part of the public API (:gh:`5508`, :gh:`5570` by `Rémi Gau`_).
 
 Changes
 -------
@@ -40,6 +40,8 @@ Changes
 
 - :bdg-danger:`Deprecation` The parameter ``tr`` was replaced by ``t_r`` in :func:`~glm.first_level.glover_dispersion_derivative`, :func:`~glm.first_level.glover_hrf`, :func:`~glm.first_level.glover_time_derivative`, :func:`~glm.first_level.spm_dispersion_derivative`, :func:`~glm.first_level.spm_hrf` and :func:`~glm.first_level.spm_time_derivative`  (:gh:`5623` by `Rémi Gau`_).
 
+- :bdg-danger:`Deprecation` The parameter ``ax`` was replaced by ``axes`` in :func:`~plotting.plot_contrast_matrix` and :func:`~plotting.plot_design_matrix` (:gh:`5661` by `Rémi Gau`_).
+
 - :bdg-danger:`Deprecation` Systematically use ``imgs`` instead of ``X`` or ``img`` in the methods ``fit()``, ``transform()`` and ``fit_transform()`` for the Nilearn maskers and their derivative classes (:gh:`5624` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The attribute ``nifti_maps_masker_`` was removed from :class:`~decomposition.CanICA` and :class:`~decomposition.DictLearning`. Use ``maps_masker_`` instead. (:gh:`5626` by `Rémi Gau`_).
@@ -51,6 +53,8 @@ Changes
 - :bdg-danger:`Deprecation` The default for the parameter ``homogeneity`` of :func:`~datasets.fetch_atlas_craddock_2012` was changed from ``None`` to ``'spatial'``. The only allowed values for this parameter must now be one of ``'spatial'``, ``'temporal'`` or ``'random'``. The fetcher now only returns a single map under the key ``maps`` for the requested ``homogeneity`` and ``grp_mean`` (:gh:`5640` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The default for the parameter ``dimension`` of :func:`~datasets.fetch_atlas_smith_2009` was changed from ``None`` to ``10``. The only allowed values for this parameter must now be one of ``10``, ``20`` or ``70``. The fetcher now only returns a single map under the key ``maps`` for the requested ``dimension`` and ``resting`` (:gh:`5640` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The default for the parameter ``extrapolate`` of :func:`~signal.clean` was changed from ``True`` to ``False`` (:gh:`5675` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The default for the parameters ``n_networks`` and ``thickness`` of :func:`~datasets.fetch_atlas_yeo_2011` were changed from ``None`` to ``7`` and ``"thick"``. The only allowed values for ``n_networks`` must now be one of ``7``, ``17``. The only allowed values for ``thickness`` must now be one of ``thin``, ``thick``. The fetcher now only returns a single map under the key ``maps`` for the requested ``n_networks`` and ``thickness`` (:gh:`5640` by `Rémi Gau`_).
 
@@ -67,3 +71,7 @@ Changes
 - :bdg-danger:`Deprecation` The parameter ``output_type`` of :func:`~mass_univariate.permuted_ols` was changed from ``legacy`` to ``dict``. The parameter ``output_type`` will be removed in Nilearn >= 0.15.0 (:gh:`5631` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter ``contrast_type`` of  :func:`~glm.compute_contrast` and :class:`~glm.Contrast` has been replaced by ``stat_type`` (:gh:`5630` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The value ``'nearest'`` for the parameter ``interpolation`` of :func:`~surface.vol_to_surf` is no longer allowed. Use ``'nearest_most_frequent'`` instead (:gh:`5662` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` :func:`~interfaces.bids.parse_bids_filename` will now always return a dictionary with the keys ``'file_path'``, ``'file_basename'``, ``'extension'``, ``'suffix'`` and ``'entities'`` (:gh:`5663` by `Rémi Gau`_).

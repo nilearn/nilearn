@@ -167,7 +167,7 @@ def _generate_confounds_file_candidates(nii_file):
     filenames : list of str
         List of potential confounds filenames.
     """
-    parsed_file = parse_bids_filename(nii_file, legacy=False)
+    parsed_file = parse_bids_filename(nii_file)
     entities = parsed_file["entities"]
     entities["desc"] = "confounds"
 

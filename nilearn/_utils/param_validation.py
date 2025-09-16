@@ -122,10 +122,9 @@ def check_threshold(
 
 def check_run_sample_masks(n_runs, sample_masks):
     """Check that number of sample_mask matches number of runs."""
-    if not isinstance(sample_masks, (list, tuple, np.ndarray)):
-        raise TypeError(
-            f"sample_mask has an unhandled type: {sample_masks.__class__}"
-        )
+    check_is_of_allowed_type(
+        sample_masks, (list, tuple, np.ndarray), "sample_masks"
+    )
 
     if isinstance(sample_masks, np.ndarray):
         sample_masks = (sample_masks,)
@@ -263,22 +262,25 @@ def check_params(fn_dict):
         value = fn_dict[k]
 
         if get_origin(type_to_check) is Literal:
-            allowed_values = normalize_type(type_to_check)
+            allowed_values = get_args(type_to_check)
             check_parameter_in_allowed(value, allowed_values, k)
 
         else:
-            error_msg = (
-                f"'{k}' should be of type '{type_to_check}'.\n"
-                f"Got: '{type(value)}'"
-            )
-            if not isinstance(value, type_to_check):
-                raise TypeError(error_msg)
+            check_is_of_allowed_type(value, type_to_check, k)
 
 
-def normalize_type(tp):
-    if get_origin(tp) is Literal:
-        return get_args(tp)  # tuple of literal values
-    return tp
+def check_is_of_allowed_type(
+    value: Any, type_to_check: tuple[Any] | Any, parameter_name: str
+):
+    if not isinstance(type_to_check, tuple):
+        type_to_check = (type_to_check,)
+    type_to_check_str = ", ".join([str(x) for x in type_to_check])
+    error_msg = (
+        f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
+        f"Got: '{value.__class__.__name__}'"
+    )
+    if not isinstance(value, type_to_check):
+        raise TypeError(error_msg)
 
 
 def check_reduction_strategy(strategy: str):
