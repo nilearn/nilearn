@@ -16,7 +16,8 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
 from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn.image.image import copy_img, crop_img
+from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn.image.image import copy_img, crop_img, new_img_like
 
 ###############################################################################
 # Affine utils
@@ -333,22 +334,6 @@ def _resample_one_img(
     return out
 
 
-def _check_force_resample(force_resample):
-    # TODO (nilearn 0.13.0)
-    if force_resample is None:
-        force_resample = False
-        warnings.warn(
-            (
-                "'force_resample' will be set to 'True'"
-                " by default in Nilearn 0.13.0.\n"
-                "Use 'force_resample=True' to suppress this warning."
-            ),
-            FutureWarning,
-            stacklevel=find_stack_level(),
-        )
-    return force_resample
-
-
 @fill_doc
 def resample_img(
     img,
@@ -359,7 +344,7 @@ def resample_img(
     order="F",
     clip=True,
     fill_value=0,
-    force_resample=None,
+    force_resample=True,
     copy_header=False,
 ):
     """Resample a Niimg-like object.
@@ -399,11 +384,14 @@ def resample_img(
     fill_value : :obj:`float`, default=0
         Use a fill value for points outside of input volume.
 
-    force_resample : :obj:`bool`, default=None
+    force_resample : :obj:`bool`, default=True
         False is intended for testing,
         this prevents the use of a padding optimization.
-        Will be set to ``False`` if ``None`` is passed.
-        The default value will be set to ``True`` for Nilearn >=0.13.0.
+        Will be set to ``True`` if ``None`` is passed.
+
+        .. versionchanged:: 0.13.0dev
+
+            Default changed to True.
 
     copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
@@ -463,9 +451,8 @@ def resample_img(
     homogeneous.
 
     """
-    from .image import new_img_like  # avoid circular imports
-
-    force_resample = _check_force_resample(force_resample)
+    if force_resample is None:
+        force_resample = True
     # TODO (nilearn >= 0.13.0) remove this warning
     check_copy_header(copy_header)
 
@@ -697,11 +684,9 @@ def _check_resample_img_inputs(target_shape, target_affine, interpolation):
         )
 
     allowed_interpolations = ("continuous", "linear", "nearest")
-    if interpolation not in allowed_interpolations:
-        raise ValueError(
-            f"interpolation must be one of {allowed_interpolations}.\n"
-            f" Got '{interpolation}' instead."
-        )
+    check_parameter_in_allowed(
+        interpolation, allowed_interpolations, "interpolation"
+    )
 
 
 def _get_resampled_data_dtype(data, interpolation, A):
@@ -812,8 +797,6 @@ def resample_to_img(
     nilearn.image.resample_img
 
     """
-    force_resample = _check_force_resample(force_resample)
-
     target = check_niimg(target_img)
     target_shape = target.shape
 
@@ -882,12 +865,10 @@ def reorder_img(img, resample=None, copy_header=False):
         # Identify the voxel size using a QR decomposition of the affine
         Q, R = np.linalg.qr(affine[:3, :3])
         target_affine = np.diag(np.abs(np.diag(R))[np.abs(Q).argmax(axis=1)])
-        # TODO (nilearn >= 0.13.0) force_resample=True
         return resample_img(
             img,
             target_affine=target_affine,
             interpolation=resample,
-            force_resample=False,
             copy_header=True,
         )
 

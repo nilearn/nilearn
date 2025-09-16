@@ -10,12 +10,12 @@ import pandas as pd
 import pytest
 from numpy.testing import assert_array_equal
 
-from nilearn._utils.exceptions import MeshDimensionError
 from nilearn._utils.helpers import (
     is_kaleido_installed,
     is_plotly_installed,
 )
 from nilearn.datasets import fetch_surf_fsaverage
+from nilearn.exceptions import MeshDimensionError
 from nilearn.plotting import (
     plot_img_on_surf,
     plot_surf,
@@ -98,7 +98,7 @@ def test_check_surface_plotting_inputs_errors():
 
 def test_plot_surf_engine_error(in_memory_mesh):
     """Test error if unknown engine is specified."""
-    with pytest.raises(ValueError, match="Unknown plotting engine"):
+    with pytest.raises(ValueError, match="'engine' must be one of"):
         plot_surf(in_memory_mesh, engine="foo")
 
 
@@ -612,7 +612,6 @@ def test_plot_surf_stat_map_with_background(
         stat_map=bg_map,
         bg_map=bg_map,
         bg_on_data=True,
-        darkness=0.5,
         engine=engine,
     )
 
@@ -1022,7 +1021,6 @@ def test_plot_surf_roi_default_arguments(
         roi_map=surface_image_roi,
         engine=engine,
         symmetric_cmap=symmetric_cmap,
-        darkness=None,  # to avoid deprecation warning
         cmap="RdYlBu_r",
         avg_method=avg_method,
     )

@@ -34,7 +34,11 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
+
 from nilearn.conftest import _shape_4d_default
+
+from nilearn.exceptions import NotImplementedWarning
+
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
     FirstLevelModel,
@@ -190,7 +194,7 @@ def test_explicit_fixed_effects(shape_3d_default):
     variance = [dic1["effect_variance"], dic2["effect_variance"]]
 
     (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _) = (
-        compute_fixed_effects(contrasts, variance, mask, return_z_score=True)
+        compute_fixed_effects(contrasts, variance, mask)
     )
 
     assert_almost_equal(
@@ -212,17 +216,13 @@ def test_explicit_fixed_effects(shape_3d_default):
             "from the number of variance images"
         ),
     ):
-        compute_fixed_effects(
-            contrasts * 2, variance, mask, return_z_score=True
-        )
+        compute_fixed_effects(contrasts * 2, variance, mask)
 
     # ensure that not providing the right number of dofs
     with pytest.raises(
         ValueError, match="degrees of freedom .* differs .* contrast images"
     ):
-        compute_fixed_effects(
-            contrasts, variance, mask, dofs=[100], return_z_score=True
-        )
+        compute_fixed_effects(contrasts, variance, mask, dofs=[100])
 
 
 @pytest.mark.timeout(0)
@@ -254,12 +254,9 @@ def test_explicit_fixed_effects_without_mask(shape_3d_default):
     variance = [dic1["effect_variance"], dic2["effect_variance"]]
 
     # test without mask variable
-    (
-        fixed_fx_contrast,
-        fixed_fx_variance,
-        fixed_fx_stat,
-        _,
-    ) = compute_fixed_effects(contrasts, variance, return_z_score=True)
+    (fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _) = (
+        compute_fixed_effects(contrasts, variance)
+    )
     assert_almost_equal(
         get_data(fixed_fx_contrast), get_data(fixed_fx_dic["effect_size"])
     )
@@ -1032,7 +1029,7 @@ def test_first_level_from_bids_set_repetition_time_warnings(tmp_path):
 @pytest.mark.parametrize(
     "t_r, error_type, error_msg",
     [
-        ("not a number", TypeError, "must be a float"),
+        ("not a number", TypeError, "must be of type"),
         (-1, ValueError, "positive"),
     ],
 )
@@ -1083,7 +1080,7 @@ def test_first_level_from_bids_set_slice_timing_ref_warnings(tmp_path):
 @pytest.mark.parametrize(
     "slice_time_ref, error_type, error_msg",
     [
-        ("not a number", TypeError, "must be a float"),
+        ("not a number", TypeError, "must be of type"),
         (2, ValueError, "between 0 and 1"),
     ],
 )
@@ -1283,7 +1280,7 @@ def test_first_level_contrast_computation_errors(shape_4d_default):
     with pytest.raises(ValueError, match=match):
         model.compute_contrast([])
 
-    match = "output_type must be one of "
+    match = "'output_type' must be one of "
     with pytest.raises(ValueError, match=match):
         model.compute_contrast(c1, "", "")
     with pytest.raises(ValueError, match=match):
@@ -1340,7 +1337,7 @@ def test_first_level_with_no_signal_scaling(affine_eye):
     fmri_data = [Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, affine_eye)]
 
     # Check error with invalid signal_scaling values
-    with pytest.raises(ValueError, match="signal_scaling must be"):
+    with pytest.raises(ValueError, match="'signal_scaling' must be one of"):
         flm = FirstLevelModel(
             mask_img=False, noise_model="ols", signal_scaling="foo"
         )
@@ -1412,7 +1409,7 @@ def test_first_level_residuals_errors(shape_4d_default):
     model.fit(fmri_data, design_matrices=design_matrices)
 
     # For coverage
-    with pytest.raises(ValueError, match="attribute must be one of"):
+    with pytest.raises(ValueError, match="must be one of"):
         model._get_element_wise_model_attribute("foo", True)
 
 
@@ -1792,7 +1789,7 @@ def test_first_level_from_bids_no_duplicate_sub_labels(bids_dataset):
 
 def test_first_level_from_bids_validation_input_dataset_path():
     """Raise error when dataset_path is invalid."""
-    with pytest.raises(TypeError, match="must be a string or pathlike"):
+    with pytest.raises(TypeError, match="must be of type"):
         first_level_from_bids(
             dataset_path=2,
             task_label="main",
@@ -1806,7 +1803,7 @@ def test_first_level_from_bids_validation_input_dataset_path():
             space_label="MNI",
             slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
-    with pytest.raises(TypeError, match="derivatives_.* must be a string"):
+    with pytest.raises(TypeError, match="derivatives_.* must be of type"):
         first_level_from_bids(
             dataset_path=Path(),
             task_label="main",
@@ -1833,7 +1830,7 @@ def test_first_level_from_bids_validation_task_label(
 @pytest.mark.parametrize(
     "sub_labels, error_type, error_msg",
     [
-        ("42", TypeError, "must be a list"),
+        ("42", TypeError, "must be of type"),
         (["1", 1], TypeError, "must be string"),
         ([1], TypeError, "must be string"),
     ],
@@ -1871,10 +1868,10 @@ def test_first_level_from_bids_validation_space_label(
 @pytest.mark.parametrize(
     "img_filters, error_type,match",
     [
-        ("foo", TypeError, "'img_filters' must be a list"),
+        ("foo", TypeError, "'img_filters' must be of type"),
         ([(1, 2)], TypeError, "Filters in img"),
         ([("desc", "*/-")], ValueError, "bids labels must be alphanumeric."),
-        ([("foo", "bar")], ValueError, "is not a possible filter."),
+        ([("foo", "bar")], ValueError, "must be one of"),
     ],
 )
 def test_first_level_from_bids_validation_img_filter(
@@ -2335,7 +2332,7 @@ def test_warn_flm_smooth_surface_image(surface_glm_data):
     mini_img, des = surface_glm_data(5)
     model = FirstLevelModel(mask_img=False, smoothing_fwhm=5)
     with pytest.warns(
-        UserWarning,
+        NotImplementedWarning,
         match="Parameter smoothing_fwhm is not yet supported for surface data",
     ):
         model.fit(mini_img, design_matrices=des)
@@ -2545,10 +2542,7 @@ def test_fixed_effect_contrast_surface(surface_glm_data):
     surf_mask_ = masker.mask_img_
     for mask in [SurfaceMasker(mask_img=masker.mask_img_), surf_mask_, None]:
         outputs = compute_fixed_effects(
-            [effect, effect],
-            [variance, variance],
-            mask=mask,
-            return_z_score=True,
+            [effect, effect], [variance, variance], mask=mask
         )
         assert len(outputs) == 4
         for output in outputs:

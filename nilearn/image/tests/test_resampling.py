@@ -19,8 +19,8 @@ from numpy.testing import (
 )
 
 from nilearn._utils import testing
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.niimg import is_binary_niimg
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.image.image import crop_img
 from nilearn.image.resampling import (
@@ -61,20 +61,6 @@ def shape():
 @pytest.fixture
 def data(rng, shape):
     return rng.random(shape)
-
-
-def test_resample_deprecation_force_resample(data, shape, affine_eye):
-    """Test change of value of force_resample."""
-    # TODO (nilearn 0.13.0)
-    affine_eye[:3, -1] = 0.5 * np.array(shape[:3])
-
-    with pytest.warns(FutureWarning, match="force_resample"):
-        resample_img(
-            Nifti1Image(data, affine_eye),
-            target_affine=affine_eye,
-            interpolation="nearest",
-            force_resample=None,
-        )
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
@@ -368,7 +354,7 @@ def test_resampling_error_checks(tmp_path, force_resample, data, affine_eye):
         )
 
     # Invalid interpolation
-    with pytest.raises(ValueError, match="interpolation must be one of"):
+    with pytest.raises(ValueError, match="'interpolation' must be one of"):
         resample_img(
             img,
             target_shape=target_shape,
@@ -1038,7 +1024,7 @@ def test_reorder_img_error_interpolation(affine_eye, rng):
     affine[1, 0] = 0.1
     ref_img = Nifti1Image(data, affine)
 
-    with pytest.raises(ValueError, match="interpolation must be one of"):
+    with pytest.raises(ValueError, match="'interpolation' must be one of"):
         reorder_img(
             ref_img, resample="an_invalid_interpolation", copy_header=True
         )

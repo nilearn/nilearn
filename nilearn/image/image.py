@@ -18,7 +18,6 @@ from scipy.stats import scoreatpercentile
 from nilearn import signal
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import (
     check_copy_header,
     stringify_path,
@@ -37,8 +36,13 @@ from nilearn._utils.niimg_conversions import (
     iter_check_niimg,
 )
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn._utils.param_validation import check_params, check_threshold
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+    check_threshold,
+)
 from nilearn._utils.path_finding import resolve_globbing
+from nilearn.exceptions import DimensionError
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -468,14 +472,12 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
         mean_data = mean_data.mean(axis=-1)
     else:
         mean_data = mean_data.copy()
-    # TODO (nilearn >= 0.13.0) force_resample=True
     mean_data = resampling.resample_img(
         Nifti1Image(mean_data, affine),
         target_affine=target_affine,
         target_shape=target_shape,
         copy=False,
         copy_header=True,
-        force_resample=False,
     )
     affine = mean_data.affine
     mean_data = get_data(mean_data)
@@ -1070,7 +1072,7 @@ def threshold_img(
     if not isinstance(img, (*NiimgLike, SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(img)=}."
+            f"Got {img.__class__.__name__}."
         )
 
     if mask_img is not None:
@@ -1106,14 +1108,12 @@ def threshold_img(
         if isinstance(mask_img, NiimgLike):
             mask_img = check_niimg_3d(mask_img)
             if not check_same_fov(img, mask_img):
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 mask_img = resample_img(
                     mask_img,
                     target_affine=affine,
                     target_shape=img.shape[:3],
                     interpolation="nearest",
                     copy_header=True,
-                    force_resample=False,
                 )
             mask_data, _ = load_mask_img(mask_img)
 
@@ -1577,7 +1577,7 @@ def clean_img(
 
     """
     # Avoid circular import
-    from .. import masking
+    from nilearn import masking
 
     # Check if t_r is set, otherwise propose t_r from imgs header
     if (low_pass is not None or high_pass is not None) and t_r is None:
@@ -1920,8 +1920,7 @@ def copy_img(img):
     img_copy : image
         copy of input (data, affine and header)
     """
-    if not isinstance(img, spatialimages.SpatialImage):
-        raise ValueError("Input value is not an image")
+    check_is_of_allowed_type(img, (spatialimages.SpatialImage,), "img")
     return new_img_like(
         img,
         safe_get_data(img, copy_data=True),
@@ -1942,7 +1941,7 @@ def get_indices_from_image(image) -> np.ndarray:
     else:
         raise TypeError(
             "Image to extract indices from must be one of: "
-            "Niimg-Like, SurfaceIamge, numpy array. "
-            f"Got {type(image)}"
+            "Niimg-Like, SurfaceImage, numpy array. "
+            f"Got {image.__class__.__name__}"
         )
     return np.unique(data)

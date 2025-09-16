@@ -197,7 +197,6 @@ output = permuted_ols(
     n_perm=2000,  # 1,000 in the interest of time; 10000 would be better
     verbose=1,  # display progress bar
     n_jobs=2,
-    output_type="dict",
 )
 neg_log_pvals = output["logp_max_t"]
 t_scores_original_data = output["t"]

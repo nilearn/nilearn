@@ -27,6 +27,7 @@ from nilearn._utils.estimator_checks import (
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _shape_3d_default
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.glm.second_level.second_level import (
@@ -34,7 +35,6 @@ from nilearn.glm.second_level.second_level import (
     _check_first_level_contrast,
     _check_input_as_first_level_model,
     _check_n_rows_desmat_vs_n_effect_maps,
-    _check_output_type,
     _check_second_level_input,
     _infer_effect_maps,
     _process_second_level_input_as_dataframe,
@@ -413,16 +413,10 @@ def test_check_second_level_input_design_matrix(shape_4d_default):
         _check_second_level_input(fmri_data[0], None)
 
 
-def test_check_output_type():
-    _check_output_type(int, [str, int, float])
-    with pytest.raises(ValueError, match="output_type must be one of"):
-        _check_output_type("foo", [str, int, float])
-
-
 def test_check_confounds():
     _check_confounds(None)  # Should not do anything
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         _check_confounds("foo")
     with pytest.raises(
@@ -776,15 +770,15 @@ def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
     # test first_level_conditions, confounds, and design
     flms = [flm, flm, flm]
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         SecondLevelModel().fit(second_level_input=flms, confounds=["", []])
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         SecondLevelModel().fit(second_level_input=flms, confounds=[])
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         SecondLevelModel().fit(
             second_level_input=flms, confounds=confounds["conf1"]
@@ -1214,15 +1208,15 @@ def test_second_level_contrast_computation_errors(rng):
         model.compute_contrast(cnull)
 
     # passing wrong parameters
-    with pytest.raises(ValueError, match="Allowed types are .*'t', 'F'"):
+    with pytest.raises(ValueError, match="'stat_type' must be one of"):
         model.compute_contrast(
             second_level_contrast=c1, second_level_stat_type=""
         )
-    with pytest.raises(ValueError, match="Allowed types are .*'t', 'F'"):
+    with pytest.raises(ValueError, match="'stat_type' must be one of"):
         model.compute_contrast(
             second_level_contrast=c1, second_level_stat_type=[]
         )
-    with pytest.raises(ValueError, match="output_type must be one of "):
+    with pytest.raises(ValueError, match="'output_type' must be one of "):
         model.compute_contrast(second_level_contrast=c1, output_type="")
 
     # check that passing no explicit contrast when the design
@@ -1525,7 +1519,7 @@ def test_second_level_input_as_surface_image_warning_smoothing(surf_img_1d):
     )
 
     model = SecondLevelModel(smoothing_fwhm=8.0)
-    with pytest.warns(UserWarning, match="not yet supported"):
+    with pytest.warns(NotImplementedWarning, match="not yet supported"):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
@@ -1646,7 +1640,7 @@ def test_non_parametric_inference_with_surface_images_warnings(surf_img_1d):
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
     with pytest.warns(
-        UserWarning,
+        NotImplementedWarning,
         match="'smoothing_fwhm' is not yet supported for surface data.",
     ):
         non_parametric_inference(
@@ -1656,7 +1650,7 @@ def test_non_parametric_inference_with_surface_images_warnings(surf_img_1d):
             smoothing_fwhm=6,
         )
     with pytest.warns(
-        UserWarning,
+        NotImplementedWarning,
         match="Cluster level inference not yet implemented for surface data.",
     ):
         non_parametric_inference(
@@ -1666,7 +1660,7 @@ def test_non_parametric_inference_with_surface_images_warnings(surf_img_1d):
             tfce=True,
         )
     with pytest.warns(
-        UserWarning,
+        NotImplementedWarning,
         match="Cluster level inference not yet implemented for surface data.",
     ):
         non_parametric_inference(
