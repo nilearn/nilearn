@@ -1006,7 +1006,7 @@ def test_cluster_level_parameters_error_no_masker(cluster_level_design):
     # but masker is not defined.
     with pytest.raises(
         ValueError,
-        match=r'If "threshold" is not None, masker must be defined as well.',
+        match=r"If 'threshold' is not None, masker must be defined as well.",
     ):
         permuted_ols(
             tested_var,
