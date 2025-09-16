@@ -406,9 +406,7 @@ class FirstLevelModel(BaseGLM):
 
     %(memory_level)s
 
-    standardize : :obj:`bool`, default=False
-        If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
+    %(standardize_false)s
 
     signal_scaling : False, :obj:`int` or (int, int), default=0
         If not False, fMRI signals are

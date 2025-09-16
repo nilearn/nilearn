@@ -29,7 +29,10 @@ def test_multi_pca(
        and that fit output is deterministic.
     """
     multi_pca = _MultiPCA(
-        mask=decomposition_mask_img, n_components=3, random_state=RANDOM_STATE
+        mask=decomposition_mask_img,
+        n_components=3,
+        random_state=RANDOM_STATE,
+        standardize="zscore_sample",
     )
     multi_pca.fit(decomposition_images)
 
@@ -38,7 +41,10 @@ def test_multi_pca(
     components1 = multi_pca.components_
 
     multi_pca = _MultiPCA(
-        mask=decomposition_mask_img, n_components=3, random_state=RANDOM_STATE
+        mask=decomposition_mask_img,
+        n_components=3,
+        random_state=RANDOM_STATE,
+        standardize="zscore_sample",
     )
     multi_pca.fit(length * decomposition_images)
     components2 = multi_pca.components_
@@ -62,6 +68,7 @@ def test_multi_pca_with_masker_without_cca_smoke(
         mask=decomposition_masker,
         do_cca=False,
         n_components=3,
+        standardize="zscore_sample",
     )
     multi_pca.fit(decomposition_images[:2])
 
@@ -87,6 +94,7 @@ def test_multi_pca_score_single_subject_n_components(
         random_state=RANDOM_STATE,
         memory_level=0,
         n_components=5,
+        standardize="zscore_sample",
     )
     multi_pca.fit(decomposition_img)
     s = multi_pca.score(decomposition_img)
@@ -99,6 +107,7 @@ def test_multi_pca_score_single_subject_n_components(
         random_state=RANDOM_STATE,
         memory_level=0,
         n_components=5,
+        standardize="zscore_sample",
     )
     multi_pca.fit(decomposition_img)
 
