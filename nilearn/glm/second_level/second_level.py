@@ -447,7 +447,6 @@ def _process_second_level_input_as_firstlevelmodels(second_level_input):
 
 def _process_second_level_input_as_surface_image(second_level_input):
     """Compute mean image across sample maps.
-    _get_element_wise_model_attribute
     All should have the same underlying meshes.
 
     Returns
@@ -653,27 +652,32 @@ class SecondLevelModel(BaseGLM):
             )[0]
         self.design_matrix_ = design_matrix
 
-        masker_type = "nii"
-        if not self._is_volume_glm() or isinstance(sample_map, SurfaceImage):
-            masker_type = "surface"
+        self.masker_ = None
+        self.n_elements_ = 0
+        if not self.design_only:
+            masker_type = "nii"
+            if not self._is_volume_glm() or isinstance(
+                sample_map, SurfaceImage
+            ):
+                masker_type = "surface"
 
-        if masker_type == "surface" and self.smoothing_fwhm is not None:
-            warn(
-                "Parameter 'smoothing_fwhm' is not "
-                "yet supported for surface data.",
-                NotImplementedWarning,
-                stacklevel=find_stack_level(),
-            )
-            self.smoothing_fwhm = None
+            if masker_type == "surface" and self.smoothing_fwhm is not None:
+                warn(
+                    "Parameter 'smoothing_fwhm' is not "
+                    "yet supported for surface data.",
+                    NotImplementedWarning,
+                    stacklevel=find_stack_level(),
+                )
+                self.smoothing_fwhm = None
 
-        check_compatibility_mask_and_images(self.mask_img, sample_map)
-        self.masker_ = check_embedded_masker(self, masker_type)
-        self.masker_.memory_level = self.memory_level
+            check_compatibility_mask_and_images(self.mask_img, sample_map)
+            self.masker_ = check_embedded_masker(self, masker_type)
+            self.masker_.memory_level = self.memory_level
 
-        if sample_map is not None:
-            self.masker_.fit(sample_map)
+            if sample_map is not None:
+                self.masker_.fit(sample_map)
 
-        self.n_elements_ = self.masker_.n_elements_
+            self.n_elements_ = self.masker_.n_elements_
 
         # Report progress
         logger.log(

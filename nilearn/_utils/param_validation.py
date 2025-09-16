@@ -172,6 +172,7 @@ TYPE_MAPS = {
     "colorbar": nilearn_typing.ColorBar,
     "connected": nilearn_typing.Connected,
     "data_dir": nilearn_typing.DataDir,
+    "design_only": nilearn_typing.DesignOnly,
     "draw_cross": nilearn_typing.DrawCross,
     "detrend": nilearn_typing.Detrend,
     "high_pass": nilearn_typing.HighPass,

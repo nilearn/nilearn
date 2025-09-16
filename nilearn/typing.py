@@ -37,6 +37,7 @@ Connected: TypeAlias = bool
 DType: TypeAlias = DTypeLike | None
 DataDir: TypeAlias = str | pathlib.Path | None
 Detrend: TypeAlias = bool
+DesignOnly: TypeAlias = bool
 DrawCross: TypeAlias = bool
 
 # Note that for HrfModel

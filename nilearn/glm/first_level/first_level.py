@@ -1040,7 +1040,7 @@ class FirstLevelModel(BaseGLM):
                 self._reporting_data["run_imgs"][run_idx] = {}
                 if isinstance(run_img, (str, Path)):
                     self._reporting_data["run_imgs"][run_idx] = (
-                        parse_bids_filename(run_img, legacy=False)
+                        parse_bids_filename(run_img)
                     )
 
                 self._fit_single_run(sample_masks, bins, run_img, run_idx)
@@ -1114,7 +1114,8 @@ class FirstLevelModel(BaseGLM):
         if n_contrasts == 1 and self._n_runs_ > 1:
             warn(
                 (
-                    f"The same contrast will be used for all {n_runs} runs. "
+                    "The same contrast will be used "
+                    f"for all {self._n_runs_} runs. "
                     "If the design matrices are not the same for all runs, "
                     "(for example with different column names "
                     "or column order across runs) "
