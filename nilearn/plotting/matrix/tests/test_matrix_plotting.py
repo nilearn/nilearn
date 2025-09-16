@@ -39,7 +39,7 @@ def labels():
 def test_sanitize_figure_and_axes_error(fig, axes):
     with pytest.raises(
         ValueError,
-        match=("Parameters figure and axes cannot be specified together."),
+        match=(r"Parameters figure and axes cannot be specified together."),
     ):
         _sanitize_figure_and_axes(fig, axes)
 
@@ -316,11 +316,11 @@ def test_plot_design_matrix_correlation_smoke_path(tmp_path):
 def test_plot_design_matrix_correlation_errors(mat):
     """Test plot_design_matrix_correlation errors."""
     with pytest.raises(
-        ValueError, match="Tables to load can only be TSV or CSV."
+        ValueError, match=r"Tables to load can only be TSV or CSV."
     ):
         plot_design_matrix_correlation("foo")
 
-    with pytest.raises(ValueError, match="dataframe cannot be empty."):
+    with pytest.raises(ValueError, match=r"dataframe cannot be empty."):
         plot_design_matrix_correlation(pd.DataFrame())
 
     with pytest.raises(ValueError, match="'cmap' must be one of"):

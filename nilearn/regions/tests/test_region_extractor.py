@@ -257,7 +257,7 @@ def test_threshold_as_none_and_string_cases(dummy_map, threshold):
     to_check = RegionExtractor(dummy_map, threshold=threshold)
 
     with pytest.raises(
-        ValueError, match="The given input to threshold is not valid."
+        ValueError, match=r"The given input to threshold is not valid."
     ):
         to_check.fit()
 
@@ -388,11 +388,11 @@ def test_region_extractor_zeros_affine_diagonal(affine_eye, n_regions):
 
 def test_error_messages_connected_label_regions(img_labels):
     with pytest.raises(
-        ValueError, match="Expected 'min_size' to be specified as integer."
+        ValueError, match=r"Expected 'min_size' to be specified as integer."
     ):
         connected_label_regions(labels_img=img_labels, min_size="a")
     with pytest.raises(
-        ValueError, match="'connect_diag' must be specified as True or False."
+        ValueError, match=r"'connect_diag' must be specified as True or False."
     ):
         connected_label_regions(labels_img=img_labels, connect_diag=None)
 

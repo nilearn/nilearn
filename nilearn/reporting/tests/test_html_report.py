@@ -251,7 +251,7 @@ def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
     seeds = [(1, 1, 1)]
     masker = NiftiSpheresMasker(seeds=seeds)
     masker.fit()
-    with pytest.raises(ValueError, match="masker only has 1 seeds."):
+    with pytest.raises(ValueError, match=r"masker only has 1 seeds."):
         masker.generate_report(displayed_spheres=displayed_spheres)
 
 

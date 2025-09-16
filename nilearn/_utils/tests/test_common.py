@@ -10,9 +10,8 @@ def test_all_modules_error(func):
     with pytest.raises(
         ValueError,
         match=(
-            "`modules_to_ignore` and "
-            "`modules_to_consider` cannot "
-            "be both specified."
+            r"`modules_to_ignore` and `modules_to_consider` cannot "
+            r"be both specified."
         ),
     ):
         func(modules_to_ignore=["foo"], modules_to_consider=["bar"])

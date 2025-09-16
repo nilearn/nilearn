@@ -166,7 +166,7 @@ def test_plot_surf_swap_hemi(plt, engine, surf_img_1d, hemi, flip_surf_img):
     """Check error is raised if background image is incompatible."""
     with pytest.raises(
         MeshDimensionError,
-        match="Number of vertices do not match for between meshes.",
+        match=r"Number of vertices do not match for between meshes.",
     ):
         plot_surf(
             surf_map=surf_img_1d,
@@ -551,12 +551,12 @@ def test_plot_surf_contours_error(
     # we need an invalid parcellation for testing
     invalid_parcellation = rng.uniform(size=(in_memory_mesh.n_vertices))
     with pytest.raises(
-        ValueError, match="Vertices in parcellation do not form region."
+        ValueError, match=r"Vertices in parcellation do not form region."
     ):
         plot_surf_contours(in_memory_mesh, invalid_parcellation)
 
     _, axes = matplotlib_pyplot.subplots(1, 1)
-    with pytest.raises(ValueError, match="Axes must be 3D."):
+    with pytest.raises(ValueError, match=r"Axes must be 3D."):
         plot_surf_contours(in_memory_mesh, parcellation, axes=axes)
 
     msg = "All elements of colors .* matplotlib .* RGBA"

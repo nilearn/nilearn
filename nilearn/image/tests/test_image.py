@@ -639,7 +639,7 @@ def test_index_img_error_4d(affine_eye):
     ]:
         with pytest.raises(
             IndexError,
-            match="out of bounds|invalid index|out of range|boolean index",
+            match=r"out of bounds|invalid index|out of range|boolean index",
         ):
             index_img(img_4d, i)
 
@@ -924,19 +924,19 @@ def test_input_in_threshold_img_errors(
     # invalid input: img is an int
     with pytest.raises(
         TypeError,
-        match="'img' should be a 3D/4D Niimg-like object or a SurfaceImage.",
+        match=r"'img' should be a 3D/4D Niimg-like object or a SurfaceImage.",
     ):
         threshold_img(img=1, threshold=1)
 
     # incompatible inputs raise errors
     with pytest.raises(
         TypeError,
-        match="Mask and input images must be of compatible types.",
+        match=r"Mask and input images must be of compatible types.",
     ):
         threshold_img(vol_img, threshold=1, mask_img=surf_mask_1d)
     with pytest.raises(
         TypeError,
-        match="Mask and input images must be of compatible types.",
+        match=r"Mask and input images must be of compatible types.",
     ):
         threshold_img(surf_img_1d, threshold=1, mask_img=vol_mask)
 
@@ -1318,7 +1318,7 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye, surf_img_2d):
     # Copying header from 4d image to a result that is 3d should raise a
     # ValueError
     formula = "np.mean(img1, axis=-1) - np.mean(img3, axis=-1)"
-    with pytest.raises(ValueError, match="Cannot copy the header."):
+    with pytest.raises(ValueError, match=r"Cannot copy the header."):
         math_img(formula, img1=img1, img3=img3, copy_header_from="img1")
 
     # Passing an 'img*' variable (to copy_header_from) that is not in the
@@ -1519,7 +1519,7 @@ def test_clean_img(affine_eye, shape_3d_default, rng):
     data_flat = data.T.reshape(100, -1)
     data_img = Nifti1Image(data, affine_eye)
 
-    with pytest.raises(ValueError, match="t_r.*must be specified"):
+    with pytest.raises(ValueError, match=r"t_r.*must be specified"):
         clean_img(data_img, t_r=None, low_pass=0.1)
 
     data_img_ = clean_img(
@@ -1780,8 +1780,10 @@ def test_concat_niimgs_errors(affine_eye, shape_3d_default):
     img5d = Nifti1Image(np.ones((2, 2, 2, 2, 2)), affine_eye)
     with pytest.raises(
         TypeError,
-        match="Concatenated images must be 3D or 4D. "
-        "You gave a list of 5D images",
+        match=(
+            r"Concatenated images must be 3D or 4D. "
+            r"You gave a list of 5D images"
+        ),
     ):
         concat_imgs([img5d, img5d])
 

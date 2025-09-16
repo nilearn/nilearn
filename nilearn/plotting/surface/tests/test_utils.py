@@ -154,7 +154,7 @@ def test_check_surface_plotting_inputs_errors(surf_img_1d):
     with pytest.raises(TypeError, match="must be a SurfaceImage instance"):
         check_surface_plotting_inputs(surf_map=1, surf_mesh=None)
     with pytest.raises(
-        TypeError, match="'surf_mesh' cannot be a SurfaceImage instance."
+        TypeError, match=r"'surf_mesh' cannot be a SurfaceImage instance."
     ):
         check_surface_plotting_inputs(
             surf_map=surf_img_1d, surf_mesh=surf_img_1d
@@ -239,7 +239,7 @@ def test_bg_data_error():
 def test_get_faces_on_edge_matplotlib(in_memory_mesh):
     _, faces = load_surf_mesh(in_memory_mesh)
     with pytest.raises(
-        ValueError, match=("Vertices in parcellation do not form region.")
+        ValueError, match=(r"Vertices in parcellation do not form region.")
     ):
         get_faces_on_edge(faces, [91])
 

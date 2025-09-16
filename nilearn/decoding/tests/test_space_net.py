@@ -490,7 +490,7 @@ def test_space_net_alpha_grid_pure_spatial(rng, is_classif):
 
 @pytest.mark.parametrize("mask_empty", [np.array([]), np.zeros((2, 2, 2))])
 def test_crop_mask_empty_mask(mask_empty):
-    with pytest.raises(ValueError, match="Empty mask:."):
+    with pytest.raises(ValueError, match=r"Empty mask:."):
         _crop_mask(mask_empty)
 
 

@@ -79,8 +79,10 @@ def test_fit_errors(
     # Test if raises an error when empty list of provided.
     with pytest.raises(
         ValueError,
-        match="Need one or more Niimg-like or SurfaceImage objects as input, "
-        "an empty list was given.",
+        match=(
+            r"Need one or more Niimg-like or SurfaceImage objects as input, "
+            r"an empty list was given."
+        ),
     ):
         est.fit([])
 
@@ -118,7 +120,7 @@ def test_fit_errors(
     )
     with pytest.raises(
         ValueError,
-        match="Number of confounds .* must match number of images .*",
+        match=r"Number of confounds .* must match number of images .*",
     ):
         est.fit(decomposition_images, confounds=confounds)
 
@@ -279,7 +281,7 @@ def test_transform_errors(
     )
     with pytest.raises(
         ValueError,
-        match="Number of confounds .* must match number of images .*",
+        match=r"Number of confounds .* must match number of images .*",
     ):
         est.transform(canica_data, confounds=confounds)
 
