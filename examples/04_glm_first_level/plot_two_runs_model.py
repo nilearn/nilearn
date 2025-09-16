@@ -79,7 +79,7 @@ fmri_glm = FirstLevelModel(
     design_only=True,
 )
 report = fmri_glm.generate_report()
-report.open_in_browser()
+# report.open_in_browser()
 
 # This report can be viewed in a notebook.
 report
