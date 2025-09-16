@@ -1046,6 +1046,11 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
       Uses population std by calling default
       :obj:`numpy.std` with N - ``ddof=0``.
 
+      .. deprecated:: 0.10.1
+
+        This option will be removed in Nilearn version 0.14.0.
+        Use ``zscore_sample`` instead.
+
     - ``'psc'``:  Timeseries are shifted to zero mean value and scaled
       to percent signal change (as compared to original mean signal).
 
@@ -1061,6 +1066,7 @@ deprecation_notice = """
     .. deprecated:: 0.10.1
 
         The default will be changed to ``'zscore_sample'``
+        and ``'zscore'`` will be removed in
         in version 0.14.0.
 
 """
