@@ -87,8 +87,8 @@ LAYOUT = {
     "paper_bgcolor": "#fff",
     "hovermode": False,
     "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
-    "title_font_family": "Times New Roman",
-    "font_family": "Courier New",
+    "title_font_family": "Arial",
+    "font_family": "Arial",
 }
 
 
