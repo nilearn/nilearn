@@ -39,39 +39,30 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
         an array with ``n_ticks`` elements if ``vmin`` != ``vmax``, else array
         with one element.
     """
-    # edge case where the data has a single value yields
-    # a cryptic matplotlib error message when trying to plot the color bar
     if vmin == vmax:
         return np.linspace(vmin, vmax, 1)
 
-    # edge case where the data has all negative values but vmax is exactly 0
-    vmax_temp = vmax
-    if vmax == 0:
-        vmax_temp = np.finfo(np.float32).eps
-
     ticks = np.linspace(vmin, vmax, n_ticks)
 
-    # If a threshold is specified, we want two of the tick
-    # to correspond to -threshold and +threshold on the colorbar.
-    # If the threshold is very small compared to vmax,
-    # we use a simple linspace as the result would be very difficult to see.
-    if threshold is not None and threshold / vmax_temp > 0.12:
-        diff = [abs(abs(tick) - threshold) for tick in ticks]
-        # Edge case where the thresholds are exactly
-        # at the same distance to 4 ticks
-        if diff.count(min(diff)) == 4:
-            idx_closest = np.sort(np.argpartition(diff, 4)[:4])
-            idx_closest = np.isin(ticks, np.sort(ticks[idx_closest])[1:3])
+    if threshold is not None:
+        diff = abs(abs(ticks) - threshold)
+        # if the values are either positive or negative
+        if 0 <= vmin <= vmax or vmin <= vmax <= 0:
+            idx_closest = np.argmin(diff)
+            ticks[idx_closest] = threshold if vmin >= 0 else -threshold
         else:
-            # Find the closest 2 ticks
-            idx_closest = np.sort(np.argpartition(diff, 2)[:2])
-            if 0 in ticks[idx_closest]:
-                idx_closest = np.sort(np.argpartition(diff, 3)[:3])
-                idx_closest = idx_closest[[0, 2]]
-        ticks[idx_closest] = [-threshold, threshold]
-    if len(ticks) > 0 and ticks[0] < vmin:
-        ticks[0] = vmin
-
+            # Edge case where the thresholds are exactly
+            # at the same distance to 4 ticks
+            if np.count_nonzero(min(diff)) == 4:
+                idx_closest = np.sort(np.argpartition(diff, 4)[:4])
+                idx_closest = np.isin(ticks, np.sort(ticks[idx_closest])[1:3])
+            else:
+                # Find the closest 2 ticks
+                idx_closest = np.sort(np.argpartition(diff, 2)[:2])
+                if 0 in ticks[idx_closest]:
+                    idx_closest = np.sort(np.argpartition(diff, 3)[:3])
+                    idx_closest = idx_closest[[0, 2]]
+            ticks[idx_closest] = [-threshold, threshold]
     return ticks
 
 
