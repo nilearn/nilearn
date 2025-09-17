@@ -89,7 +89,7 @@ jobs:
                     env: plot_min
                 -   description: oldest dependencies - with plotly
                     py: '3.10'
-                    os: ubuntu-latest
+                    os: macos-latest
                     env: plot_full_min
 
         steps:
