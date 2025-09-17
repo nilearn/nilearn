@@ -228,7 +228,7 @@ def _get_cbar(
     vmin,
     vmax,
     cbar_tick_format,
-    fontsize=25,
+    fontsize=18,
     color="black",
     height=0.5,
 ):
