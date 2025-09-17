@@ -303,7 +303,7 @@ def test_plot_surf_surface(plot_func, view, hemi):
 
 
 @pytest.mark.skipif(
-    not (is_plotly_installed() and is_kaleido_installed),
+    not (is_plotly_installed() and is_kaleido_installed()),
     reason="This test requires plotly and kaleido to be installed",
 )
 @pytest.mark.mpl_image_compare(tolerance=5)
