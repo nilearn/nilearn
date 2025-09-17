@@ -144,6 +144,26 @@ def iter_check_niimg(
         check_niimg, check_niimg_3d, check_niimg_4d
 
     """
+    # TODO move this function to avoid circular import
+    from nilearn.surface.surface import SurfaceImage
+
+    i = -1
+
+    if isinstance(niimgs[0], SurfaceImage):
+        for i, x in enumerate(niimgs):
+            # TODO
+            # add some checks
+            try:
+                ...
+            except Exception:
+                print(i)
+            yield x
+        # Raising an error if input generator is empty.
+        if i == -1:
+            raise ValueError("Input niimgs list is empty.")
+
+        return
+
     if memory is None:
         memory = Memory(location=None)
     # If niimgs is a string, use glob to expand it to the matching filenames.
@@ -154,7 +174,7 @@ def iter_check_niimg(
     ndim_minus_one = ensure_ndim - 1 if ensure_ndim is not None else None
     if target_fov is not None and target_fov != "first":
         ref_fov = target_fov
-    i = -1
+
     for i, niimg in enumerate(niimgs):
         try:
             niimg = check_niimg(

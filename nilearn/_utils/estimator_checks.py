@@ -2774,8 +2774,16 @@ def check_surface_masker_list_surf_images(estimator):
     Check that 1D or 2D mask work.
 
     transform
-    - list of 1D -> 2D array
-    - list of 2D -> 2D array
+    - masker
+      - 1D surface image -> 1D array
+      - 2D surface image -> 2D array
+      - list of 1D surface images -> 2D array
+      - list of 2D surface images -> ERROR (TODO)
+    - multimasker
+      - 1D surface image -> 1D array
+      - 2D surface image -> 2D array
+      - list of 1D surface images -> list of 1D array
+      - list of 2D surface images -> list of 2D array (TODO)
     """
     n_sample = 5
     images_to_transform = [
@@ -2790,11 +2798,20 @@ def check_surface_masker_list_surf_images(estimator):
 
             signals = estimator.transform(imgs)
 
-            assert signals.shape == (n_sample, estimator.n_elements_)
+            if is_multimasker(estimator) and isinstance(imgs, list):
+                assert isinstance(signals, list)
+                assert all(isinstance(x, np.ndarray) for x in imgs)
+                assert all(x.shape == (1, estimator.n_elements_) for x in imgs)
 
-            img = estimator.inverse_transform(signals)
-
-            assert img.shape == (_make_surface_img().mesh.n_vertices, n_sample)
+                img = estimator.inverse_transform(signals[0])
+                assert img.shape == (_make_surface_img().mesh.n_vertices, 1)
+            else:
+                assert signals.shape == (n_sample, estimator.n_elements_)
+                img = estimator.inverse_transform(signals)
+                assert img.shape == (
+                    _make_surface_img().mesh.n_vertices,
+                    n_sample,
+                )
 
 
 # ------------------ NIFTI MASKER CHECKS ------------------

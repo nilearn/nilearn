@@ -107,6 +107,8 @@ class _MultiMixin:
 
         sample_mask = self._prepare_sample_mask(imgs_list, sample_mask)
 
+        # rely on the transform_single_imgs method
+        # defined in each child class
         func = self._cache(self.transform_single_imgs)
 
         region_signals = Parallel(n_jobs=n_jobs)(
@@ -156,6 +158,11 @@ class _MultiMixin:
             return super().transform(
                 imgs, confounds=confounds, sample_mask=sample_mask
             )
+
+        # TODO throw a proper error
+        # check we have consistent type
+        if isinstance(imgs[0], SurfaceImage):
+            assert all(isinstance(x, SurfaceImage) for x in imgs)
 
         return self.transform_imgs(
             imgs,
