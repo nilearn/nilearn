@@ -368,6 +368,7 @@ def _plot_surf(
             float(colors["vmin"]),
             float(colors["vmax"]),
             cbar_tick_format,
+            fontsize=title_font_size,
         )
         fig_data.append(dummy)
 
