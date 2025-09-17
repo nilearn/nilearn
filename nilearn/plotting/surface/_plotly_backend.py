@@ -151,7 +151,6 @@ def _configure_title(title, font_size, color="black"):
         "font": {
             "size": font_size,
             "color": color,
-            "weight": 500,
         },
         "y": 0.96,
         "x": 0.5,
@@ -243,7 +242,7 @@ def _get_cbar(
     dummy = {
         "opacity": 0,
         "colorbar": {
-            "tickfont": {"size": fontsize, "color": color, "weight": 500},
+            "tickfont": {"size": fontsize, "color": color},
             "tickformat": cbar_tick_format,
             "len": height,
         },
