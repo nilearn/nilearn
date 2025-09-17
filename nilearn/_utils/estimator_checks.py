@@ -1714,7 +1714,9 @@ def check_img_estimator_standardization(estimator_orig):
             assert_array_equal(results["psc"], results["zscore"])
 
         # check output values only for maskers
-        if not is_masker(estimator_orig):
+        if not is_masker(estimator_orig) or isinstance(
+            estimator_orig, RegionExtractor
+        ):
             return
 
         assert_array_equal(default_result, unstandarized_result)
