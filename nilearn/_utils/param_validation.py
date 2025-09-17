@@ -3,7 +3,7 @@
 import numbers
 import warnings
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Literal, get_args, get_origin
 
 import numpy as np
 
@@ -191,6 +191,7 @@ TYPE_MAPS = {
     "resume": nilearn_typing.Resume,
     "screening_percentile": nilearn_typing.ScreeningPercentile,
     "smoothing_fwhm": nilearn_typing.SmoothingFwhm,
+    "standardize": nilearn_typing.Standardize,
     "standardize_confounds": nilearn_typing.StandardizeConfounds,
     "t_r": nilearn_typing.Tr,
     "tfce": nilearn_typing.Tfce,
@@ -260,7 +261,12 @@ def check_params(fn_dict):
         type_to_check = TYPE_MAPS[k]
         value = fn_dict[k]
 
-        check_is_of_allowed_type(value, type_to_check, k)
+        if get_origin(type_to_check) is Literal:
+            allowed_values = get_args(type_to_check)
+            check_parameter_in_allowed(value, allowed_values, k)
+
+        else:
+            check_is_of_allowed_type(value, type_to_check, k)
 
 
 def check_is_of_allowed_type(

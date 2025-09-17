@@ -90,7 +90,7 @@ class DictLearning(_BaseDecomposition):
     %(smoothing_fwhm)s
         Default=4mm.
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(standardize_confounds)s
 
