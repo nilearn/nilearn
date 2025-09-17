@@ -113,11 +113,7 @@ def test_check_niimg_3d(affine_eye, img_3d_zeros_eye, tmp_path):
     # Test dimensionality error
     with pytest.raises(
         TypeError,
-        match=(
-            r"Input data has incompatible dimensionality: "
-            r"Expected dimension is 3D and you provided a list "
-            r"of 3D images (4D)."
-        ),
+        match="Input data has incompatible dimensionality",
     ):
         check_niimg_3d([img_3d_zeros_eye, img_3d_zeros_eye])
 

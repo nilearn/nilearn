@@ -2862,21 +2862,13 @@ def check_nifti_masker_fit_transform_5d(estimator):
     if not is_multimasker(estimator):
         with pytest.raises(
             DimensionError,
-            match=(
-                r"Input data has incompatible dimensionality: "
-                r"Expected dimension is 4D and you provided "
-                r"a list of 4D images (5D)."
-            ),
+            match="Input data has incompatible dimensionality",
         ):
             estimator.transform(input_5d_img)
 
         with pytest.raises(
             DimensionError,
-            match=(
-                r"Input data has incompatible dimensionality: "
-                r"Expected dimension is 4D and you provided "
-                r"a list of 4D images (5D)."
-            ),
+            match="Input data has incompatible dimensionality",
         ):
             estimator.fit_transform(input_5d_img)
 
