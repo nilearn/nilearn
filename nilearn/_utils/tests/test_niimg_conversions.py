@@ -116,7 +116,7 @@ def test_check_niimg_3d(affine_eye, img_3d_zeros_eye, tmp_path):
         match=(
             r"Input data has incompatible dimensionality: "
             r"Expected dimension is 3D and you provided a list "
-            "of 3D images \\(4D\\)."
+            r"of 3D images (4D)."
         ),
     ):
         check_niimg_3d([img_3d_zeros_eye, img_3d_zeros_eye])

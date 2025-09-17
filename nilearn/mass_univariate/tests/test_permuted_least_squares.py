@@ -821,7 +821,7 @@ def test_cluster_level_parameters_warnings(cluster_level_design, masker):
     # raise a warning, and get a dictionary.
     with pytest.warns(
         Warning,
-        match='If "threshold" is not None',
+        match="If 'threshold' is not None",
     ):
         out = permuted_ols(
             tested_var,

@@ -763,7 +763,7 @@ def test_clean_errros(signals):
         clean(signals, t_r=None, low_pass=0.01)
 
     with pytest.raises(
-        ValueError, match=r"Filter method not\_implemented not implemented."
+        ValueError, match=r"Filter method not_implemented not implemented."
     ):
         clean(signals, filter="not_implemented")
 

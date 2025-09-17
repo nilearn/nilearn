@@ -39,7 +39,7 @@ def all_modules(modules_to_ignore=None, modules_to_consider=None):
     """
     if modules_to_ignore is not None and modules_to_consider is not None:
         raise ValueError(
-            "`modules_to_ignore` and `modules_to_consider` "
+            "'modules_to_ignore' and 'modules_to_consider' "
             "cannot be both specified."
         )
     if modules_to_ignore is None:

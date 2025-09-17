@@ -2865,7 +2865,7 @@ def check_nifti_masker_fit_transform_5d(estimator):
             match=(
                 r"Input data has incompatible dimensionality: "
                 r"Expected dimension is 4D and you provided "
-                "a list of 4D images \\(5D\\)."
+                r"a list of 4D images (5D)."
             ),
         ):
             estimator.transform(input_5d_img)
@@ -2875,7 +2875,7 @@ def check_nifti_masker_fit_transform_5d(estimator):
             match=(
                 r"Input data has incompatible dimensionality: "
                 r"Expected dimension is 4D and you provided "
-                "a list of 4D images \\(5D\\)."
+                r"a list of 4D images (5D)."
             ),
         ):
             estimator.fit_transform(input_5d_img)
