@@ -47,13 +47,13 @@ from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
+    get_cbar_ticks,
     get_colorbar_and_data_ranges,
 )
 from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.image.utils import (
     MNI152TEMPLATE,
-    get_cropped_cbar_ticks,
     load_anat,
 )
 from nilearn.signal import clean
@@ -282,7 +282,7 @@ def _plot_img_with_bg(
         display.title(title)
     if hasattr(display, "_cbar"):
         cbar = display._cbar
-        new_tick_locs = get_cropped_cbar_ticks(
+        new_tick_locs = get_cbar_ticks(
             cbar.vmin, cbar.vmax, threshold, n_ticks=len(cbar.locator.locs)
         )
         cbar.set_ticks(new_tick_locs)
