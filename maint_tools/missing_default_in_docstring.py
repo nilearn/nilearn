@@ -83,13 +83,17 @@ def list_parameters_with_defaults(ast_def):
     """List parameters in function that have a default value."""
     default_args = {
         k.arg: ast.unparse(v)
-        for k, v in zip(ast_def.args.args[::-1], ast_def.args.defaults[::-1])
+        for k, v in zip(
+            ast_def.args.args[::-1], ast_def.args.defaults[::-1], strict=False
+        )
     }
     # kwargs with default value
     default_args |= {
         k.arg: ast.unparse(v)
         for k, v in zip(
-            ast_def.args.kwonlyargs[::-1], ast_def.args.kw_defaults[::-1]
+            ast_def.args.kwonlyargs[::-1],
+            ast_def.args.kw_defaults[::-1],
+            strict=False,
         )
     }
     return default_args

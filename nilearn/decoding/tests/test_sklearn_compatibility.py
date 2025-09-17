@@ -6,7 +6,6 @@ from nilearn.decoding.space_net import BaseSpaceNet
 
 
 @pytest.mark.parametrize("penalty", ["graph-net", "tv-l1"])
-@pytest.mark.parametrize("is_classif", [True, False])
 @pytest.mark.parametrize(
     "param",
     [
@@ -21,7 +20,7 @@ from nilearn.decoding.space_net import BaseSpaceNet
         "alphas",
     ],
 )
-def test_get_params(penalty, is_classif, param):
+def test_get_params(penalty, param):
     # Issue #12 (on github) reported that our objects
     # get_params() methods returned empty dicts.
 
@@ -29,7 +28,6 @@ def test_get_params(penalty, is_classif, param):
     m = BaseSpaceNet(
         mask="dummy",
         penalty=penalty,
-        is_classif=is_classif,
         **kwargs,
     )
     try:

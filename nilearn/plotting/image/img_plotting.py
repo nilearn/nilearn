@@ -7,6 +7,7 @@ Only matplotlib is required.
 
 import collections.abc
 import functools
+import inspect
 import numbers
 import warnings
 
@@ -20,18 +21,19 @@ from matplotlib.gridspec import GridSpecFromSubplotSpec
 from matplotlib.ticker import MaxNLocator
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import (
-    as_ndarray,
-    check_niimg_3d,
-    check_niimg_4d,
-    compare_version,
-    fill_doc,
-    logger,
-)
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
+from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.param_validation import check_params, check_threshold
+from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
+from nilearn._utils.numpy_conversions import as_ndarray
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+    check_threshold,
+)
 from nilearn.image import (
     get_data,
     iter_img,
@@ -46,9 +48,9 @@ from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
     get_colorbar_and_data_ranges,
-    save_figure_if_needed,
 )
 from nilearn.plotting.displays import get_projector, get_slicer
+from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.image.utils import (
     MNI152TEMPLATE,
     get_cropped_cbar_ticks,
@@ -865,12 +867,8 @@ def plot_roi(
     check_threshold_not_negative(threshold)
 
     valid_view_types = ["continuous", "contours"]
-    if view_type not in valid_view_types:
-        raise ValueError(
-            f"Unknown view type: {view_type}. "
-            f"Valid view types are {valid_view_types}."
-        )
-    elif view_type == "contours":
+    check_parameter_in_allowed(view_type, valid_view_types, "view_type")
+    if view_type == "contours":
         img = roi_img
         roi_img = None
 
@@ -1075,11 +1073,7 @@ def plot_prob_atlas(
     n_maps = maps_img.shape[3]
 
     valid_view_types = ["auto", "contours", "filled_contours", "continuous"]
-    if view_type not in valid_view_types:
-        raise ValueError(
-            f"Unknown view type: {view_type}. "
-            f"Valid view types are {valid_view_types}."
-        )
+    check_parameter_in_allowed(view_type, valid_view_types, "view_type")
 
     cmap = plt.get_cmap(cmap)
     color_list = cmap(np.linspace(0, 1, n_maps))
@@ -1118,8 +1112,25 @@ def plot_prob_atlas(
         threshold = [threshold] * n_maps
 
     filled = view_type.startswith("filled")
+    tmp = dict(**inspect.signature(plot_prob_atlas).parameters)
+    kwargs_contour = {}
+    if not filled:
+        kwargs_contour = {"linewidths": linewidths}
+    elif linewidths != tmp["linewidths"].default:
+        # only throw warning if the user has changed
+        # from the default linewidths
+        # otherwise this function will always
+        # throw a warning any time the user tries to plot filled contours
+        warnings.warn(
+            f"'linewidths' is not supported by {view_type}=",
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
+
     transparency = alpha
-    for map_img, color, thr in zip(iter_img(maps_img), color_list, threshold):
+    for map_img, color, thr in zip(
+        iter_img(maps_img), color_list, threshold, strict=False
+    ):
         data = get_data(map_img)
         # To threshold or choose the level of the contours
         thr = check_threshold(
@@ -1139,11 +1150,11 @@ def plot_prob_atlas(
             display.add_contours(
                 map_img,
                 levels=[thr],
-                linewidths=linewidths,
                 colors=[color],
                 filled=filled,
                 transparency=transparency,
                 linestyles="solid",
+                **kwargs_contour,
             )
     if colorbar:
         display._colorbar = True
@@ -1808,7 +1819,9 @@ def plot_markers(
         if isinstance(node_size, collections.abc.Iterable):
             node_size = [
                 size
-                for ok_retain, size in zip(retained_nodes, node_size)
+                for ok_retain, size in zip(
+                    retained_nodes, node_size, strict=False
+                )
                 if ok_retain
             ]
 
@@ -1907,14 +1920,15 @@ def plot_carpet(
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.
 
-    %(standardize)s
+    %(standardize_true)s
 
         .. note::
 
             Added to control passing value to `standardize` of ``signal.clean``
             to call new behavior since passing "zscore" or True (default) is
-            deprecated. This parameter will be deprecated in version 0.13 and
-            removed in version 0.15.
+            deprecated.
+            This parameter will be changed to "zscore_sample"
+            in version 0.14 and removed in version 0.15.
 
     Returns
     -------
@@ -1954,7 +1968,7 @@ def plot_carpet(
             img,
             interpolation="nearest",
             copy_header=True,
-            force_resample=False,  # TODO change to True in 0.13.0
+            force_resample=False,  # TODO (nilearn  >= 0.13.0) change to True
         )
         atlas_bin = math_img(
             f"img != {background_label}",
@@ -2119,6 +2133,7 @@ def plot_img_comparison(
     """Redirect to plot_img_comparison."""
     from nilearn.plotting.img_comparison import plot_img_comparison
 
+    # TODO (nilearn >= 0.13.1)
     warnings.warn(
         (
             "The 'plot_img_comparison' has been moved to  "

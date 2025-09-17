@@ -5,16 +5,16 @@ import itertools
 from joblib import Parallel, delayed
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg_conversions import iter_check_niimg
-from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.base_masker import prepare_confounds_multimaskers
 from nilearn.maskers.nifti_maps_masker import NiftiMapsMasker
 from nilearn.typing import NiimgLike
 
 
 @fill_doc
-class MultiNiftiMapsMasker(NiftiMapsMasker):
+class MultiNiftiMapsMasker(_MultiMixin, NiftiMapsMasker):
     """Class for extracting data from multiple Niimg-like objects \
        using maps of potentially overlapping brain regions.
 
@@ -47,38 +47,47 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
     allow_overlap : :obj:`bool`, default=True
         If False, an error is raised if the maps overlaps (ie at least two
         maps have a non-zero value for the same voxel).
+
     %(smoothing_fwhm)s
-    %(standardize_maskers)s
+
+    %(standardize_false)s
+
     %(standardize_confounds)s
+
     high_variance_confounds : :obj:`bool`, default=False
         If True, high variance confounds are computed on provided image with
         :func:`nilearn.image.high_variance_confounds` and default parameters
         and regressed out.
+
     %(detrend)s
+
     %(low_pass)s
+
     %(high_pass)s
+
     %(t_r)s
 
     %(dtype)s
 
     resampling_target : {"data", "mask", "maps", None}, default="data"
-        Gives which image gives the final shape/size:
+        Defines which image gives the final shape/size:
 
-            - "data" means the atlas is resampled to the shape of the data if
-              needed
-            - "mask" means the maps_img and images provided to fit() are
-              resampled to the shape and affine of mask_img
-            - "maps" means the mask_img and images provided to fit() are
-              resampled to the shape and affine of maps_img
-            - None means no resampling: if shapes and affines do not match,
-              a ValueError is raised.
+        - ``"data"`` means that the atlas is resampled
+          to the shape of the data if needed
+        - ``"mask"`` means that the ``maps_img`` and images provided
+          to ``fit()`` are
+          resampled to the shape and affine of ``mask_img``
+        - ``"maps"`` means the ``mask_img`` and images provided
+          to ``fit()`` are
+          resampled to the shape and affine of ``maps_img``
+        - ``None`` means no resampling: if shapes and affines do not match,
+          a :obj:`ValueError` is raised.
 
+    %(keep_masked_maps)s
 
     %(memory)s
 
     %(memory_level)s
-
-    %(n_jobs)s
 
     %(verbose0)s
 
@@ -89,16 +98,20 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         default="CMRmap_r"
         Only relevant for the report figures.
 
-    %(clean_args)s
+    %(n_jobs)s
 
-    %(masker_kwargs)s
+    %(clean_args)s
 
     Attributes
     ----------
+    %(clean_args_)s
+
     maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The maps mask of the data.
 
     %(nifti_mask_img_)s
+
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int`
         The number of overlapping maps in the mask.
@@ -137,6 +150,7 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
+        keep_masked_maps=False,
         memory=None,
         memory_level=0,
         verbose=0,
@@ -144,7 +158,6 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
         cmap="CMRmap_r",
         n_jobs=1,
         clean_args=None,
-        **kwargs,
     ):
         self.n_jobs = n_jobs
         super().__init__(
@@ -164,31 +177,11 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
+            keep_masked_maps=keep_masked_maps,
             reports=reports,
             cmap=cmap,
             clean_args=clean_args,
-            **kwargs,
         )
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(masker=True, multi_masker=True)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(masker=True, multi_masker=True)
-        return tags
 
     @fill_doc
     def transform_imgs(
@@ -240,7 +233,9 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
 
         region_signals = Parallel(n_jobs=n_jobs)(
             delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sms)
-            for imgs, cfs, sms in zip(niimg_iter, confounds, sample_mask)
+            for imgs, cfs, sms in zip(
+                niimg_iter, confounds, sample_mask, strict=False
+            )
         )
         return region_signals
 
@@ -289,33 +284,4 @@ class MultiNiftiMapsMasker(NiftiMapsMasker):
             confounds=confounds,
             sample_mask=sample_mask,
             n_jobs=self.n_jobs,
-        )
-
-    @fill_doc
-    def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
-        """
-        Fit to data, then transform it.
-
-        Parameters
-        ----------
-        imgs : Niimg-like object, or a :obj:`list` of Niimg-like objects
-            See :ref:`extracting_data`.
-            Data to be preprocessed
-
-        y : None
-            This parameter is unused. It is solely included for scikit-learn
-            compatibility.
-
-        %(confounds_multi)s
-
-        %(sample_mask_multi)s
-
-            .. versionadded:: 0.8.0
-
-        Returns
-        -------
-        %(signals_transform_multi_nifti)s
-        """
-        return self.fit(imgs, y=y).transform(
-            imgs, confounds=confounds, sample_mask=sample_mask
         )

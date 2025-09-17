@@ -22,8 +22,7 @@ def check_memory(memory, verbose=0):
         Used to cache the masking process.
         If a str is given, it is the path to the caching directory.
 
-    verbose : int, default=0
-        Verbosity level.
+    %(verbose0)s
 
     Returns
     -------
@@ -157,7 +156,7 @@ def cache(
             raise TypeError(
                 "'memory' argument must be a string or a "
                 "joblib.Memory object. "
-                f"{memory} {type(memory)} was given."
+                f"{memory} {memory.__class__.__name__} was given."
             )
         if (
             memory.location is None

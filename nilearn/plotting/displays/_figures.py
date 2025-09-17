@@ -95,12 +95,12 @@ class PlotlySurfaceFigure(SurfaceFigure):
     def __init__(self, figure=None, output_file=None, hemi=DEFAULT_HEMI):
         if not is_plotly_installed():
             raise ImportError(
-                "Plotly is required to use `PlotlySurfaceFigure`."
+                "Plotly is required to use 'PlotlySurfaceFigure'."
             )
 
         if figure is not None and not isinstance(figure, go.Figure):
             raise TypeError(
-                "`PlotlySurfaceFigure` accepts only plotly Figure objects."
+                "'PlotlySurfaceFigure' accepts only plotly Figure objects."
             )
         super().__init__(figure=figure, output_file=output_file, hemi=hemi)
 
@@ -214,7 +214,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         roi = load_surf_data(roi_map)
 
         traces = []
-        for level, label, line in zip(levels, labels, lines):
+        for level, label, line in zip(levels, labels, lines, strict=False):
             parc_idx = np.where(roi == level)[0]
 
             # warn when the edge faces exclude vertices in parcellation
@@ -286,7 +286,7 @@ class PlotlySurfaceFigure(SurfaceFigure):
         segments = []
         vs = []
         idxs = []
-        for e, face in zip(edge_faces, self._faces):
+        for e, face in zip(edge_faces, self._faces, strict=False):
             if e:
                 t0 = self._coords[face[0]]
                 t1 = self._coords[face[1]]

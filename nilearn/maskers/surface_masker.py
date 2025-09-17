@@ -6,14 +6,12 @@ from copy import deepcopy
 from warnings import warn
 
 import numpy as np
+from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils import constrained_layout_kwargs, fill_doc
 from nilearn._utils.class_inspect import get_params
-from nilearn._utils.helpers import (
-    rename_parameters,
-)
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -26,7 +24,7 @@ from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
-class SurfaceMasker(_BaseSurfaceMasker):
+class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     """Extract data from a :obj:`~nilearn.surface.SurfaceImage`.
 
     .. versionadded:: 0.11.0
@@ -38,7 +36,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 
@@ -72,12 +70,16 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
     Attributes
     ----------
+    %(clean_args_)s
+
     mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage`
         The mask of the data, or the one computed from ``imgs`` passed to fit.
         If a ``mask_img`` is passed at masker construction,
         then ``mask_img_`` is the resulting binarized version of it
         where each vertex is ``True`` if all values across samples
         (for example across timepoints) is finite value different from 0.
+
+    memory_ : joblib memory cache
 
     n_elements_ : :obj:`int` or None
         number of vertices included in mask
@@ -195,9 +197,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 )
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.0"
-    )
     @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
@@ -433,12 +432,12 @@ class SurfaceMasker(_BaseSurfaceMasker):
             len(hemispheres),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
-            **constrained_layout_kwargs(),
+            layout="constrained",
         )
         axes = np.atleast_2d(axes)
 
-        for ax_row, view in zip(axes, views):
-            for ax, hemi in zip(ax_row, hemispheres):
+        for ax_row, view in zip(axes, views, strict=False):
+            for ax, hemi in zip(ax_row, hemispheres, strict=False):
                 plot_surf(
                     surf_map=background_data,
                     hemi=hemi,
@@ -448,7 +447,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
                     cmap=self.cmap,
                     vmin=vmin,
                     vmax=vmax,
-                    darkness=None,
                 )
 
                 colors = None

@@ -8,7 +8,6 @@ from numpy.testing import assert_almost_equal
 from nilearn._utils.data_gen import generate_random_img
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.html_document import WIDTH_DEFAULT, HTMLDocument
-from nilearn._utils.testing import on_windows_with_old_mpl_and_new_numpy
 from nilearn.conftest import _img_maps
 from nilearn.image import get_data
 from nilearn.maskers import (
@@ -252,7 +251,7 @@ def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
     seeds = [(1, 1, 1)]
     masker = NiftiSpheresMasker(seeds=seeds)
     masker.fit()
-    with pytest.raises(ValueError, match="masker only has 1 seeds."):
+    with pytest.raises(ValueError, match=r"masker only has 1 seeds."):
         masker.generate_report(displayed_spheres=displayed_spheres)
 
 
@@ -305,7 +304,10 @@ def test_nifti_labels_masker_report(
 ):
     """Check content nifti label masker."""
     masker = NiftiLabelsMasker(
-        img_labels, labels=labels, mask_img=img_mask_eye
+        img_labels,
+        labels=labels,
+        mask_img=img_mask_eye,
+        keep_masked_labels=True,
     )
     masker.fit_transform(img_3d_rand_eye)
     report = masker.generate_report()
@@ -389,7 +391,7 @@ def test_4d_reports(img_mask_eye, affine_eye):
     assert "The mask includes" in str(html)
 
     # test .fit_transform method
-    masker = NiftiMasker(mask_img=img_mask_eye, standardize=True)
+    masker = NiftiMasker(mask_img=img_mask_eye, standardize="zscore_sample")
     masker.fit_transform(data_img_4d)
 
     html = masker.generate_report()
@@ -512,7 +514,7 @@ def test_generate_report_engine_error(surf_maps_img, surf_img_2d):
     masker.fit_transform(surf_img_2d(10))
     with pytest.raises(
         ValueError,
-        match="should be either 'matplotlib' or 'plotly'",
+        match="'engine' must be one of",
     ):
         masker.generate_report(engine="invalid")
 
@@ -600,10 +602,6 @@ def test_generate_report_before_transform_warn(surf_maps_img):
         masker.generate_report()
 
 
-@pytest.mark.skipif(
-    on_windows_with_old_mpl_and_new_numpy(),
-    reason="Old matplotlib not compatible with numpy 2.0 on windows.",
-)
 def test_generate_report_plotly_out_figure_type(
     plotly, surf_maps_img, surf_img_2d
 ):

@@ -9,9 +9,8 @@ from warnings import warn
 import numpy as np
 from nibabel import is_proxy, load, spatialimages
 
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-
-from .helpers import stringify_path
 
 
 def _get_data(img):
@@ -111,7 +110,7 @@ def load_niimg(niimg, dtype=None):
     img : image
         A loaded image object.
     """
-    from ..image import new_img_like  # avoid circular imports
+    from nilearn.image.image import new_img_like  # avoid circular imports
 
     niimg = stringify_path(niimg)
     if isinstance(niimg, str):

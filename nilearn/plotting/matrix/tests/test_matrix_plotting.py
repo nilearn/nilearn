@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from nilearn._utils import constrained_layout_kwargs
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
@@ -40,7 +39,7 @@ def labels():
 def test_sanitize_figure_and_axes_error(fig, axes):
     with pytest.raises(
         ValueError,
-        match=("Parameters figure and axes cannot be specified together."),
+        match=(r"Parameters figure and axes cannot be specified together."),
     ):
         _sanitize_figure_and_axes(fig, axes)
 
@@ -85,7 +84,7 @@ def test_matrix_plotting_with_labels_and_different_tri(mat, labels, tri):
     assert ax._axes.get_title() == "Title"
     for axis in [ax._axes.xaxis, ax._axes.yaxis]:
         assert len(axis.majorTicks) == len(labels)
-        for tick, label in zip(axis.majorTicks, labels):
+        for tick, label in zip(axis.majorTicks, labels, strict=False):
             assert tick.label1.get_text() == label
 
 
@@ -276,7 +275,7 @@ def test_show_contrast_matrix_axes():
         frame_times, drift_model="polynomial", drift_order=3
     )
     contrast = np.ones(4)
-    fig, ax = plt.subplots(**constrained_layout_kwargs())
+    fig, ax = plt.subplots(layout="constrained")
 
     plot_contrast_matrix(contrast, dmtx, axes=ax)
 
@@ -317,20 +316,20 @@ def test_plot_design_matrix_correlation_smoke_path(tmp_path):
 def test_plot_design_matrix_correlation_errors(mat):
     """Test plot_design_matrix_correlation errors."""
     with pytest.raises(
-        ValueError, match="Tables to load can only be TSV or CSV."
+        ValueError, match=r"Tables to load can only be TSV or CSV."
     ):
         plot_design_matrix_correlation("foo")
 
-    with pytest.raises(ValueError, match="dataframe cannot be empty."):
+    with pytest.raises(ValueError, match=r"dataframe cannot be empty."):
         plot_design_matrix_correlation(pd.DataFrame())
 
-    with pytest.raises(ValueError, match="cmap must be one of"):
+    with pytest.raises(ValueError, match="'cmap' must be one of"):
         plot_design_matrix_correlation(pd.DataFrame(mat), cmap="foo")
 
     dmtx = pd.DataFrame(
         {"event_1": [0, 1], "constant": [1, 1], "drift_1": [0, 1]}
     )
-    with pytest.raises(ValueError, match="tri needs to be one of"):
+    with pytest.raises(ValueError, match="'tri' must be one of"):
         plot_design_matrix_correlation(dmtx, tri="lower")
 
     dmtx = pd.DataFrame({"constant": [1, 1], "drift_1": [0, 1]})

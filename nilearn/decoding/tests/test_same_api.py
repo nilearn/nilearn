@@ -280,7 +280,6 @@ def test_graph_net_and_tv_same_for_pure_l1_another_test(
         penalty="graph-net",
         max_iter=max_iter,
         mask=mask,
-        is_classif=False,
         standardize=standardize,
         verbose=0,
     ).fit(X, y)
@@ -290,7 +289,6 @@ def test_graph_net_and_tv_same_for_pure_l1_another_test(
         penalty="tv-l1",
         max_iter=max_iter,
         mask=mask,
-        is_classif=False,
         standardize=standardize,
         verbose=0,
     ).fit(X, y)
@@ -306,7 +304,12 @@ def test_coef_shape(penalty, cls):
     X, mask = to_niimgs(X, (2, 2, 2))
 
     model = cls(
-        mask=mask, max_iter=3, penalty=penalty, alphas=1.0, verbose=0
+        mask=mask,
+        max_iter=3,
+        penalty=penalty,
+        alphas=1.0,
+        verbose=0,
+        standardize="zscore_sample",
     ).fit(X, y)
 
     assert model.coef_.ndim == 2

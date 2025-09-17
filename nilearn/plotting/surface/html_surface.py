@@ -6,9 +6,10 @@ from warnings import warn
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import colorscale
@@ -50,7 +51,6 @@ def _one_mesh_info(
     bg_map=None,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     vmax=None,
     vmin=None,
 ):
@@ -78,50 +78,12 @@ def _one_mesh_info(
         absolute_threshold=colors["abs_threshold"],
         bg_map=bg_map,
         bg_on_data=bg_on_data,
-        darkness=darkness,
     )
     info["cmin"], info["cmax"] = float(colors["vmin"]), float(colors["vmax"])
     info["black_bg"] = black_bg
     info["full_brain_mesh"] = False
     info["colorscale"] = colors["colors"]
     return info
-
-
-def one_mesh_info(
-    surf_map,
-    surf_mesh,
-    threshold=None,
-    cmap=DEFAULT_DIVERGING_CMAP,
-    black_bg=False,
-    bg_map=None,
-    symmetric_cmap=True,
-    bg_on_data=False,
-    darkness=0.7,
-    vmax=None,
-    vmin=None,
-):
-    """Deprecate public function. See _one_mesh_info."""
-    warn(
-        category=DeprecationWarning,
-        message="one_mesh_info is a private function and is renamed "
-        "to _one_mesh_info. Using the deprecated name will "
-        "raise an error in release 0.13",
-        stacklevel=find_stack_level(),
-    )
-
-    return _one_mesh_info(
-        surf_map,
-        surf_mesh,
-        threshold=threshold,
-        cmap=cmap,
-        black_bg=black_bg,
-        bg_map=bg_map,
-        symmetric_cmap=symmetric_cmap,
-        bg_on_data=bg_on_data,
-        darkness=darkness,
-        vmax=vmax,
-        vmin=vmin,
-    )
 
 
 def _get_combined_curvature_map(mesh_left, mesh_right):
@@ -146,7 +108,6 @@ def _full_brain_info(
     black_bg=False,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     vmax=None,
     vmin=None,
     vol_to_surf_kwargs=None,
@@ -198,7 +159,6 @@ def _full_brain_info(
             absolute_threshold=colors["abs_threshold"],
             bg_map=bg_map,
             bg_on_data=bg_on_data,
-            darkness=darkness,
         )
 
     # also add info for both hemispheres
@@ -231,7 +191,6 @@ def _full_brain_info(
             mesh["curv_left"], mesh["curv_right"]
         ),
         bg_on_data=bg_on_data,
-        darkness=darkness,
     )
     info["cmin"], info["cmax"] = float(colors["vmin"]), float(colors["vmax"])
     info["black_bg"] = black_bg
@@ -248,7 +207,6 @@ def full_brain_info(
     black_bg=False,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     vmax=None,
     vmin=None,
     vol_to_surf_kwargs=None,
@@ -270,7 +228,6 @@ def full_brain_info(
         black_bg=black_bg,
         symmetric_cmap=symmetric_cmap,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         vmax=vmax,
         vmin=vmin,
         vol_to_surf_kwargs=vol_to_surf_kwargs,
@@ -300,7 +257,6 @@ def view_img_on_surf(
     vmin=None,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     colorbar=True,
     colorbar_height=0.5,
     colorbar_fontsize=25,
@@ -340,9 +296,6 @@ def view_img_on_surf(
         white background.
 
     %(bg_on_data)s
-
-    %(darkness)s
-        Default=1.
 
     vmax : :obj:`float` or None, default=None
         upper bound for the colorbar. if None, use the absolute max of the
@@ -409,7 +362,6 @@ def view_img_on_surf(
         vmax=vmax,
         vmin=vmin,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         symmetric_cmap=symmetric_cmap,
         vol_to_surf_kwargs=vol_to_surf_kwargs,
     )
@@ -433,7 +385,6 @@ def view_surf(
     vmax=None,
     vmin=None,
     bg_on_data=False,
-    darkness=0.7,
     symmetric_cmap=True,
     colorbar=True,
     colorbar_height=0.5,
@@ -473,9 +424,6 @@ def view_surf(
         .. versionadded:: 0.11.0
 
     %(bg_on_data)s
-
-    %(darkness)s
-        Default=1.
 
     threshold : :obj:`str`, number or None, default=None
         If None, no thresholding.
@@ -556,7 +504,6 @@ def view_surf(
         black_bg=black_bg,
         bg_map=bg_map,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         symmetric_cmap=symmetric_cmap,
         vmax=vmax,
         vmin=vmin,

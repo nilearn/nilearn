@@ -1,7 +1,5 @@
 """Configuration and extra fixtures for pytest."""
 
-import warnings
-
 import nibabel
 import numpy as np
 import pandas as pd
@@ -40,9 +38,13 @@ if is_matplotlib_installed():
     if compare_version(
         matplotlib.__version__, ">", OPTIONAL_MATPLOTLIB_MIN_VERSION
     ):
+        # the tests that compare plotted figures
+        # against their expected baseline is only run
+        # with the oldest version of matplolib
         collect_ignore.extend(
             [
                 "plotting/tests/test_baseline_comparisons.py",
+                "reporting/tests/test_baseline_comparisons.py",
             ]
         )
 
@@ -53,6 +55,7 @@ else:
             "plotting",
             "reporting/html_report.py",
             "reporting/tests/test_html_report.py",
+            "reporting/tests/test_baseline_comparisons.py",
         ]
     )
     matplotlib = None  # type: ignore[assignment]
@@ -118,24 +121,6 @@ def close_all():
 
 
 @pytest.fixture(autouse=True)
-def suppress_specific_warning():
-    """Ignore internal deprecation warnings."""
-    with warnings.catch_warnings():
-        messages = (
-            "The `darkness` parameter will be deprecated.*|"
-            "In release 0.13, this fetcher will return a dictionary.*|"
-            "The default strategy for standardize.*|"
-            "The 'fetch_bids_langloc_dataset' function will be removed.*|"
-        )
-        warnings.filterwarnings(
-            "ignore",
-            message=messages,
-            category=DeprecationWarning,
-        )
-        yield
-
-
-@pytest.fixture(autouse=True)
 def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
     """Monkeypatch user home directory and NILEARN_DATA env variable.
 
@@ -155,7 +140,6 @@ def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
     monkeypatch.setenv("NILEARN_DATA", str(data_dir))
     shared_data_dir = home_dir / "nilearn_shared_data"
     monkeypatch.setenv("NILEARN_SHARED_DATA", str(shared_data_dir))
-
 
 # ------------------------   RNG   ------------------------#
 
@@ -849,7 +833,7 @@ def _flip_surf_img_parts(poly_obj):
     """Flip hemispheres of a surface image data or mesh."""
     keys = list(poly_obj.parts.keys())
     keys = [keys[-1]] + keys[:-1]
-    return dict(zip(keys, poly_obj.parts.values()))
+    return dict(zip(keys, poly_obj.parts.values(), strict=False))
 
 
 @pytest.fixture

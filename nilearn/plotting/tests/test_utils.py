@@ -5,7 +5,10 @@
 import numpy as np
 import pytest
 
-from nilearn.plotting._utils import get_colorbar_and_data_ranges
+from nilearn.plotting._utils import (
+    get_cbar_ticks,
+    get_colorbar_and_data_ranges,
+)
 
 
 @pytest.fixture
@@ -205,3 +208,26 @@ def test_get_colorbar_and_data_ranges_force_min_stat_map_value(data_pos_neg):
         symmetric_cbar="auto",
         force_min_stat_map_value=0,
     )
+
+
+@pytest.mark.parametrize(
+    "vmin,vmax,threshold,num_ticks,expected",
+    [
+        (3, 3, None, 5, [3]),
+        (0, 0, None, 5, [0]),
+        (-3, -3, None, 5, [-3]),
+        (0, 3, None, 5, [0, 0.75, 1.5, 2.25, 3]),
+        (-3, 0, None, 5, [-3, -2.25, -1.5, -0.75, 0]),
+        (-5, 5, None, 5, [-5, -2.5, 0, 2.5, 5]),
+        (-3, 5, None, 5, [-3, -1, 1, 3, 5]),
+        (3, 3, 0.5, 5, [3]),
+        (0, 3, 0.5, 5, [0, 0.75, 0.5, 2.25, 3]),
+        (-3, 0, 0.5, 5, [-3, -2.25, -0.5, -0.75, 0.5]),
+        (-3, 5, 0.5, 5, [-3, -1, 1, 3, 5]),
+        (-3, 5, 0.7, 5, [-3, -0.7, 0.7, 3, 5]),
+    ],
+)
+def test_get_cbar_ticks_threshold(vmin, vmax, threshold, num_ticks, expected):
+    """Test nilearn.plotting._utils.get_cbar_ticks."""
+    ticks = get_cbar_ticks(vmin, vmax, threshold, num_ticks)
+    assert np.allclose(ticks, expected)

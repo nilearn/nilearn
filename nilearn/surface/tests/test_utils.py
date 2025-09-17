@@ -18,7 +18,7 @@ def test_assert_polydata_equal():
     data_2.parts["new_key"] = np.ones((3, 2))
 
     with pytest.raises(
-        ValueError, match="PolyData do not have the same keys."
+        ValueError, match=r"PolyData do not have the same keys."
     ):
         assert_polydata_equal(data_1, data_2)
 
@@ -28,7 +28,7 @@ def test_assert_surface_mesh_equal(surf_mesh):
     assert_surface_mesh_equal(surf_mesh.parts["left"], surf_mesh.parts["left"])
 
     with pytest.raises(
-        ValueError, match="Meshes do not have the same coordinates."
+        ValueError, match=r"Meshes do not have the same coordinates."
     ):
         assert_surface_mesh_equal(
             surf_mesh.parts["left"], surf_mesh.parts["right"]
@@ -36,7 +36,9 @@ def test_assert_surface_mesh_equal(surf_mesh):
 
     surf_mesh.parts["right"].coordinates = surf_mesh.parts["left"].coordinates
 
-    with pytest.raises(ValueError, match="Meshes do not have the same faces."):
+    with pytest.raises(
+        ValueError, match=r"Meshes do not have the same faces."
+    ):
         assert_surface_mesh_equal(
             surf_mesh.parts["left"], surf_mesh.parts["right"]
         )

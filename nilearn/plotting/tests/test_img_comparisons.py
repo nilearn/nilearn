@@ -234,7 +234,7 @@ def test_plot_bland_altman_errors(
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(surf_img_1d, img_3d_rand_eye)
 
-    with pytest.raises(TypeError, match="Mask should be of type:"):
+    with pytest.raises(TypeError, match="must be of type"):
         plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, masker=1)
 
     with pytest.raises(
@@ -242,7 +242,7 @@ def test_plot_bland_altman_errors(
     ):
         plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[-1])
 
-    with pytest.raises(TypeError, match="with all values different from 0."):
+    with pytest.raises(TypeError, match=r"with all values different from 0."):
         plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[0, 1, -2, 0])
 
 
@@ -250,7 +250,7 @@ def test_plot_bland_altman_incompatible_errors(
     surf_img_1d, surf_mask_1d, img_3d_rand_eye, img_3d_ones_eye
 ):
     """Check error for bland altman plots incompatible mask and images."""
-    error_msg = "Mask and images to fit must be of compatible types."
+    error_msg = "Mask and input images must be of compatible types."
     with pytest.raises(TypeError, match=error_msg):
         plot_bland_altman(
             img_3d_rand_eye, img_3d_rand_eye, masker=SurfaceMasker()

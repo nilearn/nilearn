@@ -17,8 +17,10 @@ from pathlib import Path
 import numpy as np
 import requests
 
-from nilearn._utils import fill_doc, logger
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 
 from .utils import get_data_dirs
 
@@ -457,14 +459,13 @@ def filter_columns(array, filters, combination="and"):
         and "or".
 
     """
+    check_parameter_in_allowed(combination, ["and", "or"], "combination")
     if combination == "and":
         fcomb = np.logical_and
         mask = np.ones(array.shape[0], dtype=bool)
     elif combination == "or":
         fcomb = np.logical_or
         mask = np.zeros(array.shape[0], dtype=bool)
-    else:
-        raise ValueError(f"Combination mode not known: {combination}")
 
     for column in filters:
         mask = fcomb(mask, _filter_column(array, column, filters[column]))

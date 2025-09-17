@@ -9,9 +9,13 @@ import pandas as pd
 from scipy.ndimage import binary_closing
 from sklearn.utils import Bunch
 
-from nilearn._utils import check_niimg, fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.datasets._utils import (
     ALLOWED_DATA_TYPES,
     ALLOWED_MESH_TYPES,
@@ -156,7 +160,9 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = get_dataset_descr(dataset_name)
 
-    params = dict([("description", fdescr), *list(zip(keys, sub_files))])
+    params = dict(
+        [("description", fdescr), *list(zip(keys, sub_files, strict=False))]
+    )
     return Bunch(**params)
 
 
@@ -213,13 +219,10 @@ def load_mni152_template(resolution=None):
     # Resample template according to the pre-specified resolution, if different
     # than 1
     if resolution != 1:
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
         new_brain_template = resampling.resample_img(
             new_brain_template,
             np.eye(3) * resolution,
             copy_header=True,
-            force_resample=False,
         )
 
     return new_brain_template
@@ -274,13 +277,10 @@ def load_mni152_gm_template(resolution=None):
     # Resample template according to the pre-specified resolution, if different
     # than 1
     if resolution != 1:
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
         new_gm_template = resampling.resample_img(
             new_gm_template,
             np.eye(3) * resolution,
             copy_header=True,
-            force_resample=False,
         )
 
     return new_gm_template
@@ -336,13 +336,10 @@ def load_mni152_wm_template(resolution=None):
     # Resample template according to the pre-specified resolution, if different
     # than 1
     if resolution != 1:
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
         new_wm_template = resampling.resample_img(
             new_wm_template,
             np.eye(3) * resolution,
             copy_header=True,
-            force_resample=False,
         )
 
     return new_wm_template
@@ -1108,17 +1105,8 @@ def load_fsaverage_data(
         SurfaceImage with the freesurfer mesh and data.
     """
     check_params(locals())
-
-    if mesh_type not in ALLOWED_MESH_TYPES:
-        raise ValueError(
-            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
-            f"Got: {mesh_type=}."
-        )
-    if data_type not in ALLOWED_DATA_TYPES:
-        raise ValueError(
-            f"'data_type' must be one of {ALLOWED_DATA_TYPES}.\n"
-            f"Got: {data_type=}."
-        )
+    check_parameter_in_allowed(mesh_type, ALLOWED_MESH_TYPES, "mesh_type")
+    check_parameter_in_allowed(data_type, ALLOWED_DATA_TYPES, "data_type")
 
     fsaverage = load_fsaverage(mesh=mesh, data_dir=data_dir)
     fsaverage_data = fetch_surf_fsaverage(mesh=mesh, data_dir=data_dir)

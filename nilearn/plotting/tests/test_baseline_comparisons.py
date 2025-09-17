@@ -19,6 +19,7 @@ from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
 from nilearn.glm.tests._testing import modulated_event_paradigm
+from nilearn.image import math_img
 from nilearn.plotting import (
     plot_anat,
     plot_bland_altman,
@@ -168,7 +169,7 @@ def test_plot_carpet_default_params(img_4d_mni, img_3d_ones_mni):
 @pytest.mark.mpl_image_compare
 def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
     """Smoke-test for plot_prob_atlas with default arguments."""
-    # TODO for 0.13.0
+    # TODO (nilearn >= 0.13.0)
     # using only 2 regions to speed up the test
     # maps = generate_maps(shape_3d_default, n_regions=2, affine=affine_mni)
     return plot_prob_atlas(img_4d_mni, bg_img=img_3d_mni)
@@ -284,6 +285,12 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
 def test_plot_surf_surface(plot_func, view, hemi):
     """Test surface plotting functions with views and hemispheres."""
     surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
     return plot_func(
         surf_img.mesh,
         surf_img,
@@ -301,6 +308,12 @@ def test_plot_surf_surface(plot_func, view, hemi):
 def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
     """Test surface plotting functions with colorbars."""
     surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
     return plot_func(
         surf_img.mesh,
         surf_img,
