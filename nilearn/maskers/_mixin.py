@@ -13,6 +13,7 @@ from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.signal import high_variance_confounds
+from nilearn.surface.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
 
@@ -147,7 +148,7 @@ class _MultiMixin:
                 "'sample_mask' must be a None or a list. "
                 f"Got {sample_mask.__class__.__name__}."
             )
-        if isinstance(imgs, NiimgLike):
+        if isinstance(imgs, (*NiimgLike, SurfaceImage)):
             if isinstance(confounds, list):
                 confounds = confounds[0]
             if isinstance(sample_mask, list):

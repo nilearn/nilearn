@@ -6,7 +6,6 @@ from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.surface_masker import SurfaceMasker
-from nilearn.surface.surface import SurfaceImage
 
 
 @fill_doc
@@ -15,6 +14,66 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
 
     MultiSurfaceMasker is useful when dealing with image sets from multiple
     subjects.
+
+    .. versionadded:: 0.13.0dev
+
+    Parameters
+    ----------
+    mask_img : :obj:`~nilearn.surface.SurfaceImage` or None, default=None
+
+    %(smoothing_fwhm)s
+        This parameter is not implemented yet.
+
+    %(standardize_false)s
+
+    %(standardize_confounds)s
+
+    %(detrend)s
+
+    high_variance_confounds : :obj:`bool`, default=False
+        If True, high variance confounds are computed on provided image with
+        :func:`nilearn.image.high_variance_confounds` and default parameters
+        and regressed out.
+
+    %(low_pass)s
+
+    %(high_pass)s
+
+    %(t_r)s
+
+    %(memory)s
+
+    %(memory_level1)s
+
+    %(n_jobs)s
+
+    %(verbose0)s
+
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+    %(cmap)s
+        default="inferno"
+        Only relevant for the report figures.
+
+    %(clean_args)s
+
+    Attributes
+    ----------
+    %(clean_args_)s
+
+    mask_img_ : A 1D binary :obj:`~nilearn.surface.SurfaceImage`
+        The mask of the data, or the one computed from ``imgs`` passed to fit.
+        If a ``mask_img`` is passed at masker construction,
+        then ``mask_img_`` is the resulting binarized version of it
+        where each vertex is ``True`` if all values across samples
+        (for example across timepoints) is finite value different from 0.
+
+    memory_ : joblib memory cache
+
+    n_elements_ : :obj:`int` or None
+        number of vertices included in mask
+
     """
 
     def __init__(
@@ -88,13 +147,15 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags(surf_img=True, niimg_like=False, masker=True)
+            return tags(
+                surf_img=True, niimg_like=False, masker=True, multi_masker=True
+            )
 
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(
-            surf_img=True, niimg_like=False, masker=True
+            surf_img=True, niimg_like=False, masker=True, multi_masker=True
         )
         return tags
 
@@ -120,10 +181,5 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         check_params(self.__dict__)
         if imgs is not None:
             self._check_imgs(imgs)
-
-            if isinstance(imgs, SurfaceImage) and any(
-                x.ndim == 1 for x in imgs.data.parts.values()
-            ):
-                raise ValueError("should only be SurfaceImage should >=2D.")
 
         return self._fit(imgs)

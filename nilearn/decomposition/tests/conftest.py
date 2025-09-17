@@ -300,7 +300,7 @@ def _make_volume_data_from_components(
     shape,
     rng,
     n_subjects,
-):
+) -> list[Nifti1Image]:
     """Create a "multi-subject" dataset of volume data."""
     background = -0.01 * rng.normal(size=shape) - 2
     background = background[..., np.newaxis]
