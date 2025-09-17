@@ -544,15 +544,22 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         # Create and fit appropriate MapsMasker for transform
         # and inverse_transform
+        maps_masker_kwargs = {
+            "memory": self.memory,
+            "memory_level": self.memory_level,
+        }
         if isinstance(self.masker_, SurfaceMasker):
             self.maps_masker_ = SurfaceMapsMasker(
-                self.components_img_, self.masker_.mask_img_
+                self.components_img_,
+                self.masker_.mask_img_,
+                **maps_masker_kwargs,
             )
         else:
             self.maps_masker_ = NiftiMapsMasker(
                 self.components_img_,
                 self.masker_.mask_img_,
                 resampling_target="maps",
+                **maps_masker_kwargs,
             )
         self.maps_masker_.fit()
 
