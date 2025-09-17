@@ -421,9 +421,11 @@ def test_filter_and_mask_error(affine_eye):
 
     with pytest.raises(
         DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
+        match=(
+            r"Input data has incompatible dimensionality: "
+            r"Expected dimension is 3D and you provided "
+            r"a 4D image."
+        ),
     ):
         filter_and_mask(data_img, mask_img, params)
 

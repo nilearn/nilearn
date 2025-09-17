@@ -174,8 +174,8 @@ def test_nifti_maps_masker_resampling_errors(
     with pytest.raises(
         ValueError,
         match=(
-            "resampling_target has been set to 'mask' "
-            "but no mask has been provided."
+            r"resampling_target has been set to 'mask' "
+            r"but no mask has been provided."
         ),
     ):
         masker.fit()

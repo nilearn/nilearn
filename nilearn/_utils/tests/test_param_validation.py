@@ -205,5 +205,5 @@ def test_check_params_not_necessary():
         check_params(locals())
         return foo
 
-    with pytest.raises(ValueError, match="No known parameter to check."):
+    with pytest.raises(ValueError, match=r"No known parameter to check."):
         f_with_unknown_param(foo=1)

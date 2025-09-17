@@ -153,7 +153,7 @@ def test_anisotropic_sphere_extraction(rng, affine_eye):
 def test_errors():
     """Check seed input."""
     masker = NiftiSpheresMasker(([1, 2]), radius=0.2)
-    with pytest.raises(ValueError, match="Seeds must be a list .+"):
+    with pytest.raises(ValueError, match=r"Seeds must be a list .+"):
         masker.fit()
 
 

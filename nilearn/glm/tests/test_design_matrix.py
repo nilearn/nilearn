@@ -120,13 +120,13 @@ def test_design_matrix_regressors_provided_manually_errors(rng, frame_times):
     ax = rng.standard_normal(size=(len(frame_times) - 1, 4))
     with pytest.raises(
         AssertionError,
-        match="Incorrect specification of additional regressors:.",
+        match=r"Incorrect specification of additional regressors:.",
     ):
         make_first_level_design_matrix(frame_times, add_regs=ax)
 
     ax = rng.standard_normal(size=(len(frame_times), 4))
     with pytest.raises(
-        ValueError, match="Incorrect number of additional regressor names."
+        ValueError, match=r"Incorrect number of additional regressor names."
     ):
         make_first_level_design_matrix(
             frame_times, add_regs=ax, add_reg_names=""
