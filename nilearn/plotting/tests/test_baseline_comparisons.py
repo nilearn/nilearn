@@ -323,6 +323,12 @@ def test_plot_surf_surface_plotly(plot_func, view, hemi):
     backend.
     """
     surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
     return plot_func(
         surf_img.mesh,
         surf_img,
@@ -368,6 +374,12 @@ def test_plot_surf_surface_colorbar_plotly(
 ):
     """Test surface plotting functions with colorbars using plotly backend."""
     surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
     return plot_func(
         surf_img.mesh,
         surf_img,
