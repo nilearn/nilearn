@@ -112,13 +112,6 @@ jobs:
                 tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
                 tox run -e plot_test_timing
 
-        -   name: Upload test results
-            if: success() || failure()
-            uses: actions/upload-artifact@v4
-            with:
-                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_results
-                path: results
-
         -   name: Upload test report
             if: success() || failure()
             uses: actions/upload-artifact@v4
