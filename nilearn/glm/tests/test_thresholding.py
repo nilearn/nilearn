@@ -193,7 +193,8 @@ def test_threshold_stats_img_errors(img_3d_rand_eye):
         threshold_stats_img(None, None, alpha=0.05, height_control="plop")
 
     with pytest.raises(
-        ValueError, match="should not be a negative value when two_sided=True."
+        ValueError,
+        match=r"should not be a negative value when two_sided=True.",
     ):
         threshold_stats_img(
             img_3d_rand_eye, height_control=None, threshold=-2, two_sided=True
