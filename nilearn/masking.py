@@ -13,7 +13,11 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import get_border_data, largest_connected_component
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
+from nilearn._utils.niimg_conversions import (
+    check_niimg,
+    check_niimg_3d,
+    check_same_fov,
+)
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets import (
@@ -21,7 +25,7 @@ from nilearn.datasets import (
     load_mni152_template,
     load_mni152_wm_template,
 )
-from nilearn.exceptions import NotImplementedWarning
+from nilearn.exceptions import MaskWarning, NotImplementedWarning
 from nilearn.image import get_data, new_img_like, resampling
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -41,13 +45,6 @@ __all__ = [
     "intersect_masks",
     "unmask",
 ]
-
-
-class _MaskWarning(UserWarning):
-    """A class to always raise warnings."""
-
-
-warnings.simplefilter("always", _MaskWarning)
 
 
 def load_mask_img(mask_img, allow_empty=False):
@@ -195,23 +192,38 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
         Intersection of all masks.
     """
     check_params(locals())
-    if len(mask_imgs) == 0:
-        raise ValueError("No mask provided for intersection")
-    grp_mask = None
-    first_mask, ref_affine = load_mask_img(mask_imgs[0], allow_empty=True)
-    ref_shape = first_mask.shape
+
     if threshold > 1:
         raise ValueError("The threshold should be smaller than 1")
     if threshold < 0:
         raise ValueError("The threshold should be greater than 0")
     threshold = min(threshold, 1 - 1.0e-7)
 
+    if len(mask_imgs) == 0:
+        raise ValueError("No mask provided for intersection")
+
+    mask_types = []
+    for i, x in enumerate(mask_imgs):
+        if not isinstance(x, NiimgLike):
+            mask_types.append(f"mask_imgs[{i}] = {x.__class__.__name__}")
+    if mask_types:
+        raise TypeError(
+            "All masks must be a 3D Niimg-like object. "
+            f"Got: {', '.join(mask_types)}."
+        )
+
+    grp_mask = None
+
+    # load all masks once
+    mask_imgs = [check_niimg_3d(x) for x in mask_imgs]
+
+    kwargs = {"raise_error": True}
+    check_same_fov(*mask_imgs, **kwargs)
+
+    _, ref_affine = load_mask_img(mask_imgs[0], allow_empty=True)
+
     for this_mask in mask_imgs:
-        mask, affine = load_mask_img(this_mask, allow_empty=True)
-        if np.any(affine != ref_affine):
-            raise ValueError("All masks should have the same affine")
-        if np.any(mask.shape != ref_shape):
-            raise ValueError("All masks should have the same shape")
+        mask, _ = load_mask_img(this_mask, allow_empty=True)
 
         if grp_mask is None:
             # We use int here because there may be a lot of masks to merge
@@ -246,7 +258,7 @@ def _post_process_mask(
     if not mask_any:
         warnings.warn(
             f"Computed an empty mask. {warning_msg}",
-            _MaskWarning,
+            MaskWarning,
             stacklevel=find_stack_level(),
         )
     if connected and mask_any:

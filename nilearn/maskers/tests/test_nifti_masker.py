@@ -13,7 +13,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils import data_gen, exceptions
+from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.estimator_checks import (
     check_estimator,
@@ -21,6 +21,7 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask
@@ -157,7 +158,9 @@ def test_matrix_orientation():
     # all signals being identical, standardizing along the wrong axis
     # would leave a null signal. Along the correct axis, the step remains.
     fmri, mask = data_gen.generate_fake_fmri(shape=(40, 41, 42), kind="step")
-    masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
+    masker = NiftiMasker(
+        mask_img=mask, standardize="zscore_sample", detrend=True
+    )
     timeseries = masker.fit_transform(fmri)
     assert timeseries.shape[0] == fmri.shape[3]
     assert timeseries.shape[1] == get_data(mask).sum()
@@ -417,7 +420,7 @@ def test_filter_and_mask_error(affine_eye):
     params = get_params(NiftiMasker, masker)
 
     with pytest.raises(
-        exceptions.DimensionError,
+        DimensionError,
         match="Input data has incompatible dimensionality: "
         "Expected dimension is 3D and you provided "
         "a 4D image.",

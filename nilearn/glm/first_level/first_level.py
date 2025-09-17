@@ -1,8 +1,6 @@
 """Contains the GLM and contrast classes that are meant to be the main \
 objects of fMRI data analyses.
 
-Author: Bertrand Thirion, Martin Perez-Guevara, 2016
-
 """
 
 from __future__ import annotations
@@ -33,6 +31,7 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
     check_parameter_in_allowed,
     check_params,
     check_run_sample_masks,
@@ -62,9 +61,9 @@ from nilearn.interfaces.bids.query import (
 )
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
-from nilearn.maskers import SurfaceMasker
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
-from nilearn.typing import NiimgLike
+from nilearn.typing import NiimgLike, Tr
 
 
 def mean_scaling(Y, axis=0):
@@ -407,9 +406,7 @@ class FirstLevelModel(BaseGLM):
 
     %(memory_level)s
 
-    standardize : :obj:`bool`, default=False
-        If standardize is True, the time-series are centered and normed:
-        their variance is put to 1 in the time dimension.
+    %(standardize_false)s
 
     signal_scaling : False, :obj:`int` or (int, int), default=0
         If not False, fMRI signals are
@@ -1148,6 +1145,48 @@ class FirstLevelModel(BaseGLM):
 
         return outputs if output_type == "all" else output
 
+    def _make_stat_maps(
+        self, contrasts, output_type="z_score", first_level_contrast=None
+    ):
+        """Given a model and contrasts, return the corresponding z-maps.
+
+        Parameters
+        ----------
+        contrasts : Dict[str, ndarray or str]
+            Dict of contrasts for a first or second level model.
+            Corresponds to the contrast_def for the FirstLevelModel
+            (nilearn.glm.first_level.FirstLevelModel.compute_contrast)
+            & second_level_contrast for a SecondLevelModel
+            (nilearn.glm.second_level.SecondLevelModel.compute_contrast)
+
+        output_type : :obj:`str`, default='z_score'
+            The type of statistical map to retain from the contrast.
+
+            .. versionadded:: 0.9.2
+
+        first_level_contrast : None
+
+            Only for consistent API with SecondLevelModel.
+
+        Returns
+        -------
+        statistical_maps : Dict[str, niimg] or Dict[str, Dict[str, niimg]]
+            Dict of statistical z-maps keyed to contrast names/titles.
+
+        See Also
+        --------
+        nilearn.glm.first_level.FirstLevelModel.compute_contrast
+
+        """
+        del first_level_contrast
+        return {
+            contrast_name: self.compute_contrast(
+                contrast_data,
+                output_type=output_type,
+            )
+            for contrast_name, contrast_data in contrasts.items()
+        }
+
     def _get_element_wise_model_attribute(
         self, attribute, result_as_time_series
     ):
@@ -1222,9 +1261,6 @@ class FirstLevelModel(BaseGLM):
         run_img : Niimg-like or :obj:`~nilearn.surface.SurfaceImage` object
             Used for setting up the masker object.
         """
-        # Local import to prevent circular imports
-        from nilearn.maskers import NiftiMasker
-
         masker_type = "nii"
         # all elements of X should be of the similar type by now
         # so we can only check the first one
@@ -1452,21 +1488,16 @@ def _check_length_match(list_1, list_2, var_name_1, var_name_2):
 
 def _check_repetition_time(t_r):
     """Check that the repetition time is a positive number."""
-    if not isinstance(t_r, (float, int)):
-        raise TypeError(
-            f"'t_r' must be a float or an integer. Got {type(t_r)} instead."
-        )
+    check_is_of_allowed_type(t_r, Tr, "t_r")
     if t_r <= 0:
         raise ValueError(f"'t_r' must be positive. Got {t_r} instead.")
 
 
 def _check_slice_time_ref(slice_time_ref):
     """Check that slice_time_ref is a number between 0 and 1."""
-    if not isinstance(slice_time_ref, (float, int)):
-        raise TypeError(
-            "'slice_time_ref' must be a float or an integer. "
-            f"Got {slice_time_ref.__class__.__name__} instead."
-        )
+    check_is_of_allowed_type(
+        slice_time_ref, (float, int, np.floating, np.integer), "slice_time_ref"
+    )
     if slice_time_ref < 0 or slice_time_ref > 1:
         raise ValueError(
             "'slice_time_ref' must be between 0 and 1. "
@@ -2311,20 +2342,12 @@ def _check_args_first_level_from_bids(
         Fullpath of the BIDS dataset derivative folder.
 
     """
-    if not isinstance(dataset_path, (str, Path)):
-        raise TypeError(
-            "'dataset_path' must be a string or pathlike. "
-            f"Got {type(dataset_path)} instead."
-        )
+    check_is_of_allowed_type(dataset_path, (str, Path), "dataset_path")
     dataset_path = Path(dataset_path)
     if not dataset_path.exists():
         raise ValueError(f"'dataset_path' does not exist:\n{dataset_path}")
 
-    if not isinstance(derivatives_folder, str):
-        raise TypeError(
-            "'derivatives_folder' must be a string. "
-            f"Got {derivatives_folder.__class__.__name__} instead."
-        )
+    check_is_of_allowed_type(derivatives_folder, (str,), "derivatives_folder")
     derivatives_folder = dataset_path / derivatives_folder
     if not derivatives_folder.exists():
         raise ValueError(
@@ -2337,17 +2360,11 @@ def _check_args_first_level_from_bids(
     if space_label is not None:
         check_bids_label(space_label)
 
-    if not isinstance(sub_labels, list):
-        raise TypeError(
-            f"sub_labels must be a list, instead {type(sub_labels)} was given"
-        )
+    check_is_of_allowed_type(sub_labels, (list,), "sub_labels")
     for sub_label_ in sub_labels:
         check_bids_label(sub_label_)
 
-    if not isinstance(img_filters, list):
-        raise TypeError(
-            f"'img_filters' must be a list. Got {type(img_filters)} instead."
-        )
+    check_is_of_allowed_type(img_filters, (list,), "img_filters")
     supported_filters = [
         *bids_entities()["raw"],
         *bids_entities()["derivatives"],
