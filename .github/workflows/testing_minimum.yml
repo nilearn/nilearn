@@ -78,6 +78,16 @@ jobs:
                 python -m pip install --upgrade pip setuptools
                 pip install ${{ matrix.min_dep }}
 
+        -   name: Install oldest kaleido if needed (not windows)
+            if: ${{ matrix.os != 'windows-latest' && contains(fromJSON('["plotly"]'),  matrix.min_dep) }}
+            run: |
+                pip install kaleido==0.2.1
+
+        -   name: Install oldest kaleido if needed (windows)
+            if: ${{ matrix.os == 'windows-latest' && contains(fromJSON('["plotly"]'),  matrix.min_dep) }}
+            run: |
+                pip install kaleido==0.1.0.post1
+
         -   name: Install nilearn
             run: pip install .[plotting,test]
 
