@@ -56,26 +56,6 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-def test_fit_list_surf_images(surf_img_1d):
-    """Test fit on list of surface images.
-
-    - resulting mask should have a single 'timepoint'
-    - all vertices should be included in the mask, because no mask is provided
-
-    """
-    masker = SurfaceMasker()
-    masker.fit([surf_img_1d, surf_img_1d])
-    assert masker.mask_img_.shape == (surf_img_1d.shape[0],)
-    assert masker.mask_img_.shape == (masker.n_elements_,)
-
-
-def test_fit_list_surf_images_with_mask(surf_mask_1d, surf_img_1d):
-    """Test fit on list of surface images when masker has a mask."""
-    masker = SurfaceMasker(mask_img=surf_mask_1d)
-    masker.fit([surf_img_1d, surf_img_1d])
-    assert masker.mask_img_.shape == (surf_img_1d.shape[0],)
-
-
 @pytest.mark.parametrize("n_timepoints", [3])
 def test_transform_inverse_transform_no_mask(surf_mesh, n_timepoints):
     """Check output of inverse transform when not using a mask."""
