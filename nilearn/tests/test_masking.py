@@ -72,12 +72,12 @@ def test_load_mask_img_error_inputs(surf_img_2d, img_4d_ones_eye):
 
     with pytest.raises(
         TypeError,
-        match="Expected dimension is 3D and you provided a 4D image.",
+        match=r"Expected dimension is 3D and you provided a 4D image.",
     ):
         load_mask_img(img_4d_ones_eye)
 
     with pytest.raises(
-        ValueError, match="Data for each part of .* should be 1D."
+        ValueError, match=r"Data for each part of .* should be 1D."
     ):
         load_mask_img(surf_img_2d())
 
@@ -334,7 +334,7 @@ def test_compute_brain_mask():
     assert (brain_data == get_data(mask_img1)).all()
 
     # Check that error is raised if mask type is unknown
-    with pytest.raises(ValueError, match="Unknown mask type foo."):
+    with pytest.raises(ValueError, match=r"Unknown mask type foo."):
         compute_brain_mask(img, verbose=1, mask_type="foo")
 
 
@@ -442,7 +442,7 @@ def test_apply_mask_errors(affine_eye):
     # Check that full masking raises error
     with pytest.raises(
         ValueError,
-        match="The mask is invalid as it is empty: it masks all data.",
+        match=r"The mask is invalid as it is empty: it masks all data.",
     ):
         apply_mask(data_img, full_mask_img)
 
@@ -450,13 +450,13 @@ def test_apply_mask_errors(affine_eye):
     mask[10, 10, 10] = 2
     with pytest.raises(
         ValueError,
-        match="Background of the mask must be represented with 0.",
+        match=r"Background of the mask must be represented with 0.",
     ):
         apply_mask(data_img, Nifti1Image(mask, affine_eye))
 
     mask[15, 15, 15] = 3
     with pytest.raises(
-        ValueError, match="Given mask is not made of 2 values.*"
+        ValueError, match=r"Given mask is not made of 2 values.*"
     ):
         apply_mask(Nifti1Image(data, affine_eye), mask_img)
 
@@ -754,7 +754,7 @@ def test_intersect_masks_errors(affine_eye, surf_img_1d):
     ):
         intersect_masks([shape_a_affine_a, shape_a_affine_a], threshold=2)
     with pytest.raises(
-        TypeError, match="All masks must be a 3D Niimg-like object."
+        TypeError, match=r"All masks must be a 3D Niimg-like object."
     ):
         intersect_masks([shape_a_affine_a, surf_img_1d])
     with pytest.raises(
@@ -809,7 +809,7 @@ def test_compute_multi_brain_mask_error():
     ]
     with pytest.raises(
         ValueError,
-        match="Field of view of image #1 is different from reference FOV.",
+        match=r"Field of view of image #1 is different from reference FOV.",
     ):
         compute_multi_brain_mask(imgs)
 

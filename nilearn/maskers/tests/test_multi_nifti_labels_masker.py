@@ -135,11 +135,11 @@ def test_multi_nifti_labels_masker_errors(
     masker11.fit()
 
     with pytest.raises(
-        ValueError, match="Images have different affine matrices."
+        ValueError, match=r"Images have different affine matrices."
     ):
         masker11.transform(fmri12_img)
 
-    with pytest.raises(ValueError, match="Images have incompatible shapes."):
+    with pytest.raises(ValueError, match=r"Images have incompatible shapes."):
         masker11.transform(fmri21_img)
 
     masker11 = MultiNiftiLabelsMasker(
