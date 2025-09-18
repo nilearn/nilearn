@@ -79,12 +79,12 @@ jobs:
                 pip install ${{ matrix.min_dep }}
 
         -   name: Install oldest kaleido if needed (not windows)
-            if: ${{ matrix.os != 'windows-latest' && contains(fromJSON('["plotly"]'),  matrix.min_dep) }}
+            if: ${{ matrix.os != 'windows-latest' && matrix.min_dep == 'plotly==5.0.0' }}
             run: |
                 pip install kaleido==0.2.1
 
         -   name: Install oldest kaleido if needed (windows)
-            if: ${{ matrix.os == 'windows-latest' && contains(fromJSON('["plotly"]'),  matrix.min_dep) }}
+            if: ${{ matrix.os == 'windows-latest' &&  matrix.min_dep == 'plotly==5.0.0' }}
             run: |
                 pip install kaleido==0.1.0.post1
 
