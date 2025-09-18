@@ -419,7 +419,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             img = mean_img(img)
             vmin, vmax = img.data._get_min_max()
 
-        fig = self._generate_figure(img, self.mask_img_, vmin, vmax)
+        fig = self._generate_figure(
+            img=img, roi_map=self.mask_img_, vmin=vmin, vmax=vmax
+        )
 
         return fig
 

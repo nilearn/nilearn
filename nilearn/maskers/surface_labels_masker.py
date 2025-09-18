@@ -569,6 +569,6 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             img = mean_img(img)
             vmin, vmax = img.data._get_min_max()
 
-        fig = self._generate_figure(img, roi_map, vmin, vmax)
+        fig = self._generate_figure(img, roi_map=roi_map, vmin=vmin, vmax=vmax)
 
         return fig
