@@ -614,6 +614,18 @@ lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
 """
 
+# mask_decomposition
+docdict["mask_decomposition"] = """
+mask : Niimg-like object,  :obj:`~nilearn.maskers.MultiNiftiMasker` or
+        :obj:`~nilearn.surface.SurfaceImage` or
+        :obj:`~nilearn.maskers.MultiSurfaceMasker` object, or None \
+        default=None
+    Mask to be used on data. If an instance of masker is passed,
+    then its mask will be used. If no mask is given, for Nifti images,
+    it will be computed automatically by a MultiNiftiMasker with default
+    parameters; for surface images, all the vertices will be used.
+"""
+
 # masker_lut
 docdict["masker_lut"] = """lut : :obj:`pandas.DataFrame` or :obj:`str` \
             or :obj:`pathlib.Path` to a TSV file or None, default=None
