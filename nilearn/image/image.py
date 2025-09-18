@@ -1343,7 +1343,7 @@ def math_img(formula, copy_header_from=None, **imgs):
 
 @fill_doc
 def binarize_img(
-    img, threshold=0.0, mask_img=None, two_sided=True, copy_header=True
+    img, threshold=0.0, mask_img=None, two_sided=False, copy_header=True
 ):
     """Binarize an image such that its values are either 0 or 1.
 
@@ -1370,13 +1370,19 @@ def binarize_img(
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
-    two_sided : :obj:`bool`, default=True
+    two_sided : :obj:`bool`, default=False
         If `True`, threshold is applied to the absolute value of the image.
         If `False`, threshold is applied to the original value of the image.
 
         .. versionadded:: 0.10.3
 
-    %(copy_header)s
+        .. versionchanged:: 0.13.0dev
+
+            Default was changed to False.
+
+     %(copy_header)s
+
+        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
         .. versionadded:: 0.11.0
 
@@ -1403,15 +1409,6 @@ def binarize_img(
      >>> img = binarize_img(anatomical_image)
 
     """
-    if two_sided is True:
-        warnings.warn(
-            'The current default behavior for the "two_sided" argument '
-            'is  "True". This behavior will be changed to "False" in '
-            "version 0.13.",
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
-
     return math_img(
         "img.astype(bool).astype('int8')",
         img=threshold_img(
