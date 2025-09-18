@@ -747,7 +747,7 @@ class BaseSlicer:
                 cmap, norm, offset, (*self._brain_color, 0.0)
             )
 
-        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks=5)
+        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset)
         bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
 
         self._cbar = ColorbarBase(
