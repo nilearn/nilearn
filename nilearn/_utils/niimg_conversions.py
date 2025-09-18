@@ -114,7 +114,7 @@ def iter_check_niimg(
 
     Parameters
     ----------
-    niimgs : list of niimg or glob pattern
+    niimgs : list of niimg or glob pattern or itertools.tee instance
         Image to iterate over.
 
     ensure_ndim : integer, optional
@@ -149,7 +149,9 @@ def iter_check_niimg(
 
     i = -1
 
-    if isinstance(niimgs[0], SurfaceImage):
+    if not isinstance(niimgs, itertools._tee) and isinstance(
+        niimgs[0], SurfaceImage
+    ):
         for i, x in enumerate(niimgs):
             # TODO
             # add some checks
