@@ -651,6 +651,7 @@ def test_ica_aroma(tmp_path, fmriprep_version):
             regular_nii, strategy=("ica_aroma",), ica_aroma="invalid"
         )
 
+
 def test_tedana_happy_path(tmp_path):
     """Test TEDANA related file input."""
     # create a tedana nifti file with no confounds
@@ -676,6 +677,7 @@ def test_tedana_happy_path(tmp_path):
         and any("rejected" in col for col in conf.columns)
         and any("accepted" in col for col in conf.columns)
     )
+
 
 def test_tedana_errors_warnings(tmp_path):
     """Test TEDANA related file input."""
@@ -711,7 +713,7 @@ def test_tedana_errors_warnings(tmp_path):
 
     # check that combining tedana with other strategies raises an warning
     with pytest.warns(UserWarning, match="TEDANA strategy"):
-        conf, _ = load_confounds(
+        _conf, _ = load_confounds(
             tedana_nii,
             strategy=("tedana", "high_pass", "ica_aroma", "global_signal"),
             motion="basic",
