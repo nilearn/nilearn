@@ -325,7 +325,7 @@ def test_resampling_error_checks(tmp_path, force_resample, data, affine_eye):
         )
 
     # Invalid shape
-    with pytest.raises(ValueError, match="shape .* should be .* 3D grid"):
+    with pytest.raises(ValueError, match=r"shape .* should be .* 3D grid"):
         resample_img(
             img,
             target_shape=(2, 3),

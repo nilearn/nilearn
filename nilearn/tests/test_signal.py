@@ -645,7 +645,7 @@ def test_clean_frequencies():
     assert cleaned_signal.max() > 0.9
 
     with pytest.raises(
-        ValueError, match="High pass .* greater than .* low pass"
+        ValueError, match=r"High pass .* greater than .* low pass"
     ):
         clean(sx, low_pass=0.4, high_pass=0.5, t_r=t_r)
 
@@ -751,19 +751,19 @@ def test_clean_errros(signals):
 
     with pytest.raises(
         ValueError,
-        match="Repetition time .* and low cutoff frequency .*",
+        match=r"Repetition time .* and low cutoff frequency .*",
     ):
         clean(signals, filter="cosine", t_r=None, high_pass=0.008)
 
     with pytest.raises(
         ValueError,
-        match="Repetition time .* must be specified for butterworth.",
+        match=r"Repetition time .* must be specified for butterworth.",
     ):
         # using butterworth filter here
         clean(signals, t_r=None, low_pass=0.01)
 
     with pytest.raises(
-        ValueError, match="Filter method not_implemented not implemented."
+        ValueError, match=r"Filter method not_implemented not implemented."
     ):
         clean(signals, filter="not_implemented")
 
@@ -1067,10 +1067,6 @@ def test_clean_t_r_highpass_float_int(t_r, high_pass):
         ]
     ).T
 
-    # Create confound
-    _, _, confounds = generate_signals(
-        n_features=10, n_confounds=10, length=100
-    )
     # TODO (nilearn >= 0.14) remove catch DeprecationWarning
     with pytest.warns(DeprecationWarning):
         clean(
@@ -1657,10 +1653,7 @@ def test_handle_scrubbed_volumes_exception():
     sample_mask = np.delete(sample_mask, scrub_index)
 
     with pytest.raises(
-        AllVolumesRemovedError,
-        match="The size of the sample mask is 0. "
-        "All volumes were marked as motion outliers "
-        "can not proceed. ",
+        AllVolumesRemovedError, match="The size of the sample mask is 0"
     ):
         _handle_scrubbed_volumes(
             signals, confounds, sample_mask, "butterworth", 2.5, True

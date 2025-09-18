@@ -39,7 +39,7 @@ def contrasts(rk):
 def flm(rk):
     """Generate first level model."""
     shapes = ((7, 7, 7, 5),)
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
     )
     # generate_fake_fmri_data_and_design
