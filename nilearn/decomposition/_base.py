@@ -279,7 +279,7 @@ def _mask_and_reduce_single(
     else:
         n_samples = ceil(data_n_samples * reduction_ratio)
 
-    U, S, V = masker._cache(_fast_svd, func_memory_level=3)(
+    U, S, _ = masker._cache(_fast_svd, func_memory_level=3)(
         this_data.T, n_samples, random_state=random_state
     )
     U = U.T.copy()
@@ -313,9 +313,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     %(smoothing_fwhm)s
 
-    standardize : boolean, default=True
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+    %(standardize_true)s
 
     standardize_confounds : boolean, default=True
         If standardize_confounds is True, the confounds are z-scored:

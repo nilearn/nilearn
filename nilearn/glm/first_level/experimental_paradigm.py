@@ -17,6 +17,7 @@ from pandas.api.types import is_numeric_dtype
 
 from nilearn._utils import logger
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_is_of_allowed_type
 
 
 def check_events(events):
@@ -81,12 +82,7 @@ def check_events(events):
                 - ``'duration'``
 
     """
-    # Check that events is a Pandas DataFrame
-    if not isinstance(events, pd.DataFrame):
-        raise TypeError(
-            "Events should be a Pandas DataFrame. "
-            f"A {events.__class__.__name__} was provided instead."
-        )
+    check_is_of_allowed_type(events, (pd.DataFrame,), "events")
 
     events = _check_columns(events)
 

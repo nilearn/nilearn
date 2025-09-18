@@ -18,7 +18,6 @@ from scipy.stats import scoreatpercentile
 from nilearn import signal
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.helpers import (
     check_copy_header,
     stringify_path,
@@ -37,8 +36,13 @@ from nilearn._utils.niimg_conversions import (
     iter_check_niimg,
 )
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn._utils.param_validation import check_params, check_threshold
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+    check_threshold,
+)
 from nilearn._utils.path_finding import resolve_globbing
+from nilearn.exceptions import DimensionError
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -1363,7 +1367,7 @@ def math_img(formula, copy_header_from=None, **imgs):
 
 
 def binarize_img(
-    img, threshold=0.0, mask_img=None, two_sided=True, copy_header=False
+    img, threshold=0.0, mask_img=None, two_sided=False, copy_header=False
 ):
     """Binarize an image such that its values are either 0 or 1.
 
@@ -1390,11 +1394,15 @@ def binarize_img(
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
-    two_sided : :obj:`bool`, default=True
+    two_sided : :obj:`bool`, default=False
         If `True`, threshold is applied to the absolute value of the image.
         If `False`, threshold is applied to the original value of the image.
 
         .. versionadded:: 0.10.3
+
+        .. versionchanged:: 0.13.0dev
+
+            Default was changed to False.
 
     copy_header : :obj:`bool`, default=False
         Whether to copy the header of the input image to the output.
@@ -1428,15 +1436,6 @@ def binarize_img(
      >>> img = binarize_img(anatomical_image, copy_header=True)
 
     """
-    if two_sided is True:
-        warnings.warn(
-            'The current default behavior for the "two_sided" argument '
-            'is  "True". This behavior will be changed to "False" in '
-            "version 0.13.",
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
-
     return math_img(
         "img.astype(bool).astype('int8')",
         img=threshold_img(
@@ -1508,8 +1507,7 @@ def clean_img(
         If detrending should be applied on timeseries
         (before confound removal).
 
-    standardize : :obj:`bool`, default=True
-        If True, returned signals are set to unit variance.
+    %(standardize_true)s
 
     confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of \
         Confounds timeseries. default=None
@@ -1572,8 +1570,9 @@ def clean_img(
         nilearn.signal.clean
 
     """
+    check_params(locals())
     # Avoid circular import
-    from .. import masking
+    from nilearn import masking
 
     # Check if t_r is set, otherwise propose t_r from imgs header
     if (low_pass is not None or high_pass is not None) and t_r is None:
@@ -1916,8 +1915,7 @@ def copy_img(img):
     img_copy : image
         copy of input (data, affine and header)
     """
-    if not isinstance(img, spatialimages.SpatialImage):
-        raise TypeError("Input value is not an image")
+    check_is_of_allowed_type(img, (spatialimages.SpatialImage,), "img")
     return new_img_like(
         img,
         safe_get_data(img, copy_data=True),
@@ -1938,7 +1936,7 @@ def get_indices_from_image(image) -> np.ndarray:
     else:
         raise TypeError(
             "Image to extract indices from must be one of: "
-            "Niimg-Like, SurfaceIamge, numpy array. "
+            "Niimg-Like, SurfaceImage, numpy array. "
             f"Got {image.__class__.__name__}"
         )
     return np.unique(data)

@@ -401,14 +401,15 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
 
-    %(standardize)s
+    %(standardize_true)s
 
         .. note::
 
             Added to control passing value to `standardize` of ``signal.clean``
             to call new behavior since passing "zscore" or True (default) is
-            deprecated. This parameter will be deprecated in version 0.13 and
-            removed in version 0.15.
+            deprecated.
+            This parameter will be changed to "zscore_sample"
+            in version 0.14 and removed in version 0.15.
 
     Attributes
     ----------
