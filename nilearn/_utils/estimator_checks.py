@@ -555,12 +555,12 @@ def nilearn_check_generator(estimator: BaseEstimator):
         requires_y = getattr(tags.target_tags, "required", False)
 
     yield (clone(estimator), check_tags)
-    yield (clone(estimator), check_transformer_set_output)
 
     if isinstance(estimator, CacheMixin):
         yield (clone(estimator), check_img_estimator_cache_warning)
 
     yield (clone(estimator), check_img_estimator_doc_attributes)
+    yield (clone(estimator), check_estimator_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
         yield (clone(estimator), check_fit_returns_self)
@@ -901,11 +901,48 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig):
 
 
 @ignore_warnings()
-def check_transformer_set_output(estimator):
-    """Check that set_ouput throws a not implemented error."""
-    if hasattr(estimator, "transform"):
+def check_estimator_set_output(estimator_orig):
+    """Check that set_ouput can be used."""
+    if not hasattr(estimator_orig, "transform") or isinstance(
+        estimator_orig, (SearchLight, ReNA)
+    ):
+        return
+
+    if isinstance(
+        estimator_orig, (_BaseDecomposition, ConnectivityMeasure)
+    ) or is_multimasker(estimator_orig):
         with pytest.raises(NotImplementedError):
-            estimator.set_output(transform="default")
+            estimator_orig.set_output(transform="pandas")
+        return
+
+    estimator = clone(estimator_orig)
+    estimator = fit_estimator(estimator)
+
+    img, _ = generate_data_to_fit(estimator)
+
+    signal = estimator.transform(img)
+    if isinstance(estimator, _BaseDecomposition):
+        assert isinstance(signal[0], np.ndarray)
+    else:
+        assert isinstance(signal, np.ndarray)
+
+    estimator.set_output(transform="pandas")
+    signal = estimator.transform(img)
+    assert isinstance(signal, pd.DataFrame)
+
+    estimator.set_output(transform="polars")
+    # if user wants to output to polars,
+    # sklearn will raise error if it's not installed
+    with pytest.raises(ImportError, match="requires polars to be installed"):
+        signal = estimator.transform(img)
+
+    # check on 1D image for estimators that accepts surface
+    if accept_surf_img_input(estimator_orig):
+        estimator = clone(estimator_orig)
+        estimator = fit_estimator(estimator)
+        estimator.set_output(transform="pandas")
+        signal = estimator.transform(img)
+        assert isinstance(signal, pd.DataFrame)
 
 
 @ignore_warnings()
@@ -1555,13 +1592,13 @@ def check_img_estimator_n_elements(estimator):
                 X = [X]
             with pytest.raises(
                 ValueError,
-                match="Input to 'inverse_transform' has wrong shape.",
+                match=r"Input to 'inverse_transform' has wrong shape.",
             ):
                 getattr(estimator, method)(X)
         elif method in ["predict", "decision_function"]:
             with pytest.raises(
                 ValueError,
-                match="X has .* features per sample; expecting .*",
+                match=r"X has .* features per sample; expecting .*",
             ):
                 getattr(estimator, method)(X)
 
@@ -1603,7 +1640,7 @@ def check_supervised_img_estimator_y_no_nan(estimator) -> None:
 
     for value in [np.inf, np.nan]:
         y[5,] = value
-        with pytest.raises(ValueError, match="Input .*contains"):
+        with pytest.raises(ValueError, match=r"Input .*contains"):
             estimator.fit(X, y)
 
 
@@ -2711,21 +2748,21 @@ def check_surface_masker_fit_with_mask(estimator):
     # errors
     with pytest.raises(
         MeshDimensionError,
-        match="Number of vertices do not match for between meshes.",
+        match=r"Number of vertices do not match for between meshes.",
     ):
         estimator.fit(_flip_surf_img(imgs))
     with pytest.raises(
         MeshDimensionError,
-        match="Number of vertices do not match for between meshes.",
+        match=r"Number of vertices do not match for between meshes.",
     ):
         estimator.transform(_flip_surf_img(imgs))
 
     with pytest.raises(
-        MeshDimensionError, match="PolyMeshes do not have the same keys."
+        MeshDimensionError, match=r"PolyMeshes do not have the same keys."
     ):
         estimator.fit(_drop_surf_img_part(imgs))
     with pytest.raises(
-        MeshDimensionError, match="PolyMeshes do not have the same keys."
+        MeshDimensionError, match=r"PolyMeshes do not have the same keys."
     ):
         estimator.transform(_drop_surf_img_part(imgs))
 
@@ -2825,17 +2862,13 @@ def check_nifti_masker_fit_transform_5d(estimator):
     if not is_multimasker(estimator):
         with pytest.raises(
             DimensionError,
-            match="Input data has incompatible dimensionality: "
-            "Expected dimension is 4D and you provided "
-            "a list of 4D images \\(5D\\).",
+            match="Input data has incompatible dimensionality",
         ):
             estimator.transform(input_5d_img)
 
         with pytest.raises(
             DimensionError,
-            match="Input data has incompatible dimensionality: "
-            "Expected dimension is 4D and you provided "
-            "a list of 4D images \\(5D\\).",
+            match="Input data has incompatible dimensionality",
         ):
             estimator.fit_transform(input_5d_img)
 
@@ -2853,6 +2886,13 @@ def check_nifti_masker_fit_transform_5d(estimator):
         assert all(isinstance(x, np.ndarray) for x in signal)
         assert len(signal) == n_subject
         assert all(x.ndim == 2 for x in signal)
+
+        # TODO
+        # check type with set_output
+        # estimator.set_output(transform="pandas")
+        # signal = estimator.transform(input_5d_img)
+        # assert isinstance(signal, list)
+        # assert all(isinstance(x, pd.DataFrame) for x in signal)
 
 
 @ignore_warnings()
@@ -2999,7 +3039,7 @@ def check_multi_masker_with_confounds(estimator):
 
     # Mismatch n imgs and n confounds
     with pytest.raises(
-        ValueError, match="number of confounds .* unequal to number of images"
+        ValueError, match=r"number of confounds .* unequal to number of images"
     ):
         estimator.fit_transform(
             [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
@@ -3007,7 +3047,7 @@ def check_multi_masker_with_confounds(estimator):
         )
 
     with pytest.raises(
-        TypeError, match="'confounds' must be a None or a list."
+        TypeError, match=r"'confounds' must be a None or a list."
     ):
         estimator.fit_transform(
             [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
@@ -3049,7 +3089,7 @@ def check_multi_masker_transformer_sample_mask(estimator):
 
     with pytest.raises(
         ValueError,
-        match="number of sample_mask .* unequal to number of images",
+        match=r"number of sample_mask .* unequal to number of images",
     ):
         estimator.fit_transform(
             [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
@@ -3057,7 +3097,7 @@ def check_multi_masker_transformer_sample_mask(estimator):
         )
 
     with pytest.raises(
-        TypeError, match="'sample_mask' must be a None or a list."
+        TypeError, match=r"'sample_mask' must be a None or a list."
     ):
         estimator.fit_transform(
             [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],

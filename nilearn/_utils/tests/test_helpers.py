@@ -132,7 +132,7 @@ def test_rename_parameters():
     to replacement parameters and all deprecation warning are raised as
     expected.
     """
-    mock_input, replacement_params = _mock_args_for_testing_replace_parameter()
+    _, replacement_params = _mock_args_for_testing_replace_parameter()
     expected_output = ("dp0", "dp1", "up0", "up1")
     expected_warnings = [
         (
@@ -250,7 +250,7 @@ def test_compare_version(version_a, operator, version_b):
 def test_compare_version_error():
     with pytest.raises(
         ValueError,
-        match="'compare_version' received an unexpected operator <>.",
+        match=r"'compare_version' received an unexpected operator <>.",
     ):
         compare_version("0.1.0", "<>", "1.1.0")
 

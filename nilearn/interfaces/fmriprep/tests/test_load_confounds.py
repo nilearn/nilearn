@@ -116,7 +116,7 @@ def _regression(confounds, tmp_path):
     img, mask_conf, _, _, _ = _simu_img(tmp_path, trend=False, demean=False)
     confounds = _handle_non_steady(confounds)
     # Do the regression
-    masker = NiftiMasker(mask_img=mask_conf, standardize=True)
+    masker = NiftiMasker(mask_img=mask_conf, standardize="zscore_sample")
     tseries_clean = masker.fit_transform(
         img, confounds=confounds, sample_mask=None
     )

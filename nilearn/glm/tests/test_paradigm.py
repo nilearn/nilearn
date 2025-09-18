@@ -61,14 +61,14 @@ def test_check_events_errors():
     # Missing onset
     missing_onset = events.drop(columns=["onset"])
     with pytest.raises(
-        ValueError, match="The provided events data has no onset column."
+        ValueError, match=r"The provided events data has no onset column."
     ):
         check_events(missing_onset)
 
     # Missing duration
     missing_duration = events.drop(columns=["duration"])
     with pytest.raises(
-        ValueError, match="The provided events data has no duration column."
+        ValueError, match=r"The provided events data has no duration column."
     ):
         check_events(missing_duration)
 

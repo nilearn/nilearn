@@ -62,7 +62,7 @@ def _check_affine(affine):
     assert affine[2, 2] == affine[1, 1]
     assert affine[0, 0] > 0
 
-    A, b = image.resampling.to_matrix_vector(affine)
+    A, _ = image.resampling.to_matrix_vector(affine)
     assert np.all((np.abs(A) > 0.001).sum(axis=0) == 1), (
         "the affine transform was not near-diagonal"
     )
@@ -96,30 +96,30 @@ def test_threshold_data():
     data = np.arange(-3, 4)
 
     # Check that an 'auto' threshold leaves at least one element
-    data_t, mask, thresh = _threshold_data(data, threshold="auto")
+    data_t, mask, _ = _threshold_data(data, threshold="auto")
     gtruth_m = np.array([False, True, True, True, True, True, False])
     gtruth_d = np.array([-3, 0, 0, 0, 0, 0, 3])
     assert (mask == gtruth_m).all()
     assert (data_t == gtruth_d).all()
 
     # Check that threshold=None keeps everything
-    data_t, mask, thresh = _threshold_data(data, threshold=None)
+    data_t, mask, _ = _threshold_data(data, threshold=None)
     assert np.all(np.logical_not(mask))
     assert np.all(data_t == data)
 
     # Check positive threshold works
-    data_t, mask, thresh = _threshold_data(data, threshold=1)
+    data_t, mask, _ = _threshold_data(data, threshold=1)
     gtruth = np.array([False, False, True, True, True, False, False])
     assert (mask == gtruth).all()
 
     # Check 0 threshold works
-    data_t, mask, thresh = _threshold_data(data, threshold=0)
+    data_t, mask, _ = _threshold_data(data, threshold=0)
     gtruth = np.array([False, False, False, True, False, False, False])
     assert (mask == gtruth).all()
 
     # Check that overly lenient threshold returns array
     data = np.arange(3, 10)
-    data_t, mask, thresh = _threshold_data(data, threshold=2)
+    data_t, mask, _ = _threshold_data(data, threshold=2)
     gtruth = np.full(7, False)
     assert (mask == gtruth).all()
 
@@ -174,11 +174,11 @@ def test_mask_stat_map():
     img, data = _simulate_img()
 
     # Try not to threshold anything
-    mask_img, img, data_t, thresh = _mask_stat_map(img, threshold=None)
+    mask_img, img, _, _ = _mask_stat_map(img, threshold=None)
     assert np.max(get_data(mask_img)) == 0
 
     # Now threshold at zero
-    mask_img, img, data_t, thresh = _mask_stat_map(img, threshold=0)
+    mask_img, img, _, _ = _mask_stat_map(img, threshold=0)
     assert np.min((data == 0) == get_data(mask_img))
 
 
@@ -205,7 +205,7 @@ def test_get_bg_mask_and_cmap():
     # non-regression test for issue #3120 (bg image was masked with mni
     # template mask)
     img, _ = _simulate_img()
-    mask, cmap = _get_bg_mask_and_cmap(img, False)
+    mask, _ = _get_bg_mask_and_cmap(img, False)
     assert (mask == np.zeros(img.shape, dtype=bool)).all()
 
 

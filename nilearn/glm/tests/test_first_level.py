@@ -111,7 +111,7 @@ def test_glm_fit_invalid_mask_img(shape_4d_default):
     # Give an unfitted NiftiMasker as mask_img and check that we get an error
     masker = NiftiMasker(mask)
     with pytest.raises(
-        ValueError, match="NiftiMasker instance is not fitted yet."
+        ValueError, match=r"NiftiMasker instance is not fitted yet."
     ):
         FirstLevelModel(mask_img=masker).fit(
             fmri_data[0], design_matrices=design_matrices[0]
@@ -208,15 +208,15 @@ def test_explicit_fixed_effects(shape_3d_default):
     with pytest.raises(
         ValueError,
         match=(
-            "The number of contrast images .* differs "
-            "from the number of variance images"
+            r"The number of contrast images .* differs "
+            r"from the number of variance images"
         ),
     ):
         compute_fixed_effects(contrasts * 2, variance, mask)
 
     # ensure that not providing the right number of dofs
     with pytest.raises(
-        ValueError, match="degrees of freedom .* differs .* contrast images"
+        ValueError, match=r"degrees of freedom .* differs .* contrast images"
     ):
         compute_fixed_effects(contrasts, variance, mask, dofs=[100])
 
@@ -496,7 +496,7 @@ def test_compute_contrast_num_contrasts(shape_4d_default):
 
     # raise when n_contrast != n_runs | 1
     with pytest.raises(
-        ValueError, match="2 contrasts given, while there are 3 runs."
+        ValueError, match=r"2 contrasts given, while there are 3 runs."
     ):
         multi_run_model.compute_contrast([np.eye(rk)[1]] * 2)
 
@@ -836,7 +836,7 @@ def test_fmri_inputs_errors(shape_4d_default):
         )
     with pytest.raises(
         ValueError,
-        match="The provided events data has no onset column.",
+        match=r"The provided events data has no onset column.",
     ):
         FirstLevelModel(mask_img=None, t_r=1.0).fit(fmri_data, design_matrices)
 
@@ -907,7 +907,7 @@ def test_fmri_inputs_errors_confounds(shape_4d_default):
     with pytest.raises(
         ValueError,
         match=(
-            "Rows in confounds does not match n_scans in run_img at index 0."
+            r"Rows in confounds does not match n_scans in run_img at index 0."
         ),
     ):
         FirstLevelModel(mask_img=None, t_r=2.0).fit(
@@ -1261,11 +1261,11 @@ def test_first_level_contrast_computation_errors(shape_4d_default):
 
     # only passing null contrasts should give back a value error
     with pytest.raises(
-        ValueError, match="All contrasts provided were null contrasts."
+        ValueError, match=r"All contrasts provided were null contrasts."
     ):
         model.compute_contrast(cnull)
     with pytest.raises(
-        ValueError, match="All contrasts provided were null contrasts."
+        ValueError, match=r"All contrasts provided were null contrasts."
     ):
         model.compute_contrast([cnull, cnull])
 
@@ -1799,7 +1799,7 @@ def test_first_level_from_bids_validation_input_dataset_path():
             space_label="MNI",
             slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
-    with pytest.raises(TypeError, match="derivatives_.* must be of type"):
+    with pytest.raises(TypeError, match=r"derivatives_.* must be of type"):
         first_level_from_bids(
             dataset_path=Path(),
             task_label="main",
@@ -1905,7 +1905,7 @@ def test_first_level_from_bids_with_missing_events(tmp_path_factory):
     for f in events_files:
         Path(f).unlink()
 
-    with pytest.raises(ValueError, match="No events.tsv files found"):
+    with pytest.raises(ValueError, match=r"No events.tsv files found"):
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
@@ -2075,7 +2075,7 @@ def test_first_level_from_bids_mismatch_run_index(tmp_path_factory):
         new_file = file_.parent / file_.name.replace("run-0", "run-")
         file_.rename(new_file)
 
-    with pytest.raises(ValueError, match=".*events.tsv files.*"):
+    with pytest.raises(ValueError, match=r".*events.tsv files.*"):
         first_level_from_bids(
             dataset_path=bids_dataset,
             task_label="main",
@@ -2270,10 +2270,10 @@ def test_first_level_from_bids_unused_kwargs(tmp_path):
 
 def test_check_run_tables_errors():
     """Check high level wrapper keeps behavior."""
-    with pytest.raises(ValueError, match="len.* does not match len.*"):
+    with pytest.raises(ValueError, match=r"len.* does not match len.*"):
         _check_run_tables([""] * 2, [""], "")
     with pytest.raises(
-        ValueError, match="Tables to load can only be TSV or CSV."
+        ValueError, match=r"Tables to load can only be TSV or CSV."
     ):
         _check_run_tables([""] * 2, [".csv", ".csv"], "")
     with pytest.raises(
@@ -2282,14 +2282,14 @@ def test_check_run_tables_errors():
     ):
         _check_run_tables([""] * 2, [[0], pd.DataFrame()], "")
     with pytest.raises(
-        ValueError, match="Tables to load can only be TSV or CSV."
+        ValueError, match=r"Tables to load can only be TSV or CSV."
     ):
         _check_run_tables([""] * 2, [".csv", pd.DataFrame()], "")
 
 
 def test_img_table_checks():
     """Check matching lengths."""
-    with pytest.raises(ValueError, match="len.* does not match len.*"):
+    with pytest.raises(ValueError, match=r"len.* does not match len.*"):
         _check_length_match([""] * 2, [""], "", "")
 
 
@@ -2370,14 +2370,14 @@ def test_error_flm_surface_mask_volume_image(
     img, des = surface_glm_data(5)
     model = FirstLevelModel(mask_img=surf_mask_1d)
     with pytest.raises(
-        TypeError, match="Mask and input images must be of compatible types."
+        TypeError, match=r"Mask and input images must be of compatible types."
     ):
         model.fit(img_4d_rand_eye, design_matrices=des)
 
     masker = SurfaceMasker().fit(img)
     model = FirstLevelModel(mask_img=masker)
     with pytest.raises(
-        TypeError, match="Mask and input images must be of compatible types."
+        TypeError, match=r"Mask and input images must be of compatible types."
     ):
         model.fit(img_4d_rand_eye, design_matrices=des)
 
@@ -2390,14 +2390,14 @@ def test_error_flm_volume_mask_surface_image(surface_glm_data):
     img, des = surface_glm_data(5)
     model = FirstLevelModel(mask_img=mask)
     with pytest.raises(
-        TypeError, match="Mask and input images must be of compatible types."
+        TypeError, match=r"Mask and input images must be of compatible types."
     ):
         model.fit(img, design_matrices=des)
 
     masker = NiftiMasker().fit(mask)
     model = FirstLevelModel(mask_img=masker)
     with pytest.raises(
-        TypeError, match="Mask and input images must be of compatible types."
+        TypeError, match=r"Mask and input images must be of compatible types."
     ):
         model.fit(img, design_matrices=des)
 
