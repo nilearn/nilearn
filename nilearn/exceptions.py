@@ -1,3 +1,13 @@
+"""Custom warnings and errors used across Nilearn."""
+
+__all__ = [
+    "AllVolumesRemovedError",
+    "DimensionError",
+    "MaskWarning",
+    "MeshDimensionError",
+    "NotImplementedWarning",
+]
+
 AuthorizedException = (
     BufferError,
     ArithmeticError,
@@ -13,6 +23,20 @@ AuthorizedException = (
     TypeError,
     ValueError,
 )
+
+
+class NotImplementedWarning(UserWarning):
+    """Custom warning to warn about not implemented features.
+
+    .. versionadded:: 0.13.0dev
+    """
+
+
+class MaskWarning(UserWarning):
+    """Custom warning related to masks.
+
+    .. versionadded:: 0.13.0dev
+    """
 
 
 class DimensionError(TypeError):

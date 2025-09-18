@@ -86,7 +86,10 @@ def test_multi_nifti_labels_masker(
     masker11.inverse_transform(signals11)
 
     masker11 = MultiNiftiLabelsMasker(
-        img_labels, mask_img=mask11_img, resampling_target=None
+        img_labels,
+        mask_img=mask11_img,
+        resampling_target=None,
+        keep_masked_labels=True,
     )
     signals11 = masker11.fit_transform(fmri11_img)
 
@@ -132,11 +135,11 @@ def test_multi_nifti_labels_masker_errors(
     masker11.fit()
 
     with pytest.raises(
-        ValueError, match="Images have different affine matrices."
+        ValueError, match=r"Images have different affine matrices."
     ):
         masker11.transform(fmri12_img)
 
-    with pytest.raises(ValueError, match="Images have incompatible shapes."):
+    with pytest.raises(ValueError, match=r"Images have incompatible shapes."):
         masker11.transform(fmri21_img)
 
     masker11 = MultiNiftiLabelsMasker(
@@ -240,7 +243,10 @@ def test_multi_nifti_labels_masker_resampling(
 
     # Target: labels
     masker = MultiNiftiLabelsMasker(
-        img_labels, mask_img=mask22_img, resampling_target="labels"
+        img_labels,
+        mask_img=mask22_img,
+        resampling_target="labels",
+        keep_masked_labels=True,
     )
 
     fmri11_img = [fmri11_img, fmri11_img]
@@ -280,7 +286,10 @@ def test_multi_nifti_labels_masker_resampling_clipped_labels(
     fmri11_img = [img_fmri, img_fmri]
 
     masker = MultiNiftiLabelsMasker(
-        img_labels, mask_img=mask22_img, resampling_target="labels"
+        img_labels,
+        mask_img=mask22_img,
+        resampling_target="labels",
+        keep_masked_labels=True,
     )
 
     signals = masker.fit_transform(fmri11_img)
@@ -345,7 +354,9 @@ def test_multi_nifti_labels_masker_resampling_target():
     )
     for resampling_target in ["data", "labels"]:
         masker = MultiNiftiLabelsMasker(
-            labels_img=labels_img, resampling_target=resampling_target
+            labels_img=labels_img,
+            resampling_target=resampling_target,
+            keep_masked_labels=True,
         )
         if resampling_target == "data":
             with pytest.warns(

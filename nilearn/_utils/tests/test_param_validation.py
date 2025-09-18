@@ -194,7 +194,7 @@ def test_check_params():
 
     f_with_param_to_check(data_dir="foo")
 
-    with pytest.raises(TypeError, match="'data_dir' should be of type"):
+    with pytest.raises(TypeError, match="'data_dir' must be of type"):
         f_with_param_to_check(data_dir=1)
 
 
@@ -205,5 +205,5 @@ def test_check_params_not_necessary():
         check_params(locals())
         return foo
 
-    with pytest.raises(ValueError, match="No known parameter to check."):
+    with pytest.raises(ValueError, match=r"No known parameter to check."):
         f_with_unknown_param(foo=1)

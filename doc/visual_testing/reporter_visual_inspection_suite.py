@@ -79,7 +79,7 @@ def report_flm_adhd_dmn(build_type):
         [pcc_coords],
         radius=10,
         detrend=True,
-        standardize=True,
+        standardize="zscore_sample",
         low_pass=0.1,
         high_pass=0.01,
         t_r=t_r,
@@ -519,7 +519,7 @@ def report_multi_nifti_labels_masker(build_type):
         )
         return None
 
-    yeo = fetch_atlas_yeo_2011(thickness="thick", n_networks=17)
+    yeo = fetch_atlas_yeo_2011(n_networks=17)
 
     data = fetch_development_fmri(n_subjects=2)
 
@@ -600,7 +600,7 @@ def report_sphere_masker(build_type):
         pcc_coords,
         radius=10,
         detrend=True,
-        standardize=True,
+        standardize="zscore_sample",
         low_pass=0.1,
         high_pass=0.01,
         t_r=t_r,

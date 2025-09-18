@@ -245,7 +245,7 @@ def connected_regions(
             label_maps = rw_maps
         else:
             # Connected component extraction
-            label_maps, n_labels = label(map_3d)
+            label_maps, _ = label(map_3d)
 
         # Takes the size of each labelized region data
         labels_size = np.bincount(label_maps.ravel())
@@ -470,7 +470,7 @@ class RegionExtractor(NiftiMapsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        keep_masked_maps=True,
+        keep_masked_maps=False,
         memory=None,
         memory_level=0,
         verbose=0,
