@@ -424,6 +424,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         return fig
 
     def _set_contour_colors(self, hemi) -> None | str | list[str]:
+        """Set the colors for the contours in the report."""
         if hemi in ["left", "right"]:
             n_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
         else:

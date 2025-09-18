@@ -758,6 +758,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         vmax=None,
         threshold=None,
     ):
+        """Create figure for all reports."""
         import matplotlib.pyplot as plt
 
         from nilearn.plotting import plot_surf, plot_surf_contours
@@ -810,6 +811,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         return fig
 
     def _set_contour_colors(self, hemi):
+        """Set the colors for the contours in the report."""
         del hemi
 
 
