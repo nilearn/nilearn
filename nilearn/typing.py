@@ -71,7 +71,7 @@ TargetAffine: TypeAlias = ndarray | None
 # Note that this is usable as for static type checking,
 # as type checkers will complain
 # about using a generic and would prefer "list[int]" to "list".
-TargetShape: TypeAlias = tuple | list | None
+TargetShape: TypeAlias = tuple | list | np.ndarray | None
 
 Threshold: TypeAlias = float | int | np.floating | np.integer | str | None
 
