@@ -207,17 +207,19 @@ def test_plotting_functions_with_display_mode_tiled(plot_func, img_3d_mni):
     plt.close()
 
 
-functions = [plot_stat_map, plot_img]
-EXPECTED = [(i, ["-10", "-5", "0", "5", "10"]) for i in [0, 0.1, 0.9, 1]]
-EXPECTED += [
-    (i, ["-10", f"-{i}", "0", f"{i}", "10"]) for i in [1.3, 2.5, 3, 4.9, 7.5]
-]
-EXPECTED += [(i, [f"-{i}", "-5", "0", "5", f"{i}"]) for i in [7.6, 8, 9.9]]
-
-
+@pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
 @pytest.mark.parametrize(
-    "plot_func, threshold, expected_ticks",
-    [(f, e[0], e[1]) for e in EXPECTED for f in functions],
+    "threshold, expected_ticks",
+    [
+        (0, [-10, -5, 0, 5, 10]),
+        (0.1, [-10, -5, -0.1, 0, 0.1, 5, 10]),
+        (0.9, [-10, -5, -0.9, 0, 0.9, 5, 10]),
+        (1.3, [-10, -5, -1.3, 0, 1.3, 5, 10]),
+        (3, [-10, -5, -3, 0, 3, 5, 10]),
+        (3.5, [-10, -3.5, 0, 3.5, 10]),
+        (7.5, [-10, -7.5, -5, 0, 5, 7.5, 10]),
+        (9.9, [-10, -9.9, -5, 0, 5, 9.9, 10]),
+    ],
 )
 def test_plot_symmetric_colorbar_threshold(
     tmp_path, plot_func, threshold, expected_ticks
@@ -229,7 +231,7 @@ def test_plot_symmetric_colorbar_threshold(
     display = plot_func(img, threshold=threshold, colorbar=True)
     plt.savefig(tmp_path / "test.png")
     assert [
-        tick.get_text() for tick in display._cbar.ax.get_yticklabels()
+        float(tick.get_text()) for tick in display._cbar.ax.get_yticklabels()
     ] == expected_ticks
     plt.close()
 
@@ -247,9 +249,10 @@ EXPECTED2 += [(i, ["0", "2.5", "5", f"{i}", "10"]) for i in [6.3, 7.5, 8, 8.7]]
 EXPECTED2 += [(i, ["0", "2.5", "5", "7.5", f"{i}"]) for i in [8.8, 9, 9.9]]
 
 
+@pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
 @pytest.mark.parametrize(
-    "plot_func, threshold, expected_ticks",
-    [(f, e[0], e[1]) for e in EXPECTED2 for f in functions],
+    "threshold, expected_ticks",
+    [(e[0], e[1]) for e in EXPECTED2 for f in functions],
 )
 def test_plot_asymmetric_colorbar_threshold(
     tmp_path, plot_func, threshold, expected_ticks
