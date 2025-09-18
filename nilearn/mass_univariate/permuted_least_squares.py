@@ -882,7 +882,7 @@ def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
 
     if (threshold is not None) and (masker is None):
         raise ValueError(
-            'If "threshold" is not None, masker must be defined as well.'
+            "If 'threshold' is not None, masker must be defined as well."
         )
 
     # make target_vars F-ordered to speed-up computation
@@ -913,14 +913,14 @@ def _sanitize_inputs_permuted_ols(
 
     if (threshold is not None) and (output_type == "legacy"):
         warnings.warn(
-            'If "threshold" is not None, "output_type" must be set to "dict". '
+            "If 'threshold' is not None, 'output_type' must be set to 'dict'. "
             "Overriding.",
             stacklevel=find_stack_level(),
         )
         output_type = "dict"
 
     if output_type == "legacy":
-        # TODO (nilearn >= 0.13.0)
+        # TODO (nilearn >= 0.15.0)
         warnings.warn(
             category=DeprecationWarning,
             message=(

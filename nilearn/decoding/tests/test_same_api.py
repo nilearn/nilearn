@@ -321,7 +321,12 @@ def test_coef_shape(penalty, cls):
     X, mask = to_niimgs(X, (2, 2, 2))
 
     model = cls(
-        mask=mask, max_iter=3, penalty=penalty, alphas=1.0, verbose=0
+        mask=mask,
+        max_iter=3,
+        penalty=penalty,
+        alphas=1.0,
+        verbose=0,
+        standardize="zscore_sample",
     ).fit(X, y)
 
     assert model.coef_.ndim == 2

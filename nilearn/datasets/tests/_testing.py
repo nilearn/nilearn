@@ -347,14 +347,14 @@ def _index_archive_contents():
     index = {}
     for file_path in sorted(archive_contents_dir.glob("**/*")):
         if file_path.is_file() and file_path.suffix not in [".py", ".pyc"]:
-            fmt, url_pattern, n = _get_format_and_pattern(file_path)
+            _, url_pattern, _ = _get_format_and_pattern(file_path)
             index[url_pattern] = str(file_path.resolve())
     return index
 
 
 def _archive_from_contents_file(file_path):
     file_path = Path(file_path)
-    fmt, pattern, n_skip = _get_format_and_pattern(file_path)
+    fmt, _, n_skip = _get_format_and_pattern(file_path)
     with file_path.open() as f:
         contents = [p.strip().replace("/", os.sep) for p in f]
     return list_to_archive(list(filter(bool, contents))[n_skip:], fmt)

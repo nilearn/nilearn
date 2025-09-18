@@ -95,12 +95,12 @@ class PlotlySurfaceFigure(SurfaceFigure):
     def __init__(self, figure=None, output_file=None, hemi=DEFAULT_HEMI):
         if not is_plotly_installed():
             raise ImportError(
-                "Plotly is required to use `PlotlySurfaceFigure`."
+                "Plotly is required to use 'PlotlySurfaceFigure'."
             )
 
         if figure is not None and not isinstance(figure, go.Figure):
             raise TypeError(
-                "`PlotlySurfaceFigure` accepts only plotly Figure objects."
+                "'PlotlySurfaceFigure' accepts only plotly Figure objects."
             )
         super().__init__(figure=figure, output_file=output_file, hemi=hemi)
 
@@ -117,13 +117,15 @@ class PlotlySurfaceFigure(SurfaceFigure):
             self.figure.show(renderer=renderer)
             return self.figure
 
-    def savefig(self, output_file=None):
+    def savefig(self, output_file=None, **savefig_kwargs):  # noqa: ARG002
         """Save the figure to file.
 
         Parameters
         ----------
         output_file : :obj:`str` or ``None``, optional
             Path to output file.
+
+        savefig_kwargs:
         """
         if not is_kaleido_installed():
             raise ImportError(
@@ -131,6 +133,8 @@ class PlotlySurfaceFigure(SurfaceFigure):
             )
         self._check_output_file(output_file=output_file)
         if self.figure is not None:
+            if output_file is not None:
+                self.output_file = output_file
             self.figure.write_image(self.output_file)
 
     def add_contours(

@@ -251,7 +251,7 @@ def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
     seeds = [(1, 1, 1)]
     masker = NiftiSpheresMasker(seeds=seeds)
     masker.fit()
-    with pytest.raises(ValueError, match="masker only has 1 seeds."):
+    with pytest.raises(ValueError, match=r"masker only has 1 seeds."):
         masker.generate_report(displayed_spheres=displayed_spheres)
 
 
@@ -391,7 +391,7 @@ def test_4d_reports(img_mask_eye, affine_eye):
     assert "The mask includes" in str(html)
 
     # test .fit_transform method
-    masker = NiftiMasker(mask_img=img_mask_eye, standardize=True)
+    masker = NiftiMasker(mask_img=img_mask_eye, standardize="zscore_sample")
     masker.fit_transform(data_img_4d)
 
     html = masker.generate_report()

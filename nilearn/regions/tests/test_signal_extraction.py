@@ -13,9 +13,9 @@ from nilearn._utils.data_gen import (
     generate_maps,
     generate_timeseries,
 )
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import _affine_eye, _shape_3d_default
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiLabelsMasker
 from nilearn.regions.signal_extraction import (
@@ -596,7 +596,7 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
 
     with pytest.warns(
         DeprecationWarning,
-        match='"keep_masked_labels" parameter will be removed ',
+        match='"keep_masked_labels" parameter will be removed.',
     ):
         labels_signals, labels_labels = img_to_signals_labels(
             imgs=fmri_img,
@@ -610,13 +610,12 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     assert len(labels_labels) == 8
 
     # test return_masked_atlas deprecation warning
-    # TODO (nilearn >= 0.13.0)
+    # TODO (nilearn >= 0.15.0)
     with pytest.warns(
         DeprecationWarning,
-        match='After version 0.13. "img_to_signals_labels" will also return '
-        'the "masked_atlas". Meanwhile "return_masked_atlas" parameter can be '
-        "used to toggle this behavior. In version 0.15, "
-        '"return_masked_atlas" parameter will be removed.',
+        match=(
+            'In version 0.15, "return_masked_atlas" parameter will be removed.'
+        ),
     ):
         img_to_signals_labels(
             imgs=fmri_img,

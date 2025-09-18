@@ -19,8 +19,8 @@ from numpy.testing import (
 )
 
 from nilearn._utils import testing
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.niimg import is_binary_niimg
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.image.image import crop_img
 from nilearn.image.resampling import (
@@ -344,7 +344,7 @@ def test_resampling_error_checks(tmp_path, force_resample, data, affine_eye):
         )
 
     # Invalid shape
-    with pytest.raises(ValueError, match="shape .* should be .* 3D grid"):
+    with pytest.raises(ValueError, match=r"shape .* should be .* 3D grid"):
         resample_img(
             img,
             target_shape=(2, 3),
