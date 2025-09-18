@@ -132,7 +132,7 @@ def test_get_index_from_direction_exception():
     """
     from nilearn.plotting.displays._utils import _get_index_from_direction
 
-    with pytest.raises(ValueError, match="foo is not a valid direction."):
+    with pytest.raises(ValueError, match=r"foo is not a valid direction."):
         _get_index_from_direction("foo")
 
 
@@ -257,9 +257,9 @@ def test_mosaic_slicer_wrong_inputs(cut_coords):
     with pytest.raises(
         ValueError,
         match=(
-            "The number cut_coords passed does not "
-            "match the display_mode. Mosaic plotting "
-            "expects tuple of length 3."
+            r"The number cut_coords passed does not "
+            r"match the display_mode. Mosaic plotting "
+            r"expects tuple of length 3."
         ),
     ):
         MosaicSlicer.init_with_figure(img=None, cut_coords=cut_coords)

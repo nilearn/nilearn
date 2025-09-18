@@ -268,7 +268,7 @@ def test_surface_label_masker_error_names_and_lut(surf_label_img):
     )
     with pytest.raises(
         ValueError,
-        match="Pass either labels or a lookup table .* but not both.",
+        match=r"Pass either labels or a lookup table .* but not both.",
     ):
         masker.fit()
 

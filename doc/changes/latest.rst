@@ -22,10 +22,12 @@ NEW
 Fixes
 -----
 
+- :bdg-primary:`Doc` Update allowed values for the parameter ``standardize`` to match those of :func:`~signal.clean` in :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMClassifier`, :class:`~decoding.FREMRegressor`, :class:`~decoding.SpaceNetClassifier`, :class:`~decoding.SpaceNetRegressor`, :class:`~connectome.ConnectivityMeasure`, :class:`~decomposition.DictLearning`, :class:`~decomposition.CanICA` as well as for all maskers  (:gh:`5668` by `Rémi Gau`_).
+
 Enhancements
 ------------
 
-- :bdg-success:`API` Add a :class:`~exceptions.NotImplementedWarning` and make :class:`~exceptions.DimensionError`, :class:`~exceptions.AllVolumesRemovedError` and :class:`~exceptions.MeshDimensionError` part of the public API (:gh:`5508`, :gh:`5570` by `Rémi Gau`_).
+- :bdg-success:`API` Add a :class:`~exceptions.NotImplementedWarning` and make :class:`~exceptions.MaskWarning`, :class:`~exceptions.DimensionError`, :class:`~exceptions.AllVolumesRemovedError` and :class:`~exceptions.MeshDimensionError` part of the public API (:gh:`5508`, :gh:`5570`, :gh:`5677` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add support for Scikit-Learn ``set_output()`` in several Nilearn feature extractors (nifti and surface non-multi maskers, and :class:`~regions.HierarchicalKMeans`) to allow ``transform()`` to output to either Pandas or Polars dataframe and not just numpy arrays (:gh:`5508` by `Rémi Gau`_).
 
@@ -57,6 +59,8 @@ Changes
 - :bdg-danger:`Deprecation` The default for the parameter ``extrapolate`` of :func:`~signal.clean` was changed from ``True`` to ``False`` (:gh:`5675` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The default for the parameters ``n_networks`` and ``thickness`` of :func:`~datasets.fetch_atlas_yeo_2011` were changed from ``None`` to ``7`` and ``"thick"``. The only allowed values for ``n_networks`` must now be one of ``7``, ``17``. The only allowed values for ``thickness`` must now be one of ``thin``, ``thick``. The fetcher now only returns a single map under the key ``maps`` for the requested ``n_networks`` and ``thickness`` (:gh:`5640` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The default for the parameter ``two_sided`` of :func:`~image.binarize_img` was changed from ``True`` to ``False`` (:gh:`5687` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter ``legacy_output`` of :func:`~datasets.fetch_language_localizer_demo_dataset` has been removed. The fetcher now always returns a Scikit-Learn Bunch (:gh:`5640` by `Rémi Gau`_).
 

@@ -242,7 +242,7 @@ def test_plot_bland_altman_errors(
     ):
         plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[-1])
 
-    with pytest.raises(TypeError, match="with all values different from 0."):
+    with pytest.raises(TypeError, match=r"with all values different from 0."):
         plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[0, 1, -2, 0])
 
 

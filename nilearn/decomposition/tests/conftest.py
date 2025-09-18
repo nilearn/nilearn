@@ -98,9 +98,11 @@ def decomposition_masker(
     """
     if data_type == "surface":
         return SurfaceMasker(
-            mask_img=decomposition_mask_img, standardize=True
+            mask_img=decomposition_mask_img, standardize="zscore_sample"
         ).fit()
-    return MultiNiftiMasker(mask_img=img_3d_ones_eye, standardize=True).fit()
+    return MultiNiftiMasker(
+        mask_img=img_3d_ones_eye, standardize="zscore_sample"
+    ).fit()
 
 
 def _decomposition_images_surface(rng, decomposition_mesh, with_activation):

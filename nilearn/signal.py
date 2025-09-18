@@ -51,27 +51,14 @@ def standardize_signal(
     detrend : :obj:`bool`, default=False
         If detrending of timeseries is requested.
 
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, \
-                  default='zscore'
-        Strategy to standardize the signal:
-
-            - 'zscore_sample': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance. Uses sample std.
-            - 'zscore': The signal is z-scored. Timeseries are shifted
-              to zero mean and scaled to unit variance. Uses population std
-              by calling :obj:`numpy.std` with N - ``ddof=0``.
-            - 'psc':  Timeseries are shifted to zero mean value and scaled
-              to percent signal change (as compared to original mean signal).
-            - True: The signal is z-scored (same as option `zscore`).
-              Timeseries are shifted to zero mean and scaled to unit variance.
-            - False: Do not standardize the data.
-
+    %(standardize_zscore)s
 
     Returns
     -------
     std_signals : :class:`numpy.ndarray`
         Copy of signals, standardized.
     """
+    check_params(locals())
     check_parameter_in_allowed(
         standardize,
         allowed=[True, False, "psc", "zscore", "zscore_sample"],
@@ -100,12 +87,12 @@ def standardize_signal(
             signals /= std
 
         elif (standardize == "zscore") or (standardize is True):
-            # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
+            # TODO (nilearn >= 0.14.0) change default to 'zscore'
             std_strategy_default = (
                 "The default strategy for standardize is currently 'zscore' "
                 "which incorrectly uses population std to calculate sample "
                 "zscores. The new strategy 'zscore_sample' corrects this "
-                "behavior by using the sample std. In release 0.13, the "
+                "behavior by using the sample std. In release 0.14.0, the "
                 "default strategy will be replaced by the new strategy and "
                 "the 'zscore' option will be removed. Please use "
                 "'zscore_sample' instead."
@@ -668,25 +655,8 @@ def clean(
 
     %(high_pass)s
     %(detrend)s
-    standardize : {'zscore_sample', 'zscore', 'psc', True, False}, \
-                  default="zscore"
-        Strategy to standardize the signal:
 
-        - 'zscore_sample':
-          The signal is z-scored.
-          Timeseries are shifted to zero mean and scaled to unit variance.
-          Uses sample std.
-        - 'zscore':
-          The signal is z-scored.
-          Timeseries are shifted to zero mean and scaled to unit variance.
-          Uses population std by calling :obj:`numpy.std` with N - ``ddof=0``.
-        - 'psc':
-          Timeseries are shifted to zero mean value and scaled
-          to percent signal change (as compared to original mean signal).
-        - True:
-          The signal is z-scored (same as option `zscore`).
-          Timeseries are shifted to zero mean and scaled to unit variance.
-        - False: Do not standardize the data.
+    %(standardize_zscore)s
 
     %(standardize_confounds)s
 
@@ -817,9 +787,33 @@ def clean(
 
     # Remove confounds
     if confounds is not None:
-        confounds = standardize_signal(
-            confounds, standardize=standardize_confounds, detrend=False
+        # TODO (nilearn >= 0.14.0)
+        # - remove DeprecationWarning
+        # - remove warnings.filterwarnings
+        # - remove comment below
+        # The following call to standardize_signal relies on the default of
+        # standardize (True) which will throw a FutureWarning
+        # that contains some actions they cannot perform
+        # as users cannot affect this call.
+        # This can be confusing because if they call clean with
+        # standardize="zscore_sample", they will get a warning to set
+        # standardize to "zscore_sample"!!!
+        # So we ignore the FutureWarning
+        # and instead throw a DeprecationWarning that's only for devs.
+        std_strategy_default = (
+            "From release 0.14.0, confounds will be standardized "
+            "using the sample std instead of the population std."
         )
+        warnings.warn(
+            category=DeprecationWarning,
+            message=std_strategy_default,
+            stacklevel=find_stack_level(),
+        )
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", category=FutureWarning)
+            confounds = standardize_signal(
+                confounds, standardize=standardize_confounds, detrend=False
+            )
         if not standardize_confounds:
             # Improve numerical stability by controlling the range of
             # confounds. We don't rely on standardize_signal as it removes any
