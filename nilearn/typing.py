@@ -39,6 +39,7 @@ DType: TypeAlias = DTypeLike | None
 DataDir: TypeAlias = str | pathlib.Path | None
 Detrend: TypeAlias = bool
 DrawCross: TypeAlias = bool
+ForceResample: TypeAlias = bool
 
 # Note that for HrfModel
 # str is too generic here
@@ -67,7 +68,7 @@ ScreeningPercentile: TypeAlias = float | int | np.floating | np.integer | None
 SmoothingFwhm: TypeAlias = float | int | np.floating | np.integer | None
 Standardize: TypeAlias = Literal["zscore", "zscore_sample", "psc", True, False]
 StandardizeConfounds: TypeAlias = bool
-TargetAffine: TypeAlias = ndarray | None
+TargetAffine: TypeAlias = ndarray | list | None
 
 # Note that this is usable as for static type checking,
 # as type checkers will complain

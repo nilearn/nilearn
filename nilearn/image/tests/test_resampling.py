@@ -111,7 +111,7 @@ def test_identity_resample_non_native_endians(
 
     rot_img = resample_img(
         Nifti1Image(data.astype(endian_type), affine_eye),
-        target_affine=affine_eye.tolist(),
+        target_affine=affine_eye,
         interpolation=interpolation,
         force_resample=force_resample,
     )

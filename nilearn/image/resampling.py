@@ -20,7 +20,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.image.image import copy_img, crop_img
+from nilearn.image.image import copy_img, crop_img, new_img_like
 
 ###############################################################################
 # Affine utils
@@ -450,11 +450,8 @@ def resample_img(
     homogeneous.
 
     """
-    from .image import new_img_like  # avoid circular imports
-
-    _check_resample_img_inputs(
-        target_shape, target_affine, interpolation, force_resample, copy_header
-    )
+    check_params(locals())
+    _check_resample_img_inputs(target_shape, target_affine, interpolation)
 
     img = stringify_path(img)
     img = check_niimg(img)
@@ -657,9 +654,7 @@ def _resampling_not_needed(img, target_affine, target_shape):
     )
 
 
-def _check_resample_img_inputs(
-    target_shape, target_affine, interpolation, force_resample, copy_header
-):
+def _check_resample_img_inputs(target_shape, target_affine, interpolation):
     # Do as many checks as possible before loading data, to avoid potentially
     # costly calls before raising an exception.
     if target_shape is not None and target_affine is None:
@@ -685,18 +680,6 @@ def _check_resample_img_inputs(
     check_parameter_in_allowed(
         interpolation, allowed_interpolations, "interpolation"
     )
-
-    if not isinstance(force_resample, bool):
-        raise TypeError(
-            "'force_resample' must be a boolean."
-            f"Got: {force_resample.__class__.__name__}"
-        )
-
-    if not isinstance(copy_header, bool):
-        raise TypeError(
-            "'copy_header' must be a boolean."
-            f"Got: {copy_header.__class__.__name__}"
-        )
 
 
 def _get_resampled_data_dtype(data, interpolation, A):

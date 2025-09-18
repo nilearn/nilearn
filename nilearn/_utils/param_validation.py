@@ -175,6 +175,7 @@ TYPE_MAPS = {
     "data_dir": nilearn_typing.DataDir,
     "draw_cross": nilearn_typing.DrawCross,
     "detrend": nilearn_typing.Detrend,
+    "force_resample": nilearn_typing.ForceResample,
     "high_pass": nilearn_typing.HighPass,
     "hrf_model": nilearn_typing.HrfModel,
     "keep_masked_labels": nilearn_typing.KeepMaskedLabels,
