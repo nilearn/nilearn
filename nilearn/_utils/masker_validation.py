@@ -50,10 +50,17 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
         New masker
 
     """
-    from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
+    from nilearn.maskers import (
+        MultiNiftiMasker,
+        MultiSurfaceMasker,
+        NiftiMasker,
+        SurfaceMasker,
+    )
 
     if masker_type == "surface":
         masker_type = SurfaceMasker
+    elif masker_type == "multi_surface":
+        masker_type = MultiSurfaceMasker
     elif masker_type == "multi_nii":
         masker_type = MultiNiftiMasker
     else:
@@ -65,7 +72,10 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     if is_glm(estimator):
         mask = getattr(estimator, "mask_img", None)
 
-    if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
+    if isinstance(
+        mask,
+        (NiftiMasker, MultiNiftiMasker, SurfaceMasker, MultiSurfaceMasker),
+    ):
         # Creating masker from provided masker
         masker_params = get_params(masker_type, mask)
         new_masker_params = masker_params
@@ -74,10 +84,10 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
         new_masker_params = estimator_params
         new_masker_params["mask_img"] = mask
     # Forwarding system parameters of instance to new masker in all case
-    if issubclass(masker_type, MultiNiftiMasker) and hasattr(
-        estimator, "n_jobs"
-    ):
-        # For MultiNiftiMasker only
+    if issubclass(
+        masker_type, (MultiNiftiMasker, MultiSurfaceMasker)
+    ) and hasattr(estimator, "n_jobs"):
+        # For MultiMaskers only
         new_masker_params["n_jobs"] = estimator.n_jobs
 
     warning_msg = Template(

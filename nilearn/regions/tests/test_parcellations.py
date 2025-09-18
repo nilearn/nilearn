@@ -347,7 +347,7 @@ def test_parcellation_all_methods_with_surface(method, n_parcels, rng):
         ),
     }
     surf_img = SurfaceImage(mesh=mesh, data=data)
-    parcellate = Parcellations(method=method, n_parcels=n_parcels)
+    parcellate = Parcellations(method=method, n_parcels=n_parcels, verbose=0)
     # fit and transform the data
     X_transformed = parcellate.fit_transform(surf_img)
     # inverse transform the transformed data
@@ -378,7 +378,7 @@ def test_parcellation_with_surface_and_confounds(method, rng):
     }
     surf_img = SurfaceImage(mesh=mesh, data=data)
     confounds = rng.standard_normal(size=(n_samples, 3))
-    parcellate = Parcellations(method=method, n_parcels=5)
+    parcellate = Parcellations(method=method, n_parcels=5, verbose=0)
     X_transformed = parcellate.fit_transform(surf_img, confounds=[confounds])
 
     assert X_transformed.shape == (n_samples, 5)
@@ -404,7 +404,7 @@ def test_parcellation_with_multi_surface(method, rng):
     }
     surf_img = SurfaceImage(mesh=mesh, data=data)
     surf_imgs = [surf_img] * 3
-    parcellate = Parcellations(method=method, n_parcels=5)
+    parcellate = Parcellations(method=method, n_parcels=5, verbose=0)
     X_transformed = parcellate.fit_transform(surf_imgs)
 
     assert X_transformed[0].shape == (n_samples, 5)
@@ -433,7 +433,9 @@ def test_parcellation_with_surface_mask(method, rng):
         "right": np.ones(mesh["right"].coordinates.shape[0]).astype(bool),
     }
     surf_mask = SurfaceImage(mesh=mesh, data=mask_data)
-    parcellate = Parcellations(method=method, n_parcels=5, mask=surf_mask)
+    parcellate = Parcellations(
+        method=method, n_parcels=5, mask=surf_mask, verbose=0
+    )
     X_transformed = parcellate.fit_transform(surf_img)
 
     assert X_transformed.shape == (n_samples, 5)

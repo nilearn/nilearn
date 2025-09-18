@@ -32,9 +32,16 @@ from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.maskers import NiftiMapsMasker, SurfaceMapsMasker, SurfaceMasker
+from nilearn.maskers import (
+    MultiNiftiMasker,
+    MultiSurfaceMasker,
+    NiftiMapsMasker,
+    SurfaceMapsMasker,
+    SurfaceMasker,
+)
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
+from nilearn.typing import NiimgLike
 
 
 def _warn_ignored_surface_masker_params(estimator):
@@ -305,7 +312,8 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     mask : Niimg-like object,  :obj:`~nilearn.maskers.MultiNiftiMasker` or
            :obj:`~nilearn.surface.SurfaceImage` or
-           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
+           :obj:`~nilearn.maskers.MultiSurfaceMasker` object, or None \
+           default=None
         Mask to be used on data. If an instance of masker is passed,
         then its mask will be used. If no mask is given, for Nifti images,
         it will be computed automatically by a MultiNiftiMasker with default
@@ -512,11 +520,22 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
         self._fit_cache()
 
+        if self.mask is not None:
+            assert isinstance(
+                self.mask,
+                (
+                    MultiSurfaceMasker,
+                    SurfaceImage,
+                    MultiNiftiMasker,
+                    *NiimgLike,
+                ),
+            )
+
         masker_type = "multi_nii"
-        if isinstance(self.mask, (SurfaceMasker, SurfaceImage)) or any(
+        if isinstance(self.mask, (MultiSurfaceMasker, SurfaceImage)) or any(
             isinstance(x, SurfaceImage) for x in imgs
         ):
-            masker_type = "surface"
+            masker_type = "multi_surface"
             _warn_ignored_surface_masker_params(self)
         self.masker_ = check_embedded_masker(self, masker_type=masker_type)
         self.masker_.memory_level = self.memory_level
