@@ -100,7 +100,7 @@ def create_masks(fmri_path, n_regions):
     atlas_img = load_img(atlas_path)
 
     resampled_atlas = resample_to_img(
-        atlas_img, fmri_path, interpolation="nearest", copy_header=True
+        atlas_img, fmri_path, interpolation="nearest"
     )
 
     mask_paths = []
@@ -108,10 +108,7 @@ def create_masks(fmri_path, n_regions):
     for idx in range(1, n_regions + 1):
         mask = resampled_atlas.get_fdata() == idx
         mask = new_img_like(
-            ref_niimg=fmri_path,
-            data=mask,
-            affine=resampled_atlas.affine,
-            copy_header=True,
+            ref_niimg=fmri_path, data=mask, affine=resampled_atlas.affine
         )
         path = output_dir / f"mask_{idx}.nii.gz"
         mask.to_filename(path)
