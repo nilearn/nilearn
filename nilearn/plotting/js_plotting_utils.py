@@ -8,10 +8,6 @@ from string import Template
 
 import numpy as np
 
-from nilearn._utils.html_document import (  # noqa: F401
-    HTMLDocument,
-    set_max_img_views_before_warning,
-)
 from nilearn.surface import load_surf_mesh
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10

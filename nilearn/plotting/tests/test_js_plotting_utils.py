@@ -131,11 +131,3 @@ def check_html(
     view = selects[2]
     assert ("id", "select-view") in view.items()
     assert len(view.findall("option")) == 7
-
-
-def test_import_html_document_from_js_plotting():
-    """Smoke test importing HTMLDocument from js_plotting_utils."""
-    from nilearn.plotting.js_plotting_utils import (  # noqa: F401
-        HTMLDocument,
-        set_max_img_views_before_warning,
-    )
