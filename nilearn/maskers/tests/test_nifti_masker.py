@@ -350,11 +350,12 @@ def test_compute_brain_mask_empty_mask_error(strategy):
 
 @pytest.mark.timeout(0)
 @pytest.mark.parametrize(
-    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+    "strategy",
+    [f"{p}-template" for p in ["whole-brain", "gm", "wm"]],
 )
 # We parametrize mask_args to make it accessible
 # to the expected_mask fixture.
-@pytest.mark.parametrize("mask_args", [{"threshold": 0.0}])
+@pytest.mark.parametrize("mask_args", [{"threshold": -0.5}])
 def test_compute_brain_mask(strategy, expected_mask, mask_args):
     """Check masker for template masking strategy."""
     masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
@@ -393,7 +394,7 @@ def test_no_warning_partial_joblib(strategy):
     """
     masker = NiftiMasker(
         mask_strategy=strategy,
-        mask_args={"threshold": 0.0},
+        mask_args={"threshold": -0.5},
         memory="nilearn_cache",
         memory_level=1,
     )

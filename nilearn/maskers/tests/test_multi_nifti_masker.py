@@ -184,13 +184,11 @@ def test_mask_strategy_errors(list_random_imgs):
 )
 def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
     """Check different strategies to compute masks."""
-    masker = MultiNiftiMasker(mask_strategy=strategy, mask_args={"opening": 1})
+    masker = MultiNiftiMasker(mask_strategy=strategy)
     masker.fit(list_random_imgs)
 
     # Check that the order of the images does not change the output
-    masker2 = MultiNiftiMasker(
-        mask_strategy=strategy, mask_args={"opening": 1}
-    )
+    masker2 = MultiNiftiMasker(mask_strategy=strategy)
     masker2.fit(list_random_imgs[::-1])
     mask_ref = np.zeros(shape_3d_default, dtype="int8")
 

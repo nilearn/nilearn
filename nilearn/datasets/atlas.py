@@ -804,7 +804,7 @@ def _get_atlas_data_and_labels(
         verbose=verbose,
     )
     # Reorder image to have positive affine diagonal
-    atlas_img = reorder_img(atlas_file, copy_header=True)
+    atlas_img = reorder_img(atlas_file)
     names = {0: "Background"}
 
     all_labels = ElementTree.parse(label_file).findall(".//label")
