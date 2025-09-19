@@ -14,7 +14,6 @@ from nilearn.plotting.surface.html_surface import (
     _fill_html_template,
     _full_brain_info,
     _one_mesh_info,
-    full_brain_info,
     view_img_on_surf,
     view_surf,
 )
@@ -96,7 +95,7 @@ def test_full_brain_info(mni152_template_res_2):
             mesh.faces
         )
 
-    full_brain_info(mni152_template_res_2)
+    _full_brain_info(mni152_template_res_2)
 
 
 def test_fill_html_template(tmp_path, mni152_template_res_2):
