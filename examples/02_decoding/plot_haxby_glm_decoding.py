@@ -124,7 +124,7 @@ for run in unique_runs:
 
 from nilearn.image import mean_img
 
-mean_img_ = mean_img(func_filename, copy_header=True)
+mean_img_ = mean_img(func_filename)
 report = glm.generate_report(
     contrasts=conditions,
     bg_img=mean_img_,

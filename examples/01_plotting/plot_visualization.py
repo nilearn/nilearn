@@ -28,7 +28,7 @@ from nilearn.image.image import mean_img
 
 # Compute the mean EPI: we do the mean along the axis 3, which is time
 func_filename = haxby_dataset.func[0]
-mean_haxby = mean_img(func_filename, copy_header=True)
+mean_haxby = mean_img(func_filename)
 
 from nilearn.plotting import plot_epi, show
 

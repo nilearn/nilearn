@@ -85,3 +85,5 @@ Changes
 - :bdg-danger:`Deprecation` The value ``'nearest'`` for the parameter ``interpolation`` of :func:`~surface.vol_to_surf` is no longer allowed. Use ``'nearest_most_frequent'`` instead (:gh:`5662` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` :func:`~interfaces.bids.parse_bids_filename` will now always return a dictionary with the keys ``'file_path'``, ``'file_basename'``, ``'extension'``, ``'suffix'`` and ``'entities'`` (:gh:`5663` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` Set ``copy_header`` default to True in :func:`~image` functions (:gh:`5656` by `Rémi Gau`_ and `Himanshu Aggarwal`_).

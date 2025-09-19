@@ -564,7 +564,6 @@ resampled_icbm_mask = resample_to_img(
     icbm_mask,
     data_mask,
     interpolation="nearest",
-    copy_header=True,
 )
 
 # %%
