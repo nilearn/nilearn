@@ -86,6 +86,7 @@ EXPECTED_PYTHON_VERSIONS = [
     "3.13t",
 ]
 
+
 def main(args=sys.argv) -> None:
     """Collect duration of each job and plots them."""
     # %%
