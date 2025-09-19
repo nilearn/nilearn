@@ -394,7 +394,7 @@ def _process_second_level_input(second_level_input):
     ) or isinstance(second_level_input, SurfaceImage):
         return _process_second_level_input_as_surface_image(second_level_input)
     else:
-        return mean_img(second_level_input, copy_header=True), None
+        return mean_img(second_level_input), None
 
 
 def _process_second_level_input_as_dataframe(second_level_input):

@@ -600,7 +600,7 @@ def compute_multi_background_mask(
 
     threshold : :obj:`float`, default=0.5
         The inter-run threshold: the fraction of the
-        total number of run in for which a :term:`voxel` must be
+        total number of runs in for which a :term:`voxel` must be
         in the mask to be kept in the common mask.
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
@@ -714,10 +714,7 @@ def compute_brain_mask(
         )
 
     resampled_template = cache(resampling.resample_to_img, memory)(
-        template,
-        target_img,
-        copy_header=True,
-        force_resample=False,  # TODO (nilearn >= 0.13.0) update to True
+        template, target_img
     )
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")

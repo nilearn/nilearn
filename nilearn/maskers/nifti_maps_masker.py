@@ -481,7 +481,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     interpolation="linear",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
-                    copy_header=True,
                 )
             if self.mask_img_ is not None and not check_same_fov(
                 ref_img, self.mask_img_
@@ -494,7 +493,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     target_shape=ref_img.shape[:3],
                     interpolation="nearest",
                     copy=True,
-                    copy_header=True,
                 )
 
                 # Just check that the mask is valid
@@ -623,7 +621,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     interpolation="linear",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
-                    copy_header=True,
                 )
 
             if self.mask_img_ is not None and not check_same_fov(
@@ -644,7 +641,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     interpolation="nearest",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
-                    copy_header=True,
                 )
 
             # Remove imgs_ from memory before loading the same image
