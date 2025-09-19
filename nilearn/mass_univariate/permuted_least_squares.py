@@ -307,7 +307,7 @@ def permuted_ols(
     masker=None,
     tfce=False,
     threshold=None,
-    output_type="legacy",
+    output_type="dict",
 ):
     """Massively univariate group analysis with permuted OLS.
 
@@ -401,26 +401,24 @@ def permuted_ols(
 
         .. versionadded:: 0.9.2
 
-    output_type : {'legacy', 'dict'}, default="legacy"
+    output_type : {'legacy', 'dict'}, default="dict"
         Determines how outputs should be returned.
         The two options are:
 
         -   'legacy': return a pvals, score_orig_data, and h0_fmax.
-            This option is the default, but it is deprecated until 0.13,
-            when the default will be changed to 'dict'.
-            It will be removed in 0.15.
         -   'dict': return a dictionary containing output arrays.
-            This option will be made the default in 0.13.
             Additionally, if ``tfce`` is True or ``threshold`` is not None,
             ``output_type`` will automatically be set to 'dict'.
 
         .. deprecated:: 0.9.2
 
-            The default value for this parameter will change from 'legacy' to
-            'dict' in 0.13, and the parameter will be removed completely in
-            0.15.
+            This parameter will be removed completely in nilearn>= 0.15.
 
         .. versionadded:: 0.9.2
+
+        .. versionchanged:: 0.13.0dev
+
+            The default was changed to ``'dict'``.
 
     Returns
     -------
@@ -884,7 +882,7 @@ def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
 
     if (threshold is not None) and (masker is None):
         raise ValueError(
-            'If "threshold" is not None, masker must be defined as well.'
+            "If 'threshold' is not None, masker must be defined as well."
         )
 
     # make target_vars F-ordered to speed-up computation
@@ -915,21 +913,21 @@ def _sanitize_inputs_permuted_ols(
 
     if (threshold is not None) and (output_type == "legacy"):
         warnings.warn(
-            'If "threshold" is not None, "output_type" must be set to "dict". '
+            "If 'threshold' is not None, 'output_type' must be set to 'dict'. "
             "Overriding.",
             stacklevel=find_stack_level(),
         )
         output_type = "dict"
 
     if output_type == "legacy":
-        # TODO (nilearn >= 0.13.0)
+        # TODO (nilearn >= 0.15.0)
         warnings.warn(
             category=DeprecationWarning,
             message=(
-                'The "legacy" output structure for "permuted_ols" is '
+                'The ``"output_type"`` parameter for "permuted_ols" is '
                 "deprecated. "
-                'The default output structure will be changed to "dict" '
-                "in version 0.13."
+                "It will be removed in version 0.15.\n"
+                'Change its value to "dict" to silence this warning.'
             ),
             stacklevel=find_stack_level(),
         )

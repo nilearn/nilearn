@@ -47,7 +47,7 @@ fmri_imgs = [data["func1"], data["func2"]]
 # Create a mean image for plotting purpose.
 from nilearn.image import mean_img
 
-mean_img_ = mean_img(fmri_imgs[0], copy_header=True)
+mean_img_ = mean_img(fmri_imgs[0])
 
 # %%
 # The design matrices were pre-computed,
@@ -151,7 +151,7 @@ variance_imgs = [
 ]
 
 fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _ = compute_fixed_effects(
-    contrast_imgs, variance_imgs, data["mask"], return_z_score=True
+    contrast_imgs, variance_imgs, data["mask"]
 )
 plot_stat_map(
     fixed_fx_stat,

@@ -5,6 +5,8 @@ from pathlib import Path
 
 import numpy as np
 
+from nilearn._utils.param_validation import check_is_of_allowed_type
+
 
 def as_ndarray(arr, copy=False, dtype=None, order="K"):
     """Convert to numpy.ndarray starting with an arbitrary array.
@@ -64,8 +66,7 @@ def as_ndarray(arr, copy=False, dtype=None, order="K"):
     if order not in ("C", "F", "A", "K", None):
         raise ValueError(f"Invalid value for 'order': {order!s}")
 
-    if not isinstance(arr, (np.memmap, np.ndarray, list, tuple)):
-        raise ValueError(f"Type not handled: {arr.__class__}")
+    check_is_of_allowed_type(arr, (np.memmap, np.ndarray, list, tuple), "arr")
 
     # the cases where we have to create a copy of the underlying array
     if isinstance(arr, (np.memmap, list, tuple)) or (

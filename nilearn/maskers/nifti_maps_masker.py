@@ -4,6 +4,7 @@ import warnings
 from copy import deepcopy
 
 import numpy as np
+from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.class_inspect import get_params
@@ -11,7 +12,10 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image import clean_img, get_data, index_img, resample_img
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
@@ -42,7 +46,7 @@ class _ExtractionFunctor:
 
 
 @fill_doc
-class NiftiMapsMasker(BaseMasker):
+class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     """Class for extracting data from Niimg-like objects \
        using maps of potentially overlapping brain regions.
 
@@ -77,7 +81,7 @@ class NiftiMapsMasker(BaseMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 
@@ -128,13 +132,10 @@ class NiftiMapsMasker(BaseMasker):
     %(clean_args)s
         .. versionadded:: 0.12.0
 
-    %(masker_kwargs)s
 
     Attributes
     ----------
     %(clean_args_)s
-
-    %(masker_kwargs_)s
 
     maps_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The maps mask of the data.
@@ -179,14 +180,13 @@ class NiftiMapsMasker(BaseMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        keep_masked_maps=True,
+        keep_masked_maps=False,
         memory=None,
         memory_level=0,
         verbose=0,
         reports=True,
         cmap="CMRmap_r",
         clean_args=None,
-        **kwargs,  # TODO (nilearn >= 0.13.0) remove
     ):
         self.maps_img = maps_img
         self.mask_img = mask_img
@@ -207,9 +207,6 @@ class NiftiMapsMasker(BaseMasker):
         self.t_r = t_r
         self.dtype = dtype
         self.clean_args = clean_args
-
-        # TODO (nilearn >= 0.13.0) remove
-        self.clean_kwargs = kwargs
 
         # Parameters for resampling
         self.resampling_target = resampling_target
@@ -406,11 +403,11 @@ class NiftiMapsMasker(BaseMasker):
         """
         del y
         check_params(self.__dict__)
-        if self.resampling_target not in ("mask", "maps", "data", None):
-            raise ValueError(
-                "invalid value for 'resampling_target' "
-                f"parameter: {self.resampling_target}"
-            )
+        check_parameter_in_allowed(
+            self.resampling_target,
+            ("mask", "maps", "data", None),
+            "resampling_target",
+        )
 
         if self.mask_img is None and self.resampling_target == "mask":
             raise ValueError(
@@ -479,29 +476,23 @@ class NiftiMapsMasker(BaseMasker):
             ):
                 mask_logger("resample_regions", verbose=self.verbose)
 
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 self.maps_img_ = self._cache(resample_img)(
                     self.maps_img_,
                     interpolation="linear",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
-                    copy_header=True,
-                    force_resample=False,
                 )
             if self.mask_img_ is not None and not check_same_fov(
                 ref_img, self.mask_img_
             ):
                 mask_logger("resample_mask", verbose=self.verbose)
 
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 self.mask_img_ = resample_img(
                     self.mask_img_,
                     target_affine=ref_img.affine,
                     target_shape=ref_img.shape[:3],
                     interpolation="nearest",
                     copy=True,
-                    copy_header=True,
-                    force_resample=False,
                 )
 
                 # Just check that the mask is valid
@@ -625,14 +616,11 @@ class NiftiMapsMasker(BaseMasker):
                     ),
                     stacklevel=find_stack_level(),
                 )
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 maps_img_ = self._cache(resample_img)(
                     self.maps_img_,
                     interpolation="linear",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
-                    copy_header=True,
-                    force_resample=False,
                 )
 
             if self.mask_img_ is not None and not check_same_fov(
@@ -648,14 +636,11 @@ class NiftiMapsMasker(BaseMasker):
                     ),
                     stacklevel=find_stack_level(),
                 )
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 mask_img_ = self._cache(resample_img)(
                     self.mask_img_,
                     interpolation="nearest",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
-                    copy_header=True,
-                    force_resample=False,
                 )
 
             # Remove imgs_ from memory before loading the same image
@@ -693,9 +678,8 @@ class NiftiMapsMasker(BaseMasker):
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
         params["clean_kwargs"] = self.clean_args_
-        # TODO (nilearn  >= 0.13.0) remove
-        if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs_
+
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
 
         region_signals, _ = self._cache(
             filter_and_extract,
@@ -718,6 +702,7 @@ class NiftiMapsMasker(BaseMasker):
             memory_level=self.memory_level,
             # kwargs
             verbose=self.verbose,
+            sklearn_output_config=sklearn_output_config,
         )
         return region_signals
 

@@ -79,7 +79,7 @@ def report_flm_adhd_dmn(build_type):
         [pcc_coords],
         radius=10,
         detrend=True,
-        standardize=True,
+        standardize="zscore_sample",
         low_pass=0.1,
         high_pass=0.01,
         t_r=t_r,
@@ -233,7 +233,7 @@ def report_flm_fiac(build_type):
     data = fetch_fiac_first_level()
     fmri_img = [data["func1"], data["func2"]]
 
-    mean_img_ = mean_img(fmri_img[0], copy_header=True)
+    mean_img_ = mean_img(fmri_img[0])
 
     design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 
@@ -289,8 +289,6 @@ def report_slm_oasis(build_type):
         fetch_icbm152_brain_gm_mask(),
         oasis_dataset.gray_matter_maps[0],
         interpolation="nearest",
-        copy_header=True,
-        force_resample=True,
     )
 
     design_matrix = _make_design_matrix_slm_oasis(oasis_dataset, n_subjects)
@@ -520,7 +518,7 @@ def report_multi_nifti_labels_masker(build_type):
         )
         return None
 
-    yeo = fetch_atlas_yeo_2011(thickness="thick", n_networks=17)
+    yeo = fetch_atlas_yeo_2011(n_networks=17)
 
     data = fetch_development_fmri(n_subjects=2)
 
@@ -601,7 +599,7 @@ def report_sphere_masker(build_type):
         pcc_coords,
         radius=10,
         detrend=True,
-        standardize=True,
+        standardize="zscore_sample",
         low_pass=0.1,
         high_pass=0.01,
         t_r=t_r,

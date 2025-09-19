@@ -36,7 +36,7 @@ class _MNI152Template(SpatialImage):
     def load(self):
         if self.data is None:
             anat_img = load_mni152_template(resolution=2)
-            anat_img = reorder_img(anat_img, copy_header=True)
+            anat_img = reorder_img(anat_img)
             data = get_data(anat_img)
             data = data.astype(np.float64)
             anat_mask = binary_fill_holes(data > np.finfo(float).eps)
@@ -154,7 +154,7 @@ def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
         if dim != "auto" and not isinstance(dim, numbers.Number):
             raise ValueError(
                 "The input given for 'dim' needs to be a float. "
-                f"You provided dim={dim} in {type(dim)}."
+                f"You provided dim={dim} in {dim.__class__.__name__}."
             )
         vmean = 0.5 * (vmin + vmax)
         ptp = 0.5 * (vmax - vmin)

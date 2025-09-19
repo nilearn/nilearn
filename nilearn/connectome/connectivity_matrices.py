@@ -14,6 +14,7 @@ from nilearn import signal
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
@@ -400,14 +401,15 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
 
-    %(standardize)s
+    %(standardize_true)s
 
         .. note::
 
             Added to control passing value to `standardize` of ``signal.clean``
             to call new behavior since passing "zscore" or True (default) is
-            deprecated. This parameter will be deprecated in version 0.13 and
-            removed in version 0.15.
+            deprecated.
+            This parameter will be changed to "zscore_sample"
+            in version 0.14 and removed in version 0.15.
 
     Attributes
     ----------
@@ -569,6 +571,16 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             connectivities = [cov_to_corr(cov) for cov in covariances_std]
         else:
             covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
+
+            allowed_kinds = (
+                "correlation",
+                "partial correlation",
+                "tangent",
+                "covariance",
+                "precision",
+            )
+            check_parameter_in_allowed(self.kind, allowed_kinds, "kind")
+
             if self.kind in ("covariance", "tangent"):
                 connectivities = covariances
             elif self.kind == "precision":
@@ -577,18 +589,6 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 connectivities = [
                     prec_to_partial(linalg.inv(cov)) for cov in covariances
                 ]
-            else:
-                allowed_kinds = (
-                    "correlation",
-                    "partial correlation",
-                    "tangent",
-                    "covariance",
-                    "precision",
-                )
-                raise ValueError(
-                    f"Allowed connectivity kinds are {allowed_kinds}. "
-                    f"Got kind {self.kind}."
-                )
 
         # Store the mean
         if do_fit:

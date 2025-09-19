@@ -18,11 +18,7 @@ from scipy.stats import scoreatpercentile
 from nilearn import signal
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.exceptions import DimensionError
-from nilearn._utils.helpers import (
-    check_copy_header,
-    stringify_path,
-)
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -37,8 +33,13 @@ from nilearn._utils.niimg_conversions import (
     iter_check_niimg,
 )
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn._utils.param_validation import check_params, check_threshold
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+    check_threshold,
+)
 from nilearn._utils.path_finding import resolve_globbing
+from nilearn.exceptions import DimensionError
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -302,12 +303,12 @@ def smooth_img(imgs, fwhm):
         filtered = smooth_array(
             get_data(img), affine, fwhm=fwhm, ensure_finite=True, copy=True
         )
-        ret.append(new_img_like(img, filtered, affine, copy_header=True))
+        ret.append(new_img_like(img, filtered, affine))
 
     return ret[0] if single_img else ret
 
 
-def _crop_img_to(img, slices, copy=True, copy_header=False):
+def _crop_img_to(img, slices, copy=True, copy_header=True):
     """Crops an image to a smaller size.
 
     Crop `img` to size indicated by slices and adjust affine accordingly.
@@ -327,13 +328,9 @@ def _crop_img_to(img, slices, copy=True, copy_header=False):
     copy : :obj:`bool`, default=True
         Specifies whether cropped data is to be copied or not.
 
-    copy_header : :obj:`bool`
-        Whether to copy the header of the input image to the output.
-        If None, the default behavior is to not copy the header.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -367,8 +364,9 @@ def _crop_img_to(img, slices, copy=True, copy_header=False):
     return new_img_like(img, cropped_data, new_affine, copy_header=copy_header)
 
 
+@fill_doc
 def crop_img(
-    img, rtol=1e-8, copy=True, pad=True, return_offset=False, copy_header=False
+    img, rtol=1e-8, copy=True, pad=True, return_offset=False, copy_header=True
 ):
     """Crops an image as much as possible.
 
@@ -398,12 +396,9 @@ def crop_img(
     return_offset : :obj:`bool`, default=False
         Specifies whether to return a tuple of the removed padding.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -414,8 +409,7 @@ def crop_img(
         *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
 
     """
-    # TODO (nilearn >= 0.13.0) remove this warning
-    check_copy_header(copy_header)
+    check_params(locals())
 
     img = check_niimg(img)
     data = get_data(img)
@@ -468,14 +462,11 @@ def compute_mean(imgs, target_affine=None, target_shape=None, smooth=False):
         mean_data = mean_data.mean(axis=-1)
     else:
         mean_data = mean_data.copy()
-    # TODO (nilearn >= 0.13.0) force_resample=True
     mean_data = resampling.resample_img(
         Nifti1Image(mean_data, affine),
         target_affine=target_affine,
         target_shape=target_shape,
         copy=False,
-        copy_header=True,
-        force_resample=False,
     )
     affine = mean_data.affine
     mean_data = get_data(mean_data)
@@ -513,7 +504,7 @@ def mean_img(
     target_shape=None,
     verbose=0,
     n_jobs=1,
-    copy_header=False,
+    copy_header=True,
 ):
     """Compute the mean over images.
 
@@ -546,13 +537,9 @@ def mean_img(
         'all CPUs').
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
-        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -564,6 +551,7 @@ def mean_img(
     nilearn.image.math_img : For more general operations on images.
 
     """
+    check_params(locals())
     is_iterable = isinstance(imgs, collections.abc.Iterable)
     is_surface_img = isinstance(imgs, SurfaceImage) or (
         is_iterable and all(isinstance(x, SurfaceImage) for x in imgs)
@@ -573,9 +561,6 @@ def mean_img(
             imgs = [imgs]
         all_means = concat_imgs([_compute_surface_mean(x) for x in imgs])
         return _compute_surface_mean(all_means)
-
-    # TODO (nilearn >= 0.13.0) remove this warning
-    check_copy_header(copy_header)
 
     imgs = stringify_path(imgs)
     is_str = isinstance(imgs, str)
@@ -646,12 +631,10 @@ def swap_img_hemispheres(img):
     img = check_niimg_3d(img)
 
     # get nifti in x-y-z order
-    img = reorder_img(img, copy_header=True)
+    img = reorder_img(img)
 
     # create swapped nifti object
-    out_img = new_img_like(
-        img, get_data(img)[::-1], img.affine, copy_header=True
-    )
+    out_img = new_img_like(img, get_data(img)[::-1], img.affine)
 
     return out_img
 
@@ -782,7 +765,8 @@ def _downcast_from_int64_if_possible(data):
     return data
 
 
-def new_img_like(ref_niimg, data, affine=None, copy_header=False):
+@fill_doc
+def new_img_like(ref_niimg, data, affine=None, copy_header=True):
     """Create a new image of the same class as the reference image.
 
     Parameters
@@ -809,10 +793,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
         Transformation matrix.
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
-    copy_header : :obj:`bool`, default=False
-        Indicated if the header of the reference image should be used to
-        create the new image.
-        Ignored for :obj:`~nilearn.surface.SurfaceImage`.
+    %(copy_header)s
 
     Returns
     -------
@@ -930,6 +911,7 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     return arr
 
 
+@fill_doc
 def threshold_img(
     img,
     threshold,
@@ -937,7 +919,7 @@ def threshold_img(
     two_sided=True,
     mask_img=None,
     copy=True,
-    copy_header=False,
+    copy_header=True,
 ):
     """Threshold the given input image, mostly statistical or atlas images.
 
@@ -1006,7 +988,8 @@ def threshold_img(
         maximum intensity of the data.
         If `two_sided` is True, threshold cannot be negative.
         If threshold is :obj:`str`,
-        the given string should be within the range of "0%" to "100%".
+        the given string should be
+        within the range of ``"0%%"`` to ``"100%%"``.
 
     cluster_threshold : :obj:`float`, default=0
         Cluster size threshold, in voxels. In the returned thresholded map,
@@ -1032,14 +1015,9 @@ def threshold_img(
         If True, input array is not modified. True by default: the filtering
         is not performed in-place.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
-
-        Not applicable for SurfaceImage.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -1067,10 +1045,12 @@ def threshold_img(
     from nilearn.image.resampling import resample_img
     from nilearn.masking import load_mask_img
 
+    check_params(locals())
+
     if not isinstance(img, (*NiimgLike, SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(img)=}."
+            f"Got {img.__class__.__name__}."
         )
 
     if mask_img is not None:
@@ -1088,9 +1068,6 @@ def threshold_img(
         cluster_threshold = 0
 
     if isinstance(img, NiimgLike):
-        # TODO (nilearn >= 0.13.0) remove this warning
-        check_copy_header(copy_header)
-
         img = check_niimg(img)
         img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
         affine = img.affine
@@ -1106,14 +1083,11 @@ def threshold_img(
         if isinstance(mask_img, NiimgLike):
             mask_img = check_niimg_3d(mask_img)
             if not check_same_fov(img, mask_img):
-                # TODO (nilearn >= 0.13.0) force_resample=True
                 mask_img = resample_img(
                     mask_img,
                     target_affine=affine,
                     target_shape=img.shape[:3],
                     interpolation="nearest",
-                    copy_header=True,
-                    force_resample=False,
                 )
             mask_data, _ = load_mask_img(mask_img)
 
@@ -1221,11 +1195,12 @@ def math_img(formula, copy_header_from=None, **imgs):
         The mathematical formula to apply to image internal data. It can use
         numpy imported as 'np'.
 
-    copy_header_from : :obj:`str`, default=None
+    copy_header_from : :obj:`str` or None, default=None
         Takes the variable name of one of the images in the formula.
         The header of this image will be copied to the result of the formula.
         Note that the result image and the image to copy the header from,
-        should have the same number of dimensions. If None, the default
+        should have the same number of dimensions.
+        If None, the default
         :class:`~nibabel.nifti1.Nifti1Header` is used.
 
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
@@ -1353,7 +1328,7 @@ def math_img(formula, copy_header_from=None, **imgs):
         raise
 
     if copy_header_from is None:
-        return new_img_like(niimg, result, niimg.affine)
+        return new_img_like(niimg, result, niimg.affine, copy_header=False)
     niimg = check_niimg(imgs[copy_header_from])
     # only copy the header if the result and the input image to copy the
     # header from have the same shape
@@ -1363,11 +1338,12 @@ def math_img(formula, copy_header_from=None, **imgs):
             "The result of the formula has a different number of "
             "dimensions than the image to copy the header from."
         )
-    return new_img_like(niimg, result, niimg.affine, copy_header=True)
+    return new_img_like(niimg, result, niimg.affine)
 
 
+@fill_doc
 def binarize_img(
-    img, threshold=0.0, mask_img=None, two_sided=True, copy_header=False
+    img, threshold=0.0, mask_img=None, two_sided=False, copy_header=True
 ):
     """Binarize an image such that its values are either 0 or 1.
 
@@ -1383,31 +1359,32 @@ def binarize_img(
         voxels which have intensities greater than this value will be kept.
         The given value should be within the range of minimum and
         maximum intensity of the input image.
-        If string, it should finish with percent sign e.g. "80%" and we
+        If string, it should finish with percent sign e.g. "80%%" and we
         threshold based on the score obtained using this percentile on
         the image data. The voxels which have intensities greater than
         this score will be kept. The given string should be
-        within the range of "0%" to "100%".
+        within the range of "0%%" to "100%%".
 
     mask_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`, \
                default=None
         Mask image applied to mask the input data.
         If None, no masking will be applied.
 
-    two_sided : :obj:`bool`, default=True
+    two_sided : :obj:`bool`, default=False
         If `True`, threshold is applied to the absolute value of the image.
         If `False`, threshold is applied to the original value of the image.
 
         .. versionadded:: 0.10.3
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+        .. versionchanged:: 0.13.0dev
+
+            Default was changed to False.
+
+     %(copy_header)s
 
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -1429,18 +1406,9 @@ def binarize_img(
     Now we binarize it, generating a pseudo brainmask::
 
      >>> from nilearn.image import binarize_img
-     >>> img = binarize_img(anatomical_image, copy_header=True)
+     >>> img = binarize_img(anatomical_image)
 
     """
-    if two_sided is True:
-        warnings.warn(
-            'The current default behavior for the "two_sided" argument '
-            'is  "True". This behavior will be changed to "False" in '
-            "version 0.13.",
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
-
     return math_img(
         "img.astype(bool).astype('int8')",
         img=threshold_img(
@@ -1512,8 +1480,7 @@ def clean_img(
         If detrending should be applied on timeseries
         (before confound removal).
 
-    standardize : :obj:`bool`, default=True
-        If True, returned signals are set to unit variance.
+    %(standardize_true)s
 
     confounds : :class:`numpy.ndarray`, :obj:`str` or :obj:`list` of \
         Confounds timeseries. default=None
@@ -1576,8 +1543,9 @@ def clean_img(
         nilearn.signal.clean
 
     """
+    check_params(locals())
     # Avoid circular import
-    from .. import masking
+    from nilearn import masking
 
     # Check if t_r is set, otherwise propose t_r from imgs header
     if (low_pass is not None or high_pass is not None) and t_r is None:
@@ -1648,13 +1616,9 @@ def clean_img(
         imgs_ = masking.unmask(data, mask_img)
     elif "sample_mask" in clean_kwargs:
         sample_shape = imgs_.shape[:3] + clean_kwargs["sample_mask"].shape
-        imgs_ = new_img_like(
-            imgs_, data.T.reshape(sample_shape), copy_header=True
-        )
+        imgs_ = new_img_like(imgs_, data.T.reshape(sample_shape))
     else:
-        imgs_ = new_img_like(
-            imgs_, data.T.reshape(imgs_.shape), copy_header=True
-        )
+        imgs_ = new_img_like(imgs_, data.T.reshape(imgs_.shape))
 
     return imgs_
 
@@ -1856,9 +1820,7 @@ def concat_imgs(
         data[..., cur_4d_index : cur_4d_index + size] = _get_data(niimg)
         cur_4d_index += size
 
-    return new_img_like(
-        first_niimg, data, first_niimg.affine, copy_header=True
-    )
+    return new_img_like(first_niimg, data, first_niimg.affine)
 
 
 def largest_connected_component_img(imgs):
@@ -1900,9 +1862,7 @@ def largest_connected_component_img(imgs):
         img = check_niimg_3d(img)
         affine = img.affine
         largest_component = largest_connected_component(safe_get_data(img))
-        ret.append(
-            new_img_like(img, largest_component, affine, copy_header=True)
-        )
+        ret.append(new_img_like(img, largest_component, affine))
 
     return ret[0] if single_img else ret
 
@@ -1920,13 +1880,9 @@ def copy_img(img):
     img_copy : image
         copy of input (data, affine and header)
     """
-    if not isinstance(img, spatialimages.SpatialImage):
-        raise ValueError("Input value is not an image")
+    check_is_of_allowed_type(img, (spatialimages.SpatialImage,), "img")
     return new_img_like(
-        img,
-        safe_get_data(img, copy_data=True),
-        img.affine.copy(),
-        copy_header=True,
+        img, safe_get_data(img, copy_data=True), img.affine.copy()
     )
 
 
@@ -1942,7 +1898,7 @@ def get_indices_from_image(image) -> np.ndarray:
     else:
         raise TypeError(
             "Image to extract indices from must be one of: "
-            "Niimg-Like, SurfaceIamge, numpy array. "
-            f"Got {type(image)}"
+            "Niimg-Like, SurfaceImage, numpy array. "
+            f"Got {image.__class__.__name__}"
         )
     return np.unique(data)

@@ -50,12 +50,10 @@ from nilearn._utils.masker_validation import (
     check_embedded_masker,
 )
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import (
-    check_feature_screening,
-    check_params,
-)
+from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
+from nilearn.decoding._utils import check_feature_screening
 from nilearn.maskers import SurfaceMasker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
@@ -177,7 +175,7 @@ def _default_param_grid(estimator, X, y):
             LassoCV,
         ),
     ):
-        raise ValueError(
+        raise TypeError(
             "Invalid estimator. The supported estimators are:"
             f" {list(SUPPORTED_ESTIMATORS.keys())}"
         )
@@ -520,7 +518,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
     %(smoothing_fwhm)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(target_affine)s
 
@@ -1193,7 +1191,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(target_affine)s
 
@@ -1369,7 +1367,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(smoothing_fwhm)s
 
-    %(standardize)s
+    %(standardize_true)s
 
     %(target_affine)s
 
@@ -1560,7 +1558,9 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
     %(smoothing_fwhm)s
-    %(standardize)s
+
+    %(standardize_true)s
+
     %(target_affine)s
     %(target_shape)s
     %(mask_strategy)s
@@ -1753,7 +1753,9 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'; default='roc_auc'
     %(smoothing_fwhm)s
-    %(standardize)s
+
+    %(standardize_true)s
+
     %(target_affine)s
     %(target_shape)s
 

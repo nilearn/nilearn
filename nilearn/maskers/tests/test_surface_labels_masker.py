@@ -268,7 +268,7 @@ def test_surface_label_masker_error_names_and_lut(surf_label_img):
     )
     with pytest.raises(
         ValueError,
-        match="Pass either labels or a lookup table .* but not both.",
+        match=r"Pass either labels or a lookup table .* but not both.",
     ):
         masker.fit()
 
@@ -701,5 +701,5 @@ def test_surface_label_masker_labels_img_none():
 def test_error_wrong_strategy(surf_label_img):
     """Throw error for unsupported strategies."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, strategy="foo")
-    with pytest.raises(ValueError, match="Invalid strategy 'foo'."):
+    with pytest.raises(ValueError, match="'strategy' must be one of"):
         masker.fit()

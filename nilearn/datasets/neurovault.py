@@ -22,7 +22,10 @@ from sklearn.utils import Bunch
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image import resample_img
 
 from ._utils import (
@@ -1559,13 +1562,10 @@ def _download_image_nii_file(image_info, collection, download_params):
         logger.log(
             "Resampling...",
         )
-        # TODO (nilearn >= 0.13.0) force_resample=True
         im_resampled = resample_img(
             img=tmp_path,
             target_affine=STD_AFFINE,
             interpolation=download_params["interpolation"],
-            copy_header=True,
-            force_resample=False,
         )
         im_resampled.to_filename(resampled_image_absolute_path)
 
@@ -1799,13 +1799,10 @@ def _scroll_local(download_params):
             image, collection = _update(image, collection, download_params)
             if download_params["resample"]:
                 if not Path(image["resampled_absolute_path"]).is_file():
-                    # TODO (nilearn  >= 0.13.0) force_resample=True
                     im_resampled = resample_img(
                         img=image["absolute_path"],
                         target_affine=STD_AFFINE,
                         interpolation=download_params["interpolation"],
-                        copy_header=True,
-                        force_resample=False,
                     )
                     im_resampled.to_filename(image["resampled_absolute_path"])
                 download_params["visited_images"].add(image["id"])
@@ -2275,11 +2272,11 @@ def _read_download_params(
     """Create a dictionary containing download information."""
     download_params = {"verbose": verbose}
     download_mode = download_mode.lower()
-    if download_mode not in ["overwrite", "download_new", "offline"]:
-        raise ValueError(
-            "Supported download modes are: overwrite, download_new, offline. "
-            f"Got {download_mode}."
-        )
+    check_parameter_in_allowed(
+        download_mode,
+        ["overwrite", "download_new", "offline"],
+        "mode",
+    )
     download_params["download_mode"] = download_mode
     if collection_terms is None:
         collection_terms = {}

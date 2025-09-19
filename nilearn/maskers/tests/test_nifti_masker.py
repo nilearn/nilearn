@@ -13,7 +13,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils import data_gen, exceptions
+from nilearn._utils import data_gen
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.estimator_checks import (
     check_estimator,
@@ -21,6 +21,7 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data, index_img
 from nilearn.maskers import NiftiMasker
 from nilearn.maskers.nifti_masker import filter_and_mask
@@ -157,7 +158,9 @@ def test_matrix_orientation():
     # all signals being identical, standardizing along the wrong axis
     # would leave a null signal. Along the correct axis, the step remains.
     fmri, mask = data_gen.generate_fake_fmri(shape=(40, 41, 42), kind="step")
-    masker = NiftiMasker(mask_img=mask, standardize=True, detrend=True)
+    masker = NiftiMasker(
+        mask_img=mask, standardize="zscore_sample", detrend=True
+    )
     timeseries = masker.fit_transform(fmri)
     assert timeseries.shape[0] == fmri.shape[3]
     assert timeseries.shape[1] == get_data(mask).sum()
@@ -347,11 +350,12 @@ def test_compute_brain_mask_empty_mask_error(strategy):
 
 @pytest.mark.timeout(0)
 @pytest.mark.parametrize(
-    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+    "strategy",
+    [f"{p}-template" for p in ["whole-brain", "gm", "wm"]],
 )
 # We parametrize mask_args to make it accessible
 # to the expected_mask fixture.
-@pytest.mark.parametrize("mask_args", [{"threshold": 0.0}])
+@pytest.mark.parametrize("mask_args", [{"threshold": -0.5}])
 def test_compute_brain_mask(strategy, expected_mask, mask_args):
     """Check masker for template masking strategy."""
     masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
@@ -390,7 +394,7 @@ def test_no_warning_partial_joblib(strategy):
     """
     masker = NiftiMasker(
         mask_strategy=strategy,
-        mask_args={"threshold": 0.0},
+        mask_args={"threshold": -0.5},
         memory="nilearn_cache",
         memory_level=1,
     )
@@ -417,10 +421,12 @@ def test_filter_and_mask_error(affine_eye):
     params = get_params(NiftiMasker, masker)
 
     with pytest.raises(
-        exceptions.DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
+        DimensionError,
+        match=(
+            r"Input data has incompatible dimensionality: "
+            r"Expected dimension is 3D and you provided "
+            r"a 4D image."
+        ),
     ):
         filter_and_mask(data_img, mask_img, params)
 

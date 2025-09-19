@@ -43,7 +43,7 @@ def test_image_2():
 
 def test_error_parcellation_method_none(test_image):
     with pytest.raises(
-        ValueError, match="Parcellation method is specified as None. "
+        ValueError, match=r"Parcellation method is specified as None. "
     ):
         Parcellations(method=None, verbose=0).fit(test_image)
 
@@ -53,7 +53,7 @@ def test_errors_raised_in_check_parameters_fit(method, test_image):
     """Test whether an error is raised or not given a false method type."""
     with pytest.raises(
         ValueError,
-        match=(f"The method you have selected is not implemented '{method}'"),
+        match=("'method' must be one of"),
     ):
         Parcellations(method=method, verbose=0).fit(test_image)
 

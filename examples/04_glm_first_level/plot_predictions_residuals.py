@@ -27,7 +27,7 @@ subject_data = fetch_spm_auditory()
 fmri_img = subject_data.func[0]
 
 # Make an average
-mean_img = image.mean_img(fmri_img, copy_header=True)
+mean_img = image.mean_img(fmri_img)
 mask = masking.compute_epi_mask(mean_img)
 
 # Clean and smooth data

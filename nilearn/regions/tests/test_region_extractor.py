@@ -10,9 +10,9 @@ from nilearn._utils.estimator_checks import (
     check_estimator,
     nilearn_check_estimator,
 )
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _affine_eye, _img_4d_zeros, _shape_3d_large
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.regions import (
     RegionExtractor,
@@ -171,9 +171,7 @@ def test_threshold_maps_ratio_3d(map_img_3d):
 def test_invalids_extract_types_in_connected_regions(
     dummy_map, invalid_extract_type
 ):
-    valid_names = ["connected_components", "local_regions"]
-    message = f"'extract_type' should be {valid_names}"
-    with pytest.raises(ValueError, match=message):
+    with pytest.raises(ValueError, match="'extract_type' must be one of"):
         connected_regions(dummy_map, extract_type=invalid_extract_type)
 
 
@@ -249,8 +247,7 @@ def test_invalid_threshold_strategies(dummy_map):
     )
 
     with pytest.raises(
-        ValueError,
-        match="'thresholding_strategy' should be ",
+        ValueError, match="'thresholding_strategy' must be one of"
     ):
         extract_strategy_check.fit()
 
@@ -260,7 +257,7 @@ def test_threshold_as_none_and_string_cases(dummy_map, threshold):
     to_check = RegionExtractor(dummy_map, threshold=threshold)
 
     with pytest.raises(
-        ValueError, match="The given input to threshold is not valid."
+        ValueError, match=r"The given input to threshold is not valid."
     ):
         to_check.fit()
 
@@ -391,11 +388,11 @@ def test_region_extractor_zeros_affine_diagonal(affine_eye, n_regions):
 
 def test_error_messages_connected_label_regions(img_labels):
     with pytest.raises(
-        ValueError, match="Expected 'min_size' to be specified as integer."
+        ValueError, match=r"Expected 'min_size' to be specified as integer."
     ):
         connected_label_regions(labels_img=img_labels, min_size="a")
     with pytest.raises(
-        ValueError, match="'connect_diag' must be specified as True or False."
+        ValueError, match=r"'connect_diag' must be specified as True or False."
     ):
         connected_label_regions(labels_img=img_labels, connect_diag=None)
 
@@ -409,7 +406,7 @@ def test_remove_small_regions(affine_eye):
         ]
     )
     # To remove small regions, data should be labeled
-    label_map, n_labels = label(data)
+    label_map, _ = label(data)
     sum_label_data = np.sum(label_map)
 
     min_size = 10

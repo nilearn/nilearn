@@ -21,10 +21,12 @@ from nilearn._utils.niimg_conversions import (
     check_same_fov,
 )
 from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
     check_params,
     check_reduction_strategy,
 )
 from nilearn.image import get_data, load_img, resample_img
+from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -68,7 +70,7 @@ class _ExtractionFunctor:
 
 
 @fill_doc
-class NiftiLabelsMasker(BaseMasker):
+class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
     """Class for extracting data from Niimg-like objects \
        using labels of non-overlapping brain regions.
 
@@ -121,7 +123,7 @@ class NiftiLabelsMasker(BaseMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 
@@ -169,13 +171,9 @@ class NiftiLabelsMasker(BaseMasker):
     %(clean_args)s
         .. versionadded:: 0.12.0
 
-    %(masker_kwargs)s
-
     Attributes
     ----------
     %(clean_args_)s
-
-    %(masker_kwargs_)s
 
     labels_img_ : :obj:`nibabel.nifti1.Nifti1Image`
         The labels image.
@@ -218,11 +216,10 @@ class NiftiLabelsMasker(BaseMasker):
         memory_level=1,
         verbose=0,
         strategy="mean",
-        keep_masked_labels=True,
+        keep_masked_labels=False,
         reports=True,
         cmap="CMRmap_r",
         clean_args=None,
-        **kwargs,  # TODO (nilearn >= 0.13.0) remove
     ):
         self.labels_img = labels_img
         self.background_label = background_label
@@ -246,9 +243,6 @@ class NiftiLabelsMasker(BaseMasker):
         self.t_r = t_r
         self.dtype = dtype
         self.clean_args = clean_args
-
-        # TODO (nilearn >= 0.13.0) remove
-        self.clean_kwargs = kwargs
 
         # Parameters for resampling
         self.resampling_target = resampling_target
@@ -531,12 +525,11 @@ class NiftiLabelsMasker(BaseMasker):
         del y
         check_params(self.__dict__)
         check_reduction_strategy(self.strategy)
-
-        if self.resampling_target not in ("labels", "data", None):
-            raise ValueError(
-                "invalid value for 'resampling_target' "
-                f"parameter: {self.resampling_target}"
-            )
+        check_parameter_in_allowed(
+            self.resampling_target,
+            ("labels", "data", None),
+            "resampling_target",
+        )
 
         self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
@@ -615,14 +608,11 @@ class NiftiLabelsMasker(BaseMasker):
         ):
             mask_logger("resample_mask", verbose=self.verbose)
 
-            # TODO (nilearn >= 0.13.0) force_resample=True
             self.mask_img_ = self._cache(resample_img, func_memory_level=2)(
                 self.mask_img_,
                 interpolation="nearest",
                 target_shape=ref_img.shape[:3],
                 target_affine=ref_img.affine,
-                copy_header=True,
-                force_resample=False,
             )
 
             # Just check that the mask is valid
@@ -654,10 +644,10 @@ class NiftiLabelsMasker(BaseMasker):
         labels = self.labels
         if not isinstance(labels, list):
             raise TypeError(
-                f"'labels' must be a list. Got: {type(labels)}",
+                f"'labels' must be a list. Got: {labels.__class__.__name__}",
             )
         if not all(isinstance(x, str) for x in labels):
-            types_labels = {type(x) for x in labels}
+            types_labels = {x.__class__.__name__ for x in labels}
             raise TypeError(
                 "All elements of 'labels' must be a string.\n"
                 f"Got a list of {types_labels}",
@@ -795,8 +785,6 @@ class NiftiLabelsMasker(BaseMasker):
                     interpolation="nearest",
                     target_shape=imgs_.shape[:3],
                     target_affine=imgs_.affine,
-                    copy_header=True,
-                    force_resample=False,
                 )
 
             # Remove imgs_ from memory before loading the same image
@@ -817,9 +805,8 @@ class NiftiLabelsMasker(BaseMasker):
         params["target_shape"] = target_shape
         params["target_affine"] = target_affine
         params["clean_kwargs"] = self.clean_args_
-        # TODO (nilearn  >= 0.13.0) remove
-        if self.clean_kwargs:
-            params["clean_kwargs"] = self.clean_kwargs_
+
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
 
         region_signals, (ids, masked_atlas) = self._cache(
             filter_and_extract,
@@ -843,6 +830,7 @@ class NiftiLabelsMasker(BaseMasker):
             memory=self.memory_,
             memory_level=self.memory_level,
             verbose=self.verbose,
+            sklearn_output_config=sklearn_output_config,
         )
 
         # Create a lut that may be different from the fitted lut_
@@ -879,8 +867,6 @@ class NiftiLabelsMasker(BaseMasker):
             interpolation="nearest",
             target_shape=imgs_.shape[:3],
             target_affine=imgs_.affine,
-            copy_header=True,
-            force_resample=False,
         )
         labels_after_resampling = set(np.unique(safe_get_data(labels_img_)))
         if labels_diff := labels_before_resampling.difference(

@@ -146,7 +146,7 @@ def test_fetch_haxby(tmp_path, request_mocker):
     assert "stimuli" in haxby
 
     subjects = ["a", 8]
-    message = "You provided invalid subject id {0} in a list"
+    message = "'subject id' must be one of"
 
     for sub_id in subjects:
         with pytest.raises(ValueError, match=message.format(sub_id)):
@@ -255,7 +255,7 @@ def test_fetch_localizer_contrasts_errors(
     tmp_path,
     localizer_mocker,  # noqa: ARG001
 ):
-    with pytest.raises(ValueError, match="should be a list of strings"):
+    with pytest.raises(TypeError, match="should be a list of strings"):
         func.fetch_localizer_contrasts(
             "checkerboard",
             n_subjects=2,
@@ -474,7 +474,7 @@ def test_fetch_mixed_gambles(tmp_path, n_subjects):
 def test_check_parameters_megatrawls_datasets():
     # testing whether the function raises the same error message
     # if invalid input parameters are provided
-    message = "Invalid {0} input is provided: {1}."
+    message = "'{0}' must be one of"
 
     for invalid_input_dim in [1, 5, 30]:
         with pytest.raises(
@@ -759,7 +759,7 @@ def test_fetch_development_fmri_invalid_n_subjects():
 
 
 def test_fetch_development_fmri_exception():
-    with pytest.raises(ValueError, match="Wrong value for age_group"):
+    with pytest.raises(ValueError, match="'age_group' must be one of"):
         func._filter_func_regressors_by_participants(
             participants="junk", age_group="junk for test"
         )
@@ -768,17 +768,6 @@ def test_fetch_development_fmri_exception():
 # datasets tests originally belonging to nistats follow
 
 datadir = PACKAGE_DIRECTORY / "data"
-
-
-def test_fetch_bids_langloc_dataset(tmp_path):
-    data_dir = tmp_path / "bids_langloc_example"
-    main_folder = data_dir / "bids_langloc_dataset"
-    main_folder.mkdir(parents=True)
-
-    datadir, dl_files = func.fetch_bids_langloc_dataset(tmp_path)
-
-    assert isinstance(datadir, str)
-    assert isinstance(dl_files, list)
 
 
 def test_select_from_index():
@@ -932,8 +921,7 @@ def test_fetch_localizer(tmp_path):
     assert isinstance(dataset.epi_img, str)
 
 
-@pytest.mark.parametrize("legacy", [True, False])
-def test_fetch_language_localizer_demo_dataset(tmp_path, legacy):
+def test_fetch_language_localizer_demo_dataset(tmp_path):
     data_dir = tmp_path
     expected_data_dir = tmp_path / "fMRI-language-localizer-demo-dataset"
     contents_dir = Path(__file__).parent / "data" / "archive_contents"
@@ -943,26 +931,13 @@ def test_fetch_language_localizer_demo_dataset(tmp_path, legacy):
             str(expected_data_dir / file_path.strip())
             for file_path in f.readlines()[1:]
         ]
-    if legacy:
-        with pytest.deprecated_call(match="Bunch"):
-            (
-                actual_dir,
-                actual_subdirs,
-            ) = func.fetch_language_localizer_demo_dataset(
-                data_dir, legacy_output=legacy
-            )
 
-        assert actual_dir == str(expected_data_dir)
-        assert actual_subdirs == sorted(expected_files)
-    else:
-        bunch = func.fetch_language_localizer_demo_dataset(
-            data_dir, legacy_output=legacy
-        )
+    bunch = func.fetch_language_localizer_demo_dataset(data_dir)
 
-        assert isinstance(bunch, Bunch)
-        check_type_fetcher(bunch)
-        assert bunch.data_dir == str(expected_data_dir)
-        assert bunch.func == sorted(expected_files)
+    assert isinstance(bunch, Bunch)
+    check_type_fetcher(bunch)
+    assert bunch.data_dir == str(expected_data_dir)
+    assert bunch.func == sorted(expected_files)
 
 
 def test_download_spm_auditory_data(tmp_path, request_mocker):

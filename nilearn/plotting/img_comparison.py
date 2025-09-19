@@ -9,14 +9,13 @@ from scipy import stats
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import constrained_layout_kwargs
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.plotting._utils import save_figure_if_needed
+from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import NiimgLike
@@ -137,7 +136,7 @@ def plot_img_comparison(
                 1,
                 2,
                 figsize=(12, 5),
-                **constrained_layout_kwargs(),
+                layout="constrained",
             )
         else:
             (ax1, ax2) = axes

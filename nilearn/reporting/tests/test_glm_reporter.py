@@ -39,7 +39,7 @@ def contrasts(rk):
 def flm(rk):
     """Generate first level model."""
     shapes = ((7, 7, 7, 5),)
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
     )
     # generate_fake_fmri_data_and_design
@@ -205,12 +205,7 @@ def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: A
             plot_type="junk",
         )
 
-    expected_error = (
-        "Invalid plot type provided. "
-        "Acceptable options are 'slice' or 'glass'."
-    )
-
-    with pytest.raises(ValueError, match=expected_error):
+    with pytest.raises(ValueError, match="'plot_type' must be one of"):
         flm.generate_report(
             contrasts=contrasts,
             display_mode="glass",

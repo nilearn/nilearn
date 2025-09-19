@@ -11,7 +11,10 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from joblib import Memory
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import (
+    BaseEstimator,
+    TransformerMixin,
+)
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
 
@@ -22,10 +25,7 @@ from nilearn._utils.bids import (
 )
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import (
-    rename_parameters,
-    stringify_path,
-)
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -33,7 +33,9 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.image import (
     concat_imgs,
     high_variance_confounds,
@@ -59,6 +61,7 @@ def filter_and_extract(
     sample_mask=None,
     copy=True,
     dtype=None,
+    sklearn_output_config=None,
 ):
     """Extract representative time series using given function.
 
@@ -79,7 +82,7 @@ def filter_and_extract(
 
     Returns
     -------
-    signals : 2D numpy array
+    signals : 1D or 2D numpy array
         Signals extracted using the extraction function. It is a scikit-learn
         friendly 2D array with shape n_samples x n_features.
 
@@ -118,8 +121,6 @@ def filter_and_extract(
             target_shape=target_shape,
             target_affine=target_affine,
             copy=copy,
-            copy_header=True,
-            force_resample=False,  # set to True in 0.13.0
         )
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
@@ -171,7 +172,9 @@ def filter_and_extract(
         **parameters["clean_kwargs"],
     )
 
-    if temp_imgs.ndim == 3:
+    # if we need to output to numpy and input was a 3D img
+    # we return 1D array
+    if temp_imgs.ndim == 3 and sklearn_output_config is None:
         region_signals = region_signals.squeeze()
 
     return region_signals, aux
@@ -232,12 +235,11 @@ def mask_logger(step, img=None, verbose=0):
         "load_data": f"Loading data from {repr}",
         "load_mask": f"Loading mask from {repr}",
         "load_regions": f"Loading regions from {repr}",
-        "resample_mask": "Resamping mask",
+        "resample_mask": "Resampling mask",
         "resample_regions": "Resampling regions",
     }
 
-    if step not in messages:
-        raise ValueError(f"Unknown step: {step}")
+    check_parameter_in_allowed(step, messages.keys(), "step")
 
     if step in ["load_mask", "load_data"] and repr is None:
         return
@@ -246,7 +248,11 @@ def mask_logger(step, img=None, verbose=0):
 
 
 @fill_doc
-class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class BaseMasker(
+    TransformerMixin,
+    CacheMixin,
+    BaseEstimator,
+):
     """Base class for NiftiMaskers."""
 
     @abc.abstractmethod
@@ -302,6 +308,11 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         tags = super().__sklearn_tags__()
         tags.input_tags = InputTags(masker=True)
         return tags
+
+    @property
+    def _n_features_out(self):
+        """Needed by sklearn machinery for set_ouput."""
+        return self.n_elements_
 
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
@@ -377,9 +388,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
-    # TODO (nilearn >= 0.13.0)
     @fill_doc
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit_transform(
         self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
     ):
@@ -501,37 +510,12 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return signals
 
-    def set_output(self, *, transform=None):
-        """Set the output container when ``"transform"`` is called.
-
-        .. warning::
-
-            This has not been implemented yet.
-        """
-        raise NotImplementedError()
-
     def _sanitize_cleaning_parameters(self):
         """Make sure that cleaning parameters are passed via clean_args.
 
         TODO (nilearn >= 0.13.0) remove
         """
         if hasattr(self, "clean_kwargs"):
-            if self.clean_kwargs:
-                tmp = [", ".join(list(self.clean_kwargs))]
-                # TODO (nilearn >= 0.13.0)
-                warnings.warn(
-                    f"You passed some kwargs to {self.__class__.__name__}: "
-                    f"{tmp}. "
-                    "This behavior is deprecated "
-                    "and will be removed in version >0.13.",
-                    DeprecationWarning,
-                    stacklevel=find_stack_level(),
-                )
-                if self.clean_args:
-                    raise ValueError(
-                        "Passing arguments via 'kwargs' "
-                        "is mutually exclusive with using 'clean_args'"
-                    )
             self.clean_kwargs_ = {
                 k[7:]: v
                 for k, v in self.clean_kwargs.items()
@@ -568,6 +552,11 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             surf_img=True, niimg_like=False, masker=True
         )
         return tags
+
+    @property
+    def _n_features_out(self):
+        """Needed by sklearn machinery for set_ouput."""
+        return self.n_elements_
 
     def _check_imgs(self, imgs) -> None:
         if not (
@@ -625,10 +614,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return mask_img_
 
-    # TODO (nilearn >= 0.13.0)
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.0"
-    )
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
@@ -663,7 +648,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             warnings.warn(
                 "Parameter smoothing_fwhm "
                 "is not yet supported for surface data",
-                UserWarning,
+                NotImplementedWarning,
                 stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = None
@@ -694,7 +679,13 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=all_confounds, sample_mask=sample_mask
         )
 
-        return signals.squeeze() if return_1D else signals
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+
+        return (
+            signals.squeeze()
+            if return_1D and sklearn_output_config is not None
+            else signals
+        )
 
     @abc.abstractmethod
     def transform_single_imgs(self, imgs, confounds=None, sample_mask=None):
@@ -702,10 +693,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # implemented in children classes
         raise NotImplementedError()
 
-    # TODO (nilearn >= 0.13.0)
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.0"
-    )
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
@@ -759,15 +746,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             )
 
         return signals
-
-    def set_output(self, *, transform=None):
-        """Set the output container when ``"transform"`` is called.
-
-        .. warning::
-
-            This has not been implemented yet.
-        """
-        raise NotImplementedError()
 
 
 def generate_lut(labels_img, background_label, lut=None, labels=None):

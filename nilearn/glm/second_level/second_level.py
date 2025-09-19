@@ -25,7 +25,11 @@ from nilearn._utils.masker_validation import (
     check_embedded_masker,
 )
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm._base import BaseGLM
 from nilearn.glm.contrasts import (
     compute_contrast,
@@ -258,7 +262,7 @@ def _check_confounds(confounds):
     """Check confounds type."""
     if confounds is not None:
         if not isinstance(confounds, pd.DataFrame):
-            raise ValueError("confounds must be a pandas DataFrame")
+            raise TypeError("confounds must be a pandas DataFrame")
         if "subject_label" not in confounds.columns:
             raise ValueError(
                 "confounds DataFrame must contain column 'subject_label'"
@@ -290,11 +294,6 @@ def _check_first_level_contrast(second_level_input, first_level_contrast):
         )
 
 
-def _check_output_type(output_type, valid_types):
-    if output_type not in valid_types:
-        raise ValueError(f"output_type must be one of {valid_types}")
-
-
 def _check_design_matrix(design_matrix):
     """Check design_matrix type."""
     if design_matrix is not None and not isinstance(
@@ -303,7 +302,7 @@ def _check_design_matrix(design_matrix):
         raise TypeError(
             "'design_matrix' must be a "
             "str, pathlib.Path or a pandas.DataFrame.\n"
-            f"Got {type(design_matrix)}"
+            f"Got {design_matrix.__class__.__name__}"
         )
 
 
@@ -395,7 +394,7 @@ def _process_second_level_input(second_level_input):
     ) or isinstance(second_level_input, SurfaceImage):
         return _process_second_level_input_as_surface_image(second_level_input)
     else:
-        return mean_img(second_level_input, copy_header=True), None
+        return mean_img(second_level_input), None
 
 
 def _process_second_level_input_as_dataframe(second_level_input):
@@ -638,7 +637,7 @@ class SecondLevelModel(BaseGLM):
             warn(
                 "Parameter 'smoothing_fwhm' is not "
                 "yet supported for surface data.",
-                UserWarning,
+                NotImplementedWarning,
                 stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = None
@@ -723,7 +722,7 @@ class SecondLevelModel(BaseGLM):
             "effect_variance",
             "all",
         ]
-        _check_output_type(output_type, valid_types)
+        check_parameter_in_allowed(output_type, valid_types, "output_type")
 
         # Get effect_maps appropriate for chosen contrast
         effect_maps = _infer_effect_maps(
@@ -779,6 +778,48 @@ class SecondLevelModel(BaseGLM):
             outputs[output_type_] = output
 
         return outputs if output_type == "all" else output
+
+    def _make_stat_maps(
+        self, contrasts, output_type="z_score", first_level_contrast=None
+    ):
+        """Given a model and contrasts, return the corresponding z-maps.
+
+        Parameters
+        ----------
+        contrasts : Dict[str, ndarray or str]
+            Dict of contrasts for a first or second level model.
+            Corresponds to the contrast_def for the FirstLevelModel
+            (nilearn.glm.first_level.FirstLevelModel.compute_contrast)
+            & second_level_contrast for a SecondLevelModel
+            (nilearn.glm.second_level.SecondLevelModel.compute_contrast)
+
+        output_type : :obj:`str`, default='z_score'
+            The type of statistical map to retain from the contrast.
+
+            .. versionadded:: 0.9.2
+
+        %(first_level_contrast)s
+
+            .. versionadded:: 0.12.0
+
+        Returns
+        -------
+        statistical_maps : Dict[str, niimg] or Dict[str, Dict[str, niimg]]
+            Dict of statistical z-maps keyed to contrast names/titles.
+
+        See Also
+        --------
+        nilearn.glm.second_level.SecondLevelModel.compute_contrast
+
+        """
+        return {
+            contrast_name: self.compute_contrast(
+                contrast_data,
+                output_type=output_type,
+                first_level_contrast=first_level_contrast,
+            )
+            for contrast_name, contrast_data in contrasts.items()
+        }
 
     def _get_element_wise_model_attribute(
         self, attribute, result_as_time_series
@@ -1103,7 +1144,7 @@ def non_parametric_inference(
         warn(
             "Parameter 'smoothing_fwhm' is not "
             "yet supported for surface data.",
-            UserWarning,
+            NotImplementedWarning,
             stacklevel=find_stack_level(),
         )
         smoothing_fwhm = None
@@ -1117,7 +1158,7 @@ def non_parametric_inference(
                 "for surface data.\n"
                 f"Setting {tfce=} and {threshold=}."
             ),
-            UserWarning,
+            NotImplementedWarning,
             stacklevel=find_stack_level(),
         )
 
@@ -1206,7 +1247,6 @@ def non_parametric_inference(
         masker=masker,
         threshold=threshold,
         tfce=tfce,
-        output_type="dict",
     )
     neg_log10_vfwe_pvals_img = masker.inverse_transform(
         np.ravel(outputs["logp_max_t"])

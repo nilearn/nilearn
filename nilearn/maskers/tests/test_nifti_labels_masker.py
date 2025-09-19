@@ -134,10 +134,10 @@ def test_nifti_labels_masker_errors(
     # Test all kinds of mismatch between shapes and between affines
     masker11.fit()
     with pytest.raises(
-        ValueError, match="Images have different affine matrices."
+        ValueError, match=r"Images have different affine matrices."
     ):
         masker11.transform(fmri12_img)
-    with pytest.raises(ValueError, match="Images have incompatible shapes."):
+    with pytest.raises(ValueError, match=r"Images have incompatible shapes."):
         masker11.transform(fmri21_img)
 
     masker11 = NiftiLabelsMasker(
@@ -267,7 +267,7 @@ def test_nifti_labels_masker_reduction_strategies_error(affine_eye):
 
     labels = Nifti1Image(labels_data, affine_eye)
 
-    with pytest.raises(ValueError, match="Invalid strategy 'TESTRAISE'"):
+    with pytest.raises(ValueError, match="'strategy' must be one of"):
         masker = NiftiLabelsMasker(labels, strategy="TESTRAISE")
         masker.fit()
 
@@ -276,14 +276,14 @@ def test_nifti_labels_masker_resampling_errors(img_labels):
     """Test errors of resampling in NiftiLabelsMasker."""
     with pytest.raises(
         ValueError,
-        match="invalid value for 'resampling_target' parameter: mask",
+        match="'resampling_target' must be one of",
     ):
         masker = NiftiLabelsMasker(img_labels, resampling_target="mask")
         masker.fit()
 
     with pytest.raises(
         ValueError,
-        match="invalid value for 'resampling_target' parameter: invalid",
+        match="'resampling_target' must be one of",
     ):
         masker = NiftiLabelsMasker(
             img_labels,
@@ -432,7 +432,10 @@ def test_nifti_labels_masker_resampling_to_clipped_labels(
     )
 
     masker = NiftiLabelsMasker(
-        labels33_img, mask_img=mask22_img, resampling_target="labels"
+        labels33_img,
+        mask_img=mask22_img,
+        resampling_target="labels",
+        keep_masked_labels=True,
     )
 
     signals = masker.fit_transform(fmri11_img)
@@ -925,7 +928,7 @@ def test_check_labels_errors(shape_3d_default, affine_eye):
         shape_3d_default, affine=affine_eye, n_regions=2
     )
 
-    with pytest.raises(TypeError, match="'labels' must be a list."):
+    with pytest.raises(TypeError, match=r"'labels' must be a list."):
         NiftiLabelsMasker(labels_img, labels={"foo", "bar", "baz"}).fit()
 
     with pytest.raises(

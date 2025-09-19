@@ -6,15 +6,12 @@ from copy import deepcopy
 from warnings import warn
 
 import numpy as np
+from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import (
-    constrained_layout_kwargs,
-    rename_parameters,
-)
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -27,7 +24,7 @@ from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
-class SurfaceMasker(_BaseSurfaceMasker):
+class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     """Extract data from a :obj:`~nilearn.surface.SurfaceImage`.
 
     .. versionadded:: 0.11.0
@@ -39,7 +36,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 
@@ -200,10 +197,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 )
         self.mask_img_ = SurfaceImage(mesh=img.mesh, data=mask_data)
 
-    # TODO (nilearn >= 0.13.0)
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.0"
-    )
     @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
@@ -439,7 +432,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
             len(hemispheres),
             subplot_kw={"projection": "3d"},
             figsize=(20, 20),
-            **constrained_layout_kwargs(),
+            layout="constrained",
         )
         axes = np.atleast_2d(axes)
 
@@ -454,7 +447,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
                     cmap=self.cmap,
                     vmin=vmin,
                     vmax=vmax,
-                    darkness=None,
                 )
 
                 colors = None

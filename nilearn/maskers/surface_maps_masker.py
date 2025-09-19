@@ -6,22 +6,24 @@ import warnings
 
 import numpy as np
 from scipy import linalg
+from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
-    constrained_layout_kwargs,
     is_matplotlib_installed,
     is_plotly_installed,
-    rename_parameters,
 )
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import (
@@ -34,7 +36,7 @@ from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
-class SurfaceMapsMasker(_BaseSurfaceMasker):
+class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     """Extract data from a SurfaceImage, using maps of potentially overlapping
     brain regions.
 
@@ -59,7 +61,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 
@@ -157,11 +159,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-    # TODO (nilearn >= 0.13.0)
     @fill_doc
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.0"
-    )
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -452,11 +450,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if not is_matplotlib_installed():
             return generate_report(self)
 
-        if engine not in ["plotly", "matplotlib"]:
-            raise ValueError(
-                "Parameter ``engine`` should be either 'matplotlib' or "
-                "'plotly'."
-            )
+        check_parameter_in_allowed(engine, ["plotly", "matplotlib"], "engine")
 
         # switch to matplotlib if plotly is selected but not installed
         if engine == "plotly" and not is_plotly_installed():
@@ -587,7 +581,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 threshold=threshold,
                 hemi="both",
                 cmap=self.cmap,
-                darkness=None,
             ).get_iframe(width=500)
         elif self._report_content["engine"] == "matplotlib":
             # TODO: possibly allow to generate a report with other views
@@ -598,7 +591,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 len(hemispheres),
                 subplot_kw={"projection": "3d"},
                 figsize=(20, 20),
-                **constrained_layout_kwargs(),
+                layout="constrained",
             )
             axes = np.atleast_2d(axes)
             for ax_row, view in zip(axes, views, strict=False):
@@ -615,6 +608,5 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                         colorbar=False,
                         threshold=threshold,
                         bg_on_data=True,
-                        darkness=None,
                     )
         return fig

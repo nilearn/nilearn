@@ -23,12 +23,13 @@ import pandas as pd
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.glm import coerce_to_dict, make_stat_maps
+from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm.thresholding import (
@@ -319,7 +320,8 @@ def make_glm_report(
             and not isinstance(bg_img, SurfaceImage)
         ):
             raise TypeError(
-                f"'bg_img' must a SurfaceImage instance. Got {type(bg_img)=}"
+                "'bg_img' must a SurfaceImage instance. "
+                f"Got {bg_img.__class__.__name__}"
             )
 
         mask_plot = _mask_to_plot(model, bg_img, cut_coords)
@@ -344,15 +346,13 @@ def make_glm_report(
                 }
             except KeyError:  # pragma: no cover
                 if contrasts is not None:
-                    statistical_maps = make_stat_maps(
-                        model,
+                    statistical_maps = model._make_stat_maps(
                         contrasts,
                         output_type="z_score",
                         first_level_contrast=first_level_contrast,
                     )
         elif contrasts is not None:
-            statistical_maps = make_stat_maps(
-                model,
+            statistical_maps = model._make_stat_maps(
                 contrasts,
                 output_type="z_score",
                 first_level_contrast=first_level_contrast,
@@ -922,7 +922,6 @@ def _stat_map_to_png(
             bg_map=bg_img,
             surf_mesh=surf_mesh,
             cmap=cmap,
-            darkness=None,
             symmetric_cbar=symmetric_cbar,
             threshold=abs(threshold),
         )
@@ -930,6 +929,7 @@ def _stat_map_to_png(
         x_label_color = "black"
 
     else:
+        check_parameter_in_allowed(plot_type, ["slice", "glass"], "plot_type")
         if plot_type == "slice":
             stat_map_plot = plot_stat_map(
                 stat_img,
@@ -949,11 +949,6 @@ def _stat_map_to_png(
                 symmetric_cbar=symmetric_cbar,
                 cmap=cmap,
                 threshold=abs(threshold),
-            )
-        else:
-            raise ValueError(
-                "Invalid plot type provided. "
-                "Acceptable options are 'slice' or 'glass'."
             )
 
         x_label_color = "white" if plot_type == "slice" else "black"

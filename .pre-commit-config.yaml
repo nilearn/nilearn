@@ -76,22 +76,23 @@ repos:
             )$
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.10
+    rev: v0.13.0
     hooks:
     # Run the linter.
     -   id: ruff-check
         # args: [--statistics]
-        args: [--fix, --show-fixes]
+        args: [--fix, --show-fixes, --unsafe-fixes]
     # Run the formatter.
     -   id: ruff-format
         # args: [--diff]
 
     # check imports contracts
 -   repo: https://github.com/seddonym/import-linter
-    rev: v2.3
+    rev: v2.5
     hooks:
     -   id: import-linter
         args: [--verbose]
+        language: python
 
 -   repo: https://github.com/PyCQA/doc8
     rev: v2.0.0
@@ -100,7 +101,7 @@ repos:
         args: [--config=pyproject.toml, nilearn]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.17.1
+    rev: v1.18.1
     hooks:
     -   id: mypy
         files: nilearn

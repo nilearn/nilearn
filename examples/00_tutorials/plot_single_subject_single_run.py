@@ -42,7 +42,7 @@ from nilearn.image import mean_img
 from nilearn.plotting import plot_anat, plot_img, plot_stat_map, show
 
 fmri_img = subject_data.func
-mean_img = mean_img(subject_data.func[0], copy_header=True)
+mean_img = mean_img(subject_data.func[0])
 plot_img(mean_img, cbar_tick_format="%i")
 
 plot_anat(subject_data.anat, cbar_tick_format="%i")
