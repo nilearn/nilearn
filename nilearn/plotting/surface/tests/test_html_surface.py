@@ -211,3 +211,11 @@ def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):
 def test_view_img_on_surf_errors(img_3d_mni):
     with pytest.raises(DimensionError):
         view_img_on_surf([img_3d_mni, img_3d_mni])
+
+
+@pytest.mark.parametrize("view", ["left", "right"])
+def test_view_img_on_surf_view(tmp_path, mni152_template_res_2, view):
+    """Smoke test for different views of view_img_on_surf."""
+    html = view_img_on_surf(mni152_template_res_2, view=view)
+    assert f', "view": "{view}"' in str(html)
+    check_html(tmp_path, html)
