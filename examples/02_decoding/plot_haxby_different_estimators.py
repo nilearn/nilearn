@@ -193,7 +193,7 @@ for classifier_name in sorted(classifiers):
 # Use the average :term:`EPI` as a background
 from nilearn.image import mean_img
 
-mean_epi_img = mean_img(func_filename, copy_header=True)
+mean_epi_img = mean_img(func_filename)
 
 for classifier_name in sorted(classifiers):
     coef_img = classifiers_data[classifier_name]["map"]
