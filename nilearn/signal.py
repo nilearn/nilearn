@@ -92,10 +92,13 @@ def standardize_signal(
                 "The default strategy for standardize is currently 'zscore' "
                 "which incorrectly uses population std to calculate sample "
                 "zscores. The new strategy 'zscore_sample' corrects this "
-                "behavior by using the sample std. In release 0.14.0, the "
-                "default strategy will be replaced by the new strategy and "
-                "the 'zscore' option will be removed. Please use "
-                "'zscore_sample' instead."
+                "behavior by using the sample std. "
+                "In release 0.14.0, the default strategy "
+                "will be replaced by the new strategy, "
+                "the 'zscore' option will be removed. "
+                "and using standardize=True will fall back "
+                "to 'zscore_sample'."
+                "To avoid this warning, please use 'zscore_sample' instead."
             )
             warnings.warn(
                 category=FutureWarning,

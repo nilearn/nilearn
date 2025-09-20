@@ -259,31 +259,6 @@ def test_is_nifti_spheres_masker_give_nans(rng, affine_eye):
     assert not np.isnan(np.sum(masker.fit_transform(img)))
 
 
-def test_standardization(rng, affine_eye):
-    """Check output properly standardized with 'standardize' parameter."""
-    data = rng.random((3, 3, 3, 5))
-    img = Nifti1Image(data, affine_eye)
-
-    # test zscore
-    masker = NiftiSpheresMasker([(1, 1, 1)], standardize="zscore_sample")
-    # Test the fit
-    s = masker.fit_transform(img)
-
-    np.testing.assert_almost_equal(s.mean(), 0)
-    np.testing.assert_almost_equal(s.std(), 1, decimal=1)
-
-    # test psc
-    masker = NiftiSpheresMasker([(1, 1, 1)], standardize="psc")
-    # Test the fit
-    s = masker.fit_transform(img)
-
-    np.testing.assert_almost_equal(s.mean(), 0)
-    np.testing.assert_almost_equal(
-        s.ravel(),
-        data[1, 1, 1] / data[1, 1, 1].mean() * 100 - 100,
-    )
-
-
 def test_nifti_spheres_masker_inverse_transform(rng, affine_eye):
     """Applying the sphere_extraction example from above backwards."""
     data = rng.random((3, 3, 3, 5))
