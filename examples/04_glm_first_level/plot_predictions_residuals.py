@@ -48,7 +48,7 @@ events = pd.read_csv(subject_data.events, sep="\t")
 from nilearn.glm.first_level import FirstLevelModel
 
 fmri_glm = FirstLevelModel(
-    t_r=7,
+    t_r=subject_data.t_r,
     drift_model="cosine",
     signal_scaling=False,
     mask_img=mask,
