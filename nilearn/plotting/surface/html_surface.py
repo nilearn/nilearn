@@ -1,14 +1,12 @@
 """Handle plotting of surfaces for html rendering."""
 
 import json
-from warnings import warn
 
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
-from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.plotting import cm
@@ -197,41 +195,6 @@ def _full_brain_info(
     info["full_brain_mesh"] = True
     info["colorscale"] = colors["colors"]
     return info
-
-
-def full_brain_info(
-    volume_img,
-    mesh="fsaverage5",
-    threshold=None,
-    cmap=DEFAULT_DIVERGING_CMAP,
-    black_bg=False,
-    symmetric_cmap=True,
-    bg_on_data=False,
-    vmax=None,
-    vmin=None,
-    vol_to_surf_kwargs=None,
-):
-    """Deprecate public function. See _full_brain_info."""
-    warn(
-        category=DeprecationWarning,
-        message="full_brain_info is a private function and is renamed to "
-        "_full_brain_info. Using the deprecated name will raise an error "
-        "in release 0.13",
-        stacklevel=find_stack_level(),
-    )
-
-    return _full_brain_info(
-        volume_img,
-        mesh=mesh,
-        threshold=threshold,
-        cmap=cmap,
-        black_bg=black_bg,
-        symmetric_cmap=symmetric_cmap,
-        bg_on_data=bg_on_data,
-        vmax=vmax,
-        vmin=vmin,
-        vol_to_surf_kwargs=vol_to_surf_kwargs,
-    )
 
 
 def _fill_html_template(info, embed_js=True):

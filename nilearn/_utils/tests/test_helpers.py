@@ -180,7 +180,7 @@ def test_rename_parameters():
     for raised_warning_, expected_warning_ in zip(
         raised_warnings, expected_warnings, strict=False
     ):
-        assert raised_warning_.category is DeprecationWarning
+        assert raised_warning_.category is FutureWarning
         assert str(raised_warning_.message) == expected_warning_
 
 
@@ -229,7 +229,7 @@ def test_future_warn_deprecated_params():
     for raised_warning_, expected_warning_ in zip(
         raised_warnings, expected_warnings, strict=False
     ):
-        assert raised_warning_.category is DeprecationWarning
+        assert raised_warning_.category is FutureWarning
         assert str(raised_warning_.message) == expected_warning_
 
 

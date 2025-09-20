@@ -276,13 +276,6 @@ def parse_bids_filename(img_path):
     img_path : :obj:`str`
         Path to file from which to parse information.
 
-    legacy : :obj:`bool`, default=True
-        Whether to return a dictionary that uses BIDS terms (``False``)
-        or the legacy content for the output (``True``).
-        ``False`` will become the default in version >= 0.13.0.
-
-        .. versionadded :: 0.12.0
-
     Returns
     -------
     reference : :obj:`dict`

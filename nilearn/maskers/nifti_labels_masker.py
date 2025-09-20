@@ -531,7 +531,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             "resampling_target",
         )
 
-        self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         self._report_content = {
