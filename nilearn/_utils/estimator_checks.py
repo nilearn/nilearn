@@ -2774,13 +2774,21 @@ def check_surface_masker_list_surf_images(estimator):
     Check that 1D or 2D mask work.
 
     transform
-    - list of 1D -> 2D array
-    - list of 2D -> 2D array
+    - masker
+      - 1D surface image -> 1D array
+      - 2D surface image -> 2D array
+      - list of 1D surface images -> 2D array
+      - list of 2D surface images -> ERROR (TODO)
+    - multimasker
+      - 1D surface image -> 1D array
+      - 2D surface image -> 2D array
+      - list of 1D surface images -> list of 1D array
+      - list of 2D surface images -> list of 2D array (TODO)
     """
     n_sample = 5
     images_to_transform = [
         [_make_surface_img()] * 5,
-        [_make_surface_img(2), _make_surface_img(3)],
+        _make_surface_img(5),
     ]
     for imgs in images_to_transform:
         for mask_img in [None, _surf_mask_1d(), _make_surface_mask()]:
@@ -2790,11 +2798,20 @@ def check_surface_masker_list_surf_images(estimator):
 
             signals = estimator.transform(imgs)
 
-            assert signals.shape == (n_sample, estimator.n_elements_)
+            if is_multimasker(estimator) and isinstance(imgs, list):
+                assert isinstance(signals, list)
+                assert all(isinstance(x, np.ndarray) for x in imgs)
+                assert all(x.shape == (1, estimator.n_elements_) for x in imgs)
 
-            img = estimator.inverse_transform(signals)
-
-            assert img.shape == (_make_surface_img().mesh.n_vertices, n_sample)
+                img = estimator.inverse_transform(signals[0])
+                assert img.shape == (_make_surface_img().mesh.n_vertices, 1)
+            else:
+                assert signals.shape == (n_sample, estimator.n_elements_)
+                img = estimator.inverse_transform(signals)
+                assert img.shape == (
+                    _make_surface_img().mesh.n_vertices,
+                    n_sample,
+                )
 
 
 # ------------------ NIFTI MASKER CHECKS ------------------
@@ -3366,9 +3383,14 @@ def check_multi_nifti_masker_generate_report_4d_fit(estimator):
     if not is_matplotlib_installed():
         return
 
-    estimator.maps_img = _img_3d_ones()
-    estimator.fit([_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()])
-    with pytest.warns(
-        UserWarning, match="A list of 4D subject images were provided to fit. "
-    ):
-        _generate_report(estimator)
+    if accept_niimg_input(estimator):
+        estimator.maps_img = _img_3d_ones()
+        estimator.fit([_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()])
+        with pytest.warns(
+            UserWarning,
+            match="A list of 4D subject images were provided to fit. ",
+        ):
+            _generate_report(estimator)
+    else:
+        ...
+        # TODO
