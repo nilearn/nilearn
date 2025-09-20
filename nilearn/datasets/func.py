@@ -2490,7 +2490,7 @@ def patch_openneuro_dataset(file_list):
             if old_pattern in name:
                 new_name = name.replace(old_pattern, new_pattern)
                 if not Path(new_name).exists():
-                    Path(name).symlink_to(new_name)
+                    os.symlink(name, new_name)
 
 
 @fill_doc
