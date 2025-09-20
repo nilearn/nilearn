@@ -35,6 +35,8 @@ Enhancements
 
 - :bdg-success:`API` Add support for Scikit-Learn ``set_output()`` in several Nilearn feature extractors (nifti and surface non-multi maskers, and :class:`~regions.HierarchicalKMeans`) to allow ``transform()`` to output to either Pandas or Polars dataframe and not just numpy arrays (:gh:`5508` by `Rémi Gau`_).
 
+- :bdg-success:`API` Add a ``design_only`` parameter to :class:`~glm.first_level.FirstLevelModel` and :class:`~glm.second_level.SecondLevelModel` to be able to only inspect the model specification before fitting if to avoid wasting computation time on a misspecified model (:gh:`54680` by `Rémi Gau`_).
+
 Changes
 -------
 
