@@ -53,7 +53,6 @@ from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.image.utils import (
     MNI152TEMPLATE,
-    get_cropped_cbar_ticks,
     load_anat,
 )
 from nilearn.signal import clean
@@ -280,12 +279,6 @@ def _plot_img_with_bg(
         display.draw_cross()
     if title is not None and title != "":
         display.title(title)
-    if hasattr(display, "_cbar"):
-        cbar = display._cbar
-        new_tick_locs = get_cropped_cbar_ticks(
-            cbar.vmin, cbar.vmax, threshold, n_ticks=len(cbar.locator.locs)
-        )
-        cbar.set_ticks(new_tick_locs)
 
     return save_figure_if_needed(display, output_file)
 
