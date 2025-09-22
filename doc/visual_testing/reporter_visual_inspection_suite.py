@@ -623,7 +623,11 @@ def report_sphere_masker(build_type):
 def report_surface_masker(build_type):
     if build_type == "partial":
         _generate_dummy_html(
-            filenames=["surface_masker.html", "surface_masker_with_mask.html"]
+            filenames=[
+                "surface_masker.html",
+                "surface_masker_with_mask.html",
+                "surface_masker_with_mask_plotly.html",
+            ]
         )
         return None, None
 
@@ -660,9 +664,17 @@ def report_surface_masker(build_type):
         REPORTS_DIR / "surface_masker_with_mask.html"
     )
 
+    surface_masker_with_mask_report_plotly = masker.generate_report(
+        engine="plotly"
+    )
+    surface_masker_with_mask_report_plotly.save_as_html(
+        REPORTS_DIR / "surface_masker_with_mask_plotly.html"
+    )
+
     return (
         surface_masker_report,
         surface_masker_with_mask_report,
+        surface_masker_with_mask_report_plotly,
     )
 
 
@@ -671,7 +683,9 @@ def report_surface_label_masker(build_type):
         _generate_dummy_html(
             filenames=[
                 "surface_label_masker_unfitted.html",
+                "surface_label_masker_unfitted_plotly.html",
                 "surface_label_masker.html",
+                "surface_label_masker_plotly.html",
             ]
         )
         return None, None
@@ -692,6 +706,13 @@ def report_surface_label_masker(build_type):
         REPORTS_DIR / "surface_label_masker_unfitted.html"
     )
 
+    labels_masker_report_unfitted_plotly = labels_masker.generate_report(
+        engine="plotly"
+    )
+    labels_masker_report_unfitted_plotly.save_as_html(
+        REPORTS_DIR / "surface_label_masker_unfitted_plotly.html"
+    )
+
     stat_img = load_sample_motor_activation_image()
     fsaverage_meshes = load_fsaverage()
     surface_stat_image = SurfaceImage.from_volume(
@@ -705,9 +726,18 @@ def report_surface_label_masker(build_type):
         REPORTS_DIR / "surface_label_masker.html"
     )
 
+    labels_masker_report_plotly = labels_masker.generate_report(
+        engine="plotly"
+    )
+    labels_masker_report_plotly.save_as_html(
+        REPORTS_DIR / "surface_label_masker_plotly.html"
+    )
+
     return (
         labels_masker_report_unfitted,
+        labels_masker_report_unfitted_plotly,
         labels_masker_report,
+        labels_masker_report_plotly,
     )
 
 
@@ -776,13 +806,13 @@ def main(args=sys.argv):
     report_surface_masker(build_type)
     report_surface_label_masker(build_type)
     report_surface_maps_masker(build_type)
-    report_nifti_masker(build_type)
-    report_nifti_maps_masker(build_type)
-    report_nifti_labels_masker(build_type)
-    report_sphere_masker(build_type)
-    report_multi_nifti_masker(build_type)
-    report_multi_nifti_labels_masker(build_type)
-    report_multi_nifti_maps_masker(build_type)
+    # report_nifti_masker(build_type)
+    # report_nifti_maps_masker(build_type)
+    # report_nifti_labels_masker(build_type)
+    # report_sphere_masker(build_type)
+    # report_multi_nifti_masker(build_type)
+    # report_multi_nifti_labels_masker(build_type)
+    # report_multi_nifti_maps_masker(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")
@@ -790,12 +820,12 @@ def main(args=sys.argv):
     print("\nGenerating GLM reports templates\n")
     t0 = time.time()
 
-    report_flm_adhd_dmn(build_type)
-    report_flm_bids_features(build_type)
-    report_flm_fiac(build_type)
-    report_slm_oasis(build_type)
-    report_surface_flm(build_type)
-    report_surface_slm(build_type)
+    # report_flm_adhd_dmn(build_type)
+    # report_flm_bids_features(build_type)
+    # report_flm_fiac(build_type)
+    # report_slm_oasis(build_type)
+    # report_surface_flm(build_type)
+    # report_surface_slm(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")

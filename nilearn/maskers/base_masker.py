@@ -776,8 +776,9 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         from nilearn.reporting.utils import figure_to_png_base64
 
         if self._report_content["engine"] == "plotly":
-            if img is None:
+            if img is None and roi_map is not None:
                 img = roi_map
+
             fig = view_surf(
                 surf_map=img,
                 bg_map=bg_map,
