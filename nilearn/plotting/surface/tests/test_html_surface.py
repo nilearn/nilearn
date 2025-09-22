@@ -14,7 +14,6 @@ from nilearn.plotting.surface.html_surface import (
     _fill_html_template,
     _full_brain_info,
     _one_mesh_info,
-    full_brain_info,
     view_img_on_surf,
     view_surf,
 )
@@ -95,15 +94,6 @@ def test_full_brain_info(mni152_template_res_2):
         assert len(decode(info[f"pial_{hemi}"]["_j"], "<i4")) == len(
             mesh.faces
         )
-
-    # TODO (nilearn >= 0.13.0)
-    with pytest.warns(
-        DeprecationWarning,
-        match="full_brain_info is a private function and is renamed to "
-        "_full_brain_info. Using the deprecated name will raise an error "
-        "in release 0.13",
-    ):
-        full_brain_info(mni152_template_res_2)
 
 
 def test_fill_html_template(tmp_path, mni152_template_res_2):
@@ -221,3 +211,11 @@ def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):
 def test_view_img_on_surf_errors(img_3d_mni):
     with pytest.raises(DimensionError):
         view_img_on_surf([img_3d_mni, img_3d_mni])
+
+
+@pytest.mark.parametrize("view", ["left", "right"])
+def test_view_img_on_surf_view(tmp_path, mni152_template_res_2, view):
+    """Smoke test for different views of view_img_on_surf."""
+    html = view_img_on_surf(mni152_template_res_2, view=view)
+    assert f', "view": "{view}"' in str(html)
+    check_html(tmp_path, html)
