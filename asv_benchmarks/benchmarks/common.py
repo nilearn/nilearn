@@ -15,9 +15,9 @@ class Benchmark:
         """Set up the cache directory with the necessary images and masks.
 
         The fMRI image is created by concatenating n_subjects subject images
-        from :func:`nilearn.datasets.fetch_adhd`. The masks are created by
+        from :func:`nilearn.datasets.fetch_abide_pcp`. The masks are created by
         resampling the atlas from
-        :func:`nilearn.datasets.fetch_atlas_basc_multiscale_2015` to the fMRI
+        :func:`nilearn.datasets.fetch_atlas_schaefer_2018` to the fMRI
         image and then creating masks for each region in the atlas.
 
         Parameters
