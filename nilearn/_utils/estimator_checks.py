@@ -2862,43 +2862,37 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
                 if isinstance(
                     estimator, (SurfaceMapsMasker, SurfaceLabelsMasker)
                 ):
-                    if isinstance(
-                        estimator, (SurfaceLabelsMasker, SurfaceMapsMasker)
-                    ):
-                        if n_dim_mask == 2:
-                            assert signals.shape == (1, estimator.n_elements_)
-                            if isinstance(estimator, (SurfaceLabelsMasker)):
-                                assert estimator.n_elements_ == 1
-                                assert signals.size == 1
-                            else:
-                                assert signals.size == estimator.n_elements_
-                        elif isinstance(estimator, (SurfaceLabelsMasker)):
-                            assert estimator.n_elements_ == 1
-                            assert signals.shape == ()
-                            assert signals.size == 1
-                        else:
-                            assert signals.shape == (estimator.n_elements_,)
+                    if isinstance(estimator, (SurfaceLabelsMasker)):
+                        assert estimator.n_elements_ == 1
+                        assert signals.size == 1
+
+                    if n_dim_mask == 2:
+                        assert signals.shape == (1, estimator.n_elements_)
+                        if not isinstance(estimator, (SurfaceLabelsMasker)):
                             assert signals.size == estimator.n_elements_
+
+                    elif isinstance(estimator, (SurfaceLabelsMasker)):
+                        assert signals.shape == ()
+                        assert signals.size == 1
 
                     else:
                         assert signals.shape == (estimator.n_elements_,)
+                        assert signals.size == estimator.n_elements_
 
                     img = estimator.inverse_transform(signals)
 
-                    if isinstance(
-                        estimator, (SurfaceLabelsMasker, SurfaceMapsMasker)
-                    ):
-                        if n_dim_mask == 2:
-                            assert img.shape == (
-                                _make_surface_img().mesh.n_vertices,
-                                1,
-                            )
+                    if n_dim_mask == 2:
+                        assert img.shape == (
+                            _make_surface_img().mesh.n_vertices,
+                            1,
+                        )
                     else:
                         assert img.shape == (
                             _make_surface_img().mesh.n_vertices,
                         )
                 else:
                     assert signals.shape == (estimator.n_elements_,)
+
                     img = estimator.inverse_transform(signals)
                     assert img.shape == (_make_surface_img().mesh.n_vertices,)
 
