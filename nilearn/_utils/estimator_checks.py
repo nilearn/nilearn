@@ -72,13 +72,13 @@ from nilearn.conftest import (
     _img_4d_rand_eye,
     _img_4d_rand_eye_medium,
     _img_mask_mni,
-    _make_mesh,
     _make_surface_img,
     _make_surface_img_and_design,
     _make_surface_mask,
     _rng,
     _shape_3d_default,
     _shape_3d_large,
+    _surf_img_1d,
     _surf_mask_1d,
 )
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
@@ -102,6 +102,7 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceLabelsMasker,
     SurfaceMapsMasker,
     SurfaceMasker,
 )
@@ -620,9 +621,10 @@ def nilearn_check_generator(estimator: BaseEstimator):
             # TODO enforce for other maskers
             yield (clone(estimator), check_masker_shelving)
 
+        yield (clone(estimator), check_masker_clean)
+        yield (clone(estimator), check_masker_detrending)
+
         if not is_multimasker(estimator):
-            yield (clone(estimator), check_masker_clean)
-            yield (clone(estimator), check_masker_detrending)
             yield (clone(estimator), check_masker_transformer_sample_mask)
             yield (clone(estimator), check_masker_with_confounds)
 
@@ -640,6 +642,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
                 check_multimasker_transformer_sample_mask,
             )
             yield (clone(estimator), check_multimasker_with_confounds)
+
             if isinstance(estimator, NiftiMasker):
                 # TODO enforce for other maskers
                 yield (clone(estimator), check_multi_nifti_masker_shelving)
@@ -656,8 +659,15 @@ def nilearn_check_generator(estimator: BaseEstimator):
             )
 
         else:
-            yield (clone(estimator), check_surface_masker_fit_with_mask)
-            yield (clone(estimator), check_surface_masker_list_surf_images)
+            yield (clone(estimator), check_surface_masker_fit_transform_errors)
+            yield (
+                clone(estimator),
+                check_surface_masker_list_surf_images_no_mask,
+            )
+            yield (
+                clone(estimator),
+                check_surface_masker_list_surf_images_with_mask,
+            )
 
     if is_glm(estimator):
         yield (clone(estimator), check_glm_dtypes)
@@ -2695,54 +2705,17 @@ def check_masker_joblib_cache(estimator):
 # ------------------ SURFACE MASKER CHECKS ------------------
 
 
-@ignore_warnings()
-def check_surface_masker_fit_with_mask(estimator):
-    """Check fit / transform with mask provided at init.
+def check_surface_masker_fit_transform_errors(estimator):
+    """Check fit / transform errors.
 
-    Check with 2D and 1D images.
-
-    1D image -> 1D array
-    2D image -> 2D array
-
-    Also check 'shape' errors between images to fit and mask.
+    Check 'shape' errors between images to fit and mask.
     """
     mask_img = _make_surface_mask()
 
-    # 1D image
-    mesh = _make_mesh()
-    data = {}
-    for k, v in mesh.parts.items():
-        data_shape = (v.n_vertices,)
-        data[k] = _rng().random(data_shape)
-    imgs = SurfaceImage(mesh, data)
-    assert imgs.shape == (9,)
-    estimator.fit(imgs)
-
-    signal = estimator.transform(imgs)
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (estimator.n_elements_,)
-
-    # 2D image with 1 sample
-    imgs = _make_surface_img(1)
-    estimator.mask_img = mask_img
-    estimator.fit(imgs)
-
-    signal = estimator.transform(imgs)
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (1, estimator.n_elements_)
-
-    # 2D image with several samples
     imgs = _make_surface_img(5)
+
     estimator = clone(estimator)
     estimator.mask_img = mask_img
-    estimator.fit(imgs)
-
-    signal = estimator.transform(imgs)
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (5, estimator.n_elements_)
 
     # errors
     with pytest.raises(
@@ -2754,6 +2727,7 @@ def check_surface_masker_fit_with_mask(estimator):
         MeshDimensionError,
         match="Number of vertices do not match for between meshes.",
     ):
+        estimator.fit(imgs)
         estimator.transform(_flip_surf_img(imgs))
 
     with pytest.raises(
@@ -2763,14 +2737,15 @@ def check_surface_masker_fit_with_mask(estimator):
     with pytest.raises(
         MeshDimensionError, match="PolyMeshes do not have the same keys."
     ):
+        estimator.fit(imgs)
         estimator.transform(_drop_surf_img_part(imgs))
 
 
 @ignore_warnings()
-def check_surface_masker_list_surf_images(estimator):
+def check_surface_masker_list_surf_images_no_mask(estimator_orig):
     """Test transform / inverse_transform on list of surface images.
 
-    Check that 1D or 2D mask work.
+    No mask provided at init.
 
     transform
     - masker
@@ -2784,26 +2759,149 @@ def check_surface_masker_list_surf_images(estimator):
       - list of 1D surface images -> list of 1D array
       - list of 2D surface images -> list of 2D array (TODO)
     """
-    n_sample = 5
     images_to_transform = [
-        [_make_surface_img()] * 5,
+        _surf_img_1d(),
+        _make_surface_img(1),
         _make_surface_img(5),
+        [_make_surface_img()] * 5,
     ]
-    for imgs in images_to_transform:
-        for mask_img in [None, _surf_mask_1d(), _make_surface_mask()]:
+    expected_n_sample = [
+        0,
+        1,
+        5,
+        5,
+    ]
+    for imgs, n_sample in zip(
+        images_to_transform, expected_n_sample, strict=False
+    ):
+        estimator = clone(estimator_orig)
+
+        estimator = estimator.fit(imgs)
+
+        signals = estimator.transform(imgs)
+
+        if is_multimasker(estimator) and isinstance(imgs, list):
+            assert isinstance(signals, list)
+            assert all(isinstance(x, np.ndarray) for x in signals)
+            assert all(x.shape == (1, estimator.n_elements_) for x in signals)
+
+            img = estimator.inverse_transform(signals[0])
+            assert img.shape == (_make_surface_img().mesh.n_vertices, 1)
+
+        elif n_sample == 0:
+            assert signals.shape == (estimator.n_elements_,)
+
+            img = estimator.inverse_transform(signals)
+            assert img.shape == (_make_surface_img().mesh.n_vertices,)
+
+        else:
+            assert signals.shape == (n_sample, estimator.n_elements_)
+
+            img = estimator.inverse_transform(signals)
+            assert img.shape == (
+                _make_surface_img().mesh.n_vertices,
+                n_sample,
+            )
+
+
+@ignore_warnings()
+def check_surface_masker_list_surf_images_with_mask(estimator_orig):
+    """Test transform / inverse_transform on list of surface images.
+
+    Check that 1D mask or 2D mask work.
+
+    transform
+    - masker
+      - 1D surface image -> 1D array
+      - 2D surface image -> 2D array
+      - list of 1D surface images -> 2D array
+      - list of 2D surface images -> ERROR (TODO)
+    - multimasker
+      - 1D surface image -> 1D array
+      - 2D surface image -> 2D array
+      - list of 1D surface images -> list of 1D array
+      - list of 2D surface images -> list of 2D array (TODO)
+    """
+    images_to_transform = [
+        _surf_img_1d(),
+        _make_surface_img(1),
+        _make_surface_img(5),
+        [_make_surface_img()] * 5,
+    ]
+    expected_n_sample = [
+        0,
+        1,
+        5,
+        5,
+    ]
+    for imgs, n_sample in zip(
+        images_to_transform, expected_n_sample, strict=False
+    ):
+        for mask_img in [_surf_mask_1d(), _make_surface_mask()]:
+            estimator = clone(estimator_orig)
+
             estimator.mask_img = mask_img
 
             estimator = estimator.fit(imgs)
 
             signals = estimator.transform(imgs)
 
+            n_dim_mask = mask_img.data.parts["left"].ndim
+
             if is_multimasker(estimator) and isinstance(imgs, list):
                 assert isinstance(signals, list)
-                assert all(isinstance(x, np.ndarray) for x in imgs)
-                assert all(x.shape == (1, estimator.n_elements_) for x in imgs)
+                assert all(isinstance(x, np.ndarray) for x in signals)
+                assert all(
+                    x.shape == (1, estimator.n_elements_) for x in signals
+                )
 
                 img = estimator.inverse_transform(signals[0])
                 assert img.shape == (_make_surface_img().mesh.n_vertices, 1)
+
+            elif n_sample == 0:
+                if isinstance(
+                    estimator, (SurfaceMapsMasker, SurfaceLabelsMasker)
+                ):
+                    if isinstance(
+                        estimator, (SurfaceLabelsMasker, SurfaceMapsMasker)
+                    ):
+                        if n_dim_mask == 2:
+                            assert signals.shape == (1, estimator.n_elements_)
+                            if isinstance(estimator, (SurfaceLabelsMasker)):
+                                assert estimator.n_elements_ == 1
+                                assert signals.size == 1
+                            else:
+                                assert signals.size == estimator.n_elements_
+                        elif isinstance(estimator, (SurfaceLabelsMasker)):
+                            assert estimator.n_elements_ == 1
+                            assert signals.shape == ()
+                            assert signals.size == 1
+                        else:
+                            assert signals.shape == (estimator.n_elements_,)
+                            assert signals.size == estimator.n_elements_
+
+                    else:
+                        assert signals.shape == (estimator.n_elements_,)
+
+                    img = estimator.inverse_transform(signals)
+
+                    if isinstance(
+                        estimator, (SurfaceLabelsMasker, SurfaceMapsMasker)
+                    ):
+                        if n_dim_mask == 2:
+                            assert img.shape == (
+                                _make_surface_img().mesh.n_vertices,
+                                1,
+                            )
+                    else:
+                        assert img.shape == (
+                            _make_surface_img().mesh.n_vertices,
+                        )
+                else:
+                    assert signals.shape == (estimator.n_elements_,)
+                    img = estimator.inverse_transform(signals)
+                    assert img.shape == (_make_surface_img().mesh.n_vertices,)
+
             else:
                 assert signals.shape == (n_sample, estimator.n_elements_)
                 img = estimator.inverse_transform(signals)
@@ -3388,7 +3486,7 @@ def check_multimasker_generate_report(estimator):
         input_img = [_make_surface_img(100), _make_surface_img(100)]
 
     if accept_niimg_input(estimator):
-        if isinstance(NiftiMapsMasker):
+        if isinstance(estimator, NiftiMapsMasker):
             estimator.maps_img = _img_3d_ones()
 
         estimator.fit(input_img)
