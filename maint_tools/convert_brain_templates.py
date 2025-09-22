@@ -1,18 +1,25 @@
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#   "nilearn[plotting]>=0.12",
+#    "PyQt6"
+# ]
+# ///
+
 """Skull extraction of whole-brain MNI ICBM152 1mm-resolution T1 template and \
 rescale+typecasting+compression of the whole-brain, grey-matter and \
 white-matter MNI ICBM152 1mm-resolution templates.
 
 This script takes as inputs the original MNI ICBM152 1mm-resolution templates
- and the corresponding 'whole-brain' mask. They can be fetched from the OSF
- (Open Science Framework) Nilearn account: https://osf.io/7pj92/download
+and the corresponding 'whole-brain' mask.
+They can be fetched from the OSF
+(Open Science Framework) Nilearn account: https://osf.io/7pj92/download
 
 This script outputs the templates that are loaded by the following Nilearn
- functions:
- nilearn.datasets.load_mni152_template
- nilearn.datasets.load_mni152_gm_template
- nilearn.datasets.load_mni152_wm_template
-
-Compatibility: Nilearn 0.7.1, Python 3.7.3
+functions:
+- nilearn.datasets.load_mni152_template
+- nilearn.datasets.load_mni152_gm_template
+- nilearn.datasets.load_mni152_wm_template
 """
 
 import gzip
@@ -25,6 +32,8 @@ from nilearn.image import get_data, load_img, new_img_like
 from nilearn.masking import apply_mask, unmask
 from nilearn.plotting import plot_img
 
+SOURCE_DIR = Path(__file__).parents[1] / "nilearn" / "datasets" / "data"
+
 # Inputs
 templates_paths = [
     "mni_icbm152_t1_tal_nlin_sym_09a.nii.gz",
@@ -32,12 +41,14 @@ templates_paths = [
     "mni_icbm152_wm_tal_nlin_sym_09a.nii.gz",
 ]
 
-brain_mask = load_img("mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz")
+brain_mask = load_img(
+    SOURCE_DIR / "mni_icbm152_t1_tal_nlin_sym_09a_mask.nii.gz"
+)
 
 
 for template_path in templates_paths:
     # Load template
-    template = load_img(template_path)
+    template = load_img(SOURCE_DIR / template_path)
     plot_img(template, colorbar=True)
 
     # Remove skull of whole-brain template
@@ -59,7 +70,9 @@ for template_path in templates_paths:
     # plot_img(new_img, colorbar=True)
 
     # Store and gzip with maximum compression rate
-    fname_nii = Path(template_path.split(".", 1)[0] + "_converted.nii")
+    fname_nii = SOURCE_DIR / (
+        template_path.split(".", 1)[0] + "_converted.nii"
+    )
     new_img.to_filename(fname_nii)
     fname_nii_gz = fname_nii.with_suffix(f"{fname_nii.suffix}.gz")
     with fname_nii.open("rb") as f_in:

@@ -361,7 +361,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             target_shape=self.target_shape,
             interpolation="nearest",
             copy=False,
-            copy_header=True,
         )
 
         if self.target_affine is not None:
@@ -389,7 +388,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
-                    copy_header=True,
                 )
 
             self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]

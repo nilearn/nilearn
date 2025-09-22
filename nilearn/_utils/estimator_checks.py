@@ -1601,13 +1601,13 @@ def check_img_estimator_n_elements(estimator):
                 X = [X]
             with pytest.raises(
                 ValueError,
-                match="Input to 'inverse_transform' has wrong shape.",
+                match=r"Input to 'inverse_transform' has wrong shape.",
             ):
                 getattr(estimator, method)(X)
         elif method in ["predict", "decision_function"]:
             with pytest.raises(
                 ValueError,
-                match="X has .* features per sample; expecting .*",
+                match=r"X has .* features per sample; expecting .*",
             ):
                 getattr(estimator, method)(X)
 
@@ -1649,7 +1649,7 @@ def check_supervised_img_estimator_y_no_nan(estimator) -> None:
 
     for value in [np.inf, np.nan]:
         y[5,] = value
-        with pytest.raises(ValueError, match="Input .*contains"):
+        with pytest.raises(ValueError, match=r"Input .*contains"):
             estimator.fit(X, y)
 
 
@@ -2721,22 +2721,22 @@ def check_surface_masker_fit_transform_errors(estimator):
     # errors
     with pytest.raises(
         MeshDimensionError,
-        match="Number of vertices do not match for between meshes.",
+        match=r"Number of vertices do not match for between meshes.",
     ):
         estimator.fit(_flip_surf_img(imgs))
     with pytest.raises(
         MeshDimensionError,
-        match="Number of vertices do not match for between meshes.",
+        match=r"Number of vertices do not match for between meshes.",
     ):
         estimator.fit(imgs)
         estimator.transform(_flip_surf_img(imgs))
 
     with pytest.raises(
-        MeshDimensionError, match="PolyMeshes do not have the same keys."
+        MeshDimensionError, match=r"PolyMeshes do not have the same keys."
     ):
         estimator.fit(_drop_surf_img_part(imgs))
     with pytest.raises(
-        MeshDimensionError, match="PolyMeshes do not have the same keys."
+        MeshDimensionError, match=r"PolyMeshes do not have the same keys."
     ):
         estimator.fit(imgs)
         estimator.transform(_drop_surf_img_part(imgs))
@@ -3021,17 +3021,13 @@ def check_nifti_masker_fit_transform_5d(estimator):
     if not is_multimasker(estimator):
         with pytest.raises(
             DimensionError,
-            match="Input data has incompatible dimensionality: "
-            "Expected dimension is 4D and you provided "
-            "a list of 4D images \\(5D\\).",
+            match="Input data has incompatible dimensionality",
         ):
             estimator.transform(input_5d_img)
 
         with pytest.raises(
             DimensionError,
-            match="Input data has incompatible dimensionality: "
-            "Expected dimension is 4D and you provided "
-            "a list of 4D images \\(5D\\).",
+            match="Input data has incompatible dimensionality",
         ):
             estimator.fit_transform(input_5d_img)
 
@@ -3203,12 +3199,12 @@ def check_multimasker_with_confounds(estimator):
 
     # Mismatch n imgs and n confounds
     with pytest.raises(
-        ValueError, match="number of confounds .* unequal to number of images"
+        ValueError, match=r"number of confounds .* unequal to number of images"
     ):
         estimator.fit_transform(input_imgs, confounds=[array])
 
     with pytest.raises(
-        TypeError, match="'confounds' must be a None or a list."
+        TypeError, match=r"'confounds' must be a None or a list."
     ):
         estimator.fit_transform(input_imgs, confounds=1)
 
@@ -3252,12 +3248,12 @@ def check_multimasker_transformer_sample_mask(estimator):
 
     with pytest.raises(
         ValueError,
-        match="number of sample_mask .* unequal to number of images",
+        match=r"number of sample_mask .* unequal to number of images",
     ):
         estimator.fit_transform(input_imgs, sample_mask=[sample_mask1])
 
     with pytest.raises(
-        TypeError, match="'sample_mask' must be a None or a list."
+        TypeError, match=r"'sample_mask' must be a None or a list."
     ):
         estimator.fit_transform(input_imgs, sample_mask=1)
 

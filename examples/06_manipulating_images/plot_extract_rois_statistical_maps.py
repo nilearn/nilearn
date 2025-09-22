@@ -30,15 +30,13 @@ from nilearn.image import threshold_img
 # Two types of strategies can be used from this threshold function
 # Type 1: strategy used will be based on scoreatpercentile
 threshold_percentile_img = threshold_img(
-    tmap_filename, threshold="97%", copy=False, copy_header=True
+    tmap_filename, threshold="97%", copy=False
 )
 
 
 # Type 2: threshold strategy used will be based on image intensity
 # Here, threshold value should be within the limits i.e. less than max value.
-threshold_value_img = threshold_img(
-    tmap_filename, threshold=3.0, copy=False, copy_header=True
-)
+threshold_value_img = threshold_img(tmap_filename, threshold=3.0, copy=False)
 
 # %%
 # Visualization

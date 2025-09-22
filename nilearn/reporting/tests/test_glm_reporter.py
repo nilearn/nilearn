@@ -39,7 +39,7 @@ def contrasts(rk):
 def flm(rk):
     """Generate first level model."""
     shapes = ((7, 7, 7, 5),)
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
     )
     # generate_fake_fmri_data_and_design
@@ -273,6 +273,7 @@ def test_drift_order_in_params(contrasts):
     assert "drift_order" in report.__str__()
 
 
+@pytest.mark.timeout(0)
 def test_flm_generate_report_surface_data(rng):
     """Generate report from flm fitted surface.
 

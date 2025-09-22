@@ -43,7 +43,7 @@ def test_image_2():
 
 def test_error_parcellation_method_none(test_image):
     with pytest.raises(
-        ValueError, match="Parcellation method is specified as None. "
+        ValueError, match=r"Parcellation method is specified as None. "
     ):
         Parcellations(method=None, verbose=0).fit(test_image)
 

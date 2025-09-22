@@ -427,63 +427,47 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
               :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
             Returns ``None`` in case the masker was not fitted.
         """
-        # avoid circular import
-        import matplotlib.pyplot as plt
-
-        from nilearn.plotting import plot_surf, plot_surf_contours
-
         if not self._reporting_data["images"] and not getattr(
             self, "mask_img_", None
         ):
             return None
 
-        background_data = self.mask_img_
+        img = self.mask_img_
         vmin = None
         vmax = None
         if self._reporting_data["images"]:
-            background_data = self._reporting_data["images"]
-            background_data = mean_img(background_data)
-            vmin, vmax = background_data.data._get_min_max()
+            img = self._reporting_data["images"]
+            img = mean_img(img)
+            vmin, vmax = img.data._get_min_max()
 
-        views = ["lateral", "medial"]
-        hemispheres = ["left", "right"]
-
-        fig, axes = plt.subplots(
-            len(views),
-            len(hemispheres),
-            subplot_kw={"projection": "3d"},
-            figsize=(20, 20),
-            layout="constrained",
+        fig = self._generate_figure(
+            img=img, roi_map=self.mask_img_, vmin=vmin, vmax=vmax
         )
-        axes = np.atleast_2d(axes)
-
-        for ax_row, view in zip(axes, views, strict=False):
-            for ax, hemi in zip(ax_row, hemispheres, strict=False):
-                plot_surf(
-                    surf_map=background_data,
-                    hemi=hemi,
-                    view=view,
-                    figure=fig,
-                    axes=ax,
-                    cmap=self.cmap,
-                    vmin=vmin,
-                    vmax=vmax,
-                )
-
-                colors = None
-                n_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
-                if n_regions == 1:
-                    colors = "b"
-                elif n_regions == 2:
-                    colors = ["w", "b"]
-
-                plot_surf_contours(
-                    roi_map=self.mask_img_,
-                    hemi=hemi,
-                    view=view,
-                    figure=fig,
-                    axes=ax,
-                    colors=colors,
-                )
 
         return fig
+
+    def _set_contour_colors(self, hemi) -> None | str | list[str]:
+        """Set the colors for the contours in the report."""
+        if hemi in ["left", "right"]:
+            n_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
+        else:
+            n_regions = len(
+                np.unique(
+                    np.concatenate(
+                        [
+                            self.mask_img_.data.parts["left"],
+                            self.mask_img_.data.parts["right"],
+                        ]
+                    )
+                )
+            )
+
+        colors: None | str | list[str]
+        if n_regions == 1:
+            colors = "b"
+        elif n_regions == 2:
+            colors = ["w", "b"]
+        else:
+            colors = None
+
+        return colors

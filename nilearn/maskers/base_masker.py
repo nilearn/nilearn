@@ -119,8 +119,6 @@ def filter_and_extract(
             target_shape=target_shape,
             target_affine=target_affine,
             copy=copy,
-            copy_header=True,
-            force_resample=False,  # set to True in 0.13.0
         )
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
@@ -710,6 +708,71 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             )
 
         return signals
+
+    def _generate_figure(
+        self,
+        img=None,
+        bg_map=None,
+        roi_map=None,
+        vmin=None,
+        vmax=None,
+        threshold=None,
+    ):
+        """Create figure for all reports."""
+        import matplotlib.pyplot as plt
+
+        from nilearn.plotting import plot_surf, plot_surf_contours
+
+        hemi_view = {
+            "left": ["lateral", "medial"],
+            "right": ["lateral", "medial"],
+            "both": ["anterior", "posterior"],
+        }
+
+        fig, axes = plt.subplots(
+            len(next(iter(hemi_view.values()))),
+            len(hemi_view.keys()),
+            subplot_kw={"projection": "3d"},
+            figsize=(20, 20),
+            layout="constrained",
+        )
+
+        axes = np.atleast_2d(axes)
+
+        for j, (hemi, views) in enumerate(hemi_view.items()):
+            for i, view in enumerate(views):
+                if img:
+                    plot_surf(
+                        surf_map=img,
+                        bg_map=bg_map,
+                        hemi=hemi,
+                        view=view,
+                        figure=fig,
+                        axes=axes[i, j],
+                        cmap=self.cmap,
+                        vmin=vmin,
+                        vmax=vmax,
+                        threshold=threshold,
+                        bg_on_data=True,
+                    )
+
+                if roi_map:
+                    colors = self._set_contour_colors(self)
+
+                    plot_surf_contours(
+                        roi_map=roi_map,
+                        hemi=hemi,
+                        view=view,
+                        figure=fig,
+                        axes=axes[i, j],
+                        colors=colors,
+                    )
+
+        return fig
+
+    def _set_contour_colors(self, hemi):
+        """Set the colors for the contours in the report."""
+        del hemi
 
 
 def generate_lut(labels_img, background_label, lut=None, labels=None):
