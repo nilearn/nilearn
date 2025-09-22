@@ -560,49 +560,15 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         this image is used as background
         on which the contours are drawn.
         """
-        import matplotlib.pyplot as plt
-
-        from nilearn.plotting import plot_surf, plot_surf_contours
-
-        labels_img = self._reporting_data["labels_image"]
+        roi_map = self._reporting_data["labels_image"]
 
         img = self._reporting_data["images"]
+        vmin = None
+        vmax = None
         if img:
             img = mean_img(img)
             vmin, vmax = img.data._get_min_max()
 
-        # TODO: possibly allow to generate a report with other views
-        views = ["lateral", "medial"]
-        hemispheres = ["left", "right"]
-
-        fig, axes = plt.subplots(
-            len(views),
-            len(hemispheres),
-            subplot_kw={"projection": "3d"},
-            figsize=(20, 20),
-            layout="constrained",
-        )
-        axes = np.atleast_2d(axes)
-
-        for ax_row, view in zip(axes, views, strict=False):
-            for ax, hemi in zip(ax_row, hemispheres, strict=False):
-                if img:
-                    plot_surf(
-                        surf_map=img,
-                        hemi=hemi,
-                        view=view,
-                        figure=fig,
-                        axes=ax,
-                        cmap=self.cmap,
-                        vmin=vmin,
-                        vmax=vmax,
-                    )
-                plot_surf_contours(
-                    roi_map=labels_img,
-                    hemi=hemi,
-                    view=view,
-                    figure=fig,
-                    axes=ax,
-                )
+        fig = self._generate_figure(img, roi_map=roi_map, vmin=vmin, vmax=vmax)
 
         return fig
