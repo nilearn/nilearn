@@ -2827,7 +2827,7 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
         # TODO error msg should give hint as to how to fix:
         # point to the appropriate masker to use
         with pytest.raises(
-            ValueError, match="Data for each part of .* should be 1D"
+            ValueError, match=r"Data for each part of .* should be 1D"
         ):
             estimator.fit([_make_surface_img(5), _make_surface_img(5)])
 
