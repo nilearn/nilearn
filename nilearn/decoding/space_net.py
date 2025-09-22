@@ -11,7 +11,6 @@ from functools import partial
 from typing import ClassVar
 
 import numpy as np
-from joblib import Parallel, delayed
 from scipy import stats
 from scipy.ndimage import binary_dilation, binary_erosion, gaussian_filter
 from sklearn.base import is_classifier
@@ -24,6 +23,7 @@ from sklearn.utils import check_array, check_X_y
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.extmath import safe_sparse_dot
 
+from joblib import Parallel, delayed
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
@@ -771,7 +771,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         raise NotImplementedError()
 
     @abc.abstractmethod
-    def _binarize_y(self, y):
+    def _set_classes(self, y):
         # implemented in mixin classes
         raise NotImplementedError()
 
@@ -869,7 +869,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
-        y = self._binarize_y(y)
+        y = self._set_classes(y)
         n_problems = self._n_problems()
 
         # standardize y

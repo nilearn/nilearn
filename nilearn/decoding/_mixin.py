@@ -39,16 +39,16 @@ class _ClassifierMixin:
         else:
             return 1
 
-    def _binarize_y(self, y):
+    def _set_classes(self, y):
         """Encode target classes as -1 and 1.
 
         Helper function invoked just before fitting a classifier.
         """
         y = np.array(y)
 
-        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
-        y = self._enc.fit_transform(y)
-        self.classes_ = self._enc.classes_
+        enc = LabelBinarizer(pos_label=1, neg_label=-1)
+        y = enc.fit_transform(y)
+        self.classes_ = enc.classes_
         self.n_classes_ = len(self.classes_)
         return y
 
@@ -100,13 +100,13 @@ class _RegressorMixin:
 
         """
         check_params(self.__dict__)
-        self._classes_ = ["beta"]
         return super().fit(X, y, groups=groups)
 
     def _n_problems(self):
         return 1
 
-    def _binarize_y(self, y):
+    def _set_classes(self, y):
+        self._classes_ = ["beta"]
         return y[:, np.newaxis]
 
     def _get_classes(self):

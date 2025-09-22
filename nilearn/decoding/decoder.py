@@ -10,12 +10,12 @@ Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
 
+import abc
 import itertools
 import warnings
 from collections.abc import Iterable
 
 import numpy as np
-from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from sklearn import clone
 from sklearn.base import (
@@ -42,6 +42,7 @@ from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
 
+from joblib import Parallel, delayed
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
@@ -612,6 +613,11 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             return self.clustering_percentile
         return 100
 
+    @abc.abstractmethod
+    def _set_classes(self, y):
+        # implemented in mixin classes
+        raise NotImplementedError()
+
     @fill_doc
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
@@ -672,7 +678,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
-        y = self._binarize_y(y)
+        y = self._set_classes(y)
         n_problems = self._n_problems()
 
         # Check if the size of the mask image and the number of features allow
