@@ -12,18 +12,12 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import (
-    is_matplotlib_installed,
-    is_plotly_installed,
-)
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.param_validation import (
-    check_parameter_in_allowed,
-    check_params,
-)
+from nilearn._utils.param_validation import check_params
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import (
@@ -450,16 +444,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if not is_matplotlib_installed():
             return generate_report(self)
 
-        check_parameter_in_allowed(engine, ["plotly", "matplotlib"], "engine")
+        engine = self._validate_reporting_engine(engine)
 
-        # switch to matplotlib if plotly is selected but not installed
-        if engine == "plotly" and not is_plotly_installed():
-            engine = "matplotlib"
-            warnings.warn(
-                "Plotly is not installed. "
-                "Switching to matplotlib for report generation.",
-                stacklevel=find_stack_level(),
-            )
         if hasattr(self, "_report_content"):
             self._report_content["engine"] = engine
 
@@ -478,7 +464,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 "Parameter ``displayed_maps`` of "
                 "``generate_report()`` should be either 'all' or "
                 "an int, or a list/array of ints. You provided a "
-                f"{type(displayed_maps)}"
+                f"{(displayed_maps.__class__.__name__)}"
             )
 
         self.displayed_maps = displayed_maps
@@ -494,8 +480,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             A list of all displays to be rendered.
         """
         import matplotlib.pyplot as plt
-
-        from nilearn.reporting.utils import figure_to_png_base64
 
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
@@ -548,11 +532,19 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         for roi in maps_to_be_displayed:
             roi = index_img(maps_img, roi)
-            fig = self._create_figure_for_report(roi=roi, bg_img=img)
+
             if self._report_content["engine"] == "plotly":
+                # squeeze the last dimension
+                for part in roi.data.parts:
+                    roi.data.parts[part] = np.squeeze(
+                        roi.data.parts[part], axis=-1
+                    )
+                fig = self._create_figure_for_report(roi=roi, bg_img=img)
                 embeded_images.append(fig)
+
             elif self._report_content["engine"] == "matplotlib":
-                embeded_images.append(figure_to_png_base64(fig))
+                fig = self._create_figure_for_report(roi=roi, bg_img=img)
+                embeded_images.append(fig)
                 plt.close()
 
         return embeded_images
@@ -563,28 +555,10 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         If transform() was applied to an image, this image is used as
         background on which the maps are plotted.
         """
-        from nilearn.plotting import view_surf
-
         threshold = 1e-6
 
-        if self._report_content["engine"] == "plotly":
-            # squeeze the last dimension
-            for part in roi.data.parts:
-                roi.data.parts[part] = np.squeeze(
-                    roi.data.parts[part], axis=-1
-                )
-            fig = view_surf(
-                surf_map=roi,
-                bg_map=bg_img,
-                bg_on_data=True,
-                threshold=threshold,
-                hemi="both",
-                cmap=self.cmap,
-            ).get_iframe(width=500)
-
-        elif self._report_content["engine"] == "matplotlib":
-            fig = self._generate_figure(
-                img=roi, bg_map=bg_img, threshold=threshold
-            )
+        fig = self._generate_figure(
+            img=roi, bg_map=bg_img, threshold=threshold
+        )
 
         return fig

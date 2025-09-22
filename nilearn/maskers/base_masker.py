@@ -25,7 +25,7 @@ from nilearn._utils.bids import (
 )
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import stringify_path
+from nilearn._utils.helpers import is_plotly_installed, stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -747,6 +747,19 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return signals
 
+    def _validate_reporting_engine(self, engine):
+        check_parameter_in_allowed(engine, ["plotly", "matplotlib"], "engine")
+        # switch to matplotlib if plotly is selected but not installed
+        if engine == "plotly" and not is_plotly_installed():
+            engine = "matplotlib"
+            warnings.warn(
+                "Plotly is not installed. "
+                "Switching to matplotlib for report generation.",
+                stacklevel=find_stack_level(),
+            )
+
+        return engine
+
     def _generate_figure(
         self,
         img=None,
@@ -759,52 +772,66 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         """Create figure for all reports."""
         import matplotlib.pyplot as plt
 
-        from nilearn.plotting import plot_surf, plot_surf_contours
+        from nilearn.plotting import plot_surf, plot_surf_contours, view_surf
+        from nilearn.reporting.utils import figure_to_png_base64
 
-        hemi_view = {
-            "left": ["lateral", "medial"],
-            "right": ["lateral", "medial"],
-            "both": ["anterior", "posterior"],
-        }
+        if self._report_content["engine"] == "plotly":
+            fig = view_surf(
+                surf_map=img,
+                bg_map=bg_map,
+                bg_on_data=True,
+                threshold=threshold,
+                hemi="both",
+                cmap=self.cmap,
+            ).get_iframe(width=500)
 
-        fig, axes = plt.subplots(
-            len(next(iter(hemi_view.values()))),
-            len(hemi_view.keys()),
-            subplot_kw={"projection": "3d"},
-            figsize=(20, 20),
-            layout="constrained",
-        )
+        elif self._report_content["engine"] == "matplotlib":
+            hemi_view = {
+                "left": ["lateral", "medial"],
+                "right": ["lateral", "medial"],
+                "both": ["anterior", "posterior"],
+            }
 
-        axes = np.atleast_2d(axes)
+            fig, axes = plt.subplots(
+                len(next(iter(hemi_view.values()))),
+                len(hemi_view.keys()),
+                subplot_kw={"projection": "3d"},
+                figsize=(20, 20),
+                layout="constrained",
+            )
 
-        for j, (hemi, views) in enumerate(hemi_view.items()):
-            for i, view in enumerate(views):
-                if img:
-                    plot_surf(
-                        surf_map=img,
-                        bg_map=bg_map,
-                        hemi=hemi,
-                        view=view,
-                        figure=fig,
-                        axes=axes[i, j],
-                        cmap=self.cmap,
-                        vmin=vmin,
-                        vmax=vmax,
-                        threshold=threshold,
-                        bg_on_data=True,
-                    )
+            axes = np.atleast_2d(axes)
 
-                if roi_map:
-                    colors = self._set_contour_colors(self)
+            for j, (hemi, views) in enumerate(hemi_view.items()):
+                for i, view in enumerate(views):
+                    if img:
+                        plot_surf(
+                            surf_map=img,
+                            bg_map=bg_map,
+                            hemi=hemi,
+                            view=view,
+                            figure=fig,
+                            axes=axes[i, j],
+                            cmap=self.cmap,
+                            vmin=vmin,
+                            vmax=vmax,
+                            threshold=threshold,
+                            bg_on_data=True,
+                        )
 
-                    plot_surf_contours(
-                        roi_map=roi_map,
-                        hemi=hemi,
-                        view=view,
-                        figure=fig,
-                        axes=axes[i, j],
-                        colors=colors,
-                    )
+                    if roi_map:
+                        colors = self._set_contour_colors(self)
+
+                        plot_surf_contours(
+                            roi_map=roi_map,
+                            hemi=hemi,
+                            view=view,
+                            figure=fig,
+                            axes=axes[i, j],
+                            colors=colors,
+                        )
+
+            fig = figure_to_png_base64(fig)
 
         return fig
 
