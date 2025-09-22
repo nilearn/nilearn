@@ -2814,16 +2814,17 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
     estimator = clone(estimator_orig)
 
     if is_multimasker(estimator):
-        n_samples = 5
         signals = estimator.fit_transform(
-            [_make_surface_img(n_samples), _make_surface_img(n_samples)]
+            [_make_surface_img(5), _make_surface_img(2)]
         )
         assert isinstance(signals, list)
         assert all(isinstance(x, np.ndarray) for x in signals)
-        assert all(
-            x.shape == (n_samples, estimator.n_elements_) for x in signals
-        )
+        assert signals[0].shape == 5
+        assert signals[1].shape == 2
     else:
+        # TODO Turn that into a dimension error like for NiftiMaskers
+        # TODO error msg should give hint as to how to fix:
+        # point to the appropriate masker to use
         with pytest.raises(
             ValueError, match="Data for each part of .* should be 1D"
         ):
