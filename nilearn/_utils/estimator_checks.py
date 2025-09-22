@@ -2747,17 +2747,25 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
 
     No mask provided at init.
 
-    transform
-    - masker
-      - 1D surface image -> 1D array
-      - 2D surface image -> 2D array
-      - list of 1D surface images -> 2D array
-      - list of 2D surface images -> ERROR (TODO)
-    - multimasker
-      - 1D surface image -> 1D array
-      - 2D surface image -> 2D array
-      - list of 1D surface images -> list of 1D array
-      - list of 2D surface images -> list of 2D array (TODO)
+    - transform
+        - masker
+            - 1D surface image -> 1D array
+            - 2D surface image -> 2D array
+            - list of 1D surface images -> 2D array
+            - list of 2D surface images -> ERROR (TODO)
+        - multimasker
+            - 1D surface image -> 1D array
+            - 2D surface image -> 2D array
+            - list of 1D surface images -> list of 1D array
+            - list of 2D surface images -> list of 2D array (TODO)
+
+    - inverse_transform
+        - masker
+            - 1D array -> 1D surface image
+            - 2D array -> 2D surface image
+        - multimasker
+            - 1D array -> 1D surface image
+            - 2D array -> 2D surface image
     """
     images_to_transform = [
         _surf_img_1d(),
@@ -2803,6 +2811,24 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
                 n_sample,
             )
 
+    estimator = clone(estimator_orig)
+
+    if is_multimasker(estimator):
+        n_samples = 5
+        signals = estimator.fit_transform(
+            [_make_surface_img(n_samples), _make_surface_img(n_samples)]
+        )
+        assert isinstance(signals, list)
+        assert all(isinstance(x, np.ndarray) for x in signals)
+        assert all(
+            x.shape == (n_samples, estimator.n_elements_) for x in signals
+        )
+    else:
+        with pytest.raises(
+            ValueError, match="Data for each part of .* should be 1D"
+        ):
+            estimator.fit([_make_surface_img(5), _make_surface_img(5)])
+
 
 @ignore_warnings()
 def check_surface_masker_list_surf_images_with_mask(estimator_orig):
@@ -2810,17 +2836,32 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
 
     Check that 1D mask or 2D mask work.
 
-    transform
-    - masker
-      - 1D surface image -> 1D array
-      - 2D surface image -> 2D array
-      - list of 1D surface images -> 2D array
-      - list of 2D surface images -> ERROR (TODO)
-    - multimasker
-      - 1D surface image -> 1D array
-      - 2D surface image -> 2D array
-      - list of 1D surface images -> list of 1D array
-      - list of 2D surface images -> list of 2D array (TODO)
+    TODO there are some unexpected outcomes with
+    SurfaceMapsMasker, SurfaceLabelsMasker (see details below)
+    once those are fixed this test should be mergeable with its "no mask"
+    equivalent
+
+    Theoretically expected input / output shape relations:
+
+    - transform
+        - masker
+            - 1D surface image -> 1D array
+            - 2D surface image -> 2D array
+            - list of 1D surface images -> 2D array
+            - list of 2D surface images -> ERROR
+        - multimasker
+            - 1D surface image -> 1D array
+            - 2D surface image -> 2D array
+            - list of 1D surface images -> list of 1D array
+            - list of 2D surface images -> list of 2D array
+
+    - inverse_transform
+        - masker
+            - 1D array -> 1D surface image
+            - 2D array -> 2D surface image
+        - multimasker
+            - 1D array -> 1D surface image
+            - 2D array -> 2D surface image
     """
     images_to_transform = [
         _surf_img_1d(),
@@ -2862,21 +2903,28 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
                 assert signals.size == estimator.n_elements_
 
                 if isinstance(estimator, (SurfaceLabelsMasker)):
+                    # TODO having a test where SurfaceLabelsMasker
+                    # with mask leads to have only 1 ROI
+                    # is a bit of an edge case
+                    # Should this be changed?
+                    # We should maybe also check what happens
+                    # to the surface maps masker with only 1 map.
                     assert estimator.n_elements_ == 1
 
-                    if n_dim_mask == 2:
-                        assert signals.shape == (1, estimator.n_elements_)
-                    else:
-                        assert signals.shape == ()
-
-                elif isinstance(estimator, (SurfaceMapsMasker)):
-                    assert estimator.n_elements_ == 6
-
-                    if n_dim_mask == 2:
-                        assert signals.shape == (1, estimator.n_elements_)
-                    else:
-                        assert signals.shape == (estimator.n_elements_,)
-
+                # TODO We have some unexpected behavior from
+                # SurfaceMapsMasker, SurfaceLabelsMasker
+                # This should be fixed (in a follow up PR).
+                if (
+                    isinstance(
+                        estimator, (SurfaceMapsMasker, SurfaceLabelsMasker)
+                    )
+                    and n_dim_mask == 2
+                ):
+                    assert signals.shape == (1, estimator.n_elements_)
+                elif isinstance(estimator, (SurfaceLabelsMasker)):
+                    # we probably get a scalar here because
+                    # the label masker has only 1 valid ROI.
+                    assert signals.shape == ()
                 else:
                     assert signals.shape == (estimator.n_elements_,)
 
