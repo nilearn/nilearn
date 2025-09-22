@@ -1,6 +1,6 @@
 """Common Benchmarks class that does the setup for the benchmarks."""
 
-from nilearn.datasets import fetch_adhd, fetch_atlas_schaefer_2018
+from nilearn.datasets import fetch_abide_pcp, fetch_atlas_schaefer_2018
 from nilearn.image import concat_imgs, new_img_like, resample_to_img
 
 
@@ -29,7 +29,7 @@ class Benchmark:
             The number of masks to create.
         """
         # get an image
-        fmri_data = fetch_adhd(n_subjects=n_subjects)
+        fmri_data = fetch_abide_pcp(n_subjects=n_subjects)
         concat = concat_imgs(fmri_data.func)
         concat.to_filename(f"fmri_{n_subjects}.nii.gz")
 
