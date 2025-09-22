@@ -611,6 +611,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_masker_no_mask_no_img)
         yield (clone(estimator), check_masker_refit)
         yield (clone(estimator), check_masker_smooth)
+        yield (clone(estimator), check_masker_standardization)
         yield (clone(estimator), check_masker_transform_resampling)
         yield (clone(estimator), check_masker_transformer)
         yield (
@@ -1607,39 +1608,19 @@ def check_img_estimator_n_elements(estimator):
 
 
 def check_img_estimator_standardization(estimator_orig):
-    """Check estimator with several value for standardize.
+    """Check non-masker estimator with several value for standardize.
 
     Check that the different values give different results.
 
     For _BaseDecomposition derived classes
     this is mostly only a smoke test.
     """
-    if not hasattr(estimator_orig, "standardize"):
+    if not hasattr(estimator_orig, "standardize") or is_masker(estimator_orig):
+        # maskers have their own tests
         return
     # We need to use data with several samples
     # for the standardize to actually do something
-    n_samples = 100
-    # decimal precision for 100 n_samples
-    decimal = 2
-    if is_masker(estimator_orig):
-        if accept_niimg_input(estimator_orig):
-            signals = _rng().standard_normal(
-                size=(np.prod(_shape_3d_default()), n_samples)
-            )
-            means = (
-                _rng().standard_normal(size=(np.prod(_shape_3d_default()), 1))
-                * 50
-                + 1000
-            )
-            signals += means
-            input_img = Nifti1Image(
-                signals.reshape((*_shape_3d_default(), n_samples)),
-                _affine_eye(),
-            )
-        elif accept_surf_img_input(estimator_orig):
-            input_img = _make_surface_img(n_samples)
-    else:
-        input_img, y = generate_data_to_fit(estimator_orig)
+    input_img, y = generate_data_to_fit(estimator_orig)
 
     for method in ["predict", "transform"]:
         if not hasattr(estimator_orig, method):
@@ -1651,8 +1632,6 @@ def check_img_estimator_standardization(estimator_orig):
             estimator.fit(input_img, y)
         else:
             estimator.fit(input_img)
-
-        default_result = getattr(estimator, method)(input_img)
 
         results = {}
         standardize_values = ["zscore", "zscore_sample", "psc", True, False]
@@ -1712,29 +1691,6 @@ def check_img_estimator_standardization(estimator_orig):
             assert_array_equal(results["psc"], results["zscore_sample"])
         with pytest.raises(AssertionError):
             assert_array_equal(results["psc"], results["zscore"])
-
-        # check output values only for maskers
-        if not is_masker(estimator_orig) or isinstance(
-            estimator_orig, RegionExtractor
-        ):
-            return
-
-        assert_array_equal(default_result, unstandarized_result)
-
-        for x in ["zscore_sample", "zscore"]:
-            assert_almost_equal(results[x].mean(0), 0)
-            assert_almost_equal(results[x].std(0), 1, decimal=decimal)
-
-        assert_almost_equal(results["psc"].mean(0), 0)
-        if not isinstance(estimator, SurfaceMapsMasker):
-            assert_almost_equal(
-                results["psc"],
-                (
-                    unstandarized_result / unstandarized_result.mean(0) * 100
-                    - 100
-                ),
-                decimal=1,
-            )
 
 
 # ------------------ DECODERS CHECKS ------------------
@@ -1985,6 +1941,104 @@ def check_masker_detrending(estimator):
     detrended_signal = estimator.fit_transform(input_img)
 
     assert_raises(AssertionError, assert_array_equal, detrended_signal, signal)
+
+
+def check_masker_standardization(estimator_orig):
+    """Check maskers with several value for standardize.
+
+    Check that the different values give different results.
+    """
+    # We need to use data with several samples
+    # for the standardize to actually do something
+    n_samples = 100
+    # decimal precision for 100 n_samples
+    decimal = 2
+
+    if accept_niimg_input(estimator_orig):
+        signals = _rng().standard_normal(
+            size=(np.prod(_shape_3d_default()), n_samples)
+        )
+        means = (
+            _rng().standard_normal(size=(np.prod(_shape_3d_default()), 1)) * 50
+            + 1000
+        )
+        signals += means
+        input_img = Nifti1Image(
+            signals.reshape((*_shape_3d_default(), n_samples)),
+            _affine_eye(),
+        )
+    elif accept_surf_img_input(estimator_orig):
+        input_img = _make_surface_img(n_samples)
+
+        estimator = clone(estimator_orig)
+
+        estimator.fit(input_img)
+
+        default_result = estimator.transform(input_img)
+
+        results = {}
+        standardize_values = ["zscore", "zscore_sample", "psc", True, False]
+        for standardize in standardize_values:
+            estimator = clone(estimator_orig)
+
+            estimator.standardize = standardize
+
+            estimator.fit(input_img)
+
+            # TODO (nilearn >= 0.14.0) adapt if necessary
+            # Make sure that a FutureWarning warning is thrown
+            # and not one during call to fit and then call to clean.
+            if standardize in ["zscore", True]:
+                with warnings.catch_warnings(record=True) as warnings_list:
+                    results[str(standardize)] = estimator.transform(input_img)
+                n_future_warnings = len(
+                    [
+                        x
+                        for x in warnings_list
+                        if issubclass(x.category, FutureWarning)
+                    ]
+                )
+                assert n_future_warnings == 1
+            else:
+                results[str(standardize)] = estimator.transform(input_img)
+
+        unstandarized_result = results[str(False)]
+
+        # check which options are equal or different
+        assert_array_equal(results["zscore"], results[str(True)])
+
+        with pytest.raises(AssertionError):
+            assert_array_equal(results["zscore"], results["zscore_sample"])
+        for x in ["zscore_sample", "zscore", "psc"]:
+            with pytest.raises(AssertionError):
+                assert_array_equal(unstandarized_result, results[x])
+        with pytest.raises(AssertionError):
+            assert_array_equal(results["psc"], results["zscore_sample"])
+        with pytest.raises(AssertionError):
+            assert_array_equal(results["psc"], results["zscore"])
+
+        # check output values
+        if not is_masker(estimator_orig) or isinstance(
+            estimator_orig, RegionExtractor
+        ):
+            return
+
+        assert_array_equal(default_result, unstandarized_result)
+
+        for x in ["zscore_sample", "zscore"]:
+            assert_almost_equal(results[x].mean(0), 0)
+            assert_almost_equal(results[x].std(0), 1, decimal=decimal)
+
+        assert_almost_equal(results["psc"].mean(0), 0)
+        if not isinstance(estimator, SurfaceMapsMasker):
+            assert_almost_equal(
+                results["psc"],
+                (
+                    unstandarized_result / unstandarized_result.mean(0) * 100
+                    - 100
+                ),
+                decimal=1,
+            )
 
 
 @ignore_warnings()
