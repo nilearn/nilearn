@@ -56,7 +56,7 @@ jobs:
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 python-version: ['3.10']
-                min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.22.4, pandas==2.2.0, scikit-learn==1.4.0, scipy==1.8.0, matplotlib==3.8.0]
+                min_dep: [joblib==1.2.0, nibabel==5.2.0, numpy==1.22.4, pandas==2.2.0, scikit-learn==1.4.0, scipy==1.8.0, matplotlib==3.8.0, plotly==5.0.0]
 
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}
 
@@ -75,8 +75,18 @@ jobs:
                 python -m pip install --upgrade pip setuptools
                 pip install ${{ matrix.min_dep }}
 
+        -   name: Install oldest kaleido if needed (not windows)
+            if: ${{ matrix.os != 'windows-latest' && matrix.min_dep == 'plotly==5.0.0' }}
+            run: |
+                pip install kaleido==0.2.1
+
+        -   name: Install oldest kaleido if needed (windows)
+            if: ${{ matrix.os == 'windows-latest' &&  matrix.min_dep == 'plotly==5.0.0' }}
+            run: |
+                pip install kaleido==0.1.0.post1
+
         -   name: Install nilearn
-            run: pip install .[plotting,plotly,test]
+            run: pip install .[plotting,test]
 
         -   name: Run tests
             run: |
