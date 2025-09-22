@@ -563,11 +563,10 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         If transform() was applied to an image, this image is used as
         background on which the maps are plotted.
         """
-        import matplotlib.pyplot as plt
-
-        from nilearn.plotting import plot_surf, view_surf
+        from nilearn.plotting import view_surf
 
         threshold = 1e-6
+
         if self._report_content["engine"] == "plotly":
             # squeeze the last dimension
             for part in roi.data.parts:
@@ -582,31 +581,10 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 hemi="both",
                 cmap=self.cmap,
             ).get_iframe(width=500)
+
         elif self._report_content["engine"] == "matplotlib":
-            # TODO: possibly allow to generate a report with other views
-            views = ["lateral", "medial"]
-            hemispheres = ["left", "right"]
-            fig, axes = plt.subplots(
-                len(views),
-                len(hemispheres),
-                subplot_kw={"projection": "3d"},
-                figsize=(20, 20),
-                layout="constrained",
+            fig = self._generate_figure(
+                img=roi, bg_map=bg_img, threshold=threshold
             )
-            axes = np.atleast_2d(axes)
-            for ax_row, view in zip(axes, views, strict=False):
-                for ax, hemi in zip(ax_row, hemispheres, strict=False):
-                    # very low threshold to only make 0 values transparent
-                    plot_surf(
-                        surf_map=roi,
-                        bg_map=bg_img,
-                        hemi=hemi,
-                        view=view,
-                        figure=fig,
-                        axes=ax,
-                        cmap=self.cmap,
-                        colorbar=False,
-                        threshold=threshold,
-                        bg_on_data=True,
-                    )
+
         return fig
