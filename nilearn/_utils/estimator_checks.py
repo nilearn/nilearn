@@ -2705,6 +2705,7 @@ def check_masker_joblib_cache(estimator):
 # ------------------ SURFACE MASKER CHECKS ------------------
 
 
+@ignore_warnings()
 def check_surface_masker_fit_transform_errors(estimator):
     """Check fit / transform errors.
 
@@ -2819,8 +2820,8 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
         )
         assert isinstance(signals, list)
         assert all(isinstance(x, np.ndarray) for x in signals)
-        assert signals[0].shape == 5
-        assert signals[1].shape == 2
+        assert signals[0].shape == (5, estimator.n_elements_)
+        assert signals[1].shape == (2, estimator.n_elements_)
     else:
         # TODO Turn that into a dimension error like for NiftiMaskers
         # TODO error msg should give hint as to how to fix:
@@ -3457,7 +3458,6 @@ def check_masker_generate_report(estimator):
         assert (Path(tmp_dir) / "report.html").is_file()
 
 
-@ignore_warnings()
 def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     """Check 3D mask is enough to run with fit and generate report."""
     mask = np.ones(_shape_3d_large())

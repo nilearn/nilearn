@@ -47,13 +47,15 @@ def _check_html(html_view, reports_requested=True, is_fit=True):
         html_view.width = "foo"
     assert html_view.width == WIDTH_DEFAULT
 
+    assert html_view._repr_html_() == html_view.body
+
     if reports_requested and is_fit:
         assert "<th>Parameter</th>" in str(html_view)
+
     if "Surface" in str(html_view):
         assert "data:image/png;base64," in str(html_view)
     else:
         assert "data:image/svg+xml;base64," in str(html_view)
-    assert html_view._repr_html_() == html_view.body
 
 
 @pytest.fixture
