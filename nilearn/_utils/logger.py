@@ -151,18 +151,27 @@ def find_stack_level() -> int:
 
     pkg_dir = Path(nil.__file__).parent
 
+    # list of stack frames to skip
+    skip_list = [Path("sklearn") / "utils" / "_set_output.py"]
+
     # https://stackoverflow.com/questions/17407119/python-inspect-stack-is-slow
     frame = inspect.currentframe()
     try:
         n = 0
         while frame:
             filename = inspect.getfile(frame)
+
             is_test_file = Path(filename).name.startswith("test_")
+
             in_nilearn_code = filename.startswith(str(pkg_dir))
-            if not in_nilearn_code or is_test_file:
+            skip = any(str(x) in filename for x in skip_list)
+            if (not in_nilearn_code and not skip) or is_test_file:
                 break
+
             frame = frame.f_back
+
             n += 1
+
     finally:
         # See note in
         # https://docs.python.org/3/library/inspect.html#inspect.Traceback
