@@ -626,6 +626,24 @@ def nilearn_check_generator(estimator: BaseEstimator):
             yield (clone(estimator), check_masker_transformer_sample_mask)
             yield (clone(estimator), check_masker_with_confounds)
 
+        else:
+            yield (
+                clone(estimator),
+                check_multimasker_generate_report,
+            )
+            yield (
+                clone(estimator),
+                check_multimasker_transformer_high_variance_confounds,
+            )
+            yield (
+                clone(estimator),
+                check_multimasker_transformer_sample_mask,
+            )
+            yield (clone(estimator), check_multimasker_with_confounds)
+            if isinstance(estimator, NiftiMasker):
+                # TODO enforce for other maskers
+                yield (clone(estimator), check_multi_nifti_masker_shelving)
+
         if accept_niimg_input(estimator):
             yield (clone(estimator), check_nifti_masker_dtype)
             yield (clone(estimator), check_nifti_masker_fit_transform)
@@ -637,26 +655,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
                 check_nifti_masker_generate_report_after_fit_with_only_mask,
             )
 
-            if is_multimasker(estimator):
-                yield (
-                    clone(estimator),
-                    check_multi_nifti_masker_generate_report_4d_fit,
-                )
-                yield (
-                    clone(estimator),
-                    check_multi_masker_transformer_high_variance_confounds,
-                )
-                yield (
-                    clone(estimator),
-                    check_multi_masker_transformer_sample_mask,
-                )
-                yield (clone(estimator), check_multi_masker_with_confounds)
-
-                if isinstance(estimator, NiftiMasker):
-                    # TODO enforce for other maskers
-                    yield (clone(estimator), check_multi_nifti_masker_shelving)
-
-        if accept_surf_img_input(estimator):
+        else:
             yield (clone(estimator), check_surface_masker_fit_with_mask)
             yield (clone(estimator), check_surface_masker_list_surf_images)
 
@@ -2973,7 +2972,7 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
     assert hasattr(estimator, "mask_img_")
 
 
-# ------------------ MULTI NIFTI MASKER CHECKS ------------------
+# ------------------ MULTI MASKER CHECKS ------------------
 
 
 @ignore_warnings()
@@ -3019,27 +3018,31 @@ def check_multi_nifti_masker_shelving(estimator):
 
 
 @ignore_warnings()
-def check_multi_masker_with_confounds(estimator):
+def check_multimasker_with_confounds(estimator):
     """Test multi maskers with a list of confounds.
 
     Ensure results is different than when not using confounds.
 
-    Check that confounds are applied when passing a 4D image (not iterable)
-    to transform.
+    Check that confounds are applied when passing
+    a 4D image (not iterable) to transform (or 2D for surface).
 
     Check that error is raised if number of confounds
     does not match number of images.
     """
     length = _img_4d_rand_eye_medium().shape[3]
 
+    if accept_niimg_input(estimator):
+        input_imgs = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
+        single_img = _img_4d_rand_eye_medium()
+    else:
+        input_imgs = [_make_surface_img(length), _make_surface_img(length)]
+        single_img = _make_surface_img(length)
+
     array = _rng().random((length, 3))
 
-    signals_list_1 = estimator.fit_transform(
-        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-    )
+    signals_list_1 = estimator.fit_transform(input_imgs)
     signals_list_2 = estimator.fit_transform(
-        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-        confounds=[array, array],
+        input_imgs, confounds=[array, array]
     )
 
     for signal_1, signal_2 in zip(
@@ -3048,11 +3051,8 @@ def check_multi_masker_with_confounds(estimator):
         assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
 
     # should also work with a single 4D image (has no __iter__ )
-    signals_list_1 = estimator.fit_transform(_img_4d_rand_eye_medium())
-    signals_list_2 = estimator.fit_transform(
-        _img_4d_rand_eye_medium(),
-        confounds=[array],
-    )
+    signals_list_1 = estimator.fit_transform(single_img)
+    signals_list_2 = estimator.fit_transform(single_img, confounds=[array])
     for signal_1, signal_2 in zip(
         signals_list_1, signals_list_2, strict=False
     ):
@@ -3062,22 +3062,16 @@ def check_multi_masker_with_confounds(estimator):
     with pytest.raises(
         ValueError, match="number of confounds .* unequal to number of images"
     ):
-        estimator.fit_transform(
-            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-            confounds=[array],
-        )
+        estimator.fit_transform(input_imgs, confounds=[array])
 
     with pytest.raises(
         TypeError, match="'confounds' must be a None or a list."
     ):
-        estimator.fit_transform(
-            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-            confounds=1,
-        )
+        estimator.fit_transform(input_imgs, confounds=1)
 
 
 @ignore_warnings()
-def check_multi_masker_transformer_sample_mask(estimator):
+def check_multimasker_transformer_sample_mask(estimator):
     """Test multi maskers with a list of "sample_mask".
 
     "sample_mask" was directly sent as input to the parallel calls of
@@ -3086,15 +3080,21 @@ def check_multi_masker_transformer_sample_mask(estimator):
     """
     length = _img_4d_rand_eye_medium().shape[3]
 
-    n_scrub1 = 3
-    n_scrub2 = 2
+    if accept_niimg_input(estimator):
+        input_imgs = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
+        single_img = _img_4d_rand_eye_medium()
+    else:
+        input_imgs = [_make_surface_img(length), _make_surface_img(length)]
+        single_img = _make_surface_img(length)
 
+    n_scrub1 = 3
     sample_mask1 = np.arange(length - n_scrub1)
+
+    n_scrub2 = 2
     sample_mask2 = np.arange(length - n_scrub2)
 
     signals_list = estimator.fit_transform(
-        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-        sample_mask=[sample_mask1, sample_mask2],
+        input_imgs, sample_mask=[sample_mask1, sample_mask2]
     )
 
     for ts, n_scrub in zip(signals_list, [n_scrub1, n_scrub2], strict=False):
@@ -3102,8 +3102,7 @@ def check_multi_masker_transformer_sample_mask(estimator):
 
     # should also work with a single 4D image (has no __iter__ )
     signals_list = estimator.fit_transform(
-        _img_4d_rand_eye_medium(),
-        sample_mask=[sample_mask1],
+        single_img, sample_mask=[sample_mask1]
     )
 
     assert signals_list.shape[0] == length - n_scrub1
@@ -3112,42 +3111,40 @@ def check_multi_masker_transformer_sample_mask(estimator):
         ValueError,
         match="number of sample_mask .* unequal to number of images",
     ):
-        estimator.fit_transform(
-            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-            sample_mask=[sample_mask1],
-        )
+        estimator.fit_transform(input_imgs, sample_mask=[sample_mask1])
 
     with pytest.raises(
         TypeError, match="'sample_mask' must be a None or a list."
     ):
-        estimator.fit_transform(
-            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-            sample_mask=1,
-        )
+        estimator.fit_transform(input_imgs, sample_mask=1)
 
 
 @ignore_warnings()
-def check_multi_masker_transformer_high_variance_confounds(estimator):
-    """Check high_variance_confounds use in multi maskers with 5D data.
+def check_multimasker_transformer_high_variance_confounds(estimator):
+    """Check high_variance_confounds in multi maskers with data many samples.
 
     Make sure that using high_variance_confounds returns different result.
 
     Ensure that high_variance_confounds can be used with regular confounds,
     and that results are different than when just using the confounds alone.
-    """
-    length = 20
 
-    data = _rng().random((*_shape_3d_default(), length))
-    input_img = Nifti1Image(data, _affine_eye())
+    Also checks that confounds can be accepted as different formats.
+    """
+    length = _img_4d_rand_eye_medium().shape[3]
+
+    if accept_niimg_input(estimator):
+        input_imgs = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
+    else:
+        input_imgs = [_make_surface_img(length), _make_surface_img(length)]
 
     estimator.high_variance_confounds = False
 
-    signal = estimator.fit_transform([input_img, input_img])
+    signal = estimator.fit_transform(input_imgs)
 
     estimator = clone(estimator)
     estimator.high_variance_confounds = True
 
-    signal_hvc = estimator.fit_transform([input_img, input_img])
+    signal_hvc = estimator.fit_transform(input_imgs)
 
     for s1, s2 in zip(signal, signal_hvc, strict=False):
         assert_raises(AssertionError, assert_array_equal, s1, s2)
@@ -3165,14 +3162,12 @@ def check_multi_masker_transformer_high_variance_confounds(estimator):
 
             estimator = clone(estimator)
             estimator.high_variance_confounds = False
-            signal_c = estimator.fit_transform(
-                [input_img, input_img], confounds=confounds
-            )
+            signal_c = estimator.fit_transform(input_imgs, confounds=confounds)
 
             estimator = clone(estimator)
             estimator.high_variance_confounds = True
             signal_c_hvc = estimator.fit_transform(
-                [input_img, input_img], confounds=confounds
+                input_imgs, confounds=confounds
             )
 
             for s1, s2 in zip(signal_c, signal_c_hvc, strict=False):
@@ -3382,19 +3377,27 @@ def check_masker_generate_report_false(estimator):
 
 
 @ignore_warnings()
-def check_multi_nifti_masker_generate_report_4d_fit(estimator):
+def check_multimasker_generate_report(estimator):
     """Test calling generate report on multiple subjects raises warning."""
     if not is_matplotlib_installed():
         return
 
     if accept_niimg_input(estimator):
-        estimator.maps_img = _img_3d_ones()
-        estimator.fit([_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()])
+        input_img = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
+    else:
+        input_img = [_make_surface_img(100), _make_surface_img(100)]
+
+    if accept_niimg_input(estimator):
+        if isinstance(NiftiMapsMasker):
+            estimator.maps_img = _img_3d_ones()
+
+        estimator.fit(input_img)
         with pytest.warns(
             UserWarning,
             match="A list of 4D subject images were provided to fit. ",
         ):
             _generate_report(estimator)
     else:
-        ...
-        # TODO
+        # TODO add a warning
+        estimator.fit(input_img)
+        _generate_report(estimator)
