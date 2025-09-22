@@ -41,7 +41,7 @@ on:
         -   main
     schedule:
     # every Monday at 3pm UTC
-    -   cron: 0 15 * * MON
+    -   cron: 0 17 * * MON
 
     workflow_dispatch:  # This enables manual triggering from GitHub UI
 
