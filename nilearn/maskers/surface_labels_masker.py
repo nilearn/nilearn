@@ -529,6 +529,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         engine = self._validate_reporting_engine(engine)
 
         if hasattr(self, "_report_content"):
+            self._report_content["displayed_maps"] = [1]
             self._report_content["engine"] = engine
 
         return generate_report(self)
