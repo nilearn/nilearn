@@ -5,6 +5,7 @@ import warnings
 from string import Template
 
 import pandas as pd
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
@@ -21,6 +22,7 @@ from nilearn.reporting.utils import (
     HTML_PARTIALS_PATH,
     HTML_TEMPLATE_PATH,
     JS_PATH,
+    TEMPLATE_ROOT_PATH,
     figure_to_svg_base64,
 )
 
@@ -57,6 +59,16 @@ def _get_estimator_template(estimator):
         return ESTIMATOR_TEMPLATES[estimator.__class__.__name__]
     else:
         return ESTIMATOR_TEMPLATES["default"]
+
+
+def return_jinja_env() -> Environment:
+    """Set up the jinja Environment."""
+    return Environment(
+        loader=FileSystemLoader(TEMPLATE_ROOT_PATH),
+        autoescape=select_autoescape(),
+        lstrip_blocks=True,
+        trim_blocks=True,
+    )
 
 
 def embed_img(display):
@@ -315,13 +327,10 @@ def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
     )
 
 
-def _render_warnings_partial(warning_messages):
-    if not warning_messages:
-        return ""
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(HTML_PARTIALS_PATH / "warnings.html"), encoding="utf-8"
-    )
-    return tpl.substitute(warning_messages=warning_messages)
+def _render_warnings_partial(warning_messages) -> str:
+    env = return_jinja_env()
+    tpl = env.get_template("html/partials/warnings.jinja")
+    return tpl.render(warning_messages=warning_messages)
 
 
 def _create_report(estimator, data):

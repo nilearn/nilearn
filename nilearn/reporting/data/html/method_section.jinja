@@ -3,7 +3,7 @@
   (version= {{ version }}; RRID:SCR_001362).
 </p>
 
-{{if model_type == "First Level Model"}}
+{% if model_type == "First Level Model" %}
   <p>
     At the subject level, a mass univariate analysis was performed with a linear
     regression at each voxel of the brain, using generalized least squares with a
@@ -11,44 +11,44 @@
     {{ reporting_data.drift_model }}.
   </p>
 
-  {{if reporting_data.trial_types}}
+  {% if reporting_data.trial_types %}
   <p>
     Regressors were entered into run-specific design matrices and onsets were
     convolved with a {{ reporting_data.hrf_model }} canonical hemodynamic response function
     for the following conditions:
     <ul>
-      {{for trial in reporting_data.trial_types}}
+      {% for trial in reporting_data.trial_types %}
       <li>{{ trial }}</li>
-      {{endfor}}
+      {% endfor %}
     </ul>
   </p>
-  {{endif}}
+  {% endif %}
 
-{{else}}
+{% else %}
   <p>
     At the group level, a mass univariate analysis was performed with a linear
     regression at each voxel of the brain.
   </p>
-{{endif}}
+{% endif %}
 
-{{if smoothing_fwhm }}
+{% if smoothing_fwhm %}
   <p>
     Input images were smoothed with gaussian kernel
     <!--  -->
     (full-width at half maximum={{ smoothing_fwhm }} mm).
   </p>
-{{endif}}
+{% endif %}
 
-{{if contrasts }}
+{% if contrasts %}
   <p>
     The following contrasts were computed
-    {{if model_type == "First Level Model"}}
+    {% if model_type == "First Level Model" %}
       using a fixed-effect approach across runs
-    {{endif}}:
+    {% endif %}:
     <ul>
-      {{for c in contrasts}}
+      {% for c in contrasts %}
       <li>{{ c }}</li>
-      {{endfor}}
+      {% endfor %}
     </ul>
   </p>
-{{endif}}
+{% endif %}

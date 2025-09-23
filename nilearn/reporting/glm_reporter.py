@@ -18,7 +18,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from jinja2 import Environment, FileSystemLoader, select_autoescape
+from sklearn.utils import Bunch
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import logger
@@ -31,7 +31,6 @@ from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._version import __version__
-from nilearn.externals import tempita
 from nilearn.glm.thresholding import (
     threshold_stats_img,
     warn_default_threshold,
@@ -48,26 +47,15 @@ from nilearn.reporting.html_report import (
     HTMLReport,
     _render_warnings_partial,
     is_notebook,
+    return_jinja_env,
 )
 from nilearn.reporting.utils import (
     CSS_PATH,
-    HTML_TEMPLATE_PATH,
     JS_PATH,
-    TEMPLATE_ROOT_PATH,
     figure_to_png_base64,
 )
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
-
-
-def _return_jinja_env() -> Environment:
-    return Environment(
-        loader=FileSystemLoader(TEMPLATE_ROOT_PATH),
-        autoescape=select_autoescape(),
-        lstrip_blocks=True,
-        trim_blocks=True,
-    )
-
 
 MNI152TEMPLATE = None
 if is_matplotlib_installed():
@@ -106,7 +94,7 @@ def make_glm_report(
     cut_coords=None,
     display_mode=None,
     report_dims=(WIDTH_DEFAULT, HEIGHT_DEFAULT),
-):
+) -> HTMLReport:
     """Return HTMLReport object \
     for a report which shows all important aspects of a fitted GLM.
 
@@ -311,7 +299,7 @@ def make_glm_report(
 
     design_matrices = None
     mask_plot = None
-    mask_info = {"n_elements": 0, "coverage": 0}
+    mask_info = {"n_elements": 0, "coverage": "0"}
     results = None
     warning_messages = ["The model has not been fit yet."]
     if model.__sklearn_is_fitted__():
@@ -385,8 +373,8 @@ def make_glm_report(
             plot_type=plot_type,
         )
 
-    design_matrices_dict = tempita.bunch()
-    contrasts_dict = tempita.bunch()
+    design_matrices_dict = Bunch()
+    contrasts_dict = Bunch()
     if output is not None:
         design_matrices_dict = output["design_matrices_dict"]
         contrasts_dict = output["contrasts_dict"]
@@ -411,9 +399,9 @@ def make_glm_report(
             output=output,
         )
 
-    run_wise_dict = tempita.bunch()
+    run_wise_dict = Bunch()
     for i_run in design_matrices_dict:
-        tmp = tempita.bunch()
+        tmp = Bunch()
         tmp["design_matrix_png"] = design_matrices_dict[i_run][
             "design_matrix_png"
         ]
@@ -425,20 +413,18 @@ def make_glm_report(
             tmp["all_contrasts"] = contrasts_dict[i_run]
         run_wise_dict[i_run] = tmp
 
-    env = _return_jinja_env()
+    env = return_jinja_env()
 
     # for methods writing, only keep the contrast expressed as strings
     if contrasts is not None:
         contrasts = [x for x in contrasts.values() if isinstance(x, str)]
-    method_section_template_path = HTML_TEMPLATE_PATH / "method_section.html"
-    method_tpl = tempita.HTMLTemplate.from_filename(
-        str(method_section_template_path),
-        encoding="utf-8",
-    )
-    method_section = method_tpl.substitute(
+
+    method_tpl = env.get_template("html/method_section.jinja")
+
+    method_section = method_tpl.render(
         version=__version__,
         model_type=model.__str__(),
-        reporting_data=tempita.bunch(**model._reporting_data),
+        reporting_data=Bunch(**model._reporting_data),
         smoothing_fwhm=smoothing_fwhm,
         contrasts=contrasts,
     )
@@ -495,16 +481,16 @@ def make_glm_report(
     return report
 
 
-def _turn_into_full_path(bunch, dir: Path) -> str | tempita.bunch:
+def _turn_into_full_path(bunch, dir: Path) -> str | Bunch:
     """Recursively turns str values of a dict into path.
 
     Used to turn relative paths into full paths.
     """
     if isinstance(bunch, str) and not bunch.startswith(str(dir)):
         return str(dir / bunch)
-    tmp = tempita.bunch()
+    tmp = Bunch()
     for k in bunch:
-        if isinstance(bunch[k], (dict, str, tempita.bunch)):
+        if isinstance(bunch[k], (dict, str, Bunch)):
             tmp[k] = _turn_into_full_path(bunch[k], dir)
         else:
             tmp[k] = bunch[k]
@@ -811,7 +797,7 @@ def _make_stat_maps_contrast_clusters(
             cluster_table_html = None
             stat_map_png = None
 
-        results[escape(contrast_name)] = tempita.bunch(
+        results[escape(contrast_name)] = Bunch(
             stat_map_img=stat_map_png,
             cluster_table_details=table_details_html,
             cluster_table=cluster_table_html,
