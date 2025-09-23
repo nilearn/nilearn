@@ -13,7 +13,7 @@ from nilearn._utils.bids import (
 )
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.image.image import get_indices_from_image
+from nilearn.image.utils import get_indices_from_image
 
 
 class _MultiMixin:
