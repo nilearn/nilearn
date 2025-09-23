@@ -111,7 +111,7 @@
 <div class="report">
   <section>
     <h2>Description</h2>
-    {{ method_section|safe }}
+    {% include 'html/partials/method_section.jinja' %}
   </section>
 
   <section id="model-details-{{ unique_id }}">
@@ -199,7 +199,7 @@
         <h3>Contrasts</h3>
 
         <div class="d-flex flex-column">
-          {% if run_content.all_contrasts is defined %}
+          {% if run_content.all_contrasts %}
           {% for contrast_name in contrasts %}
           <div class="scroll-y">
             {% set is_bytes = not contrast_plot.endswith('.png') %}
@@ -314,7 +314,7 @@
 
 {% if n_runs > 1 %}
 <script>
-  {{ js_carousel | safe }}
+  {% include 'js/carousel.js' %}
   document.addEventListener("DOMContentLoaded", function () {
     new Carousel("{{ unique_id }}", {{ displayed_runs }}, false);
 }

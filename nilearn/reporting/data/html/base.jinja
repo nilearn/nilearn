@@ -12,7 +12,7 @@
 />
 
 <style type="text/css">
-  {{ css }}
+  {% include 'css/report.css' %}
 </style>
 
 <section class="nilearn-report pt-0 border border-1 rounded-2 scroll-y">
@@ -34,7 +34,7 @@
       class="pure-u-7-8 pure-u-md-7-8 d-flex flex-column justify-content-space-around main-container"
     >
 
-      {{ warning_messages }}
+      {% include 'html/partials/warnings.jinja' %}
 
       {% block report %}{% endblock %}
 

@@ -45,15 +45,10 @@ from nilearn.reporting.get_clusters_table import (
 )
 from nilearn.reporting.html_report import (
     HTMLReport,
-    _render_warnings_partial,
     is_notebook,
     return_jinja_env,
 )
-from nilearn.reporting.utils import (
-    CSS_PATH,
-    JS_PATH,
-    figure_to_png_base64,
-)
+from nilearn.reporting.utils import CSS_PATH, figure_to_png_base64
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
@@ -413,36 +408,18 @@ def make_glm_report(
             tmp["all_contrasts"] = contrasts_dict[i_run]
         run_wise_dict[i_run] = tmp
 
-    env = return_jinja_env()
-
     # for methods writing, only keep the contrast expressed as strings
     if contrasts is not None:
         contrasts = [x for x in contrasts.values() if isinstance(x, str)]
 
-    method_tpl = env.get_template("html/partials/method_section.jinja")
-
-    method_section = method_tpl.render(
-        version=__version__,
-        model_type=model.__str__(),
-        reporting_data=Bunch(**model._reporting_data),
-        smoothing_fwhm=smoothing_fwhm,
-        contrasts=contrasts,
-    )
+    env = return_jinja_env()
 
     body_tpl = env.get_template("html/glm_report.jinja")
 
-    css_file_path = CSS_PATH / "report.css"
-    with css_file_path.open(encoding="utf-8") as css_file:
-        css = css_file.read()
-
-    with (JS_PATH / "carousel.js").open(encoding="utf-8") as js_file:
-        js_carousel = js_file.read()
-
     body = body_tpl.render(
-        css=css,
         title=title,
         docstring=snippet,
-        warning_messages=_render_warnings_partial(warning_messages),
+        warning_messages=warning_messages,
         parameters=model_attributes_html,
         mask_plot=mask_plot,
         results=results,
@@ -450,9 +427,11 @@ def make_glm_report(
         unique_id=unique_id,
         date=date,
         show_navbar="style='display: none;'" if is_notebook() else "",
-        method_section=method_section,
-        js_carousel=js_carousel,
         displayed_runs=list(range(len(run_wise_dict))),
+        model_type=model.__str__(),
+        reporting_data=Bunch(**model._reporting_data),
+        smoothing_fwhm=smoothing_fwhm,
+        contrasts=contrasts,
         **mask_info,
     )
 
