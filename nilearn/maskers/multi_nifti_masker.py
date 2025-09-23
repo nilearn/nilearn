@@ -272,7 +272,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             "hover over the displayed image."
         )
 
-        self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         self.mask_img_ = self._load_mask(imgs)

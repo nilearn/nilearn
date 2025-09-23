@@ -2925,7 +2925,7 @@ def fetch_neurovault_motor_task(
             "in version>0.13.1. \n"
             "Please use 'load_sample_motor_activation_image' instead.'"
         ),
-        DeprecationWarning,
+        FutureWarning,
         stacklevel=find_stack_level(),
     )
 
