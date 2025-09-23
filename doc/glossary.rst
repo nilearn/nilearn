@@ -131,14 +131,14 @@ If you wish to add a missing term, please
 
     Tedana
         `Tedana`_ is a multi-echo :term:`fMRI` data denoising pipeline.
-        :term:`Tedana` originally came about as a part of the ME-ICA pipeline,
+        `Tedana` originally came about as a part of the ME-ICA pipeline,
         although it has since diverged. An important distinction is that
         the ME-ICA pipeline was written for python v2.7,
         and was not designed in a way that others could easily
         examine and improve the underlying algorithms for
         TE-dependent analysis of multi-echo :term:`fMRI` data, tedana now assumes
         that you are working with data which has been previously preprocessed.
-        :term:`Tedana` works by decomposing multi-echo BOLD data via principal
+        `Tedana` works by decomposing multi-echo BOLD data via principal
         component analysis (PCA) and independent component analysis (ICA). The
         resulting components are then analyzed to determine whether they are
         TE-dependent or -independent. TE-dependent components are classified
