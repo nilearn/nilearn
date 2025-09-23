@@ -68,9 +68,11 @@ Changes
 
 - :bdg-danger:`Deprecation` The function ``nilearn.datasets.fetch_bids_langloc_dataset`` has been removed. Use :func:`~datasets.fetch_language_localizer_demo_dataset` instead. (:gh:`5640` by `Rémi Gau`_).
 
+- :bdg-danger:`Deprecation` The parameter ``subject_id`` of :func:`~datasets.fetch_spm_auditory` and   :func:`~datasets.fetch_spm_multimodal_fmri` has been removed (:gh:`????` by `Rémi Gau`_).
+
 - :bdg-danger:`Deprecation` The default version returned by :func:`~datasets.fetch_atlas_aal` was changed from ``SPM12`` to ``3v2`` (:gh:`5640` by `Rémi Gau`_).
 
-- :bdg-danger:`Deprecation` The default to ``force_resample`` was set to True in :func:`~image.resample_img` (:gh:`5635` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` The default to ``force_resample`` was set to ``True`` in :func:`~image.resample_img` (:gh:`5635` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter ``return_z_score`` of :func:`~glm.compute_fixed_effects` has been removed. :func:`~glm.compute_fixed_effects` will now always return 4 values instead of 3: the fourth one is ``fixed_fx_z_score_img`` (:gh:`5626` by `Rémi Gau`_).
 
