@@ -419,7 +419,7 @@ def make_glm_report(
     if contrasts is not None:
         contrasts = [x for x in contrasts.values() if isinstance(x, str)]
 
-    method_tpl = env.get_template("html/method_section.jinja")
+    method_tpl = env.get_template("html/partials/method_section.jinja")
 
     method_section = method_tpl.render(
         version=__version__,
