@@ -431,7 +431,7 @@ def make_glm_report(
 
     body_tpl = env.get_template("html/glm_report.jinja")
 
-    css_file_path = CSS_PATH / "masker_report.css"
+    css_file_path = CSS_PATH / "report.css"
     with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
 
