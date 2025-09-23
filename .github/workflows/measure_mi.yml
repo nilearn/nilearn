@@ -13,12 +13,12 @@ jobs:
 
         steps:
         -   name: Checkout repository
-            uses: actions/checkout@v2
+            uses: actions/checkout@v5
             with:
                 fetch-depth: 0
                 ref: ${{ github.event.pull_request.head.ref }}
         -   name: Set up Python
-            uses: actions/setup-python@v2
+            uses: actions/setup-python@v5
             with:
                 python-version: 3.13.0
         -   name: Install Wily
@@ -26,8 +26,8 @@ jobs:
         -   name: Build cache and diff
             id: wily
             run: |
-                wily build my_package/ tests/
-                DIFF=$(wily diff my_package/ tests/ --no-detail -r origin/${{ github.event.pull_request.base.ref }})
+                wily build nilearn/
+                DIFF=$(wily diff nilearn/ --no-detail -r origin/${{ github.event.pull_request.base.ref }})
                 echo "$DIFF"
 
                 # Build multine output
