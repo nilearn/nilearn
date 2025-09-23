@@ -77,6 +77,10 @@ class _MultiMixin:
 
 
 class _LabelMaskerMixin:
+    lut_: pd.DataFrame
+    _lut_: pd.DataFrame
+    background_label: int | float
+
     @property
     def n_elements_(self) -> int:
         """Return number of regions.
@@ -86,10 +90,10 @@ class _LabelMaskerMixin:
         minus the background value.
         """
         check_is_fitted(self)
-        lut = self.lut_  # type: ignore[attr-defined]
+        lut = self.lut_
         if hasattr(self, "_lut_"):
-            lut = self._lut_  # type: ignore[attr-defined]
-        return len(lut[lut["index"] != self.background_label])  # type: ignore[attr-defined]
+            lut = self._lut_
+        return len(lut[lut["index"] != self.background_label])
 
     @property
     def labels_(self) -> list[int | float]:
@@ -98,9 +102,9 @@ class _LabelMaskerMixin:
         The background label is included if present in the image.
         """
         check_is_fitted(self)
-        lut = self.lut_  # type: ignore[attr-defined]
+        lut = self.lut_
         if hasattr(self, "_lut_"):
-            lut = self._lut_  # type: ignore[attr-defined]
+            lut = self._lut_
         return lut["index"].to_list()
 
     @property
@@ -116,9 +120,9 @@ class _LabelMaskerMixin:
         check_is_fitted(self)
 
         index = self.labels_
-        valid_ids = [id for id in index if id != self.background_label]  # type: ignore[attr-defined]
+        valid_ids = [id for id in index if id != self.background_label]
 
-        sub_df = self.lut_[self.lut_["index"].isin(valid_ids)]  # type: ignore[attr-defined]
+        sub_df = self.lut_[self.lut_["index"].isin(valid_ids)]
 
         return sub_df["name"].reset_index(drop=True).to_dict()
 
@@ -139,9 +143,9 @@ class _LabelMaskerMixin:
         index = self.labels_
 
         region_ids_: dict[str | int, int | float] = {}
-        if self.background_label in index:  # type: ignore[attr-defined]
-            index.pop(index.index(self.background_label))  # type: ignore[attr-defined]
-            region_ids_["background"] = self.background_label  # type: ignore[attr-defined]
+        if self.background_label in index:
+            index.pop(index.index(self.background_label))
+            region_ids_["background"] = self.background_label
         for i, id in enumerate(index):
             region_ids_[i] = id  # noqa : PERF403
 
