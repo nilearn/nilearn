@@ -414,7 +414,7 @@ def make_glm_report(
 
     env = return_jinja_env()
 
-    body_tpl = env.get_template("html/glm_report.jinja")
+    body_tpl = env.get_template("html/body_glm.jinja")
 
     body = body_tpl.render(
         title=title,
@@ -438,7 +438,7 @@ def make_glm_report(
     # revert HTML safe substitutions in CSS sections
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
 
-    head_tpl = env.get_template("html/report_template.jinja")
+    head_tpl = env.get_template("html/head.jinja")
 
     head_css_file_path = CSS_PATH / "head.css"
     with head_css_file_path.open(encoding="utf-8") as head_css_file:

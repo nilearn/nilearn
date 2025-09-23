@@ -11,14 +11,18 @@ from nilearn._utils.data_gen import (
 )
 from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.datasets import load_fsaverage
-from nilearn.glm.first_level import (
-    FirstLevelModel,
-)
+from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import HTMLReport
 from nilearn.surface import SurfaceImage
+
+
+def check_glm_report(report):
+    """Run some generic check on report."""
+    assert isinstance(report, HTMLReport)
+    assert '<nav class="navbar pure-g fw-bold" id="menu"' in str(report)
 
 
 @pytest.fixture
@@ -72,7 +76,15 @@ def test_empty_surface_reports(tmp_path, model, bg_img):
     """Test that empty reports on unfitted model can be generated."""
     report = model(smoothing_fwhm=None).generate_report(bg_img=bg_img)
 
-    assert isinstance(report, HTMLReport)
+    report.open_in_browser()
+
+    check_glm_report(report)
+
+    assert "The model has not been fit yet." in str(report)
+    assert "No mask was provided." in str(report)
+    assert "No statistical map was provided." in str(report)
+    assert "No design matrix was provided." in str(report)
+    assert "No contrast was provided." in str(report)
 
     report.save_as_html(tmp_path / "tmp.html")
     assert (tmp_path / "tmp.html").exists()
@@ -86,12 +98,16 @@ def test_flm_reporting_no_contrasts(flm):
         min_distance=15,
         alpha=0.01,
     )
+
+    check_glm_report(report)
     assert "No statistical map was provided." in report.__str__()
 
 
 def test_mask_coverage_in_report(flm):
     """Check that how much image is included in mask is in the report."""
     report = flm.generate_report()
+
+    check_glm_report(report)
     assert "The mask includes" in report.__str__()
 
 
@@ -114,6 +130,9 @@ def test_flm_reporting_height_control(flm, height_control, contrasts):
         )
     if height_control is not None:
         assert any("will not be used with" in str(x) for x in warnings_list)
+
+    check_glm_report(report_flm)
+
     # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
     # in case certain unicode characters are mishandled,
     # like the greek alpha symbol.
@@ -134,6 +153,9 @@ def test_slm_reporting_method(slm, height_control):
     report_slm = slm.generate_report(
         c1, height_control=height_control, alpha=0.01
     )
+
+    check_glm_report(report_slm)
+
     # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
     report_slm.get_iframe()
 
@@ -151,7 +173,11 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
 
     c1 = np.eye(len(model.design_matrix_.columns))[0]
 
-    model.generate_report(c1, first_level_contrast=first_level_contrast)
+    report = model.generate_report(
+        c1, first_level_contrast=first_level_contrast
+    )
+
+    check_glm_report(report)
 
 
 def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
@@ -172,29 +198,35 @@ def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
 
     c1 = np.eye(len(model.design_matrix_.columns))[0]
 
-    model.generate_report(c1, first_level_contrast="a")
+    report = model.generate_report(c1, first_level_contrast="a")
+
+    check_glm_report(report)
 
 
 @pytest.mark.timeout(0)
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 def test_report_plot_type(flm, plot_type, contrasts):
     """Smoke test for valid plot type."""
-    flm.generate_report(
+    report = flm.generate_report(
         contrasts=contrasts,
         plot_type=plot_type,
     )
+
+    check_glm_report(report)
 
 
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
 def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
     """Smoke test for valid cut_coords."""
-    flm.generate_report(
+    report = flm.generate_report(
         contrasts=contrasts,
         cut_coords=cut_coords,
         display_mode="z",
         plot_type=plot_type,
     )
+
+    check_glm_report(report)
 
 
 def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: ARG001
@@ -238,6 +270,8 @@ def test_masking_first_level_model(contrasts):
 
     report_flm.get_iframe()
 
+    check_glm_report(report_flm)
+
 
 def test_fir_delays_in_params(contrasts):
     """Check that fir_delays is in the report when hrf_model is fir.
@@ -252,6 +286,8 @@ def test_fir_delays_in_params(contrasts):
     model.fit(fmri_data, design_matrices=design_matrices)
 
     report = model.generate_report(contrasts=contrasts)
+
+    check_glm_report(report)
 
     assert "fir_delays" in report.__str__()
 
@@ -269,6 +305,8 @@ def test_drift_order_in_params(contrasts):
     model.fit(fmri_data, design_matrices=design_matrices)
 
     report = model.generate_report(contrasts=contrasts)
+
+    check_glm_report(report)
 
     assert "drift_order" in report.__str__()
 
@@ -300,7 +338,7 @@ def test_flm_generate_report_surface_data(rng):
         "c0", height_control=None, threshold=DEFAULT_Z_THRESHOLD
     )
 
-    assert isinstance(report, HTMLReport)
+    check_glm_report(report)
 
     assert "Results table not available for surface data." in report.__str__()
 
@@ -337,10 +375,14 @@ def test_carousel_two_runs(
     # Second level have a single "run" and do not need a carousel
     report_slm = slm.generate_report()
 
+    check_glm_report(report_slm)
+
     assert 'id="carousel-navbar"' not in report_slm.__str__()
 
     # first level model with one run : no run carousel
     report_one_run = flm.generate_report(contrasts=contrasts)
+
+    check_glm_report(report_one_run)
 
     assert 'id="carousel-navbar"' not in report_one_run.__str__()
 
@@ -359,6 +401,8 @@ def test_carousel_two_runs(
     )
 
     report = flm_two_runs.generate_report(contrasts=contrasts)
+
+    check_glm_report(report)
 
     assert 'id="carousel-navbar"' in report.__str__()
 
