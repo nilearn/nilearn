@@ -152,7 +152,10 @@ def find_stack_level() -> int:
     pkg_dir = Path(nil.__file__).parent
 
     # list of stack frames to skip
-    skip_list = [Path("sklearn") / "utils" / "_set_output.py"]
+    skip_list = [
+        Path("sklearn") / "utils" / "_set_output.py",
+        Path("joblib") / "memory.py",
+    ]
 
     # https://stackoverflow.com/questions/17407119/python-inspect-stack-is-slow
     frame = inspect.currentframe()
