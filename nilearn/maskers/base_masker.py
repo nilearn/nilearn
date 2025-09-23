@@ -43,7 +43,7 @@ from nilearn.image import (
     resample_img,
     smooth_img,
 )
-from nilearn.image.image import get_indices_from_image
+from nilearn.image.utils import get_indices_from_image
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img

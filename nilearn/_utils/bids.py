@@ -3,7 +3,7 @@ import warnings
 import pandas as pd
 
 from nilearn._utils.logger import find_stack_level
-from nilearn.image.image import get_indices_from_image
+from nilearn.image.utils import get_indices_from_image
 
 
 def generate_atlas_look_up_table(
