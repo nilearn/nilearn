@@ -416,6 +416,8 @@ def make_glm_report(
 
     body_tpl = env.get_template("html/body_glm.jinja")
 
+    print(run_wise_dict)
+
     body = body_tpl.render(
         title=title,
         docstring=snippet,
