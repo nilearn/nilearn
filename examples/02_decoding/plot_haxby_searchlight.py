@@ -106,7 +106,7 @@ scores_img = searchlight.scores_img_
 # Use the :term:`fMRI` mean image as a surrogate of anatomical data
 from nilearn.image import mean_img
 
-mean_fmri = mean_img(fmri_img, copy_header=True)
+mean_fmri = mean_img(fmri_img)
 
 # %%
 # Because scores are not a zero-center test statistics,

@@ -272,7 +272,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             "hover over the displayed image."
         )
 
-        self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         self.mask_img_ = self._load_mask(imgs)
@@ -364,7 +363,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             target_shape=self.target_shape,
             interpolation="nearest",
             copy=False,
-            copy_header=True,
         )
 
         if self.target_affine is not None:
@@ -392,7 +390,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
-                    copy_header=True,
                 )
 
             self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]

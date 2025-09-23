@@ -595,7 +595,7 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     # test if the warning is raised
 
     with pytest.warns(
-        DeprecationWarning,
+        FutureWarning,
         match='"keep_masked_labels" parameter will be removed.',
     ):
         labels_signals, labels_labels = img_to_signals_labels(
@@ -612,7 +612,7 @@ def test_img_to_signals_labels_warnings(labeled_regions, fmri_img):
     # test return_masked_atlas deprecation warning
     # TODO (nilearn >= 0.15.0)
     with pytest.warns(
-        DeprecationWarning,
+        FutureWarning,
         match=(
             'In version 0.15, "return_masked_atlas" parameter will be removed.'
         ),
@@ -671,7 +671,7 @@ def test_img_to_signals_maps_warnings(
 
     # TODO (nilearn >= 0.15.0)
     with pytest.warns(
-        DeprecationWarning,
+        FutureWarning,
         match='"keep_masked_maps" parameter will be removed',
     ):
         maps_signals, maps_labels = img_to_signals_maps(

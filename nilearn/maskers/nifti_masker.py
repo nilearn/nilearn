@@ -173,7 +173,7 @@ def filter_and_mask(
         )
         parameters = copy_object(parameters)
         # now we can crop
-        mask_img_ = crop_img(mask_img_, copy=False, copy_header=True)
+        mask_img_ = crop_img(mask_img_, copy=False)
         parameters["target_shape"] = mask_img_.shape
         parameters["target_affine"] = mask_img_.affine
 
@@ -487,7 +487,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "hover over the displayed image."
         )
 
-        self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         self._fit_cache()
@@ -569,7 +568,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             target_shape=self.target_shape,
             copy=False,
             interpolation="nearest",
-            copy_header=True,
         )
 
         if self.target_affine is not None:  # resample image to target affine
@@ -596,7 +594,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
-                    copy_header=True,
                 )
                 resampl_imgs, _ = compute_middle_image(resampl_imgs)
             else:  # imgs not provided to fit
