@@ -28,7 +28,7 @@ dependencies = [
     "pandas>=2.2.0",
     "requests>=2.25.0",
     "scikit-learn>=1.4.0",
-    "scipy>=1.8.0",
+    "scipy>=1.9.0",
     "packaging"
 ]
 description = "Statistical learning for neuroimaging in Python"
