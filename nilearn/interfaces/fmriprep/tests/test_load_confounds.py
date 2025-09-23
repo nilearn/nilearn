@@ -707,13 +707,13 @@ def test_tedana_errors_warnings(tmp_path):
 
     # check that combining tedana with other strategies raises an warning
     with pytest.warns(UserWarning, match="TEDANA strategy"):
-        conf, _ = load_confounds(
+        load_confounds(
             tedana_nii, strategy=("tedana", "motion"), motion="basic"
         )
 
     # check that combining tedana with other strategies raises an warning
     with pytest.warns(UserWarning, match="TEDANA strategy"):
-        _conf, _ = load_confounds(
+        load_confounds(
             tedana_nii,
             strategy=("tedana", "high_pass", "ica_aroma", "global_signal"),
             motion="basic",
