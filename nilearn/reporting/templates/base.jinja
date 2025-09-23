@@ -1,3 +1,7 @@
+{% extends "report_template.jinja" %}
+
+{% block body %}
+
 <!-- CSS for the report -->
 
 <link
@@ -12,7 +16,7 @@
 />
 
 <style type="text/css">
-  {{css}}
+  {{ css }}
 </style>
 
 <section class="nilearn-report pt-0 border border-1 rounded-2 scroll-y">
@@ -46,3 +50,5 @@
     </div>
   </div>
 </section>
+
+{% endblock %}
