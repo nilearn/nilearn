@@ -15,10 +15,10 @@ import uuid
 import warnings
 from html import escape
 from pathlib import Path
-from string import Template
 
 import numpy as np
 import pandas as pd
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import logger
@@ -58,6 +58,16 @@ from nilearn.reporting.utils import (
 )
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
+
+
+def _return_jinja_env() -> Environment:
+    return Environment(
+        loader=FileSystemLoader(TEMPLATE_ROOT_PATH),
+        autoescape=select_autoescape(),
+        lstrip_blocks=True,
+        trim_blocks=True,
+    )
+
 
 MNI152TEMPLATE = None
 if is_matplotlib_installed():
@@ -415,6 +425,8 @@ def make_glm_report(
             tmp["all_contrasts"] = contrasts_dict[i_run]
         run_wise_dict[i_run] = tmp
 
+    env = _return_jinja_env()
+
     # for methods writing, only keep the contrast expressed as strings
     if contrasts is not None:
         contrasts = [x for x in contrasts.values() if isinstance(x, str)]
@@ -431,11 +443,7 @@ def make_glm_report(
         contrasts=contrasts,
     )
 
-    body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(body_template_path),
-        encoding="utf-8",
-    )
+    body_tpl = env.get_template("html/glm_report.jinja")
 
     css_file_path = CSS_PATH / "masker_report.css"
     with css_file_path.open(encoding="utf-8") as css_file:
@@ -444,7 +452,7 @@ def make_glm_report(
     with (JS_PATH / "carousel.js").open(encoding="utf-8") as js_file:
         js_carousel = js_file.read()
 
-    body = tpl.substitute(
+    body = body_tpl.render(
         css=css,
         title=title,
         docstring=snippet,
@@ -465,11 +473,7 @@ def make_glm_report(
     # revert HTML safe substitutions in CSS sections
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
 
-    head_template_path = (
-        TEMPLATE_ROOT_PATH / "html" / "report_head_template.html"
-    )
-    with head_template_path.open() as head_file:
-        head_tpl = Template(head_file.read())
+    head_tpl = env.get_template("html/report_template.jinja")
 
     head_css_file_path = CSS_PATH / "head.css"
     with head_css_file_path.open(encoding="utf-8") as head_css_file:

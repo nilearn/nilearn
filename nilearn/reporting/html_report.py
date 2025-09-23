@@ -438,9 +438,9 @@ class HTMLReport(HTMLDocument):
         """Construct the ``HTMLReport`` class."""
         if head_values is None:
             head_values = {}
-        html = head_tpl.safe_substitute(body=body, **head_values)
+        html = head_tpl.render(body=body, **head_values)
         super().__init__(html)
-        self.head_tpl = head_tpl
+        self.head_tpl = head_tpl.render(**head_values)
         self.body = body
 
     def _repr_html_(self):
