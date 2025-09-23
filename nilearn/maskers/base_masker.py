@@ -43,7 +43,7 @@ from nilearn.image import (
     resample_img,
     smooth_img,
 )
-from nilearn.image.image import get_indices_from_image
+from nilearn.image.utils import get_indices_from_image
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
@@ -534,18 +534,6 @@ class BaseMasker(
             )
 
         return signals
-
-    def _sanitize_cleaning_parameters(self):
-        """Make sure that cleaning parameters are passed via clean_args.
-
-        TODO (nilearn >= 0.13.0) remove
-        """
-        if hasattr(self, "clean_kwargs"):
-            self.clean_kwargs_ = {
-                k[7:]: v
-                for k, v in self.clean_kwargs.items()
-                if k.startswith("clean__")
-            }
 
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
