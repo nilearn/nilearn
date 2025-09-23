@@ -16,33 +16,29 @@
 </style>
 
 <section class="nilearn-report pt-0 border border-1 rounded-2 scroll-y">
+
   <h1 class="withtooltip m-0 pl-3 pt-3 rounded-top-2 fs-5">
+
     {{ title|safe }}
+
     <span class="tooltiptext m-1 p-1 fw-200 fs-3 border border-1 rounded-2"
       >{{ docstring }}</span
     >
+
   </h1>
+
   {% block navbar %}{% endblock %}
 
   <div class="pure-g d-flex justify-content-center my-1">
     <div
       class="pure-u-7-8 pure-u-md-7-8 d-flex flex-column justify-content-space-around main-container"
     >
-      <!--  -->
-      {%if warning_messages %}
-      <section>
-        <div class="warning my-2 border border-1 rounded-2">
-          <h2 class="m-0 p-3 fw-bold rounded-top-2">WARNING</h2>
-          <ul>
-            {% for message in warning_messages %}
-            <li class="fw-bold p-1">{{ message }}</li>
-            {% endfor %}
-          </ul>
-        </div>
-      </section>
-      {% endif %}
-      <!--  -->
+
+      {{ warning_messages }}
+
       {% block report %}{% endblock %}
+
     </div>
   </div>
+
 </section>

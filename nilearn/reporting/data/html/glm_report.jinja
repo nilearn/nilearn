@@ -1,6 +1,7 @@
 {% extends "html/base.jinja" %}
-<!--  -->
+
 {% block navbar %}
+
 <!-- Adapted from Pure CSS navbar : https://purecss.io/layouts/tucked-menu-vertical/ -->
 <nav class="navbar pure-g fw-bold" id="menu" {{show_navbar|safe}}>
   <script>
@@ -104,7 +105,7 @@
 </script>
 
 {% endblock %}
-<!--  -->
+
 {% block report %}
 
 <div class="report">
@@ -187,7 +188,7 @@
             style="min-width: 600px" />
         </div>
         {% endif %}
-        <!--  -->
+
         {% else %}
           <p>No design matrix was provided.</p>
 
@@ -210,7 +211,7 @@
               style="min-width: 600px" />
           </div>
           {% endfor %}
-          <!--  -->
+
           {% else %}
             <p>No contrast was provided.</p>
           {% endif %}
