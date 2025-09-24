@@ -259,20 +259,6 @@ def make_glm_report(
         height_control=height_control,
     )
 
-    unique_id = str(uuid.uuid4()).replace("-", "")
-
-    title = f"<br>{title}" if title else ""
-    title = f"Statistical Report - {model.__str__()}{title}"
-
-    docstring = model.__doc__
-    snippet = docstring.partition("Parameters\n    ----------\n")[0]
-
-    date = datetime.datetime.now().replace(microsecond=0).isoformat()
-
-    smoothing_fwhm = getattr(model, "smoothing_fwhm", 0)
-    if smoothing_fwhm == 0:
-        smoothing_fwhm = None
-
     model_attributes = _glm_model_attributes_to_dataframe(model)
     with pd.option_context("display.max_colwidth", 100):
         model_attributes_html = dataframe_to_html(
@@ -298,12 +284,17 @@ def make_glm_report(
     results = None
     warning_messages = ["The model has not been fit yet."]
     if model.__sklearn_is_fitted__():
-        warning_messages = []
+        warning_messages = (
+            ["No contrast passed during report generation."]
+            if contrasts is None
+            else []
+        )
 
-        if model.__str__() == "Second Level Model":
-            design_matrices = [model.design_matrix_]
-        else:
-            design_matrices = model.design_matrices_
+        design_matrices = (
+            [model.design_matrix_]
+            if model.__str__() == "Second Level Model"
+            else model.design_matrices_
+        )
 
         if bg_img == "MNI152TEMPLATE":
             bg_img = MNI152TEMPLATE if model._is_volume_glm() else None
@@ -412,26 +403,34 @@ def make_glm_report(
     if contrasts is not None:
         contrasts = [x for x in contrasts.values() if isinstance(x, str)]
 
+    title = f"<br>{title}" if title else ""
+    title = f"Statistical Report - {model.__str__()}{title}"
+
+    smoothing_fwhm = getattr(model, "smoothing_fwhm", 0)
+    if smoothing_fwhm == 0:
+        smoothing_fwhm = None
+
     env = return_jinja_env()
 
     body_tpl = env.get_template("html/body_glm.jinja")
 
     body = body_tpl.render(
-        title=title,
-        docstring=snippet,
-        warning_messages=warning_messages,
-        parameters=model_attributes_html,
+        docstring=model.__doc__.partition("Parameters\n    ----------\n")[0],
+        contrasts=contrasts,
+        date=datetime.datetime.now().replace(microsecond=0).isoformat(),
+        displayed_runs=list(range(len(run_wise_dict))),
         mask_plot=mask_plot,
+        model_type=model.__str__(),
+        parameters=model_attributes_html,
+        reporting_data=Bunch(**model._reporting_data),
         results=results,
         run_wise_dict=run_wise_dict,
-        unique_id=unique_id,
-        date=date,
         show_navbar="style='display: none;'" if is_notebook() else "",
-        displayed_runs=list(range(len(run_wise_dict))),
-        model_type=model.__str__(),
-        reporting_data=Bunch(**model._reporting_data),
         smoothing_fwhm=smoothing_fwhm,
-        contrasts=contrasts,
+        title=title,
+        version=__version__,
+        unique_id=str(uuid.uuid4()).replace("-", ""),
+        warning_messages=warning_messages,
         **mask_info,
     )
 

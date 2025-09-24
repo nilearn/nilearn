@@ -24,7 +24,8 @@ def check_glm_report(
     model: FirstLevelModel | SecondLevelModel,
     view=False,
     pth: Path | None = None,
-    extra_check: list[str] | None = None,
+    extend_includes: list[str] | None = None,
+    extend_excludes: list[str] | None = None,
     **kwargs,
 ):
     """Generate a GLM report and run generic checks on it.
@@ -41,9 +42,15 @@ def check_glm_report(
     pth: Path or None, default=None
         Where to save the report
 
-    extra_check : Iterable[str] | None, default=None
+    extend_includes : Iterable[str] | None, default=None
         The function will check
-        for the presence of of each string in this iterable.
+        for the presence in the report
+        of each string in this iterable.
+
+    extend_includes : Iterable[str] | None, default=None
+        The function will check
+        for the absence in the report
+        of each string in this iterable.
     """
     report = model.generate_report(**kwargs)
 
@@ -65,28 +72,75 @@ def check_glm_report(
         report.save_as_html(pth / "tmp.html")
         assert (pth / "tmp.html").exists()
 
-    if extra_check is None:
-        extra_check = []
-
+    includes = []
+    excludes = []
     # check the navbar is there
-    extra_check.append('<nav class="navbar pure-g fw-bold" id="menu"')
+    includes.append('<nav class="navbar pure-g fw-bold" id="menu"')
+
+    # 'Contrasts' and 'Statistical maps' should appear
+    # as section and in navbar
+    # if report was generated with contrasts.
+    contrast_present_checks = [
+        '<a id="navbar-contrasts-link',
+        '<a href="#statistical-maps',
+    ]
+    # There should be a warning
+    # that no contrast was passed
+    # if that's the case
+    contrasts_missing_checks = [
+        "No contrast passed during report generation.",
+    ]
+    if "contrasts" in kwargs and kwargs["contrasts"] is not None:
+        includes.extend(contrast_present_checks)
+        excludes.extend(contrasts_missing_checks)
+    else:
+        excludes.extend(contrast_present_checks)
+        if model.__sklearn_is_fitted__():
+            # the no contrast warning only appears for fitted models
+            includes.extend(contrasts_missing_checks)
 
     if not model.__sklearn_is_fitted__():
-        to_check = [
-            "The model has not been fit yet.",
-            "No mask was provided.",
-            "No statistical map was provided.",
-        ]
-        extra_check.extend(to_check)
+        includes.extend(
+            [
+                "The model has not been fit yet.",
+                "No mask was provided.",
+                "No statistical map was provided.",
+            ]
+        )
+
+        # no design matrix in navbar if model not fitted
+        excludes.append('<a id="navbar-matrix-link')
 
         # assert "No design matrix was provided." in str(report)
         # assert "No contrast was provided." in str(report)
 
     else:
-        ...
+        # report should mention how much of image is included in mask
+        includes.extend(
+            [
+                "The mask includes",
+            ]
+        )
 
-    for check in extra_check:
+        if (
+            isinstance(model, SecondLevelModel)
+            or len(model.design_matrices_) < 2
+        ):
+            # SecondLevelModel have a single "run" and do not need a carousel
+            # FirstLevelModel with a single neither
+            excludes.append('id="carousel-navbar"')
+        else:
+            includes.append('id="carousel-navbar"')
+
+    if extend_includes is not None:
+        includes.extend(extend_includes)
+    for check in set(includes):
         assert check in str(report)
+
+    if extend_excludes is not None:
+        excludes.extend(extend_excludes)
+    for check in set(excludes):
+        assert check not in str(report)
 
 
 @pytest.fixture
@@ -133,7 +187,7 @@ def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
     check_glm_report(
         model=flm,
         pth=tmp_path,
-        extra_check=["No suprathreshold cluster"],
+        extend_includes=["No suprathreshold cluster"],
         contrasts=contrasts,
     )
 
@@ -146,7 +200,6 @@ def test_empty_surface_reports(tmp_path, model, bg_img):
         model=model(smoothing_fwhm=None),
         pth=tmp_path,
         bg_img=bg_img,
-        view=True,
     )
 
 
@@ -155,20 +208,11 @@ def test_flm_reporting_no_contrasts(flm, tmp_path):
     check_glm_report(
         model=flm,
         pth=tmp_path,
-        extra_check=["No statistical map was provided."],
+        extend_includes=["No statistical map was provided."],
         plot_type="glass",
         contrasts=None,
         min_distance=15,
         alpha=0.01,
-    )
-
-
-def test_mask_coverage_in_report(flm, tmp_path):
-    """Check that how much image is included in mask is in the report."""
-    check_glm_report(
-        model=flm,
-        pth=tmp_path,
-        extra_check=["The mask includes"],
     )
 
 
@@ -188,7 +232,7 @@ def test_flm_reporting_height_control(
             pth=tmp_path,
             # glover / cosine are the default
             # hrf / drift model so they should appear in report
-            extra_check=["glover", "cosine"],
+            extend_includes=["glover", "cosine"],
             contrasts=contrasts,
             plot_type="glass",
             height_control=height_control,
@@ -258,6 +302,9 @@ def test_report_plot_type(flm, plot_type, contrasts):
         flm,
         contrasts=contrasts,
         plot_type=plot_type,
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
     )
 
 
@@ -331,7 +378,9 @@ def test_fir_delays_in_params(contrasts):
     # matrices were passed at fit time
     # so fir_delays should not appear in report
     # as we do not know which HRF was used to build the matrix
-    check_glm_report(model, contrasts=contrasts, extra_check=["fir_delays"])
+    check_glm_report(
+        model, contrasts=contrasts, extend_includes=["fir_delays"]
+    )
 
 
 @pytest.mark.timeout(0)
@@ -346,7 +395,9 @@ def test_drift_order_in_params(contrasts):
     model = FirstLevelModel(drift_model="polynomial", drift_order=3)
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    check_glm_report(model, contrasts=contrasts, extra_check=["drift_order"])
+    check_glm_report(
+        model, contrasts=contrasts, extend_includes=["drift_order"]
+    )
 
 
 @pytest.mark.timeout(0)
@@ -377,7 +428,7 @@ def test_flm_generate_report_surface_data(rng):
         contrasts="c0",
         height_control=None,
         threshold=DEFAULT_Z_THRESHOLD,
-        extra_check=["Results table not available for surface data."],
+        extend_includes=["Results table not available for surface data."],
     )
 
 
@@ -405,21 +456,9 @@ def test_flm_generate_report_surface_data_error(
 @pytest.mark.timeout(0)
 def test_carousel_two_runs(
     matplotlib_pyplot,  # noqa: ARG001
-    flm,
-    slm,
     contrasts,
 ):
     """Check that a carousel is present when there is more than 1 run."""
-    # Second level have a single "run" and do not need a carousel
-    report_slm = slm.generate_report()
-
-    assert 'id="carousel-navbar"' not in report_slm.__str__()
-
-    # first level model with one run : no run carousel
-    report_one_run = flm.generate_report(contrasts=contrasts)
-
-    assert 'id="carousel-navbar"' not in report_one_run.__str__()
-
     # first level model with 2 runs : run carousel
     rk = 6
     shapes = ((7, 7, 7, 5), (7, 7, 7, 10))
@@ -435,7 +474,8 @@ def test_carousel_two_runs(
     )
 
     check_glm_report(
-        flm_two_runs, contrasts=contrasts, extra_check=['id="carousel-navbar"']
+        flm_two_runs,
+        contrasts=contrasts,
     )
 
 

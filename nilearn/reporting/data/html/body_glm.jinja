@@ -65,7 +65,7 @@
 
       <section id="design-matrix-{{ unique_id }}-{{ loop.index }}">
         <h3>Design Matrix</h3>
-        {% if run_content.design_matrix_png is defined %}
+        {% if run_content.design_matrix_png %}
         <div class="scroll-y">
           {% set is_bytes = not run_content.design_matrix_png.endswith('.png') %}
           <img
@@ -76,7 +76,7 @@
             style="min-width: 600px" />
         </div>
 
-        {% if run_content.correlation_matrix_png is defined %}
+        {% if run_content.correlation_matrix_png %}
         <h3>correlation matrix</h3>
         <div class="scroll-y">
           {% set is_bytes = not run_content.correlation_matrix_png.endswith('.png') %}
