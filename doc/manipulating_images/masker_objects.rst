@@ -532,7 +532,7 @@ or list of 1D or 2D surface data with the same underlying mesh.
 
     - transforming a 1D image (n_vertices,) produces a 1D array,
     - transforming a 2D image (n_vertices, samples) produces a 2D array,
-    - transforming a a list of ``length==n`` of 1D image (n_vertices,) produces a 2D array (n_vertices, n)
+    - transforming a list of ``length==n`` of 1D image (n_vertices,) produces a 2D array (n_vertices, n)
 
     Multi surface masker objects can transform both 1D, 2D,
     as well as list of 1D or 2D surface image objects.
