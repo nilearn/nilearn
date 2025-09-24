@@ -987,12 +987,8 @@ def check_img_estimator_doc_attributes(estimator) -> None:
     documented_parameters = {
         param.name: param.type for param in doc["Parameters"]
     }
-    # TODO (nilearn >= 0.13.0)
-    # remove the 'and param != "clean_kwargs"'
     undocumented_parameters = [
-        param
-        for param in parameters
-        if param not in documented_parameters and param != "clean_kwargs"
+        param for param in parameters if param not in documented_parameters
     ]
     if undocumented_parameters:
         raise ValueError(
