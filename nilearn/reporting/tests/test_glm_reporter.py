@@ -27,7 +27,7 @@ def check_glm_report(
     extend_includes: list[str] | None = None,
     extend_excludes: list[str] | None = None,
     **kwargs,
-):
+) -> HTMLReport:
     """Generate a GLM report and run generic checks on it.
 
     Parameters
@@ -111,14 +111,13 @@ def check_glm_report(
         # no design matrix in navbar if model not fitted
         excludes.append('<a id="navbar-matrix-link')
 
-        # assert "No design matrix was provided." in str(report)
-        # assert "No contrast was provided." in str(report)
-
     else:
-        # report should mention how much of image is included in mask
         includes.extend(
             [
-                "The mask includes",
+                'id="design-matrix-',
+                'id="mask-',
+                'id="statistical-maps-',
+                "The mask includes",  # check that mask coverage is there
             ]
         )
 
@@ -147,6 +146,8 @@ def check_glm_report(
         excludes.extend(extend_excludes)
     for check in set(excludes):
         assert check not in str(report)
+
+    return report
 
 
 @pytest.fixture
@@ -195,6 +196,7 @@ def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
         pth=tmp_path,
         extend_includes=["No suprathreshold cluster"],
         contrasts=contrasts,
+        view=True,
     )
 
 
@@ -501,6 +503,9 @@ def test_carousel_several_runs(
 ):
     """Check that a carousel is present when there is more than 1 run."""
     # first level model with 3 runs : run carousel
+    # TODO
+    # change name of design matrix columns and use contrast expression
+    # to have different plots for each run
     rk = 6
     shapes = ((7, 7, 7, 5), (7, 7, 7, 10), (7, 7, 7, 15))
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -514,14 +519,16 @@ def test_carousel_several_runs(
         fmri_data, design_matrices=design_matrices
     )
 
-    check_glm_report(
+    report = check_glm_report(
         flm_two_runs,
         contrasts=contrasts,
         # the following are to avoid warnings
         threshold=1e-8,
         height_control=None,
-        view=True,
     )
+
+    # 3 runs should be in the carousel
+    assert str(report).count('id="carousel-obj-') == len(shapes)
 
 
 @pytest.mark.parametrize("threshold", [3.09, 2.9, DEFAULT_Z_THRESHOLD])

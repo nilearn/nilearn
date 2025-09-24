@@ -355,7 +355,7 @@ def make_glm_report(
 
         warning_messages = (
             ["No contrast passed during report generation."]
-            if results is None
+            if contrasts is None
             else []
         )
 
@@ -418,7 +418,6 @@ def make_glm_report(
         docstring=model.__doc__.partition("Parameters\n    ----------\n")[0],
         contrasts=contrasts,
         date=datetime.datetime.now().replace(microsecond=0).isoformat(),
-        displayed_runs=list(range(len(run_wise_dict))),
         mask_plot=mask_plot,
         model_type=model.__str__(),
         parameters=model_attributes_html,
@@ -433,9 +432,6 @@ def make_glm_report(
         warning_messages=warning_messages,
         **mask_info,
     )
-
-    # revert HTML safe substitutions in CSS sections
-    body = body.replace(".pure-g &gt; div", ".pure-g > div")
 
     head_tpl = env.get_template("html/head.jinja")
 

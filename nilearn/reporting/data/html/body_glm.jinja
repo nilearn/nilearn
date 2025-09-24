@@ -6,6 +6,9 @@
 
 {% block report %}
 
+{% set n_runs = run_wise_dict|length %}
+{% set displayed_runs = range(n_runs)|list %}
+
 <div class="report">
 
   <section>
@@ -18,9 +21,17 @@
     <div class="table-container">{{ parameters|safe }}</div>
   </section>
 
-  {% set n_runs = displayed_runs|length %}
-
-  <div id="carousel-container-{{ unique_id }}">
+  <div id="carousel-container-{{ unique_id }}"
+      {#
+        add a border when more than one run
+        to make it visually clear
+        what changes across runs
+        endcomment
+      #}
+      {% if n_runs > 1 %}
+      class="border border-1 rounded-1"
+      {% endif %}
+    >
 
     {% if n_runs > 1 %}
     <div class="pure-g d-flex justify-content-center align-items-stretch mt-1"
@@ -47,13 +58,12 @@
     </div>
     {% endif %}
 
-
-    <!--
+    {#
       when there is more than one run
       all runs are set to display 'none',
       but initialization of the carousel
       will set the first one to be shown.
-    -->
+    #}
     {% for i_run, run_content in run_wise_dict.items() %}
 
     <div
@@ -99,12 +109,12 @@
 
         <div class="d-flex flex-column">
           {% if run_content.all_contrasts %}
-          {% for contrast_name in contrasts %}
+          {% for contrast_name, contrast_plot in run_content.all_contrasts.items() %}
           <div class="scroll-y">
             {% set is_bytes = not contrast_plot.endswith('.png') %}
             <img
               class="pure-img"
-              src="{%if is_bytes %}data:image/png;base64,{% endif %}{{ contrasts[contrast_name] }}"
+              src="{%if is_bytes %}data:image/png;base64,{% endif %}{{ contrast_plot }}"
               title="Plot of the contrast {{ contrast_name }} (run {{ loop.index0 }})."
               alt="Plot of the contrast {{ contrast_name }} (run {{ loop.index0 }})."
               style="min-width: 600px" />
@@ -177,13 +187,10 @@
               Cluster Table
             </summary>
             {% if results[contrast_name].cluster_table_details %}
-            <!--  -->
             {{ results[contrast_name].cluster_table_details|safe }}
-            <!--  -->
             {% else %}
             <p>No cluster table parameter provided</p>
             {% endif %}
-            <!--  -->
             {% if results[contrast_name].cluster_table %}
               {{ results[contrast_name].cluster_table|safe }}
             {% else %}
@@ -213,6 +220,7 @@
 </div>
 
 {% if n_runs > 1 %}
+{{ displayed_runs }}
 <script>
   {% include 'js/carousel.js' %}
   document.addEventListener("DOMContentLoaded", function () {
