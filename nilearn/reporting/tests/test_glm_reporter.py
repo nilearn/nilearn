@@ -90,14 +90,14 @@ def check_glm_report(
     contrasts_missing_checks = [
         "No contrast passed during report generation.",
     ]
-    if "contrasts" in kwargs and kwargs["contrasts"] is not None:
+
+    has_contrasts = "contrasts" in kwargs and kwargs["contrasts"] is not None
+
+    if has_contrasts:
         includes.extend(contrast_present_checks)
         excludes.extend(contrasts_missing_checks)
     else:
         excludes.extend(contrast_present_checks)
-        if model.__sklearn_is_fitted__():
-            # the no contrast warning only appears for fitted models
-            includes.extend(contrasts_missing_checks)
 
     if not model.__sklearn_is_fitted__():
         includes.extend(
@@ -121,6 +121,12 @@ def check_glm_report(
                 "The mask includes",
             ]
         )
+
+        if not has_contrasts:
+            # the no contrast warning only appears for fitted models
+            includes.extend(contrasts_missing_checks)
+        elif not model._is_volume_glm():
+            includes.append("Results table not available for surface data.")
 
         if (
             isinstance(model, SecondLevelModel)
@@ -194,8 +200,11 @@ def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
 
 @pytest.mark.parametrize("model", [FirstLevelModel, SecondLevelModel])
 @pytest.mark.parametrize("bg_img", [_img_mask_mni(), _make_surface_mask()])
-def test_empty_surface_reports(tmp_path, model, bg_img):
-    """Test that empty reports on unfitted model can be generated."""
+def test_empty_reports(tmp_path, model, bg_img):
+    """Test that empty reports on unfitted model can be generated.
+
+    Both for volume and surface data.
+    """
     check_glm_report(
         model=model(smoothing_fwhm=None),
         pth=tmp_path,
@@ -208,7 +217,6 @@ def test_flm_reporting_no_contrasts(flm, tmp_path):
     check_glm_report(
         model=flm,
         pth=tmp_path,
-        extend_includes=["No statistical map was provided."],
         plot_type="glass",
         contrasts=None,
         min_distance=15,
@@ -269,7 +277,12 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
     c1 = np.eye(len(model.design_matrix_.columns))[0]
 
     check_glm_report(
-        model, contrasts=c1, first_level_contrast=first_level_contrast
+        model,
+        contrasts=c1,
+        first_level_contrast=first_level_contrast,
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
     )
 
 
@@ -291,7 +304,14 @@ def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
 
     c1 = np.eye(len(model.design_matrix_.columns))[0]
 
-    check_glm_report(model, contrasts=c1, first_level_contrast="a")
+    check_glm_report(
+        model,
+        contrasts=c1,
+        first_level_contrast="a",
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
+    )
 
 
 @pytest.mark.timeout(0)
@@ -318,6 +338,9 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
         cut_coords=cut_coords,
         display_mode="z",
         plot_type=plot_type,
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
     )
 
 
@@ -327,6 +350,9 @@ def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: A
         flm.generate_report(
             contrasts=contrasts,
             plot_type="junk",
+            # the following are to avoid warnings
+            threshold=1e-8,
+            height_control=None,
         )
 
     with pytest.raises(ValueError, match="'plot_type' must be one of"):
@@ -334,6 +360,9 @@ def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: A
             contrasts=contrasts,
             display_mode="glass",
             plot_type="junk",
+            # the following are to avoid warnings
+            threshold=1e-8,
+            height_control=None,
         )
 
 
@@ -356,9 +385,11 @@ def test_masking_first_level_model(contrasts):
         flm,
         contrasts=contrasts,
         plot_type="glass",
-        height_control=None,
         min_distance=15,
         alpha=0.01,
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
     )
 
 
@@ -379,7 +410,12 @@ def test_fir_delays_in_params(contrasts):
     # so fir_delays should not appear in report
     # as we do not know which HRF was used to build the matrix
     check_glm_report(
-        model, contrasts=contrasts, extend_includes=["fir_delays"]
+        model,
+        contrasts=contrasts,
+        extend_includes=["fir_delays"],
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
     )
 
 
@@ -396,7 +432,12 @@ def test_drift_order_in_params(contrasts):
     model.fit(fmri_data, design_matrices=design_matrices)
 
     check_glm_report(
-        model, contrasts=contrasts, extend_includes=["drift_order"]
+        model,
+        contrasts=contrasts,
+        extend_includes=["drift_order"],
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
     )
 
 
@@ -426,9 +467,9 @@ def test_flm_generate_report_surface_data(rng):
     check_glm_report(
         model,
         contrasts="c0",
+        # the following are to avoid warnings
+        threshold=1e-8,
         height_control=None,
-        threshold=DEFAULT_Z_THRESHOLD,
-        extend_includes=["Results table not available for surface data."],
     )
 
 
@@ -448,8 +489,9 @@ def test_flm_generate_report_surface_data_error(
         model.generate_report(
             "c0",
             bg_img=img_3d_mni,
+            # the following are to avoid warnings
+            threshold=1e-8,
             height_control=None,
-            threshold=DEFAULT_Z_THRESHOLD,
         )
 
 
@@ -476,6 +518,9 @@ def test_carousel_two_runs(
     check_glm_report(
         flm_two_runs,
         contrasts=contrasts,
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
     )
 
 
