@@ -449,7 +449,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         if isinstance(imgs, SurfaceImage) and any(
             hemi.ndim > 2 for hemi in imgs.data.parts.values()
         ):
-            raise ValueError("should only be SurfaceImage should 1D or 2D.")
+            raise ValueError("SurfaceImage should only be 1D or 2D.")
         elif hasattr(imgs, "__iter__"):
             for i, x in enumerate(imgs):
                 x.data._check_n_samples(1, f"imgs[{i}]")
