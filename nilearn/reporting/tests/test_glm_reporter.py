@@ -495,15 +495,14 @@ def test_flm_generate_report_surface_data_error(
         )
 
 
-@pytest.mark.timeout(0)
-def test_carousel_two_runs(
+def test_carousel_several_runs(
     matplotlib_pyplot,  # noqa: ARG001
     contrasts,
 ):
     """Check that a carousel is present when there is more than 1 run."""
-    # first level model with 2 runs : run carousel
+    # first level model with 3 runs : run carousel
     rk = 6
-    shapes = ((7, 7, 7, 5), (7, 7, 7, 10))
+    shapes = ((7, 7, 7, 5), (7, 7, 7, 10), (7, 7, 7, 15))
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
     )
@@ -521,6 +520,7 @@ def test_carousel_two_runs(
         # the following are to avoid warnings
         threshold=1e-8,
         height_control=None,
+        view=True,
     )
 
 
