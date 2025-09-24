@@ -284,12 +284,6 @@ def make_glm_report(
     results = None
     warning_messages = ["The model has not been fit yet."]
     if model.__sklearn_is_fitted__():
-        warning_messages = (
-            ["No contrast passed during report generation."]
-            if contrasts is None
-            else []
-        )
-
         design_matrices = (
             [model.design_matrix_]
             if model.__str__() == "Second Level Model"
@@ -357,6 +351,12 @@ def make_glm_report(
             cut_coords=cut_coords,
             display_mode=display_mode,
             plot_type=plot_type,
+        )
+
+        warning_messages = (
+            ["No contrast passed during report generation."]
+            if results is None
+            else []
         )
 
     design_matrices_dict = Bunch()
