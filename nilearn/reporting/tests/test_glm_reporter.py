@@ -196,7 +196,6 @@ def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
         pth=tmp_path,
         extend_includes=["No suprathreshold cluster"],
         contrasts=contrasts,
-        view=True,
     )
 
 

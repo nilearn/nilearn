@@ -419,7 +419,7 @@ class HTMLReport(HTMLDocument):
 
     Parameters
     ----------
-    head_tpl : Template
+    head_tpl : :obj:`Template` or Jinja template
         This is meant for display as a full page, eg writing on disk.
         This is the Template object used to generate the HTML head
         section of the report. The template should be filled with:
@@ -447,10 +447,18 @@ class HTMLReport(HTMLDocument):
         """Construct the ``HTMLReport`` class."""
         if head_values is None:
             head_values = {}
-        html = head_tpl.render(body=body, **head_values)
-        super().__init__(html)
-        self.head_tpl = head_tpl.render(**head_values)
+
+        if isinstance(head_tpl, Template):
+            html = head_tpl.safe_substitute(body=body, **head_values)
+            self.head_tpl = head_tpl.safe_substitute(**head_values)
+        else:
+            # in this case we are working with jinja template
+            html = head_tpl.render(body=body, **head_values)
+            self.head_tpl = head_tpl.render(**head_values)
+
         self.body = body
+
+        super().__init__(html)
 
     def _repr_html_(self):
         """Return body of the report.
