@@ -68,9 +68,9 @@ Changes
 
 - :bdg-danger:`Deprecation` The function ``nilearn.datasets.fetch_bids_langloc_dataset`` has been removed. Use :func:`~datasets.fetch_language_localizer_demo_dataset` instead. (:gh:`5640` by `Rémi Gau`_).
 
-- :bdg-danger:`Deprecation` The parameter ``subject_id`` of :func:`~datasets.fetch_spm_auditory` and   :func:`~datasets.fetch_spm_multimodal_fmri` has been removed (:gh:`????` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` The parameter ``subject_id`` of :func:`~datasets.fetch_spm_auditory` and   :func:`~datasets.fetch_spm_multimodal_fmri` has been removed (:gh:`5709` by `Rémi Gau`_).
 
-- :bdg-danger:`Deprecation` The parameter ``temp_file_lifetime`` of the :meth:`~reporting.HTMLReport.open_in_browser` has been removed (:gh:`????` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` The parameter ``temp_file_lifetime`` of the :meth:`~reporting.HTMLReport.open_in_browser` has been removed (:gh:`5709` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The default version returned by :func:`~datasets.fetch_atlas_aal` was changed from ``SPM12`` to ``3v2`` (:gh:`5640` by `Rémi Gau`_).
 
