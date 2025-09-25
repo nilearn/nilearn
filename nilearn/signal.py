@@ -72,7 +72,7 @@ def standardize_signal(
             warnings.warn(
                 "Standardization of 3D signal has been requested but "
                 "would lead to zero values. Skipping.",
-                categoty=SignalWarning,
+                category=SignalWarning,
                 stacklevel=find_stack_level(),
             )
             return signals
@@ -125,7 +125,7 @@ def standardize_signal(
                     "psc standardization strategy is meaningless "
                     "for features that have a mean of 0. "
                     "These time series are set to 0.",
-                    categoty=SignalWarning,
+                    category=SignalWarning,
                     stacklevel=find_stack_level(),
                 )
                 signals[:, invalid_ix] = 0
@@ -264,7 +264,7 @@ def _detrend(signals, inplace=False, type="linear", n_batches=10):
         warnings.warn(
             "Detrending of 3D signal has been requested but "
             "would lead to zero values. Skipping.",
-            categoty=SignalWarning,
+            category=SignalWarning,
             stacklevel=find_stack_level(),
         )
         return signals
@@ -313,7 +313,7 @@ def _check_wn(btype, freq, nyq):
             "too high to be handled by a digital filter "
             "(superior to Nyquist frequency). "
             f"It has been lowered to {freq} (Nyquist frequency).",
-            categoty=SignalWarning,
+            category=SignalWarning,
             stacklevel=find_stack_level(),
         )
 
@@ -323,7 +323,7 @@ def _check_wn(btype, freq, nyq):
             f"The frequency specified for the {btype} pass filter is too "
             "low to be handled by a digital filter (must be non-negative). "
             f"It has been set to eps: {freq}.",
-            categoty=SignalWarning,
+            category=SignalWarning,
             stacklevel=find_stack_level(),
         )
 
@@ -420,7 +420,7 @@ def butterworth(
                 "Signals are returned unfiltered because band-pass critical "
                 "frequencies are equal. Please check that inputs for "
                 "sampling_rate, low_pass, and high_pass are valid.",
-                categoty=SignalWarning,
+                category=SignalWarning,
                 stacklevel=find_stack_level(),
             )
             return signals.copy() if copy else signals
@@ -944,7 +944,7 @@ def create_cosine_drift(high_pass, frame_times):
             "and saturate the design matrix. "
             "You may want to reduce the high_pass value."
             f"The provided value is {high_pass} Hz",
-            categoty=SignalWarning,
+            category=SignalWarning,
             stacklevel=find_stack_level(),
         )
     order = np.minimum(
@@ -980,7 +980,7 @@ def _check_cosine_by_user(confounds, cosine_drift):
         warnings.warn(
             "Cosine filter was not created. The time series might be too "
             "short or the high pass filter is not suitable for the data.",
-            categoty=SignalWarning,
+            category=SignalWarning,
             stacklevel=find_stack_level(),
         )
         return confounds
@@ -999,7 +999,7 @@ def _check_cosine_by_user(confounds, cosine_drift):
         warnings.warn(
             "Cosine filter(s) exist in user supplied confounds."
             "Use user supplied regressors only.",
-            categoty=SignalWarning,
+            category=SignalWarning,
             stacklevel=find_stack_level(),
         )
         return confounds
@@ -1180,7 +1180,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
             warnings.warn(
                 "No filter type selected but cutoff frequency provided."
                 "Will not perform filtering.",
-                categoty=SignalWarning,
+                category=SignalWarning,
                 stacklevel=find_stack_level(),
             )
         return False
@@ -1237,6 +1237,6 @@ def _check_signal_parameters(detrend, standardize_confounds):
             "If confounds were not standardized or demeaned "
             "before passing to signal.clean signal "
             "will not be correctly cleaned. ",
-            categoty=SignalWarning,
+            category=SignalWarning,
             stacklevel=find_stack_level(),
         )
