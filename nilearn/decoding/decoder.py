@@ -619,6 +619,11 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         raise NotImplementedError()
 
     def _n_problems(self) -> int:
+        """Define the number problems to solve.
+
+        In case of classification this
+        number corresponds to the number of binary problems to solve.
+        """
         if len(self._get_classes()) > 2:
             return len(self._get_classes())
         else:
@@ -683,9 +688,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.cv_ = list(cv_object.split(X, y, groups=groups))
 
         y = self._set_classes(y)
-        # Define the number problems to solve.
-        # In case of classification this
-        # number corresponds to the number of binary problems to solve.
         n_problems = self._n_problems()
 
         # Check if the size of the mask image and the number of features allow
@@ -787,8 +789,9 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 classes_, self.coef_, self.std_coef_
             )
 
-            # TODO try to extract
-            if is_classifier(self) and (self.n_classes_ == 2):
+            # Note this will only apply to classifiers
+            # as regressors only have 1 problem
+            if self._n_problems == 2:
                 self.coef_ = self.coef_[0, :][np.newaxis, :]
                 self.intercept_ = self.intercept_[0]
 
@@ -803,7 +806,10 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                     for class_index in classes_
                 ]
             )
-            if is_classifier(self) and (self.n_classes_ == 2):
+
+            # Note this will only apply to classifiers
+            # as regressors only have 1 problem
+            if self._n_problems == 2:
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
         return self

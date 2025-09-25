@@ -766,6 +766,11 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         return loss
 
     def _n_problems(self):
+        """Define the number problems to solve.
+
+        In case of classification this
+        number corresponds to the number of binary problems to solve.
+        """
         if len(self._get_classes()) > 2:
             return len(self._get_classes())
         else:
