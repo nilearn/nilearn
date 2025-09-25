@@ -285,7 +285,7 @@ def threshold_stats_img(
 
     cluster_threshold : :obj:`float`, default=0
         cluster size threshold. In the returned thresholded map,
-        sets of connected voxels (`clusters`) with size smaller
+        sets of connected voxels / vertices (`clusters`) with size smaller
         than this number will be removed.
 
     two_sided : :obj:`bool`, default=True
