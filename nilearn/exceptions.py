@@ -39,6 +39,13 @@ class MaskWarning(UserWarning):
     """
 
 
+class SignalWarning(UserWarning):
+    """Custom warning related to signal and filtering.
+
+    .. versionadded:: 0.13.0dev
+    """
+
+
 class DimensionError(TypeError):
     """Custom error type for dimension checking.
 
