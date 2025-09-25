@@ -55,7 +55,7 @@ clean:
 	-rm -rf modules/description/
 
 glm_reports:
-	python visual_testing/reporter_visual_inspection_suite.py full
+	python visual_testing/reporter_visual_inspection_suite.py partial
 
 sym_links_datasets:
 	# copy datasets RST from nilearn package to doc folder
