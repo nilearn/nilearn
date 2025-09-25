@@ -2,14 +2,11 @@
 
 import abc
 import contextlib
-import itertools
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
-from pathlib import Path
 
 import numpy as np
-import pandas as pd
 from joblib import Memory
 from sklearn.base import (
     BaseEstimator,
@@ -19,10 +16,6 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
 
 from nilearn._utils import logger
-from nilearn._utils.bids import (
-    generate_atlas_look_up_table,
-    sanitize_look_up_table,
-)
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
@@ -32,7 +25,6 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.exceptions import NotImplementedWarning
@@ -43,7 +35,6 @@ from nilearn.image import (
     resample_img,
     smooth_img,
 )
-from nilearn.image.image import get_indices_from_image
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
@@ -121,8 +112,6 @@ def filter_and_extract(
             target_shape=target_shape,
             target_affine=target_affine,
             copy=copy,
-            copy_header=True,
-            force_resample=False,  # set to True in 0.13.0
         )
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
@@ -180,42 +169,6 @@ def filter_and_extract(
         region_signals = region_signals.squeeze()
 
     return region_signals, aux
-
-
-def prepare_confounds_multimaskers(masker, imgs_list, confounds):
-    """Check and prepare confounds for multimaskers."""
-    if confounds is None:
-        confounds = list(itertools.repeat(None, len(imgs_list)))
-    elif len(confounds) != len(imgs_list):
-        raise ValueError(
-            f"number of confounds ({len(confounds)}) unequal to "
-            f"number of images ({len(imgs_list)})."
-        )
-
-    if masker.high_variance_confounds:
-        for i, img in enumerate(imgs_list):
-            hv_confounds = masker._cache(high_variance_confounds)(img)
-
-            if confounds[i] is None:
-                confounds[i] = hv_confounds
-            elif isinstance(confounds[i], list):
-                confounds[i] += hv_confounds
-            elif isinstance(confounds[i], np.ndarray):
-                confounds[i] = np.hstack([confounds[i], hv_confounds])
-            elif isinstance(confounds[i], pd.DataFrame):
-                confounds[i] = np.hstack(
-                    [confounds[i].to_numpy(), hv_confounds]
-                )
-            elif isinstance(confounds[i], (str, Path)):
-                c = csv_to_array(confounds[i])
-                if np.isnan(c.flat[0]):
-                    # There may be a header
-                    c = csv_to_array(confounds[i], skip_header=1)
-                confounds[i] = np.hstack([c, hv_confounds])
-            else:
-                confounds[i].append(hv_confounds)
-
-    return confounds
 
 
 def mask_logger(step, img=None, verbose=0):
@@ -512,18 +465,6 @@ class BaseMasker(
 
         return signals
 
-    def _sanitize_cleaning_parameters(self):
-        """Make sure that cleaning parameters are passed via clean_args.
-
-        TODO (nilearn >= 0.13.0) remove
-        """
-        if hasattr(self, "clean_kwargs"):
-            self.clean_kwargs_ = {
-                k[7:]: v
-                for k, v in self.clean_kwargs.items()
-                if k.startswith("clean__")
-            }
-
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Class from which all surface maskers should inherit."""
@@ -749,80 +690,67 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         return signals
 
+    def _generate_figure(
+        self,
+        img=None,
+        bg_map=None,
+        roi_map=None,
+        vmin=None,
+        vmax=None,
+        threshold=None,
+    ):
+        """Create figure for all reports."""
+        import matplotlib.pyplot as plt
 
-def generate_lut(labels_img, background_label, lut=None, labels=None):
-    """Generate a look up table if one was not provided.
+        from nilearn.plotting import plot_surf, plot_surf_contours
 
-    Also sanitize its content if necessary.
+        hemi_view = {
+            "left": ["lateral", "medial"],
+            "right": ["lateral", "medial"],
+            "both": ["anterior", "posterior"],
+        }
 
-    Parameters
-    ----------
-    labels_img : Nifti1Image | SurfaceImage
-
-    background_label : int | float
-
-    lut : Optional[str, Path, pd.DataFrame]
-
-    labels : Optional[list[str]]
-    """
-    labels_present = get_indices_from_image(labels_img)
-    add_background_to_lut = (
-        None if background_label not in labels_present else background_label
-    )
-
-    if lut is not None:
-        if isinstance(lut, (str, Path)):
-            lut = pd.read_table(lut, sep=None, engine="python")
-
-    elif labels:
-        lut = generate_atlas_look_up_table(
-            function=None,
-            name=deepcopy(labels),
-            index=labels_img,
-            background_label=add_background_to_lut,
+        fig, axes = plt.subplots(
+            len(next(iter(hemi_view.values()))),
+            len(hemi_view.keys()),
+            subplot_kw={"projection": "3d"},
+            figsize=(20, 20),
+            layout="constrained",
         )
 
-    else:
-        lut = generate_atlas_look_up_table(
-            function=None,
-            index=labels_img,
-            background_label=add_background_to_lut,
-        )
+        axes = np.atleast_2d(axes)
 
-    assert isinstance(lut, pd.DataFrame)
+        for j, (hemi, views) in enumerate(hemi_view.items()):
+            for i, view in enumerate(views):
+                if img:
+                    plot_surf(
+                        surf_map=img,
+                        bg_map=bg_map,
+                        hemi=hemi,
+                        view=view,
+                        figure=fig,
+                        axes=axes[i, j],
+                        cmap=self.cmap,
+                        vmin=vmin,
+                        vmax=vmax,
+                        threshold=threshold,
+                        bg_on_data=True,
+                    )
 
-    # passed labels or lut may not include background label
-    # because of poor data standardization
-    # so we need to update the lut accordingly
-    mask_background_index = lut["index"] == background_label
-    if (mask_background_index).any():
-        # Ensure background is the first row with name "Background"
-        # Shift the 'name' column down by one
-        # if background row was not named properly
-        first_rows = lut[mask_background_index]
-        other_rows = lut[~mask_background_index]
-        lut = pd.concat([first_rows, other_rows], ignore_index=True)
+                if roi_map:
+                    colors = self._set_contour_colors(self)
 
-        mask_background_name = lut["name"] == "Background"
-        if not (mask_background_name).any():
-            lut["name"] = lut["name"].shift(1)
+                    plot_surf_contours(
+                        roi_map=roi_map,
+                        hemi=hemi,
+                        view=view,
+                        figure=fig,
+                        axes=axes[i, j],
+                        colors=colors,
+                    )
 
-        lut.loc[0, "name"] = "Background"
+        return fig
 
-    else:
-        first_row = {
-            "name": "Background",
-            "index": background_label,
-            "color": "FFFFFF",
-        }
-        first_row = {
-            col: first_row[col] if col in lut else np.nan
-            for col in lut.columns
-        }
-        lut = pd.concat([pd.DataFrame([first_row]), lut], ignore_index=True)
-
-    return (
-        sanitize_look_up_table(lut, atlas=labels_img)
-        .sort_values("index")
-        .reset_index(drop=True)
-    )
+    def _set_contour_colors(self, hemi):
+        """Set the colors for the contours in the report."""
+        del hemi

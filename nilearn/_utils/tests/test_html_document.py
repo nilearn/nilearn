@@ -46,14 +46,6 @@ def test_open_in_browser_timeout(monkeypatch):
         doc.open_in_browser()
 
 
-@pytest.mark.parametrize("request_mocker", [None])
-def test_open_in_browser_deprecation_warning(monkeypatch):
-    monkeypatch.setattr(webbrowser, "open", Get())
-    doc = html_document.HTMLDocument("hello")
-    with pytest.deprecated_call(match="temp_file_lifetime"):
-        doc.open_in_browser(temp_file_lifetime=30.0)
-
-
 def test_open_in_browser_file(tmp_path, monkeypatch):
     opener = Mock()
     monkeypatch.setattr(webbrowser, "open", opener)

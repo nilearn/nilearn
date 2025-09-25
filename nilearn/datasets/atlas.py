@@ -265,14 +265,6 @@ def fetch_atlas_craddock_2012(
         - %(template)s
 
 
-    Warns
-    -----
-    DeprecationWarning
-        If an homogeneity input is provided, the current behavior
-        (returning multiple maps) is deprecated.
-        Starting in version 0.13, one map will be returned in a 'maps' dict key
-        depending on the homogeneity and grp_mean value.
-
     References
     ----------
     .. footbibliography::
@@ -806,7 +798,7 @@ def _get_atlas_data_and_labels(
         verbose=verbose,
     )
     # Reorder image to have positive affine diagonal
-    atlas_img = reorder_img(atlas_file, copy_header=True)
+    atlas_img = reorder_img(atlas_file)
     names = {0: "Background"}
 
     all_labels = ElementTree.parse(label_file).findall(".//label")

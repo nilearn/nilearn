@@ -514,8 +514,8 @@ seed position is used.
   * :ref:`sphx_glr_auto_examples_03_connectivity_plot_sphere_based_connectome.py`
 
 
-Extraction of signals from surface images\  :class:`SurfaceMasker`, :class:`SurfaceLabelsMasker`, :class:`SurfaceMapsMasker`
-============================================================================================================================
+Extraction of signals from surface images\  :class:`SurfaceMasker`, :class:`SurfaceLabelsMasker`, :class:`SurfaceMapsMasker`, :class:`MultiSurfaceMasker`
+=========================================================================================================================================================
 
 The purpose of :class:`SurfaceMasker`, :class:`SurfaceLabelsMasker`, :class:`SurfaceMapsMasker`
 is to mirror the capabilities of
@@ -524,11 +524,23 @@ but to extract data from :class:`~nilearn.surface.SurfaceImage`.
 
 They can perform data extraction from 1D surface data (n_vertices),
 2D surface data (n_vertices x samples)
-as well as list of 1D or 2D surface data with the same underlying mesh.
+or list of 1D or 2D surface data with the same underlying mesh.
 
 .. tip::
     Surface masker objects can transform both 1D, 2D,
+    as well as list of 1D surface image objects.
+
+    - transforming a 1D image (n_vertices,) produces a 1D array,
+    - transforming a 2D image (n_vertices, samples) produces a 2D array,
+    - transforming a list of ``length==n`` of 1D image (n_vertices,) produces a 2D array (n_vertices, n)
+
+    Multi surface masker objects can transform both 1D, 2D,
     as well as list of 1D or 2D surface image objects.
+
+    - transforming a 1D image (n_vertices,) produces a 1D array,
+    - transforming a 2D image (n_vertices, samples) produces a 2D array,
+    - transforming a list of ``length==n`` of images (n_vertices,) produces a list of ``length==n`` of arrays where the dimension of each array matches that of the input image
+
     Transforming a 1D image produces a 1D (features,) array.
     All other input will produce a 1D (samples, features) array..
 

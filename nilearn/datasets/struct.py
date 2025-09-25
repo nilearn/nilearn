@@ -221,9 +221,7 @@ def load_mni152_template(resolution=None):
     # than 1
     if resolution != 1:
         new_brain_template = resampling.resample_img(
-            new_brain_template,
-            np.eye(3) * resolution,
-            copy_header=True,
+            new_brain_template, np.eye(3) * resolution
         )
 
     return new_brain_template
@@ -279,9 +277,7 @@ def load_mni152_gm_template(resolution=None):
     # than 1
     if resolution != 1:
         new_gm_template = resampling.resample_img(
-            new_gm_template,
-            np.eye(3) * resolution,
-            copy_header=True,
+            new_gm_template, np.eye(3) * resolution
         )
 
     return new_gm_template
@@ -338,9 +334,7 @@ def load_mni152_wm_template(resolution=None):
     # than 1
     if resolution != 1:
         new_wm_template = resampling.resample_img(
-            new_wm_template,
-            np.eye(3) * resolution,
-            copy_header=True,
+            new_wm_template, np.eye(3) * resolution
         )
 
     return new_wm_template

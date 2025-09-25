@@ -1,16 +1,17 @@
 """Handle plotting of surfaces for html rendering."""
 
 import json
-from warnings import warn
 
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
-from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg_3d
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import (
@@ -36,6 +37,8 @@ from nilearn.surface.surface import (
     combine_hemispheres_meshes,
     get_data,
 )
+
+ALLOWED_VIEWS = {"left", "right", "front", "back", "top", "bottom"}
 
 
 class SurfaceView(HTMLDocument):  # noqa: D101
@@ -199,41 +202,6 @@ def _full_brain_info(
     return info
 
 
-def full_brain_info(
-    volume_img,
-    mesh="fsaverage5",
-    threshold=None,
-    cmap=DEFAULT_DIVERGING_CMAP,
-    black_bg=False,
-    symmetric_cmap=True,
-    bg_on_data=False,
-    vmax=None,
-    vmin=None,
-    vol_to_surf_kwargs=None,
-):
-    """Deprecate public function. See _full_brain_info."""
-    warn(
-        category=DeprecationWarning,
-        message="full_brain_info is a private function and is renamed to "
-        "_full_brain_info. Using the deprecated name will raise an error "
-        "in release 0.13",
-        stacklevel=find_stack_level(),
-    )
-
-    return _full_brain_info(
-        volume_img,
-        mesh=mesh,
-        threshold=threshold,
-        cmap=cmap,
-        black_bg=black_bg,
-        symmetric_cmap=symmetric_cmap,
-        bg_on_data=bg_on_data,
-        vmax=vmax,
-        vmin=vmin,
-        vol_to_surf_kwargs=vol_to_surf_kwargs,
-    )
-
-
 def _fill_html_template(info, embed_js=True):
     as_json = json.dumps(info)
     as_html = get_html_template("surface_plot_template.html").safe_substitute(
@@ -262,6 +230,7 @@ def view_img_on_surf(
     colorbar_fontsize=25,
     title=None,
     title_fontsize=25,
+    view="left",
     vol_to_surf_kwargs=None,
 ):
     """Insert a surface plot of a statistical map into an HTML page.
@@ -327,6 +296,10 @@ def view_img_on_surf(
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
+    view : one of {"left", "right", "front", "back", "top", "bottom"}, \
+      default="left"
+        Default view used for displaying the surface.
+
     vol_to_surf_kwargs : :obj:`dict`, default=None
         Dictionary of keyword arguments that are passed on to
         :func:`nilearn.surface.vol_to_surf` when extracting a surface from
@@ -352,7 +325,10 @@ def view_img_on_surf(
     """
     if vol_to_surf_kwargs is None:
         vol_to_surf_kwargs = {}
+
     stat_map_img = check_niimg_3d(stat_map_img)
+    check_parameter_in_allowed(view, ALLOWED_VIEWS, "view")
+
     info = _full_brain_info(
         volume_img=stat_map_img,
         mesh=surf_mesh,
@@ -370,6 +346,7 @@ def view_img_on_surf(
     info["cbar_fontsize"] = colorbar_fontsize
     info["title"] = title
     info["title_fontsize"] = title_fontsize
+    info["view"] = view
     return _fill_html_template(info, embed_js=True)
 
 
@@ -391,6 +368,7 @@ def view_surf(
     colorbar_fontsize=25,
     title=None,
     title_fontsize=25,
+    view="left",
 ):
     """Insert a surface plot of a surface map into an HTML page.
 
@@ -470,6 +448,10 @@ def view_surf(
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
+    view : one of {"left", "right", "front", "back", "top", "bottom"}, \
+      default="left"
+        Default view used for displaying the surface.
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -488,6 +470,7 @@ def view_surf(
     surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map, map_var_name="surf_map"
     )
+    check_parameter_in_allowed(view, ALLOWED_VIEWS, "view")
 
     surf_mesh = load_surf_mesh(surf_mesh)
     if surf_map is None:
@@ -513,4 +496,5 @@ def view_surf(
     info["cbar_fontsize"] = colorbar_fontsize
     info["title"] = title
     info["title_fontsize"] = title_fontsize
+    info["view"] = view
     return _fill_html_template(info, embed_js=True)

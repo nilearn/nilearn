@@ -11,12 +11,15 @@ from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import check_copy_header, stringify_path
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
 from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image.image import copy_img, crop_img, new_img_like
 
 ###############################################################################
@@ -345,7 +348,7 @@ def resample_img(
     clip=True,
     fill_value=0,
     force_resample=True,
-    copy_header=False,
+    copy_header=True,
 ):
     """Resample a Niimg-like object.
 
@@ -387,18 +390,14 @@ def resample_img(
     force_resample : :obj:`bool`, default=True
         False is intended for testing,
         this prevents the use of a padding optimization.
-        Will be set to ``True`` if ``None`` is passed.
 
         .. versionchanged:: 0.13.0dev
 
             Default changed to True.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -451,11 +450,7 @@ def resample_img(
     homogeneous.
 
     """
-    if force_resample is None:
-        force_resample = True
-    # TODO (nilearn >= 0.13.0) remove this warning
-    check_copy_header(copy_header)
-
+    check_params(locals())
     _check_resample_img_inputs(target_shape, target_affine, interpolation)
 
     img = stringify_path(img)
@@ -572,9 +567,7 @@ def resample_img(
 
         # ... special case: can be solved with padding alone
         # crop source image and keep N voxels offset before/after volume
-        cropped_img, offsets = crop_img(
-            img, pad=False, return_offset=True, copy_header=True
-        )
+        cropped_img, offsets = crop_img(img, pad=False, return_offset=True)
 
         # TODO: flip axes that are flipped
         # TODO: un-shuffle permuted dimensions
@@ -725,6 +718,7 @@ def _get_resampled_data_dtype(data, interpolation, A):
     return resampled_data_dtype
 
 
+@fill_doc
 def resample_to_img(
     source_img,
     target_img,
@@ -733,8 +727,8 @@ def resample_to_img(
     order="F",
     clip=False,
     fill_value=0,
-    force_resample=None,
-    copy_header=False,
+    force_resample=True,
+    copy_header=True,
 ):
     """Resample a Niimg-like source image on a target Niimg-like image.
 
@@ -773,18 +767,13 @@ def resample_to_img(
     fill_value : :obj:`float`, default=0
         Use a fill value for points outside of input volume.
 
-    force_resample : :obj:`bool`, default=None
+    force_resample : :obj:`bool`, default=True
         False is intended for testing,
         this prevents the use of a padding optimization.
-        Will be set to ``False`` if ``None`` is passed.
-        The default value will be set to ``True`` for Nilearn >=0.13.0.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
 
     Returns
     -------
@@ -819,7 +808,8 @@ def resample_to_img(
     )
 
 
-def reorder_img(img, resample=None, copy_header=False):
+@fill_doc
+def reorder_img(img, resample=None, copy_header=True):
     """Return an image with the affine diagonal (by permuting axes).
 
     The orientation of the new image will be RAS (Right, Anterior, Superior).
@@ -840,16 +830,14 @@ def reorder_img(img, resample=None, copy_header=False):
         be passed as the 'interpolation' argument into
         resample_img.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+    %(copy_header)s
 
         .. versionadded:: 0.11.0
 
-        This parameter will be set to True by default in 0.13.0.
     """
     from .image import new_img_like
 
-    check_copy_header(copy_header)
+    check_params(locals())
     img = check_niimg(img)
     # The copy is needed in order not to modify the input img affine
     # see https://github.com/nilearn/nilearn/issues/325 for a concrete bug
@@ -866,10 +854,7 @@ def reorder_img(img, resample=None, copy_header=False):
         Q, R = np.linalg.qr(affine[:3, :3])
         target_affine = np.diag(np.abs(np.diag(R))[np.abs(Q).argmax(axis=1)])
         return resample_img(
-            img,
-            target_affine=target_affine,
-            interpolation=resample,
-            copy_header=True,
+            img, target_affine=target_affine, interpolation=resample
         )
 
     axis_numbers = np.argmax(np.abs(A), axis=0)

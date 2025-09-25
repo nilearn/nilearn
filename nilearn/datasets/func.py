@@ -22,7 +22,6 @@ from sklearn.utils import Bunch
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import remove_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
@@ -2578,7 +2577,7 @@ def patch_openneuro_dataset(file_list):
             if old_pattern in name:
                 new_name = name.replace(old_pattern, new_pattern)
                 if not Path(new_name).exists():
-                    Path(name).symlink_to(new_name)
+                    os.symlink(name, new_name)
 
 
 @fill_doc
@@ -2799,17 +2798,9 @@ def _download_spm_auditory_data(data_dir):
         return fetch_spm_auditory(data_dir=data_dir, data_name="")
 
 
-# (nilearn >= 0.13.0) remove subject_id
-@fill_doc
-@remove_parameters(
-    removed_params=["subject_id"],
-    reason="The spm_auditory dataset contains only one subject.",
-    end_version="0.13.0",
-)
 def fetch_spm_auditory(
     data_dir=None,
     data_name="spm_auditory",
-    subject_id=None,
     verbose=1,
 ):
     """Fetch :term:`SPM` auditory single-subject data.
@@ -2833,10 +2824,6 @@ def fetch_spm_auditory(
 
     data_name : :obj:`str`, default='spm_auditory'
         Name of the dataset.
-
-    subject_id : :obj:`str`, default=None
-        Indicates which subject to retrieve.
-        Will be removed in version ``0.13.0``.
 
     %(verbose)s
 
@@ -3018,18 +3005,10 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     return events
 
 
-# (nilearn >= 0.13.0) remove subject_id
-@fill_doc
-@remove_parameters(
-    removed_params=["subject_id"],
-    reason="The spm_multimodal_fmri dataset contains only one subject.",
-    end_version="0.13.0",
-)
 @fill_doc
 def fetch_spm_multimodal_fmri(
     data_dir=None,
     data_name="spm_multimodal_fmri",
-    subject_id=None,
     verbose=1,
 ):
     """Fetcher for Multi-modal Face Dataset.
@@ -3054,12 +3033,6 @@ def fetch_spm_multimodal_fmri(
 
     data_name : :obj:`str`, default='spm_multimodal_fmri'
         Name of the dataset.
-
-    subject_id : :obj:`str`, default=None
-
-        .. deprecated:: 0.12.0
-
-            Will be removed in version ``0.13.0``.
 
     %(verbose)s
 

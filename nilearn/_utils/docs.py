@@ -283,6 +283,14 @@ confounds : :obj:`list` of confounds, default=None
     Must be of same length than imgs.
 """
 
+# copy_header
+docdict["copy_header"] = """
+copy_header : :obj:`bool`, default=True
+    Indicated if the header of the reference image
+    should be used to create the new image.
+    Ignored for :obj:`~nilearn.surface.SurfaceImage`.
+"""
+
 # cut_coords
 docdict["cut_coords"] = """
 cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
@@ -612,6 +620,21 @@ low_pass : :obj:`float` or :obj:`int` or None, default=None
 docdict["lower_cutoff"] = """
 lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
+"""
+
+# mask_decomposition
+docdict["mask_decomposition"] = """
+mask : Niimg-like object,  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
+        :obj:`~nilearn.surface.SurfaceImage` or \
+        :obj:`~nilearn.maskers.MultiSurfaceMasker` object, or None \
+        default=None
+    Mask to be used on data.
+    If an instance of masker is passed,
+    then its mask will be used.
+    If no mask is given, for Nifti images,
+    it will be computed automatically by a MultiNiftiMasker
+    with default parameters;
+    for surface images, all the vertices will be used.
 """
 
 # masker_lut
@@ -1324,7 +1347,7 @@ maps_masker_ : instance of NiftiMapsMasker or SurfaceMapsMasker
     This masker was initialized with
     ``components_img_``, ``masker_.mask_img_``
     and is the masker used
-    when calliing transform and inverse_transform.
+    when calling transform and inverse_transform.
 
 mask_img_ : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
     See :ref:`extracting_data`.
@@ -1357,13 +1380,13 @@ components_img_ : 4D Nifti image \
     .. versionadded:: 0.4.1
 
 masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
-        :obj:`~nilearn.maskers.SurfaceMasker`
+        :obj:`~nilearn.maskers.MultiSurfaceMasker`
     Masker used to filter and mask data as first step.
     If :obj:`~nilearn.maskers.MultiNiftiMasker`
-    or :obj:`~nilearn.maskers.SurfaceMasker` is given in
+    or :obj:`~nilearn.maskers.MultiSurfaceMasker` is given in
     ``mask`` parameter, this is a copy of it.
     Otherwise, a masker is created using the value of ``mask`` and
-    other NiftiMasker/SurfaceMasker
+    other Masker
     related parameters as initialization.
 
 memory_ : joblib memory cache
@@ -1777,5 +1800,8 @@ def fill_doc(f):
     except (TypeError, ValueError, KeyError) as exp:
         funcname = f.__name__
         funcname = docstring.split("\n")[0] if funcname is None else funcname
-        raise RuntimeError(f"Error documenting {funcname}:\n{exp!s}")
+        raise RuntimeError(
+            f"Error documenting {funcname}:\n{exp!s}.\n"
+            "Did you forget to escape a character with an extra '%'"
+        )
     return f

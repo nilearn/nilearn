@@ -47,13 +47,15 @@ def _check_html(html_view, reports_requested=True, is_fit=True):
         html_view.width = "foo"
     assert html_view.width == WIDTH_DEFAULT
 
+    assert html_view._repr_html_() == html_view.body
+
     if reports_requested and is_fit:
         assert "<th>Parameter</th>" in str(html_view)
+
     if "Surface" in str(html_view):
         assert "data:image/png;base64," in str(html_view)
     else:
         assert "data:image/svg+xml;base64," in str(html_view)
-    assert html_view._repr_html_() == html_view.body
 
 
 @pytest.fixture
@@ -124,6 +126,7 @@ def test_nifti_maps_masker_report_maps_number_errors(
         masker.generate_report(displayed_maps)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("displayed_maps", [[1, 2], np.array([0, 1, 2])])
 def test_nifti_maps_masker_report_list_and_arrays_maps_number(
     niftimapsmasker_inputs, displayed_maps
@@ -147,6 +150,7 @@ def test_nifti_maps_masker_report_list_and_arrays_maps_number(
     assert html.body.count("<img") == len(displayed_maps)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("displayed_maps", [1, 3, 4, "all"])
 def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
     niftimapsmasker_inputs, displayed_maps
@@ -357,6 +361,7 @@ def test_nifti_labels_masker_report(
         )
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
 def test_nifti_labels_masker_report_cut_coords(
     masker_class, input_parameters, img_3d_rand_eye
