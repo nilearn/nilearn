@@ -765,10 +765,12 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             loss = "logistic"
         return loss
 
-    @abc.abstractmethod
     def _n_problems(self):
-        # implemented in mixin classes
-        raise NotImplementedError()
+        check_is_fitted(self)
+        if len(self._get_classes()) > 2:
+            return len(self._get_classes())
+        else:
+            return 1
 
     @abc.abstractmethod
     def _set_classes(self, y):
@@ -867,9 +869,10 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
             n_samples, _ = X.shape
             self.cv_ = [(np.arange(n_samples), [])]
 
-        # Define the number problems to solve. In case of classification this
-        # number corresponds to the number of binary problems to solve
         y = self._set_classes(y)
+        # Define the number problems to solve.
+        # In case of classification this
+        # number corresponds to the number of binary problems to solve.
         n_problems = self._n_problems()
 
         # standardize y
