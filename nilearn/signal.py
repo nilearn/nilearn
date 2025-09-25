@@ -637,7 +637,7 @@ def clean(
         information, sample_mask must be a list containing sets of indexes for
         each run.
 
-        .. versionadded:: 0.8.0
+        .. nilearn_versionadded:: 0.8.0
 
     %(t_r)s
         Default=2.5.
@@ -669,7 +669,7 @@ def clean(
         the signal data will be interpolated before filtering. Otherwise, they
         will be discarded from the band-pass filtering process.
 
-        .. versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0dev
             Default changed to False.
 
     kwargs : :obj:`dict`

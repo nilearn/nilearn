@@ -16,6 +16,9 @@ import re
 import sys
 from pathlib import Path
 
+from sphinx.domains import changeset
+from sphinx.locale import _
+
 from nilearn._version import __version__
 
 # ----------------------------------------------------------------------------
@@ -456,7 +459,57 @@ def touch_example_backreferences(
         examples_path.touch()
 
 
+# adapting https://github.com/sphinx-doc/sphinx/blob/master/sphinx/domains/changeset.py
+changeset.versionlabels["nilearn_versionadded"] = _("Added in Nilearn %s")
+changeset.versionlabels["nilearn_versionchanged"] = _("Changed in Nilearn %s")
+changeset.versionlabels["nilearn_deprecated"] = _(
+    "Deprecated since Nilearn %s"
+)
+changeset.versionlabels["nilearn_versionremoved"] = _("Removed in Nilearn %s")
+changeset.versionlabel_classes["nilearn_versionadded"] = "added"
+changeset.versionlabel_classes["nilearn_versionchanged"] = "changed"
+changeset.versionlabel_classes["nilearn_deprecated"] = "deprecated"
+changeset.versionlabel_classes["nilearn_versionremoved"] = "removed"
+
+
+class NilearnVersionAdded(changeset.VersionChange):
+    """Replace sphinx versionadded directive to add name of project."""
+
+    def run(self):
+        """Run directive."""
+        return super().run()
+
+
+class NilearnVersionChanged(changeset.VersionChange):
+    """Replace sphinx versionchanged directive to add name of project."""
+
+    def run(self):
+        """Run directive."""
+        return super().run()
+
+
+class NilearnVersionDeprecated(changeset.VersionChange):
+    """Replace sphinx deprecated directive to add name of project."""
+
+    def run(self):
+        """Run directive."""
+        return super().run()
+
+
+class NilearnVersionRemoved(changeset.VersionChange):
+    """Replace sphinx versionremoved directive to add name of project."""
+
+    def run(self):
+        """Run directive."""
+        return super().run()
+
+
 def setup(app):
+    app.add_directive("nilearn_versionadded", NilearnVersionAdded)
+    app.add_directive("nilearn_versionchanged", NilearnVersionChanged)
+    app.add_directive("nilearn_deprecated", NilearnVersionDeprecated)
+    app.add_directive("nilearn_versionremoved", NilearnVersionRemoved)
+
     app.connect("autodoc-process-docstring", touch_example_backreferences)
 
 

@@ -267,7 +267,7 @@ class BaseMasker(
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         copy : :obj:`bool`, default=True
             Indicates whether a copy is returned or not.
@@ -355,7 +355,7 @@ class BaseMasker(
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Returns
         -------
@@ -401,7 +401,7 @@ class BaseMasker(
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Returns
         -------

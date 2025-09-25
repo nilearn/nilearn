@@ -124,7 +124,7 @@ def generate_regions_ts(
         If True, creates negative and positive valued regions randomly; all
         generated region values are positive otherwise.
 
-        .. versionadded:: 0.11.1
+        .. nilearn_versionadded:: 0.11.1
 
     Returns
     -------
@@ -200,7 +200,7 @@ def generate_maps(
         If True, creates negative and positive valued regions randomly; all
         generated region values are positive otherwise.
 
-        .. versionadded:: 0.11.1
+        .. nilearn_versionadded:: 0.11.1
 
     Returns
     -------
