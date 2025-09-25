@@ -112,6 +112,7 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
     For more information
     see the :ref:`dataset description <icbm_152_template>`.
 
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -553,6 +554,7 @@ def fetch_icbm152_brain_gm_mask(
     For more information
     see the :ref:`dataset description <icbm_152_template>`.
 
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -671,6 +673,7 @@ def fetch_oasis_vbm(
     For more information
     see the :ref:`dataset description <oasis_maps>`.
 
+    %(fetcher_note)s
     """
     check_params(locals())
 

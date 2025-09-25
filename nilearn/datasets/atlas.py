@@ -97,6 +97,8 @@ def fetch_atlas_difumo(
     - 512: https://osf.io/9b76y/download
     - 1024: https://osf.io/34792/download
 
+    %(fetcher_note)s
+
     Parameters
     ----------
     dimension : :obj:`int`, default=64
@@ -1099,6 +1101,7 @@ def fetch_atlas_smith_2009(
     For more information about this dataset's structure:
     https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
 
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -1231,6 +1234,7 @@ def fetch_atlas_yeo_2011(
     -----
     License: unknown.
 
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -1417,6 +1421,7 @@ def fetch_atlas_aal(
     -----
     License: unknown.
 
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -1571,6 +1576,7 @@ def fetch_atlas_basc_multiscale_2015(
     For more information on this dataset's structure, see
     https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615
 
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -1837,6 +1843,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
     See https://trendscenter.org/data/ for more information
     on this dataset.
 
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -2299,6 +2306,7 @@ def fetch_atlas_schaefer_2018(
 
     License: MIT.
 
+    %(fetcher_note)s
     """
     check_params(locals())
 
