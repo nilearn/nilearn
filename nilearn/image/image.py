@@ -993,11 +993,11 @@ def threshold_img(
         within the range of ``"0%%"`` to ``"100%%"``.
 
     cluster_threshold : :obj:`float`, default=0
-        Cluster size threshold, in voxels. In the returned thresholded map,
-        sets of connected voxels (``clusters``) with size smaller than this
-        number will be removed.
-
-        Not implemented for SurfaceImage.
+        Cluster size threshold, in voxels / vertices.
+        In the returned thresholded map,
+        sets of connected voxels / vertices (``clusters``)
+        with size smaller than this number
+        will be removed.
 
         .. versionadded:: 0.9.0
 
