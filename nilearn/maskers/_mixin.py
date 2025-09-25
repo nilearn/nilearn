@@ -135,8 +135,6 @@ class _LabelMaskerMixin:
         The region id corresponding to ``region_signal[:,i]``
         is ``region_ids_[i]``.
         ``region_ids_['background']`` is the background label.
-
-        .. versionadded:: 0.10.3
         """
         check_is_fitted(self)
 
