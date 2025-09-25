@@ -619,7 +619,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         raise NotImplementedError()
 
     def _n_problems(self) -> int:
-        check_is_fitted(self)
         if len(self._get_classes()) > 2:
             return len(self._get_classes())
         else:
@@ -1213,9 +1212,6 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
     classes_ : ndarray of labels (`n_classes_`)
         Labels of the classes
 
-    n_classes_ : int
-        number of classes
-
     See Also
     --------
     nilearn.decoding.DecoderRegressor: regression strategies for Neuro-imaging,
@@ -1721,9 +1717,6 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
 
     classes_ : ndarray of labels (`n_classes_`)
         Labels of the classes
-
-    n_classes_ : int
-        number of classes
 
     References
     ----------

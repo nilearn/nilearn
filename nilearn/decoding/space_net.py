@@ -766,7 +766,6 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         return loss
 
     def _n_problems(self):
-        check_is_fitted(self)
         if len(self._get_classes()) > 2:
             return len(self._get_classes())
         else:
@@ -1098,9 +1097,6 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     classes_ : ndarray of labels (`n_classes_`)
         Labels of the classes
-
-    n_classes_ : int
-        Number of classes
 
     See Also
     --------

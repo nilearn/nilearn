@@ -43,7 +43,6 @@ class _ClassifierMixin:
         return y
 
     def _get_classes(self):
-        check_is_fitted(self)
         return self.classes_
 
     @property
@@ -81,5 +80,4 @@ class _RegressorMixin:
         return y[:, np.newaxis]
 
     def _get_classes(self):
-        check_is_fitted(self)
         return self._classes_
