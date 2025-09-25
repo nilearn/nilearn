@@ -1135,7 +1135,7 @@ def threshold_img(
                 )
                 # exclude only labels with size < min_size
                 exclude_labels = set(
-                    clusters.loc[clusters["size"] < cluster_threshold, "label"]
+                    clusters.loc[clusters["size"] < cluster_threshold, "index"]
                 )
                 exclude = np.isin(labels, list(exclude_labels))
                 img_data.data.parts[hemi][exclude] = 0

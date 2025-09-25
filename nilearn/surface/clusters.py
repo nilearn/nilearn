@@ -76,8 +76,13 @@ def find_surface_clusters(mesh, mask) -> tuple[pd.DataFrame, np.ndarray]:
     Returns
     -------
     clusters : pandas.DataFrame
+        A look up table
+        that should be BIDS friendly
+        (resemble the look up table used for discrete segmentation).
+
         One row per cluster with:
-          - 'label': cluster ID (1..n_clusters)
+          - 'name': cluster name
+          - 'index': cluster ID (1..n_clusters)
           - 'size': number of vertices in the cluster
 
     labels : np.ndarray of shape (n_vertices,)
@@ -102,6 +107,8 @@ def find_surface_clusters(mesh, mask) -> tuple[pd.DataFrame, np.ndarray]:
     labels[mask] = labels_sub + 1
 
     unique, counts = np.unique(labels[labels > 0], return_counts=True)
-    clusters = pd.DataFrame({"label": unique, "size": counts})
+    clusters = pd.DataFrame(
+        {"name": [str(x) for x in unique], "index": unique, "size": counts}
+    )
 
     return clusters, labels
