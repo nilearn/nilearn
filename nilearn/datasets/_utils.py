@@ -916,3 +916,4 @@ def tree(path, pattern=None, dictionary=False):
     if len(files) > 0:
         dirs["."] = files
     return dirs
+

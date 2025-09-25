@@ -60,16 +60,8 @@ def fetch_haxby(
 ):
     """Download and loads complete haxby dataset.
 
-    Notes
-    -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
 
 
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
 
     See :footcite:t:`Haxby2001`.
 
@@ -117,6 +109,7 @@ def fetch_haxby(
 
     Notes
     -----
+
     PyMVPA provides a tutorial making use of this dataset:
     http://www.pymvpa.org/tutorial.html
 
@@ -129,6 +122,7 @@ def fetch_haxby(
     Run 8 in subject 5 does not contain any task labels.
     The anatomical image for subject 6 is unavailable.
 
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -288,14 +282,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
 
     Notes
     -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
+    %(fetcher_note)s
 
     See :footcite:t:`ADHDdataset`.
 
@@ -457,14 +444,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 
     Notes
     -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
+    %(fetcher_note)s
 
     See :footcite:t:`Miyawaki2008`.
 
@@ -504,6 +484,7 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     <https://bicr.atr.jp//dni/en/downloads/\
     fmri-data-set-for-visual-image-reconstruction/>`_
 
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -648,14 +629,7 @@ def fetch_localizer_contrasts(
 
     Notes
     -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
+    %(fetcher_note)s
 
     You may cite :footcite:t:`Papadopoulos-Orfanos2017`
     when using this dataset.
@@ -990,16 +964,6 @@ def _is_valid_path(path, index, verbose):
 def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, verbose=1):
     """Fetch calculation task contrast maps from the localizer.
 
-    Notes
-    -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
 
     Parameters
     ----------
@@ -1028,6 +992,7 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, verbose=1):
     nilearn.datasets.fetch_localizer_button_task
     nilearn.datasets.fetch_localizer_contrasts
 
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -1049,16 +1014,6 @@ def fetch_localizer_button_task(data_dir=None, verbose=1):
     """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
-    Notes
-    -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
 
     Parameters
     ----------
@@ -1086,6 +1041,7 @@ def fetch_localizer_button_task(data_dir=None, verbose=1):
     nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_contrasts
 
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -1125,16 +1081,6 @@ def fetch_abide_pcp(
     version of ABIDE provided by the preprocess connectome projects (PCP).
     See :footcite:t:`Nielsen2013`.
 
-    Notes
-    -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
 
     Parameters
     ----------
@@ -1270,6 +1216,8 @@ def fetch_abide_pcp(
     -----
     Code and description of preprocessing pipelines are provided on the
     `PCP website <http://preprocessed-connectomes-project.org/>`_.
+
+    %(fetcher_note)s
 
     References
     ----------
@@ -1463,14 +1411,7 @@ def fetch_mixed_gambles(
 
     Notes
     -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
+    %(fetcher_note)s
 
     Parameters
     ----------
@@ -3174,14 +3115,8 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
     Notes
     -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
+    %(fetcher_note)s
 
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
 
     Parameters
     ----------
@@ -3204,6 +3139,8 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information
     see the :ref:`dataset description <fiac_dataset>`.
 
