@@ -35,9 +35,10 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     instance : object, instance of BaseEstimator
         The object that gives us the values of the parameters
 
-    masker_type : {"multi_nii", "nii", "surface"}, default="mutli_nii"
-        Indicates whether to return a MultiNiftiMasker, NiftiMasker, or a
-        SurfaceMasker.
+    masker_type : {"multi_nii", "nii", "surface", "multi_surface"}, \
+                  default="mutli_nii"
+        Indicates whether to return a MultiNiftiMasker, NiftiMasker,
+        SurfaceMasker, or a MultiSurfaceMasker.
 
     ignore : None or list of strings
         Names of the parameters of the estimator that should not be
