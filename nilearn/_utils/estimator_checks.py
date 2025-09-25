@@ -72,13 +72,13 @@ from nilearn.conftest import (
     _img_4d_rand_eye,
     _img_4d_rand_eye_medium,
     _img_mask_mni,
-    _make_mesh,
     _make_surface_img,
     _make_surface_img_and_design,
     _make_surface_mask,
     _rng,
     _shape_3d_default,
     _shape_3d_large,
+    _surf_img_1d,
     _surf_mask_1d,
 )
 from nilearn.connectome import GroupSparseCovariance, GroupSparseCovarianceCV
@@ -102,6 +102,7 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceLabelsMasker,
     SurfaceMapsMasker,
     SurfaceMasker,
 )
@@ -620,11 +621,31 @@ def nilearn_check_generator(estimator: BaseEstimator):
             # TODO enforce for other maskers
             yield (clone(estimator), check_masker_shelving)
 
+        yield (clone(estimator), check_masker_clean)
+        yield (clone(estimator), check_masker_detrending)
+
         if not is_multimasker(estimator):
-            yield (clone(estimator), check_masker_clean)
-            yield (clone(estimator), check_masker_detrending)
             yield (clone(estimator), check_masker_transformer_sample_mask)
             yield (clone(estimator), check_masker_with_confounds)
+
+        else:
+            yield (
+                clone(estimator),
+                check_multimasker_generate_report,
+            )
+            yield (
+                clone(estimator),
+                check_multimasker_transformer_high_variance_confounds,
+            )
+            yield (
+                clone(estimator),
+                check_multimasker_transformer_sample_mask,
+            )
+            yield (clone(estimator), check_multimasker_with_confounds)
+
+            if isinstance(estimator, NiftiMasker):
+                # TODO enforce for other maskers
+                yield (clone(estimator), check_multi_nifti_masker_shelving)
 
         if accept_niimg_input(estimator):
             yield (clone(estimator), check_nifti_masker_dtype)
@@ -637,28 +658,16 @@ def nilearn_check_generator(estimator: BaseEstimator):
                 check_nifti_masker_generate_report_after_fit_with_only_mask,
             )
 
-            if is_multimasker(estimator):
-                yield (
-                    clone(estimator),
-                    check_multi_nifti_masker_generate_report_4d_fit,
-                )
-                yield (
-                    clone(estimator),
-                    check_multi_masker_transformer_high_variance_confounds,
-                )
-                yield (
-                    clone(estimator),
-                    check_multi_masker_transformer_sample_mask,
-                )
-                yield (clone(estimator), check_multi_masker_with_confounds)
-
-                if isinstance(estimator, NiftiMasker):
-                    # TODO enforce for other maskers
-                    yield (clone(estimator), check_multi_nifti_masker_shelving)
-
-        if accept_surf_img_input(estimator):
-            yield (clone(estimator), check_surface_masker_fit_with_mask)
-            yield (clone(estimator), check_surface_masker_list_surf_images)
+        else:
+            yield (clone(estimator), check_surface_masker_fit_transform_errors)
+            yield (
+                clone(estimator),
+                check_surface_masker_list_surf_images_no_mask,
+            )
+            yield (
+                clone(estimator),
+                check_surface_masker_list_surf_images_with_mask,
+            )
 
     if is_glm(estimator):
         yield (clone(estimator), check_glm_dtypes)
@@ -2693,53 +2702,17 @@ def check_masker_joblib_cache(estimator):
 
 
 @ignore_warnings()
-def check_surface_masker_fit_with_mask(estimator):
-    """Check fit / transform with mask provided at init.
+def check_surface_masker_fit_transform_errors(estimator):
+    """Check fit / transform errors.
 
-    Check with 2D and 1D images.
-
-    1D image -> 1D array
-    2D image -> 2D array
-
-    Also check 'shape' errors between images to fit and mask.
+    Check 'shape' errors between images to fit and mask.
     """
     mask_img = _make_surface_mask()
 
-    # 1D image
-    mesh = _make_mesh()
-    data = {}
-    for k, v in mesh.parts.items():
-        data_shape = (v.n_vertices,)
-        data[k] = _rng().random(data_shape)
-    imgs = SurfaceImage(mesh, data)
-    assert imgs.shape == (9,)
-    estimator.fit(imgs)
-
-    signal = estimator.transform(imgs)
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (estimator.n_elements_,)
-
-    # 2D image with 1 sample
-    imgs = _make_surface_img(1)
-    estimator.mask_img = mask_img
-    estimator.fit(imgs)
-
-    signal = estimator.transform(imgs)
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (1, estimator.n_elements_)
-
-    # 2D image with several samples
     imgs = _make_surface_img(5)
+
     estimator = clone(estimator)
     estimator.mask_img = mask_img
-    estimator.fit(imgs)
-
-    signal = estimator.transform(imgs)
-
-    assert isinstance(signal, np.ndarray)
-    assert signal.shape == (5, estimator.n_elements_)
 
     # errors
     with pytest.raises(
@@ -2751,6 +2724,7 @@ def check_surface_masker_fit_with_mask(estimator):
         MeshDimensionError,
         match=r"Number of vertices do not match for between meshes.",
     ):
+        estimator.fit(imgs)
         estimator.transform(_flip_surf_img(imgs))
 
     with pytest.raises(
@@ -2760,37 +2734,222 @@ def check_surface_masker_fit_with_mask(estimator):
     with pytest.raises(
         MeshDimensionError, match=r"PolyMeshes do not have the same keys."
     ):
+        estimator.fit(imgs)
         estimator.transform(_drop_surf_img_part(imgs))
 
 
 @ignore_warnings()
-def check_surface_masker_list_surf_images(estimator):
+def check_surface_masker_list_surf_images_no_mask(estimator_orig):
     """Test transform / inverse_transform on list of surface images.
 
-    Check that 1D or 2D mask work.
+    No mask provided at init.
 
-    transform
-    - list of 1D -> 2D array
-    - list of 2D -> 2D array
+    - transform
+        - masker
+            - 1D surface image -> 1D array
+            - 2D surface image -> 2D array
+            - list of 1D surface images -> 2D array
+            - list of 2D surface images -> ERROR (TODO)
+        - multimasker
+            - 1D surface image -> 1D array
+            - 2D surface image -> 2D array
+            - list of 1D surface images -> list of 1D array
+            - list of 2D surface images -> list of 2D array (TODO)
+
+    - inverse_transform
+        - masker
+            - 1D array -> 1D surface image
+            - 2D array -> 2D surface image
+        - multimasker
+            - 1D array -> 1D surface image
+            - 2D array -> 2D surface image
     """
-    n_sample = 5
     images_to_transform = [
+        _surf_img_1d(),
+        _make_surface_img(1),
+        _make_surface_img(5),
         [_make_surface_img()] * 5,
-        [_make_surface_img(2), _make_surface_img(3)],
     ]
-    for imgs in images_to_transform:
-        for mask_img in [None, _surf_mask_1d(), _make_surface_mask()]:
+    expected_n_sample = [
+        0,
+        1,
+        5,
+        5,
+    ]
+    for imgs, n_sample in zip(
+        images_to_transform, expected_n_sample, strict=False
+    ):
+        estimator = clone(estimator_orig)
+
+        estimator = estimator.fit(imgs)
+
+        signals = estimator.transform(imgs)
+
+        if is_multimasker(estimator) and isinstance(imgs, list):
+            assert isinstance(signals, list)
+            assert all(isinstance(x, np.ndarray) for x in signals)
+            assert all(x.shape == (1, estimator.n_elements_) for x in signals)
+
+            img = estimator.inverse_transform(signals[0])
+            assert img.shape == (_make_surface_img().mesh.n_vertices, 1)
+
+        elif n_sample == 0:
+            assert signals.shape == (estimator.n_elements_,)
+
+            img = estimator.inverse_transform(signals)
+            assert img.shape == (_make_surface_img().mesh.n_vertices,)
+
+        else:
+            assert signals.shape == (n_sample, estimator.n_elements_)
+
+            img = estimator.inverse_transform(signals)
+            assert img.shape == (
+                _make_surface_img().mesh.n_vertices,
+                n_sample,
+            )
+
+    estimator = clone(estimator_orig)
+
+    if is_multimasker(estimator):
+        signals = estimator.fit_transform(
+            [_make_surface_img(5), _make_surface_img(2)]
+        )
+        assert isinstance(signals, list)
+        assert all(isinstance(x, np.ndarray) for x in signals)
+        assert signals[0].shape == (5, estimator.n_elements_)
+        assert signals[1].shape == (2, estimator.n_elements_)
+    else:
+        # TODO Turn that into a dimension error like for NiftiMaskers
+        # TODO error msg should give hint as to how to fix:
+        # point to the appropriate masker to use
+        with pytest.raises(
+            ValueError, match=r"Data for each part of .* should be 1D"
+        ):
+            estimator.fit([_make_surface_img(5), _make_surface_img(5)])
+
+
+@ignore_warnings()
+def check_surface_masker_list_surf_images_with_mask(estimator_orig):
+    """Test transform / inverse_transform on list of surface images.
+
+    Check that 1D mask or 2D mask work.
+
+    TODO there are some unexpected outcomes with
+    SurfaceMapsMasker, SurfaceLabelsMasker (see details below)
+    once those are fixed this test should be mergeable with its "no mask"
+    equivalent
+
+    Theoretically expected input / output shape relations:
+
+    - transform
+        - masker
+            - 1D surface image -> 1D array
+            - 2D surface image -> 2D array
+            - list of 1D surface images -> 2D array
+            - list of 2D surface images -> ERROR
+        - multimasker
+            - 1D surface image -> 1D array
+            - 2D surface image -> 2D array
+            - list of 1D surface images -> list of 1D array
+            - list of 2D surface images -> list of 2D array
+
+    - inverse_transform
+        - masker
+            - 1D array -> 1D surface image
+            - 2D array -> 2D surface image
+        - multimasker
+            - 1D array -> 1D surface image
+            - 2D array -> 2D surface image
+    """
+    images_to_transform = [
+        _surf_img_1d(),
+        _make_surface_img(1),
+        _make_surface_img(5),
+        [_make_surface_img()] * 5,
+    ]
+    expected_n_sample = [
+        0,
+        1,
+        5,
+        5,
+    ]
+    for imgs, n_sample in zip(
+        images_to_transform, expected_n_sample, strict=False
+    ):
+        for mask_img in [_surf_mask_1d(), _make_surface_mask()]:
+            estimator = clone(estimator_orig)
+
             estimator.mask_img = mask_img
 
             estimator = estimator.fit(imgs)
 
             signals = estimator.transform(imgs)
 
-            assert signals.shape == (n_sample, estimator.n_elements_)
+            n_dim_mask = mask_img.data.parts["left"].ndim
 
-            img = estimator.inverse_transform(signals)
+            if is_multimasker(estimator) and isinstance(imgs, list):
+                assert isinstance(signals, list)
+                assert all(isinstance(x, np.ndarray) for x in signals)
+                assert all(
+                    x.shape == (1, estimator.n_elements_) for x in signals
+                )
 
-            assert img.shape == (_make_surface_img().mesh.n_vertices, n_sample)
+                img = estimator.inverse_transform(signals[0])
+                assert img.shape == (_make_surface_img().mesh.n_vertices, 1)
+
+            elif n_sample == 0:
+                assert signals.size == estimator.n_elements_
+
+                if isinstance(estimator, (SurfaceLabelsMasker)):
+                    # TODO having a test where SurfaceLabelsMasker
+                    # with mask leads to have only 1 ROI
+                    # is a bit of an edge case
+                    # Should this be changed?
+                    # We should maybe also check what happens
+                    # to the surface maps masker with only 1 map.
+                    assert estimator.n_elements_ == 1
+
+                # TODO We have some unexpected behavior from
+                # SurfaceMapsMasker, SurfaceLabelsMasker
+                # This should be fixed (in a follow up PR).
+                if (
+                    isinstance(
+                        estimator, (SurfaceMapsMasker, SurfaceLabelsMasker)
+                    )
+                    and n_dim_mask == 2
+                ):
+                    assert signals.shape == (1, estimator.n_elements_)
+                elif isinstance(estimator, (SurfaceLabelsMasker)):
+                    # we probably get a scalar here because
+                    # the label masker has only 1 valid ROI.
+                    assert signals.shape == ()
+                else:
+                    assert signals.shape == (estimator.n_elements_,)
+
+                img = estimator.inverse_transform(signals)
+
+                if (
+                    isinstance(
+                        estimator, (SurfaceMapsMasker, SurfaceLabelsMasker)
+                    )
+                    and n_dim_mask == 2
+                ):
+                    assert img.shape == (
+                        _make_surface_img().mesh.n_vertices,
+                        1,
+                    )
+                else:
+                    assert img.shape == (_make_surface_img().mesh.n_vertices,)
+
+            else:
+                assert signals.shape == (n_sample, estimator.n_elements_)
+
+                img = estimator.inverse_transform(signals)
+
+                assert img.shape == (
+                    _make_surface_img().mesh.n_vertices,
+                    n_sample,
+                )
 
 
 # ------------------ NIFTI MASKER CHECKS ------------------
@@ -2948,7 +3107,7 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
     assert hasattr(estimator, "mask_img_")
 
 
-# ------------------ MULTI NIFTI MASKER CHECKS ------------------
+# ------------------ MULTI MASKER CHECKS ------------------
 
 
 @ignore_warnings()
@@ -2994,27 +3153,31 @@ def check_multi_nifti_masker_shelving(estimator):
 
 
 @ignore_warnings()
-def check_multi_masker_with_confounds(estimator):
+def check_multimasker_with_confounds(estimator):
     """Test multi maskers with a list of confounds.
 
     Ensure results is different than when not using confounds.
 
-    Check that confounds are applied when passing a 4D image (not iterable)
-    to transform.
+    Check that confounds are applied when passing
+    a 4D image (not iterable) to transform (or 2D for surface).
 
     Check that error is raised if number of confounds
     does not match number of images.
     """
     length = _img_4d_rand_eye_medium().shape[3]
 
+    if accept_niimg_input(estimator):
+        input_imgs = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
+        single_img = _img_4d_rand_eye_medium()
+    else:
+        input_imgs = [_make_surface_img(length), _make_surface_img(length)]
+        single_img = _make_surface_img(length)
+
     array = _rng().random((length, 3))
 
-    signals_list_1 = estimator.fit_transform(
-        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-    )
+    signals_list_1 = estimator.fit_transform(input_imgs)
     signals_list_2 = estimator.fit_transform(
-        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-        confounds=[array, array],
+        input_imgs, confounds=[array, array]
     )
 
     for signal_1, signal_2 in zip(
@@ -3023,11 +3186,8 @@ def check_multi_masker_with_confounds(estimator):
         assert_raises(AssertionError, assert_array_equal, signal_1, signal_2)
 
     # should also work with a single 4D image (has no __iter__ )
-    signals_list_1 = estimator.fit_transform(_img_4d_rand_eye_medium())
-    signals_list_2 = estimator.fit_transform(
-        _img_4d_rand_eye_medium(),
-        confounds=[array],
-    )
+    signals_list_1 = estimator.fit_transform(single_img)
+    signals_list_2 = estimator.fit_transform(single_img, confounds=[array])
     for signal_1, signal_2 in zip(
         signals_list_1, signals_list_2, strict=False
     ):
@@ -3037,22 +3197,16 @@ def check_multi_masker_with_confounds(estimator):
     with pytest.raises(
         ValueError, match=r"number of confounds .* unequal to number of images"
     ):
-        estimator.fit_transform(
-            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-            confounds=[array],
-        )
+        estimator.fit_transform(input_imgs, confounds=[array])
 
     with pytest.raises(
         TypeError, match=r"'confounds' must be a None or a list."
     ):
-        estimator.fit_transform(
-            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-            confounds=1,
-        )
+        estimator.fit_transform(input_imgs, confounds=1)
 
 
 @ignore_warnings()
-def check_multi_masker_transformer_sample_mask(estimator):
+def check_multimasker_transformer_sample_mask(estimator):
     """Test multi maskers with a list of "sample_mask".
 
     "sample_mask" was directly sent as input to the parallel calls of
@@ -3061,15 +3215,21 @@ def check_multi_masker_transformer_sample_mask(estimator):
     """
     length = _img_4d_rand_eye_medium().shape[3]
 
-    n_scrub1 = 3
-    n_scrub2 = 2
+    if accept_niimg_input(estimator):
+        input_imgs = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
+        single_img = _img_4d_rand_eye_medium()
+    else:
+        input_imgs = [_make_surface_img(length), _make_surface_img(length)]
+        single_img = _make_surface_img(length)
 
+    n_scrub1 = 3
     sample_mask1 = np.arange(length - n_scrub1)
+
+    n_scrub2 = 2
     sample_mask2 = np.arange(length - n_scrub2)
 
     signals_list = estimator.fit_transform(
-        [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-        sample_mask=[sample_mask1, sample_mask2],
+        input_imgs, sample_mask=[sample_mask1, sample_mask2]
     )
 
     for ts, n_scrub in zip(signals_list, [n_scrub1, n_scrub2], strict=False):
@@ -3077,8 +3237,7 @@ def check_multi_masker_transformer_sample_mask(estimator):
 
     # should also work with a single 4D image (has no __iter__ )
     signals_list = estimator.fit_transform(
-        _img_4d_rand_eye_medium(),
-        sample_mask=[sample_mask1],
+        single_img, sample_mask=[sample_mask1]
     )
 
     assert signals_list.shape[0] == length - n_scrub1
@@ -3087,42 +3246,40 @@ def check_multi_masker_transformer_sample_mask(estimator):
         ValueError,
         match=r"number of sample_mask .* unequal to number of images",
     ):
-        estimator.fit_transform(
-            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-            sample_mask=[sample_mask1],
-        )
+        estimator.fit_transform(input_imgs, sample_mask=[sample_mask1])
 
     with pytest.raises(
         TypeError, match=r"'sample_mask' must be a None or a list."
     ):
-        estimator.fit_transform(
-            [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()],
-            sample_mask=1,
-        )
+        estimator.fit_transform(input_imgs, sample_mask=1)
 
 
 @ignore_warnings()
-def check_multi_masker_transformer_high_variance_confounds(estimator):
-    """Check high_variance_confounds use in multi maskers with 5D data.
+def check_multimasker_transformer_high_variance_confounds(estimator):
+    """Check high_variance_confounds in multi maskers with data many samples.
 
     Make sure that using high_variance_confounds returns different result.
 
     Ensure that high_variance_confounds can be used with regular confounds,
     and that results are different than when just using the confounds alone.
-    """
-    length = 20
 
-    data = _rng().random((*_shape_3d_default(), length))
-    input_img = Nifti1Image(data, _affine_eye())
+    Also checks that confounds can be accepted as different formats.
+    """
+    length = _img_4d_rand_eye_medium().shape[3]
+
+    if accept_niimg_input(estimator):
+        input_imgs = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
+    else:
+        input_imgs = [_make_surface_img(length), _make_surface_img(length)]
 
     estimator.high_variance_confounds = False
 
-    signal = estimator.fit_transform([input_img, input_img])
+    signal = estimator.fit_transform(input_imgs)
 
     estimator = clone(estimator)
     estimator.high_variance_confounds = True
 
-    signal_hvc = estimator.fit_transform([input_img, input_img])
+    signal_hvc = estimator.fit_transform(input_imgs)
 
     for s1, s2 in zip(signal, signal_hvc, strict=False):
         assert_raises(AssertionError, assert_array_equal, s1, s2)
@@ -3140,14 +3297,12 @@ def check_multi_masker_transformer_high_variance_confounds(estimator):
 
             estimator = clone(estimator)
             estimator.high_variance_confounds = False
-            signal_c = estimator.fit_transform(
-                [input_img, input_img], confounds=confounds
-            )
+            signal_c = estimator.fit_transform(input_imgs, confounds=confounds)
 
             estimator = clone(estimator)
             estimator.high_variance_confounds = True
             signal_c_hvc = estimator.fit_transform(
-                [input_img, input_img], confounds=confounds
+                input_imgs, confounds=confounds
             )
 
             for s1, s2 in zip(signal_c, signal_c_hvc, strict=False):
@@ -3295,7 +3450,6 @@ def check_masker_generate_report(estimator):
         assert (Path(tmp_dir) / "report.html").is_file()
 
 
-@ignore_warnings()
 def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     """Check 3D mask is enough to run with fit and generate report."""
     mask = np.ones(_shape_3d_large())
@@ -3357,14 +3511,27 @@ def check_masker_generate_report_false(estimator):
 
 
 @ignore_warnings()
-def check_multi_nifti_masker_generate_report_4d_fit(estimator):
+def check_multimasker_generate_report(estimator):
     """Test calling generate report on multiple subjects raises warning."""
     if not is_matplotlib_installed():
         return
 
-    estimator.maps_img = _img_3d_ones()
-    estimator.fit([_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()])
-    with pytest.warns(
-        UserWarning, match="A list of 4D subject images were provided to fit. "
-    ):
+    if accept_niimg_input(estimator):
+        input_img = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
+    else:
+        input_img = [_make_surface_img(100), _make_surface_img(100)]
+
+    if accept_niimg_input(estimator):
+        if isinstance(estimator, NiftiMapsMasker):
+            estimator.maps_img = _img_3d_ones()
+
+        estimator.fit(input_img)
+        with pytest.warns(
+            UserWarning,
+            match="A list of 4D subject images were provided to fit. ",
+        ):
+            _generate_report(estimator)
+    else:
+        # TODO add a warning
+        estimator.fit(input_img)
         _generate_report(estimator)
