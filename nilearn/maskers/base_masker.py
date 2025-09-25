@@ -5,10 +5,8 @@ import contextlib
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
-from pathlib import Path
 
 import numpy as np
-import pandas as pd
 from joblib import Memory
 from sklearn.base import (
     BaseEstimator,
