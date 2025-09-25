@@ -166,16 +166,6 @@ class _LabelMaskerMixin:
         """Generate a look up table if one was not provided.
 
         Also sanitize its content if necessary.
-
-        Parameters
-        ----------
-        labels_img : Nifti1Image | SurfaceImage
-
-        background_label : int | float
-
-        lut : Optional[str, Path, pd.DataFrame]
-
-        labels : Optional[list[str]]
         """
         labels_img = self.labels_img_
         background_label = self.background_label
