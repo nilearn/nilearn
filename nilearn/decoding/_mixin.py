@@ -2,6 +2,7 @@
 
 import numpy as np
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
@@ -29,12 +30,6 @@ class _ClassifierMixin:
 
         return tags
 
-    def _n_problems(self):
-        if self.n_classes_ > 2:
-            return self.n_classes_
-        else:
-            return 1
-
     def _set_classes(self, y):
         """Encode target classes as -1 and 1.
 
@@ -45,11 +40,17 @@ class _ClassifierMixin:
         enc = LabelBinarizer(pos_label=1, neg_label=-1)
         y = enc.fit_transform(y)
         self.classes_ = enc.classes_
-        self.n_classes_ = len(self.classes_)
         return y
 
     def _get_classes(self):
+        check_is_fitted(self)
         return self.classes_
+
+    @property
+    def n_classes_(self) -> int:
+        """Return number of classes."""
+        check_is_fitted(self)
+        return len(self.classes_)
 
 
 class _RegressorMixin:
@@ -75,12 +76,10 @@ class _RegressorMixin:
 
         return tags
 
-    def _n_problems(self):
-        return 1
-
     def _set_classes(self, y):
         self._classes_ = ["beta"]
         return y[:, np.newaxis]
 
     def _get_classes(self):
+        check_is_fitted(self)
         return self._classes_

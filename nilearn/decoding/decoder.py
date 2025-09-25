@@ -618,6 +618,13 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         # implemented in mixin classes
         raise NotImplementedError()
 
+    def _n_problems(self) -> int:
+        check_is_fitted(self)
+        if len(self._get_classes()) > 2:
+            return len(self._get_classes())
+        else:
+            return 1
+
     @fill_doc
     def fit(self, X, y, groups=None):
         """Fit the decoder (learner).
@@ -676,9 +683,10 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
         self.cv_ = list(cv_object.split(X, y, groups=groups))
 
-        # Define the number problems to solve. In case of classification this
-        # number corresponds to the number of binary problems to solve
         y = self._set_classes(y)
+        # Define the number problems to solve.
+        # In case of classification this
+        # number corresponds to the number of binary problems to solve.
         n_problems = self._n_problems()
 
         # Check if the size of the mask image and the number of features allow
