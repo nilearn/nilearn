@@ -40,6 +40,7 @@ from nilearn._utils.param_validation import (
 )
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.exceptions import DimensionError
+from nilearn.surface.clusters import find_surface_clusters
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -1059,14 +1060,6 @@ def threshold_img(
     if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
         check_polymesh_equal(mask_img.mesh, img.mesh)
 
-    if isinstance(img, SurfaceImage) and cluster_threshold > 0:
-        warnings.warn(
-            "Cluster thresholding not implemented for SurfaceImage. "
-            "Setting 'cluster_threshold' to 0.",
-            stacklevel=find_stack_level(),
-        )
-        cluster_threshold = 0
-
     if isinstance(img, NiimgLike):
         img = check_niimg(img)
         img_data = safe_get_data(img, ensure_finite=True, copy_data=copy)
@@ -1129,11 +1122,24 @@ def threshold_img(
     if expand:
         img_data = img_data[:, :, :, None]
     if cluster_threshold > 0:
-        for i_vol in range(img_data.shape[3]):
-            img_data[..., i_vol] = _apply_cluster_size_threshold(
-                img_data[..., i_vol],
-                cluster_threshold,
-            )
+        if isinstance(img, NiimgLike):
+            for i_vol in range(img_data.shape[3]):
+                img_data[..., i_vol] = _apply_cluster_size_threshold(
+                    img_data[..., i_vol],
+                    cluster_threshold,
+                )
+        else:
+            for hemi in img_data.data.parts:
+                clusters, labels = find_surface_clusters(
+                    img_data.mesh.parts[hemi], img_data.data.parts[hemi]
+                )
+                # exclude only labels with size < min_size
+                exclude_labels = set(
+                    clusters.loc[clusters["size"] < cluster_threshold, "label"]
+                )
+                exclude = np.isin(labels, list(exclude_labels))
+                img_data.data.parts[hemi][exclude] = 0
+
     if expand:
         # Reduce back to 3D
         img_data = img_data[:, :, :, 0]
