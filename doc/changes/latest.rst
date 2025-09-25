@@ -38,8 +38,6 @@ Enhancements
 Changes
 -------
 
-- :bdg-danger:`Deprecation` The attribute ``nifti_maps_masker_`` was removed from :class:`~decomposition.CanICA` and :class:`~decomposition.DictLearning`. Use ``maps_masker_`` instead (:gh:`5626` by `Rémi Gau`_).
-
 - :bdg-danger:`Deprecation` Extra key-words arguments (``kwargs``) have been removed from the constructor of all the Nifti maskers. Any extra-parameters to pass to the call to :func:`~image.clean_img` done by ``transform`` must be done via the parameter ``clean_args`` (:gh:`5628` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter ``darkness`` was removed from the function :func:`~plotting.view_img_on_surf`, :func:`~plotting.view_surf`, :func:`~plotting.plot_surf`, :func:`~plotting.plot_surf_stat_map` and :func:`~plotting.plot_surf_roi` (:gh:`5625` by `Rémi Gau`_).
@@ -70,9 +68,13 @@ Changes
 
 - :bdg-danger:`Deprecation` The function ``nilearn.datasets.fetch_bids_langloc_dataset`` has been removed. Use :func:`~datasets.fetch_language_localizer_demo_dataset` instead. (:gh:`5640` by `Rémi Gau`_).
 
-- :bdg-danger:`Deprecation` The default version returned by :func:`~datasets.fetch_atlas_aal` was changed from ``3v2`` (:gh:`5640` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` The parameter ``subject_id`` of :func:`~datasets.fetch_spm_auditory` and   :func:`~datasets.fetch_spm_multimodal_fmri` has been removed (:gh:`5709` by `Rémi Gau`_).
 
-- :bdg-danger:`Deprecation` The default to ``force_resample`` was set to True in :func:`~image.resample_img` (:gh:`5635` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` The parameter ``temp_file_lifetime`` of the :meth:`~reporting.HTMLReport.open_in_browser` has been removed (:gh:`5709` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The default version returned by :func:`~datasets.fetch_atlas_aal` was changed from ``SPM12`` to ``3v2`` (:gh:`5640` by `Rémi Gau`_).
+
+- :bdg-danger:`Deprecation` The default to ``force_resample`` was set to ``True`` in :func:`~image.resample_img` (:gh:`5635` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter ``return_z_score`` of :func:`~glm.compute_fixed_effects` has been removed. :func:`~glm.compute_fixed_effects` will now always return 4 values instead of 3: the fourth one is ``fixed_fx_z_score_img`` (:gh:`5626` by `Rémi Gau`_).
 
