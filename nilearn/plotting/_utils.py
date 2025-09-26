@@ -45,12 +45,17 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
     The tick list will contain vmin, vmax and threshold values. If
     necessary the number of ticks might increase by 2.
 
+    If the distance between threshold and the closest tick is smaller than or
+    equal to 1/3th of the tick spacing, the closest tick is replaced with
+    threshold; otherwise the threshold (and/or -threshold) is added to the tick
+    list.
+
     Parameters
     ----------
     vmin: :obj:`float`
-        minimum value for the colorbar
+        minimum value for the colorbar, should not be None
     vmax: :obj:`float`
-        maximum value for the colorbar
+        maximum value for the colorbar, should not be None
     threshold: :obj:`float`, :obj:`int` or None
         if threshold is not None, ``-threshold`` and ``threshold`` values are
     replaced with the closest tick values. If the space between closest value
