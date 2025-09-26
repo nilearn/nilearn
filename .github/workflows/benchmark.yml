@@ -68,14 +68,14 @@ jobs:
             with:
                 python-version: 3.10.18
         -   name: Key for cache based on month number
-            run: date +%m > month_num
+            run: date +%m > month_num;
 
         # Try to restore the monthly cache from build-docs workflow
         -   name: Restore nilearn data cache from build-docs workflow
             uses: actions/cache@v4
             with:
                 path: nilearn_data
-                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
+                key: data_cache-DocumentationBuilder_month-${{ hashFiles('month_num') }}
 
         # Move data to expected location if cache was restored
         -   name: Setup data directory
