@@ -33,6 +33,7 @@ Annotate: TypeAlias = bool
 BgOnData: TypeAlias = bool
 BorderSize: TypeAlias = int | np.integer
 ColorBar: TypeAlias = bool
+ClusterThreshold: TypeAlias = int | np.integer
 Connected: TypeAlias = bool
 CopyHeader: TypeAlias = bool
 DType: TypeAlias = DTypeLike | None
