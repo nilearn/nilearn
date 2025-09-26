@@ -338,7 +338,7 @@ def plot_surf_contours(
         Provide `None` as list entry to skip showing the label of that region.
         If `None`, no labels are used.
 
-    colors : :obj:`list` of matplotlib color names or RGBA values, or None,
+    colors : :obj:`list` of matplotlib color names or RGBA values, or None, \
         default=None
         Colors to be used.
 

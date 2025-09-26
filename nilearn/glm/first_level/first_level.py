@@ -1791,6 +1791,7 @@ def first_level_from_bids(
             f"from the value found in the BIDS dataset ({inferred_t_r}).\n"
             "Note this may lead to the wrong model specification.",
             stacklevel=find_stack_level(),
+            category=RuntimeWarning,
         )
     if t_r is not None:
         _check_repetition_time(t_r)
@@ -1800,6 +1801,7 @@ def first_level_from_bids(
             "It will need to be set manually in the list of models, "
             "otherwise their fit will throw an exception.",
             stacklevel=find_stack_level(),
+            category=RuntimeWarning,
         )
 
     # Slice time correction reference time
