@@ -69,16 +69,16 @@ jobs:
                 python-version: 3.10.18
         -   name: Key for cache based on month number
             run: |
-                date +%m > month_num;
-                cat month_num
-                echo "Hash of month_num file: ${{ hashFiles('month_num') }}"
+                date +%m > /home/runner/work/nilearn/nilearn/nilearn_data/month_num;
+                cat /home/runner/work/nilearn/nilearn/nilearn_data/month_num;
+                echo "Hash of month_num file: ${{ hashFiles('/home/runner/work/nilearn/nilearn/nilearn_data/month_num') }}"
 
         # Try to restore the monthly cache from build-docs workflow
         -   name: Restore nilearn data cache from build-docs workflow
             uses: actions/cache@v4
             with:
                 path: ${{ env.NILEARN_DATA }}
-                key: data_cache-DocumentationBuilder_month-dummy
+                key: data_cache-DocumentationBuilder_month-${{ hashFiles('/home/runner/work/nilearn/nilearn/nilearn_data/month_num') }}
                 restore-keys: |
                     data_cache-DocumentationBuilder_month-
 
