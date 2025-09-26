@@ -53,3 +53,37 @@ jobs:
                 set -e
                 pip install dist/nilearn-*-py3-none-any.whl
                 python -c "import nilearn"
+
+        -   name: Check wheel size vs PyPI
+            shell: bash {0}
+            run: |
+                set -e
+
+                # Path to newly built wheel
+                NEW_WHEEL=$(ls dist/nilearn-*-py3-none-any.whl)
+
+                # Get size of new wheel in bytes
+                NEW_SIZE=$(stat -c%s "$NEW_WHEEL" || stat -f%z "$NEW_WHEEL")
+
+                echo "New wheel size: $NEW_SIZE bytes"
+
+                # Download latest wheel from PyPI
+                pip install --upgrade pip
+                pip download nilearn --only-binary=:all: --no-deps -d /tmp
+                OLD_WHEEL=$(ls /tmp/nilearn-*-py3-none-any.whl)
+
+                OLD_SIZE=$(stat -c%s "$OLD_WHEEL" || stat -f%z "$OLD_WHEEL")
+
+                echo "Latest PyPI wheel size: $OLD_SIZE bytes"
+
+                # Allow up to 20% increase
+                LIMIT=$(( OLD_SIZE * 120 / 100 ))
+
+                if [ "$NEW_SIZE" -gt "$LIMIT" ]; then
+                    echo "❌ Wheel size regression detected!"
+                    echo "New:  $NEW_SIZE bytes"
+                    echo "Old:  $OLD_SIZE bytes"
+                    exit 1
+                else
+                    echo "✅ Wheel size check passed"
+                fi
