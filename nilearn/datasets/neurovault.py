@@ -2588,12 +2588,12 @@ def fetch_neurovault(
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
-    interpolation : str, default='continuous'
+    interpolation : {'continuous', 'linear', 'nearest'}, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
         method.
         Argument passed to nilearn.image.resample_img.
 
-    timeout : float, default=_DEFAULT_TIME_OUT
+    timeout : :obj:`float`, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
     %(verbose3)s
@@ -2808,7 +2808,7 @@ def fetch_neurovault_ids(
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
 
-    timeout : float, default=_DEFAULT_TIME_OUT
+    timeout : :obj:`float`, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
     %(verbose3)s

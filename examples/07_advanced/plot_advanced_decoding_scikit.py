@@ -211,10 +211,12 @@ print(
 )
 
 # We apply the inverse of masking on these to make a 4D image that we can plot
-from nilearn.plotting import plot_stat_map
+from nilearn.plotting import plot_stat_map, show
 
 weight_img = masker.inverse_transform(full_coef)
 plot_stat_map(weight_img, title="Anova+SVC weights")
+
+show()
 
 # %%
 # Going further with scikit-learn

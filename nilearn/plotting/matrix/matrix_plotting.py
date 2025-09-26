@@ -555,6 +555,8 @@ def plot_design_matrix_correlation(
         - ``"RdBu_r"``
         - ``"seismic_r"``
 
+    %(colorbar)s
+
     %(output_file)s
 
     kwargs : extra keyword arguments, optional
