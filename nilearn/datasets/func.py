@@ -82,22 +82,36 @@ def fetch_haxby(
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-        - 'anat': :obj:`list` of :obj:`str`. Paths to anatomic images.
+        - 'anat': :obj:`list` of :obj:`str`.
+            Paths to anatomic images.
+
         - 'func': :obj:`list` of :obj:`str`.
-          Paths to nifti file with :term:`BOLD` data.
+            Paths to nifti file with :term:`BOLD` data.
+
         - 'session_target': :obj:`list` of :obj:`str`.
-          Paths to text file containing run and target data.
+            Paths to text file containing run and target data.
+
         - 'mask': :obj:`str`. Path to fullbrain mask file.
+
         - 'mask_vt': :obj:`list` of :obj:`str`.
-          Paths to nifti ventral temporal mask file.
+            Paths to nifti ventral temporal mask file.
+
         - 'mask_face': :obj:`list` of :obj:`str`.
-          Paths to nifti with face-responsive brain regions.
+            Paths to nifti with face-responsive brain regions.
+
         - 'mask_face_little': :obj:`list` of :obj:`str`.
-          Spatially more constrained version of the above.
+            Paths to nifti with face-responsive brain regions.
+            Spatially more constrained version of  ``mask_face``.
+
         - 'mask_house': :obj:`list` of :obj:`str`.
-          Paths to nifti with house-responsive brain regions.
+            Paths to nifti with house-responsive brain regions.
+
         - 'mask_house_little': :obj:`list` of :obj:`str`.
-          Spatially more constrained version of the above.
+            Paths to nifti with house-responsive brain regions.
+            Spatially more constrained version of ``mask_house``.
+
+        - 't_r': :obj:`float`
+            Repetition time of the functional data.
 
     References
     ----------
@@ -220,6 +234,7 @@ def fetch_haxby(
         mask_house_little=files[6::n_files],
         mask=mask,
         description=fdescr,
+        t_r=2.5,
         **kwargs,
     )
 
@@ -292,9 +307,18 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are :
 
-        - 'func': Paths to functional :term:`resting-state` images
-        - 'phenotypic': pd.dataframe with explanations of preprocessing steps
-        - 'confounds': CSV files containing the nuisance variables
+        - 'func':
+            Paths to functional :term:`resting-state` images
+
+        - 'phenotypic': pd.dataframe
+            explanations of preprocessing steps
+
+        - 'confounds':
+            CSV files containing the nuisance variables
+
+        - 't_r': :obj:`float`
+            Repetition time of the functional data.
+
 
     References
     ----------
@@ -378,6 +402,7 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
         confounds=confounds,
         phenotypic=phenotypic,
         description=fdescr,
+        t_r=2.0,
     )
 
 
@@ -2121,6 +2146,9 @@ def fetch_development_fmri(
             Contains each subject age, age group, child or adult, gender,
             handedness.
 
+        - 't_r': :obj:`float`
+            Repetition time of the functional data.
+
     Notes
     -----
     The original data is downloaded from OpenNeuro
@@ -2209,6 +2237,7 @@ def fetch_development_fmri(
         confounds=regressors,
         phenotypic=participants,
         description=fdescr,
+        t_r=2,
     )
 
 
@@ -2648,6 +2677,13 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
         - description: data description
 
+        - t_r: repetition time of the function data in seconds
+
+        - slice_time_ref:
+            slice timing reference used during slice timing correction
+
+
+
     """
     check_params(locals())
 
@@ -2670,6 +2706,8 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
     description = get_dataset_descr(dataset_name)
     data.description = description
+    data.t_r = 2.4
+    data.slice_time_ref = 0.5
     return data
 
 
@@ -2710,10 +2748,21 @@ def fetch_spm_auditory(
     -------
     data : :obj:`sklearn.utils.Bunch`
         Dictionary-like object, the interest attributes are:
-        - 'anat': :obj:`list` of :obj:`str`. Path to anat image
-        - 'func': :obj:`list` of :obj:`str`. Path to functional image
-        - 'events': :obj:`list` of :obj:`str`. Path to events.tsv file
-        - 'description': :obj:`str`. Data description
+
+        - 'anat': :obj:`list` of :obj:`str`.
+            Paths to anat images
+
+        - 'func': :obj:`list` of :obj:`str`.
+            Paths to functional images
+
+        - 'events': :obj:`list` of :obj:`str`.
+            Paths to events.tsv files
+
+        - 'description': :obj:`str`.
+            Data description
+
+        - 't_r' : :obj:`float`.
+            Repetition time in seconds of the functional images.
 
     References
     ----------
@@ -2747,6 +2796,7 @@ def fetch_spm_auditory(
         "func": func,
         "events": events,
         "description": get_dataset_descr("spm_auditory"),
+        "t_r": 7.0,
     }
     return Bunch(**spm_auditory_data)
 
