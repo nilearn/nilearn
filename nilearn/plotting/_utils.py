@@ -60,7 +60,7 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
 
     ticks = np.linspace(vmin, vmax, n_ticks)
 
-    if threshold is not None and threshold != 0:
+    if threshold is not None and threshold > 1e-6:
         diff = abs(abs(ticks) - threshold)
         add = _add_to_ticks(ticks, threshold)
 
