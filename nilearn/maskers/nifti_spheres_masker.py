@@ -278,7 +278,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
          If set to True, data is saved in order to produce a report.
 
     %(clean_args)s
-        .. versionadded:: 0.12.0
+
+        .. nilearn_versionadded:: 0.12.0
 
     Attributes
     ----------
@@ -291,7 +292,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     n_elements_ : :obj:`int`
         The number of seeds in the masker.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     seeds_ : :obj:`list` of :obj:`list`
         The coordinates of the seeds in the masker.
@@ -637,7 +638,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Returns
         -------
@@ -666,7 +667,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Returns
         -------

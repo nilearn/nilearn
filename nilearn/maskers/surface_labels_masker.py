@@ -57,7 +57,7 @@ def signals_to_surf_img_labels(
 class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------

@@ -594,7 +594,7 @@ def _is_flm_with_single_run(model) -> bool:
 def _clean_contrast_name(contrast_name):
     """Remove prohibited characters from name and convert to camelCase.
 
-    .. versionadded:: 0.9.2
+    .. nilearn_versionadded:: 0.9.2
 
     BIDS filenames, in which the contrast name will appear as a
     contrast-<name> key/value pair, must be alphanumeric strings.

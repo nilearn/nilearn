@@ -239,8 +239,10 @@ with the tools we use for development and deployment.
 |   `Coding Style`_  |    Any        | - No new dependency                                 |
 |                    |               | - Backward compatibility                            |
 |                    |               | - All internal imports are absolute, not relative   |
-|                    |               | - Impacted docstrings have versionadded and/or      |
-|                    |               |   versionchanged directives as needed.              |
+|                    |               | - Impacted docstrings have                          |
+|                    |               |   ``.. nilearn_versionadded`` and/or                |
+|                    |               |   ``.. nilearn_versionchanged`` directives          |
+|                    |               |   as needed.                                        |
 |                    |               |   These should use the current dev version.         |
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Test type is adapted to function behavior         |

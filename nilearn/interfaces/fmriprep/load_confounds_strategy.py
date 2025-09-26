@@ -56,7 +56,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
     `load_confounds_strategy` provides an interface to select confounds
     based on past literature with limited parameters for user customization.
 
-    .. versionadded:: 0.9.0
+    .. nilearn_versionadded:: 0.9.0
 
     Parameters
     ----------
@@ -102,7 +102,7 @@ def load_confounds_strategy(img_files, denoise_strategy="simple", **kwargs):
           component can be really high. Please refer to :term:`fMRIPrep`
           documentation for more details.
 
-          .. versionadded:: 0.10.3
+          .. nilearn_versionadded:: 0.10.3
             `golobal_signal` is now a tunable parameter for compcor.
 
         - 'ica_aroma': Load confounds for non-aggresive ICA-AROMA strategy

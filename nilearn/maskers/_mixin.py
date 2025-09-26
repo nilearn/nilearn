@@ -63,7 +63,7 @@ class _MultiMixin:
 
         %(sample_mask_multi)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Returns
         -------

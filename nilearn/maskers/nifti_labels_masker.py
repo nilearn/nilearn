@@ -168,7 +168,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         Only relevant for the report figures.
 
     %(clean_args)s
-        .. versionadded:: 0.12.0
+
+        .. nilearn_versionadded:: 0.12.0
 
     Attributes
     ----------
@@ -603,7 +604,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Returns
         -------
@@ -632,7 +633,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Attributes
         ----------
@@ -643,7 +644,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             that takes the value ``region_ids_[i]``
             is used to compute the signal in ``region_signal[:, i]``.
 
-            .. versionadded:: 0.10.3
+            .. nilearn_versionadded:: 0.10.3
 
         Returns
         -------
@@ -811,7 +812,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         Any mask given at initialization is taken into account.
 
-        .. versionchanged:: 0.9.2
+        .. nilearn_versionchanged:: 0.9.2
 
             This method now supports 1D arrays, which will produce 3D images.
 

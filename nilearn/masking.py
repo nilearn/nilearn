@@ -689,7 +689,7 @@ def compute_brain_mask(
     %(verbose0)s
     %(mask_type)s
 
-        .. versionadded:: 0.8.1
+        .. nilearn_versionadded:: 0.8.1
 
     Returns
     -------
@@ -750,7 +750,7 @@ def compute_multi_brain_mask(
     The mask is calculated through the resampling of the corresponding
     MNI152 template mask onto the target image.
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     Parameters
     ----------

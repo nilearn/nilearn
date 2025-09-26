@@ -220,7 +220,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
 
     Acts on the last two dimensions of the array if not 2-dimensional.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -256,7 +256,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     Diagonal can be encompassed in vec or given separately. In both cases, note
     that diagonal elements are multiplied by sqrt(2).
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -378,7 +378,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
     """A class that computes different kinds of \
        :term:`functional connectivity` matrices.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------

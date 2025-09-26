@@ -260,11 +260,11 @@ def img_to_signals_labels(
     return_masked_atlas : :obj:`bool`, default=False
         If True, the masked atlas is returned.
 
-        .. versionchanged :: 0.13.0dev
+        .. nilearn_versionchanged :: 0.13.0dev
 
             Default changed to False.
 
-        .. deprecated:: 0.13.0dev
+        .. nilearn_deprecated:: 0.13.0dev
 
             This parameter will be removed in versions >= 0.15.0
 
@@ -354,7 +354,7 @@ def signals_to_img_labels(
 
     labels_img, mask_img must have the same shapes and affines.
 
-    .. versionchanged:: 0.9.2
+    .. nilearn_versionchanged:: 0.9.2
         Support 1D signals.
 
     Parameters

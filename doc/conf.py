@@ -17,6 +17,8 @@ import sys
 from pathlib import Path
 
 from nilearn._version import __version__
+from sphinx.domains import changeset
+from sphinx.locale import _
 
 # ----------------------------------------------------------------------------
 
@@ -456,7 +458,25 @@ def touch_example_backreferences(
         examples_path.touch()
 
 
+# adapting https://github.com/sphinx-doc/sphinx/blob/master/sphinx/domains/changeset.py
+changeset.versionlabels["nilearn_versionadded"] = _("Added in Nilearn %s")
+changeset.versionlabels["nilearn_versionchanged"] = _("Changed in Nilearn %s")
+changeset.versionlabels["nilearn_deprecated"] = _(
+    "Deprecated since Nilearn %s"
+)
+changeset.versionlabels["nilearn_versionremoved"] = _("Removed in Nilearn %s")
+changeset.versionlabel_classes["nilearn_versionadded"] = "added"
+changeset.versionlabel_classes["nilearn_versionchanged"] = "changed"
+changeset.versionlabel_classes["nilearn_deprecated"] = "deprecated"
+changeset.versionlabel_classes["nilearn_versionremoved"] = "removed"
+
+
 def setup(app):
+    app.add_directive("nilearn_versionadded", changeset.VersionChange)
+    app.add_directive("nilearn_versionchanged", changeset.VersionChange)
+    app.add_directive("nilearn_deprecated", changeset.VersionChange)
+    app.add_directive("nilearn_versionremoved", changeset.VersionChange)
+
     app.connect("autodoc-process-docstring", touch_example_backreferences)
 
 

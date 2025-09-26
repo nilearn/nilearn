@@ -291,7 +291,8 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         Only relevant for the report figures.
 
     %(clean_args)s
-        .. versionadded:: 0.12.0
+
+        .. nilearn_versionadded:: 0.12.0
 
 
     Attributes
@@ -308,7 +309,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     See Also
     --------

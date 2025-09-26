@@ -246,7 +246,7 @@ the docstring should be updated to:
         param2 : type
             Description of param2.
 
-        .. versionadded:: x.y.z
+        .. nilearn_versionadded:: x.y.z
 
         Returns
         -------
