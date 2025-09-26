@@ -440,10 +440,6 @@ def miyawaki2008_file_mask():
 def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
     """Download and loads Miyawaki et al. 2008 dataset (153MB).
 
-    Notes
-    -----
-    %(fetcher_note)s
-
     See :footcite:t:`Miyawaki2008`.
 
     Parameters
