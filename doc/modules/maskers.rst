@@ -26,8 +26,9 @@ Classes
    NiftiMapsMasker
    MultiNiftiMapsMasker
    NiftiSpheresMasker
-   SurfaceLabelsMasker
    SurfaceMasker
+   MultiSurfaceMasker
+   SurfaceLabelsMasker
    SurfaceMapsMasker
 
 .. autoclasstree:: nilearn.maskers
