@@ -471,43 +471,11 @@ changeset.versionlabel_classes["nilearn_deprecated"] = "deprecated"
 changeset.versionlabel_classes["nilearn_versionremoved"] = "removed"
 
 
-class NilearnVersionAdded(changeset.VersionChange):
-    """Replace sphinx versionadded directive to add name of project."""
-
-    def run(self):
-        """Run directive."""
-        return super().run()
-
-
-class NilearnVersionChanged(changeset.VersionChange):
-    """Replace sphinx versionchanged directive to add name of project."""
-
-    def run(self):
-        """Run directive."""
-        return super().run()
-
-
-class NilearnVersionDeprecated(changeset.VersionChange):
-    """Replace sphinx deprecated directive to add name of project."""
-
-    def run(self):
-        """Run directive."""
-        return super().run()
-
-
-class NilearnVersionRemoved(changeset.VersionChange):
-    """Replace sphinx versionremoved directive to add name of project."""
-
-    def run(self):
-        """Run directive."""
-        return super().run()
-
-
 def setup(app):
-    app.add_directive("nilearn_versionadded", NilearnVersionAdded)
-    app.add_directive("nilearn_versionchanged", NilearnVersionChanged)
-    app.add_directive("nilearn_deprecated", NilearnVersionDeprecated)
-    app.add_directive("nilearn_versionremoved", NilearnVersionRemoved)
+    app.add_directive("nilearn_versionadded", changeset.VersionChange)
+    app.add_directive("nilearn_versionchanged", changeset.VersionChange)
+    app.add_directive("nilearn_deprecated", changeset.VersionChange)
+    app.add_directive("nilearn_versionremoved", changeset.VersionChange)
 
     app.connect("autodoc-process-docstring", touch_example_backreferences)
 
