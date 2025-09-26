@@ -72,12 +72,10 @@ jobs:
 
         # Try to restore the monthly cache from build-docs workflow
         -   name: Restore nilearn data cache from build-docs workflow
-            uses: actions/cache/restore@v4
+            uses: actions/cache@v4
             with:
                 path: nilearn_data
-                key: data_cache-DocumentationBuilder_month-dummy-key
-                restore-keys: |
-                    data_cache-DocumentationBuilder_month-
+                key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
 
         # Move data to expected location if cache was restored
         -   name: Setup data directory
