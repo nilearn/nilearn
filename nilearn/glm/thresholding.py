@@ -219,6 +219,7 @@ def cluster_level_inference(
     return proportion_true_discoveries_img
 
 
+@fill_doc
 def threshold_stats_img(
     stat_img=None,
     mask_img=None,
@@ -283,10 +284,7 @@ def threshold_stats_img(
         False positive control meaning of cluster forming
         threshold: None|'fpr'|'fdr'|'bonferroni'
 
-    cluster_threshold : :obj:`float`, default=0
-        cluster size threshold. In the returned thresholded map,
-        sets of connected voxels / vertices (`clusters`) with size smaller
-        than this number will be removed.
+    %(cluster_threshold)s
 
     two_sided : :obj:`bool`, default=True
         Whether the thresholding should yield both positive and negative

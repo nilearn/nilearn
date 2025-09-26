@@ -871,8 +871,9 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     ----------
     arr : :obj:`numpy.ndarray` of shape (X, Y, Z)
         3D array that has been thresholded at the voxel level.
-    cluster_threshold : :obj:`float`
-        Cluster-size threshold, in voxels, to apply to ``arr``.
+
+    %(cluster_threshold)s
+
     copy : :obj:`bool`, default=True
         Whether to copy the array before modifying it or not.
 
