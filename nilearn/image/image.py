@@ -40,11 +40,11 @@ from nilearn._utils.param_validation import (
 )
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.exceptions import DimensionError
-from nilearn.surface.clusters import find_surface_clusters
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
     extract_data,
+    find_surface_clusters,
 )
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
