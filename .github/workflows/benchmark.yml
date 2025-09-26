@@ -39,6 +39,9 @@ on:
     push:
         branches:
         -   main
+    pull_request:
+        branches:
+        -   '*'
     schedule:
     # every Tuesday at 12 Noon UTC
     -   cron: 0 12 * * TUE
