@@ -471,7 +471,7 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
 def test_deprecation_threshold(surf_img_1d, height_control, threshold):
     """Check warning thrown when threshold==old threshold.
 
-    # TODO (nilearn >= 0.15)
+    # TODO (nilearn >= 0.15.0)
     # remove
     """
     with warnings.catch_warnings(record=True) as warning_list:
@@ -494,7 +494,7 @@ def test_deprecation_threshold_cluster_level_inference(
 ):
     """Check cluster_level_inference warns when threshold==old threshold .
 
-    # TODO (nilearn >= 0.15)
+    # TODO (nilearn >= 0.15.0)
     # remove
     """
     data = data_norm_isf
