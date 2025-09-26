@@ -207,18 +207,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             self._reporting_data = None
             return self
 
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image "
-                "(if provided via img) overlaid with the regions provided "
-                "via maps_img."
-            ),
-            "n_vertices": {},
-            "number_of_regions": self.n_elements_,
-            "summary": {},
-            "warning_message": None,
-        }
+        self._init_report_content()
 
         for part in self.maps_img.data.parts:
             self._report_content["n_vertices"][part] = (
@@ -239,6 +228,23 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        # content to inject in the HTML template
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This report shows the input surface image "
+                    "(if provided via img) overlaid with the regions provided "
+                    "via maps_img."
+                ),
+                "n_vertices": {},
+                "number_of_regions": getattr(self, "n_elements_", 0),
+                "displayed_maps": [],
+                "number_of_maps": 0,
+                "summary": {},
+                "warning_message": None,
+            }
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
@@ -447,8 +453,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         # engine is selected
         from nilearn.reporting.html_report import generate_report
 
-        if not is_matplotlib_installed():
-            return generate_report(self)
+        self._init_report_content()
 
         check_parameter_in_allowed(engine, ["plotly", "matplotlib"], "engine")
 
@@ -460,8 +465,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 "Switching to matplotlib for report generation.",
                 stacklevel=find_stack_level(),
             )
-        if hasattr(self, "_report_content"):
-            self._report_content["engine"] = engine
+        self._report_content["engine"] = engine
 
         incorrect_type = not isinstance(
             displayed_maps, (list, np.ndarray, int, str)
@@ -493,13 +497,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         displays : list
             A list of all displays to be rendered.
         """
-        import matplotlib.pyplot as plt
-
-        from nilearn.reporting.utils import figure_to_png_base64
-
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
+        if getattr(self, "_reporting_data", None) is None:
             return [None]
 
         maps_img = self._reporting_data["maps_img"]
@@ -545,6 +545,13 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 "method) on any image yet. Plotting only maps for reporting."
             )
             warnings.warn(msg, stacklevel=find_stack_level())
+
+        if not is_matplotlib_installed() and not is_plotly_installed():
+            return embeded_images
+
+        import matplotlib.pyplot as plt
+
+        from nilearn.reporting.utils import figure_to_png_base64
 
         for roi in maps_to_be_displayed:
             roi = index_img(maps_img, roi)

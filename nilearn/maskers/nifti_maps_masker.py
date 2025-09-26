@@ -269,9 +269,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         from nilearn.reporting.html_report import generate_report
 
-        if not is_matplotlib_installed():
-            return generate_report(self)
-
         incorrect_type = not isinstance(
             displayed_maps, (list, np.ndarray, int, str)
         )
@@ -302,10 +299,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        from nilearn import plotting
-        from nilearn.reporting.html_report import embed_img
-
-        if self._reporting_data is not None:
+        if getattr(self, "_reporting_data", None) is not None:
             maps_image = self._reporting_data["maps_image"]
         else:
             maps_image = None
@@ -344,8 +338,15 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._report_content["number_of_maps"] = n_maps
         self._report_content["displayed_maps"] = list(maps_to_be_displayed)
 
-        img = self._reporting_data["img"]
         embedded_images = []
+
+        if not is_matplotlib_installed():
+            return embedded_images
+
+        from nilearn import plotting
+        from nilearn.reporting.html_report import embed_img
+
+        img = self._reporting_data["img"]
 
         if img is None:
             msg = (
@@ -360,6 +361,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 )
                 embedded_images.append(embed_img(display))
                 display.close()
+
             return embedded_images
 
         if self._reporting_data["dim"] == 5:
@@ -386,7 +388,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 cmap=plotting.cm.black_blue,
             )
             embedded_images.append(embed_img(display))
+
             display.close()
+
         return embedded_images
 
     @fill_doc

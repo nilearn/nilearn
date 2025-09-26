@@ -13,6 +13,7 @@ from nilearn._utils.bids import (
 )
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import (
@@ -310,6 +311,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         """Generate a report."""
         from nilearn.reporting.html_report import generate_report
 
+        self._init_report_content()
+
         return generate_report(self)
 
     def _reporting(self):
@@ -321,12 +324,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        import matplotlib.pyplot as plt
-
-        from nilearn import plotting
-
         labels_image = None
-        if self._reporting_data is not None:
+        if getattr(self, "_reporting_data", None) is not None:
             labels_image = self._reporting_data["labels_image"]
 
         if (
@@ -334,7 +333,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             or not self.__sklearn_is_fitted__
             or not self.reports
         ):
-            self._report_content["summary"] = None
+            self._report_content |= {"summary": None}
             return [None]
 
         # Remove warning message in case where the masker was
@@ -387,9 +386,16 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         img = self._reporting_data["img"]
 
+        if not is_matplotlib_installed():
+            return [None]
+
+        import matplotlib.pyplot as plt
+
+        from nilearn.plotting import find_xyz_cut_coords, plot_img, plot_roi
+
         # compute the cut coordinates on the label image in case
         # we have a functional image
-        cut_coords = plotting.find_xyz_cut_coords(
+        cut_coords = find_xyz_cut_coords(
             labels_image, activation_threshold=0.5
         )
 
@@ -402,7 +408,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 )
                 warnings.warn(msg, stacklevel=find_stack_level())
                 self._report_content["warning_message"] = msg
-            display = plotting.plot_img(
+
+            display = plot_img(
                 img,
                 cut_coords=cut_coords,
                 black_bg=False,
@@ -421,7 +428,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             )
             warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
-            display = plotting.plot_roi(labels_image)
+            display = plot_roi(labels_image)
             plt.close()
 
         # If we have a mask, show its contours
@@ -458,13 +465,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
-        self._report_content = {
-            "description": (
-                "This reports shows the regions "
-                "defined by the labels of the mask."
-            ),
-            "warning_message": None,
-        }
+        self._init_report_content()
 
         self._fit_cache()
 
@@ -557,6 +558,17 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This reports shows the regions "
+                    "defined by the labels of the mask."
+                ),
+                "warning_message": None,
+                "number_of_regions": 0,
+            }
 
     def _check_labels(self):
         """Check labels.

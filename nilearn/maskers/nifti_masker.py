@@ -11,6 +11,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
@@ -383,13 +384,9 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        import matplotlib.pyplot as plt
-
-        from nilearn import plotting
-
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
+        if getattr(self, "_reporting_data", None) is None:
             return [None]
 
         img = self._reporting_data["images"]
@@ -403,6 +400,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
             img = mask
+
         if self._reporting_data["dim"] == 5:
             msg = (
                 "A list of 4D subject images were provided to fit. "
@@ -410,13 +408,20 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             )
             warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
+
+        if not is_matplotlib_installed():
+            if "transform" not in self._reporting_data:
+                return [None]
+            else:
+                return [None, None]
+
+        import matplotlib.pyplot as plt
+
+        from nilearn.plotting import plot_img
+
         # create display of retained input mask, image
         # for visual comparison
-        init_display = plotting.plot_img(
-            img,
-            black_bg=False,
-            cmap=self.cmap,
-        )
+        init_display = plot_img(img, black_bg=False, cmap=self.cmap)
         plt.close()
         if mask is not None:
             init_display.add_contours(
@@ -437,11 +442,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if resampl_img is None:  # images were not provided to fit
             resampl_img = resampl_mask
 
-        final_display = plotting.plot_img(
-            resampl_img,
-            black_bg=False,
-            cmap=self.cmap,
-        )
+        final_display = plot_img(resampl_img, black_bg=False, cmap=self.cmap)
         plt.close()
         final_display.add_contours(
             resampl_mask,

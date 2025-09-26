@@ -165,6 +165,9 @@ def _update_template(
     else:
         data["coverage"] = ""
 
+    # Generate a unique ID for this report
+    data["unique_id"] = str(uuid.uuid4()).replace("-", "")
+
     body = tpl.substitute(
         title=title,
         content=content,
@@ -247,46 +250,37 @@ def generate_report(estimator):
     report : HTMLReport
 
     """
+    warning_messages = []
     if not is_matplotlib_installed():
-        with warnings.catch_warnings():
-            mpl_unavail_msg = (
-                "Matplotlib is not imported! No reports will be generated."
-            )
-            warnings.filterwarnings("always", message=mpl_unavail_msg)
-            warnings.warn(
-                category=ImportWarning,
-                message=mpl_unavail_msg,
-                stacklevel=find_stack_level(),
-            )
-            return [None]
+        msg = "No plotting backend detected. Report will be missing figures."
+        warning_messages.append(msg)
 
     if hasattr(estimator, "_report_content"):
         data = estimator._report_content
     else:
         data = {}
 
-    warning_messages = []
-
-    if estimator.reports is False:
-        warning_messages.append(
-            "\nReport generation not enabled!\nNo visual outputs created."
-        )
-
     if (
         not hasattr(estimator, "_reporting_data")
         or not estimator._reporting_data
     ):
-        warning_messages.append(
-            "\nThis report was not generated.\n"
+        msg = (
+            "\nThis estimator contains no data to report.\n"
             "Make sure to run `fit` before inspecting reports."
         )
+        warning_messages.append(msg)
 
-    if warning_messages:
-        for msg in warning_messages:
-            warnings.warn(
-                msg,
-                stacklevel=find_stack_level(),
-            )
+    for x in warning_messages:
+        warnings.warn(
+            x,
+            stacklevel=find_stack_level(),
+        )
+
+    if estimator.reports is False:
+        warnings.warn(
+            "Report generation not enabled! Generating empty report",
+            stacklevel=find_stack_level(),
+        )
 
         return _update_template(
             title="Empty Report",
@@ -376,15 +370,13 @@ def _create_report(estimator, data):
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
     # Generate a unique ID for this report
-    unique_id = str(uuid.uuid4()).replace("-", "")
-
     return _update_template(
         title=estimator.__class__.__name__,
         docstring=snippet,
         content=embeded_images,
         overlay=embed_img(overlay),
         parameters=parameters,
-        data={**data, "unique_id": unique_id},
+        data={**data},
         template_name=html_template,
         summary_html=summary_html,
     )

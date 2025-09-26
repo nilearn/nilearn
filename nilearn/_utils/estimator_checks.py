@@ -109,6 +109,7 @@ from nilearn.masking import load_mask_img
 from nilearn.regions import RegionExtractor
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
 from nilearn.regions.rena_clustering import ReNA
+from nilearn.reporting.html_report import HTMLReport
 from nilearn.reporting.tests.test_html_report import _check_html
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
@@ -3261,16 +3262,15 @@ def check_masker_generate_report(estimator):
     if not is_matplotlib_installed():
         with warnings.catch_warnings(record=True) as warning_list:
             report = _generate_report(estimator)
-
-        assert len(warning_list) == 1
-        assert issubclass(warning_list[0].category, ImportWarning)
-        assert report == [None]
-
-        return
+            assert isinstance(report, HTMLReport)
+            assert any(
+                "Report will be missing figures" in str(x)
+                for x in warning_list
+            )
 
     with warnings.catch_warnings(record=True) as warning_list:
         report = _generate_report(estimator)
-        assert len(warning_list) == 1
+        assert any("Make sure to run `fit`" in str(x) for x in warning_list)
 
     _check_html(report, is_fit=False)
     assert "Make sure to run `fit`" in str(report)
@@ -3309,12 +3309,10 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     assert estimator._report_content["warning_message"] is None
 
-    if not is_matplotlib_installed():
-        return
-
-    with pytest.warns(UserWarning, match="No image provided to fit."):
-        report = _generate_report(estimator)
-    _check_html(report)
+    if is_matplotlib_installed():
+        with pytest.warns(UserWarning, match="No image provided to fit."):
+            report = _generate_report(estimator)
+        _check_html(report)
 
     input_img = _img_4d_rand_eye_medium()
 
@@ -3331,9 +3329,6 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 @ignore_warnings()
 def check_masker_generate_report_false(estimator):
     """Test with reports set to False."""
-    if not is_matplotlib_installed():
-        return
-
     estimator.reports = False
 
     if accept_niimg_input(estimator):
@@ -3347,7 +3342,7 @@ def check_masker_generate_report_false(estimator):
     assert estimator._reporting() == [None]
     with pytest.warns(
         UserWarning,
-        match=("No visual outputs created."),
+        match=("Report generation not enabled"),
     ):
         report = _generate_report(estimator)
 
@@ -3359,9 +3354,6 @@ def check_masker_generate_report_false(estimator):
 @ignore_warnings()
 def check_multi_nifti_masker_generate_report_4d_fit(estimator):
     """Test calling generate report on multiple subjects raises warning."""
-    if not is_matplotlib_installed():
-        return
-
     estimator.maps_img = _img_3d_ones()
     estimator.fit([_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()])
     with pytest.warns(

@@ -424,10 +424,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         displays : list
             A list of all displays to be rendered.
         """
-        from nilearn import plotting
-        from nilearn.reporting.html_report import embed_img
+        self._init_report_content()
 
-        if self._reporting_data is not None:
+        if getattr(self, "_reporting_data", None) is not None:
             seeds = self._reporting_data["seeds"]
         else:
             self._report_content["summary"] = None
@@ -487,6 +486,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         tmp.extend(spheres_to_be_displayed.tolist())
         self._report_content["displayed_maps"] = tmp
 
+        embedded_images = []
+
+        if not is_matplotlib_installed():
+            from nilearn.plotting import plot_img, plot_markers
+            from nilearn.reporting.html_report import embed_img
+
         columns = [
             "seed number",
             "coordinates",
@@ -499,11 +504,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         regions_summary = {c: [] for c in columns}
 
         radius = 1.0 if self.radius is None else self.radius
-        display = plotting.plot_markers(
+        display = plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
         )
-        embedded_images = [embed_img(display)]
+        embedded_images = embedded_images.append(embed_img(display))
         display.close()
+
         for idx, seed in enumerate(seeds):
             regions_summary["seed number"].append(idx)
             regions_summary["coordinates"].append(str(seed))
@@ -516,7 +522,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             regions_summary["relative size (in %)"].append("not implemented")
 
             if idx + 1 in self._report_content["displayed_maps"]:
-                display = plotting.plot_img(img, cut_coords=seed, cmap="gray")
+                display = plot_img(img, cut_coords=seed, cmap="gray")
                 display.add_markers(
                     marker_coords=[seed],
                     marker_color="g",
@@ -544,13 +550,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         """
         del y
-        self._report_content = {
-            "description": (
-                "This reports shows the regions defined "
-                "by the spheres of the masker."
-            ),
-            "warning_message": None,
-        }
+        self._init_report_content()
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
@@ -618,6 +618,17 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        # content to inject in the HTML template
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This reports shows the regions defined "
+                    "by the spheres of the masker."
+                ),
+                "warning_message": None,
+            }
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):

@@ -10,6 +10,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -465,14 +466,17 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         displays : list
             A list of all displays to be rendered.
         """
-        import matplotlib.pyplot as plt
-
-        from nilearn.reporting.utils import figure_to_png_base64
-
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
         if self._reporting_data is None:
             return [None]
+
+        if not is_matplotlib_installed():
+            return [None]
+
+        import matplotlib.pyplot as plt
+
+        from nilearn.reporting.utils import figure_to_png_base64
 
         fig = self._create_figure_for_report()
 

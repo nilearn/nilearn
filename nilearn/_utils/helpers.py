@@ -31,7 +31,7 @@ def set_mpl_backend(message=None):
     # We are doing local imports here to avoid polluting our namespace
     try:
         import matplotlib
-    except ImportError:
+    except (ImportError, ModuleNotFoundError):
         warning = (
             "Some dependencies of nilearn.plotting package seem to be missing."
             "\nThey can be installed with:\n"
