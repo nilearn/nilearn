@@ -38,6 +38,8 @@ Enhancements
 
 - :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker` (:gh:`5679` by `Rémi Gau`_).
 
+- :bdg-success:`API` Add support for ``cluster_threshold`` for :func:`~image.threshold_img`, :func:`~glm.threshold_stats_img`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generated_reports` and :meth:`~glm.second_level.SecondLevelModel.generated_reports` (:gh:`55715` by `Rémi Gau`_).
+
 
 Changes
 -------

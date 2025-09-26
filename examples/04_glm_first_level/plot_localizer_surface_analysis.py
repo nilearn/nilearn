@@ -218,6 +218,7 @@ save_glm_to_bids(
     height_control=None,
     prefix="sub-01",
     out_dir=output_dir,
+    cluster_threshold=10,
 )
 
 report = glm.generate_report(
@@ -225,6 +226,7 @@ report = glm.generate_report(
     threshold=threshold,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=None,
+    cluster_threshold=10,
 )
 
 # %%
@@ -233,7 +235,7 @@ report
 
 # %%
 # Or in a separate browser window
-# report.open_in_browser()
+report.open_in_browser()
 
 report.save_as_html(output_dir / "report.html")
 

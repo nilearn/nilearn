@@ -91,7 +91,7 @@ def test_stat_map_to_png_surface(
     """Check figures plotting for GLM report for surface data."""
     alpha = 0.05
 
-    surf_img = load_fsaverage_data()
+    surf_img = load_fsaverage_data(mesh_type="inflated")
 
     thresholded_img, threshold = threshold_stats_img(
         stat_img=surf_img,
