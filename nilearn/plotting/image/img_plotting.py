@@ -97,7 +97,7 @@ def _plot_img_with_bg(
     display_factory=get_slicer,
     cbar_vmin=None,
     cbar_vmax=None,
-    cbar_tick_format="%.3g",
+    cbar_tick_format="%.2g",
     brain_color=(0.5, 0.5, 0.5),
     decimals=False,
     radiological=False,
@@ -156,7 +156,7 @@ def _plot_img_with_bg(
     display_factory : function, default=get_slicer
         Takes a display_mode argument and return a display class.
 
-    cbar_tick_format : :obj:`str`, default="%%.3g" (scientific notation)
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
 
@@ -297,7 +297,7 @@ def plot_img(
     draw_cross=True,
     black_bg=False,
     colorbar=True,
-    cbar_tick_format="%.3g",
+    cbar_tick_format="%.2g",
     resampling_interpolation="continuous",
     bg_img=None,
     vmin=None,
@@ -341,7 +341,7 @@ def plot_img(
     %(colorbar)s
         Default=True.
 
-    cbar_tick_format : :obj:`str`, default="%%.3g" (scientific notation)
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
 
@@ -456,7 +456,7 @@ def plot_anat(
     dim="auto",
     cmap="gray",
     colorbar=True,
-    cbar_tick_format="%.3g",
+    cbar_tick_format="%.2g",
     radiological=False,
     vmin=None,
     vmax=None,
@@ -503,7 +503,7 @@ def plot_anat(
     %(colorbar)s
         Default=True
 
-    cbar_tick_format : :obj:`str`, default="%%.3g" (scientific notation)
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
 
@@ -585,7 +585,7 @@ def plot_epi(
     draw_cross=True,
     black_bg=True,
     colorbar=True,
-    cbar_tick_format="%.3g",
+    cbar_tick_format="%.2g",
     cmap="gray",
     vmin=None,
     vmax=None,
@@ -623,7 +623,7 @@ def plot_epi(
     %(colorbar)s
         Default=True
 
-    cbar_tick_format : :obj:`str`, default="%%.3g" (scientific notation)
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
 
@@ -806,7 +806,7 @@ def plot_roi(
 
     cbar_tick_format : :obj:`str`, default="%%i"
         Controls how to format the tick labels of the colorbar.
-        Ex: use "%%.3g" to use scientific notation.
+        Ex: use "%%.2g" to use scientific notation.
 
     %(vmin)s
 
@@ -1190,7 +1190,7 @@ def plot_stat_map(
     output_file=None,
     display_mode="ortho",
     colorbar=True,
-    cbar_tick_format="%.3g",
+    cbar_tick_format="%.2g",
     figure=None,
     axes=None,
     title=None,
@@ -1233,7 +1233,7 @@ def plot_stat_map(
     %(colorbar)s
         Default=True.
 
-    cbar_tick_format : :obj:`str`, default="%%.3g" (scientific notation)
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
 
@@ -1359,7 +1359,7 @@ def plot_glass_brain(
     output_file=None,
     display_mode="ortho",
     colorbar=True,
-    cbar_tick_format="%.3g",
+    cbar_tick_format="%.2g",
     figure=None,
     axes=None,
     title=None,
@@ -1407,7 +1407,7 @@ def plot_glass_brain(
     %(colorbar)s
         Default=True.
 
-    cbar_tick_format : :obj:`str`, default="%%.3g" (scientific notation)
+    cbar_tick_format : :obj:`str`, default="%%.2g" (scientific notation)
         Controls how to format the tick labels of the colorbar.
         Ex: use "%%i" to display as integers.
 

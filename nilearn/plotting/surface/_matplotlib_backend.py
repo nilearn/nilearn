@@ -427,7 +427,7 @@ def _plot_surf(
     avg_method = "mean" if avg_method is None else avg_method
     alpha = "auto" if alpha is None else alpha
     cbar_tick_format = (
-        "%.3g" if cbar_tick_format == "auto" else cbar_tick_format
+        "%.2g" if cbar_tick_format == "auto" else cbar_tick_format
     )
     # Leave space for colorbar
     figsize = [4.7, 5] if colorbar else [4, 5]

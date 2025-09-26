@@ -701,7 +701,7 @@ def test_plot_surf_stat_map_colorbar_tick(plotly, in_memory_mesh, bg_map):
     plot_surf_stat_map(
         in_memory_mesh,
         stat_map=bg_map,
-        cbar_tick_format="%.3g",
+        cbar_tick_format="%.2g",
         engine="plotly",
     )
 
@@ -913,7 +913,7 @@ def test_plot_surf_roi_matplotlib_specific(
         vmin=1.2,
         vmax=8.9,
         colorbar=True,
-        cbar_tick_format="%.3g",
+        cbar_tick_format="%.2g",
         engine=ENGINE,
     )
     img2.canvas.draw()

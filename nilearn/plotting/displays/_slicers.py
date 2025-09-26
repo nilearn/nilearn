@@ -83,7 +83,7 @@ class BaseSlicer:
         self._brain_color = brain_color
         self._colorbar = False
         self._colorbar_width = 0.05 * bb.width
-        self._cbar_tick_format = "%.3g"
+        self._cbar_tick_format = "%.2g"
         self._colorbar_margin = {
             "left": 0.25 * bb.width,
             "right": 0.02 * bb.width,
@@ -280,7 +280,7 @@ class BaseSlicer:
         img,
         threshold=1e-6,
         colorbar=False,
-        cbar_tick_format="%.3g",
+        cbar_tick_format="%.2g",
         cbar_vmin=None,
         cbar_vmax=None,
         transparency=None,
@@ -302,7 +302,7 @@ class BaseSlicer:
                 value is used to threshold the image: values below the
                 threshold (in absolute value) are plotted as transparent.
 
-        cbar_tick_format : str, default="%%.3g" (scientific notation)
+        cbar_tick_format : str, default="%%.2g" (scientific notation)
             Controls how to format the tick labels of the colorbar.
             Ex: use "%%i" to display as integers.
 
