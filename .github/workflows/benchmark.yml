@@ -40,10 +40,13 @@ on:
         branches:
         -   main
     schedule:
-    # every Monday at 12noon UTC
-    -   cron: 0 12 * * TUE
+    # every Monday at 9 AM UTC
+    -   cron: 0 9 * * MON
 
     workflow_dispatch:  # This enables manual triggering from GitHub UI
+
+env:
+    NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
 
 jobs:
     benchmark:
@@ -51,8 +54,7 @@ jobs:
             (github.event_name == 'workflow_dispatch' ||
             github.event_name == 'schedule') &&
             github.repository == 'nilearn/nilearn'
-        # TODO bump to 24.04 when bumping minimum python to 3.10
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
         defaults:
             run:
                 working-directory: ./asv_benchmarks
@@ -64,8 +66,30 @@ jobs:
                 fetch-depth: 0
         -   uses: actions/setup-python@v6
             with:
-                # TODO bump to 3.10 when minimum python is 3.10
-                python-version: 3.9
+                python-version: 3.10
+        -   name: Key for cache based on month number
+            run: date +%m > month_num
+
+        # Try to restore the monthly cache from build-docs workflow
+        -   name: Restore nilearn data cache from build-docs workflow
+            uses: actions/cache/restore@v4
+            with:
+                path: nilearn_data
+                key: data_cache-DocumentationBuilder_month-${{ hashFiles('month_num') }}
+                restore-keys: |
+                    data_cache-DocumentationBuilder_month-
+
+        # Move data to expected location if cache was restored
+        -   name: Setup data directory
+            run: |
+                if [ -d "../nilearn_data" ]; then
+                    mkdir -p ${{ env.NILEARN_DATA }}
+                    cp -r ../nilearn_data/* ${{ env.NILEARN_DATA }}/
+                    echo "Using cached data from build-docs workflow"
+                else
+                    echo "No cached data found, benchmarks will download data as needed"
+                fi
+
         -   name: Install asv and switch to asv_benchmarks directory
             run: |
                 pip install --upgrade pip
