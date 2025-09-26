@@ -77,8 +77,10 @@ jobs:
         -   name: Restore nilearn data cache from build-docs workflow
             uses: actions/cache@v4
             with:
-                path: nilearn_data
-                key: data_cache-DocumentationBuilder_month-${{ hashFiles('month_num') }}
+                path: ${{ env.NILEARN_DATA }}
+                key: data_cache-DocumentationBuilder_month-dummy
+                restore-keys: |
+                    data_cache-DocumentationBuilder_month-
 
         # Move data to expected location if cache was restored
         -   name: Setup data directory
