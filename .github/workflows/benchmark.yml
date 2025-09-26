@@ -68,7 +68,7 @@ jobs:
                 fetch-depth: 0
         -   uses: actions/setup-python@v6
             with:
-                python-version: 3.10
+                python-version: 3.10.18
         -   name: Key for cache based on month number
             run: date +%m > month_num
 
