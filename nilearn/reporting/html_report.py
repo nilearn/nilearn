@@ -420,7 +420,7 @@ class HTMLReport(HTMLDocument):
 
     Parameters
     ----------
-    head_tpl : :obj:`str.Template` or Jinja Template
+    head_tpl : str.Template or Jinja Template
         This is meant for display as a full page, like writing on disk.
         This is the Template object used to generate the HTML head
         section of the report. The template should be filled with:

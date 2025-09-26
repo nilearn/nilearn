@@ -15,7 +15,11 @@ HIGHLIGHTS
  |
  | **Minimum supported versions of the following packages have been bumped up:**
  | - matplotlib -- 3.8.0
- | - SciPy -- v1.9.0
+ | - SciPy -- 1.9.0
+ |
+ | **A new dependency has been added:**
+ | - Jinja2 >= 3.1.0
+ |
 
 NEW
 ---
@@ -27,6 +31,8 @@ Fixes
 
 Enhancements
 ------------
+
+- :bdg-dark:`Code` Parameter ``head_tpl`` in  :class:`~reporting.HTMLReport` can now be a Jinja2 template (:gh:`5710` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add ``view`` parameter to :func:`~plotting.view_img_on_surf` to select the default view that will be used when displaying the figure  (:gh:`5692` by `Rémi Gau`_).
 
