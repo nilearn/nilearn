@@ -369,7 +369,7 @@ def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
 def test_threshold_stats_img_surface_output(surf_img_1d):
     """Check output threshold_stats_img surface with no height_control.
 
-    Also check the user of cluster_treshold.
+    Also check the user of cluster_threshold.
     """
     surf_img_1d.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
     surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
