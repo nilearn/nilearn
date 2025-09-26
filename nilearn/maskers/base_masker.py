@@ -317,6 +317,10 @@ class BaseMasker(
     def _init_report_content(self):
         """Initialize report content."""
 
+    @abc.abstractmethod
+    def _create_figure_for_report(self):
+        """Generate figure for report."""
+
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
 
@@ -609,6 +613,10 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     @abc.abstractmethod
     def _init_report_content(self):
         """Initialize report content."""
+
+    @abc.abstractmethod
+    def _create_figure_for_report(self):
+        """Generate figure for report."""
 
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
