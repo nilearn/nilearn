@@ -17,5 +17,3 @@ coverage:
 
 ignore:
 -   '*externals/.*'  # ignore folders and all its contents
--   nilearn/datasets/data/convert_templates.py
--   nilearn/plotting/glass_brain_files/

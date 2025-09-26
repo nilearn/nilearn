@@ -454,9 +454,7 @@ class BaseSlicer:
             resampling_interpolation = "nearest"
 
         # Image reordering should be done before sanitizing transparency
-        img = reorder_img(
-            img, resample=resampling_interpolation, copy_header=True
-        )
+        img = reorder_img(img, resample=resampling_interpolation)
 
         transparency, transparency_affine = self._sanitize_transparency(
             img,
@@ -579,9 +577,7 @@ class BaseSlicer:
             if is_binary_niimg(transparency):
                 resampling_interpolation = "nearest"
             transparency = reorder_img(
-                transparency,
-                resample=resampling_interpolation,
-                copy_header=True,
+                transparency, resample=resampling_interpolation
             )
             if not _check_fov(transparency, img.affine, img.shape[:3]):
                 warnings.warn(
@@ -592,7 +588,6 @@ class BaseSlicer:
                     transparency,
                     img.affine,
                     img.shape,
-                    copy_header=True,
                     interpolation=resampling_interpolation,
                 )
 
@@ -785,7 +780,7 @@ class BaseSlicer:
             The color used to display the edge map.
 
         """
-        img = reorder_img(img, resample="continuous", copy_header=True)
+        img = reorder_img(img, resample="continuous")
         data = get_data(img)
         affine = img.affine
         single_color_cmap = ListedColormap([color])

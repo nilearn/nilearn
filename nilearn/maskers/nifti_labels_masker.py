@@ -31,7 +31,6 @@ from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
     filter_and_extract,
-    generate_lut,
     mask_logger,
 )
 from nilearn.masking import load_mask_img
@@ -271,80 +270,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             .to_dict()
         )
 
-    @property
-    def labels_(self) -> list[int | float]:
-        """Return list of labels of the regions.
-
-        The background label is included if present in the image.
-        """
-        check_is_fitted(self)
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
-        return lut["index"].to_list()
-
-    @property
-    def region_names_(self) -> dict[int, str]:
-        """Return a dictionary containing the region names corresponding \
-            to each column in the array returned by `transform`.
-
-        The region names correspond to the labels provided
-        in labels in input.
-        The region name corresponding to ``region_signal[:,i]``
-        is ``region_names_[i]``.
-
-        .. versionadded:: 0.10.3
-        """
-        check_is_fitted(self)
-
-        index = self.labels_
-        valid_ids = [id for id in index if id != self.background_label]
-
-        sub_df = self.lut_[self.lut_["index"].isin(valid_ids)]
-
-        return sub_df["name"].reset_index(drop=True).to_dict()
-
-    @property
-    def region_ids_(self) -> dict[str | int, int | float]:
-        """Return dictionary containing the region ids corresponding \
-           to each column in the array \
-           returned by `transform`.
-
-        The region id corresponding to ``region_signal[:,i]``
-        is ``region_ids_[i]``.
-        ``region_ids_['background']`` is the background label.
-
-        .. versionadded:: 0.10.3
-        """
-        check_is_fitted(self)
-
-        index = self.labels_
-
-        region_ids_: dict[str | int, int | float] = {}
-        if self.background_label in index:
-            index.pop(index.index(self.background_label))
-            region_ids_["background"] = self.background_label
-        for i, id in enumerate(index):
-            region_ids_[i] = id  # noqa : PERF403
-
-        return region_ids_
-
-    @property
-    def n_elements_(self) -> int:
-        """Return number of regions.
-
-        This is equal to the number of unique values
-        in the fitted label image,
-        minus the background value.
-
-        .. versionadded:: 0.9.2
-        """
-        check_is_fitted(self)
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
-        return len(lut[lut["index"] != self.background_label])
-
     def _post_masking_atlas(self, visualize=False):
         """
         Find the masked atlas before transform and return it.
@@ -531,7 +456,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             "resampling_target",
         )
 
-        self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         self._report_content = {
@@ -561,9 +485,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 idx = self.labels.index("background")
                 self.labels[idx] = "Background"
 
-        self.lut_ = generate_lut(
-            self.labels_img_, self.background_label, self.lut, self.labels
-        )
+        self.lut_ = self._generate_lut()
 
         self._original_region_ids = self.lut_["index"].to_list()
 
@@ -613,7 +535,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 interpolation="nearest",
                 target_shape=ref_img.shape[:3],
                 target_affine=ref_img.affine,
-                copy_header=True,
             )
 
             # Just check that the mask is valid
@@ -786,8 +707,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                     interpolation="nearest",
                     target_shape=imgs_.shape[:3],
                     target_affine=imgs_.affine,
-                    copy_header=True,
-                    force_resample=False,
                 )
 
             # Remove imgs_ from memory before loading the same image
@@ -870,8 +789,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             interpolation="nearest",
             target_shape=imgs_.shape[:3],
             target_affine=imgs_.affine,
-            copy_header=True,
-            force_resample=False,
         )
         labels_after_resampling = set(np.unique(safe_get_data(labels_img_)))
         if labels_diff := labels_before_resampling.difference(

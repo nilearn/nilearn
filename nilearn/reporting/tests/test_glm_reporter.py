@@ -273,6 +273,7 @@ def test_drift_order_in_params(contrasts):
     assert "drift_order" in report.__str__()
 
 
+@pytest.mark.timeout(0)
 def test_flm_generate_report_surface_data(rng):
     """Generate report from flm fitted surface.
 

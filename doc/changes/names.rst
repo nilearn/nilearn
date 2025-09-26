@@ -53,6 +53,8 @@
 
 .. _Caglar Cakan: https://github.com/caglorithm
 
+.. _Chloe Hampson: https://github.com/chlohamp
+
 .. _Chris Gorgolewski: https://chrisgorgolewski.org/
 
 .. _Chris Markiewicz: https://github.com/effigies

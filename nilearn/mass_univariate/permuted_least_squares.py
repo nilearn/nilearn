@@ -922,9 +922,9 @@ def _sanitize_inputs_permuted_ols(
     if output_type == "legacy":
         # TODO (nilearn >= 0.15.0)
         warnings.warn(
-            category=DeprecationWarning,
+            category=FutureWarning,
             message=(
-                'The ``"output_type"`` parameter for "permuted_ols" is '
+                "The 'output_type' parameter for 'permuted_ols' is "
                 "deprecated. "
                 "It will be removed in version 0.15.\n"
                 'Change its value to "dict" to silence this warning.'

@@ -1956,13 +1956,7 @@ def plot_carpet(
     if is_atlas:
         background_label = 0
 
-        atlas_img_res = resample_to_img(
-            mask_img,
-            img,
-            interpolation="nearest",
-            copy_header=True,
-            force_resample=False,  # TODO (nilearn  >= 0.13.0) change to True
-        )
+        atlas_img_res = resample_to_img(mask_img, img, interpolation="nearest")
         atlas_bin = math_img(
             f"img != {background_label}",
             img=atlas_img_res,
@@ -2137,7 +2131,7 @@ def plot_img_comparison(
             "from 'nilearn.plotting.img_comparison' "
             "to silence this warning."
         ),
-        DeprecationWarning,
+        FutureWarning,
         stacklevel=find_stack_level(),
     )
 

@@ -299,10 +299,10 @@ def test_butterworth_warnings_hpf_too_low(data_butterworth_single_timeseries):
     assert not array_equal(data, out)
 
 
-def test_butterworth_errors(data_butterworth_single_timeseries):
-    """Check for high-pass frequency higher than low-pass frequency."""
+@pytest.mark.parametrize("high_pass", [0.1, 0.2])
+def test_butterworth_errors(data_butterworth_single_timeseries, high_pass):
+    """Check for high-pass frequency higher or equal to low-pass frequency."""
     sampling = 1
-    high_pass = 0.2
     low_pass = 0.1
     with pytest.raises(
         ValueError,
@@ -487,19 +487,15 @@ def test_clean_detrending():
     # using assert_almost_equal instead of array_equal due to NaNs
     assert_almost_equal(y_orig, y, decimal=13)
 
-    # This should remove trends
-    x_detrended = clean(
-        x, standardize=False, detrend=True, low_pass=None, high_pass=None
-    )
+    # This should remove trends as detrend is True by default
+    x_detrended = clean(x, standardize=False)
 
     assert_almost_equal(x_detrended, signals, decimal=13)
     # clean should not modify inputs
     assert array_equal(x_orig, x)
 
     # This should do nothing
-    x_undetrended = clean(
-        x, standardize=False, detrend=False, low_pass=None, high_pass=None
-    )
+    x_undetrended = clean(x, standardize=False, detrend=False)
 
     assert abs(x_undetrended - signals).max() >= 0.06
     # clean should not modify inputs
@@ -1190,10 +1186,16 @@ def test_high_variance_confounds_detrend():
     )
     seriesG = seriesC
 
-    # Check shape of output
-    out = high_variance_confounds(seriesG, n_confounds=7, detrend=False)
+    # detrend is True by default
+    out_detrended = high_variance_confounds(seriesG, n_confounds=7)
+    out_not_detrended = high_variance_confounds(
+        seriesG, n_confounds=7, detrend=False
+    )
+    with pytest.raises(AssertionError):
+        assert_equal(out_detrended, out_not_detrended)
 
-    assert out.shape == (length, 7)
+    # Check shape of output
+    assert out_not_detrended.shape == (length, 7)
 
     trends = generate_trends(n_features=n_features, length=length)
     seriesGt = seriesG + trends

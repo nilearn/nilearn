@@ -138,7 +138,7 @@ original_voxels = np.sum(get_data(ward.mask_img_))
 
 # Compute mean over time on the functional image to use the mean
 # image for compressed representation comparisons
-mean_func_img = mean_img(dataset.func[0], copy_header=True)
+mean_func_img = mean_img(dataset.func[0])
 
 # Compute common vmin and vmax
 vmin = np.min(get_data(mean_func_img))
