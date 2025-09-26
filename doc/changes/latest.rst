@@ -93,3 +93,10 @@ Changes
 - :bdg-danger:`Deprecation` :func:`~interfaces.bids.parse_bids_filename` will now always return a dictionary with the keys ``'file_path'``, ``'file_basename'``, ``'extension'``, ``'suffix'`` and ``'entities'`` (:gh:`5663` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Set ``copy_header`` default to True in :func:`~image` functions (:gh:`5656` by `Rémi Gau`_ and `Himanshu Aggarwal`_).
+
+Documentation
+-------------
+
+- :bdg-primary:`Doc` Clarified that :func:`~datasets.fetch_*` functions do not
+  re-download datasets already present locally. Added cross-reference to dataset
+  storage documentation. (:gh:`5690` by `Victoria McCray`_)
