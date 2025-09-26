@@ -120,6 +120,7 @@ def test_plot_stat_map_threshold_for_affine_with_rotation(
     assert plotted_array.mask.any()
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "params",
     [
