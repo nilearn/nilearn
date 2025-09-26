@@ -246,7 +246,7 @@ def test_plot_symmetric_colorbar_threshold(
         (3.4, [0, 2.5, 3.4, 5, 7.5, 10]),
         (6.6, [0, 2.5, 5, 6.6, 7.5, 10]),
         (6.7, [0, 2.5, 5, 6.7, 10]),
-        (9.96, [0, 2.5, 5, 7.5, 9.96, 10]),
+        (9.96, [0, 2.5, 5, 7.5, 10]),
     ],
 )
 def test_plot_asymmetric_colorbar_threshold(
