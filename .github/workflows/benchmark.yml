@@ -71,8 +71,7 @@ jobs:
             run: |
                 date +%m > month_num;
                 cat month_num
-                echo "Hash of month_num file:"
-                sha256sum month_num
+                echo "Hash of month_num file: ${{ hashFiles('month_num') }}"
 
         # Try to restore the monthly cache from build-docs workflow
         -   name: Restore nilearn data cache from build-docs workflow
