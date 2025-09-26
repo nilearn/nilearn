@@ -1141,7 +1141,7 @@ def test_first_level_from_bids_get_repetition_time_from_derivatives(tmp_path):
         metadata={"RepetitionTime": RepetitionTime},
     )
 
-    with pytest.warns(UserWarning, match="StartTime' not found in file"):
+    with pytest.warns(RuntimeWarning, match="StartTime' not found in file"):
         models, *_ = first_level_from_bids(
             dataset_path=str(tmp_path / bids_path),
             task_label="main",
@@ -1167,7 +1167,9 @@ def test_first_level_from_bids_get_start_time_from_derivatives(tmp_path):
         bids_path=tmp_path / bids_path, metadata={"StartTime": StartTime}
     )
 
-    with pytest.warns(UserWarning, match="RepetitionTime' not found in file"):
+    with pytest.warns(
+        RuntimeWarning, match="RepetitionTime' not found in file"
+    ):
         models, *_ = first_level_from_bids(
             dataset_path=str(tmp_path / bids_path),
             task_label="main",
@@ -1926,7 +1928,7 @@ def test_first_level_from_bids_no_tr(tmp_path_factory):
         Path(f).unlink()
 
     with pytest.warns(
-        UserWarning, match="'t_r' not provided and cannot be inferred"
+        RuntimeWarning, match="'t_r' not provided and cannot be inferred"
     ):
         first_level_from_bids(
             dataset_path=bids_dataset,
