@@ -194,7 +194,7 @@ def make_glm_report(
         This function translates alpha to a z-scale threshold.
 
     cluster_threshold : :obj:`int`, default=0
-        Cluster size threshold, in voxels.
+        Cluster size threshold, in voxels / vertices.
 
     height_control :  :obj:`str`, default='fpr'
         false positive control meaning of cluster forming
@@ -647,7 +647,7 @@ def _make_stat_maps_contrast_clusters(
 
     cluster_threshold : float
         Cluster size threshold. In the returned thresholded map,
-        sets of connected voxels (`clusters`) with size smaller
+        sets of connected voxels / vertices (`clusters`) with size smaller
         than this number will be removed.
 
     height_control : string
