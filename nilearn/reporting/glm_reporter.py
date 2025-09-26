@@ -29,7 +29,10 @@ from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm.thresholding import (
@@ -237,6 +240,7 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
+    check_params(locals())
     if not is_matplotlib_installed():
         warnings.warn(
             ("No plotting back-end detected. Output will be missing figures."),
@@ -690,6 +694,7 @@ def _make_stat_maps_contrast_clusters(
         contrast name, contrast plot, statistical map, cluster table.
 
     """
+    check_params(locals())
     if not display_mode:
         display_mode_selector = {"slice": "z", "glass": "lzry"}
         display_mode = display_mode_selector[plot_type]

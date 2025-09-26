@@ -20,6 +20,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn._utils.param_validation import check_params
 from nilearn.image import new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
 from nilearn.surface import SurfaceImage
@@ -304,6 +305,7 @@ def get_clusters_table(
         .. versionadded:: 0.10.1
 
     """
+    check_params(locals())
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
 
     label_maps = []
@@ -497,6 +499,7 @@ def clustering_params_to_dataframe(
         Dataframe with clustering parameters.
 
     """
+    check_params(locals())
     table_details = OrderedDict()
     threshold = np.around(threshold, 3)
 

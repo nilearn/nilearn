@@ -891,6 +891,7 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     Clusters are defined using 6-connectivity, also known as NN1 (in AFNI) or
     "faces" connectivity.
     """
+    check_params(locals())
     assert arr.ndim == 3
 
     if copy:

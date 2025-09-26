@@ -13,7 +13,10 @@ from scipy.stats import norm
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image import get_data, math_img, threshold_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -311,6 +314,7 @@ def threshold_stats_img(
         without correction.
 
     """
+    check_params(locals())
     height_control_methods = [
         "fpr",
         "fdr",
