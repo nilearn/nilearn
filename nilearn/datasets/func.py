@@ -108,7 +108,6 @@ def fetch_haxby(
 
     Notes
     -----
-
     PyMVPA provides a tutorial making use of this dataset:
     http://www.pymvpa.org/tutorial.html
 
