@@ -30,6 +30,7 @@ def _add_to_ticks(ticks, threshold):
     """
     ticks = ticks[ticks != 0]
     min_diff = min(abs(abs(ticks) - threshold))
+
     # check if threshold should be added to the tick list or replaced by a
     # value in the list
     return bool(
@@ -78,25 +79,33 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
     if threshold is not None and threshold > 1e-6:
         diff = abs(abs(ticks) - threshold)
         add = _add_to_ticks(ticks, threshold)
+        # threshold formatted as matplotlib will display it
+        # this is to avoid double appearance of same tick value
+        # for example when threshold is 9.96 and vmax is 10, matplotlib rounds
+        # 9.96 to 10. If both 9.96 and 10 are in the tick list, matplotlib will
+        # display double 10 in the colorbar.
+        f_threshold = float(f"{threshold:.2g}")
 
         # if the values are either positive or negative
         if 0 <= vmin <= vmax or vmin <= vmax <= 0:
-            threshold = threshold if vmin >= 0 else -threshold
+            if vmax <= 0:
+                f_threshold = -f_threshold
             if add:
-                ticks = np.append(ticks, threshold)
+                ticks = np.append(ticks, f_threshold)
             else:
                 idx_closest = np.argmin(diff)
                 # if the closest value to replace is one of vmin or vmax,
                 # instead of replacing add the threshold value to the list
-                if ticks[idx_closest] == vmin or ticks[idx_closest] == vmax:
-                    ticks = np.append(ticks, threshold)
+                closest = ticks[idx_closest]
+                if (closest in (vmin, vmax)) and closest != f_threshold:
+                    ticks = np.append(ticks, f_threshold)
                 # if threshold value is already in the list, do nothing
-                elif threshold not in ticks and -threshold not in ticks:
-                    ticks[idx_closest] = threshold
+                elif f_threshold not in ticks:
+                    ticks[idx_closest] = f_threshold
         # if vmin is negative and vmax is positive and threshold is in between
         # or outside vmin-vmax values
         elif add:
-            ticks = np.append(ticks, [-threshold, threshold])
+            ticks = np.append(ticks, [-f_threshold, f_threshold])
         else:
             # Edge case where the thresholds are exactly
             # at the same distance to 4 ticks
@@ -109,16 +118,22 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
                 if 0 in ticks[idx_closest]:
                     idx_closest = np.sort(np.argpartition(diff, 3)[:3])
                     idx_closest = idx_closest[[0, 2]]
-            if -threshold not in ticks and -threshold != vmin:
-                if ticks[idx_closest[0]] != 0:
-                    ticks[idx_closest[0]] = -threshold
+            if -f_threshold not in ticks and -f_threshold != vmin:
+                if (
+                    ticks[idx_closest[0]] != 0
+                    or ticks[idx_closest[0]] == -f_threshold
+                ):
+                    ticks[idx_closest[0]] = -f_threshold
                 else:
-                    ticks = np.append(-threshold)
-            if threshold not in ticks and threshold != vmax:
-                if ticks[idx_closest[1]] != 0:
-                    ticks[idx_closest[1]] = threshold
+                    ticks = np.append(-f_threshold)
+            if f_threshold not in ticks and f_threshold != vmax:
+                if (
+                    ticks[idx_closest[1]] != 0
+                    or ticks[idx_closest] == f_threshold
+                ):
+                    ticks[idx_closest[1]] = f_threshold
                 else:
-                    ticks = np.append(threshold)
+                    ticks = np.append(f_threshold)
 
         ticks = np.append(ticks, [vmin, vmax])
         ticks = np.sort(np.unique(ticks))
