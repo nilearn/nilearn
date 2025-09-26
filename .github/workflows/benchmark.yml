@@ -68,7 +68,11 @@ jobs:
             with:
                 python-version: 3.10.18
         -   name: Key for cache based on month number
-            run: date +%m > month_num;
+            run: |
+                date +%m > month_num;
+                cat month_num
+                echo "Hash of month_num file:"
+                sha256sum month_num
 
         # Try to restore the monthly cache from build-docs workflow
         -   name: Restore nilearn data cache from build-docs workflow
