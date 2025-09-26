@@ -309,8 +309,13 @@ class BaseMasker(
         """Needed by sklearn machinery for set_ouput."""
         return self.n_elements_
 
+    @abc.abstractmethod
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
+
+    @abc.abstractmethod
+    def _init_report_content(self):
+        """Initialize report content."""
 
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
@@ -596,6 +601,14 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                 check_polymesh_equal(mask_img_.mesh, x.mesh)
 
         return mask_img_
+
+    @abc.abstractmethod
+    def fit(self, imgs=None, y=None):
+        """Present only to comply with sklearn estimators checks."""
+
+    @abc.abstractmethod
+    def _init_report_content(self):
+        """Initialize report content."""
 
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
