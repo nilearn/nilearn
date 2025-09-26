@@ -18,6 +18,16 @@ def engine_warning(engine):
 
 
 def _add_to_ticks(ticks, threshold):
+    """Compare the distance of threshold to closest tick location and decide if
+    threshold should replace the tick or it should be added to the tick list.
+
+    The distance of threshold to 0 is excluded when finding the tick with
+    minimum distance.
+
+    If the distance is smaller than or equal to 1/3th of the tick spacing, the
+    return ``False`` so that the closest tick is replaced with threshold;
+    otherwise return ``True`` so that the threshold is added to the tick list.
+    """
     ticks = ticks[ticks != 0]
     min_diff = min(abs(abs(ticks) - threshold))
     # check if threshold should be added to the tick list or replaced by a
