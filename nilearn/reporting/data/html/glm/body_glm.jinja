@@ -1,7 +1,7 @@
 {% extends "html/body_base.jinja" %}
 
 {% block navbar %}
-{% include 'html/partials/navbar.jinja' %}
+{% include 'html/glm/partials/navbar.jinja' %}
 {% endblock %}
 
 {% block report %}
@@ -13,7 +13,7 @@
 
   <section>
     <h2>Description</h2>
-    {% include 'html/partials/method_section.jinja' %}
+    {% include 'html/glm/partials/method_section.jinja' %}
   </section>
 
   <section id="model-details-{{ unique_id }}">

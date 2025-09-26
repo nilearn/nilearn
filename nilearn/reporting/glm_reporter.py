@@ -412,7 +412,7 @@ def make_glm_report(
 
     env = return_jinja_env()
 
-    body_tpl = env.get_template("html/body_glm.jinja")
+    body_tpl = env.get_template("html/glm/body_glm.jinja")
 
     body = body_tpl.render(
         docstring=model.__doc__.partition("Parameters\n    ----------\n")[0],
