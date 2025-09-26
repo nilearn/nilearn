@@ -744,7 +744,7 @@ def plot_roi(
     cmap="gist_ncar",
     dim="auto",
     colorbar=True,
-    cbar_tick_format="%i",
+    cbar_tick_format="%.2g",
     vmin=None,
     vmax=None,
     resampling_interpolation="nearest",
