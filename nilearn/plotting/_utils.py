@@ -77,7 +77,7 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5, tick_format="%.2g"):
         return np.linspace(vmin, vmax, 1)
 
     if tick_format == "%i" and vmax - vmin < n_ticks - 1:
-        n_ticks = vmax - vmin + 1
+        n_ticks = int(vmax - vmin + 1)
 
     ticks = np.linspace(vmin, vmax, n_ticks)
     ticks = np.vectorize(lambda x: float(f"{x}".format(tick_format)))(ticks)
