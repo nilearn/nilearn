@@ -502,12 +502,6 @@ def _plot_surf(
                 cbar_vmax += 1
                 cbar_vmin += -1
 
-            ticks = get_cbar_ticks(
-                cbar_vmin,
-                cbar_vmax,
-                threshold=threshold,
-                tick_format=cbar_tick_format,
-            )
             if threshold is not None and (
                 cbar_tick_format == "%i" and int(threshold) != threshold
             ):
@@ -516,6 +510,12 @@ def _plot_surf(
                     "but configured the colorbar to use integer formatting.",
                     stacklevel=find_stack_level(),
                 )
+            ticks = get_cbar_ticks(
+                cbar_vmin,
+                cbar_vmax,
+                threshold=threshold,
+                tick_format=cbar_tick_format,
+            )
             norm = Normalize(vmin, vmax)
             thrs_cmap = threshold_cmap(cmap, norm, threshold)
             bounds = np.linspace(cbar_vmin, cbar_vmax, thrs_cmap.N)
