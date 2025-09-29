@@ -258,3 +258,27 @@ def test_get_cbar_ticks_threshold(vmin, vmax, threshold, num_ticks, expected):
     """Test nilearn.plotting._utils.get_cbar_ticks."""
     ticks = get_cbar_ticks(vmin, vmax, threshold, num_ticks)
     assert np.allclose(ticks, expected, rtol=1e-02)
+
+
+@pytest.mark.parametrize(
+    "vmin,vmax,cbar_tick_format,expected",
+    [
+        (0, 0, "%i", [0]),
+        (0, 3, "%i", [0, 1, 2, 3]),
+        (0, 4, "%i", [0, 1, 2, 3, 4]),
+        (1, 5, "%i", [1, 2, 3, 4, 5]),
+        (0, 5, "%i", [0, 1.25, 2.5, 3.75, 5]),
+        (0, 10, "%i", [0, 2.5, 5, 7.5, 10]),
+        (0, 0, "%.1f", [0]),
+        (0, 1, "%.1f", [0, 0.25, 0.5, 0.75, 1]),
+        (1, 2, "%.1f", [1, 1.25, 1.5, 1.75, 2]),
+        (1.1, 1.2, "%.1f", [1.1, 1.125, 1.15, 1.175, 1.2]),
+        (0, np.nextafter(0, 1), "%.1f", [0.0e000, 5.0e-324]),
+    ],
+)
+def test_get_cbar_ticks_int_tick_format(
+    vmin, vmax, cbar_tick_format, expected
+):
+    """Test nilearn.plotting._utils.get_cbar_ticks for integer tick format."""
+    ticks = get_cbar_ticks(vmin, vmax, tick_format=cbar_tick_format)
+    assert np.allclose(ticks, expected, rtol=1e-02)

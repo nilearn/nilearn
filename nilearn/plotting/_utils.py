@@ -39,7 +39,7 @@ def _add_to_ticks(ticks, threshold):
     )
 
 
-def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
+def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5, tick_format="%.2g"):
     """Return an array of evenly spaced ``n_ticks`` tick values to be used for
     the colorbar.
 
@@ -64,6 +64,8 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
     list.
     n_ticks: :obj:`int`
         number of tick values to return
+    tick_format: :obj:`str`, default="%.2g"
+        formatting to be used for colorbar ticks
 
     Returns
     -------
@@ -74,7 +76,11 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
     if vmin == vmax and (threshold is None or threshold == 0 or vmax == 0):
         return np.linspace(vmin, vmax, 1)
 
+    if tick_format == "%i" and vmax - vmin < n_ticks - 1:
+        n_ticks = vmax - vmin + 1
+
     ticks = np.linspace(vmin, vmax, n_ticks)
+    ticks = np.vectorize(lambda x: float(f"{x}".format(tick_format)))(ticks)
 
     if threshold is not None and threshold > 1e-6:
         diff = abs(abs(ticks) - threshold)
@@ -84,7 +90,7 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
         # for example when threshold is 9.96 and vmax is 10, matplotlib rounds
         # 9.96 to 10. If both 9.96 and 10 are in the tick list, matplotlib will
         # display double 10 in the colorbar.
-        f_threshold = float(f"{threshold:.2g}")
+        f_threshold = float(f"{threshold}".format(tick_format))
 
         # if the values are either positive or negative
         if 0 <= vmin <= vmax or vmin <= vmax <= 0:
@@ -135,8 +141,8 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5):
                 else:
                     ticks = np.append(f_threshold)
 
-        ticks = np.append(ticks, [vmin, vmax])
-        ticks = np.sort(np.unique(ticks))
+    ticks = np.append(ticks, [vmin, vmax])
+    ticks = np.sort(np.unique(ticks))
     return ticks
 
 

@@ -314,21 +314,6 @@ def _get_bounds(data, vmin=None, vmax=None):
     return vmin, vmax
 
 
-def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
-    """Help for plot_surf with matplotlib engine.
-
-    This function computes the tick values for the colorbar.
-    """
-    # Default number of ticks is 5...
-    n_ticks = 5
-    # ...unless we are dealing with integers with a small range
-    # in this case, we reduce the number of ticks
-    if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1:
-        return np.arange(vmin, vmax + 1)
-    else:
-        return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
-
-
 def _rescale(data, vmin=None, vmax=None):
     """Rescales the data."""
     data_copy = np.copy(data)
@@ -517,8 +502,11 @@ def _plot_surf(
                 cbar_vmax += 1
                 cbar_vmin += -1
 
-            ticks = _get_ticks(
-                cbar_vmin, cbar_vmax, cbar_tick_format, threshold
+            ticks = get_cbar_ticks(
+                cbar_vmin,
+                cbar_vmax,
+                threshold=threshold,
+                tick_format=cbar_tick_format,
             )
             if threshold is not None and (
                 cbar_tick_format == "%i" and int(threshold) != threshold
@@ -774,7 +762,9 @@ def _plot_img_on_surf(
         cbar_ax = fig.add_subplot(cbar_grid[1])
         axes.append(cbar_ax)
         # Get custom ticks to set in colorbar
-        ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold)
+        ticks = get_cbar_ticks(
+            vmin, vmax, threshold=threshold, tick_format=cbar_tick_format
+        )
         fig.colorbar(
             sm,
             cax=cbar_ax,
