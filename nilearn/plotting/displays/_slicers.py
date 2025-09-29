@@ -21,6 +21,7 @@ from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
 from nilearn.plotting._engine_utils import threshold_cmap
 from nilearn.plotting._utils import (
     check_threshold_not_negative,
+    get_cbar_bounds,
     get_cbar_ticks,
 )
 from nilearn.plotting.displays import CutAxes
@@ -742,8 +743,12 @@ class BaseSlicer:
                 cmap, norm, offset, (*self._brain_color, 0.0)
             )
 
-        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset)
-        bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
+        ticks = get_cbar_ticks(
+            cbar_vmin, cbar_vmax, offset, tick_format=self._cbar_tick_format
+        )
+        bounds = get_cbar_bounds(
+            cbar_vmin, cbar_vmax, our_cmap.N, self._cbar_tick_format
+        )
 
         self._cbar = ColorbarBase(
             self._colorbar_ax,

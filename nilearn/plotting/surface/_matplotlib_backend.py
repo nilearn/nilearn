@@ -16,6 +16,7 @@ from nilearn.image import get_data
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import threshold_cmap, to_color_strings
 from nilearn.plotting._utils import (
+    get_cbar_bounds,
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
 )
@@ -518,7 +519,9 @@ def _plot_surf(
             )
             norm = Normalize(vmin, vmax)
             thrs_cmap = threshold_cmap(cmap, norm, threshold)
-            bounds = np.linspace(cbar_vmin, cbar_vmax, thrs_cmap.N)
+            bounds = get_cbar_bounds(
+                cbar_vmin, cbar_vmax, thrs_cmap.N, cbar_tick_format
+            )
 
             # we need to create a proxy mappable
             proxy_mappable = ScalarMappable(cmap=thrs_cmap, norm=norm)
