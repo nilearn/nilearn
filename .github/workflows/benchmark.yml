@@ -74,10 +74,9 @@ jobs:
                 echo "Hash of month_num file: ${{ hashFiles('month_num') }}"
 
         -   name: List all directories
-            run: |
-                ls -la *
+            run: pwd
 
-              # Try to restore the monthly cache from build-docs workflow
+                  # Try to restore the monthly cache from build-docs workflow
         -   name: Restore nilearn data cache from build-docs workflow
             uses: actions/cache@v4
             with:
