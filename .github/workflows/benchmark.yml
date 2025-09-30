@@ -75,6 +75,7 @@ jobs:
         -   name: Download and cache nilearn data
             run: python ../doc/get_data_examples.py full
         -   name: Add SSH key for benchmarks repo
+            if: github.event_name != 'pull_request'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -85,11 +86,20 @@ jobs:
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
         -   name: Pull previous results from benchmarks repo
+            if: github.event_name != 'pull_request'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
                 git clone git@github.com:nilearn/benchmarks.git benchmarks_repo
                 cp -r benchmarks_repo/results .
+
+        -   name: Pull previous results from benchmarks repo (PR fallback)
+            if: github.event_name == 'pull_request'
+            run: |
+                # Use HTTPS for PRs (read-only)
+                git clone https://github.com/nilearn/benchmarks.git benchmarks_repo
+                cp -r benchmarks_repo/results .
+
         -   name: Get all the machine info
             run: |
                 asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
@@ -110,6 +120,7 @@ jobs:
                     ./asv_benchmarks/results
                 compression-level: 9
         -   name: Push new results and logs back to benchmarks repo
+            if: github.event_name != 'pull_request'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -122,6 +133,7 @@ jobs:
                 git commit -m "Update benchmark results and logs (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin main
         -   name: Push html to gh-pages branch
+            if: github.event_name != 'pull_request'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
