@@ -6,6 +6,7 @@ import numpy as np
 from nilearn._utils.logger import find_stack_level
 
 DEFAULT_ENGINE = "matplotlib"
+DEFAULT_TICK_FORMAT = "%.2g"
 
 
 def engine_warning(engine):
@@ -17,7 +18,7 @@ def engine_warning(engine):
     warn(message, stacklevel=find_stack_level())
 
 
-def get_cbar_bounds(vmin, vmax, num_val, tick_format):
+def get_cbar_bounds(vmin, vmax, num_val, tick_format=DEFAULT_TICK_FORMAT):
     """Return colorbar boundaries which include vmin and vmax values when
     formatted with ``tick_format``.
     """
@@ -56,7 +57,9 @@ def _add_to_ticks(ticks, threshold):
     )
 
 
-def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5, tick_format="%.2g"):
+def get_cbar_ticks(
+    vmin, vmax, threshold=None, n_ticks=5, tick_format=DEFAULT_TICK_FORMAT
+):
     """Return an array of evenly spaced ``n_ticks`` tick values to be used for
     the colorbar.
 

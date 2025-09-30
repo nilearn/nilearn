@@ -20,6 +20,7 @@ from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
 from nilearn.plotting._engine_utils import threshold_cmap
 from nilearn.plotting._utils import (
+    DEFAULT_TICK_FORMAT,
     check_threshold_not_negative,
     get_cbar_bounds,
     get_cbar_ticks,
@@ -84,7 +85,7 @@ class BaseSlicer:
         self._brain_color = brain_color
         self._colorbar = False
         self._colorbar_width = 0.05 * bb.width
-        self._cbar_tick_format = "%.2g"
+        self._cbar_tick_format = DEFAULT_TICK_FORMAT
         self._colorbar_margin = {
             "left": 0.25 * bb.width,
             "right": 0.02 * bb.width,
@@ -281,7 +282,7 @@ class BaseSlicer:
         img,
         threshold=1e-6,
         colorbar=False,
-        cbar_tick_format="%.2g",
+        cbar_tick_format=DEFAULT_TICK_FORMAT,
         cbar_vmin=None,
         cbar_vmax=None,
         transparency=None,

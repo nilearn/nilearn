@@ -14,6 +14,7 @@ from nilearn.image import get_data
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import threshold_cmap, to_color_strings
 from nilearn.plotting._utils import (
+    DEFAULT_TICK_FORMAT,
     get_cbar_bounds,
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
@@ -115,7 +116,7 @@ def _adjust_plot_roi_params(params):
 
     cbar_tick_format = params.get("cbar_tick_format", "auto")
     if cbar_tick_format == "auto":
-        params["cbar_tick_format"] = "%.2g"
+        params["cbar_tick_format"] = DEFAULT_TICK_FORMAT
 
 
 def _normalize_bg_data(data):
@@ -410,9 +411,8 @@ def _plot_surf(
     # adjust values
     avg_method = "mean" if avg_method is None else avg_method
     alpha = "auto" if alpha is None else alpha
-    cbar_tick_format = (
-        "%.2g" if cbar_tick_format == "auto" else cbar_tick_format
-    )
+    if cbar_tick_format == "auto":
+        cbar_tick_format = DEFAULT_TICK_FORMAT
     # Leave space for colorbar
     figsize = [4.7, 5] if colorbar else [4, 5]
 
