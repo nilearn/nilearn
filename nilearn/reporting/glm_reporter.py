@@ -971,8 +971,10 @@ def _stat_map_to_png(
             # Because the image has been flipped
             # replace labels with their negative
             ticks = stat_map_plot._cbar.get_ticks()
-            stat_map_plot._cbar.set_ticks(ticks)
-            stat_map_plot._cbar.set_ticklabels([f"{-t:.2g}" for t in ticks])
+            stat_map_plot._cbar.ax.invert_yaxis()
+            stat_map_plot._cbar.set_ticklabels(
+                [f"{-t:.2g}" if t != 0 else "0" for t in ticks]
+            )
 
     with pd.option_context("display.precision", 2):
         _add_params_to_plot(table_details, stat_map_plot)
