@@ -121,6 +121,7 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5, tick_format="%.2g"):
                 # if the closest value to replace is one of vmin or vmax,
                 # instead of replacing add the threshold value to the list
                 closest = ticks[idx_closest]
+                # if closest is vmin or vmax do not replace
                 if (closest in (vmin, vmax)) and closest != threshold:
                     ticks = np.append(ticks, threshold)
                 # if threshold value is already in the list, do nothing
@@ -142,23 +143,18 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5, tick_format="%.2g"):
                 if 0 in ticks[idx_closest]:
                     idx_closest = np.sort(np.argpartition(diff, 3)[:3])
                     idx_closest = idx_closest[[0, 2]]
+            # set vmin and vmax to formatted values
             vmin = float(tick_format % vmin)
             vmax = float(tick_format % vmax)
             if -threshold not in ticks and -threshold != vmin:
-                if (
-                    ticks[idx_closest[0]] != 0
-                    or ticks[idx_closest[0]] == -threshold
-                ):
+                if ticks[idx_closest[0]] != 0:
                     ticks[idx_closest[0]] = -threshold
-                else:
+                elif ticks[idx_closest[0]] != -threshold:
                     ticks = np.append(-threshold)
             if threshold not in ticks and threshold != vmax:
-                if (
-                    ticks[idx_closest[1]] != 0
-                    or ticks[idx_closest] == threshold
-                ):
+                if ticks[idx_closest[1]] != 0:
                     ticks[idx_closest[1]] = threshold
-                else:
+                elif ticks[idx_closest] != threshold:
                     ticks = np.append(threshold)
 
             ticks = np.append(ticks, [vmin, vmax])
