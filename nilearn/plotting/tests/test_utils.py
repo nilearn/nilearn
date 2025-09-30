@@ -292,5 +292,5 @@ def test_get_cbar_ticks_int_threshold_float():
         UserWarning, match="You provided a non integer threshold"
     ):
         get_cbar_ticks(
-            vmin=3, vmax=5, threshold=2.4, num_ticks=5, tick_format="%i"
+            vmin=3, vmax=5, threshold=2.4, n_ticks=5, tick_format="%i"
         )
