@@ -158,6 +158,15 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5, tick_format="%.2g"):
                     ticks = np.append(threshold)
 
             ticks = np.append(ticks, [vmin, vmax])
+        # remove unnecessary ticks that would be between 0 and +-threshold
+        ticks = ticks[
+            np.where(
+                (ticks > threshold)
+                | (ticks < -threshold)
+                | (np.isin(ticks, [0, vmin, vmax, threshold, -threshold]))
+            )
+        ]
+
     ticks = np.sort(np.unique(ticks))
 
     return ticks
