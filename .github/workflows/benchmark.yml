@@ -76,7 +76,14 @@ jobs:
         -   name: List all directories
             run: pwd
 
-                  # Try to restore the monthly cache from build-docs workflow
+        -   name: List all directories in work
+            run: ls -la /home/runner/work
+
+        -   name: List all directories in nilearn
+            run: |
+                ls -la /home/runner/work/nilearn/nilearn
+
+            # Try to restore the monthly cache from build-docs workflow
         -   name: Restore nilearn data cache from build-docs workflow
             uses: actions/cache@v4
             with:
