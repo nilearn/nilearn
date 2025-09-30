@@ -75,8 +75,8 @@ jobs:
 
         -   name: List all directories
             run: |
-                ls -la /home/*
-                pwd
+                ls -la /home/*;
+                pwd;
 
               # Try to restore the monthly cache from build-docs workflow
         -   name: Restore nilearn data cache from build-docs workflow
