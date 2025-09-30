@@ -6,12 +6,10 @@ functions in :obj:`~nilearn.plotting.surface` should be in this file.
 """
 
 import itertools
-from warnings import warn
 
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils.logger import find_stack_level
 from nilearn.image import get_data
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import threshold_cmap, to_color_strings
@@ -503,14 +501,6 @@ def _plot_surf(
                 cbar_vmax += 1
                 cbar_vmin += -1
 
-            if threshold is not None and (
-                cbar_tick_format == "%i" and int(threshold) != threshold
-            ):
-                warn(
-                    "You provided a non integer threshold "
-                    "but configured the colorbar to use integer formatting.",
-                    stacklevel=find_stack_level(),
-                )
             ticks = get_cbar_ticks(
                 cbar_vmin,
                 cbar_vmax,

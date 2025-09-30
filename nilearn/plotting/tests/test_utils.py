@@ -282,3 +282,15 @@ def test_get_cbar_ticks_int_tick_format(
     """Test nilearn.plotting._utils.get_cbar_ticks for integer tick format."""
     ticks = get_cbar_ticks(vmin, vmax, tick_format=cbar_tick_format)
     assert np.allclose(ticks, expected, rtol=1e-02)
+
+
+def test_get_cbar_ticks_int_threshold_float():
+    """Test nilearn.plotting._utils.get_cbar_ticks for when integer tick
+    format with threshold of type float specified.
+    """
+    with pytest.warns(
+        UserWarning, match="You provided a non integer threshold"
+    ):
+        get_cbar_ticks(
+            vmin=3, vmax=5, threshold=2.4, num_ticks=5, tick_format="%i"
+        )

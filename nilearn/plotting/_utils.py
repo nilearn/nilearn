@@ -93,8 +93,15 @@ def get_cbar_ticks(vmin, vmax, threshold=None, n_ticks=5, tick_format="%.2g"):
     if vmin == vmax and (threshold is None or threshold == 0 or vmax == 0):
         return np.linspace(vmin, vmax, 1)
 
-    if tick_format == "%i" and vmax - vmin < n_ticks - 1:
-        n_ticks = int(vmax - vmin + 1)
+    if tick_format == "%i":
+        if threshold is not None and int(threshold) != threshold:
+            warn(
+                "You provided a non integer threshold "
+                "but configured the colorbar to use integer formatting.",
+                stacklevel=find_stack_level(),
+            )
+        if vmax - vmin < n_ticks - 1:
+            n_ticks = int(vmax - vmin + 1)
 
     ticks = np.linspace(vmin, vmax, n_ticks)
     # tick values formatted as matplotlib will display it
