@@ -43,10 +43,10 @@ on:
         branches:
         -   '*'
     schedule:
-    # every Tuesday at 12 Noon UTC
+        # every Tuesday at 12 Noon UTC
     -   cron: 0 12 * * TUE
 
-    workflow_dispatch:  # This enables manual triggering from GitHub UI
+    workflow_dispatch: # This enables manual triggering from GitHub UI
 
 env:
     NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
@@ -62,27 +62,30 @@ jobs:
         steps:
         -   uses: actions/checkout@v5
             with:
-                # fetch all branches and tags
+                  # fetch all branches and tags
                 fetch-depth: 0
         -   uses: actions/setup-python@v6
             with:
                 python-version: 3.10.18
         -   name: Key for cache based on month number
             run: |
-                date +%m > /home/runner/work/nilearn/nilearn/nilearn_data/month_num;
-                cat /home/runner/work/nilearn/nilearn/nilearn_data/month_num;
-                echo "Hash of month_num file: ${{ hashFiles('/home/runner/work/nilearn/nilearn/nilearn_data/month_num') }}"
+                date +%m > month_num;
+                cat month_num;
+                echo "Hash of month_num file: ${{ hashFiles('month_num') }}"
 
-        # Try to restore the monthly cache from build-docs workflow
+        -   name: List all directories
+            run: ls -la ../*
+
+            # Try to restore the monthly cache from build-docs workflow
         -   name: Restore nilearn data cache from build-docs workflow
             uses: actions/cache@v4
             with:
-                path: ${{ env.NILEARN_DATA }}
-                key: data_cache-DocumentationBuilder_month-${{ hashFiles('/home/runner/work/nilearn/nilearn/nilearn_data/month_num') }}
+                path: '*'
+                key: data_cache-DocumentationBuilder_month-${{ hashFiles('month_num') }}
                 restore-keys: |
                     data_cache-DocumentationBuilder_month-
 
-        # Move data to expected location if cache was restored
+            # Move data to expected location if cache was restored
         -   name: Setup data directory
             run: |
                 if [ -d "../nilearn_data" ]; then
