@@ -67,13 +67,13 @@ jobs:
         -   uses: actions/setup-python@v6
             with:
                 python-version: 3.10.18
-        -   name: Download and cache nilearn data
-            run: python ../doc/get_data_examples.py full
         -   name: Install asv and switch to asv_benchmarks directory
             run: |
                 pip install --upgrade pip
                 pip install asv
                 pip install nilearn
+        -   name: Download and cache nilearn data
+            run: python ../doc/get_data_examples.py full
         -   name: Add SSH key for benchmarks repo
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
