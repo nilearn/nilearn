@@ -115,7 +115,7 @@ def _adjust_plot_roi_params(params):
 
     cbar_tick_format = params.get("cbar_tick_format", "auto")
     if cbar_tick_format == "auto":
-        params["cbar_tick_format"] = "%i"
+        params["cbar_tick_format"] = "%.2g"
 
 
 def _normalize_bg_data(data):
