@@ -969,9 +969,9 @@ def _stat_map_to_png(
             and threshold < 0
         ):
             # Because the image has been flipped
-            # replace labels with their negative
-            ticks = stat_map_plot._cbar.get_ticks()
+            # flip the axes and replace labels with their negative
             stat_map_plot._cbar.ax.invert_yaxis()
+            ticks = stat_map_plot._cbar.get_ticks()
             stat_map_plot._cbar.set_ticklabels(
                 [f"{-t:.2g}" if t != 0 else "0" for t in ticks]
             )
