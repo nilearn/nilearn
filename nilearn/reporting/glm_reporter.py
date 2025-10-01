@@ -29,7 +29,6 @@ from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._version import __version__
 from nilearn.externals import tempita
@@ -37,7 +36,7 @@ from nilearn.glm.thresholding import (
     threshold_stats_img,
     warn_default_threshold,
 )
-from nilearn.image import new_img_like
+from nilearn.image import math_img
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (
     dataframe_to_html,
@@ -936,9 +935,7 @@ def _stat_map_to_png(
             # we cannot use negative threshold in plot_stat_map
             # so we flip the sign of the image, the colormap
             # and we relabel the colorbar later
-            data = safe_get_data(stat_img)
-            affine = stat_img.affine
-            stat_img = new_img_like(stat_img, as_ndarray(-data), affine)
+            stat_img = math_img("-img", img=stat_img)
             cmap = "Blues"
 
         if plot_type == "slice":
