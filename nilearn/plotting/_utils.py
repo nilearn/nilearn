@@ -171,8 +171,13 @@ def get_cbar_ticks(
         # remove unnecessary ticks that would be between 0 and +-threshold
         ticks = ticks[
             np.where(
-                (ticks > threshold)
-                | (ticks < -threshold)
+                # normally threshold should be positive
+                # however in the above condition, if data is either positive or
+                # negative
+                # we set threshold=-threshold
+                # in that case below we need to check with abs(threshold)
+                (ticks > abs(threshold))
+                | (ticks < -abs(threshold))
                 | (np.isin(ticks, [0, vmin, vmax, threshold, -threshold]))
             )
         ]
