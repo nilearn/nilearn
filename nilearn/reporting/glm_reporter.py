@@ -36,7 +36,6 @@ from nilearn.glm.thresholding import (
     threshold_stats_img,
     warn_default_threshold,
 )
-from nilearn.image import math_img
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (
     dataframe_to_html,
@@ -908,14 +907,6 @@ def _stat_map_to_png(
             cmap = "Blues_r"
 
     if isinstance(stat_img, SurfaceImage):
-        if not two_sided and threshold < 0:
-            # we cannot use negative threshold in plot_surf_stat_map
-            # so we flip the sign of the image, the colormap
-            # and we relabel the colorbar later
-            for k, v in stat_img.data.parts.items():
-                stat_img.data.parts[k] = -v
-            cmap = "Blues"
-
         surf_mesh = bg_img.mesh if bg_img else None
         stat_map_plot = plot_surf_stat_map(
             stat_map=stat_img,
@@ -931,12 +922,6 @@ def _stat_map_to_png(
 
     else:
         check_parameter_in_allowed(plot_type, ["slice", "glass"], "plot_type")
-        if not two_sided and threshold < 0:
-            # we cannot use negative threshold in plot_stat_map
-            # so we flip the sign of the image, the colormap
-            # and we relabel the colorbar later
-            stat_img = math_img("-img", img=stat_img)
-            cmap = "Blues"
 
         if plot_type == "slice":
             stat_map_plot = plot_stat_map(
@@ -970,15 +955,6 @@ def _stat_map_to_png(
             loc="right",
             color=x_label_color,
         )
-
-        if not two_sided and threshold < 0:
-            # Because the image has been flipped
-            # flip the axes and replace labels with their negative
-            stat_map_plot._cbar.ax.invert_yaxis()
-            ticks = stat_map_plot._cbar.get_ticks()
-            stat_map_plot._cbar.set_ticklabels(
-                [f"{-t:.2g}" if t != 0 else "0" for t in ticks]
-            )
 
     with pd.option_context("display.precision", 2):
         _add_params_to_plot(table_details, stat_map_plot)
