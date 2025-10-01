@@ -715,9 +715,6 @@ class BaseSlicer:
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
         """
-        offset = 0 if threshold is None else threshold
-        offset = min(offset, norm.vmax)
-
         cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
         cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
 
@@ -741,11 +738,11 @@ class BaseSlicer:
             return
         else:
             our_cmap = threshold_cmap(
-                cmap, norm, offset, (*self._brain_color, 0.0)
+                cmap, norm, threshold, (*self._brain_color, 0.0)
             )
 
         ticks = get_cbar_ticks(
-            cbar_vmin, cbar_vmax, offset, tick_format=self._cbar_tick_format
+            cbar_vmin, cbar_vmax, threshold, tick_format=self._cbar_tick_format
         )
         bounds = get_cbar_bounds(
             cbar_vmin, cbar_vmax, our_cmap.N, self._cbar_tick_format
