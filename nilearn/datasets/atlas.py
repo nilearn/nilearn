@@ -263,14 +263,6 @@ def fetch_atlas_craddock_2012(
         - %(template)s
 
 
-    Warns
-    -----
-    DeprecationWarning
-        If an homogeneity input is provided, the current behavior
-        (returning multiple maps) is deprecated.
-        Starting in version 0.13, one map will be returned in a 'maps' dict key
-        depending on the homogeneity and grp_mean value.
-
     References
     ----------
     .. footbibliography::

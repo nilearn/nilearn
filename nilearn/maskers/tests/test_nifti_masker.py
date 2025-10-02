@@ -169,7 +169,7 @@ def test_matrix_orientation():
     assert not np.any(std < 0.1)
 
     # Test inverse transform
-    masker = NiftiMasker(mask_img=mask, standardize=False, detrend=False)
+    masker = NiftiMasker(mask_img=mask)
     masker.fit()
     timeseries = masker.transform(fmri)
     recovered = masker.inverse_transform(timeseries)
@@ -448,37 +448,3 @@ def test_filter_and_mask(affine_eye):
     # Test return_affine = False
     data = filter_and_mask(data_img, mask_img, params)
     assert data.shape == (data_shape[3], np.prod(np.array(mask.shape)))
-
-
-def test_standardization(rng, shape_3d_default, affine_eye):
-    """Check output properly standardized with 'standardize' parameter."""
-    n_samples = 500
-
-    signals = rng.standard_normal(size=(np.prod(shape_3d_default), n_samples))
-    means = (
-        rng.standard_normal(size=(np.prod(shape_3d_default), 1)) * 50 + 1000
-    )
-    signals += means
-    img = Nifti1Image(
-        signals.reshape((*shape_3d_default, n_samples)),
-        affine_eye,
-    )
-
-    mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
-
-    # z-score
-    masker = NiftiMasker(mask, standardize="zscore_sample")
-    trans_signals = masker.fit_transform(img)
-
-    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals.std(0), 1, decimal=3)
-
-    # psc
-    masker = NiftiMasker(mask, standardize="psc")
-    trans_signals = masker.fit_transform(img)
-
-    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(
-        trans_signals,
-        (signals / signals.mean(1)[:, np.newaxis] * 100 - 100).T,
-    )

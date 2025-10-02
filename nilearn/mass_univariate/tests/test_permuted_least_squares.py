@@ -801,8 +801,8 @@ def test_cluster_level_parameters_warnings(cluster_level_design, masker):
     # masker is defined, but threshold is not.
     # no cluster-level inference is performed, but there's a warning.
     with pytest.warns(
-        DeprecationWarning,
-        match='The ``"output_type"`` parameter for "permuted_ols"',
+        FutureWarning,
+        match="'output_type'.*is deprecated",
     ):
         out = permuted_ols(
             tested_var,

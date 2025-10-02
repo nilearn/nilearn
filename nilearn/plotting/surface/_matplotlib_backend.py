@@ -11,7 +11,6 @@ from warnings import warn
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn.image import get_data
 from nilearn.plotting import cm
@@ -35,7 +34,6 @@ from nilearn.surface import load_surf_data, load_surf_mesh
 
 try:
     import matplotlib.pyplot as plt
-    from matplotlib import __version__ as mpl_version
     from matplotlib.cm import ScalarMappable
     from matplotlib.colorbar import make_axes
     from matplotlib.colors import Normalize, to_rgba
@@ -639,23 +637,10 @@ def _plot_surf_contours(
     for level, color, label in zip(levels, colors, labels, strict=False):
         roi_indices = np.where(roi == level)[0]
         faces_outside = get_faces_on_edge(faces, roi_indices)
-        # Fix: Matplotlib version 3.3.2 to 3.3.3
-        # Attribute _facecolors3d changed to _facecolor3d in
-        # matplotlib version 3.3.3
-        if compare_version(mpl_version, "<", "3.3.3"):
-            axes.collections[0]._facecolors3d[faces_outside] = color
-            if axes.collections[0]._edgecolors3d.size == 0:
-                axes.collections[0].set_edgecolor(
-                    axes.collections[0]._facecolors3d
-                )
-            axes.collections[0]._edgecolors3d[faces_outside] = color
-        else:
-            axes.collections[0]._facecolor3d[faces_outside] = color
-            if axes.collections[0]._edgecolor3d.size == 0:
-                axes.collections[0].set_edgecolor(
-                    axes.collections[0]._facecolor3d
-                )
-            axes.collections[0]._edgecolor3d[faces_outside] = color
+        axes.collections[0]._facecolor3d[faces_outside] = color
+        if axes.collections[0]._edgecolor3d.size == 0:
+            axes.collections[0].set_edgecolor(axes.collections[0]._facecolor3d)
+        axes.collections[0]._edgecolor3d[faces_outside] = color
         if label and legend:
             patch_list.append(Patch(color=color, label=label))
     # plot legend only if indicated and labels provided
