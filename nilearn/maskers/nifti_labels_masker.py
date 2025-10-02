@@ -451,6 +451,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         """
         del y
         check_params(self.__dict__)
+
+        self._init_report_content()
+
         check_reduction_strategy(self.strategy)
         check_parameter_in_allowed(
             self.resampling_target,
@@ -459,8 +462,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         )
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
-
-        self._init_report_content()
 
         self._fit_cache()
 
@@ -547,8 +548,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 imgs, dims = compute_middle_image(imgs)
                 self._reporting_data["img"] = imgs
                 self._reporting_data["dim"] = dims
-        else:
-            self._reporting_data = None
 
         mask_logger("fit_done", verbose=self.verbose)
 
@@ -564,6 +563,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 "warning_message": None,
                 "number_of_regions": 0,
             }
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = None
 
     def _check_labels(self):
         """Check labels.

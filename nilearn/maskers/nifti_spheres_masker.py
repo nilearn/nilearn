@@ -599,7 +599,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
             self.seeds_.append(seed)
 
-        self._reporting_data = None
         if self.reports:
             self._reporting_data = {
                 "seeds": self.seeds_,
@@ -623,6 +622,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 ),
                 "warning_message": None,
             }
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = None
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
