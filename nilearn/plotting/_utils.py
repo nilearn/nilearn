@@ -144,9 +144,11 @@ def get_cbar_ticks(
         else:
             # Edge case where the thresholds are exactly
             # at the same distance to 4 ticks
-            if np.count_nonzero(min(diff)) == 4:
+            if np.count_nonzero(ticks == min(diff)) == 4:
                 idx_closest = np.sort(np.argpartition(diff, 4)[:4])
-                idx_closest = np.isin(ticks, np.sort(ticks[idx_closest])[1:3])
+                idx_closest = np.where(
+                    np.isin(ticks, np.sort(ticks[idx_closest])[1:3])
+                )
             else:
                 # Find the closest 2 ticks
                 idx_closest = np.sort(np.argpartition(diff, 2)[:2])
@@ -159,13 +161,13 @@ def get_cbar_ticks(
             if -threshold not in ticks and -threshold != vmin:
                 if ticks[idx_closest[0]] != 0:
                     ticks[idx_closest[0]] = -threshold
-                elif ticks[idx_closest[0]] != -threshold:
-                    ticks = np.append(-threshold)
+                else:
+                    ticks = np.append(ticks, -threshold)
             if threshold not in ticks and threshold != vmax:
                 if ticks[idx_closest[1]] != 0:
                     ticks[idx_closest[1]] = threshold
-                elif ticks[idx_closest] != threshold:
-                    ticks = np.append(threshold)
+                else:
+                    ticks = np.append(ticks, threshold)
 
             ticks = np.append(ticks, [vmin, vmax])
         # remove unnecessary ticks that would be between 0 and +-threshold
@@ -181,7 +183,6 @@ def get_cbar_ticks(
                 | (np.isin(ticks, [0, vmin, vmax, threshold, -threshold]))
             )
         ]
-
     ticks = np.sort(np.unique(ticks))
 
     return ticks
