@@ -112,7 +112,7 @@ def iter_check_niimg(
 
     Parameters
     ----------
-    niimgs : list of niimg or glob pattern
+    niimgs : list of niimg or glob pattern or itertools.tee instance
         Image to iterate over.
 
     ensure_ndim : integer, optional
@@ -142,6 +142,9 @@ def iter_check_niimg(
         check_niimg, check_niimg_3d, check_niimg_4d
 
     """
+    # TODO move this function to avoid circular import
+    from nilearn.surface.surface import SurfaceImage
+
     if memory is None:
         memory = Memory(location=None)
     # If niimgs is a string, use glob to expand it to the matching filenames.
@@ -152,65 +155,73 @@ def iter_check_niimg(
     ndim_minus_one = ensure_ndim - 1 if ensure_ndim is not None else None
     if target_fov is not None and target_fov != "first":
         ref_fov = target_fov
+
     i = -1
     for i, niimg in enumerate(niimgs):
-        try:
-            niimg = check_niimg(
-                niimg,
-                ensure_ndim=ndim_minus_one,
-                atleast_4d=atleast_4d,
-                dtype=dtype,
-            )
-            if i == 0:
-                ndim_minus_one = len(niimg.shape)
-                if ref_fov is None:
-                    ref_fov = (niimg.affine, niimg.shape[:3])
-                    resample_to_first_img = True
-
-            if not _check_fov(niimg, ref_fov[0], ref_fov[1]):
-                if target_fov is None:
-                    raise ValueError(
-                        f"Field of view of image #{i} is different from "
-                        "reference FOV.\n"
-                        f"Reference affine:\n{ref_fov[0]!r}\n"
-                        f"Image affine:\n{niimg.affine!r}\n"
-                        f"Reference shape:\n{ref_fov[1]!r}\n"
-                        f"Image shape:\n{niimg.shape!r}\n"
-                    )
-                from nilearn.image import (
-                    resample_img,  # we avoid a circular import
-                )
-
-                if resample_to_first_img:
-                    warnings.warn(
-                        "Affine is different across subjects."
-                        " Realignment on first subject "
-                        "affine forced",
-                        stacklevel=find_stack_level(),
-                    )
-                niimg = cache(
-                    resample_img,
-                    memory,
-                    func_memory_level=2,
-                    memory_level=memory_level,
-                )(
-                    niimg,
-                    target_affine=ref_fov[0],
-                    target_shape=ref_fov[1],
-                )
+        if isinstance(niimg, SurfaceImage):
+            # TODO do some checks
             yield niimg
-        except DimensionError as exc:
-            # Keep track of the additional dimension in the error
-            exc.increment_stack_counter()
-            raise
-        except TypeError as exc:
-            img_name = f" ({niimg}) " if isinstance(niimg, (str, Path)) else ""
 
-            exc.args = (
-                f"Error encountered while loading image #{i}{img_name}",
-                *exc.args,
-            )
-            raise
+        else:
+            try:
+                niimg = check_niimg(
+                    niimg,
+                    ensure_ndim=ndim_minus_one,
+                    atleast_4d=atleast_4d,
+                    dtype=dtype,
+                )
+                if i == 0:
+                    ndim_minus_one = len(niimg.shape)
+                    if ref_fov is None:
+                        ref_fov = (niimg.affine, niimg.shape[:3])
+                        resample_to_first_img = True
+
+                if not _check_fov(niimg, ref_fov[0], ref_fov[1]):
+                    if target_fov is None:
+                        raise ValueError(
+                            f"Field of view of image #{i} is different from "
+                            "reference FOV.\n"
+                            f"Reference affine:\n{ref_fov[0]!r}\n"
+                            f"Image affine:\n{niimg.affine!r}\n"
+                            f"Reference shape:\n{ref_fov[1]!r}\n"
+                            f"Image shape:\n{niimg.shape!r}\n"
+                        )
+                    from nilearn.image import (
+                        resample_img,  # we avoid a circular import
+                    )
+
+                    if resample_to_first_img:
+                        warnings.warn(
+                            "Affine is different across subjects."
+                            " Realignment on first subject "
+                            "affine forced",
+                            stacklevel=find_stack_level(),
+                        )
+                    niimg = cache(
+                        resample_img,
+                        memory,
+                        func_memory_level=2,
+                        memory_level=memory_level,
+                    )(
+                        niimg,
+                        target_affine=ref_fov[0],
+                        target_shape=ref_fov[1],
+                    )
+                yield niimg
+            except DimensionError as exc:
+                # Keep track of the additional dimension in the error
+                exc.increment_stack_counter()
+                raise
+            except TypeError as exc:
+                img_name = (
+                    f" ({niimg}) " if isinstance(niimg, (str, Path)) else ""
+                )
+
+                exc.args = (
+                    f"Error encountered while loading image #{i}{img_name}",
+                    *exc.args,
+                )
+                raise
 
     # Raising an error if input generator is empty.
     if i == -1:

@@ -588,24 +588,32 @@ def _make_surface_img(n_samples=1):
 
 @pytest.fixture
 def surf_img_2d():
-    """Create a sample surface image using the sample mesh.
-    This will add some random data to the vertices of the mesh.
+    """Return a 2D SurfaceImage with random data.
+
     The shape of the data will be (n_vertices, n_samples).
     n_samples by default is 1.
     """
     return _make_surface_img
 
 
-@pytest.fixture
-def surf_img_1d():
-    """Create a sample surface image using the sample mesh.
-    This will add some random data to the vertices of the mesh.
+def _surf_img_1d():
+    """Return a 1D SurfaceImage with random data.
+
     The shape of the data will be (n_vertices,).
     """
     img = _make_surface_img(n_samples=1)
     img.data.parts["left"] = np.squeeze(img.data.parts["left"])
     img.data.parts["right"] = np.squeeze(img.data.parts["right"])
     return img
+
+
+@pytest.fixture
+def surf_img_1d():
+    """Return a 1D SurfaceImage with random data.
+
+    The shape of the data will be (n_vertices,).
+    """
+    return _surf_img_1d()
 
 
 def _make_surface_mask(n_zeros=4):

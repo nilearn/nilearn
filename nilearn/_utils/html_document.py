@@ -11,7 +11,6 @@ from queue import Empty, Queue
 from socketserver import TCPServer
 from threading import Thread
 
-from nilearn._utils.helpers import remove_parameters
 from nilearn._utils.logger import find_stack_level
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
@@ -241,20 +240,7 @@ class HTMLDocument:
         with Path(file_name).open("wb") as f:
             f.write(self.get_standalone().encode("utf-8"))
 
-    # (nilearn >= 0.13.0) remove temp_file_lifetime
-    @remove_parameters(
-        removed_params=["temp_file_lifetime"],
-        reason=(
-            "this function does not use a temporary file anymore "
-            "and 'temp_file_lifetime' has no effect."
-        ),
-        end_version="0.13.0",
-    )
-    def open_in_browser(
-        self,
-        file_name=None,
-        temp_file_lifetime="deprecated",  # noqa: ARG002
-    ):
+    def open_in_browser(self, file_name=None):
         """Save the plot to a temporary HTML file and open it in a browser.
 
         Parameters
