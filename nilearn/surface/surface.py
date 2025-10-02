@@ -2071,7 +2071,7 @@ def extract_data(img, index):
     }
 
 
-def compute_adjacency_matrix(mesh, dtype=None):
+def compute_adjacency_matrix(mesh: InMemoryMesh, dtype=None):
     """Compute the adjacency matrix for a surface.
 
     The adjacency matrix is a matrix
@@ -2094,6 +2094,8 @@ def compute_adjacency_matrix(mesh, dtype=None):
     """
     n = mesh.coordinates.shape[0]
 
+    # Extract all 3 undirected edges per face:
+    #   (i, j), (i, k), (j, k).
     edges = np.vstack(
         [
             mesh.faces[:, [0, 1]],
@@ -2102,6 +2104,14 @@ def compute_adjacency_matrix(mesh, dtype=None):
         ]
     )
     edges = edges.astype(np.int64)
+
+    # To uniquely represent an undirected edge (u, v),
+    # ensure that u < v.
+    # We do this by splitting edges into
+    # "bigcol" (first index > second index)
+    # and "lilcol" (otherwise),
+    # and encoding each pair into a single integer u + v * n.
+    # Then we keep unique pairs.
     bigcol = edges[:, 0] > edges[:, 1]
     lilcol = ~bigcol
     edges = np.concatenate(
@@ -2112,6 +2122,7 @@ def compute_adjacency_matrix(mesh, dtype=None):
     )
     edges = np.unique(edges)
 
+    # Decode back to pairs of vertices (u, v).
     (u, v) = (edges // n, edges % n)
 
     if dtype is None:
@@ -2119,11 +2130,12 @@ def compute_adjacency_matrix(mesh, dtype=None):
     else:
         edge_lens = np.ones(edges.shape, dtype=dtype)
 
-    # We can now make a sparse matrix.
+    # Build a symmetric adjacency matrix.
+    # For each undirected edge (u, v), we add entries (u, v) and (v, u).
+    # And return as a sparse CSR matrix of shape (n_vertices, n_vertices).
     ee = np.concatenate([edge_lens, edge_lens])
     uv = np.concatenate([u, v])
     vu = np.concatenate([v, u])
-
     return csr_matrix((ee, (uv, vu)), shape=(n, n))
 
 

@@ -1255,13 +1255,19 @@ def test_check_surf_img_dtype_error(surf_img_1d):
 
 
 def test_compute_adjacency_matrix(surf_mesh):
+    """Check basic content of an adjacency matrix.
+
+    - should be a square matrix determined by number of edges in mesh
+    - number of actually connected faces will actually depend on the
+      size of the mesh so it's very much hard coded for the mesh used here.
+    """
     adjacency_matrix = compute_adjacency_matrix(surf_mesh.parts["left"])
     assert adjacency_matrix.shape == (4, 4)
-    assert adjacency_matrix.size == 12
+    assert np.sum(np.sum(adjacency_matrix)) == 12
 
     adjacency_matrix = compute_adjacency_matrix(surf_mesh.parts["right"])
     assert adjacency_matrix.shape == (5, 5)
-    assert adjacency_matrix.size == 18
+    assert np.sum(np.sum(adjacency_matrix)) == 18
 
 
 @pytest.mark.parametrize(
