@@ -176,6 +176,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        self._init_report_content()
+
         if imgs is not None:
             self._check_imgs(imgs)
 
@@ -204,15 +207,14 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         # initialize reporting content and data
         if not self.reports:
-            self._reporting_data = None
             return self
-
-        self._init_report_content()
 
         for part in self.maps_img.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.maps_img.mesh.parts[part].n_vertices
             )
+
+        self._report_content["number_of_regions"] = self.n_elements_
 
         self._reporting_data = {
             "maps_img": self.maps_img_,
@@ -245,6 +247,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 "summary": {},
                 "warning_message": None,
             }
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = None
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")

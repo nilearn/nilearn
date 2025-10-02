@@ -219,6 +219,9 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        self._init_report_content()
+
         if imgs is not None:
             self._check_imgs(imgs)
 
@@ -283,10 +286,8 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             self.clean_args_ = self.clean_args
 
         if not self.reports:
-            self._reporting_data = None
             return self
 
-        self._init_report_content()
         for part in self.labels_img_.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.labels_img_.mesh.parts[part].n_vertices
@@ -308,10 +309,13 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
                     "between the mask and its input image. "
                 ),
                 "n_vertices": {},
-                "number_of_regions": self.n_elements_,
+                "number_of_regions": 0,
                 "summary": {},
                 "warning_message": None,
             }
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = None
 
     def _generate_reporting_data(self):
         for part in self.labels_img_.data.parts:

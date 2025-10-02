@@ -119,8 +119,6 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
-        # data necessary to construct figure for the report
-        self._reporting_data = None
 
     def __sklearn_is_fitted__(self):
         return (
@@ -201,10 +199,11 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        self._init_report_content()
+
         if imgs is not None:
             self._check_imgs(imgs)
-
-        self.__init_report_content()
 
         self._fit_cache()
 
@@ -259,6 +258,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 "n_elements": 0,
                 "coverage": 0,
             }
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = None
 
     @fill_doc
     def transform_single_imgs(
