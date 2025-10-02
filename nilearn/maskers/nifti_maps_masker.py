@@ -365,8 +365,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        :class:`~matplotlib.figure.Figure`
-            Returns ``None`` in case the masker was not fitted.
+        list of :class:`~matplotlib.figure.Figure`
         """
         from nilearn.plotting import (
             cm,
