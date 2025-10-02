@@ -323,10 +323,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        import matplotlib.pyplot as plt
-
-        from nilearn import plotting
-
         labels_image = None
         if self._reporting_data is not None:
             labels_image = self._reporting_data["labels_image"]
@@ -389,12 +385,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         img = self._reporting_data["img"]
 
-        # compute the cut coordinates on the label image in case
-        # we have a functional image
-        cut_coords = plotting.find_xyz_cut_coords(
-            labels_image, activation_threshold=0.5
-        )
-
         # If we have a func image to show in the report, use it
         if img is not None:
             if self._reporting_data["dim"] == 5:
@@ -404,6 +394,39 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 )
                 warnings.warn(msg, stacklevel=find_stack_level())
                 self._report_content["warning_message"] = msg
+
+        # Otherwise, simply plot the ROI of the label image
+        # and give a warning to the user
+        else:
+            msg = (
+                "No image provided to fit in NiftiLabelsMasker. "
+                "Plotting ROIs of label image on the "
+                "MNI152Template for reporting."
+            )
+            warnings.warn(msg, stacklevel=find_stack_level())
+            self._report_content["warning_message"] = msg
+
+        return self._create_figure_for_report(labels_image, img)
+
+    def _create_figure_for_report(self, labels_image, img):
+        """Generate figure to include in the report.
+
+        Returns
+        -------
+        list of :class:`~matplotlib.figure.Figure`
+        """
+        import matplotlib.pyplot as plt
+
+        from nilearn import plotting
+
+        # compute the cut coordinates on the label image in case
+        # we have a functional image
+        cut_coords = plotting.find_xyz_cut_coords(
+            labels_image, activation_threshold=0.5
+        )
+
+        # If we have a func image to show in the report, use it
+        if img is not None:
             display = plotting.plot_img(
                 img,
                 cut_coords=cut_coords,
@@ -416,13 +439,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         # Otherwise, simply plot the ROI of the label image
         # and give a warning to the user
         else:
-            msg = (
-                "No image provided to fit in NiftiLabelsMasker. "
-                "Plotting ROIs of label image on the "
-                "MNI152Template for reporting."
-            )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
             display = plotting.plot_roi(labels_image)
             plt.close()
 
