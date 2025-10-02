@@ -119,22 +119,6 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            # unused but required in HTML template
-            "number_of_regions": None,
-            "summary": None,
-            "warning_message": None,
-            "n_elements": 0,
-            "coverage": 0,
-        }
         # data necessary to construct figure for the report
         self._reporting_data = None
 
@@ -220,6 +204,8 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if imgs is not None:
             self._check_imgs(imgs)
 
+        self.__init_report_content()
+
         self._fit_cache()
 
         self._fit_mask_img(imgs)
@@ -255,6 +241,24 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This report shows the input surface image overlaid "
+                    "with the outlines of the mask. "
+                    "We recommend to inspect the report for the overlap "
+                    "between the mask and its input image. "
+                ),
+                "n_vertices": {},
+                # unused but required in HTML template
+                "number_of_regions": None,
+                "summary": None,
+                "warning_message": None,
+                "n_elements": 0,
+                "coverage": 0,
+            }
 
     @fill_doc
     def transform_single_imgs(

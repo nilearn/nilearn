@@ -418,12 +418,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
-        self._report_content = {
-            "description": (
-                "This reports shows the spatial maps provided to the mask."
-            ),
-            "warning_message": None,
-        }
+        self._init_report_content()
 
         # Load images
         maps_img = self.maps_img
@@ -517,6 +512,15 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This reports shows the spatial maps provided to the mask."
+                ),
+                "warning_message": None,
+            }
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")

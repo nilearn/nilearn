@@ -544,13 +544,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         """
         del y
-        self._report_content = {
-            "description": (
-                "This reports shows the regions defined "
-                "by the spheres of the masker."
-            ),
-            "warning_message": None,
-        }
+        self._init_report_content()
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
@@ -618,6 +612,17 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        # content to inject in the HTML template
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This reports shows the regions defined "
+                    "by the spheres of the masker."
+                ),
+                "warning_message": None,
+            }
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):

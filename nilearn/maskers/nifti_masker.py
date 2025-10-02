@@ -471,17 +471,8 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         del y
         check_params(self.__dict__)
 
-        self._report_content = {
-            "description": (
-                "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (in green). We "
-                "recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "warning_message": None,
-            "n_elements": 0,
-            "coverage": 0,
-        }
+        self._init_report_content()
+
         self._overlay_text = (
             "\n To see the input Nifti image before resampling, "
             "hover over the displayed image."
@@ -604,6 +595,20 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This report shows the input Nifti image overlaid "
+                    "with the outlines of the mask (in green). We "
+                    "recommend to inspect the report for the overlap "
+                    "between the mask and its input image. "
+                ),
+                "warning_message": None,
+                "n_elements": 0,
+                "coverage": 0,
+            }
 
     @fill_doc
     def transform_single_imgs(

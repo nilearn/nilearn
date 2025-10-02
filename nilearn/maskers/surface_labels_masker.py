@@ -286,20 +286,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             self._reporting_data = None
             return self
 
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            "number_of_regions": self.n_elements_,
-            "summary": {},
-            "warning_message": None,
-        }
-
+        self._init_report_content()
         for part in self.labels_img_.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.labels_img_.mesh.parts[part].n_vertices
@@ -310,6 +297,21 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This report shows the input surface image overlaid "
+                    "with the outlines of the mask. "
+                    "We recommend to inspect the report for the overlap "
+                    "between the mask and its input image. "
+                ),
+                "n_vertices": {},
+                "number_of_regions": self.n_elements_,
+                "summary": {},
+                "warning_message": None,
+            }
 
     def _generate_reporting_data(self):
         for part in self.labels_img_.data.parts:

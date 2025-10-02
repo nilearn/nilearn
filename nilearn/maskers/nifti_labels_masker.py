@@ -310,6 +310,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         """Generate a report."""
         from nilearn.reporting.html_report import generate_report
 
+        self._init_report_content()
+
         return generate_report(self)
 
     def _reporting(self):
@@ -458,13 +460,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
-        self._report_content = {
-            "description": (
-                "This reports shows the regions "
-                "defined by the labels of the mask."
-            ),
-            "warning_message": None,
-        }
+        self._init_report_content()
 
         self._fit_cache()
 
@@ -557,6 +553,17 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This reports shows the regions "
+                    "defined by the labels of the mask."
+                ),
+                "warning_message": None,
+                "number_of_regions": 0,
+            }
 
     def _check_labels(self):
         """Check labels.
