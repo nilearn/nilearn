@@ -16,8 +16,6 @@ To expand the functionality of check_params you need to:
     to pair the name of the parameter / attribute with its expected type.
 """
 
-from __future__ import annotations
-
 import pathlib
 from collections.abc import Callable
 from pathlib import Path

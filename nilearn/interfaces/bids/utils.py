@@ -1,7 +1,5 @@
 """Public Utility functions for the nilearn.interfaces.bids module."""
 
-from __future__ import annotations
-
 
 def bids_entities():
     """Return a dictionary of BIDS entities.
