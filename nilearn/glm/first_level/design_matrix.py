@@ -243,7 +243,7 @@ def make_first_level_design_matrix(
     add_reg_names=None,
     min_onset=-24,
     oversampling=50,
-):
+) -> pd.DataFrame:
     """Generate a design matrix from the input parameters.
 
     Parameters
@@ -393,8 +393,7 @@ def make_first_level_design_matrix(
     # step 4: Force the design matrix to be full rank at working precision
     matrix, _ = full_rank(matrix)
 
-    design_matrix = pd.DataFrame(matrix, columns=names, index=frame_times)
-    return design_matrix
+    return pd.DataFrame(matrix, columns=names, index=frame_times)
 
 
 def check_design_matrix(design_matrix):

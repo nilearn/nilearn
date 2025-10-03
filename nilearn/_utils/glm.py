@@ -1,5 +1,6 @@
 from collections.abc import Iterable
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -132,3 +133,22 @@ def coerce_to_dict(input_arg):
             input_arg = [input_arg]
         input_arg = {str(contrast_): contrast_ for contrast_ in input_arg}
     return input_arg
+
+
+def sanitize_contrasts(
+    contrasts: dict[str, Any] | None,
+) -> None | dict[str, str | np.ndarray | list]:
+    contrasts = coerce_to_dict(contrasts)
+    if contrasts is not None:
+        for k, v in contrasts.items():
+            if not isinstance(k, str):
+                raise TypeError(
+                    f"contrast names must be strings, not {type(k)}"
+                )
+
+            if not isinstance(v, (str, np.ndarray, list)):
+                raise TypeError(
+                    "contrast definitions must be strings or array_likes, "
+                    f"not {v.__class__.__name__}"
+                )
+    return contrasts

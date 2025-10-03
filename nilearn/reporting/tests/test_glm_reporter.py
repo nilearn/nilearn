@@ -3,6 +3,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_array_almost_equal
 
 from nilearn._utils.data_gen import (
     basic_paradigm,
@@ -13,11 +14,13 @@ from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.datasets import load_fsaverage
 from nilearn.glm.first_level import (
     FirstLevelModel,
+    make_first_level_design_matrix,
 )
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import HTMLReport
+from nilearn.reporting.glm_reporter import design_efficiency
 from nilearn.surface import SurfaceImage
 
 
@@ -387,3 +390,32 @@ def test_report_threshold_deprecation_warning(
         assert n_warnings == 1
     else:
         assert n_warnings == 0
+
+
+def test_design_efficiency():
+    """Check some arbitrary values returned for efficiency."""
+    frame_times = np.arange(0, 200, 2)
+    events = pd.DataFrame(
+        {
+            "onset": [10, 50, 90, 130],
+            "duration": [5, 5, 5, 5],
+            "trial_type": ["A", "B", "A", "B"],
+        }
+    )
+    X = make_first_level_design_matrix(frame_times, events)
+
+    # T-contrasts
+    t1 = np.array([1, -1] + [0] * (X.shape[1] - 2))  # A-B
+    t2 = np.array([1, 1] + [0] * (X.shape[1] - 2))  # A+B
+
+    # F-contrast: test jointly [1,0,...] and [0,1,...]
+    # (main effects of A and B)
+    f1 = np.array(
+        [[1, 0] + [0] * (X.shape[1] - 2), [0, 1] + [0] * (X.shape[1] - 2)]
+    )
+
+    effs = design_efficiency(X, {"t1": t1, "t2": t2, "f1": f1})
+
+    assert_array_almost_equal(effs[0], 3.687151)
+    assert_array_almost_equal(effs[1], 3.761717)
+    assert_array_almost_equal(effs[2], 3.724060)

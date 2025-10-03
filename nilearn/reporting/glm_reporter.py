@@ -23,7 +23,7 @@ import pandas as pd
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.glm import coerce_to_dict
+from nilearn._utils.glm import sanitize_contrasts
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
@@ -37,6 +37,7 @@ from nilearn.glm.thresholding import (
     warn_default_threshold,
 )
 from nilearn.maskers import NiftiMasker
+from nilearn.plotting.matrix.utils import pad_contrast_matrix
 from nilearn.reporting._utils import (
     dataframe_to_html,
 )
@@ -289,7 +290,7 @@ def make_glm_report(
             sparsify=False,
         )
 
-    contrasts = coerce_to_dict(contrasts)
+    contrasts = sanitize_contrasts(contrasts)
 
     # If some contrasts are passed
     # we do not rely on filenames stored in the model.
@@ -299,7 +300,7 @@ def make_glm_report(
         if output is not None and output["use_absolute_path"]:
             output = _turn_into_full_path(output, output["dir"])
 
-    design_matrices = None
+    design_matrices: list[pd.DataFrame] = []
     mask_plot = None
     mask_info = {"n_elements": 0, "coverage": 0}
     results = None
@@ -404,15 +405,35 @@ def make_glm_report(
     run_wise_dict = tempita.bunch()
     for i_run in design_matrices_dict:
         tmp = tempita.bunch()
+
         tmp["design_matrix_png"] = design_matrices_dict[i_run][
             "design_matrix_png"
         ]
+
         tmp["correlation_matrix_png"] = design_matrices_dict[i_run][
             "correlation_matrix_png"
         ]
+
         tmp["all_contrasts"] = None
         if i_run in contrasts_dict:
             tmp["all_contrasts"] = contrasts_dict[i_run]
+
+        tmp["efficiencies"] = None
+        if model.__str__() == "First Level Model" and contrasts is not None:
+            efficiencies = design_efficiency(design_matrices[i_run], contrasts)
+            efficiencies = pd.DataFrame(
+                {"name": contrasts.keys(), "efficiency": efficiencies}
+            )
+            with pd.option_context("display.max_colwidth", 100):
+                efficiencies_html = dataframe_to_html(
+                    efficiencies,
+                    precision=2,
+                    header=True,
+                    sparsify=False,
+                    index=False,
+                )
+            tmp["efficiencies"] = efficiencies_html
+
         run_wise_dict[i_run] = tmp
 
     # for methods writing, only keep the contrast expressed as strings
@@ -1025,3 +1046,45 @@ def _add_params_to_plot(table_details, stat_map_plot):
         suptitle_text.set_color("w")
 
     return stat_map_plot
+
+
+def design_efficiency(
+    design_matrix: pd.DataFrame, contrasts: dict[str, str | list | np.ndarray]
+):
+    """
+    Compute design efficiency for an fMRI design matrix and set of contrasts.
+
+    Parameters
+    ----------
+    X : array, shape (n_samples, n_regressors)
+        The design matrix (e.g., from nilearn.make_first_level_design_matrix).
+    contrasts : list of array-like
+        Each element can be:
+          - a 1D contrast vector of shape (n_regressors,)
+          - a 2D contrast matrix of shape (n_contrasts, n_regressors),
+            for F-contrasts.
+
+    Returns
+    -------
+    efficiencies : list of floats
+        Efficiency value for each contrast.
+    """
+    design_matrix.columns.tolist()
+    design_matrix_array = design_matrix.to_numpy()
+    XtX_inv = np.linalg.pinv(design_matrix_array.T @ design_matrix_array)
+    effs = []
+
+    for con in contrasts.values():
+        con = pad_contrast_matrix(con, design_matrix)
+
+        C = np.atleast_2d(con)  # ensure 2D
+        if C.shape[1] != design_matrix_array.shape[1]:
+            raise ValueError(
+                f"Contrast has {C.shape[1]} columns, "
+                f"but design matrix has "
+                "{design_matrix_array.shape[1]} regressors."
+            )
+        tr = np.trace(C @ XtX_inv @ C.T)
+        effs.append(1.0 / tr if tr > 0 else np.nan)
+
+    return effs
