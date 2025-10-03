@@ -28,6 +28,7 @@ dependencies = [
     "pandas>=2.2.0",
     "requests>=2.25.0",
     "scikit-learn>=1.4.0",
+    "jinja2>=3.1.0",
     "scipy>=1.9.0",
     "packaging"
 ]
@@ -43,7 +44,9 @@ requires-python = ">=3.10"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
-dev = ["nilearn[plotting,doc,style,test]"]
+dev = [
+    "nilearn[plotting,doc,style,test]"
+]
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
@@ -178,6 +181,7 @@ module = ["nilearn.externals.*", "nilearn._version"]
 ignore_missing_imports = true
 module = [
     "IPython.*",
+    "jinja2.*",
     "joblib.*",
     "kaleido",
     "matplotlib.*",
