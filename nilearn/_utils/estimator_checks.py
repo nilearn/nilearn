@@ -741,6 +741,7 @@ def generate_data_to_fit(estimator: BaseEstimator):
             data_type="surface",
             rng=_rng(),
             mesh=_decomposition_mesh(),
+            with_activation=True,
         )
         return decomp_input, None
 
