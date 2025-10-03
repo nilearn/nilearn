@@ -953,7 +953,7 @@ def plot_prob_atlas(
         To turn off background image, just pass "bg_img=False".
         Default=MNI152TEMPLATE.
 
-        .. versionadded:: 0.4.0
+        .. nilearn_versionadded:: 0.4.0
 
     view_type : {'auto', 'contours', 'filled_contours', 'continuous'}, \
                 default='auto'
@@ -1899,7 +1899,7 @@ def plot_carpet(
             If ``t_r`` is not provided, it will be inferred from ``img``'s
             header (``img.header.get_zooms()[-1]``).
 
-        .. versionadded:: 0.9.1
+        .. nilearn_versionadded:: 0.9.1
             Prior to this, ``t_r`` would be inferred from ``img`` without
             user input.
 
