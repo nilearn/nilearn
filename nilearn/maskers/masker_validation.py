@@ -89,8 +89,8 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
         new_masker_params["n_jobs"] = estimator.n_jobs
 
     warning_msg = Template(
-        "Provided estimator has no $attribute attribute set."
-        "Setting $attribute to $default_value by default."
+        "Provided estimator has no '$attribute' attribute set. "
+        "Setting '$attribute' to '$default_value' by default."
     )
 
     if hasattr(estimator, "memory"):

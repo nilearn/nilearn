@@ -91,25 +91,27 @@ class DummyEstimator:
 
 
 @pytest.mark.parametrize(
-    "kwargs, warning_msg",
+    "kwargs, warning_msg, expected_verbose, expected_memory_level",
     [
-        ({"memory": None, "memory_level": 1}, "verbose"),
-        ({"memory": None, "memory_level": 1}, "memory"),
+        ({"memory": None, "memory_level": 1}, "verbose", 0, 0),
+        ({"verbose": 1}, "memory", 1, 0),
     ],
 )
-def test_check_embedded_masker_defaults(kwargs, warning_msg):
+def test_check_embedded_masker_defaults(
+    kwargs, warning_msg, expected_verbose, expected_memory_level
+):
     """Check what values are set in embedded_masker."""
     dummy = DummyEstimator(**kwargs)
     with pytest.warns(
         Warning,
-        match=f"Provided estimator has no {warning_msg} attribute set.",
+        match=f"Provided estimator has no '{warning_msg}' attribute set.",
     ):
         dummy.fit()
 
     assert isinstance(dummy.masker.memory, Memory)
     assert dummy.masker.memory.location is None
-    assert dummy.masker.memory_level == dummy.memory_level
-    assert dummy.masker.verbose == dummy.verbose
+    assert dummy.masker.memory_level == expected_memory_level
+    assert dummy.masker.verbose == expected_verbose
 
 
 def test_check_embedded_masker_default():
@@ -175,8 +177,11 @@ def test_check_embedded_masker_attribute_forwarding():
 
 
 def test_check_embedded_masker_conflict_warning():
-    """Do."""
+    """Check warning thrown when changing some parameters."""
     mask = NiftiMasker(mask_strategy="epi")
     owner = OwningClass(mask=mask)
-    with pytest.warns(UserWarning, match="foo"):
+    with pytest.warns(
+        UserWarning,
+        match="overriding estimator parameter background",
+    ):
         check_embedded_masker(owner)

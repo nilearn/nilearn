@@ -1,4 +1,7 @@
-"""Masker utilities available for other nilearn modules."""
+"""Masker utilities available for other nilearn modules.
+
+Must be kept out of the nilearn.maskers subpackage to avoid circular imports.
+"""
 
 from collections.abc import Iterable
 
