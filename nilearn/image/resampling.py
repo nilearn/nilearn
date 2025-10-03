@@ -391,13 +391,13 @@ def resample_img(
         False is intended for testing,
         this prevents the use of a padding optimization.
 
-        .. versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0dev
 
             Default changed to True.
 
     %(copy_header)s
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -734,7 +734,7 @@ def resample_to_img(
 
     No registration is performed: the image should already be aligned.
 
-    .. versionadded:: 0.2.4
+    .. nilearn_versionadded:: 0.2.4
 
     Parameters
     ----------
@@ -773,7 +773,7 @@ def resample_to_img(
 
     %(copy_header)s
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -832,7 +832,7 @@ def reorder_img(img, resample=None, copy_header=True):
 
     %(copy_header)s
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     """
     from .image import new_img_like
