@@ -189,6 +189,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 for i, x in enumerate(imgs):
                     x.data._check_n_samples(1, f"imgs[{i}]")
 
+        return self._fit(imgs)
+
+    def _fit(self, imgs):
         if self.maps_img is None:
             raise ValueError(
                 "Please provide a maps_img during initialization. "
