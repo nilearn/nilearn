@@ -363,7 +363,7 @@ def test_standardize(rng):
 
     # With trend removal
     a = np.atleast_2d(np.linspace(0, 2.0, n_features)).T
-    b = standardize_signal(a, detrend=True, standardize=False)
+    b = standardize_signal(a, detrend=True, standardize=None)
 
     assert_almost_equal(b, np.zeros(b.shape))
 
