@@ -195,9 +195,15 @@
       <section id="contrasts-{{unique_id}}-{{i_run}}">
         <h3>Contrasts</h3>
 
+        {{py: has_efficiencies = run_content.efficiencies is not None}}
+        {{if has_efficiencies}}
+        <div class="table-container">{{ run_content.efficiencies|html }}</div>
+        {{endif}}
+
         <div class="d-flex flex-column">
           {{py: has_contrasts = run_content.all_contrasts is not None}}
           {{if has_contrasts}}
+
           <!--  -->
           {{py: contrasts = run_content.all_contrasts.items()}}
           <!--  -->

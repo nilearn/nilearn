@@ -10,11 +10,11 @@ from nilearn.glm.first_level.design_matrix import (
 from nilearn.plotting.matrix._utils import (
     VALID_REORDER_VALUES,
     VALID_TRI_VALUES,
-    pad_contrast_matrix,
     sanitize_labels,
     sanitize_reorder,
     sanitize_tri,
 )
+from nilearn.plotting.matrix.utils import pad_contrast_matrix
 
 
 def test_pad_contrast_matrix():

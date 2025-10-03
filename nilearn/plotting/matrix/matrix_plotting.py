@@ -15,12 +15,12 @@ from nilearn.glm.first_level.experimental_paradigm import check_events
 from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.matrix._utils import (
     mask_matrix,
-    pad_contrast_matrix,
     reorder_matrix,
     sanitize_labels,
     sanitize_reorder,
     sanitize_tri,
 )
+from nilearn.plotting.matrix.utils import pad_contrast_matrix
 
 
 def _configure_axis(
