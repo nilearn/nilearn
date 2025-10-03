@@ -205,7 +205,7 @@ class Parcellations(_MultiPCA):
     kmeans, ward, complete, average are leveraged from scikit-learn.
     rena is built into nilearn.
 
-    .. versionadded:: 0.4.1
+    .. nilearn_versionadded:: 0.4.1
 
     Parameters
     ----------

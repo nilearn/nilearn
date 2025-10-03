@@ -40,6 +40,17 @@ from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
 
+STANDARIZE_WARNING_MESSAGE = (
+    "The 'zscore' strategy incorrectly "
+    "uses population std to calculate sample zscores. "
+    "The new strategy 'zscore_sample' corrects this "
+    "behavior by using the sample std. "
+    "In release 0.14.0, the 'zscore' option will be removed "
+    "and using standardize=True will fall back "
+    "to 'zscore_sample'."
+    "To avoid this warning, please use 'zscore_sample' instead."
+)
+
 
 def filter_and_extract(
     imgs,
@@ -227,7 +238,7 @@ class BaseMasker(
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         copy : :obj:`bool`, default=True
             Indicates whether a copy is returned or not.
@@ -315,7 +326,7 @@ class BaseMasker(
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Returns
         -------
@@ -323,10 +334,21 @@ class BaseMasker(
         """
         check_is_fitted(self)
 
-        if confounds is None and not self.high_variance_confounds:
-            return self.transform_single_imgs(
-                imgs, confounds=confounds, sample_mask=sample_mask
+        if (self.standardize == "zscore") or (self.standardize is True):
+            # TODO (nilearn >= 0.14.0) remove or adapt warning
+            warnings.warn(
+                category=FutureWarning,
+                message=STANDARIZE_WARNING_MESSAGE,
+                stacklevel=find_stack_level(),
             )
+
+        if confounds is None and not self.high_variance_confounds:
+            # TODO (Nilearn >= 0.14.0) remove ignore FutureWarning
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=FutureWarning)
+                return self.transform_single_imgs(
+                    imgs, confounds=confounds, sample_mask=sample_mask
+                )
 
         # Compute high variance confounds if requested
         all_confounds = []
@@ -339,9 +361,12 @@ class BaseMasker(
             else:
                 all_confounds.append(confounds)
 
-        return self.transform_single_imgs(
-            imgs, confounds=all_confounds, sample_mask=sample_mask
-        )
+        # TODO (Nilearn >= 0.14.0) remove ignore FutureWarning
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=FutureWarning)
+            return self.transform_single_imgs(
+                imgs, confounds=all_confounds, sample_mask=sample_mask
+            )
 
     @fill_doc
     def fit_transform(
@@ -361,7 +386,7 @@ class BaseMasker(
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Returns
         -------
@@ -596,13 +621,23 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             )
             self.smoothing_fwhm = None
 
+        if (self.standardize == "zscore") or (self.standardize is True):
+            # TODO (nilearn >= 0.14.0) remove or adapt warning
+            warnings.warn(
+                category=FutureWarning,
+                message=STANDARIZE_WARNING_MESSAGE,
+                stacklevel=find_stack_level(),
+            )
+
         if self.reports:
             self._reporting_data["images"] = imgs
 
         if confounds is None and not self.high_variance_confounds:
-            signals = self.transform_single_imgs(
-                imgs, confounds=confounds, sample_mask=sample_mask
-            )
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=FutureWarning)
+                signals = self.transform_single_imgs(
+                    imgs, confounds=confounds, sample_mask=sample_mask
+                )
             return signals.squeeze() if return_1D else signals
 
         # Compute high variance confounds if requested
@@ -618,9 +653,12 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             else:
                 all_confounds.append(confounds)
 
-        signals = self.transform_single_imgs(
-            imgs, confounds=all_confounds, sample_mask=sample_mask
-        )
+        # TODO (Nilearn >= 0.14.0) remove ignore FutureWarning
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=FutureWarning)
+            signals = self.transform_single_imgs(
+                imgs, confounds=all_confounds, sample_mask=sample_mask
+            )
 
         sklearn_output_config = getattr(self, "_sklearn_output_config", None)
 

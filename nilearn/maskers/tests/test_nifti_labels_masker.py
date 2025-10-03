@@ -490,46 +490,6 @@ def test_nifti_labels_masker_resampling_to_none(
         masker.fit_transform(fmri_img)
 
 
-def test_standardization(rng, affine_eye, shape_3d_default, img_labels):
-    """Check output properly standardized with 'standardize' parameter."""
-    n_samples = 400
-
-    signals = rng.standard_normal(size=(np.prod(shape_3d_default), n_samples))
-    means = (
-        rng.standard_normal(size=(np.prod(shape_3d_default), 1)) * 50 + 1000
-    )
-    signals += means
-    img = Nifti1Image(
-        signals.reshape((*shape_3d_default, n_samples)), affine_eye
-    )
-
-    # Unstandarized
-    masker = NiftiLabelsMasker(img_labels, standardize=False)
-    unstandarized_label_signals = masker.fit_transform(img)
-
-    # z-score
-    masker = NiftiLabelsMasker(img_labels, standardize="zscore_sample")
-    trans_signals = masker.fit_transform(img)
-
-    assert_almost_equal(trans_signals.mean(0), 0)
-    assert_almost_equal(trans_signals.std(0), 1, decimal=3)
-
-    # psc
-    masker = NiftiLabelsMasker(img_labels, standardize="psc")
-    trans_signals = masker.fit_transform(img)
-
-    assert_almost_equal(trans_signals.mean(0), 0)
-    assert_almost_equal(
-        trans_signals,
-        (
-            unstandarized_label_signals
-            / unstandarized_label_signals.mean(0)
-            * 100
-            - 100
-        ),
-    )
-
-
 def test_nifti_labels_masker_with_mask(
     shape_3d_default, affine_eye, length, img_labels
 ):

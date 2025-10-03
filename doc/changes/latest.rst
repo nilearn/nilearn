@@ -97,6 +97,6 @@ Changes
 Documentation
 -------------
 
-- :bdg-primary:`Doc` Clarified that :func:`~datasets.fetch_*` functions do not
-  re-download datasets already present locally. Added cross-reference to dataset
-  storage documentation. (:gh:`5690` by `Victoria McCray`_)
+- :bdg-primary:`Doc` Clarified that :func:`~datasets.fetch_*` functions do not re-download datasets already present locally. Added cross-reference to dataset storage documentation. (:gh:`5690` by `Victoria McCray`_)
+
+- :bdg-primary:`Doc` Home-made sphinx directives are used instead of default sphinx directives relative to version changes (``versionadded``, ``versionchanged``, ``deprecated``...) to more easily distinguish between feature changes introduced in Nilearn versus those introduced in upstream dependencies (like in Scikit-Learn) (:gh:`5654` by `Rémi Gau`_).
