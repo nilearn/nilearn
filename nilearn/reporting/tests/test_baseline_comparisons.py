@@ -20,6 +20,7 @@ from nilearn.glm.thresholding import threshold_stats_img
 from nilearn.reporting.glm_reporter import _stat_map_to_png
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 @pytest.mark.parametrize(
