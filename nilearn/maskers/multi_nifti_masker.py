@@ -169,7 +169,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     See Also
     --------
@@ -400,7 +400,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
 
         %(sample_mask_multi)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         copy : :obj:`bool`, default=True
             If True, guarantees that output array has no memory in common with

@@ -1475,14 +1475,14 @@ def fetch_megatrawls_netmats(
         Stephen Smith et al,
         HCP beta-release of the Functional Connectivity MegaTrawl.
         April 2015 "HCP500-MegaTrawl" release.
-        https://db.humanconnectome.org/megatrawl/
+        https://balsa.wustl.edu
 
     ..  admonition:: Terms and conditions
         :class: attention
 
         This is open access data. You must agree to Terms and conditions
         of using this data before using it, available at:
-        http://humanconnectome.org/data/data-use-terms/open-access.html
+        https://www.humanconnectome.org/study/hcp-young-adult/document/wu-minn-hcp-consortium-open-access-data-use-terms
 
     Parameters
     ----------
@@ -1704,7 +1704,7 @@ def fetch_surf_nki_enhanced(
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -1846,7 +1846,7 @@ def load_nki(
 ):
     """Load NKI enhanced surface data into a surface object.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -2081,7 +2081,7 @@ def fetch_development_fmri(
     Please cite :footcite:t:`Richardson2018`
     if you are using this dataset.
 
-    .. versionadded:: 0.5.2
+    .. nilearn_versionadded:: 0.5.2
 
     Parameters
     ----------
@@ -2331,7 +2331,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
 def fetch_ds000030_urls(data_dir=None, verbose=1):
     """Fetch URLs for files from the ds000030 :term:`BIDS` dataset.
 
-    .. versionadded:: 0.9.2
+    .. nilearn_versionadded:: 0.9.2
 
     This dataset is version 1.0.4 of the "UCLA Consortium for
     Neuropsychiatric Phenomics LA5c" dataset
