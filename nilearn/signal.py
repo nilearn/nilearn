@@ -7,6 +7,7 @@ features
 
 import warnings
 from pathlib import Path
+from typing import Literal
 
 import numpy as np
 import pandas as pd
@@ -38,9 +39,9 @@ available_filters = ("butterworth", "cosine")
 
 def standardize_signal(
     signals,
-    detrend=False,
-    standardize="zscore",
-):
+    detrend: bool = False,
+    standardize: Literal["zscore", "psc", "zscore_sample"] | None = "zscore",
+) -> np.ndarray:
     """Center and standardize a given signal (time is along first axis).
 
     Parameters
