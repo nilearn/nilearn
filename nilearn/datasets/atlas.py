@@ -85,7 +85,7 @@ def fetch_atlas_difumo(
     over a with range of experimental conditions.
     See :footcite:t:`Dadi2020`.
 
-    .. versionadded:: 0.7.1
+    .. nilearn_versionadded:: 0.7.1
 
     Notes
     -----
@@ -604,7 +604,7 @@ def fetch_atlas_juelich(
     specified by your FSL installed path given in `data_dir` argument.
     See documentation for details.
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     .. note::
 
@@ -1176,9 +1176,9 @@ def fetch_atlas_yeo_2011(
         - 7 networks parcellation,
         - 17 networks parcellation.
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
-        .. versionchanged:: 0.13.0
+        .. nilearn_versionchanged:: 0.13.0
 
           The default was changed to 7.
 
@@ -1188,9 +1188,9 @@ def fetch_atlas_yeo_2011(
         - ``"thick"``: parcellation fitted to thick cortex segmentations,
         - ``"thin"``: parcellation fitted to thin cortex segmentations.
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
-        .. versionchanged:: 0.13.0
+        .. nilearn_versionchanged:: 0.13.0
 
           The default was changed to "thick".
 
@@ -1352,7 +1352,7 @@ def fetch_atlas_aal(
         The version of the AAL atlas. Must be 'SPM5', 'SPM8', 'SPM12', or '3v2'
         for the latest SPM12 version of AAL3 software.
 
-        .. versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0dev
 
           The default was changed to '3v2'.
 
@@ -1510,7 +1510,7 @@ def fetch_atlas_basc_multiscale_2015(
     :term:`fMRI`: finding homotopic regions simply consists of flipping the
     x-axis of the template.
 
-    .. versionadded:: 0.2.3
+    .. nilearn_versionadded:: 0.2.3
 
     Parameters
     ----------
@@ -1527,7 +1527,7 @@ def fetch_atlas_basc_multiscale_2015(
         Valid resolutions available are
         {7, 12, 20, 36, 64, 122, 197, 325, 444}
 
-        .. versionchanged: 0.13.0dev
+        .. nilearn_versionchanged: 0.13.0dev
 
           Default changed to ``7``.
 
@@ -1689,7 +1689,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
 
     See :footcite:t:`Seitzman2020`.
 
-    .. versionadded:: 0.5.1
+    .. nilearn_versionadded:: 0.5.1
 
     Parameters
     ----------
@@ -1893,7 +1893,7 @@ def fetch_atlas_surf_destrieux(
     This atlas returns 76 labels per hemisphere based on sulco-gryal patterns
     as distributed with Freesurfer in fsaverage5 surface space.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -2059,7 +2059,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     :footcite:t:`Lancaster2000`,
     and :footcite:t:`Lancaster1997`.
 
-    .. versionadded:: 0.4.0
+    .. nilearn_versionadded:: 0.4.0
 
     Parameters
     ----------
@@ -2229,7 +2229,7 @@ def fetch_atlas_schaefer_2018(
 ):
     """Download and return file names for the Schaefer 2018 parcellation.
 
-    .. versionadded:: 0.5.1
+    .. nilearn_versionadded:: 0.5.1
 
     This function returns a :term:`Deterministic atlas`, and the provided
     images are in MNI152 space.

@@ -30,7 +30,7 @@ class Benchmark:
         """
         # get an image
         fmri_data = fetch_abide_pcp(n_subjects=n_subjects)
-        concat = concat_imgs(fmri_data.func)
+        concat = concat_imgs(fmri_data.func_preproc)
         concat.to_filename(f"fmri_{n_subjects}.nii.gz")
 
         # get a mask

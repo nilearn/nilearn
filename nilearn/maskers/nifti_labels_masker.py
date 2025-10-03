@@ -31,7 +31,6 @@ from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
     filter_and_extract,
-    generate_lut,
     mask_logger,
 )
 from nilearn.masking import load_mask_img
@@ -169,7 +168,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         Only relevant for the report figures.
 
     %(clean_args)s
-        .. versionadded:: 0.12.0
+
+        .. nilearn_versionadded:: 0.12.0
 
     Attributes
     ----------
@@ -270,80 +270,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             .set_index("index")["name"]
             .to_dict()
         )
-
-    @property
-    def labels_(self) -> list[int | float]:
-        """Return list of labels of the regions.
-
-        The background label is included if present in the image.
-        """
-        check_is_fitted(self)
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
-        return lut["index"].to_list()
-
-    @property
-    def region_names_(self) -> dict[int, str]:
-        """Return a dictionary containing the region names corresponding \
-            to each column in the array returned by `transform`.
-
-        The region names correspond to the labels provided
-        in labels in input.
-        The region name corresponding to ``region_signal[:,i]``
-        is ``region_names_[i]``.
-
-        .. versionadded:: 0.10.3
-        """
-        check_is_fitted(self)
-
-        index = self.labels_
-        valid_ids = [id for id in index if id != self.background_label]
-
-        sub_df = self.lut_[self.lut_["index"].isin(valid_ids)]
-
-        return sub_df["name"].reset_index(drop=True).to_dict()
-
-    @property
-    def region_ids_(self) -> dict[str | int, int | float]:
-        """Return dictionary containing the region ids corresponding \
-           to each column in the array \
-           returned by `transform`.
-
-        The region id corresponding to ``region_signal[:,i]``
-        is ``region_ids_[i]``.
-        ``region_ids_['background']`` is the background label.
-
-        .. versionadded:: 0.10.3
-        """
-        check_is_fitted(self)
-
-        index = self.labels_
-
-        region_ids_: dict[str | int, int | float] = {}
-        if self.background_label in index:
-            index.pop(index.index(self.background_label))
-            region_ids_["background"] = self.background_label
-        for i, id in enumerate(index):
-            region_ids_[i] = id  # noqa : PERF403
-
-        return region_ids_
-
-    @property
-    def n_elements_(self) -> int:
-        """Return number of regions.
-
-        This is equal to the number of unique values
-        in the fitted label image,
-        minus the background value.
-
-        .. versionadded:: 0.9.2
-        """
-        check_is_fitted(self)
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
-        return len(lut[lut["index"] != self.background_label])
 
     def _post_masking_atlas(self, visualize=False):
         """
@@ -560,9 +486,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 idx = self.labels.index("background")
                 self.labels[idx] = "Background"
 
-        self.lut_ = generate_lut(
-            self.labels_img_, self.background_label, self.lut, self.labels
-        )
+        self.lut_ = self._generate_lut()
 
         self._original_region_ids = self.lut_["index"].to_list()
 
@@ -680,7 +604,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Returns
         -------
@@ -709,7 +633,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Attributes
         ----------
@@ -720,7 +644,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             that takes the value ``region_ids_[i]``
             is used to compute the signal in ``region_signal[:, i]``.
 
-            .. versionadded:: 0.10.3
+            .. nilearn_versionadded:: 0.10.3
 
         Returns
         -------
@@ -888,7 +812,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         Any mask given at initialization is taken into account.
 
-        .. versionchanged:: 0.9.2
+        .. nilearn_versionchanged:: 0.9.2
 
             This method now supports 1D arrays, which will produce 3D images.
 

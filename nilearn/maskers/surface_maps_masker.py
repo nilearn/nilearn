@@ -40,7 +40,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     """Extract data from a SurfaceImage, using maps of potentially overlapping
     brain regions.
 
-    .. versionadded:: 0.11.1
+    .. nilearn_versionadded:: 0.11.1
 
     Parameters
     ----------
@@ -179,6 +179,16 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if imgs is not None:
             self._check_imgs(imgs)
 
+            if isinstance(imgs, SurfaceImage) and any(
+                hemi.ndim > 2 for hemi in imgs.data.parts.values()
+            ):
+                raise ValueError(
+                    "should only be SurfaceImage should 1D or 2D."
+                )
+            elif hasattr(imgs, "__iter__"):
+                for i, x in enumerate(imgs):
+                    x.data._check_n_samples(1, f"imgs[{i}]")
+
         if self.maps_img is None:
             raise ValueError(
                 "Please provide a maps_img during initialization. "
@@ -265,8 +275,15 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         check_is_fitted(self)
 
         check_compatibility_mask_and_images(self.maps_img, imgs)
-
         check_polymesh_equal(self.maps_img.mesh, imgs.mesh)
+
+        if isinstance(imgs, SurfaceImage) and any(
+            hemi.ndim > 2 for hemi in imgs.data.parts.values()
+        ):
+            raise ValueError("should only be SurfaceImage should 1D or 2D.")
+        elif hasattr(imgs, "__iter__"):
+            for i, x in enumerate(imgs):
+                x.data._check_n_samples(1, f"imgs[{i}]")
 
         imgs = at_least_2d(imgs)
 

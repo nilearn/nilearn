@@ -4,7 +4,6 @@ on multi subject MRI data.
 
 import collections.abc
 import inspect
-import itertools
 import warnings
 
 import numpy as np
@@ -22,7 +21,6 @@ from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     mask_logger,
-    prepare_confounds_multimaskers,
 )
 from nilearn.maskers.nifti_masker import (
     NiftiMasker,
@@ -34,7 +32,6 @@ from nilearn.masking import (
     compute_multi_epi_mask,
     load_mask_img,
 )
-from nilearn.typing import NiimgLike
 
 
 def _get_mask_strategy(strategy: str):
@@ -172,7 +169,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     See Also
     --------
@@ -413,7 +410,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
 
         %(sample_mask_multi)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         copy : :obj:`bool`, default=True
             If True, guarantees that output array has no memory in common with
@@ -438,15 +435,9 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             memory_level=self.memory_level,
         )
 
-        confounds = prepare_confounds_multimaskers(self, imgs_list, confounds)
+        confounds = self._prepare_confounds(imgs_list, confounds)
 
-        if sample_mask is None:
-            sample_mask = itertools.repeat(None, len(imgs_list))
-        elif len(sample_mask) != len(imgs_list):
-            raise ValueError(
-                f"number of sample_mask ({len(sample_mask)}) unequal to "
-                f"number of images ({len(imgs_list)})."
-            )
+        sample_mask = self._prepare_sample_mask(imgs_list, sample_mask)
 
         # Ignore the mask-computing params: they are not useful and will
         # just invalidate the cache for no good reason
@@ -490,52 +481,3 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             )
         )
         return data
-
-    @fill_doc
-    def transform(self, imgs, confounds=None, sample_mask=None):
-        """Apply mask, spatial and temporal preprocessing.
-
-        Parameters
-        ----------
-        imgs : Niimg-like object, or a :obj:`list` of Niimg-like objects
-            See :ref:`extracting_data`.
-            Data to be preprocessed
-
-        %(confounds_multi)s
-
-        %(sample_mask_multi)s
-
-            .. versionadded:: 0.8.0
-
-        Returns
-        -------
-        %(signals_transform_multi_nifti)s
-
-        """
-        check_is_fitted(self)
-
-        if not (confounds is None or isinstance(confounds, list)):
-            raise TypeError(
-                "'confounds' must be a None or a list. "
-                f"Got {confounds.__class__.__name__}."
-            )
-        if not (sample_mask is None or isinstance(sample_mask, list)):
-            raise TypeError(
-                "'sample_mask' must be a None or a list. "
-                f"Got {sample_mask.__class__.__name__}."
-            )
-        if isinstance(imgs, NiimgLike):
-            if isinstance(confounds, list):
-                confounds = confounds[0]
-            if isinstance(sample_mask, list):
-                sample_mask = sample_mask[0]
-            return super().transform(
-                imgs, confounds=confounds, sample_mask=sample_mask
-            )
-
-        return self.transform_imgs(
-            imgs,
-            confounds=confounds,
-            sample_mask=sample_mask,
-            n_jobs=self.n_jobs,
-        )
