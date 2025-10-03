@@ -145,7 +145,7 @@ def make_glm_report(
 
     %(first_level_contrast)s
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
     title : :obj:`str`, default=None
         If string, represents the web page's title and primary heading,

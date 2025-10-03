@@ -190,3 +190,36 @@ img.math {
     filter: invert(1);
   }
 }
+
+/*
+to match https://github.com/pradyunsg/furo/blob/main/src/furo/assets/styles/content/_api.sass
+*/
+
+div.nilearn_versionadded,
+div.nilearn_versionchanged,
+div.nilearn_deprecated,
+div.nilearn_versionremoved {
+  border-left: 0.1875rem solid var(--color-api-added-border);
+  border-radius: 0.125rem;
+  padding-left: 0.75rem;
+}
+
+div.nilearn_versionadded .versionmodified {
+  color: var(--color-api-added);
+  font-weight: bold;
+}
+
+div.nilearn_versionchanged .versionmodified {
+  color: var(--color-api-added);
+  font-weight: bold;
+}
+
+div.nilearn_deprecated .versionmodified {
+  color: var(--color-api-added);
+  font-weight: bold;
+}
+
+div.nilearn_versionremoved .versionmodified {
+  color: var(--color-api-added);
+  font-weight: bold;
+}

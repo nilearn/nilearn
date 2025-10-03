@@ -237,7 +237,7 @@ def get_clusters_table(
 
         This center of mass may, in some cases, appear outside of the cluster.
 
-        .. versionchanged:: 0.9.2
+        .. nilearn_versionchanged:: 0.9.2
             In this case, the cluster voxel nearest to the center of mass is
             reported.
 
@@ -276,7 +276,7 @@ def get_clusters_table(
     return_label_maps : :obj:`bool`, default=False
         Whether or not to additionally output cluster label map images.
 
-        .. versionadded:: 0.10.1
+        .. nilearn_versionadded:: 0.10.1
 
     Returns
     -------
@@ -302,7 +302,7 @@ def get_clusters_table(
         If two_sided==True, first and second maps correspond
         to positive and negative tails.
 
-        .. versionadded:: 0.10.1
+        .. nilearn_versionadded:: 0.10.1
 
     """
     check_params(locals())
