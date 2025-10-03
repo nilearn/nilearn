@@ -20,7 +20,7 @@ from nilearn.surface import SurfaceImage
 def _generate_model_metadata(out_file, model):
     """Generate a sidecar JSON file containing model metadata.
 
-    .. versionadded:: 0.9.2
+    .. nilearn_versionadded:: 0.9.2
 
     Parameters
     ----------
@@ -52,7 +52,7 @@ def _generate_model_metadata(out_file, model):
 def _generate_dataset_description(out_file, model_level):
     """Generate a BIDS dataset_description.json file with relevant metadata.
 
-    .. versionadded:: 0.9.2
+    .. nilearn_versionadded:: 0.9.2
 
     If the dataset_description already exists only the GeneratedBy section
     is extended.
@@ -101,7 +101,7 @@ def save_glm_to_bids(
 ):
     """Save :term:`GLM` results to :term:`BIDS`-like files.
 
-    .. versionadded:: 0.9.2
+    .. nilearn_versionadded:: 0.9.2
 
     Parameters
     ----------
@@ -122,7 +122,7 @@ def save_glm_to_bids(
 
     %(first_level_contrast)s
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
     contrast_types : None or :obj:`dict` of :obj:`str`, default=None
         An optional dictionary mapping some
@@ -162,7 +162,7 @@ def save_glm_to_bids(
     model : :obj:`~nilearn.glm.first_level.FirstLevelModel` or \
             :obj:`~nilearn.glm.second_level.SecondLevelModel`
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
     Warnings
     --------
