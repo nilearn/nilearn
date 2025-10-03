@@ -44,6 +44,7 @@ from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
     extract_data,
+    find_surface_clusters,
 )
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
@@ -870,8 +871,9 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     ----------
     arr : :obj:`numpy.ndarray` of shape (X, Y, Z)
         3D array that has been thresholded at the voxel level.
-    cluster_threshold : :obj:`float`
-        Cluster-size threshold, in voxels, to apply to ``arr``.
+
+    %(cluster_threshold)s
+
     copy : :obj:`bool`, default=True
         Whether to copy the array before modifying it or not.
 
@@ -889,6 +891,7 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     Clusters are defined using 6-connectivity, also known as NN1 (in AFNI) or
     "faces" connectivity.
     """
+    check_params(locals())
     assert arr.ndim == 3
 
     if copy:
@@ -992,11 +995,11 @@ def threshold_img(
         within the range of ``"0%%"`` to ``"100%%"``.
 
     cluster_threshold : :obj:`float`, default=0
-        Cluster size threshold, in voxels. In the returned thresholded map,
-        sets of connected voxels (``clusters``) with size smaller than this
-        number will be removed.
-
-        Not implemented for SurfaceImage.
+        Cluster size threshold, in voxels / vertices.
+        In the returned thresholded map,
+        sets of connected voxels / vertices (``clusters``)
+        with size smaller than this number
+        will be removed.
 
         .. nilearn_versionadded:: 0.9.0
 
@@ -1058,14 +1061,6 @@ def threshold_img(
 
     if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
         check_polymesh_equal(mask_img.mesh, img.mesh)
-
-    if isinstance(img, SurfaceImage) and cluster_threshold > 0:
-        warnings.warn(
-            "Cluster thresholding not implemented for SurfaceImage. "
-            "Setting 'cluster_threshold' to 0.",
-            stacklevel=find_stack_level(),
-        )
-        cluster_threshold = 0
 
     if isinstance(img, NiimgLike):
         img = check_niimg(img)
@@ -1129,11 +1124,24 @@ def threshold_img(
     if expand:
         img_data = img_data[:, :, :, None]
     if cluster_threshold > 0:
-        for i_vol in range(img_data.shape[3]):
-            img_data[..., i_vol] = _apply_cluster_size_threshold(
-                img_data[..., i_vol],
-                cluster_threshold,
-            )
+        if isinstance(img, NiimgLike):
+            for i_vol in range(img_data.shape[3]):
+                img_data[..., i_vol] = _apply_cluster_size_threshold(
+                    img_data[..., i_vol],
+                    cluster_threshold,
+                )
+        else:
+            for hemi in img_data.data.parts:
+                clusters, labels = find_surface_clusters(
+                    img_data.mesh.parts[hemi], img_data.data.parts[hemi]
+                )
+                # exclude only labels with size < min_size
+                exclude_labels = set(
+                    clusters.loc[clusters["size"] < cluster_threshold, "index"]
+                )
+                exclude = np.isin(labels, list(exclude_labels))
+                img_data.data.parts[hemi][exclude] = 0
+
     if expand:
         # Reduce back to 3D
         img_data = img_data[:, :, :, 0]

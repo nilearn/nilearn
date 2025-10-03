@@ -170,6 +170,7 @@ TYPE_MAPS = {
     "border_size": nilearn_typing.BorderSize,
     "bg_on_data": nilearn_typing.BgOnData,
     "colorbar": nilearn_typing.ColorBar,
+    "cluster_threshold": nilearn_typing.ClusterThreshold,
     "connected": nilearn_typing.Connected,
     "copy_header": nilearn_typing.CopyHeader,
     "data_dir": nilearn_typing.DataDir,
