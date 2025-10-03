@@ -4,12 +4,14 @@ from joblib import Memory
 from nibabel import Nifti1Image
 from sklearn.base import BaseEstimator
 
-from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
+from nilearn.maskers.masker_validation import check_embedded_masker
 
 
 class OwningClass(BaseEstimator):
+    """Dummy class that can have an embedded masker."""
+
     def __init__(
         self,
         mask=None,
@@ -64,6 +66,8 @@ class OwningClass(BaseEstimator):
 
 
 class DummyEstimator:
+    """Dummy class that checks embedded masker at fit time."""
+
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
             setattr(self, k, v)
@@ -82,72 +86,97 @@ class DummyEstimator:
         return tags
 
     def fit(self, *args, **kwargs):  # noqa: ARG002
+        """Fit estimator."""
         self.masker = check_embedded_masker(self)
 
 
-def test_check_embedded_masker_defaults():
-    dummy = DummyEstimator(memory=None, memory_level=1)
+@pytest.mark.parametrize(
+    "kwargs, warning_msg",
+    [
+        ({"memory": None, "memory_level": 1}, "verbose"),
+        ({"memory": None, "memory_level": 1}, "memory"),
+    ],
+)
+def test_check_embedded_masker_defaults(kwargs, warning_msg):
+    """Check what values are set in embedded_masker."""
+    dummy = DummyEstimator(**kwargs)
     with pytest.warns(
-        Warning, match="Provided estimator has no verbose attribute set."
+        Warning,
+        match=f"Provided estimator has no {warning_msg} attribute set.",
     ):
         dummy.fit()
-    assert dummy.masker.memory_level == 0
-    assert dummy.masker.verbose == 0
-    dummy = DummyEstimator(verbose=1)
-    with pytest.warns(
-        Warning, match="Provided estimator has no memory attribute set."
-    ):
-        dummy.fit()
+
     assert isinstance(dummy.masker.memory, Memory)
     assert dummy.masker.memory.location is None
-    assert dummy.masker.memory_level == 0
-    assert dummy.masker.verbose == 1
+    assert dummy.masker.memory_level == dummy.memory_level
+    assert dummy.masker.verbose == dummy.verbose
 
 
-def test_check_embedded_masker():
+def test_check_embedded_masker_default():
+    """Check default return value."""
     owner = OwningClass()
     masker = check_embedded_masker(owner)
     assert type(masker) is MultiNiftiMasker
 
-    for mask, masker_type in (
+
+@pytest.mark.parametrize(
+    "mask, masker_type",
+    (
         (MultiNiftiMasker(), "multi_nii"),
         (NiftiMasker(), "nii"),
         (SurfaceMasker(), "surface"),
-    ):
-        owner = OwningClass(mask=mask)
-        masker = check_embedded_masker(owner, masker_type=masker_type)
-        assert isinstance(masker, type(mask))
-        for param_key in masker.get_params():
-            if param_key not in [
-                "memory",
-                "memory_level",
-                "n_jobs",
-                "verbose",
-            ]:
-                assert getattr(masker, param_key) == getattr(mask, param_key)
-            else:
-                assert getattr(masker, param_key) == getattr(owner, param_key)
+    ),
+)
+def test_check_embedded_masker(mask, masker_type):
+    """Check return value and attribute of the masker \
+        when passing a masker at init.
+    """
+    owner = OwningClass(mask=mask)
 
-    # Check use of mask as mask_img
+    masker = check_embedded_masker(owner, masker_type=masker_type)
+
+    assert isinstance(masker, type(mask))
+    for param_key in masker.get_params():
+        if param_key not in [
+            "memory",
+            "memory_level",
+            "n_jobs",
+            "verbose",
+        ]:
+            assert getattr(masker, param_key) == getattr(mask, param_key)
+        else:
+            assert getattr(masker, param_key) == getattr(owner, param_key)
+
+
+def test_check_embedded_masker_with_mask():
+    """Check that mask of owning class is passed to embedded masker."""
     shape = (6, 8, 10, 5)
     affine = np.eye(4)
     mask = Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
     owner = OwningClass(mask=mask)
+
     masker = check_embedded_masker(owner)
+
     assert masker.mask_img is mask
 
-    # Check attribute forwarding
+
+def test_check_embedded_masker_attribute_forwarding():
+    """Check attribute forwarding."""
     data = np.zeros((9, 9, 9))
     data[2:-2, 2:-2, 2:-2] = 10
     imgs = Nifti1Image(data, np.eye(4))
     mask = MultiNiftiMasker()
     mask.fit([[imgs]])
     owner = OwningClass(mask=mask)
+
     masker = check_embedded_masker(owner)
+
     assert masker.mask_img is mask.mask_img_
 
-    # Check conflict warning
+
+def test_check_embedded_masker_conflict_warning():
+    """Do."""
     mask = NiftiMasker(mask_strategy="epi")
     owner = OwningClass(mask=mask)
-    with pytest.warns(UserWarning):
+    with pytest.warns(UserWarning, match="foo"):
         check_embedded_masker(owner)

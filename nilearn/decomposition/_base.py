@@ -26,7 +26,6 @@ from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
@@ -42,6 +41,7 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
+from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike

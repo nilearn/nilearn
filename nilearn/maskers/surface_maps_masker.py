@@ -17,15 +17,13 @@ from nilearn._utils.helpers import (
     is_plotly_installed,
 )
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.masker_validation import (
-    check_compatibility_mask_and_images,
-)
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
+from nilearn.maskers.utils import check_compatibility_mask_and_images
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,

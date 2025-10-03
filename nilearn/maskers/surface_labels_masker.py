@@ -11,19 +11,14 @@ from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.masker_validation import (
-    check_compatibility_mask_and_images,
-)
 from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
 )
 from nilearn.image import mean_img
 from nilearn.maskers._mixin import _LabelMaskerMixin
-from nilearn.maskers.base_masker import (
-    _BaseSurfaceMasker,
-    mask_logger,
-)
+from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
+from nilearn.maskers.utils import check_compatibility_mask_and_images
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,

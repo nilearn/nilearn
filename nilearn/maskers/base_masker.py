@@ -20,9 +20,6 @@ from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.masker_validation import (
-    check_compatibility_mask_and_images,
-)
 from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_parameter_in_allowed
@@ -35,6 +32,7 @@ from nilearn.image import (
     resample_img,
     smooth_img,
 )
+from nilearn.maskers.utils import check_compatibility_mask_and_images
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img

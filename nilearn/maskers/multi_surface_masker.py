@@ -8,14 +8,12 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.masker_validation import (
-    check_compatibility_mask_and_images,
-)
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.base_masker import mask_logger
 from nilearn.maskers.surface_masker import SurfaceMasker
+from nilearn.maskers.utils import check_compatibility_mask_and_images
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 
