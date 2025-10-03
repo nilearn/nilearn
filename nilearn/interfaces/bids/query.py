@@ -1,7 +1,5 @@
 """Functions for working with BIDS datasets."""
 
-from __future__ import annotations
-
 import glob
 import json
 from pathlib import Path
