@@ -173,7 +173,7 @@ pygments_dark_style = "monokai"
 suppress_warnings = ["image.not_readable", "config.cache"]
 
 linkcheck_allowed_redirects = {
-    "https://db.humanconnectome.org/": r"https://db.humanconnectome.org/app/template/.*",
+    "https://balsa.wustl.edu": r"https://balsa.wustl.eduapp/template/.*",
     r"http://humanconnectome.org/.*": r"https://store.humanconnectome.org/.*",
     # Issue redirect to PR
     r"https://github.com/nilearn/nilearn/issues/.*": r"https://github.com/nilearn/nilearn/pull/.*",
@@ -184,22 +184,6 @@ linkcheck_allowed_redirects = {
 }
 
 linkcheck_ignore = [
-    r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
-    r"https://fcon_1000.projects.nitrc.org/.*",
-    r"https://www.cambridge.org/be/universitypress/.*",
-    r"https://sites.wustl.edu/oasisbrains/.*"
-    "http://brainomics.cea.fr/localizer/",
-    "https://github.com/nilearn/nilearn/issues/new/choose",
-    "https://pages.saclay.inria.fr/bertrand.thirion/",
-    "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
-    "http://brainomics.cea.fr/localizer/",
-    "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
-    (
-        "https://www.info.gouv.fr/"
-        "organisation/"  # codespell:ignore organisation
-        "secretariat-general-pour-l-investissement-sgpi"
-    ),
-    "https://pkgs.org/search/.*",
     # ignore nilearn github issues mostly for the sake of speed
     # given that there many of those in our changelog
     r"https://github.com/nilearn/nilearn/issues/.*",
@@ -213,6 +197,22 @@ linkcheck_ignore = [
     r"https://doi.org/.*",
     # do not check download links for OSF
     r"https://osf.io/.*/download",
+    r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
+    r"https://fcon_1000.projects.nitrc.org/.*",
+    r"https://www.cambridge.org/be/universitypress/.*",
+    r"https://sites.wustl.edu/oasisbrains/.*",
+    "http://brainomics.cea.fr/localizer/",
+    "https://childmind.org/science/global-open-science/healthy-brain-network/",
+    "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
+    "https://github.com/nilearn/nilearn/issues/new/choose",
+    "https://pages.saclay.inria.fr/bertrand.thirion/",
+    "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
+    (
+        "https://www.info.gouv.fr/"
+        "organisation/"  # codespell:ignore organisation
+        "secretariat-general-pour-l-investissement-sgpi"
+    ),
+    "https://pkgs.org/search/.*",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
