@@ -11,9 +11,6 @@ on:
     push:
         branches:
         -   main
-    pull_request:
-        branches:
-        -   '*'
     schedule:
     # Run every Monday at 8am UTC
     -   cron: 0 8 * * 1
