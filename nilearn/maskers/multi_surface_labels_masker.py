@@ -1,25 +1,15 @@
 """Extract data from multiple 2D surface objects."""
 
-import numpy as np
-from sklearn.utils.estimator_checks import check_is_fitted
-
-from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
-from nilearn._utils.class_inspect import get_params
+from nilearn import DEFAULT_SEQUENTIAL_CMAP
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.masker_validation import (
-    check_compatibility_mask_and_images,
-)
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers._mixin import _MultiMixin
-from nilearn.maskers.base_masker import mask_logger
 from nilearn.maskers.surface_labels_masker import SurfaceLabelsMasker
-from nilearn.surface.surface import SurfaceImage
-from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
-class MultiSurfaceMasker(_MultiMixin, SurfaceLabelsMasker):
+class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
     """Extract time-series from multiple SurfaceImage objects.
 
     MultiSurfaceMasker is useful when dealing with image sets from multiple
@@ -92,6 +82,8 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceLabelsMasker):
 
     %(verbose0)s
 
+    %(strategy)s
+
     reports : :obj:`bool`, default=True
         If set to True, data is saved in order to produce a report.
 
@@ -124,9 +116,6 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceLabelsMasker):
 
     memory_ : joblib memory cache
 
-    n_elements_ : :obj:`int` or None
-        number of vertices included in mask
-
     """
 
     def __init__(
@@ -148,6 +137,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceLabelsMasker):
         memory_level=1,
         n_jobs=1,
         verbose=0,
+        strategy="mean",
         reports=True,
         cmap=DEFAULT_SEQUENTIAL_CMAP,
         clean_args=None,
@@ -168,6 +158,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceLabelsMasker):
         self.memory = memory
         self.memory_level = memory_level
         self.verbose = verbose
+        self.strategy = strategy
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
@@ -188,6 +179,7 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceLabelsMasker):
             memory=memory,
             memory_level=memory_level,
             verbose=verbose,
+            strategy=strategy,
             reports=reports,
             cmap=cmap,
             clean_args=clean_args,
@@ -247,75 +239,3 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceLabelsMasker):
             self._check_imgs(imgs)
 
         return self._fit(imgs)
-
-    @fill_doc
-    def transform_single_imgs(
-        self,
-        imgs,
-        confounds=None,
-        sample_mask=None,
-    ):
-        """Extract signals from fitted surface object.
-
-        Parameters
-        ----------
-        imgs : imgs : :obj:`~nilearn.surface.SurfaceImage` object or \
-              iterable of :obj:`~nilearn.surface.SurfaceImage`
-            Images to process.
-            Mesh and data for both hemispheres/parts.
-
-        %(confounds)s
-
-        %(sample_mask)s
-
-        Returns
-        -------
-        %(signals_transform_surface)s
-
-        """
-        check_is_fitted(self)
-
-        check_compatibility_mask_and_images(self.mask_img_, imgs)
-        check_polymesh_equal(self.mask_img_.mesh, imgs.mesh)
-
-        if isinstance(imgs, SurfaceImage) and any(
-            hemi.ndim > 2 for hemi in imgs.data.parts.values()
-        ):
-            raise ValueError("should only be SurfaceImage should 1D or 2D.")
-        elif hasattr(imgs, "__iter__"):
-            for i, x in enumerate(imgs):
-                x.data._check_n_samples(1, f"imgs[{i}]")
-
-        if self.reports:
-            self._reporting_data["images"] = imgs
-
-        mask_logger("extracting", verbose=self.verbose)
-
-        output = np.empty((1, self.n_elements_))
-        if len(imgs.shape) == 2:
-            output = np.empty((imgs.shape[1], self.n_elements_))
-        for part_name, (start, stop) in self._slices.items():
-            mask = self.mask_img_.data.parts[part_name].ravel()
-            output[:, start:stop] = imgs.data.parts[part_name][mask].T
-
-        mask_logger("cleaning", verbose=self.verbose)
-
-        parameters = get_params(self.__class__, self, ignore=["mask_img"])
-
-        parameters["clean_args"] = self.clean_args_
-
-        # signal cleaning here
-        output = self._cache(signal.clean, func_memory_level=2)(
-            output,
-            detrend=parameters["detrend"],
-            standardize=parameters["standardize"],
-            standardize_confounds=parameters["standardize_confounds"],
-            t_r=parameters["t_r"],
-            low_pass=parameters["low_pass"],
-            high_pass=parameters["high_pass"],
-            confounds=confounds,
-            sample_mask=sample_mask,
-            **parameters["clean_args"],
-        )
-
-        return output

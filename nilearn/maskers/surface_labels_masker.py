@@ -235,6 +235,10 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
                 for i, x in enumerate(imgs):
                     x.data._check_n_samples(1, f"imgs[{i}]")
 
+        return self._fit(imgs)
+
+    def _fit(self, imgs):
+        """Keep private to call it with MultiSurfaceLabelsMasker too."""
         check_reduction_strategy(self.strategy)
 
         if self.labels_img is None:
