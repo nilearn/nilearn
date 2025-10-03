@@ -32,28 +32,29 @@ def get_cbar_bounds(vmin, vmax, num_val, tick_format=DEFAULT_TICK_FORMAT):
     )
 
 
-def _add_to_ticks(ticks, threshold):
-    """Compare the distance of threshold to closest tick location and decide if
-    threshold should replace the tick or it should be added to the tick list.
+def _add_to_ticks(ticks, value):
+    """Compare the distance of value to closest tick location and decide if
+    value should replace the tick or it should be added to the tick list.
 
     The distance of threshold to 0 is excluded when finding the tick with
     minimum distance.
 
-    If the distance is smaller than or equal to 1/3th of the tick spacing, or
-    it is smaller than 4/3th of threshold value, return ``False`` so that the
-    closest tick is replaced with threshold;
-    otherwise return ``True`` so that the threshold is added to the tick list.
+    If the distance is smaller than or equal to 1/3th of the max tick spacing,
+    or it is smaller than 4/3th of threshold value, return ``False`` so that
+    the closest tick is replaced with value;
+    otherwise return ``True`` so that the value is added to the tick list.
     """
-    ticks = ticks[ticks != 0]
-    if len(ticks) <= 2:
+    ticks_without_zero = ticks[ticks != 0]
+    if len(ticks_without_zero) <= 2:
         return True
-    min_diff = min(abs(abs(ticks) - threshold))
 
-    # check if threshold should be added to the tick list or replaced by a
+    min_diff = min(abs(abs(ticks_without_zero) - value))
+    step_size = max([ticks[i] - ticks[i - 1] for i in range(len(ticks))])
+
+    # check if value should be added to the tick list or replaced by another
     # value in the list
     return bool(
-        min_diff > abs(ticks[1] - ticks[0]) / 3
-        or min_diff >= threshold * 4 / 3
+        min_diff > step_size / 3 or (min_diff >= value * 4 / 3 and value != 0)
     )
 
 
@@ -155,21 +156,14 @@ def get_cbar_ticks(
                 if 0 in ticks[idx_closest]:
                     idx_closest = np.sort(np.argpartition(diff, 3)[:3])
                     idx_closest = idx_closest[[0, 2]]
-            # set vmin and vmax to formatted values
-            vmin = float(tick_format % vmin)
-            vmax = float(tick_format % vmax)
-            if -threshold not in ticks and -threshold != vmin:
-                if ticks[idx_closest[0]] != 0:
-                    ticks[idx_closest[0]] = -threshold
-                else:
-                    ticks = np.append(ticks, -threshold)
-            if threshold not in ticks and threshold != vmax:
-                if ticks[idx_closest[1]] != 0:
-                    ticks[idx_closest[1]] = threshold
-                else:
-                    ticks = np.append(ticks, threshold)
+            ticks[idx_closest[0]] = -threshold
+            ticks[idx_closest[1]] = threshold
 
-            ticks = np.append(ticks, [vmin, vmax])
+        # set vmin and vmax to formatted values and add them to ticks in case
+        # they are replaced by threshold
+        vmin = float(tick_format % vmin)
+        vmax = float(tick_format % vmax)
+        ticks = np.append(ticks, [vmin, vmax])
         # remove unnecessary ticks that would be between 0 and +-threshold
         ticks = ticks[
             np.where(
@@ -183,6 +177,24 @@ def get_cbar_ticks(
                 | (np.isin(ticks, [0, vmin, vmax, threshold, -threshold]))
             )
         ]
+
+    # we want 0 to always appear if the data contains both positive and
+    # negative values
+    if vmin < 0 and vmax > 0 and 0 not in ticks:
+        add_zero = _add_to_ticks(ticks, 0)
+        if add_zero:
+            ticks = np.append(ticks, 0)
+        else:
+            closest = np.argmin(np.abs(ticks))
+            if (
+                threshold is not None
+                and ticks[closest] != threshold
+                and ticks[closest] != -threshold
+            ) or threshold is None:
+                ticks[closest] = 0
+            else:
+                ticks = np.append(ticks, 0)
+
     ticks = np.sort(np.unique(ticks))
 
     return ticks
