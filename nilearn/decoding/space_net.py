@@ -618,7 +618,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
     %(spacenet_fit_attributes)s
 
@@ -1096,7 +1096,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.12.1
+        .. nilearn_versionadded:: 0.12.1
 
     %(spacenet_fit_attributes)s
 
@@ -1329,7 +1329,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.12.1
+        .. nilearn_versionadded:: 0.12.1
 
 
     %(spacenet_fit_attributes)s

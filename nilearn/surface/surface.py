@@ -619,7 +619,7 @@ def vol_to_surf(
 ):
     """Extract surface data from a Nifti image.
 
-    .. versionadded:: 0.4.0
+    .. nilearn_versionadded:: 0.4.0
 
     Parameters
     ----------
@@ -651,7 +651,7 @@ def vol_to_surf(
             when the image is a
             :term:`deterministic atlas<Deterministic atlas>`.
 
-            .. versionadded:: 0.12.0
+            .. nilearn_versionadded:: 0.12.0
 
         For one image, the speed difference is small, 'linear' takes about x1.5
         more time. For many images, 'nearest' scales much better, up to x20
@@ -1298,7 +1298,7 @@ class PolyData:
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1321,7 +1321,7 @@ class PolyData:
         dtype to enforce on the data.
         If ``None`` the original dtype if used.
 
-        .. versionadded:: 0.12.1
+        .. nilearn_versionadded:: 0.12.1
 
     Examples
     --------
@@ -1416,7 +1416,21 @@ class PolyData:
         vmax = max(x.max() for x in self.parts.values())
         return vmin, vmax
 
-    def _check_ndims(self, dim, var_name="img"):
+    def _check_n_samples(self, samples: int, var_name="img"):
+        max_n_samples = []
+        for hemi in self.parts.values():
+            if hemi.ndim > 1:
+                max_n_samples.append(hemi.shape[1])
+            else:
+                max_n_samples.append(1)
+        max_n_samples = np.max(max_n_samples)
+        if max_n_samples > samples:
+            raise ValueError(
+                f"Data for each part of {var_name} should be {samples}D. "
+                f"Found: {max_n_samples}."
+            )
+
+    def _check_ndims(self, dim: int, var_name="img"):
         """Check if the data is of a given dimension.
 
         Raise error if not.
@@ -1497,7 +1511,7 @@ class SurfaceMesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
     coordinates and faces (triangles).
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Attributes
     ----------
@@ -1534,7 +1548,7 @@ class SurfaceMesh(abc.ABC):
 class InMemoryMesh(SurfaceMesh):
     """A surface mesh stored as in-memory numpy arrays.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1584,7 +1598,7 @@ class InMemoryMesh(SurfaceMesh):
 class FileMesh(SurfaceMesh):
     """A surface mesh stored in a Gifti or Freesurfer file.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1641,7 +1655,7 @@ class PolyMesh:
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1835,7 +1849,7 @@ def _sanitize_filename(filename):
 class SurfaceImage:
     """Surface image containing meshes & data for both hemispheres.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1857,7 +1871,7 @@ class SurfaceImage:
         dtype to enforce on the data.
         If ``None`` the original dtype is used.
 
-        .. versionadded:: 0.12.1
+        .. nilearn_versionadded:: 0.12.1
 
     Attributes
     ----------

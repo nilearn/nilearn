@@ -22,7 +22,6 @@ from nilearn.image import mean_img
 from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers.base_masker import (
     _BaseSurfaceMasker,
-    generate_lut,
     mask_logger,
 )
 from nilearn.surface.surface import (
@@ -58,7 +57,7 @@ def signals_to_surf_img_labels(
 class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -203,74 +202,6 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-    @property
-    def n_elements_(self) -> int:
-        """Return number of regions.
-
-        This is equal to the number of unique values
-        in the fitted label image,
-        minus the background value.
-        """
-        check_is_fitted(self)
-        lut = self.lut_
-        return len(lut[lut["index"] != self.background_label])
-
-    @property
-    def labels_(self) -> list[int | float]:
-        """Return list of labels of the regions.
-
-        The background label is included if present in the image.
-        """
-        check_is_fitted(self)
-        lut = self.lut_
-        return lut["index"].to_list()
-
-    @property
-    def region_names_(self) -> dict[int, str]:
-        """Return a dictionary containing the region names corresponding \
-           to each column in the array returned by `transform`.
-
-        The region names correspond to the labels provided
-        in labels in input.
-        The region name corresponding to ``region_signal[:,i]``
-        is ``region_names_[i]``.
-
-        .. versionadded:: 0.12.0
-        """
-        check_is_fitted(self)
-
-        index = self.labels_
-        valid_ids = [id for id in index if id != self.background_label]
-
-        sub_df = self.lut_[self.lut_["index"].isin(valid_ids)]
-
-        return sub_df["name"].reset_index(drop=True).to_dict()
-
-    @property
-    def region_ids_(self) -> dict[str | int, int | float]:
-        """Return dictionary containing the region ids corresponding \
-           to each column in the array \
-           returned by `transform`.
-
-        The region id corresponding to ``region_signal[:,i]``
-        is ``region_ids_[i]``.
-        ``region_ids_['background']`` is the background label.
-
-        .. versionadded:: 0.12.0
-        """
-        check_is_fitted(self)
-
-        index = self.labels_
-
-        region_ids_: dict[str | int, int | float] = {}
-        if self.background_label in index:
-            index.pop(index.index(self.background_label))
-            region_ids_["background"] = self.background_label
-        for i, id in enumerate(index):
-            region_ids_[i] = id  # noqa : PERF403
-
-        return region_ids_
-
     @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
@@ -293,6 +224,16 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         if imgs is not None:
             check_surf_img(imgs)
+
+            if isinstance(imgs, SurfaceImage) and any(
+                hemi.ndim > 2 for hemi in imgs.data.parts.values()
+            ):
+                raise ValueError(
+                    "should only be SurfaceImage should 1D or 2D."
+                )
+            elif hasattr(imgs, "__iter__"):
+                for i, x in enumerate(imgs):
+                    x.data._check_n_samples(1, f"imgs[{i}]")
 
         check_reduction_strategy(self.strategy)
 
@@ -344,9 +285,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
                     stacklevel=find_stack_level(),
                 )
 
-        self.lut_ = generate_lut(
-            self.labels_img_, self.background_label, self.lut, self.labels
-        )
+        self.lut_ = self._generate_lut()
 
         if self.clean_args is None:
             self.clean_args_ = {}
@@ -435,6 +374,14 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         check_compatibility_mask_and_images(self.labels_img_, imgs)
         check_polymesh_equal(self.labels_img_.mesh, imgs.mesh)
+
+        if isinstance(imgs, SurfaceImage) and any(
+            hemi.ndim > 2 for hemi in imgs.data.parts.values()
+        ):
+            raise ValueError("SurfaceImage should only be 1D or 2D.")
+        elif hasattr(imgs, "__iter__"):
+            for i, x in enumerate(imgs):
+                x.data._check_n_samples(1, f"imgs[{i}]")
 
         imgs = at_least_2d(imgs)
         img_data = get_data(imgs)

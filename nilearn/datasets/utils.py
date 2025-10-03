@@ -74,7 +74,7 @@ def load_sample_motor_activation_image():
         "Import from 'nilearn.datasets.utils'\n"
         "will be deprecated in version 0.14.0.\n"
         "Please import this function from 'nilearn.datasets.func' instead.",
-        DeprecationWarning,
+        FutureWarning,
         stacklevel=find_stack_level(),
     )
     return tmp()
