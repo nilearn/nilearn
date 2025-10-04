@@ -161,10 +161,11 @@ def _update_template(
 
     if "n_elements" not in data:
         data["n_elements"] = 0
-    if "coverage" in data:
-        data["coverage"] = f"{data['coverage']:0.1f}"
-    else:
+
+    if "coverage" not in data:
         data["coverage"] = ""
+    if not isinstance(data["coverage"], str):
+        data["coverage"] = f"{data['coverage']:0.1f}"
 
     body = tpl.substitute(
         title=title,
@@ -265,6 +266,9 @@ def generate_report(estimator):
         data = estimator._report_content
     else:
         data = {}
+
+    # Generate a unique ID for this report
+    data["unique_id"] = str(uuid.uuid4()).replace("-", "")
 
     warning_messages = []
 
@@ -376,16 +380,13 @@ def _create_report(estimator, data):
     docstring = estimator.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
-    # Generate a unique ID for this report
-    unique_id = str(uuid.uuid4()).replace("-", "")
-
     return _update_template(
         title=estimator.__class__.__name__,
         docstring=snippet,
         content=embeded_images,
         overlay=embed_img(overlay),
         parameters=parameters,
-        data={**data, "unique_id": unique_id},
+        data=data,
         template_name=html_template,
         summary_html=summary_html,
     )
