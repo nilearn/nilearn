@@ -39,20 +39,22 @@ on:
     push:
         branches:
         -   main
+    pull_request:
+        branches:
+        -   '*'
     schedule:
-    # every Monday at 12noon UTC
+        # every Tuesday at 12 Noon UTC
     -   cron: 0 12 * * TUE
 
-    workflow_dispatch:  # This enables manual triggering from GitHub UI
+    workflow_dispatch: # This enables manual triggering from GitHub UI
+
+env:
+    NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
 
 jobs:
     benchmark:
-        if: >-
-            (github.event_name == 'workflow_dispatch' ||
-            github.event_name == 'schedule') &&
-            github.repository == 'nilearn/nilearn'
-        # TODO bump to 24.04 when bumping minimum python to 3.10
-        runs-on: ubuntu-22.04
+        if: github.event_name == 'pull_request' && github.repository == 'nilearn/nilearn'
+        runs-on: ubuntu-24.04
         defaults:
             run:
                 working-directory: ./asv_benchmarks
@@ -60,17 +62,20 @@ jobs:
         steps:
         -   uses: actions/checkout@v5
             with:
-                # fetch all branches and tags
+                  # fetch all branches and tags
                 fetch-depth: 0
         -   uses: actions/setup-python@v6
             with:
-                # TODO bump to 3.10 when minimum python is 3.10
-                python-version: 3.9
+                python-version: 3.10.18
         -   name: Install asv and switch to asv_benchmarks directory
             run: |
                 pip install --upgrade pip
                 pip install asv
+                pip install nilearn
+        -   name: Download and cache nilearn data
+            run: python ../doc/get_data_examples.py full
         -   name: Add SSH key for benchmarks repo
+            if: github.event_name != 'pull_request'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -81,11 +86,20 @@ jobs:
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
         -   name: Pull previous results from benchmarks repo
+            if: github.event_name != 'pull_request'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
                 git clone git@github.com:nilearn/benchmarks.git benchmarks_repo
                 cp -r benchmarks_repo/results .
+
+        -   name: Pull previous results from benchmarks repo (PR fallback)
+            if: github.event_name == 'pull_request'
+            run: |
+                # Use HTTPS for PRs (read-only)
+                git clone https://github.com/nilearn/benchmarks.git benchmarks_repo
+                cp -r benchmarks_repo/results .
+
         -   name: Get all the machine info
             run: |
                 asv machine --yes 2>&1 | tee log_${{ github.event.repository.updated_at }}_${{ github.run_number }}
@@ -106,6 +120,7 @@ jobs:
                     ./asv_benchmarks/results
                 compression-level: 9
         -   name: Push new results and logs back to benchmarks repo
+            if: github.event_name != 'pull_request'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
@@ -118,6 +133,7 @@ jobs:
                 git commit -m "Update benchmark results and logs (${{ github.event.repository.updated_at }}_${{ github.run_number }})"
                 git push origin main
         -   name: Push html to gh-pages branch
+            if: github.event_name != 'pull_request'
             env:
                 SSH_AUTH_SOCK: /tmp/ssh_agent_benchmarks.sock
             run: |
