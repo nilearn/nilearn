@@ -28,6 +28,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` Add tedana support for load_confounds and testing for tedana load_confounds support (:gh:`5410` by `Milton Camacho`_).
+
 - :bdg-success:`API` Add ``view`` parameter to :func:`~plotting.view_img_on_surf` to select the default view that will be used when displaying the figure  (:gh:`5692` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add anterior and posterior views to :class:`~maskers.SurfaceLabelsMasker`, :class:`~maskers.SurfaceMapsMasker` and :class:`~maskers.SurfaceMasker` (:gh:`5473` by `Chloe Hampson`_).
