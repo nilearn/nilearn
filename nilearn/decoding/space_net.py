@@ -28,7 +28,6 @@ from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -38,6 +37,7 @@ from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
+from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import unmask_from_to_3d_array
 from nilearn.surface import SurfaceImage
 
