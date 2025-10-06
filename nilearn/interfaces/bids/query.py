@@ -1,7 +1,5 @@
 """Functions for working with BIDS datasets."""
 
-from __future__ import annotations
-
 import glob
 import json
 from pathlib import Path
@@ -51,6 +49,7 @@ def _get_metadata_from_bids(
             warn(
                 f"'{field}' not found in file {json_files[0]}.",
                 stacklevel=find_stack_level(),
+                category=RuntimeWarning,
             )
     else:
         msg_suffix = f" in:\n {bids_path}" if bids_path else ""
