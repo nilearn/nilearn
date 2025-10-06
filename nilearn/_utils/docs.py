@@ -231,6 +231,14 @@ docdict["clean_args_"] = docdict["clean_args"].replace(
     "clean_args_ : :obj:`dict`",
 )
 
+# cluster_threshold
+docdict["cluster_threshold"] = """
+    cluster_threshold : :obj:`int`, default=0
+        Cluster size threshold.
+        Sets of connected voxels / vertices (`clusters`)
+        with size smaller than this number will be removed.
+"""
+
 # cmap
 docdict["cmap"] = """
 cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional

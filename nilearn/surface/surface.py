@@ -8,11 +8,14 @@ from collections.abc import Iterable, Mapping
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import sklearn.cluster
 import sklearn.preprocessing
 from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
+from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import connected_components
 from sklearn.exceptions import EfficiencyWarning
 
 from nilearn._utils.helpers import stringify_path
@@ -2066,3 +2069,123 @@ def extract_data(img, index):
         .reshape(mesh.parts[hemi].n_vertices, last_dim)
         for hemi in data.parts
     }
+
+
+def compute_adjacency_matrix(mesh: InMemoryMesh, dtype=None):
+    """Compute the adjacency matrix for a surface.
+
+    The adjacency matrix is a matrix
+    with one row and one column for each vertex
+    such that the value of a cell `(u,v)` in the matrix is 1
+    if nodes `u` and `v` are adjacent and 0 otherwise.
+
+    Parameters
+    ----------
+    mesh : InMemoryMesh
+
+    dtype : numpy dtype-like or None, default=None
+        The dtype that should be used for the returned sparse matrix.
+
+    Returns
+    -------
+    matrix : scipy.sparse.csr_matrix
+        A sparse matrix representing the edge relationships in `surface`.
+
+    """
+    n = mesh.coordinates.shape[0]
+
+    # Extract all 3 undirected edges per face:
+    #   (i, j), (i, k), (j, k).
+    edges = np.vstack(
+        [
+            mesh.faces[:, [0, 1]],
+            mesh.faces[:, [0, 2]],
+            mesh.faces[:, [1, 2]],
+        ]
+    )
+    edges = edges.astype(np.int64)
+
+    # To uniquely represent an undirected edge (u, v),
+    # ensure that u < v.
+    # We do this by splitting edges into
+    # "bigcol" (first index > second index)
+    # and "lilcol" (otherwise),
+    # and encoding each pair into a single integer u + v * n.
+    # Then we keep unique pairs.
+    bigcol = edges[:, 0] > edges[:, 1]
+    lilcol = ~bigcol
+    edges = np.concatenate(
+        [
+            edges[bigcol, 0] + edges[bigcol, 1] * n,
+            edges[lilcol, 1] + edges[lilcol, 0] * n,
+        ]
+    )
+    edges = np.unique(edges)
+
+    # Decode back to pairs of vertices (u, v).
+    (u, v) = (edges // n, edges % n)
+
+    if dtype is None:
+        edge_lens = np.ones_like(edges)
+    else:
+        edge_lens = np.ones(edges.shape, dtype=dtype)
+
+    # Build a symmetric adjacency matrix.
+    # For each undirected edge (u, v), we add entries (u, v) and (v, u).
+    # And return as a sparse CSR matrix of shape (n_vertices, n_vertices).
+    ee = np.concatenate([edge_lens, edge_lens])
+    uv = np.concatenate([u, v])
+    vu = np.concatenate([v, u])
+    return csr_matrix((ee, (uv, vu)), shape=(n, n))
+
+
+def find_surface_clusters(mesh, mask) -> tuple[pd.DataFrame, np.ndarray]:
+    """Find clusters of truthy vertices on a surface mesh.
+
+    Parameters
+    ----------
+    mesh : InMemoryMesh
+        Surface mesh providing coordinates and faces.
+
+    mask : (n_vertices,) array_like of bool
+        Boolean mask, True where vertex is part of a cluster.
+
+    Returns
+    -------
+    clusters : pandas.DataFrame
+        A look up table
+        that should be BIDS friendly
+        (resemble the look up table used for discrete segmentation).
+
+        One row per cluster with:
+          - 'name': cluster name
+          - 'index': cluster ID (1..n_clusters)
+          - 'size': number of vertices in the cluster
+
+    labels : np.ndarray of shape (n_vertices,)
+        Integer labels per vertex.
+        0 means background (mask is False).
+        Positive integers index the cluster ID (1..n_clusters).
+    """
+    mask = np.asarray(mask, dtype=bool)
+    if mask.shape[0] != mesh.n_vertices:
+        raise ValueError(
+            f"Mask length {mask.shape[0]} does not match "
+            f"mesh.n_vertices {mesh.n_vertices}"
+        )
+
+    adj = compute_adjacency_matrix(mesh)
+    sub_adj = adj[mask][:, mask]
+
+    _, labels_sub = connected_components(sub_adj, directed=False)
+
+    # full label array (0 = background)
+    labels = np.zeros(mesh.n_vertices, dtype=int)
+    labels[mask] = labels_sub + 1
+
+    unique, counts = np.unique(labels[labels > 0], return_counts=True)
+    clusters = pd.DataFrame(
+        {"name": [str(x) for x in unique], "index": unique, "size": counts}
+    )
+
+    return clusters, labels
