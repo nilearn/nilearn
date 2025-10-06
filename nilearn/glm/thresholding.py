@@ -19,7 +19,7 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.image import get_data, math_img, new_img_like, threshold_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.surface.surface import PolyData, SurfaceImage
+from nilearn.surface.surface import SurfaceImage
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
 
@@ -222,7 +222,7 @@ def cluster_level_inference(
                 continue
 
             tmp_mask = new_img_like(
-                stat_img, PolyData(left=mask_left, right=mask_right)
+                stat_img, {"left": mask_left, "right": mask_right}
             )
             masker = SurfaceMasker(mask_img=tmp_mask).fit()
 
