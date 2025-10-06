@@ -1,7 +1,5 @@
 """Extract data from multiple 2D surface objects."""
 
-from __future__ import annotations
-
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
 

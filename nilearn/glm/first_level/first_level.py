@@ -3,8 +3,6 @@ objects of fMRI data analyses.
 
 """
 
-from __future__ import annotations
-
 import csv
 import inspect
 import time
