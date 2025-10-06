@@ -96,6 +96,23 @@ def test_identity_resample(data, force_resample, shape, affine_eye):
     )
 
 
+@pytest.mark.parametrize(
+    "target_affine",
+    [
+        [1, 2, 3],
+        [[1, 2, 3]],
+    ],
+)
+def test_target_affine_error(data, target_affine, affine_eye):
+    """Check errors when passing affine as list with wrong dimensions."""
+    with pytest.raises(np.linalg.LinAlgError):
+        resample_img(
+            Nifti1Image(data, affine_eye),
+            target_affine=target_affine,
+            interpolation="nearest",
+        )
+
+
 @pytest.mark.parametrize("force_resample", [False, True])
 @pytest.mark.parametrize("endian_type", [">f8", "<f8"])
 @pytest.mark.parametrize("interpolation", ["nearest", "linear", "continuous"])

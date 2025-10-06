@@ -100,12 +100,33 @@ def test_fit_transform_warning(img_3d_rand_eye, mask_img_1):
         assert np.any(X != 0)
 
 
-def test_resample(img_3d_rand_eye, mask_img_1):
-    """Check that target_affine triggers the right resampling."""
-    masker = NiftiMasker(mask_img=mask_img_1, target_affine=2 * np.eye(3))
+@pytest.mark.parametrize(
+    "target_affine", [2 * np.eye(3), (2 * np.eye(3)).tolist()]
+)
+def test_resample(img_3d_rand_eye, mask_img_1, target_affine):
+    """Check that target_affine triggers the right resampling.
+
+    Also check that target affine can be passed as a list.
+    """
+    masker = NiftiMasker(mask_img=mask_img_1, target_affine=target_affine)
     # Smoke test the fit
     X = masker.fit_transform(img_3d_rand_eye)
     assert np.any(X != 0)
+
+
+@pytest.mark.parametrize(
+    "target_affine",
+    [
+        [1, 2, 3],
+        [[1, 2, 3]],
+    ],
+)
+def test_target_affine_error(img_3d_rand_eye, target_affine):
+    """Check errors when passing affine as list with wrong dimensions."""
+    masker = NiftiMasker(target_affine=target_affine)
+
+    with pytest.raises(np.linalg.LinAlgError):
+        masker.fit_transform(img_3d_rand_eye)
 
 
 def test_resample_to_mask_warning(img_3d_rand_eye, affine_eye):
