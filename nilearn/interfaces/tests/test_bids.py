@@ -46,7 +46,7 @@ def test_get_metadata_from_bids(tmp_path):
 
     with json_file.open("w") as f:
         json.dump({"foo": 2.0}, f)
-    with pytest.warns(UserWarning, match="'RepetitionTime' not found"):
+    with pytest.warns(RuntimeWarning, match="'RepetitionTime' not found"):
         value = _get_metadata_from_bids(
             field="RepetitionTime", json_files=json_files
         )
