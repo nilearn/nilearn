@@ -1100,13 +1100,25 @@ deprecation_notice = """
 
     .. nilearn_deprecated:: 0.10.1
 
-        The default will be changed to ``'zscore_sample'``
+        The default will be changed to ``'zscore_sample'`` (or ``True``)
         and ``'zscore'`` will be removed in
         in version 0.14.0.
 
 """
 
-docdict["standardize_false"] = standardize.format("False")
+# TODO (nilearn >= 0.15.0) update to ..versionchanged
+deprecation_notice_false_to_none = """
+
+    .. nilearn_deprecated:: 0.15.0dev
+
+        The default will be changed from ``False`` to ``None``
+        in version 0.15.0.
+
+"""
+
+docdict["standardize_false"] = (
+    standardize.format("False") + deprecation_notice_false_to_none
+)
 # TODO (nilearn >= 0.14.0)
 # create a single  standardize_zscore_sample
 # with the updated deprecation notice

@@ -1061,7 +1061,7 @@ def _sanitize_inputs(
 
     if isinstance(standardize, bool):
         warnings.warn(
-            stacklevel=2,
+            stacklevel=find_stack_level(),
             category=FutureWarning,
             message=(
                 "boolean values for 'standardize' "
