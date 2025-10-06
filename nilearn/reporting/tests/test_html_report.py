@@ -389,7 +389,7 @@ def test_4d_reports(img_mask_eye, affine_eye):
     masker = NiftiMasker(mask_strategy="epi")
     masker.fit(data_img_4d)
 
-    assert masker._report_content["coverage"] > 0
+    assert float(masker._report_content["coverage"]) > 0
 
     html = masker.generate_report()
     _check_html(html)
@@ -509,7 +509,7 @@ def test_surface_masker_minimal_report_fit(
     if not reports:
         assert 'src="data:image/svg+xml;base64,"' in str(report)
     else:
-        assert masker._report_content["coverage"] > 0
+        assert float(masker._report_content["coverage"]) > 0
         assert "The mask includes" in str(report)
 
 
