@@ -527,6 +527,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         return self.n_elements_
 
     def _check_imgs(self, imgs) -> None:
+        """Check that imgs is a SurfaceImage or an iterable of SurfaceImage."""
         if not (
             isinstance(imgs, SurfaceImage)
             or (

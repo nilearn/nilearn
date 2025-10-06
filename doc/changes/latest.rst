@@ -36,7 +36,7 @@ Enhancements
 
 - :bdg-success:`API` Add support for Scikit-Learn ``set_output()`` in several Nilearn feature extractors (nifti and surface non-multi maskers, and :class:`~regions.HierarchicalKMeans`) to allow ``transform()`` to output to either Pandas or Polars dataframe and not just numpy arrays (:gh:`5508` by `Rémi Gau`_).
 
-- :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker` (:gh:`5679` by `Rémi Gau`_).
+- :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker`, a :class:`~maskers.MultiSurfaceLabelsMasker` (:gh:`5679`, :gh:`5726` by `Rémi Gau`_).
 
 
 Changes
