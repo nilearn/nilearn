@@ -8,8 +8,13 @@ from nilearn._utils.logger import find_stack_level
 from nilearn.glm.contrasts import expression_to_contrast_vector
 
 
-def pad_contrast_matrix(contrast_def, design_matrix):
+def pad_contrast_matrix(contrast_def, design_matrix, verbose=1):
     """Pad contrasts with zeros.
+
+    TODO
+    try to refactor with "pad_contrast"
+    from nilearn/glm/_utils.py
+
 
     Parameters
     ----------
@@ -39,14 +44,15 @@ def pad_contrast_matrix(contrast_def, design_matrix):
     horizontal_padding = n_columns_design_matrix - n_columns_contrast_def
     if horizontal_padding == 0:
         return contrast_def
-    warnings.warn(
-        (
-            f"Contrasts will be padded with {horizontal_padding} "
-            "column(s) of zeros."
-        ),
-        category=UserWarning,
-        stacklevel=find_stack_level(),
-    )
+    if verbose:
+        warnings.warn(
+            (
+                f"Contrasts will be padded with {horizontal_padding} "
+                "column(s) of zeros."
+            ),
+            category=UserWarning,
+            stacklevel=find_stack_level(),
+        )
     contrast_def = np.pad(
         contrast_def,
         ((0, 0), (0, horizontal_padding)),

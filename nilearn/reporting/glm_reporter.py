@@ -1075,15 +1075,10 @@ def design_efficiency(
     effs = []
 
     for con in contrasts.values():
-        con = pad_contrast_matrix(con, design_matrix)
+        con = pad_contrast_matrix(con, design_matrix, verbose=0)
 
         C = np.atleast_2d(con)  # ensure 2D
-        if C.shape[1] != design_matrix_array.shape[1]:
-            raise ValueError(
-                f"Contrast has {C.shape[1]} columns, "
-                f"but design matrix has "
-                "{design_matrix_array.shape[1]} regressors."
-            )
+
         tr = np.trace(C @ XtX_inv @ C.T)
         effs.append(1.0 / tr if tr > 0 else np.nan)
 
