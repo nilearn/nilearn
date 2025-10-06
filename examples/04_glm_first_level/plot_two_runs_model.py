@@ -252,7 +252,10 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 # -------------------
 # Since we have already computed the FirstLevelModel
 # and have a number of contrasts,
-# we can quickly create a summary report.
+# we can quickly create a summary report
+# that will include more details and figures
+# (design matrix, correlation matrix across regressors,
+# design efficiency for each contrast...).
 report = fmri_glm_multirun.generate_report(
     contrasts,
     bg_img=mean_img_,

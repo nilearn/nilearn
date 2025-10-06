@@ -62,7 +62,7 @@ from nilearn.glm.first_level import make_first_level_design_matrix
 hrf_model = "glover"
 X1 = make_first_level_design_matrix(
     frame_times,
-    events,
+    events=events,
     drift_model="polynomial",
     drift_order=3,
     add_regs=motion,
@@ -76,7 +76,7 @@ X1 = make_first_level_design_matrix(
 # parameter.
 
 duration = 7.0 * np.ones(len(conditions))
-events = pd.DataFrame(
+blocks = pd.DataFrame(
     {"trial_type": conditions, "onset": onsets, "duration": duration}
 )
 
@@ -85,7 +85,7 @@ events = pd.DataFrame(
 
 X2 = make_first_level_design_matrix(
     frame_times,
-    events,
+    events=blocks,
     drift_model="polynomial",
     drift_order=3,
     hrf_model=hrf_model,
@@ -94,13 +94,13 @@ X2 = make_first_level_design_matrix(
 # %%
 # Finally we compute a :term:`FIR` model
 
-events = pd.DataFrame(
+fir = pd.DataFrame(
     {"trial_type": conditions, "onset": onsets, "duration": duration}
 )
 hrf_model = "FIR"
 X3 = make_first_level_design_matrix(
     frame_times,
-    events,
+    events=fir,
     hrf_model="fir",
     drift_model="polynomial",
     drift_order=3,
