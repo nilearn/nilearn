@@ -13,7 +13,10 @@ from scipy.stats import norm
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image import get_data, math_img, new_img_like, threshold_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface.surface import PolyData, SurfaceImage
@@ -291,6 +294,7 @@ def cluster_level_inference(
     return proportion_true_discoveries_img
 
 
+@fill_doc
 def threshold_stats_img(
     stat_img=None,
     mask_img=None,
@@ -355,10 +359,7 @@ def threshold_stats_img(
         False positive control meaning of cluster forming
         threshold: None|'fpr'|'fdr'|'bonferroni'
 
-    cluster_threshold : :obj:`float`, default=0
-        cluster size threshold. In the returned thresholded map,
-        sets of connected voxels (`clusters`) with size smaller
-        than this number will be removed.
+    %(cluster_threshold)s
 
     two_sided : :obj:`bool`, default=True
         Whether the thresholding should yield both positive and negative
@@ -385,6 +386,7 @@ def threshold_stats_img(
         without correction.
 
     """
+    check_params(locals())
     height_control_methods = [
         "fpr",
         "fdr",

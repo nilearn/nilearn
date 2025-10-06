@@ -246,7 +246,7 @@ def test_get_clusters_table_relabel_label_maps(shape, affine_eye):
     [
         (4, 10, True, 1),  # test one cluster should be removed
         (4, 7, False, 2),  # test no clusters should be removed
-        (4, None, False, 2),  # test cluster threshold is None
+        (4, 0, False, 2),  # test cluster threshold is 0
     ],
 )
 def test_get_clusters_table_not_modifying_stat_image(

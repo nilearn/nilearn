@@ -6,16 +6,16 @@ functions in :obj:`~nilearn.plotting.surface` should be in this file.
 """
 
 import itertools
-from warnings import warn
 
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils.logger import find_stack_level
 from nilearn.image import get_data
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import threshold_cmap, to_color_strings
 from nilearn.plotting._utils import (
+    DEFAULT_TICK_FORMAT,
+    get_cbar_bounds,
     get_cbar_ticks,
     get_colorbar_and_data_ranges,
 )
@@ -116,7 +116,7 @@ def _adjust_plot_roi_params(params):
 
     cbar_tick_format = params.get("cbar_tick_format", "auto")
     if cbar_tick_format == "auto":
-        params["cbar_tick_format"] = "%i"
+        params["cbar_tick_format"] = DEFAULT_TICK_FORMAT
 
 
 def _normalize_bg_data(data):
@@ -314,21 +314,6 @@ def _get_bounds(data, vmin=None, vmax=None):
     return vmin, vmax
 
 
-def _get_ticks(vmin, vmax, cbar_tick_format, threshold):
-    """Help for plot_surf with matplotlib engine.
-
-    This function computes the tick values for the colorbar.
-    """
-    # Default number of ticks is 5...
-    n_ticks = 5
-    # ...unless we are dealing with integers with a small range
-    # in this case, we reduce the number of ticks
-    if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1:
-        return np.arange(vmin, vmax + 1)
-    else:
-        return get_cbar_ticks(vmin, vmax, threshold, n_ticks)
-
-
 def _rescale(data, vmin=None, vmax=None):
     """Rescales the data."""
     data_copy = np.copy(data)
@@ -426,9 +411,8 @@ def _plot_surf(
     # adjust values
     avg_method = "mean" if avg_method is None else avg_method
     alpha = "auto" if alpha is None else alpha
-    cbar_tick_format = (
-        "%.2g" if cbar_tick_format == "auto" else cbar_tick_format
-    )
+    if cbar_tick_format == "auto":
+        cbar_tick_format = DEFAULT_TICK_FORMAT
     # Leave space for colorbar
     figsize = [4.7, 5] if colorbar else [4, 5]
 
@@ -517,20 +501,17 @@ def _plot_surf(
                 cbar_vmax += 1
                 cbar_vmin += -1
 
-            ticks = _get_ticks(
-                cbar_vmin, cbar_vmax, cbar_tick_format, threshold
+            ticks = get_cbar_ticks(
+                cbar_vmin,
+                cbar_vmax,
+                threshold=threshold,
+                tick_format=cbar_tick_format,
             )
-            if threshold is not None and (
-                cbar_tick_format == "%i" and int(threshold) != threshold
-            ):
-                warn(
-                    "You provided a non integer threshold "
-                    "but configured the colorbar to use integer formatting.",
-                    stacklevel=find_stack_level(),
-                )
             norm = Normalize(vmin, vmax)
             thrs_cmap = threshold_cmap(cmap, norm, threshold)
-            bounds = np.linspace(cbar_vmin, cbar_vmax, thrs_cmap.N)
+            bounds = get_cbar_bounds(
+                cbar_vmin, cbar_vmax, thrs_cmap.N, cbar_tick_format
+            )
 
             # we need to create a proxy mappable
             proxy_mappable = ScalarMappable(cmap=thrs_cmap, norm=norm)
@@ -774,7 +755,9 @@ def _plot_img_on_surf(
         cbar_ax = fig.add_subplot(cbar_grid[1])
         axes.append(cbar_ax)
         # Get custom ticks to set in colorbar
-        ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold)
+        ticks = get_cbar_ticks(
+            vmin, vmax, threshold=threshold, tick_format=cbar_tick_format
+        )
         fig.colorbar(
             sm,
             cax=cbar_ax,
