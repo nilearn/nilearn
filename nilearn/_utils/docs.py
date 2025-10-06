@@ -1057,7 +1057,8 @@ smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
 
 # standardize
 standardize = """
-standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
+standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
+              default={}
     Strategy to standardize the signal:
 
     - ``'zscore_sample'``: The signal is z-scored.
@@ -1080,7 +1081,18 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
     - ``True``: The signal is z-scored (same as option `zscore`).
       Timeseries are shifted to zero mean and scaled to unit variance.
 
+      .. nilearn_deprecated:: 0.13.0dev
+
+        In nilearn version 0.15.0,
+        ``True`` will be replaced by  ``'zscore_sample'``.
+
     - ``False``: Do not standardize the data.
+
+      .. nilearn_deprecated:: 0.13.0dev
+
+        In nilearn version 0.15.0,
+        ``False`` will be replaced by ``None``.
+
 
 """
 # TODO (nilearn >= 0.14.0) update to ..versionchanged
