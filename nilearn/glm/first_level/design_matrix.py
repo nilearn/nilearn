@@ -34,6 +34,7 @@ from warnings import warn
 
 import numpy as np
 import pandas as pd
+from numpy.typing import NDArray
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
@@ -335,6 +336,7 @@ def make_first_level_design_matrix(
     # check that additional regressor specification is correct
     n_add_regs = 0
     if add_regs is not None:
+        add_regs_: NDArray[np.generic]
         if isinstance(add_regs, pd.DataFrame):
             add_regs_ = add_regs.to_numpy()
             add_reg_names = add_regs.columns.tolist()

@@ -8,7 +8,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.glm import check_and_load_tables
+from nilearn._utils.glm import check_and_load_tables, pad_contrast_matrix
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm.first_level import check_design_matrix
 from nilearn.glm.first_level.experimental_paradigm import check_events
@@ -20,7 +20,6 @@ from nilearn.plotting.matrix._utils import (
     sanitize_reorder,
     sanitize_tri,
 )
-from nilearn.plotting.matrix.utils import pad_contrast_matrix
 
 
 def _configure_axis(

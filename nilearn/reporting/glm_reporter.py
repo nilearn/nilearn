@@ -23,7 +23,7 @@ import pandas as pd
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.glm import sanitize_contrasts
+from nilearn._utils.glm import pad_contrast_matrix, sanitize_contrasts
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
@@ -40,7 +40,6 @@ from nilearn.glm.thresholding import (
     warn_default_threshold,
 )
 from nilearn.maskers import NiftiMasker
-from nilearn.plotting.matrix.utils import pad_contrast_matrix
 from nilearn.reporting._utils import (
     dataframe_to_html,
 )

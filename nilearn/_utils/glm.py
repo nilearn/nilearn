@@ -1,3 +1,4 @@
+import warnings
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
@@ -6,6 +7,101 @@ import numpy as np
 import pandas as pd
 
 from nilearn._utils.helpers import stringify_path
+from nilearn._utils.logger import find_stack_level
+
+
+# kept here for architectural reasons
+# pad_contrast_matrix (that uses expression_to_contrast_vector)
+# needs to be imported in plotting and reporting
+# and those cannot import from glm
+def expression_to_contrast_vector(expression, design_columns):
+    """Convert a string describing a :term:`contrast` \
+       to a :term:`contrast` vector.
+
+    Parameters
+    ----------
+    expression : :obj:`str`
+        The expression to convert to a vector.
+
+    design_columns : :obj:`list` or array of :obj:`str`
+        The column names of the design matrix.
+
+    """
+    if expression in design_columns:
+        contrast_vector = np.zeros(len(design_columns))
+        contrast_vector[list(design_columns).index(expression)] = 1.0
+        return contrast_vector
+
+    eye_design = pd.DataFrame(
+        np.eye(len(design_columns)), columns=design_columns
+    )
+    try:
+        contrast_vector = eye_design.eval(
+            expression, engine="python"
+        ).to_numpy()
+    except Exception:
+        raise ValueError(
+            f"The expression ({expression}) is not valid. "
+            "This could be due to "
+            "defining the contrasts using design matrix columns that are "
+            "invalid python identifiers."
+        )
+
+    return contrast_vector
+
+
+def pad_contrast_matrix(contrast_def, design_matrix, verbose=1):
+    """Pad contrasts with zeros.
+
+    TODO
+    try to refactor with "pad_contrast"
+    from nilearn/glm/_utils.py
+
+
+    Parameters
+    ----------
+    contrast_def : :class:`numpy.ndarray`, str
+        Contrast to be padded
+
+    design_matrix : :class:`pandas.DataFrame`
+        Design matrix to use.
+
+    Returns
+    -------
+    axes : :class:`numpy.ndarray`
+        Padded contrast
+
+    """
+    design_column_names = design_matrix.columns.tolist()
+    if isinstance(contrast_def, str):
+        contrast_def = expression_to_contrast_vector(
+            contrast_def, design_column_names
+        )
+    n_columns_design_matrix = len(design_column_names)
+    n_columns_contrast_def = (
+        contrast_def.shape[0]
+        if contrast_def.ndim == 1
+        else contrast_def.shape[1]
+    )
+    horizontal_padding = n_columns_design_matrix - n_columns_contrast_def
+    if horizontal_padding == 0:
+        return contrast_def
+    if verbose:
+        warnings.warn(
+            (
+                f"Contrasts will be padded with {horizontal_padding} "
+                "column(s) of zeros."
+            ),
+            category=UserWarning,
+            stacklevel=find_stack_level(),
+        )
+    contrast_def = np.pad(
+        contrast_def,
+        ((0, 0), (0, horizontal_padding)),
+        "constant",
+        constant_values=(0, 0),
+    )
+    return contrast_def
 
 
 def check_and_load_tables(tables_to_check, var_name):
@@ -66,7 +162,8 @@ def check_and_load_tables(tables_to_check, var_name):
 
 
 def _read_events_table(table_path):
-    """Load the contents of the event file specified by `table_path`\
+    """Load the contents of the event file specified by `table_path
+    DEF_TINY = 1e-50`\
        to a pandas.DataFrame.
 
 
