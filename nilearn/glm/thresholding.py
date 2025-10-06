@@ -14,9 +14,9 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
-from nilearn.image import get_data, math_img, threshold_img
+from nilearn.image import get_data, math_img, new_img_like, threshold_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.surface import SurfaceImage
+from nilearn.surface.surface import PolyData, SurfaceImage
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
 
@@ -185,37 +185,109 @@ def cluster_level_inference(
     if not isinstance(threshold, list):
         threshold = [threshold]
 
-    if mask_img is None:
-        masker = NiftiMasker(mask_strategy="background").fit(stat_img)
-    else:
-        masker = NiftiMasker(mask_img=mask_img).fit()
-    stats = np.ravel(masker.transform(stat_img))
-    hommel_value = _compute_hommel_value(stats, alpha, verbose=verbose)
-
-    # embed it back to 3D grid
-    stat_map = get_data(masker.inverse_transform(stats))
-
-    # Extract connected components above threshold
-    proportion_true_discoveries_img = math_img("0. * img", img=stat_img)
-    proportion_true_discoveries = masker.transform(
-        proportion_true_discoveries_img
-    ).ravel()
-
-    for threshold_ in sorted(threshold):
-        label_map, n_labels = label(stat_map > threshold_)
-        labels = label_map[get_data(masker.mask_img_) > 0]
-
-        for label_ in range(1, n_labels + 1):
-            # get the z-vals in the cluster
-            cluster_vals = stats[labels == label_]
-            proportion = _true_positive_fraction(
-                cluster_vals, hommel_value, alpha
-            )
-            proportion_true_discoveries[labels == label_] = proportion
-
-    proportion_true_discoveries_img = masker.inverse_transform(
-        proportion_true_discoveries
+    is_surface = isinstance(stat_img, SurfaceImage) or isinstance(
+        mask_img, SurfaceImage
     )
+
+    if is_surface:
+        # for surface we run the inference on each hemisphere indendently
+        # by creating a temporary mask that only includes one hemisphere
+        if mask_img is None:
+            masker = SurfaceMasker().fit(stat_img)
+            mask_img = masker.mask_img_
+            del masker
+
+        data = {
+            "left": np.zeros(stat_img.data.parts["left"].shape),
+            "right": np.zeros(stat_img.data.parts["right"].shape),
+        }
+        for hemi in ["left", "right"]:
+            if hemi == "left":
+                mask_left = mask_img.data.parts["left"].astype(bool)
+                hemi_empty = not np.any(mask_left.ravel())
+                mask_right = np.zeros(
+                    mask_img.data.parts["right"].shape, dtype=bool
+                )
+            else:
+                mask_left = np.zeros(
+                    mask_img.data.parts["left"].shape, dtype=bool
+                )
+                mask_right = mask_img.data.parts["right"].astype(bool)
+                hemi_empty = not np.any(mask_right.ravel())
+
+            if hemi_empty:
+                continue
+
+            tmp_mask = new_img_like(
+                stat_img, PolyData(left=mask_left, right=mask_right)
+            )
+            masker = SurfaceMasker(mask_img=tmp_mask).fit()
+
+            stats = np.ravel(masker.transform(stat_img))
+            hommel_value = _compute_hommel_value(stats, alpha, verbose=verbose)
+
+            # embed it back to image
+            stat_map = masker.inverse_transform(stats).data.parts[hemi]
+
+            # Extract connected components above threshold
+            proportion_true_discoveries_img = math_img(
+                "0. * img", img=stat_img
+            )
+            proportion_true_discoveries = masker.transform(
+                proportion_true_discoveries_img
+            ).ravel()
+
+            for threshold_ in sorted(threshold):
+                label_map, n_labels = label(stat_map > threshold_)
+                labels = label_map[masker.mask_img_.data.parts[hemi] > 0]
+
+                for label_ in range(1, n_labels + 1):
+                    # get the z-vals in the cluster
+                    cluster_vals = stats[labels == label_]
+                    proportion = _true_positive_fraction(
+                        cluster_vals, hommel_value, alpha
+                    )
+                    proportion_true_discoveries[labels == label_] = proportion
+
+            tmp_img = masker.inverse_transform(proportion_true_discoveries)
+            data[hemi] = tmp_img.data.parts[hemi]
+
+        proportion_true_discoveries_img = new_img_like(stat_img, data)
+
+    else:
+        if mask_img is None:
+            masker = NiftiMasker(mask_strategy="background").fit(stat_img)
+        else:
+            masker = NiftiMasker(mask_img=mask_img).fit()
+
+        stats = np.ravel(masker.transform(stat_img))
+        hommel_value = _compute_hommel_value(stats, alpha, verbose=verbose)
+
+        # embed it back to 3D grid
+        stat_map = get_data(masker.inverse_transform(stats))
+
+        # Extract connected components above threshold
+        proportion_true_discoveries_img = math_img("0. * img", img=stat_img)
+        proportion_true_discoveries = masker.transform(
+            proportion_true_discoveries_img
+        ).ravel()
+
+        for threshold_ in sorted(threshold):
+            label_map, n_labels = label(stat_map > threshold_)
+            labels = label_map[get_data(masker.mask_img_) > 0]
+
+            for label_ in range(1, n_labels + 1):
+                # get the z-vals in the cluster
+                cluster_vals = stats[labels == label_]
+                proportion = _true_positive_fraction(
+                    cluster_vals, hommel_value, alpha
+                )
+                proportion_true_discoveries[labels == label_] = proportion
+
+        proportion_true_discoveries_img = masker.inverse_transform(
+            proportion_true_discoveries
+        )
+
     return proportion_true_discoveries_img
 
 
