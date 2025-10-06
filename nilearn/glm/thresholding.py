@@ -152,13 +152,14 @@ def cluster_level_inference(
 
     Parameters
     ----------
-    stat_img : Niimg-like object
+    stat_img : Niimg-like object or :obj:`~surface.SurfaceImage`
        statistical image (presumably in z scale)
 
-    mask_img : Niimg-like object, default=None
+    mask_img : Niimg-like object, or :obj:`~surface.SurfaceImage` or None, \
+               default=None
         mask image
 
-    threshold : :obj:`list` of :obj:`float`, default=3.0
+    threshold : :obj:`float` or :obj:`list` of :obj:`float`, default=3.0
        Cluster-forming threshold in z-scale.
 
     alpha : :obj:`float` or :obj:`list`, default=0.05
