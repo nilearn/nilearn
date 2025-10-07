@@ -340,6 +340,9 @@ def make_first_level_design_matrix(
             add_reg_names = add_regs.columns.tolist()
         else:
             add_regs_ = np.atleast_2d(add_regs)
+
+        add_regs = np.nan_to_num(add_regs)
+
         n_add_regs = add_regs_.shape[1]
         assert add_regs_.shape[0] == np.size(frame_times), (
             "Incorrect specification of additional regressors: "

@@ -21,6 +21,7 @@ from numpy.testing import (
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
+import nilearn as nil
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
     basic_paradigm,
@@ -728,7 +729,7 @@ def test_fmri_inputs_events_type(tmp_path):
     )
 
 
-def test_fmri_inputs_with_confounds():
+def test_fmri_inputs_with_confounds(tmp_path):
     """Test with confounds and, events."""
     n_timepoints = 10
     shapes = ((3, 4, 5, n_timepoints),)
@@ -744,6 +745,22 @@ def test_fmri_inputs_with_confounds():
     flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
         fmri_data,
         confounds=conf,
+        events=events,
+    )
+    assert "conf" in flm.design_matrices_[0]
+
+    # confounds as files are OK
+    conf.to_csv(tmp_path / "confounds.csv")
+    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        fmri_data,
+        confounds=str(tmp_path / "confounds.csv"),
+        events=events,
+    )
+    assert "conf" in flm.design_matrices_[0]
+
+    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        fmri_data,
+        confounds=tmp_path / "confounds.csv",
         events=events,
     )
     assert "conf" in flm.design_matrices_[0]
@@ -769,6 +786,36 @@ def test_fmri_inputs_with_confounds():
         events=events,
     )
     assert "confound_0" in flm.design_matrices_[0]
+
+
+def test_fmri_inputs_with_confounds_with_nan():
+    """Test with confounds and, events."""
+    confound_file = (
+        Path(nil.__file__).parent
+        / "interfaces"
+        / "fmriprep"
+        / "data"
+        / "test_desc-confounds_regressors.tsv"
+    )
+    confounds = pd.read_csv(confound_file, sep="\t")
+    confounds = confounds["framewise_displacement"]
+    assert_array_equal(confounds.to_numpy()[0], np.nan)
+
+    n_timepoints = len(confounds)
+    shapes = ((3, 4, 5, n_timepoints),)
+    mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
+
+    events = basic_paradigm()
+
+    fmri_data = fmri_data[0]
+
+    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        fmri_data,
+        confounds=confound_file,
+        events=events,
+    )
+
+    assert "framewise_displacement" in flm.design_matrices_[0]
 
 
 def test_fmri_inputs_confounds_ignored_with_design_matrix():

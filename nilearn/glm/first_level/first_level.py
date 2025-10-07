@@ -880,7 +880,8 @@ class FirstLevelModel(BaseGLM):
                 a :obj:`list` or \
                 a :obj:`tuple` of :obj:`~nilearn.surface.SurfaceImage`.
 
-        events : :obj:`pandas.DataFrame` or :obj:`str` or \
+        events : :obj:`pandas.DataFrame` or :obj:`pandas.Series` \
+                 or :obj:`str` or \
                  :obj:`pathlib.Path` to a TSV file, or \
                  :obj:`list` of \
                  :obj:`pandas.DataFrame`, :obj:`str` or \
