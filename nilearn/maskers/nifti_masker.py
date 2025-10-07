@@ -409,26 +409,26 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
 
-        resampl_img = None
-        resampl_mask = None
+        resampled_img = None
+        resampled_mask = None
         if "transform" in self._reporting_data:
             # if resampling was performed
             self._report_content["description"] += self._overlay_text
 
             # create display of resampled NiftiImage and mask
-            resampl_img, resampl_mask = self._reporting_data["transform"]
-            if resampl_img is None:  # images were not provided to fit
-                resampl_img = resampl_mask
+            resampled_img, resampled_mask = self._reporting_data["transform"]
+            if resampled_img is None:  # images were not provided to fit
+                resampled_img = resampled_mask
 
         return self._create_figure_for_report(
             img=img,
             mask=mask,
-            resampl_img=resampl_img,
-            resampl_mask=resampl_mask,
+            resampled_img=resampled_img,
+            resampled_mask=resampled_mask,
         )
 
     def _create_figure_for_report(
-        self, img, mask=None, resampl_img=None, resampl_mask=None
+        self, img, mask=None, resampled_img=None, resampled_mask=None
     ):
         """Generate figure to include in the report.
 
@@ -459,17 +459,17 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 linewidths=2.5,
             )
 
-        if resampl_img is None:
+        if resampled_img is None:
             return [init_display]
 
         final_display = plot_img(
-            resampl_img,
+            resampled_img,
             black_bg=False,
             cmap=self.cmap,
         )
         plt.close()
         final_display.add_contours(
-            resampl_mask,
+            resampled_mask,
             levels=[0.5],
             colors="g",
             linewidths=2.5,
