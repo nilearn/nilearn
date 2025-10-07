@@ -286,7 +286,11 @@ class BaseMasker(
 
     @abc.abstractmethod
     def _init_report_content(self):
-        """Initialize report content."""
+        """Initialize report content.
+
+        Prepare basing content to inject in the HTML template
+        during report generation.
+        """
 
     @abc.abstractmethod
     def _create_figure_for_report(self):
@@ -597,7 +601,11 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
     @abc.abstractmethod
     def _init_report_content(self):
-        """Initialize report content."""
+        """Initialize report content.
+
+        Prepare basing content to inject in the HTML template
+        during report generation.
+        """
 
     @abc.abstractmethod
     def _create_figure_for_report(self):

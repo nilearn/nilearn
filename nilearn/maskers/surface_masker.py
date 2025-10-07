@@ -254,6 +254,11 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         return self
 
     def _init_report_content(self):
+        """Initialize report content.
+
+        Prepare basing content to inject in the HTML template
+        during report generation.
+        """
         if not hasattr(self, "_report_content"):
             self._report_content = {
                 "description": (
