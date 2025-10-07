@@ -460,12 +460,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 )
             )
 
-        colors: None | str | list[str]
         if n_regions == 1:
-            colors = "b"
+            return "b"
         elif n_regions == 2:
-            colors = ["w", "b"]
+            return ["w", "b"]
         else:
-            colors = None
-
-        return colors
+            return None

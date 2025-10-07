@@ -49,12 +49,12 @@ def _add_to_ticks(ticks, value):
         return True
 
     min_diff = min(abs(abs(ticks_without_zero) - value))
-    step_size = max([ticks[i] - ticks[i - 1] for i in range(len(ticks))])
+    step_size = max(ticks[i] - ticks[i - 1] for i in range(len(ticks)))
 
     # check if value should be added to the tick list or replaced by another
     # value in the list
-    return bool(
-        min_diff > step_size / 3 or (min_diff >= value * 4 / 3 and value != 0)
+    return min_diff > step_size / 3 or (
+        min_diff >= value * 4 / 3 and value != 0
     )
 
 

@@ -300,10 +300,11 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             # to the mask computing function
             # depending if they are supported.
             signature = dict(**inspect.signature(compute_mask).parameters)
-            mask_args = {}
-            for arg in ["n_jobs", "target_shape", "target_affine"]:
-                if arg in signature and getattr(self, arg) is not None:
-                    mask_args[arg] = getattr(self, arg)
+            mask_args = {
+                arg: getattr(self, arg)
+                for arg in ["n_jobs", "target_shape", "target_affine"]
+                if arg in signature and getattr(self, arg) is not None
+            }
             if self.mask_args:
                 skipped_args = []
                 for arg in self.mask_args:
