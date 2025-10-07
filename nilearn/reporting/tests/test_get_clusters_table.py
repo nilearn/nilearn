@@ -122,6 +122,42 @@ def test_get_clusters_table(
     assert len(clusters_table) == expected_n_cluster
 
 
+@pytest.mark.parametrize(
+    "stat_threshold, cluster_threshold, two_sided, expected_n_cluster",
+    [
+        (4, 0, False, 0),  # test one cluster extracted
+        (6, 0, False, 0),  # test empty table on high stat threshold
+        (4, 9, False, 0),  # test empty table on high cluster threshold
+        (4, 0, True, 0),  # test two clusters with different signs extracted
+        (6, 0, True, 0),  # test empty table on high stat threshold
+        (4, 9, True, 0),  # test empty table on high cluster threshold
+    ],
+)
+def test_get_clusters_table_surface(
+    surf_img_1d,
+    stat_threshold,
+    cluster_threshold,
+    two_sided,
+    expected_n_cluster,
+):
+    """Test several combination of input parameters."""
+    for hemi in surf_img_1d.data.parts:
+        surf_img_1d.data.parts[hemi] = np.zeros(
+            surf_img_1d.data.parts[hemi].shape
+        )
+        surf_img_1d.data.parts[hemi][0:2] = 5
+        surf_img_1d.data.parts[hemi][2:4] = -5
+    stat_img = surf_img_1d
+
+    clusters_table = get_clusters_table(
+        stat_img,
+        stat_threshold=stat_threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=two_sided,
+    )
+    assert len(clusters_table) == expected_n_cluster
+
+
 def test_get_clusters_table_negative_threshold(shape, affine_eye):
     """Check that one sided negative thresholds are handled well."""
     data = np.zeros(shape)
@@ -194,7 +230,10 @@ def test_get_clusters_table_more(shape, affine_eye, tmp_path):
     # Test that nans are handled correctly (No numpy axis errors are raised)
     data[data == 0] = np.nan
     stat_img_nans = Nifti1Image(data, affine=affine_eye)
-    cluster_table = get_clusters_table(stat_img_nans, 1e-2, 0, two_sided=False)
+    with pytest.warns(UserWarning, match="Non-finite values detected"):
+        cluster_table = get_clusters_table(
+            stat_img_nans, 1e-2, 0, two_sided=False
+        )
     assert len(cluster_table) == 1
 
     # Test that subpeaks are handled correctly for len(subpeak_vals) > 1
