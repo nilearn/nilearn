@@ -337,20 +337,46 @@ def get_clusters_table(
         copy=True,
     )
 
-    signs = [1, -1] if two_sided else [1]
-
-    no_clusters_found = True
-    rows = []
-
     if is_surface:
         offset = 1
+        data = {}
+        all_clusters = []
+
         for hemi in stat_img.data.parts:
             clusters, labels = find_surface_clusters(
                 stat_img.mesh.parts[hemi],
                 stat_img.data.parts[hemi],
                 offset=offset,
             )
+
+            peak_stat = []
+            for i in clusters["index"].tolist():
+                mask = labels == i
+                peak_stat.append(
+                    np.max(stat_img.data.parts[hemi][mask].ravel())
+                )
+
+            clusters["Peak Stat"] = peak_stat
+
+            clusters["Hemisphere"] = hemi
+            clusters = clusters.rename(
+                columns={
+                    "name": "Cluster ID",
+                    "size": "Cluster Size (vertices)",
+                }
+            )
+            clusters = clusters[cols]
+
             offset = len(clusters)
+
+            data[hemi] = labels
+
+            all_clusters.append(clusters)
+
+        result_table = pd.concat(all_clusters, ignore_index=True)
+
+        if return_label_maps:
+            label_maps = new_img_like(stat_img, data)
 
     else:
         # If cluster threshold is used, there is chance that stat_map will be
@@ -365,6 +391,10 @@ def get_clusters_table(
         bin_struct = generate_binary_structure(rank=3, connectivity=1)
 
         voxel_size = np.prod(stat_img.header.get_zooms())
+
+        clusters_found = False
+        signs = [1, -1] if two_sided else [1]
+        rows = []
 
         for sign in signs:
             # Flip map if necessary
@@ -473,12 +503,12 @@ def get_clusters_table(
                     rows += [row]
 
             # If we reach this point, there are clusters in this sign
-            no_clusters_found = False
+            clusters_found = True
 
-    if no_clusters_found:
-        result_table = pd.DataFrame(columns=cols)
-    else:
-        result_table = pd.DataFrame(columns=cols, data=rows)
+        if clusters_found:
+            result_table = pd.DataFrame(columns=cols, data=rows)
+        else:
+            result_table = pd.DataFrame(columns=cols)
 
     return (result_table, label_maps) if return_label_maps else result_table
 

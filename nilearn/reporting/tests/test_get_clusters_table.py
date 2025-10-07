@@ -125,10 +125,10 @@ def test_get_clusters_table(
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, two_sided, expected_n_cluster",
     [
-        (4, 0, False, 0),  # test one cluster extracted
+        (4, 0, False, 1),  # test one cluster extracted
         (6, 0, False, 0),  # test empty table on high stat threshold
         (4, 9, False, 0),  # test empty table on high cluster threshold
-        (4, 0, True, 0),  # test two clusters with different signs extracted
+        (4, 0, True, 2),  # test two clusters with different signs extracted
         (6, 0, True, 0),  # test empty table on high stat threshold
         (4, 9, True, 0),  # test empty table on high cluster threshold
     ],
@@ -155,6 +155,7 @@ def test_get_clusters_table_surface(
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
     )
+    print(clusters_table)
     assert len(clusters_table) == expected_n_cluster
 
 
