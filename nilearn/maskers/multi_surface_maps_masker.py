@@ -20,7 +20,7 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
     Parameters
     ----------
     maps_img : :obj:`~nilearn.surface.SurfaceImage`
-        Set of maps that define the regions. representative time course \
+        Set of maps that define the regions. A representative time course \
         per map is extracted using least square regression. The data for \
         each hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
