@@ -17,7 +17,7 @@ from nilearn.maskers import (
 )
 
 
-def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
+def check_embedded_masker(estimator, masker_type, ignore=None):
     """Create a masker from instance parameters.
 
     Base function for using a masker within a BaseEstimator class
@@ -39,8 +39,7 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     instance : object, instance of BaseEstimator
         The object that gives us the values of the parameters
 
-    masker_type : {"multi_nii", "nii", "surface", "multi_surface"}, \
-                  default="mutli_nii"
+    masker_type : {"multi_nii", "nii", "surface", "multi_surface"}
         Indicates whether to return a MultiNiftiMasker, NiftiMasker,
         SurfaceMasker, or a MultiSurfaceMasker.
 

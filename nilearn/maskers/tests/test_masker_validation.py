@@ -87,7 +87,7 @@ class DummyEstimator:
 
     def fit(self, *args, **kwargs):  # noqa: ARG002
         """Fit estimator."""
-        self.masker = check_embedded_masker(self)
+        self.masker = check_embedded_masker(self, masker_type="nii")
 
 
 @pytest.mark.parametrize(
@@ -117,7 +117,7 @@ def test_check_embedded_masker_defaults(
 def test_check_embedded_masker_default():
     """Check default return value."""
     owner = OwningClass()
-    masker = check_embedded_masker(owner)
+    masker = check_embedded_masker(owner, masker_type="multi_nii")
     assert type(masker) is MultiNiftiMasker
 
 
@@ -157,7 +157,7 @@ def test_check_embedded_masker_with_mask():
     mask = Nifti1Image(np.ones(shape[:3], dtype=np.int8), affine)
     owner = OwningClass(mask=mask)
 
-    masker = check_embedded_masker(owner)
+    masker = check_embedded_masker(owner, masker_type="nii")
 
     assert masker.mask_img is mask
 
@@ -171,7 +171,7 @@ def test_check_embedded_masker_attribute_forwarding():
     mask.fit([[imgs]])
     owner = OwningClass(mask=mask)
 
-    masker = check_embedded_masker(owner)
+    masker = check_embedded_masker(owner, masker_type="nii")
 
     assert masker.mask_img is mask.mask_img_
 
@@ -184,4 +184,4 @@ def test_check_embedded_masker_conflict_warning():
         UserWarning,
         match="overriding estimator parameter background",
     ):
-        check_embedded_masker(owner)
+        check_embedded_masker(owner, masker_type="nii")
