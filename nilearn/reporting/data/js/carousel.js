@@ -36,8 +36,12 @@ class Carousel {
         let prevButton = document.querySelector(`#prev-btn-${this.uid}`);
         let nextButton = document.querySelector(`#next-btn-${this.uid}`);
 
-        if (prevButton) prevButton.addEventListener("click", () => this.displayPrevious());
-        if (nextButton) nextButton.addEventListener("click", () => this.displayNext());
+        if (prevButton) {
+          prevButton.addEventListener("click", () => this.displayPrevious());
+        }
+        if (nextButton) {
+          nextButton.addEventListener("click", () => this.displayNext());
+        }
 
         this.bindKeyboardEvents();
     }

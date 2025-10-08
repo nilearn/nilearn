@@ -277,12 +277,12 @@ def check_is_of_allowed_type(
 ):
     if not isinstance(type_to_check, tuple):
         type_to_check = (type_to_check,)
-    type_to_check_str = ", ".join([str(x) for x in type_to_check])
-    error_msg = (
-        f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
-        f"Got: '{value.__class__.__name__}'"
-    )
     if not isinstance(value, type_to_check):
+        type_to_check_str = ", ".join([str(x) for x in type_to_check])
+        error_msg = (
+            f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
+            f"Got: '{value.__class__.__name__}'"
+        )
         raise TypeError(error_msg)
 
 
