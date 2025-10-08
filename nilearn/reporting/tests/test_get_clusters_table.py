@@ -178,7 +178,7 @@ def test_get_clusters_table_surface_real_data(
     two_sided,
     expected_n_cluster,
 ):
-    """Test cluster table generation on real data."""
+    """Test cluster table generation on real surface data."""
     stat_img = SurfaceImage.from_volume(
         load_fsaverage()["inflated"], load_sample_motor_activation_image()
     )
