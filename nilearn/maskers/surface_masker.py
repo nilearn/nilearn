@@ -421,8 +421,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         Returns
         -------
-        None, :class:`~matplotlib.figure.Figure` or\
-              :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
+        None, :class:`~matplotlib.figure.Figure`
             Returns ``None`` in case the masker was not fitted.
         """
         if not self._reporting_data["images"] and not getattr(

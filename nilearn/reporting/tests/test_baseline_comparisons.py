@@ -17,7 +17,10 @@ from nilearn.datasets import (
     load_sample_motor_activation_image,
 )
 from nilearn.glm.thresholding import threshold_stats_img
+from nilearn.image import new_img_like, threshold_img
+from nilearn.maskers import SurfaceLabelsMasker, SurfaceMasker
 from nilearn.reporting.glm_reporter import _stat_map_to_png
+from nilearn.surface.surface import find_surface_clusters
 
 
 @pytest.mark.timeout(0)
@@ -125,3 +128,57 @@ def test_stat_map_to_png_surface(
     )
 
     return fig
+
+
+def _fs_inflated_sulcal():
+    """Load fs average sulcal data on inflated surface."""
+    return load_fsaverage_data(mesh_type="inflated")
+
+
+def _surface_mask_img():
+    """Generate surface mask including only high curvature regions."""
+    return threshold_img(
+        _fs_inflated_sulcal(), 0.5, cluster_threshold=50, two_sided=False
+    )
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize(
+    "mask_img, img",
+    (
+        [_surface_mask_img(), None],
+        [None, _surface_mask_img()],
+        [_surface_mask_img(), _fs_inflated_sulcal()],
+    ),
+)
+def test_surface_masker_create_figure_for_report(mask_img, img):
+    """Check figure generated in report of SurfaceMasker."""
+    masker = SurfaceMasker(mask_img)
+    masker.fit(img)
+    return masker._create_figure_for_report()
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize(
+    "mask_img, img",
+    (
+        [_surface_mask_img(), None],
+        [None, _fs_inflated_sulcal()],
+        [_surface_mask_img(), _fs_inflated_sulcal()],
+    ),
+)
+def test_surface_labels_masker_create_figure_for_report(mask_img, img):
+    """Check figure generated in report of SurfaceLabelsMasker."""
+    # generate dummy label image
+    tmp = _surface_mask_img()
+    data = {}
+    for hemi in tmp.data.parts:
+        _, labels = find_surface_clusters(
+            tmp.mesh.parts[hemi], tmp.data.parts[hemi]
+        )
+        data[hemi] = labels
+    labels_img = new_img_like(tmp, data)
+
+    masker = SurfaceLabelsMasker(labels_img, mask_img=mask_img)
+    masker.fit(img)
+    return masker._create_figure_for_report()
