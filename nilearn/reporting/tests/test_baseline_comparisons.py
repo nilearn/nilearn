@@ -18,9 +18,13 @@ from nilearn.datasets import (
 )
 from nilearn.glm.thresholding import threshold_stats_img
 from nilearn.image import new_img_like, threshold_img
-from nilearn.maskers import SurfaceLabelsMasker, SurfaceMasker
+from nilearn.maskers import (
+    SurfaceLabelsMasker,
+    SurfaceMapsMasker,
+    SurfaceMasker,
+)
 from nilearn.reporting.glm_reporter import _stat_map_to_png
-from nilearn.surface.surface import find_surface_clusters
+from nilearn.surface.surface import at_least_2d, find_surface_clusters
 
 
 @pytest.mark.timeout(0)
@@ -147,7 +151,7 @@ def _surface_mask_img():
     "mask_img, img",
     (
         [_surface_mask_img(), None],
-        [None, _surface_mask_img()],
+        [None, _fs_inflated_sulcal()],
         [_surface_mask_img(), _fs_inflated_sulcal()],
     ),
 )
@@ -159,17 +163,14 @@ def test_surface_masker_create_figure_for_report(mask_img, img):
 
 
 @pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("mask_img", [_surface_mask_img(), None])
 @pytest.mark.parametrize(
-    "mask_img, img",
-    (
-        [_surface_mask_img(), None],
-        [None, _fs_inflated_sulcal()],
-        [_surface_mask_img(), _fs_inflated_sulcal()],
-    ),
+    "img",
+    [None, _fs_inflated_sulcal()],
 )
 def test_surface_labels_masker_create_figure_for_report(mask_img, img):
     """Check figure generated in report of SurfaceLabelsMasker."""
-    # generate dummy label image
+    # generate dummy labels image
     tmp = _surface_mask_img()
     data = {}
     for hemi in tmp.data.parts:
@@ -182,3 +183,40 @@ def test_surface_labels_masker_create_figure_for_report(mask_img, img):
     masker = SurfaceLabelsMasker(labels_img, mask_img=mask_img)
     masker.fit(img)
     return masker._create_figure_for_report()
+
+
+@pytest.mark.mpl_image_compare
+@pytest.mark.parametrize("hemi", ["left", "right"])
+@pytest.mark.parametrize("mask_img", [_surface_mask_img(), None])
+@pytest.mark.parametrize(
+    "img",
+    [None, _fs_inflated_sulcal()],
+)
+def test_surface_maps_masker_create_figure_for_report(mask_img, img, hemi):
+    """Check figure generated in report of SurfaceMapsMasker."""
+    # generate dummy maps image
+    # take values main cluster in each hemisphere
+    tmp = _surface_mask_img()
+
+    data = {
+        "right": np.zeros(tmp.data.parts["right"].shape, dtype=np.float32),
+        "left": np.zeros(tmp.data.parts["left"].shape, dtype=np.float32),
+    }
+    data[hemi] = tmp.data.parts[hemi].astype(np.float32)
+
+    clusters, labels = find_surface_clusters(
+        tmp.mesh.parts[hemi], tmp.data.parts[hemi]
+    )
+    max_size = clusters["size"].max()
+    idx_biggest_cluster = clusters["index"][
+        clusters["size"] == max_size
+    ].to_numpy()
+
+    data[hemi][labels != idx_biggest_cluster] = 0
+
+    maps_imgs = at_least_2d(new_img_like(tmp, data))
+
+    masker = SurfaceMapsMasker(maps_imgs, mask_img=mask_img)
+    masker.fit(img)
+    masker._report_content["engine"] = "matplotlib"
+    return masker._create_figure_for_report(maps_imgs, bg_img=img)
