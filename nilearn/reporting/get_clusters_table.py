@@ -352,9 +352,11 @@ def get_clusters_table(
             peak_stat = []
             for i in clusters["index"].tolist():
                 mask = labels == i
-                peak_stat.append(
-                    np.max(stat_img.data.parts[hemi][mask].ravel())
-                )
+                values = stat_img.data.parts[hemi][mask].ravel()
+                if np.all(np.isnan(values)):
+                    raise ValueError("this should not happen")
+                cluster_max = np.nanmax(values)
+                peak_stat.append(cluster_max)
 
             clusters["Peak Stat"] = peak_stat
 

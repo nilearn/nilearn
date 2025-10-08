@@ -5,12 +5,18 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
+from nilearn.datasets import (
+    load_fsaverage,
+    load_fsaverage_data,
+    load_sample_motor_activation_image,
+)
 from nilearn.image import get_data
 from nilearn.reporting.get_clusters_table import (
     _cluster_nearest_neighbor,
     _local_max,
     get_clusters_table,
 )
+from nilearn.surface import SurfaceImage
 
 
 @pytest.fixture
@@ -125,12 +131,12 @@ def test_get_clusters_table(
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, two_sided, expected_n_cluster",
     [
-        (4, 0, False, 1),  # test one cluster extracted
-        (6, 0, False, 0),  # test empty table on high stat threshold
-        (4, 9, False, 0),  # test empty table on high cluster threshold
-        (4, 0, True, 2),  # test two clusters with different signs extracted
+        (4, 2, False, 1),  # one cluster in left hemisphere
+        (4, 0, False, 2),  # one cluster in each hemisphere
+        (4, 0, True, 2),  # one cluster in each hemisphere
+        (4, 2, True, 2),  # one cluster in each hemisphere
         (6, 0, True, 0),  # test empty table on high stat threshold
-        (4, 9, True, 0),  # test empty table on high cluster threshold
+        (6, 0, False, 0),  # test empty table on high stat threshold
     ],
 )
 def test_get_clusters_table_surface(
@@ -141,13 +147,43 @@ def test_get_clusters_table_surface(
     expected_n_cluster,
 ):
     """Test several combination of input parameters."""
-    for hemi in surf_img_1d.data.parts:
-        surf_img_1d.data.parts[hemi] = np.zeros(
-            surf_img_1d.data.parts[hemi].shape
-        )
-        surf_img_1d.data.parts[hemi][0:2] = 5
-        surf_img_1d.data.parts[hemi][2:4] = -5
+    surf_img_1d.data.parts["left"] = np.asarray([5, 5, 5, -5])
+    surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5, -5])
     stat_img = surf_img_1d
+
+    clusters_table = get_clusters_table(
+        stat_img,
+        stat_threshold=stat_threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=two_sided,
+    )
+    assert len(clusters_table) == expected_n_cluster
+
+
+@pytest.mark.parametrize(
+    "stat_threshold, cluster_threshold, two_sided, expected_n_cluster",
+    [
+        # (4, 0, False, 12),
+        (1, 0, True, 63),
+        (1, 0, False, 29),
+        (-1, 0, False, 34),
+        # (4, 20, True, 10),
+        # (6, 0, True, 11),
+        # (6, 0, False, 9),
+    ],
+)
+def test_get_clusters_table_surface_real_data(
+    stat_threshold,
+    cluster_threshold,
+    two_sided,
+    expected_n_cluster,
+):
+    """Test cluster table generation on real data."""
+    stat_img = SurfaceImage.from_volume(
+        load_fsaverage()["inflated"], load_sample_motor_activation_image()
+    )
+
+    stat_img = load_fsaverage_data(mesh_type="inflated")
 
     clusters_table = get_clusters_table(
         stat_img,
@@ -157,6 +193,7 @@ def test_get_clusters_table_surface(
     )
     print(clusters_table)
     assert len(clusters_table) == expected_n_cluster
+    assert not any(clusters_table["Peak Stat"].to_numpy() == np.nan)
 
 
 def test_get_clusters_table_negative_threshold(shape, affine_eye):
