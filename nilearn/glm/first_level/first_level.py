@@ -587,8 +587,6 @@ class FirstLevelModel(BaseGLM):
                     stacklevel=find_stack_level(),
                 )
 
-            # check with the default of __init__
-            attributes_to_ignore = []
             attributes_used_in_des_mat_generation = [
                 "drift_model",
                 "drift_order",
@@ -600,14 +598,11 @@ class FirstLevelModel(BaseGLM):
                 "t_r",
             ]
             tmp = dict(**inspect.signature(self.__init__).parameters)
-            attributes_to_ignore.extend(
-                [
-                    k
-                    for k in attributes_used_in_des_mat_generation
-                    if getattr(self, k) != tmp[k].default
-                ]
-            )
-
+            attributes_to_ignore = [
+                k
+                for k in attributes_used_in_des_mat_generation
+                if getattr(self, k) != tmp[k].default
+            ]
             if attributes_to_ignore:
                 warn(
                     "If design matrices are supplied, "
