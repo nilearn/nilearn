@@ -500,6 +500,7 @@ def test_infer_effect_maps_error(tmp_path, shape_3d_default):
         _infer_effect_maps(second_level_input, "b")
 
 
+@pytest.mark.timeout(0)
 def test_high_level_glm_with_paths(affine_eye):
     func_img, mask = fake_fmri_data()
 

@@ -6,8 +6,6 @@
     - if a function of class definition uses the fill_doc decorator properly
 """
 
-from __future__ import annotations
-
 import ast
 import re
 from pathlib import Path

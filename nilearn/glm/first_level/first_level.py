@@ -3,8 +3,6 @@ objects of fMRI data analyses.
 
 """
 
-from __future__ import annotations
-
 import csv
 import inspect
 import time
@@ -589,8 +587,6 @@ class FirstLevelModel(BaseGLM):
                     stacklevel=find_stack_level(),
                 )
 
-            # check with the default of __init__
-            attributes_to_ignore = []
             attributes_used_in_des_mat_generation = [
                 "drift_model",
                 "drift_order",
@@ -602,14 +598,11 @@ class FirstLevelModel(BaseGLM):
                 "t_r",
             ]
             tmp = dict(**inspect.signature(self.__init__).parameters)
-            attributes_to_ignore.extend(
-                [
-                    k
-                    for k in attributes_used_in_des_mat_generation
-                    if getattr(self, k) != tmp[k].default
-                ]
-            )
-
+            attributes_to_ignore = [
+                k
+                for k in attributes_used_in_des_mat_generation
+                if getattr(self, k) != tmp[k].default
+            ]
             if attributes_to_ignore:
                 warn(
                     "If design matrices are supplied, "
@@ -1791,6 +1784,7 @@ def first_level_from_bids(
             f"from the value found in the BIDS dataset ({inferred_t_r}).\n"
             "Note this may lead to the wrong model specification.",
             stacklevel=find_stack_level(),
+            category=RuntimeWarning,
         )
     if t_r is not None:
         _check_repetition_time(t_r)
@@ -1800,6 +1794,7 @@ def first_level_from_bids(
             "It will need to be set manually in the list of models, "
             "otherwise their fit will throw an exception.",
             stacklevel=find_stack_level(),
+            category=RuntimeWarning,
         )
 
     # Slice time correction reference time

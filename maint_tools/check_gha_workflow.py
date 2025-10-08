@@ -38,8 +38,6 @@ USAGE
     python maint_tools/check_gha_workflow.py $GITHUB_TOKEN
 """
 
-from __future__ import annotations
-
 import sys
 import warnings
 from pathlib import Path

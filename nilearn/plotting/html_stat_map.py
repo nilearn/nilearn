@@ -617,6 +617,11 @@ def view_img(
     opacity : :obj:`float` in [0,1], default=1
         The level of opacity of the overlay (0: transparent, 1: opaque).
 
+    %(radiological)s
+
+    show_lr : :obj:`bool`, default=True
+        Show left and right labels on the figure
+
     Returns
     -------
     html_view : the html viewer object.
