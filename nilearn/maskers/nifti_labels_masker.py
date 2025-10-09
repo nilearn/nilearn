@@ -384,6 +384,19 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         self._report_content["summary"] = table
         self._report_content["number_of_regions"] = self.n_elements_
 
+        return self._create_figure_for_report(labels_image)
+
+    def _create_figure_for_report(self, labels_image):
+        """Generate figure to include in the report.
+
+        Returns
+        -------
+        list of :class:`~matplotlib.figure.Figure`
+        """
+        import matplotlib.pyplot as plt
+
+        from nilearn import plotting
+
         img = self._reporting_data["img"]
 
         # If we have a func image to show in the report, use it
@@ -406,19 +419,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             )
             warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
-
-        return self._create_figure_for_report(labels_image, img)
-
-    def _create_figure_for_report(self, labels_image, img):
-        """Generate figure to include in the report.
-
-        Returns
-        -------
-        list of :class:`~matplotlib.figure.Figure`
-        """
-        import matplotlib.pyplot as plt
-
-        from nilearn import plotting
 
         # compute the cut coordinates on the label image in case
         # we have a functional image

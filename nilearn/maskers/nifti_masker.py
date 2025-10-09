@@ -380,14 +380,27 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        displays : list
+        displays : List of :class:`~matplotlib.figure.Figure`
             A list of all displays to be rendered.
-
+            Returns None when masker is not fitted
         """
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
         if self._reporting_data is None:
             return [None]
+
+        return self._create_figure_for_report()
+
+    def _create_figure_for_report(self):
+        """Generate figure to include in the report.
+
+        Returns
+        -------
+        List of :class:`~matplotlib.figure.Figure`
+        """
+        import matplotlib.pyplot as plt
+
+        from nilearn.plotting import plot_img
 
         img = self._reporting_data["images"]
         mask = self._reporting_data["mask"]
@@ -419,28 +432,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             resampled_img, resampled_mask = self._reporting_data["transform"]
             if resampled_img is None:  # images were not provided to fit
                 resampled_img = resampled_mask
-
-        return self._create_figure_for_report(
-            img=img,
-            mask=mask,
-            resampled_img=resampled_img,
-            resampled_mask=resampled_mask,
-        )
-
-    def _create_figure_for_report(
-        self, img, mask=None, resampled_img=None, resampled_mask=None
-    ):
-        """Generate figure to include in the report.
-
-        Returns
-        -------
-        None, :class:`~matplotlib.figure.Figure` or\
-              :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
-            Returns ``None`` in case the masker was not fitted.
-        """
-        import matplotlib.pyplot as plt
-
-        from nilearn.plotting import plot_img
 
         # create display of retained input mask, image
         # for visual comparison
