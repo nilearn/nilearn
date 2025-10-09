@@ -180,7 +180,7 @@ def get_cbar_ticks(
 
     # we want 0 to always appear if the data contains both positive and
     # negative values
-    if vmin < 0 and vmax > 0 and 0 not in ticks:
+    if vmin < 0 < vmax and 0 not in ticks:
         add_zero = _add_to_ticks(ticks, 0)
         if add_zero:
             ticks = np.append(ticks, 0)
