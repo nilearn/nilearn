@@ -35,9 +35,10 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     instance : object, instance of BaseEstimator
         The object that gives us the values of the parameters
 
-    masker_type : {"multi_nii", "nii", "surface"}, default="mutli_nii"
-        Indicates whether to return a MultiNiftiMasker, NiftiMasker, or a
-        SurfaceMasker.
+    masker_type : {"multi_nii", "nii", "surface", "multi_surface"}, \
+                  default="mutli_nii"
+        Indicates whether to return a MultiNiftiMasker, NiftiMasker,
+        SurfaceMasker, or a MultiSurfaceMasker.
 
     ignore : None or list of strings
         Names of the parameters of the estimator that should not be
@@ -50,10 +51,17 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
         New masker
 
     """
-    from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
+    from nilearn.maskers import (
+        MultiNiftiMasker,
+        MultiSurfaceMasker,
+        NiftiMasker,
+        SurfaceMasker,
+    )
 
     if masker_type == "surface":
         masker_type = SurfaceMasker
+    elif masker_type == "multi_surface":
+        masker_type = MultiSurfaceMasker
     elif masker_type == "multi_nii":
         masker_type = MultiNiftiMasker
     else:
@@ -65,7 +73,10 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     if is_glm(estimator):
         mask = getattr(estimator, "mask_img", None)
 
-    if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
+    if isinstance(
+        mask,
+        (NiftiMasker, MultiNiftiMasker, SurfaceMasker, MultiSurfaceMasker),
+    ):
         # Creating masker from provided masker
         masker_params = get_params(masker_type, mask)
         new_masker_params = masker_params
@@ -74,10 +85,10 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
         new_masker_params = estimator_params
         new_masker_params["mask_img"] = mask
     # Forwarding system parameters of instance to new masker in all case
-    if issubclass(masker_type, MultiNiftiMasker) and hasattr(
-        estimator, "n_jobs"
-    ):
-        # For MultiNiftiMasker only
+    if issubclass(
+        masker_type, (MultiNiftiMasker, MultiSurfaceMasker)
+    ) and hasattr(estimator, "n_jobs"):
+        # For MultiMaskers only
         new_masker_params["n_jobs"] = estimator.n_jobs
 
     warning_msg = Template(

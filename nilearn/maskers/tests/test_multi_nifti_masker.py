@@ -184,13 +184,11 @@ def test_mask_strategy_errors(list_random_imgs):
 )
 def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
     """Check different strategies to compute masks."""
-    masker = MultiNiftiMasker(mask_strategy=strategy, mask_args={"opening": 1})
+    masker = MultiNiftiMasker(mask_strategy=strategy)
     masker.fit(list_random_imgs)
 
     # Check that the order of the images does not change the output
-    masker2 = MultiNiftiMasker(
-        mask_strategy=strategy, mask_args={"opening": 1}
-    )
+    masker2 = MultiNiftiMasker(mask_strategy=strategy)
     masker2.fit(list_random_imgs[::-1])
     mask_ref = np.zeros(shape_3d_default, dtype="int8")
 
@@ -226,47 +224,7 @@ def test_no_warning_partial_joblib(strategy, list_random_imgs):
     with warnings.catch_warnings(record=True) as warning_list:
         masker.fit(list_random_imgs)
 
-    assert not any(
-        "Cannot inspect object functools.partial" in str(x)
+    assert all(
+        "Cannot inspect object functools.partial" not in str(x)
         for x in warning_list
     )
-
-
-def test_standardization(rng, shape_3d_default, affine_eye):
-    """Check output properly standardized with 'standardize' parameter."""
-    n_samples = 500
-
-    signals = rng.standard_normal(
-        size=(2, np.prod(shape_3d_default), n_samples)
-    )
-    means = (
-        rng.standard_normal(size=(2, np.prod(shape_3d_default), 1)) * 50 + 1000
-    )
-    signals += means
-
-    img1 = Nifti1Image(
-        signals[0].reshape((*shape_3d_default, n_samples)), affine_eye
-    )
-    img2 = Nifti1Image(
-        signals[1].reshape((*shape_3d_default, n_samples)), affine_eye
-    )
-
-    mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
-
-    # z-score
-    masker = MultiNiftiMasker(mask, standardize="zscore_sample")
-    trans_signals = masker.fit_transform([img1, img2])
-
-    for ts in trans_signals:
-        np.testing.assert_almost_equal(ts.mean(0), 0)
-        np.testing.assert_almost_equal(ts.std(0), 1, decimal=3)
-
-    # psc
-    masker = MultiNiftiMasker(mask, standardize="psc")
-    trans_signals = masker.fit_transform([img1, img2])
-
-    for ts, s in zip(trans_signals, signals, strict=False):
-        np.testing.assert_almost_equal(ts.mean(0), 0)
-        np.testing.assert_almost_equal(
-            ts, (s / s.mean(1)[:, np.newaxis] * 100 - 100).T
-        )

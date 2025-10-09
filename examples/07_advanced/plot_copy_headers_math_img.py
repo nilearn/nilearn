@@ -120,7 +120,6 @@ result_img_with_header = new_img_like(
     ref_niimg=subj1_img,
     data=result_img.get_fdata(),
     affine=result_img.affine,
-    copy_header=True,
 )
 
 # %%

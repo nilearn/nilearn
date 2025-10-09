@@ -22,7 +22,6 @@ from sklearn.utils import Bunch
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import remove_parameters
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
@@ -1476,14 +1475,14 @@ def fetch_megatrawls_netmats(
         Stephen Smith et al,
         HCP beta-release of the Functional Connectivity MegaTrawl.
         April 2015 "HCP500-MegaTrawl" release.
-        https://db.humanconnectome.org/megatrawl/
+        https://balsa.wustl.edu
 
     ..  admonition:: Terms and conditions
         :class: attention
 
         This is open access data. You must agree to Terms and conditions
         of using this data before using it, available at:
-        http://humanconnectome.org/data/data-use-terms/open-access.html
+        https://www.humanconnectome.org/study/hcp-young-adult/document/wu-minn-hcp-consortium-open-access-data-use-terms
 
     Parameters
     ----------
@@ -1705,7 +1704,7 @@ def fetch_surf_nki_enhanced(
     """Download and load the NKI enhanced :term:`resting-state` dataset, \
     preprocessed and projected to the fsaverage5 space surface.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -1847,7 +1846,7 @@ def load_nki(
 ):
     """Load NKI enhanced surface data into a surface object.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -2082,7 +2081,7 @@ def fetch_development_fmri(
     Please cite :footcite:t:`Richardson2018`
     if you are using this dataset.
 
-    .. versionadded:: 0.5.2
+    .. nilearn_versionadded:: 0.5.2
 
     Parameters
     ----------
@@ -2332,7 +2331,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
 def fetch_ds000030_urls(data_dir=None, verbose=1):
     """Fetch URLs for files from the ds000030 :term:`BIDS` dataset.
 
-    .. versionadded:: 0.9.2
+    .. nilearn_versionadded:: 0.9.2
 
     This dataset is version 1.0.4 of the "UCLA Consortium for
     Neuropsychiatric Phenomics LA5c" dataset
@@ -2689,17 +2688,9 @@ def _download_spm_auditory_data(data_dir):
         return fetch_spm_auditory(data_dir=data_dir, data_name="")
 
 
-# (nilearn >= 0.13.0) remove subject_id
-@fill_doc
-@remove_parameters(
-    removed_params=["subject_id"],
-    reason="The spm_auditory dataset contains only one subject.",
-    end_version="0.13.0",
-)
 def fetch_spm_auditory(
     data_dir=None,
     data_name="spm_auditory",
-    subject_id=None,
     verbose=1,
 ):
     """Fetch :term:`SPM` auditory single-subject data.
@@ -2712,10 +2703,6 @@ def fetch_spm_auditory(
 
     data_name : :obj:`str`, default='spm_auditory'
         Name of the dataset.
-
-    subject_id : :obj:`str`, default=None
-        Indicates which subject to retrieve.
-        Will be removed in version ``0.13.0``.
 
     %(verbose)s
 
@@ -2897,18 +2884,10 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
     return events
 
 
-# (nilearn >= 0.13.0) remove subject_id
-@fill_doc
-@remove_parameters(
-    removed_params=["subject_id"],
-    reason="The spm_multimodal_fmri dataset contains only one subject.",
-    end_version="0.13.0",
-)
 @fill_doc
 def fetch_spm_multimodal_fmri(
     data_dir=None,
     data_name="spm_multimodal_fmri",
-    subject_id=None,
     verbose=1,
 ):
     """Fetcher for Multi-modal Face Dataset.
@@ -2922,12 +2901,6 @@ def fetch_spm_multimodal_fmri(
 
     data_name : :obj:`str`, default='spm_multimodal_fmri'
         Name of the dataset.
-
-    subject_id : :obj:`str`, default=None
-
-        .. deprecated:: 0.12.0
-
-            Will be removed in version ``0.13.0``.
 
     %(verbose)s
 

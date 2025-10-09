@@ -22,7 +22,6 @@ from nilearn.image import mean_img
 from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers.base_masker import (
     _BaseSurfaceMasker,
-    generate_lut,
     mask_logger,
 )
 from nilearn.surface.surface import (
@@ -58,7 +57,7 @@ def signals_to_surf_img_labels(
 class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -203,74 +202,6 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-    @property
-    def n_elements_(self) -> int:
-        """Return number of regions.
-
-        This is equal to the number of unique values
-        in the fitted label image,
-        minus the background value.
-        """
-        check_is_fitted(self)
-        lut = self.lut_
-        return len(lut[lut["index"] != self.background_label])
-
-    @property
-    def labels_(self) -> list[int | float]:
-        """Return list of labels of the regions.
-
-        The background label is included if present in the image.
-        """
-        check_is_fitted(self)
-        lut = self.lut_
-        return lut["index"].to_list()
-
-    @property
-    def region_names_(self) -> dict[int, str]:
-        """Return a dictionary containing the region names corresponding \
-           to each column in the array returned by `transform`.
-
-        The region names correspond to the labels provided
-        in labels in input.
-        The region name corresponding to ``region_signal[:,i]``
-        is ``region_names_[i]``.
-
-        .. versionadded:: 0.12.0
-        """
-        check_is_fitted(self)
-
-        index = self.labels_
-        valid_ids = [id for id in index if id != self.background_label]
-
-        sub_df = self.lut_[self.lut_["index"].isin(valid_ids)]
-
-        return sub_df["name"].reset_index(drop=True).to_dict()
-
-    @property
-    def region_ids_(self) -> dict[str | int, int | float]:
-        """Return dictionary containing the region ids corresponding \
-           to each column in the array \
-           returned by `transform`.
-
-        The region id corresponding to ``region_signal[:,i]``
-        is ``region_ids_[i]``.
-        ``region_ids_['background']`` is the background label.
-
-        .. versionadded:: 0.12.0
-        """
-        check_is_fitted(self)
-
-        index = self.labels_
-
-        region_ids_: dict[str | int, int | float] = {}
-        if self.background_label in index:
-            index.pop(index.index(self.background_label))
-            region_ids_["background"] = self.background_label
-        for i, id in enumerate(index):
-            region_ids_[i] = id  # noqa : PERF403
-
-        return region_ids_
-
     @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
@@ -288,11 +219,24 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        self._init_report_content()
+
         if imgs is not None:
             self._check_imgs(imgs)
 
         if imgs is not None:
             check_surf_img(imgs)
+
+            if isinstance(imgs, SurfaceImage) and any(
+                hemi.ndim > 2 for hemi in imgs.data.parts.values()
+            ):
+                raise ValueError(
+                    "should only be SurfaceImage should 1D or 2D."
+                )
+            elif hasattr(imgs, "__iter__"):
+                for i, x in enumerate(imgs):
+                    x.data._check_n_samples(1, f"imgs[{i}]")
 
         check_reduction_strategy(self.strategy)
 
@@ -344,9 +288,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
                     stacklevel=find_stack_level(),
                 )
 
-        self.lut_ = generate_lut(
-            self.labels_img_, self.background_label, self.lut, self.labels
-        )
+        self.lut_ = self._generate_lut()
 
         if self.clean_args is None:
             self.clean_args_ = {}
@@ -354,22 +296,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             self.clean_args_ = self.clean_args
 
         if not self.reports:
-            self._reporting_data = None
             return self
-
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            "number_of_regions": self.n_elements_,
-            "summary": {},
-            "warning_message": None,
-        }
 
         for part in self.labels_img_.data.parts:
             self._report_content["n_vertices"][part] = (
@@ -381,6 +308,29 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        """Initialize report content.
+
+        Prepare basing content to inject in the HTML template
+        during report generation.
+        """
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This report shows the input surface image overlaid "
+                    "with the outlines of the mask. "
+                    "We recommend to inspect the report for the overlap "
+                    "between the mask and its input image. "
+                ),
+                "n_vertices": {},
+                "number_of_regions": 0,
+                "summary": {},
+                "warning_message": None,
+            }
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = None
 
     def _generate_reporting_data(self):
         for part in self.labels_img_.data.parts:
@@ -435,6 +385,14 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         check_compatibility_mask_and_images(self.labels_img_, imgs)
         check_polymesh_equal(self.labels_img_.mesh, imgs.mesh)
+
+        if isinstance(imgs, SurfaceImage) and any(
+            hemi.ndim > 2 for hemi in imgs.data.parts.values()
+        ):
+            raise ValueError("SurfaceImage should only be 1D or 2D.")
+        elif hasattr(imgs, "__iter__"):
+            for i, x in enumerate(imgs):
+                x.data._check_n_samples(1, f"imgs[{i}]")
 
         imgs = at_least_2d(imgs)
         img_data = get_data(imgs)
@@ -560,49 +518,15 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         this image is used as background
         on which the contours are drawn.
         """
-        import matplotlib.pyplot as plt
-
-        from nilearn.plotting import plot_surf, plot_surf_contours
-
-        labels_img = self._reporting_data["labels_image"]
+        roi_map = self._reporting_data["labels_image"]
 
         img = self._reporting_data["images"]
+        vmin = None
+        vmax = None
         if img:
             img = mean_img(img)
             vmin, vmax = img.data._get_min_max()
 
-        # TODO: possibly allow to generate a report with other views
-        views = ["lateral", "medial"]
-        hemispheres = ["left", "right"]
-
-        fig, axes = plt.subplots(
-            len(views),
-            len(hemispheres),
-            subplot_kw={"projection": "3d"},
-            figsize=(20, 20),
-            layout="constrained",
-        )
-        axes = np.atleast_2d(axes)
-
-        for ax_row, view in zip(axes, views, strict=False):
-            for ax, hemi in zip(ax_row, hemispheres, strict=False):
-                if img:
-                    plot_surf(
-                        surf_map=img,
-                        hemi=hemi,
-                        view=view,
-                        figure=fig,
-                        axes=ax,
-                        cmap=self.cmap,
-                        vmin=vmin,
-                        vmax=vmax,
-                    )
-                plot_surf_contours(
-                    roi_map=labels_img,
-                    hemi=hemi,
-                    view=view,
-                    figure=fig,
-                    axes=ax,
-                )
+        fig = self._generate_figure(img, roi_map=roi_map, vmin=vmin, vmax=vmax)
 
         return fig

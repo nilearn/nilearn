@@ -119,6 +119,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -274,7 +275,7 @@ def test_non_supported_estimator_error(rand_x_y, estimator):
     X, Y = rand_x_y
 
     with pytest.raises(
-        TypeError, match="Invalid estimator. The supported estimators are:"
+        TypeError, match=r"Invalid estimator. The supported estimators are:"
     ):
         _check_param_grid(estimator, X, Y, None)
 
@@ -1365,7 +1366,7 @@ def test_decoder_vs_sklearn(classifier_penalty):
     # default scoring is accuracy
     scorer = check_scoring(_check_estimator(classifier_penalty), "accuracy")
 
-    ## nilearn decoding
+    # nilearn decoding
     nilearn_decoder = Decoder(
         estimator=classifier_penalty,
         mask=mask,
@@ -1377,7 +1378,7 @@ def test_decoder_vs_sklearn(classifier_penalty):
     nilearn_decoder.fit(X, y)
     scores_nilearn = nilearn_decoder.cv_scores_
 
-    ## start decoding with sklearn
+    # start decoding with sklearn
     masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 
@@ -1453,7 +1454,7 @@ def test_regressor_vs_sklearn(regressor):
     # r2 is the default scoring for regression
     scorer = check_scoring(_check_estimator(regressor), "r2")
 
-    ## nilearn decoding
+    # nilearn decoding
     nilearn_regressor = DecoderRegressor(
         estimator=regressor,
         mask=mask,
@@ -1465,7 +1466,7 @@ def test_regressor_vs_sklearn(regressor):
     nilearn_regressor.fit(X, y)
     scores_nilearn = nilearn_regressor.cv_scores_["beta"]
 
-    ## start decoding with sklearn
+    # start decoding with sklearn
     masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 

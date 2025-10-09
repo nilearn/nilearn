@@ -10,6 +10,7 @@ import pandas as pd
 import pytest
 from matplotlib import pyplot as plt
 
+from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.datasets import (
     load_fsaverage_data,
     load_mni152_template,
@@ -301,6 +302,43 @@ def test_plot_surf_surface(plot_func, view, hemi):
     )
 
 
+@pytest.mark.skipif(
+    not (is_plotly_installed() and is_kaleido_installed()),
+    reason="This test requires plotly and kaleido to be installed",
+)
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
+@pytest.mark.parametrize(
+    "view",
+    [
+        "anterior",
+        "posterior",
+        "dorsal",
+        "ventral",
+    ],
+)
+@pytest.mark.parametrize("hemi", ["left", "right", "both"])
+def test_plot_surf_surface_plotly(plot_func, view, hemi):
+    """Test surface plotting functions with views and hemispheres using plotly
+    backend.
+    """
+    surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
+    return plot_func(
+        surf_img.mesh,
+        surf_img,
+        engine="plotly",
+        view=view,
+        hemi=hemi,
+        title=f"{view=}, {hemi=}",
+    )
+
+
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])
@@ -318,6 +356,34 @@ def test_plot_surf_surface_colorbar(plot_func, colorbar, cbar_tick_format):
         surf_img.mesh,
         surf_img,
         engine="matplotlib",
+        colorbar=colorbar,
+        cbar_tick_format=cbar_tick_format,
+    )
+
+
+@pytest.mark.skipif(
+    not (is_plotly_installed() and is_kaleido_installed()),
+    reason="This test requires plotly and kaleido to be installed",
+)
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
+@pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
+def test_plot_surf_surface_colorbar_plotly(
+    plot_func, colorbar, cbar_tick_format
+):
+    """Test surface plotting functions with colorbars using plotly backend."""
+    surf_img = load_fsaverage_data()
+    if plot_func == plot_surf_roi:
+        # cannot have negative values for roi_map
+        surf_img = math_img(
+            "img > 0",
+            img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        )
+    return plot_func(
+        surf_img.mesh,
+        surf_img,
+        engine="plotly",
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
     )

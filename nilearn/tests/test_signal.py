@@ -299,10 +299,10 @@ def test_butterworth_warnings_hpf_too_low(data_butterworth_single_timeseries):
     assert not array_equal(data, out)
 
 
-def test_butterworth_errors(data_butterworth_single_timeseries):
-    """Check for high-pass frequency higher than low-pass frequency."""
+@pytest.mark.parametrize("high_pass", [0.1, 0.2])
+def test_butterworth_errors(data_butterworth_single_timeseries, high_pass):
+    """Check for high-pass frequency higher or equal to low-pass frequency."""
     sampling = 1
-    high_pass = 0.2
     low_pass = 0.1
     with pytest.raises(
         ValueError,
@@ -487,19 +487,15 @@ def test_clean_detrending():
     # using assert_almost_equal instead of array_equal due to NaNs
     assert_almost_equal(y_orig, y, decimal=13)
 
-    # This should remove trends
-    x_detrended = clean(
-        x, standardize=False, detrend=True, low_pass=None, high_pass=None
-    )
+    # This should remove trends as detrend is True by default
+    x_detrended = clean(x, standardize=False)
 
     assert_almost_equal(x_detrended, signals, decimal=13)
     # clean should not modify inputs
     assert array_equal(x_orig, x)
 
     # This should do nothing
-    x_undetrended = clean(
-        x, standardize=False, detrend=False, low_pass=None, high_pass=None
-    )
+    x_undetrended = clean(x, standardize=False, detrend=False)
 
     assert abs(x_undetrended - signals).max() >= 0.06
     # clean should not modify inputs
@@ -645,7 +641,7 @@ def test_clean_frequencies():
     assert cleaned_signal.max() > 0.9
 
     with pytest.raises(
-        ValueError, match="High pass .* greater than .* low pass"
+        ValueError, match=r"High pass .* greater than .* low pass"
     ):
         clean(sx, low_pass=0.4, high_pass=0.5, t_r=t_r)
 
@@ -751,19 +747,19 @@ def test_clean_errros(signals):
 
     with pytest.raises(
         ValueError,
-        match="Repetition time .* and low cutoff frequency .*",
+        match=r"Repetition time .* and low cutoff frequency .*",
     ):
         clean(signals, filter="cosine", t_r=None, high_pass=0.008)
 
     with pytest.raises(
         ValueError,
-        match="Repetition time .* must be specified for butterworth.",
+        match=r"Repetition time .* must be specified for butterworth.",
     ):
         # using butterworth filter here
         clean(signals, t_r=None, low_pass=0.01)
 
     with pytest.raises(
-        ValueError, match="Filter method not_implemented not implemented."
+        ValueError, match=r"Filter method not_implemented not implemented."
     ):
         clean(signals, filter="not_implemented")
 
@@ -1067,10 +1063,6 @@ def test_clean_t_r_highpass_float_int(t_r, high_pass):
         ]
     ).T
 
-    # Create confound
-    _, _, confounds = generate_signals(
-        n_features=10, n_confounds=10, length=100
-    )
     # TODO (nilearn >= 0.14) remove catch DeprecationWarning
     with pytest.warns(DeprecationWarning):
         clean(
@@ -1194,10 +1186,16 @@ def test_high_variance_confounds_detrend():
     )
     seriesG = seriesC
 
-    # Check shape of output
-    out = high_variance_confounds(seriesG, n_confounds=7, detrend=False)
+    # detrend is True by default
+    out_detrended = high_variance_confounds(seriesG, n_confounds=7)
+    out_not_detrended = high_variance_confounds(
+        seriesG, n_confounds=7, detrend=False
+    )
+    with pytest.raises(AssertionError):
+        assert_equal(out_detrended, out_not_detrended)
 
-    assert out.shape == (length, 7)
+    # Check shape of output
+    assert out_not_detrended.shape == (length, 7)
 
     trends = generate_trends(n_features=n_features, length=length)
     seriesGt = seriesG + trends
@@ -1657,10 +1655,7 @@ def test_handle_scrubbed_volumes_exception():
     sample_mask = np.delete(sample_mask, scrub_index)
 
     with pytest.raises(
-        AllVolumesRemovedError,
-        match="The size of the sample mask is 0. "
-        "All volumes were marked as motion outliers "
-        "can not proceed. ",
+        AllVolumesRemovedError, match="The size of the sample mask is 0"
     ):
         _handle_scrubbed_volumes(
             signals, confounds, sample_mask, "butterworth", 2.5, True

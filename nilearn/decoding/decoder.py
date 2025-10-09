@@ -22,6 +22,7 @@ from sklearn import clone
 from sklearn.base import (
     BaseEstimator,
     MultiOutputMixin,
+    is_classifier,
 )
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
@@ -38,7 +39,6 @@ from sklearn.model_selection import (
     StratifiedShuffleSplit,
     check_cv,
 )
-from sklearn.preprocessing import LabelBinarizer
 from sklearn.svm import SVR, LinearSVC, l1_min_c
 from sklearn.utils.extmath import safe_sparse_dot
 from sklearn.utils.validation import check_is_fitted, check_X_y
@@ -362,7 +362,7 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
                 f' being replaced by "{new_key}" due to a change in the'
                 " choice of underlying scikit-learn estimator. In a future"
                 " version, this will result in an error.",
-                DeprecationWarning,
+                FutureWarning,
                 stacklevel=find_stack_level(),
             )
             param_grid_item[new_key] = param_grid_item.pop(key_to_replace)
@@ -687,17 +687,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.estimator_args = estimator_args
 
     @property
-    def _is_classification(self) -> bool:
-        # TODO (sklearn  >= 1.6.0) remove
-        # this private method can probably be removed
-        # when dropping sklearn>=1.5 and replaced by just:
-        #   self.__sklearn_tags__().estimator_type == "classifier"
-        if SKLEARN_LT_1_6:
-            # TODO (sklearn  >= 1.6.0) remove
-            return self._estimator_type == "classifier"
-        return self.__sklearn_tags__().estimator_type == "classifier"
-
-    @property
     def _clustering_percentile(self) -> int:
         # only FREMClassifier and FREMRegressor use clustering_percentile
         if hasattr(self, "clustering_percentile"):
@@ -712,13 +701,14 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         ----------
         X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
             See :ref:`extracting_data`.
-            Data on which model is to be fitted. If this is a list,
+            Data on which model is to be fitted.
+            If this is a list,
             the affine is considered the same for all.
 
         y : numpy.ndarray of shape=(n_samples) or list of length n_samples
             The dependent variable (age, sex, IQ, yes/no, etc.).
-            Target variable to predict. Must have exactly as many elements as
-            3D images in niimg.
+            Target variable to predict.
+            Must have exactly as many samples as the input images.
 
         %(groups)s
 
@@ -765,29 +755,21 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             cv_object = LeaveOneGroupOut()
 
         else:
-            cv_object = check_cv(cv, y=y, classifier=self._is_classification)
+            cv_object = check_cv(cv, y=y, classifier=is_classifier(self))
 
         self.cv_ = list(cv_object.split(X, y, groups=groups))
 
         # Define the number problems to solve. In case of classification this
         # number corresponds to the number of binary problems to solve
-        y = (
-            self._binarize_y(y)
-            if self._is_classification
-            else y[:, np.newaxis]
-        )
-
-        if self._is_classification and self.n_classes_ > 2:
-            n_problems = self.n_classes_
-        else:
-            n_problems = 1
+        y = self._binarize_y(y)
+        n_problems = self._n_problems()
 
         # Check if the size of the mask image and the number of features allow
         # to perform feature screening.
         selector = check_feature_screening(
             self.screening_percentile,
             self.mask_img_,
-            self._is_classification,
+            is_classifier(self),
             verbose=self.verbose,
         )
 
@@ -859,7 +841,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             parallel_fit_outputs, y, n_problems
         )
 
-        classes_ = self.classes_ if self._is_classification else self._classes_
+        classes_ = self._get_classes()
 
         # Build the final model (the aggregated one)
         if not isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
@@ -886,7 +868,8 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 classes_, self.coef_, self.std_coef_
             )
 
-            if self._is_classification and (self.n_classes_ == 2):
+            # TODO try to extract
+            if is_classifier(self) and (self.n_classes_ == 2):
                 self.coef_ = self.coef_[0, :][np.newaxis, :]
                 self.intercept_ = self.intercept_[0]
 
@@ -901,7 +884,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                     for class_index in classes_
                 ]
             )
-            if self._is_classification and (self.n_classes_ == 2):
+            if is_classifier(self) and (self.n_classes_ == 2):
                 self.dummy_output_ = self.dummy_output_[0, :][np.newaxis, :]
 
         return self
@@ -1020,7 +1003,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         else:
             scores = self._decision_function(X)
 
-        if self._is_classification:
+        if is_classifier(self):
             if scores.ndim == 1:
                 indices = (scores > 0).astype(int)
             else:
@@ -1078,7 +1061,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         cv_scores = {}
         self.cv_params_ = {}
         self.dummy_output_ = {}
-        classes = self.classes_ if self._is_classification else self._classes_
+        classes_ = self._get_classes()
 
         for (
             class_index,
@@ -1088,28 +1071,28 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             scores,
             dummy_output,
         ) in parallel_fit_outputs:
-            coefs.setdefault(classes[class_index], []).append(coef)
-            intercepts.setdefault(classes[class_index], []).append(intercept)
+            coefs.setdefault(classes_[class_index], []).append(coef)
+            intercepts.setdefault(classes_[class_index], []).append(intercept)
 
-            cv_scores.setdefault(classes[class_index], []).append(scores)
+            cv_scores.setdefault(classes_[class_index], []).append(scores)
 
-            self.cv_params_.setdefault(classes[class_index], {})
+            self.cv_params_.setdefault(classes_[class_index], {})
             if isinstance(self.estimator_, (DummyClassifier, DummyRegressor)):
-                self.dummy_output_.setdefault(classes[class_index], []).append(
-                    dummy_output
-                )
+                self.dummy_output_.setdefault(
+                    classes_[class_index], []
+                ).append(dummy_output)
             else:
-                self.dummy_output_.setdefault(classes[class_index], []).append(
-                    None
-                )
+                self.dummy_output_.setdefault(
+                    classes_[class_index], []
+                ).append(None)
             for k in params:
-                self.cv_params_[classes[class_index]].setdefault(k, []).append(
-                    params[k]
-                )
+                self.cv_params_[classes_[class_index]].setdefault(
+                    k, []
+                ).append(params[k])
 
-            if (n_problems <= 2) and self._is_classification:
+            if (n_problems <= 2) and is_classifier(self):
                 # Binary classification
-                other_class = np.setdiff1d(classes, classes[class_index])[0]
+                other_class = np.setdiff1d(classes_, classes_[class_index])[0]
                 if coef is not None:
                     coefs.setdefault(other_class, []).append(-coef)
                     intercepts.setdefault(other_class, []).append(-intercept)
@@ -1119,7 +1102,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
 
                 cv_scores.setdefault(other_class, []).append(scores)
                 self.cv_params_[other_class] = self.cv_params_[
-                    classes[class_index]
+                    classes_[class_index]
                 ]
                 if isinstance(
                     self.estimator_, (DummyClassifier, DummyRegressor)
@@ -1137,7 +1120,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
     def _set_scorer(self):
         if self.scoring is not None:
             self.scorer_ = check_scoring(self.estimator_, self.scoring)
-        elif self._is_classification:
+        elif is_classifier(self):
             self.scorer_ = get_scorer("accuracy")
         else:
             self.scorer_ = get_scorer("r2")
@@ -1152,19 +1135,6 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             std_coef_img[class_index] = self.masker_.inverse_transform(std)
 
         return coef_img, std_coef_img
-
-    def _binarize_y(self, y):
-        """Encode target classes as -1 and 1.
-
-        Helper function invoked just before fitting a classifier.
-        """
-        y = np.array(y)
-
-        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
-        y = self._enc.fit_transform(y)
-        self.classes_ = self._enc.classes_
-        self.n_classes_ = len(self.classes_)
-        return y
 
     def _predict_dummy(self, n_samples):
         """Non-sparse scikit-learn based prediction steps for classification \
@@ -1569,29 +1539,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         """
         return super().__sklearn_tags__()
 
-    @fill_doc
-    def fit(self, X, y, groups=None):
-        """Fit the decoder (learner).
-
-        Parameters
-        ----------
-        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
-            See :ref:`extracting_data`.
-            Data on which model is to be fitted. If this is a list,
-            the affine is considered the same for all.
-
-        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
-            The dependent variable (age, sex, IQ, yes/no, etc.).
-            Target variable to predict. Must have exactly as many elements as
-            3D images in niimg.
-
-        %(groups)s
-
-        """
-        check_params(self.__dict__)
-        self._classes_ = ["beta"]
-        return super().fit(X, y, groups=groups)
-
 
 @fill_doc
 class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
@@ -1761,30 +1708,6 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
         return super().__sklearn_tags__()
-
-    @fill_doc
-    def fit(self, X, y, groups=None):
-        """Fit the decoder (learner).
-
-        Parameters
-        ----------
-        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
-            See :ref:`extracting_data`.
-            Data on which model is to be fitted. If this is a list,
-            the affine is considered the same for all.
-
-        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
-            The dependent variable (age, sex, IQ, yes/no, etc.).
-            Target variable to predict. Must have exactly as many elements as
-            3D images in niimg.
-
-        %(groups)s
-
-        """
-        check_params(self.__dict__)
-        self._classes_ = ["beta"]
-        super().fit(X, y, groups=groups)
-        return self
 
 
 @fill_doc

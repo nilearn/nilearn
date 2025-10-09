@@ -80,7 +80,7 @@ from nilearn.plotting import plot_stat_map, show
 # Show some interesting components
 
 # Use the mean as a background
-mean_img = image.mean_img(func_filename, copy_header=True)
+mean_img = image.mean_img(func_filename)
 
 plot_stat_map(image.index_img(component_img, 0), mean_img)
 

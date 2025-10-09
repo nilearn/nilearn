@@ -20,7 +20,9 @@ from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
 from nilearn.plotting._engine_utils import threshold_cmap
 from nilearn.plotting._utils import (
+    DEFAULT_TICK_FORMAT,
     check_threshold_not_negative,
+    get_cbar_bounds,
     get_cbar_ticks,
 )
 from nilearn.plotting.displays import CutAxes
@@ -83,7 +85,7 @@ class BaseSlicer:
         self._brain_color = brain_color
         self._colorbar = False
         self._colorbar_width = 0.05 * bb.width
-        self._cbar_tick_format = "%.2g"
+        self._cbar_tick_format = DEFAULT_TICK_FORMAT
         self._colorbar_margin = {
             "left": 0.25 * bb.width,
             "right": 0.02 * bb.width,
@@ -280,7 +282,7 @@ class BaseSlicer:
         img,
         threshold=1e-6,
         colorbar=False,
-        cbar_tick_format="%.2g",
+        cbar_tick_format=DEFAULT_TICK_FORMAT,
         cbar_vmin=None,
         cbar_vmax=None,
         transparency=None,
@@ -454,9 +456,7 @@ class BaseSlicer:
             resampling_interpolation = "nearest"
 
         # Image reordering should be done before sanitizing transparency
-        img = reorder_img(
-            img, resample=resampling_interpolation, copy_header=True
-        )
+        img = reorder_img(img, resample=resampling_interpolation)
 
         transparency, transparency_affine = self._sanitize_transparency(
             img,
@@ -579,9 +579,7 @@ class BaseSlicer:
             if is_binary_niimg(transparency):
                 resampling_interpolation = "nearest"
             transparency = reorder_img(
-                transparency,
-                resample=resampling_interpolation,
-                copy_header=True,
+                transparency, resample=resampling_interpolation
             )
             if not _check_fov(transparency, img.affine, img.shape[:3]):
                 warnings.warn(
@@ -592,7 +590,6 @@ class BaseSlicer:
                     transparency,
                     img.affine,
                     img.shape,
-                    copy_header=True,
                     interpolation=resampling_interpolation,
                 )
 
@@ -718,9 +715,6 @@ class BaseSlicer:
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
         """
-        offset = 0 if threshold is None else threshold
-        offset = min(offset, norm.vmax)
-
         cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
         cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
 
@@ -744,11 +738,15 @@ class BaseSlicer:
             return
         else:
             our_cmap = threshold_cmap(
-                cmap, norm, offset, (*self._brain_color, 0.0)
+                cmap, norm, threshold, (*self._brain_color, 0.0)
             )
 
-        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks=5)
-        bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
+        ticks = get_cbar_ticks(
+            cbar_vmin, cbar_vmax, threshold, tick_format=self._cbar_tick_format
+        )
+        bounds = get_cbar_bounds(
+            cbar_vmin, cbar_vmax, our_cmap.N, self._cbar_tick_format
+        )
 
         self._cbar = ColorbarBase(
             self._colorbar_ax,
@@ -785,7 +783,7 @@ class BaseSlicer:
             The color used to display the edge map.
 
         """
-        img = reorder_img(img, resample="continuous", copy_header=True)
+        img = reorder_img(img, resample="continuous")
         data = get_data(img)
         affine = img.affine
         single_color_cmap = ListedColormap([color])
@@ -2182,7 +2180,7 @@ class MosaicSlicer(BaseSlicer):
                 ax = fh_c.add_axes(indices)
                 ax.axis("off")
                 display_ax = self._axes_class(ax, direction, coord, **kwargs)
-                self.axes[(direction, coord)] = display_ax
+                self.axes[direction, coord] = display_ax
                 ax.set_axes_locator(self._locator)
 
         # increase color bar width to adapt to the number of cuts

@@ -154,7 +154,7 @@ def connected_regions(
         The region size should be defined in mm^3.
         See the documentation for more details.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
@@ -221,7 +221,6 @@ def connected_regions(
                 target_affine=maps_img.affine,
                 target_shape=maps_img.shape[:3],
                 interpolation="nearest",
-                copy_header=True,
             )
         mask_data, _ = masking.load_mask_img(mask_img)
         # Set as 0 to the values which are outside of the mask
@@ -245,7 +244,7 @@ def connected_regions(
             label_maps = rw_maps
         else:
             # Connected component extraction
-            label_maps, n_labels = label(map_3d)
+            label_maps, _ = label(map_3d)
 
         # Takes the size of each labelized region data
         labels_size = np.bincount(label_maps.ravel())
@@ -277,7 +276,7 @@ class RegionExtractor(NiftiMapsMasker):
 
     See :footcite:t:`Abraham2014`.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
@@ -321,7 +320,7 @@ class RegionExtractor(NiftiMapsMasker):
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-        .. versionadded:: 0.11.1
+        .. nilearn_versionadded:: 0.11.1
 
     %(extractor)s
 
@@ -413,7 +412,8 @@ class RegionExtractor(NiftiMapsMasker):
         (ie at least two maps have a non-zero value for the same voxel).
 
     %(clean_args)s
-        .. versionadded:: 0.12.1
+
+        .. nilearn_versionadded:: 0.12.1
 
     Attributes
     ----------
@@ -434,7 +434,7 @@ class RegionExtractor(NiftiMapsMasker):
         The number of overlapping maps in the mask.
         This is equivalent to the number of volumes in the mask image.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     regions_img_ : :class:`nibabel.nifti1.Nifti1Image`
         List of separated regions with each region lying on an
@@ -559,7 +559,6 @@ class RegionExtractor(NiftiMapsMasker):
                     copy=True,
                     threshold=self.threshold,
                     two_sided=self.two_sided,
-                    copy_header=True,
                 )
 
         # connected component extraction

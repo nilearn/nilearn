@@ -3,6 +3,7 @@
 __all__ = [
     "AllVolumesRemovedError",
     "DimensionError",
+    "MaskWarning",
     "MeshDimensionError",
     "NotImplementedWarning",
 ]
@@ -27,7 +28,14 @@ AuthorizedException = (
 class NotImplementedWarning(UserWarning):
     """Custom warning to warn about not implemented features.
 
-    .. versionadded:: 0.13.0
+    .. nilearn_versionadded:: 0.13.0dev
+    """
+
+
+class MaskWarning(UserWarning):
+    """Custom warning related to masks.
+
+    .. nilearn_versionadded:: 0.13.0dev
     """
 
 

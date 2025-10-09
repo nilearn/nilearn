@@ -16,8 +16,6 @@ To expand the functionality of check_params you need to:
     to pair the name of the parameter / attribute with its expected type.
 """
 
-from __future__ import annotations
-
 import pathlib
 from collections.abc import Callable
 from pathlib import Path
@@ -33,11 +31,14 @@ Annotate: TypeAlias = bool
 BgOnData: TypeAlias = bool
 BorderSize: TypeAlias = int | np.integer
 ColorBar: TypeAlias = bool
+ClusterThreshold: TypeAlias = int | np.integer
 Connected: TypeAlias = bool
+CopyHeader: TypeAlias = bool
 DType: TypeAlias = DTypeLike | None
 DataDir: TypeAlias = str | pathlib.Path | None
 Detrend: TypeAlias = bool
 DrawCross: TypeAlias = bool
+ForceResample: TypeAlias = bool
 
 # Note that for HrfModel
 # str is too generic here
@@ -66,12 +67,12 @@ ScreeningPercentile: TypeAlias = float | int | np.floating | np.integer | None
 SmoothingFwhm: TypeAlias = float | int | np.floating | np.integer | None
 Standardize: TypeAlias = Literal["zscore", "zscore_sample", "psc", True, False]
 StandardizeConfounds: TypeAlias = bool
-TargetAffine: TypeAlias = ndarray | None
+TargetAffine: TypeAlias = ndarray | list | None
 
 # Note that this is usable as for static type checking,
 # as type checkers will complain
 # about using a generic and would prefer "list[int]" to "list".
-TargetShape: TypeAlias = tuple | list | None
+TargetShape: TypeAlias = tuple | list | ndarray | None
 
 Threshold: TypeAlias = float | int | np.floating | np.integer | str | None
 

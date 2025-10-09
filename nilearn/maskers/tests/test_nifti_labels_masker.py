@@ -134,10 +134,10 @@ def test_nifti_labels_masker_errors(
     # Test all kinds of mismatch between shapes and between affines
     masker11.fit()
     with pytest.raises(
-        ValueError, match="Images have different affine matrices."
+        ValueError, match=r"Images have different affine matrices."
     ):
         masker11.transform(fmri12_img)
-    with pytest.raises(ValueError, match="Images have incompatible shapes."):
+    with pytest.raises(ValueError, match=r"Images have incompatible shapes."):
         masker11.transform(fmri21_img)
 
     masker11 = NiftiLabelsMasker(
@@ -488,46 +488,6 @@ def test_nifti_labels_masker_resampling_to_none(
         ValueError, match="Following field of view errors were detected"
     ):
         masker.fit_transform(fmri_img)
-
-
-def test_standardization(rng, affine_eye, shape_3d_default, img_labels):
-    """Check output properly standardized with 'standardize' parameter."""
-    n_samples = 400
-
-    signals = rng.standard_normal(size=(np.prod(shape_3d_default), n_samples))
-    means = (
-        rng.standard_normal(size=(np.prod(shape_3d_default), 1)) * 50 + 1000
-    )
-    signals += means
-    img = Nifti1Image(
-        signals.reshape((*shape_3d_default, n_samples)), affine_eye
-    )
-
-    # Unstandarized
-    masker = NiftiLabelsMasker(img_labels, standardize=False)
-    unstandarized_label_signals = masker.fit_transform(img)
-
-    # z-score
-    masker = NiftiLabelsMasker(img_labels, standardize="zscore_sample")
-    trans_signals = masker.fit_transform(img)
-
-    assert_almost_equal(trans_signals.mean(0), 0)
-    assert_almost_equal(trans_signals.std(0), 1, decimal=3)
-
-    # psc
-    masker = NiftiLabelsMasker(img_labels, standardize="psc")
-    trans_signals = masker.fit_transform(img)
-
-    assert_almost_equal(trans_signals.mean(0), 0)
-    assert_almost_equal(
-        trans_signals,
-        (
-            unstandarized_label_signals
-            / unstandarized_label_signals.mean(0)
-            * 100
-            - 100
-        ),
-    )
 
 
 def test_nifti_labels_masker_with_mask(
@@ -928,7 +888,7 @@ def test_check_labels_errors(shape_3d_default, affine_eye):
         shape_3d_default, affine=affine_eye, n_regions=2
     )
 
-    with pytest.raises(TypeError, match="'labels' must be a list."):
+    with pytest.raises(TypeError, match=r"'labels' must be a list."):
         NiftiLabelsMasker(labels_img, labels={"foo", "bar", "baz"}).fit()
 
     with pytest.raises(

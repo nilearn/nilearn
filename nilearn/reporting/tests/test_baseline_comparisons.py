@@ -16,10 +16,11 @@ from nilearn.datasets import (
     load_mni152_template,
     load_sample_motor_activation_image,
 )
-from nilearn.glm import threshold_stats_img
+from nilearn.glm.thresholding import threshold_stats_img
 from nilearn.reporting.glm_reporter import _stat_map_to_png
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 @pytest.mark.parametrize(
@@ -84,12 +85,14 @@ def test_stat_map_to_png_volume(
         ("bonferroni", False, 3),
     ],
 )
-def test_stat_map_to_png_surface(height_control, two_sided, threshold):
+@pytest.mark.parametrize("cluster_threshold", [0, 200])
+def test_stat_map_to_png_surface(
+    height_control, two_sided, threshold, cluster_threshold
+):
     """Check figures plotting for GLM report for surface data."""
     alpha = 0.05
-    cluster_threshold = 0
 
-    surf_img = load_fsaverage_data()
+    surf_img = load_fsaverage_data(mesh_type="inflated")
 
     thresholded_img, threshold = threshold_stats_img(
         stat_img=surf_img,
@@ -104,6 +107,7 @@ def test_stat_map_to_png_surface(height_control, two_sided, threshold):
     table_details.update({"Threshold Z": np.around(threshold, 3)})
     table_details.update({"two_sided": two_sided})
     table_details.update({"height_control": height_control})
+    table_details.update({"cluster_threshold": cluster_threshold})
     table_details = pd.DataFrame.from_dict(
         table_details,
         orient="index",

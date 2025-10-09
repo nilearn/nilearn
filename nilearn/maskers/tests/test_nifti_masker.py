@@ -169,7 +169,7 @@ def test_matrix_orientation():
     assert not np.any(std < 0.1)
 
     # Test inverse transform
-    masker = NiftiMasker(mask_img=mask, standardize=False, detrend=False)
+    masker = NiftiMasker(mask_img=mask)
     masker.fit()
     timeseries = masker.transform(fmri)
     recovered = masker.inverse_transform(timeseries)
@@ -350,11 +350,12 @@ def test_compute_brain_mask_empty_mask_error(strategy):
 
 @pytest.mark.timeout(0)
 @pytest.mark.parametrize(
-    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+    "strategy",
+    [f"{p}-template" for p in ["whole-brain", "gm", "wm"]],
 )
 # We parametrize mask_args to make it accessible
 # to the expected_mask fixture.
-@pytest.mark.parametrize("mask_args", [{"threshold": 0.0}])
+@pytest.mark.parametrize("mask_args", [{"threshold": -0.5}])
 def test_compute_brain_mask(strategy, expected_mask, mask_args):
     """Check masker for template masking strategy."""
     masker = NiftiMasker(mask_strategy=strategy, mask_args=mask_args)
@@ -393,7 +394,7 @@ def test_no_warning_partial_joblib(strategy):
     """
     masker = NiftiMasker(
         mask_strategy=strategy,
-        mask_args={"threshold": 0.0},
+        mask_args={"threshold": -0.5},
         memory="nilearn_cache",
         memory_level=1,
     )
@@ -401,8 +402,8 @@ def test_no_warning_partial_joblib(strategy):
     with warnings.catch_warnings(record=True) as warning_list:
         masker.fit(img)
 
-    assert not any(
-        "Cannot inspect object functools.partial" in str(x)
+    assert all(
+        "Cannot inspect object functools.partial" not in str(x)
         for x in warning_list
     )
 
@@ -421,9 +422,11 @@ def test_filter_and_mask_error(affine_eye):
 
     with pytest.raises(
         DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided "
-        "a 4D image.",
+        match=(
+            r"Input data has incompatible dimensionality: "
+            r"Expected dimension is 3D and you provided "
+            r"a 4D image."
+        ),
     ):
         filter_and_mask(data_img, mask_img, params)
 
@@ -445,37 +448,3 @@ def test_filter_and_mask(affine_eye):
     # Test return_affine = False
     data = filter_and_mask(data_img, mask_img, params)
     assert data.shape == (data_shape[3], np.prod(np.array(mask.shape)))
-
-
-def test_standardization(rng, shape_3d_default, affine_eye):
-    """Check output properly standardized with 'standardize' parameter."""
-    n_samples = 500
-
-    signals = rng.standard_normal(size=(np.prod(shape_3d_default), n_samples))
-    means = (
-        rng.standard_normal(size=(np.prod(shape_3d_default), 1)) * 50 + 1000
-    )
-    signals += means
-    img = Nifti1Image(
-        signals.reshape((*shape_3d_default, n_samples)),
-        affine_eye,
-    )
-
-    mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
-
-    # z-score
-    masker = NiftiMasker(mask, standardize="zscore_sample")
-    trans_signals = masker.fit_transform(img)
-
-    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(trans_signals.std(0), 1, decimal=3)
-
-    # psc
-    masker = NiftiMasker(mask, standardize="psc")
-    trans_signals = masker.fit_transform(img)
-
-    np.testing.assert_almost_equal(trans_signals.mean(0), 0)
-    np.testing.assert_almost_equal(
-        trans_signals,
-        (signals / signals.mean(1)[:, np.newaxis] * 100 - 100).T,
-    )

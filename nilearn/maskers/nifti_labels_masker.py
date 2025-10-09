@@ -31,7 +31,6 @@ from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
     filter_and_extract,
-    generate_lut,
     mask_logger,
 )
 from nilearn.masking import load_mask_img
@@ -169,7 +168,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         Only relevant for the report figures.
 
     %(clean_args)s
-        .. versionadded:: 0.12.0
+
+        .. nilearn_versionadded:: 0.12.0
 
     Attributes
     ----------
@@ -271,80 +271,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             .to_dict()
         )
 
-    @property
-    def labels_(self) -> list[int | float]:
-        """Return list of labels of the regions.
-
-        The background label is included if present in the image.
-        """
-        check_is_fitted(self)
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
-        return lut["index"].to_list()
-
-    @property
-    def region_names_(self) -> dict[int, str]:
-        """Return a dictionary containing the region names corresponding \
-            to each column in the array returned by `transform`.
-
-        The region names correspond to the labels provided
-        in labels in input.
-        The region name corresponding to ``region_signal[:,i]``
-        is ``region_names_[i]``.
-
-        .. versionadded:: 0.10.3
-        """
-        check_is_fitted(self)
-
-        index = self.labels_
-        valid_ids = [id for id in index if id != self.background_label]
-
-        sub_df = self.lut_[self.lut_["index"].isin(valid_ids)]
-
-        return sub_df["name"].reset_index(drop=True).to_dict()
-
-    @property
-    def region_ids_(self) -> dict[str | int, int | float]:
-        """Return dictionary containing the region ids corresponding \
-           to each column in the array \
-           returned by `transform`.
-
-        The region id corresponding to ``region_signal[:,i]``
-        is ``region_ids_[i]``.
-        ``region_ids_['background']`` is the background label.
-
-        .. versionadded:: 0.10.3
-        """
-        check_is_fitted(self)
-
-        index = self.labels_
-
-        region_ids_: dict[str | int, int | float] = {}
-        if self.background_label in index:
-            index.pop(index.index(self.background_label))
-            region_ids_["background"] = self.background_label
-        for i, id in enumerate(index):
-            region_ids_[i] = id  # noqa : PERF403
-
-        return region_ids_
-
-    @property
-    def n_elements_(self) -> int:
-        """Return number of regions.
-
-        This is equal to the number of unique values
-        in the fitted label image,
-        minus the background value.
-
-        .. versionadded:: 0.9.2
-        """
-        check_is_fitted(self)
-        lut = self.lut_
-        if hasattr(self, "_lut_"):
-            lut = self._lut_
-        return len(lut[lut["index"] != self.background_label])
-
     def _post_masking_atlas(self, visualize=False):
         """
         Find the masked atlas before transform and return it.
@@ -385,6 +311,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         """Generate a report."""
         from nilearn.reporting.html_report import generate_report
 
+        self._init_report_content()
+
         return generate_report(self)
 
     def _reporting(self):
@@ -396,10 +324,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        import matplotlib.pyplot as plt
-
-        from nilearn import plotting
-
         labels_image = None
         if self._reporting_data is not None:
             labels_image = self._reporting_data["labels_image"]
@@ -462,12 +386,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         img = self._reporting_data["img"]
 
-        # compute the cut coordinates on the label image in case
-        # we have a functional image
-        cut_coords = plotting.find_xyz_cut_coords(
-            labels_image, activation_threshold=0.5
-        )
-
         # If we have a func image to show in the report, use it
         if img is not None:
             if self._reporting_data["dim"] == 5:
@@ -477,6 +395,39 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 )
                 warnings.warn(msg, stacklevel=find_stack_level())
                 self._report_content["warning_message"] = msg
+
+        # Otherwise, simply plot the ROI of the label image
+        # and give a warning to the user
+        else:
+            msg = (
+                "No image provided to fit in NiftiLabelsMasker. "
+                "Plotting ROIs of label image on the "
+                "MNI152Template for reporting."
+            )
+            warnings.warn(msg, stacklevel=find_stack_level())
+            self._report_content["warning_message"] = msg
+
+        return self._create_figure_for_report(labels_image, img)
+
+    def _create_figure_for_report(self, labels_image, img):
+        """Generate figure to include in the report.
+
+        Returns
+        -------
+        list of :class:`~matplotlib.figure.Figure`
+        """
+        import matplotlib.pyplot as plt
+
+        from nilearn import plotting
+
+        # compute the cut coordinates on the label image in case
+        # we have a functional image
+        cut_coords = plotting.find_xyz_cut_coords(
+            labels_image, activation_threshold=0.5
+        )
+
+        # If we have a func image to show in the report, use it
+        if img is not None:
             display = plotting.plot_img(
                 img,
                 cut_coords=cut_coords,
@@ -489,13 +440,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         # Otherwise, simply plot the ROI of the label image
         # and give a warning to the user
         else:
-            msg = (
-                "No image provided to fit in NiftiLabelsMasker. "
-                "Plotting ROIs of label image on the "
-                "MNI152Template for reporting."
-            )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
             display = plotting.plot_roi(labels_image)
             plt.close()
 
@@ -524,6 +468,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         """
         del y
         check_params(self.__dict__)
+
+        self._init_report_content()
+
         check_reduction_strategy(self.strategy)
         check_parameter_in_allowed(
             self.resampling_target,
@@ -531,16 +478,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             "resampling_target",
         )
 
-        self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
-
-        self._report_content = {
-            "description": (
-                "This reports shows the regions "
-                "defined by the labels of the mask."
-            ),
-            "warning_message": None,
-        }
 
         self._fit_cache()
 
@@ -561,9 +499,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 idx = self.labels.index("background")
                 self.labels[idx] = "Background"
 
-        self.lut_ = generate_lut(
-            self.labels_img_, self.background_label, self.lut, self.labels
-        )
+        self.lut_ = self._generate_lut()
 
         self._original_region_ids = self.lut_["index"].to_list()
 
@@ -613,7 +549,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 interpolation="nearest",
                 target_shape=ref_img.shape[:3],
                 target_affine=ref_img.affine,
-                copy_header=True,
             )
 
             # Just check that the mask is valid
@@ -630,12 +565,29 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 imgs, dims = compute_middle_image(imgs)
                 self._reporting_data["img"] = imgs
                 self._reporting_data["dim"] = dims
-        else:
-            self._reporting_data = None
 
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        """Initialize report content.
+
+        Prepare basing content to inject in the HTML template
+        during report generation.
+        """
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This reports shows the regions "
+                    "defined by the labels of the mask."
+                ),
+                "warning_message": None,
+                "number_of_regions": 0,
+            }
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = None
 
     def _check_labels(self):
         """Check labels.
@@ -682,7 +634,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Returns
         -------
@@ -711,7 +663,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         %(sample_mask)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Attributes
         ----------
@@ -722,7 +674,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             that takes the value ``region_ids_[i]``
             is used to compute the signal in ``region_signal[:, i]``.
 
-            .. versionadded:: 0.10.3
+            .. nilearn_versionadded:: 0.10.3
 
         Returns
         -------
@@ -786,8 +738,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                     interpolation="nearest",
                     target_shape=imgs_.shape[:3],
                     target_affine=imgs_.affine,
-                    copy_header=True,
-                    force_resample=False,
                 )
 
             # Remove imgs_ from memory before loading the same image
@@ -870,8 +820,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             interpolation="nearest",
             target_shape=imgs_.shape[:3],
             target_affine=imgs_.affine,
-            copy_header=True,
-            force_resample=False,
         )
         labels_after_resampling = set(np.unique(safe_get_data(labels_img_)))
         if labels_diff := labels_before_resampling.difference(
@@ -894,7 +842,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         Any mask given at initialization is taken into account.
 
-        .. versionchanged:: 0.9.2
+        .. nilearn_versionchanged:: 0.9.2
 
             This method now supports 1D arrays, which will produce 3D images.
 

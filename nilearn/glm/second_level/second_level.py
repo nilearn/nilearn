@@ -394,7 +394,7 @@ def _process_second_level_input(second_level_input):
     ) or isinstance(second_level_input, SurfaceImage):
         return _process_second_level_input_as_surface_image(second_level_input)
     else:
-        return mean_img(second_level_input, copy_header=True), None
+        return mean_img(second_level_input), None
 
 
 def _process_second_level_input_as_dataframe(second_level_input):
@@ -523,7 +523,7 @@ class SecondLevelModel(BaseGLM):
     n_elements_ : :obj:`int`
         The number of voxels or vertices in the mask.
 
-        .. versionadded:: 0.12.1
+        .. nilearn_versionadded:: 0.12.1
 
     results_ : :obj:`dict`,
         with keys corresponding to the different labels values.
@@ -796,11 +796,11 @@ class SecondLevelModel(BaseGLM):
         output_type : :obj:`str`, default='z_score'
             The type of statistical map to retain from the contrast.
 
-            .. versionadded:: 0.9.2
+            .. nilearn_versionadded:: 0.9.2
 
         %(first_level_contrast)s
 
-            .. versionadded:: 0.12.0
+            .. nilearn_versionadded:: 0.12.0
 
         Returns
         -------
@@ -1003,7 +1003,7 @@ def non_parametric_inference(
 
     %(first_level_contrast)s
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
     %(second_level_mask)s
 
@@ -1034,7 +1034,7 @@ def non_parametric_inference(
         This is only used for cluster-level inference.
         If None, no cluster-level inference will be performed.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
         .. warning::
 
@@ -1047,7 +1047,7 @@ def non_parametric_inference(
 
     %(tfce)s
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
         .. warning::
 
@@ -1070,7 +1070,7 @@ def non_parametric_inference(
         .. note::
             This is returned if ``tfce`` is True or ``threshold`` is not None.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
         Here are the keys:
 

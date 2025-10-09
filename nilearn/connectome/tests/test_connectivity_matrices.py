@@ -218,7 +218,7 @@ def test_check_square():
 )  # non SPD
 def test_check_spd(invalid_input):
     with pytest.raises(
-        ValueError, match="Expected a symmetric positive definite matrix."
+        ValueError, match=r"Expected a symmetric positive definite matrix."
     ):
         _check_spd(invalid_input)
 
@@ -498,7 +498,7 @@ def test_geometric_mean_error_input_matrices_have_different_shapes():
     mat2 = np.ones((n_features + 1, n_features + 1))
 
     with pytest.raises(
-        ValueError, match="Matrices are not of the same shape."
+        ValueError, match=r"Matrices are not of the same shape."
     ):
         _geometric_mean([mat1, mat2])
 
@@ -508,7 +508,7 @@ def test_geometric_mean_error_non_spd_input_matrix():
     mat2 = np.ones((n_features + 1, n_features + 1))
 
     with pytest.raises(
-        ValueError, match="Expected a symmetric positive definite matrix."
+        ValueError, match=r"Expected a symmetric positive definite matrix."
     ):
         _geometric_mean([mat2])
 
@@ -625,13 +625,14 @@ def test_connectivity_measure_errors():
 
     # input subjects not 2D numpy.ndarrays
     with pytest.raises(
-        ValueError, match="Each subject must be 2D numpy.ndarray."
+        ValueError, match=r"Each subject must be 2D numpy.ndarray."
     ):
         conn_measure.fit([np.ones((100, 40)), np.ones((10,))])
 
     # input subjects with different number of features
     with pytest.raises(
-        ValueError, match="All subjects must have the same number of features."
+        ValueError,
+        match=r"All subjects must have the same number of features.",
     ):
         conn_measure.fit([np.ones((100, 40)), np.ones((100, 41))])
 
@@ -642,7 +643,7 @@ def test_connectivity_measure_errors():
 
     with pytest.raises(
         ValueError,
-        match="Tangent space parametrization .* only be .* group of subjects",
+        match=r"Tangent space parametrization .* only be .* group of subjects",
     ):
         conn_measure.fit_transform([np.ones((100, 40))])
 
@@ -692,7 +693,7 @@ def test_connectivity_measure_generic_3d_array(kind, cov_estimator, signals):
 
     assert isinstance(connectivities, np.ndarray)
 
-    signals_as_tuple = tuple(x for x in signals)
+    signals_as_tuple = tuple(signals)
 
     connectivities = conn_measure.fit_transform(signals_as_tuple)
 

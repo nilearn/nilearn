@@ -36,6 +36,7 @@ __all__ = [
 available_filters = ("butterworth", "cosine")
 
 
+@fill_doc
 def standardize_signal(
     signals,
     detrend=False,
@@ -92,10 +93,13 @@ def standardize_signal(
                 "The default strategy for standardize is currently 'zscore' "
                 "which incorrectly uses population std to calculate sample "
                 "zscores. The new strategy 'zscore_sample' corrects this "
-                "behavior by using the sample std. In release 0.14.0, the "
-                "default strategy will be replaced by the new strategy and "
-                "the 'zscore' option will be removed. Please use "
-                "'zscore_sample' instead."
+                "behavior by using the sample std. "
+                "In release 0.14.0, the default strategy "
+                "will be replaced by the new strategy, "
+                "the 'zscore' option will be removed. "
+                "and using standardize=True will fall back "
+                "to 'zscore_sample'."
+                "To avoid this warning, please use 'zscore_sample' instead."
             )
             warnings.warn(
                 category=FutureWarning,
@@ -637,7 +641,7 @@ def clean(
         information, sample_mask must be a list containing sets of indexes for
         each run.
 
-        .. versionadded:: 0.8.0
+        .. nilearn_versionadded:: 0.8.0
 
     %(t_r)s
         Default=2.5.
@@ -669,7 +673,7 @@ def clean(
         the signal data will be interpolated before filtering. Otherwise, they
         will be discarded from the band-pass filtering process.
 
-        .. versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0dev
             Default changed to False.
 
     kwargs : :obj:`dict`

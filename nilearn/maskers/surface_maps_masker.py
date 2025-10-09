@@ -40,7 +40,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     """Extract data from a SurfaceImage, using maps of potentially overlapping
     brain regions.
 
-    .. versionadded:: 0.11.1
+    .. nilearn_versionadded:: 0.11.1
 
     Parameters
     ----------
@@ -176,8 +176,21 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        self._init_report_content()
+
         if imgs is not None:
             self._check_imgs(imgs)
+
+            if isinstance(imgs, SurfaceImage) and any(
+                hemi.ndim > 2 for hemi in imgs.data.parts.values()
+            ):
+                raise ValueError(
+                    "should only be SurfaceImage should 1D or 2D."
+                )
+            elif hasattr(imgs, "__iter__"):
+                for i, x in enumerate(imgs):
+                    x.data._check_n_samples(1, f"imgs[{i}]")
 
         if self.maps_img is None:
             raise ValueError(
@@ -204,26 +217,14 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         # initialize reporting content and data
         if not self.reports:
-            self._reporting_data = None
             return self
-
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image "
-                "(if provided via img) overlaid with the regions provided "
-                "via maps_img."
-            ),
-            "n_vertices": {},
-            "number_of_regions": self.n_elements_,
-            "summary": {},
-            "warning_message": None,
-        }
 
         for part in self.maps_img.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.maps_img.mesh.parts[part].n_vertices
             )
+
+        self._report_content["number_of_regions"] = self.n_elements_
 
         self._reporting_data = {
             "maps_img": self.maps_img_,
@@ -239,6 +240,30 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        """Initialize report content.
+
+        Prepare basing content to inject in the HTML template
+        during report generation.
+        """
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This report shows the input surface image "
+                    "(if provided via img) overlaid with the regions provided "
+                    "via maps_img."
+                ),
+                "n_vertices": {},
+                "number_of_regions": getattr(self, "n_elements_", 0),
+                "displayed_maps": [],
+                "number_of_maps": 0,
+                "summary": {},
+                "warning_message": None,
+            }
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = None
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
@@ -265,8 +290,15 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         check_is_fitted(self)
 
         check_compatibility_mask_and_images(self.maps_img, imgs)
-
         check_polymesh_equal(self.maps_img.mesh, imgs.mesh)
+
+        if isinstance(imgs, SurfaceImage) and any(
+            hemi.ndim > 2 for hemi in imgs.data.parts.values()
+        ):
+            raise ValueError("should only be SurfaceImage should 1D or 2D.")
+        elif hasattr(imgs, "__iter__"):
+            for i, x in enumerate(imgs):
+                x.data._check_n_samples(1, f"imgs[{i}]")
 
         imgs = at_least_2d(imgs)
 
@@ -563,11 +595,10 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         If transform() was applied to an image, this image is used as
         background on which the maps are plotted.
         """
-        import matplotlib.pyplot as plt
-
-        from nilearn.plotting import plot_surf, view_surf
+        from nilearn.plotting import view_surf
 
         threshold = 1e-6
+
         if self._report_content["engine"] == "plotly":
             # squeeze the last dimension
             for part in roi.data.parts:
@@ -582,31 +613,10 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 hemi="both",
                 cmap=self.cmap,
             ).get_iframe(width=500)
+
         elif self._report_content["engine"] == "matplotlib":
-            # TODO: possibly allow to generate a report with other views
-            views = ["lateral", "medial"]
-            hemispheres = ["left", "right"]
-            fig, axes = plt.subplots(
-                len(views),
-                len(hemispheres),
-                subplot_kw={"projection": "3d"},
-                figsize=(20, 20),
-                layout="constrained",
+            fig = self._generate_figure(
+                img=roi, bg_map=bg_img, threshold=threshold
             )
-            axes = np.atleast_2d(axes)
-            for ax_row, view in zip(axes, views, strict=False):
-                for ax, hemi in zip(ax_row, hemispheres, strict=False):
-                    # very low threshold to only make 0 values transparent
-                    plot_surf(
-                        surf_map=roi,
-                        bg_map=bg_img,
-                        hemi=hemi,
-                        view=view,
-                        figure=fig,
-                        axes=ax,
-                        cmap=self.cmap,
-                        colorbar=False,
-                        threshold=threshold,
-                        bg_on_data=True,
-                    )
+
         return fig

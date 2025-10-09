@@ -239,8 +239,10 @@ with the tools we use for development and deployment.
 |   `Coding Style`_  |    Any        | - No new dependency                                 |
 |                    |               | - Backward compatibility                            |
 |                    |               | - All internal imports are absolute, not relative   |
-|                    |               | - Impacted docstrings have versionadded and/or      |
-|                    |               |   versionchanged directives as needed.              |
+|                    |               | - Impacted docstrings have                          |
+|                    |               |   ``.. nilearn_versionadded`` and/or                |
+|                    |               |   ``.. nilearn_versionchanged`` directives          |
+|                    |               |   as needed.                                        |
 |                    |               |   These should use the current dev version.         |
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Test type is adapted to function behavior         |
@@ -608,6 +610,27 @@ You can also use the ``rng`` fixture.
           my_number = rng.normal()
 
           # the rest of the test
+
+Plotting
+--------
+
+Glass brains
+^^^^^^^^^^^^
+
+The background images for the glass brains are stored in
+``nilearn/plotting/glass_brain_files``.
+Once the SVG file have been modified (or added) make sure
+to regenerate the associated JSON file
+(this will require to make sure that the svg module
+from https://github.com/cjlano/svg
+is in the python path).
+
+.. code-block:: bash
+
+      python maint_tools/svg_to_json_converter.py \
+            nilearn/plotting/glass_brain_files/input.svg \
+            nilearn/plotting/glass_brain_files/output.json
+
 
 Documentation
 -------------

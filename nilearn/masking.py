@@ -25,7 +25,7 @@ from nilearn.datasets import (
     load_mni152_template,
     load_mni152_wm_template,
 )
-from nilearn.exceptions import NotImplementedWarning
+from nilearn.exceptions import MaskWarning, NotImplementedWarning
 from nilearn.image import get_data, new_img_like, resampling
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -45,13 +45,6 @@ __all__ = [
     "intersect_masks",
     "unmask",
 ]
-
-
-class _MaskWarning(UserWarning):
-    """A class to always raise warnings."""
-
-
-warnings.simplefilter("always", _MaskWarning)
 
 
 def load_mask_img(mask_img, allow_empty=False):
@@ -209,10 +202,11 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     if len(mask_imgs) == 0:
         raise ValueError("No mask provided for intersection")
 
-    mask_types = []
-    for i, x in enumerate(mask_imgs):
-        if not isinstance(x, NiimgLike):
-            mask_types.append(f"mask_imgs[{i}] = {x.__class__.__name__}")
+    mask_types = [
+        f"mask_imgs[{i}] = {x.__class__.__name__}"
+        for i, x in enumerate(mask_imgs)
+        if not isinstance(x, NiimgLike)
+    ]
     if mask_types:
         raise TypeError(
             "All masks must be a 3D Niimg-like object. "
@@ -265,7 +259,7 @@ def _post_process_mask(
     if not mask_any:
         warnings.warn(
             f"Computed an empty mask. {warning_msg}",
-            _MaskWarning,
+            MaskWarning,
             stacklevel=find_stack_level(),
         )
     if connected and mask_any:
@@ -607,7 +601,7 @@ def compute_multi_background_mask(
 
     threshold : :obj:`float`, default=0.5
         The inter-run threshold: the fraction of the
-        total number of run in for which a :term:`voxel` must be
+        total number of runs in for which a :term:`voxel` must be
         in the mask to be kept in the common mask.
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
@@ -696,7 +690,7 @@ def compute_brain_mask(
     %(verbose0)s
     %(mask_type)s
 
-        .. versionadded:: 0.8.1
+        .. nilearn_versionadded:: 0.8.1
 
     Returns
     -------
@@ -721,10 +715,7 @@ def compute_brain_mask(
         )
 
     resampled_template = cache(resampling.resample_to_img, memory)(
-        template,
-        target_img,
-        copy_header=True,
-        force_resample=False,  # TODO (nilearn >= 0.13.0) update to True
+        template, target_img
     )
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")
@@ -760,7 +751,7 @@ def compute_multi_brain_mask(
     The mask is calculated through the resampling of the corresponding
     MNI152 template mask onto the target image.
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     Parameters
     ----------
