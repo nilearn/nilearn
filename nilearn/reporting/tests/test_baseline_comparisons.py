@@ -20,6 +20,9 @@ from nilearn.datasets import (
 from nilearn.glm.thresholding import threshold_stats_img
 from nilearn.image import load_img, math_img, new_img_like, threshold_img
 from nilearn.maskers import (
+    MultiNiftiLabelsMasker,
+    MultiNiftiMapsMasker,
+    MultiNiftiMasker,
     NiftiLabelsMasker,
     NiftiMapsMasker,
     NiftiMasker,
@@ -156,9 +159,10 @@ def loaded_motor_activation_image():
         [load_mni152_gm_mask(), loaded_motor_activation_image()],
     ),
 )
-def test_nifti_masker_create_figure_for_report(mask_img, img):
-    """Check figure generated in report of SurfaceMasker."""
-    masker = NiftiMasker(mask_img)
+@pytest.mark.parametrize("src_masker", [NiftiMasker, MultiNiftiMasker])
+def test_nifti_masker_create_figure_for_report(src_masker, mask_img, img):
+    """Check figure generated in report of NiftiMasker."""
+    masker = src_masker(mask_img)
     masker.fit(img)
 
     displays = masker._create_figure_for_report()
@@ -168,7 +172,12 @@ def test_nifti_masker_create_figure_for_report(mask_img, img):
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("mask_img", [load_mni152_gm_mask(), None])
 @pytest.mark.parametrize("img", [None, loaded_motor_activation_image()])
-def test_nifti_labels_masker_create_figure_for_report(mask_img, img):
+@pytest.mark.parametrize(
+    "src_masker", [NiftiLabelsMasker, MultiNiftiLabelsMasker]
+)
+def test_nifti_labels_masker_create_figure_for_report(
+    src_masker, mask_img, img
+):
     """Check figure generated in report of NiftiLabelsMasker."""
     # generate a dummy label image that makes sense for human visualization
     positive_img = threshold_img(
@@ -193,7 +202,7 @@ def test_nifti_labels_masker_create_figure_for_report(mask_img, img):
 
     labels_img = math_img("img1 + img2", img1=positive_img, img2=negative_img)
 
-    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
+    masker = src_masker(labels_img, mask_img=mask_img)
     masker.fit(img)
 
     labels_image = masker._reporting_data["labels_image"]
@@ -205,7 +214,8 @@ def test_nifti_labels_masker_create_figure_for_report(mask_img, img):
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("mask_img", [load_mni152_gm_mask(), None])
 @pytest.mark.parametrize("img", [None, loaded_motor_activation_image()])
-def test_nifti_maps_masker_create_figure_for_report(mask_img, img):
+@pytest.mark.parametrize("src_masker", [NiftiMapsMasker, MultiNiftiMapsMasker])
+def test_nifti_maps_masker_create_figure_for_report(src_masker, mask_img, img):
     """Check figure generated in report of NiftiMapsMasker."""
     # generate dummy maps image
     maps_img = threshold_img(
@@ -215,7 +225,7 @@ def test_nifti_maps_masker_create_figure_for_report(mask_img, img):
         two_sided=False,
     )
 
-    masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
+    masker = src_masker(maps_img, mask_img=mask_img)
     masker.fit(img)
     masker._report_content["displayed_maps"] = [0]
 
