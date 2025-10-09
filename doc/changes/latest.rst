@@ -40,7 +40,7 @@ Enhancements
 
 - :bdg-success:`API` Add support for ``cluster_threshold`` for :class:`~surface.SurfaceImage` in :func:`~image.threshold_img`, :func:`~glm.threshold_stats_img`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report` and :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5715` by `Rémi Gau`_).
 
-- :bdg-success:`API` Add support for :class:`~surface.SurfaceImage` in :func:`~glm.cluster_level_inference` (:gh:`XXXX` by `Rémi Gau`_).
+- :bdg-success:`API` Add support for :class:`~surface.SurfaceImage` in :func:`~glm.cluster_level_inference` (:gh:`5733` by `Rémi Gau`_).
 
 
 Changes
