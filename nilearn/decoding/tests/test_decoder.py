@@ -1369,7 +1369,7 @@ def test_decoder_vs_sklearn(
     # default scoring is accuracy
     scorer = check_scoring(strings_to_sklearn[classifier_penalty], "accuracy")
 
-    ## nilearn decoding
+    # nilearn decoding
     nilearn_decoder = Decoder(
         estimator=classifier_penalty,
         mask=mask,
@@ -1381,7 +1381,7 @@ def test_decoder_vs_sklearn(
     nilearn_decoder.fit(X, y)
     scores_nilearn = nilearn_decoder.cv_scores_
 
-    ## start decoding with sklearn
+    # start decoding with sklearn
     masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 
@@ -1459,7 +1459,7 @@ def test_regressor_vs_sklearn(
     # r2 is the default scoring for regression
     scorer = check_scoring(strings_to_sklearn[regressor], "r2")
 
-    ## nilearn decoding
+    # nilearn decoding
     nilearn_regressor = DecoderRegressor(
         estimator=regressor,
         mask=mask,
@@ -1471,7 +1471,7 @@ def test_regressor_vs_sklearn(
     nilearn_regressor.fit(X, y)
     scores_nilearn = nilearn_regressor.cv_scores_["beta"]
 
-    ## start decoding with sklearn
+    # start decoding with sklearn
     masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 

@@ -176,6 +176,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        self._init_report_content()
+
         if imgs is not None:
             self._check_imgs(imgs)
 
@@ -214,26 +217,14 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         # initialize reporting content and data
         if not self.reports:
-            self._reporting_data = None
             return self
-
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image "
-                "(if provided via img) overlaid with the regions provided "
-                "via maps_img."
-            ),
-            "n_vertices": {},
-            "number_of_regions": self.n_elements_,
-            "summary": {},
-            "warning_message": None,
-        }
 
         for part in self.maps_img.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.maps_img.mesh.parts[part].n_vertices
             )
+
+        self._report_content["number_of_regions"] = self.n_elements_
 
         self._reporting_data = {
             "maps_img": self.maps_img_,
@@ -249,6 +240,30 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        """Initialize report content.
+
+        Prepare basing content to inject in the HTML template
+        during report generation.
+        """
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This report shows the input surface image "
+                    "(if provided via img) overlaid with the regions provided "
+                    "via maps_img."
+                ),
+                "n_vertices": {},
+                "number_of_regions": getattr(self, "n_elements_", 0),
+                "displayed_maps": [],
+                "number_of_maps": 0,
+                "summary": {},
+                "warning_message": None,
+            }
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = None
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
