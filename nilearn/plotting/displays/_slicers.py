@@ -2180,7 +2180,7 @@ class MosaicSlicer(BaseSlicer):
                 ax = fh_c.add_axes(indices)
                 ax.axis("off")
                 display_ax = self._axes_class(ax, direction, coord, **kwargs)
-                self.axes[(direction, coord)] = display_ax
+                self.axes[direction, coord] = display_ax
                 ax.set_axes_locator(self._locator)
 
         # increase color bar width to adapt to the number of cuts
