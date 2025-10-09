@@ -13,7 +13,13 @@ img_file_patterns = {
         "entities": {
             "space": "MNI152NLin2009cAsym",
             "desc": "smoothAROMAnonaggr",
-        }
+        },
+    },
+    "tedana": {
+        "entities": {
+            "space": "MNI152NLin2009cAsym",
+            "desc": "optcom",
+        },
     },
     "regular": {
         "entities": {"space": "MNI152NLin2009cAsym", "desc": "preproc"}
@@ -51,12 +57,23 @@ img_file_patterns = {
 }
 
 
-def get_testdata_path(non_steady_state=True, fmriprep_version="1.4.x"):
+def get_testdata_path(
+    non_steady_state=True, tedana=False, fmriprep_version="1.4.x"
+):
     """Get file path for the confound regressors."""
     derivative = "regressors" if fmriprep_version != "21.x.x" else "timeseries"
     path_data = Path(load_confounds_utils.__file__).parent / "data"
     suffix = "test-v21" if fmriprep_version == "21.x.x" else "test"
+
     if non_steady_state:
+        if tedana:
+            return [
+                path_data / filename
+                for filename in [
+                    "test_desc-ICA_mixing.tsv",
+                    "test_desc-tedana_metrics.tsv",
+                ]
+            ]
         return [
             path_data / filename
             for filename in [
@@ -97,6 +114,62 @@ def create_tmp_filepath(
     # create test files in temporary directory
     derivative = "regressors" if fmriprep_version == "1.2.x" else "timeseries"
 
+    if "tedana" in image_type:
+        # confound files
+        for suffix in ["mixing", "metrics"]:
+            if suffix == "metrics":
+                bids_fields["entities"]["desc"] = "tedana"
+            else:
+                bids_fields["entities"]["desc"] = "ICA"
+            bids_fields["suffix"] = suffix
+            bids_fields["extension"] = "tsv"
+
+            confounds_filename = create_bids_filename(
+                fields=bids_fields, entities_to_include=entities_to_include
+            )
+            tmp_conf = base_path / confounds_filename
+
+            if copy_confounds:
+                conf, _ = get_legal_confound(
+                    tedana=True, fmriprep_version=fmriprep_version
+                )
+                for n, i_conf in enumerate(conf):
+                    if n == 0 and suffix == "mixing":
+                        # mixing file
+                        i_conf.to_csv(tmp_conf, sep="\t", index=False)
+                    if n == 1 and suffix == "metrics":
+                        # metrics file
+                        i_conf.to_csv(tmp_conf, sep="\t", index=False)
+            else:
+                tmp_conf.touch()
+
+            if copy_json:
+                bids_fields["extension"] = "json"
+                confounds_sidecar = create_bids_filename(
+                    fields=bids_fields, entities_to_include=entities_to_include
+                )
+                tmp_meta = base_path / confounds_sidecar
+                conf, meta = get_legal_confound(
+                    tedana=True, fmriprep_version=fmriprep_version
+                )
+                with tmp_meta.open("w") as file:
+                    json.dump(meta, file, indent=2)
+
+        # image data
+        # convert path object to string as nibabel do strings
+        img_file_patterns_type = img_file_patterns[image_type]
+        if type(img_file_patterns_type) is dict:
+            bids_fields = update_bids_fields(
+                bids_fields, img_file_patterns_type
+            )
+            tmp_img = create_bids_filename(
+                fields=bids_fields, entities_to_include=entities_to_include
+            )
+            tmp_img = base_path / tmp_img
+            tmp_img.touch()
+            tmp_img = str(tmp_img)
+        return tmp_img, tmp_conf
+
     # confound files
     bids_fields["entities"]["desc"] = "confounds"
     bids_fields["suffix"] = derivative
@@ -107,7 +180,9 @@ def create_tmp_filepath(
     tmp_conf = base_path / confounds_filename
 
     if copy_confounds:
-        conf, meta = get_legal_confound(fmriprep_version=fmriprep_version)
+        conf, meta = get_legal_confound(
+            tedana=False, fmriprep_version=fmriprep_version
+        )
         conf.to_csv(tmp_conf, sep="\t", index=False)
     else:
         tmp_conf.touch()
@@ -118,7 +193,9 @@ def create_tmp_filepath(
             fields=bids_fields, entities_to_include=entities_to_include
         )
         tmp_meta = base_path / confounds_sidecar
-        conf, meta = get_legal_confound(fmriprep_version=fmriprep_version)
+        conf, meta = get_legal_confound(
+            tedana=False, fmriprep_version=fmriprep_version
+        )
         with tmp_meta.open("w") as file:
             json.dump(meta, file, indent=2)
 
@@ -146,11 +223,27 @@ def create_tmp_filepath(
     return tmp_img, tmp_conf
 
 
-def get_legal_confound(non_steady_state=True, fmriprep_version="1.4.x"):
+def get_legal_confound(
+    non_steady_state=True, tedana=False, fmriprep_version="1.4.x"
+):
     """Load the valid confound files for manipulation."""
     conf, meta = get_testdata_path(
-        non_steady_state=non_steady_state, fmriprep_version=fmriprep_version
+        non_steady_state=non_steady_state,
+        tedana=tedana,
+        fmriprep_version=fmriprep_version,
     )
+    if tedana:  # tedana has two confounds files
+        conf_list = []
+        conf_list.append(conf)
+        conf_list.append(meta)
+        tmp_conf = [
+            pd.read_csv(confounds, delimiter="\t", encoding="utf-8")
+            for confounds in conf_list
+        ]
+        meta = None
+        conf = tmp_conf
+        return conf, meta
+
     conf = pd.read_csv(conf, delimiter="\t", encoding="utf-8")
     with meta.open() as file:
         meta = json.load(file)
