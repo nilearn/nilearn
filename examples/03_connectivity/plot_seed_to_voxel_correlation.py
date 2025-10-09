@@ -139,6 +139,7 @@ plt.plot(brain_time_series[:, [10, 45, 100, 5000, 10000]])
 plt.title("Time series from 5 random voxels")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
+plt.show()
 
 # %%
 # Performing the seed-to-voxel correlation analysis

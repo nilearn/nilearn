@@ -36,6 +36,7 @@ __all__ = [
 available_filters = ("butterworth", "cosine")
 
 
+@fill_doc
 def standardize_signal(
     signals,
     detrend=False,

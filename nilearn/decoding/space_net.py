@@ -994,17 +994,15 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 f"expecting {self.n_elements_}."
             )
 
-        # prediction proper
-        if is_classifier(self):
-            scores = self.decision_function(X)
-            if len(scores.shape) == 1:
-                indices = (scores > 0).astype(int)
-            else:
-                indices = scores.argmax(axis=1)
-            return self.classes_[indices]
-        else:
+        if not is_classifier(self):
             # handle regression (least-squared loss)
             return LinearRegression.predict(self, X)
+        scores = self.decision_function(X)
+        if len(scores.shape) == 1:
+            indices = (scores > 0).astype(int)
+        else:
+            indices = scores.argmax(axis=1)
+        return self.classes_[indices]
 
 
 @fill_doc
