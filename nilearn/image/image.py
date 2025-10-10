@@ -52,7 +52,7 @@ from nilearn.surface.surface import (
 from nilearn.surface.surface import get_data as get_surface_data
 
 from nilearn.surface.utils import (
-    check_polymesh_equal,
+    check_polymesh_equal
 )
 
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
