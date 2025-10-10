@@ -1198,6 +1198,8 @@ def check_img_estimator_fit_idempotent(estimator_orig):
     the same results.
 
     replaces sklearn check_fit_idempotent
+
+    TODO: speed up this test for decoders
     """
     check_methods = ["predict", "transform", "decision_function"]
 
