@@ -8,11 +8,10 @@ import pandas as pd
 from nibabel import Nifti1Image
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils.bids import (
-    sanitize_look_up_table,
-)
+from nilearn._utils.bids import sanitize_look_up_table
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import (
@@ -416,6 +415,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         -------
         list of :class:`~matplotlib.figure.Figure`
         """
+        if not is_matplotlib_installed():
+            return [None]
+
         import matplotlib.pyplot as plt
 
         from nilearn import plotting
