@@ -43,6 +43,8 @@ Enhancements
 - :bdg-success:`API` Add support for ``cluster_threshold`` for :func:`~image.threshold_img`, :func:`~glm.threshold_stats_img`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report` and :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5715` by `Rémi Gau`_).
 
 
+- :bdg-success:`API` Add a ``design_only`` parameter to :class:`~glm.first_level.FirstLevelModel` and :class:`~glm.second_level.SecondLevelModel` to be able to only inspect the model specification before fitting if to avoid wasting computation time on a misspecified model (:gh:`54680` by `Rémi Gau`_).
+
 Changes
 -------
 
