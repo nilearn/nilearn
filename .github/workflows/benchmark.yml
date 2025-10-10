@@ -74,7 +74,7 @@ jobs:
                 cat month_num
         -   name: Show hash of month_num file
             run: |
-                echo "Hash of month_num file: ${{ hashFiles('month_num') }}"
+                echo "Hash of month_num file: ${{ hashFiles('**/month_num') }}"
 
         -   name: Install asv and switch to asv_benchmarks directory
             run: |
