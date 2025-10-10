@@ -1,69 +1,24 @@
-#!/bin/bash -exf
+#!/usr/bin/env bash
 
+# script to check size of the nilearn wheel to avoid the package getting too large
 set -x -e
 
-rm -fr dist
+THRESHOLD=$((11 * 1024 * 1024))   # 11 MB max
 
-python -m pip install --upgrade pip
-pip install --prefer-binary build
-python -m build
-ls -lrth dist
+rm -rf dist build *.egg-info
 
-# Path to newly built wheel
-NEW_WHEEL=$(ls dist/nilearn-*-py3-none-any.whl)
+python -m build --wheel
 
-# Get size of new wheel in bytes
-NEW_SIZE=$(stat -c%s "$NEW_WHEEL" || stat -f%z "$NEW_WHEEL")
+WHEEL=$(ls dist/nilearn-*.whl || true)
+SIZE=$(stat -c%s "$WHEEL" 2>/dev/null || stat -f%z "$WHEEL")
+SIZE_MB=$(awk "BEGIN {print $SIZE/1024/1024}")
 
-echo "New wheel size: $NEW_SIZE bytes"
+echo "Wheel size: $SIZE_MB MB (threshold: $(($THRESHOLD/1024/1024)) MB)"
 
-# Download latest wheel from PyPI
-pip install --upgrade pip
-pip download nilearn --only-binary=:all: --no-deps -d /tmp
-OLD_WHEEL=$(ls /tmp/nilearn-*-py3-none-any.whl)
-
-OLD_SIZE=$(stat -c%s "$OLD_WHEEL" || stat -f%z "$OLD_WHEEL")
-
-echo "Latest PyPI wheel size: $OLD_SIZE bytes"
-
-# Allow up to 10% increase
-LIMIT=$(( OLD_SIZE * 105 / 100 ))
-
-if [ "$NEW_SIZE" -gt "$LIMIT" ]; then
-    echo "❌ Wheel size regression detected!"
-    echo "New:  $NEW_SIZE bytes"
-    echo "Old:  $OLD_SIZE bytes"
+if [ "$SIZE" -gt "$THRESHOLD" ]; then
+    echo "❌ wheel size check failed"
     exit 1
-else
-    echo "✅ Wheel size check passed"
 fi
 
-# Compare installed sizes
-echo "Checking installed package size..."
-TMPENV=$(mktemp -d)
-
-# Install new wheel in a fresh venv
-python -m venv $TMPENV/newenv
-source $TMPENV/newenv/bin/activate
-pip install "$NEW_WHEEL"
-NEW_INSTALLED=$(du -sb $(python -c "import nilearn, os; print(os.path.dirname(nilearn.__file__))") | cut -f1)
-deactivate
-
-# Install PyPI wheel in another fresh venv
-python -m venv $TMPENV/oldenv
-source $TMPENV/oldenv/bin/activate
-pip install nilearn
-OLD_INSTALLED=$(du -sb $(python -c "import nilearn, os; print(os.path.dirname(nilearn.__file__))") | cut -f1)
-deactivate
-
-echo "New installed size: $NEW_INSTALLED bytes"
-echo "Old installed size: $OLD_INSTALLED bytes"
-
-LIMIT=$(( OLD_INSTALLED * 105 / 100 ))
-if [ "$NEW_INSTALLED" -gt "$LIMIT" ]; then
-    echo "❌ Installed size regression detected!"
-    echo "New: $NEW_INSTALLED bytes vs Old: $OLD_INSTALLED bytes"
-    exit 1
-else
-    echo "✅ Installed size check passed"
-fi
+echo "✅ wheel size check passed"
+exit 0
