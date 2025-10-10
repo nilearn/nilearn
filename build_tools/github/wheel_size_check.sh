@@ -7,6 +7,8 @@ THRESHOLD=$((11 * 1024 * 1024))   # 11 MB max
 
 rm -rf dist build *.egg-info
 
+python -m pip install --upgrade pip
+pip install --prefer-binary build
 python -m build --wheel
 
 WHEEL=$(ls dist/nilearn-*.whl || true)

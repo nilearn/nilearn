@@ -63,12 +63,8 @@ jobs:
 
     check_wheel_size:
         if: github.repository == 'nilearn/nilearn'
-        runs-on: ${{ matrix.os }}
-        strategy:
-            fail-fast: false
-            matrix:
-                os: [ubuntu-latest, macos-latest, windows-latest]
-        name: check wheel size on ${{ matrix.os }}
+        runs-on: ubuntu-latest
+        name: check wheel size
         defaults:
             run:
                 shell: bash
@@ -79,11 +75,6 @@ jobs:
             uses: actions/setup-python@v6
             with:
                 python-version: '3.10'
-        -   name: Install dependencies for building Nilearn
-            run: |
-                set -e
-                python -m pip install --upgrade pip
-                pip install --prefer-binary build
 
         -   name: Check wheel size
             run: bash build_tools/github/wheel_size_check.sh
@@ -91,12 +82,17 @@ jobs:
 
     check_install_size:
         if: github.repository == 'nilearn/nilearn'
-        runs-on: ${{ matrix.os }}
+        runs-on: ubuntu-latest
         strategy:
             fail-fast: false
             matrix:
-                os: [ubuntu-latest, macos-latest, windows-latest]
-        name: check install size on ${{ matrix.os }} with oldest dependencies
+                python: ['3.13']
+                dependencies: [plotting]
+                include:
+                -   python: '3.10'
+                    dependencies: [min_plotting]
+
+        name: check install size
         defaults:
             run:
                 shell: bash
@@ -106,12 +102,7 @@ jobs:
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
-                python-version: '3.10'
-        -   name: Install dependencies for building Nilearn
-            run: |
-                set -e
-                python -m pip install --upgrade pip
-                pip install --prefer-binary build
+                python-version: ${{ matrix.python }}
 
         -   name: Check wheel size
-            run: bash build_tools/github/whole_install_size_check.sh
+            run: bash build_tools/github/whole_install_size_check.sh  ${{ matrix.dependencies }}
