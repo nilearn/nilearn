@@ -34,6 +34,7 @@ ESTIMATOR_TEMPLATES = {
     "MultiSurfaceMasker": "report_body_template_surfacemasker.html",
     "SurfaceLabelsMasker": "report_body_template_surfacemasker.html",
     "SurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
+    "MultiSurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
     "default": "report_body_template.html",
 }
 
