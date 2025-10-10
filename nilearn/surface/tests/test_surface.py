@@ -36,7 +36,10 @@ from nilearn.surface.surface import (
     _vertex_outer_normals,
     check_mesh_and_data,
     check_mesh_is_fsaverage,
+    check_surf_img,
+    compute_adjacency_matrix,
     extract_data,
+    find_surface_clusters,
     get_data,
     load_surf_data,
     load_surf_mesh,
@@ -46,7 +49,7 @@ from nilearn.surface.surface import (
 datadir = Path(__file__).resolve().parent / "data"
 
 
-def flat_mesh(x_s, y_s, z=0):
+def flat_mesh(x_s: int, y_s: int, z=0) -> InMemoryMesh:
     """Create a flat horizontal mesh."""
     x, y = np.mgrid[:x_s, :y_s]
     x, y = x.ravel(), y.ravel()
@@ -90,7 +93,7 @@ def test_check_mesh_and_data(rng, in_memory_mesh):
     # with the resulting wrong mesh
     with pytest.raises(
         ValueError,
-        match="Mismatch between .* indices of faces .* number of nodes.",
+        match=r"Mismatch between .* indices of faces .* number of nodes.",
     ):
         InMemoryMesh(in_memory_mesh.coordinates, wrong_faces)
 
@@ -552,7 +555,9 @@ def test_sample_locations_between_surfaces(depth, n_points, affine_eye):
             [
                 np.linspace(b, a, n_points)
                 for (a, b) in zip(
-                    inner.coordinates.ravel(), outer.coordinates.ravel()
+                    inner.coordinates.ravel(),
+                    outer.coordinates.ravel(),
+                    strict=False,
                 )
             ]
         )
@@ -574,10 +579,10 @@ def test_vol_to_surf_errors():
     img, *_ = data_gen.generate_mni_space_img()
     mesh = load_surf_mesh(datasets.fetch_surf_fsaverage()["pial_left"])
 
-    with pytest.raises(ValueError, match=".*does not support.*"):
+    with pytest.raises(ValueError, match=r".*does not support.*"):
         vol_to_surf(img, mesh, kind="ball", depth=[0.5])
 
-    with pytest.raises(ValueError, match=".*interpolation.*"):
+    with pytest.raises(ValueError, match=r".*interpolation.*"):
         vol_to_surf(img, mesh, interpolation="bad")
 
 
@@ -624,17 +629,6 @@ def test_vol_to_surf_nearest_most_frequent(img_labels):
 
     uniques_surf = np.unique(mesh_labels)
     assert set(uniques_surf) <= set(uniques_vol)
-
-
-def test_vol_to_surf_nearest_deprecation(img_labels):
-    """Test deprecation warning for nearest interpolation method in
-    vol_to_surf.
-    """
-    mesh = flat_mesh(5, 7)
-    with pytest.warns(
-        FutureWarning, match="interpolation method will be deprecated"
-    ):
-        vol_to_surf(img_labels, mesh, interpolation="nearest")
 
 
 def test_masked_indices():
@@ -763,7 +757,7 @@ def test_choose_kind():
     assert kind == "line"
     kind = _choose_kind("auto", "mesh")
     assert kind == "depth"
-    with pytest.raises(TypeError, match=".*sampling strategy"):
+    with pytest.raises(TypeError, match=r".*sampling strategy"):
         kind = _choose_kind("depth", None)
 
 
@@ -779,14 +773,14 @@ def test_validate_mesh(rng):
     coords[0] = np.array([np.nan, np.nan, np.nan])
     faces = None
 
-    with pytest.raises(TypeError, match="must be numpy arrays."):
+    with pytest.raises(TypeError, match=r"must be numpy arrays."):
         InMemoryMesh(coordinates=coords, faces=faces)
 
     # coordinates is None
     faces = rng.integers(20, size=(30, 3))
     coords = None
 
-    with pytest.raises(TypeError, match="must be numpy arrays."):
+    with pytest.raises(TypeError, match=r"must be numpy arrays."):
         InMemoryMesh(coordinates=coords, faces=faces)
 
     # coordinates with non finite values
@@ -794,7 +788,7 @@ def test_validate_mesh(rng):
     coords[0] = np.array([np.nan, np.nan, np.nan])
     faces = rng.integers(coords.shape[0], size=(30, 3))
 
-    with pytest.raises(ValueError, match="Mesh coordinates must be finite."):
+    with pytest.raises(ValueError, match=r"Mesh coordinates must be finite."):
         InMemoryMesh(coordinates=coords, faces=faces)
 
     # faces with indices that do not correspond to any coordinate
@@ -805,7 +799,7 @@ def test_validate_mesh(rng):
 
     with pytest.raises(
         ValueError,
-        match="Mismatch between the indices of faces and the number of nodes.",
+        match=r".*between the indices of faces and the number of nodes.",
     ):
         InMemoryMesh(coordinates=coords, faces=faces)
 
@@ -814,7 +808,7 @@ def test_validate_mesh(rng):
 
     with pytest.raises(
         ValueError,
-        match="Mismatch between the indices of faces and the number of nodes.",
+        match=r".*between the indices of faces and the number of nodes.",
     ):
         InMemoryMesh(coordinates=coords, faces=faces)
 
@@ -923,7 +917,7 @@ def test_surface_image_shape(surf_img_2d, shape):
 
 
 def test_data_shape_not_matching_mesh(surf_img_1d, flip_surf_img_parts):
-    with pytest.raises(ValueError, match="shape.*vertices"):
+    with pytest.raises(ValueError, match=r"shape.*vertices"):
         SurfaceImage(surf_img_1d.mesh, flip_surf_img_parts(surf_img_1d.data))
 
 
@@ -1015,7 +1009,7 @@ def test_save_mesh_error(tmp_path, surf_img_1d):
 
 
 def test_save_mesh_error_wrong_suffix(tmp_path, surf_img_1d):
-    with pytest.raises(ValueError, match="with the extension '.gii'"):
+    with pytest.raises(ValueError, match=r"with the extension '.gii'"):
         surf_img_1d.mesh.to_filename(
             tmp_path / "hemi-L_hemi-R_cannot_have_both.foo"
         )
@@ -1154,7 +1148,7 @@ def test_surface_image_error():
     mesh_right = datasets.fetch_surf_fsaverage().pial_right
     mesh_left = datasets.fetch_surf_fsaverage().pial_left
 
-    with pytest.raises(TypeError, match="[PolyData, dict]"):
+    with pytest.raises(TypeError, match=r"[PolyData, dict]"):
         SurfaceImage(mesh={"left": mesh_left, "right": mesh_right}, data=3)
 
 
@@ -1191,7 +1185,7 @@ def test_get_min_max(surf_img_2d):
 
 def test_extract_data_wrong_input():
     """Check that only SurfaceImage is accepted as input."""
-    with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
+    with pytest.raises(TypeError, match="must be of type"):
         extract_data(1, index=1)
 
 
@@ -1205,8 +1199,8 @@ def test_get_data(surf_img_1d):
 @pytest.mark.parametrize("ensure_finite", [True, False])
 def test_get_data_ensure_finite(surf_img_1d, ensure_finite):
     """Check get data can deal with non finite values."""
-    surf_img_1d.data.parts["left"][0] = np.nan
-    surf_img_1d.data.parts["left"][1] = np.inf
+    surf_img_1d.data.parts["left"][1] = np.nan
+    surf_img_1d.data.parts["left"][2] = np.inf
 
     if ensure_finite is True:
         with pytest.warns(UserWarning, match="Non-finite values detected."):
@@ -1217,3 +1211,87 @@ def test_get_data_ensure_finite(surf_img_1d, ensure_finite):
     else:
         data_from_image = get_data(surf_img_1d, ensure_finite=ensure_finite)
         assert np.logical_not(np.all(np.isfinite(data_from_image)))
+
+
+def test_check_surf_img(surf_img_1d, surf_img_2d):
+    """Check that surface image are properly validated."""
+    check_surf_img(surf_img_1d)
+    check_surf_img(surf_img_2d())
+
+    data = {
+        part: np.empty(0).reshape((surf_img_1d.data.parts[part].shape[0], 0))
+        for part in surf_img_1d.data.parts
+    }
+    imgs = SurfaceImage(surf_img_1d.mesh, data)
+    with pytest.raises(ValueError, match="empty"):
+        check_surf_img(imgs)
+
+
+def test_check_surf_img_dtype(surf_img_1d):
+    """Check dtype of SurfaceImage can be set at init."""
+    data = {
+        "left": np.ones(surf_img_1d.data.parts["left"].shape, dtype="float32"),
+        "right": np.ones(surf_img_1d.data.parts["right"].shape, dtype="int32"),
+    }
+    new_img = SurfaceImage(surf_img_1d.mesh, data, dtype=np.int32)
+
+    for k in surf_img_1d.data.parts:
+        assert new_img.data.parts[k].dtype != surf_img_1d.data.parts[k].dtype
+        assert new_img.data.parts[k].dtype == np.int32
+
+
+def test_check_surf_img_dtype_error(surf_img_1d):
+    """Check that both hemispheres must have same dtype."""
+    data = {
+        "left": np.ones(surf_img_1d.data.parts["left"].shape, dtype="float32"),
+        "right": np.ones(surf_img_1d.data.parts["right"].shape, dtype="int32"),
+    }
+
+    with pytest.raises(TypeError, match=r"All parts should have same dtype."):
+        SurfaceImage(surf_img_1d.mesh, data)
+
+
+# TODO check that clusters with same number of faces do not get same label
+
+
+def test_compute_adjacency_matrix(surf_mesh):
+    """Check basic content of an adjacency matrix.
+
+    - should be a square matrix determined by number of edges in mesh
+    - number of actually connected faces will actually depend on the
+      size of the mesh so it's very much hard coded for the mesh used here.
+    """
+    adjacency_matrix = compute_adjacency_matrix(surf_mesh.parts["left"])
+    assert adjacency_matrix.shape == (4, 4)
+    assert np.sum(np.sum(adjacency_matrix)) == 12
+
+    adjacency_matrix = compute_adjacency_matrix(surf_mesh.parts["right"])
+    assert adjacency_matrix.shape == (5, 5)
+    assert np.sum(np.sum(adjacency_matrix)) == 18
+
+
+@pytest.mark.parametrize(
+    "mask, expected_n_clusters",
+    [
+        ([False, False, False, False], 0),
+        ([True, False, False, False], 1),
+        ([True, True, True, True], 1),
+    ],
+)
+def test_find_surface_clusters_4_faces(mask, expected_n_clusters, surf_mesh):
+    clusters, _ = find_surface_clusters(surf_mesh.parts["left"], mask)
+    assert len(clusters) == expected_n_clusters
+
+
+@pytest.mark.parametrize(
+    "mask, expected_n_clusters",
+    [
+        ([False, False, False, False, False], 0),
+        ([True, False, False, False, False], 1),
+        ([False, True, False, True, False], 1),
+        ([True, True, True, True, True], 1),
+    ],
+)
+def test_find_surface_clusters_5_faces(mask, expected_n_clusters, surf_mesh):
+    clusters, _ = find_surface_clusters(surf_mesh.parts["right"], mask)
+    assert len(clusters) == expected_n_clusters

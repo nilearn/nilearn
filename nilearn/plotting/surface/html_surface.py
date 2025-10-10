@@ -1,27 +1,29 @@
 """Handle plotting of surfaces for html rendering."""
 
 import json
-from warnings import warn
 
-import matplotlib as mpl
-import matplotlib.pyplot as plt
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.plotting import cm
+from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
-    colorscale,
     get_html_template,
     mesh_to_plotly,
-    to_color_strings,
 )
 from nilearn.plotting.surface._utils import (
+    DEFAULT_ENGINE,
+    DEFAULT_HEMI,
     check_surface_plotting_inputs,
-    sanitize_hemi_for_surface_image,
+    get_surface_backend,
 )
 from nilearn.surface import (
     PolyMesh,
@@ -36,62 +38,11 @@ from nilearn.surface.surface import (
     get_data,
 )
 
+ALLOWED_VIEWS = {"left", "right", "front", "back", "top", "bottom"}
+
 
 class SurfaceView(HTMLDocument):  # noqa: D101
     pass
-
-
-def get_vertexcolor(
-    surf_map,
-    cmap,
-    norm,
-    absolute_threshold=None,
-    bg_map=None,
-    bg_on_data=None,
-    darkness=None,
-):
-    """Get the color of the vertices."""
-    if bg_map is None:
-        bg_data = np.ones(len(surf_map)) * 0.5
-        bg_vmin, bg_vmax = 0, 1
-    else:
-        bg_data = np.copy(load_surf_data(bg_map))
-
-    # scale background map if need be
-    bg_vmin, bg_vmax = np.min(bg_data), np.max(bg_data)
-    if bg_vmin < 0 or bg_vmax > 1:
-        bg_norm = mpl.colors.Normalize(vmin=bg_vmin, vmax=bg_vmax)
-        bg_data = bg_norm(bg_data)
-
-    if darkness is not None:
-        bg_data *= darkness
-        warn(
-            (
-                "The `darkness` parameter will be deprecated in release 0.13. "
-                "We recommend setting `darkness` to None"
-            ),
-            DeprecationWarning,
-        )
-
-    bg_colors = plt.get_cmap("Greys")(bg_data)
-
-    # select vertices which are filtered out by the threshold
-    if absolute_threshold is None:
-        under_threshold = np.zeros_like(surf_map, dtype=bool)
-    else:
-        under_threshold = np.abs(surf_map) < absolute_threshold
-
-    surf_colors = cmap(norm(surf_map).data)
-    # set transparency of voxels under threshold to 0
-    surf_colors[under_threshold, 3] = 0
-    if bg_on_data:
-        # if need be, set transparency of voxels above threshold to 0.7
-        # so that background map becomes visible
-        surf_colors[~under_threshold, 3] = 0.7
-
-    vertex_colors = cm.mix_colormaps(surf_colors, bg_colors)
-
-    return to_color_strings(vertex_colors)
 
 
 def _one_mesh_info(
@@ -103,7 +54,6 @@ def _one_mesh_info(
     bg_map=None,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     vmax=None,
     vmin=None,
 ):
@@ -123,56 +73,20 @@ def _one_mesh_info(
         vmin=vmin,
     )
     info = {"inflated_both": mesh_to_plotly(surf_mesh)}
-    info["vertexcolor_both"] = get_vertexcolor(
+    backend = get_surface_backend(DEFAULT_ENGINE)
+    info["vertexcolor_both"] = backend._get_vertexcolor(
         surf_map,
         colors["cmap"],
         colors["norm"],
         absolute_threshold=colors["abs_threshold"],
         bg_map=bg_map,
         bg_on_data=bg_on_data,
-        darkness=darkness,
     )
     info["cmin"], info["cmax"] = float(colors["vmin"]), float(colors["vmax"])
     info["black_bg"] = black_bg
     info["full_brain_mesh"] = False
     info["colorscale"] = colors["colors"]
     return info
-
-
-def one_mesh_info(
-    surf_map,
-    surf_mesh,
-    threshold=None,
-    cmap=DEFAULT_DIVERGING_CMAP,
-    black_bg=False,
-    bg_map=None,
-    symmetric_cmap=True,
-    bg_on_data=False,
-    darkness=0.7,
-    vmax=None,
-    vmin=None,
-):
-    """Deprecate public function. See _one_mesh_info."""
-    warn(
-        category=DeprecationWarning,
-        message="one_mesh_info is a private function and is renamed "
-        "to _one_mesh_info. Using the deprecated name will "
-        "raise an error in release 0.13",
-    )
-
-    return _one_mesh_info(
-        surf_map,
-        surf_mesh,
-        threshold=threshold,
-        cmap=cmap,
-        black_bg=black_bg,
-        bg_map=bg_map,
-        symmetric_cmap=symmetric_cmap,
-        bg_on_data=bg_on_data,
-        darkness=darkness,
-        vmax=vmax,
-        vmin=vmin,
-    )
 
 
 def _get_combined_curvature_map(mesh_left, mesh_right):
@@ -197,7 +111,6 @@ def _full_brain_info(
     black_bg=False,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     vmax=None,
     vmin=None,
     vol_to_surf_kwargs=None,
@@ -241,14 +154,14 @@ def _full_brain_info(
         info[f"pial_{hemi}"] = mesh_to_plotly(mesh[f"pial_{hemi}"])
         info[f"inflated_{hemi}"] = mesh_to_plotly(mesh[f"infl_{hemi}"])
 
-        info[f"vertexcolor_{hemi}"] = get_vertexcolor(
+        backend = get_surface_backend(DEFAULT_ENGINE)
+        info[f"vertexcolor_{hemi}"] = backend._get_vertexcolor(
             surf_map,
             colors["cmap"],
             colors["norm"],
             absolute_threshold=colors["abs_threshold"],
             bg_map=bg_map,
             bg_on_data=bg_on_data,
-            darkness=darkness,
         )
 
     # also add info for both hemispheres
@@ -271,7 +184,8 @@ def _full_brain_info(
                     )
                 )
             )
-    info["vertexcolor_both"] = get_vertexcolor(
+    backend = get_surface_backend(DEFAULT_ENGINE)
+    info["vertexcolor_both"] = backend._get_vertexcolor(
         get_data(surface_maps),
         colors["cmap"],
         colors["norm"],
@@ -280,49 +194,12 @@ def _full_brain_info(
             mesh["curv_left"], mesh["curv_right"]
         ),
         bg_on_data=bg_on_data,
-        darkness=darkness,
     )
     info["cmin"], info["cmax"] = float(colors["vmin"]), float(colors["vmax"])
     info["black_bg"] = black_bg
     info["full_brain_mesh"] = True
     info["colorscale"] = colors["colors"]
     return info
-
-
-def full_brain_info(
-    volume_img,
-    mesh="fsaverage5",
-    threshold=None,
-    cmap=DEFAULT_DIVERGING_CMAP,
-    black_bg=False,
-    symmetric_cmap=True,
-    bg_on_data=False,
-    darkness=0.7,
-    vmax=None,
-    vmin=None,
-    vol_to_surf_kwargs=None,
-):
-    """Deprecate public function. See _full_brain_info."""
-    warn(
-        category=DeprecationWarning,
-        message="full_brain_info is a private function and is renamed to "
-        "_full_brain_info. Using the deprecated name will raise an error "
-        "in release 0.13",
-    )
-
-    return _full_brain_info(
-        volume_img,
-        mesh=mesh,
-        threshold=threshold,
-        cmap=cmap,
-        black_bg=black_bg,
-        symmetric_cmap=symmetric_cmap,
-        bg_on_data=bg_on_data,
-        darkness=darkness,
-        vmax=vmax,
-        vmin=vmin,
-        vol_to_surf_kwargs=vol_to_surf_kwargs,
-    )
 
 
 def _fill_html_template(info, embed_js=True):
@@ -348,12 +225,12 @@ def view_img_on_surf(
     vmin=None,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     colorbar=True,
     colorbar_height=0.5,
     colorbar_fontsize=25,
     title=None,
     title_fontsize=25,
+    view="left",
     vol_to_surf_kwargs=None,
 ):
     """Insert a surface plot of a statistical map into an HTML page.
@@ -389,9 +266,6 @@ def view_img_on_surf(
 
     %(bg_on_data)s
 
-    %(darkness)s
-        Default=1.
-
     vmax : :obj:`float` or None, default=None
         upper bound for the colorbar. if None, use the absolute max of the
         brain map.
@@ -422,6 +296,10 @@ def view_img_on_surf(
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
+    view : one of {"left", "right", "front", "back", "top", "bottom"}, \
+      default="left"
+        Default view used for displaying the surface.
+
     vol_to_surf_kwargs : :obj:`dict`, default=None
         Dictionary of keyword arguments that are passed on to
         :func:`nilearn.surface.vol_to_surf` when extracting a surface from
@@ -447,7 +325,10 @@ def view_img_on_surf(
     """
     if vol_to_surf_kwargs is None:
         vol_to_surf_kwargs = {}
+
     stat_map_img = check_niimg_3d(stat_map_img)
+    check_parameter_in_allowed(view, ALLOWED_VIEWS, "view")
+
     info = _full_brain_info(
         volume_img=stat_map_img,
         mesh=surf_mesh,
@@ -457,7 +338,6 @@ def view_img_on_surf(
         vmax=vmax,
         vmin=vmin,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         symmetric_cmap=symmetric_cmap,
         vol_to_surf_kwargs=vol_to_surf_kwargs,
     )
@@ -466,6 +346,7 @@ def view_img_on_surf(
     info["cbar_fontsize"] = colorbar_fontsize
     info["title"] = title
     info["title_fontsize"] = title_fontsize
+    info["view"] = view
     return _fill_html_template(info, embed_js=True)
 
 
@@ -474,42 +355,29 @@ def view_surf(
     surf_mesh=None,
     surf_map=None,
     bg_map=None,
-    hemi=None,
+    hemi=DEFAULT_HEMI,
     threshold=None,
     cmap=DEFAULT_DIVERGING_CMAP,
     black_bg=False,
     vmax=None,
     vmin=None,
     bg_on_data=False,
-    darkness=0.7,
     symmetric_cmap=True,
     colorbar=True,
     colorbar_height=0.5,
     colorbar_fontsize=25,
     title=None,
     title_fontsize=25,
+    view="left",
 ):
     """Insert a surface plot of a surface map into an HTML page.
 
     Parameters
     ----------
-    surf_mesh : :obj:`str` or :obj:`list` of two :class:`numpy.ndarray`, \
-                or a :obj:`~nilearn.surface.InMemoryMesh`, \
-                or a :obj:`~nilearn.surface.PolyMesh`, or None, default=None
-        Surface :term:`mesh` geometry, can be a file
-        (valid formats are .gii or Freesurfer specific files
-        such as .orig, .pial, .sphere, .white, .inflated) or
-        a list of two Numpy arrays, the first containing the x-y-z coordinates
-        of the :term:`mesh` vertices, the second containing the indices
-        (into coords) of the :term:`mesh` :term:`faces`.
-        or a :obj:`~nilearn.surface.InMemoryMesh` object with
-        "coordinates" and "faces" attributes,
-        or a :obj:`~nilearn.surface.PolyMesh` object,
-        or None.
-        If None is passed, then ``surf_map``
-        must be a :obj:`~nilearn.surface.SurfaceImage` instance
-        and the mesh from that :obj:`~nilearn.surface.SurfaceImage` instance
-        will be used.
+    %(surf_mesh)s
+        If None is passed, then ``surf_map`` must be a
+        :obj:`~nilearn.surface.SurfaceImage` instance and the mesh from that
+        :obj:`~nilearn.surface.SurfaceImage` instance will be used.
 
     surf_map : :obj:`str` or :class:`numpy.ndarray`, \
                or :obj:`~nilearn.surface.SurfaceImage` or None, \
@@ -526,19 +394,14 @@ def view_surf(
 
     %(bg_map)s
 
-    hemi : {"left", "right", "both", None}, default=None
-        Hemisphere to display in case a :obj:`~nilearn.surface.SurfaceImage`
-        is passed as ``surf_map``
-        and / or if :obj:`~nilearn.surface.PolyMesh`
-        is passed as ``surf_mesh``.
-        In these cases, if ``hemi`` is set to None, it will default to "left".
+    %(hemi)s
+        It is only used if ``surf_map`` is :obj:`~nilearn.surface.SurfaceImage`
+        and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
+        Otherwise a warning will be displayed.
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     %(bg_on_data)s
-
-    %(darkness)s
-        Default=1.
 
     threshold : :obj:`str`, number or None, default=None
         If None, no thresholding.
@@ -585,6 +448,10 @@ def view_surf(
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
+    view : one of {"left", "right", "front", "back", "top", "bottom"}, \
+      default="left"
+        Default view used for displaying the surface.
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -600,10 +467,10 @@ def view_surf(
     nilearn.plotting.view_img_on_surf: Surface plot from a 3D statistical map.
     """
     check_params(locals())
-    hemi = sanitize_hemi_for_surface_image(hemi, surf_map, surf_mesh)
     surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map, map_var_name="surf_map"
     )
+    check_parameter_in_allowed(view, ALLOWED_VIEWS, "view")
 
     surf_mesh = load_surf_mesh(surf_mesh)
     if surf_map is None:
@@ -620,7 +487,6 @@ def view_surf(
         black_bg=black_bg,
         bg_map=bg_map,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         symmetric_cmap=symmetric_cmap,
         vmax=vmax,
         vmin=vmin,
@@ -630,4 +496,5 @@ def view_surf(
     info["cbar_fontsize"] = colorbar_fontsize
     info["title"] = title
     info["title_fontsize"] = title_fontsize
+    info["view"] = view
     return _fill_html_template(info, embed_js=True)

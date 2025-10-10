@@ -92,6 +92,8 @@ glm = FirstLevelModel(
     high_pass=0.008,
     smoothing_fwhm=4,
     memory="nilearn_cache",
+    memory_level=1,
+    verbose=1,
 )
 
 # %%
@@ -122,7 +124,7 @@ for run in unique_runs:
 
 from nilearn.image import mean_img
 
-mean_img_ = mean_img(func_filename, copy_header=True)
+mean_img_ = mean_img(func_filename)
 report = glm.generate_report(
     contrasts=conditions,
     bg_img=mean_img_,
@@ -180,6 +182,7 @@ decoder = Decoder(
     standardize=False,
     screening_percentile=5,
     cv=LeaveOneGroupOut(),
+    verbose=1,
 )
 decoder.fit(z_maps, conditions_label, groups=run_label)
 

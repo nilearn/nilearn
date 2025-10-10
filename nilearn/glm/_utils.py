@@ -138,7 +138,7 @@ def multiple_mahalanobis(effect, covariance):
     if covariance.shape[0] != covariance.shape[1]:
         raise ValueError("Inconsistent shape for covariance")
 
-    # transpose and make contuguous for the sake of speed
+    # transpose and make contiguous for the sake of speed
     Xt, Kt = np.ascontiguousarray(effect.T), np.ascontiguousarray(covariance.T)
 
     # compute the inverse of the covariances
@@ -257,7 +257,7 @@ def pad_contrast(con_val, theta, stat_type):
             )
         if stat_type == "F":
             warn(
-                f"F contrasts should have {theta.shape[0]} colmuns, "
+                f"F contrasts should have {theta.shape[0]} columns, "
                 f"but it has only {n_cols}. "
                 "The rest of the contrast was padded with zeros.",
                 category=UserWarning,

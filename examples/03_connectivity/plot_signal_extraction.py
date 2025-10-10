@@ -28,16 +28,17 @@ documentation <parcellation_time_series>` for more.
 # %%
 # Retrieve the atlas and the data
 # -------------------------------
-from nilearn import datasets
+from nilearn.datasets import fetch_atlas_harvard_oxford, fetch_development_fmri
 
-dataset = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
+dataset = fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
 atlas_filename = dataset.maps
 labels = dataset.labels
+look_up_table = dataset.lut
 
 print(f"Atlas ROIs are located in nifti image (4D) at: {atlas_filename}")
 
 # One subject of brain development fMRI data
-data = datasets.fetch_development_fmri(n_subjects=1, reduce_confounds=True)
+data = fetch_development_fmri(n_subjects=1, reduce_confounds=True)
 fmri_filenames = data.func[0]
 reduced_confounds = data.confounds[0]  # This is a preselected set of confounds
 
@@ -49,10 +50,11 @@ from nilearn.maskers import NiftiLabelsMasker
 
 masker = NiftiLabelsMasker(
     labels_img=atlas_filename,
+    lut=look_up_table,
     standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
-    verbose=5,
+    verbose=1,
 )
 
 # Here we go from nifti files to the signal time series in a numpy
@@ -74,7 +76,7 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 # Plot the correlation matrix
 import numpy as np
 
-from nilearn import plotting
+from nilearn.plotting import plot_matrix, show
 
 # Make a large figure
 # Mask the main diagonal for visualization:
@@ -82,7 +84,7 @@ np.fill_diagonal(correlation_matrix, 0)
 # The labels we have start with the background (0), hence we skip the
 # first label
 # matrices are ordered for block-like representation
-plotting.plot_matrix(
+plot_matrix(
     correlation_matrix,
     figure=(10, 8),
     labels=labels[1:],
@@ -107,7 +109,7 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 np.fill_diagonal(correlation_matrix, 0)
 
-plotting.plot_matrix(
+plot_matrix(
     correlation_matrix,
     figure=(10, 8),
     labels=labels[1:],
@@ -153,7 +155,7 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 np.fill_diagonal(correlation_matrix, 0)
 
-plotting.plot_matrix(
+plot_matrix(
     correlation_matrix,
     figure=(10, 8),
     labels=labels[1:],
@@ -181,9 +183,6 @@ confounds_scrub, sample_mask = load_confounds(
     strategy=["high_pass", "motion", "wm_csf", "scrub"],
     motion="basic",
     wm_csf="basic",
-    scrub=5,
-    fd_threshold=0.5,
-    std_dvars_threshold=1.5,
 )
 
 print(
@@ -201,7 +200,7 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 np.fill_diagonal(correlation_matrix, 0)
 
-plotting.plot_matrix(
+plot_matrix(
     correlation_matrix,
     figure=(10, 8),
     labels=labels[1:],
@@ -238,7 +237,7 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 np.fill_diagonal(correlation_matrix, 0)
 
-plotting.plot_matrix(
+plot_matrix(
     correlation_matrix,
     figure=(10, 8),
     labels=labels[1:],
@@ -274,7 +273,7 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 np.fill_diagonal(correlation_matrix, 0)
 
-plotting.plot_matrix(
+plot_matrix(
     correlation_matrix,
     figure=(10, 8),
     labels=labels[1:],
@@ -299,7 +298,7 @@ correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
 np.fill_diagonal(correlation_matrix, 0)
 
-plotting.plot_matrix(
+plot_matrix(
     correlation_matrix,
     figure=(10, 8),
     labels=labels[1:],
@@ -309,7 +308,7 @@ plotting.plot_matrix(
     reorder=True,
 )
 
-plotting.show()
+show()
 
 # %%
 # References

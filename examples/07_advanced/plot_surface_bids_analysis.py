@@ -35,7 +35,7 @@ were already normalized to the same :term:`MNI` space.
 # and the confounds.tsv files.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
-data = fetch_language_localizer_demo_dataset(legacy_output=False)
+data = fetch_language_localizer_demo_dataset()
 
 # %%
 # Here is the location of the dataset on disk.
@@ -111,7 +111,7 @@ z_scores = []
 z_scores_left = []
 z_scores_right = []
 for i, (first_level_glm, fmri_img, confound, event) in enumerate(
-    zip(models, run_imgs, confounds, events)
+    zip(models, run_imgs, confounds, events, strict=False)
 ):
     print(f"Running GLM on {Path(fmri_img[0]).relative_to(data.data_dir)}")
 

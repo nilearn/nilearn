@@ -17,6 +17,8 @@ import sys
 from pathlib import Path
 
 from nilearn._version import __version__
+from sphinx.domains import changeset
+from sphinx.locale import _
 
 # ----------------------------------------------------------------------------
 
@@ -26,7 +28,11 @@ from nilearn._version import __version__
 # is relative to the documentation root, use os.path.abspath to make it
 # absolute, like shown here.
 sys.path.insert(0, str(Path("sphinxext").absolute()))
+
+# See https://www.sphinx-doc.org/en/master/usage/extensions/linkcode.html
 from github_link import make_linkcode_resolve
+
+linkcode_resolve = make_linkcode_resolve
 
 # We also add the directory just above to enable local imports of nilearn
 sys.path.insert(0, str(Path("..").absolute()))
@@ -62,8 +68,6 @@ autodoc_default_options = {
     "inherited-members": True,
     "undoc-members": True,
     "member-order": "bysource",
-    #  We cannot have __init__: it causes duplicated entries
-    #  'special-members': '__init__',
 }
 
 # Get rid of spurious warnings due to some interaction between
@@ -78,7 +82,7 @@ templates_path = ["templates"]
 autosummary_generate = True
 
 # The suffix of source filenames.
-source_suffix = [".rst", ".md"]
+source_suffix = {".rst": "restructuredtext", ".md": "markdown"}
 
 # The encoding of source files.
 # source_encoding = 'utf-8'
@@ -169,7 +173,7 @@ pygments_dark_style = "monokai"
 suppress_warnings = ["image.not_readable", "config.cache"]
 
 linkcheck_allowed_redirects = {
-    "https://db.humanconnectome.org/": r"https://db.humanconnectome.org/app/template/.*",
+    "https://balsa.wustl.edu": r"https://balsa.wustl.eduapp/template/.*",
     r"http://humanconnectome.org/.*": r"https://store.humanconnectome.org/.*",
     # Issue redirect to PR
     r"https://github.com/nilearn/nilearn/issues/.*": r"https://github.com/nilearn/nilearn/pull/.*",
@@ -180,17 +184,6 @@ linkcheck_allowed_redirects = {
 }
 
 linkcheck_ignore = [
-    r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
-    r"https://fcon_1000.projects.nitrc.org/.*",
-    r"https://www.cambridge.org/be/universitypress/.*",
-    r"https://sites.wustl.edu/oasisbrains/.*"
-    "http://brainomics.cea.fr/localizer/",
-    "https://github.com/nilearn/nilearn/issues/new/choose",
-    "https://pages.saclay.inria.fr/bertrand.thirion/",
-    "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
-    "http://brainomics.cea.fr/localizer/",
-    "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
-    "https://pkgs.org/search/.*",
     # ignore nilearn github issues mostly for the sake of speed
     # given that there many of those in our changelog
     r"https://github.com/nilearn/nilearn/issues/.*",
@@ -204,6 +197,22 @@ linkcheck_ignore = [
     r"https://doi.org/.*",
     # do not check download links for OSF
     r"https://osf.io/.*/download",
+    r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
+    r"https://fcon_1000.projects.nitrc.org/.*",
+    r"https://www.cambridge.org/be/universitypress/.*",
+    r"https://sites.wustl.edu/oasisbrains/.*",
+    "http://brainomics.cea.fr/localizer/",
+    "https://childmind.org/science/global-open-science/healthy-brain-network/",
+    "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
+    "https://github.com/nilearn/nilearn/issues/new/choose",
+    "https://pages.saclay.inria.fr/bertrand.thirion/",
+    "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
+    (
+        "https://www.info.gouv.fr/"
+        "organisation/"  # codespell:ignore organisation
+        "secretariat-general-pour-l-investissement-sgpi"
+    ),
+    "https://pkgs.org/search/.*",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
@@ -372,7 +381,7 @@ copybutton_prompt_text = ">>> "
 
 trim_doctests_flags = True
 
-_python_doc_base = "https://docs.python.org/3.9"
+_python_doc_base = "https://docs.python.org/3.10"
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {
@@ -449,17 +458,27 @@ def touch_example_backreferences(
         examples_path.touch()
 
 
+# adapting https://github.com/sphinx-doc/sphinx/blob/master/sphinx/domains/changeset.py
+changeset.versionlabels["nilearn_versionadded"] = _("Added in Nilearn %s")
+changeset.versionlabels["nilearn_versionchanged"] = _("Changed in Nilearn %s")
+changeset.versionlabels["nilearn_deprecated"] = _(
+    "Deprecated since Nilearn %s"
+)
+changeset.versionlabels["nilearn_versionremoved"] = _("Removed in Nilearn %s")
+changeset.versionlabel_classes["nilearn_versionadded"] = "added"
+changeset.versionlabel_classes["nilearn_versionchanged"] = "changed"
+changeset.versionlabel_classes["nilearn_deprecated"] = "deprecated"
+changeset.versionlabel_classes["nilearn_versionremoved"] = "removed"
+
+
 def setup(app):
+    app.add_directive("nilearn_versionadded", changeset.VersionChange)
+    app.add_directive("nilearn_versionchanged", changeset.VersionChange)
+    app.add_directive("nilearn_deprecated", changeset.VersionChange)
+    app.add_directive("nilearn_versionremoved", changeset.VersionChange)
+
     app.connect("autodoc-process-docstring", touch_example_backreferences)
 
-
-# The following is used by sphinx.ext.linkcode to provide links to github
-linkcode_resolve = make_linkcode_resolve(
-    "nilearn",
-    "https://github.com/nilearn/"
-    "nilearn/blob/{revision}/"
-    "{package}/{path}#L{lineno}",
-)
 
 # -- sphinxext.opengraph configuration -------------------------------------
 ogp_site_url = "https://nilearn.github.io/"

@@ -17,6 +17,7 @@ from pandas.api.types import is_numeric_dtype
 
 from nilearn._utils import logger
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_is_of_allowed_type
 
 
 def check_events(events):
@@ -45,7 +46,7 @@ def check_events(events):
         Per-event onset time (in seconds)
 
     duration : array of shape (n_events,), dtype='f'
-        Per-event durantion, (in seconds)
+        Per-event duration, (in seconds)
         defaults to zeros(n_events) when no duration is provided
 
     modulation : array of shape (n_events,), dtype='f'
@@ -81,12 +82,7 @@ def check_events(events):
                 - ``'duration'``
 
     """
-    # Check that events is a Pandas DataFrame
-    if not isinstance(events, pd.DataFrame):
-        raise TypeError(
-            "Events should be a Pandas DataFrame. "
-            f"A {type(events)} was provided instead."
-        )
+    check_is_of_allowed_type(events, (pd.DataFrame,), "events")
 
     events = _check_columns(events)
 

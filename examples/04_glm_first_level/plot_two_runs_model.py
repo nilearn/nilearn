@@ -47,7 +47,7 @@ fmri_imgs = [data["func1"], data["func2"]]
 # Create a mean image for plotting purpose.
 from nilearn.image import mean_img
 
-mean_img_ = mean_img(fmri_imgs[0], copy_header=True)
+mean_img_ = mean_img(fmri_imgs[0])
 
 # %%
 # The design matrices were pre-computed,
@@ -150,10 +150,8 @@ variance_imgs = [
     summary_statistics_run_2["effect_variance"],
 ]
 
-fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat = compute_fixed_effects(
-    contrast_imgs,
-    variance_imgs,
-    data["mask"],
+fixed_fx_contrast, fixed_fx_variance, fixed_fx_stat, _ = compute_fixed_effects(
+    contrast_imgs, variance_imgs, data["mask"]
 )
 plot_stat_map(
     fixed_fx_stat,
@@ -174,8 +172,8 @@ show()
 # of the resulting brain maps.
 
 # %%
-# Compute the fixed effects statistics
-# using the preprocessed data of both runs.
+# Compute fixed effects statistics using preprocessed data of both runs
+# ---------------------------------------------------------------------
 #
 # A more straightforward alternative to fitting run-specific GLMs,
 # than combining the results with :func:`~nilearn.glm.compute_fixed_effects`,

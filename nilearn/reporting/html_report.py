@@ -31,6 +31,7 @@ ESTIMATOR_TEMPLATES = {
     "MultiNiftiMapsMasker": "report_body_template_niftimapsmasker.html",
     "NiftiSpheresMasker": "report_body_template_niftispheresmasker.html",
     "SurfaceMasker": "report_body_template_surfacemasker.html",
+    "MultiSurfaceMasker": "report_body_template_surfacemasker.html",
     "SurfaceLabelsMasker": "report_body_template_surfacemasker.html",
     "SurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
     "default": "report_body_template.html",
@@ -158,6 +159,14 @@ def _update_template(
     with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
 
+    if "n_elements" not in data:
+        data["n_elements"] = 0
+
+    if "coverage" not in data:
+        data["coverage"] = ""
+    if not isinstance(data["coverage"], str):
+        data["coverage"] = f"{data['coverage']:0.1f}"
+
     body = tpl.substitute(
         title=title,
         content=content,
@@ -257,6 +266,9 @@ def generate_report(estimator):
         data = estimator._report_content
     else:
         data = {}
+
+    # Generate a unique ID for this report
+    data["unique_id"] = str(uuid.uuid4()).replace("-", "")
 
     warning_messages = []
 
@@ -368,16 +380,13 @@ def _create_report(estimator, data):
     docstring = estimator.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
-    # Generate a unique ID for this report
-    unique_id = str(uuid.uuid4()).replace("-", "")
-
     return _update_template(
         title=estimator.__class__.__name__,
         docstring=snippet,
         content=embeded_images,
         overlay=embed_img(overlay),
         parameters=parameters,
-        data={**data, "unique_id": unique_id},
+        data=data,
         template_name=html_template,
         summary_html=summary_html,
     )
@@ -390,12 +399,7 @@ def is_notebook() -> bool:
     """
     try:
         shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
-        if shell == "ZMQInteractiveShell":
-            return True  # Jupyter notebook or qtconsole
-        elif shell == "TerminalInteractiveShell":
-            return False  # Terminal running IPython
-        else:
-            return False  # Other type (?)
+        return shell == "ZMQInteractiveShell"
     except NameError:
         return False  # Probably standard Python interpreter
 

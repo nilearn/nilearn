@@ -7,12 +7,15 @@ import numpy as np
 from scipy import linalg
 from sklearn.base import BaseEstimator, TransformerMixin, clone
 from sklearn.covariance import LedoitWolf
+from sklearn.utils import check_array
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import signal
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
 def _check_square(matrix):
@@ -130,8 +133,7 @@ def _geometric_mean(matrices, init=None, max_iter=10, tol=1e-7):
         Raise an error if the matrix is not symmetric positive definite of the
         same shape as the elements of matrices.
 
-    max_iter : int, default=10
-        Maximal number of iterations.
+    %(max_iter10)s
 
     tol : positive float or None, default=1e-7
         The tolerance to declare convergence: if the gradient norm goes below
@@ -218,7 +220,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
 
     Acts on the last two dimensions of the array if not 2-dimensional.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -254,7 +256,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     Diagonal can be encompassed in vec or given separately. In both cases, note
     that diagonal elements are multiplied by sqrt(2).
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -376,7 +378,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
     """A class that computes different kinds of \
        :term:`functional connectivity` matrices.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
@@ -399,14 +401,15 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         If True, vectorized connectivity coefficients do not include the
         matrices diagonal elements. Used only when vectorize is set to True.
 
-    %(standardize)s
+    %(standardize_true)s
 
         .. note::
 
             Added to control passing value to `standardize` of ``signal.clean``
             to call new behavior since passing "zscore" or True (default) is
-            deprecated. This parameter will be deprecated in version 0.13 and
-            removed in version 0.15.
+            deprecated.
+            This parameter will be changed to "zscore_sample"
+            in version 0.14 and removed in version 0.15.
 
     Attributes
     ----------
@@ -422,8 +425,12 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         correlation matrices). For other values for "kind", it is the
         mean of the corresponding matrices
 
-    whitening_ : numpy.ndarray
+    n_features_in_ : :obj:`int`
+        Number of features seen during fit.
+
+    whitening_ : numpy.ndarray or None
         The inverted square-rooted geometric mean of the covariance matrices.
+        Only set when for ``kind=="tangent"``
 
     References
     ----------
@@ -445,13 +452,33 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         self.discard_diagonal = discard_diagonal
         self.standardize = standardize
 
-    def _check_input(self, X, confounds=None):
-        if not hasattr(X, "__iter__"):
-            raise ValueError(
-                "'subjects' input argument must be an iterable. "
-                f"You provided {X.__class__}"
-            )
+    def _more_tags(self):
+        """Return estimator tags.
 
+        TODO (sklearn >= 1.6.0) remove
+        """
+        return self.__sklearn_tags__()
+
+    def __sklearn_tags__(self):
+        """Return estimator tags.
+
+        See the sklearn documentation for more details on tags
+        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
+        """
+        # TODO (sklearn  >= 1.6.0) remove if block
+        # see https://github.com/scikit-learn/scikit-learn/pull/29677
+        if SKLEARN_LT_1_6:
+            from nilearn._utils.tags import tags
+
+            return tags(niimg_like=False)
+
+        from nilearn._utils.tags import InputTags
+
+        tags = super().__sklearn_tags__()
+        tags.input_tags = InputTags(niimg_like=False)
+        return tags
+
+    def _check_input(self, X, confounds=None):
         subjects_types = [type(s) for s in X]
         if set(subjects_types) != {np.ndarray}:
             raise ValueError(
@@ -473,26 +500,28 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 f"You provided: {features_dims}"
             )
 
+        for s in X:
+            check_array(s, accept_sparse=False)
+
         if confounds is not None and not hasattr(confounds, "__iter__"):
-            raise ValueError(
+            raise TypeError(
                 "'confounds' input argument must be an iterable. "
                 f"You provided {confounds.__class__}"
             )
 
-    def fit(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-    ):
+    @fill_doc
+    def fit(self, X, y=None):
         """Fit the covariance estimator to the given time series for each \
         subject.
 
         Parameters
         ----------
-        X : :obj:`list` of numpy.ndarray, \
-            shape for each (n_samples, n_features)
-            The input subjects time series. The number of samples may differ
-            from one subject to another.
+        X : iterable of :class:`numpy.ndarray` \
+            each of shape (n_samples, n_features)
+            Each :class:`numpy.ndarray` represents a subject's time series.
+            The number of samples may differ from one subject to another.
+
+        %(y_dummy)s
 
         Returns
         -------
@@ -500,6 +529,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             The object itself. Useful for chaining operations.
 
         """
+        del y
         self._fit_transform(X, do_fit=True)
         return self
 
@@ -510,9 +540,20 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         if self.cov_estimator is None:
             self.cov_estimator = LedoitWolf(store_precision=False)
 
+        if not hasattr(X, "__iter__"):
+            raise TypeError(
+                "Input must be an iterable of numpy arrays. "
+                f"Got {X.__class__.__name__}"
+            )
+
+        # casting to a list
+        # to make it easier to check with sklearn estimator compliance
+        if isinstance(X, np.ndarray) and X.ndim == 2:
+            X = [X]
         self._check_input(X, confounds=confounds)
 
         if do_fit:
+            self.n_features_in_ = next(iter(s.shape[1] for s in X))
             self.cov_estimator_ = clone(self.cov_estimator)
 
         # Compute all the matrices, stored in "connectivities"
@@ -530,6 +571,16 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             connectivities = [cov_to_corr(cov) for cov in covariances_std]
         else:
             covariances = [self.cov_estimator_.fit(x).covariance_ for x in X]
+
+            allowed_kinds = (
+                "correlation",
+                "partial correlation",
+                "tangent",
+                "covariance",
+                "precision",
+            )
+            check_parameter_in_allowed(self.kind, allowed_kinds, "kind")
+
             if self.kind in ("covariance", "tangent"):
                 connectivities = covariances
             elif self.kind == "precision":
@@ -538,18 +589,6 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 connectivities = [
                     prec_to_partial(linalg.inv(cov)) for cov in covariances
                 ]
-            else:
-                allowed_kinds = (
-                    "correlation",
-                    "partial correlation",
-                    "tangent",
-                    "covariance",
-                    "precision",
-                )
-                raise ValueError(
-                    f"Allowed connectivity kinds are {allowed_kinds}. "
-                    f"Got kind {self.kind}."
-                )
 
         # Store the mean
         if do_fit:
@@ -565,9 +604,24 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 # Fight numerical instabilities: make symmetric
                 self.mean_ = self.mean_ + self.mean_.T
                 self.mean_ *= 0.5
+                self.whitening_ = None
 
         # Compute the vector we return on transform
         if do_transform:
+            # TODO (sklearn >= 1.6.0) simplify
+            if SKLEARN_LT_1_6:
+                for x in X:
+                    check_array(
+                        x,
+                        estimator=self,
+                        ensure_min_features=self.n_features_in_,
+                    )
+            else:
+                from sklearn.utils.validation import validate_data
+
+                for x in X:
+                    validate_data(self, x, reset=False)
+
             if self.kind == "tangent":
                 connectivities = [
                     _map_eigenvalues(
@@ -598,22 +652,20 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         return connectivities
 
-    def fit_transform(
-        self,
-        X,
-        y=None,  # noqa: ARG002
-        confounds=None,
-    ):
+    @fill_doc
+    def fit_transform(self, X, y=None, confounds=None):
         """Fit the covariance estimator to the given time series \
         for each subject. \
         Then apply transform to covariance matrices for the chosen kind.
 
         Parameters
         ----------
-        X : :obj:`list` of n_subjects numpy.ndarray with shapes \
-            (n_samples, n_features)
-            The input subjects time series. The number of samples may differ
-            from one subject to another.
+        X : iterable of :class:`numpy.ndarray` \
+            each of shape (n_samples, n_features)
+            Each :class:`numpy.ndarray` represents a subject's time series.
+            The number of samples may differ from one subject to another.
+
+        %(y_dummy)s
 
         confounds : np.ndarray with shape (n_samples) or \
                     (n_samples, n_confounds), or pandas DataFrame, default=None
@@ -631,6 +683,16 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             Vectors are cleaned when vectorize=True and confounds are provided.
 
         """
+        del y
+        # casting to a list
+        # to make it easier to check with sklearn estimator compliance
+        if not hasattr(X, "__iter__"):
+            raise TypeError(
+                "Input must be an iterable of numpy arrays. "
+                f"Got {X.__class__.__name__}"
+            )
+        if isinstance(X, np.ndarray) and X.ndim == 2:
+            X = [X]
         if self.kind == "tangent" and len(X) <= 1:
             # Check that people are applying fit_transform to a group of
             # subject
@@ -651,10 +713,10 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : :obj:`list` of n_subjects numpy.ndarray with shapes \
-            (n_samples, n_features)
-            The input subjects time series. The number of samples may differ
-            from one subject to another.
+        X : iterable of :class:`numpy.ndarray` \
+            each of shape (n_samples, n_features)
+            Each :class:`numpy.ndarray` represents a subject's time series.
+            The number of samples may differ from one subject to another.
 
         confounds : numpy.ndarray with shape (n_samples) or \
                     (n_samples, n_confounds), default=None
@@ -734,3 +796,12 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             connectivities = np.array(connectivities)
 
         return connectivities
+
+    def set_output(self, *, transform=None):
+        """Set the output container when ``"transform"`` is called.
+
+        .. warning::
+
+            This has not been implemented yet.
+        """
+        raise NotImplementedError()

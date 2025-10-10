@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
@@ -104,7 +106,7 @@ def generate_design_matrices_figures(
     return design_matrices_dict
 
 
-def generate_constrat_matrices_figures(
+def generate_contrast_matrices_figures(
     design_matrices, contrasts=None, contrasts_dict=None, output=None
 ):
     """Generate plot for contrasts matrices.
@@ -155,9 +157,14 @@ def generate_constrat_matrices_figures(
                 except KeyError:  # pragma: no cover
                     contrast_fig = None
             if contrast_fig is None:
-                contrast_fig = figure_to_png_base64(contrast_plot)
-                # prevents sphinx-gallery & jupyter
-                # from scraping & inserting plots
+                with warnings.catch_warnings():
+                    # ignore some warnings that we cannot avoid
+                    warnings.filterwarnings(
+                        "ignore", message=".*constrained_layout not applied.*"
+                    )
+                    contrast_fig = figure_to_png_base64(contrast_plot)
+            # prevents sphinx-gallery & jupyter
+            # from scraping & inserting plots
             plt.close("all")
 
             tmp[contrast_name] = contrast_fig

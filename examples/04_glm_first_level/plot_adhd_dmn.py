@@ -40,7 +40,6 @@ adhd_dataset = fetch_adhd(n_subjects=1)
 
 # Prepare timing
 t_r = 2.0
-slice_time_ref = 0.0
 n_scans = 176
 
 # Prepare seed
@@ -93,7 +92,7 @@ contrasts = {"seed_based_glm": dmn_contrast}
 # Perform first level analysis
 # ----------------------------
 # Setup and fit GLM.
-first_level_model = FirstLevelModel(t_r=t_r, slice_time_ref=slice_time_ref)
+first_level_model = FirstLevelModel()
 first_level_model = first_level_model.fit(
     run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
 )

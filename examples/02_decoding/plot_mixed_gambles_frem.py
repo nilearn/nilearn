@@ -33,11 +33,17 @@ mask_filename = data.mask_img
 # --------
 # We compare both of these models to a pipeline ensembling many models
 #
+import warnings
+
+from sklearn.exceptions import ConvergenceWarning
+
 from nilearn.decoding import FREMRegressor
 
-frem = FREMRegressor("svr", cv=10, standardize="zscore_sample")
+frem = FREMRegressor("svr", cv=10, standardize="zscore_sample", verbose=1)
 
-frem.fit(zmap_filenames, behavioral_target)
+with warnings.catch_warnings():
+    warnings.filterwarnings(action="ignore", category=ConvergenceWarning)
+    frem.fit(zmap_filenames, behavioral_target)
 
 # %%
 # Visualize FREM weights

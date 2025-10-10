@@ -1,17 +1,16 @@
 """Neuroimaging file input and output."""
 
 import collections.abc
-import copy
 import gc
+from copy import deepcopy
 from pathlib import Path
 from warnings import warn
 
 import numpy as np
 from nibabel import is_proxy, load, spatialimages
 
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-
-from .helpers import stringify_path
 
 
 def _get_data(img):
@@ -49,7 +48,7 @@ def safe_get_data(img, ensure_finite=False, copy_data=False) -> np.ndarray:
         nilearn.image.get_data return from Nifti image.
     """
     if copy_data:
-        img = copy.deepcopy(img)
+        img = deepcopy(img)
 
     # typically the line below can double memory usage
     # that's why we invoke a forced call to the garbage collector
@@ -111,7 +110,7 @@ def load_niimg(niimg, dtype=None):
     img : image
         A loaded image object.
     """
-    from ..image import new_img_like  # avoid circular imports
+    from nilearn.image.image import new_img_like  # avoid circular imports
 
     niimg = stringify_path(niimg)
     if isinstance(niimg, str):
@@ -124,22 +123,16 @@ def load_niimg(niimg, dtype=None):
             + repr_niimgs(niimg, shorten=True)
         )
 
-    dtype = _get_target_dtype(_get_data(niimg).dtype, dtype)
+    img_data = _get_data(niimg)
+    target_dtype = _get_target_dtype(img_data.dtype, dtype)
 
-    if dtype is not None:
-        # Copyheader and set dtype in header if header exists
-        if niimg.header is not None:
-            niimg = new_img_like(
-                niimg,
-                _get_data(niimg).astype(dtype),
-                niimg.affine,
-                copy_header=True,
-            )
-            niimg.header.set_data_dtype(dtype)
-        else:
-            niimg = new_img_like(
-                niimg, _get_data(niimg).astype(dtype), niimg.affine
-            )
+    if target_dtype is not None:
+        copy_header = niimg.header is not None
+        niimg = new_img_like(
+            niimg, img_data.astype(target_dtype), niimg.affine
+        )
+        if copy_header:
+            niimg.header.set_data_dtype(target_dtype)
 
     return niimg
 
@@ -251,13 +244,13 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
     return rep
 
 
-def img_data_dtype(niimg):
+def img_data_dtype(img):
     """Determine type of data contained in image.
 
     Based on the information contained in ``niimg.dataobj``, determine the
     dtype of ``np.array(niimg.dataobj).dtype``.
     """
-    dataobj = niimg.dataobj
+    dataobj = img.dataobj
 
     # Neuroimages that scale data should be interpreted as floating point
     if is_proxy(dataobj) and (dataobj.slope, dataobj.inter) != (
@@ -267,6 +260,4 @@ def img_data_dtype(niimg):
         return np.float64
 
     # ArrayProxy gained the dtype attribute in nibabel 2.2
-    return (
-        dataobj.dtype if hasattr(dataobj, "dtype") else niimg.get_data_dtype()
-    )
+    return dataobj.dtype if hasattr(dataobj, "dtype") else img.get_data_dtype()

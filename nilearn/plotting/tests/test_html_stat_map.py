@@ -9,6 +9,7 @@ from nibabel import Nifti1Image
 
 from nilearn import datasets, image
 from nilearn.image import get_data, new_img_like
+from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.html_stat_map import (
     StatMapView,
     _bytes_io_to_base64,
@@ -27,7 +28,6 @@ from nilearn.plotting.html_stat_map import (
     _threshold_data,
     view_img,
 )
-from nilearn.plotting.js_plotting_utils import colorscale
 
 
 def _check_html(html_view, title=None):
@@ -62,7 +62,7 @@ def _check_affine(affine):
     assert affine[2, 2] == affine[1, 1]
     assert affine[0, 0] > 0
 
-    A, b = image.resampling.to_matrix_vector(affine)
+    A, _ = image.resampling.to_matrix_vector(affine)
     assert np.all((np.abs(A) > 0.001).sum(axis=0) == 1), (
         "the affine transform was not near-diagonal"
     )
@@ -96,30 +96,30 @@ def test_threshold_data():
     data = np.arange(-3, 4)
 
     # Check that an 'auto' threshold leaves at least one element
-    data_t, mask, thresh = _threshold_data(data, threshold="auto")
+    data_t, mask, _ = _threshold_data(data, threshold="auto")
     gtruth_m = np.array([False, True, True, True, True, True, False])
     gtruth_d = np.array([-3, 0, 0, 0, 0, 0, 3])
     assert (mask == gtruth_m).all()
     assert (data_t == gtruth_d).all()
 
     # Check that threshold=None keeps everything
-    data_t, mask, thresh = _threshold_data(data, threshold=None)
+    data_t, mask, _ = _threshold_data(data, threshold=None)
     assert np.all(np.logical_not(mask))
     assert np.all(data_t == data)
 
     # Check positive threshold works
-    data_t, mask, thresh = _threshold_data(data, threshold=1)
+    data_t, mask, _ = _threshold_data(data, threshold=1)
     gtruth = np.array([False, False, True, True, True, False, False])
     assert (mask == gtruth).all()
 
     # Check 0 threshold works
-    data_t, mask, thresh = _threshold_data(data, threshold=0)
+    data_t, mask, _ = _threshold_data(data, threshold=0)
     gtruth = np.array([False, False, False, True, False, False, False])
     assert (mask == gtruth).all()
 
     # Check that overly lenient threshold returns array
     data = np.arange(3, 10)
-    data_t, mask, thresh = _threshold_data(data, threshold=2)
+    data_t, mask, _ = _threshold_data(data, threshold=2)
     gtruth = np.full(7, False)
     assert (mask == gtruth).all()
 
@@ -174,11 +174,11 @@ def test_mask_stat_map():
     img, data = _simulate_img()
 
     # Try not to threshold anything
-    mask_img, img, data_t, thresh = _mask_stat_map(img, threshold=None)
+    mask_img, img, _, _ = _mask_stat_map(img, threshold=None)
     assert np.max(get_data(mask_img)) == 0
 
     # Now threshold at zero
-    mask_img, img, data_t, thresh = _mask_stat_map(img, threshold=0)
+    mask_img, img, _, _ = _mask_stat_map(img, threshold=0)
     assert np.min((data == 0) == get_data(mask_img))
 
 
@@ -205,7 +205,7 @@ def test_get_bg_mask_and_cmap():
     # non-regression test for issue #3120 (bg image was masked with mni
     # template mask)
     img, _ = _simulate_img()
-    mask, cmap = _get_bg_mask_and_cmap(img, False)
+    mask, _ = _get_bg_mask_and_cmap(img, False)
     assert (mask == np.zeros(img.shape, dtype=bool)).all()
 
 
@@ -278,7 +278,7 @@ def test_json_view_size():
     assert height == height_exp, "html viewer does not have expected height"
 
 
-def _get_data_and_json_view(black_bg, cbar):
+def _get_data_and_json_view(black_bg, cbar, radiological):
     # simple simulated data for stat_img and background
     bg_img, data = _simulate_img()
     stat_map_img, data = _simulate_img()
@@ -302,14 +302,16 @@ def _get_data_and_json_view(black_bg, cbar):
         colors=colors,
         cmap="cold_hot",
         colorbar=cbar,
+        radiological=radiological,
     )
     return data, json_view
 
 
 @pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("cbar", [True, False])
-def test_json_view_data(black_bg, cbar):
-    _, json_view = _get_data_and_json_view(black_bg, cbar)
+@pytest.mark.parametrize("radiological", [True, False])
+def test_json_view_data(black_bg, cbar, radiological):
+    _, json_view = _get_data_and_json_view(black_bg, cbar, radiological)
     # Check the presence of critical fields
     assert isinstance(json_view["bg_base64"], str)
     assert isinstance(json_view["stat_map_base64"], str)
@@ -318,8 +320,9 @@ def test_json_view_data(black_bg, cbar):
 
 @pytest.mark.parametrize("black_bg", [True, False])
 @pytest.mark.parametrize("cbar", [True, False])
-def test_json_view_to_html(affine_eye, black_bg, cbar):
-    data, json_view = _get_data_and_json_view(black_bg, cbar)
+@pytest.mark.parametrize("radiological", [True, False])
+def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
+    data, json_view = _get_data_and_json_view(black_bg, cbar, radiological)
     json_view["params"] = _json_view_params(
         data.shape,
         affine_eye,
@@ -332,6 +335,7 @@ def test_json_view_to_html(affine_eye, black_bg, cbar):
         annotate=False,
         title="test",
         colorbar=True,
+        radiological=radiological,
     )
 
     # Create a viewer
@@ -380,12 +384,7 @@ def test_view_img_3d_warnings(params, warning_msg):
     mni = datasets.load_mni152_template(resolution=2)
 
     # Create a fake functional image by resample the template
-    img = image.resample_img(
-        mni,
-        target_affine=3 * np.eye(3),
-        copy_header=True,
-        force_resample=True,
-    )
+    img = image.resample_img(mni, target_affine=3 * np.eye(3))
 
     # Should not raise warnings
     with warnings.catch_warnings(record=True) as w:
@@ -406,12 +405,7 @@ def test_view_img_3d_warnings_more():
     mni = datasets.load_mni152_template(resolution=2)
 
     # Create a fake functional image by resample the template
-    img = image.resample_img(
-        mni,
-        target_affine=3 * np.eye(3),
-        copy_header=True,
-        force_resample=True,
-    )
+    img = image.resample_img(mni, target_affine=3 * np.eye(3))
 
     with pytest.warns(
         UserWarning,
@@ -443,12 +437,7 @@ def test_view_img_4d_warnings(params):
     mni = datasets.load_mni152_template(resolution=2)
 
     # Create a fake functional image by resample the template
-    img = image.resample_img(
-        mni,
-        target_affine=3 * np.eye(3),
-        copy_header=True,
-        force_resample=True,
-    )
+    img = image.resample_img(mni, target_affine=3 * np.eye(3))
     img_4d = image.new_img_like(img, get_data(img)[:, :, :, np.newaxis])
     assert len(img_4d.shape) == 4
 

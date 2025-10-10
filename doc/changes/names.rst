@@ -53,6 +53,8 @@
 
 .. _Caglar Cakan: https://github.com/caglorithm
 
+.. _Chloe Hampson: https://github.com/chlohamp
+
 .. _Chris Gorgolewski: https://chrisgorgolewski.org/
 
 .. _Chris Markiewicz: https://github.com/effigies
@@ -111,6 +113,8 @@
 
 .. _Guillaume Lemaitre: https://glemaitre.github.io/
 
+.. _Gustav Magnusson: https://github.com/gurraburra
+
 .. _Hande Gözükan: https://github.com/hndgzkn
 
 .. _Hao-Ting Wang: https://wanghaoting.com/
@@ -133,7 +137,7 @@
 
 .. _Javier Rasero: https://jrasero.github.io/
 
-.. _Jean Kossaifi: http://jeankossaifi.com/
+.. _Jean Kossaifi: https://jeankossaifi.com/
 
 .. _Jean-Rémi King: https://github.com/kingjr
 
@@ -215,7 +219,7 @@
 
 .. _Michael Waskom: https://mwaskom.github.io/
 
-.. _Michelle Wang: https://github.com/michellewang
+.. _Michelle Wang: https://michellewang.github.io
 
 .. _Mohammad Torabi: https://github.com/mtorabi59
 
@@ -249,9 +253,11 @@
 
 .. _Philippe Gervais: https://github.com/pgervais
 
-.. _Pierre Bellec: https://github.com/pbellec
+.. _Pierre Bellec: https://github.com/lunebellec
 
 .. _Pierre Glaser: https://pierreglaser.github.io/
+
+.. _Pierre-Louis Barbarant: https://github.com/pbarbarant
 
 .. _Pierre-Olivier Quirion: https://github.com/poquirion
 
@@ -268,6 +274,8 @@
 .. _Robert Williamson: https://github.com/RobWilliamson15
 
 .. _Roberto Guidotti: https://github.com/robbisg
+
+.. _Rohan Thomas Jepegnanam: https://github.com/rohan3412
 
 .. _Ronald Phlypo: https://github.com/rphlypo
 

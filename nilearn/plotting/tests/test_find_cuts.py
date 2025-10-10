@@ -191,7 +191,7 @@ def test_find_cut_slices(affine_eye, direction):
     cuts = find_cut_slices(img, direction=direction, n_cuts=n_cuts, spacing=2)
 
 
-def test_find_cut_slices_directrion_z():
+def test_find_cut_slices_direction_z():
     """Test find_cut_slices in the z direction.
 
     Test that we are not getting cuts that are separated by
@@ -452,12 +452,8 @@ def test_find_parcellation_cut_coords_non_trivial_affine():
 
 
 def test_find_parcellation_cut_coords_error(img_3d_mni):
-    """Test error with wrong label_hemisphere name with 'lft'."""
-    error_msg = (
-        "Invalid label_hemisphere name:lft.\nShould be one of "
-        "these 'left' or 'right'."
-    )
-    with pytest.raises(ValueError, match=error_msg):
+    """Test error with wrong label_hemisphere."""
+    with pytest.raises(ValueError, match="'label_hemisphere' must be one of"):
         find_parcellation_cut_coords(
             labels_img=img_3d_mni, label_hemisphere="lft"
         )

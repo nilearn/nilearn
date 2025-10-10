@@ -153,7 +153,7 @@ class LikelihoodModelResults:
             else:
                 return self.cov[column][:, column] * dispersion
 
-        elif matrix is not None:
+        else:
             if other is None:
                 other = matrix
             tmp = np.dot(matrix, np.dot(self.cov, np.transpose(other)))
@@ -344,7 +344,7 @@ class LikelihoodModelResults:
                     + inv_t_cdf(1 - alpha / 2, self.df_residuals)
                     * np.sqrt(self.vcov(column=i, dispersion=dispersion))
                 )
-        return np.asarray(list(zip(lower, upper)))
+        return np.asarray(list(zip(lower, upper, strict=False)))
 
 
 class TContrastResults:

@@ -20,9 +20,12 @@ import requests
 from sklearn.feature_extraction import DictVectorizer
 from sklearn.utils import Bunch
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image import resample_img
 
 from ._utils import (
@@ -948,8 +951,7 @@ def _get_batch(query, prefix_msg="", timeout=_DEFAULT_TIME_OUT, verbose=3):
     timeout : float, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
-    verbose : int, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     Returns
     -------
@@ -1055,8 +1057,7 @@ def _scroll_server_results(
     timeout : float, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
-    verbose : int, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     Yields
     ------
@@ -1119,8 +1120,7 @@ def _yield_from_url_list(url_list, timeout=_DEFAULT_TIME_OUT, verbose=3):
     timeout : float, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
-    verbose : int, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     Yields
     ------
@@ -1157,8 +1157,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
     temp_dir : pathlib.Path
         Location of sandbox directory used by ``fetch_single_file``.
 
-    verbose : int, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     Returns
     -------
@@ -1200,6 +1199,7 @@ def _simple_download(url, target_file, temp_dir, verbose=3):
     return target_file
 
 
+@fill_doc
 def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
     """Load Neurosynth data from disk into an (n images, voc size) matrix.
 
@@ -1214,8 +1214,7 @@ def neurosynth_words_vectorized(word_files, verbose=3, **kwargs):
         is supposed to contain the Neurosynth response for a
         particular image).
 
-    verbose : :obj:`int`, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     Keyword arguments are passed on to
     ``sklearn.feature_extraction.DictVectorizer``.
@@ -1563,14 +1562,10 @@ def _download_image_nii_file(image_info, collection, download_params):
         logger.log(
             "Resampling...",
         )
-        # TODO switch to force_resample=True
-        # when bumping to version > 0.13
         im_resampled = resample_img(
             img=tmp_path,
             target_affine=STD_AFFINE,
             interpolation=download_params["interpolation"],
-            copy_header=True,
-            force_resample=False,
         )
         im_resampled.to_filename(resampled_image_absolute_path)
 
@@ -1804,14 +1799,10 @@ def _scroll_local(download_params):
             image, collection = _update(image, collection, download_params)
             if download_params["resample"]:
                 if not Path(image["resampled_absolute_path"]).is_file():
-                    # TODO switch to force_resample=True
-                    # when bumping to version > 0.13
                     im_resampled = resample_img(
                         img=image["absolute_path"],
                         target_affine=STD_AFFINE,
                         interpolation=download_params["interpolation"],
-                        copy_header=True,
-                        force_resample=False,
                     )
                     im_resampled.to_filename(image["resampled_absolute_path"])
                 download_params["visited_images"].add(image["id"])
@@ -2281,11 +2272,11 @@ def _read_download_params(
     """Create a dictionary containing download information."""
     download_params = {"verbose": verbose}
     download_mode = download_mode.lower()
-    if download_mode not in ["overwrite", "download_new", "offline"]:
-        raise ValueError(
-            "Supported download modes are: overwrite, download_new, offline. "
-            f"Got {download_mode}."
-        )
+    check_parameter_in_allowed(
+        download_mode,
+        ["overwrite", "download_new", "offline"],
+        "mode",
+    )
     download_params["download_mode"] = download_mode
     if collection_terms is None:
         collection_terms = {}
@@ -2404,7 +2395,7 @@ def _result_list_to_bunch(result_list, download_params):
     if not result_list:
         images_meta, collections_meta = [], []
     else:
-        images_meta, collections_meta = zip(*result_list)
+        images_meta, collections_meta = zip(*result_list, strict=False)
         images_meta = list(images_meta)
         collections_meta = list(collections_meta)
 
@@ -2597,16 +2588,15 @@ def fetch_neurovault(
         Resamples downloaded images to a 3x3x3 grid before saving them,
         to save disk space.
 
-    interpolation : str, default='continuous'
+    interpolation : {'continuous', 'linear', 'nearest'}, default='continuous'
         Can be 'continuous', 'linear', or 'nearest'. Indicates the resample
         method.
         Argument passed to nilearn.image.resample_img.
 
-    timeout : float, default=_DEFAULT_TIME_OUT
+    timeout : :obj:`float`, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
-    verbose : :obj:`int`, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     kwarg_image_filters
         Keyword arguments are understood to be filter terms for
@@ -2818,11 +2808,10 @@ def fetch_neurovault_ids(
         counts and add it to the result. Also add to the result a
         vocabulary list. See ``sklearn.CountVectorizer`` for more info.
 
-    timeout : float, default=_DEFAULT_TIME_OUT
+    timeout : :obj:`float`, default=_DEFAULT_TIME_OUT
         Timeout in seconds.
 
-    verbose : :obj:`int`, default=3
-        An integer in [0, 1, 2, 3] to control the verbosity level.
+    %(verbose3)s
 
     Returns
     -------
@@ -2889,11 +2878,9 @@ def fetch_neurovault_motor_task(
     """Fetch left vs right button press \
        group :term:`contrast` map from :term:`Neurovault`.
 
-    .. deprecated:: 0.11.2dev
+    .. nilearn_deprecated:: 0.12.0
 
-        This fetcher function will be removed in version>0.13.1
-        as it returns the same data
-        as :func:`nilearn.datasets.load_sample_motor_activation_image`.
+        This fetcher function will be removed in version>0.13.1.
 
         Please use
         :func:`nilearn.datasets.load_sample_motor_activation_image`
@@ -2931,14 +2918,14 @@ def fetch_neurovault_motor_task(
     """
     check_params(locals())
 
+    # TODO (nilearn >= 0.13.1)
     warnings.warn(
         (
             "The 'fetch_neurovault_motor_task' function will be removed "
-            "in version>0.13.1 as it returns the same data "
-            "as 'load_sample_motor_activation_image'.\n"
+            "in version>0.13.1. \n"
             "Please use 'load_sample_motor_activation_image' instead.'"
         ),
-        DeprecationWarning,
+        FutureWarning,
         stacklevel=find_stack_level(),
     )
 

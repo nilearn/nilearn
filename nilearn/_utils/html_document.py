@@ -11,7 +11,6 @@ from queue import Empty, Queue
 from socketserver import TCPServer
 from threading import Thread
 
-from nilearn._utils import remove_parameters
 from nilearn._utils.logger import find_stack_level
 
 MAX_IMG_VIEWS_BEFORE_WARNING = 10
@@ -42,7 +41,7 @@ def _open_in_browser(content):
         def log_message(self, *args):
             del args
 
-        def do_GET(self):  # noqa: N802
+        def do_GET(self):
             if not self.path.endswith("index.html"):
                 self.send_error(HTTPStatus.NOT_FOUND, "File not found")
                 return
@@ -241,19 +240,7 @@ class HTMLDocument:
         with Path(file_name).open("wb") as f:
             f.write(self.get_standalone().encode("utf-8"))
 
-    @remove_parameters(
-        removed_params=["temp_file_lifetime"],
-        reason=(
-            "this function does not use a temporary file anymore "
-            "and 'temp_file_lifetime' has no effect."
-        ),
-        end_version="0.13.0",
-    )
-    def open_in_browser(
-        self,
-        file_name=None,
-        temp_file_lifetime="deprecated",  # noqa: ARG002
-    ):
+    def open_in_browser(self, file_name=None):
         """Save the plot to a temporary HTML file and open it in a browser.
 
         Parameters
@@ -263,7 +250,7 @@ class HTMLDocument:
 
         temp_file_lifetime : :obj:`float`, default=30
 
-            .. deprecated:: 0.10.3
+            .. nilearn_deprecated:: 0.10.3
 
                 The parameter is kept for backward compatibility and will be
                 removed in a future version. It has no effect.

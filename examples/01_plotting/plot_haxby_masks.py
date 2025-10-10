@@ -25,7 +25,7 @@ print(
 from nilearn import image
 
 func_filename = haxby_dataset.func[0]
-mean_img = image.mean_img(func_filename, copy_header=True)
+mean_img = image.mean_img(func_filename)
 
 z_slice = -14
 
@@ -44,7 +44,7 @@ mask_house_filename = haxby_dataset.mask_house[0]
 mask_face_filename = haxby_dataset.mask_face[0]
 masks = [mask_vt_filename, mask_house_filename, mask_face_filename]
 colors = ["red", "blue", "limegreen"]
-for mask, color in zip(masks, colors):
+for mask, color in zip(masks, colors, strict=False):
     display.add_contours(
         mask,
         contours=1,

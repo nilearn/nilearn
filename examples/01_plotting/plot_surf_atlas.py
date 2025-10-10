@@ -61,7 +61,6 @@ plot_surf_roi(
     view="lateral",
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    darkness=0.5,
     title="Destrieux parcellation on sulcal surface",
 )
 
@@ -76,7 +75,6 @@ for view in ["lateral", "posterior", "ventral"]:
         view=view,
         bg_map=fsaverage_sulcal,
         bg_on_data=True,
-        darkness=0.5,
         title=f"Destrieux parcellation on inflated surface\n{view} view",
     )
 
@@ -93,7 +91,6 @@ plot_surf_roi(
     view=(elev, azim),
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
-    darkness=0.5,
     title="Arbitrary view of Destrieux parcellation",
 )
 

@@ -13,19 +13,22 @@ from matplotlib.image import imsave
 from nibabel.affines import apply_affine
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_threshold
 from nilearn.datasets import load_mni152_template
 from nilearn.image import get_data, new_img_like, reorder_img, resample_to_img
+from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
-from nilearn.plotting.img_plotting import load_anat
-from nilearn.plotting.js_plotting_utils import colorscale, get_html_template
+from nilearn.plotting.image.utils import load_anat
+from nilearn.plotting.js_plotting_utils import get_html_template
 
 
-def _data_to_sprite(data):
+def _data_to_sprite(data, radiological=False):
     """Convert a 3D array into a sprite of sagittal slices.
 
     Parameters
@@ -49,12 +52,19 @@ def _data_to_sprite(data):
     sprite = np.zeros((nrows * nz, ncolumns * ny))
     indrow, indcol = np.where(np.ones((nrows, ncolumns)))
 
-    for xx in range(nx):
-        # we need to flip the image in the x axis
-        sprite[
-            (indrow[xx] * nz) : ((indrow[xx] + 1) * nz),
-            (indcol[xx] * ny) : ((indcol[xx] + 1) * ny),
-        ] = data[xx, :, ::-1].transpose()
+    if radiological:
+        for xx in range(nx):
+            sprite[
+                (indrow[xx] * nz) : ((indrow[xx] + 1) * nz),
+                (indcol[xx] * ny) : ((indcol[xx] + 1) * ny),
+            ] = data[nx - xx - 1, :, ::-1].transpose()
+
+    else:
+        for xx in range(nx):
+            sprite[
+                (indrow[xx] * nz) : ((indrow[xx] + 1) * nz),
+                (indcol[xx] * ny) : ((indcol[xx] + 1) * ny),
+            ] = data[xx, :, ::-1].transpose()
 
     return sprite
 
@@ -106,13 +116,21 @@ def _threshold_data(data, threshold=None):
     if not np.any(mask):
         warnings.warn(
             f"Threshold given was {threshold}, "
-            f"but the data has no values below {data.min()}. "
+            f"but the data has no values below {data.min()}. ",
+            stacklevel=find_stack_level(),
         )
     return data, mask, threshold
 
 
 def _save_sprite(
-    data, output_sprite, vmax, vmin, mask=None, cmap="Greys", format="png"
+    data,
+    output_sprite,
+    vmax,
+    vmin,
+    mask=None,
+    cmap="Greys",
+    format="png",
+    radiological=False,
 ):
     """Generate a sprite from a 3D Niimg-like object.
 
@@ -144,11 +162,11 @@ def _save_sprite(
 
     """
     # Create sprite
-    sprite = _data_to_sprite(data)
+    sprite = _data_to_sprite(data, radiological)
 
     # Mask the sprite
     if mask is not None:
-        mask = _data_to_sprite(mask)
+        mask = _data_to_sprite(mask, radiological)
         sprite = np.ma.array(sprite, mask=mask)
 
     # Save the sprite
@@ -247,7 +265,7 @@ def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
         bg_img, black_bg, bg_min, bg_max = load_anat(
             bg_img, dim=dim, black_bg=black_bg
         )
-    bg_img = reorder_img(bg_img, resample="nearest", copy_header=True)
+    bg_img = reorder_img(bg_img, resample="nearest")
     return bg_img, bg_min, bg_max, black_bg
 
 
@@ -263,19 +281,10 @@ def _resample_stat_map(
     mask_img
     """
     stat_map_img = resample_to_img(
-        stat_map_img,
-        bg_img,
-        interpolation=resampling_interpolation,
-        copy_header=True,
-        force_resample=False,  # TODO set to True in 0.13.0
+        stat_map_img, bg_img, interpolation=resampling_interpolation
     )
     mask_img = resample_to_img(
-        mask_img,
-        bg_img,
-        fill_value=1,
-        interpolation="nearest",
-        copy_header=True,
-        force_resample=False,  # TODO set to True in 0.13.0
+        mask_img, bg_img, fill_value=1, interpolation="nearest"
     )
 
     return stat_map_img, mask_img
@@ -294,6 +303,8 @@ def _json_view_params(
     title=None,
     colorbar=True,
     value=True,
+    radiological=False,
+    show_lr=True,
 ):
     """Create a dictionary with all the brainsprite parameters.
 
@@ -336,6 +347,8 @@ def _json_view_params(
             "Y": cut_slices[1] - 1,
             "Z": cut_slices[2] - 1,
         },
+        "radiological": radiological,
+        "showLR": show_lr,
     }
 
     if colorbar:
@@ -389,6 +402,7 @@ def _json_view_data(
     colors,
     cmap,
     colorbar,
+    radiological,
 ):
     """Create a json-like viewer object, and populate with base64 data.
 
@@ -412,7 +426,16 @@ def _json_view_data(
     bg_sprite = BytesIO()
     bg_data = safe_get_data(bg_img, ensure_finite=True).astype(float)
     bg_mask, bg_cmap = _get_bg_mask_and_cmap(bg_img, black_bg)
-    _save_sprite(bg_data, bg_sprite, bg_max, bg_min, bg_mask, bg_cmap, "png")
+    _save_sprite(
+        bg_data,
+        bg_sprite,
+        bg_max,
+        bg_min,
+        bg_mask,
+        bg_cmap,
+        "png",
+        radiological,
+    )
     json_view["bg_base64"] = _bytes_io_to_base64(bg_sprite)
 
     # Create a base64 sprite for the stat map
@@ -427,6 +450,7 @@ def _json_view_data(
         mask,
         cmap,
         "png",
+        radiological,
     )
     json_view["stat_map_base64"] = _bytes_io_to_base64(stat_map_sprite)
 
@@ -521,6 +545,8 @@ def view_img(
     resampling_interpolation="continuous",
     width_view=600,
     opacity=1,
+    radiological=False,
+    show_lr=True,
 ):
     """Interactive html viewer of a statistical map, with optional background.
 
@@ -591,6 +617,11 @@ def view_img(
     opacity : :obj:`float` in [0,1], default=1
         The level of opacity of the overlay (0: transparent, 1: opaque).
 
+    %(radiological)s
+
+    show_lr : :obj:`bool`, default=True
+        Show left and right labels on the figure
+
     Returns
     -------
     html_view : the html viewer object.
@@ -645,6 +676,7 @@ def view_img(
         colors,
         cmap,
         colorbar,
+        radiological,
     )
 
     json_view["params"] = _json_view_params(
@@ -660,6 +692,8 @@ def view_img(
         title,
         colorbar,
         value=False,
+        radiological=radiological,
+        show_lr=show_lr,
     )
 
     html_view = _json_view_to_html(json_view, width_view)

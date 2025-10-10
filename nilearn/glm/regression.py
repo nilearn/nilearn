@@ -61,7 +61,7 @@ class OLSModel:
         rank of the design.
 
     df_model : scalar
-        Degrees of freedome of the model.  The rank of the design.
+        Degrees of freedom of the model.  The rank of the design.
 
     """
 
@@ -72,7 +72,7 @@ class OLSModel:
     def initialize(self, design):
         """Construct instance."""
         # PLEASE don't assume we have a constant...
-        # TODO: handle case for noconstant regression
+        # TODO: handle case for nonconstant regression
         self.design = design
         self.whitened_design = self.whiten(self.design)
         self.calc_beta = spl.pinv(self.whitened_design)

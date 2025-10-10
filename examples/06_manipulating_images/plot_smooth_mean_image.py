@@ -28,16 +28,19 @@ print(
 first_epi_file = data.func[0]
 
 # First compute the mean image, from the 4D series of image
-mean_func = mean_img(first_epi_file, copy_header=True)
+mean_func = mean_img(first_epi_file)
 
 # %%
 # Then we smooth, with a varying amount of smoothing, from none to 20mm
 # by increments of 5mm
-for fwhm in range(0, 25, 5):
+for fwhm in [None, 5, 10, 15, 20, 25]:
     smoothed_img = smooth_img(mean_func, fwhm)
+    title = (
+        "No smoothing" if fwhm is None else f"Smoothing {fwhm} mm"
+    )    
     plot_epi(
         smoothed_img,
-        title=f"Smoothing {int(fwhm)}mm",
+        title=title,
         colorbar=True,
         cmap="gray",
         vmin=0,
@@ -66,12 +69,15 @@ surface_image = SurfaceImage.from_volume(
     volume_img=stat_img,
 )
 
-for fwhm in range(0, 25, 5):
-    smoothed_surface_image = smooth_img(surface_image, fwhm)
+for fwhm in [None, 5, 10, 15, 20, 25]:
+    smoothed_img = smooth_img(surface_image, fwhm)
+    title = (
+        "No smoothing" if fwhm is None else f"Smoothing {fwhm} mm"
+    )       
     plot_surf_stat_map(
         surf_mesh=fsaverage_meshes["inflated"],
-        stat_map=smoothed_surface_image,
-        title=f"{fwhm} mm",
+        stat_map=smoothed_img,
+        title=title,
         threshold=1.0,
         vmax=8,
         bg_map=curvature,

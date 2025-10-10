@@ -1,6 +1,6 @@
 """Hemodynamic response function (hrf) specification.
 
-Here we provide for SPM, Glover hrfs and finite timpulse response (FIR) models.
+Here we provide for SPM, Glover hrfs and finite impulse response (FIR) models.
 This module closely follows SPM implementation
 """
 
@@ -12,7 +12,7 @@ from scipy.interpolate import interp1d
 from scipy.linalg import pinv
 from scipy.stats import gamma
 
-from nilearn._utils import fill_doc, rename_parameters
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 
@@ -85,7 +85,6 @@ def _gamma_difference_hrf(
     return hrf
 
 
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the :term:`SPM` :term:`HRF` model.
 
@@ -96,7 +95,7 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -118,7 +117,6 @@ def spm_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     return _gamma_difference_hrf(t_r, oversampling, time_length, onset)
 
 
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the Glover :term:`HRF` model.
 
@@ -129,7 +127,7 @@ def glover_hrf(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -198,7 +196,6 @@ def _generic_time_derivative(
     )
 
 
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the :term:`SPM` time derivative :term:`HRF` (dhrf) model.
 
@@ -209,7 +206,7 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -237,7 +234,6 @@ def spm_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     )
 
 
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
     """Implement the Glover time derivative :term:`HRF` (dhrf) model.
 
@@ -248,7 +244,7 @@ def glover_time_derivative(t_r, oversampling=50, time_length=32.0, onset=0.0):
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -318,7 +314,6 @@ def _generic_dispersion_derivative(
     )
 
 
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def spm_dispersion_derivative(
     t_r, oversampling=50, time_length=32.0, onset=0.0
 ):
@@ -331,7 +326,7 @@ def spm_dispersion_derivative(
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -355,7 +350,6 @@ def spm_dispersion_derivative(
     )
 
 
-@rename_parameters({"tr": "t_r"}, end_version="0.13.0")
 def glover_dispersion_derivative(
     t_r, oversampling=50, time_length=32.0, onset=0.0
 ):
@@ -371,7 +365,7 @@ def glover_dispersion_derivative(
 
     tr:
 
-        .. deprecated:: 0.11.0
+        .. nilearn_deprecated:: 0.11.0
 
             Use ``t_r`` instead (see above).
 
@@ -460,7 +454,7 @@ def _sample_condition(
     t_onset = np.minimum(
         np.searchsorted(frame_times_high_res, onsets), tmax - 1
     )
-    for t, v in zip(t_onset, values):
+    for t, v in zip(t_onset, values, strict=False):
         regressor[t] += v
     t_offset = np.minimum(
         np.searchsorted(frame_times_high_res, onsets + durations), tmax - 1
@@ -471,7 +465,7 @@ def _sample_condition(
         if t < (tmax - 1) and t == t_onset[i]:
             t_offset[i] += 1
 
-    for t, v in zip(t_offset, values):
+    for t, v in zip(t_offset, values, strict=False):
         regressor[t] -= v
     regressor = np.cumsum(regressor)
 

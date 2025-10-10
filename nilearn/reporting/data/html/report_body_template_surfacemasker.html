@@ -29,6 +29,15 @@
     <p>{{description}}</p>
     {{endif}}
     <!--  -->
+    {{if n_elements }}
+    <div class="pure-u-1 pure-u-md-3-3">
+      <p>
+        The mask includes {{ n_elements }} vertices ({{ coverage }} %) of the
+        image.
+      </p>
+    </div>
+    {{endif}}
+    <!--  -->
     {{if n_vertices}}
     <div>
       <table class="pure-table">

@@ -48,7 +48,7 @@ fmri_masked = nifti_masker.fit_transform(cmap_filenames)
 from sklearn.feature_selection import f_regression
 
 # Center=False is used to not remove intercept
-_, pvals_anova = f_regression(fmri_masked, tested_var, center=False)
+_, pvals_anova = f_regression(fmri_masked, tested_var.ravel(), center=False)
 pvals_anova *= fmri_masked.shape[1]
 pvals_anova[np.isnan(pvals_anova)] = 1
 pvals_anova[pvals_anova > 1] = 1
@@ -86,6 +86,5 @@ display = plot_stat_map(
     vmin=threshold,
     title=title,
 )
-
 
 show()

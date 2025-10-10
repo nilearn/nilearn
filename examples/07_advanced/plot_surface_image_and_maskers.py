@@ -81,8 +81,8 @@ fig, axes = plt.subplots(
 )
 axes = np.atleast_2d(axes)
 
-for view, ax_row in zip(views, axes):
-    for ax, hemi in zip(ax_row, hemispheres):
+for view, ax_row in zip(views, axes, strict=False):
+    for ax, hemi in zip(ax_row, hemispheres, strict=False):
         if hemi == "both" and view == "lateral":
             view = "left"
         elif hemi == "both" and view == "medial":
@@ -95,7 +95,7 @@ for view, ax_row in zip(views, axes):
             axes=ax,
             title=f"{hemi} - {view}",
             colorbar=False,
-            symmetric_cmap=True,
+            symmetric_cmap=None,
             bg_on_data=True,
             vmin=vmin,
             vmax=vmax,
@@ -147,7 +147,9 @@ print(f"Masked data shape: {masked_data.shape}")
 # %%
 # Plot connectivity matrix
 # ------------------------
-connectome_measure = ConnectivityMeasure(kind="correlation")
+connectome_measure = ConnectivityMeasure(
+    kind="correlation", standardize="zscore_sample"
+)
 connectome = connectome_measure.fit([masked_data])
 
 vmax = np.absolute(connectome.mean_).max()
@@ -157,7 +159,7 @@ vmin = -vmax
 # We only print every 3rd label
 # for a more legible figure.
 labels = []
-for i, label in enumerate(labels_masker.label_names_):
+for i, label in enumerate(labels_masker.region_names_.values()):
     if i % 3 == 1:
         labels.append(label)
     else:
@@ -236,11 +238,10 @@ decoder.fit(surf_img_nki, y)
 coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
 vmax = max(np.absolute(hemi).max() for hemi in coef_img.data.parts.values())
-vmin = -vmax
 plot_surf(
     surf_map=coef_img,
     cmap="RdBu_r",
-    vmin=vmin,
+    vmin=-vmax,
     vmax=vmax,
     threshold=1e-6,
     bg_map=fsaverage_sulcal,

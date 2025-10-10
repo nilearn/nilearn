@@ -4,22 +4,27 @@ import abc
 import gzip
 import pathlib
 import warnings
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import sklearn.cluster
 import sklearn.preprocessing
 from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
 from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import connected_components
 from sklearn.exceptions import EfficiencyWarning
 
-from nilearn import _utils
-from nilearn._utils import stringify_path
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_parameter_in_allowed,
+)
 from nilearn._utils.path_finding import resolve_globbing
 
 
@@ -300,8 +305,7 @@ def _sample_locations(
             {"inner_mesh": inner_mesh},
         ),
     }
-    if kind not in projectors:
-        raise ValueError(f'"kind" must be one of {tuple(projectors.keys())}')
+    check_parameter_in_allowed(kind, tuple(projectors.keys()), "kind")
     projector, extra_kwargs = projectors[kind]
     # let the projector choose the default for n_points
     # (for example a ball probably needs more than a line)
@@ -505,10 +509,10 @@ def _nearest_most_frequent(
     )
     texture = np.zeros((mesh.n_vertices, images.shape[0]))
     for img in range(images.shape[0]):
-        for loc in range(len(sample_locations)):
+        for loc, sample_location in enumerate(sample_locations):
             possible_values = [
                 data[img][coords[0], coords[1], coords[2]]
-                for coords in sample_locations[loc]
+                for coords in sample_location
             ]
             unique, counts = np.unique(possible_values, return_counts=True)
             texture[loc, img] = unique[np.argmax(counts)]
@@ -618,7 +622,7 @@ def vol_to_surf(
 ):
     """Extract surface data from a Nifti image.
 
-    .. versionadded:: 0.4.0
+    .. nilearn_versionadded:: 0.4.0
 
     Parameters
     ----------
@@ -637,23 +641,12 @@ def vol_to_surf(
         The size (in mm) of the neighbourhood from which samples are drawn
         around each node. Ignored if `inner_mesh` is provided.
 
-    interpolation : {'linear', 'nearest', 'nearest_most_frequent'}, \
+    interpolation : {'linear', 'nearest_most_frequent'}, \
                     default='linear'
         How the image intensity is measured at a sample point.
 
         - 'linear':
             Use a trilinear interpolation of neighboring voxels.
-        - 'nearest':
-            Use the intensity of the nearest voxel.
-
-            .. versionchanged:: 0.11.2.dev
-
-                The 'nearest' interpolation method will be removed in
-                version 0.13.0. It is recommended to use 'linear' for
-                statistical maps and
-                :term:`probabilistic atlases<Probabilistic atlas>` and
-                'nearest_most_frequent' for
-                :term:`deterministic atlases<Deterministic atlas>`.
 
         - 'nearest_most_frequent':
             Use the most frequent value in the neighborhood (out of the
@@ -661,7 +654,7 @@ def vol_to_surf(
             when the image is a
             :term:`deterministic atlas<Deterministic atlas>`.
 
-            .. versionadded:: 0.11.2.dev
+            .. nilearn_versionadded:: 0.12.0
 
         For one image, the speed difference is small, 'linear' takes about x1.5
         more time. For many images, 'nearest' scales much better, up to x20
@@ -806,53 +799,31 @@ def vol_to_surf(
 
     """
     # avoid circular import
-    from nilearn.image import get_data as get_vol_data
-    from nilearn.image import load_img
+    from nilearn.image.image import get_data as get_vol_data
+    from nilearn.image.image import load_img
     from nilearn.image.resampling import resample_to_img
 
     sampling_schemes = {
         "linear": _interpolation_sampling,
-        "nearest": _nearest_voxel_sampling,
         "nearest_most_frequent": _nearest_most_frequent,
     }
-    if interpolation not in sampling_schemes:
-        raise ValueError(
-            "'interpolation' should be one of "
-            f"{tuple(sampling_schemes.keys())}"
-        )
-
-    # deprecate nearest interpolation in 0.13.0
-    if interpolation == "nearest":
-        warnings.warn(
-            "The 'nearest' interpolation method will be deprecated in 0.13.0. "
-            "To disable this warning, select either 'linear' or "
-            "'nearest_most_frequent'. If your image is a deterministic atlas "
-            "'nearest_most_frequent' is recommended. Otherwise, use 'linear'. "
-            "See the documentation for more information.",
-            FutureWarning,
-            stacklevel=find_stack_level(),
-        )
+    check_parameter_in_allowed(
+        interpolation, tuple(sampling_schemes.keys()), "interpolation"
+    )
 
     img = load_img(img)
 
     if mask_img is not None:
-        mask_img = _utils.check_niimg(mask_img)
+        mask_img = check_niimg(mask_img)
         mask = get_vol_data(
-            resample_to_img(
-                mask_img,
-                img,
-                interpolation="nearest",
-                copy=False,
-                force_resample=False,  # TODO update to True in 0.13.0
-                copy_header=True,
-            )
+            resample_to_img(mask_img, img, interpolation="nearest", copy=False)
         )
     else:
         mask = None
 
     original_dimension = len(img.shape)
 
-    img = _utils.check_niimg(img, atleast_4d=True)
+    img = check_niimg(img, atleast_4d=True)
 
     frames = np.rollaxis(get_vol_data(img), -1)
 
@@ -950,7 +921,7 @@ def load_surf_data(surf_data):
 
     """
     # avoid circular import
-    from nilearn.image import get_data as get_vol_data
+    from nilearn.image.image import get_data as get_vol_data
 
     # if the input is a filename, load it
     surf_data = stringify_path(surf_data)
@@ -1129,16 +1100,13 @@ def check_mesh_is_fsaverage(mesh):
     with sufficient entries. Basically ensures that the mesh data is
     Freesurfer-like fsaverage data.
     """
+    check_is_of_allowed_type(mesh, (str, Mapping), "mesh")
     if isinstance(mesh, str):
         # avoid circular imports
         from nilearn.datasets import fetch_surf_fsaverage
 
         return fetch_surf_fsaverage(mesh)
-    if not isinstance(mesh, Mapping):
-        raise TypeError(
-            "The mesh should be a str or a dictionary, "
-            f"you provided: {type(mesh).__name__}."
-        )
+
     missing = {
         "pial_left",
         "pial_right",
@@ -1333,7 +1301,7 @@ class PolyData:
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1351,6 +1319,12 @@ class PolyData:
             The first dimension corresponds to the vertices:
             the typical shape of the
             data for a hemisphere is ``(n_vertices, n_time_points)``.
+
+    dtype : DTypeLike object, default=None
+        dtype to enforce on the data.
+        If ``None`` the original dtype if used.
+
+        .. nilearn_versionadded:: 0.12.1
 
     Examples
     --------
@@ -1372,7 +1346,7 @@ class PolyData:
     ValueError: Cannot create an empty PolyData. ...
     """
 
-    def __init__(self, left=None, right=None):
+    def __init__(self, left=None, right=None, dtype=None):
         if left is None and right is None:
             raise ValueError(
                 "Cannot create an empty PolyData. "
@@ -1380,12 +1354,13 @@ class PolyData:
             )
 
         parts = {}
-        for hemi, param in zip(["left", "right"], [left, right]):
+        for hemi, param in zip(["left", "right"], [left, right], strict=False):
             if param is not None:
                 if not isinstance(param, np.ndarray):
                     param = load_surf_data(param)
                 parts[hemi] = param
         self.parts = parts
+        self._set_data_dtype(dtype)
 
         self._check_parts()
 
@@ -1404,6 +1379,13 @@ class PolyData:
                 f"Data arrays for keys 'left' and 'right' "
                 "have incompatible shapes: "
                 f"{parts['left'].shape} and {parts['right'].shape}"
+            )
+
+        if parts["left"].dtype != parts["right"].dtype:
+            raise TypeError(
+                "All parts should have same dtype. "
+                f"Got {parts['left'].dtype=} and {parts['right'].dtype=}. "
+                "You can fix this by passing a 'dtype' at instantiation."
             )
 
     @property
@@ -1437,7 +1419,21 @@ class PolyData:
         vmax = max(x.max() for x in self.parts.values())
         return vmin, vmax
 
-    def _check_ndims(self, dim, var_name="img"):
+    def _check_n_samples(self, samples: int, var_name="img"):
+        max_n_samples = []
+        for hemi in self.parts.values():
+            if hemi.ndim > 1:
+                max_n_samples.append(hemi.shape[1])
+            else:
+                max_n_samples.append(1)
+        max_n_samples = np.max(max_n_samples)
+        if max_n_samples > samples:
+            raise ValueError(
+                f"Data for each part of {var_name} should be {samples}D. "
+                f"Found: {max_n_samples}."
+            )
+
+    def _check_ndims(self, dim: int, var_name="img"):
         """Check if the data is of a given dimension.
 
         Raise error if not.
@@ -1492,6 +1488,11 @@ class PolyData:
 
         _data_to_gifti(data, filename)
 
+    def _set_data_dtype(self, dtype):
+        if dtype is not None:
+            for h, v in self.parts.items():
+                self.parts[h] = v.astype(dtype)
+
 
 def at_least_2d(input):
     """Force surface image or polydata to be 2d."""
@@ -1513,7 +1514,7 @@ class SurfaceMesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
     coordinates and faces (triangles).
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Attributes
     ----------
@@ -1550,7 +1551,7 @@ class SurfaceMesh(abc.ABC):
 class InMemoryMesh(SurfaceMesh):
     """A surface mesh stored as in-memory numpy arrays.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1621,7 +1622,7 @@ class InMemoryMesh(SurfaceMesh):
 class FileMesh(SurfaceMesh):
     """A surface mesh stored in a Gifti or Freesurfer file.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1678,7 +1679,7 @@ class PolyMesh:
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1872,7 +1873,7 @@ def _sanitize_filename(filename):
 class SurfaceImage:
     """Surface image containing meshes & data for both hemispheres.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1890,12 +1891,11 @@ class SurfaceImage:
            :obj:`pathlib.Path`
            Data for the both hemispheres.
 
-    squeeze_on_save : :obj:`bool` or None, default=None
-            If ``True`` axes of length one from the data
-            will be removed before saving them to file.
-            If ``None`` is passed,
-            then the value will be set to ``True``
-            if any of the data parts is one dimensional.
+    dtype : DTypeLike object, default=None
+        dtype to enforce on the data.
+        If ``None`` the original dtype is used.
+
+        .. nilearn_versionadded:: 0.12.1
 
     Attributes
     ----------
@@ -1903,19 +1903,21 @@ class SurfaceImage:
         shape of the surface data array
     """
 
-    def __init__(self, mesh, data):
+    def __init__(self, mesh, data, dtype=None):
         """Create a SurfaceImage instance."""
         self.mesh = mesh if isinstance(mesh, PolyMesh) else PolyMesh(**mesh)
 
         if not isinstance(data, (PolyData, dict)):
             raise TypeError(
-                f"'data' must be one of[PolyData, dict].\nGot {type(data)}"
+                "'data' must be one of [PolyData, dict].\n"
+                f"Got {data.__class__.__name__}"
             )
 
         if isinstance(data, PolyData):
             self.data = data
-        elif isinstance(data, dict):
-            self.data = PolyData(**data)
+            self.data._set_data_dtype(dtype)
+        else:
+            self.data = PolyData(**data, dtype=dtype)
 
         _check_data_and_mesh_compat(self.mesh, self.data)
 
@@ -2004,6 +2006,21 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
+def check_surf_img(img: SurfaceImage | Iterable[SurfaceImage]) -> None:
+    """Validate SurfaceImage.
+
+    Equivalent to check_niimg for volumes.
+    """
+    if isinstance(img, SurfaceImage):
+        if get_data(img).size == 0:
+            raise ValueError("The image is empty.")
+        return None
+
+    if hasattr(img, "__iter__"):
+        for x in img:
+            check_surf_img(x)
+
+
 def get_data(img, ensure_finite=False) -> np.ndarray:
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
@@ -2026,6 +2043,10 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
         data = img.data
     elif isinstance(img, PolyData):
         data = img
+    else:
+        raise TypeError(
+            f"Expected PolyData or SurfaceImage. Got {img.__class__.__name__}."
+        )
 
     data = np.concatenate(list(data.parts.values()), axis=0)
 
@@ -2057,8 +2078,7 @@ def extract_data(img, index):
     a dict where each value contains the data extracted
     for each part
     """
-    if not isinstance(img, SurfaceImage):
-        raise TypeError("Input must a be SurfaceImage.")
+    check_is_of_allowed_type(img, (SurfaceImage,), "img")
     mesh = img.mesh
     data = img.data
 
@@ -2072,7 +2092,7 @@ def extract_data(img, index):
     }
 
 
-def compute_adjacency_matrix(mesh, values="ones", dtype=None):
+def compute_adjacency_matrix(mesh: InMemoryMesh, values="ones", dtype=None):
     """Compute the adjacency matrix for a surface.
 
     The adjacency matrix is a matrix
@@ -2101,6 +2121,8 @@ def compute_adjacency_matrix(mesh, values="ones", dtype=None):
     """
     n = mesh.coordinates.shape[0]
 
+    # Extract all 3 undirected edges per face:
+    #   (i, j), (i, k), (j, k).
     edges = np.vstack(
         [
             mesh.faces[:, [0, 1]],
@@ -2109,6 +2131,14 @@ def compute_adjacency_matrix(mesh, values="ones", dtype=None):
         ]
     )
     edges = edges.astype(np.int64)
+
+    # To uniquely represent an undirected edge (u, v),
+    # ensure that u < v.
+    # We do this by splitting edges into
+    # "bigcol" (first index > second index)
+    # and "lilcol" (otherwise),
+    # and encoding each pair into a single integer u + v * n.
+    # Then we keep unique pairs.
     bigcol = edges[:, 0] > edges[:, 1]
     lilcol = ~bigcol
     edges = np.concatenate(
@@ -2119,6 +2149,7 @@ def compute_adjacency_matrix(mesh, values="ones", dtype=None):
     )
     edges = np.unique(edges)
 
+    # Decode back to pairs of vertices (u, v).
     (u, v) = (edges // n, edges % n)
 
     # Calculate distances between pairs.
@@ -2137,9 +2168,62 @@ def compute_adjacency_matrix(mesh, values="ones", dtype=None):
     else:
         edge_lens = np.ones(edges.shape, dtype=dtype)
 
-    # We can now make a sparse matrix.
+    # Build a symmetric adjacency matrix.
+    # For each undirected edge (u, v), we add entries (u, v) and (v, u).
+    # And return as a sparse CSR matrix of shape (n_vertices, n_vertices).
     ee = np.concatenate([edge_lens, edge_lens])
     uv = np.concatenate([u, v])
     vu = np.concatenate([v, u])
-
     return csr_matrix((ee, (uv, vu)), shape=(n, n))
+
+
+def find_surface_clusters(mesh, mask) -> tuple[pd.DataFrame, np.ndarray]:
+    """Find clusters of truthy vertices on a surface mesh.
+
+    Parameters
+    ----------
+    mesh : InMemoryMesh
+        Surface mesh providing coordinates and faces.
+
+    mask : (n_vertices,) array_like of bool
+        Boolean mask, True where vertex is part of a cluster.
+
+    Returns
+    -------
+    clusters : pandas.DataFrame
+        A look up table
+        that should be BIDS friendly
+        (resemble the look up table used for discrete segmentation).
+
+        One row per cluster with:
+          - 'name': cluster name
+          - 'index': cluster ID (1..n_clusters)
+          - 'size': number of vertices in the cluster
+
+    labels : np.ndarray of shape (n_vertices,)
+        Integer labels per vertex.
+        0 means background (mask is False).
+        Positive integers index the cluster ID (1..n_clusters).
+    """
+    mask = np.asarray(mask, dtype=bool)
+    if mask.shape[0] != mesh.n_vertices:
+        raise ValueError(
+            f"Mask length {mask.shape[0]} does not match "
+            f"mesh.n_vertices {mesh.n_vertices}"
+        )
+
+    adj = compute_adjacency_matrix(mesh)
+    sub_adj = adj[mask][:, mask]
+
+    _, labels_sub = connected_components(sub_adj, directed=False)
+
+    # full label array (0 = background)
+    labels = np.zeros(mesh.n_vertices, dtype=int)
+    labels[mask] = labels_sub + 1
+
+    unique, counts = np.unique(labels[labels > 0], return_counts=True)
+    clusters = pd.DataFrame(
+        {"name": [str(x) for x in unique], "index": unique, "size": counts}
+    )
+
+    return clusters, labels

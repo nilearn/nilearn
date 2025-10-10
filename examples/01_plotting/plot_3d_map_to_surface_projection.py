@@ -262,6 +262,7 @@ plot_img_on_surf(
     hemispheres=["left", "right"],
     title="multiple views of the 3D volume",
     bg_on_data=True,
+    symmetric_cmap=None,
 )
 show()
 
@@ -319,7 +320,7 @@ view = view_img_on_surf(
     vol_to_surf_kwargs={
         "n_samples": 1,
         "radius": 0.0,
-        "interpolation": "nearest",
+        "interpolation": "nearest_most_frequent",
     },
     symmetric_cmap=False,
     colorbar=False,

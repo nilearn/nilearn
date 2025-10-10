@@ -3,33 +3,53 @@
 import abc
 import contextlib
 import warnings
+from collections.abc import Iterable
+from copy import deepcopy
 
 import numpy as np
 from joblib import Memory
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import (
+    BaseEstimator,
+    TransformerMixin,
+)
 from sklearn.utils.estimator_checks import check_is_fitted
+from sklearn.utils.validation import check_array
 
-from nilearn._utils import repr_niimgs
+from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin, cache
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import (
-    rename_parameters,
-    stringify_path,
-)
-from nilearn._utils.logger import find_stack_level, log
+from nilearn._utils.helpers import stringify_path
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
+from nilearn._utils.niimg import repr_niimgs, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.image import (
     concat_imgs,
     high_variance_confounds,
+    new_img_like,
     resample_img,
     smooth_img,
 )
-from nilearn.masking import unmask
+from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
+from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
+from nilearn.surface.utils import check_polymesh_equal
+
+STANDARIZE_WARNING_MESSAGE = (
+    "The 'zscore' strategy incorrectly "
+    "uses population std to calculate sample zscores. "
+    "The new strategy 'zscore_sample' corrects this "
+    "behavior by using the sample std. "
+    "In release 0.14.0, the 'zscore' option will be removed "
+    "and using standardize=True will fall back "
+    "to 'zscore_sample'."
+    "To avoid this warning, please use 'zscore_sample' instead."
+)
 
 
 def filter_and_extract(
@@ -43,6 +63,7 @@ def filter_and_extract(
     sample_mask=None,
     copy=True,
     dtype=None,
+    sklearn_output_config=None,
 ):
     """Extract representative time series using given function.
 
@@ -63,7 +84,7 @@ def filter_and_extract(
 
     Returns
     -------
-    signals : 2D numpy array
+    signals : 1D or 2D numpy array
         Signals extracted using the extraction function. It is a scikit-learn
         friendly 2D array with shape n_samples x n_features.
 
@@ -76,33 +97,19 @@ def filter_and_extract(
     if isinstance(imgs, str):
         copy = False
 
-    log(
-        f"Loading data from {repr_niimgs(imgs, shorten=False)}",
-        verbose=verbose,
-    )
+    mask_logger("load_data", imgs, verbose)
 
     # Convert input to niimg to check shape.
     # This must be repeated after the shape check because check_niimg will
     # coerce 5D data to 4D, which we don't want.
     temp_imgs = check_niimg(imgs)
 
-    # Raise warning if a 3D niimg is provided.
-    if temp_imgs.ndim == 3:
-        warnings.warn(
-            "Starting in version 0.12, 3D images will be transformed to "
-            "1D arrays. "
-            "Until then, 3D images will be coerced to 2D arrays, with a "
-            "singleton first dimension representing time.",
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
-
     imgs = check_niimg(imgs, atleast_4d=True, ensure_ndim=4, dtype=dtype)
 
     target_shape = parameters.get("target_shape")
     target_affine = parameters.get("target_affine")
     if target_shape is not None or target_affine is not None:
-        log("Resampling images")
+        logger.log("Resampling images")
 
         imgs = cache(
             resample_img,
@@ -116,13 +123,11 @@ def filter_and_extract(
             target_shape=target_shape,
             target_affine=target_affine,
             copy=copy,
-            copy_header=True,
-            force_resample=False,  # set to True in 0.13.0
         )
 
     smoothing_fwhm = parameters.get("smoothing_fwhm")
     if smoothing_fwhm is not None:
-        log("Smoothing images", verbose=verbose)
+        logger.log("Smoothing images", verbose=verbose)
 
         imgs = cache(
             smooth_img,
@@ -131,7 +136,7 @@ def filter_and_extract(
             memory_level=memory_level,
         )(imgs, parameters["smoothing_fwhm"])
 
-    log("Extracting region signals", verbose=verbose)
+    mask_logger("extracting", verbose=verbose)
 
     region_signals, aux = cache(
         extraction_function,
@@ -147,7 +152,7 @@ def filter_and_extract(
     # Confounds removing (from csv file or numpy array)
     # Normalizing
 
-    log("Cleaning extracted signals", verbose=verbose)
+    mask_logger("cleaning", verbose=verbose)
 
     runs = parameters.get("runs", None)
     region_signals = cache(
@@ -169,11 +174,51 @@ def filter_and_extract(
         **parameters["clean_kwargs"],
     )
 
+    # if we need to output to numpy and input was a 3D img
+    # we return 1D array
+    if temp_imgs.ndim == 3 and sklearn_output_config is None:
+        region_signals = region_signals.squeeze()
+
     return region_signals, aux
 
 
+def mask_logger(step, img=None, verbose=0):
+    """Log similar messages for all maskers."""
+    repr = None
+    if img is not None:
+        repr = img.__repr__()
+        if verbose > 1:
+            repr = repr_niimgs(img, shorten=True)
+        elif verbose > 2:
+            repr = repr_niimgs(img, shorten=False)
+
+    messages = {
+        "cleaning": "Cleaning extracted signals",
+        "compute_mask": "Computing mask",
+        "extracting": "Extracting region signals",
+        "fit_done": "Finished fit",
+        "inverse_transform": "Computing image from signals",
+        "load_data": f"Loading data from {repr}",
+        "load_mask": f"Loading mask from {repr}",
+        "load_regions": f"Loading regions from {repr}",
+        "resample_mask": "Resampling mask",
+        "resample_regions": "Resampling regions",
+    }
+
+    check_parameter_in_allowed(step, messages.keys(), "step")
+
+    if step in ["load_mask", "load_data"] and repr is None:
+        return
+
+    logger.log(messages[step], verbose=verbose)
+
+
 @fill_doc
-class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class BaseMasker(
+    TransformerMixin,
+    CacheMixin,
+    BaseEstimator,
+):
     """Base class for NiftiMaskers."""
 
     @abc.abstractmethod
@@ -181,38 +226,26 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def transform_single_imgs(
         self, imgs, confounds=None, sample_mask=None, copy=True
     ):
-        """Extract signals from a single 4D niimg.
+        """Extract signals from a single niimg.
 
         Parameters
         ----------
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
 
         %(confounds)s
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         copy : :obj:`bool`, default=True
             Indicates whether a copy is returned or not.
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
-            Signal for each element.
-            shape: (number of scans, number of elements)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
+        %(signals_transform_nifti)s
 
         """
         raise NotImplementedError()
@@ -220,7 +253,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -230,9 +263,7 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
-        # bumping sklearn_version > 1.5
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -244,9 +275,54 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         tags.input_tags = InputTags(masker=True)
         return tags
 
+    @property
+    def _n_features_out(self):
+        """Needed by sklearn machinery for set_ouput."""
+        return self.n_elements_
+
+    @abc.abstractmethod
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
-        ...
+
+    @abc.abstractmethod
+    def _init_report_content(self):
+        """Initialize report content.
+
+        Prepare basing content to inject in the HTML template
+        during report generation.
+        """
+
+    @abc.abstractmethod
+    def _create_figure_for_report(self):
+        """Generate figure for report."""
+
+    def _load_mask(self, imgs):
+        """Load and validate mask if one passed at init.
+
+        Returns
+        -------
+        mask_img_ : None or 3D binary nifti
+        """
+        if self.mask_img is None:
+            # in this case
+            # (Multi)Niftimasker will infer one from imaged to fit
+            # other nifti maskers are OK with None
+            return None
+
+        mask_logger("load_mask", img=self.mask_img, verbose=self.verbose)
+
+        # ensure that the mask_img_ is a 3D binary image
+        tmp = check_niimg(self.mask_img, atleast_4d=True)
+        mask = safe_get_data(tmp, ensure_finite=True)
+        mask = mask.astype(bool).all(axis=3)
+        mask_img_ = new_img_like(self.mask_img, mask)
+
+        # Just check that the mask is valid
+        load_mask_img(mask_img_)
+        if imgs is not None:
+            check_compatibility_mask_and_images(self.mask_img, imgs)
+
+        return mask_img_
 
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
@@ -257,36 +333,35 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         imgs : 3D/4D Niimg-like object
             See :ref:`extracting_data`.
             Images to process.
-            If a 3D niimg is provided, a singleton dimension will be added to
-            the output to represent the single scan in the niimg.
+            If a 3D niimg is provided, a 1D array is returned.
 
         %(confounds)s
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
-            Signal for each element.
-            shape: (number of scans, number of elements)
-
-        Warns
-        -----
-        DeprecationWarning
-            If a 3D niimg input is provided, the current behavior
-            (adding a singleton dimension to produce a 2D array) is deprecated.
-            Starting in version 0.12, a 1D array will be returned for 3D
-            inputs.
-
+        %(signals_transform_nifti)s
         """
         check_is_fitted(self)
 
-        if confounds is None and not self.high_variance_confounds:
-            return self.transform_single_imgs(
-                imgs, confounds=confounds, sample_mask=sample_mask
+        if (self.standardize == "zscore") or (self.standardize is True):
+            # TODO (nilearn >= 0.14.0) remove or adapt warning
+            warnings.warn(
+                category=FutureWarning,
+                message=STANDARIZE_WARNING_MESSAGE,
+                stacklevel=find_stack_level(),
             )
+
+        if confounds is None and not self.high_variance_confounds:
+            # TODO (Nilearn >= 0.14.0) remove ignore FutureWarning
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=FutureWarning)
+                return self.transform_single_imgs(
+                    imgs, confounds=confounds, sample_mask=sample_mask
+                )
 
         # Compute high variance confounds if requested
         all_confounds = []
@@ -299,11 +374,13 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             else:
                 all_confounds.append(confounds)
 
-        return self.transform_single_imgs(
-            imgs, confounds=all_confounds, sample_mask=sample_mask
-        )
+        # TODO (Nilearn >= 0.14.0) remove ignore FutureWarning
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=FutureWarning)
+            return self.transform_single_imgs(
+                imgs, confounds=all_confounds, sample_mask=sample_mask
+            )
 
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.2")
     @fill_doc
     def fit_transform(
         self, imgs, y=None, confounds=None, sample_mask=None, **fit_params
@@ -322,12 +399,11 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         %(sample_mask)s
 
-                .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         Returns
         -------
-        X_new : numpy array of shape [n_samples, n_features_new]
-            Transformed array.
+        %(signals_transform_nifti)s
 
         """
         # non-optimized default implementation; override when a better
@@ -352,8 +428,8 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
         warnings.warn(
             f"[{self.__class__.__name__}.fit] "
             "Generation of a mask has been"
-            " requested (y != None) while a mask has"
-            " been provided at masker creation. Given mask"
+            " requested (y != None) while a mask was"
+            " given at masker creation. Given mask"
             " will be used.",
             stacklevel=find_stack_level(),
         )
@@ -361,8 +437,9 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
+    @fill_doc
     def inverse_transform(self, X):
-        """Transform the 2D data matrix back to an image in brain space.
+        """Transform the data matrix back to an image in brain space.
 
         This step only performs spatial unmasking,
         without inverting any additional processing performed by ``transform``,
@@ -370,21 +447,20 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : 1D/2D :obj:`numpy.ndarray`
-            Signal for each element in the mask.
-            If a 1D array is provided, then the shape should be
-            (number of elements,), and a 3D img will be returned.
-            If a 2D array is provided, then the shape should be
-            (number of scans, number of elements), and a 4D img will be
-            returned.
-            See :ref:`extracting_data`.
+        %(x_inv_transform)s
 
         Returns
         -------
-        img : Transformed image in brain space.
+        %(img_inv_transform_nifti)s
 
         """
         check_is_fitted(self)
+
+        # do not run sklearn_check as they may cause some failure
+        # with some GLM inputs
+        X = self._check_array(X, sklearn_check=False)
+
+        mask_logger("inverse_transform", verbose=self.verbose)
 
         img = self._cache(unmask)(X, self.mask_img_)
         # Be robust again memmapping that will create read-only arrays in
@@ -393,6 +469,40 @@ class BaseMasker(TransformerMixin, CacheMixin, BaseEstimator):
             img._header._structarr = np.array(img._header._structarr).copy()
         return img
 
+    def _check_array(
+        self, signals: np.ndarray, sklearn_check: bool = True
+    ) -> np.ndarray:
+        """Check array to inverse transform.
+
+        Parameters
+        ----------
+        signals : :obj:`numpy.ndarray`
+
+        sklearn_check : :obj:`bool`
+            Run scikit learn check on input
+        """
+        signals = np.atleast_1d(signals)
+
+        if sklearn_check:
+            signals = check_array(signals, ensure_2d=False)
+
+        assert signals.ndim <= 2
+
+        expected_shape = (
+            (self.n_elements_,)
+            if signals.ndim == 1
+            else (signals.shape[0], self.n_elements_)
+        )
+
+        if signals.shape != expected_shape:
+            raise ValueError(
+                "Input to 'inverse_transform' has wrong shape.\n"
+                f"Expected {expected_shape}.\n"
+                f"Got {signals.shape}."
+            )
+
+        return signals
+
 
 class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     """Class from which all surface maskers should inherit."""
@@ -400,7 +510,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     def _more_tags(self):
         """Return estimator tags.
 
-        TODO remove when bumping sklearn_version > 1.5
+        TODO (sklearn >= 1.6.0) remove
         """
         return self.__sklearn_tags__()
 
@@ -410,8 +520,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         See the sklearn documentation for more details on tags
         https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
         """
-        # TODO
-        # get rid of if block
+        # TODO (sklearn  >= 1.6.0) remove if block
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
@@ -425,9 +534,83 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         )
         return tags
 
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
-    )
+    @property
+    def _n_features_out(self):
+        """Needed by sklearn machinery for set_ouput."""
+        return self.n_elements_
+
+    def _check_imgs(self, imgs) -> None:
+        if not (
+            isinstance(imgs, SurfaceImage)
+            or (
+                hasattr(imgs, "__iter__")
+                and all(isinstance(x, SurfaceImage) for x in imgs)
+            )
+        ):
+            raise TypeError(
+                "'imgs' should be a SurfaceImage or "
+                "an iterable of SurfaceImage."
+                f"Got: {imgs.__class__.__name__}"
+            )
+
+    def _load_mask(self, imgs):
+        """Load and validate mask if one passed at init.
+
+        Returns
+        -------
+        mask_img_ : None or 1D binary SurfaceImage
+        """
+        if self.mask_img is None:
+            return None
+
+        mask_img_ = deepcopy(self.mask_img)
+
+        mask_logger("load_mask", img=mask_img_, verbose=self.verbose)
+
+        mask_img_ = at_least_2d(mask_img_)
+        mask = {}
+        for part, v in mask_img_.data.parts.items():
+            mask[part] = v
+            non_finite_mask = np.logical_not(np.isfinite(mask[part]))
+            if non_finite_mask.any():
+                warnings.warn(
+                    "Non-finite values detected. "
+                    "These values will be replaced with zeros.",
+                    stacklevel=find_stack_level(),
+                )
+                mask[part][non_finite_mask] = 0
+            mask[part] = mask[part].astype(bool).all(axis=1)
+
+        mask_img_ = new_img_like(self.mask_img, mask)
+
+        # Just check that the mask is valid
+        load_mask_img(mask_img_)
+        if imgs is not None:
+            check_compatibility_mask_and_images(mask_img_, imgs)
+            if not isinstance(imgs, Iterable):
+                imgs = [imgs]
+            for x in imgs:
+                check_surf_img(x)
+                check_polymesh_equal(mask_img_.mesh, x.mesh)
+
+        return mask_img_
+
+    @abc.abstractmethod
+    def fit(self, imgs=None, y=None):
+        """Present only to comply with sklearn estimators checks."""
+
+    @abc.abstractmethod
+    def _init_report_content(self):
+        """Initialize report content.
+
+        Prepare basing content to inject in the HTML template
+        during report generation.
+        """
+
+    @abc.abstractmethod
+    def _create_figure_for_report(self):
+        """Generate figure for report."""
+
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
         """Apply mask, spatial and temporal preprocessing.
@@ -444,16 +627,17 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        region_signals : 2D numpy.ndarray
-            Signal for each element.
-            shape: (number of scans, number of elements)
-
+        %(signals_transform_surface)s
         """
         check_is_fitted(self)
+        self._check_imgs(imgs)
+
+        return_1D = isinstance(imgs, SurfaceImage) and len(imgs.shape) < 2
 
         if not isinstance(imgs, list):
             imgs = [imgs]
         imgs = concat_imgs(imgs)
+        check_surf_img(imgs)
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
 
@@ -461,18 +645,29 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             warnings.warn(
                 "Parameter smoothing_fwhm "
                 "is not yet supported for surface data",
-                UserWarning,
+                NotImplementedWarning,
                 stacklevel=find_stack_level(),
             )
             self.smoothing_fwhm = None
+
+        if (self.standardize == "zscore") or (self.standardize is True):
+            # TODO (nilearn >= 0.14.0) remove or adapt warning
+            warnings.warn(
+                category=FutureWarning,
+                message=STANDARIZE_WARNING_MESSAGE,
+                stacklevel=find_stack_level(),
+            )
 
         if self.reports:
             self._reporting_data["images"] = imgs
 
         if confounds is None and not self.high_variance_confounds:
-            return self.transform_single_imgs(
-                imgs, confounds=confounds, sample_mask=sample_mask
-            )
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", category=FutureWarning)
+                signals = self.transform_single_imgs(
+                    imgs, confounds=confounds, sample_mask=sample_mask
+                )
+            return signals.squeeze() if return_1D else signals
 
         # Compute high variance confounds if requested
         all_confounds = []
@@ -487,8 +682,19 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
             else:
                 all_confounds.append(confounds)
 
-        return self.transform_single_imgs(
-            imgs, confounds=all_confounds, sample_mask=sample_mask
+        # TODO (Nilearn >= 0.14.0) remove ignore FutureWarning
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=FutureWarning)
+            signals = self.transform_single_imgs(
+                imgs, confounds=all_confounds, sample_mask=sample_mask
+            )
+
+        sklearn_output_config = getattr(self, "_sklearn_output_config", None)
+
+        return (
+            signals.squeeze()
+            if return_1D and sklearn_output_config is not None
+            else signals
         )
 
     @abc.abstractmethod
@@ -497,9 +703,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         # implemented in children classes
         raise NotImplementedError()
 
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.2"
-    )
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
         """Prepare and perform signal extraction from regions.
@@ -523,13 +726,98 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
 
         Returns
         -------
-        signals: :obj:`numpy.ndarray`
-            Signal for each region as provided
-            in the mask, label or maps image.
-            The shape will vary depending on the masker type:
-            - SurfaceMasker: (n_timepoints, n_vertices_in_mask)
-            - SurfaceLabelsMasker: (n_timepoints, n_regions)
-            - SurfaceMapssMasker: (n_timepoints, n_maps)
+        %(signals_transform_surface)s
         """
         del y
         return self.fit(imgs).transform(imgs, confounds, sample_mask)
+
+    def _check_array(
+        self, signals: np.ndarray, sklearn_check: bool = True
+    ) -> np.ndarray:
+        """Check array to inverse transform.
+
+        Parameters
+        ----------
+        signals : :obj:`numpy.ndarray`
+
+        sklearn_check : :obj:`bool`
+            Run scikit learn check on input
+        """
+        signals = np.atleast_2d(signals)
+
+        if sklearn_check:
+            signals = check_array(signals, ensure_2d=False)
+
+        if signals.shape[-1] != self.n_elements_:
+            raise ValueError(
+                "Input to 'inverse_transform' has wrong shape.\n"
+                f"Last dimension should be {self.n_elements_}.\n"
+                f"Got {signals.shape[-1]}."
+            )
+
+        return signals
+
+    def _generate_figure(
+        self,
+        img=None,
+        bg_map=None,
+        roi_map=None,
+        vmin=None,
+        vmax=None,
+        threshold=None,
+    ):
+        """Create figure for all reports."""
+        import matplotlib.pyplot as plt
+
+        from nilearn.plotting import plot_surf, plot_surf_contours
+
+        hemi_view = {
+            "left": ["lateral", "medial"],
+            "right": ["lateral", "medial"],
+            "both": ["anterior", "posterior"],
+        }
+
+        fig, axes = plt.subplots(
+            len(next(iter(hemi_view.values()))),
+            len(hemi_view.keys()),
+            subplot_kw={"projection": "3d"},
+            figsize=(20, 20),
+            layout="constrained",
+        )
+
+        axes = np.atleast_2d(axes)
+
+        for j, (hemi, views) in enumerate(hemi_view.items()):
+            for i, view in enumerate(views):
+                if img:
+                    plot_surf(
+                        surf_map=img,
+                        bg_map=bg_map,
+                        hemi=hemi,
+                        view=view,
+                        figure=fig,
+                        axes=axes[i, j],
+                        cmap=self.cmap,
+                        vmin=vmin,
+                        vmax=vmax,
+                        threshold=threshold,
+                        bg_on_data=True,
+                    )
+
+                if roi_map:
+                    colors = self._set_contour_colors(self)
+
+                    plot_surf_contours(
+                        roi_map=roi_map,
+                        hemi=hemi,
+                        view=view,
+                        figure=fig,
+                        axes=axes[i, j],
+                        colors=colors,
+                    )
+
+        return fig
+
+    def _set_contour_colors(self, hemi):
+        """Set the colors for the contours in the report."""
+        del hemi

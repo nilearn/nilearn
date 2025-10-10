@@ -7,15 +7,16 @@ import pytest
 from numpy.testing import assert_array_almost_equal, assert_array_equal
 from pandas import DataFrame
 from scipy import linalg
-from sklearn import __version__ as sklearn_version
 from sklearn.covariance import EmpiricalCovariance, LedoitWolf
-from sklearn.utils.estimator_checks import (
-    check_estimator as sklearn_check_estimator,
-)
+from sklearn.utils.estimator_checks import parametrize_with_checks
 
-from nilearn._utils import compare_version
-from nilearn._utils.estimator_checks import check_estimator
+from nilearn._utils.estimator_checks import (
+    check_estimator,
+    nilearn_check_estimator,
+    return_expected_failed_checks,
+)
 from nilearn._utils.extmath import is_spd
+from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.connectome.connectivity_matrices import (
     ConnectivityMeasure,
     _check_spd,
@@ -42,77 +43,61 @@ N_FEATURES = 49
 N_SUBJECTS = 5
 
 
-@pytest.mark.parametrize(
-    "estimator",
-    [EmpiricalCovariance(), LedoitWolf()],
-)
-def test_check_estimator_cov_estimator(estimator):
-    """Check compliance with sklearn estimators."""
-    sklearn_check_estimator(estimator)
+ESTIMATORS_TO_CHECK = [
+    ConnectivityMeasure(
+        cov_estimator=EmpiricalCovariance(), standardize="zscore_sample"
+    )
+]
 
+if SKLEARN_LT_1_6:
 
-expected_failed_checks = {
-    "check_complex_data": "TODO",
-    "check_dont_overwrite_parameters": "TODO",
-    "check_dtype_object": "TODO",
-    "check_estimator_sparse_array": "TODO",
-    "check_estimator_sparse_matrix": "TODO",
-    "check_estimators_empty_data_messages": "TODO",
-    "check_estimators_overwrite_params": "TODO",
-    "check_f_contiguous_array_estimator": "TODO",
-    "check_fit_check_is_fitted": "handled by nilearn checks",
-    "check_fit2d_1feature": "TODO",
-    "check_fit2d_1sample": "TODO",
-    "check_fit2d_predict1d": "TODO",
-    "check_methods_sample_order_invariance": "TODO",
-    "check_methods_subset_invariance": "TODO",
-    "check_positive_only_tag_during_fit": "TODO",
-    "check_readonly_memmap_input": "TODO",
-    "check_transformer_data_not_an_array": "TODO",
-    "check_transformer_general": "TODO",
-    "check_transformer_preserve_dtypes": "TODO",
-}
+    @pytest.mark.parametrize(
+        "estimator, check, name",
+        (check_estimator(estimators=ESTIMATORS_TO_CHECK)),
+    )
+    def test_check_estimator_sklearn_valid(estimator, check, name):
+        """Check compliance with sklearn estimators."""
+        if name == "check_estimators_fit_returns_self":
+            # "check_estimators_fit_returns_self" fails with sklearn 1.4
+            # whether passed as a valid or invalid check
+            # so we are skipping it.
+            # Note it passes fine with later sklearn versions
+            pytest.skip("ignored for older sklearn")
+        check(estimator)
 
-if compare_version(sklearn_version, "<", "1.5.0"):
-    expected_failed_checks |= {
-        "check_estimator_sparse_data": "TODO",
-    }
-
-
-@pytest.mark.parametrize(
-    "estimator, check, name",
-    (
+    @pytest.mark.xfail(reason="invalid checks should fail")
+    @pytest.mark.parametrize(
+        "estimator, check, name",
         check_estimator(
-            estimator=[
-                ConnectivityMeasure(cov_estimator=EmpiricalCovariance())
-            ],
-            expected_failed_checks=expected_failed_checks,
-        )
-    ),
-)
-def test_check_estimator_group_sparse_covariance(
-    estimator,
-    check,
-    name,  # noqa: ARG001
-):
-    """Check compliance with sklearn estimators."""
-    check(estimator)
+            estimators=ESTIMATORS_TO_CHECK,
+            valid=False,
+        ),
+    )
+    def test_check_estimator_sklearn_invalid(
+        estimator,
+        check,
+        name,  # noqa: ARG001
+    ):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
+
+else:
+
+    @parametrize_with_checks(
+        estimators=ESTIMATORS_TO_CHECK,
+        expected_failed_checks=return_expected_failed_checks,
+    )
+    def test_check_estimator_sklearn_2(estimator, check):
+        """Check compliance with sklearn estimators."""
+        check(estimator)
 
 
-@pytest.mark.xfail(reason="invalid checks should fail")
 @pytest.mark.parametrize(
     "estimator, check, name",
-    check_estimator(
-        estimator=[ConnectivityMeasure(cov_estimator=EmpiricalCovariance())],
-        valid=False,
-    ),
+    nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
 )
-def test_check_estimator_invalid_group_sparse_covariance(
-    estimator,
-    check,
-    name,  # noqa: ARG001
-):
-    """Check compliance with sklearn estimators."""
+def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
+    """Check compliance with nilearn estimators rules."""
     check(estimator)
 
 
@@ -233,7 +218,7 @@ def test_check_square():
 )  # non SPD
 def test_check_spd(invalid_input):
     with pytest.raises(
-        ValueError, match="Expected a symmetric positive definite matrix."
+        ValueError, match=r"Expected a symmetric positive definite matrix."
     ):
         _check_spd(invalid_input)
 
@@ -325,7 +310,7 @@ def test_geometric_mean_properties():
 
     # Generic
     assert isinstance(spds, list)
-    for spd, input_spd in zip(spds, input_spds):
+    for spd, input_spd in zip(spds, input_spds, strict=False):
         assert_array_equal(spd, input_spd)
     assert is_spd(gmean, decimal=7)
 
@@ -513,7 +498,7 @@ def test_geometric_mean_error_input_matrices_have_different_shapes():
     mat2 = np.ones((n_features + 1, n_features + 1))
 
     with pytest.raises(
-        ValueError, match="Matrices are not of the same shape."
+        ValueError, match=r"Matrices are not of the same shape."
     ):
         _geometric_mean([mat1, mat2])
 
@@ -523,7 +508,7 @@ def test_geometric_mean_error_non_spd_input_matrix():
     mat2 = np.ones((n_features + 1, n_features + 1))
 
     with pytest.raises(
-        ValueError, match="Expected a symmetric positive definite matrix."
+        ValueError, match=r"Expected a symmetric positive definite matrix."
     ):
         _geometric_mean([mat2])
 
@@ -636,31 +621,29 @@ def test_prec_to_partial():
 
 def test_connectivity_measure_errors():
     # Raising error for input subjects not iterable
-    conn_measure = ConnectivityMeasure()
-
-    with pytest.raises(
-        ValueError, match="'subjects' input argument must be an iterable"
-    ):
-        conn_measure.fit(1.0)
+    conn_measure = ConnectivityMeasure(standardize="zscore_sample")
 
     # input subjects not 2D numpy.ndarrays
     with pytest.raises(
-        ValueError, match="Each subject must be 2D numpy.ndarray."
+        ValueError, match=r"Each subject must be 2D numpy.ndarray."
     ):
         conn_measure.fit([np.ones((100, 40)), np.ones((10,))])
 
     # input subjects with different number of features
     with pytest.raises(
-        ValueError, match="All subjects must have the same number of features."
+        ValueError,
+        match=r"All subjects must have the same number of features.",
     ):
         conn_measure.fit([np.ones((100, 40)), np.ones((100, 41))])
 
     # fit_transform with a single subject and kind=tangent
-    conn_measure = ConnectivityMeasure(kind="tangent")
+    conn_measure = ConnectivityMeasure(
+        kind="tangent", standardize="zscore_sample"
+    )
 
     with pytest.raises(
         ValueError,
-        match="Tangent space parametrization .* only be .* group of subjects",
+        match=r"Tangent space parametrization .* only be .* group of subjects",
     ):
         conn_measure.fit_transform([np.ones((100, 40))])
 
@@ -676,7 +659,9 @@ def test_connectivity_measure_generic(
 
     # Check outputs properties
     input_covs = copy.copy(covs)
-    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+    conn_measure = ConnectivityMeasure(
+        kind=kind, cov_estimator=cov_estimator, standardize="zscore_sample"
+    )
     connectivities = conn_measure.fit_transform(signals)
 
     # Generic
@@ -687,6 +672,32 @@ def test_connectivity_measure_generic(
         assert_array_equal(input_covs[k], covs[k])
 
         assert is_spd(covs[k], decimal=7)
+
+
+@pytest.mark.parametrize(
+    "cov_estimator", [EmpiricalCovariance(), LedoitWolf()]
+)
+@pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
+def test_connectivity_measure_generic_3d_array(kind, cov_estimator, signals):
+    """Ensure ConnectivityMeasure accepts 3D arrays or tuple of 2D arrays."""
+    conn_measure = ConnectivityMeasure(
+        kind=kind, cov_estimator=cov_estimator, standardize="zscore_sample"
+    )
+
+    signals_as_array = np.asarray(
+        [_signals(n_subjects=1)[0] for _ in range(5)]
+    ).squeeze()
+    assert signals_as_array.ndim == 3
+
+    connectivities = conn_measure.fit_transform(signals_as_array)
+
+    assert isinstance(connectivities, np.ndarray)
+
+    signals_as_tuple = tuple(signals)
+
+    connectivities = conn_measure.fit_transform(signals_as_tuple)
+
+    assert isinstance(connectivities, np.ndarray)
 
 
 def _assert_connectivity_tangent(connectivities, conn_measure, covs):
@@ -700,7 +711,7 @@ def _assert_connectivity_tangent(connectivities, conn_measure, covs):
         also produces a positive-definite matrix
     """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         assert_array_almost_equal(
             estimated_covariance_matrix, estimated_covariance_matrix.T
@@ -729,7 +740,7 @@ def _assert_connectivity_precision(connectivities, covs):
       is close to the identity matrix.
     """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         assert is_spd(estimated_covariance_matrix, decimal=7)
         assert_array_almost_equal(
@@ -752,7 +763,7 @@ def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
     should be close to the true covariance matrix.
     """
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         assert is_spd(estimated_covariance_matrix, decimal=7)
 
@@ -772,7 +783,7 @@ def _assert_connectivity_correlation(connectivities, cov_estimator, covs):
 
 def _assert_connectivity_partial_correlation(connectivities, covs):
     for true_covariance_matrix, estimated_covariance_matrix in zip(
-        covs, connectivities
+        covs, connectivities, strict=False
     ):
         precision_matrix = linalg.inv(true_covariance_matrix)
 
@@ -809,7 +820,9 @@ def test_connectivity_measure_specific_for_each_kind(
 ):
     signals, covs = signals_and_covariances
 
-    conn_measure = ConnectivityMeasure(kind=kind, cov_estimator=cov_estimator)
+    conn_measure = ConnectivityMeasure(
+        kind=kind, cov_estimator=cov_estimator, standardize="zscore_sample"
+    )
     connectivities = conn_measure.fit_transform(signals)
 
     if kind == "tangent":
@@ -824,7 +837,7 @@ def test_connectivity_measure_specific_for_each_kind(
 
 @pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
 def test_connectivity_measure_check_mean(kind, signals):
-    conn_measure = ConnectivityMeasure(kind=kind)
+    conn_measure = ConnectivityMeasure(kind=kind, standardize="zscore_sample")
     conn_measure.fit_transform(signals)
 
     assert (conn_measure.mean_).shape == (N_FEATURES, N_FEATURES)
@@ -836,7 +849,9 @@ def test_connectivity_measure_check_mean(kind, signals):
         )
 
     # Check that the mean isn't modified in transform
-    conn_measure = ConnectivityMeasure(kind="covariance")
+    conn_measure = ConnectivityMeasure(
+        kind="covariance", standardize="zscore_sample"
+    )
     conn_measure.fit(signals[:1])
     mean = conn_measure.mean_
     conn_measure.transform(signals[1:])
@@ -846,9 +861,11 @@ def test_connectivity_measure_check_mean(kind, signals):
 
 @pytest.mark.parametrize("kind", CONNECTIVITY_KINDS)
 def test_connectivity_measure_check_vectorization_option(kind, signals):
-    conn_measure = ConnectivityMeasure(kind=kind)
+    conn_measure = ConnectivityMeasure(kind=kind, standardize="zscore_sample")
     connectivities = conn_measure.fit_transform(signals)
-    conn_measure = ConnectivityMeasure(vectorize=True, kind=kind)
+    conn_measure = ConnectivityMeasure(
+        vectorize=True, kind=kind, standardize="zscore_sample"
+    )
     vectorized_connectivities = conn_measure.fit_transform(signals)
 
     assert_array_almost_equal(
@@ -862,7 +879,7 @@ def test_connectivity_measure_check_vectorization_option(kind, signals):
 )
 def test_connectivity_measure_check_inverse_transformation(kind, signals):
     # without vectorization: input matrices are returned with no change
-    conn_measure = ConnectivityMeasure(kind=kind)
+    conn_measure = ConnectivityMeasure(kind=kind, standardize="zscore_sample")
     connectivities = conn_measure.fit_transform(signals)
 
     assert_array_almost_equal(
@@ -871,7 +888,9 @@ def test_connectivity_measure_check_inverse_transformation(kind, signals):
 
     # with vectorization: input vectors are reshaped into matrices
     # if diagonal has not been discarded
-    conn_measure = ConnectivityMeasure(kind=kind, vectorize=True)
+    conn_measure = ConnectivityMeasure(
+        kind=kind, vectorize=True, standardize="zscore_sample"
+    )
     vectorized_connectivities = conn_measure.fit_transform(signals)
 
     assert_array_almost_equal(
@@ -888,9 +907,14 @@ def test_connectivity_measure_check_inverse_transformation_discard_diag(
     kind, signals
 ):
     # with vectorization
-    connectivities = ConnectivityMeasure(kind=kind).fit_transform(signals)
+    connectivities = ConnectivityMeasure(
+        kind=kind, standardize="zscore_sample"
+    ).fit_transform(signals)
     conn_measure = ConnectivityMeasure(
-        kind=kind, vectorize=True, discard_diagonal=True
+        kind=kind,
+        vectorize=True,
+        discard_diagonal=True,
+        standardize="zscore_sample",
     )
     vectorized_connectivities = conn_measure.fit_transform(signals)
 
@@ -919,9 +943,13 @@ def test_connectivity_measure_inverse_transform_tangent(
 ):
     """For 'tangent' kind, covariance matrices are reconstructed."""
     # Without vectorization
-    tangent_measure = ConnectivityMeasure(kind="tangent")
+    tangent_measure = ConnectivityMeasure(
+        kind="tangent", standardize="zscore_sample"
+    )
     displacements = tangent_measure.fit_transform(signals)
-    covariances = ConnectivityMeasure(kind="covariance").fit_transform(signals)
+    covariances = ConnectivityMeasure(
+        kind="covariance", standardize="zscore_sample"
+    ).fit_transform(signals)
 
     assert_array_almost_equal(
         tangent_measure.inverse_transform(displacements), covariances
@@ -929,7 +957,9 @@ def test_connectivity_measure_inverse_transform_tangent(
 
     # with vectorization
     # when diagonal has not been discarded
-    tangent_measure = ConnectivityMeasure(kind="tangent", vectorize=True)
+    tangent_measure = ConnectivityMeasure(
+        kind="tangent", vectorize=True, standardize="zscore_sample"
+    )
     vectorized_displacements = tangent_measure.fit_transform(signals)
 
     assert_array_almost_equal(
@@ -939,7 +969,10 @@ def test_connectivity_measure_inverse_transform_tangent(
 
     # When diagonal has been discarded
     tangent_measure = ConnectivityMeasure(
-        kind="tangent", vectorize=True, discard_diagonal=True
+        kind="tangent",
+        vectorize=True,
+        discard_diagonal=True,
+        standardize="zscore_sample",
     )
     vectorized_displacements = tangent_measure.fit_transform(signals)
 
@@ -963,7 +996,7 @@ def test_confounds_connectome_measure():
     signals, confounds = _signals(n_subjects)
 
     correlation_measure = ConnectivityMeasure(
-        kind="correlation", vectorize=True
+        kind="correlation", vectorize=True, standardize="zscore_sample"
     )
 
     # Clean confounds on 10 subjects with confounds filtered to 10 subjects in
@@ -984,27 +1017,41 @@ def test_confounds_connectome_measure():
 
 
 def test_confounds_connectome_measure_errors(signals):
+    """Check proper errors raised for wrong inputs."""
+    # Raising error for input signals are not iterable
+    conn_measure = ConnectivityMeasure(
+        vectorize=True, standardize="zscore_sample"
+    )
+    msg = "is not iterable"
+
+    with pytest.raises(TypeError, match=msg):
+        conn_measure._check_input(X=1.0)
+
     # Generate signals and compute covariances and apply confounds while
     # computing covariances
     signals, confounds = _signals()
 
     # Raising error for input confounds are not iterable
-    conn_measure = ConnectivityMeasure(vectorize=True)
+    conn_measure = ConnectivityMeasure(
+        vectorize=True, standardize="zscore_sample"
+    )
     msg = "'confounds' input argument must be an iterable"
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure._check_input(X=signals, confounds=1.0)
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure._fit_transform(
             X=signals, do_fit=True, do_transform=True, confounds=1.0
         )
 
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(TypeError, match=msg):
         conn_measure.fit_transform(X=signals, y=None, confounds=1.0)
 
     # Raising error for input confounds are given but not vectorize=True
-    conn_measure = ConnectivityMeasure(vectorize=False)
+    conn_measure = ConnectivityMeasure(
+        vectorize=False, standardize="zscore_sample"
+    )
     with pytest.raises(
         ValueError, match="'confounds' are provided but vectorize=False"
     ):

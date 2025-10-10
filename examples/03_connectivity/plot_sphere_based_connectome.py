@@ -64,7 +64,7 @@ masker = NiftiSpheresMasker(
     t_r=2,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=2,
+    verbose=1,
     clean_args={
         "butterworth__padtype": "even"
     },  # kwarg to modify Butterworth filter
@@ -96,7 +96,7 @@ import matplotlib.pyplot as plt
 
 plt.figure(constrained_layout=True)
 
-for time_serie, label in zip(time_series.T, labels):
+for time_serie, label in zip(time_series.T, labels, strict=False):
     plt.plot(time_serie, label=label)
 
 plt.title("Default Mode Network Time Series")

@@ -167,7 +167,7 @@ def _generate_confounds_file_candidates(nii_file):
     filenames : list of str
         List of potential confounds filenames.
     """
-    parsed_file = parse_bids_filename(nii_file, legacy=False)
+    parsed_file = parse_bids_filename(nii_file)
     entities = parsed_file["entities"]
     entities["desc"] = "confounds"
 
@@ -426,7 +426,7 @@ def prepare_output(confounds, demean):
     Returns
     -------
     sample_mask : None or numpy.ndarray
-        When no volumns require removal, the value is None.
+        When no volume removal is required, the value is None.
         Otherwise, the shape is \
             (number of scans - number of volumes removed, )
         The index of the niimgs along time/fourth dimension for valid
@@ -458,7 +458,7 @@ def _demean_confounds(confounds, sample_mask):
         Confound regressors loaded based on user's choice.
 
     sample_mask : None or numpy.ndarray
-        When no volumns require removal, the value is None.
+        When no volume removal is required, the value is None.
         Otherwise, the shape is \
             (number of scans - number of volumes removed, )
         The index of the niimgs along time/fourth dimension for valid

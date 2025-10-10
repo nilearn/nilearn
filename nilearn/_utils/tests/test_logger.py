@@ -12,7 +12,12 @@ from io import StringIO
 import pytest
 from sklearn.base import BaseEstimator
 
-from nilearn._utils.logger import _has_rich, log
+from nilearn._utils.logger import (
+    _has_rich,
+    find_stack_level,
+    log,
+    one_level_deeper,
+)
 
 
 # Helper functions and classes
@@ -80,6 +85,12 @@ def test_log_1_non_matching_object(capsys):
     t.run3()
     captured = capsys.readouterr()
     assert captured.out == "[Run3.run3] method Test3\n[run] function run()\n"
+
+
+def test_find_stack_level():
+    """Test find_stack_level."""
+    assert find_stack_level() == 1
+    assert one_level_deeper() == 2
 
 
 def test_log_stack_lvl_stack_too_large(capsys):

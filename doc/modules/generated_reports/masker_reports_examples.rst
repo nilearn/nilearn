@@ -2,8 +2,8 @@
 
 .. only:: html
 
-Examples masker reports
-=======================
+Examples nifti masker reports
+=============================
 
 Nifti masker
 ------------
@@ -69,9 +69,11 @@ Adapted from :ref:`sphx_glr_auto_examples_04_glm_first_level_plot_adhd_dmn.py`
 .. raw:: html
    :file: nifti_sphere_masker_fitted.html
 
+Examples surface masker reports
+===============================
 
-Surface maskers
----------------
+Surface masker
+--------------
 
 .. raw:: html
    :file: surface_masker.html
@@ -79,11 +81,17 @@ Surface maskers
 .. raw:: html
    :file: surface_masker_with_mask.html
 
+Surface labels masker
+---------------------
+
 .. raw:: html
    :file: surface_label_masker_unfitted.html
 
 .. raw:: html
    :file: surface_label_masker.html
+
+Surface maps masker
+-------------------
 
 .. raw:: html
    :file: surface_maps_masker_plotly.html
