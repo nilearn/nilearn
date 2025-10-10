@@ -1,7 +1,5 @@
 """Extract data from multiple 2D surface objects."""
 
-from __future__ import annotations
-
 import numpy as np
 from sklearn.utils.estimator_checks import check_is_fitted
 
@@ -191,6 +189,9 @@ class MultiSurfaceMasker(_MultiMixin, SurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        self._init_report_content()
+
         if imgs is not None:
             self._check_imgs(imgs)
 

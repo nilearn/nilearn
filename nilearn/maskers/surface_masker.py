@@ -1,7 +1,5 @@
 """Masker for surface objects."""
 
-from __future__ import annotations
-
 from copy import deepcopy
 from warnings import warn
 
@@ -27,7 +25,7 @@ from nilearn.surface.utils import check_polymesh_equal
 class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     """Extract data from a :obj:`~nilearn.surface.SurfaceImage`.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -119,24 +117,6 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            # unused but required in HTML template
-            "number_of_regions": None,
-            "summary": None,
-            "warning_message": None,
-            "n_elements": 0,
-            "coverage": 0,
-        }
-        # data necessary to construct figure for the report
-        self._reporting_data = None
 
     def __sklearn_is_fitted__(self):
         return (
@@ -217,6 +197,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        self._init_report_content()
+
         if imgs is not None:
             self._check_imgs(imgs)
 
@@ -269,6 +252,32 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        """Initialize report content.
+
+        Prepare basing content to inject in the HTML template
+        during report generation.
+        """
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This report shows the input surface image overlaid "
+                    "with the outlines of the mask. "
+                    "We recommend to inspect the report for the overlap "
+                    "between the mask and its input image. "
+                ),
+                "n_vertices": {},
+                # unused but required in HTML template
+                "number_of_regions": None,
+                "summary": None,
+                "warning_message": None,
+                "n_elements": 0,
+                "coverage": 0,
+            }
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = None
 
     @fill_doc
     def transform_single_imgs(
@@ -446,7 +455,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return fig
 
-    def _set_contour_colors(self, hemi) -> None | str | list[str]:
+    def _set_contour_colors(self, hemi) -> str | list[str] | None:
         """Set the colors for the contours in the report."""
         if hemi in ["left", "right"]:
             n_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
@@ -462,12 +471,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 )
             )
 
-        colors: None | str | list[str]
         if n_regions == 1:
-            colors = "b"
+            return "b"
         elif n_regions == 2:
-            colors = ["w", "b"]
+            return ["w", "b"]
         else:
-            colors = None
-
-        return colors
+            return None

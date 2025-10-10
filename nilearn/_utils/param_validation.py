@@ -44,7 +44,7 @@ def check_threshold(
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
     Returns
     -------
@@ -170,6 +170,7 @@ TYPE_MAPS = {
     "border_size": nilearn_typing.BorderSize,
     "bg_on_data": nilearn_typing.BgOnData,
     "colorbar": nilearn_typing.ColorBar,
+    "cluster_threshold": nilearn_typing.ClusterThreshold,
     "connected": nilearn_typing.Connected,
     "copy_header": nilearn_typing.CopyHeader,
     "data_dir": nilearn_typing.DataDir,
@@ -276,12 +277,12 @@ def check_is_of_allowed_type(
 ):
     if not isinstance(type_to_check, tuple):
         type_to_check = (type_to_check,)
-    type_to_check_str = ", ".join([str(x) for x in type_to_check])
-    error_msg = (
-        f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
-        f"Got: '{value.__class__.__name__}'"
-    )
     if not isinstance(value, type_to_check):
+        type_to_check_str = ", ".join([str(x) for x in type_to_check])
+        error_msg = (
+            f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
+            f"Got: '{value.__class__.__name__}'"
+        )
         raise TypeError(error_msg)
 
 

@@ -44,6 +44,7 @@ from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
     extract_data,
+    find_surface_clusters,
 )
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
@@ -330,7 +331,7 @@ def _crop_img_to(img, slices, copy=True, copy_header=True):
 
     %(copy_header)s
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -398,7 +399,7 @@ def crop_img(
 
     %(copy_header)s
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -539,7 +540,7 @@ def mean_img(
 
     %(copy_header)s
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -783,7 +784,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=True):
         Data to be stored in the image. If data dtype is a boolean, then data
         is cast to 'uint8' by default.
 
-        .. versionchanged:: 0.9.2
+        .. nilearn_versionchanged:: 0.9.2
             Changed default dtype casting of booleans from 'int8' to 'uint8'.
 
         If ``ref_niimg`` is a Niimg-like object,
@@ -870,8 +871,9 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     ----------
     arr : :obj:`numpy.ndarray` of shape (X, Y, Z)
         3D array that has been thresholded at the voxel level.
-    cluster_threshold : :obj:`float`
-        Cluster-size threshold, in voxels, to apply to ``arr``.
+
+    %(cluster_threshold)s
+
     copy : :obj:`bool`, default=True
         Whether to copy the array before modifying it or not.
 
@@ -889,6 +891,7 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
     Clusters are defined using 6-connectivity, also known as NN1 (in AFNI) or
     "faces" connectivity.
     """
+    check_params(locals())
     assert arr.ndim == 3
 
     if copy:
@@ -969,12 +972,12 @@ def threshold_img(
 
         The score is calculated only on the non-negative values of data.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
-    .. versionchanged:: 0.9.0
+    .. nilearn_versionchanged:: 0.9.0
         New ``cluster_threshold`` and ``two_sided`` parameters added.
 
-    .. versionchanged:: 0.12.0
+    .. nilearn_versionchanged:: 0.12.0
         Add support for SurfaceImage.
 
     Parameters
@@ -992,19 +995,19 @@ def threshold_img(
         within the range of ``"0%%"`` to ``"100%%"``.
 
     cluster_threshold : :obj:`float`, default=0
-        Cluster size threshold, in voxels. In the returned thresholded map,
-        sets of connected voxels (``clusters``) with size smaller than this
-        number will be removed.
+        Cluster size threshold, in voxels / vertices.
+        In the returned thresholded map,
+        sets of connected voxels / vertices (``clusters``)
+        with size smaller than this number
+        will be removed.
 
-        Not implemented for SurfaceImage.
-
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
     two_sided : :obj:`bool`, default=True
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
     mask_img : Niimg-like object or a :obj:`~nilearn.surface.SurfaceImage` \
         or None, default=None
@@ -1017,7 +1020,7 @@ def threshold_img(
 
     %(copy_header)s
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -1058,14 +1061,6 @@ def threshold_img(
 
     if isinstance(img, SurfaceImage) and isinstance(mask_img, SurfaceImage):
         check_polymesh_equal(mask_img.mesh, img.mesh)
-
-    if isinstance(img, SurfaceImage) and cluster_threshold > 0:
-        warnings.warn(
-            "Cluster thresholding not implemented for SurfaceImage. "
-            "Setting 'cluster_threshold' to 0.",
-            stacklevel=find_stack_level(),
-        )
-        cluster_threshold = 0
 
     if isinstance(img, NiimgLike):
         img = check_niimg(img)
@@ -1129,11 +1124,24 @@ def threshold_img(
     if expand:
         img_data = img_data[:, :, :, None]
     if cluster_threshold > 0:
-        for i_vol in range(img_data.shape[3]):
-            img_data[..., i_vol] = _apply_cluster_size_threshold(
-                img_data[..., i_vol],
-                cluster_threshold,
-            )
+        if isinstance(img, NiimgLike):
+            for i_vol in range(img_data.shape[3]):
+                img_data[..., i_vol] = _apply_cluster_size_threshold(
+                    img_data[..., i_vol],
+                    cluster_threshold,
+                )
+        else:
+            for hemi in img_data.data.parts:
+                clusters, labels = find_surface_clusters(
+                    img_data.mesh.parts[hemi], img_data.data.parts[hemi]
+                )
+                # exclude only labels with size < min_size
+                exclude_labels = set(
+                    clusters.loc[clusters["size"] < cluster_threshold, "index"]
+                )
+                exclude = np.isin(labels, list(exclude_labels))
+                img_data.data.parts[hemi][exclude] = 0
+
     if expand:
         # Reduce back to 3D
         img_data = img_data[:, :, :, 0]
@@ -1187,7 +1195,7 @@ def _apply_threshold(img_data, two_sided, cutoff_threshold):
 def math_img(formula, copy_header_from=None, **imgs):
     """Interpret a numpy based string formula using niimg in named parameters.
 
-    .. versionadded:: 0.2.3
+    .. nilearn_versionadded:: 0.2.3
 
     Parameters
     ----------
@@ -1205,7 +1213,7 @@ def math_img(formula, copy_header_from=None, **imgs):
 
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
-        .. versionadded:: 0.10.4
+        .. nilearn_versionadded:: 0.10.4
 
     imgs : images (:class:`~nibabel.nifti1.Nifti1Image` or file names \
            or :obj:`~nilearn.surface.SurfaceImage` object)
@@ -1251,7 +1259,7 @@ def math_img(formula, copy_header_from=None, **imgs):
     but might have different header information, specifically the TR value,
     see :gh:`2645`.
 
-    .. versionadded:: 0.10.4
+    .. nilearn_versionadded:: 0.10.4
 
     We can also copy the header from one of the input images using
     ``copy_header_from``::
@@ -1347,7 +1355,7 @@ def binarize_img(
 ):
     """Binarize an image such that its values are either 0 or 1.
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -1374,9 +1382,9 @@ def binarize_img(
         If `True`, threshold is applied to the absolute value of the image.
         If `False`, threshold is applied to the original value of the image.
 
-        .. versionadded:: 0.10.3
+        .. nilearn_versionadded:: 0.10.3
 
-        .. versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0dev
 
             Default was changed to False.
 
@@ -1384,7 +1392,7 @@ def binarize_img(
 
         Ignored for :obj:`~nilearn.surface.SurfaceImage`.
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -1456,7 +1464,7 @@ def clean_img(
     orthogonally to temporal filters (low- and/or high-pass filters), if both
     are specified.
 
-    .. versionadded:: 0.2.5
+    .. nilearn_versionadded:: 0.2.5
 
     Parameters
     ----------
@@ -1627,7 +1635,7 @@ def clean_img(
 def load_img(img, wildcards=True, dtype=None):
     """Load a Niimg-like object from filenames or list of filenames.
 
-    .. versionadded:: 0.2.5
+    .. nilearn_versionadded:: 0.2.5
 
     Parameters
     ----------
@@ -1826,7 +1834,7 @@ def concat_imgs(
 def largest_connected_component_img(imgs):
     """Return the largest connected component of an image or list of images.
 
-    .. versionadded:: 0.3.1
+    .. nilearn_versionadded:: 0.3.1
 
     Parameters
     ----------

@@ -408,7 +408,7 @@ Surface plotting
 Plotting functions required to plot surface data or statistical maps
 on a brain surface.
 
-.. versionadded:: 0.3
+.. nilearn_versionadded:: 0.3
 
 .. |plot_surf_roi| image:: ../auto_examples/01_plotting/images/sphx_glr_plot_surf_atlas_001.png
      :target: ../auto_examples/01_plotting/plot_surf_atlas.html
@@ -451,11 +451,11 @@ interactive mode is available:
 - :ref:`interactive-surface-plotting`
 - :ref:`interactive-connectome-plotting`
 
-.. versionadded:: 0.5
+.. nilearn_versionadded:: 0.5
 
    Interactive plotting is new in nilearn 0.5
 
-.. versionadded:: 0.9.0
+.. nilearn_versionadded:: 0.9.0
 
     Nilearn offers the possibility to select different plotting engines
     (either `matplotlib`_ or `plotly`_) for most surface plotting functions.

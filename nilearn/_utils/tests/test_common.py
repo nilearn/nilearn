@@ -45,6 +45,7 @@ def test_number_public_functions():
     assert len({_[0] for _ in all_functions()}) == 262
 
 
+
 @pytest.mark.skipif(
     not is_matplotlib_installed(),
     reason="This test requires matplotlib to be installed.",
