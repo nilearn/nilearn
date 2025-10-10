@@ -64,6 +64,21 @@ doc = [
     "sphinxext-opengraph>=0.9.1",
     "sphinxcontrib-mermaid>=1.0.0"
 ]
+min = [
+    "joblib==1.2.0",
+    "nibabel==5.2.0",
+    "numpy==1.22.4",
+    "pandas==2.2.0",
+    "requests==2.25.0",
+    "scikit-learn==1.4.0",
+    "scipy==1.8.0"
+]
+min_plotting = [
+    "nilearn[min]",
+    "matplotlib==3.8.0",
+    "plotly==5.0.0",
+    "kaleido"
+]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
 # Necessary req to use nilearn's plotting module
@@ -119,7 +134,10 @@ max-line-length = 120
 version-file = "nilearn/_version.py"
 
 [tool.hatch.build.targets.wheel]
-exclude = ["nilearn/plotting/tests/baseline"]
+exclude = [
+    "nilearn/plotting/tests/baseline",
+    "nilearn/reporting/tests/baseline"
+]
 packages = ["nilearn"]
 
 [tool.hatch.version]

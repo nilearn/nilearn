@@ -1,5 +1,14 @@
 ---
-# Tries to install Nilearn from wheel & check installation on all operating systems.
+# Runs several checks on the nilearn package:
+#
+# - tries to install Nilearn from wheel
+#   & check installation on all operating systems
+#
+# - ensure thath the nilearn wheel is not over a certain size
+#
+# - ensure the whole nilearn install with all its transitive dependencies
+#   is not too large
+#
 ###
 name: test installation
 
@@ -23,8 +32,7 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
-                python-version: ['3.10']
-        name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and latest package versions
+        name: check install on ${{ matrix.os }} with latest package versions
         defaults:
             run:
                 shell: bash
@@ -34,9 +42,8 @@ jobs:
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
-                python-version: ${{ matrix.python-version }}
+                python-version: '3.10'
         -   name: Install dependencies for building Nilearn
-            shell: bash {0}
             run: |
                 set -e
                 python -m pip install --upgrade pip
@@ -53,3 +60,58 @@ jobs:
                 set -e
                 pip install dist/nilearn-*-py3-none-any.whl
                 python -c "import nilearn"
+
+    check_wheel_size:
+        if: github.repository == 'nilearn/nilearn'
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, macos-latest, windows-latest]
+        name: check wheel size on ${{ matrix.os }}
+        defaults:
+            run:
+                shell: bash
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v5
+        -   name: Setup python
+            uses: actions/setup-python@v6
+            with:
+                python-version: '3.10'
+        -   name: Install dependencies for building Nilearn
+            run: |
+                set -e
+                python -m pip install --upgrade pip
+                pip install --prefer-binary build
+
+        -   name: Check wheel size
+            run: bash build_tools/github/wheel_size_check.sh
+
+
+    check_install_size:
+        if: github.repository == 'nilearn/nilearn'
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                os: [ubuntu-latest, macos-latest, windows-latest]
+        name: check install size on ${{ matrix.os }} with oldest dependencies
+        defaults:
+            run:
+                shell: bash
+        steps:
+        -   name: Checkout nilearn
+            uses: actions/checkout@v5
+        -   name: Setup python
+            uses: actions/setup-python@v6
+            with:
+                python-version: '3.10'
+        -   name: Install dependencies for building Nilearn
+            run: |
+                set -e
+                python -m pip install --upgrade pip
+                pip install --prefer-binary build
+
+        -   name: Check wheel size
+            run: bash build_tools/github/wheel_size_check.sh
