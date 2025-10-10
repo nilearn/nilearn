@@ -67,12 +67,8 @@ jobs:
 
     check_wheel_size:
         if: github.repository == 'nilearn/nilearn'
-        runs-on: ${{ matrix.os }}
-        strategy:
-            fail-fast: false
-            matrix:
-                os: [ubuntu-latest, macos-latest, windows-latest]
-        name: check wheel size on ${{ matrix.os }}
+        runs-on: ubuntu-latest
+        name: check wheel size
         defaults:
             run:
                 shell: bash
@@ -95,12 +91,8 @@ jobs:
 
     check_install_size:
         if: github.repository == 'nilearn/nilearn'
-        runs-on: ${{ matrix.os }}
-        strategy:
-            fail-fast: false
-            matrix:
-                os: [ubuntu-latest, macos-latest, windows-latest]
-        name: check install size on ${{ matrix.os }} with oldest dependencies
+        runs-on: ubuntu-latest
+        name: check install size on with oldest dependencies
         defaults:
             run:
                 shell: bash
