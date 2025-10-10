@@ -50,13 +50,7 @@ from nilearn.surface.surface import (
     find_surface_clusters,
 )
 from nilearn.surface.surface import get_data as get_surface_data
-
-from nilearn.surface.utils import (
-    check_polymesh_equal
-)
-
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
-
 from nilearn.typing import NiimgLike
 
 
@@ -396,7 +390,7 @@ def _smooth_surface_img(
     values = "invlen" if distance_weights else "ones"
 
     new_data = {}
-    for hemi, n_iter in zip(imgs.mesh.parts, iterations):
+    for hemi, n_iter in zip(imgs.mesh.parts, iterations, strict=False):
         mesh = imgs.mesh.parts[hemi]
         data = imgs.data.parts[hemi]
 
@@ -468,7 +462,6 @@ def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
         )
 
     return niters
-
 
 
 def _crop_img_to(img, slices, copy=True, copy_header=True):
