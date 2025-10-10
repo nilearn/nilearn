@@ -64,7 +64,7 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
-        name: check wheel size on ${{ matrix.os }} with latest package versions
+        name: check wheel size on ${{ matrix.os }}
         defaults:
             run:
                 shell: bash
@@ -92,7 +92,7 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, macos-latest, windows-latest]
-        name: check wheel size on ${{ matrix.os }} with latest package versions
+        name: check install size on ${{ matrix.os }} with oldest dependencies
         defaults:
             run:
                 shell: bash
