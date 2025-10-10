@@ -76,6 +76,14 @@ jobs:
             run: |
                 echo "Hash of month_num file: ${{ hashFiles('**/month_num') }}"
 
+        -   name: Restore nilearn data cache from build-docs workflow
+            uses: actions/cache/restore@v4
+            with:
+                path: nilearn_data
+                key: data_cache-DocumentationBuilder_month-${{ hashFiles('month_num') }}
+                restore-keys: |
+                    data_cache-DocumentationBuilder_month-
+
         -   name: Install asv and switch to asv_benchmarks directory
             run: |
                 pip install --upgrade pip
