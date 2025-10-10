@@ -114,4 +114,4 @@ jobs:
                 pip install --prefer-binary build
 
         -   name: Check wheel size
-            run: bash build_tools/github/wheel_size_check.sh
+            run: bash build_tools/github/whole_install_size_check.sh
