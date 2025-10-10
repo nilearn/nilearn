@@ -495,7 +495,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
                 self.maps_img_ = self._cache(resample_img)(
                     self.maps_img_,
-                    interpolation="linear",
+                    interpolation="nearest",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                 )
@@ -650,7 +650,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 )
                 maps_img_ = self._cache(resample_img)(
                     self.maps_img_,
-                    interpolation="linear",
+                    interpolation="nearest",
                     target_shape=ref_img.shape[:3],
                     target_affine=ref_img.affine,
                 )
