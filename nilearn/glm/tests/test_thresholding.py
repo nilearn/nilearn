@@ -8,14 +8,14 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_equal
 from scipy.stats import norm
 
-from nilearn.conftest import _shape_3d_default
 from nilearn.glm import (
     cluster_level_inference,
     fdr_threshold,
     threshold_stats_img,
 )
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD, _compute_hommel_value
-from nilearn.image import get_data
+from nilearn.image import get_data, new_img_like
+from nilearn.surface.surface import PolyData
 
 
 def test_fdr(rng):
@@ -50,12 +50,14 @@ def test_fdr_error(rng):
         fdr_threshold(x, 1.5)
 
 
+def _data_norm_isf(shape):
+    p = np.prod(shape)
+    return norm.isf(np.linspace(1.0 / p, 1.0 - 1.0 / p, p)).reshape(shape)
+
+
 @pytest.fixture
-def data_norm_isf():
-    p = np.prod(_shape_3d_default())
-    return norm.isf(np.linspace(1.0 / p, 1.0 - 1.0 / p, p)).reshape(
-        _shape_3d_default()
-    )
+def data_norm_isf(shape_3d_default):
+    return _data_norm_isf(shape_3d_default)
 
 
 @pytest.mark.parametrize("height_control", [None, "fpr", "fdr", "bonferroni"])
@@ -256,6 +258,37 @@ def test_all_resolution_inference(data_norm_isf, affine_eye, kwargs, expected):
     assert np.sum(vals > 0) == expected
 
 
+@pytest.mark.parametrize(
+    "kwargs, expected_left, expected_right",
+    [
+        (
+            {"threshold": DEFAULT_Z_THRESHOLD, "verbose": 1},
+            2,
+            3,
+        ),  # standard case (also test verbose)
+        ({"threshold": 6}, 0, 0),  # high threshold
+        ({"threshold": [3, 6]}, 2, 3),  # list of thresholds
+    ],
+)
+def test_all_resolution_inference_surface(
+    surf_img_1d, kwargs, expected_left, expected_right
+):
+    """Check cluster_level_inference that runs on each hemisphere."""
+    data_left = _data_norm_isf(surf_img_1d.data.parts["left"].shape)
+    data_left[2:4] = 5.0
+    data_right = _data_norm_isf(surf_img_1d.data.parts["right"].shape)
+    data_right[2:5] = 5.0
+
+    stat_img = new_img_like(
+        surf_img_1d, PolyData(left=data_left, right=data_right)
+    )
+
+    th_map = cluster_level_inference(stat_img, alpha=0.05, **kwargs)
+
+    assert np.sum(th_map.data.parts["left"] > 0) == expected_left
+    assert np.sum(th_map.data.parts["right"] > 0) == expected_right
+
+
 def test_all_resolution_inference_with_mask(
     img_3d_ones_eye, affine_eye, data_norm_isf
 ):
@@ -272,6 +305,36 @@ def test_all_resolution_inference_with_mask(
     vals = get_data(th_map)
 
     assert np.sum(vals > 0) == 8
+
+
+def test_all_resolution_inference_surface_mask(surf_img_1d):
+    """Check cluster_level_inference that runs on each hemisphere.
+
+    Here mask excludes the right hemisphere.
+    """
+    data_left = _data_norm_isf(surf_img_1d.data.parts["left"].shape)
+    data_left[2:4] = 5.0
+    data_right = _data_norm_isf(surf_img_1d.data.parts["right"].shape)
+    data_right[2:5] = 5.0
+    stat_img = new_img_like(
+        surf_img_1d, {"left": data_left, "right": data_right}
+    )
+
+    mask_left = np.ones(surf_img_1d.data.parts["left"].shape)
+    mask_right = np.zeros(surf_img_1d.data.parts["right"].shape)
+    mask_img = new_img_like(
+        surf_img_1d, data={"left": mask_left, "right": mask_right}
+    )
+
+    th_map = cluster_level_inference(
+        stat_img,
+        mask_img=mask_img,
+        threshold=DEFAULT_Z_THRESHOLD,
+        alpha=0.05,
+    )
+
+    assert np.sum(th_map.data.parts["left"] > 0) == 2
+    assert np.sum(th_map.data.parts["right"] > 0) == 0
 
 
 def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
