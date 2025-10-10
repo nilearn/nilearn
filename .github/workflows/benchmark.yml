@@ -79,7 +79,8 @@ jobs:
         -   name: Restore nilearn data cache from build-docs workflow
             uses: actions/cache/restore@v4
             with:
-                path: nilearn_data
+                fail-on-cache-miss: true
+                path: '**/nilearn_data'
                 key: data_cache-DocumentationBuilder_month-${{ hashFiles('**/month_num') }}
                 restore-keys: |
                     data_cache-DocumentationBuilder_month-
