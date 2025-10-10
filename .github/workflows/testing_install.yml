@@ -24,10 +24,6 @@ concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
     cancel-in-progress: true
 
-# Force to use color
-env:
-    FORCE_COLOR: true
-
 jobs:
     test_install:
         if: github.repository == 'nilearn/nilearn'
@@ -79,11 +75,6 @@ jobs:
             uses: actions/setup-python@v6
             with:
                 python-version: '3.10'
-        -   name: Install dependencies for building Nilearn
-            run: |
-                set -e
-                python -m pip install --upgrade pip
-                pip install --prefer-binary build
 
         -   name: Check wheel size
             run: bash build_tools/github/wheel_size_check.sh
@@ -92,7 +83,16 @@ jobs:
     check_install_size:
         if: github.repository == 'nilearn/nilearn'
         runs-on: ubuntu-latest
-        name: check install size on with oldest dependencies
+        strategy:
+            fail-fast: false
+            matrix:
+                python: ['3.13']
+                dependencies: [plotting]
+                include:
+                -   python: '3.10'
+                    dependencies: [min_plotting]
+
+        name: check install size
         defaults:
             run:
                 shell: bash
@@ -102,12 +102,7 @@ jobs:
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
-                python-version: '3.10'
-        -   name: Install dependencies for building Nilearn
-            run: |
-                set -e
-                python -m pip install --upgrade pip
-                pip install --prefer-binary build
+                python-version: ${{ matrix.python }}
 
         -   name: Check wheel size
-            run: bash build_tools/github/whole_install_size_check.sh
+            run: bash build_tools/github/whole_install_size_check.sh  ${{ matrix.dependencies }}
