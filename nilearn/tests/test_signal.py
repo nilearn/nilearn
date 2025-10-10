@@ -1,5 +1,6 @@
 """Test the signals module."""
 
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -363,7 +364,7 @@ def test_standardize(rng):
 
     # With trend removal
     a = np.atleast_2d(np.linspace(0, 2.0, n_features)).T
-    b = standardize_signal(a, detrend=True, standardize=False)
+    b = standardize_signal(a, detrend=True, standardize=None)
 
     assert_almost_equal(b, np.zeros(b.shape))
 
@@ -488,14 +489,16 @@ def test_clean_detrending():
     assert_almost_equal(y_orig, y, decimal=13)
 
     # This should remove trends as detrend is True by default
-    x_detrended = clean(x, standardize=False)
+    match = "boolean values for 'standardize' will be deprecated"
+    with pytest.deprecated_call(match=match):
+        x_detrended = clean(x, standardize=False)
 
     assert_almost_equal(x_detrended, signals, decimal=13)
     # clean should not modify inputs
     assert array_equal(x_orig, x)
 
     # This should do nothing
-    x_undetrended = clean(x, standardize=False, detrend=False)
+    x_undetrended = clean(x, standardize=None, detrend=False)
 
     assert abs(x_undetrended - signals).max() >= 0.06
     # clean should not modify inputs
@@ -625,7 +628,7 @@ def test_clean_frequencies():
     sx = np.vstack((sx1, sx2)).T
 
     t_r = 2.5
-    standardize = False
+    standardize = None
 
     cleaned_signal = clean(
         sx, standardize=standardize, high_pass=0.002, low_pass=None, t_r=t_r
@@ -654,7 +657,7 @@ def test_clean_leaves_input_untouched():
     sx_orig = sx.copy()
 
     t_r = 2.5
-    standardize = False
+    standardize = None
 
     _ = clean(
         sx, standardize=standardize, detrend=False, low_pass=0.2, t_r=t_r
@@ -805,13 +808,26 @@ def test_clean_confounds():
 
     # Same output when a constant confound is added
     confounds1 = np.hstack((np.ones((45, 1)), confounds))
-    # TODO (nilearn >= 0.14) remove catch FutureWarning, DeprecationWarning
-    with pytest.warns(FutureWarning), pytest.warns(DeprecationWarning):
+    # TODO (nilearn >= 0.15) remove catch catch_warnings
+    with warnings.catch_warnings(record=True) as warning_lists:
         cleaned_signals1 = clean(
             signals + noises,
             confounds=confounds1,
             detrend=False,
             standardize=True,
+        )
+        assert any(
+            issubclass(x.category, FutureWarning)
+            and "boolean values for 'standardize' will be deprecated" in str(x)
+            for x in warning_lists
+        )
+        # TODO (nilearn >= 0.14)
+        # remove 'the default strategy will be replaced' catch
+        assert any(
+            issubclass(x.category, FutureWarning)
+            and "the default strategy will be replaced by the new strategy"
+            in str(x)
+            for x in warning_lists
         )
 
     assert_almost_equal(cleaned_signals1, cleaned_signals)
@@ -861,13 +877,26 @@ def test_clean_standardize_true_false():
     signals, _, _ = generate_signals(n_features=41, n_confounds=5, length=45)
 
     input_signals = 10 * signals
-    cleaned_signals = clean(input_signals, detrend=False, standardize=False)
+    cleaned_signals = clean(input_signals, detrend=False, standardize=None)
 
     assert_almost_equal(cleaned_signals, input_signals)
 
-    # TODO (nilearn >= 0.14) remove catch of FutureWarning
-    with pytest.warns(FutureWarning):
+    # TODO (nilearn >= 0.15) remove catch_warnings
+    with warnings.catch_warnings(record=True) as warning_lists:
         cleaned_signals = clean(input_signals, detrend=False, standardize=True)
+        assert any(
+            issubclass(x.category, FutureWarning)
+            and "boolean values for 'standardize' will be deprecated" in str(x)
+            for x in warning_lists
+        )
+        # TODO (nilearn >= 0.14)
+        # remove 'the default strategy will be replaced' catch
+        assert any(
+            issubclass(x.category, FutureWarning)
+            and "the default strategy will be replaced by the new strategy"
+            in str(x)
+            for x in warning_lists
+        )
 
     assert_almost_equal(
         cleaned_signals.var(axis=0), np.ones(cleaned_signals.shape[1])
@@ -913,7 +942,7 @@ def test_clean_confounds_inputs():
 
     # test array-like signals
     list_signal = signals.tolist()
-    clean(list_signal, standardize=False)
+    clean(list_signal, standardize=None)
 
     # Use a list containing two filenames, a 2D array and a 1D array
     # TODO (nilearn >= 0.14) remove catch DeprecationWarning
@@ -952,7 +981,7 @@ def test_clean_warning(signals):
         assert_almost_equal(
             clean(
                 np.ones((20, 2)),
-                standardize=False,
+                standardize=None,
                 confounds=np.ones(20),
                 standardize_confounds=False,
                 detrend=False,
@@ -1007,7 +1036,7 @@ def test_clean_frequencies_using_power_spectrum_density():
     res_low = clean(
         sx,
         detrend=False,
-        standardize=False,
+        standardize=None,
         filter="butterworth",
         low_pass=low_pass,
         high_pass=None,
@@ -1016,7 +1045,7 @@ def test_clean_frequencies_using_power_spectrum_density():
     res_high = clean(
         sx,
         detrend=False,
-        standardize=False,
+        standardize=None,
         filter="butterworth",
         low_pass=None,
         high_pass=high_pass,
@@ -1237,7 +1266,7 @@ def test_high_variance_confounds_nan():
     assert_almost_equal(out1, out2, decimal=13)
 
 
-def test_clean_standardize_false():
+def test_clean_standardize_none():
     """Check output cleaning butterworth filter and no standardization."""
     n_samples = 500
     n_features = 5
@@ -1245,7 +1274,7 @@ def test_clean_standardize_false():
 
     signals, _, _ = generate_signals(n_features=n_features, length=n_samples)
 
-    cleaned_signals = clean(signals, standardize=False, detrend=False)
+    cleaned_signals = clean(signals, standardize=None, detrend=False)
 
     assert_almost_equal(cleaned_signals, signals)
 
@@ -1253,7 +1282,7 @@ def test_clean_standardize_false():
     cleaned_butterworth_signals = clean(
         signals,
         detrend=False,
-        standardize=False,
+        standardize=None,
         filter="butterworth",
         high_pass=0.01,
         t_r=t_r,
