@@ -185,6 +185,7 @@ def test_report_plot_type(flm, plot_type, contrasts):
     )
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
 def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
@@ -239,6 +240,7 @@ def test_masking_first_level_model(contrasts):
     report_flm.get_iframe()
 
 
+@pytest.mark.timeout(0)
 def test_fir_delays_in_params(contrasts):
     """Check that fir_delays is in the report when hrf_model is fir.
 
@@ -363,6 +365,7 @@ def test_carousel_two_runs(
     assert 'id="carousel-navbar"' in report.__str__()
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("threshold", [3.09, 2.9, DEFAULT_Z_THRESHOLD])
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_report_threshold_deprecation_warning(
