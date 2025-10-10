@@ -10,7 +10,7 @@ from pathlib import Path
 from nilearn import __version__
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.glm import coerce_to_dict
+from nilearn._utils.glm import sanitize_contrasts
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
@@ -223,7 +223,7 @@ def save_glm_to_bids(
         check_parameter_in_allowed(key, report_kwargs, "Extra key-word")
         report_kwargs[key] = kwargs[key]
 
-    contrasts = coerce_to_dict(contrasts)
+    contrasts = sanitize_contrasts(contrasts)
 
     out_dir = Path(out_dir)
     out_dir.mkdir(exist_ok=True, parents=True)
