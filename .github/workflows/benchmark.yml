@@ -51,8 +51,7 @@ jobs:
             (github.event_name == 'workflow_dispatch' ||
             github.event_name == 'schedule') &&
             github.repository == 'nilearn/nilearn'
-        # TODO bump to 24.04 when bumping minimum python to 3.10
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
         defaults:
             run:
                 working-directory: ./asv_benchmarks
@@ -64,8 +63,7 @@ jobs:
                 fetch-depth: 0
         -   uses: actions/setup-python@v6
             with:
-                # TODO bump to 3.10 when minimum python is 3.10
-                python-version: 3.9
+                python-version: 3.10
         -   name: Install asv and switch to asv_benchmarks directory
             run: |
                 pip install --upgrade pip
