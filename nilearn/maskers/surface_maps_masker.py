@@ -525,14 +525,15 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         displays : list
             A list of all displays to be rendered.
         """
+        # Handle the edge case where this function is called
+        # without matplolib or
+        # with a masker having report capabilities disabled
+        if not is_matplotlib_installed() or self._reporting_data is None:
+            return [None]
+
         import matplotlib.pyplot as plt
 
         from nilearn.reporting.utils import figure_to_png_base64
-
-        # Handle the edge case where this function is
-        # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
-            return [None]
 
         maps_img = self._reporting_data["maps_img"]
 

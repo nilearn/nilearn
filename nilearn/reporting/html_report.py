@@ -252,7 +252,7 @@ def generate_report(estimator):
     if not is_matplotlib_installed():
         with warnings.catch_warnings():
             mpl_unavail_msg = (
-                "Matplotlib is not imported! No reports will be generated."
+                "Matplotlib is not imported! Report will be missing figures."
             )
             warnings.filterwarnings("always", message=mpl_unavail_msg)
             warnings.warn(
@@ -260,7 +260,7 @@ def generate_report(estimator):
                 message=mpl_unavail_msg,
                 stacklevel=find_stack_level(),
             )
-            return [None]
+            # return [None]
 
     if hasattr(estimator, "_report_content"):
         data = estimator._report_content
