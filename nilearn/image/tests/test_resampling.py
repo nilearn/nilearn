@@ -109,10 +109,12 @@ def test_identity_resample_array_like(
     [
         [1, 2, 3],
         [[1, 2, 3]],
+        _affine_eye().ravel(),
+        _affine_eye()[:3, :3].ravel(),
     ],
 )
 def test_target_affine_error(data, target_affine, affine_eye):
-    """Check errors when passing affine as list with wrong dimensions."""
+    """Check errors when passing affine as array-like with wrong dimensions."""
     with pytest.raises(np.linalg.LinAlgError):
         resample_img(
             Nifti1Image(data, affine_eye),
