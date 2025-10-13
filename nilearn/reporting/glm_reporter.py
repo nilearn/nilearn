@@ -29,7 +29,10 @@ from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn._version import __version__
 from nilearn.externals import tempita
 from nilearn.glm.thresholding import (
@@ -193,8 +196,7 @@ def make_glm_report(
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
 
-    cluster_threshold : :obj:`int`, default=0
-        Cluster size threshold, in voxels.
+    %(cluster_threshold)s
 
     height_control :  :obj:`str`, default='fpr'
         false positive control meaning of cluster forming
@@ -238,6 +240,7 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
+    check_params(locals())
     if not is_matplotlib_installed():
         warnings.warn(
             ("No plotting back-end detected. Output will be missing figures."),
@@ -645,10 +648,7 @@ def _make_stat_maps_contrast_clusters(
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
 
-    cluster_threshold : float
-        Cluster size threshold. In the returned thresholded map,
-        sets of connected voxels (`clusters`) with size smaller
-        than this number will be removed.
+    %(cluster_threshold)s
 
     height_control : string
         False positive control meaning of cluster forming
@@ -694,6 +694,7 @@ def _make_stat_maps_contrast_clusters(
         contrast name, contrast plot, statistical map, cluster table.
 
     """
+    check_params(locals())
     if not display_mode:
         display_mode_selector = {"slice": "z", "glass": "lzry"}
         display_mode = display_mode_selector[plot_type]
@@ -907,14 +908,6 @@ def _stat_map_to_png(
             cmap = "Blues_r"
 
     if isinstance(stat_img, SurfaceImage):
-        if not two_sided and threshold < 0:
-            # we cannot use negative threshold in plot_surf_stat_map
-            # so we flip the sign of the image, the colormap
-            # and we relabel the colorbar later
-            for k, v in stat_img.data.parts.items():
-                stat_img.data.parts[k] = -v
-            cmap = "Blues"
-
         surf_mesh = bg_img.mesh if bg_img else None
         stat_map_plot = plot_surf_stat_map(
             stat_map=stat_img,
@@ -930,6 +923,7 @@ def _stat_map_to_png(
 
     else:
         check_parameter_in_allowed(plot_type, ["slice", "glass"], "plot_type")
+
         if plot_type == "slice":
             stat_map_plot = plot_stat_map(
                 stat_img,
@@ -962,17 +956,6 @@ def _stat_map_to_png(
             loc="right",
             color=x_label_color,
         )
-
-        if (
-            isinstance(stat_img, SurfaceImage)
-            and not two_sided
-            and threshold < 0
-        ):
-            # Because the image has been flipped
-            # replace labels with their negative
-            ticks = stat_map_plot._cbar.get_ticks()
-            stat_map_plot._cbar.set_ticks(ticks)
-            stat_map_plot._cbar.set_ticklabels([f"{-t:.2g}" for t in ticks])
 
     with pd.option_context("display.precision", 2):
         _add_params_to_plot(table_details, stat_map_plot)

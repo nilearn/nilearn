@@ -5,6 +5,7 @@ from .multi_nifti_labels_masker import MultiNiftiLabelsMasker
 from .multi_nifti_maps_masker import MultiNiftiMapsMasker
 from .multi_nifti_masker import MultiNiftiMasker
 from .multi_surface_labels_masker import MultiSurfaceLabelsMasker
+from .multi_surface_maps_masker import MultiSurfaceMapsMasker
 from .multi_surface_masker import MultiSurfaceMasker
 from .nifti_labels_masker import NiftiLabelsMasker
 from .nifti_maps_masker import NiftiMapsMasker
@@ -20,6 +21,7 @@ __all__ = [
     "MultiNiftiMapsMasker",
     "MultiNiftiMasker",
     "MultiSurfaceLabelsMasker",
+    "MultiSurfaceMapsMasker",
     "MultiSurfaceMasker",
     "NiftiLabelsMasker",
     "NiftiMapsMasker",

@@ -31,6 +31,7 @@ Classes
    SurfaceLabelsMasker
    MultiSurfaceLabelsMasker
    SurfaceMapsMasker
+   MultiSurfaceMapsMasker
 
 .. autoclasstree:: nilearn.maskers
    :full:
