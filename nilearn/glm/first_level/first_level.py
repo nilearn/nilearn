@@ -11,6 +11,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from warnings import warn
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
@@ -58,8 +59,12 @@ from nilearn.interfaces.bids.query import (
 )
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
+<<<<<<< HEAD
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
+=======
+from nilearn.maskers import NiftiMasker, NiftiSpheresMasker, SurfaceMasker
+>>>>>>> method to easily visualize predicted ts and residuals
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike, Tr
 
@@ -982,9 +987,11 @@ class FirstLevelModel(BaseGLM):
         self._reporting_data = {
             "trial_types": [],
             "noise_model": self.noise_model,
-            "hrf_model": "finite impulse response"
-            if self.hrf_model == "fir"
-            else self.hrf_model,
+            "hrf_model": (
+                "finite impulse response"
+                if self.hrf_model == "fir"
+                else self.hrf_model
+            ),
             "drift_model": drift_model_str,
         }
 
@@ -1320,6 +1327,92 @@ class FirstLevelModel(BaseGLM):
             self.masker_ = self.mask_img
 
         self.n_elements_ = self.masker_.n_elements_
+
+    def plot_predicted_signal_and_residuals(
+        self,
+        coords=(0, 0, 0),
+        masker=None,
+        radius=3.0,
+        figsize=(10, 6),
+    ):
+        """Plot the predicted time series and residuals for a voxel \
+        or small region.
+
+        The :term:`GLM` must be fitted and have the computed design
+        matrix(ces).
+
+        Parameters
+        ----------
+        coords: tuple of coordinates
+            Coordinates of the voxel or region center.
+        masker : NiftiMasker or NiftiSpheresMasker, optional
+            Custom masker used to extract the time series. If None, a
+            :class:`~nilearn.maskers.NiftiSpheresMasker` centered on `coords`
+            with radius `radius` is created.
+        radius : float, optional
+            Radius of the sphere if `masker` is None. Default is 3mm.
+        figsize : tuple, optional
+            Size of the figure. Default is (10, 6).
+
+        Returns
+        -------
+        fig : matplotlib.figure.Figure
+            The matplotlib figure containing two subplots:
+            - Top: observed vs predicted signal
+            - Bottom: residuals
+
+        Notes
+        -----
+        This method requires that the model was fitted with
+        ``minimize_memory=False``, since the voxelwise predicted signal
+        and residuals are only stored in that mode.
+
+        """
+        check_is_fitted(self)
+
+        if self.minimize_memory:
+            raise ValueError(
+                "To plot predicted signal and residuals, "
+                "the `FirstLevelModel`-object needs to store "
+                "there attributes. "
+                "To do so, set `minimize_memory` to `False` "
+                "when initializing the `FirstLevelModel`-object."
+            )
+
+        # Create masker if needed
+        if masker is None:
+            masker = NiftiSpheresMasker([coords], radius=radius)
+            masker.fit()
+
+        # Get observed, predicted, and residual time series
+        y_pred = self._get_element_wise_model_attribute(
+            "predicted", result_as_time_series=True
+        )
+        resid = self._get_element_wise_model_attribute(
+            "residuals", result_as_time_series=True
+        )
+
+        # Extract time series for the observed, predicted, and residuals
+        predicted_ts = masker.transform(y_pred[0])
+        residuals_ts = masker.transform(resid[0])
+
+        # Plot observed vs predicted signal
+        fig, axes = plt.subplots(2, 1, figsize=figsize, sharex=True)
+        # axes[0].plot(observed_ts, label="Observed", color="blue")
+        axes[0].plot(predicted_ts, label="Predicted", color="orange")
+        axes[0].set_title("Observed vs Predicted Signal")
+        axes[0].set_ylabel("Signal")
+        axes[0].legend()
+
+        # Plot residuals
+        axes[1].plot(residuals_ts, label="Residuals", color="red")
+        axes[1].set_title("Residuals")
+        axes[1].set_xlabel("Time")
+        axes[1].set_ylabel("Residuals")
+        axes[1].legend()
+
+        plt.tight_layout()
+        return fig
 
     @fill_doc
     def generate_report(
