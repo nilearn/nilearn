@@ -337,6 +337,7 @@ def test_multi_nifti_labels_masker_atlas_data_different_fov(
     assert_array_equal(masker.labels_img_.affine, affine2)
 
 
+@pytest.mark.timeout(0)
 def test_multi_nifti_labels_masker_resampling_target():
     """Test labels masker with resampling target in 'data', 'labels'.
 

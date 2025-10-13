@@ -38,15 +38,14 @@ than using a subject-tailored mesh.
 # Prepare data and analysis parameters
 # ------------------------------------
 #
-# Prepare the timing parameters.
-t_r = 2.4
-slice_time_ref = 0.5
 
 # %%
 # Fetch the data.
 from nilearn.datasets import fetch_localizer_first_level
 
 data = fetch_localizer_first_level()
+t_r = data.t_r
+slice_time_ref = data.slice_time_ref
 
 # %%
 # Project the :term:`fMRI` image to the surface

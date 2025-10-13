@@ -1292,12 +1292,11 @@ def test_math_img_surface(surf_img_2d):
     img1 = surf_img_2d(1)
     img2 = surf_img_2d(3)
 
-    tmp = {}
-    for part in img1.data.parts:
-        tmp[part] = np.mean(img1.data.parts[part], axis=-1) - np.mean(
-            img2.data.parts[part], axis=-1
-        )
-
+    tmp = {
+        part: np.mean(img1.data.parts[part], axis=-1)
+        - np.mean(img2.data.parts[part], axis=-1)
+        for part in img1.data.parts
+    }
     expected_result = SurfaceImage(mesh=img1.mesh, data=tmp)
 
     formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"

@@ -85,3 +85,6 @@ results/
 # node
 package.json
 package-lock.json
+
+# pydeps output
+nilearn.svg

@@ -123,6 +123,7 @@ def test_parcellations_fit_on_multi_nifti_images(
     parcellator.fit(fmri_imgs)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_single_nifti_image(
@@ -144,6 +145,7 @@ def test_parcellations_transform_single_nifti_image(
     assert signals.shape == (test_image_2.shape[3], n_parcel)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("verbose", [True, False, -1, 0, 1, 2])
 def test_parcellations_transform_verbose(test_image_2, verbose):
     """Test verbose mostly for coverage purpose."""
@@ -262,6 +264,7 @@ def test_fit_transform_with_confounds(method, n_parcel, test_image_2, rng):
     assert signals[0].shape == (10, n_parcel)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_inverse_transform_single_nifti_image(method, n_parcel, test_image_2):
