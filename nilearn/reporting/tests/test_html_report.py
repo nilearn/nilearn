@@ -52,10 +52,14 @@ def _check_html(html_view, reports_requested=True, is_fit=True):
     if reports_requested and is_fit:
         assert "<th>Parameter</th>" in str(html_view)
 
-    if "Surface" in str(html_view):
-        assert "data:image/png;base64," in str(html_view)
+    if is_matplotlib_installed():
+        if "Surface" in str(html_view):
+            assert "data:image/png;base64," in str(html_view)
+        else:
+            assert "data:image/svg+xml;base64," in str(html_view)
     else:
-        assert "data:image/svg+xml;base64," in str(html_view)
+        assert "data:image/svg+xml;base64," not in str(html_view)
+        assert "data:image/png;base64," not in str(html_view)
 
 
 @pytest.fixture

@@ -282,7 +282,7 @@ def generate_report(estimator):
         or not estimator._reporting_data
     ):
         warning_messages.append(
-            "\nThis report was not generated.\n"
+            "\nGenerating empty report.\n"
             "Make sure to run `fit` before inspecting reports."
         )
 

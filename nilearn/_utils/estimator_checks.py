@@ -3571,11 +3571,18 @@ def _generate_report_with_no_warning(estimator):
             # only thrown with older dependencies
             "No contour levels were found within the data range.",
         ]
-        unknown_warnings = [
-            str(x.message)
-            for x in warning_list
-            if str(x.message) not in warnings_to_ignore
-        ]
+
+        if not is_matplotlib_installed():
+            # in case we are generating reports with no matplotlib
+            warnings_to_ignore.append("Report will be missing figures")
+
+        unknown_warnings = []
+        for x in warning_list:
+            message = str(x.message)
+            if any(y in message for y in warnings_to_ignore):
+                continue
+            unknown_warnings.append(message)
+
         if not isinstance(estimator, (RegionExtractor, SurfaceMapsMasker)):
             assert not unknown_warnings, unknown_warnings
 
@@ -3609,18 +3616,13 @@ def check_masker_generate_report(estimator):
 
     """
     if not is_matplotlib_installed():
-        with warnings.catch_warnings(record=True) as warning_list:
+        with pytest.warns(
+            ImportWarning, match="Report will be missing figures"
+        ):
             report = _generate_report(estimator)
 
-        assert len(warning_list) == 1
-        assert issubclass(warning_list[0].category, ImportWarning)
-        assert report == [None]
-
-        return
-
-    with warnings.catch_warnings(record=True) as warning_list:
+    with pytest.warns(UserWarning, match="Generating empty report"):
         report = _generate_report(estimator)
-        assert len(warning_list) == 1
 
     _check_html(report, is_fit=False)
     assert "Make sure to run `fit`" in str(report)
@@ -3658,9 +3660,6 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     assert estimator._report_content["warning_message"] is None
 
-    if not is_matplotlib_installed():
-        return
-
     with pytest.warns(UserWarning, match="No image provided to fit."):
         report = _generate_report(estimator)
     _check_html(report)
@@ -3680,9 +3679,6 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 @ignore_warnings()
 def check_masker_generate_report_false(estimator):
     """Test with reports set to False."""
-    if not is_matplotlib_installed():
-        return
-
     estimator.reports = False
 
     if accept_niimg_input(estimator):
@@ -3708,9 +3704,6 @@ def check_masker_generate_report_false(estimator):
 @ignore_warnings()
 def check_multimasker_generate_report(estimator):
     """Test calling generate report on multiple subjects raises warning."""
-    if not is_matplotlib_installed():
-        return
-
     if accept_niimg_input(estimator):
         input_img = [_img_4d_rand_eye_medium(), _img_4d_rand_eye_medium()]
     else:
