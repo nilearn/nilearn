@@ -59,8 +59,8 @@ from nilearn.interfaces.bids.query import (
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.reporting import HTMLReport
 from nilearn.maskers.masker_validation import check_embedded_masker
+from nilearn.reporting import HTMLReport
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike, Tr
 
