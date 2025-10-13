@@ -91,6 +91,8 @@ jobs:
                 include:
                 -   python: '3.10'
                     dependencies: min_plotting
+                -   python: '3.10'
+                    dependencies: min
 
         name: check install size
         defaults:
