@@ -412,8 +412,15 @@ def test_smooth_img_surface(surf_img_1d):
     assert data.min() < smoothed_data.min()
 
 
+def test_smooth_list_img_surface(surf_img_1d):
+    """Test smoothing list surface images."""
+    smoothed_img = smooth_img([surf_img_1d, surf_img_1d], fwhm=5)
+    assert isinstance(smoothed_img, list)
+    assert all(isinstance(x, SurfaceImage) for x in smoothed_img)
+
+
 def test_smooth_surface_img(surf_img_1d):
-    """Check smoothing change data."""
+    """Check smoothing changes data."""
     smoothed_imgs = _smooth_surface_img(surf_img_1d, iterations=[1, 1])
 
     assert isinstance(smoothed_imgs, SurfaceImage)
@@ -439,7 +446,7 @@ def test_smooth_surface_img_center_surround_knob_minus_inf(surf_img_1d):
 
 
 def test_smooth_surface_img_errors(surf_img_1d):
-    with pytest.raises(TypeError, match=""):
+    with pytest.raises(TypeError, match="'vertex_weights'"):
         _smooth_surface_img(
             surf_img_1d,
             vertex_weights="'vertex_weights' must be None or a SurfaceImage.",

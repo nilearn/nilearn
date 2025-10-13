@@ -279,7 +279,8 @@ def smooth_img(imgs, fwhm):
 
     Parameters
     ----------
-    imgs : Niimg-like object or iterable of Niimg-like objects or
+    imgs : Niimg-like object, :obj:`~nilearn.surface.SurfaceImage`, \
+           or iterable of Niimg-like objects or \
            :obj:`~nilearn.surface.SurfaceImage`.
         Image(s) to smooth (see :ref:`extracting_data`
         for a detailed description of the valid input types).
@@ -288,44 +289,55 @@ def smooth_img(imgs, fwhm):
 
     Returns
     -------
-    :obj:`nibabel.nifti1.Nifti1Image` or list of smoothed input image, \
-        or :obj:`~nilearn.surface.SurfaceImage`.
-        If `imgs` is an iterable of :class:`nibabel.nifti1.Nifti1Image`,
-        then the output is a list.
+    smoothed input image or list of smoothed input image.
+        If `imgs` is an iterable then the output is a list.
 
     """
-    if isinstance(imgs, SurfaceImage):
-        iterations = _mris_fwhm_to_niters(fwhm, imgs)
-        return _smooth_surface_img(
-            imgs,
-            iterations,
-            distance_weights=False,
-            center_surround_knob=0,
-        )
+    is_surface = False
+    single_img = True
 
-    # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
-    # See http://bugs.python.org/issue7624
     imgs = stringify_path(imgs)
-    if hasattr(imgs, "__iter__") and not isinstance(imgs, str):
+
+    if isinstance(imgs, SurfaceImage):
+        is_surface = True
+    elif hasattr(imgs, "__iter__") and not isinstance(imgs, str):
+        # Use hasattr() instead of isinstance
+        # to workaround a Python 2.6/2.7 bug
+        # See http://bugs.python.org/issue7624
         single_img = False
-    else:
-        single_img = True
+        if all(isinstance(x, SurfaceImage) for x in imgs):
+            is_surface = True
+
+    if single_img:
         imgs = [imgs]
 
     ret = []
-    for img in imgs:
-        img = check_niimg(img)
-        affine = img.affine
-        filtered = smooth_array(
-            get_data(img), affine, fwhm=fwhm, ensure_finite=True, copy=True
-        )
-        ret.append(new_img_like(img, filtered, affine))
+    if is_surface:
+        for img in imgs:
+            iterations = _mris_fwhm_to_niters(fwhm, img)
+            ret.append(
+                _smooth_surface_img(
+                    img,
+                    iterations,
+                    distance_weights=False,
+                    center_surround_knob=0,
+                )
+            )
+
+    else:
+        for img in imgs:
+            img = check_niimg(img)
+            affine = img.affine
+            filtered = smooth_array(
+                get_data(img), affine, fwhm=fwhm, ensure_finite=True, copy=True
+            )
+            ret.append(new_img_like(img, filtered, affine))
 
     return ret[0] if single_img else ret
 
 
 def _smooth_surface_img(
-    imgs,
+    img: SurfaceImage,
     iterations: list[int],
     distance_weights: bool = False,
     center_surround_knob=0,
@@ -377,16 +389,16 @@ def _smooth_surface_img(
     surround_weight = 1 - center_weight
     if surround_weight == 0:
         # There's nothing to do in this case.
-        return new_img_like(imgs, imgs.data)
+        return new_img_like(img, img.data)
 
     # Calculate the adjacency matrix either weighting
     # by inverse distance or not weighting (ones)
     values = "invlen" if distance_weights else "ones"
 
     new_data = {}
-    for hemi, n_iter in zip(imgs.mesh.parts, iterations, strict=False):
-        mesh = imgs.mesh.parts[hemi]
-        data = imgs.data.parts[hemi]
+    for hemi, n_iter in zip(img.mesh.parts, iterations, strict=False):
+        mesh = img.mesh.parts[hemi]
+        data = img.data.parts[hemi]
 
         if n_iter == 0:
             new_data[hemi] = data
@@ -411,7 +423,7 @@ def _smooth_surface_img(
         # Convert back into numpy array.
         new_data[hemi] = np.reshape(np.asarray(tmp), np.shape(data))
 
-    return new_img_like(imgs, new_data)
+    return new_img_like(img, new_data)
 
 
 def _mris_fwhm_to_niters(fwhm, img) -> list[int]:
