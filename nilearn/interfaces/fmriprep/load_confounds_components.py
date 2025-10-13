@@ -16,6 +16,8 @@ See an example below:
 import numpy as np
 import pandas as pd
 
+from nilearn._utils.param_validation import check_parameter_in_allowed
+
 from .load_confounds_compcor import find_compcor
 from .load_confounds_scrub import optimize_scrub
 from .load_confounds_utils import (
@@ -206,6 +208,7 @@ def _load_ica_aroma(confounds_raw, ica_aroma):
     ValueError
         When ica_aroma is not "full" or "basic".
     """
+    check_parameter_in_allowed(ica_aroma, ("full", "basic"), "ica_aroma")
     if ica_aroma == "full":
         return pd.DataFrame()
     elif ica_aroma == "basic":
@@ -213,11 +216,6 @@ def _load_ica_aroma(confounds_raw, ica_aroma):
         if not ica_aroma_params:
             raise MissingConfoundError(keywords=["ica_aroma"])
         return confounds_raw[ica_aroma_params]
-    else:
-        raise ValueError(
-            "Please select an option when using ICA-AROMA strategy."
-            f"Current input: {ica_aroma}"
-        )
 
 
 def _load_scrub(confounds_raw, scrub, fd_threshold, std_dvars_threshold):

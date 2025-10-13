@@ -1,13 +1,12 @@
 """Fixtures for decomposition tests."""
 
 import warnings
-from typing import Union
 
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn.maskers import MultiNiftiMasker, SurfaceMasker
+from nilearn.maskers import MultiNiftiMasker, MultiSurfaceMasker
 from nilearn.surface import PolyMesh, SurfaceImage
 from nilearn.surface.tests.test_surface import flat_mesh
 
@@ -54,7 +53,7 @@ def decomposition_mask_img(
     decomposition_mesh: PolyMesh,
     affine_eye: np.ndarray,
     shape_3d_large,
-) -> Union[SurfaceImage, Nifti1Image]:
+) -> SurfaceImage | Nifti1Image:
     """Return a mask for decomposition."""
     if data_type == "surface":
         mask_data = {
@@ -89,19 +88,21 @@ def decomposition_mask_img(
 
 @pytest.fixture
 def decomposition_masker(
-    decomposition_mask_img: Union[SurfaceImage, Nifti1Image],
+    decomposition_mask_img: SurfaceImage | Nifti1Image,
     img_3d_ones_eye: Nifti1Image,
     data_type: str,
-) -> Union[SurfaceMasker, MultiNiftiMasker]:
+) -> MultiSurfaceMasker | MultiNiftiMasker:
     """Return the proper masker for test with volume of surface.
 
     Use detrend=True to check how masker parameters are passed to estimators.
     """
     if data_type == "surface":
-        return SurfaceMasker(
-            mask_img=decomposition_mask_img, standardize=True
+        return MultiSurfaceMasker(
+            mask_img=decomposition_mask_img, standardize="zscore_sample"
         ).fit()
-    return MultiNiftiMasker(mask_img=img_3d_ones_eye, standardize=True).fit()
+    return MultiNiftiMasker(
+        mask_img=img_3d_ones_eye, standardize="zscore_sample"
+    ).fit()
 
 
 def _decomposition_images_surface(rng, decomposition_mesh, with_activation):
@@ -123,7 +124,7 @@ def _decomposition_img(
     shape=None,
     affine=None,
     with_activation: bool = True,
-) -> Union[SurfaceImage, Nifti1Image]:
+) -> SurfaceImage | Nifti1Image:
     """Return a single image for decomposition."""
     if data_type == "surface":
         data = {
@@ -185,7 +186,7 @@ def decomposition_img(
     shape_3d_large,
     affine_eye,
     with_activation: bool = True,
-) -> Union[SurfaceImage, Nifti1Image]:
+) -> SurfaceImage | Nifti1Image:
     """Return a single image for decomposition."""
     return _decomposition_img(
         data_type,
@@ -206,7 +207,7 @@ def canica_data(
     decomposition_mesh,
     data_type: str,
     n_subjects=N_SUBJECTS,
-) -> Union[list[Nifti1Image], list[SurfaceImage]]:
+) -> list[Nifti1Image] | list[SurfaceImage]:
     """Create a "multi-subject" dataset."""
     if data_type == "nifti":
         return _make_volume_data_from_components(
@@ -236,33 +237,32 @@ def _make_canica_components(
     if data_type == "nifti":
         return _canica_components_volume(shape_3d_large)
 
-    else:
-        shape = (decomposition_mesh.n_vertices, 1)
+    shape = (decomposition_mesh.n_vertices, 1)
 
-        component1 = np.zeros(shape)
-        component1[:5] = 1
-        component1[5:10] = -1
+    component1 = np.zeros(shape)
+    component1[:5] = 1
+    component1[5:10] = -1
 
-        component2 = np.zeros(shape)
-        component2[:5] = 1
-        component2[5:10] = -1
+    component2 = np.zeros(shape)
+    component2[:5] = 1
+    component2[5:10] = -1
 
-        component3 = np.zeros(shape)
-        component3[-5:] = 1
-        component3[-10:-5] = -1
+    component3 = np.zeros(shape)
+    component3[-5:] = 1
+    component3[-10:-5] = -1
 
-        component4 = np.zeros(shape)
-        component4[-5:] = 1
-        component4[-10:-5] = -1
+    component4 = np.zeros(shape)
+    component4[-5:] = 1
+    component4[-10:-5] = -1
 
-        return np.vstack(
-            (
-                component1.ravel(),
-                component2.ravel(),
-                component3.ravel(),
-                component4.ravel(),
-            )
+    return np.vstack(
+        (
+            component1.ravel(),
+            component2.ravel(),
+            component3.ravel(),
+            component4.ravel(),
         )
+    )
 
 
 def _canica_components_volume(shape):
@@ -299,7 +299,7 @@ def _make_volume_data_from_components(
     shape,
     rng,
     n_subjects,
-):
+) -> list[Nifti1Image]:
     """Create a "multi-subject" dataset of volume data."""
     background = -0.01 * rng.normal(size=shape) - 2
     background = background[..., np.newaxis]
@@ -364,7 +364,7 @@ def check_decomposition_estimator(estimator, data_type):
     elif data_type == "surface":
         assert isinstance(estimator.mask_img_, SurfaceImage)
         assert isinstance(estimator.components_img_, SurfaceImage)
-        assert isinstance(estimator.masker_, SurfaceMasker)
+        assert isinstance(estimator.masker_, MultiSurfaceMasker)
         check_shape = (estimator.mask_img_.shape[0], estimator.n_components)
 
     assert estimator.components_img_.shape == check_shape

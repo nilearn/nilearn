@@ -174,8 +174,8 @@ def test_nifti_maps_masker_resampling_errors(
     with pytest.raises(
         ValueError,
         match=(
-            "resampling_target has been set to 'mask' "
-            "but no mask has been provided."
+            r"resampling_target has been set to 'mask' "
+            r"but no mask has been provided."
         ),
     ):
         masker.fit()
@@ -183,7 +183,7 @@ def test_nifti_maps_masker_resampling_errors(
     masker = NiftiMapsMasker(maps33_img, resampling_target="invalid")
     with pytest.raises(
         ValueError,
-        match="invalid value for 'resampling_target' parameter: invalid",
+        match="'resampling_target' must be one of",
     ):
         masker.fit()
 
@@ -271,7 +271,10 @@ def test_nifti_maps_masker_resampling_to_mask(
 
     # Target: mask
     masker = NiftiMapsMasker(
-        maps33_img, mask_img=mask22_img, resampling_target="mask"
+        maps33_img,
+        mask_img=mask22_img,
+        resampling_target="mask",
+        keep_masked_maps=True,
     )
 
     signals = masker.fit_transform(img_fmri)
@@ -305,7 +308,10 @@ def test_nifti_maps_masker_resampling_to_maps(
     maps33_img, _ = generate_maps(shape_3d_large, n_regions, affine=affine_eye)
 
     masker = NiftiMapsMasker(
-        maps33_img, mask_img=mask22_img, resampling_target="maps"
+        maps33_img,
+        mask_img=mask22_img,
+        resampling_target="maps",
+        keep_masked_maps=True,
     )
 
     signals = masker.fit_transform(img_fmri)
@@ -339,7 +345,10 @@ def test_nifti_maps_masker_clipped_mask(n_regions, affine_eye):
     maps33_img, _ = generate_maps(shape3, n_regions, affine=affine_eye)
 
     masker = NiftiMapsMasker(
-        maps33_img, mask_img=mask22_img, resampling_target="maps"
+        maps33_img,
+        mask_img=mask22_img,
+        resampling_target="maps",
+        keep_masked_maps=True,
     )
 
     signals = masker.fit_transform(fmri11_img)
@@ -398,43 +407,3 @@ def test_nifti_maps_masker_overlap(maps_img_fn, allow_overlap, img_fmri):
             masker.fit_transform(img_fmri)
     else:
         masker.fit_transform(img_fmri)
-
-
-def test_standardization(rng, affine_eye, shape_3d_default):
-    """Check output properly standardized with 'standardize' parameter."""
-    length = 500
-
-    signals = rng.standard_normal(size=(np.prod(shape_3d_default), length))
-    means = (
-        rng.standard_normal(size=(np.prod(shape_3d_default), 1)) * 50 + 1000
-    )
-    signals += means
-    img = Nifti1Image(signals.reshape((*shape_3d_default, length)), affine_eye)
-
-    maps, _ = generate_maps((9, 9, 5), 10)
-
-    # Unstandarized
-    masker = NiftiMapsMasker(maps, standardize=False)
-    unstandarized_label_signals = masker.fit_transform(img)
-
-    # z-score
-    masker = NiftiMapsMasker(maps, standardize="zscore_sample")
-    trans_signals = masker.fit_transform(img)
-
-    assert_almost_equal(trans_signals.mean(0), 0)
-    assert_almost_equal(trans_signals.std(0), 1, decimal=3)
-
-    # psc
-    masker = NiftiMapsMasker(maps, standardize="psc")
-    trans_signals = masker.fit_transform(img)
-
-    assert_almost_equal(trans_signals.mean(0), 0)
-    assert_almost_equal(
-        trans_signals,
-        (
-            unstandarized_label_signals
-            / unstandarized_label_signals.mean(0)
-            * 100
-            - 100
-        ),
-    )

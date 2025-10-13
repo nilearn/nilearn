@@ -1,19 +1,14 @@
 """Utilities to check for valid parameters."""
 
 import numbers
-import sys
 import warnings
+from collections.abc import Iterable
+from typing import Any, Literal, get_args, get_origin
 
 import numpy as np
-from sklearn.feature_selection import SelectPercentile, f_classif, f_regression
 
 import nilearn.typing as nilearn_typing
-from nilearn._utils import logger
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import _get_data
-
-# Volume of a standard (MNI152) brain mask in mm^3
-MNI152_BRAIN_VOLUME = 1827243.0
 
 
 def check_threshold(
@@ -49,7 +44,7 @@ def check_threshold(
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
     Returns
     -------
@@ -125,207 +120,11 @@ def check_threshold(
     return threshold
 
 
-def _get_mask_extent(mask_img):
-    """Compute the extent of the provided brain mask.
-    The extent is the volume of the mask in mm^3 if mask_img is a Nifti1Image
-    or the number of vertices if mask_img is a SurfaceImage.
-
-    Parameters
-    ----------
-    mask_img : Nifti1Image or SurfaceImage
-        The Nifti1Image whose voxel dimensions or the SurfaceImage whose
-        number of vertices are to be computed.
-
-    Returns
-    -------
-    mask_extent : float
-        The computed volume in mm^3 (if mask_img is a Nifti1Image) or the
-        number of vertices (if mask_img is a SurfaceImage).
-
-    """
-    if not hasattr(mask_img, "affine"):
-        # sum number of True values in both hemispheres
-        return (
-            mask_img.data.parts["left"].sum()
-            + mask_img.data.parts["right"].sum()
-        )
-    affine = mask_img.affine
-    prod_vox_dims = 1.0 * np.abs(np.linalg.det(affine[:3, :3]))
-    return prod_vox_dims * _get_data(mask_img).astype(bool).sum()
-
-
-def adjust_screening_percentile(
-    screening_percentile,
-    mask_img,
-    verbose=0,
-    mesh_n_vertices=None,
-):
-    """Adjust the screening percentile according to the MNI152 template or
-    the number of vertices of the provided standard brain mesh.
-
-    Parameters
-    ----------
-    screening_percentile : float in the interval [0, 100]
-        Percentile value for ANOVA univariate feature selection. A value of
-        100 means 'keep all features'. This percentile is expressed
-        w.r.t the volume of either a standard (MNI152) brain (if mask_img is a
-        3D volume) or a the number of vertices in the standard brain mesh
-        (if mask_img is a SurfaceImage). This means that the
-        `screening_percentile` is corrected at runtime by premultiplying it
-        with the ratio of the volume of the mask of the data and volume of the
-        standard brain.
-
-    mask_img :  Nifti1Image or SurfaceImage
-        The Nifti1Image whose voxel dimensions or the SurfaceImage whose
-        number of vertices are to be computed.
-
-    %(verbose0)s
-
-    mesh_n_vertices : int, default=None
-        Number of vertices of the reference brain mesh, eg., fsaverage5
-        or fsaverage7 etc.. If provided, the screening percentile will be
-        adjusted according to the number of vertices.
-
-    Returns
-    -------
-    screening_percentile : float in the interval [0, 100]
-        Percentile value for ANOVA univariate feature selection.
-
-    """
-    original_screening_percentile = screening_percentile
-    # correct screening_percentile according to the volume of the data mask
-    # or the number of vertices of the reference mesh
-    mask_extent = _get_mask_extent(mask_img)
-    # if mask_img is a surface mesh, reference is the number of vertices
-    # in the standard mesh otherwise it is the volume of the MNI152 brain
-    # template
-    reference_extent = (
-        MNI152_BRAIN_VOLUME if mesh_n_vertices is None else mesh_n_vertices
-    )
-    if mask_extent > 1.1 * reference_extent:
-        warnings.warn(
-            "Brain mask is bigger than the standard "
-            "human brain. This object is probably not tuned to "
-            "be used on such data.",
-            stacklevel=find_stack_level(),
-        )
-    elif mask_extent < 0.005 * reference_extent:
-        warnings.warn(
-            "Brain mask is smaller than .5% of the size of the standard "
-            "human brain. This object is probably not tuned to "
-            "be used on such data.",
-            stacklevel=find_stack_level(),
-        )
-
-    if screening_percentile < 100.0:
-        screening_percentile = screening_percentile * (
-            reference_extent / mask_extent
-        )
-        screening_percentile = min(screening_percentile, 100.0)
-    # if screening_percentile is 100, we don't do anything
-
-    if hasattr(mask_img, "mesh"):
-        log_mask = f"Mask n_vertices = {mask_extent:g}"
-    else:
-        log_mask = (
-            f"Mask volume = {mask_extent:g}mm^3 = {mask_extent / 1000.0:g}cm^3"
-        )
-    logger.log(
-        log_mask,
-        verbose=verbose,
-        msg_level=1,
-    )
-    if hasattr(mask_img, "mesh"):
-        log_ref = f"Reference mesh n_vertices = {reference_extent:g}"
-    else:
-        log_ref = f"Standard brain volume = {MNI152_BRAIN_VOLUME:g}mm^3"
-    logger.log(
-        log_ref,
-        verbose=verbose,
-        msg_level=1,
-    )
-    logger.log(
-        f"Original screening-percentile: {original_screening_percentile:g}",
-        verbose=verbose,
-        msg_level=1,
-    )
-    logger.log(
-        f"Corrected screening-percentile: {screening_percentile:g}",
-        verbose=verbose,
-        msg_level=1,
-    )
-    return screening_percentile
-
-
-def check_feature_screening(
-    screening_percentile,
-    mask_img,
-    is_classification,
-    verbose=0,
-    mesh_n_vertices=None,
-):
-    """Check feature screening method.
-
-    Turns floats between 1 and 100 into SelectPercentile objects.
-
-    Parameters
-    ----------
-    screening_percentile : float in the interval [0, 100]
-        Percentile value for :term:`ANOVA` univariate feature selection.
-        A value of 100 means 'keep all features'.
-        This percentile is expressed
-        w.r.t the volume of a standard (MNI152) brain, and so is corrected
-        at runtime by premultiplying it with the ratio of the volume of the
-        mask of the data and volume of a standard brain.
-
-    mask_img : nibabel image object
-        Input image whose :term:`voxel` dimensions are to be computed.
-
-    is_classification : bool
-        If is_classification is True, it indicates that a classification task
-        is performed. Otherwise, a regression task is performed.
-
-    %(verbose0)s
-
-    mesh_n_vertices : int, default=None
-        Number of vertices of the reference mesh, eg., fsaverage5 or
-        fsaverage7 etc.. If provided, the screening percentile will be adjusted
-        according to the number of vertices.
-
-    Returns
-    -------
-    selector : SelectPercentile instance
-       Used to perform the :term:`ANOVA` univariate feature selection.
-
-    """
-    f_test = f_classif if is_classification else f_regression
-
-    if screening_percentile == 100 or screening_percentile is None:
-        return None
-    elif not (0.0 <= screening_percentile <= 100.0):
-        raise ValueError(
-            "screening_percentile should be in the interval"
-            f" [0, 100], got {screening_percentile:g}"
-        )
-    else:
-        # correct screening_percentile according to the volume or the number of
-        # vertices in the data mask
-        screening_percentile_ = adjust_screening_percentile(
-            screening_percentile,
-            mask_img,
-            verbose=verbose,
-            mesh_n_vertices=mesh_n_vertices,
-        )
-
-        return SelectPercentile(f_test, percentile=int(screening_percentile_))
-
-
 def check_run_sample_masks(n_runs, sample_masks):
     """Check that number of sample_mask matches number of runs."""
-    if not isinstance(sample_masks, (list, tuple, np.ndarray)):
-        raise TypeError(
-            f"sample_mask has an unhandled type: {sample_masks.__class__}"
-        )
+    check_is_of_allowed_type(
+        sample_masks, (list, tuple, np.ndarray), "sample_masks"
+    )
 
     if isinstance(sample_masks, np.ndarray):
         sample_masks = (sample_masks,)
@@ -371,10 +170,13 @@ TYPE_MAPS = {
     "border_size": nilearn_typing.BorderSize,
     "bg_on_data": nilearn_typing.BgOnData,
     "colorbar": nilearn_typing.ColorBar,
+    "cluster_threshold": nilearn_typing.ClusterThreshold,
     "connected": nilearn_typing.Connected,
+    "copy_header": nilearn_typing.CopyHeader,
     "data_dir": nilearn_typing.DataDir,
     "draw_cross": nilearn_typing.DrawCross,
     "detrend": nilearn_typing.Detrend,
+    "force_resample": nilearn_typing.ForceResample,
     "high_pass": nilearn_typing.HighPass,
     "hrf_model": nilearn_typing.HrfModel,
     "keep_masked_labels": nilearn_typing.KeepMaskedLabels,
@@ -390,7 +192,9 @@ TYPE_MAPS = {
     "random_state": nilearn_typing.RandomState,
     "resolution": nilearn_typing.Resolution,
     "resume": nilearn_typing.Resume,
+    "screening_percentile": nilearn_typing.ScreeningPercentile,
     "smoothing_fwhm": nilearn_typing.SmoothingFwhm,
+    "standardize": nilearn_typing.Standardize,
     "standardize_confounds": nilearn_typing.StandardizeConfounds,
     "t_r": nilearn_typing.Tr,
     "tfce": nilearn_typing.Tfce,
@@ -460,15 +264,26 @@ def check_params(fn_dict):
         type_to_check = TYPE_MAPS[k]
         value = fn_dict[k]
 
-        # TODO update when dropping python 3.9
+        if get_origin(type_to_check) is Literal:
+            allowed_values = get_args(type_to_check)
+            check_parameter_in_allowed(value, allowed_values, k)
+
+        else:
+            check_is_of_allowed_type(value, type_to_check, k)
+
+
+def check_is_of_allowed_type(
+    value: Any, type_to_check: tuple[Any] | Any, parameter_name: str
+):
+    if not isinstance(type_to_check, tuple):
+        type_to_check = (type_to_check,)
+    if not isinstance(value, type_to_check):
+        type_to_check_str = ", ".join([str(x) for x in type_to_check])
         error_msg = (
-            f"'{k}' should be of type '{type_to_check}'.\nGot: '{type(value)}'"
+            f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
+            f"Got: '{value.__class__.__name__}'"
         )
-        if sys.version_info[1] > 9:
-            if not isinstance(value, type_to_check):
-                raise TypeError(error_msg)
-        elif value is not None and not isinstance(value, type_to_check):
-            raise TypeError(error_msg)
+        raise TypeError(error_msg)
 
 
 def check_reduction_strategy(strategy: str):
@@ -487,9 +302,16 @@ def check_reduction_strategy(strategy: str):
         "standard_deviation",
         "variance",
     }
+    check_parameter_in_allowed(
+        strategy, available_reduction_strategies, "strategy"
+    )
 
-    if strategy not in available_reduction_strategies:
+
+def check_parameter_in_allowed(
+    parameter: Any, allowed: Iterable[Any], parameter_name: str
+):
+    if parameter not in allowed:
         raise ValueError(
-            f"Invalid strategy '{strategy}'. "
-            f"Valid strategies are {available_reduction_strategies}."
+            f"'{parameter_name}' must be one of {allowed}.\n"
+            f"'{parameter}' was provided."
         )

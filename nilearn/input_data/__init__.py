@@ -17,12 +17,13 @@ import warnings
 
 from nilearn._utils.logger import find_stack_level
 
+# TODO (nilearn >= 0.14.0)
 message = (
     "The import path 'nilearn.input_data' is deprecated in version 0.9. "
     "Importing from 'nilearn.input_data' will be possible at least until "
     "release 0.13.0. Please import from 'nilearn.maskers' instead."
 )
-warnings.warn(message, DeprecationWarning, stacklevel=find_stack_level())
+warnings.warn(message, FutureWarning, stacklevel=find_stack_level())
 
 
 from nilearn.input_data.base_masker import BaseMasker

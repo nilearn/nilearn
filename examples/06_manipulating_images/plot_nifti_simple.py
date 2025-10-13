@@ -43,7 +43,7 @@ from nilearn.image.image import mean_img
 from nilearn.plotting import plot_roi
 
 # calculate mean image for the background
-mean_func_img = mean_img(func_filename, copy_header=True)
+mean_func_img = mean_img(func_filename)
 
 plot_roi(mask_img, mean_func_img, display_mode="y", cut_coords=4, title="Mask")
 
@@ -66,7 +66,9 @@ fmri_masked = nifti_masker.transform(func_filename)
 from sklearn.decomposition import FastICA
 
 n_components = 10
-ica = FastICA(n_components=n_components, random_state=42)
+ica = FastICA(
+    n_components=n_components, random_state=42, tol=0.001, max_iter=2000
+)
 components_masked = ica.fit_transform(fmri_masked.T).T
 
 # %%
@@ -79,7 +81,7 @@ from nilearn.image import index_img
 from nilearn.plotting import plot_stat_map, show
 
 # calculate mean image for the background
-mean_func_img = mean_img(func_filename, copy_header=True)
+mean_func_img = mean_img(func_filename)
 
 plot_stat_map(
     index_img(components, 0),

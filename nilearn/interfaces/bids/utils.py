@@ -1,7 +1,5 @@
 """Public Utility functions for the nilearn.interfaces.bids module."""
 
-from __future__ import annotations
-
 
 def bids_entities():
     """Return a dictionary of BIDS entities.
@@ -53,7 +51,7 @@ def check_bids_label(label):
     if not isinstance(label, str):
         raise TypeError(
             f"All bids labels must be string. "
-            f"Got '{type(label)}' for {label} instead."
+            f"Got '{label.__class__.__name__}' for {label} instead."
         )
     if not all(char.isalnum() for char in label):
         raise ValueError(

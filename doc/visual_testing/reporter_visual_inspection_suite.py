@@ -26,10 +26,12 @@ from nilearn.datasets import (
     fetch_fiac_first_level,
     fetch_icbm152_2009,
     fetch_icbm152_brain_gm_mask,
+    fetch_localizer_first_level,
     fetch_miyawaki2008,
     fetch_oasis_vbm,
     fetch_openneuro_dataset,
     load_fsaverage,
+    load_fsaverage_data,
     load_nki,
     load_sample_motor_activation_image,
     select_from_index,
@@ -67,9 +69,7 @@ def report_flm_adhd_dmn(build_type):
         _generate_dummy_html(filenames=["flm_adhd_dmn.html"])
         return None
 
-    t_r = 2.0
-    slice_time_ref = 0.0
-    n_scans = 176
+    adhd_dataset = fetch_adhd(n_subjects=1)
 
     pcc_coords = (0, -53, 26)
 
@@ -77,18 +77,18 @@ def report_flm_adhd_dmn(build_type):
         [pcc_coords],
         radius=10,
         detrend=True,
-        standardize=True,
+        standardize="zscore_sample",
         low_pass=0.1,
         high_pass=0.01,
-        t_r=t_r,
+        t_r=adhd_dataset.t_r,
         memory="nilearn_cache",
         memory_level=1,
     )
 
-    adhd_dataset = fetch_adhd(n_subjects=1)
     seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
+    n_scans = seed_time_series.shape[0]
 
-    frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
+    frametimes = np.linspace(0, (n_scans - 1) * adhd_dataset.t_r, n_scans)
 
     design_matrix = make_first_level_design_matrix(
         frametimes,
@@ -99,7 +99,7 @@ def report_flm_adhd_dmn(build_type):
     dmn_contrast = np.array([1] + [0] * (design_matrix.shape[1] - 1))
     contrasts = {"seed_based_glm": dmn_contrast}
 
-    first_level_model = FirstLevelModel(t_r=t_r, slice_time_ref=slice_time_ref)
+    first_level_model = FirstLevelModel(slice_time_ref=0)
     first_level_model = first_level_model.fit(
         run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
     )
@@ -231,7 +231,7 @@ def report_flm_fiac(build_type):
     data = fetch_fiac_first_level()
     fmri_img = [data["func1"], data["func2"]]
 
-    mean_img_ = mean_img(fmri_img[0], copy_header=True)
+    mean_img_ = mean_img(fmri_img[0])
 
     design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 
@@ -287,8 +287,6 @@ def report_slm_oasis(build_type):
         fetch_icbm152_brain_gm_mask(),
         oasis_dataset.gray_matter_maps[0],
         interpolation="nearest",
-        copy_header=True,
-        force_resample=True,
     )
 
     design_matrix = _make_design_matrix_slm_oasis(oasis_dataset, n_subjects)
@@ -320,20 +318,75 @@ def report_slm_oasis(build_type):
     return report
 
 
-def report_surface_glm(build_type):
-    """Empyt reports."""
+def report_surface_flm(build_type):
+    """FirstLevelGLM surface reports."""
+    if build_type == "partial":
+        _generate_dummy_html(filenames=["flm_surf_empty.html"])
+        _generate_dummy_html(filenames=["flm_surf.html"])
+        return None
+
     flm = FirstLevelModel(mask_img=SurfaceMasker())
     report_flm_empty = flm.generate_report(height_control=None)
     report_flm_empty.save_as_html(REPORTS_DIR / "flm_surf_empty.html")
 
-    flm = SecondLevelModel(mask_img=SurfaceMasker())
-    report_slm_empty = flm.generate_report(height_control="bonferroni")
+    data = fetch_localizer_first_level()
+
+    fsaverage5 = load_fsaverage()
+    surface_image = SurfaceImage.from_volume(
+        mesh=fsaverage5["pial"],
+        volume_img=data.epi_img,
+    )
+
+    t_r = 2.4
+    slice_time_ref = 0.5
+
+    glm = FirstLevelModel(
+        t_r=t_r,
+        slice_time_ref=slice_time_ref,
+        hrf_model="glover + derivative",
+        minimize_memory=False,
+        verbose=1,
+    ).fit(run_imgs=surface_image, events=data.events)
+
+    design_matrix = glm.design_matrices_[0]
+    contrast_matrix = np.eye(design_matrix.shape[1])
+
+    basic_contrasts = {
+        column: contrast_matrix[i]
+        for i, column in enumerate(design_matrix.columns)
+    }
+
+    contrasts = {
+        "(left - right) button press": (
+            basic_contrasts["audio_left_hand_button_press"]
+            - basic_contrasts["audio_right_hand_button_press"]
+            + basic_contrasts["visual_left_hand_button_press"]
+            - basic_contrasts["visual_right_hand_button_press"]
+        )
+    }
+
+    report_flm = glm.generate_report(
+        contrasts,
+        threshold=3.0,
+        bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
+        height_control=None,
+    )
+
+    report_flm.save_as_html(REPORTS_DIR / "flm_surf.html")
+
+    return report_flm, report_flm_empty
+
+
+def report_surface_slm(build_type):
+    if build_type == "partial":
+        _generate_dummy_html(filenames=["slm_surf_empty.html"])
+        return None
+
+    slm = SecondLevelModel(mask_img=SurfaceMasker())
+    report_slm_empty = slm.generate_report(height_control="bonferroni")
     report_slm_empty.save_as_html(REPORTS_DIR / "slm_surf_empty.html")
 
-    if build_type == "partial":
-        _generate_dummy_html(filenames=["flm_surf_empty.html"])
-        _generate_dummy_html(filenames=["slm_surf_empty.html"])
-        return report_flm_empty, report_slm_empty
+    return report_slm_empty
 
 
 # %%
@@ -463,7 +516,7 @@ def report_multi_nifti_labels_masker(build_type):
         )
         return None
 
-    yeo = fetch_atlas_yeo_2011(thickness="thick", n_networks=17)
+    yeo = fetch_atlas_yeo_2011(n_networks=17)
 
     data = fetch_development_fmri(n_subjects=2)
 
@@ -536,7 +589,9 @@ def report_sphere_masker(build_type):
         )
         return None
 
-    t_r = 2.0
+    data = fetch_development_fmri(n_subjects=1)
+
+    t_r = data.t_r
 
     pcc_coords = [(0, -53, 26), (5, 53, -26), (0, 0, 0)]
 
@@ -544,7 +599,7 @@ def report_sphere_masker(build_type):
         pcc_coords,
         radius=10,
         detrend=True,
-        standardize=True,
+        standardize="zscore_sample",
         low_pass=0.1,
         high_pass=0.01,
         t_r=t_r,
@@ -554,8 +609,6 @@ def report_sphere_masker(build_type):
 
     report_unfitted = masker.generate_report([0, 2])
     report_unfitted.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
-
-    data = fetch_development_fmri(n_subjects=1)
 
     masker.fit(data.func[0])
 
@@ -739,7 +792,8 @@ def main(args=sys.argv):
     report_flm_bids_features(build_type)
     report_flm_fiac(build_type)
     report_slm_oasis(build_type)
-    report_surface_glm(build_type)
+    report_surface_flm(build_type)
+    report_surface_slm(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")

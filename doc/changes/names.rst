@@ -53,6 +53,8 @@
 
 .. _Caglar Cakan: https://github.com/caglorithm
 
+.. _Chloe Hampson: https://github.com/chlohamp
+
 .. _Chris Gorgolewski: https://chrisgorgolewski.org/
 
 .. _Chris Markiewicz: https://github.com/effigies
@@ -135,7 +137,7 @@
 
 .. _Javier Rasero: https://jrasero.github.io/
 
-.. _Jean Kossaifi: http://jeankossaifi.com/
+.. _Jean Kossaifi: https://jeankossaifi.com/
 
 .. _Jean-Rémi King: https://github.com/kingjr
 

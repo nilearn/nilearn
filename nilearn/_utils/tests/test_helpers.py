@@ -15,7 +15,6 @@ from nilearn._utils.helpers import (
     stringify_path,
     transfer_deprecated_param_vals,
 )
-from nilearn._utils.testing import on_windows_with_old_mpl_and_new_numpy
 
 
 def _mock_args_for_testing_replace_parameter():
@@ -36,10 +35,6 @@ def _mock_args_for_testing_replace_parameter():
 
 
 @pytest.mark.skipif(
-    on_windows_with_old_mpl_and_new_numpy(),
-    reason="Old matplotlib not compatible with numpy 2.0 on windows.",
-)
-@pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
 )
@@ -57,10 +52,6 @@ def test_should_raise_custom_warning_if_mpl_not_installed():
         set_mpl_backend(warning)
 
 
-@pytest.mark.skipif(
-    on_windows_with_old_mpl_and_new_numpy(),
-    reason="Old matplotlib not compatible with numpy 2.0 on windows.",
-)
 @pytest.mark.skipif(
     is_matplotlib_installed(),
     reason="Test requires matplotlib not to be installed.",
@@ -141,7 +132,7 @@ def test_rename_parameters():
     to replacement parameters and all deprecation warning are raised as
     expected.
     """
-    mock_input, replacement_params = _mock_args_for_testing_replace_parameter()
+    _, replacement_params = _mock_args_for_testing_replace_parameter()
     expected_output = ("dp0", "dp1", "up0", "up1")
     expected_warnings = [
         (
@@ -187,9 +178,9 @@ def test_rename_parameters():
     expected_warnings.sort()
     raised_warnings.sort(key=lambda mem: str(mem.message))
     for raised_warning_, expected_warning_ in zip(
-        raised_warnings, expected_warnings
+        raised_warnings, expected_warnings, strict=False
     ):
-        assert raised_warning_.category is DeprecationWarning
+        assert raised_warning_.category is FutureWarning
         assert str(raised_warning_.message) == expected_warning_
 
 
@@ -236,9 +227,9 @@ def test_future_warn_deprecated_params():
     expected_warnings.sort()
     raised_warnings.sort(key=lambda mem: str(mem.message))
     for raised_warning_, expected_warning_ in zip(
-        raised_warnings, expected_warnings
+        raised_warnings, expected_warnings, strict=False
     ):
-        assert raised_warning_.category is DeprecationWarning
+        assert raised_warning_.category is FutureWarning
         assert str(raised_warning_.message) == expected_warning_
 
 
@@ -259,7 +250,7 @@ def test_compare_version(version_a, operator, version_b):
 def test_compare_version_error():
     with pytest.raises(
         ValueError,
-        match="'compare_version' received an unexpected operator <>.",
+        match=r"'compare_version' received an unexpected operator <>.",
     ):
         compare_version("0.1.0", "<>", "1.1.0")
 

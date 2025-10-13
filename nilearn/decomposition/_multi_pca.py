@@ -6,7 +6,7 @@ This is a good initialization method for ICA.
 import numpy as np
 from sklearn.utils.extmath import randomized_svd
 
-from nilearn._utils import fill_doc
+from nilearn._utils.docs import fill_doc
 
 from ._base import _BaseDecomposition
 
@@ -32,14 +32,7 @@ class _MultiPCA(_BaseDecomposition):
 
     %(smoothing_fwhm)s
 
-    mask : Niimg-like object, :obj:`~nilearn.maskers.NiftiMasker` or \
-          :obj:`~nilearn.maskers.MultiNiftiMasker` or \
-           :obj:`~nilearn.surface.SurfaceImage` or \
-           :obj:`~nilearn.maskers.SurfaceMasker` object, optional
-        Mask to be used on data. If an instance of masker is passed,
-        then its mask will be used. If no mask is given, for Nifti images,
-        it will be computed automatically by a MultiNiftiMasker with default
-        parameters; for surface images, all the vertices will be used.
+    %(mask_decomposition)s
 
     %(mask_strategy)s
         Default='epi'.
@@ -55,9 +48,7 @@ class _MultiPCA(_BaseDecomposition):
         to fine-tune mask computation.
         Please see the related documentation for details.
 
-    standardize : boolean, default=False
-        If standardize is True, the time-series are centered and normed:
-        their mean is put to 0 and their variance to 1 in the time dimension.
+    %(standardize_false)s
 
     standardize_confounds : boolean, default=True
         If standardize_confounds is True, the confounds are z-scored:
@@ -108,9 +99,9 @@ class _MultiPCA(_BaseDecomposition):
 
     %(verbose0)s
 
-    %(base_decomposition_attributes)s
+    %(base_decomposition_fit_attributes)s
 
-    %(multi_pca_attributes)s
+    %(multi_pca_fit_attributes)s
 
     """
 

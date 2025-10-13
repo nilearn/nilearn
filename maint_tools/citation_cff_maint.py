@@ -1,7 +1,5 @@
 """Update AUTHORS and names from CITATION.cff file."""
 
-from __future__ import annotations
-
 import operator
 from pathlib import Path
 from typing import Any
@@ -77,7 +75,7 @@ def write_names_rst(citation: list[dict[str, str]]) -> None:
                 )
                 print(line, file=f)
             if i < len(citation["authors"]) - 1:
-                print("", file=f)
+                print(file=f)
 
 
 def read_authors_file() -> list[str]:

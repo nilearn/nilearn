@@ -1,7 +1,5 @@
 """Data generation utilities."""
 
-from __future__ import annotations
-
 import itertools
 import json
 import string
@@ -14,7 +12,8 @@ from nibabel import Nifti1Image, gifti
 from scipy.ndimage import binary_dilation
 
 from nilearn import datasets, image, maskers, masking
-from nilearn._utils import as_ndarray, logger
+from nilearn._utils import logger
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn.interfaces.bids.utils import (
     bids_entities,
     check_bids_label,
@@ -123,7 +122,7 @@ def generate_regions_ts(
         If True, creates negative and positive valued regions randomly; all
         generated region values are positive otherwise.
 
-        .. versionadded:: 0.11.1
+        .. nilearn_versionadded:: 0.11.1
 
     Returns
     -------
@@ -199,7 +198,7 @@ def generate_maps(
         If True, creates negative and positive valued regions randomly; all
         generated region values are positive otherwise.
 
-        .. versionadded:: 0.11.1
+        .. nilearn_versionadded:: 0.11.1
 
     Returns
     -------
@@ -277,7 +276,7 @@ def generate_labeled_regions(
         n_voxels, n_regions, random_state=random_state
     )
     # replace weights with labels
-    for n, row in zip(labels, regions):
+    for n, row in zip(labels, regions, strict=False):
         row[row > 0] = n
     data = np.zeros(shape, dtype=dtype)
     data[np.ones(shape, dtype=bool)] = regions.sum(axis=0).T
@@ -642,7 +641,7 @@ def _generate_signals_from_precisions(
     mean = np.zeros(precisions[0].shape[0])
     signals.extend(
         rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n,))
-        for n, prec in zip(n_samples, precisions)
+        for n, prec in zip(n_samples, precisions, strict=False)
     )
     return signals
 
@@ -1162,7 +1161,7 @@ def _mock_bids_dataset(
         func_path = subses_dir / "func"
         func_path.mkdir(parents=True, exist_ok=True)
 
-        for task, n_run in zip(tasks, n_runs):
+        for task, n_run in zip(tasks, n_runs, strict=False):
             for run in _listify(n_run):
                 if entities:
                     for key in entities:
@@ -1265,7 +1264,7 @@ def _mock_bids_derivatives(
         func_path = subses_dir / "func"
         func_path.mkdir(parents=True, exist_ok=True)
 
-        for task, n_run in zip(tasks, n_runs):
+        for task, n_run in zip(tasks, n_runs, strict=False):
             for run in _listify(n_run):
                 if entities:
                     for key in entities:

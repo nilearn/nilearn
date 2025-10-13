@@ -7,23 +7,25 @@ import numpy as np
 from joblib import Parallel, delayed
 from scipy.ndimage import binary_dilation, binary_erosion
 
-from nilearn._utils import (
-    as_ndarray,
-    check_niimg,
-    check_niimg_3d,
-    fill_doc,
-    logger,
-)
+from nilearn._utils import logger
 from nilearn._utils.cache_mixin import cache
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import get_border_data, largest_connected_component
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import (
+    check_niimg,
+    check_niimg_3d,
+    check_same_fov,
+)
+from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets import (
     load_mni152_gm_template,
     load_mni152_template,
     load_mni152_wm_template,
 )
+from nilearn.exceptions import MaskWarning, NotImplementedWarning
 from nilearn.image import get_data, new_img_like, resampling
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -43,13 +45,6 @@ __all__ = [
     "intersect_masks",
     "unmask",
 ]
-
-
-class _MaskWarning(UserWarning):
-    """A class to always raise warnings."""
-
-
-warnings.simplefilter("always", _MaskWarning)
 
 
 def load_mask_img(mask_img, allow_empty=False):
@@ -82,7 +77,7 @@ def load_mask_img(mask_img, allow_empty=False):
     if not isinstance(mask_img, (*NiimgLike, SurfaceImage)):
         raise TypeError(
             "'img' should be a 3D/4D Niimg-like object or a SurfaceImage. "
-            f"Got {type(mask_img)=}."
+            f"Got {mask_img.__class__.__name__}."
         )
 
     if isinstance(mask_img, NiimgLike):
@@ -197,23 +192,39 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
         Intersection of all masks.
     """
     check_params(locals())
-    if len(mask_imgs) == 0:
-        raise ValueError("No mask provided for intersection")
-    grp_mask = None
-    first_mask, ref_affine = load_mask_img(mask_imgs[0], allow_empty=True)
-    ref_shape = first_mask.shape
+
     if threshold > 1:
         raise ValueError("The threshold should be smaller than 1")
     if threshold < 0:
         raise ValueError("The threshold should be greater than 0")
     threshold = min(threshold, 1 - 1.0e-7)
 
+    if len(mask_imgs) == 0:
+        raise ValueError("No mask provided for intersection")
+
+    mask_types = [
+        f"mask_imgs[{i}] = {x.__class__.__name__}"
+        for i, x in enumerate(mask_imgs)
+        if not isinstance(x, NiimgLike)
+    ]
+    if mask_types:
+        raise TypeError(
+            "All masks must be a 3D Niimg-like object. "
+            f"Got: {', '.join(mask_types)}."
+        )
+
+    grp_mask = None
+
+    # load all masks once
+    mask_imgs = [check_niimg_3d(x) for x in mask_imgs]
+
+    kwargs = {"raise_error": True}
+    check_same_fov(*mask_imgs, **kwargs)
+
+    _, ref_affine = load_mask_img(mask_imgs[0], allow_empty=True)
+
     for this_mask in mask_imgs:
-        mask, affine = load_mask_img(this_mask, allow_empty=True)
-        if np.any(affine != ref_affine):
-            raise ValueError("All masks should have the same affine")
-        if np.any(mask.shape != ref_shape):
-            raise ValueError("All masks should have the same shape")
+        mask, _ = load_mask_img(this_mask, allow_empty=True)
 
         if grp_mask is None:
             # We use int here because there may be a lot of masks to merge
@@ -248,7 +259,7 @@ def _post_process_mask(
     if not mask_any:
         warnings.warn(
             f"Computed an empty mask. {warning_msg}",
-            _MaskWarning,
+            MaskWarning,
             stacklevel=find_stack_level(),
         )
     if connected and mask_any:
@@ -590,7 +601,7 @@ def compute_multi_background_mask(
 
     threshold : :obj:`float`, default=0.5
         The inter-run threshold: the fraction of the
-        total number of run in for which a :term:`voxel` must be
+        total number of runs in for which a :term:`voxel` must be
         in the mask to be kept in the common mask.
         threshold=1 corresponds to keeping the intersection of all
         masks, whereas threshold=0 is the union of all masks.
@@ -679,7 +690,7 @@ def compute_brain_mask(
     %(verbose0)s
     %(mask_type)s
 
-        .. versionadded:: 0.8.1
+        .. nilearn_versionadded:: 0.8.1
 
     Returns
     -------
@@ -704,10 +715,7 @@ def compute_brain_mask(
         )
 
     resampled_template = cache(resampling.resample_to_img, memory)(
-        template,
-        target_img,
-        copy_header=True,
-        force_resample=False,  # TODO set to True in 0.13.0
+        template, target_img
     )
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")
@@ -736,7 +744,6 @@ def compute_multi_brain_mask(
     memory=None,
     verbose=0,
     mask_type="whole-brain",
-    **kwargs,
 ):
     """Compute the whole-brain, grey-matter or white-matter mask \
     for a list of images.
@@ -744,7 +751,7 @@ def compute_multi_brain_mask(
     The mask is calculated through the resampling of the corresponding
     MNI152 template mask onto the target image.
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -772,14 +779,6 @@ def compute_multi_brain_mask(
     %(memory)s
 
     %(verbose0)s
-
-    .. note::
-        Argument not used but kept to fit the API
-
-    **kwargs : optional arguments
-        Arguments such as 'target_affine' are used in the call of other
-        masking strategies, which then would raise an error for this function
-        which does not need such arguments.
 
     Returns
     -------
@@ -899,7 +898,7 @@ def apply_mask_fmri(
             warnings.warn(
                 "Parameter smoothing_fwhm "
                 "is not yet supported for surface data",
-                UserWarning,
+                NotImplementedWarning,
                 stacklevel=2,
             )
             smoothing_fwhm = True

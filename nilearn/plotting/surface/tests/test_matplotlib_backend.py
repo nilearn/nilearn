@@ -9,7 +9,6 @@ from nilearn.plotting.surface._matplotlib_backend import (
     MATPLOTLIB_VIEWS,
     _compute_facecolors,
     _get_bounds,
-    _get_ticks,
     _get_vertexcolor,
     _get_view_plot_surf,
 )
@@ -109,35 +108,6 @@ def test_get_bounds(data, expected):
     assert _get_bounds(data, vmin=0.1, vmax=0.8) == (0.1, 0.8)
 
 
-@pytest.mark.parametrize(
-    "vmin,vmax,cbar_tick_format,expected",
-    [
-        (0, 0, "%i", [0]),
-        (0, 3, "%i", [0, 1, 2, 3]),
-        (0, 4, "%i", [0, 1, 2, 3, 4]),
-        (1, 5, "%i", [1, 2, 3, 4, 5]),
-        (0, 5, "%i", [0, 1.25, 2.5, 3.75, 5]),
-        (0, 10, "%i", [0, 2.5, 5, 7.5, 10]),
-        (0, 0, "%.1f", [0]),
-        (0, 1, "%.1f", [0, 0.25, 0.5, 0.75, 1]),
-        (1, 2, "%.1f", [1, 1.25, 1.5, 1.75, 2]),
-        (1.1, 1.2, "%.1f", [1.1, 1.125, 1.15, 1.175, 1.2]),
-        (0, np.nextafter(0, 1), "%.1f", [0.0e000, 5.0e-324]),
-    ],
-)
-def test_get_ticks(vmin, vmax, cbar_tick_format, expected):
-    """Test if nilearn.plotting.surface._matplotlib_backend._get_ticks
-    returns expected values.
-    """
-    ticks = _get_ticks(vmin, vmax, cbar_tick_format, threshold=None)
-    assert 1 <= len(ticks) <= 5
-    assert ticks[0] == vmin and ticks[-1] == vmax
-    assert (
-        len(np.unique(ticks)) == len(expected)
-        and (np.unique(ticks) == expected).all()
-    )
-
-
 def test_compute_facecolors():
     """Test if nilearn.plotting.surface._matplotlib_backend._compute_facecolors
     returns expected values.
@@ -157,7 +127,6 @@ def test_compute_facecolors():
         bg_map,
         mesh.faces,
         len(mesh.coordinates),
-        None,
         alpha,
     )
 
@@ -171,7 +140,6 @@ def test_compute_facecolors():
         bg_map_normalized,
         mesh.faces,
         len(mesh.coordinates),
-        None,
         alpha,
     )
 
@@ -188,7 +156,6 @@ def test_compute_facecolors():
         bg_map_scaled,
         mesh.faces,
         len(mesh.coordinates),
-        None,
         alpha,
     )
 
@@ -196,34 +163,6 @@ def test_compute_facecolors():
     assert not np.allclose(
         facecolors_manually_rescaled, facecolors_auto_normalized
     )
-
-
-def test_compute_facecolors_deprecation():
-    """Test warning deprecation."""
-    fsaverage = fetch_surf_fsaverage()
-    mesh = load_surf_mesh(fsaverage["pial_left"])
-    alpha = "auto"
-    # Surface map whose value in each vertex is
-    # 1 if this vertex's curv > 0
-    # 0 if this vertex's curv is 0
-    # -1 if this vertex's curv < 0
-    bg_map = np.sign(load_surf_data(fsaverage["curv_left"]))
-    bg_min, bg_max = np.min(bg_map), np.max(bg_map)
-    assert bg_min < 0 or bg_max > 1
-    with pytest.warns(
-        DeprecationWarning,
-        match=(
-            "The `darkness` parameter will be deprecated in release 0.13. "
-            "We recommend setting `darkness` to None"
-        ),
-    ):
-        _compute_facecolors(
-            bg_map,
-            mesh.faces,
-            len(mesh.coordinates),
-            0.5,
-            alpha,
-        )
 
 
 def test_get_vertexcolor():
@@ -307,25 +246,3 @@ def test_get_vertexcolor_bg_map():
 
     assert len(vertexcolors_manually_rescaled) == len(mesh.coordinates)
     assert vertexcolors_manually_rescaled != vertexcolors_auto_normalized
-
-
-def test_get_vertexcolor_deprecation():
-    """Check deprecation warning."""
-    fsaverage = fetch_surf_fsaverage()
-    mesh = load_surf_mesh(fsaverage["pial_left"])
-    surf_map = np.arange(len(mesh.coordinates))
-    colors = colorscale("jet", surf_map, 10)
-
-    with pytest.warns(
-        DeprecationWarning,
-        match=(
-            "The `darkness` parameter will be deprecated in release 0.13. "
-            "We recommend setting `darkness` to None"
-        ),
-    ):
-        _get_vertexcolor(
-            surf_map,
-            colors["cmap"],
-            colors["norm"],
-            darkness=0.5,
-        )

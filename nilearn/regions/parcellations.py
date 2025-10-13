@@ -10,10 +10,13 @@ from sklearn.base import clone
 from sklearn.feature_extraction import image
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._utils import fill_doc, logger, stringify_path
+from nilearn._utils import logger
+from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import iter_check_niimg
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.decomposition._multi_pca import _MultiPCA
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
 from nilearn.maskers.surface_labels_masker import signals_to_surf_img_labels
@@ -202,7 +205,7 @@ class Parcellations(_MultiPCA):
     kmeans, ward, complete, average are leveraged from scikit-learn.
     rena is built into nilearn.
 
-    .. versionadded:: 0.4.1
+    .. nilearn_versionadded:: 0.4.1
 
     Parameters
     ----------
@@ -221,22 +224,13 @@ class Parcellations(_MultiPCA):
     %(random_state)s
         Default=0.
 
-    mask : Niimg-like object or :class:`~nilearn.surface.SurfaceImage`,\
-           or :class:`nilearn.maskers.NiftiMasker`,\
-           :class:`nilearn.maskers.MultiNiftiMasker` or \
-           :class:`nilearn.maskers.SurfaceMasker`, optional
-        Mask/Masker used for masking the data.
-        If mask image if provided, it will be used in the MultiNiftiMasker or
-        SurfaceMasker (depending on the type of mask image).
-        If an instance of either maskers is provided, then this instance
-        parameters will be used in masking the data by overriding the default
-        masker parameters.
-        If None, mask will be automatically computed by a MultiNiftiMasker
-        with default parameters for Nifti images and no mask will be used for
-        SurfaceImage.
+    %(mask_decomposition)s
+
     %(smoothing_fwhm)s
         Default=4.0.
+
     %(standardize_false)s
+
     %(detrend)s
 
         .. note::
@@ -425,11 +419,7 @@ class Parcellations(_MultiPCA):
                 "Parcellation method is specified as None. "
                 f"Please select one of the method in {valid_methods}"
             )
-        if self.method not in valid_methods:
-            raise ValueError(
-                f"The method you have selected is not implemented "
-                f"'{self.method}'. Valid methods are in {valid_methods}"
-            )
+        check_parameter_in_allowed(self.method, valid_methods, "method")
 
         # we delay importing Ward or AgglomerativeClustering and same
         # time import plotting module before that.
@@ -602,7 +592,7 @@ class Parcellations(_MultiPCA):
             delayed(
                 self._cache(_labels_masker_extraction, func_memory_level=2)
             )(img, masker, confound)
-            for img, confound in zip(imgs_list, confounds)
+            for img, confound in zip(imgs_list, confounds, strict=False)
         )
 
         return region_signals[0] if single_subject else region_signals

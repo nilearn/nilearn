@@ -355,7 +355,7 @@ from nilearn.plotting import plot_stat_map, show
 subject_data = fetch_spm_auditory(verbose=0)
 
 fmri_glm = FirstLevelModel(
-    t_r=7,
+    t_r=subject_data.t_r,
     smoothing_fwhm=4,
     noise_model="ar1",
     standardize=False,
@@ -368,7 +368,7 @@ fmri_glm = fmri_glm.fit(subject_data.func, subject_data.events)
 
 results = fmri_glm.compute_contrast("listening", output_type="all")
 
-mean_img = mean_img(subject_data.func[0], copy_header=True)
+mean_img = mean_img(subject_data.func[0])
 
 # %%
 # Let's set some common configuration for our plots.

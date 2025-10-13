@@ -40,8 +40,8 @@ on:
         branches:
         -   main
     schedule:
-    # every Monday at 9am UTC
-    -   cron: 0 9 * * MON
+    # every Monday at 12noon UTC
+    -   cron: 0 12 * * TUE
 
     workflow_dispatch:  # This enables manual triggering from GitHub UI
 
@@ -58,11 +58,11 @@ jobs:
                 working-directory: ./asv_benchmarks
 
         steps:
-        -   uses: actions/checkout@v4
+        -   uses: actions/checkout@v5
             with:
                 # fetch all branches and tags
                 fetch-depth: 0
-        -   uses: actions/setup-python@v5
+        -   uses: actions/setup-python@v6
             with:
                 # TODO bump to 3.10 when minimum python is 3.10
                 python-version: 3.9

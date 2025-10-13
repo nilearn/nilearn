@@ -87,6 +87,8 @@ LAYOUT = {
     "paper_bgcolor": "#fff",
     "hovermode": False,
     "margin": {"l": 0, "r": 0, "b": 0, "t": 0, "pad": 0},
+    "title_font_family": "Arial",
+    "font_family": "Arial",
 }
 
 
@@ -226,7 +228,7 @@ def _get_cbar(
     vmin,
     vmax,
     cbar_tick_format,
-    fontsize=25,
+    fontsize=18,
     color="black",
     height=0.5,
 ):
@@ -282,7 +284,6 @@ def _plot_surf(
     threshold=None,
     alpha=None,
     bg_on_data=False,
-    darkness=0.7,
     vmin=None,
     vmax=None,
     cbar_vmin=None,
@@ -347,7 +348,6 @@ def _plot_surf(
             absolute_threshold=colors["abs_threshold"],
             bg_map=bg_data,
             bg_on_data=bg_on_data,
-            darkness=darkness,
         )
     else:
         if bg_data is None:
@@ -368,6 +368,7 @@ def _plot_surf(
             float(colors["vmin"]),
             float(colors["vmax"]),
             cbar_tick_format,
+            fontsize=title_font_size,
         )
         fig_data.append(dummy)
 

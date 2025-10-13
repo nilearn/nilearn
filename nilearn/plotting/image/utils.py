@@ -9,13 +9,12 @@ import numpy as np
 from nibabel.spatialimages import SpatialImage
 from scipy.ndimage import binary_fill_holes
 
-from nilearn._utils import check_niimg_3d
 from nilearn._utils.ndimage import get_border_data
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn.datasets import load_mni152_template
 from nilearn.image import get_data, new_img_like
 from nilearn.image.resampling import reorder_img
-from nilearn.plotting._utils import get_cbar_ticks
 
 
 # A constant class to serve as a sentinel for the default MNI template
@@ -36,7 +35,7 @@ class _MNI152Template(SpatialImage):
     def load(self):
         if self.data is None:
             anat_img = load_mni152_template(resolution=2)
-            anat_img = reorder_img(anat_img, copy_header=True)
+            anat_img = reorder_img(anat_img)
             data = get_data(anat_img)
             data = data.astype(np.float64)
             anat_mask = binary_fill_holes(data > np.finfo(float).eps)
@@ -89,34 +88,6 @@ class _MNI152Template(SpatialImage):
 MNI152TEMPLATE = _MNI152Template()
 
 
-def get_cropped_cbar_ticks(cbar_vmin, cbar_vmax, threshold=None, n_ticks=5):
-    """Return ticks for cropped colorbars."""
-    new_tick_locs = np.linspace(cbar_vmin, cbar_vmax, n_ticks)
-    if threshold is not None:
-        # Case where cbar is either all positive or all negative
-        if 0 <= cbar_vmin <= cbar_vmax or cbar_vmin <= cbar_vmax <= 0:
-            idx_closest = np.argmin(
-                [abs(abs(new_tick_locs) - threshold) for _ in new_tick_locs]
-            )
-            new_tick_locs[idx_closest] = threshold
-        # Case where we do a symmetric thresholding
-        # within an asymmetric cbar
-        # and both threshold values are within bounds
-        elif cbar_vmin <= -threshold <= threshold <= cbar_vmax:
-            new_tick_locs = get_cbar_ticks(
-                cbar_vmin, cbar_vmax, threshold, n_ticks=len(new_tick_locs)
-            )
-        # Case where one of the threshold values is out of bounds
-        else:
-            idx_closest = np.argmin(
-                [abs(new_tick_locs - threshold) for _ in new_tick_locs]
-            )
-            new_tick_locs[idx_closest] = (
-                -threshold if threshold > cbar_vmax else threshold
-            )
-    return new_tick_locs
-
-
 def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
     """Load anatomy, for optional diming."""
     vmin = None
@@ -154,7 +125,7 @@ def load_anat(anat_img=MNI152TEMPLATE, dim="auto", black_bg="auto"):
         if dim != "auto" and not isinstance(dim, numbers.Number):
             raise ValueError(
                 "The input given for 'dim' needs to be a float. "
-                f"You provided dim={dim} in {type(dim)}."
+                f"You provided dim={dim} in {dim.__class__.__name__}."
             )
         vmean = 0.5 * (vmin + vmax)
         ptp = 0.5 * (vmax - vmin)

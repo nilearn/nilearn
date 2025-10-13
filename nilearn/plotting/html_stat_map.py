@@ -13,11 +13,12 @@ from matplotlib.image import imsave
 from nibabel.affines import apply_affine
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn._utils import check_niimg_3d, fill_doc
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_threshold
 from nilearn.datasets import load_mni152_template
 from nilearn.image import get_data, new_img_like, reorder_img, resample_to_img
@@ -264,7 +265,7 @@ def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
         bg_img, black_bg, bg_min, bg_max = load_anat(
             bg_img, dim=dim, black_bg=black_bg
         )
-    bg_img = reorder_img(bg_img, resample="nearest", copy_header=True)
+    bg_img = reorder_img(bg_img, resample="nearest")
     return bg_img, bg_min, bg_max, black_bg
 
 
@@ -280,19 +281,10 @@ def _resample_stat_map(
     mask_img
     """
     stat_map_img = resample_to_img(
-        stat_map_img,
-        bg_img,
-        interpolation=resampling_interpolation,
-        copy_header=True,
-        force_resample=False,  # TODO set to True in 0.13.0
+        stat_map_img, bg_img, interpolation=resampling_interpolation
     )
     mask_img = resample_to_img(
-        mask_img,
-        bg_img,
-        fill_value=1,
-        interpolation="nearest",
-        copy_header=True,
-        force_resample=False,  # TODO set to True in 0.13.0
+        mask_img, bg_img, fill_value=1, interpolation="nearest"
     )
 
     return stat_map_img, mask_img
@@ -624,6 +616,11 @@ def view_img(
 
     opacity : :obj:`float` in [0,1], default=1
         The level of opacity of the overlay (0: transparent, 1: opaque).
+
+    %(radiological)s
+
+    show_lr : :obj:`bool`, default=True
+        Show left and right labels on the figure
 
     Returns
     -------

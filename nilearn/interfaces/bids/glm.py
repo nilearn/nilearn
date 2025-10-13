@@ -10,16 +10,17 @@ from pathlib import Path
 from nilearn import __version__
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.glm import coerce_to_dict, make_stat_maps
+from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.surface import SurfaceImage
 
 
 def _generate_model_metadata(out_file, model):
     """Generate a sidecar JSON file containing model metadata.
 
-    .. versionadded:: 0.9.2
+    .. nilearn_versionadded:: 0.9.2
 
     Parameters
     ----------
@@ -51,7 +52,7 @@ def _generate_model_metadata(out_file, model):
 def _generate_dataset_description(out_file, model_level):
     """Generate a BIDS dataset_description.json file with relevant metadata.
 
-    .. versionadded:: 0.9.2
+    .. nilearn_versionadded:: 0.9.2
 
     If the dataset_description already exists only the GeneratedBy section
     is extended.
@@ -100,7 +101,7 @@ def save_glm_to_bids(
 ):
     """Save :term:`GLM` results to :term:`BIDS`-like files.
 
-    .. versionadded:: 0.9.2
+    .. nilearn_versionadded:: 0.9.2
 
     Parameters
     ----------
@@ -121,7 +122,7 @@ def save_glm_to_bids(
 
     %(first_level_contrast)s
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
     contrast_types : None or :obj:`dict` of :obj:`str`, default=None
         An optional dictionary mapping some
@@ -161,7 +162,7 @@ def save_glm_to_bids(
     model : :obj:`~nilearn.glm.first_level.FirstLevelModel` or \
             :obj:`~nilearn.glm.second_level.SecondLevelModel`
 
-            .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
     Warnings
     --------
@@ -219,14 +220,8 @@ def save_glm_to_bids(
     tmp.pop("contrasts")
     report_kwargs = {k: v.default for k, v in tmp.items()}
     for key in kwargs:
-        if key not in report_kwargs:
-            raise ValueError(
-                f"Extra key-word arguments must be one of: "
-                f"{report_kwargs}\n"
-                f"Got: {key}"
-            )
-        else:
-            report_kwargs[key] = kwargs[key]
+        check_parameter_in_allowed(key, report_kwargs, "Extra key-word")
+        report_kwargs[key] = kwargs[key]
 
     contrasts = coerce_to_dict(contrasts)
 
@@ -299,8 +294,7 @@ def save_glm_to_bids(
     _generate_model_metadata(metadata_file, model)
 
     logger.log("Saving contrast-level statistical maps...", verbose=verbose)
-    statistical_maps = make_stat_maps(
-        model,
+    statistical_maps = model._make_stat_maps(
         contrasts,
         output_type="all",
         first_level_contrast=first_level_contrast,
@@ -318,7 +312,9 @@ def save_glm_to_bids(
             if model._is_volume_glm():
                 img.to_filename(out_dir / filename)
             else:
-                for label, hemi in zip(["L", "R"], ["left", "right"]):
+                for label, hemi in zip(
+                    ["L", "R"], ["left", "right"], strict=False
+                ):
                     density = img.mesh.parts[hemi].n_vertices
                     img.data.to_filename(
                         out_dir
@@ -408,7 +404,7 @@ def _write_mask(model):
         # need to convert mask from book to a type that's gifti friendly
 
         mask = deepcopy(model.masker_.mask_img_)
-        for label, hemi in zip(["L", "R"], ["left", "right"]):
+        for label, hemi in zip(["L", "R"], ["left", "right"], strict=False):
             mask.data.parts[hemi] = mask.data.parts[hemi].astype("uint8")
             density = mask.mesh.parts[hemi].n_vertices
             mask.data.to_filename(
@@ -429,7 +425,9 @@ def _write_model_level_statistical_maps(model, out_dir):
             if model._is_volume_glm():
                 stat_map_to_save.to_filename(out_dir / map_name)
             else:
-                for label, hemi in zip(["L", "R"], ["left", "right"]):
+                for label, hemi in zip(
+                    ["L", "R"], ["left", "right"], strict=False
+                ):
                     density = stat_map_to_save.mesh.parts[hemi].n_vertices
                     stat_map_to_save.data.to_filename(
                         out_dir
@@ -450,7 +448,7 @@ def _generate_filename_surface_file(filename, hemi, den=None):
         create_bids_filename,
     )
 
-    fields = parse_bids_filename(filename, legacy=False)
+    fields = parse_bids_filename(filename)
     fields["prefix"] = None
 
     fields["entities"]["hemi"] = hemi

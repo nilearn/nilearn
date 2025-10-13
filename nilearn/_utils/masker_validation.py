@@ -4,12 +4,13 @@ from string import Template
 
 import numpy as np
 
+from nilearn._utils.cache_mixin import check_memory
+from nilearn._utils.class_inspect import get_params
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_is_of_allowed_type
+from nilearn._utils.tags import is_glm
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike
-
-from .cache_mixin import check_memory
-from .class_inspect import get_params
 
 
 def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
@@ -34,9 +35,10 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     instance : object, instance of BaseEstimator
         The object that gives us the values of the parameters
 
-    masker_type : {"multi_nii", "nii", "surface"}, default="mutli_nii"
-        Indicates whether to return a MultiNiftiMasker, NiftiMasker, or a
-        SurfaceMasker.
+    masker_type : {"multi_nii", "nii", "surface", "multi_surface"}, \
+                  default="mutli_nii"
+        Indicates whether to return a MultiNiftiMasker, NiftiMasker,
+        SurfaceMasker, or a MultiSurfaceMasker.
 
     ignore : None or list of strings
         Names of the parameters of the estimator that should not be
@@ -49,12 +51,17 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
         New masker
 
     """
-    from nilearn.glm.first_level import FirstLevelModel
-    from nilearn.glm.second_level import SecondLevelModel
-    from nilearn.maskers import MultiNiftiMasker, NiftiMasker, SurfaceMasker
+    from nilearn.maskers import (
+        MultiNiftiMasker,
+        MultiSurfaceMasker,
+        NiftiMasker,
+        SurfaceMasker,
+    )
 
     if masker_type == "surface":
         masker_type = SurfaceMasker
+    elif masker_type == "multi_surface":
+        masker_type = MultiSurfaceMasker
     elif masker_type == "multi_nii":
         masker_type = MultiNiftiMasker
     else:
@@ -63,10 +70,13 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     estimator_params = get_params(masker_type, estimator, ignore=ignore)
 
     mask = getattr(estimator, "mask", None)
-    if isinstance(estimator, (FirstLevelModel, SecondLevelModel)):
+    if is_glm(estimator):
         mask = getattr(estimator, "mask_img", None)
 
-    if isinstance(mask, (NiftiMasker, MultiNiftiMasker, SurfaceMasker)):
+    if isinstance(
+        mask,
+        (NiftiMasker, MultiNiftiMasker, SurfaceMasker, MultiSurfaceMasker),
+    ):
         # Creating masker from provided masker
         masker_params = get_params(masker_type, mask)
         new_masker_params = masker_params
@@ -75,10 +85,10 @@ def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
         new_masker_params = estimator_params
         new_masker_params["mask_img"] = mask
     # Forwarding system parameters of instance to new masker in all case
-    if issubclass(masker_type, MultiNiftiMasker) and hasattr(
-        estimator, "n_jobs"
-    ):
-        # For MultiNiftiMasker only
+    if issubclass(
+        masker_type, (MultiNiftiMasker, MultiSurfaceMasker)
+    ) and hasattr(estimator, "n_jobs"):
+        # For MultiMaskers only
         new_masker_params["n_jobs"] = estimator.n_jobs
 
     warning_msg = Template(
@@ -165,8 +175,8 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
         run_imgs = [run_imgs]
 
     msg = (
-        "Mask and images to fit must be of compatible types.\n"
-        f"Got mask of type: {type(mask_img)}, "
+        "Mask and input images must be of compatible types.\n"
+        f"Got mask of type: {mask_img.__class__.__name__}, "
         f"and images of type: {[type(x) for x in run_imgs]}"
     )
 
@@ -174,12 +184,7 @@ def check_compatibility_mask_and_images(mask_img, run_imgs):
     surface_type = (SurfaceImage, SurfaceMasker)
     all_allowed_types = (*volumetric_type, *surface_type)
 
-    if not isinstance(mask_img, all_allowed_types):
-        raise TypeError(
-            "\nMask should be of type: "
-            f"{[x.__name__ for x in all_allowed_types]}.\n"
-            f"Got : '{mask_img.__class__.__name__}'"
-        )
+    check_is_of_allowed_type(mask_img, all_allowed_types, "mask")
 
     if isinstance(mask_img, volumetric_type) and any(
         not isinstance(x, NiimgLike) for x in run_imgs

@@ -29,9 +29,6 @@ from nilearn.datasets import fetch_haxby
 
 haxby_dataset = fetch_haxby()
 
-# repetition has to be known
-t_r = 2.5
-
 # %%
 # Load the behavioral data
 # ------------------------
@@ -59,9 +56,9 @@ for run in unique_runs:
     # get the number of scans per run, then the corresponding
     # vector of frame times
     n_scans = len(conditions_run)
-    frame_times = t_r * np.arange(n_scans)
+    frame_times = haxby_dataset.t_r * np.arange(n_scans)
     # each event last the full TR
-    duration = t_r * np.ones(n_scans)
+    duration = haxby_dataset.t_r * np.ones(n_scans)
     # Define the events object
     events_ = pd.DataFrame(
         {
@@ -87,7 +84,7 @@ run_label = []
 from nilearn.glm.first_level import FirstLevelModel
 
 glm = FirstLevelModel(
-    t_r=t_r,
+    t_r=haxby_dataset.t_r,
     mask_img=haxby_dataset.mask,
     high_pass=0.008,
     smoothing_fwhm=4,
@@ -124,7 +121,7 @@ for run in unique_runs:
 
 from nilearn.image import mean_img
 
-mean_img_ = mean_img(func_filename, copy_header=True)
+mean_img_ = mean_img(func_filename)
 report = glm.generate_report(
     contrasts=conditions,
     bg_img=mean_img_,

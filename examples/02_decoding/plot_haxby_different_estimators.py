@@ -95,9 +95,14 @@ for classifier_name in sorted(classifiers):
         mask=mask_filename,
         standardize="zscore_sample",
         cv=cv,
+        screening_percentile=100,
     )
     t0 = time.time()
-    decoder.fit(fmri_niimgs, classification_target, groups=run_labels)
+    decoder.fit(
+        fmri_niimgs,
+        classification_target,
+        groups=run_labels,
+    )
 
     classifiers_data[classifier_name] = {"score": decoder.cv_scores_}
     print(f"{classifier_name:10}: {time.time() - t0:.2f}s")
@@ -125,7 +130,9 @@ tick_position = np.arange(len(all_categories))
 plt.yticks(tick_position + 0.25, all_categories)
 height = 0.1
 
-for color, classifier_name in zip(["b", "m", "k", "r", "g"], classifiers):
+for color, classifier_name in zip(
+    ["b", "m", "k", "r", "g"], classifiers, strict=False
+):
     score_means = [
         np.mean(classifiers_data[classifier_name]["score"][category])
         for category in all_categories
@@ -174,6 +181,7 @@ for classifier_name in sorted(classifiers):
         mask=mask_filename,
         standardize="zscore_sample",
         cv=cv,
+        screening_percentile=100,
     )
     decoder.fit(fmri_niimgs_condition, stimuli, groups=run_labels)
     classifiers_data[classifier_name] = {}
@@ -185,7 +193,7 @@ for classifier_name in sorted(classifiers):
 # Use the average :term:`EPI` as a background
 from nilearn.image import mean_img
 
-mean_epi_img = mean_img(func_filename, copy_header=True)
+mean_epi_img = mean_img(func_filename)
 
 for classifier_name in sorted(classifiers):
     coef_img = classifiers_data[classifier_name]["map"]
