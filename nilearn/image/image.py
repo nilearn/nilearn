@@ -370,12 +370,6 @@ def _smooth_surface_img(
     smoothed_imgs : SurfaceImage
         SurfaceImage with smoothed data at each vertex.
 
-    Examples
-    --------
-    >>> from nilearn import datasets, surface
-    >>> curv = datasets.load_fsaverage_data(data_type="curvature")
-    >>> curv_smooth = surface.smooth_img(curv, iterations=50)
-
     """
     # First, calculate the center and surround weights for the
     # center-surround knob.
