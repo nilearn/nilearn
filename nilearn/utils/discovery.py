@@ -37,21 +37,23 @@ def all_estimators(type_filter=None):
 
     Parameters
     ----------
-    type_filter : {"classifier",  "cluster", "regressor", "masker",
+    type_filter : {"classifier",  "cluster", "regressor", "masker", \
                   "multi_masker", "transformer"} \
-                  or list of such str, default=None
+                  or list of such strings, default=None
         Which kind of estimators should be returned.
-        If None, no filter is applied and all estimators are returned.
+        If ``None``, no filter is applied and all estimators are returned.
         Possible values are
-        'classifier', 'regressor', 'cluster' and 'transformer'
+        "classifier", "cluster", "regressor", "masker",
+        "multi_masker", "transformer"
         to get estimators only of these specific types,
         or a list of these to get the estimators
         that fit at least one of the types.
 
     Returns
     -------
-    estimators : list of tuples
-        List of (name, class), where ``name`` is the class name as string
+    estimators : functions : :obj:`list` of :obj:`tuple`
+        List of (name, class),
+        where ``name`` is the class name as string
         and ``class`` is the actual type of the class.
 
     """
@@ -150,9 +152,10 @@ def all_functions():
 
     Returns
     -------
-    functions : list of tuples
-        List of (name, function), where ``name`` is the function name as
-        string and ``function`` is the actual function.
+    functions : :obj:`list` of :obj:`tuple`
+        List of ``(name, function)``,
+        where ``name`` is the function name as string
+        and ``function`` is the actual function.
 
     """
     all_functions = []
@@ -170,8 +173,6 @@ def all_functions():
 
             if not hasattr(module, "__all__"):
                 continue
-
-            print(module.__all__)
 
             functions = inspect.getmembers(module, _is_checked_function)
             functions = [

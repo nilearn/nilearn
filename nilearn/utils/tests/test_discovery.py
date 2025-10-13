@@ -24,4 +24,4 @@ def test_all_estimators(type_filter, n_expected):
 def test_all_functions():
     """Check number of functions in public API."""
     fn = all_functions()
-    assert len(fn) == 166
+    assert len(fn) == 168
