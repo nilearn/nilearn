@@ -258,7 +258,7 @@ def cluster_level_inference(
 
         proportion_true_discoveries_img = new_img_like(stat_img, data)
 
-    else:
+    else:  # data are volume-based
         if mask_img is None:
             masker = NiftiMasker(mask_strategy="background").fit(stat_img)
         else:
