@@ -6,11 +6,7 @@ from importlib import import_module
 from operator import itemgetter
 from pathlib import Path
 
-from sklearn.base import (
-    BaseEstimator,
-    ClusterMixin,
-    TransformerMixin,
-)
+from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils._testing import ignore_warnings
 
 from nilearn._utils.param_validation import check_parameter_in_allowed
@@ -24,22 +20,33 @@ _MODULE_TO_IGNORE = {
 }
 
 
+def _skip_module(module_name: str):
+    module_parts = module_name.split(".")
+    return bool(
+        any(part in _MODULE_TO_IGNORE for part in module_parts)
+        or "._" in module_name
+    )
+
+
 def all_estimators(type_filter=None):
-    """Get a list of all estimators from `sklearn`.
+    """Get a list of all estimators from `nilearn`.
 
     This function crawls the module and gets all classes that inherit
-    from BaseEstimator. Classes that are defined in test-modules are not
-    included.
+    from sklearn BaseEstimator.
+    Classes that are defined in test-modules are not included.
 
     Parameters
     ----------
-    type_filter : {"classifier", "regressor", "cluster", "transformer"} \
-            or list of such str, default=None
-        Which kind of estimators should be returned. If None, no filter is
-        applied and all estimators are returned.  Possible values are
-        'classifier', 'regressor', 'cluster' and 'transformer' to get
-        estimators only of these specific types, or a list of these to
-        get the estimators that fit at least one of the types.
+    type_filter : {"classifier",  "cluster", "regressor", "masker",
+                  "multi_masker", "transformer"} \
+                  or list of such str, default=None
+        Which kind of estimators should be returned.
+        If None, no filter is applied and all estimators are returned.
+        Possible values are
+        'classifier', 'regressor', 'cluster' and 'transformer'
+        to get estimators only of these specific types,
+        or a list of these to get the estimators
+        that fit at least one of the types.
 
     Returns
     -------
@@ -48,18 +55,19 @@ def all_estimators(type_filter=None):
         and ``class`` is the actual type of the class.
 
     """
-    # lazy import to avoid circular imports from sklearn.base
+    # lazy import to avoid circular imports
     from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
     from nilearn.maskers._mixin import _MultiMixin
     from nilearn.maskers.base_masker import BaseMasker, _BaseSurfaceMasker
 
+    # TODO: add GLM?
     allowed_filters = {
         "classifier": _ClassifierMixin,
-        "regressor": _RegressorMixin,
-        "transformer": TransformerMixin,
         "cluster": ClusterMixin,
         "masker": (BaseMasker, _BaseSurfaceMasker),
         "multi_masker": _MultiMixin,
+        "regressor": _RegressorMixin,
+        "transformer": TransformerMixin,
     }
 
     if type_filter is not None and type_filter not in allowed_filters:
@@ -73,19 +81,14 @@ def all_estimators(type_filter=None):
         return len(c.__abstractmethods__)
 
     all_classes = []
-    root = str(Path(__file__).parent.parent)  # sklearn package
+    root = str(Path(__file__).parent.parent)  # nilearn package
     # Ignore deprecation warnings triggered at import time and from walking
     # packages
     with ignore_warnings(category=FutureWarning):
         for _, module_name, _ in pkgutil.walk_packages(
             path=[root], prefix="nilearn."
         ):
-            module_parts = module_name.split(".")
-
-            if (
-                any(part in _MODULE_TO_IGNORE for part in module_parts)
-                or "._" in module_name
-            ):
+            if _skip_module(module_name):
                 continue
 
             module = import_module(module_name)
@@ -124,8 +127,8 @@ def all_estimators(type_filter=None):
         estimators = filtered_estimators
 
     # drop duplicates, sort for reproducibility
-    # itemgetter is used to ensure the sort does not extend to the 2nd item of
-    # the tuple
+    # itemgetter is used to ensure the sort does not extend
+    # to the 2nd item of the tuple
     return sorted(set(estimators), key=itemgetter(0))
 
 
@@ -138,12 +141,12 @@ def _is_checked_function(item):
 
     mod = item.__module__
     return not (
-        not mod.startswith("sklearn.") or mod.endswith("estimator_checks")
+        not mod.startswith("nilearn.") or mod.endswith("estimator_checks")
     )
 
 
 def all_functions():
-    """Get a list of all functions from `sklearn`.
+    """Get a list of all functions from `nilearn`.
 
     Returns
     -------
@@ -153,26 +156,28 @@ def all_functions():
 
     """
     all_functions = []
-    root = str(Path(__file__).parent.parent)  # sklearn package
+    root = str(Path(__file__).parent.parent)  # nilearn package
     # Ignore deprecation warnings triggered at import time and from walking
     # packages
     with ignore_warnings(category=FutureWarning):
         for _, module_name, _ in pkgutil.walk_packages(
-            path=[root], prefix="sklearn."
+            path=[root], prefix="nilearn."
         ):
-            module_parts = module_name.split(".")
-            if (
-                any(part in _MODULE_TO_IGNORE for part in module_parts)
-                or "._" in module_name
-            ):
+            if _skip_module(module_name):
                 continue
 
             module = import_module(module_name)
+
+            if not hasattr(module, "__all__"):
+                continue
+
+            print(module.__all__)
+
             functions = inspect.getmembers(module, _is_checked_function)
             functions = [
                 (func.__name__, func)
                 for name, func in functions
-                if not name.startswith("_")
+                if not name.startswith("_") and func.__name__ in module.__all__
             ]
             all_functions.extend(functions)
 

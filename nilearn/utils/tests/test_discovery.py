@@ -1,6 +1,6 @@
 import pytest
 
-from nilearn.utils.discovery import all_estimators
+from nilearn.utils.discovery import all_estimators, all_functions
 
 
 @pytest.mark.parametrize(
@@ -19,3 +19,9 @@ def test_all_estimators(type_filter, n_expected):
     """Check number of estimators in public API."""
     estimators = all_estimators(type_filter=type_filter)
     assert len(estimators) == n_expected
+
+
+def test_all_functions():
+    """Check number of functions in public API."""
+    fn = all_functions()
+    assert len(fn) == 166
