@@ -27,7 +27,7 @@ from nilearn.plotting import plot_stat_map
 
 data = func.fetch_localizer_first_level()
 fmri_img = data.epi_img
-t_r = 2.4
+t_r = data.t_r
 events_file = data["events"]
 events = pd.read_table(events_file)
 

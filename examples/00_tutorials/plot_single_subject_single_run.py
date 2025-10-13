@@ -90,7 +90,7 @@ from nilearn.glm.first_level import FirstLevelModel
 # * ``high_pass=0.01`` (Hz) defines the cutoff frequency
 #   (inverse of the time period).
 fmri_glm = FirstLevelModel(
-    t_r=7,
+    t_r=subject_data.t_r,
     noise_model="ar1",
     standardize=False,
     hrf_model="spm",

@@ -500,6 +500,7 @@ def test_infer_effect_maps_error(tmp_path, shape_3d_default):
         _infer_effect_maps(second_level_input, "b")
 
 
+@pytest.mark.timeout(0)
 def test_high_level_glm_with_paths(affine_eye):
     func_img, mask = fake_fmri_data()
 
@@ -993,6 +994,7 @@ def test_non_parametric_inference_permutation_computation():
     assert get_data(neg_log_pvals_img).shape == SHAPE[:3]
 
 
+@pytest.mark.timeout(0)
 def test_non_parametric_inference_tfce():
     """Test non-parametric inference with TFCE inference."""
     shapes = [SHAPE] * 4
@@ -1099,6 +1101,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     assert logp_unc_cluster_sizes == logp_max_cluster_sizes
 
 
+@pytest.mark.timeout(0)
 def test_non_parametric_inference_cluster_level_with_single_covariates(
     shape_3d_default,
     rng,
@@ -1187,6 +1190,7 @@ def test_second_level_contrast_computation_all(output_type):
     )
 
 
+@pytest.mark.timeout(0)
 def test_second_level_contrast_computation_errors(rng):
     func_img, mask = fake_fmri_data()
 

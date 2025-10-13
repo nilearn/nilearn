@@ -237,33 +237,32 @@ def _make_canica_components(
     if data_type == "nifti":
         return _canica_components_volume(shape_3d_large)
 
-    else:
-        shape = (decomposition_mesh.n_vertices, 1)
+    shape = (decomposition_mesh.n_vertices, 1)
 
-        component1 = np.zeros(shape)
-        component1[:5] = 1
-        component1[5:10] = -1
+    component1 = np.zeros(shape)
+    component1[:5] = 1
+    component1[5:10] = -1
 
-        component2 = np.zeros(shape)
-        component2[:5] = 1
-        component2[5:10] = -1
+    component2 = np.zeros(shape)
+    component2[:5] = 1
+    component2[5:10] = -1
 
-        component3 = np.zeros(shape)
-        component3[-5:] = 1
-        component3[-10:-5] = -1
+    component3 = np.zeros(shape)
+    component3[-5:] = 1
+    component3[-10:-5] = -1
 
-        component4 = np.zeros(shape)
-        component4[-5:] = 1
-        component4[-10:-5] = -1
+    component4 = np.zeros(shape)
+    component4[-5:] = 1
+    component4[-10:-5] = -1
 
-        return np.vstack(
-            (
-                component1.ravel(),
-                component2.ravel(),
-                component3.ravel(),
-                component4.ravel(),
-            )
+    return np.vstack(
+        (
+            component1.ravel(),
+            component2.ravel(),
+            component3.ravel(),
+            component4.ravel(),
         )
+    )
 
 
 def _canica_components_volume(shape):
