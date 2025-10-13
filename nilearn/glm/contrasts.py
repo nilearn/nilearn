@@ -5,10 +5,12 @@ obtain fixed effect results.
 from warnings import warn
 
 import numpy as np
-import pandas as pd
 import scipy.stats as sps
 
 from nilearn._utils import logger
+from nilearn._utils.glm import (
+    expression_to_contrast_vector,  # noqa: F401 # import here for backward compatibility of API
+)
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm._utils import pad_contrast, z_score
@@ -17,42 +19,6 @@ from nilearn.surface import SurfaceImage
 
 DEF_TINY = 1e-50
 DEF_DOFMAX = 1e10
-
-
-def expression_to_contrast_vector(expression, design_columns):
-    """Convert a string describing a :term:`contrast` \
-       to a :term:`contrast` vector.
-
-    Parameters
-    ----------
-    expression : :obj:`str`
-        The expression to convert to a vector.
-
-    design_columns : :obj:`list` or array of :obj:`str`
-        The column names of the design matrix.
-
-    """
-    if expression in design_columns:
-        contrast_vector = np.zeros(len(design_columns))
-        contrast_vector[list(design_columns).index(expression)] = 1.0
-        return contrast_vector
-
-    eye_design = pd.DataFrame(
-        np.eye(len(design_columns)), columns=design_columns
-    )
-    try:
-        contrast_vector = eye_design.eval(
-            expression, engine="python"
-        ).to_numpy()
-    except Exception:
-        raise ValueError(
-            f"The expression ({expression}) is not valid. "
-            "This could be due to "
-            "defining the contrasts using design matrix columns that are "
-            "invalid python identifiers."
-        )
-
-    return contrast_vector
 
 
 def compute_contrast(labels, regression_result, con_val, stat_type=None):

@@ -1,8 +1,43 @@
 import numpy as np
 import pandas as pd
 import pytest
+from numpy.testing import assert_array_equal
 
-from nilearn._utils.glm import check_and_load_tables, coerce_to_dict
+from nilearn._utils.glm import (
+    check_and_load_tables,
+    coerce_to_dict,
+    pad_contrast_matrix,
+)
+from nilearn.glm.first_level.design_matrix import (
+    make_first_level_design_matrix,
+)
+
+
+def test_pad_contrast_matrix():
+    """Test for contrasts padding before plotting.
+
+    See https://github.com/nilearn/nilearn/issues/4211
+    """
+    frame_times = np.linspace(0, 127 * 1.0, 128)
+    dmtx = make_first_level_design_matrix(
+        frame_times, drift_model="polynomial", drift_order=3
+    )
+    contrast = np.array([[1, -1]])
+    padded_contrast = pad_contrast_matrix(contrast, dmtx)
+    assert_array_equal(padded_contrast, np.array([[1, -1, 0, 0]]))
+
+    contrast = np.eye(3)
+    padded_contrast = pad_contrast_matrix(contrast, dmtx)
+    assert_array_equal(
+        padded_contrast,
+        np.array(
+            [
+                [1, 0, 0, 0],
+                [0, 1, 0, 0],
+                [0, 0, 1, 0],
+            ]
+        ),
+    )
 
 
 def test_img_table_checks():

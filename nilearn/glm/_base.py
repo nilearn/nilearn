@@ -9,7 +9,7 @@ from sklearn.base import BaseEstimator
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.cache_mixin import CacheMixin
-from nilearn._utils.glm import coerce_to_dict
+from nilearn._utils.glm import sanitize_contrasts
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.externals import tempita
@@ -209,18 +209,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         generate_bids_name = _use_input_files_for_filenaming(self, prefix)
 
-        contrasts = coerce_to_dict(contrasts)
-        for k, v in contrasts.items():
-            if not isinstance(k, str):
-                raise TypeError(
-                    f"contrast names must be strings, not {type(k)}"
-                )
-
-            if not isinstance(v, (str, np.ndarray, list)):
-                raise TypeError(
-                    "contrast definitions must be strings or array_likes, "
-                    f"not {v.__class__.__name__}"
-                )
+        contrasts = sanitize_contrasts(contrasts)
 
         entities = {
             "sub": None,
