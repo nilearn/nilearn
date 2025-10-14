@@ -45,7 +45,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     Parameters
     ----------
     maps_img : :obj:`~nilearn.surface.SurfaceImage`
-        Set of maps that define the regions. representative time course \
+        Set of maps that define the regions. A representative time course \
         per map is extracted using least square regression. The data for \
         each hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
@@ -192,6 +192,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 for i, x in enumerate(imgs):
                     x.data._check_n_samples(1, f"imgs[{i}]")
 
+        return self._fit(imgs)
+
+    def _fit(self, imgs):
         if self.maps_img is None:
             raise ValueError(
                 "Please provide a maps_img during initialization. "
