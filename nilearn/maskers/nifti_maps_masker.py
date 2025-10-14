@@ -444,7 +444,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.maps_img_ = clean_img(
             self.maps_img_,
             detrend=False,
-            standardize=False,
+            standardize=None,
             ensure_finite=True,
         )
 

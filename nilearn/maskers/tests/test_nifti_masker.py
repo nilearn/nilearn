@@ -441,7 +441,7 @@ def test_filter_and_mask(affine_eye):
     data_img = Nifti1Image(data, affine_eye)
     mask_img = Nifti1Image(mask, affine_eye)
 
-    masker = NiftiMasker()
+    masker = NiftiMasker(standardize=None)
     params = get_params(NiftiMasker, masker)
     params["clean_kwargs"] = {}
 
