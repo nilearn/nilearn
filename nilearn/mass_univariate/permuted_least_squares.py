@@ -742,7 +742,7 @@ def permuted_ols(
     if n_perm > n_jobs:
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
         n_perm_chunks[-1] += n_perm % n_jobs
-    elif n_perm > 0:
+    else:
         warnings.warn(
             f"The specified number of permutations is {n_perm} "
             "and the number of jobs to be performed in parallel "

@@ -1,3 +1,4 @@
+from itertools import pairwise
 from numbers import Number
 from warnings import warn
 
@@ -49,12 +50,12 @@ def _add_to_ticks(ticks, value):
         return True
 
     min_diff = min(abs(abs(ticks_without_zero) - value))
-    step_size = max([ticks[i] - ticks[i - 1] for i in range(len(ticks))])
+    step_size = max(b - a for a, b in pairwise(ticks))
 
     # check if value should be added to the tick list or replaced by another
     # value in the list
-    return bool(
-        min_diff > step_size / 3 or (min_diff >= value * 4 / 3 and value != 0)
+    return min_diff > step_size / 3 or (
+        min_diff >= value * 4 / 3 and value != 0
     )
 
 
@@ -180,7 +181,7 @@ def get_cbar_ticks(
 
     # we want 0 to always appear if the data contains both positive and
     # negative values
-    if vmin < 0 and vmax > 0 and 0 not in ticks:
+    if vmin < 0 < vmax and 0 not in ticks:
         add_zero = _add_to_ticks(ticks, 0)
         if add_zero:
             ticks = np.append(ticks, 0)

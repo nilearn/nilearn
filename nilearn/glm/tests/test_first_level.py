@@ -1058,7 +1058,7 @@ def test_first_level_from_bids_set_repetition_time_warnings(tmp_path):
             space_label="MNI",
             img_filters=[("desc", "preproc")],
             t_r=t_r,
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
             verbose=1,
         )
 
@@ -1193,8 +1193,8 @@ def test_first_level_from_bids_get_repetition_time_from_derivatives(tmp_path):
             dataset_path=str(tmp_path / bids_path),
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
             img_filters=[("desc", "preproc")],
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
         assert models[0].t_r == 6.0
         assert models[0].slice_time_ref == 0.0
@@ -1645,6 +1645,34 @@ def test_first_level_from_bids(
     assert len(imgs[0]) == n_imgs_expected
 
 
+def test_first_level_from_bids_exclude_subject(tmp_path):
+    """Test several BIDS structure."""
+    n_sub = 2
+    n_ses = 1
+    n_runs = [1]
+    task_label = "main"
+    space_label = "MNI"
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        n_ses=n_ses,
+        tasks=[task_label],
+        n_runs=n_runs,
+    )
+
+    models, _, _, _ = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label=task_label,
+        space_label=space_label,
+        img_filters=[("desc", "preproc")],
+        exclude_subjects=["01"],
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
+    )
+
+    assert len(models) == 1
+
+
 @pytest.mark.parametrize("slice_time_ref", [None, 0.0, 0.5, 1.0])
 def test_first_level_from_bids_slice_time_ref(bids_dataset, slice_time_ref):
     """Test several valid values of slice_time_ref."""
@@ -1674,7 +1702,7 @@ def test_first_level_from_bids_space_none(tmp_path):
         task_label="main",
         space_label=None,
         img_filters=[("run", "01"), ("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -2210,6 +2238,7 @@ def test_first_level_from_bids_load_confounds(tmp_path):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc")],
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     assert len(confounds[0][0].columns) == 189
@@ -2222,6 +2251,7 @@ def test_first_level_from_bids_load_confounds(tmp_path):
         confounds_strategy=("motion", "wm_csf"),
         confounds_motion="full",
         confounds_wm_csf="basic",
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -2254,6 +2284,7 @@ def test_first_level_from_bids_load_confounds_warnings(tmp_path):
         img_filters=[("desc", "preproc")],
         drift_model=None,
         confounds_strategy=("high_pass",),
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     with pytest.warns(
@@ -2268,6 +2299,7 @@ def test_first_level_from_bids_load_confounds_warnings(tmp_path):
             img_filters=[("desc", "preproc")],
             drift_model="cosine",
             confounds_strategy=("high_pass",),
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
     with pytest.warns(
@@ -2282,6 +2314,7 @@ def test_first_level_from_bids_load_confounds_warnings(tmp_path):
             img_filters=[("desc", "preproc")],
             drift_model="polynomial",
             confounds_strategy=("high_pass",),
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -2536,7 +2569,7 @@ def test_first_level_from_bids_subject_order(tmp_path):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     # Check if the subjects are returned in order
@@ -2561,7 +2594,7 @@ def test_first_level_from_bids_subject_order_with_labels(tmp_path):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     # Check if the subjects are returned in order

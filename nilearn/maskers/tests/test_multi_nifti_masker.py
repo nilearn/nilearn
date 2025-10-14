@@ -224,7 +224,7 @@ def test_no_warning_partial_joblib(strategy, list_random_imgs):
     with warnings.catch_warnings(record=True) as warning_list:
         masker.fit(list_random_imgs)
 
-    assert not any(
-        "Cannot inspect object functools.partial" in str(x)
+    assert all(
+        "Cannot inspect object functools.partial" not in str(x)
         for x in warning_list
     )
