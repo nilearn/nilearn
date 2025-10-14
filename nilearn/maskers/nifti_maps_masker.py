@@ -303,13 +303,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        from nilearn import plotting
-        from nilearn.reporting.html_report import embed_img
-
+        maps_image = None
         if self._reporting_data is not None:
             maps_image = self._reporting_data["maps_image"]
-        else:
-            maps_image = None
 
         if maps_image is None:
             return [None]
@@ -346,7 +342,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._report_content["displayed_maps"] = list(maps_to_be_displayed)
 
         img = self._reporting_data["img"]
-        embedded_images = []
 
         if img is None:
             msg = (
@@ -355,13 +350,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             )
             warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
-            for component in maps_to_be_displayed:
-                display = plotting.plot_stat_map(
-                    index_img(maps_image, component)
-                )
-                embedded_images.append(embed_img(display))
-                display.close()
-            return embedded_images
 
         if self._reporting_data["dim"] == 5:
             msg = (
@@ -371,23 +359,56 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
 
-        for component in maps_to_be_displayed:
-            # Find the cut coordinates
-            cut_coords = plotting.find_xyz_cut_coords(
-                index_img(maps_image, component)
-            )
-            display = plotting.plot_img(
-                img,
-                cut_coords=cut_coords,
-                black_bg=False,
-                cmap=self.cmap,
-            )
-            display.add_overlay(
-                index_img(maps_image, component),
-                cmap=plotting.cm.black_blue,
-            )
-            embedded_images.append(embed_img(display))
-            display.close()
+        return self._create_figure_for_report()
+
+    def _create_figure_for_report(self):
+        """Generate figure to include in the report.
+
+        Returns
+        -------
+        list of :class:`~matplotlib.figure.Figure`
+        """
+        from nilearn.plotting import (
+            cm,
+            find_xyz_cut_coords,
+            plot_img,
+            plot_stat_map,
+        )
+        from nilearn.reporting.html_report import embed_img
+
+        maps_image = self._reporting_data["maps_image"]
+
+        maps_to_be_displayed = self._report_content["displayed_maps"]
+
+        img = self._reporting_data["img"]
+
+        embedded_images = []
+
+        if img is None:
+            for component in maps_to_be_displayed:
+                display = plot_stat_map(index_img(maps_image, component))
+                embedded_images.append(embed_img(display))
+                display.close()
+
+        else:
+            for component in maps_to_be_displayed:
+                # Find the cut coordinates
+                cut_coords = find_xyz_cut_coords(
+                    index_img(maps_image, component)
+                )
+                display = plot_img(
+                    img,
+                    cut_coords=cut_coords,
+                    black_bg=False,
+                    cmap=self.cmap,
+                )
+                display.add_overlay(
+                    index_img(maps_image, component),
+                    cmap=cm.black_blue,
+                )
+                embedded_images.append(embed_img(display))
+                display.close()
+
         return embedded_images
 
     @fill_doc
@@ -404,6 +425,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         del y
         check_params(self.__dict__)
+
+        self._init_report_content()
+
         check_parameter_in_allowed(
             self.resampling_target,
             ("mask", "maps", "data", None),
@@ -418,13 +442,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             )
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
-
-        self._report_content = {
-            "description": (
-                "This reports shows the spatial maps provided to the mask."
-            ),
-            "warning_message": None,
-        }
 
         # Load images
         maps_img = self.maps_img
@@ -509,8 +526,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 imgs, dims = compute_middle_image(imgs)
                 self._reporting_data["img"] = imgs
                 self._reporting_data["dim"] = dims
-        else:
-            self._reporting_data = None
 
         # The number of elements is equal to the number of volumes
         self.n_elements_ = self.maps_img_.shape[3]
@@ -518,6 +533,23 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        """Initialize report content.
+
+        Prepare basing content to inject in the HTML template
+        during report generation.
+        """
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This reports shows the spatial maps provided to the mask."
+                ),
+                "warning_message": None,
+            }
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = None
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")

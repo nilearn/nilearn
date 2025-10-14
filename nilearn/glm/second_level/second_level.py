@@ -22,7 +22,6 @@ from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
-    check_embedded_masker,
 )
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
@@ -43,6 +42,7 @@ from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
 from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import concat_imgs, iter_img, mean_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.mass_univariate import permuted_ols
 from nilearn.surface.surface import (
     SurfaceImage,

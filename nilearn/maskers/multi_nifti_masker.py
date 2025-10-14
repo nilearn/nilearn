@@ -253,17 +253,8 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         del y
         check_params(self.__dict__)
 
-        self._report_content = {
-            "description": (
-                "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (in green). We "
-                "recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "warning_message": None,
-            "n_elements": 0,
-            "coverage": 0,
-        }
+        self._init_report_content()
+
         self._overlay_text = (
             "\n To see the input Nifti image before resampling, "
             "hover over the displayed image."
@@ -300,10 +291,11 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             # to the mask computing function
             # depending if they are supported.
             signature = dict(**inspect.signature(compute_mask).parameters)
-            mask_args = {}
-            for arg in ["n_jobs", "target_shape", "target_affine"]:
-                if arg in signature and getattr(self, arg) is not None:
-                    mask_args[arg] = getattr(self, arg)
+            mask_args = {
+                arg: getattr(self, arg)
+                for arg in ["n_jobs", "target_shape", "target_affine"]
+                if arg in signature and getattr(self, arg) is not None
+            }
             if self.mask_args:
                 skipped_args = []
                 for arg in self.mask_args:
@@ -337,7 +329,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                 stacklevel=find_stack_level(),
             )
 
-        self._reporting_data = None
         if self.reports:  # save inputs for reporting
             self._reporting_data = {
                 "mask": self.mask_img_,
