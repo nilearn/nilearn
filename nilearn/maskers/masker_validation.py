@@ -17,7 +17,7 @@ from nilearn.maskers import (
 )
 
 
-def check_embedded_masker(estimator, masker_type, ignore=None):
+def check_embedded_masker(estimator, masker_type="multi_nii", ignore=None):
     """Create a masker from instance parameters.
 
     Base function for using a masker within a BaseEstimator class
@@ -39,7 +39,8 @@ def check_embedded_masker(estimator, masker_type, ignore=None):
     instance : object, instance of BaseEstimator
         The object that gives us the values of the parameters
 
-    masker_type : {"multi_nii", "nii", "surface", "multi_surface"}
+    masker_type : {"multi_nii", "nii", "surface", "multi_surface"}, \
+                  default="mutli_nii"
         Indicates whether to return a MultiNiftiMasker, NiftiMasker,
         SurfaceMasker, or a MultiSurfaceMasker.
 
@@ -88,8 +89,8 @@ def check_embedded_masker(estimator, masker_type, ignore=None):
         new_masker_params["n_jobs"] = estimator.n_jobs
 
     warning_msg = Template(
-        "Provided estimator has no '$attribute' attribute set. "
-        "Setting '$attribute' to '$default_value' by default."
+        "Provided estimator has no $attribute attribute set."
+        "Setting $attribute to $default_value by default."
     )
 
     if hasattr(estimator, "memory"):
@@ -116,7 +117,9 @@ def check_embedded_masker(estimator, masker_type, ignore=None):
         new_masker_params["memory_level"] = 0
 
     if hasattr(estimator, "verbose"):
-        new_masker_params["verbose"] = estimator.verbose
+        new_masker_params["verbose"] = int(
+            np.maximum(estimator.verbose - 1, 0)
+        )
     else:
         warnings.warn(
             warning_msg.substitute(attribute="verbose", default_value="0"),
