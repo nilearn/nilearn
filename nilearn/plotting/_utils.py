@@ -1,3 +1,4 @@
+from itertools import pairwise
 from numbers import Number
 from warnings import warn
 
@@ -49,7 +50,7 @@ def _add_to_ticks(ticks, value):
         return True
 
     min_diff = min(abs(abs(ticks_without_zero) - value))
-    step_size = max(ticks[i] - ticks[i - 1] for i in range(len(ticks)))
+    step_size = max(b - a for a, b in pairwise(ticks))
 
     # check if value should be added to the tick list or replaced by another
     # value in the list
