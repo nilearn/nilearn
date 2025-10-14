@@ -129,7 +129,7 @@ jobs:
         -   name: Checkout nilearn
             uses: actions/checkout@v5
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v6
+            uses: astral-sh/setup-uv@v7
         -   uses: actions/setup-python@v6
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
@@ -352,7 +352,7 @@ jobs:
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v6
+            uses: astral-sh/setup-uv@v7
 
         -   name: Setup python
             uses: actions/setup-python@v6

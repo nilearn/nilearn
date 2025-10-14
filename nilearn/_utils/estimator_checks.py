@@ -1667,14 +1667,14 @@ def check_img_estimator_standardization(estimator_orig):
                     results[str(standardize)] = getattr(estimator, method)(
                         input_img
                     )
-                n_future_warnings = len(
-                    [
-                        x
-                        for x in warnings_list
-                        if issubclass(x.category, FutureWarning)
-                    ]
-                )
                 if not isinstance(estimator, _BaseDecomposition):
+                    n_future_warnings = len(
+                        [
+                            x
+                            for x in warnings_list
+                            if issubclass(x.category, FutureWarning)
+                        ]
+                    )
                     assert n_future_warnings == 1
             else:
                 results[str(standardize)] = getattr(estimator, method)(
@@ -1762,18 +1762,17 @@ def check_decoder_empty_data_messages(estimator):
         # SearchLight, BaseSpaceNet do not support surface data directly
         return None
 
-    else:
-        # we can use classification data even for regressors
-        # because fit should fail early
-        dim = 5
-        _, y = make_classification(
-            n_samples=20,
-            n_features=dim**3,
-            scale=3.0,
-            n_informative=5,
-            n_classes=2,
-            random_state=42,
-        )
+    # we can use classification data even for regressors
+    # because fit should fail early
+    dim = 5
+    _, y = make_classification(
+        n_samples=20,
+        n_features=dim**3,
+        scale=3.0,
+        n_informative=5,
+        n_classes=2,
+        random_state=42,
+    )
 
     imgs = _make_surface_img(n_samples)
     data = {
@@ -2512,15 +2511,14 @@ def check_masker_empty_data_messages(estimator):
     if accept_niimg_input(estimator):
         return None
 
-    else:
-        imgs = _make_surface_img()
-        data = {
-            part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-            for part in imgs.data.parts
-        }
-        imgs = SurfaceImage(imgs.mesh, data)
+    imgs = _make_surface_img()
+    data = {
+        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
+        for part in imgs.data.parts
+    }
+    imgs = SurfaceImage(imgs.mesh, data)
 
-        mask_img = _make_surface_mask()
+    mask_img = _make_surface_mask()
 
     with pytest.raises(ValueError, match="empty"):
         estimator.fit(imgs)
