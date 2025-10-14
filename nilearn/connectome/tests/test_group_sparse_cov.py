@@ -163,7 +163,7 @@ def test_group_sparse_covariance_check_consistency_between_classes(rng):
 
     # Check consistency between classes
     gsc1 = GroupSparseCovarianceCV(
-        alphas=4, tol=1e-1, max_iter=20, verbose=0, early_stopping=True
+        tol=1e-1, max_iter=20, verbose=0, early_stopping=True
     )
     gsc1.fit(signals)
 
@@ -204,7 +204,11 @@ def test_group_sparse_covariance_errors(rng):
 
 
 @pytest.mark.parametrize("cv", [None, 10, KFold(n_splits=4)])
-def test_group_sparse_covariance_cross_validation(rng, cv):
+@pytest.mark.parametrize("alphas", [3, 5])
+@pytest.mark.parametrize("n_refinements", [3, 5])
+def test_group_sparse_covariance_cross_validation(
+    rng, cv, alphas, n_refinements
+):
     signals, _, _ = generate_group_sparse_gaussian_graphs(
         density=0.1,
         n_subjects=5,
@@ -214,12 +218,14 @@ def test_group_sparse_covariance_cross_validation(rng, cv):
         random_state=rng,
     )
 
-    gsc = GroupSparseCovarianceCV(verbose=0, cv=cv)
+    gsc = GroupSparseCovarianceCV(
+        alphas=alphas, n_refinements=n_refinements, verbose=0, cv=cv
+    )
     gsc.fit(signals)
 
     cv_alphas_ = gsc.cv_alphas_
     assert isinstance(cv_alphas_, list)
-    assert len(cv_alphas_) == 16
+    assert len(cv_alphas_) == alphas * n_refinements
 
     cv_scores_ = gsc.cv_scores_
-    assert cv_scores_.shape[0] == 16
+    assert cv_scores_.shape == (alphas * n_refinements,)
