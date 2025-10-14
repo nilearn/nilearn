@@ -20,10 +20,7 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.image import mean_img
 from nilearn.maskers._mixin import _LabelMaskerMixin
-from nilearn.maskers.base_masker import (
-    _BaseSurfaceMasker,
-    mask_logger,
-)
+from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -219,6 +216,9 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        self._init_report_content()
+
         if imgs is not None:
             self._check_imgs(imgs)
 
@@ -293,22 +293,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             self.clean_args_ = self.clean_args
 
         if not self.reports:
-            self._reporting_data = None
             return self
-
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            "number_of_regions": self.n_elements_,
-            "summary": {},
-            "warning_message": None,
-        }
 
         for part in self.labels_img_.data.parts:
             self._report_content["n_vertices"][part] = (
@@ -320,6 +305,29 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        """Initialize report content.
+
+        Prepare basing content to inject in the HTML template
+        during report generation.
+        """
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This report shows the input surface image overlaid "
+                    "with the outlines of the mask. "
+                    "We recommend to inspect the report for the overlap "
+                    "between the mask and its input image. "
+                ),
+                "n_vertices": {},
+                "number_of_regions": 0,
+                "summary": {},
+                "warning_message": None,
+            }
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = None
 
     def _generate_reporting_data(self):
         for part in self.labels_img_.data.parts:
