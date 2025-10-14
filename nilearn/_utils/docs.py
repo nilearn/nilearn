@@ -1111,7 +1111,7 @@ deprecation_notice_false_to_none = """
 
     .. nilearn_deprecated:: 0.15.0dev
 
-        The default will be changed from ``False`` to ``None``
+        The default will be changed from ``None``
         in version 0.15.0.
 
 """
@@ -1121,7 +1121,7 @@ deprecation_notice_true_to_zscore_sample = """
 
     .. nilearn_deprecated:: 0.15.0dev
 
-        The default will be changed from ``True`` to ``'zscore_sample'``
+        The default will be changed from ``'zscore_sample'``
         in version 0.15.0.
 
 """
