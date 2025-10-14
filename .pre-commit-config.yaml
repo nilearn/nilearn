@@ -34,12 +34,9 @@ repos:
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
+    -   id: rst-backticks
     -   id: rst-directive-colons
     -   id: rst-inline-touching-normal
--   repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
-    hooks:
-    -   id: rst-backticks
 
     # Checks for spelling errors
 -   repo: https://github.com/codespell-project/codespell
@@ -75,20 +72,19 @@ repos:
                 maint_tools/templates/index.html
             )$
 
+    # Lint and format Python code
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.13.3
+    rev: v0.14.0
     hooks:
-    # Run the linter.
     -   id: ruff-check
         # args: [--statistics]
         args: [--fix, --show-fixes, --unsafe-fixes]
-    # Run the formatter.
     -   id: ruff-format
         # args: [--diff]
 
-    # check imports contracts
+    # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter
-    rev: v2.5
+    rev: v2.5.2
     hooks:
     -   id: import-linter
         args: [--verbose]

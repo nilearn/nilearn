@@ -1,7 +1,5 @@
 """Tests for the data generation utilities."""
 
-from __future__ import annotations
-
 import json
 
 import numpy as np

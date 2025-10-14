@@ -202,10 +202,11 @@ def intersect_masks(mask_imgs, threshold=0.5, connected=True):
     if len(mask_imgs) == 0:
         raise ValueError("No mask provided for intersection")
 
-    mask_types = []
-    for i, x in enumerate(mask_imgs):
-        if not isinstance(x, NiimgLike):
-            mask_types.append(f"mask_imgs[{i}] = {x.__class__.__name__}")
+    mask_types = [
+        f"mask_imgs[{i}] = {x.__class__.__name__}"
+        for i, x in enumerate(mask_imgs)
+        if not isinstance(x, NiimgLike)
+    ]
     if mask_types:
         raise TypeError(
             "All masks must be a 3D Niimg-like object. "
