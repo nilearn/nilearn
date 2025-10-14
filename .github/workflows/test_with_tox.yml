@@ -83,7 +83,7 @@ jobs:
                     py: '3.10'
                     os: macos-latest
                     env: min
-                -   description: oldest dependencies - with plotly
+                -   description: oldest dependencies - with plotting
                     py: '3.10'
                     os: macos-latest
                     env: plot_min
