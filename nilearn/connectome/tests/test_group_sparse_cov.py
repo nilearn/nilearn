@@ -203,7 +203,7 @@ def test_group_sparse_covariance_errors(rng):
         group_sparse_covariance([np.ones((2, 2)), np.ones((2, 3))], alpha)
 
 
-@pytest.mark.parametrize("cv", [None, 3, KFold(n_splits=4)])
+@pytest.mark.parametrize("cv", [None, 10, KFold(n_splits=4)])
 def test_group_sparse_covariance_cross_validation(rng, cv):
     signals, _, _ = generate_group_sparse_gaussian_graphs(
         density=0.1,
@@ -217,4 +217,9 @@ def test_group_sparse_covariance_cross_validation(rng, cv):
     gsc = GroupSparseCovarianceCV(verbose=0, cv=cv)
     gsc.fit(signals)
 
-    assert gsc.cv_scores_.shape[1]
+    cv_alphas_ = gsc.cv_alphas_
+    assert isinstance(cv_alphas_, list)
+    assert len(cv_alphas_) == 16
+
+    cv_scores_ = gsc.cv_scores_
+    assert cv_scores_.shape[0] == 16
