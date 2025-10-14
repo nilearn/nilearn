@@ -53,6 +53,10 @@
       function addPlot() {
         let hemisphere = $("#select-hemisphere").val();
         let kind = $("#select-kind").val();
+
+        if (surfaceMapInfo["view"]) {
+          $("#select-view").val(surfaceMapInfo["view"]);
+        }
         makePlot(kind, hemisphere, "surface-plot");
       }
 

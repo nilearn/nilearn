@@ -6,22 +6,24 @@ import warnings
 
 import numpy as np
 from scipy import linalg
+from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import (
-    constrained_layout_kwargs,
     is_matplotlib_installed,
     is_plotly_installed,
-    rename_parameters,
 )
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import (
@@ -34,16 +36,16 @@ from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
-class SurfaceMapsMasker(_BaseSurfaceMasker):
+class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     """Extract data from a SurfaceImage, using maps of potentially overlapping
     brain regions.
 
-    .. versionadded:: 0.11.1
+    .. nilearn_versionadded:: 0.11.1
 
     Parameters
     ----------
     maps_img : :obj:`~nilearn.surface.SurfaceImage`
-        Set of maps that define the regions. representative time course \
+        Set of maps that define the regions. A representative time course \
         per map is extracted using least square regression. The data for \
         each hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
@@ -59,7 +61,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 
@@ -157,11 +159,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-    # TODO (nilearn >= 0.13.0)
     @fill_doc
-    @rename_parameters(
-        replacement_params={"img": "imgs"}, end_version="0.13.0"
-    )
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -178,9 +176,25 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        self._init_report_content()
+
         if imgs is not None:
             self._check_imgs(imgs)
 
+            if isinstance(imgs, SurfaceImage) and any(
+                hemi.ndim > 2 for hemi in imgs.data.parts.values()
+            ):
+                raise ValueError(
+                    "should only be SurfaceImage should 1D or 2D."
+                )
+            elif hasattr(imgs, "__iter__"):
+                for i, x in enumerate(imgs):
+                    x.data._check_n_samples(1, f"imgs[{i}]")
+
+        return self._fit(imgs)
+
+    def _fit(self, imgs):
         if self.maps_img is None:
             raise ValueError(
                 "Please provide a maps_img during initialization. "
@@ -206,26 +220,14 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         # initialize reporting content and data
         if not self.reports:
-            self._reporting_data = None
             return self
-
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image "
-                "(if provided via img) overlaid with the regions provided "
-                "via maps_img."
-            ),
-            "n_vertices": {},
-            "number_of_regions": self.n_elements_,
-            "summary": {},
-            "warning_message": None,
-        }
 
         for part in self.maps_img.data.parts:
             self._report_content["n_vertices"][part] = (
                 self.maps_img.mesh.parts[part].n_vertices
             )
+
+        self._report_content["number_of_regions"] = self.n_elements_
 
         self._reporting_data = {
             "maps_img": self.maps_img_,
@@ -241,6 +243,30 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
+
+    def _init_report_content(self):
+        """Initialize report content.
+
+        Prepare basing content to inject in the HTML template
+        during report generation.
+        """
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": (
+                    "This report shows the input surface image "
+                    "(if provided via img) overlaid with the regions provided "
+                    "via maps_img."
+                ),
+                "n_vertices": {},
+                "number_of_regions": getattr(self, "n_elements_", 0),
+                "displayed_maps": [],
+                "number_of_maps": 0,
+                "summary": {},
+                "warning_message": None,
+            }
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = None
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
@@ -267,8 +293,15 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         check_is_fitted(self)
 
         check_compatibility_mask_and_images(self.maps_img, imgs)
-
         check_polymesh_equal(self.maps_img.mesh, imgs.mesh)
+
+        if isinstance(imgs, SurfaceImage) and any(
+            hemi.ndim > 2 for hemi in imgs.data.parts.values()
+        ):
+            raise ValueError("should only be SurfaceImage should 1D or 2D.")
+        elif hasattr(imgs, "__iter__"):
+            for i, x in enumerate(imgs):
+                x.data._check_n_samples(1, f"imgs[{i}]")
 
         imgs = at_least_2d(imgs)
 
@@ -403,34 +436,34 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                          or :class:`~numpy.ndarray`, or "all", default=10
             Indicates which maps will be displayed in the HTML report.
 
-                - If "all": All maps will be displayed in the report.
+            - If "all": All maps will be displayed in the report.
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report("all")
+                masker.generate_report("all")
 
-                .. warning:
-                    If there are too many maps, this might be time and
-                    memory consuming, and will result in very heavy
-                    reports.
+            .. warning:
+                If there are too many maps, this might be time and
+                memory consuming, and will result in very heavy
+                reports.
 
-                - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
-                  the indices of the maps to be displayed in the report. For
-                  example, the following code will generate a report with maps
-                  6, 3, and 12, displayed in this specific order:
+            - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
+                the indices of the maps to be displayed in the report. For
+                example, the following code will generate a report with maps
+                6, 3, and 12, displayed in this specific order:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report([6, 3, 12])
+                masker.generate_report([6, 3, 12])
 
-                - If an :obj:`int`: This will only display the first n maps,
-                  n being the value of the parameter. By default, the report
-                  will only contain the first 10 maps. Example to display the
-                  first 16 maps:
+            - If an :obj:`int`: This will only display the first n maps,
+                n being the value of the parameter. By default, the report
+                will only contain the first 10 maps. Example to display the
+                first 16 maps:
 
-                .. code-block:: python
+            .. code-block:: python
 
-                    masker.generate_report(16)
+                masker.generate_report(16)
 
         engine : :obj:`str`, default="matplotlib"
             The plotting engine to use for the report. Can be either
@@ -452,11 +485,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if not is_matplotlib_installed():
             return generate_report(self)
 
-        if engine not in ["plotly", "matplotlib"]:
-            raise ValueError(
-                "Parameter ``engine`` should be either 'matplotlib' or "
-                "'plotly'."
-            )
+        check_parameter_in_allowed(engine, ["plotly", "matplotlib"], "engine")
 
         # switch to matplotlib if plotly is selected but not installed
         if engine == "plotly" and not is_plotly_installed():
@@ -569,11 +598,10 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         If transform() was applied to an image, this image is used as
         background on which the maps are plotted.
         """
-        import matplotlib.pyplot as plt
-
-        from nilearn.plotting import plot_surf, view_surf
+        from nilearn.plotting import view_surf
 
         threshold = 1e-6
+
         if self._report_content["engine"] == "plotly":
             # squeeze the last dimension
             for part in roi.data.parts:
@@ -587,34 +615,11 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 threshold=threshold,
                 hemi="both",
                 cmap=self.cmap,
-                darkness=None,
             ).get_iframe(width=500)
+
         elif self._report_content["engine"] == "matplotlib":
-            # TODO: possibly allow to generate a report with other views
-            views = ["lateral", "medial"]
-            hemispheres = ["left", "right"]
-            fig, axes = plt.subplots(
-                len(views),
-                len(hemispheres),
-                subplot_kw={"projection": "3d"},
-                figsize=(20, 20),
-                **constrained_layout_kwargs(),
+            fig = self._generate_figure(
+                img=roi, bg_map=bg_img, threshold=threshold
             )
-            axes = np.atleast_2d(axes)
-            for ax_row, view in zip(axes, views):
-                for ax, hemi in zip(ax_row, hemispheres):
-                    # very low threshold to only make 0 values transparent
-                    plot_surf(
-                        surf_map=roi,
-                        bg_map=bg_img,
-                        hemi=hemi,
-                        view=view,
-                        figure=fig,
-                        axes=ax,
-                        cmap=self.cmap,
-                        colorbar=False,
-                        threshold=threshold,
-                        bg_on_data=True,
-                        darkness=None,
-                    )
+
         return fig

@@ -750,6 +750,7 @@ def empirical_covariances(subjects, assume_centered=False, standardize=False):
     # single precision to double will be required or not.
     emp_covs = np.empty((n_features, n_features, n_subjects), order="F")
     for k, s in enumerate(subjects):
+        # TODO should we use sample std?
         if standardize:
             s = s / s.std(axis=0)  # copy on purpose
         M = empirical_covariance(s, assume_centered=assume_centered)
@@ -1228,7 +1229,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
         covs_init = itertools.repeat(None)
 
         # Copying the cv generators to use them n_refinements times.
-        cv_ = zip(*cv)
+        cv_ = zip(*cv, strict=False)
 
         for i, (this_cv) in enumerate(itertools.tee(cv_, n_refinements)):
             # Compute the cross-validated loss on the current grid
@@ -1241,9 +1242,10 @@ class GroupSparseCovarianceCV(BaseEstimator):
                             *[
                                 (subject[train, :], subject[test, :])
                                 for subject, (train, test) in zip(
-                                    subjects, train_test
+                                    subjects, train_test, strict=False
                                 )
-                            ]
+                            ],
+                            strict=False,
                         )
                     )
                 )
@@ -1271,7 +1273,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
                     probe_function=probe,
                 )
                 for (train_subjs, test_subjs), prec_init, probe in zip(
-                    train_test_subjs, covs_init, probes
+                    train_test_subjs, covs_init, probes, strict=False
                 )
             )
 
@@ -1280,14 +1282,16 @@ class GroupSparseCovarianceCV(BaseEstimator):
             #   of alpha.
             # - precisions_list: corresponding precisions matrices, for each
             #   value of alpha.
-            precisions_list, scores = list(zip(*this_path))
+            precisions_list, scores = list(zip(*this_path, strict=False))
             # now scores[i][j] is the score for the i-th folding, j-th value of
             # alpha (analogous for precisions_list)
-            precisions_list = list(zip(*precisions_list))
-            scores = [np.mean(sc) for sc in zip(*scores)]
+            precisions_list = list(zip(*precisions_list, strict=False))
+            scores = [np.mean(sc) for sc in zip(*scores, strict=False)]
             # scores[i] is the mean score obtained for the i-th value of alpha.
 
-            path.extend(list(zip(alphas, scores, precisions_list)))
+            path.extend(
+                list(zip(alphas, scores, precisions_list, strict=False))
+            )
             path = sorted(path, key=operator.itemgetter(0), reverse=True)
 
             # Find the maximum score (avoid using the built-in 'max' function
@@ -1337,7 +1341,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
                     verbose=self.verbose,
                 )
 
-        path = list(zip(*path))
+        path = list(zip(*path, strict=False))
         cv_scores_ = list(path[1])
         alphas = list(path[0])
 

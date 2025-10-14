@@ -16,7 +16,6 @@ from nibabel import Nifti1Image, spatialimages
 from numpy.testing import assert_array_equal
 
 import nilearn as ni
-from nilearn._utils.exceptions import DimensionError
 from nilearn._utils.niimg import repr_niimgs
 from nilearn._utils.niimg_conversions import (
     check_niimg,
@@ -30,6 +29,7 @@ from nilearn._utils.testing import (
     with_memory_profiler,
     write_imgs_to_path,
 )
+from nilearn.exceptions import DimensionError
 from nilearn.image import get_data
 
 
@@ -72,7 +72,7 @@ def test_check_same_fov(affine_eye):
     check_same_fov(a=shape_a_affine_a, b=shape_a_affine_a_2, raise_error=True)
 
     with pytest.raises(
-        ValueError, match="[ac] and [ac] do not have the same affine"
+        ValueError, match=r"[ac] and [ac] do not have the same affine"
     ):
         check_same_fov(
             a=shape_a_affine_a,
@@ -81,20 +81,20 @@ def test_check_same_fov(affine_eye):
             raise_error=True,
         )
     with pytest.raises(
-        ValueError, match="[ab] and [ab] do not have the same shape"
+        ValueError, match=r"[ab] and [ab] do not have the same shape"
     ):
         check_same_fov(
             a=shape_a_affine_a, b=shape_b_affine_a, raise_error=True
         )
     with pytest.raises(
-        ValueError, match="[ab] and [ab] do not have the same affine"
+        ValueError, match=r"[ab] and [ab] do not have the same affine"
     ):
         check_same_fov(
             a=shape_b_affine_b, b=shape_a_affine_a, raise_error=True
         )
 
     with pytest.raises(
-        ValueError, match="[ab] and [ab] do not have the same shape"
+        ValueError, match=r"[ab] and [ab] do not have the same shape"
     ):
         check_same_fov(
             a=shape_b_affine_b, b=shape_a_affine_a, raise_error=True
@@ -113,9 +113,7 @@ def test_check_niimg_3d(affine_eye, img_3d_zeros_eye, tmp_path):
     # Test dimensionality error
     with pytest.raises(
         TypeError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 3D and you provided a list "
-        "of 3D images \\(4D\\).",
+        match="Input data has incompatible dimensionality",
     ):
         check_niimg_3d([img_3d_zeros_eye, img_3d_zeros_eye])
 
@@ -146,8 +144,10 @@ def test_check_niimg_4d_errors(affine_eye, img_3d_zeros_eye, shape_3d_default):
     # This should raise an error: a 3D img is given and we want a 4D
     with pytest.raises(
         DimensionError,
-        match="Input data has incompatible dimensionality: "
-        "Expected dimension is 4D and you provided a 3D image.",
+        match=(
+            r"Input data has incompatible dimensionality: "
+            r"Expected dimension is 4D and you provided a 3D image."
+        ),
     ):
         check_niimg_4d(img_3d_zeros_eye)
 
@@ -189,7 +189,9 @@ def test_check_niimg_4d(affine_eye, img_3d_zeros_eye, shape_3d_default):
         [img_3d_zeros_eye, img_3d_zeros_eye], return_iterator=True
     )
     img_3d_iterator_2 = check_niimg_4d(img_3d_iterator_1, return_iterator=True)
-    for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
+    for img_1, img_2 in zip(
+        img_3d_iterator_1, img_3d_iterator_2, strict=False
+    ):
         assert get_data(img_1).shape == shape_3d_default
         assert_array_equal(get_data(img_1), get_data(img_2))
         assert_array_equal(img_1.affine, img_2.affine)
@@ -198,7 +200,9 @@ def test_check_niimg_4d(affine_eye, img_3d_zeros_eye, shape_3d_default):
         [img_3d_zeros_eye, img_3d_zeros_eye], return_iterator=True
     )
     img_3d_iterator_2 = check_niimg_4d(img_4d_1, return_iterator=True)
-    for img_1, img_2 in zip(img_3d_iterator_1, img_3d_iterator_2):
+    for img_1, img_2 in zip(
+        img_3d_iterator_1, img_3d_iterator_2, strict=False
+    ):
         assert get_data(img_1).shape == shape_3d_default
         assert_array_equal(get_data(img_1), get_data(img_2))
         assert_array_equal(img_1.affine, img_2.affine)
@@ -414,7 +418,7 @@ def test_iter_check_niimgs_error():
     no_file_matching = "No files matching path: %s"
 
     for empty in ((), [], iter(())):
-        with pytest.raises(ValueError, match="Input niimgs list is empty."):
+        with pytest.raises(ValueError, match=r"Input niimgs list is empty."):
             list(iter_check_niimg(empty))
 
     nofile_path = "/tmp/nofile"

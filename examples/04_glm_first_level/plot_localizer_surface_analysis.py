@@ -38,15 +38,14 @@ than using a subject-tailored mesh.
 # Prepare data and analysis parameters
 # ------------------------------------
 #
-# Prepare the timing parameters.
-t_r = 2.4
-slice_time_ref = 0.5
 
 # %%
 # Fetch the data.
 from nilearn.datasets import fetch_localizer_first_level
 
 data = fetch_localizer_first_level()
+t_r = data.t_r
+slice_time_ref = data.slice_time_ref
 
 # %%
 # Project the :term:`fMRI` image to the surface
@@ -197,7 +196,6 @@ for contrast_id, contrast_val in contrasts.items():
         title=contrast_id,
         threshold=threshold,
         bg_map=fsaverage_data,
-        darkness=None,
     )
 
 show()
@@ -219,6 +217,7 @@ save_glm_to_bids(
     height_control=None,
     prefix="sub-01",
     out_dir=output_dir,
+    cluster_threshold=10,
 )
 
 report = glm.generate_report(
@@ -226,6 +225,7 @@ report = glm.generate_report(
     threshold=threshold,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=None,
+    cluster_threshold=10,
 )
 
 # %%

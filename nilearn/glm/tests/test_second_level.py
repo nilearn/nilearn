@@ -27,6 +27,7 @@ from nilearn._utils.estimator_checks import (
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.conftest import _shape_3d_default
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.first_level import FirstLevelModel, run_glm
 from nilearn.glm.second_level import SecondLevelModel, non_parametric_inference
 from nilearn.glm.second_level.second_level import (
@@ -34,7 +35,6 @@ from nilearn.glm.second_level.second_level import (
     _check_first_level_contrast,
     _check_input_as_first_level_model,
     _check_n_rows_desmat_vs_n_effect_maps,
-    _check_output_type,
     _check_second_level_input,
     _infer_effect_maps,
     _process_second_level_input_as_dataframe,
@@ -413,16 +413,10 @@ def test_check_second_level_input_design_matrix(shape_4d_default):
         _check_second_level_input(fmri_data[0], None)
 
 
-def test_check_output_type():
-    _check_output_type(int, [str, int, float])
-    with pytest.raises(ValueError, match="output_type must be one of"):
-        _check_output_type("foo", [str, int, float])
-
-
 def test_check_confounds():
     _check_confounds(None)  # Should not do anything
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         _check_confounds("foo")
     with pytest.raises(
@@ -506,6 +500,7 @@ def test_infer_effect_maps_error(tmp_path, shape_3d_default):
         _infer_effect_maps(second_level_input, "b")
 
 
+@pytest.mark.timeout(0)
 def test_high_level_glm_with_paths(affine_eye):
     func_img, mask = fake_fmri_data()
 
@@ -746,8 +741,8 @@ def test_fmri_inputs_pandas_errors():
     with pytest.raises(
         ValueError,
         match=(
-            "'second_level_input' DataFrame must have "
-            "columns 'subject_label', 'map_name' and 'effects_map_path'."
+            r"'second_level_input' DataFrame must have "
+            r"columns 'subject_label', 'map_name' and 'effects_map_path'."
         ),
     ):
         SecondLevelModel().fit(niidf)
@@ -776,15 +771,15 @@ def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
     # test first_level_conditions, confounds, and design
     flms = [flm, flm, flm]
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         SecondLevelModel().fit(second_level_input=flms, confounds=["", []])
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         SecondLevelModel().fit(second_level_input=flms, confounds=[])
     with pytest.raises(
-        ValueError, match="confounds must be a pandas DataFrame"
+        TypeError, match="confounds must be a pandas DataFrame"
     ):
         SecondLevelModel().fit(
             second_level_input=flms, confounds=confounds["conf1"]
@@ -824,7 +819,7 @@ def test_secondlevelmodel_design_matrix_path(img_3d_mni, tmp_path):
 def test_secondlevelmodel_design_matrix_error_path(img_3d_mni, design_matrix):
     second_level_input = [img_3d_mni, img_3d_mni, img_3d_mni]
     with pytest.raises(
-        ValueError, match="Tables to load can only be TSV or CSV."
+        ValueError, match=r"Tables to load can only be TSV or CSV."
     ):
         SecondLevelModel().fit(
             second_level_input=second_level_input, design_matrix=design_matrix
@@ -852,7 +847,7 @@ def test_fmri_img_inputs_errors(confounds):
         SecondLevelModel().fit(niimgs)
     with pytest.raises(
         TypeError,
-        match="Elements of second_level_input must be of the same type.",
+        match=r"Elements of second_level_input must be of the same type.",
     ):
         SecondLevelModel().fit([*niimgs, []], confounds)
 
@@ -909,7 +904,7 @@ def test_fmri_inputs_for_non_parametric_inference_errors(
         non_parametric_inference([*niimgs, []], confounds)
 
     # test other objects
-    with pytest.raises(ValueError, match="File not found: .*"):
+    with pytest.raises(ValueError, match=r"File not found: .*"):
         non_parametric_inference("random string object")
 
 
@@ -945,7 +940,7 @@ def test_second_level_voxelwise_attribute_errors(attribute):
     X = pd.DataFrame([[1]] * 4, columns=["intercept"])
     model.fit(Y, design_matrix=X)
 
-    with pytest.raises(ValueError, match="The model has no results."):
+    with pytest.raises(ValueError, match=r"The model has no results."):
         getattr(model, attribute)
     with pytest.raises(ValueError, match="attribute must be one of"):
         model._get_element_wise_model_attribute("foo", True)
@@ -999,6 +994,7 @@ def test_non_parametric_inference_permutation_computation():
     assert get_data(neg_log_pvals_img).shape == SHAPE[:3]
 
 
+@pytest.mark.timeout(0)
 def test_non_parametric_inference_tfce():
     """Test non-parametric inference with TFCE inference."""
     shapes = [SHAPE] * 4
@@ -1105,6 +1101,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     assert logp_unc_cluster_sizes == logp_max_cluster_sizes
 
 
+@pytest.mark.timeout(0)
 def test_non_parametric_inference_cluster_level_with_single_covariates(
     shape_3d_default,
     rng,
@@ -1193,6 +1190,7 @@ def test_second_level_contrast_computation_all(output_type):
     )
 
 
+@pytest.mark.timeout(0)
 def test_second_level_contrast_computation_errors(rng):
     func_img, mask = fake_fmri_data()
 
@@ -1214,15 +1212,15 @@ def test_second_level_contrast_computation_errors(rng):
         model.compute_contrast(cnull)
 
     # passing wrong parameters
-    with pytest.raises(ValueError, match="Allowed types are .*'t', 'F'"):
+    with pytest.raises(ValueError, match="'stat_type' must be one of"):
         model.compute_contrast(
             second_level_contrast=c1, second_level_stat_type=""
         )
-    with pytest.raises(ValueError, match="Allowed types are .*'t', 'F'"):
+    with pytest.raises(ValueError, match="'stat_type' must be one of"):
         model.compute_contrast(
             second_level_contrast=c1, second_level_stat_type=[]
         )
-    with pytest.raises(ValueError, match="output_type must be one of "):
+    with pytest.raises(ValueError, match="'output_type' must be one of "):
         model.compute_contrast(second_level_contrast=c1, output_type="")
 
     # check that passing no explicit contrast when the design
@@ -1247,7 +1245,7 @@ def test_second_level_t_contrast_length_errors():
 
     with pytest.raises(
         ValueError,
-        match=("t contrasts should be of length P=1, but it has length 2."),
+        match=(r"t contrasts should be of length P=1, but it has length 2."),
     ):
         model.compute_contrast(second_level_contrast=[1, 2])
 
@@ -1264,7 +1262,7 @@ def test_second_level_f_contrast_length_errors():
 
     with pytest.raises(
         ValueError,
-        match=("F contrasts should have .* columns, but it has .*"),
+        match=(r"F contrasts should have .* columns, but it has .*"),
     ):
         model.compute_contrast(second_level_contrast=np.eye(2))
 
@@ -1346,7 +1344,7 @@ def test_non_parametric_inference_contrast_computation_errors(rng):
     # matrix has more than one columns raises an error
     X = pd.DataFrame(rng.uniform(size=(4, 2)), columns=["r1", "r2"])
     with pytest.raises(
-        ValueError, match="No second-level contrast is specified."
+        ValueError, match=r"No second-level contrast is specified."
     ):
         non_parametric_inference(
             second_level_input=Y,
@@ -1497,7 +1495,7 @@ def test_second_level_input_with_wrong_mask(
     model = SecondLevelModel(mask_img=img_mask_mni)
 
     with pytest.raises(
-        TypeError, match="Mask and input images must be of compatible types."
+        TypeError, match=r"Mask and input images must be of compatible types."
     ):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 
@@ -1507,7 +1505,7 @@ def test_second_level_input_with_wrong_mask(
     model = SecondLevelModel(mask_img=surf_mask_1d)
 
     with pytest.raises(
-        TypeError, match="Mask and input images must be of compatible types."
+        TypeError, match=r"Mask and input images must be of compatible types."
     ):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 
@@ -1522,7 +1520,7 @@ def test_second_level_input_as_surface_image_warning_smoothing(surf_img_1d):
     )
 
     model = SecondLevelModel(smoothing_fwhm=8.0)
-    with pytest.warns(UserWarning, match="not yet supported"):
+    with pytest.warns(NotImplementedWarning, match="not yet supported"):
         model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
@@ -1643,7 +1641,7 @@ def test_non_parametric_inference_with_surface_images_warnings(surf_img_1d):
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
     with pytest.warns(
-        UserWarning,
+        NotImplementedWarning,
         match="'smoothing_fwhm' is not yet supported for surface data.",
     ):
         non_parametric_inference(
@@ -1653,7 +1651,7 @@ def test_non_parametric_inference_with_surface_images_warnings(surf_img_1d):
             smoothing_fwhm=6,
         )
     with pytest.warns(
-        UserWarning,
+        NotImplementedWarning,
         match="Cluster level inference not yet implemented for surface data.",
     ):
         non_parametric_inference(
@@ -1663,7 +1661,7 @@ def test_non_parametric_inference_with_surface_images_warnings(surf_img_1d):
             tfce=True,
         )
     with pytest.warns(
-        UserWarning,
+        NotImplementedWarning,
         match="Cluster level inference not yet implemented for surface data.",
     ):
         non_parametric_inference(

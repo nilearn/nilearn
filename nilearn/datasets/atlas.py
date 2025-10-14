@@ -3,7 +3,6 @@
 import json
 import re
 import shutil
-import warnings
 from pathlib import Path
 from tempfile import mkdtemp
 from xml.etree import ElementTree
@@ -20,9 +19,11 @@ from nilearn._utils.bids import (
 )
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import rename_parameters
-from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.datasets._utils import (
     PACKAGE_DIRECTORY,
     fetch_files,
@@ -84,7 +85,7 @@ def fetch_atlas_difumo(
     over a with range of experimental conditions.
     See :footcite:t:`Dadi2020`.
 
-    .. versionadded:: 0.7.1
+    .. nilearn_versionadded:: 0.7.1
 
     Notes
     -----
@@ -147,17 +148,11 @@ def fetch_atlas_difumo(
         1024: "34792",
     }
     valid_dimensions = [64, 128, 256, 512, 1024]
+    check_parameter_in_allowed(dimension, valid_dimensions, "dimension")
     valid_resolution_mm = [2, 3]
-    if dimension not in valid_dimensions:
-        raise ValueError(
-            f"Requested dimension={dimension} is not available. "
-            f"Valid options: {valid_dimensions}"
-        )
-    if resolution_mm not in valid_resolution_mm:
-        raise ValueError(
-            f"Requested resolution_mm={resolution_mm} is not available. "
-            f"Valid options: {valid_resolution_mm}"
-        )
+    check_parameter_in_allowed(
+        resolution_mm, valid_resolution_mm, "resolution_mm"
+    )
 
     url = f"https://osf.io/{dic[dimension]}/download"
     opts = {"uncompress": True}
@@ -206,7 +201,7 @@ def fetch_atlas_craddock_2012(
     url=None,
     resume=True,
     verbose=1,
-    homogeneity=None,
+    homogeneity="spatial",
     grp_mean=True,
 ):
     """Download and return file names \
@@ -231,8 +226,9 @@ def fetch_atlas_craddock_2012(
 
     %(verbose)s
 
-    homogeneity : :obj:`str`,  default=None
+    homogeneity : :obj:`str`,  default='spatial'
         The choice of the homogeneity ('spatial' or 'temporal' or 'random')
+
     grp_mean : :obj:`bool`, default=True
         The choice of the :term:`parcellation` (with group_mean or without)
 
@@ -267,14 +263,6 @@ def fetch_atlas_craddock_2012(
         - %(template)s
 
 
-    Warns
-    -----
-    DeprecationWarning
-        If an homogeneity input is provided, the current behavior
-        (returning multiple maps) is deprecated.
-        Starting in version 0.13, one map will be returned in a 'maps' dict key
-        depending on the homogeneity and grp_mean value.
-
     References
     ----------
     .. footbibliography::
@@ -292,74 +280,35 @@ def fetch_atlas_craddock_2012(
 
     dataset_name = "craddock_2012"
 
-    keys = (
-        "scorr_mean",
-        "tcorr_mean",
-        "scorr_2level",
-        "tcorr_2level",
-        "random",
-    )
-    filenames = [
-        ("scorr05_mean_all.nii.gz", url, opts),
-        ("tcorr05_mean_all.nii.gz", url, opts),
-        ("scorr05_2level_all.nii.gz", url, opts),
-        ("tcorr05_2level_all.nii.gz", url, opts),
-        ("random_all.nii.gz", url, opts),
-    ]
-
     data_dir = get_dataset_dir(
         dataset_name, data_dir=data_dir, verbose=verbose
     )
 
-    sub_files = fetch_files(
-        data_dir, filenames, resume=resume, verbose=verbose
-    )
-
     fdescr = get_dataset_descr(dataset_name)
 
-    if homogeneity:
-        if homogeneity in ["spatial", "temporal"]:
-            if grp_mean:
-                filename = [
-                    (homogeneity[0] + "corr05_mean_all.nii.gz", url, opts)
-                ]
-            else:
-                filename = [
-                    (homogeneity[0] + "corr05_2level_all.nii.gz", url, opts)
-                ]
-        else:
-            filename = [("random_all.nii.gz", url, opts)]
-        data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
-
-        return Atlas(
-            maps=data[0],
-            description=fdescr,
-            atlas_type=atlas_type,
+    allowed_homogeneity = {"spatial", "temporal", "random"}
+    if homogeneity not in allowed_homogeneity:
+        raise ValueError(
+            f"'homogeneity' must be one of {allowed_homogeneity}. "
+            f"Got {homogeneity=}."
         )
 
-    # TODO (nilearn >= 0.13.0)
-    warnings.warn(
-        category=DeprecationWarning,
-        message=(
-            deprecation_message.format(version="0.13")
-            + (
-                "To suppress this warning, "
-                "Please use the parameters 'homogeneity' and 'grp_mean' "
-                "to specify the exact atlas image you want."
-            )
-        ),
-        stacklevel=find_stack_level(),
-    )
+    if homogeneity in ["spatial", "temporal"]:
+        if grp_mean:
+            filename = [(homogeneity[0] + "corr05_mean_all.nii.gz", url, opts)]
+        else:
+            filename = [
+                (homogeneity[0] + "corr05_2level_all.nii.gz", url, opts)
+            ]
+    else:
+        filename = [("random_all.nii.gz", url, opts)]
+    data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
 
-    params = dict(
-        [
-            ("description", fdescr),
-            *list(zip(keys, sub_files)),
-        ]
+    return Atlas(
+        maps=data[0],
+        description=fdescr,
+        atlas_type=atlas_type,
     )
-    params["atlas_type"] = atlas_type
-
-    return Bunch(**params)
 
 
 @fill_doc
@@ -586,12 +535,7 @@ def fetch_atlas_harvard_oxford(
         "sub-prob-1mm",
         "sub-prob-2mm",
     ]
-    if atlas_name not in atlases:
-        atlases = "\n".join(atlases)
-        raise ValueError(
-            f"Invalid atlas name: {atlas_name}. "
-            f"Please choose an atlas among:\n{atlases}"
-        )
+    check_parameter_in_allowed(atlas_name, atlases, "atlas_name")
 
     atlas_type = "probabilistic" if "-prob-" in atlas_name else "deterministic"
 
@@ -660,7 +604,7 @@ def fetch_atlas_juelich(
     specified by your FSL installed path given in `data_dir` argument.
     See documentation for details.
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     .. note::
 
@@ -752,12 +696,7 @@ def fetch_atlas_juelich(
         "prob-1mm",
         "prob-2mm",
     ]
-    if atlas_name not in atlases:
-        atlases = "\n".join(atlases)
-        raise ValueError(
-            f"Invalid atlas name: {atlas_name}. "
-            f"Please choose an atlas among:\n{atlases}"
-        )
+    check_parameter_in_allowed(atlas_name, atlases, "atlas_name")
 
     atlas_type = (
         "probabilistic" if atlas_name.startswith("prob-") else "deterministic"
@@ -817,12 +756,16 @@ def _get_atlas_data_and_labels(
 
     This function downloads the atlas image and labels.
     """
+    check_parameter_in_allowed(
+        atlas_source,
+        ["Juelich", "HarvardOxford", "atlas_source"],
+        "atlas_source",
+    )
     if atlas_source == "Juelich":
         url = "https://www.nitrc.org/frs/download.php/12096/Juelich.tgz"
     elif atlas_source == "HarvardOxford":
         url = "https://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz"
-    else:
-        raise ValueError(f"Atlas source {atlas_source} is not valid.")
+
     # For practical reasons, we mimic the FSL data directory here.
     data_dir = get_dataset_dir("fsl", data_dir=data_dir, verbose=verbose)
     opts = {"uncompress": True}
@@ -853,7 +796,7 @@ def _get_atlas_data_and_labels(
         verbose=verbose,
     )
     # Reorder image to have positive affine diagonal
-    atlas_img = reorder_img(atlas_file, copy_header=True)
+    atlas_img = reorder_img(atlas_file)
     names = {0: "Background"}
 
     all_labels = ElementTree.parse(label_file).findall(".//label")
@@ -949,7 +892,7 @@ def _compute_symmetric_split(source, atlas_niimg, names):
     new_atlas = atlas_data.copy()
     # Assumes that the background label is zero.
     new_names = [names[0]]
-    for label, name in zip(labels[1:], names[1:]):
+    for label, name in zip(labels[1:], names[1:], strict=False):
         new_label += 1
         left_elements = (left_atlas == label).sum()
         right_elements = (right_atlas == label).sum()
@@ -1092,7 +1035,7 @@ def fetch_atlas_smith_2009(
     resume=True,
     verbose=1,
     mirror="origin",
-    dimension=None,
+    dimension=10,
     resting=True,
 ):
     """Download and load the Smith :term:`ICA` and BrainMap \
@@ -1116,7 +1059,7 @@ def fetch_atlas_smith_2009(
         potentially higher bandwidth.
 
     dimension : :obj:`int`, default=None
-        Number of dimensions in the dictionary. Valid resolutions
+        Number of dimensions in the dictionary. Valid dimension
         available are {10, 20, 70}.
 
     resting : :obj:`bool`, default=True
@@ -1127,51 +1070,17 @@ def fetch_atlas_smith_2009(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, contains:
 
-        - ``'rsn20'``: :obj:`str`
-            Path to nifti file containing
-            the 20-dimensional :term:`ICA`, resting-:term:`fMRI` components.
-            The shape of the image is ``(91, 109, 91, 20)``.
-
-        - ``'rsn10'``: :obj:`str`
-            Path to nifti file containing
-            the 10 well-matched maps from the 20 maps obtained as for 'rsn20',
-            as shown in :footcite:t:`Smith2009b`.
-            The shape of the image is ``(91, 109, 91, 10)``.
-
-        - ``'bm20'``: :obj:`str`
-            Path to nifti file containing
-            the 20-dimensional :term:`ICA`, BrainMap components.
-            The shape of the image is ``(91, 109, 91, 20)``.
-
-        - ``'bm10'``: :obj:`str`
-            Path to nifti file containing
-            the 10 well-matched maps from the 20 maps obtained as for 'bm20',
-            as shown in :footcite:t:`Smith2009b`.
-            The shape of the image is ``(91, 109, 91, 10)``.
-
-        - ``'rsn70'``: :obj:`str`
-            Path to nifti file containing
-            the 70-dimensional :term:`ICA`, resting-:term:`fMRI` components.
-            The shape of the image is ``(91, 109, 91, 70)``.
-
-        - ``'bm70'``: :obj:`str`
-            Path to nifti file containing
-            the 70-dimensional :term:`ICA`, BrainMap components.
-            The shape of the image is ``(91, 109, 91, 70)``.
+        - ``maps``: :obj:`str`
+            Path to nifti file containing the requested resting fMRI or
+            or BrainMap components image with the number of requested
+            dimenensions.
+            The shape of the image is ``(91, 109, 91, dimension)``.
 
         - %(description)s
 
         - %(atlas_type)s
 
         - %(template)s
-
-    Warns
-    -----
-    DeprecationWarning
-        If a dimension input is provided, the current behavior
-        (returning multiple maps) is deprecated.
-        Starting in version 0.13, one map will be returned in a 'maps' dict key
-        depending on the dimension and resting value.
 
     References
     ----------
@@ -1188,6 +1097,7 @@ def fetch_atlas_smith_2009(
     atlas_type = "probabilistic"
 
     if url is None:
+        check_parameter_in_allowed(mirror, ["origin", "nitrc"], "mirror")
         if mirror == "origin":
             url = "https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/"
         elif mirror == "nitrc":
@@ -1199,11 +1109,6 @@ def fetch_atlas_smith_2009(
                 "https://www.nitrc.org/frs/download.php/7728/",
                 "https://www.nitrc.org/frs/download.php/7727/",
             ]
-        else:
-            raise ValueError(
-                f'Unknown mirror "{mirror!s}". '
-                'Mirror must be "origin" or "nitrc"'
-            )
 
     files = {
         "rsn20": "rsn20.nii.gz",
@@ -1224,42 +1129,17 @@ def fetch_atlas_smith_2009(
 
     fdescr = get_dataset_descr(dataset_name)
 
-    if dimension:
-        key = f"{'rsn' if resting else 'bm'}{dimension}"
-        key_index = list(files).index(key)
+    key = f"{'rsn' if resting else 'bm'}{dimension}"
+    key_index = list(files).index(key)
 
-        file = [(files[key], url[key_index] + files[key], {})]
-        data = fetch_files(data_dir, file, resume=resume, verbose=verbose)
+    file = [(files[key], url[key_index] + files[key], {})]
+    data = fetch_files(data_dir, file, resume=resume, verbose=verbose)
 
-        return Atlas(
-            maps=data[0],
-            description=fdescr,
-            atlas_type=atlas_type,
-        )
-
-    # TODO (nilearn >= 0.13.0)
-    warnings.warn(
-        category=DeprecationWarning,
-        message=(
-            deprecation_message.format(version="0.13")
-            + (
-                "To suppress this warning, "
-                "Please use the parameters 'dimension' and 'resting' "
-                "to specify the exact atlas image you want."
-            )
-        ),
-        stacklevel=find_stack_level(),
+    return Atlas(
+        maps=data[0],
+        description=fdescr,
+        atlas_type=atlas_type,
     )
-
-    keys = list(files.keys())
-    files = [(f, u + f, {}) for f, u in zip(files.values(), url)]
-    files_ = fetch_files(data_dir, files, resume=resume, verbose=verbose)
-    params = dict(zip(keys, files_))
-
-    params["description"] = fdescr
-    params["atlas_type"] = atlas_type
-
-    return Bunch(**params)
 
 
 @fill_doc
@@ -1268,8 +1148,8 @@ def fetch_atlas_yeo_2011(
     url=None,
     resume=True,
     verbose=1,
-    n_networks=None,
-    thickness=None,
+    n_networks=7,
+    thickness="thick",
 ):
     """Download and return file names for the Yeo 2011 :term:`parcellation`.
 
@@ -1290,88 +1170,34 @@ def fetch_atlas_yeo_2011(
     %(resume)s
     %(verbose)s
 
-    n_networks : {7, 17, None}, default = None
-        If not None,
-        then only specific version of the atlas is returned:
+    n_networks : {7, 17}, default = 7
+        Specify the version of the atlas that is returned:
 
         - 7 networks parcellation,
         - 17 networks parcellation.
 
-        If ``thickness`` is not None, this will default to ``7``.
-        The default will be set to ``7`` in version 0.13.0.
+        .. nilearn_versionadded:: 0.12.0
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionchanged:: 0.13.0
 
-    thickness : {"thin", "thick", None}, default = None
-        If not None,
-        then only specific version of the atlas is returned:
+          The default was changed to 7.
+
+    thickness : {"thin", "thick"}, default = "thick"
+        Specific the version of the atlas that is returned:
 
         - ``"thick"``: parcellation fitted to thick cortex segmentations,
         - ``"thin"``: parcellation fitted to thin cortex segmentations.
 
-        If ``n_networks`` is not None, this will default to ``"thick"``.
-        The default will be set to ``"thick"`` in version 0.13.0.
+        .. nilearn_versionadded:: 0.12.0
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionchanged:: 0.13.0
+
+          The default was changed to "thick".
 
     Returns
     -------
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object.
-
-        If ``n_networks`` and ``thickness`` are None, keys are:
-
-        - 'thin_7': :obj:`str`
-            Path to nifti file containing the
-            7 networks :term:`parcellation` fitted to thin template cortex
-            segmentations.
-            The image contains integer values which can be
-            interpreted as the indices in ``colors_7``.
-
-        - 'thick_7': :obj:`str`
-            Path to nifti file containing the
-            7 networks :term:`parcellation` fitted to thick template cortex
-            segmentations.
-            The image contains integer values which can be
-            interpreted as the indices in ``colors_7``.
-
-        - 'thin_17': :obj:`str`
-            Path to nifti file containing the
-            17 networks :term:`parcellation` fitted to thin template cortex
-            segmentations.
-            The image contains integer values which can be
-            interpreted as the indices in ``colors_17``.
-
-        - 'thick_17': :obj:`str`
-            Path to nifti file containing the
-            17 networks :term:`parcellation` fitted to thick template cortex
-            segmentations.
-            The image contains integer values which can be
-            interpreted as the indices in ``colors_17``.
-
-        - 'colors_7': :obj:`str`
-            Path to colormaps text file for
-            7 networks :term:`parcellation`.
-            This file maps :term:`voxel` integer
-            values from ``data.thin_7`` and ``data.tick_7`` to network names.
-
-        - 'colors_17': :obj:`str`
-            Path to colormaps text file for
-            17 networks :term:`parcellation`.
-            This file maps :term:`voxel` integer
-            values from ``data.thin_17`` and ``data.tick_17``
-            to network names.
-
-        - 'anat': :obj:`str`
-            Path to nifti file containing the anatomy image.
-
-        - %(description)s
-
-        - %(template)s
-
-        - %(atlas_type)s
-
-        otherwise the keys are:
 
         - 'anat': :obj:`str`
             Path to nifti file containing the anatomy image.
@@ -1402,35 +1228,8 @@ def fetch_atlas_yeo_2011(
 
     atlas_type = "deterministic"
 
-    if n_networks is None and thickness is None:
-        # TODO (nilearn >= 0.13.0)
-        warnings.warn(
-            category=DeprecationWarning,
-            message=(
-                deprecation_message.format(version="0.13.0")
-                + (
-                    "To suppress this warning, "
-                    "Please use the parameters 'n_networks' and 'thickness' "
-                    "to specify the exact atlas image you want."
-                )
-            ),
-            stacklevel=find_stack_level(),
-        )
-
-    if n_networks is not None:
-        if n_networks not in (7, 17):
-            raise ValueError(
-                f"'n_networks' must be 7 or 17. Got {n_networks=}"
-            )
-        if thickness is None:
-            thickness = "thick"
-    if thickness is not None:
-        if thickness not in ("thin", "thick"):
-            raise ValueError(
-                f"'thickness' must be 'thin' or 'thick'. Got {thickness=}"
-            )
-        if n_networks is None:
-            n_networks = 7
+    check_parameter_in_allowed(n_networks, (7, 17), "n_networks")
+    check_parameter_in_allowed(thickness, ("thin", "thick"), "thickness")
 
     if url is None:
         url = (
@@ -1476,35 +1275,30 @@ def fetch_atlas_yeo_2011(
         [
             ("description", fdescr),
             ("atlas_type", atlas_type),
-            *list(zip(keys, sub_files)),
+            *list(zip(keys, sub_files, strict=False)),
         ]
     )
 
-    if n_networks and thickness:
-        lut_file = (
-            params["colors_7"] if n_networks == 7 else params["colors_17"]
-        )
-        lut = pd.read_csv(
-            lut_file,
-            sep="\\s+",
-            names=["index", "name", "r", "g", "b", "fs"],
-            header=0,
-        )
-        lut = _update_lut_freesurder(lut)
+    lut_file = params["colors_7"] if n_networks == 7 else params["colors_17"]
+    lut = pd.read_csv(
+        lut_file,
+        sep="\\s+",
+        names=["index", "name", "r", "g", "b", "fs"],
+        header=0,
+    )
+    lut = _update_lut_freesurder(lut)
 
-        maps = params[f"{thickness}_{n_networks}"]
+    maps = params[f"{thickness}_{n_networks}"]
 
-        return Atlas(
-            maps=maps,
-            labels=lut.name.to_list(),
-            description=fdescr,
-            template="MNI152NLin6Asym",
-            lut=lut,
-            atlas_type=atlas_type,
-            anat=params["anat"],
-        )
-
-    return Bunch(**params)
+    return Atlas(
+        maps=maps,
+        labels=lut.name.to_list(),
+        description=fdescr,
+        template="MNI152NLin6Asym",
+        lut=lut,
+        atlas_type=atlas_type,
+        anat=params["anat"],
+    )
 
 
 def _update_lut_freesurder(lut):
@@ -1523,7 +1317,7 @@ def _update_lut_freesurder(lut):
 
 @fill_doc
 def fetch_atlas_aal(
-    version="SPM12", data_dir=None, url=None, resume=True, verbose=1
+    version="3v2", data_dir=None, url=None, resume=True, verbose=1
 ):
     """Download and returns the AAL template for :term:`SPM` 12.
 
@@ -1554,9 +1348,14 @@ def fetch_atlas_aal(
 
     Parameters
     ----------
-    version : {'3v2', 'SPM12', 'SPM5', 'SPM8'}, default='SPM12'
+    version : {'3v2', 'SPM12', 'SPM5', 'SPM8'}, default='3v2'
         The version of the AAL atlas. Must be 'SPM5', 'SPM8', 'SPM12', or '3v2'
         for the latest SPM12 version of AAL3 software.
+
+        .. nilearn_versionchanged:: 0.13.0dev
+
+          The default was changed to '3v2'.
+
     %(data_dir)s
     %(url)s
     %(resume)s
@@ -1602,12 +1401,6 @@ def fetch_atlas_aal(
 
         - %(atlas_type)s
 
-
-    Warns
-    -----
-    DeprecationWarning
-        Starting in version 0.13, the default fetched mask will be AAL 3v2.
-
     References
     ----------
     .. footbibliography::
@@ -1622,11 +1415,7 @@ def fetch_atlas_aal(
     atlas_type = "deterministic"
 
     versions = ["SPM5", "SPM8", "SPM12", "3v2"]
-    if version not in versions:
-        raise ValueError(
-            f"The version of AAL requested '{version}' does not exist."
-            f"Please choose one among {versions}."
-        )
+    check_parameter_in_allowed(version, versions, "version")
 
     dataset_name = f"aal_{version}"
     opts = {"uncompress": True}
@@ -1639,15 +1428,6 @@ def fetch_atlas_aal(
             filenames = [
                 (Path("aal", "atlas", f), url, opts) for f in basenames
             ]
-            message = (
-                "Starting in version 0.13, the default fetched mask will be"
-                "AAL 3v2 instead."
-            )
-            # TODO (nilearn >= 0.13.0)
-            warnings.warn(
-                message, DeprecationWarning, stacklevel=find_stack_level()
-            )
-
         elif version == "3v2":
             url = f"{base_url}wp-content/uploads/AAL3v2_for_SPM12.tar.gz"
             basenames = ("AAL3v1.nii", "AAL3v1.xml")
@@ -1703,7 +1483,7 @@ def fetch_atlas_basc_multiscale_2015(
     url=None,
     resume=True,
     verbose=1,
-    resolution=None,
+    resolution=7,
     version="sym",
 ):
     """Download and load multiscale functional brain parcellations.
@@ -1730,7 +1510,7 @@ def fetch_atlas_basc_multiscale_2015(
     :term:`fMRI`: finding homotopic regions simply consists of flipping the
     x-axis of the template.
 
-    .. versionadded:: 0.2.3
+    .. nilearn_versionadded:: 0.2.3
 
     Parameters
     ----------
@@ -1742,10 +1522,14 @@ def fetch_atlas_basc_multiscale_2015(
 
     %(verbose)s
 
-    resolution : :obj:`int`, default=None
+    resolution : :obj:`int`, default=7
         Number of networks in the dictionary.
-        Valid resolutions  available are
+        Valid resolutions available are
         {7, 12, 20, 36, 64, 122, 197, 325, 444}
+
+        .. nilearn_versionchanged: 0.13.0dev
+
+          Default changed to ``7``.
 
     version : {'sym', 'asym'}, default='sym'
         Available versions are 'sym' or 'asym'.
@@ -1757,9 +1541,8 @@ def fetch_atlas_basc_multiscale_2015(
     data : :class:`sklearn.utils.Bunch`
         Dictionary-like object, Keys are:
 
-        - "scale007", "scale012", "scale020", "scale036", "scale064", \
-          "scale122", "scale197", "scale325", "scale444": :obj:`str`
-            Path to Nifti file of various scales of brain parcellations.
+        - maps: :obj:`str`
+            Path to Nifti file of the brain parcellation.
             Images have shape ``(53, 64, 52)`` and contain consecutive integer
             values from 0 to the selected number of networks (scale).
 
@@ -1770,14 +1553,6 @@ def fetch_atlas_basc_multiscale_2015(
         - %(template)s
 
         - %(atlas_type)s
-
-    Warns
-    -----
-    DeprecationWarning
-        If a resolution input is provided, the current behavior
-        (returning multiple maps) is deprecated.
-        Starting in version 0.13, one map will be returned in a 'maps' dict key
-        depending on the resolution and version value.
 
     References
     ----------
@@ -1794,29 +1569,19 @@ def fetch_atlas_basc_multiscale_2015(
     atlas_type = "deterministic"
 
     versions = ["sym", "asym"]
-    if version not in versions:
+    check_parameter_in_allowed(version, versions, "version")
+
+    allowed_resolutions = {7, 12, 20, 36, 64, 122, 197, 325, 444}
+    if resolution not in allowed_resolutions:
         raise ValueError(
-            f"The version of Brain parcellations requested '{version}' "
-            "does not exist. "
-            f"Please choose one among them {versions}."
+            f"Requested {resolution=} not available. "
+            f"Valid options: {allowed_resolutions}"
         )
 
     file_number = "1861819" if version == "sym" else "1861820"
     url = f"https://ndownloader.figshare.com/files/{file_number}"
 
     opts = {"uncompress": True}
-
-    keys = [
-        "scale007",
-        "scale012",
-        "scale020",
-        "scale036",
-        "scale064",
-        "scale122",
-        "scale197",
-        "scale325",
-        "scale444",
-    ]
 
     dataset_name = "basc_multiscale_2015"
     data_dir = get_dataset_dir(
@@ -1826,57 +1591,29 @@ def fetch_atlas_basc_multiscale_2015(
     folder_name = Path(f"template_cambridge_basc_multiscale_nii_{version}")
     fdescr = get_dataset_descr(dataset_name)
 
-    if resolution:
-        basename = (
-            "template_cambridge_basc_multiscale_"
-            + version
-            + f"_scale{resolution:03}"
-            + ".nii.gz"
-        )
-
-        filename = [(folder_name / basename, url, opts)]
-
-        data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
-
-        labels = ["Background"] + [str(x) for x in range(1, resolution + 1)]
-
-        return Atlas(
-            maps=data[0],
-            labels=labels,
-            description=fdescr,
-            lut=generate_atlas_look_up_table(
-                "fetch_atlas_basc_multiscale_2015", name=labels
-            ),
-            atlas_type=atlas_type,
-            template=f"MNI152{version}",
-        )
-
-    # TODO (nilearn >= 0.13.0)
-    warnings.warn(
-        category=DeprecationWarning,
-        message=(
-            deprecation_message.format(version="0.13")
-            + (
-                "To suppress this warning, "
-                "Please use the parameters 'resolution' and 'version' "
-                "to specify the exact atlas image you want."
-            )
-        ),
-        stacklevel=find_stack_level(),
+    basename = (
+        "template_cambridge_basc_multiscale_"
+        + version
+        + f"_scale{resolution:03}"
+        + ".nii.gz"
     )
 
-    basenames = [
-        "template_cambridge_basc_multiscale_" + version + "_" + key + ".nii.gz"
-        for key in keys
-    ]
-    filenames = [(folder_name / basename, url, opts) for basename in basenames]
-    data = fetch_files(data_dir, filenames, resume=resume, verbose=verbose)
+    filename = [(folder_name / basename, url, opts)]
 
-    params = dict(zip(keys, data))
-    params["description"] = fdescr
-    params["atlas_type"] = atlas_type
+    data = fetch_files(data_dir, filename, resume=resume, verbose=verbose)
 
-    return Bunch(**params)
+    labels = ["Background"] + [str(x) for x in range(1, resolution + 1)]
+
+    return Atlas(
+        maps=data[0],
+        labels=labels,
+        description=fdescr,
+        lut=generate_atlas_look_up_table(
+            "fetch_atlas_basc_multiscale_2015", name=labels
+        ),
+        atlas_type=atlas_type,
+        template=f"MNI152{version}",
+    )
 
 
 @fill_doc
@@ -1925,7 +1662,10 @@ def fetch_coords_dosenbach_2010(ordered_regions=True):
     # We add the ROI number to its name, since names are not unique
     names = out_csv["name"]
     numbers = out_csv["number"]
-    labels = [f"{name} {number}" for (name, number) in zip(names, numbers)]
+    labels = [
+        f"{name} {number}"
+        for (name, number) in zip(names, numbers, strict=False)
+    ]
     params = {
         "rois": out_csv[["x", "y", "z"]],
         "labels": labels,
@@ -1949,7 +1689,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
 
     See :footcite:t:`Seitzman2020`.
 
-    .. versionadded:: 0.5.1
+    .. nilearn_versionadded:: 0.5.1
 
     Parameters
     ----------
@@ -2136,7 +1876,7 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
         ("rsn_indices", labels),
         ("networks", networks),
         ("template", "MNI152"),
-        *list(zip(keys, sub_files)),
+        *list(zip(keys, sub_files, strict=False)),
     ]
     return Bunch(**dict(params))
 
@@ -2153,7 +1893,7 @@ def fetch_atlas_surf_destrieux(
     This atlas returns 76 labels per hemisphere based on sulco-gryal patterns
     as distributed with Freesurfer in fsaverage5 surface space.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -2268,7 +2008,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
         verbose=verbose,
     )
     for level_name, old_level_labels in zip(
-        _TALAIRACH_LEVELS, np.asarray(labels).T
+        _TALAIRACH_LEVELS, np.asarray(labels).T, strict=False
     ):
         logger.log(level_name, verbose=verbose)
         # level with most regions, ba, has 72 regions
@@ -2319,7 +2059,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     :footcite:t:`Lancaster2000`,
     and :footcite:t:`Lancaster1997`.
 
-    .. versionadded:: 0.4.0
+    .. nilearn_versionadded:: 0.4.0
 
     Parameters
     ----------
@@ -2361,8 +2101,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     atlas_type = "deterministic"
 
-    if level_name not in _TALAIRACH_LEVELS:
-        raise ValueError(f'"level_name" should be one of {_TALAIRACH_LEVELS}')
+    check_parameter_in_allowed(level_name, _TALAIRACH_LEVELS, "level_name")
     talairach_dir = get_dataset_dir(
         "talairach_atlas", data_dir=data_dir, verbose=verbose
     )
@@ -2436,42 +2175,15 @@ def fetch_atlas_pauli_2017(
 
         - %(atlas_type)s
 
-
-    Warns
-    -----
-    DeprecationWarning
-        The possible values for atlas_type are currently 'prob' and 'det'. From
-    release 0.13.0 onwards, atlas_type will accept only 'probabilistic' or
-    'deterministic' as value.
-
     References
     ----------
     .. footbibliography::
 
     """
     check_params(locals())
-
-    # TODO (nilearn >= 0.13.0) remove this part
-    if atlas_type in ("prob", "det"):
-        # TODO (nilearn >= 0.13.0)
-        atlas_type_values = (
-            "The possible values for atlas_type are currently 'prob' and"
-            " 'det'. From release 0.13.0 onwards, atlas_type will accept only"
-            " 'probabilistic' or 'deterministic' as value."
-        )
-        warnings.warn(
-            category=DeprecationWarning,
-            message=atlas_type_values,
-            stacklevel=find_stack_level(),
-        )
-        atlas_type = (
-            "probabilistic" if atlas_type == "prob" else "deterministic"
-        )
-
-    if atlas_type not in {"probabilistic", "deterministic"}:
-        raise NotImplementedError(
-            f"{atlas_type} is not a valid type for the Pauli atlas"
-        )
+    check_parameter_in_allowed(
+        atlas_type, {"probabilistic", "deterministic"}, "atlas_type"
+    )
 
     url_maps = "https://osf.io/w8zq2/download"
     filename = "pauli_2017_prob.nii.gz"
@@ -2517,7 +2229,7 @@ def fetch_atlas_schaefer_2018(
 ):
     """Download and return file names for the Schaefer 2018 parcellation.
 
-    .. versionadded:: 0.5.1
+    .. nilearn_versionadded:: 0.5.1
 
     This function returns a :term:`Deterministic atlas`, and the provided
     images are in MNI152 space.
@@ -2585,23 +2297,15 @@ def fetch_atlas_schaefer_2018(
     atlas_type = "deterministic"
 
     valid_n_rois = list(range(100, 1100, 100))
+    check_parameter_in_allowed(n_rois, valid_n_rois, "n_rois")
     valid_yeo_networks = [7, 17]
+    check_parameter_in_allowed(
+        yeo_networks, valid_yeo_networks, "yeo_networks"
+    )
     valid_resolution_mm = [1, 2]
-    if n_rois not in valid_n_rois:
-        raise ValueError(
-            f"Requested n_rois={n_rois} not available. "
-            f"Valid options: {valid_n_rois}"
-        )
-    if yeo_networks not in valid_yeo_networks:
-        raise ValueError(
-            f"Requested yeo_networks={yeo_networks} not available. "
-            f"Valid options: {valid_yeo_networks}"
-        )
-    if resolution_mm not in valid_resolution_mm:
-        raise ValueError(
-            f"Requested resolution_mm={resolution_mm} not available. "
-            f"Valid options: {valid_resolution_mm}"
-        )
+    check_parameter_in_allowed(
+        resolution_mm, valid_resolution_mm, "resolution_mm"
+    )
 
     if base_url is None:
         base_url = (

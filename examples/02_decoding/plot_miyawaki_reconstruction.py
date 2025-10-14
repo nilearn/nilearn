@@ -122,7 +122,7 @@ yt_big = [np.dot(height_tf, np.dot(m, width_tf)) for m in y_train]
 # Add it to the training set
 y_train = [
     np.r_[y.ravel(), t.ravel(), l.ravel(), b.ravel()]
-    for y, t, l, b in zip(y_train, yt_tall, yt_large, yt_big)
+    for y, t, l, b in zip(y_train, yt_tall, yt_large, yt_big, strict=False)
 ]
 
 y_test = np.asarray(flatten(y_test))

@@ -10,7 +10,6 @@ from scipy.stats import scoreatpercentile
 
 from nilearn import masking
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import rename_parameters
 from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import (
@@ -19,7 +18,10 @@ from nilearn._utils.niimg_conversions import (
     check_niimg_4d,
     check_same_fov,
 )
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn._utils.segmentation import random_walker
 from nilearn.image.image import (
     concat_imgs,
@@ -152,7 +154,7 @@ def connected_regions(
         The region size should be defined in mm^3.
         See the documentation for more details.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
@@ -208,24 +210,17 @@ def connected_regions(
     min_region_size = min_region_size / np.abs(np.linalg.det(affine[:3, :3]))
 
     allowed_extract_types = ["connected_components", "local_regions"]
-    if extract_type not in allowed_extract_types:
-        message = (
-            "'extract_type' should be given "
-            f"either of these {allowed_extract_types} "
-            f"You provided extract_type='{extract_type}'"
-        )
-        raise ValueError(message)
+    check_parameter_in_allowed(
+        extract_type, allowed_extract_types, "extract_type"
+    )
 
     if mask_img is not None:
         if not check_same_fov(maps_img, mask_img):
-            # TODO (nilearn >= 0.13.0) force_resample=True
             mask_img = resample_img(
                 mask_img,
                 target_affine=maps_img.affine,
                 target_shape=maps_img.shape[:3],
                 interpolation="nearest",
-                copy_header=True,
-                force_resample=False,
             )
         mask_data, _ = masking.load_mask_img(mask_img)
         # Set as 0 to the values which are outside of the mask
@@ -249,7 +244,7 @@ def connected_regions(
             label_maps = rw_maps
         else:
             # Connected component extraction
-            label_maps, n_labels = label(map_3d)
+            label_maps, _ = label(map_3d)
 
         # Takes the size of each labelized region data
         labels_size = np.bincount(label_maps.ravel())
@@ -281,7 +276,7 @@ class RegionExtractor(NiftiMapsMasker):
 
     See :footcite:t:`Abraham2014`.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
@@ -325,7 +320,7 @@ class RegionExtractor(NiftiMapsMasker):
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-        .. versionadded:: 0.11.1
+        .. nilearn_versionadded:: 0.11.1
 
     %(extractor)s
 
@@ -384,11 +379,18 @@ class RegionExtractor(NiftiMapsMasker):
     %(dtype)s
 
     resampling_target : {"data", "mask", "maps", None}, default="data"
-        Gives which image gives the final shape/size. For example, if
-        `resampling_target` is "mask" then maps_img and images provided to
-        fit() are resampled to the shape and affine of mask_img. "None" means
-        no resampling: if shapes and affines do not match, a ValueError is
-        raised.
+        Defines which image gives the final shape/size.
+
+        - ``"data"`` means that the atlas is resampled
+          to the shape of the data if needed
+        - ``"mask"`` means that the ``maps_img`` and images provided
+          to ``fit()`` are
+          resampled to the shape and affine of ``mask_img``
+        - ``"maps"`` means the ``mask_img`` and images provided
+          to ``fit()`` are
+          resampled to the shape and affine of ``maps_img``
+        - ``None`` means no resampling: if shapes and affines do not match,
+          a :obj:`ValueError` is raised.
 
     %(keep_masked_maps)s
 
@@ -410,13 +412,12 @@ class RegionExtractor(NiftiMapsMasker):
         (ie at least two maps have a non-zero value for the same voxel).
 
     %(clean_args)s
-        .. versionadded:: 0.12.1dev
+
+        .. nilearn_versionadded:: 0.12.1
 
     Attributes
     ----------
     %(clean_args_)s
-
-    %(masker_kwargs_)s
 
     index_ : :class:`numpy.ndarray`
         Array of list of indices where each index value is assigned to
@@ -433,7 +434,7 @@ class RegionExtractor(NiftiMapsMasker):
         The number of overlapping maps in the mask.
         This is equivalent to the number of volumes in the mask image.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     regions_img_ : :class:`nibabel.nifti1.Nifti1Image`
         List of separated regions with each region lying on an
@@ -469,7 +470,7 @@ class RegionExtractor(NiftiMapsMasker):
         t_r=None,
         dtype=None,
         resampling_target="data",
-        keep_masked_maps=True,
+        keep_masked_maps=False,
         memory=None,
         memory_level=0,
         verbose=0,
@@ -508,9 +509,7 @@ class RegionExtractor(NiftiMapsMasker):
         self.extractor = extractor
         self.smoothing_fwhm = smoothing_fwhm
 
-    # TODO (nilearn >= 0.13.0)
     @fill_doc
-    @rename_parameters(replacement_params={"X": "imgs"}, end_version="0.13.0")
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
 
@@ -533,12 +532,11 @@ class RegionExtractor(NiftiMapsMasker):
             check_niimg(imgs)
 
         list_of_strategies = ["ratio_n_voxels", "img_value", "percentile"]
-        if self.thresholding_strategy not in list_of_strategies:
-            message = (
-                "'thresholding_strategy' should be "
-                f"either of these {list_of_strategies}"
-            )
-            raise ValueError(message)
+        check_parameter_in_allowed(
+            self.thresholding_strategy,
+            list_of_strategies,
+            "thresholding_strategy",
+        )
 
         if self.threshold is None or isinstance(self.threshold, str):
             raise ValueError(
@@ -561,7 +559,6 @@ class RegionExtractor(NiftiMapsMasker):
                     copy=True,
                     threshold=self.threshold,
                     two_sided=self.two_sided,
-                    copy_header=True,
                 )
 
         # connected component extraction
@@ -690,7 +687,7 @@ def connected_label_regions(
 
     new_labels_data = np.zeros(labels_data.shape, dtype=np.int32)
     current_max_label = 0
-    for label_id, name in zip(unique_labels, this_labels):
+    for label_id, name in zip(unique_labels, this_labels, strict=False):
         this_label_mask = labels_data == label_id
         # Extract regions assigned to each label id
         if connect_diag:

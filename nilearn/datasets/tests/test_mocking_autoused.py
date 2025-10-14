@@ -70,4 +70,3 @@ def check_doctest_fixture():
     >>> import requests
     >>> assert requests.get("https://example.com").is_mock
     """
-    pass

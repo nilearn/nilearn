@@ -104,7 +104,7 @@ env:
     BROWSER: /usr/bin/firefox
     DISPLAY: :99.0
     NILEARN_DATA: /home/runner/work/nilearn/nilearn/nilearn_data
-    MIN_PYTHON_VERSION: '3.9'
+    MIN_PYTHON_VERSION: '3.10'
     HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
 jobs:
@@ -129,8 +129,8 @@ jobs:
         -   name: Checkout nilearn
             uses: actions/checkout@v5
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v6
-        -   uses: actions/setup-python@v5
+            uses: astral-sh/setup-uv@v7
+        -   uses: actions/setup-python@v6
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
         -   name: Install tox
@@ -212,7 +212,7 @@ jobs:
 
         # Set up environment
         -   name: Setup python
-            uses: actions/setup-python@v5
+            uses: actions/setup-python@v6
             with:
                 python-version: ${{ env.MIN_PYTHON_VERSION }}
 
@@ -307,10 +307,10 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                py: [3.13]
+                py: ['3.13']
                 env: [doc_latest]
                 include:
-                -   py: 3.9
+                -   py: '3.10'
                     env: doc
 
         defaults:
@@ -352,10 +352,10 @@ jobs:
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v6
+            uses: astral-sh/setup-uv@v7
 
         -   name: Setup python
-            uses: actions/setup-python@v5
+            uses: actions/setup-python@v6
             with:
                 python-version: ${{ matrix.py }}
 

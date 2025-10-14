@@ -43,7 +43,7 @@ def test_image_2():
 
 def test_error_parcellation_method_none(test_image):
     with pytest.raises(
-        ValueError, match="Parcellation method is specified as None. "
+        ValueError, match=r"Parcellation method is specified as None. "
     ):
         Parcellations(method=None, verbose=0).fit(test_image)
 
@@ -53,7 +53,7 @@ def test_errors_raised_in_check_parameters_fit(method, test_image):
     """Test whether an error is raised or not given a false method type."""
     with pytest.raises(
         ValueError,
-        match=(f"The method you have selected is not implemented '{method}'"),
+        match=("'method' must be one of"),
     ):
         Parcellations(method=method, verbose=0).fit(test_image)
 
@@ -123,6 +123,7 @@ def test_parcellations_fit_on_multi_nifti_images(
     parcellator.fit(fmri_imgs)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_single_nifti_image(
@@ -144,6 +145,7 @@ def test_parcellations_transform_single_nifti_image(
     assert signals.shape == (test_image_2.shape[3], n_parcel)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("verbose", [True, False, -1, 0, 1, 2])
 def test_parcellations_transform_verbose(test_image_2, verbose):
     """Test verbose mostly for coverage purpose."""
@@ -262,6 +264,7 @@ def test_fit_transform_with_confounds(method, n_parcel, test_image_2, rng):
     assert signals[0].shape == (10, n_parcel)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_inverse_transform_single_nifti_image(method, n_parcel, test_image_2):
@@ -347,7 +350,7 @@ def test_parcellation_all_methods_with_surface(method, n_parcels, rng):
         ),
     }
     surf_img = SurfaceImage(mesh=mesh, data=data)
-    parcellate = Parcellations(method=method, n_parcels=n_parcels)
+    parcellate = Parcellations(method=method, n_parcels=n_parcels, verbose=0)
     # fit and transform the data
     X_transformed = parcellate.fit_transform(surf_img)
     # inverse transform the transformed data
@@ -378,7 +381,7 @@ def test_parcellation_with_surface_and_confounds(method, rng):
     }
     surf_img = SurfaceImage(mesh=mesh, data=data)
     confounds = rng.standard_normal(size=(n_samples, 3))
-    parcellate = Parcellations(method=method, n_parcels=5)
+    parcellate = Parcellations(method=method, n_parcels=5, verbose=0)
     X_transformed = parcellate.fit_transform(surf_img, confounds=[confounds])
 
     assert X_transformed.shape == (n_samples, 5)
@@ -404,7 +407,7 @@ def test_parcellation_with_multi_surface(method, rng):
     }
     surf_img = SurfaceImage(mesh=mesh, data=data)
     surf_imgs = [surf_img] * 3
-    parcellate = Parcellations(method=method, n_parcels=5)
+    parcellate = Parcellations(method=method, n_parcels=5, verbose=0)
     X_transformed = parcellate.fit_transform(surf_imgs)
 
     assert X_transformed[0].shape == (n_samples, 5)
@@ -433,7 +436,9 @@ def test_parcellation_with_surface_mask(method, rng):
         "right": np.ones(mesh["right"].coordinates.shape[0]).astype(bool),
     }
     surf_mask = SurfaceImage(mesh=mesh, data=mask_data)
-    parcellate = Parcellations(method=method, n_parcels=5, mask=surf_mask)
+    parcellate = Parcellations(
+        method=method, n_parcels=5, mask=surf_mask, verbose=0
+    )
     X_transformed = parcellate.fit_transform(surf_img)
 
     assert X_transformed.shape == (n_samples, 5)

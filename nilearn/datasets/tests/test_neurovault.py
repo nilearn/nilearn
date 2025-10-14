@@ -578,7 +578,9 @@ def test_neurosynth_words_vectorized(tmp_path):
     for i, file_name in enumerate(words_files):
         word_weights = np.zeros(n_im)
         word_weights[i] = 1
-        words_dict = {"data": {"values": dict(zip(words, word_weights))}}
+        words_dict = {
+            "data": {"values": dict(zip(words, word_weights, strict=False))}
+        }
         with file_name.open("wb") as words_file:
             words_file.write(json.dumps(words_dict).encode("utf-8"))
 
@@ -870,10 +872,7 @@ def test_fetch_neurovault_ids(tmp_path):
 
 def test_fetch_neurovault_ids_error():
     """Test fetch_neurovault_ids errors."""
-    with pytest.raises(
-        ValueError,
-        match="Supported download modes are: overwrite, download_new, offline",
-    ):
+    with pytest.raises(ValueError, match="'mode' must be one of"):
         fetch_neurovault_ids(mode="bad")
 
 
@@ -1143,11 +1142,11 @@ def test_timeout_error(capsys, request_mocker):
     assert len(data.images) == 0
 
     captured = capsys.readouterr()
-    match = re.search("Try increasing", captured.out)
+    match = re.search(r"Try increasing", captured.out)
     assert match is not None
 
 
 def test_fetch_neurovault_motor_task():
     """Test deprecation fetch_neurovault_motor_task."""
-    with pytest.warns(DeprecationWarning, match="will be removed"):
+    with pytest.warns(FutureWarning, match="will be removed"):
         neurovault.fetch_neurovault_motor_task(verbose=0)

@@ -15,7 +15,6 @@ classifiers = [
     "Operating System :: POSIX",
     "Operating System :: Unix",
     "Operating System :: MacOS",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -29,7 +28,7 @@ dependencies = [
     "pandas>=2.2.0",
     "requests>=2.25.0",
     "scikit-learn>=1.4.0",
-    "scipy>=1.8.0",
+    "scipy>=1.9.0",
     "packaging"
 ]
 description = "Statistical learning for neuroimaging in Python"
@@ -40,13 +39,11 @@ license-files = ["LICENSE"]
 maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
 name = "nilearn"
 readme = "README.rst"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
-dev = [
-    "nilearn[plotting,doc,style,test]"
-]
+dev = ["nilearn[plotting,doc,style,test]"]
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
@@ -64,20 +61,34 @@ doc = [
     "sphinxext-opengraph>=0.9.1",
     "sphinxcontrib-mermaid>=1.0.0"
 ]
+min = [
+    "joblib==1.2.0",
+    "nibabel==5.2.0",
+    "numpy==1.22.4",
+    "pandas==2.2.0",
+    "requests==2.25.0",
+    "scikit-learn==1.4.0",
+    "scipy==1.9.0"
+]
+min_plotting = [
+    "nilearn[min]",
+    "matplotlib==3.8.0",
+    "plotly==5.0.0",
+    "kaleido"
+]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
 # Necessary req to use nilearn's plotting module
 # Kaleido version is pinned for windows due to bug
 # See https://github.com/plotly/Kaleido/issues/134 for more detail
 plotting = [
-    "matplotlib>=3.3.0",
-    "plotly>=5.0.0,!=6.1.0",
+    "matplotlib>=3.8.0",
+    "plotly>=5.0.0,!=6.1.0 ; platform_system != 'Windows'",
     "kaleido ; platform_system != 'Windows'",
+    "plotly>=5.0.0,<6.1.0 ; platform_system == 'Windows'",
     "kaleido==0.1.0.post1 ; platform_system == 'Windows'"
 ]
-style = [
-    'tox'
-]
+style = ['tox']
 # For running unit and docstring tests
 test = [
     "coverage",
@@ -86,7 +97,7 @@ test = [
     "pytest-cov",
     "pytest-csv",
     "pytest-randomly",
-    "pytest-reporter-html1>=0.9.2",
+    "pytest-reporter-html1>=0.9.2,<0.9.4",
     "pytest-timeout",
     "pytest-xdist[psutil]"
 ]
@@ -120,11 +131,49 @@ max-line-length = 120
 version-file = "nilearn/_version.py"
 
 [tool.hatch.build.targets.wheel]
-exclude = ["nilearn/plotting/tests/baseline"]
+exclude = [
+    "nilearn/plotting/tests/baseline",
+    "nilearn/reporting/tests/baseline"
+]
 packages = ["nilearn"]
 
 [tool.hatch.version]
 source = "vcs"
+
+[tool.importlinter]
+root_package = "nilearn"
+
+[[tool.importlinter.contracts]]
+ignore_imports = [
+    "nilearn.*.tests.* -> nilearn._utils.estimator_checks",  # allowed in tests
+    "nilearn._utils.estimator_checks -> nilearn.glm.*",  # allowed in tests
+    "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
+    "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
+    "nilearn.reporting.tests.* -> nilearn.glm.**",  # allowed in tests
+    "nilearn.interfaces.bids.glm -> nilearn.glm",
+    "nilearn.plotting.matrix.* -> nilearn.glm.**",
+    "nilearn.reporting.glm_reporter -> nilearn.glm.thresholding"
+]
+# 1. glm, decoding, connectome, decomposition:
+# - cannot import from each other
+# - but can import from any lower layers
+# 2. mass_univariate:
+# - can import from any lower layers
+# 3. maskers, image, surface, plotting, masking, datasets, reporting:
+# - can import from each other
+# - can import from any lower layers
+# 4. signal:
+# - can import from any lower layers
+# TODO: not yet included are datasets, regions
+layers = [
+    "nilearn.glm | nilearn.decoding | nilearn.connectome | nilearn.decomposition",
+    "nilearn.mass_univariate",
+    "nilearn.maskers : nilearn.image : nilearn.surface : nilearn.plotting : nilearn.masking : nilearn.reporting : nilearn.datasets",
+    "nilearn.signal",
+    "nilearn.typing | nilearn.exceptions"
+]
+name = "main architecture"
+type = "layers"
 
 [tool.mypy]
 allow_redefinition = false
@@ -141,10 +190,7 @@ warn_unreachable = true
 
 [[tool.mypy.overrides]]
 ignore_errors = true
-module = [
-    "nilearn.externals.*",
-    "nilearn._version"
-]
+module = ["nilearn.externals.*", "nilearn._version"]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
@@ -177,9 +223,13 @@ minversion = "6.0"
 xfail_strict = true
 
 [tool.ruff]
-exclude = [
-    "nilearn/externals/*",
-    "nilearn/_version.py"
+extend-exclude = ["nilearn/externals/*", "doc/auto_examples/*", "nilearn/_version.py"]
+include = [
+    "pyproject.toml",
+    "nilearn/**/*.py",
+    "examples/**/*.py",
+    "maint_tools/**/*.py",
+    "doc/**/*.py"
 ]
 indent-width = 4
 line-length = 79
@@ -203,15 +253,11 @@ ignore = [
     "D301",
     "E741",
     "ERA001",
-    "FURB105",
-    "PD901",  # https://github.com/astral-sh/ruff/issues/7710
     "N803",
     "N806",
     "PERF203",
-    "PIE790",
     "PLR2004",
     "PTH207",
-    "UP038",  # https://github.com/astral-sh/ruff/issues/7871
     "RUF005",
     # Avoid linter rules conflicting with the formatter
     # https://docs.astral.sh/ruff/formatter/#conflicting-lint-rules
@@ -264,6 +310,7 @@ max-complexity = 23
 "__init__.py" = ["D104", "E402"]
 "nilearn/**/tests/test_*" = ["D100"]
 "nilearn/connectome/**/{tests}/*" = ["D103"]  # 35 errors to fix
+"nilearn/datasets/func.py" = ["PTH211"]  # 1 error
 "nilearn/datasets/tests/test_atlas.py" = ["D103"]
 "nilearn/datasets/tests/test_func.py" = ["D103"]
 "nilearn/datasets/tests/test_mocking_autoused.py" = ["D103"]
@@ -282,11 +329,22 @@ max-complexity = 23
 "nilearn/glm/tests/test_thresholding.py" = ["D103"]
 "nilearn/glm/tests/test_utils.py" = ["D103"]
 "nilearn/image/**/{tests}/*" = ["D103"]  # 75 errors to fix
-"nilearn/plotting/**/{tests}/*" = ["D103"]  # 123 errors to fix
+"nilearn/plotting/displays/tests/test_edge_detect.py" = ["D103"]
+"nilearn/plotting/image/tests/test_img_plotting.py" = ["D103"]
+"nilearn/plotting/matrix/tests/test_matrix_plotting.py" = ["D103"]
+"nilearn/plotting/matrix/tests/test_utils.py" = ["D103"]
+"nilearn/plotting/surface/tests/conftest.py" = ["D103"]
+"nilearn/plotting/surface/tests/test_html_surface.py" = ["D103"]
+"nilearn/plotting/surface/tests/test_surf_plotting.py" = ["D103"]
+"nilearn/plotting/surface/tests/test_utils.py" = ["D103"]
+"nilearn/plotting/tests/test_baseline_comparisons.py" = ["D103"]
+"nilearn/plotting/tests/test_cm.py" = ["D103"]
+"nilearn/plotting/tests/test_find_cuts.py" = ["D103"]
+"nilearn/plotting/tests/test_html_connectome.py" = ["D103"]
+"nilearn/plotting/tests/test_html_stat_map.py" = ["D103"]
+"nilearn/plotting/tests/test_img_comparisons.py" = ["D103"]
 "nilearn/regions/**/{tests}/*" = ["D103"]  # 64 errors to fix
-"nilearn/reporting/tests/test_glm_reporter.py" = ["D103"]
 "nilearn/reporting/tests/test_html_report.py" = ["D103"]
-"nilearn/reporting/tests/test_reporting.py" = ["D103"]
 "nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
 
 [tool.ruff.lint.pydocstyle]
@@ -300,4 +358,4 @@ max-branches = 22
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-returns
 max-returns = 8
 # https://docs.astral.sh/ruff/settings/#lint_pylint_max-statements
-max-statements = 93
+max-statements = 96
