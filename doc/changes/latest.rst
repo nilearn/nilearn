@@ -44,6 +44,8 @@ Enhancements
 
 - :bdg-success:`API` Add support for :class:`~surface.SurfaceImage` in :func:`~glm.cluster_level_inference` (:gh:`5733` by `Rémi Gau`_).
 
+- :bdg-success:`API` Add support for non-parametric cluster-level inference on :class:`~surface.SurfaceImage` in :func:`~glm.second_level.non_parametric_inference` (:gh:`5733` by `Rémi Gau`_).
+
 
 Changes
 -------
