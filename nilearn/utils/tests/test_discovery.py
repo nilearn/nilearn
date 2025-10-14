@@ -6,13 +6,13 @@ from nilearn.utils.discovery import all_estimators, all_functions
 @pytest.mark.parametrize(
     "type_filter, n_expected",
     [
-        (None, 31),
+        (None, 32),
         ("classifier", 3),
         ("regressor", 3),
         ("cluster", 2),
-        ("masker", 13),
-        ("multi_masker", 4),
-        ("transformer", 20),
+        ("masker", 14),
+        ("multi_masker", 5),
+        ("transformer", 21),
     ],
 )
 def test_all_estimators(
