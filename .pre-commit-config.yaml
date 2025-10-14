@@ -84,7 +84,7 @@ repos:
 
     # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter
-    rev: v2.5
+    rev: v2.5.2
     hooks:
     -   id: import-linter
         args: [--verbose]
