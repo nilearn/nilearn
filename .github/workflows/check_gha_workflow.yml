@@ -17,7 +17,6 @@
 name: Benchmark test suite
 
 on:
-    pull_request:
     schedule:
 
 # Uses the cron schedule for github actions
