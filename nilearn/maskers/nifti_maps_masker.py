@@ -493,12 +493,21 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             ):
                 mask_logger("resample_regions", verbose=self.verbose)
 
-                self.maps_img_ = self._cache(resample_img)(
-                    self.maps_img_,
-                    interpolation="linear",
-                    target_shape=ref_img.shape[:3],
-                    target_affine=ref_img.affine,
-                )
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        action="ignore",
+                        category=UserWarning,
+                        message=(
+                            "Resampling binary images "
+                            "with continuous or linear interpolation"
+                        ),
+                    )
+                    self.maps_img_ = self._cache(resample_img)(
+                        self.maps_img_,
+                        interpolation="linear",
+                        target_shape=ref_img.shape[:3],
+                        target_affine=ref_img.affine,
+                    )
             if self.mask_img_ is not None and not check_same_fov(
                 ref_img, self.mask_img_
             ):
@@ -648,12 +657,21 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     ),
                     stacklevel=find_stack_level(),
                 )
-                maps_img_ = self._cache(resample_img)(
-                    self.maps_img_,
-                    interpolation="linear",
-                    target_shape=ref_img.shape[:3],
-                    target_affine=ref_img.affine,
-                )
+                with warnings.catch_warnings():
+                    warnings.filterwarnings(
+                        action="ignore",
+                        category=UserWarning,
+                        message=(
+                            "Resampling binary images "
+                            "with continuous or linear interpolation"
+                        ),
+                    )
+                    maps_img_ = self._cache(resample_img)(
+                        self.maps_img_,
+                        interpolation="linear",
+                        target_shape=ref_img.shape[:3],
+                        target_affine=ref_img.affine,
+                    )
 
             if self.mask_img_ is not None and not check_same_fov(
                 ref_img,
