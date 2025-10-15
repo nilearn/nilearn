@@ -69,7 +69,7 @@ INCLUDE_FAILED_RUNS = True
 
 # Pages of runs to collect
 # 100 per page
-PAGES_TO_COLLECT = range(1, 30)
+PAGES_TO_COLLECT = range(1, 40)
 
 # If False, just plots the content of the TSV
 UPDATE_TSV = True
