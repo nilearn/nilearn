@@ -63,19 +63,30 @@ TOKEN_FILE = Path("/home/remi-gau/Documents/tokens/gh_user.txt")
 
 BRANCH = "main"
 
-# Set to True if yu want to also include the runs of a CI workflow
+# Set to True if you want to also include the runs of a CI workflow
 # that did not complete successfully.
 INCLUDE_FAILED_RUNS = True
 
 # Pages of runs to collect
 # 100 per page
-PAGES_TO_COLLECT = range(1, 30)
+PAGES_TO_COLLECT = range(1, 10)
 
 # If False, just plots the content of the TSV
 UPDATE_TSV = True
 
 # used by set_python_version to filter jobs by their python version
-EXPECTED_PYTHON_VERSIONS = ["3.10", "3.11", "3.12", "3.13", "3.13t"]
+EXPECTED_PYTHON_VERSIONS = [
+    "3.8",
+    "3.9",
+    "3.10",
+    "3.11",
+    "3.12",
+    "3.13",
+    "3.13t",
+]
+
+DO_TEST = True
+DO_DOC = True
 
 
 def main(args=sys.argv) -> None:
@@ -86,62 +97,68 @@ def main(args=sys.argv) -> None:
     TEST_WORKFLOW_ID = "71549417"
     output_file = Path(__file__).parent / "test_runs_timing.tsv"
 
-    _update_tsv(
-        args,
-        update=UPDATE_TSV,
-        output_file=output_file,
-        workflow_id=TEST_WORKFLOW_ID,
-    )
+    if DO_TEST:
+        _update_tsv(
+            args,
+            update=UPDATE_TSV,
+            output_file=output_file,
+            workflow_id=TEST_WORKFLOW_ID,
+        )
 
-    test_runs_timing = pd.read_csv(
-        output_file,
-        sep="\t",
-        parse_dates=["started_at", "completed_at"],
-    )
+        test_runs_timing = pd.read_csv(
+            output_file,
+            sep="\t",
+            parse_dates=["started_at", "completed_at"],
+        )
 
-    test_runs_timing["duration"] = (
-        test_runs_timing["completed_at"] - test_runs_timing["started_at"]
-    ) / pd.Timedelta(minutes=1)
-    test_runs_timing["python"] = test_runs_timing["name"].apply(
-        _set_python_version
-    )
-    test_runs_timing["OS"] = test_runs_timing["name"].apply(_set_os)
-    test_runs_timing["dependencies"] = test_runs_timing["name"].apply(
-        _set_dependencies
-    )
+        test_runs_timing["duration"] = (
+            test_runs_timing["completed_at"] - test_runs_timing["started_at"]
+        ) / pd.Timedelta(minutes=1)
+        test_runs_timing["python"] = test_runs_timing["name"].apply(
+            _set_python_version
+        )
+        test_runs_timing["OS"] = test_runs_timing["name"].apply(_set_os)
+        test_runs_timing["dependencies"] = test_runs_timing["name"].apply(
+            _set_dependencies
+        )
 
-    print(test_runs_timing)
+        print(test_runs_timing)
 
-    _plot_test_job_durations(test_runs_timing, output_file)
+        _plot_test_job_durations(test_runs_timing, output_file)
 
     # %%
     DOC_WORKFLOW_ID = "37349438"
     output_file = Path(__file__).parent / "doc_runs_timing.tsv"
 
-    _update_tsv(
-        args,
-        update=UPDATE_TSV,
-        output_file=output_file,
-        workflow_id=DOC_WORKFLOW_ID,
-        event_type="push",
-    )
+    if DO_DOC:
+        _update_tsv(
+            args,
+            update=UPDATE_TSV,
+            output_file=output_file,
+            workflow_id=DOC_WORKFLOW_ID,
+            event_type="push",
+        )
 
-    doc_runs_timing = pd.read_csv(
-        output_file,
-        sep="\t",
-        parse_dates=["started_at", "completed_at"],
-    )
+        doc_runs_timing = pd.read_csv(
+            output_file,
+            sep="\t",
+            parse_dates=["started_at", "completed_at"],
+        )
 
-    doc_runs_timing["duration"] = (
-        doc_runs_timing["completed_at"] - doc_runs_timing["started_at"]
-    ) / pd.Timedelta(minutes=1)
+        doc_runs_timing["duration"] = (
+            doc_runs_timing["completed_at"] - doc_runs_timing["started_at"]
+        ) / pd.Timedelta(minutes=1)
 
-    doc_runs_timing = doc_runs_timing[doc_runs_timing["name"] == "build_docs"]
-    doc_runs_timing = doc_runs_timing[doc_runs_timing["duration"] < 360]
+        doc_runs_timing = doc_runs_timing[
+            doc_runs_timing["name"].str.contains(
+                r"build_docs \(3.*, doc\)", regex=True
+            )
+        ]
+        doc_runs_timing = doc_runs_timing[doc_runs_timing["duration"] < 360]
 
-    print(doc_runs_timing)
+        print(doc_runs_timing)
 
-    _plot_doc_job_durations(doc_runs_timing, output_file)
+        _plot_doc_job_durations(doc_runs_timing, output_file)
 
 
 def _update_tsv(
@@ -272,7 +289,14 @@ def _set_dependencies(x: str) -> str:
     return next(
         (
             dependencies
-            for dependencies in ["pre-release", "no plotting", "no plotly"]
+            for dependencies in [
+                "pre-release",
+                "no plotting",
+                "no plotly",
+                "min",
+                "plot_min",
+                "pytest_mpl",
+            ]
             if dependencies in x
         ),
         "latest" if "latest dependencies" in x else "n/a",
