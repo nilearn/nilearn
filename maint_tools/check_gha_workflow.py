@@ -150,9 +150,7 @@ def main(args=sys.argv) -> None:
         ) / pd.Timedelta(minutes=1)
 
         doc_runs_timing = doc_runs_timing[
-            doc_runs_timing["name"].str.contains(
-                r"build_docs \(3.*, doc\)", regex=True
-            )
+            doc_runs_timing["name"].str.contains(r"build_docs", regex=True)
         ]
         doc_runs_timing = doc_runs_timing[doc_runs_timing["duration"] < 360]
 
