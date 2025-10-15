@@ -121,6 +121,8 @@ def main(args=sys.argv) -> None:
         test_runs_timing["dependencies"] = test_runs_timing["name"].apply(
             _set_dependencies
         )
+        test_runs_timing = test_runs_timing[test_runs_timing["duration"] < 360]
+        test_runs_timing = test_runs_timing[test_runs_timing["duration"] > 5]
 
         print(test_runs_timing)
 
@@ -153,6 +155,7 @@ def main(args=sys.argv) -> None:
             doc_runs_timing["name"].str.contains(r"build_docs", regex=True)
         ]
         doc_runs_timing = doc_runs_timing[doc_runs_timing["duration"] < 360]
+        doc_runs_timing = doc_runs_timing[doc_runs_timing["duration"] > 20]
 
         print(doc_runs_timing)
 
@@ -216,6 +219,12 @@ def _plot_test_job_durations(df: pd.DataFrame, output_file: Path) -> None:
     )
 
     fig.update_xaxes(dtick="M1", tickformat="%b\n%Y")
+    # Format hover label to show full date (day precision)
+    fig.update_traces(
+        hovertemplate=(
+            "Run started on %{x|%Y-%m-%d}<br>Duration: %{y:.2f} minutes"
+        )
+    )
     fig.update_layout(autosize=True, width=1000, height=700)
 
     fig.write_image(output_file.with_suffix(".png"), engine="kaleido")
@@ -232,6 +241,12 @@ def _plot_doc_job_durations(df: pd.DataFrame, output_file: Path) -> None:
     )
 
     fig.update_xaxes(dtick="M1", tickformat="%b\n%Y")
+    # Format hover label to show full date (day precision)
+    fig.update_traces(
+        hovertemplate=(
+            "Run started on %{x|%Y-%m-%d}<br>Duration: %{y:.2f} minutes"
+        )
+    )
     fig.update_layout(autosize=True, width=1000, height=700)
 
     fig.write_image(output_file.with_suffix(".png"), engine="kaleido")
