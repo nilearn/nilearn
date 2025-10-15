@@ -1,8 +1,6 @@
 import numpy as np
 import pytest
-from sklearn.model_selection import (
-    KFold,
-)
+from sklearn.model_selection import KFold
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
