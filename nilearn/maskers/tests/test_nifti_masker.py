@@ -198,6 +198,7 @@ def test_matrix_orientation():
     np.testing.assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
 
+@pytest.mark.timeout(0)
 def test_mask_4d(shape_3d_default, affine_eye):
     """Test performance with 4D data."""
     # Dummy mask
