@@ -83,7 +83,7 @@ def test_group_sparse_covariance(rng):
         signals, alpha, max_iter=20, tol=1e-2, debug=True, verbose=1
     )
     _, omega2 = group_sparse_covariance(
-        signals, alpha, max_iter=20, tol=1e-2, debug=True, verbose=0
+        signals, alpha, max_iter=20, tol=1e-2, debug=True
     )
 
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
@@ -139,7 +139,7 @@ def test_group_sparse_covariance_with_probe_function(rng, duality_gap):
     # Use a probe to test for number of iterations and decreasing objective.
     probe = Probe()
     _, omega = group_sparse_covariance(
-        signals, alpha, max_iter=4, tol=None, verbose=0, probe_function=probe
+        signals, alpha, max_iter=4, tol=None, probe_function=probe
     )
     objective = probe.objective
     # check number of iterations
@@ -162,14 +162,10 @@ def test_group_sparse_covariance_check_consistency_between_classes(rng):
     )
 
     # Check consistency between classes
-    gsc1 = GroupSparseCovarianceCV(
-        tol=1e-1, max_iter=20, verbose=0, early_stopping=True
-    )
+    gsc1 = GroupSparseCovarianceCV(tol=1e-1, max_iter=20, early_stopping=True)
     gsc1.fit(signals)
 
-    gsc2 = GroupSparseCovariance(
-        alpha=gsc1.alpha_, tol=1e-1, max_iter=20, verbose=0
-    )
+    gsc2 = GroupSparseCovariance(alpha=gsc1.alpha_, tol=1e-1, max_iter=20)
     gsc2.fit(signals)
 
     np.testing.assert_almost_equal(
@@ -219,7 +215,7 @@ def test_group_sparse_covariance_cross_validation(
     )
 
     gsc = GroupSparseCovarianceCV(
-        alphas=alphas, n_refinements=n_refinements, verbose=0, cv=cv
+        alphas=alphas, n_refinements=n_refinements, cv=cv
     )
     gsc.fit(signals)
 
