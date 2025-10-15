@@ -20,6 +20,7 @@ from numpy.testing import (
 
 from nilearn._utils import testing
 from nilearn._utils.niimg import is_binary_niimg
+from nilearn.conftest import _affine_eye
 from nilearn.exceptions import DimensionError
 from nilearn.image import get_data
 from nilearn.image.image import crop_img
@@ -77,23 +78,49 @@ def test_identity_resample(data, force_resample, shape, affine_eye):
 
     assert_almost_equal(data, get_data(rot_img))
 
-    # Test with a 3x3 affine
+
+@pytest.mark.parametrize(
+    "target_affine",
+    [
+        _affine_eye()[:3, :3],  # with a 3x3 affine
+        _affine_eye().tolist(),
+        _affine_eye()[:3, :3].tolist(),
+        tuple(_affine_eye().tolist()),
+        tuple(_affine_eye()[:3, :3].tolist()),
+    ],
+)
+@pytest.mark.parametrize("force_resample", [False, True])
+def test_identity_resample_array_like(
+    data, force_resample, affine_eye, target_affine
+):
+    """Test target_affine as non array."""
     rot_img = resample_img(
         Nifti1Image(data, affine_eye),
-        target_affine=affine_eye[:3, :3],
+        target_affine=target_affine,
         interpolation="nearest",
         force_resample=force_resample,
     )
 
     assert_almost_equal(data, get_data(rot_img))
 
-    # Smoke-test with a list affine
-    rot_img = resample_img(
-        Nifti1Image(data, affine_eye),
-        target_affine=affine_eye.tolist(),
-        interpolation="nearest",
-        force_resample=force_resample,
-    )
+
+@pytest.mark.parametrize(
+    "target_affine",
+    [
+        [1, 2, 3],
+        [[1, 2, 3]],
+        _affine_eye().ravel(),
+        _affine_eye()[:3, :3].ravel(),
+    ],
+)
+def test_target_affine_error(data, target_affine, affine_eye):
+    """Check errors when passing affine as array-like with wrong dimensions."""
+    with pytest.raises(np.linalg.LinAlgError):
+        resample_img(
+            Nifti1Image(data, affine_eye),
+            target_affine=target_affine,
+            interpolation="nearest",
+        )
 
 
 @pytest.mark.parametrize("force_resample", [False, True])
