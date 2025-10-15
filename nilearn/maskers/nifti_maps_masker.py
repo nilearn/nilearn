@@ -494,6 +494,10 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 mask_logger("resample_regions", verbose=self.verbose)
 
                 with warnings.catch_warnings():
+                    # in case all voxel maps contains same value,
+                    # it will be seen as a binary image
+                    # silence warnings for this
+                    # as user cannot change the interpolation type
                     warnings.filterwarnings(
                         action="ignore",
                         category=UserWarning,
@@ -658,6 +662,10 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     stacklevel=find_stack_level(),
                 )
                 with warnings.catch_warnings():
+                    # in case all voxel maps contains same value,
+                    # it will be seen as a binary image
+                    # silence warnings for this
+                    # as user cannot change the interpolation type
                     warnings.filterwarnings(
                         action="ignore",
                         category=UserWarning,
