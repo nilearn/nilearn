@@ -641,16 +641,21 @@ def test_high_level_non_parametric_inference_with_paths_warning(n_subjects):
         )
 
 
-@pytest.fixture
-def confounds():
+def _confounds():
     return pd.DataFrame(
         [["01", 1], ["02", 2], ["03", 3]],
         columns=["subject_label", "conf1"],
     )
 
 
-def test_fmri_inputs(rng, confounds, shape_3d_default, shape_4d_default):
-    """Test processing of FMRI inputs."""
+@pytest.fixture
+def confounds():
+    return _confounds()
+
+
+@pytest.mark.parametrize("confounds", [None, _confounds()])
+def test_fmri_inputs_flms(rng, confounds, shape_4d_default):
+    """Test second level model with first level model as inputs."""
     # prepare fake data
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         [shape_4d_default], rk=1
@@ -664,33 +669,44 @@ def test_fmri_inputs(rng, confounds, shape_3d_default, shape_4d_default):
     # prepare correct input dataframe and lists
     p, q = 80, 10
     X = rng.standard_normal(size=(p, q))
-    sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+    design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
     # smoke tests with correct input
     flms = [flm, flm, flm]
 
-    shape_3d = [(*shape_3d_default, 1)]
-    _, fmri_data, _ = generate_fake_fmri_data_and_design(shape_3d)
-    fmri_data = fmri_data[0]
-    niimgs = [fmri_data, fmri_data, fmri_data]
-    niimg_4d = concat_imgs(niimgs)
-
     # First level models as input
     SecondLevelModel(mask_img=mask).fit(flms)
     SecondLevelModel().fit(flms)
+
     # Note : the following one creates a singular design matrix
     SecondLevelModel().fit(flms, confounds)
-    SecondLevelModel().fit(flms, None, sdes)
+    SecondLevelModel().fit(flms, confounds, design_matrix)
+
+
+@pytest.mark.parametrize("confounds", [None, _confounds()])
+def test_fmri_inputs_images(rng, shape_3d_default, confounds):
+    """Test second level model with image as inputs."""
+    # prepare correct input dataframe and lists
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+    design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+
+    shape_3d = [(*shape_3d_default, 1)]
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(shape_3d)
+    fmri_data = fmri_data[0]
 
     # niimgs as input
-    SecondLevelModel().fit(niimgs, None, sdes)
+    niimgs = [fmri_data, fmri_data, fmri_data]
+    SecondLevelModel().fit(niimgs, confounds, design_matrix)
 
     # 4d niimg as input
-    SecondLevelModel().fit(niimg_4d, None, sdes)
+    niimg_4d = concat_imgs(niimgs)
+    SecondLevelModel().fit(niimg_4d, confounds, design_matrix)
 
 
+@pytest.mark.parametrize("confounds", [None, _confounds()])
 def test_fmri_inputs_dataframes_as_input(tmp_path, rng, confounds):
-    # Test processing of FMRI inputs
+    """Test second level model with dataframe as inputs."""
     # prepare fake data
     p, q = 80, 10
     X = rng.standard_normal(size=(p, q))
@@ -701,7 +717,7 @@ def test_fmri_inputs_dataframes_as_input(tmp_path, rng, confounds):
     )
     fmri_files = fmri_files[0]
 
-    sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+    design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
 
     # dataframes as input
     dfcols = ["subject_label", "map_name", "effects_map_path"]
@@ -712,10 +728,8 @@ def test_fmri_inputs_dataframes_as_input(tmp_path, rng, confounds):
     ]
     niidf = pd.DataFrame(dfrows, columns=dfcols)
 
-    SecondLevelModel().fit(niidf)
     SecondLevelModel().fit(niidf, confounds)
-    SecondLevelModel().fit(niidf, confounds, sdes)
-    SecondLevelModel().fit(niidf, None, sdes)
+    SecondLevelModel().fit(niidf, confounds, design_matrix)
 
 
 def test_fmri_pandas_series_as_input(tmp_path, rng):
@@ -729,12 +743,12 @@ def test_fmri_pandas_series_as_input(tmp_path, rng):
     fmri_files = fmri_files[0]
 
     # dataframes as input
-    sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+    design_matrix = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
     niidf = pd.DataFrame({"filepaths": [fmri_files, fmri_files, fmri_files]})
     SecondLevelModel().fit(
         second_level_input=niidf["filepaths"],
         confounds=None,
-        design_matrix=sdes,
+        design_matrix=design_matrix,
     )
 
 
@@ -1279,6 +1293,7 @@ def test_second_level_f_contrast_length_errors(n_subjects):
         model.compute_contrast(second_level_contrast=np.eye(2))
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("second_level_contrast", [None, "intercept", [1]])
 def test_non_parametric_inference_contrast_computation(
     second_level_contrast, n_subjects
