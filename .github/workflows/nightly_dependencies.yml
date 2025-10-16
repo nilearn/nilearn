@@ -90,7 +90,7 @@ jobs:
             id: nightly
             continue-on-error: true
             run: |
-                tox run --list-dependencies -e nightly -- nilearn
+                tox run --list-dependencies -e nightly -- nilearn tests
                 tox run -e plot_test_timing
 
         -   name: Upload test report

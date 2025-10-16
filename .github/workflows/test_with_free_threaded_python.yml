@@ -48,7 +48,7 @@ jobs:
             run: tox c
         -   name: Run test suite
             run: |
-                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
+                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn tests
                 tox run -e plot_test_timing
         -   name: Upload test report
             if: success() || failure()
