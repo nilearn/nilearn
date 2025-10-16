@@ -11,6 +11,7 @@ from nilearn.image import get_data
 from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
+    DEFAULT_TICK_FORMAT,
     check_threshold_not_negative,
 )
 from nilearn.plotting.surface._utils import (
@@ -626,7 +627,7 @@ def plot_img_on_surf(
     vmin=None,
     vmax=None,
     symmetric_cbar="auto",
-    cbar_tick_format="%i",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     title=None,
     output_file=None,
     **kwargs,
