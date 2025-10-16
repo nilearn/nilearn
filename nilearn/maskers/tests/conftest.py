@@ -4,6 +4,9 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
+from nilearn.conftest import _make_mesh
+from nilearn.surface import SurfaceImage
+
 
 @pytest.fixture
 def data_1(shape_3d_default):
@@ -23,3 +26,14 @@ def mask_img_1(data_1, affine_eye):
 def shape_mask():
     """Shape for masks."""
     return (13, 14, 15)
+
+
+def sklearn_surf_label_img() -> SurfaceImage:
+    """Create a sample surface label image using the sample mesh,
+    just to use for scikit-learn checks.
+    """
+    labels = {
+        "left": np.asarray([1, 1, 2, 2]),
+        "right": np.asarray([1, 1, 2, 2, 2]),
+    }
+    return SurfaceImage(_make_mesh(), labels)
