@@ -6,6 +6,8 @@ rather than the underlying functions (clean(), img_to_signals_labels(), etc.).
 See test_masking.py and test_signal.py for details.
 """
 
+import warnings
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -96,7 +98,12 @@ def test_nifti_maps_masker_data_atlas_different_shape(
 
     masker = NiftiMapsMasker(img_maps, mask_img=mask21_img)
 
-    masker.fit(fmri22_img)
+    with warnings.catch_warnings(record=True) as warning_list:
+        masker.fit(fmri22_img)
+        assert not any(
+            "consider using nearest interpolation instead" in x.message
+            for x in warning_list
+        )
 
     assert_array_equal(masker.maps_img_.affine, affine2)
 
@@ -277,7 +284,12 @@ def test_nifti_maps_masker_resampling_to_mask(
         keep_masked_maps=True,
     )
 
-    signals = masker.fit_transform(img_fmri)
+    with warnings.catch_warnings(record=True) as warning_list:
+        signals = masker.fit_transform(img_fmri)
+        assert not any(
+            "consider using nearest interpolation instead" in x.message
+            for x in warning_list
+        )
 
     assert_almost_equal(masker.mask_img_.affine, mask22_img.affine)
     assert masker.mask_img_.shape == mask22_img.shape

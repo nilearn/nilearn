@@ -83,17 +83,18 @@ jobs:
                     py: '3.10'
                     os: macos-latest
                     env: min
-                -   description: oldest dependencies - no plotly
+                -   description: oldest dependencies - with plotting
                     py: '3.10'
                     os: macos-latest
                     env: plot_min
                 # plotly images saved on different OS can generate slightly
                 # different baseline images. As baseline images are generated
                 # on a linux machine, ubuntu-latest is used
-                -   description: oldest dependencies - with plotly
+                -   description: check generated figures
                     py: '3.10'
                     os: ubuntu-latest
-                    env: plot_full_min
+                    env: pytest_mpl
+
 
         steps:
 
