@@ -15,7 +15,8 @@ HIGHLIGHTS
  |
  | **Minimum supported versions of the following packages have been bumped up:**
  | - matplotlib -- 3.8.0
- | - SciPy -- v1.9.0
+ | - scipy -- 1.9.0
+ | - requests -- 2.30.0
 
 NEW
 ---
@@ -30,6 +31,8 @@ Enhancements
 
 - :bdg-dark:`Code` Add tedana support for load_confounds and testing for tedana load_confounds support (:gh:`5410` by `Milton Camacho`_).
 
+- :bdg-success:`API` Add an ``exclude_subjects`` parameter to :func:`~glm.first_level.first_level_from_bids` to skip some subjects when creating GLM models from a BIDS dataset (:gh:`XXXX` by `Rémi Gau`_).
+
 - :bdg-success:`API` Add ``view`` parameter to :func:`~plotting.view_img_on_surf` to select the default view that will be used when displaying the figure  (:gh:`5692` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add anterior and posterior views to :class:`~maskers.SurfaceLabelsMasker`, :class:`~maskers.SurfaceMapsMasker` and :class:`~maskers.SurfaceMasker` (:gh:`5473` by `Chloe Hampson`_).
@@ -38,7 +41,9 @@ Enhancements
 
 - :bdg-success:`API` Add support for Scikit-Learn ``set_output()`` in several Nilearn feature extractors (nifti and surface non-multi maskers, and :class:`~regions.HierarchicalKMeans`) to allow ``transform()`` to output to either Pandas or Polars dataframe and not just numpy arrays (:gh:`5508` by `Rémi Gau`_).
 
-- :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker` (:gh:`5679` by `Rémi Gau`_).
+- :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker`, a :class:`~maskers.MultiSurfaceLabelsMasker` (:gh:`5679`, :gh:`5726` by `Rémi Gau`_).
+
+- :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker`, a :class:`~maskers.MultiSurfaceMapsMasker` (:gh:`5679`, :gh:`5727` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add support for ``cluster_threshold`` for :func:`~image.threshold_img`, :func:`~glm.threshold_stats_img`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report` and :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5715` by `Rémi Gau`_).
 

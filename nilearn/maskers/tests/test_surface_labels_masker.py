@@ -10,23 +10,11 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.conftest import _make_mesh
 from nilearn.maskers import SurfaceLabelsMasker
+from nilearn.maskers.tests.conftest import sklearn_surf_label_img
 from nilearn.surface import SurfaceImage
 
-
-def _sklearn_surf_label_img():
-    """Create a sample surface label image using the sample mesh,
-    just to use for scikit-learn checks.
-    """
-    labels = {
-        "left": np.asarray([1, 1, 2, 2]),
-        "right": np.asarray([1, 1, 2, 2, 2]),
-    }
-    return SurfaceImage(_make_mesh(), labels)
-
-
-ESTIMATORS_TO_CHECK = [SurfaceLabelsMasker(_sklearn_surf_label_img())]
+ESTIMATORS_TO_CHECK = [SurfaceLabelsMasker(sklearn_surf_label_img())]
 
 if SKLEARN_LT_1_6:
 
