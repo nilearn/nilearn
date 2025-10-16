@@ -15,7 +15,8 @@ HIGHLIGHTS
  |
  | **Minimum supported versions of the following packages have been bumped up:**
  | - matplotlib -- 3.8.0
- | - SciPy -- v1.9.0
+ | - scipy -- 1.9.0
+ | - requests -- 2.30.0
 
 NEW
 ---
