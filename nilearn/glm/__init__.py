@@ -18,6 +18,7 @@ from nilearn.glm.regression import (
     RegressionResults,
     SimpleRegressionResults,
 )
+from nilearn.glm.save_glm import save_glm_to_bids
 from nilearn.glm.thresholding import (
     cluster_level_inference,
     fdr_threshold,
@@ -39,6 +40,7 @@ __all__ = [
     "expression_to_contrast_vector",
     "fdr_threshold",
     "first_level",
+    "save_glm_to_bids",
     "second_level",
     "threshold_stats_img",
 ]

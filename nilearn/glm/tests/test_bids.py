@@ -13,12 +13,12 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
 )
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn.glm import save_glm_to_bids
 from nilearn.glm.first_level import FirstLevelModel, first_level_from_bids
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.interfaces.bids import (
     get_bids_files,
     parse_bids_filename,
-    save_glm_to_bids,
 )
 from nilearn.interfaces.bids.query import (
     _get_metadata_from_bids,
