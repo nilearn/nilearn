@@ -219,6 +219,7 @@ def test_process_second_level_input_as_firstlevelmodels(
     assert sample_map.shape == shape_4d_default[:3]
 
 
+@pytest.mark.timeout(0)
 def test_check_affine_first_level_models(
     affine_eye, shape_4d_default, n_subjects
 ):
@@ -817,32 +818,31 @@ def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
         )
 
 
-def test_secondlevelmodel_design_matrix_path(img_3d_mni, tmp_path):
-    second_level_input = [img_3d_mni, img_3d_mni, img_3d_mni]
-    des = pd.DataFrame(np.ones((len(second_level_input), 1)), columns=["a"])
-
-    SecondLevelModel().fit(
-        second_level_input=second_level_input, design_matrix=des
+@pytest.mark.parametrize(
+    "filename, sep", [("design.csv", ","), ("design.tsv", "\t"), ()]
+)
+def test_secondlevelmodel_design_matrix_path(
+    img_3d_mni, tmp_path, filename, sep
+):
+    second_level_input = [img_3d_mni, img_3d_mni]
+    design_matrix = pd.DataFrame(
+        np.ones((len(second_level_input), 1)), columns=["a"]
     )
 
-    des_fname = tmp_path / "design.csv"
-    des.to_csv(des_fname)
-
     SecondLevelModel().fit(
-        second_level_input=second_level_input, design_matrix=des_fname
-    )
-    SecondLevelModel().fit(
-        second_level_input=second_level_input, design_matrix=str(des_fname)
+        second_level_input=second_level_input, design_matrix=design_matrix
     )
 
-    des_fname = tmp_path / "design.tsv"
-    des.to_csv(des_fname, sep="\t")
+    design_matrix_fname = tmp_path / filename
+    design_matrix.to_csv(design_matrix_fname, sep=sep)
 
     SecondLevelModel().fit(
-        second_level_input=second_level_input, design_matrix=des_fname
+        second_level_input=second_level_input,
+        design_matrix=design_matrix_fname,
     )
     SecondLevelModel().fit(
-        second_level_input=second_level_input, design_matrix=str(des_fname)
+        second_level_input=second_level_input,
+        design_matrix=str(design_matrix_fname),
     )
 
 
@@ -961,10 +961,10 @@ def test_second_level_glm_computation(n_subjects):
 def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
     """Tests that an error is raised when trying to access \
        voxelwise attributes before fitting the model, \
-       before computing a contrast, \
-       and when not setting ``minimize_memory`` to ``True``.
+       before computing a contrast.
     """
     mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
+
     model = SecondLevelModel(mask_img=mask, minimize_memory=False)
 
     Y = fmri_data * n_subjects
@@ -976,8 +976,23 @@ def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
     with pytest.raises(ValueError, match="attribute must be one of"):
         model._get_element_wise_model_attribute("foo", True)
 
+
+@pytest.mark.parametrize("attribute", ["residuals", "predicted", "r_square"])
+def test_second_level_voxelwise_attribute_errors_minimize_memory(
+    attribute, n_subjects
+):
+    """Tests that an error is raised when trying to access \
+       voxelwise attributes before fitting the model, \
+       when not setting ``minimize_memory`` to ``True``.
+    """
+    mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
+
     model = SecondLevelModel(mask_img=mask, minimize_memory=True)
+
+    Y = fmri_data * n_subjects
+    X = pd.DataFrame([[1]] * n_subjects, columns=["intercept"])
     model.fit(Y, design_matrix=X)
+
     model.compute_contrast()
 
     with pytest.raises(ValueError, match="To access voxelwise attributes"):
