@@ -8,10 +8,10 @@
 .. No relevant user manual section yet.
 
 
-:mod:`nilearn.utils.discovery`
-------------------------------
+:mod:`nilearn.utils`
+--------------------
 
-.. currentmodule:: nilearn.utils.discovery
+.. currentmodule:: nilearn.utils
 
 .. autosummary::
    :toctree: generated/
