@@ -14,6 +14,11 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn.glm.thresholding import threshold_stats_img
+from nilearn.reporting.get_clusters_table import (
+    clustering_params_to_dataframe,
+    get_clusters_table,
+)
 from nilearn.surface import SurfaceImage
 
 
@@ -195,25 +200,6 @@ def save_glm_to_bids(
     - Contrast weights figure (``contrast-[name]_design.svg``)
 
     """
-    # Import here to avoid circular imports
-    from nilearn.glm import threshold_stats_img
-    from nilearn.reporting.get_clusters_table import (
-        clustering_params_to_dataframe,
-        get_clusters_table,
-    )
-
-    if is_matplotlib_installed():
-        from nilearn._utils.plotting import (
-            generate_contrast_matrices_figures,
-            generate_design_matrices_figures,
-        )
-    else:
-        warnings.warn(
-            ("No plotting backend detected. Output will be missing figures."),
-            UserWarning,
-            stacklevel=find_stack_level(),
-        )
-
     # grab the default from generate_report()
     # fail early if invalid parameters to pass to generate_report()
     tmp = dict(**inspect.signature(model.generate_report).parameters)
@@ -254,7 +240,18 @@ def save_glm_to_bids(
 
     verbose = model.verbose
 
-    if is_matplotlib_installed():
+    if not is_matplotlib_installed():
+        warnings.warn(
+            ("No plotting backend detected. Output will be missing figures."),
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
+    else:
+        from nilearn._utils.plotting import (
+            generate_contrast_matrices_figures,
+            generate_design_matrices_figures,
+        )
+
         logger.log("Generating design matrices figures...", verbose=verbose)
         # TODO: Assuming that cases of multiple design matrices correspond to
         # different runs. Not sure if this is correct. Need to check.
