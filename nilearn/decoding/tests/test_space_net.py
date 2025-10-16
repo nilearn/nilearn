@@ -4,23 +4,13 @@ from functools import partial
 
 import numpy as np
 import pytest
-from numpy.testing import (
-    assert_almost_equal,
-    assert_array_equal,
-)
+from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy import linalg
 from sklearn.datasets import load_iris
-from sklearn.linear_model import (
-    Lasso,
-    LogisticRegression,
-)
+from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.linear_model._coordinate_descent import _alpha_grid
-from sklearn.metrics import (
-    accuracy_score,
-)
-from sklearn.model_selection import (
-    KFold,
-)
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import KFold
 from sklearn.utils.estimator_checks import (
     ignore_warnings,
     parametrize_with_checks,
