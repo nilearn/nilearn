@@ -13,13 +13,13 @@ with contextlib.suppress(ImportError):
 @pytest.mark.parametrize(
     "type_filter, n_expected",
     [
-        (None, 32),
+        (None, 33),
         ("classifier", 3),
         ("regressor", 3),
         ("cluster", 2),
-        ("masker", 14),
-        ("multi_masker", 5),
-        ("transformer", 21),
+        ("masker", 15),
+        ("multi_masker", 6),
+        ("transformer", 22),
     ],
 )
 def test_all_estimators(
