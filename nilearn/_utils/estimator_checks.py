@@ -2944,12 +2944,12 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
             - 1D surface image -> 1D array
             - 2D surface image -> 2D array
             - list of 1D surface images -> 2D array
-            - list of 2D surface images -> ERROR (TODO)
+            - list of 2D surface images -> ERROR
         - multimasker
             - 1D surface image -> 1D array
             - 2D surface image -> 2D array
             - list of 1D surface images -> list of 1D array
-            - list of 2D surface images -> list of 2D array (TODO)
+            - list of 2D surface images -> list of 2D array
 
     - inverse_transform
         - masker
