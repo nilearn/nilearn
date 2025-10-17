@@ -1295,3 +1295,18 @@ def test_find_surface_clusters_4_faces(mask, expected_n_clusters, surf_mesh):
 def test_find_surface_clusters_5_faces(mask, expected_n_clusters, surf_mesh):
     clusters, _ = find_surface_clusters(surf_mesh.parts["right"], mask)
     assert len(clusters) == expected_n_clusters
+
+
+def test_3d_surface_image_not_implemented(surf_mesh):
+    """Raise error when trying to create an image with 3D.
+
+    For example to represent surface with several 'layers'
+    in the cortical sheet.
+    """
+    with pytest.raises(
+        NotImplementedError, match="more than 2D are not supported"
+    ):
+        SurfaceImage(
+            mesh=surf_mesh,
+            data={"left": np.ones((4, 3, 2)), "right": np.ones((5, 3, 2))},
+        )

@@ -26,6 +26,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
 )
 from nilearn._utils.path_finding import resolve_globbing
+from nilearn.exceptions import DimensionError
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -1388,6 +1389,11 @@ class PolyData:
                 "You can fix this by passing a 'dtype' at instantiation."
             )
 
+        if any(part.ndim > 2 for part in parts.values()):
+            raise NotImplementedError(
+                "Data with more than 2D are not supported."
+            )
+
     @property
     def shape(self):
         """Shape of the data."""
@@ -1419,19 +1425,17 @@ class PolyData:
         vmax = max(x.max() for x in self.parts.values())
         return vmin, vmax
 
-    def _check_n_samples(self, samples: int, var_name="img"):
-        max_n_samples = []
-        for hemi in self.parts.values():
-            if hemi.ndim > 1:
-                max_n_samples.append(hemi.shape[1])
-            else:
-                max_n_samples.append(1)
-        max_n_samples = np.max(max_n_samples)
+    def _check_n_samples(self, samples: int):
+        # ensure both parts have same number of samples
+        self._check_parts()
+
+        hemi = self.parts["right"]
+        max_n_samples = 1
+        if hemi.ndim > 1:
+            max_n_samples = hemi.shape[1]
+
         if max_n_samples > samples:
-            raise ValueError(
-                f"Data for each part of {var_name} should be {samples}D. "
-                f"Found: {max_n_samples}."
-            )
+            raise DimensionError(max_n_samples, samples)
 
     def _check_ndims(self, dim: int, var_name="img"):
         """Check if the data is of a given dimension.
