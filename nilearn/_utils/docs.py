@@ -1162,9 +1162,9 @@ t_r : :obj:`float` or :obj:`int` or None, default=None
 
 # target_affine
 docdict["target_affine"] = """
-target_affine : :class:`numpy.ndarray` or None, default=None
+target_affine : 3x3 or a 4x4 array-like, or None, \
+       default=None
     If specified, the image is resampled corresponding to this new affine.
-    `target_affine` can be a 3x3 or a 4x4 matrix.
 """
 
 # target_shape
