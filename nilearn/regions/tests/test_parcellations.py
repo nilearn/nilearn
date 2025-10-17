@@ -103,6 +103,7 @@ def test_parcellations_no_int64_warnings(img_4d_zeros_eye):
             assert "image contains 64-bit ints" not in str(r.message)
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("method", METHODS)
 def test_parcellations_fit_on_multi_nifti_images(
     method, test_image, affine_eye

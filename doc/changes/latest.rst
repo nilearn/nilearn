@@ -15,7 +15,8 @@ HIGHLIGHTS
  |
  | **Minimum supported versions of the following packages have been bumped up:**
  | - matplotlib -- 3.8.0
- | - SciPy -- v1.9.0
+ | - scipy -- 1.9.0
+ | - requests -- 2.30.0
 
 NEW
 ---
@@ -37,6 +38,8 @@ Enhancements
 - :bdg-success:`API` Add a :class:`~exceptions.NotImplementedWarning` and make :class:`~exceptions.MaskWarning`, :class:`~exceptions.DimensionError`, :class:`~exceptions.AllVolumesRemovedError` and :class:`~exceptions.MeshDimensionError` part of the public API (:gh:`5508`, :gh:`5570`, :gh:`5677` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add support for Scikit-Learn ``set_output()`` in several Nilearn feature extractors (nifti and surface non-multi maskers, and :class:`~regions.HierarchicalKMeans`) to allow ``transform()`` to output to either Pandas or Polars dataframe and not just numpy arrays (:gh:`5508` by `Rémi Gau`_).
+
+- :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker`, a :class:`~maskers.MultiSurfaceLabelsMasker` (:gh:`5679`, :gh:`5726` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker`, a :class:`~maskers.MultiSurfaceMapsMasker` (:gh:`5679`, :gh:`5727` by `Rémi Gau`_).
 

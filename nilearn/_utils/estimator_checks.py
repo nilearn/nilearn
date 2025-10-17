@@ -2536,12 +2536,12 @@ def check_masker_empty_data_messages(estimator):
 
     mask_img = _make_surface_mask()
 
-    with pytest.raises(ValueError, match="empty"):
+    with pytest.raises(ValueError, match="The image is empty"):
         estimator.fit(imgs)
 
     estimator.mask_img = mask_img
     estimator.fit()
-    with pytest.raises(ValueError, match="empty"):
+    with pytest.raises(ValueError, match="The image is empty"):
         estimator.transform(imgs)
 
 
