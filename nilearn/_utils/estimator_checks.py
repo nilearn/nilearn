@@ -2512,15 +2512,15 @@ def check_masker_empty_data_messages(estimator):
         return None
 
     imgs = _make_surface_img()
-    data = {
-        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-        for part in imgs.data.parts
-    }
-    imgs = SurfaceImage(imgs.mesh, data)
+    # force some parts to be empty
+    for part in imgs.data.parts:
+        imgs.data.parts[part] = np.empty(0).reshape(
+            (imgs.data.parts[part].shape[0], 0)
+        )
 
     mask_img = _make_surface_mask()
 
-    with pytest.raises(ValueError, match=r"The image .* is empty"):
+    with pytest.raises(ValueError, match=r"The image .*is empty"):
         estimator.fit(imgs)
 
     estimator.mask_img = mask_img
@@ -3516,11 +3516,11 @@ def check_glm_empty_data_messages(estimator: BaseEstimator) -> None:
     """
     imgs, design_matrices = _make_surface_img_and_design()
 
-    data = {
-        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-        for part in imgs.data.parts
-    }
-    imgs = SurfaceImage(imgs.mesh, data)
+    # force some parts to be empty
+    for part in imgs.data.parts:
+        imgs.data.parts[part] = np.empty(0).reshape(
+            (imgs.data.parts[part].shape[0], 0)
+        )
 
     with pytest.raises(ValueError, match="empty"):
         # FirstLevel

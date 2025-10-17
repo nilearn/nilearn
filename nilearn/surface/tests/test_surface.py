@@ -1219,13 +1219,18 @@ def test_check_surf_img(surf_img_1d, surf_img_2d):
     check_surf_img(surf_img_1d)
     check_surf_img(surf_img_2d())
 
-    data = {
+    {
         part: np.empty(0).reshape((surf_img_1d.data.parts[part].shape[0], 0))
         for part in surf_img_1d.data.parts
     }
-    imgs = SurfaceImage(surf_img_1d.mesh, data)
+    # force some parts to be empty
+    for part in surf_img_1d.data.parts:
+        surf_img_1d.data.parts[part] = np.empty(0).reshape(
+            (surf_img_1d.data.parts[part].shape[0], 0)
+        )
+
     with pytest.raises(ValueError, match="empty"):
-        check_surf_img(imgs)
+        check_surf_img(surf_img_1d)
 
 
 def test_check_surf_img_dtype(surf_img_1d):
