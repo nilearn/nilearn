@@ -51,7 +51,7 @@ def all_estimators(type_filter=None):
 
     Returns
     -------
-    estimators : functions : :obj:`list` of :obj:`tuple`
+    estimators : :obj:`list` of :obj:`tuple`
         List of (name, class),
         where ``name`` is the class name as string
         and ``class`` is the actual type of the class.
