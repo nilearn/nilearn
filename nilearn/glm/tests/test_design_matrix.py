@@ -476,18 +476,8 @@ def test_create_second_level_design_nan():
     ]
     regressors = pd.DataFrame(regressors, columns=["subject_label", "f1"])
 
-    design = make_second_level_design_matrix(subjects_label, regressors)
-
-    expected_design = np.array(
-        [
-            [0.1, 1.0],
-            [0.75, 1.0],
-            [0.0, 1.0],
-        ]
-    )
-    assert_array_equal(design, expected_design)
-    assert len(design.columns) == 2
-    assert len(design) == 3
+    with pytest.raises(ValueError, match="Confounds contain NaN values"):
+        make_second_level_design_matrix(subjects_label, regressors)
 
 
 def test_designs_with_negative_onsets_warning(frame_times):

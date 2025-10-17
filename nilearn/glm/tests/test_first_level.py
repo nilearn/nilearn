@@ -809,13 +809,14 @@ def test_fmri_inputs_with_confounds_with_nan():
 
     fmri_data = fmri_data[0]
 
-    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
-        fmri_data,
-        confounds=confound_file,
-        events=events,
-    )
-
-    assert "framewise_displacement" in flm.design_matrices_[0]
+    with pytest.raises(
+        ValueError, match="Extra regressors contain NaN values"
+    ):
+        FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+            fmri_data,
+            confounds=confound_file,
+            events=events,
+        )
 
 
 def test_fmri_inputs_confounds_ignored_with_design_matrix():

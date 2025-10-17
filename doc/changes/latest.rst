@@ -25,8 +25,12 @@ Fixes
 
 - :bdg-primary:`Doc` Update allowed values for the parameter ``standardize`` to match those of :func:`~signal.clean` in :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMClassifier`, :class:`~decoding.FREMRegressor`, :class:`~decoding.SpaceNetClassifier`, :class:`~decoding.SpaceNetRegressor`, :class:`~connectome.ConnectivityMeasure`, :class:`~decomposition.DictLearning`, :class:`~decomposition.CanICA` as well as for all maskers  (:gh:`5668` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Improve errors thrown when the confounds for a subject or group level analysis GLM contain NaN (:gh:`5739` by `Rémi Gau`_).
+
 Enhancements
 ------------
+
+- :bdg-dark:`Code` NaN values contained in the first row of the confounds loaded by :func:`~glm.first_level.first_level_from_bids` will be turned into 0 to avoid downstream errors when creating design matrices (:gh:`5739` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add an ``exclude_subjects`` parameter to :func:`~glm.first_level.first_level_from_bids` to skip some subjects when creating GLM models from a BIDS dataset (:gh:`XXXX` by `Rémi Gau`_).
 
