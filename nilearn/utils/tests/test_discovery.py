@@ -1,6 +1,13 @@
+"""Run tests on nilearn.utils."""
+
+import contextlib
+
 import pytest
 
 from nilearn.utils.discovery import all_estimators, all_functions
+
+with contextlib.suppress(ImportError):
+    from rich import print
 
 
 @pytest.mark.parametrize(

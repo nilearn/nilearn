@@ -72,7 +72,7 @@ def all_estimators(type_filter=None):
         "transformer": TransformerMixin,
     }
 
-    if type_filter is not None and type_filter not in allowed_filters:
+    if type_filter is not None:
         check_parameter_in_allowed(
             type_filter, allowed_filters.keys(), "type_filter"
         )
