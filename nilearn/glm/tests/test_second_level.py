@@ -819,7 +819,7 @@ def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
 
 
 @pytest.mark.parametrize(
-    "filename, sep", [("design.csv", ","), ("design.tsv", "\t"), ()]
+    "filename, sep", [("design.csv", ","), ("design.tsv", "\t")]
 )
 def test_secondlevelmodel_design_matrix_path(
     img_3d_mni, tmp_path, filename, sep
