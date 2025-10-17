@@ -2520,7 +2520,7 @@ def check_masker_empty_data_messages(estimator):
 
     mask_img = _make_surface_mask()
 
-    with pytest.raises(ValueError, match="The image is empty"):
+    with pytest.raises(ValueError, match=r"The image .* is empty"):
         estimator.fit(imgs)
 
     estimator.mask_img = mask_img
@@ -3018,7 +3018,7 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
         # TODO error msg should give hint as to how to fix:
         # point to the appropriate masker to use
         with pytest.raises(
-            DimensionError, match=r"Data for each part of .* should be 1D"
+            DimensionError, match="Input data has incompatible dimensionality"
         ):
             estimator.fit([_make_surface_img(5), _make_surface_img(5)])
 
