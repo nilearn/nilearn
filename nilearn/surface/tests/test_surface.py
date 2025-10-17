@@ -13,6 +13,7 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import datasets, image
 from nilearn._utils import data_gen
+from nilearn.exceptions import DimensionError
 from nilearn.image import resampling
 from nilearn.surface.surface import (
     FileMesh,
@@ -1310,3 +1311,26 @@ def test_3d_surface_image_not_implemented(surf_mesh):
             mesh=surf_mesh,
             data={"left": np.ones((4, 3, 2)), "right": np.ones((5, 3, 2))},
         )
+
+
+@pytest.mark.parametrize(
+    "part",
+    [
+        np.ones((2,)),  # 1D
+        np.ones((2, 1)),  # 1D
+        np.ones((2, 2)),  # 2D
+    ],
+)
+def test_polydata_check_n_samples_errors(part):
+    """Check n_samples throws errors when appropriate."""
+    data = PolyData(left=part, right=part)
+    data._check_n_samples(2)
+
+    if part.ndim > 1 and part.shape[1] > 1:
+        with pytest.raises(
+            DimensionError,
+            match="Expected 1 sample and you provided a 2 samples image",
+        ):
+            data._check_n_samples(1)
+    else:
+        data._check_n_samples(1)

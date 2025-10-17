@@ -1368,6 +1368,16 @@ class PolyData:
     def _check_parts(self):
         parts = self.parts
 
+        for hemi, part in parts.items():
+            if part.size == 0:
+                msg = f"part {hemi} is empty"
+                raise ValueError(msg)
+
+        if any(part.ndim > 2 for part in parts.values()):
+            raise NotImplementedError(
+                "Data with more than 2D are not supported."
+            )
+
         if len(parts) == 1:
             return
 
@@ -1387,11 +1397,6 @@ class PolyData:
                 "All parts should have same dtype. "
                 f"Got {parts['left'].dtype=} and {parts['right'].dtype=}. "
                 "You can fix this by passing a 'dtype' at instantiation."
-            )
-
-        if any(part.ndim > 2 for part in parts.values()):
-            raise NotImplementedError(
-                "Data with more than 2D are not supported."
             )
 
     @property
@@ -1431,13 +1436,17 @@ class PolyData:
         # so we only check one of them after that.
         self._check_parts()
 
+        if samples <= 0:
+            # We cannot have less than 1 sample
+            samples = 1
+
         hemi = self.parts["right"]
         n_samples = 1
         if hemi.ndim > 1:
             n_samples = hemi.shape[1]
 
         if n_samples > samples:
-            raise DimensionError(n_samples, samples)
+            raise DimensionError(n_samples, samples, msg_about_samples=True)
 
     def _check_ndims(self, dim: int, var_name="img"):
         """Check if the data is of a given dimension.
