@@ -17,7 +17,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
-from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
+from nilearn.surface.surface import SurfaceImage, at_least_2d
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -162,8 +162,6 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         img = concat_imgs(img)
 
         img = at_least_2d(img)
-
-        check_surf_img(img)
 
         mask_data = {}
         for part, v in img.data.parts.items():

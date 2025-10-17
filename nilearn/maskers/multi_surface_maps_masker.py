@@ -205,6 +205,8 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         self._init_report_content()
 
         if imgs is not None:
+            if not hasattr(imgs, "__iter__"):
+                imgs = [imgs]
             self._check_imgs(imgs)
 
         return self._fit(imgs)

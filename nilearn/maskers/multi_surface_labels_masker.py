@@ -6,7 +6,6 @@ from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.surface_labels_masker import SurfaceLabelsMasker
-from nilearn.surface.surface import check_surf_img
 
 
 @fill_doc
@@ -240,10 +239,8 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         self._init_report_content()
 
         if imgs is not None:
-            self._check_imgs(imgs)
             if not hasattr(imgs, "__iter__"):
                 imgs = [imgs]
-            for x in imgs:
-                check_surf_img(x)
+            self._check_imgs(imgs)
 
         return self._fit(imgs)

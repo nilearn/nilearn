@@ -24,7 +24,6 @@ from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
-    check_surf_img,
     get_data,
 )
 from nilearn.surface.utils import check_polymesh_equal
@@ -222,9 +221,6 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         if imgs is not None:
             self._check_imgs(imgs)
 
-        if imgs is not None:
-            check_surf_img(imgs)
-
             if hasattr(imgs, "__iter__"):
                 for x in imgs:
                     x.data._check_n_samples(1)
@@ -386,6 +382,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
                 x.data._check_n_samples(1)
 
         imgs = at_least_2d(imgs)
+
         img_data = get_data(imgs)
 
         target_datatype = (

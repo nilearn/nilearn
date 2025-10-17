@@ -295,9 +295,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         imgs = at_least_2d(imgs)
 
-        img_data = np.concatenate(
-            list(imgs.data.parts.values()), axis=0
-        ).astype(np.float32)
+        img_data = get_data(imgs).astype(np.float32)
 
         # get concatenated hemispheres/parts data from maps_img and mask_img
         maps_data = get_data(self.maps_img)

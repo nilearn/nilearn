@@ -1426,16 +1426,18 @@ class PolyData:
         return vmin, vmax
 
     def _check_n_samples(self, samples: int):
-        # ensure both parts have same number of samples
+        """Check that image has no more than n samples."""
+        # Ensure both parts have same number of samples
+        # so we only check one of them after that.
         self._check_parts()
 
         hemi = self.parts["right"]
-        max_n_samples = 1
+        n_samples = 1
         if hemi.ndim > 1:
-            max_n_samples = hemi.shape[1]
+            n_samples = hemi.shape[1]
 
-        if max_n_samples > samples:
-            raise DimensionError(max_n_samples, samples)
+        if n_samples > samples:
+            raise DimensionError(n_samples, samples)
 
     def _check_ndims(self, dim: int, var_name="img"):
         """Check if the data is of a given dimension.
@@ -1989,19 +1991,22 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
-def check_surf_img(img: SurfaceImage | Iterable[SurfaceImage]) -> None:
+def check_surf_img(img: SurfaceImage | Iterable[SurfaceImage], var="") -> None:
     """Validate SurfaceImage.
 
     Equivalent to check_niimg for volumes.
     """
+    # check image is not empty
     if isinstance(img, SurfaceImage):
+        msg = "The image is empty."
+        if var:
+            msg = f"The image {var} is empty."
         if get_data(img).size == 0:
-            raise ValueError("The image is empty.")
+            raise ValueError(msg)
         return None
-
     if hasattr(img, "__iter__"):
-        for x in img:
-            check_surf_img(x)
+        for i, x in enumerate(img):
+            check_surf_img(x, var=f"img[{i}]")
 
 
 def get_data(img, ensure_finite=False) -> np.ndarray:
