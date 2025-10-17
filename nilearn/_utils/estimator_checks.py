@@ -1774,12 +1774,13 @@ def check_decoder_empty_data_messages(estimator):
         random_state=42,
     )
 
-    imgs = _make_surface_img(n_samples)
-    data = {
-        part: np.empty(0).reshape((imgs.data.parts[part].shape[0], 0))
-        for part in imgs.data.parts
-    }
-    X = SurfaceImage(imgs.mesh, data)
+    X = _make_surface_img(n_samples)
+
+    # force some parts to be empty
+    for part in X.data.parts:
+        X.data.parts[part] = np.empty(0).reshape(
+            (X.data.parts[part].shape[0], 0)
+        )
 
     y = _rng().random(y.shape)
 
