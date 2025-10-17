@@ -88,7 +88,7 @@ class DimensionError(TypeError):
 
         def unit(n):
             unit = f"{n} sample" if self.msg_about_samples else f"{n}D"
-            if n > 1:
+            if self.msg_about_samples and n > 1:
                 unit += "s"
             return unit
 
