@@ -862,7 +862,7 @@ def test_polydata_shape(shape):
 
 
 def test_polydata_1d_check_parts():
-    """Smoke test for check parts.
+    """Test for check parts.
 
     - passing a 1D array at instantiation is fine:
       they are convertd to 2D
@@ -878,6 +878,31 @@ def test_polydata_1d_check_parts():
     data.parts["left"] = np.empty(0)
     with pytest.raises(ValueError, match="part left is empty"):
         data._check_parts()
+
+
+def test_polydata_check_ndim():
+    """Test for check_ndim."""
+    data = PolyData(left=np.ones((7,)), right=np.ones((5,)))
+    data._check_ndims(1)
+
+    with pytest.raises(
+        DimensionError,
+        match="Expected dimension is 2D and you provided a 1D image",
+    ):
+        data._check_ndims(2)
+
+    data = PolyData(left=np.ones((7, 1)), right=np.ones((5, 1)))
+    data._check_ndims(2)
+
+    with pytest.raises(
+        DimensionError,
+        match="Expected dimension is 1D and you provided a 2D image",
+    ):
+        data._check_ndims(1)
+
+    # checking for more dimension than 2 is equivalent to checking to 2
+    # as we do not support more than 2 dimensions
+    data._check_ndims(3)
 
 
 def test_mesh_to_gifti(single_mesh, tmp_path):

@@ -203,7 +203,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         mask_logger("load_regions", self.maps_img, verbose=self.verbose)
 
         # check maps_img data is 2D
-        self.maps_img.data._check_ndims(2, "maps_img")
+        self.maps_img.data._check_ndims(2)
         self.maps_img_ = self.maps_img
 
         self.n_elements_ = self.maps_img.shape[1]
