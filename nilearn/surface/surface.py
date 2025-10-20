@@ -1419,15 +1419,14 @@ class PolyData:
         # Ensure both parts have same number of samples
         # so we only check one of them after that.
         self._check_parts()
+        hemi = self.parts[next(iter(self.parts))]
+        n_samples = 1
+        if hemi.ndim > 1:
+            n_samples = hemi.shape[1]
 
         if samples <= 0:
             # We cannot have less than 1 sample
             samples = 1
-
-        hemi = self.parts["right"]
-        n_samples = 1
-        if hemi.ndim > 1:
-            n_samples = hemi.shape[1]
 
         if n_samples > samples:
             raise DimensionError(n_samples, samples, msg_about_samples=True)
@@ -1453,7 +1452,7 @@ class PolyData:
         # Ensure both parts have same number of samples
         # so we only check one of them after that.
         self._check_parts()
-        hemi = self.parts["right"]
+        hemi = self.parts[next(iter(self.parts))]
         dim = min(dim, 2)
         if hemi.ndim != dim:
             raise DimensionError(hemi.ndim, dim)
