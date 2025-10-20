@@ -1110,12 +1110,13 @@ def test_decoder_multiclass_error_incorrect_cv(multiclass_data):
 
 
 @ignore_warnings
-def test_decoder_multiclass_warnings(multiclass_data):
+def test_decoder_multiclass_warnings_decoder(multiclass_data):
+    """Check whether decoder raised warning \
+        when groups is set to specific value but CV Splitter is not set.
+    """
     X, y, _ = multiclass_data
     groups = _rng(0).binomial(2, 0.3, size=len(y))
 
-    # Check whether decoder raised warning when groups is set to specific
-    # value but CV Splitter is not set
     expected_warning = (
         "groups parameter is specified but "
         "cv parameter is not set to custom CV splitter. "
@@ -1125,8 +1126,14 @@ def test_decoder_multiclass_warnings(multiclass_data):
         model = Decoder(mask=NiftiMasker(), standardize="zscore_sample")
         model.fit(X, y, groups=groups)
 
-    # Check that warning is raised when n_features is lower than 50 after
-    # screening and clustering for FREM
+
+@ignore_warnings
+def test_decoder_multiclass_warnings_frem(multiclass_data):
+    """Check that warning is raised \
+        when n_features is lower than 50 after \
+        screening and clustering.
+    """
+    X, y, _ = multiclass_data
     with pytest.warns(
         UserWarning, match=".*decoding model will be trained only.*"
     ):

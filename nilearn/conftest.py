@@ -141,7 +141,7 @@ def rng():
 # ------------------------ AFFINES ------------------------#
 
 
-def _affine_mni():
+def _affine_mni() -> np.ndarray:
     """Return an affine corresponding to 2mm isotropic MNI template.
 
     Mostly used for set up in other fixtures in other testing modules.
@@ -162,7 +162,7 @@ def affine_mni():
     return _affine_mni()
 
 
-def _affine_eye():
+def _affine_eye() -> np.ndarray:
     """Return an identity matrix affine.
 
     Mostly used for set up in other fixtures in other testing modules.
