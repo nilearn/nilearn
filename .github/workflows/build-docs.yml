@@ -163,7 +163,7 @@ jobs:
     # Check the build type and files examples to generate
     # Upload as an artifact for other jobs.
     build_type:
-        needs: [check_skip_flags, validate_cff]
+        needs: [check_skip_flags]
         runs-on: ubuntu-latest
         steps:
         -   name: Checkout nilearn
