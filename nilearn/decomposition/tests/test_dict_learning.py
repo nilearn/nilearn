@@ -11,6 +11,7 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface.surface import get_data as get_surface_data
 
 
+@pytest.mark.timeout(0)
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 @pytest.mark.parametrize("n_epochs", [1, 2, 10])
 def test_check_values_epoch_argument_smoke(
