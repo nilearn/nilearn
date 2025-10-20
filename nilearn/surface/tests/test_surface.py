@@ -875,6 +875,10 @@ def test_polydata_1d_check_parts():
 
     data._check_parts()
 
+    data.parts["left"] = np.empty(0)
+    with pytest.raises(ValueError, match="part left is empty"):
+        data._check_parts()
+
 
 def test_mesh_to_gifti(single_mesh, tmp_path):
     """Check saving mesh to gifti.
@@ -1338,4 +1342,8 @@ def test_polydata_check_n_samples_errors(part):
         ):
             data._check_n_samples(1)
     else:
+        # testing value <=0 for coverage
+        # as it will default to 1 in this case
+        data._check_n_samples(-1)
+
         data._check_n_samples(1)
