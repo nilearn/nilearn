@@ -10,6 +10,13 @@ from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils._testing import ignore_warnings
 
 from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
+from nilearn.maskers._mixin import _MultiMixin
+from nilearn.maskers.base_masker import BaseMasker, _BaseSurfaceMasker
+from nilearn.plotting.displays import BaseAxes, BaseSlicer
+
+ROOT = str(Path(__file__).parent.parent)  # nilearn package
+
 
 _MODULE_TO_IGNORE = {
     "_utils",
@@ -26,6 +33,41 @@ def _skip_module(module_name: str):
         any(part in _MODULE_TO_IGNORE for part in module_parts)
         or "._" in module_name
     )
+
+
+def _is_abstract(c):
+    if not (hasattr(c, "__abstractmethods__")):
+        return False
+    return len(c.__abstractmethods__)
+
+
+def _get_all_classes():
+    all_classes = []
+    # Ignore deprecation warnings triggered at import time and from walking
+    # packages
+    with ignore_warnings(category=FutureWarning):
+        for _, module_name, _ in pkgutil.walk_packages(
+            path=[ROOT], prefix="nilearn."
+        ):
+            if _skip_module(module_name):
+                continue
+
+            module = import_module(module_name)
+            classes = inspect.getmembers(module, inspect.isclass)
+            classes = [
+                (name, est_cls)
+                for name, est_cls in classes
+                if not name.startswith("_") and "sklearn" not in str(est_cls)
+            ]
+
+            all_classes.extend(classes)
+
+    all_classes = set(all_classes)
+
+    # get rid of abstract base classes
+    all_classes = [c for c in all_classes if not _is_abstract(c[1])]
+
+    return all_classes
 
 
 def all_estimators(type_filter=None):
@@ -57,11 +99,6 @@ def all_estimators(type_filter=None):
         and ``class`` is the actual type of the class.
 
     """
-    # lazy import to avoid circular imports
-    from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
-    from nilearn.maskers._mixin import _MultiMixin
-    from nilearn.maskers.base_masker import BaseMasker, _BaseSurfaceMasker
-
     # TODO: add GLM?
     allowed_filters = {
         "classifier": _ClassifierMixin,
@@ -72,48 +109,19 @@ def all_estimators(type_filter=None):
         "transformer": TransformerMixin,
     }
 
-    if type_filter is not None:
-        check_parameter_in_allowed(
-            type_filter, allowed_filters.keys(), "type_filter"
-        )
-
-    def is_abstract(c):
-        if not (hasattr(c, "__abstractmethods__")):
-            return False
-        return len(c.__abstractmethods__)
-
-    all_classes = []
-    root = str(Path(__file__).parent.parent)  # nilearn package
-    # Ignore deprecation warnings triggered at import time and from walking
-    # packages
-    with ignore_warnings(category=FutureWarning):
-        for _, module_name, _ in pkgutil.walk_packages(
-            path=[root], prefix="nilearn."
-        ):
-            if _skip_module(module_name):
-                continue
-
-            module = import_module(module_name)
-            classes = inspect.getmembers(module, inspect.isclass)
-            classes = [
-                (name, est_cls)
-                for name, est_cls in classes
-                if not name.startswith("_") and "sklearn" not in str(est_cls)
-            ]
-
-            all_classes.extend(classes)
-
-    all_classes = set(all_classes)
+    all_classes = _get_all_classes()
 
     estimators = [
         c
         for c in all_classes
         if (issubclass(c[1], BaseEstimator) and c[0] != "BaseEstimator")
     ]
-    # get rid of abstract base classes
-    estimators = [c for c in estimators if not is_abstract(c[1])]
 
     if type_filter is not None:
+        check_parameter_in_allowed(
+            type_filter, allowed_filters.keys(), "type_filter"
+        )
+
         if not isinstance(type_filter, list):
             type_filter = [type_filter]
         else:
@@ -159,12 +167,11 @@ def all_functions():
 
     """
     all_functions = []
-    root = str(Path(__file__).parent.parent)  # nilearn package
     # Ignore deprecation warnings triggered at import time and from walking
     # packages
     with ignore_warnings(category=FutureWarning):
         for _, module_name, _ in pkgutil.walk_packages(
-            path=[root], prefix="nilearn."
+            path=[ROOT], prefix="nilearn."
         ):
             if _skip_module(module_name):
                 continue
@@ -186,3 +193,62 @@ def all_functions():
     # itemgetter is used to ensure the sort does not extend to the 2nd item of
     # the tuple
     return sorted(set(all_functions), key=itemgetter(0))
+
+
+def all_displays(type_filter=None):
+    """Get a list of all 'displays' objects from `nilearn`.
+
+    Parameters
+    ----------
+    type_filter : {"slicer",  "axe"} \
+                  or list of such strings, default=None
+        Which kind of display object should be returned.
+        If ``None``, no filter is applied and all objects are returned.
+        Possible values are
+        "slicer",  "axe"
+        to get only these specific types,
+        or a list of display objects
+        that fit at least one of the types.
+
+    Returns
+    -------
+    displays : list of tuples
+        List of (name, class), where ``name`` is the display class name as
+        string and ``class`` is the actual type of the class.
+    """
+    allowed_filters = {
+        "slicer": BaseSlicer,
+        "axe": BaseAxes,
+    }
+
+    all_classes = _get_all_classes()
+
+    displays = [
+        c
+        for c in all_classes
+        if (issubclass(c[1], tuple(allowed_filters.values())))
+    ]
+
+    if type_filter is not None:
+        check_parameter_in_allowed(
+            type_filter, allowed_filters.keys(), "type_filter"
+        )
+
+        if not isinstance(type_filter, list):
+            type_filter = [type_filter]
+        else:
+            type_filter = list(type_filter)  # copy
+        filtered_displays = []
+
+        for name, this_class in allowed_filters.items():
+            if name in type_filter:
+                type_filter.remove(name)
+                filtered_displays.extend(
+                    [est for est in displays if issubclass(est[1], this_class)]
+                )
+        displays = filtered_displays
+
+    # drop duplicates, sort for reproducibility
+    # itemgetter is used to ensure the sort does not extend
+    # to the 2nd item of the tuple
+    return sorted(set(displays), key=itemgetter(0))

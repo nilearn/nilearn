@@ -4,7 +4,7 @@ import contextlib
 
 import pytest
 
-from nilearn.utils.discovery import all_estimators, all_functions
+from nilearn.utils.discovery import all_displays, all_estimators, all_functions
 
 with contextlib.suppress(ImportError):
     from rich import print
@@ -39,4 +39,23 @@ def test_all_functions(
     """Check number of functions in public API."""
     fn = all_functions()
     print(fn)
-    assert len(fn) == 168
+    assert len(fn) == 169
+
+
+@pytest.mark.parametrize(
+    "type_filter, n_expected",
+    [
+        (None, 27),
+        ("slicer", 24),
+        ("axe", 3),
+    ],
+)
+def test_all_displays(
+    type_filter,
+    n_expected,
+    matplotlib_pyplot,  # noqa : ARG001
+):
+    """Check number of functions in public API."""
+    disp = all_displays(type_filter)
+    print(disp)
+    assert len(disp) == n_expected

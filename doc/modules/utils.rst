@@ -17,5 +17,6 @@
    :toctree: generated/
    :template: function.rst
 
+   all_displays
    all_estimators
    all_functions
