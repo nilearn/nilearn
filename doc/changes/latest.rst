@@ -19,7 +19,7 @@ HIGHLIGHTS
  | - requests -- 2.30.0
  |
  | **A new dependency has been added:**
- | - Jinja2 >= 3.1.0
+ | - Jinja2 >= 3.1.2
  |
 
 
