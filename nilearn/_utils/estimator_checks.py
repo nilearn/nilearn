@@ -1640,7 +1640,14 @@ def check_img_estimator_standardization(estimator_orig):
             estimator.fit(input_img)
 
         results = {}
-        standardize_values = ["zscore", "zscore_sample", "psc", True, False]
+        standardize_values = [
+            "zscore",
+            "zscore_sample",
+            "psc",
+            True,
+            False,
+            None,
+        ]
         for standardize in standardize_values:
             if standardize == "psc" and isinstance(
                 estimator, _BaseDecomposition
@@ -1681,7 +1688,7 @@ def check_img_estimator_standardization(estimator_orig):
                     input_img
                 )
 
-        unstandarized_result = results[str(False)]
+        unstandarized_result = results[str(None)]
 
         if isinstance(estimator, _BaseDecomposition):
             # TODO
@@ -1689,6 +1696,7 @@ def check_img_estimator_standardization(estimator_orig):
 
         # check which options are equal or different
         assert_array_equal(results["zscore"], results[str(True)])
+        assert_array_equal(results[str(None)], results[str(False)])
 
         if isinstance(estimator, Decoder):
             # differences are too small to have an effect in this test
@@ -1990,7 +1998,14 @@ def check_masker_standardization(estimator_orig):
         default_result = estimator.transform(input_img)
 
         results = {}
-        standardize_values = ["zscore", "zscore_sample", "psc", True, False]
+        standardize_values = [
+            "zscore",
+            "zscore_sample",
+            "psc",
+            True,
+            False,
+            None,
+        ]
         for standardize in standardize_values:
             estimator = clone(estimator_orig)
 
@@ -2019,6 +2034,7 @@ def check_masker_standardization(estimator_orig):
 
         # check which options are equal or different
         assert_array_equal(results["zscore"], results[str(True)])
+        assert_array_equal(results[str(None)], results[str(False)])
 
         with pytest.raises(AssertionError):
             assert_array_equal(results["zscore"], results["zscore_sample"])

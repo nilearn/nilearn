@@ -558,12 +558,14 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         # Compute all the matrices, stored in "connectivities"
         if self.kind == "correlation":
+            # TODO (nilearn 0.14: change to "zscore_sample")
+            standardize = "zscore" if self.standardize is True else None
             covariances_std = [
                 self.cov_estimator_.fit(
                     signal.standardize_signal(
                         x,
                         detrend=False,
-                        standardize=self.standardize,
+                        standardize=standardize,
                     )
                 ).covariance_
                 for x in X
