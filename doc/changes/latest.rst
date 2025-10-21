@@ -29,7 +29,7 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-success:`API` Add :mod:`~utils.discovery` to provide functions to list all estimators and functions available in Nilearn (:gh:`5535` by `Rémi Gau`_).
+- :bdg-success:`API` Add :func:`~utils.all_estimators`, :func:`~utils.all_displays`, :func:`~utils.all_functions` to provide list all estimators and functions available in Nilearn (:gh:`5535` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add an ``exclude_subjects`` parameter to :func:`~glm.first_level.first_level_from_bids` to skip some subjects when creating GLM models from a BIDS dataset (:gh:`5741` by `Rémi Gau`_).
 
