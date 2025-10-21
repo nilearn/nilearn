@@ -4,21 +4,17 @@ from functools import partial
 
 import numpy as np
 import pytest
-from numpy.testing import (
-    assert_almost_equal,
-    assert_array_equal,
-)
+from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy import linalg
 from sklearn.datasets import load_iris
-from sklearn.linear_model import (
-    Lasso,
-    LogisticRegression,
-)
+from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.linear_model._coordinate_descent import _alpha_grid
-from sklearn.metrics import (
-    accuracy_score,
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import KFold
+from sklearn.utils.estimator_checks import (
+    ignore_warnings,
+    parametrize_with_checks,
 )
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
     check_estimator,
@@ -557,6 +553,32 @@ def test_targets_in_y_space_net_regressor():
         ValueError, match="The given input y must have at least 2 targets"
     ):
         regressor.fit(imgs, y)
+
+
+@ignore_warnings
+@pytest.mark.parametrize("estimator", [SpaceNetRegressor, SpaceNetClassifier])
+# TODO
+# fails with cv=LeaveOneGroupOut()
+# ValueError: The 'groups' parameter should not be None.
+@pytest.mark.parametrize("cv", [8, KFold(n_splits=5), None])
+def test_cross_validation(estimator, cv):
+    """Check cross-validation scheme."""
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    X, mask = to_niimgs(X, [2, 2, 2])
+
+    model = estimator(mask=mask, cv=cv, verbose=0)
+
+    model.fit(X, y)
+
+    y_pred = model.predict(X)
+
+    if cv is None:
+        n_cv = len(model.cv_)
+        assert n_cv == 5
+
+    if isinstance(model, (SpaceNetClassifier)):
+        assert accuracy_score(y, y_pred) > 0.7
 
 
 # ------------------------ surface tests ------------------------------------ #
