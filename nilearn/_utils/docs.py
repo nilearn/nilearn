@@ -1065,7 +1065,8 @@ smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
 
 # standardize
 standardize = """
-standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
+standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
+              default={}
     Strategy to standardize the signal:
 
     - ``'zscore_sample'``: The signal is z-scored.
@@ -1088,7 +1089,18 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
     - ``True``: The signal is z-scored (same as option `zscore`).
       Timeseries are shifted to zero mean and scaled to unit variance.
 
+      .. nilearn_deprecated:: 0.13.0dev
+
+        In nilearn version 0.15.0,
+        ``True`` will be replaced by  ``'zscore_sample'``.
+
     - ``False``: Do not standardize the data.
+
+      .. nilearn_deprecated:: 0.13.0dev
+
+        In nilearn version 0.15.0,
+        ``False`` will be replaced by ``None``.
+
 
 """
 # TODO (nilearn >= 0.14.0) update to ..versionchanged
@@ -1102,11 +1114,36 @@ deprecation_notice = """
 
 """
 
-docdict["standardize_false"] = standardize.format("False")
-# TODO (nilearn >= 0.14.0)
-# create a single  standardize_zscore_sample
-# with the updated deprecation notice
-docdict["standardize_true"] = standardize.format("True") + deprecation_notice
+# TODO (nilearn >= 0.15.0) update to ..versionchanged
+deprecation_notice_false_to_none = """
+
+    .. nilearn_deprecated:: 0.15.0dev
+
+        The default will be changed to ``None``
+        in version 0.15.0.
+
+"""
+
+# TODO (nilearn >= 0.15.0) update to ..versionchanged
+deprecation_notice_true_to_zscore_sample = """
+
+    .. nilearn_deprecated:: 0.15.0dev
+
+        The default will be changed to ``'zscore_sample'``
+        in version 0.15.0.
+
+"""
+
+docdict["standardize_false"] = (
+    standardize.format("False") + deprecation_notice_false_to_none
+)
+# TODO (nilearn >= 0.14.0 and 0.15.0)
+# adapt the deprecation notices
+docdict["standardize_true"] = (
+    standardize.format("True")
+    + deprecation_notice
+    + deprecation_notice_true_to_zscore_sample
+)
 docdict["standardize_zscore"] = (
     standardize.format("zscore") + deprecation_notice
 )
@@ -1119,7 +1156,7 @@ standardize_confounds : :obj:`bool`, default=True
     their mean is put to 0 and their variance to 1 in the time dimension.
 """
 
-# standardize_confounds
+# strategy
 docdict["strategy"] = """
 strategy : :obj:`str`, default="mean"
     The name of a valid function to reduce the region with.
