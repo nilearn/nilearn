@@ -16,10 +16,6 @@ import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
-from scipy.linalg import toeplitz
-from sklearn.cluster import KMeans
-from sklearn.utils.estimator_checks import check_is_fitted
-
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
@@ -63,6 +59,9 @@ from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, NiftiSpheresMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike, Tr
+from scipy.linalg import toeplitz
+from sklearn.cluster import KMeans
+from sklearn.utils.estimator_checks import check_is_fitted
 
 
 def mean_scaling(Y, axis=0):
@@ -1391,13 +1390,14 @@ class FirstLevelModel(BaseGLM):
         # Extract time series for the observed, predicted, and residuals
         predicted_ts = masker.transform(y_pred[0])
         residuals_ts = masker.transform(resid[0])
+        observed_ts = predicted_ts + residuals_ts
 
         # Plot observed vs predicted signal
         fig, axes = plt.subplots(2, 1, figsize=figsize, sharex=True)
-        # axes[0].plot(observed_ts, label="Observed", color="blue")
+        axes[0].plot(observed_ts, label="Observed", color="blue")
         axes[0].plot(predicted_ts, label="Predicted", color="orange")
         axes[0].set_title("Observed vs Predicted Signal")
-        axes[0].set_ylabel("Signal")
+        axes[0].set_ylabel("Signal Intensity")
         axes[0].legend()
 
         # Plot residuals
