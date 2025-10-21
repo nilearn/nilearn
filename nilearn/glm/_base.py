@@ -170,7 +170,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         and str or Path were used as input files to the GLM
         the output filenames will be based on the input files.
 
-        See nilearn.interfaces.bids.save_glm_to_bids for more details.
+        See nilearn.glm.io.save_glm_to_bids for more details.
 
         Parameters
         ----------

@@ -7,6 +7,7 @@ from nilearn.glm.contrasts import (
     compute_fixed_effects,
     expression_to_contrast_vector,
 )
+from nilearn.glm.io import save_glm_to_bids
 from nilearn.glm.model import (
     FContrastResults,
     LikelihoodModelResults,
@@ -18,7 +19,6 @@ from nilearn.glm.regression import (
     RegressionResults,
     SimpleRegressionResults,
 )
-from nilearn.glm.save_glm import save_glm_to_bids
 from nilearn.glm.thresholding import (
     cluster_level_inference,
     fdr_threshold,
