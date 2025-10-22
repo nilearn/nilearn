@@ -927,7 +927,7 @@ def apply_mask_fmri(
     if not np.allclose(mask_affine, imgs_img.affine):
         raise ValueError(
             f"Mask affine:\n{mask_affine}\n is different from img affine:"
-            "\n{imgs_img.affine}"
+            f"\n{imgs_img.affine}"
         )
 
     if mask_data.shape != imgs_img.shape[:3]:
