@@ -34,7 +34,11 @@ from nilearn.datasets.atlas import (
     fetch_atlas_talairach,
     fetch_atlas_yeo_2011,
 )
-from nilearn.datasets.tests._testing import check_type_fetcher, dict_to_archive
+from nilearn.datasets.tests._testing import (
+    check_fetcher_verbosity,
+    check_type_fetcher,
+    dict_to_archive,
+)
 from nilearn.image import get_data
 
 
@@ -213,7 +217,7 @@ def atlas_data():
 
 
 @pytest.mark.parametrize(
-    "name,label_fname,fname,is_symm,split",
+    "name, label_fname, fname, is_symm, split",
     [
         ("HarvardOxford", "-Cortical", "cort-prob-1mm", False, False),
         ("HarvardOxford", "-Subcortical", "sub-maxprob-thr0-1mm", False, True),
@@ -272,6 +276,19 @@ def test_fetch_atlas_fsl(
 
 
 @pytest.mark.parametrize(
+    "fetcher, atlas_name",
+    [
+        (fetch_atlas_juelich, "maxprob-thr0-1mm"),
+        (fetch_atlas_harvard_oxford, "cort-maxprob-thr25-1mm"),
+    ],
+)
+def test_fsl_fetcher_verbosity(fetcher, capsys, tmp_path, atlas_name):
+    check_fetcher_verbosity(
+        fetcher, capsys, atlas_name=atlas_name, data_dir=tmp_path
+    )
+
+
+@pytest.mark.parametrize(
     "homogeneity, grp_mean, expected",
     [
         ("spatial", True, "scorr05_mean_all.nii.gz"),
@@ -280,7 +297,7 @@ def test_fetch_atlas_fsl(
     ],
 )
 def test_fetch_atlas_craddock_2012(
-    tmp_path, request_mocker, homogeneity, grp_mean, expected
+    tmp_path, request_mocker, homogeneity, grp_mean, expected, capsys
 ):
     local_archive = (
         Path(__file__).parent / "data" / "craddock_2011_parcellations.tar.gz"
@@ -298,6 +315,10 @@ def test_fetch_atlas_craddock_2012(
     assert bunch["maps"] == str(tmp_path / "craddock_2012" / expected)
 
     assert request_mocker.url_count == 1
+
+    check_fetcher_verbosity(
+        fetch_atlas_craddock_2012, capsys, data_dir=tmp_path
+    )
 
 
 def test_fetch_atlas_smith_2009(tmp_path):
@@ -347,7 +368,9 @@ def _destrieux_data():
 
 
 @pytest.mark.parametrize("lateralized", [True, False])
-def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
+def test_fetch_atlas_destrieux_2009(
+    tmp_path, request_mocker, lateralized, capsys
+):
     """Tests for function `fetch_atlas_destrieux_2009`.
 
     The atlas is fetched with different values for `lateralized`.
@@ -367,8 +390,15 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
         tmp_path / "destrieux_2009" / f"destrieux2009_rois{name}.nii.gz"
     )
 
+    check_fetcher_verbosity(
+        fetch_atlas_destrieux_2009,
+        capsys,
+        lateralized=lateralized,
+        data_dir=tmp_path,
+    )
 
-def test_fetch_atlas_msdl(tmp_path, request_mocker):
+
+def test_fetch_atlas_msdl(tmp_path, request_mocker, capsys):
     labels = pd.DataFrame(
         {
             "x": [1.5, 1.2],
@@ -394,6 +424,8 @@ def test_fetch_atlas_msdl(tmp_path, request_mocker):
     assert isinstance(dataset.networks, list)
     assert isinstance(dataset.maps, str)
     assert request_mocker.url_count == 1
+
+    check_fetcher_verbosity(fetch_atlas_msdl, capsys, data_dir=tmp_path)
 
 
 def _generate_yeo_data(tmp_path):
@@ -444,7 +476,7 @@ def _generate_yeo_data(tmp_path):
     return dict_to_archive(to_archive, archive_format="zip")
 
 
-def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
+def test_fetch_atlas_yeo_2011(tmp_path, request_mocker, capsys):
     """Check fetcher for the Yeo atlas.
 
     Mocks data for each deterministic atlas and their look up tables.
@@ -454,13 +486,14 @@ def test_fetch_atlas_yeo_2011(tmp_path, request_mocker):
     request_mocker.url_mapping["*Yeo_JNeurophysiol11_MNI152*"] = yeo_data
 
     dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0)
-
     dataset = fetch_atlas_yeo_2011(data_dir=tmp_path, verbose=0, n_networks=17)
     dataset = fetch_atlas_yeo_2011(
         data_dir=tmp_path, verbose=0, thickness="thin"
     )
 
     validate_atlas(dataset)
+
+    check_fetcher_verbosity(fetch_atlas_yeo_2011, capsys, data_dir=tmp_path)
 
 
 def test_fetch_atlas_yeo_2011_error(tmp_path):
@@ -474,7 +507,7 @@ def test_fetch_atlas_yeo_2011_error(tmp_path):
         )
 
 
-def test_fetch_atlas_difumo(tmp_path, request_mocker):
+def test_fetch_atlas_difumo(tmp_path, request_mocker, capsys):
     resolutions = [2, 3]  # Valid resolution values
     dimensions = [64, 128, 256, 512, 1024]  # Valid dimension values
     dimension_urls = ["pqu9r", "wjvd5", "3vrct", "9b76y", "34792"]
@@ -515,6 +548,8 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
         fetch_atlas_difumo(
             data_dir=tmp_path, dimension=128, resolution_mm=3.14
         )
+
+    check_fetcher_verbosity(fetch_atlas_difumo, capsys, data_dir=tmp_path)
 
 
 @pytest.fixture
@@ -579,7 +614,7 @@ def test_fetch_atlas_aal_version_error(tmp_path):
         fetch_atlas_aal(version="FLS33", data_dir=tmp_path, verbose=0)
 
 
-def test_fetch_atlas_basc_multiscale_2015(tmp_path):
+def test_fetch_atlas_basc_multiscale_2015(tmp_path, capsys):
     resolution = 7
 
     dataset_name = "basc_multiscale_2015"
@@ -618,6 +653,10 @@ def test_fetch_atlas_basc_multiscale_2015(tmp_path):
         tmp_path / dataset_name / name_asym / basename_asym
     )
 
+    check_fetcher_verbosity(
+        fetch_atlas_basc_multiscale_2015, capsys, data_dir=tmp_path
+    )
+
 
 def test_fetch_atlas_basc_multiscale_2015_error(tmp_path):
     with pytest.raises(ValueError, match="'version' must be one of"):
@@ -639,7 +678,7 @@ def test_fetch_coords_dosenbach_2010():
     assert np.any(bunch.networks != np.sort(bunch.networks))
 
 
-def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
+def test_fetch_atlas_allen_2011(tmp_path, request_mocker, capsys):
     """Fetch allen atlas and checks filenames are those expected."""
     bunch = fetch_atlas_allen_2011(data_dir=tmp_path, verbose=0)
     keys = ("maps", "rsn28", "comps")
@@ -657,8 +696,10 @@ def test_fetch_atlas_allen_2011(tmp_path, request_mocker):
             tmp_path / "allen_rsn_2011" / "allen_rsn_2011" / fn
         )
 
+    check_fetcher_verbosity(fetch_atlas_allen_2011, capsys, data_dir=tmp_path)
 
-def test_fetch_atlas_surf_destrieux(tmp_path):
+
+def test_fetch_atlas_surf_destrieux(tmp_path, capsys):
     data_dir = tmp_path / "destrieux_surface"
     data_dir.mkdir()
 
@@ -682,6 +723,10 @@ def test_fetch_atlas_surf_destrieux(tmp_path):
     assert bunch.map_left.shape == (4,)
     assert bunch.map_right.shape == (4,)
 
+    check_fetcher_verbosity(
+        fetch_atlas_surf_destrieux, capsys, data_dir=tmp_path
+    )
+
 
 def _get_small_fake_talairach():
     labels = ["*", "b", "a"]
@@ -699,7 +744,7 @@ def _get_small_fake_talairach():
 
 
 @pytest.mark.timeout(0)
-def test_fetch_atlas_talairach(tmp_path, request_mocker):
+def test_fetch_atlas_talairach(tmp_path, request_mocker, capsys):
     request_mocker.url_mapping["*talairach.nii"] = _get_small_fake_talairach()
     level_values = np.ones((81, 3)) * [0, 1, 2]
     talairach = fetch_atlas_talairach("hemisphere", data_dir=tmp_path)
@@ -717,6 +762,13 @@ def test_fetch_atlas_talairach(tmp_path, request_mocker):
 
     with pytest.raises(ValueError):
         fetch_atlas_talairach("bad_level")
+
+    check_fetcher_verbosity(
+        fetch_atlas_talairach,
+        capsys,
+        level_name="hemisphere",
+        data_dir=tmp_path,
+    )
 
 
 def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
@@ -783,7 +835,7 @@ def test_fetch_atlas_schaefer_2018_errors():
 @pytest.mark.parametrize("yeo_networks", [7, 17])
 @pytest.mark.parametrize("resolution_mm", [1, 2])
 def test_fetch_atlas_schaefer_2018(
-    tmp_path, request_mocker, n_rois, yeo_networks, resolution_mm
+    tmp_path, request_mocker, n_rois, yeo_networks, resolution_mm, capsys
 ):
     labels_pattern = re.compile(
         r".*2018_(?P<n_rois>\d+)Parcels_(?P<network>\d+)Networks_order.txt"
@@ -830,6 +882,15 @@ def test_fetch_atlas_schaefer_2018(
 
     assert img.header.get_zooms()[0] == resolution_mm
     assert np.array_equal(np.unique(img.dataobj), np.arange(n_rois + 1))
+
+    check_fetcher_verbosity(
+        fetch_atlas_schaefer_2018,
+        capsys,
+        n_rois=n_rois,
+        yeo_networks=yeo_networks,
+        resolution_mm=resolution_mm,
+        data_dir=tmp_path,
+    )
 
 
 @pytest.fixture
