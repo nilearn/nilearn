@@ -1043,8 +1043,9 @@ def _sanitize_standard_output(output):
     )
     output = re.sub(r", .* seconds remaining", ", X seconds remaining", output)
     output = re.sub(
-        r"Time Elapsed: .* seconds.", "Time Elapsed: X seconds.", output
+        r"Time Elapsed: .* seconds", "Time Elapsed: X seconds", output
     )
+    output = re.sub(r"done in .* seconds", "done in X seconds", output)
     return output
 
 
