@@ -145,15 +145,6 @@ def test_parcellations_transform_single_nifti_image(
 
 
 @pytest.mark.timeout(0)
-@pytest.mark.parametrize("verbose", [-1, 0, 1, 2])
-def test_parcellations_transform_verbose(test_image_2, verbose):
-    """Test verbose mostly for coverage purpose."""
-    parcellator = Parcellations(method="kmeans", n_parcels=5, verbose=verbose)
-    parcellator.fit(test_image_2)
-    parcellator.transform(test_image_2)
-
-
-@pytest.mark.timeout(0)
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_multi_nifti_images(

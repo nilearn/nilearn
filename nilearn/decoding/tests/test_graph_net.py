@@ -280,7 +280,6 @@ def test_tikhonov_regularization_vs_graph_net():
         fit_intercept=False,
         screening_percentile=100.0,
         standardize=False,
-        verbose=0,
     )
     graph_net.fit(X_, y.copy())
 
