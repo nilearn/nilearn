@@ -2712,7 +2712,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
 
 def _download_spm_auditory_data(data_dir):
-    logger.log("Data absent, downloading...")
+    logger.log("Data absent, downloading...", verbose=1)
     url = (
         "https://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
         "MoAEpilot.bids.zip"
@@ -2810,7 +2810,8 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
     if len(session_func) < 390:
         logger.log(
             f"Missing {390 - len(session_func)} functional scans "
-            f"for session {session}."
+            f"for session {session}.",
+            verbose=1,
         )
         return None
 
@@ -2879,7 +2880,7 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
 
 
 def _download_data_spm_multimodal(data_dir, subject_dir):
-    logger.log("Data absent, downloading...")
+    logger.log("Data absent, downloading...", verbose=1)
     urls = [
         # fmri
         (

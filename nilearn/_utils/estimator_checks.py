@@ -980,7 +980,7 @@ def check_img_estimator_verbose(estimator_orig):
     """Check verbose behavior.
 
     All estimators:
-    - should be quiet when verbose == 0
+    - should be quiet by default (when verbose == 0)
     - should say something (anything) when verbose > 0
     - check that outputs are the same for
       - verbose False and verbose = 0
@@ -1022,7 +1022,9 @@ def check_img_estimator_verbose(estimator_orig):
     with contextlib.redirect_stdout(buffer):
         fit_estimator(estimator)
     output_true = buffer.getvalue()
-    assert _rm_nifti_obj_ref(output_true) == _rm_nifti_obj_ref(output)
+    assert _sanitize_standard_output(output_true) == _sanitize_standard_output(
+        output
+    )
 
     # verbose 2 should have more than output verbose 1
     estimator = clone(estimator_orig)
@@ -1035,9 +1037,13 @@ def check_img_estimator_verbose(estimator_orig):
     assert len(output_2) >= len(output)
 
 
-def _rm_nifti_obj_ref(output):
+def _sanitize_standard_output(output):
     output = re.sub(
         r"<nibabel.nifti1.Nifti1Image object at .*>", "Nifti1Image", output
+    )
+    output = re.sub(r", .* seconds remaining", ", X seconds remaining", output)
+    output = re.sub(
+        r"Time Elapsed: .* seconds.", "Time Elapsed: X seconds.", output
     )
     return output
 

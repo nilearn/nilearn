@@ -675,7 +675,9 @@ def fetch_single_file(
         )
     except requests.RequestException:
         logger.log(
-            f"Error while fetching file {file_name}; dataset fetching aborted."
+            f"Error while fetching file {file_name}; "
+            "dataset fetching aborted.",
+            verbose=verbose,
         )
         raise
     if md5sum is not None and _md5_sum_file(full_name) != md5sum:

@@ -4,7 +4,10 @@ import inspect
 import traceback
 from pathlib import Path
 
+import numpy as np
 from sklearn.base import BaseEstimator
+
+from nilearn.typing import Verbose
 
 
 def _has_rich():
@@ -26,12 +29,12 @@ if _has_rich():
 # The technique used in the log() function only applies to CPython, because
 # it uses the inspect module to walk the call stack.
 def log(
-    msg,
-    verbose,
+    msg: str,
+    verbose: Verbose,
     object_classes=(BaseEstimator,),
-    stack_level=None,
-    msg_level=1,
-    with_traceback=False,
+    stack_level: int | np.integer | None = None,
+    msg_level: int | np.integer = 1,
+    with_traceback: bool = False,
 ):
     """Display a message to the user, depending on the verbosity level.
 
@@ -72,6 +75,11 @@ def log(
     is the one which is most likely to have been written in the user's script.
 
     """
+    if verbose is False:
+        verbose = 0
+    if verbose is True:
+        verbose = 1
+
     if verbose < msg_level:
         return
     if stack_level is None:

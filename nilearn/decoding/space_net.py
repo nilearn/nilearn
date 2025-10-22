@@ -949,7 +949,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         # report time elapsed
         duration = time.time() - tic
         logger.log(
-            f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes.",
+            f"Time Elapsed: {duration:.3f} seconds.",
             self.verbose,
         )
 
