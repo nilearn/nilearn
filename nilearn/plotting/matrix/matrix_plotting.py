@@ -317,7 +317,7 @@ def plot_contrast_matrix(
 
     maxval = np.max(np.abs(contrast_def))
     mat = axes.matshow(
-        con_matrix, aspect="equal", cmap="gray", vmin=-maxval, vmax=maxval
+        con_matrix, aspect="equal", cmap="RdBu_r", vmin=-maxval, vmax=maxval
     )
 
     axes.set_label("conditions")
