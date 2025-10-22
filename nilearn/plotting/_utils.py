@@ -109,7 +109,7 @@ def get_cbar_ticks(
             n_ticks = int(vmax - vmin + 1)
 
     ticks = np.linspace(vmin, vmax, n_ticks)
-    # tick values formatted as matplotlib will display it
+    # format tick values as matplotlib will display it
     # this is to avoid double appearance of same tick value
     # for example when threshold is 9.96 and vmax is 10, matplotlib rounds
     # 9.96 to 10. If both 9.96 and 10 are in the tick list, matplotlib will
