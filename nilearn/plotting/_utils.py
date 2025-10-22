@@ -98,8 +98,12 @@ def get_cbar_ticks(
         an array with ``n_ticks`` elements if ``vmin`` != ``vmax``, else array
         with one element.
     """
-    if vmin == vmax and (threshold is None or threshold == 0 or vmax == 0):
-        return np.linspace(vmin, vmax, 1)
+    f_vmin = float(tick_format % vmin)
+    f_vmax = float(tick_format % vmax)
+    if f_vmin == f_vmax and (
+        threshold is None or threshold == 0 or f_vmax == 0
+    ):
+        return np.linspace(f_vmin, f_vmax, 1)
 
     if tick_format == "%i":
         if threshold is not None and int(threshold) != threshold:
@@ -108,8 +112,8 @@ def get_cbar_ticks(
                 "but configured the colorbar to use integer formatting.",
                 stacklevel=find_stack_level(),
             )
-        if vmax - vmin < n_ticks - 1:
-            n_ticks = int(vmax - vmin + 1)
+        if f_vmax - f_vmin < n_ticks - 1:
+            n_ticks = int(f_vmax - f_vmin + 1)
 
     ticks = np.linspace(vmin, vmax, n_ticks)
     # format tick values as matplotlib will display them
@@ -120,8 +124,6 @@ def get_cbar_ticks(
     ticks = np.vectorize(lambda x: float(tick_format % x))(ticks)
     # get the size of maximum interval between the ticks
     step_size = max(b - a for a, b in pairwise(ticks))
-    vmin = float(tick_format % vmin)
-    vmax = float(tick_format % vmax)
 
     if threshold is not None and threshold > 1e-6:
         # set threshold to formatted threshold
@@ -145,7 +147,7 @@ def get_cbar_ticks(
                 # in that case below we need to check with abs(threshold)
                 (ticks > abs(threshold))
                 | (ticks < -abs(threshold))
-                | (np.isin(ticks, [0, vmin, vmax, threshold, -threshold]))
+                | (np.isin(ticks, [0, f_vmin, f_vmax, threshold, -threshold]))
             )
         ]
 
@@ -155,7 +157,9 @@ def get_cbar_ticks(
 
     ticks = np.sort(np.unique(ticks))
     abs_threshold = abs(threshold) if threshold is not None else None
-    ticks = _remove_close_values(ticks, step_size, abs_threshold, vmin, vmax)
+    ticks = _remove_close_values(
+        ticks, step_size, abs_threshold, f_vmin, f_vmax
+    )
 
     return ticks
 
