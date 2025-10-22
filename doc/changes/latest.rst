@@ -49,6 +49,8 @@ Enhancements
 Changes
 -------
 
+- :bdg-success:`API` The default verbosity of the spacenet estimators was changed to 0 to match the default of all other Nilearn estimators (:gh:`5778` by `Rémi Gau`_).
+
 - :bdg-danger:`Deprecation` Extra key-words arguments (``kwargs``) have been removed from the constructor of all the Nifti maskers. Any extra-parameters to pass to the call to :func:`~image.clean_img` done by ``transform`` must be done via the parameter ``clean_args`` (:gh:`5628` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The parameter ``darkness`` was removed from the function :func:`~plotting.view_img_on_surf`, :func:`~plotting.view_surf`, :func:`~plotting.plot_surf`, :func:`~plotting.plot_surf_stat_map` and :func:`~plotting.plot_surf_roi` (:gh:`5625` by `Rémi Gau`_).
