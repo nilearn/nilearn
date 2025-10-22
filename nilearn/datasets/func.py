@@ -1459,7 +1459,9 @@ def fetch_mixed_gambles(
         (f"zmaps{os.sep}sub{int(j + 1):03}_zmaps.nii.gz", url, opts)
         for j in range(n_subjects)
     ]
-    data_dir = get_dataset_dir("jimura_poldrack_2012_zmaps", data_dir=data_dir)
+    data_dir = get_dataset_dir(
+        "jimura_poldrack_2012_zmaps", data_dir=data_dir, verbose=verbose
+    )
     zmap_fnames = fetch_files(data_dir, files, resume=resume, verbose=verbose)
     subject_id = pd.DataFrame(
         {"subject_id": np.repeat(np.arange(n_subjects), 6 * 8).tolist()}
@@ -2171,7 +2173,9 @@ def fetch_development_fmri(
     check_params(locals())
 
     dataset_name = "development_fmri"
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir, verbose=1)
+    data_dir = get_dataset_dir(
+        dataset_name, data_dir=data_dir, verbose=verbose
+    )
     keep_confounds = [
         "trans_x",
         "trans_y",
