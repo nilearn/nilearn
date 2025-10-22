@@ -1354,7 +1354,6 @@ verbose : :obj:`int`, default={}
 """
 docdict["verbose"] = verbose.format(1)
 docdict["verbose0"] = verbose.format(0)
-docdict["verbose2"] = verbose.format(2)
 docdict["verbose3"] = verbose.format(3)
 
 # view

@@ -317,7 +317,7 @@ def path_scores(
     key=None,
     debias=False,
     screening_percentile=20,
-    verbose=1,
+    verbose=0,
 ):
     """Compute scores of different alphas in regression \
     and classification used by CV objects.
@@ -369,7 +369,7 @@ def path_scores(
 
     %(screening_percentile)s
 
-    %(verbose)s
+    %(verbose0)s
 
     """
     if l1_ratios is None:
@@ -598,7 +598,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     tol : :obj:`float`, default=5e-4
         Defines the tolerance for convergence for the backend FISTA solver.
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -639,7 +639,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,
@@ -1058,7 +1058,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     %(standardize_true)s
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -1115,7 +1115,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,
@@ -1290,7 +1290,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
 
     %(standardize_true)s
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -1340,7 +1340,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,

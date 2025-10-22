@@ -99,7 +99,7 @@ def test_fetch_haxby_more_than_6(tmp_path, request_mocker, subjects):
     request_mocker.url_mapping[re.compile(r".*(subj\d).*\.tar\.gz")] = (
         _make_haxby_subject_data
     )
-    func.fetch_haxby(data_dir=tmp_path, subjects=subjects, verbose=1)
+    func.fetch_haxby(data_dir=tmp_path, subjects=subjects)
 
 
 def test_fetch_haxby(tmp_path, request_mocker):
@@ -278,13 +278,13 @@ def test_fetch_localizer_contrasts_edge_cases(
     subjects,
 ):
     func.fetch_localizer_contrasts(
-        ["checkerboard"], n_subjects=subjects, data_dir=tmp_path, verbose=1
+        ["checkerboard"], n_subjects=subjects, data_dir=tmp_path
     )
 
 
 def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):  # noqa: ARG001
     dataset = func.fetch_localizer_contrasts(
-        ["checkerboard"], n_subjects=2, data_dir=tmp_path, verbose=1
+        ["checkerboard"], n_subjects=2, data_dir=tmp_path
     )
 
     check_type_fetcher(dataset)
@@ -305,7 +305,6 @@ def test_fetch_localizer_contrasts_multiple_contrasts(
         ["checkerboard", "horizontal checkerboard"],
         n_subjects=2,
         data_dir=tmp_path,
-        verbose=1,
     )
 
     assert isinstance(dataset.ext_vars, pd.DataFrame)
@@ -323,7 +322,6 @@ def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):  # noqa:
         get_anats=True,
         get_masks=True,
         get_tmaps=True,
-        verbose=1,
     )
 
     assert isinstance(dataset.ext_vars, pd.DataFrame)
@@ -341,10 +339,7 @@ def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):  # noqa:
 def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  # noqa: ARG001
     # grab a given list of subjects
     dataset2 = func.fetch_localizer_contrasts(
-        ["checkerboard"],
-        n_subjects=[2, 3, 5],
-        data_dir=tmp_path,
-        verbose=1,
+        ["checkerboard"], n_subjects=[2, 3, 5], data_dir=tmp_path
     )
 
     assert len(dataset2["ext_vars"]) == 3
@@ -456,7 +451,6 @@ def test_fetch_mixed_gambles(tmp_path, n_subjects):
     mgambles = func.fetch_mixed_gambles(
         n_subjects=n_subjects,
         data_dir=tmp_path,
-        verbose=1,
         return_raw_data=True,
         url=None,
     )
@@ -674,7 +668,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
         mock_participants.to_csv(index=False, sep="\t")
     )
 
-    data = fetch_development_fmri(n_subjects=2, data_dir=tmp_path, verbose=1)
+    data = fetch_development_fmri(n_subjects=2, data_dir=tmp_path)
 
     assert isinstance(data, Bunch)
     check_type_fetcher(data)
@@ -694,7 +688,7 @@ def test_fetch_development_fmri_n_confounds(request_mocker):
         mock_participants.to_csv(index=False, sep="\t")
     )
 
-    data = fetch_development_fmri(n_subjects=2, verbose=1)
+    data = fetch_development_fmri(n_subjects=2)
 
     # check reduced confounds
     confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
@@ -702,9 +696,7 @@ def test_fetch_development_fmri_n_confounds(request_mocker):
     assert len(confounds[0]) == 15
 
     # check full confounds
-    data = fetch_development_fmri(
-        n_subjects=2, reduce_confounds=False, verbose=1
-    )
+    data = fetch_development_fmri(n_subjects=2, reduce_confounds=False)
     confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
 
     assert len(confounds[0]) == 28
@@ -721,26 +713,26 @@ def test_fetch_development_fmri_phenotype(request_mocker):
     )
 
     # check first subject is an adult
-    data = fetch_development_fmri(n_subjects=1, verbose=1)
+    data = fetch_development_fmri(n_subjects=1)
     age_group = data.phenotypic["Child_Adult"].to_list()[0]
 
     assert age_group == "adult"
 
     # check one of each age group returned if n_subject == 2
     # and age_group == 'both
-    data = fetch_development_fmri(n_subjects=2, verbose=1, age_group="both")
+    data = fetch_development_fmri(n_subjects=2, age_group="both")
     age_group = data.phenotypic["Child_Adult"]
 
     assert all(age_group == ["adult", "child"])
 
     # check first subject is an child if requested with age_group
-    data = fetch_development_fmri(n_subjects=1, verbose=1, age_group="child")
+    data = fetch_development_fmri(n_subjects=1, age_group="child")
     age_group = data.phenotypic["Child_Adult"][0]
 
     assert age_group == "child"
 
     # check age_group
-    data = fetch_development_fmri(n_subjects=2, verbose=1, age_group="child")
+    data = fetch_development_fmri(n_subjects=2, age_group="child")
 
     assert all(x == "child" for x in data.phenotypic["Child_Adult"])
 
@@ -844,10 +836,7 @@ def test_fetch_ds000030_urls():
             json.dump(mock_json_content, f)
 
         # fetch_ds000030_urls should retrieve the appropriate URLs
-        urls_path, urls = func.fetch_ds000030_urls(
-            data_dir=tmpdir,
-            verbose=1,
-        )
+        urls_path, urls = func.fetch_ds000030_urls(data_dir=tmpdir)
 
         assert urls_path == str(filepath)
         assert urls == mock_json_content
@@ -858,11 +847,7 @@ def test_fetch_openneuro_dataset(tmp_path):
     data_prefix = (
         f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
     )
-    data_dir = get_dataset_dir(
-        data_prefix,
-        data_dir=tmp_path,
-        verbose=1,
-    )
+    data_dir = get_dataset_dir(data_prefix, data_dir=tmp_path)
     url_file = data_dir / "urls.json"
 
     # Prepare url files for subject and filter tests
@@ -899,7 +884,6 @@ def test_fetch_openneuro_dataset(tmp_path):
             urls=None,
             data_dir=tmp_path,
             dataset_version="ds500_v2",
-            verbose=1,
         )
 
 
@@ -1017,7 +1001,7 @@ def test_fetch_spm_multimodal_missing_data(tmp_path, request_mocker):
     subject_id = "sub001"
     subject_dir = tmp_path / "spm_multimodal_fmri" / subject_id
 
-    dataset = func.fetch_spm_multimodal_fmri(data_dir=tmp_path, verbose=1)
+    dataset = func.fetch_spm_multimodal_fmri(data_dir=tmp_path)
     assert (subject_dir / "fMRI").exists()
     assert (subject_dir / "sMRI").exists()
     assert isinstance(dataset, Bunch)

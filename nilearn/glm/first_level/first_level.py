@@ -420,7 +420,7 @@ class FirstLevelModel(BaseGLM):
     noise_model : {'ar1', 'ols'}, default='ar1'
         The temporal variance model.
 
-    %(verbose)s
+    %(verbose0)s
         If 1 prints progress by computation of
         each run. If 2 prints timing details of masker and GLM. If 3
         prints masker computation details.

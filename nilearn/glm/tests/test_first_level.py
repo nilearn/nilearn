@@ -2044,7 +2044,6 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc")],
-        verbose=0,
         slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
@@ -2124,7 +2123,6 @@ def test_slice_time_ref_warning_only_when_not_provided(bids_dataset):
             space_label="MNI",
             img_filters=[("desc", "preproc")],
             slice_time_ref=0.6,
-            verbose=0,
         )
 
     # check that no warnings were raised

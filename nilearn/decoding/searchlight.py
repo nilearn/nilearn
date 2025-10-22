@@ -226,6 +226,7 @@ def _group_iter_search_light(
                     f"Job #{thread_id}, processed {i}/{len(list_rows)} steps "
                     f"({percent:0.2f}%, "
                     f"{remaining:0.1f} seconds remaining){crlf}",
+                    verbose,
                 )
     return par_scores
 

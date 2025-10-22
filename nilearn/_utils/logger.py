@@ -27,7 +27,7 @@ if _has_rich():
 # it uses the inspect module to walk the call stack.
 def log(
     msg,
-    verbose=1,
+    verbose,
     object_classes=(BaseEstimator,),
     stack_level=None,
     msg_level=1,

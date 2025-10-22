@@ -248,7 +248,6 @@ def test_max_alpha_squared_loss(estimator, l1_ratio):
         mask=mask_,
         max_iter=10,
         penalty="graph-net",
-        verbose=0,
         standardize="zscore_sample",
     )
 
