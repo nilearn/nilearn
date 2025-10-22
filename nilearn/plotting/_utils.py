@@ -33,30 +33,40 @@ def get_cbar_bounds(vmin, vmax, num_val, tick_format=DEFAULT_TICK_FORMAT):
     )
 
 
-def _add_to_ticks(ticks, value):
-    """Compare the distance of value to closest tick location and decide if
-    value should replace the tick or it should be added to the tick list.
+def _remove_close_values(ticks, step_size, threshold, vmin, vmax):
+    """Remove some tick values if they are very close to each other."""
+    # create the list for the values to be kept in tick list
+    keep_list = [vmin, 0, vmax]
+    if threshold is not None:
+        keep_list.extend([-threshold, threshold])
 
-    The distance of threshold to 0 is excluded when finding the tick with
-    minimum distance.
+    for a, b in pairwise(ticks):
+        # if two consecutive values have distance less the 1/3th of step_size
+        # check for the possibility to remove one
+        if b - a < step_size / 3:
+            value_to_remove = a if a not in keep_list else None
+            if value_to_remove is None:
+                value_to_remove = b if b not in keep_list else None
 
-    If the distance is smaller than or equal to 1/3th of the max tick spacing,
-    or it is smaller than 4/3th of threshold value, return ``False`` so that
-    the closest tick is replaced with value;
-    otherwise return ``True`` so that the value is added to the tick list.
-    """
-    ticks_without_zero = ticks[ticks != 0]
-    if len(ticks_without_zero) <= 2:
-        return True
-
-    min_diff = min(abs(abs(ticks_without_zero) - value))
-    step_size = max(b - a for a, b in pairwise(ticks))
-
-    # check if value should be added to the tick list or replaced by another
-    # value in the list
-    return min_diff > step_size / 3 or (
-        min_diff >= value * 4 / 3 and value != 0
-    )
+            # if one of the ticks is 0 and the other is threshold
+            if (
+                value_to_remove is None
+                and threshold is not None
+                and (
+                    a in [-threshold, threshold]
+                    or b in [-threshold, threshold]
+                )
+                and (a == 0 or b == 0)
+            ):
+                # if threshold is very close to 0, remove it and keep 0
+                if threshold <= 1e-5:
+                    value_to_remove = a if a != 0 else b
+                    # otherwise remove 0 if it is not vmin or vmax
+                elif vmin != 0 and vmax != 0:
+                    value_to_remove = 0
+            if value_to_remove is not None:
+                ticks = np.delete(ticks, np.where(ticks == value_to_remove))
+    return ticks
 
 
 def get_cbar_ticks(
@@ -65,13 +75,9 @@ def get_cbar_ticks(
     """Return an array of evenly spaced ``n_ticks`` tick values to be used for
     the colorbar.
 
-    The tick list will contain vmin, vmax and threshold values. If
-    necessary the number of ticks might increase by 2.
-
-    If the distance between threshold and the closest tick is smaller than or
-    equal to 1/3th of the tick spacing, or it is smaller than 4/3th of
-    threshold value the closest tick is replaced with threshold;
-    otherwise the threshold (and/or -threshold) is added to the tick list.
+    The final tick list will contain 0, vmin, vmax and threshold values. If
+    there are values very close to each other, it will favor threshold value
+    over 0.
 
     Parameters
     ----------
@@ -80,10 +86,7 @@ def get_cbar_ticks(
     vmax: :obj:`float`
         maximum value for the colorbar, should not be None
     threshold: :obj:`float`, :obj:`int` or None
-        if threshold is not None, ``-threshold`` and ``threshold`` values are
-    replaced with the closest tick values. If the space between closest value
-    is large, instead of replacing threshold value(s) will be added to the
-    list.
+        threshold value
     n_ticks: :obj:`int`
         number of tick values to return
     tick_format: :obj:`str`, default="%.2g"
@@ -109,62 +112,29 @@ def get_cbar_ticks(
             n_ticks = int(vmax - vmin + 1)
 
     ticks = np.linspace(vmin, vmax, n_ticks)
-    # format tick values as matplotlib will display it
+    # format tick values as matplotlib will display them
     # this is to avoid double appearance of same tick value
     # for example when threshold is 9.96 and vmax is 10, matplotlib rounds
     # 9.96 to 10. If both 9.96 and 10 are in the tick list, matplotlib will
     # display double 10 in the colorbar.
     ticks = np.vectorize(lambda x: float(tick_format % x))(ticks)
+    # get the size of maximum interval between the ticks
+    step_size = max(b - a for a, b in pairwise(ticks))
+    vmin = float(tick_format % vmin)
+    vmax = float(tick_format % vmax)
 
     if threshold is not None and threshold > 1e-6:
         # set threshold to formatted threshold
         threshold = float(tick_format % threshold)
-        diff = abs(abs(ticks) - threshold)
-        add = _add_to_ticks(ticks, threshold)
 
         # if the values are either positive or negative
         if 0 <= vmin <= vmax or vmin <= vmax <= 0:
             if vmax <= 0:
                 threshold = -threshold
-            if add:
-                ticks = np.append(ticks, threshold)
-            else:
-                idx_closest = np.argmin(diff)
-                # if the closest value to replace is one of vmin or vmax,
-                # instead of replacing add the threshold value to the list
-                closest = ticks[idx_closest]
-                # if closest is vmin or vmax do not replace
-                if (closest in (vmin, vmax)) and closest != threshold:
-                    ticks = np.append(ticks, threshold)
-                # if threshold value is already in the list, do nothing
-                elif threshold not in ticks:
-                    ticks[idx_closest] = threshold
-        # if vmin is negative and vmax is positive and threshold is in between
-        # or outside vmin-vmax values
-        elif add:
-            ticks = np.append(ticks, [-threshold, threshold])
+            ticks = np.append(ticks, threshold)
         else:
-            # Edge case where the thresholds are exactly
-            # at the same distance to 4 ticks
-            if np.count_nonzero(ticks == min(diff)) == 4:
-                idx_closest = np.sort(np.argpartition(diff, 4)[:4])
-                idx_closest = np.where(
-                    np.isin(ticks, np.sort(ticks[idx_closest])[1:3])
-                )
-            else:
-                # Find the closest 2 ticks
-                idx_closest = np.sort(np.argpartition(diff, 2)[:2])
-                if 0 in ticks[idx_closest]:
-                    idx_closest = np.sort(np.argpartition(diff, 3)[:3])
-                    idx_closest = idx_closest[[0, 2]]
-            ticks[idx_closest[0]] = -threshold
-            ticks[idx_closest[1]] = threshold
+            ticks = np.append(ticks, [-threshold, threshold])
 
-        # set vmin and vmax to formatted values and add them to ticks in case
-        # they are replaced by threshold
-        vmin = float(tick_format % vmin)
-        vmax = float(tick_format % vmax)
-        ticks = np.append(ticks, [vmin, vmax])
         # remove unnecessary ticks that would be between 0 and +-threshold
         ticks = ticks[
             np.where(
@@ -179,24 +149,13 @@ def get_cbar_ticks(
             )
         ]
 
-    # we want 0 to always appear if the data contains both positive and
-    # negative values
-    if vmin < 0 < vmax and 0 not in ticks:
-        add_zero = _add_to_ticks(ticks, 0)
-        if add_zero:
-            ticks = np.append(ticks, 0)
-        else:
-            closest = np.argmin(np.abs(ticks))
-            if (
-                threshold is not None
-                and ticks[closest] != threshold
-                and ticks[closest] != -threshold
-            ) or threshold is None:
-                ticks[closest] = 0
-            else:
-                ticks = np.append(ticks, 0)
+    # we do this here to include the case where threshold is None
+    if vmin < 0 and vmax > 0:
+        ticks = np.append(ticks, 0)
 
     ticks = np.sort(np.unique(ticks))
+    abs_threshold = abs(threshold) if threshold is not None else None
+    ticks = _remove_close_values(ticks, step_size, abs_threshold, vmin, vmax)
 
     return ticks
 
