@@ -81,7 +81,7 @@ def read_md5_sum_file(path):
     return hashes
 
 
-def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
+def _chunk_report_(bytes_so_far, total_size, initial_size, t0, verbose):
     """Show downloading percentage.
 
     Parameters
@@ -102,7 +102,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
 
     """
     if not total_size:
-        logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.")
+        logger.log(f"\rDownloaded {int(bytes_so_far)} of ? bytes.", verbose)
 
     else:
         # Estimate remaining download time
@@ -120,6 +120,7 @@ def _chunk_report_(bytes_so_far, total_size, initial_size, t0):
             f"\rDownloaded {bytes_so_far} of {total_size} bytes "
             f"({total_percent * 100:.1f}%%, "
             f"{_format_time(time_remaining)} remaining)",
+            verbose=verbose,
         )
 
 
@@ -191,7 +192,7 @@ def _chunk_read_(
             # finished.
             (time_last_read > time_last_display + 1.0 or not chunk)
         ):
-            _chunk_report_(bytes_so_far, total_size, initial_size, t0)
+            _chunk_report_(bytes_so_far, total_size, initial_size, t0, verbose)
             time_last_display = time_last_read
         if chunk:
             local_file.write(chunk)
