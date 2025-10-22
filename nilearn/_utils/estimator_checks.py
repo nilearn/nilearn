@@ -789,6 +789,19 @@ def check_tags(estimator):
     assert estimator._more_tags() == estimator.__sklearn_tags__()
 
 
+def check_verbose(estimator):
+    """Check verbose.
+
+    All estimators should have:
+    - verbose set to 0
+    - a default verbose == 0
+    """
+    assert estimator.verbose == 0
+
+    signature = dict(**inspect.signature(estimator.__init__).parameters)
+    assert signature["verbose"] == 0
+
+
 def _check_mask_img_(estimator):
     if accept_niimg_input(estimator):
         assert isinstance(estimator.mask_img_, Nifti1Image)
@@ -1015,6 +1028,9 @@ def check_img_estimator_doc_attributes(estimator) -> None:
 
     # avoid duplicates
     assert len(documented_parameters) == len(set(documented_parameters))
+
+    verbose_doc = documented_parameters["verbose"]
+    assert "default=0" in verbose_doc
 
     # Attributes should be in same order as in __init__()
     tmp = dict(**inspect.signature(estimator.__init__).parameters)
