@@ -19,12 +19,12 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
-from nilearn.image.niimg_conversions import (
+from nilearn.image.resampling import coord_transform
+from nilearn.image.utils import (
     check_niimg_3d,
     check_niimg_4d,
     safe_get_data,
 )
-from nilearn.image.resampling import coord_transform
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,

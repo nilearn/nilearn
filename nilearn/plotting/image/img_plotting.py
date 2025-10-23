@@ -40,7 +40,7 @@ from nilearn.image import (
     new_img_like,
     resample_to_img,
 )
-from nilearn.image.niimg_conversions import check_niimg_3d, check_niimg_4d
+from nilearn.image.utils import check_niimg_3d, check_niimg_4d
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm

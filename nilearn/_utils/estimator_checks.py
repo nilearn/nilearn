@@ -95,7 +95,7 @@ from nilearn.decomposition.tests.conftest import (
 from nilearn.exceptions import DimensionError, MeshDimensionError
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import get_data, index_img, new_img_like
-from nilearn.image.niimg_conversions import check_imgs_equal
+from nilearn.image.utils import check_imgs_equal
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     MultiNiftiMasker,

@@ -31,7 +31,7 @@ from nilearn.datasets._utils import (
 )
 from nilearn.image import get_data as get_img_data
 from nilearn.image import new_img_like, reorder_img
-from nilearn.image.niimg_conversions import check_niimg
+from nilearn.image.utils import check_niimg
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 

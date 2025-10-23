@@ -7,7 +7,7 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data
-from nilearn.image.niimg_conversions import check_niimg_3d
+from nilearn.image.utils import check_niimg_3d
 from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,

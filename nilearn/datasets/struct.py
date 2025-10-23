@@ -24,7 +24,7 @@ from nilearn.datasets._utils import (
     get_dataset_dir,
 )
 from nilearn.image import get_data, new_img_like, resampling
-from nilearn.image.niimg_conversions import check_niimg
+from nilearn.image.utils import check_niimg
 from nilearn.surface import (
     FileMesh,
     PolyMesh,

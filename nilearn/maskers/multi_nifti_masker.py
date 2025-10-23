@@ -16,7 +16,7 @@ from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_params
 from nilearn.image import resample_img
-from nilearn.image.niimg_conversions import iter_check_niimg
+from nilearn.image.utils import iter_check_niimg
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (

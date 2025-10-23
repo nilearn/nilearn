@@ -23,13 +23,13 @@ from nilearn.image.image import (
     smooth_array,
     threshold_img,
 )
-from nilearn.image.niimg_conversions import (
+from nilearn.image.resampling import resample_img
+from nilearn.image.utils import (
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,
     check_same_fov,
 )
-from nilearn.image.resampling import resample_img
 from nilearn.maskers import NiftiMapsMasker
 
 

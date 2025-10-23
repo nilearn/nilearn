@@ -32,7 +32,7 @@ from nilearn._utils.param_validation import (
 )
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.exceptions import DimensionError
-from nilearn.image.niimg_conversions import (
+from nilearn.image.utils import (
     _index_img,
     check_niimg,
     check_niimg_3d,

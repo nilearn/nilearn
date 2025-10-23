@@ -22,7 +22,7 @@ from nilearn.datasets import (
 )
 from nilearn.exceptions import MaskWarning, NotImplementedWarning
 from nilearn.image import get_data, new_img_like, resampling
-from nilearn.image.niimg_conversions import (
+from nilearn.image.utils import (
     check_niimg,
     check_niimg_3d,
     check_same_fov,

@@ -800,8 +800,8 @@ def vol_to_surf(
     # avoid circular import
     from nilearn.image.image import get_data as get_vol_data
     from nilearn.image.image import load_img
-    from nilearn.image.niimg_conversions import check_niimg
     from nilearn.image.resampling import resample_to_img
+    from nilearn.image.utils import check_niimg
 
     sampling_schemes = {
         "linear": _interpolation_sampling,

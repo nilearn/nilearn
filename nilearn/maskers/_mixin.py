@@ -17,7 +17,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import high_variance_confounds
-from nilearn.image.niimg_conversions import (
+from nilearn.image.utils import (
     get_indices_from_image,
     iter_check_niimg,
 )

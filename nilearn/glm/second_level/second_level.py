@@ -40,7 +40,7 @@ from nilearn.glm.first_level.design_matrix import (
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
 from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import concat_imgs, iter_img, mean_img
-from nilearn.image.niimg_conversions import check_niimg
+from nilearn.image.utils import check_niimg
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.mass_univariate import permuted_ols

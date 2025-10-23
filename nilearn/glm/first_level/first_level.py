@@ -50,7 +50,7 @@ from nilearn.glm.regression import (
 )
 from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import get_data
-from nilearn.image.niimg_conversions import check_niimg
+from nilearn.image.utils import check_niimg
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids.query import (
     infer_repetition_time_from_dataset,

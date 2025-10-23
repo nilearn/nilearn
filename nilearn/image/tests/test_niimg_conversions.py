@@ -21,7 +21,7 @@ from nilearn._utils.testing import (
 )
 from nilearn.exceptions import DimensionError
 from nilearn.image import get_data
-from nilearn.image.niimg_conversions import (
+from nilearn.image.utils import (
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,

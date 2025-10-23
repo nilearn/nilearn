@@ -18,7 +18,7 @@ from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_reduction_strategy
 from nilearn.image import new_img_like
-from nilearn.image.niimg_conversions import check_niimg_3d, check_niimg_4d
+from nilearn.image.utils import check_niimg_3d, check_niimg_4d
 
 INF = 1000 * np.finfo(np.float32).eps
 

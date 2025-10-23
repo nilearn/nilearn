@@ -38,7 +38,7 @@ from nilearn.glm.thresholding import (
     threshold_stats_img,
     warn_default_threshold,
 )
-from nilearn.image.niimg_conversions import check_niimg
+from nilearn.image.utils import check_niimg
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (
     dataframe_to_html,

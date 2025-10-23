@@ -21,7 +21,7 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import get_data, load_img, resample_img
-from nilearn.image.niimg_conversions import (
+from nilearn.image.utils import (
     check_niimg,
     check_niimg_3d,
     check_same_fov,

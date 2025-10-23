@@ -22,16 +22,16 @@ from nilearn.image.image import (
     swap_img_hemispheres,
     threshold_img,
 )
-from nilearn.image.niimg_conversions import (
-    check_niimg,
-    check_niimg_3d,
-    check_niimg_4d,
-)
 from nilearn.image.resampling import (
     coord_transform,
     reorder_img,
     resample_img,
     resample_to_img,
+)
+from nilearn.image.utils import (
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
 )
 
 __all__ = [
