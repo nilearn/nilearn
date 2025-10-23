@@ -168,6 +168,7 @@ def plot_img_comparison(
                 np.max(src_data),
             ]
 
+            ax1.set_facecolor("black")
             hb = ax1.hexbin(
                 ref_data,
                 src_data,
@@ -352,6 +353,7 @@ def plot_bland_altman(
     )
 
     ax1 = figure.add_subplot(gs[:-1, 1:5])
+    ax1.set_facecolor("black")
     hb = ax1.hexbin(
         mean,
         diff,
