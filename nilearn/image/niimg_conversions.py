@@ -12,12 +12,33 @@ from numpy.testing import assert_array_equal
 
 import nilearn as ni
 from nilearn._utils.cache_mixin import cache
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data, load_niimg, safe_get_data
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.exceptions import DimensionError
+from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.typing import NiimgLike
+
+
+def get_indices_from_image(image) -> np.ndarray:
+    """Return unique values in a label image."""
+    if isinstance(image, NiimgLike):
+        img = check_niimg(image)
+        data = safe_get_data(img)
+    elif isinstance(image, SurfaceImage):
+        data = get_surface_data(image)
+    elif isinstance(image, np.ndarray):
+        data = image
+    else:
+        raise TypeError(
+            "Image to extract indices from must be one of: "
+            "Niimg-Like, SurfaceImage, numpy array. "
+            f"Got {image.__class__.__name__}"
+        )
+    return np.unique(data)
 
 
 def _check_fov(img, affine, shape):
@@ -93,12 +114,13 @@ def check_imgs_equal(img1, img2) -> bool:
 
 
 def _index_img(img, index):
-    """Helper function for check_niimg_4d."""  # noqa: D401
-    from nilearn.image.image import new_img_like  # avoid circular imports
+    """Help function for check_niimg_4d."""
+    from nilearn.image import new_img_like
 
     return new_img_like(img, _get_data(img)[:, :, :, index], img.affine)
 
 
+@fill_doc
 def iter_check_niimg(
     niimgs,
     ensure_ndim=None,
@@ -142,8 +164,7 @@ def iter_check_niimg(
         check_niimg, check_niimg_3d, check_niimg_4d
 
     """
-    # TODO move this function to avoid circular import
-    from nilearn.surface.surface import SurfaceImage
+    from nilearn.image import resample_img
 
     if memory is None:
         memory = Memory(location=None)
@@ -186,9 +207,6 @@ def iter_check_niimg(
                             f"Reference shape:\n{ref_fov[1]!r}\n"
                             f"Image shape:\n{niimg.shape!r}\n"
                         )
-                    from nilearn.image import (
-                        resample_img,  # we avoid a circular import
-                    )
 
                     if resample_to_first_img:
                         warnings.warn(
@@ -228,6 +246,7 @@ def iter_check_niimg(
         raise ValueError("Input niimgs list is empty.")
 
 
+@fill_doc
 def check_niimg(
     niimg,
     ensure_ndim=None,
@@ -292,7 +311,7 @@ def check_niimg(
         iter_check_niimg, check_niimg_3d, check_niimg_4d
 
     """
-    from nilearn.image.image import new_img_like  # avoid circular imports
+    from nilearn.image import new_img_like
 
     if not (
         isinstance(niimg, (NiimgLike, SpatialImage))
@@ -380,6 +399,7 @@ def check_niimg(
     return niimg
 
 
+@fill_doc
 def check_niimg_3d(niimg, dtype=None):
     """Check that niimg is a proper 3D niimg-like object and load it.
 
@@ -414,6 +434,7 @@ def check_niimg_3d(niimg, dtype=None):
     return check_niimg(niimg, ensure_ndim=3, dtype=dtype)
 
 
+@fill_doc
 def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     """Check that niimg is a proper 4D niimg-like object and load it.
 

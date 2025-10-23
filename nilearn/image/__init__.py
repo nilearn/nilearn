@@ -3,7 +3,7 @@
 Like, for example, a (3+)D block of data, and an affine.
 """
 
-from .image import (
+from nilearn.image.image import (
     binarize_img,
     clean_img,
     concat_imgs,
@@ -22,7 +22,12 @@ from .image import (
     swap_img_hemispheres,
     threshold_img,
 )
-from .resampling import (
+from nilearn.image.niimg_conversions import (
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
+)
+from nilearn.image.resampling import (
     coord_transform,
     reorder_img,
     resample_img,
@@ -31,6 +36,9 @@ from .resampling import (
 
 __all__ = [
     "binarize_img",
+    "check_niimg",
+    "check_niimg_3d",
+    "check_niimg_4d",
     "clean_img",
     "concat_imgs",
     "coord_transform",

@@ -25,7 +25,6 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
 )
 from nilearn._utils.path_finding import resolve_globbing
-from nilearn.image.niimg_conversions import check_niimg
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -801,6 +800,7 @@ def vol_to_surf(
     # avoid circular import
     from nilearn.image.image import get_data as get_vol_data
     from nilearn.image.image import load_img
+    from nilearn.image.niimg_conversions import check_niimg
     from nilearn.image.resampling import resample_to_img
 
     sampling_schemes = {
@@ -1965,9 +1965,6 @@ class SurfaceImage:
             right_kwargs = {"inner_mesh": inner_mesh.parts["right"]}
         else:
             left_kwargs, right_kwargs = {}, {}
-
-        if isinstance(volume_img, (str, Path)):
-            volume_img = check_niimg(volume_img)
 
         texture_left = vol_to_surf(
             volume_img, mesh.parts["left"], **vol_to_surf_kwargs, **left_kwargs
