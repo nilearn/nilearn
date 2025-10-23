@@ -18,16 +18,43 @@ BASE_TESTS = [
     "nilearn/tests/test_init.py",
     "nilearn/tests/test_package_import.py",
 ]
-
 TOP_LAYER = ["nilearn/glm", "nilearn/decoding", "nilearn/decomposition"]
 MID_LAYER = [
-    "nilearn/maskers",
+    "nilearn/datasets",
     "nilearn/image",
-    "nilearn/surface",
+    "nilearn/interfaces",
+    "nilearn/maskers",
     "nilearn/plotting",
     "nilearn/reporting",
-    "nilearn/datasets",
+    "nilearn/regions",
+    "nilearn/surface",
 ]
+IGNORE = ["input_data", "__pycache__", "externals", "tests"]
+
+
+def root_folder():
+    """Return local nilearn folder."""
+    return Path(__file__).parents[2]
+
+
+# run small sanity check that all folders are accounted for
+all_folders = sorted(
+    [
+        f"nilearn/{x.name!s}"
+        for x in (root_folder() / "nilearn").iterdir()
+        if (x.is_dir() and x.name not in IGNORE)
+    ]
+)
+known_dirs = sorted(
+    [
+        *TOP_LAYER,
+        *MID_LAYER,
+        "nilearn/_utils",
+        "nilearn/connectome",
+        "nilearn/mass_univariate",
+    ]
+)
+assert known_dirs == all_folders, f"\n{known_dirs=}\n{all_folders=}"
 
 
 def main() -> None:
@@ -86,7 +113,11 @@ def restrict_tests(changed_files: list[str]) -> list[str]:
     for x in changed_files:
         if "nilearn" not in x:
             continue
-        subpackages_changed.append("/".join(x.split("/")[0:2]))
+        x = x.split("/")
+        if x[1] != "tests":
+            subpackages_changed.append("/".join(x[0:2]))
+        else:
+            subpackages_changed.append("/".join(x))
     subpackages_changed = sorted(set(subpackages_changed))
     print(f"{subpackages_changed=}")
 
@@ -117,10 +148,10 @@ def restrict_tests(changed_files: list[str]) -> list[str]:
         if any(
             x == lowest_layer
             for lowest_layer in [
-                "nilearn/signal.py",
                 "nilearn/_utils",
-                "nilearn/exceptions.py",
                 "nilearn/conftest.py",
+                "nilearn/exceptions.py",
+                "nilearn/signal.py",
                 "nilearn/typing.py",
             ]
         ):
@@ -133,6 +164,14 @@ def restrict_tests(changed_files: list[str]) -> list[str]:
                     *TOP_LAYER,
                 ]
             )
+
+        # edge case where some tests files where changed
+        for test_file in [
+            "nilearn/tests/test_masking.py",
+            "nilearn/tests/test_signal.py",
+        ]:
+            if x == test_file:
+                tests_to_run.extend([x])
 
     # we always run some base tests
     tests_to_run.extend(BASE_TESTS)
@@ -153,7 +192,7 @@ def print_to_file(tests_to_run: list[str], output_path=None) -> None:
     print(f"Will run tests on {tests_to_run}")
 
     if output_path is None:
-        output_path = output_file = Path(__file__).parents[2]
+        output_path = root_folder()
     output_file = output_path / "tests_to_run.txt"
     with output_file.open("w") as f:
         f.write(" ".join(tests_to_run))
@@ -226,6 +265,10 @@ def test_print_to_file(tmp_path, tests_to_run, expected_content):
                 "nilearn/tests/test_signal.py",
                 "nilearn/connectome",
             ],
+        ),
+        (
+            ["nilearn/tests/test_signal.py"],
+            ["nilearn/tests/test_signal.py"],
         ),
     ],
 )
