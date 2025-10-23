@@ -396,9 +396,7 @@ def plot_bland_altman(
 
     if colorbar:
         ax4 = figure.add_subplot(gs[:-1, 5])
-        ax4.set_aspect(20)
-        pos1 = ax4.get_position()
-        ax4.set_position([pos1.x0 - 0.025, pos1.y0, pos1.width, pos1.height])
+        ax4.set_aspect(3)
 
         cb = figure.colorbar(hb, cax=ax4)
         cb.set_label("log10(N)")
