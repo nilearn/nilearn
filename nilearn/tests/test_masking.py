@@ -450,7 +450,7 @@ def test_apply_mask_errors(affine_eye, shape_3d_default):
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Mask shape: (7, 8, 9)\nis different from img shape:(40, 40, 40)"
+            "Mask shape: (7, 8, 9)\n is different from img shape:(40, 40, 40)"
         ),
     ):
         apply_mask(data_img, Nifti1Image(wrong_shape_mask_data, affine_eye))
