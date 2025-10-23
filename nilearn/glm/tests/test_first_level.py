@@ -134,8 +134,12 @@ def test_glm_fit_invalid_mask_img(shape_4d_default):
         )
 
 
-def test_glm_fit_verbose(shape_4d_default, capsys):
-    """Check verbosity levels."""
+def test_flm_fit_verbose(shape_4d_default, capsys):
+    """Check verbosity levels.
+
+    Standard output content should be larger
+    when we go from verbosity 1 to verbosity 3.
+    """
     rk = 3
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default], rk=rk
@@ -1731,7 +1735,9 @@ def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
     assert len(imgs[0]) == n_imgs_expected
 
 
-def test_first_level_from_bids_smoke_test_for_verbose_argument(bids_dataset):
+def test_first_level_from_bids_smoke_test_for_verbose_argument(
+    bids_dataset, capsys
+):
     """Test with verbose mode.
 
     verbose = 0 is the default, so should be covered by other tests.
@@ -1744,6 +1750,7 @@ def test_first_level_from_bids_smoke_test_for_verbose_argument(bids_dataset):
         verbose=1,
         slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
+    assert len(capsys.readouterr().out) > 0
 
 
 @pytest.mark.parametrize(
