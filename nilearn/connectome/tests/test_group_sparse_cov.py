@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from sklearn.model_selection import KFold
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.data_gen import generate_group_sparse_gaussian_graphs
@@ -80,7 +81,7 @@ def test_group_sparse_covariance(rng):
         signals, alpha, max_iter=20, tol=1e-2, debug=True, verbose=1
     )
     _, omega2 = group_sparse_covariance(
-        signals, alpha, max_iter=20, tol=1e-2, debug=True, verbose=0
+        signals, alpha, max_iter=20, tol=1e-2, debug=True
     )
 
     np.testing.assert_almost_equal(omega, omega2, decimal=4)
@@ -136,7 +137,7 @@ def test_group_sparse_covariance_with_probe_function(rng, duality_gap):
     # Use a probe to test for number of iterations and decreasing objective.
     probe = Probe()
     _, omega = group_sparse_covariance(
-        signals, alpha, max_iter=4, tol=None, verbose=0, probe_function=probe
+        signals, alpha, max_iter=4, tol=None, probe_function=probe
     )
     objective = probe.objective
     # check number of iterations
@@ -159,14 +160,10 @@ def test_group_sparse_covariance_check_consistency_between_classes(rng):
     )
 
     # Check consistency between classes
-    gsc1 = GroupSparseCovarianceCV(
-        alphas=4, tol=1e-1, max_iter=20, verbose=0, early_stopping=True
-    )
+    gsc1 = GroupSparseCovarianceCV(tol=1e-1, max_iter=20, early_stopping=True)
     gsc1.fit(signals)
 
-    gsc2 = GroupSparseCovariance(
-        alpha=gsc1.alpha_, tol=1e-1, max_iter=20, verbose=0
-    )
+    gsc2 = GroupSparseCovariance(alpha=gsc1.alpha_, tol=1e-1, max_iter=20)
     gsc2.fit(signals)
 
     np.testing.assert_almost_equal(
@@ -198,3 +195,31 @@ def test_group_sparse_covariance_errors(rng):
         match=r"All subjects must have the same number of features.",
     ):
         group_sparse_covariance([np.ones((2, 2)), np.ones((2, 3))], alpha)
+
+
+@pytest.mark.parametrize("cv", [None, 10, KFold(n_splits=4)])
+@pytest.mark.parametrize("alphas", [3, 5])
+@pytest.mark.parametrize("n_refinements", [3, 5])
+def test_group_sparse_covariance_cross_validation(
+    rng, cv, alphas, n_refinements
+):
+    signals, _, _ = generate_group_sparse_gaussian_graphs(
+        density=0.1,
+        n_subjects=5,
+        n_features=10,
+        min_n_samples=100,
+        max_n_samples=151,
+        random_state=rng,
+    )
+
+    gsc = GroupSparseCovarianceCV(
+        alphas=alphas, n_refinements=n_refinements, cv=cv
+    )
+    gsc.fit(signals)
+
+    cv_alphas_ = gsc.cv_alphas_
+    assert isinstance(cv_alphas_, list)
+    assert len(cv_alphas_) == alphas * n_refinements
+
+    cv_scores_ = gsc.cv_scores_
+    assert cv_scores_.shape == (alphas * n_refinements,)
