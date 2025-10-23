@@ -24,14 +24,6 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.niimg import _get_data, repr_niimgs, safe_get_data
-from nilearn._utils.niimg_conversions import (
-    _index_img,
-    check_niimg,
-    check_niimg_3d,
-    check_niimg_4d,
-    check_same_fov,
-    iter_check_niimg,
-)
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
@@ -40,6 +32,14 @@ from nilearn._utils.param_validation import (
 )
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn.exceptions import DimensionError
+from nilearn.image.niimg_conversions import (
+    _index_img,
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
+    check_same_fov,
+    iter_check_niimg,
+)
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,

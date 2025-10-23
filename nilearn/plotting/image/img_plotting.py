@@ -27,7 +27,6 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -41,6 +40,7 @@ from nilearn.image import (
     new_img_like,
     resample_to_img,
 )
+from nilearn.image.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm

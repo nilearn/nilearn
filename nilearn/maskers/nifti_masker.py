@@ -13,9 +13,9 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
 from nilearn._utils.param_validation import check_params
 from nilearn.image import crop_img, resample_img
+from nilearn.image.niimg_conversions import check_niimg, check_same_fov
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,

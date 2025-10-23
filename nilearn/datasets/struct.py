@@ -11,7 +11,6 @@ from sklearn.utils import Bunch
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -25,6 +24,7 @@ from nilearn.datasets._utils import (
     get_dataset_dir,
 )
 from nilearn.image import get_data, new_img_like, resampling
+from nilearn.image.niimg_conversions import check_niimg
 from nilearn.surface import (
     FileMesh,
     PolyMesh,

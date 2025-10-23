@@ -19,7 +19,6 @@ from nilearn._utils.bids import (
 )
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import rename_parameters
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -32,6 +31,7 @@ from nilearn.datasets._utils import (
 )
 from nilearn.image import get_data as get_img_data
 from nilearn.image import new_img_like, reorder_img
+from nilearn.image.niimg_conversions import check_niimg
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 

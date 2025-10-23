@@ -10,13 +10,13 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import largest_connected_component
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_parameter_in_allowed
 
 # Local imports
 from nilearn.image import get_data, iter_img, reorder_img
 from nilearn.image.image import smooth_array
+from nilearn.image.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn.image.resampling import coord_transform
 from nilearn.plotting._utils import check_threshold_not_negative
 

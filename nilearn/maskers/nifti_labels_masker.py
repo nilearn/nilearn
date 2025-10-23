@@ -15,17 +15,17 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import (
-    check_niimg,
-    check_niimg_3d,
-    check_same_fov,
-)
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
     check_reduction_strategy,
 )
 from nilearn.image import get_data, load_img, resample_img
+from nilearn.image.niimg_conversions import (
+    check_niimg,
+    check_niimg_3d,
+    check_same_fov,
+)
 from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (

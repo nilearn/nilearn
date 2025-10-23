@@ -14,9 +14,9 @@ from matplotlib.transforms import Bbox
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
-from nilearn._utils.niimg_conversions import _check_fov, check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, new_img_like, reorder_img
+from nilearn.image.niimg_conversions import _check_fov, check_niimg_3d
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
 from nilearn.plotting._engine_utils import threshold_cmap
 from nilearn.plotting._utils import (

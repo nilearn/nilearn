@@ -20,12 +20,12 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
     check_parameter_in_allowed,
 )
 from nilearn._utils.path_finding import resolve_globbing
+from nilearn.image.niimg_conversions import check_niimg
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):

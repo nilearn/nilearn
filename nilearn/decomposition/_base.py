@@ -27,13 +27,13 @@ from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
     check_params,
 )
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.image.niimg_conversions import check_niimg
 from nilearn.maskers import (
     MultiNiftiMasker,
     MultiSurfaceMasker,

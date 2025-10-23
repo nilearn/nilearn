@@ -13,11 +13,6 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.ndimage import get_border_data, largest_connected_component
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import (
-    check_niimg,
-    check_niimg_3d,
-    check_same_fov,
-)
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_params
 from nilearn.datasets import (
@@ -27,6 +22,11 @@ from nilearn.datasets import (
 )
 from nilearn.exceptions import MaskWarning, NotImplementedWarning
 from nilearn.image import get_data, new_img_like, resampling
+from nilearn.image.niimg_conversions import (
+    check_niimg,
+    check_niimg_3d,
+    check_same_fov,
+)
 from nilearn.surface.surface import (
     SurfaceImage,
 )

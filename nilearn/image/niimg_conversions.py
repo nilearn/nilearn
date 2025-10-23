@@ -421,17 +421,13 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     ----------
     niimg : 4D Niimg-like object
         See :ref:`extracting_data`.
-        If niimgs is an iterable, checks if data is really 4D. Then,
-        considering that it is a list of niimg and load them one by one.
-        If niimg is a string, consider it as a path to Nifti image and
-        call nibabel.load on it.
-        If it is an object, check if the affine attribute present and that
-        nilearn.image.get_data returns a result, raise TypeError otherwise.
-
-    dtype : {dtype, "auto"}, optional
-        Data type toward which the data should be converted. If "auto", the
-        data will be converted to int32 if dtype is discrete and float32 if it
-        is continuous.
+        If niimgs is an iterable, checks if data is really 4D.
+        Then, considering that it is a list of niimg and load them one by one.
+        If niimg is a string,
+        consider it as a path to Nifti image and call nibabel.load on it.
+        If it is an object, check if the affine attribute present
+        and that nilearn.image.get_data returns a result,
+        raise TypeError otherwise.
 
     return_iterator : boolean, default=False
         If True, an iterator of 3D images is returned. This reduces the memory
@@ -439,14 +435,19 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
         If False, a single 4D image is returned. When `niimgs` contains 3D
         images they are concatenated together.
 
+    dtype : {dtype, "auto", None}, default=None
+        Data type toward which the data should be converted.
+        If "auto", the data will be converted to int32
+        if dtype is discrete and float32 if it is continuous.
+
     Returns
     -------
     niimg: 4D nibabel.Nifti1Image or iterator of 3D nibabel.Nifti1Image
 
     Notes
     -----
-    This function is the equivalent to check_niimg_3d() for Niimg-like objects
-    with a run level.
+    This function is the equivalent to check_niimg_3d()
+    for Niimg-like objects with a run level.
 
     Its application is idempotent.
 

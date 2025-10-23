@@ -50,7 +50,6 @@ from sklearn.utils.estimator_checks import (
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_imgs_equal
 from nilearn._utils.param_validation import check_is_of_allowed_type
 from nilearn._utils.tags import (
     SKLEARN_LT_1_6,
@@ -96,6 +95,7 @@ from nilearn.decomposition.tests.conftest import (
 from nilearn.exceptions import DimensionError, MeshDimensionError
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import get_data, index_img, new_img_like
+from nilearn.image.niimg_conversions import check_imgs_equal
 from nilearn.maskers import (
     MultiNiftiMapsMasker,
     MultiNiftiMasker,

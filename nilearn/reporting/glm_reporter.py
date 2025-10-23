@@ -28,7 +28,6 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import load_niimg, safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -39,6 +38,7 @@ from nilearn.glm.thresholding import (
     threshold_stats_img,
     warn_default_threshold,
 )
+from nilearn.image.niimg_conversions import check_niimg
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (
     dataframe_to_html,

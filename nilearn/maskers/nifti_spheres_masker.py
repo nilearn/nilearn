@@ -17,13 +17,13 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.niimg_conversions import (
+from nilearn.datasets import load_mni152_template
+from nilearn.image import resample_img
+from nilearn.image.niimg_conversions import (
     check_niimg_3d,
     check_niimg_4d,
     safe_get_data,
 )
-from nilearn.datasets import load_mni152_template
-from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (

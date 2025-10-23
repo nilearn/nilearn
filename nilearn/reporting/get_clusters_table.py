@@ -19,9 +19,9 @@ from scipy.ndimage import (
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.image import new_img_like, threshold_img
+from nilearn.image.niimg_conversions import check_niimg_3d
 from nilearn.image.resampling import coord_transform
 from nilearn.surface import SurfaceImage
 

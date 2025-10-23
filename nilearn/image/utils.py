@@ -3,7 +3,7 @@
 import numpy as np
 
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import (
+from nilearn.image.niimg_conversions import (
     check_niimg,
 )
 from nilearn.surface.surface import (
