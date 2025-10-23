@@ -6,8 +6,8 @@ name: test free threaded python
 
 on:
     schedule:
-    # Run every 1rst of the month
-    -   cron: 0 8 1 * *
+    # Run every Monday at midnight UTC
+    -   cron: 0 0 * * 1
 
     # Allows you to run this workflow manually from the Actions tab
     workflow_dispatch:
