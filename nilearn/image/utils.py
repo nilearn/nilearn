@@ -138,7 +138,7 @@ def iter_check_niimg(
     niimgs : list of niimg or glob pattern or itertools.tee instance
         Image to iterate over.
 
-    ensure_ndim : integer, optional
+    ensure_ndim : integer, default=None
         If specified, an error is raised if the data does not have the
         required dimension.
 
@@ -150,15 +150,13 @@ def iter_check_niimg(
 
     %(dtype)s
 
-    memory : instance of joblib.Memory or string, default=None
-        Used to cache the masking process.
-        By default, no caching is done.
-        If a string is given, it is the path to the caching directory.
+    %(memory)s
+        default=None
         If ``None`` is passed will default to ``Memory(location=None)``.
 
     memory_level : integer, default=0
-        Rough estimator of the amount of memory used by caching. Higher value
-        means more memory for caching.
+        Rough estimator of the amount of memory used by caching.
+        Higher value means more memory for caching.
 
     See Also
     --------
@@ -265,52 +263,56 @@ def check_niimg(
     ----------
     niimg : Niimg-like object
         See :ref:`extracting_data`.
-        If niimg is a string or pathlib.Path, consider it as a path to
-        Nifti image and call nibabel.load on it. The '~' symbol is expanded to
-        the user home folder.
-        If it is an object, check if the affine attribute present and that
-        nilearn.image.get_data returns a result, raise TypeError otherwise.
+        If niimg is a string or :obj:`pathlib.Path`,
+        consider it as a path to Nifti image
+        and call nibabel.load on it.
+        The ``'~'`` symbol is expanded to the user home folder.
+        If it is an object, check if the affine attribute present
+        and that :func:`nilearn.image.get_data` returns a result,
+        raise :obj:`TypeError` otherwise.
 
-    ensure_ndim : integer {3, 4}, optional
-        Indicate the dimensionality of the expected niimg. An
-        error is raised if the niimg is of another dimensionality.
+    ensure_ndim : {3, 4, None}, default=None
+        Indicate the dimensionality of the expected niimg.
+        An error is raised if the niimg is of another dimensionality.
 
-    atleast_4d : boolean, default=False
+    atleast_4d : :obj:`bool`, default=False
         Indicates if a 3d image should be turned into a single-scan 4d niimg.
 
     %(dtype)s
-        If None, data will not be converted to a new data type.
 
-    return_iterator : boolean, default=False
+    return_iterator : :obj:`bool`, default=False
         Returns an iterator on the content of the niimg file input.
 
-    wildcards : boolean, default=True
-        Use niimg as a regular expression to get a list of matching input
-        filenames.
-        If multiple files match, the returned list is sorted using an ascending
-        order.
-        If no file matches the regular expression, a ValueError exception is
-        raised.
+    wildcards : :obj:`bool`, default=True
+        Use niimg as a regular expression
+        to get a list of matching input filenames.
+        If multiple files match,
+        the returned list is sorted using an ascending order.
+        If no file matches the regular expression,
+        a :obj:`ValueError` exception is raised.
 
     Returns
     -------
     result : 3D/4D Niimg-like object
-        Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-        that the returned object has an affine attribute and that its data can
-        be retrieved with nilearn.image.get_data.
+        Result can be nibabel.Nifti1Image or the input, as-is.
+        It is guaranteed that the returned object
+        has an affine attribute
+        and that its data can be retrieved
+        with :func:`nilearn.image.get_data`.
 
     Notes
     -----
     In nilearn, special care has been taken to make image manipulation easy.
-    This method is a kind of pre-requisite for any data processing method in
-    nilearn because it checks if data have a correct format and loads them if
-    necessary.
+    This method is a kind of pre-requisite
+    for any data processing method in Nilearn
+    because it checks if data have a correct format
+    and loads them if necessary.
 
     Its application is idempotent.
 
     See Also
     --------
-        iter_check_niimg, check_niimg_3d, check_niimg_4d
+        check_niimg_3d, check_niimg_4d
 
     """
     # TODO circular import
@@ -413,23 +415,26 @@ def check_niimg_3d(niimg, dtype=None):
         If niimg is a string, consider it as a path to Nifti image and
         call nibabel.load on it.
         If it is an object, check if the affine attribute present and that
-        nilearn.image.get_data returns a result, raise TypeError otherwise.
+        :func:`nilearn.image.get_data` returns a result,
+        raise :obj:`TypeError` otherwise.
 
     %(dtype)s
 
     Returns
     -------
     result : 3D Niimg-like object
-        Result can be nibabel.Nifti1Image or the input, as-is. It is guaranteed
-        that the returned object has an affine attribute and that its data can
-        be retrieved with nilearn.image.get_data.
+        Result can be nibabel.Nifti1Image or the input, as-is.
+        It is guaranteed that the returned object has an affine attribute
+        and that its data can be retrieved
+        with :func:`nilearn.image.get_data`.
 
     Notes
     -----
     In nilearn, special care has been taken to make image manipulation easy.
-    This method is a kind of pre-requisite for any data processing method in
-    nilearn because it checks if data have a correct format and loads them if
-    necessary.
+    This method is a kind of pre-requisite
+    for any data processing method in Nilearn
+    because it checks if data have a correct format
+    and loads them if necessary.
 
     Its application is idempotent.
 
@@ -445,24 +450,22 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     ----------
     niimg : 4D Niimg-like object
         See :ref:`extracting_data`.
-        If niimgs is an iterable, checks if data is really 4D.
+        If ``niimgs`` is an iterable, checks if data is really 4D.
         Then, considering that it is a list of niimg and load them one by one.
-        If niimg is a string,
-        consider it as a path to Nifti image and call nibabel.load on it.
+        If ``niimgs`` is a string,
+        consider it as a path to Nifti image
+        and call nibabel.load on it.
         If it is an object, check if the affine attribute present
-        and that nilearn.image.get_data returns a result,
-        raise TypeError otherwise.
+        and that :func:`nilearn.image.get_data` returns a result,
+        raise :obj:`TypeError` otherwise.
 
-    return_iterator : boolean, default=False
-        If True, an iterator of 3D images is returned. This reduces the memory
-        usage when `niimgs` contains 3D images.
-        If False, a single 4D image is returned. When `niimgs` contains 3D
-        images they are concatenated together.
+    return_iterator : :obj:`bool`, default=False
+        If True, an iterator of 3D images is returned.
+        This reduces the memory usage when ``niimgs`` contains 3D images.
+        If False, a single 4D image is returned.
+        When ``niimgs`` contains 3D images they are concatenated together.
 
-    dtype : {dtype, "auto", None}, default=None
-        Data type toward which the data should be converted.
-        If "auto", the data will be converted to int32
-        if dtype is discrete and float32 if it is continuous.
+    %(dtype)s.
 
     Returns
     -------
@@ -470,7 +473,7 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
 
     Notes
     -----
-    This function is the equivalent to check_niimg_3d()
+    This function is the equivalent to :func:`nilearn.image.check_niimg_3d()`
     for Niimg-like objects with a run level.
 
     Its application is idempotent.

@@ -408,6 +408,7 @@ dtype : dtype like, "auto" or None, default=None
     Data type toward which the data should be converted.
     If "auto", the data will be converted to int32
     if dtype is discrete and float32 if it is continuous.
+    If None, data will not be converted to a new data type.
 """
 
 # extractor / extract_type
@@ -750,7 +751,7 @@ docdict["max_iter5000"] = verbose.format(5000)
 # memory
 docdict["memory"] = """
 memory : None, instance of :class:`joblib.Memory`, :obj:`str`, or \
-:class:`pathlib.Path`
+:class:`pathlib.Path`, default=None
     Used to cache the masking process.
     By default, no caching is done.
     If a :obj:`str` is given, it is the path to the caching directory.
