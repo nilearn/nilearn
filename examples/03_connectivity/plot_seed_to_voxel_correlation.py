@@ -74,7 +74,6 @@ seed_masker = NiftiSpheresMasker(
     t_r=dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
 )
 
 # %%
@@ -101,7 +100,6 @@ brain_masker = NiftiMasker(
     t_r=dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
 )
 
 # %%

@@ -55,7 +55,6 @@ seed_masker = NiftiSpheresMasker(
     t_r=adhd_dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
 )
 seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
 
