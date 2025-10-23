@@ -60,8 +60,7 @@ from nilearn.maskers import MultiNiftiLabelsMasker
 # ConnectivityMeasure from Nilearn uses simple 'correlation' to compute
 # connectivity matrices for all subjects in a list
 connectome_measure = ConnectivityMeasure(
-    kind="correlation",
-    standardize="zscore_sample",
+    kind="correlation", standardize="zscore_sample", verbose=1
 )
 
 # create masker using MultiNiftiLabelsMasker to extract functional data within

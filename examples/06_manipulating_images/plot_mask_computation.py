@@ -46,7 +46,7 @@ miyawaki_mean_img = image.mean_img(miyawaki_filename)
 plot_epi(miyawaki_mean_img, title="Mean EPI image")
 # %%
 # A NiftiMasker with the default strategy
-masker = NiftiMasker()
+masker = NiftiMasker(verbose=1)
 masker.fit(miyawaki_filename)
 
 # Plot the generated mask using the mask_img_ attribute
@@ -83,7 +83,7 @@ plot_epi(mean_img, title="Mean EPI image")
 # %%
 # Simple mask extraction from :term:`EPI` images
 # We need to specify an 'epi' mask_strategy, as this is raw :term:`EPI` data
-masker = NiftiMasker(mask_strategy="epi")
+masker = NiftiMasker(mask_strategy="epi", verbose=1)
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -98,7 +98,7 @@ report
 # and :term:`dilation<Dilation>` operations
 # on the outer voxel layers of the mask,
 # which can for example remove remaining skull parts in the image.
-masker = NiftiMasker(mask_strategy="epi", mask_args={"opening": 10})
+masker = NiftiMasker(mask_strategy="epi", mask_args={"opening": 10}, verbose=1)
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -117,6 +117,7 @@ report
 masker = NiftiMasker(
     mask_strategy="epi",
     mask_args={"upper_cutoff": 0.9, "lower_cutoff": 0.8, "opening": False},
+    verbose=1,
 )
 masker.fit(epi_img)
 report = masker.generate_report()
@@ -132,7 +133,7 @@ report
 # 'whole-brain-template', 'gm-template', and 'wm-template' depending on whether
 # the whole-brain, gray matter, or white matter template should be used.
 
-masker = NiftiMasker(mask_strategy="whole-brain-template")
+masker = NiftiMasker(mask_strategy="whole-brain-template", verbose=1)
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -151,7 +152,9 @@ report
 
 import numpy as np
 
-masker = NiftiMasker(mask_strategy="epi", target_affine=np.eye(3) * 8)
+masker = NiftiMasker(
+    mask_strategy="epi", target_affine=np.eye(3) * 8, verbose=1
+)
 masker.fit(epi_img)
 report = masker.generate_report()
 report
@@ -163,8 +166,8 @@ report
 # Extract time series
 
 # trended vs detrended
-trended = NiftiMasker(mask_strategy="epi")
-detrended = NiftiMasker(mask_strategy="epi", detrend=True)
+trended = NiftiMasker(mask_strategy="epi", verbose=1)
+detrended = NiftiMasker(mask_strategy="epi", detrend=True, verbose=1)
 trended_data = trended.fit_transform(epi_img)
 detrended_data = detrended.fit_transform(epi_img)
 

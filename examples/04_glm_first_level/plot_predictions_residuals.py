@@ -53,6 +53,7 @@ fmri_glm = FirstLevelModel(
     signal_scaling=False,
     mask_img=mask,
     minimize_memory=False,
+    verbose=1,
 )
 
 fmri_glm = fmri_glm.fit(fmri_img, events)

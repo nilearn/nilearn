@@ -111,7 +111,6 @@ gs = GridSearchCV(
     param_grid,
     scoring="accuracy",
     cv=cv,
-    verbose=1,
     refit=False,
     n_jobs=2,
 )

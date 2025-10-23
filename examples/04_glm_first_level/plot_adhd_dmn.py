@@ -89,7 +89,7 @@ contrasts = {"seed_based_glm": dmn_contrast}
 # Perform first level analysis
 # ----------------------------
 # Setup and fit GLM.
-first_level_model = FirstLevelModel()
+first_level_model = FirstLevelModel(verbose=1)
 first_level_model = first_level_model.fit(
     run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
 )
