@@ -7,11 +7,12 @@ and select the subset of tests to to run.
 - Dump that list to a txt file so it can be used by other processes downstream
 """
 
+import contextlib
 import subprocess
 from pathlib import Path
 
-import pytest
-from rich import print
+with contextlib.suppress(Exception):
+    from rich import print
 
 BASE_TESTS = [
     "nilearn/tests/test_exceptions.py",
@@ -201,80 +202,83 @@ def print_to_file(tests_to_run: list[str], output_path=None) -> None:
 if __name__ == "__main__":
     main()
 
+try:
+    import pytest
 
-# ---------------- TESTS ----------------
+    # ---------------- TESTS ----------------
 
-
-@pytest.mark.parametrize(
-    "tests_to_run, expected_content",
-    [([], "nilearn"), (["foo", "bar"], "foo bar")],
-)
-def test_print_to_file(tmp_path, tests_to_run, expected_content):
-    """Check content printed to disk."""
-    print_to_file(tests_to_run, tmp_path)
-    assert (tmp_path / "tests_to_run.txt").is_file()
-    with (tmp_path / "tests_to_run.txt").open("r") as f:
-        content = f.read()
-    assert content == expected_content
-
-
-@pytest.mark.parametrize(
-    "changed_files, expected_subpackages_to_test",
-    [
-        ([], []),
-        (
-            ["nilearn/glm/first_level/first_level.py"],
-            ["nilearn/glm"],
-        ),
-        (
-            ["nilearn/decoding/decoder.py"],
-            ["nilearn/decoding"],
-        ),
-        (
-            ["nilearn/connectome/group_sparse_cov.py"],
-            ["nilearn/connectome"],
-        ),
-        (
-            ["nilearn/mass_univariate/permuted_least_squares.py"],
-            ["nilearn/glm", "nilearn/mass_univariate"],
-        ),
-        (
-            ["nilearn/plotting/cm.py"],
-            [*TOP_LAYER, *MID_LAYER, "nilearn/tests/test_masking.py"],
-        ),
-        (
-            ["nilearn/maskers/nifti_masker.py"],
-            [*TOP_LAYER, *MID_LAYER, "nilearn/tests/test_masking.py"],
-        ),
-        (
-            ["nilearn/signal.py"],
-            [
-                *TOP_LAYER,
-                *MID_LAYER,
-                "nilearn/tests/test_masking.py",
-                "nilearn/tests/test_signal.py",
-                "nilearn/connectome",
-            ],
-        ),
-        (
-            ["nilearn/conftest.py"],
-            [
-                *TOP_LAYER,
-                *MID_LAYER,
-                "nilearn/tests/test_masking.py",
-                "nilearn/tests/test_signal.py",
-                "nilearn/connectome",
-            ],
-        ),
-        (
-            ["nilearn/tests/test_signal.py"],
-            ["nilearn/tests/test_signal.py"],
-        ),
-    ],
-)
-def test_restrict_tests(changed_files, expected_subpackages_to_test):
-    """Check subset of tests to run."""
-    subpackages_to_test = restrict_tests(changed_files)
-    assert subpackages_to_test == sorted(
-        {*expected_subpackages_to_test, *BASE_TESTS}
+    @pytest.mark.parametrize(
+        "tests_to_run, expected_content",
+        [([], "nilearn"), (["foo", "bar"], "foo bar")],
     )
+    def test_print_to_file(tmp_path, tests_to_run, expected_content):
+        """Check content printed to disk."""
+        print_to_file(tests_to_run, tmp_path)
+        assert (tmp_path / "tests_to_run.txt").is_file()
+        with (tmp_path / "tests_to_run.txt").open("r") as f:
+            content = f.read()
+        assert content == expected_content
+
+    @pytest.mark.parametrize(
+        "changed_files, expected_subpackages_to_test",
+        [
+            ([], []),
+            (
+                ["nilearn/glm/first_level/first_level.py"],
+                ["nilearn/glm"],
+            ),
+            (
+                ["nilearn/decoding/decoder.py"],
+                ["nilearn/decoding"],
+            ),
+            (
+                ["nilearn/connectome/group_sparse_cov.py"],
+                ["nilearn/connectome"],
+            ),
+            (
+                ["nilearn/mass_univariate/permuted_least_squares.py"],
+                ["nilearn/glm", "nilearn/mass_univariate"],
+            ),
+            (
+                ["nilearn/plotting/cm.py"],
+                [*TOP_LAYER, *MID_LAYER, "nilearn/tests/test_masking.py"],
+            ),
+            (
+                ["nilearn/maskers/nifti_masker.py"],
+                [*TOP_LAYER, *MID_LAYER, "nilearn/tests/test_masking.py"],
+            ),
+            (
+                ["nilearn/signal.py"],
+                [
+                    *TOP_LAYER,
+                    *MID_LAYER,
+                    "nilearn/tests/test_masking.py",
+                    "nilearn/tests/test_signal.py",
+                    "nilearn/connectome",
+                ],
+            ),
+            (
+                ["nilearn/conftest.py"],
+                [
+                    *TOP_LAYER,
+                    *MID_LAYER,
+                    "nilearn/tests/test_masking.py",
+                    "nilearn/tests/test_signal.py",
+                    "nilearn/connectome",
+                ],
+            ),
+            (
+                ["nilearn/tests/test_signal.py"],
+                ["nilearn/tests/test_signal.py"],
+            ),
+        ],
+    )
+    def test_restrict_tests(changed_files, expected_subpackages_to_test):
+        """Check subset of tests to run."""
+        subpackages_to_test = restrict_tests(changed_files)
+        assert subpackages_to_test == sorted(
+            {*expected_subpackages_to_test, *BASE_TESTS}
+        )
+
+except Exception:
+    ...
