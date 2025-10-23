@@ -115,6 +115,7 @@ def check_imgs_equal(img1, img2) -> bool:
 
 def _index_img(img, index):
     """Help function for check_niimg_4d."""
+    # TODO circular import
     from nilearn.image import new_img_like
 
     return new_img_like(img, _get_data(img)[:, :, :, index], img.affine)
@@ -164,6 +165,7 @@ def iter_check_niimg(
         check_niimg, check_niimg_3d, check_niimg_4d
 
     """
+    # TODO circular import
     from nilearn.image import resample_img
 
     if memory is None:
@@ -311,6 +313,7 @@ def check_niimg(
         iter_check_niimg, check_niimg_3d, check_niimg_4d
 
     """
+    # TODO circular import
     from nilearn.image import new_img_like
 
     if not (
