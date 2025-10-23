@@ -438,7 +438,7 @@ def test_apply_mask_errors(affine_eye, shape_3d_default):
         apply_mask(data_img, Nifti1Image(mask[20, ...], affine_eye))
 
     with pytest.raises(
-        ValueError, match=r"5\]\]\nis different from img affine:\n\[\[1"
+        ValueError, match=r"5\]\]\n is different from img affine:\n\[\[1"
     ):
         apply_mask(data_img, Nifti1Image(mask, affine_eye / 2.0))
 
