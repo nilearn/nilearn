@@ -97,7 +97,6 @@ jobs:
 
 
         steps:
-
         -   uses: actions/checkout@v5
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v7
@@ -112,6 +111,8 @@ jobs:
             run: tox c
 
         -   name: Run test suite
+            # skip intermediate python versions on PR
+            if: ${{ !(github.event_name == 'pull_request' && contains(fromJSON('["3.12", "3.11"]'), matrix.py)) }}
             run: |
                 tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
                 tox run -e plot_test_timing
