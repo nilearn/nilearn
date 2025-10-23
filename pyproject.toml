@@ -198,6 +198,12 @@ source_modules = [
 ]
 type = "forbidden"
 
+[[tool.importlinter.contracts]]
+allowed_importers = ["nilearn.glm"]
+name = "only 'nilearn.glm' imports from 'nilearn.mass_univariate'"
+protected_modules = ["nilearn.mass_univariate"]
+type = 'protected'
+
 [tool.mypy]
 allow_redefinition = false
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]

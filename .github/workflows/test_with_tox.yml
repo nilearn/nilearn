@@ -26,6 +26,11 @@ on:
     push:
         branches:
         -   main
+        paths:
+        -   nilearn/**/*
+        -   tox.ini
+        -   pyproject.toml
+        -   .github/workflows/test_with_tox.yml
     pull_request:
         branches:
         -   '*'
@@ -118,7 +123,9 @@ jobs:
 
         -   name: Run test suite
             run: |
-                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
+                python build_tools/github/restrict_tests_to_run.py
+                tests_to_run=$(cat tests_to_run.txt)
+                tox run --list-dependencies -e ${{ matrix.env }} -- ${tests_to_run}
                 tox run -e plot_test_timing
 
         -   name: Upload test report
