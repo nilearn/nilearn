@@ -114,6 +114,7 @@ def fake_fmri_data(shape=SHAPE):
     return fmri_data[0], mask
 
 
+@pytest.mark.slow
 def test_non_parametric_inference_with_flm_objects(shape_3d_default):
     """See https://github.com/nilearn/nilearn/issues/3579 ."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -258,6 +259,7 @@ def test_check_affine_first_level_models(
         )
 
 
+@pytest.mark.slow
 def test_check_shape_first_level_models(shape_4d_default, n_subjects):
     """Check all FirstLevelModel have the same shape."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -1399,6 +1401,7 @@ def test_non_parametric_inference_contrast_computation_errors(rng, n_subjects):
         )
 
 
+@pytest.mark.slow
 def test_second_level_contrast_computation_with_memory_caching(n_subjects):
     func_img, mask = fake_fmri_data()
 
