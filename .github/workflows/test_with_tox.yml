@@ -29,6 +29,11 @@ on:
     pull_request:
         branches:
         -   '*'
+        paths:
+        -   nilearn/**/*
+        -   tox.ini
+        -   pyproject.toml
+        -   .github/workflows/test_with_tox.yml
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}

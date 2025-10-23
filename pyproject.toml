@@ -176,6 +176,28 @@ layers = [
 name = "main architecture"
 type = "layers"
 
+[[tool.importlinter.contracts]]
+forbidden_modules = [
+    "nilearn.mass_univariate",
+    "nilearn.reporting",
+    "nilearn.plotting",
+    "nilearn.maskers",
+    "nilearn.image",
+    "nilearn.surface",
+    "nilearn.masking",
+    "nilearn.datasets"
+]
+ignore_imports = [
+    "nilearn.connectome.tests.* -> nilearn._utils.estimator_checks",
+    "nilearn.connectome.tests.test_connectivity_matrices -> nilearn.tests.test_signal",
+    "nilearn.connectome.tests.test_group_sparse_cov -> nilearn._utils.data_gen"
+]
+name = "'nilearn.connectome' only imports from 'nilearn.signal'"
+source_modules = [
+    "nilearn.connectome"
+]
+type = "forbidden"
+
 [tool.mypy]
 allow_redefinition = false
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
