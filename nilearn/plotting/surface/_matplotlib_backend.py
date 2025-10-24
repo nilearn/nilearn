@@ -418,6 +418,9 @@ def _plot_surf(
 
     coords, faces = load_surf_mesh(surf_mesh)
 
+    # Center the mesh
+    coords -= np.mean(coords, axis=0)
+
     limits = [coords.min(), coords.max()]
 
     # Get elevation and azimut from view
