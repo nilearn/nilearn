@@ -6,6 +6,7 @@ from matplotlib.colors import Normalize
 
 from nilearn.plotting._engine_utils import (
     colorscale,
+    create_colorbar_for_fig,
     threshold_cmap,
     to_color_strings,
 )
@@ -157,3 +158,39 @@ def test_to_color_strings(colors):
     else:
         expected = ["#ff0000", "#008000", "#000000", "#ffffff"]
     assert to_color_strings(colors) == expected
+
+
+@pytest.mark.parametrize(
+    "threshold, cbar_vmin, cbar_vmax, vmin, vmax, expected_ticks",
+    [
+        (0, -10, 10, -5, 5, [-10, -5, 0, 5, 10]),
+        (0.1, None, None, -10, 10, [-10, -5, -0.1, 0, 0.1, 5, 10]),
+        (0.9, -10, 10, -5, 5, [-10, -5, -0.9, 0, 0.9, 5, 10]),
+        (1.3, None, 10, -10, 10, [-10, -5, -1.3, 0, 1.3, 5, 10]),
+        (3, -10, None, -10, 10, [-10, -5, -3, 0, 3, 5, 10]),
+    ],
+)
+def test_create_colorbar_for_fig(
+    matplotlib_pyplot,
+    threshold,
+    cbar_vmin,
+    cbar_vmax,
+    vmin,
+    vmax,
+    expected_ticks,
+):
+    """Test nilearn.plotting._engine_utils.create_colorbar_for_fig function for
+    valid values.
+    """
+    fig, ax = matplotlib_pyplot.subplots()
+    cmap = matplotlib_pyplot.get_cmap("Greys")
+    norm = Normalize(vmin, vmax)
+
+    colorbar = create_colorbar_for_fig(
+        fig, ax, cmap, norm, threshold, cbar_vmin, cbar_vmax
+    )
+
+    assert colorbar is not None
+    assert [
+        float(tick.get_text()) for tick in colorbar.ax.get_yticklabels()
+    ] == expected_ticks

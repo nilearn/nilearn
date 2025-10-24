@@ -198,6 +198,7 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
     )
 
 
+@pytest.mark.timeout(0)
 def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: ARG001
     """Check errors when wrong plot type is requested."""
     with pytest.raises(KeyError, match="junk"):
@@ -214,6 +215,7 @@ def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: A
         )
 
 
+@pytest.mark.timeout(0)
 def test_masking_first_level_model(contrasts):
     """Check that using NiftiMasker when instantiating FirstLevelModel \
        doesn't raise Error when calling generate_report().
