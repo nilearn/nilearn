@@ -123,7 +123,11 @@ jobs:
 
         -   name: Run test suite
             run: |
-                git diff --name-only HEAD main
+                if ! git remote -v | grep upstream; then
+                    git remote add upstream https://github.com/nilearn/nilearn.git
+                fi
+                git fetch upstream
+                git diff --name-only HEAD upstream/main
                 python build_tools/github/restrict_tests_to_run.py
                 tests_to_run=$(cat tests_to_run.txt)
                 tox run --list-dependencies -e ${{ matrix.env }} -- ${tests_to_run}
