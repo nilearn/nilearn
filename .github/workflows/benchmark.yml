@@ -36,14 +36,15 @@
 name: Run and deploy Nilearn benchmarks
 
 on:
-    push:
-        branches:
-        -   main
-    schedule:
-    # every Monday at 12noon UTC
-    -   cron: 0 12 * * TUE
 
-    workflow_dispatch:  # This enables manual triggering from GitHub UI
+    schedule:
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+    # Run every Monday at midnight UTC
+    -   cron: 0 0 * * 1
+
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
+    workflow_dispatch:
 
 jobs:
     benchmark:
