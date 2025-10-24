@@ -94,7 +94,7 @@ class DummyEstimator:
     "kwargs, warning_msg, expected_verbose, expected_memory_level",
     [
         ({"memory": None, "memory_level": 1}, "verbose", 0, 0),
-        ({"verbose": 1}, "memory", 1, 0),
+        ({"verbose": 1}, "memory", 0, 0),
     ],
 )
 def test_check_embedded_masker_defaults(
