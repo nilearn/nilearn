@@ -170,38 +170,68 @@ contrasts = {
 
 # %%
 # Let's estimate the contrasts by iterating over them.
+#
+# We then plot each contrast on the inflated fsaverage mesh,
+# together with a suitable background to give an impression
+# of the cortex folding.
+#
+# We plot threshold the contrasts at uncorrected p < 0.001.
+from scipy.stats import norm
+
 from nilearn.datasets import load_fsaverage_data
+from nilearn.glm import cluster_level_inference
 from nilearn.plotting import plot_surf_stat_map, show
 
-#  let's make sure we use the same threshold
-threshold = 3.0
+p_val = 0.001
+p001_uncorrected = norm.isf(p_val)
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
+results = {}
 for contrast_id, contrast_val in contrasts.items():
-    # compute contrast-related statistics
-    z_score = glm.compute_contrast(contrast_val, stat_type="t")
+    results[contrast_id] = glm.compute_contrast(contrast_val, stat_type="t")
 
+for contrast_id, z_score in results.items():
     hemi = "left"
     if contrast_id == "(left - right) button press":
         hemi = "both"
 
-    # we plot it on the surface, on the inflated fsaverage mesh,
-    # together with a suitable background to give an impression
-    # of the cortex folding.
     plot_surf_stat_map(
         surf_mesh=fsaverage5["inflated"],
         stat_map=z_score,
         hemi=hemi,
         title=contrast_id,
-        threshold=threshold,
+        threshold=p001_uncorrected,
         bg_map=fsaverage_data,
     )
 
 show()
 
 # %%
-# Or we can save as an html file.
+# TODO: add explanation
+proportion_true_discoveries_img = cluster_level_inference(
+    results["audio - visual"], threshold=[3, 4, 5, 6], alpha=0.05
+)
+
+plot_surf_stat_map(
+    surf_mesh=fsaverage5["inflated"],
+    stat_map=proportion_true_discoveries_img,
+    hemi=hemi,
+    threshold=0.0,
+    cmap="inferno",
+    title="audio - visual, proportion true positives",
+    bg_map=fsaverage_data,
+)
+
+show()
+
+# %%
+# Saving model outputs to disk
+# ----------------------------
+#
+# We can now easily save the main results,
+# the model metadata and an HTML report to the disk.
+#
 from pathlib import Path
 
 from nilearn.interfaces.bids import save_glm_to_bids
@@ -212,7 +242,7 @@ output_dir.mkdir(exist_ok=True, parents=True)
 save_glm_to_bids(
     glm,
     contrasts=contrasts,
-    threshold=threshold,
+    threshold=p001_uncorrected,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=None,
     prefix="sub-01",
@@ -220,9 +250,11 @@ save_glm_to_bids(
     cluster_threshold=10,
 )
 
+# %%
+# The report can also be generated and saved on its own.
 report = glm.generate_report(
     contrasts,
-    threshold=threshold,
+    threshold=p001_uncorrected,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=None,
     cluster_threshold=10,
