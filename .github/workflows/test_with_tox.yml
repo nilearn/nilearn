@@ -123,7 +123,7 @@ jobs:
 
         -   name: Run test suite
             run: |
-                git diff --name-only HEAD upstream/main
+                git diff --name-only HEAD main
                 python build_tools/github/restrict_tests_to_run.py
                 tests_to_run=$(cat tests_to_run.txt)
                 tox run --list-dependencies -e ${{ matrix.env }} -- ${tests_to_run}
