@@ -1,6 +1,6 @@
 """Helper functions to download NeuroImaging datasets."""
 
-from .atlas import (
+from nilearn.datasets.atlas import (
     fetch_atlas_aal,
     fetch_atlas_allen_2011,
     fetch_atlas_basc_multiscale_2015,
@@ -20,6 +20,7 @@ from .atlas import (
     fetch_coords_power_2011,
     fetch_coords_seitzman_2018,
 )
+
 from .func import (
     fetch_abide_pcp,
     fetch_adhd,

@@ -1,9 +1,4 @@
-"""Test the numpy_conversions module.
-
-This test file is in nilearn/tests because Nosetest,
-which we historically used,
-ignores modules whose name starts with an underscore.
-"""
+"""Test the numpy_conversions module."""
 
 from pathlib import Path
 
