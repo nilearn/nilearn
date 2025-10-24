@@ -270,9 +270,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         from nilearn.reporting.html_report import generate_report
 
-        if not is_matplotlib_installed():
-            return generate_report(self)
-
         incorrect_type = not isinstance(
             displayed_maps, (list, np.ndarray, int, str)
         )
@@ -368,13 +365,15 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         -------
         list of :class:`~matplotlib.figure.Figure`
         """
+        if not is_matplotlib_installed():
+            return [None]
+
         from nilearn.plotting import (
             cm,
             find_xyz_cut_coords,
             plot_img,
             plot_stat_map,
         )
-        from nilearn.reporting.html_report import embed_img
 
         maps_image = self._reporting_data["maps_image"]
 
@@ -387,7 +386,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if img is None:
             for component in maps_to_be_displayed:
                 display = plot_stat_map(index_img(maps_image, component))
-                embedded_images.append(embed_img(display))
+                embedded_images.append(display)
                 display.close()
 
         else:
@@ -406,7 +405,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     index_img(maps_image, component),
                     cmap=cm.black_blue,
                 )
-                embedded_images.append(embed_img(display))
+                embedded_images.append(display)
                 display.close()
 
         return embedded_images
