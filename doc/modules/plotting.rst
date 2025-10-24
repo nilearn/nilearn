@@ -55,7 +55,7 @@ Functions
 Comparing images
 ----------------
 
-.. automodule:: nilearn.plotting.img_comparison
+.. automodule:: nilearn.plotting
    :no-members:
    :no-inherited-members:
 
@@ -64,7 +64,7 @@ Comparing images
 Functions
 ^^^^^^^^^
 
-.. currentmodule:: nilearn.plotting.img_comparison
+.. currentmodule:: nilearn.plotting
 
 .. autosummary::
    :toctree: generated/
