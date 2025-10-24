@@ -88,14 +88,8 @@ def get_current_branch() -> str:
 
 def list_changed_files() -> list[str]:
     """List files changed in the pull request."""
-    base = subprocess.run(
-        ["git", "merge-base", "HEAD", "upstream/main"],
-        capture_output=True,
-        text=True,
-        check=True,
-    )
     result = subprocess.run(
-        ["git", "diff", "--name-only", base.stdout.strip(), "HEAD"],
+        ["git", "diff", "--name-only", "HEAD", "upstream/main"],
         capture_output=True,
         text=True,
         check=True,
