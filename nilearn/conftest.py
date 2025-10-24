@@ -60,6 +60,7 @@ else:
             "plotting",
             "reporting/html_report.py",
             "reporting/tests/test_html_report.py",
+            "reporting/tests/test_glm_report.py",
             "reporting/tests/test_baseline_comparisons.py",
         ]
     )
