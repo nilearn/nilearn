@@ -102,4 +102,4 @@ Changes
 
 - :bdg-primary:`Doc` Home-made sphinx directives are used instead of default sphinx directives relative to version changes (``versionadded``, ``versionchanged``, ``deprecated``...) to more easily distinguish between feature changes introduced in Nilearn versus those introduced in upstream dependencies (like in Scikit-Learn) (:gh:`5654` by `Rémi Gau`_).
 
-- :bdg-info:`Plotting` Change background to ``'black'`` for functions :func:`~plotting.image_comparison.plot_img_comparison` and :func:`~plotting.image_comparison.plot_bland_altman` (:gh:`5785` by `Hande Gözükan`_).
+- :bdg-info:`Plotting` Change background to ``'black'`` for functions :func:`~plotting.plot_img_comparison` and :func:`~plotting.plot_bland_altman` (:gh:`5785` by `Hande Gözükan`_).
