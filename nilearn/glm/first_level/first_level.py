@@ -1408,6 +1408,7 @@ class FirstLevelModel(BaseGLM):
         axes[1].legend()
 
         plt.tight_layout()
+        plt.close(fig)
         return fig
 
     @fill_doc
