@@ -85,7 +85,6 @@ def embed_img(display):
 
 
 def _update_template(
-    title,
     docstring,
     content,
     overlay,
@@ -99,9 +98,6 @@ def _update_template(
 
     Parameters
     ----------
-    title : str
-        The title for the report.
-
     docstring : str
         The introductory docstring for the reported object.
 
@@ -118,6 +114,7 @@ def _update_template(
         A dictionary holding the data to be added to the report.
         The keys must match exactly the ones used in the template.
         The default template accepts the following:
+            - title (str) : Title of the report
             - description (str) : Description of the content.
             - warning_message (str) : An optional warning
               message to be displayed in red. This is used
@@ -170,7 +167,6 @@ def _update_template(
         data["coverage"] = f"{data['coverage']:0.1f}"
 
     body = tpl.substitute(
-        title=title,
         content=content,
         overlay=overlay,
         docstring=docstring,
@@ -210,7 +206,7 @@ def _update_template(
         head_values={
             "head_css": head_css,
             "version": __version__,
-            "page_title": f"{title} report",
+            "page_title": f"{data['title']} report",
             "display_footer": "style='display: none'" if is_notebook() else "",
         },
     )
@@ -272,6 +268,9 @@ def generate_report(estimator):
     # Generate a unique ID for this report
     data["unique_id"] = str(uuid.uuid4()).replace("-", "")
 
+    if data.get("title") is None:
+        data["title"] = estimator.__class__.__name__
+
     warning_messages = []
 
     if estimator.reports is False:
@@ -295,8 +294,9 @@ def generate_report(estimator):
                 stacklevel=find_stack_level(),
             )
 
+        data["title"] = "Empty Report"
+
         return _update_template(
-            title="Empty Report",
             docstring="Empty Report",
             content=embed_img(None),
             overlay=None,
@@ -383,7 +383,6 @@ def _create_report(estimator, data):
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
     return _update_template(
-        title=estimator.__class__.__name__,
         docstring=snippet,
         content=embeded_images,
         overlay=embed_img(overlay),
