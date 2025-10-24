@@ -56,7 +56,7 @@ from nilearn.interfaces.bids.query import (
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 <<<<<<< HEAD
-from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.maskers import NiftiMasker, NiftiSpheresMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 =======
 from nilearn.maskers import NiftiMasker, NiftiSpheresMasker, SurfaceMasker
