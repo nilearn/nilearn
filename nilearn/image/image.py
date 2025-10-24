@@ -2118,9 +2118,9 @@ def iter_check_niimg(
 def check_niimg(
     niimg,
     ensure_ndim: Literal[3] = ...,
-    atleast_4d=...,
+    atleast_4d: Literal[False] = ...,
     dtype=...,
-    return_iterator=...,
+    return_iterator: Literal[False] = ...,
     wildcards=...,
 ) -> Nifti1Image: ...
 
