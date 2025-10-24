@@ -1876,15 +1876,27 @@ def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
     )
 
 
-def test_check_niimg_return_iterator_4d_input(img_4d_zeros_eye):
-    """Check behavior return_iterator on 4D image."""
+def test_check_niimg_return_iterator_4d_input(
+    img_3d_zeros_eye, img_4d_zeros_eye
+):
+    """Check behavior return_iterator on 4D-like image."""
     # return a 4D image
     img = check_niimg(img_4d_zeros_eye)
     assert isinstance(img, Nifti1Image)
     assert len(img.shape) == 4
 
+    img = check_niimg([img_3d_zeros_eye, img_3d_zeros_eye])
+    assert isinstance(img, Nifti1Image)
+    assert len(img.shape) == 4
+
     # return a generator of 3D images
     img = check_niimg(img_4d_zeros_eye, return_iterator=True)
+    assert isinstance(img, Iterable)
+    assert len(next(img).shape) == 3
+
+    img = check_niimg(
+        [img_3d_zeros_eye, img_3d_zeros_eye], return_iterator=True
+    )
     assert isinstance(img, Iterable)
     assert len(next(img).shape) == 3
 
@@ -1906,6 +1918,7 @@ def test_check_niimg_return_iterator_3d_input(img_3d_zeros_eye):
     assert isinstance(img, Iterable)
     assert len(next(img).shape) == 3
 
+    # ???
     img = check_niimg(img_3d_zeros_eye, return_iterator=True)
     assert isinstance(img, Nifti1Image)
     assert len(img.shape) == 3
