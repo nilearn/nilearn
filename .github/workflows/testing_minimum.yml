@@ -90,8 +90,7 @@ jobs:
 
         -   name: Run tests
             run: |
-                pip install pytest-mpl
-                pytest --pyargs nilearn --report=report.html -n auto --csv results/pytest_output/pytest_output.csv
+                pytest --pyargs nilearn tests --report=report.html -n auto --csv results/pytest_output/pytest_output.csv
 
         -   name: Generate plots tests timing
             if: success() || failure()
