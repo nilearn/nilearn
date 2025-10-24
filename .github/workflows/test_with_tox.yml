@@ -120,14 +120,16 @@ jobs:
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions
         -   name: Show tox config
             run: tox c
-
-        -   name: Run test suite
+        -   name: add upstream as remote
+            shell: bash -el {0}
             run: |
                 if ! git remote -v | grep upstream; then
                     git remote add upstream https://github.com/nilearn/nilearn.git
                 fi
                 git fetch upstream
                 git diff --name-only HEAD upstream/main
+        -   name: Run test suite
+            run: |
                 python build_tools/github/restrict_tests_to_run.py
                 tests_to_run=$(cat tests_to_run.txt)
                 tox run --list-dependencies -e ${{ matrix.env }} -- ${tests_to_run}
