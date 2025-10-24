@@ -55,10 +55,6 @@ Functions
 Comparing images
 ----------------
 
-.. automodule:: nilearn.plotting
-   :no-members:
-   :no-inherited-members:
-
 .. No relevant user manual section yet.
 
 Functions
