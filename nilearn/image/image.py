@@ -705,7 +705,7 @@ def index_img(imgs, index):
     # duck-type for pandas arrays, and select the 'values' attr
     if hasattr(index, "values") and hasattr(index, "iloc"):
         index = index.to_numpy().flatten()
-    return _index_img(imgs, index)
+    return new_img_like(imgs, _get_data(imgs)[:, :, :, index], imgs.affine)
 
 
 def iter_img(imgs):
@@ -1987,11 +1987,6 @@ def check_imgs_equal(img1, img2) -> bool:
         raise e
 
 
-def _index_img(img, index):
-    """Help function for check_niimg_4d."""
-    return new_img_like(img, _get_data(img)[:, :, :, index], img.affine)
-
-
 @fill_doc
 def iter_check_niimg(
     niimgs,
@@ -2267,7 +2262,10 @@ def check_niimg(
         raise DimensionError(len(niimg.shape), ensure_ndim)
 
     if return_iterator:
-        return (_index_img(niimg, i) for i in range(niimg.shape[3]))
+        return (
+            new_img_like(niimg, _get_data(niimg)[:, :, :, i], niimg.affine)
+            for i in range(niimg.shape[3])
+        )
 
     return niimg
 
