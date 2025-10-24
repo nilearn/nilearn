@@ -621,7 +621,11 @@ def report_sphere_masker(build_type):
 def report_surface_masker(build_type):
     if build_type == "partial":
         _generate_dummy_html(
-            filenames=["surface_masker.html", "surface_masker_with_mask.html"]
+            filenames=[
+                "surface_masker.html",
+                "surface_masker_with_mask.html",
+                "surface_masker_with_mask_plotly.html",
+            ]
         )
         return None, None
 
@@ -658,9 +662,17 @@ def report_surface_masker(build_type):
         REPORTS_DIR / "surface_masker_with_mask.html"
     )
 
+    surface_masker_with_mask_report_plotly = masker.generate_report(
+        engine="plotly"
+    )
+    surface_masker_with_mask_report_plotly.save_as_html(
+        REPORTS_DIR / "surface_masker_with_mask_plotly.html"
+    )
+
     return (
         surface_masker_report,
         surface_masker_with_mask_report,
+        surface_masker_with_mask_report_plotly,
     )
 
 
@@ -669,7 +681,9 @@ def report_surface_label_masker(build_type):
         _generate_dummy_html(
             filenames=[
                 "surface_label_masker_unfitted.html",
+                "surface_label_masker_unfitted_plotly.html",
                 "surface_label_masker.html",
+                "surface_label_masker_plotly.html",
             ]
         )
         return None, None
@@ -690,6 +704,13 @@ def report_surface_label_masker(build_type):
         REPORTS_DIR / "surface_label_masker_unfitted.html"
     )
 
+    labels_masker_report_unfitted_plotly = labels_masker.generate_report(
+        engine="plotly"
+    )
+    labels_masker_report_unfitted_plotly.save_as_html(
+        REPORTS_DIR / "surface_label_masker_unfitted_plotly.html"
+    )
+
     stat_img = load_sample_motor_activation_image()
     fsaverage_meshes = load_fsaverage()
     surface_stat_image = SurfaceImage.from_volume(
@@ -703,9 +724,18 @@ def report_surface_label_masker(build_type):
         REPORTS_DIR / "surface_label_masker.html"
     )
 
+    labels_masker_report_plotly = labels_masker.generate_report(
+        engine="plotly"
+    )
+    labels_masker_report_plotly.save_as_html(
+        REPORTS_DIR / "surface_label_masker_plotly.html"
+    )
+
     return (
         labels_masker_report_unfitted,
+        labels_masker_report_unfitted_plotly,
         labels_masker_report,
+        labels_masker_report_plotly,
     )
 
 
