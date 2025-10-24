@@ -222,7 +222,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self.keep_masked_maps = keep_masked_maps
 
-    def generate_report(self, displayed_maps=10):
+    def generate_report(self, displayed_maps=10, title=None):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 
         .. note::
@@ -263,6 +263,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
                 masker.generate_report(16)
 
+        title : str, default=None
+            title for the report
+
         Returns
         -------
         report : `nilearn.reporting.html_report.HTMLReport`
@@ -291,6 +294,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 f"{type(displayed_maps)}"
             )
         self.displayed_maps = displayed_maps
+        self._report_content["title"] = title
 
         return generate_report(self)
 

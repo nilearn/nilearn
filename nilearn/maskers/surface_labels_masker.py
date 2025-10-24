@@ -481,9 +481,21 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         return imgs
 
-    def generate_report(self):
-        """Generate a report."""
+    def generate_report(self, title=None):
+        """Generate a report for the SurfaceLabelsMasker.
+
+        Parameters
+        ----------
+        title : str, default=None
+            title for the report
+
+        Returns
+        -------
+        list(None) or HTMLReport
+        """
         from nilearn.reporting.html_report import generate_report
+
+        self._report_content["title"] = title
 
         return generate_report(self)
 

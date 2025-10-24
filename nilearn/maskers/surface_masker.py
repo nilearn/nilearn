@@ -386,14 +386,21 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
-    def generate_report(self):
+    def generate_report(self, title=None):
         """Generate a report for the SurfaceMasker.
+
+        Parameters
+        ----------
+        title : str, default=None
+            title for the report
 
         Returns
         -------
         list(None) or HTMLReport
         """
         from nilearn.reporting.html_report import generate_report
+
+        self._report_content["title"] = title
 
         return generate_report(self)
 

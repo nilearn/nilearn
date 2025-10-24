@@ -307,11 +307,22 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return masked_atlas, removed_region_ids, removed_region_names, display
 
-    def generate_report(self):
-        """Generate a report."""
+    def generate_report(self, title=None):
+        """Generate a report.
+
+        Parameters
+        ----------
+        title : str, default=None
+            title for the report
+
+        Returns
+        -------
+        list(None) or HTMLReport
+        """
         from nilearn.reporting.html_report import generate_report
 
         self._init_report_content()
+        self._report_content["title"] = title
 
         return generate_report(self)
 
