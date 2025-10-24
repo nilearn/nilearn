@@ -127,8 +127,8 @@ jobs:
                     git remote add upstream https://github.com/nilearn/nilearn.git
                 fi
                 git fetch upstream
-                git diff --name-only HEAD upstream/main
         -   name: Run test suite
+            shell: bash -el {0}
             run: |
                 python build_tools/github/restrict_tests_to_run.py
                 tests_to_run=$(cat tests_to_run.txt)
