@@ -118,8 +118,6 @@ jobs:
                 allow-prereleases: true
         -   name: Install tox
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions
-        -   name: Install rich
-            run: uv pip install rich
         -   name: Show tox config
             run: tox c
         -   name: add upstream as remote
