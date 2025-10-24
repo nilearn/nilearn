@@ -8,8 +8,10 @@ import collections.abc
 import glob
 import itertools
 import warnings
+from collections.abc import Iterable
 from copy import deepcopy
 from pathlib import Path
+from typing import Any, Literal, overload
 
 import numpy as np
 from joblib import Memory, Parallel, delayed
@@ -1915,11 +1917,10 @@ def get_indices_from_image(image) -> np.ndarray:
     return np.unique(data)
 
 
-def _check_fov(img, affine, shape):
+def _check_fov(img, affine, shape) -> bool:
     """Return True if img's field of view correspond to given \
     shape and affine, False elsewhere.
     """
-    img = check_niimg(img)
     return img.shape[:3] == shape and np.allclose(img.affine, affine)
 
 
@@ -2112,15 +2113,52 @@ def iter_check_niimg(
         raise ValueError("Input niimgs list is empty.")
 
 
-@fill_doc
+# ensure_ndim = 3 always returns a NiftiImage
+@overload
 def check_niimg(
     niimg,
-    ensure_ndim=None,
-    atleast_4d=False,
-    dtype=None,
-    return_iterator=False,
-    wildcards=True,
-):
+    ensure_ndim: Literal[3] = ...,
+    atleast_4d=...,
+    dtype=...,
+    return_iterator=...,
+    wildcards=...,
+) -> Nifti1Image: ...
+
+
+# ensure_ndim = 4 with return_iterator=False always returns a NiftiImage
+@overload
+def check_niimg(
+    niimg,
+    ensure_ndim: Literal[4] = ...,
+    atleast_4d=...,
+    dtype=...,
+    return_iterator: Literal[False] = ...,
+    wildcards=...,
+) -> Nifti1Image: ...
+
+
+# ensure_ndim = 4 with return_iterator=True
+# always returns an iterator NiftiImage
+@overload
+def check_niimg(
+    niimg,
+    ensure_ndim: Literal[4] = ...,
+    atleast_4d=...,
+    dtype=...,
+    return_iterator: Literal[True] = ...,
+    wildcards=...,
+) -> Iterable[Nifti1Image]: ...
+
+
+@fill_doc
+def check_niimg(
+    niimg: Any,
+    ensure_ndim: Literal[3, 4] | None = None,
+    atleast_4d: bool = False,
+    dtype: Any = None,
+    return_iterator: bool = False,
+    wildcards: bool = True,
+) -> Nifti1Image | Iterable[Nifti1Image]:
     """Check that niimg is a proper 3D/4D niimg.
 
     Turn filenames into objects.
@@ -2241,9 +2279,7 @@ def check_niimg(
             return iter_check_niimg(
                 niimg, ensure_ndim=ensure_ndim, dtype=dtype
             )
-        return ni.image.concat_imgs(
-            niimg, ensure_ndim=ensure_ndim, dtype=dtype
-        )
+        return concat_imgs(niimg, ensure_ndim=ensure_ndim, dtype=dtype)
 
     # Otherwise, it should be a filename or a SpatialImage, we load it
     niimg = load_niimg(niimg, dtype=dtype)
@@ -2271,7 +2307,7 @@ def check_niimg(
 
 
 @fill_doc
-def check_niimg_3d(niimg, dtype=None):
+def check_niimg_3d(niimg: Any, dtype: Any = None) -> Nifti1Image:
     """Check that niimg is a proper 3D niimg-like object and load it.
 
     Parameters
@@ -2308,8 +2344,28 @@ def check_niimg_3d(niimg, dtype=None):
     return check_niimg(niimg, ensure_ndim=3, dtype=dtype)
 
 
+@overload
+def check_niimg_4d(
+    niimg: Any,
+    return_iterator: Literal[False] = ...,
+    dtype: Any = ...,
+) -> Nifti1Image: ...
+
+
+@overload
+def check_niimg_4d(
+    niimg: Any,
+    return_iterator: Literal[True] = ...,
+    dtype: Any = ...,
+) -> Iterable[Nifti1Image]: ...
+
+
 @fill_doc
-def check_niimg_4d(niimg, return_iterator=False, dtype=None):
+def check_niimg_4d(
+    niimg: Any,
+    return_iterator: Literal[False, True] = False,
+    dtype: Any = None,
+):
     """Check that niimg is a proper 4D niimg-like object and load it.
 
     Parameters
@@ -2345,6 +2401,10 @@ def check_niimg_4d(niimg, return_iterator=False, dtype=None):
     Its application is idempotent.
 
     """
+    ensure_ndim: Literal[4] = 4
     return check_niimg(
-        niimg, ensure_ndim=4, return_iterator=return_iterator, dtype=dtype
+        niimg,
+        ensure_ndim=ensure_ndim,
+        return_iterator=return_iterator,
+        dtype=dtype,
     )

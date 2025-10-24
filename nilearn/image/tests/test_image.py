@@ -3,6 +3,7 @@
 import platform
 import re
 import warnings
+from collections.abc import Iterable
 from pathlib import Path
 
 import joblib
@@ -1873,6 +1874,27 @@ def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
         get_data(img_4d_zeros_eye).dtype.kind
         == get_data(img_4d_check).dtype.kind
     )
+
+
+def test_check_niimg_return_iterator(img_3d_zeros_eye, img_4d_zeros_eye):
+    # return a generator of 3D images
+    img = check_niimg(img_4d_zeros_eye, return_iterator=True)
+    assert isinstance(img, Iterable)
+    assert len(next(img).shape) == 3
+
+    # return a 4D image
+    img = check_niimg(img_4d_zeros_eye, return_iterator=False)
+    assert isinstance(img, Nifti1Image)
+    assert len(img.shape) == 4
+
+    # return a 3D image
+    img = check_niimg(img_3d_zeros_eye, return_iterator=False)
+    assert isinstance(img, Nifti1Image)
+    assert len(img.shape) == 3
+
+    img = check_niimg(img_3d_zeros_eye, return_iterator=True)
+    assert isinstance(img, Nifti1Image)
+    assert len(img.shape) == 3
 
 
 def test_check_niimg_errors(img_3d_zeros_eye, img_4d_zeros_eye):
