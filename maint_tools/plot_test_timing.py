@@ -9,27 +9,24 @@ import plotly.express as px
 
 def main():
     """Get output from pytest run and plot duration with different grouping."""
-    input_file = (
-        Path(__file__).parents[1]
-        / "results"
-        / "pytest_output"
-        / "pytest_output.csv"
-    )
-    if not input_file.exists():
-        warn(f"{input_file} not found.", stacklevel=2)
-        return
+    for file in ["pytest_output.csv", "pytest_output_slow_tests.csv"]:
+        input_file = (
+            Path(__file__).parents[1] / "results" / "pytest_output" / file
+        )
+        if not input_file.exists():
+            warn(f"{input_file} not found.", stacklevel=2)
+        else:
+            plot_tests_timing(input_file)
 
+
+def plot_tests_timing(input_file: Path):
+    """Plot timing of tests based on pytest_csv output."""
     tests_data = pd.read_csv(input_file)
 
     tests_data["subpackage"] = tests_data["module"].str.split(
         ".", expand=True
     )[1]
 
-    # get name of test without any parametrization
-    # from
-    #   test_resampling_result_axis_permutation[axis_permutation3-False]
-    # to
-    #   test_resampling_result_axis_permutation
     tests_data["id_no_param"] = tests_data["id"].str.split("[", expand=True)[0]
 
     for column, title in zip(

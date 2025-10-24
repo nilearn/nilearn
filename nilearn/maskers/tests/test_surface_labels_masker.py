@@ -46,6 +46,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),

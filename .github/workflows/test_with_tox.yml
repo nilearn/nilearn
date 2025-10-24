@@ -120,8 +120,8 @@ jobs:
             if: success() || failure()
             uses: actions/upload-artifact@v4
             with:
-                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report.html
-                path: report.html
+                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
+                path: report
 
         -   name: Upload test timings
             if: success() || failure()

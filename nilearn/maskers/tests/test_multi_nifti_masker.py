@@ -50,7 +50,7 @@ else:
 
 
 # check_multi_masker_transformer_high_variance_confounds is slow
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),

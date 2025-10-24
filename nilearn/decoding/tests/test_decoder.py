@@ -120,7 +120,7 @@ else:
         check(estimator)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -1183,7 +1183,7 @@ def test_decoder_tags_regression():
 
 
 @ignore_warnings
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_decoder_strings_filepaths_input(
     tiny_binary_classification_data, tmp_path
 ):
@@ -1372,7 +1372,7 @@ def test_frem_decoder_fit_surface(
 
 
 @ignore_warnings
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "classifier_penalty",
     ["svc_l1", "svc_l2", "logistic_l1", "logistic_l2", "ridge_classifier"],
