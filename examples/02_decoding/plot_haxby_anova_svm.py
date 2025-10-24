@@ -64,6 +64,7 @@ decoder = Decoder(
     standardize="zscore_sample",
     screening_percentile=5,
     scoring="accuracy",
+    verbose=1,
 )
 
 # %%
@@ -92,6 +93,7 @@ decoder = Decoder(
     screening_percentile=5,
     scoring="accuracy",
     cv=cv,
+    verbose=1,
 )
 # Compute the prediction accuracy for the different folds (i.e. run)
 decoder.fit(func_img, conditions, groups=run_label)

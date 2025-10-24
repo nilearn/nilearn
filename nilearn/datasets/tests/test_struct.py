@@ -7,13 +7,22 @@ import pytest
 from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
-from nilearn.datasets import struct
 from nilearn.datasets.struct import (
+    fetch_icbm152_2009,
+    fetch_icbm152_brain_gm_mask,
+    fetch_oasis_vbm,
     fetch_surf_fsaverage,
     load_fsaverage,
     load_fsaverage_data,
+    load_mni152_brain_mask,
+    load_mni152_gm_mask,
+    load_mni152_gm_template,
+    load_mni152_template,
+    load_mni152_wm_mask,
+    load_mni152_wm_template,
 )
 from nilearn.datasets.tests._testing import (
+    check_fetcher_verbosity,
     check_type_fetcher,
     dict_to_archive,
     list_to_archive,
@@ -21,8 +30,8 @@ from nilearn.datasets.tests._testing import (
 from nilearn.surface import PolyMesh, SurfaceImage
 
 
-def test_fetch_icbm152_2009(tmp_path, request_mocker):
-    dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
+def test_fetch_icbm152_2009(tmp_path, request_mocker, capsys):
+    dataset = fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
 
     check_type_fetcher(dataset)
     assert isinstance(dataset.csf, str)
@@ -36,6 +45,8 @@ def test_fetch_icbm152_2009(tmp_path, request_mocker):
     assert isinstance(dataset.t2_relax, str)
     assert isinstance(dataset.wm, str)
     assert request_mocker.url_count == 1
+
+    check_fetcher_verbosity(fetch_icbm152_2009, capsys, data_dir=tmp_path)
 
 
 def _make_oasis_data(dartel=True):
@@ -57,11 +68,11 @@ def _make_oasis_data(dartel=True):
     return dict_to_archive(data)
 
 
-def test_fetch_oasis_vbm(tmp_path, request_mocker):
+def test_fetch_oasis_vbm(tmp_path, request_mocker, capsys):
     request_mocker.url_mapping["*archive_dartel.tgz*"] = _make_oasis_data()
     request_mocker.url_mapping["*archive.tgz*"] = _make_oasis_data(False)
 
-    dataset = struct.fetch_oasis_vbm(data_dir=str(tmp_path), verbose=0)
+    dataset = fetch_oasis_vbm(data_dir=str(tmp_path), verbose=0)
 
     check_type_fetcher(dataset)
     assert len(dataset.gray_matter_maps) == 403
@@ -72,7 +83,7 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker):
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 1
 
-    dataset = struct.fetch_oasis_vbm(
+    dataset = fetch_oasis_vbm(
         data_dir=str(tmp_path), dartel_version=False, verbose=0
     )
 
@@ -85,16 +96,18 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker):
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 2
 
+    check_fetcher_verbosity(fetch_oasis_vbm, capsys, data_dir=tmp_path)
+
 
 @pytest.mark.parametrize(
     "func",
     [
-        struct.load_mni152_brain_mask,
-        struct.load_mni152_gm_mask,
-        struct.load_mni152_gm_template,
-        struct.load_mni152_template,
-        struct.load_mni152_wm_mask,
-        struct.load_mni152_wm_template,
+        load_mni152_brain_mask,
+        load_mni152_gm_mask,
+        load_mni152_gm_template,
+        load_mni152_template,
+        load_mni152_wm_mask,
+        load_mni152_wm_template,
     ],
 )
 @pytest.mark.parametrize("resolution", [None, 2])
@@ -117,9 +130,9 @@ def test_load_mni152(func, resolution):
 
 
 def test_fetch_icbm152_brain_gm_mask(tmp_path):
-    dataset = struct.fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
-    struct.load_mni152_template(resolution=2).to_filename(dataset.gm)
-    grey_matter_img = struct.fetch_icbm152_brain_gm_mask(
+    dataset = fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
+    load_mni152_template(resolution=2).to_filename(dataset.gm)
+    grey_matter_img = fetch_icbm152_brain_gm_mask(
         data_dir=str(tmp_path), verbose=0
     )
 
