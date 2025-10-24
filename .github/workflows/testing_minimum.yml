@@ -11,27 +11,14 @@
 ###
 name: test minimal version of each dependency
 
-
 on:
-
-    # Uses the cron schedule for github actions
-    #
-    # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#scheduled-events
-    #
-    #            ┌───────────── minute (0 - 59)
-    #            │ ┌───────────── hour (0 - 23)
-    #            │ │ ┌───────────── day of the month (1 - 31)
-    #            │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
-    #            │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
-    #            │ │ │ │ │
-    #            │ │ │ │ │
-    #            │ │ │ │ │
-    #            * * * * *
     schedule:
-    # Run every Monday at midnight UTC
+        # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+        # Run every Monday at midnight UTC
     -   cron: 0 0 * * 1
 
-    # Allows you to run this workflow manually from the Actions tab
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
     workflow_dispatch:
 
 concurrency:
@@ -44,7 +31,6 @@ env:
 
 jobs:
     test_min_install:
-
         if: github.repository == 'nilearn/nilearn'
 
         runs-on: ${{ matrix.os }}
@@ -59,7 +45,6 @@ jobs:
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}
 
         steps:
-
         -   name: Checkout nilearn
             uses: actions/checkout@v5
 

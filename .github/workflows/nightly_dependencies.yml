@@ -7,11 +7,13 @@
 name: test on nightly dependencies
 
 on:
-
     schedule:
-    # Run every Monday at midnight UTC
+        # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+        # Run every Monday at midnight UTC
     -   cron: 0 0 * * 1
 
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
     workflow_dispatch:
 
 # Force to use color
@@ -24,7 +26,6 @@ concurrency:
 
 jobs:
     nightly:
-
         # This prevents this workflow from running on a fork.
         # To test this workflow on a fork, uncomment the following line.
         if: github.repository == 'nilearn/nilearn'
@@ -32,11 +33,10 @@ jobs:
         runs-on: ubuntu-latest
 
         steps:
-
         -   name: Checkout nilearn
             uses: actions/checkout@v5
             with:
-                # If pull request, checkout HEAD commit with all commit history
+                  # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
 
         -   name: Install the latest version of uv
@@ -72,8 +72,8 @@ jobs:
                 path: results/pytest_output
 
         -   name: Create issue
-            # Do not open issues when on a PR
-            # because the result will be visible in the PR CI report
+              # Do not open issues when on a PR
+              # because the result will be visible in the PR CI report
             if: ${{ steps.nightly.outcome != 'success' }}
             uses: JasonEtco/create-an-issue@v2.9.2
             env:

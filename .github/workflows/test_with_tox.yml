@@ -111,8 +111,9 @@ jobs:
             run: tox c
 
         -   name: Run test suite
-            # skip intermediate python versions on PR
-            if: ${{ !(github.event_name == 'pull_request' && contains(fromJSON('["3.12", "3.11"]'), matrix.py)) }}
+            # only run on main
+            # or PR for oldest and latest supported python versions
+            if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && (matrix.py =='3.10' || matrix.py =='3.13')) }}
             run: |
                 tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
                 tox run -e plot_test_timing

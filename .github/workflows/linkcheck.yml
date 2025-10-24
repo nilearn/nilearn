@@ -8,14 +8,13 @@
 name: linkcheck
 
 on:
-    push:
-        branches:
-        -   main
     schedule:
-    # Run every Monday at 8am UTC
-    -   cron: 0 8 * * 1
+        # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+        # Run every Monday at midnight UTC
+    -   cron: 0 0 * * 1
 
-    # Allows you to run this workflow manually from the Actions tab
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
     workflow_dispatch:
 
 concurrency:
@@ -27,7 +26,6 @@ env:
     FORCE_COLOR: true
 
 jobs:
-
     # check the links in the doc
     linkcheck:
         if: github.repository == 'nilearn/nilearn'
