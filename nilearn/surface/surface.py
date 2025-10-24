@@ -26,6 +26,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
 )
 from nilearn._utils.path_finding import resolve_globbing
+from nilearn.exceptions import DimensionError
 
 
 def _uniform_ball_cloud(n_points=20, dim=3, n_monte_carlo=50000):
@@ -1364,8 +1365,33 @@ class PolyData:
 
         self._check_parts()
 
+    @property
+    def shape(self):
+        """Shape of the data."""
+        if len(self.parts) == 1:
+            return next(iter(self.parts.values())).shape
+
+        tmp = next(iter(self.parts.values()))
+
+        sum_vertices = sum(p.shape[0] for p in self.parts.values())
+        return (
+            (sum_vertices, tmp.shape[1])
+            if len(tmp.shape) == 2
+            else (sum_vertices,)
+        )
+
     def _check_parts(self):
         parts = self.parts
+
+        for hemi, part in parts.items():
+            if part.size == 0:
+                msg = f"part {hemi} is empty"
+                raise ValueError(msg)
+
+        if any(part.ndim > 2 for part in parts.values()):
+            raise NotImplementedError(
+                "Data with more than 2D are not supported."
+            )
 
         if len(parts) == 1:
             return
@@ -1388,52 +1414,24 @@ class PolyData:
                 "You can fix this by passing a 'dtype' at instantiation."
             )
 
-    @property
-    def shape(self):
-        """Shape of the data."""
-        if len(self.parts) == 1:
-            return next(iter(self.parts.values())).shape
+    def _check_n_samples(self, samples: int):
+        """Check that image has no more than n samples."""
+        # Ensure both parts have same number of samples
+        # so we only check one of them after that.
+        self._check_parts()
+        hemi = self.parts[next(iter(self.parts))]
+        n_samples = 1
+        if hemi.ndim > 1:
+            n_samples = hemi.shape[1]
 
-        tmp = next(iter(self.parts.values()))
+        if samples <= 0:
+            # We cannot have less than 1 sample
+            samples = 1
 
-        sum_vertices = sum(p.shape[0] for p in self.parts.values())
-        return (
-            (sum_vertices, tmp.shape[1])
-            if len(tmp.shape) == 2
-            else (sum_vertices,)
-        )
+        if n_samples > samples:
+            raise DimensionError(n_samples, samples, msg_about_samples=True)
 
-    def __repr__(self):
-        return f"<{self.__class__.__name__} {self.shape}>"
-
-    def _get_min_max(self):
-        """Get min and max across parts.
-
-        Returns
-        -------
-        vmin : float
-
-        vmax : float
-        """
-        vmin = min(x.min() for x in self.parts.values())
-        vmax = max(x.max() for x in self.parts.values())
-        return vmin, vmax
-
-    def _check_n_samples(self, samples: int, var_name="img"):
-        max_n_samples = []
-        for hemi in self.parts.values():
-            if hemi.ndim > 1:
-                max_n_samples.append(hemi.shape[1])
-            else:
-                max_n_samples.append(1)
-        max_n_samples = np.max(max_n_samples)
-        if max_n_samples > samples:
-            raise ValueError(
-                f"Data for each part of {var_name} should be {samples}D. "
-                f"Found: {max_n_samples}."
-            )
-
-    def _check_ndims(self, dim: int, var_name="img"):
+    def _check_ndims(self, dim: int):
         """Check if the data is of a given dimension.
 
         Raise error if not.
@@ -1451,12 +1449,29 @@ class PolyData:
         raise ValueError if the data of the SurfaceImage is not of the given
         dimension.
         """
-        if any(x.ndim != dim for x in self.parts.values()):
-            msg = [f"{v.ndim}D for {k}" for k, v in self.parts.items()]
-            raise ValueError(
-                f"Data for each part of {var_name} should be {dim}D. "
-                f"Found: {', '.join(msg)}."
-            )
+        # Ensure both parts have same number of samples
+        # so we only check one of them after that.
+        self._check_parts()
+        hemi = self.parts[next(iter(self.parts))]
+        dim = min(dim, 2)
+        if hemi.ndim != dim:
+            raise DimensionError(hemi.ndim, dim)
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__} {self.shape}>"
+
+    def _get_min_max(self):
+        """Get min and max across parts.
+
+        Returns
+        -------
+        vmin : float
+
+        vmax : float
+        """
+        vmin = min(x.min() for x in self.parts.values())
+        vmax = max(x.max() for x in self.parts.values())
+        return vmin, vmax
 
     def to_filename(self, filename):
         """Save data to gifti.
@@ -1985,19 +2000,22 @@ class SurfaceImage:
         return cls(mesh=mesh, data=data)
 
 
-def check_surf_img(img: SurfaceImage | Iterable[SurfaceImage]) -> None:
+def check_surf_img(img: SurfaceImage | Iterable[SurfaceImage], var="") -> None:
     """Validate SurfaceImage.
 
     Equivalent to check_niimg for volumes.
     """
+    # check image is not empty
     if isinstance(img, SurfaceImage):
+        msg = "The image is empty."
+        if var:
+            msg = f"The image {var} is empty."
         if get_data(img).size == 0:
-            raise ValueError("The image is empty.")
+            raise ValueError(msg)
         return None
-
     if hasattr(img, "__iter__"):
-        for x in img:
-            check_surf_img(x)
+        for i, x in enumerate(img):
+            check_surf_img(x, var=f"img[{i}]")
 
 
 def get_data(img, ensure_finite=False) -> np.ndarray:
