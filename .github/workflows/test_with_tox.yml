@@ -117,7 +117,7 @@ jobs:
                 python-version: ${{ matrix.py }}
                 allow-prereleases: true
         -   name: Install tox
-            run: uv tool install tox --with=tox-uv --with=tox-gh-actions --with=rich
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
         -   name: Show tox config
             run: tox c
         -   name: add upstream as remote
