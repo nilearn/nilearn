@@ -82,7 +82,9 @@ def frame_times(n_frames):
 
 
 def test_design_matrix_no_experimental_paradigm(frame_times):
-    # Test design matrix creation when no experimental paradigm is provided
+    """Test design matrix creation \
+        when no experimental paradigm is provided.
+    """
     _, X, names = check_design_matrix(
         make_first_level_design_matrix(
             frame_times, drift_model="polynomial", drift_order=3
