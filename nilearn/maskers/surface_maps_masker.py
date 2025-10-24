@@ -423,7 +423,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return imgs
 
-    def generate_report(self, displayed_maps=10, engine="matplotlib"):
+    def generate_report(
+        self, displayed_maps=10, title=None, engine="matplotlib"
+    ):
         """Generate an HTML report for the current ``SurfaceMapsMasker``
         object.
 
@@ -464,6 +466,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             .. code-block:: python
 
                 masker.generate_report(16)
+
+        title : str, default=None
+            title for the report
 
         engine : :obj:`str`, default="matplotlib"
             The plotting engine to use for the report. Can be either
@@ -517,6 +522,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             )
 
         self.displayed_maps = displayed_maps
+        self._report_content["title"] = title
 
         return generate_report(self)
 

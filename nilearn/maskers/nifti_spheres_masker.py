@@ -352,7 +352,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.reports = reports
         self.verbose = verbose
 
-    def generate_report(self, displayed_spheres="all"):
+    def generate_report(self, displayed_spheres="all", title=None):
         """Generate an HTML report for current ``NiftiSpheresMasker`` object.
 
         .. note::
@@ -394,6 +394,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
                 masker.generate_report(16)
 
+        title : str, default=None
+            title for the report
+
         Returns
         -------
         report : `nilearn.reporting.html_report.HTMLReport`
@@ -414,6 +417,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 f"{type(displayed_spheres)}"
             )
         self.displayed_spheres = displayed_spheres
+        self._report_content["title"] = title
 
         return generate_report(self)
 

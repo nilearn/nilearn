@@ -263,6 +263,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
                 masker.generate_report(16)
 
+        title : str, default=None
+            title for the report
+
         Returns
         -------
         report : `nilearn.reporting.html_report.HTMLReport`

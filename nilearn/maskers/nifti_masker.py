@@ -369,9 +369,21 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-    def generate_report(self):
-        """Generate a report of the masker."""
+    def generate_report(self, title=None):
+        """Generate a report for the NiftiMasker.
+
+        Parameters
+        ----------
+        title : str, default=None
+            title for the report
+
+        Returns
+        -------
+        list(None) or HTMLReport
+        """
         from nilearn.reporting.html_report import generate_report
+
+        self._report_content["title"] = title
 
         return generate_report(self)
 
