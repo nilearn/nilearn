@@ -22,7 +22,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import new_img_like
-from nilearn.image.utils import check_niimg_3d, check_niimg_4d
+from nilearn.image.image import check_niimg_3d, check_niimg_4d
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 
 from .. import masking

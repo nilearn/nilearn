@@ -18,18 +18,16 @@ from nilearn._utils.param_validation import (
 )
 from nilearn._utils.segmentation import random_walker
 from nilearn.image.image import (
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
+    check_same_fov,
     concat_imgs,
     new_img_like,
     smooth_array,
     threshold_img,
 )
 from nilearn.image.resampling import resample_img
-from nilearn.image.utils import (
-    check_niimg,
-    check_niimg_3d,
-    check_niimg_4d,
-    check_same_fov,
-)
 from nilearn.maskers import NiftiMapsMasker
 
 

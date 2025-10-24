@@ -19,8 +19,13 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.image.image import copy_img, crop_img, new_img_like
-from nilearn.image.utils import check_niimg, check_niimg_3d
+from nilearn.image.image import (
+    check_niimg,
+    check_niimg_3d,
+    copy_img,
+    crop_img,
+    new_img_like,
+)
 
 ###############################################################################
 # Affine utils

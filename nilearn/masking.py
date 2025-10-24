@@ -21,15 +21,15 @@ from nilearn.datasets import (
     load_mni152_wm_template,
 )
 from nilearn.exceptions import MaskWarning, NotImplementedWarning
-from nilearn.image import get_data, new_img_like, resampling
-from nilearn.image.utils import (
+from nilearn.image.image import (
     check_niimg,
     check_niimg_3d,
     check_same_fov,
+    get_data,
+    new_img_like,
 )
-from nilearn.surface.surface import (
-    SurfaceImage,
-)
+from nilearn.image.resampling import resample_to_img
+from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import NiimgLike
@@ -714,9 +714,7 @@ def compute_brain_mask(
             "Only 'whole-brain', 'gm' or 'wm' are accepted."
         )
 
-    resampled_template = cache(resampling.resample_to_img, memory)(
-        template, target_img
-    )
+    resampled_template = cache(resample_to_img, memory)(template, target_img)
 
     mask = (get_data(resampled_template) >= threshold).astype("int8")
 

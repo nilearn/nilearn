@@ -15,9 +15,8 @@ from nilearn._utils.param_validation import check_parameter_in_allowed
 
 # Local imports
 from nilearn.image import get_data, iter_img, reorder_img
-from nilearn.image.image import smooth_array
+from nilearn.image.image import check_niimg_3d, check_niimg_4d, smooth_array
 from nilearn.image.resampling import coord_transform
-from nilearn.image.utils import check_niimg_3d, check_niimg_4d
 from nilearn.plotting._utils import check_threshold_not_negative
 
 ###############################################################################

@@ -33,7 +33,7 @@ from nilearn._utils.param_validation import (
 )
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.image.utils import check_niimg
+from nilearn.image.image import check_niimg
 from nilearn.maskers import (
     MultiNiftiMasker,
     MultiSurfaceMasker,

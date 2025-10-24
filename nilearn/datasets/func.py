@@ -41,7 +41,7 @@ from nilearn.datasets._utils import (
 )
 from nilearn.datasets.struct import load_fsaverage
 from nilearn.image import get_data
-from nilearn.image.utils import check_niimg
+from nilearn.image.image import check_niimg
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.surface import SurfaceImage
 
