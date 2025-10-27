@@ -500,7 +500,6 @@ def test_flm_generate_report_surface_data_error(
         )
 
 
-
 @pytest.mark.slow
 def test_carousel_several_runs(
     matplotlib_pyplot,  # noqa: ARG001

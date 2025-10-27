@@ -259,7 +259,6 @@ def test_check_affine_first_level_models(
         )
 
 
-
 @pytest.mark.slow
 def test_check_shape_first_level_models(shape_4d_default, n_subjects):
     """Check all FirstLevelModel have the same shape."""
