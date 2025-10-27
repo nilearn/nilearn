@@ -8,7 +8,7 @@ from nilearn.interfaces.bids import save_glm_to_bids
 
 @pytest.mark.timeout(0)
 def test_deprecation_save_glm_to_bids(tmp_path):
-    """Check deprecation about moved functmp_pathtion."""
+    """Check deprecation about moved function."""
     shapes, rk = [(7, 8, 9, 15)], 3
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes,
