@@ -81,7 +81,7 @@ def main():
     # Check for [example] in commit message
     example = []
     if "[example]" in GITLOG:
-        print("Building selected example")
+        print(f"Building selected example: {GITLOG}")
         # Extract everything after the first "] "
         try:
             examples_in_message = GITLOG.split("] ", 1)[1].strip()
@@ -121,7 +121,7 @@ def main():
 
     Path("pattern.txt").write_text(PATTERN + "\n")
 
-    print(f"PATTERN={PATTERN}")
+    print(f"{PATTERN=}")
 
 
 if __name__ == "__main__":
