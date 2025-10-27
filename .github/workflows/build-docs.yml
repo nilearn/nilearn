@@ -172,10 +172,16 @@ jobs:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
+        -   name: Setup python
+            uses: actions/setup-python@v6
+            with:
+                python-version: ${{ env.MIN_PYTHON_VERSION }}
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v7
         -   name: Merge with upstream
             run: ./build_tools/github/merge_upstream.sh
         -   name: Check if we are doing a full or partial build
-            run: ./build_tools/github/build_type.sh
+            run: uv run /build_tools/github/build_type.py
             env:
                 COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         -   name: Verify build type

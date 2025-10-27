@@ -1,5 +1,13 @@
-#!/usr/bin/env python3
-"""_summary_
+#!/usr/bin/env python
+
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#   "rich"
+# ]
+# ///
+
+"""
 Checks what doc build type to run.
 
 Generate:
