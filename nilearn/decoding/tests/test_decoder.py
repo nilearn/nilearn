@@ -661,23 +661,58 @@ def test_decoder_binary_classification_clustering(
 
 
 @ignore_warnings
-@pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
-def test_decoder_binary_classification_cross_validation(
-    binary_classification_data, cv, rng
-):
-    X, y, mask = binary_classification_data
+@pytest.mark.parametrize(
+    "estimator, data",
+    [
+        (Decoder, _make_binary_classification_test_data(n_samples=N_SAMPLES)),
+        (
+            Decoder,
+            _make_multiclass_classification_test_data(n_samples=N_SAMPLES),
+        ),
+        (
+            DecoderRegressor,
+            _make_regression_test_data(n_samples=N_SAMPLES, dim=5),
+        ),
+        (
+            FREMClassifier,
+            _make_binary_classification_test_data(n_samples=N_SAMPLES),
+        ),
+        (
+            FREMClassifier,
+            _make_multiclass_classification_test_data(n_samples=N_SAMPLES),
+        ),
+        (
+            FREMRegressor,
+            _make_regression_test_data(n_samples=N_SAMPLES, dim=5),
+        ),
+    ],
+)
+@pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut(), None])
+def test_cross_validation(estimator, data, cv):
+    """Check cross-validation scheme and fit attribute with groups enabled."""
+    X, y, mask = data
 
-    # check cross-validation scheme and fit attribute with groups enabled
-    model = Decoder(
-        estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
-    )
+    model = estimator(mask=mask, cv=cv)
+
     groups = None
     if isinstance(cv, LeaveOneGroupOut):
-        groups = rng.binomial(2, 0.3, size=len(y))
+        groups = _rng(0).binomial(2, 0.3, size=len(y))
     model.fit(X, y, groups=groups)
+
     y_pred = model.predict(X)
 
-    assert accuracy_score(y, y_pred) > 0.9
+    # fall on default of 10 fold (30 for the FREM) when cv is None
+    if cv is None:
+        n_cv = len(model.cv_)
+        if isinstance(model, (Decoder, DecoderRegressor)):
+            assert n_cv == 10
+        else:
+            assert n_cv == 30
+
+    if isinstance(model, (Decoder)):
+        assert accuracy_score(y, y_pred) > 0.9
+    elif isinstance(model, (DecoderRegressor)):
+        assert r2_score(y, y_pred) > 0.9
 
 
 @ignore_warnings
@@ -1019,26 +1054,6 @@ def test_decoder_multiclass_classification_clustering(
     y_pred = model.predict(X)
 
     assert model.scoring == "roc_auc"
-    assert accuracy_score(y, y_pred) > 0.9
-
-
-@ignore_warnings
-@pytest.mark.parametrize("cv", [KFold(n_splits=5), LeaveOneGroupOut()])
-def test_decoder_multiclass_classification_cross_validation(
-    multiclass_data, cv
-):
-    X, y, mask = multiclass_data
-
-    # check cross-validation scheme and fit attribute with groups enabled
-    model = Decoder(
-        estimator="svc", mask=mask, standardize="zscore_sample", cv=cv
-    )
-    groups = None
-    if isinstance(cv, LeaveOneGroupOut):
-        groups = _rng(0).binomial(2, 0.3, size=len(y))
-    model.fit(X, y, groups=groups)
-    y_pred = model.predict(X)
-
     assert accuracy_score(y, y_pred) > 0.9
 
 
