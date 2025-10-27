@@ -78,6 +78,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -113,6 +114,7 @@ def fake_fmri_data(shape=SHAPE):
     return fmri_data[0], mask
 
 
+@pytest.mark.slow
 def test_non_parametric_inference_with_flm_objects(shape_3d_default):
     """See https://github.com/nilearn/nilearn/issues/3579 ."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -219,7 +221,7 @@ def test_process_second_level_input_as_firstlevelmodels(
     assert sample_map.shape == shape_4d_default[:3]
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_check_affine_first_level_models(
     affine_eye, shape_4d_default, n_subjects
 ):
@@ -257,7 +259,8 @@ def test_check_affine_first_level_models(
         )
 
 
-@pytest.mark.timeout(0)
+
+@pytest.mark.slow
 def test_check_shape_first_level_models(shape_4d_default, n_subjects):
     """Check all FirstLevelModel have the same shape."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -582,7 +585,7 @@ def test_warning_overriding_with_masker_parameter(n_subjects):
         SecondLevelModel(mask_img=masker, verbose=1).fit(Y, design_matrix=X)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_high_level_non_parametric_inference_with_paths(tmp_path, n_subjects):
     mask_file, fmri_files, _ = write_fake_fmri_data_and_design(
         (SHAPE,), file_path=tmp_path
@@ -1041,7 +1044,7 @@ def test_non_parametric_inference_permutation_computation(n_subjects):
     assert get_data(neg_log_pvals_img).shape == SHAPE[:3]
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_non_parametric_inference_tfce(n_subjects):
     """Test non-parametric inference with TFCE inference."""
     shapes = [SHAPE] * n_subjects
@@ -1066,7 +1069,7 @@ def test_non_parametric_inference_tfce(n_subjects):
     assert get_data(out["logp_max_tfce"]).shape == shapes[0][:3]
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_non_parametric_inference_cluster_level(n_subjects):
     """Test non-parametric inference with cluster-level inference."""
     func_img, mask = fake_fmri_data()
@@ -1093,7 +1096,7 @@ def test_non_parametric_inference_cluster_level(n_subjects):
     assert get_data(out["logp_max_t"]).shape == SHAPE[:3]
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_non_parametric_inference_cluster_level_with_covariates(
     shape_3d_default, rng, n_subjects
 ):
@@ -1146,7 +1149,7 @@ def test_non_parametric_inference_cluster_level_with_covariates(
     assert logp_unc_cluster_sizes == logp_max_cluster_sizes
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_non_parametric_inference_cluster_level_with_single_covariates(
     shape_3d_default, rng, n_subjects
 ):
@@ -1175,7 +1178,7 @@ def test_non_parametric_inference_cluster_level_with_single_covariates(
     )
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_second_level_contrast_computation_smoke(n_subjects):
     """Smoke test for different contrasts in fixed effects."""
     func_img, mask = fake_fmri_data()
@@ -1196,7 +1199,7 @@ def test_second_level_contrast_computation_smoke(n_subjects):
     model.compute_contrast()
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "output_type",
     [
@@ -1233,7 +1236,7 @@ def test_second_level_contrast_computation_all(output_type, n_subjects):
     )
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_second_level_contrast_computation_errors(rng, n_subjects):
     func_img, mask = fake_fmri_data()
 
@@ -1310,7 +1313,7 @@ def test_second_level_f_contrast_length_errors(n_subjects):
         model.compute_contrast(second_level_contrast=np.eye(2))
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("second_level_contrast", [None, "intercept", [1]])
 def test_non_parametric_inference_contrast_computation(
     second_level_contrast, n_subjects
@@ -1401,6 +1404,7 @@ def test_non_parametric_inference_contrast_computation_errors(rng, n_subjects):
         )
 
 
+@pytest.mark.slow
 def test_second_level_contrast_computation_with_memory_caching(n_subjects):
     func_img, mask = fake_fmri_data()
 
