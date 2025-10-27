@@ -300,7 +300,7 @@ def test_projectors_basic(projector, img, tmp_path):
     projector.close()
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_contour_fillings_levels_in_add_contours(img):
     """Tests for method ``add_contours`` of ``OrthoSlicer``."""
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
