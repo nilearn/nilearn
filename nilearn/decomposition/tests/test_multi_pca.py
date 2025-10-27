@@ -16,7 +16,7 @@ from nilearn.decomposition.tests.conftest import (
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 @pytest.mark.parametrize("length", [1, 2])
 def test_multi_pca(
@@ -55,7 +55,7 @@ def test_multi_pca(
         assert_array_almost_equal(components1, components2)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_multi_pca_with_masker_without_cca_smoke(
     data_type,
