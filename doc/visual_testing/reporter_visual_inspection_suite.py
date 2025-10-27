@@ -17,7 +17,6 @@ import pandas as pd
 from nilearn.datasets import (
     fetch_adhd,
     fetch_atlas_difumo,
-    fetch_atlas_msdl,
     fetch_atlas_schaefer_2018,
     fetch_atlas_surf_destrieux,
     fetch_atlas_yeo_2011,
@@ -396,7 +395,7 @@ def report_nifti_maps_masker(build_type):
         _generate_dummy_html(filenames=["nifti_maps_masker.html"])
         return None
 
-    atlas = fetch_atlas_msdl()
+    atlas = fetch_atlas_difumo(dimension=64, resolution_mm=2)
     atlas_filename = atlas["maps"]
 
     data = fetch_development_fmri(n_subjects=1)
@@ -720,7 +719,7 @@ def report_surface_maps_masker(build_type):
         return None, None
 
     # Fetch a volumetric probabilistic atlas
-    atlas = fetch_atlas_msdl()
+    atlas = fetch_atlas_difumo(dimension=64, resolution_mm=2)
     # Fetch the fsaverage5 mesh
     fsaverage5_mesh = load_fsaverage("fsaverage5")["pial"]
     # project atlas to the surface
