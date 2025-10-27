@@ -91,7 +91,6 @@ DO_TEST = True
 DO_DOC = True
 
 
-
 def main(args=sys.argv) -> None:
     """Collect duration of each job and plots them."""
     # %%
