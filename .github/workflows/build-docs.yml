@@ -83,11 +83,24 @@ on:
     pull_request:
         branches:
         -   '*'
-    schedule:
-    # Run every Monday at 8am UTC
-    -   cron: 0 8 * * 1
 
-    # Allows you to run this workflow manually from the Actions tab
+    schedule:
+        # Uses the cron schedule for github actions
+        # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+        # Run every Monday at midnight UTC
+        #     ┌───────────── minute (0 - 59)
+        #     │ ┌───────────── hour (0 - 23)
+        #     │ │ ┌───────────── day of the month (1 - 31)
+        #     │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+        #     │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     * * * * *
+    -   cron: 0 0 * * 1
+
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
     workflow_dispatch:
 
     # This will run automatically when a release is published
@@ -108,7 +121,6 @@ env:
     HEAD_COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
 jobs:
-
     # Make citation metadata from CITATION.cff is valid.
     # as it is used in the documentation build.
     validate_cff:
@@ -169,7 +181,7 @@ jobs:
         -   name: Checkout nilearn
             uses: actions/checkout@v5
             with:
-                # If pull request, checkout HEAD commit with all commit history
+                  # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
         -   name: Merge with upstream
@@ -206,11 +218,11 @@ jobs:
         -   name: Checkout nilearn
             uses: actions/checkout@v5
             with:
-                # If pull request, checkout HEAD commit with all commit history
+                  # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
 
-        # Set up environment
+                  # Set up environment
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
@@ -253,7 +265,7 @@ jobs:
                     data_cache-${{ github.workflow }}_ref-${{ github.ref }}
 
         -   name: Get data from a previous successful run for full builds
-            # only run it if we did not get the data from a previous attempt
+                  # only run it if we did not get the data from a previous attempt
             if: ${{ steps.build-type.outputs.build == 'html-strict' && steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit
                 != 'true' }}
             id: restore-previous-full-build
@@ -263,7 +275,7 @@ jobs:
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
 
         -   name: Get data for reports from a previous successful run
-            # only run it if we did not get the data from a previous attempt
+                  # only run it if we did not get the data from a previous attempt
             if: ${{ steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit != 'true' && steps.restore-previous-full-build.outputs.cache-hit
                 != 'true' }}
             uses: actions/cache@v4
@@ -318,17 +330,16 @@ jobs:
                 shell: bash -el {0}
 
         steps:
-
         -   name: Checkout nilearn
             uses: actions/checkout@v5
             with:
-                # If pull request, checkout HEAD commit with all commit history
+                  # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
         -   name: Merge with upstream
             run: ./build_tools/github/merge_upstream.sh
 
-        # Set up environment
+                  # Set up environment
         -   name: Install apt packages
             run: |
                 sudo -E apt-get -yq update
@@ -346,8 +357,8 @@ jobs:
                 restore-keys: |
                     data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}
 
-        # Set up and launch a virtual browser needed for one example to run
-        # without stalling the job. The example launches an html in the browser.
+                  # Set up and launch a virtual browser needed for one example to run
+                  # without stalling the job. The example launches an html in the browser.
         -   name: Set up display server for virtual browser
             run: Xvfb -ac :99 -screen 0 1280x1024x16 > /dev/null 2>&1 &
 
@@ -370,13 +381,13 @@ jobs:
         -   name: Show tox config
             run: tox c
 
-        # Run the doc build
-        #
-        # We let tox handle creating virtual env and install dependencies.
-        # If no data is restored in previous steps,
-        # the data will be downloaded during the build
-        # (this only applies for full builds;
-        # no data is downloaded for partial builds).
+                  # Run the doc build
+                  #
+                  # We let tox handle creating virtual env and install dependencies.
+                  # If no data is restored in previous steps,
+                  # the data will be downloaded during the build
+                  # (this only applies for full builds;
+                  # no data is downloaded for partial builds).
         -   name: Build docs
             id: build-docs
             if: ${{ matrix.env == 'doc' ||  matrix.env == 'doc_latest' && contains(fromJSON('["workflow_dispatch", "schedule"]'), github.event_name) }}

@@ -28,6 +28,7 @@ rule_settings:
     -   no-loop-in-tests
     -   no-conditionals-in-tests
     -   low-code-quality
+    -   inline-immediately-returned-variable
     # --------------------
     -   raise-from-previous-error   # │    21 │
     -   use-named-expression        # │    16 │
