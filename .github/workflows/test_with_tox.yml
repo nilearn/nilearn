@@ -18,7 +18,13 @@
 #
 # - ``htmlcov`` containing the html version of the code coverage.
 #
+# .. admonition:: Not all python version run on pull requests
+#    :class: warning
 #
+#    When this workflow is triggered by a pull-request,
+#    it will run using only the oldest and latest python version we support.
+#    When running on main all combination of operating system
+#    and python versions are run.
 ###
 name: test
 
@@ -97,7 +103,6 @@ jobs:
 
 
         steps:
-
         -   uses: actions/checkout@v5
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v7
@@ -112,6 +117,11 @@ jobs:
             run: tox c
 
         -   name: Run test suite
+            # only run on main
+            # or PR for oldest and latest supported python versions
+            #
+            # NOTE: skipped versions will just show a green tick on PRs
+            if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && (matrix.py =='3.10' || matrix.py =='3.13')) }}
             run: |
                 tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
                 tox run -e plot_test_timing
