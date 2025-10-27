@@ -34,15 +34,15 @@ def main():
     """Check what doc build type to run."""
     if not Path("gitlog.txt").exists():
         raise RuntimeError(
-            "'gitlog.txt' not found."
-            "should have been generated "
-            "by build_tools/github/merge_upstream.sh"
+            "'gitlog.txt' not found. "
+            "It should have been generated "
+            "by 'build_tools/github/merge_upstream.sh'"
         )
     if not Path("merge.txt").exists():
         raise RuntimeError(
-            "'merge.txt' not found."
-            "should have been generated "
-            "by build_tools/github/merge_upstream.sh"
+            "'merge.txt' not found. "
+            "It should have been generated "
+            "by 'build_tools/github/merge_upstream.sh'"
         )
 
     # ----- Set missing variables
