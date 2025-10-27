@@ -58,6 +58,7 @@ jobs:
         -   name: Show tox config
             run: tox c
         -   name: Run test suite
+            id: test_free_threaded
             run: |
                 tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
                 tox run -e plot_test_timing
@@ -73,3 +74,20 @@ jobs:
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
+
+        -   name: Create issue
+            if: ${{ steps.test_free_threaded.outcome != 'success' }}
+            uses: JasonEtco/create-an-issue@v2.9.2
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run_id: ${{ github.run_id }}
+                repository: ${{ github.repository }}
+                workflow_name: TEST FREE THREADED PYTHON
+            with:
+                filename: .github/workflow_failure.md
+                update_existing: true
+                search_existing: open
+
+        -   name: Return failure
+            if: ${{ steps.test_free_threaded.outcome != 'success' }}
+            run: exit 1

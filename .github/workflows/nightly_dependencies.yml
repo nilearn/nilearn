@@ -82,17 +82,15 @@ jobs:
                 path: results/pytest_output
 
         -   name: Create issue
-                  # Do not open issues when on a PR
-                  # because the result will be visible in the PR CI report
             if: ${{ steps.nightly.outcome != 'success' }}
             uses: JasonEtco/create-an-issue@v2.9.2
             env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                ref: ${{ github.ref }}
                 run_id: ${{ github.run_id }}
                 repository: ${{ github.repository }}
+                workflow_name: NIGHTLY DEPENDENCIES TEST
             with:
-                filename: .github/nightly_failure.md
+                filename: .github/workflow_failure.md
                 update_existing: true
                 search_existing: open
 

@@ -53,6 +53,8 @@ jobs:
             run: pip install .[plotting]
 
         -   name: Test atlases
+            id: test_atlas
+            continue-on-error: true
             run: python maint_tools/check_atlas.py
 
         -   name: Upload masker reports
@@ -61,3 +63,20 @@ jobs:
             with:
                 name: label_masker_reports
                 path: maint_tools/tmp
+
+        -   name: Create issue
+            if: ${{ steps.test_atlas.outcome != 'success' }}
+            uses: JasonEtco/create-an-issue@v2.9.2
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run_id: ${{ github.run_id }}
+                repository: ${{ github.repository }}
+                workflow_name: TEST ATLAS
+            with:
+                filename: .github/workflow_failure.md
+                update_existing: true
+                search_existing: open
+
+        -   name: Return failure
+            if: ${{ steps.test_atlas.outcome != 'success' }}
+            run: exit 1

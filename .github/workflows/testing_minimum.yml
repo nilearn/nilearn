@@ -82,6 +82,7 @@ jobs:
             run: pip install .[plotting,test]
 
         -   name: Run tests
+            id: test_minimum
             run: |
                 pip install pytest-mpl
                 pytest --pyargs nilearn --report=report.html -n auto --csv results/pytest_output/pytest_output.csv
@@ -105,3 +106,20 @@ jobs:
             with:
                 name: ${{ matrix.os }}_${{ matrix.min_dep }}_pytest_output
                 path: results/pytest_output
+
+        -   name: Create issue
+            if: ${{ steps.test_minimum.outcome != 'success' }}
+            uses: JasonEtco/create-an-issue@v2.9.2
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run_id: ${{ github.run_id }}
+                repository: ${{ github.repository }}
+                workflow_name: TEST MINIMUM DEPENDENCIES
+            with:
+                filename: .github/workflow_failure.md
+                update_existing: true
+                search_existing: open
+
+        -   name: Return failure
+            if: ${{ steps.test_minimum.outcome != 'success' }}
+            run: exit 1

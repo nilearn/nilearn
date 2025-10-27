@@ -52,4 +52,23 @@ jobs:
         -   name: Install packages
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions
         -   name: check links
+            id: linkcheck
             run: tox run -e linkcheck
+            continue-on-error: true
+
+        -   name: Create issue
+            if: ${{ steps.linkcheck.outcome != 'success' }}
+            uses: JasonEtco/create-an-issue@v2.9.2
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run_id: ${{ github.run_id }}
+                repository: ${{ github.repository }}
+                workflow_name: LINKCHECK
+            with:
+                filename: .github/workflow_failure.md
+                update_existing: true
+                search_existing: open
+
+        -   name: Return failure
+            if: ${{ steps.linkcheck.outcome != 'success' }}
+            run: exit 1
