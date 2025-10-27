@@ -120,13 +120,9 @@ jobs:
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions
         -   name: Show tox config
             run: tox c
-        -   name: add upstream as remote
+        -   name: Merge with upstream
             shell: bash -el {0}
-            run: |
-                if ! git remote -v | grep upstream; then
-                    git remote add upstream https://github.com/nilearn/nilearn.git
-                fi
-                git fetch upstream
+            run: ./build_tools/github/merge_upstream.sh
         -   name: Run test suite
             shell: bash -el {0}
             run: |
