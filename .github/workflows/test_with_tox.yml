@@ -105,24 +105,32 @@ jobs:
                     os: ubuntu-latest
                     env: pytest_mpl
 
-
         steps:
 
         -   uses: actions/checkout@v5
+
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v7
+
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
                 python-version: ${{ matrix.py }}
                 allow-prereleases: true
+
         -   name: Install tox
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+
         -   name: Show tox config
             run: tox c
+
         -   name: Merge with upstream
+            # We do this so that when on a PR,
+            # we only get the files involved in a PR
+            # to avoid running more tests than needed.
             shell: bash -el {0}
             run: ./build_tools/github/merge_upstream.sh
+
         -   name: Run test suite
             shell: bash -el {0}
             run: |
@@ -151,6 +159,7 @@ jobs:
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_htmlcov
                 path: htmlcov
+
         -   name: Upload coverage to CodeCov
             uses: codecov/codecov-action@v5
             with:
