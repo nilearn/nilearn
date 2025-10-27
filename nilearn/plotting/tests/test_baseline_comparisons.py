@@ -5,6 +5,7 @@ See the  maintenance page of our documentation for more information
 https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-for-plotting-tests
 """
 
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
 import pytest
@@ -282,6 +283,7 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
         "ventral",
     ],
 )
+@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
 def test_plot_surf_surface(plot_func, view, hemi):
     """Test surface plotting functions with views and hemispheres."""
