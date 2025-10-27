@@ -28,9 +28,15 @@ def get_cbar_bounds(vmin, vmax, num_val, tick_format=DEFAULT_TICK_FORMAT):
     # are formatted, they are actually rounded depending on tick_format. If the
     # rounded value is bigger than vmax, or smaller than vmin, these values are
     # omitted in the display.
-    return np.linspace(
+    bounds = np.linspace(
         float(tick_format % vmin), float(tick_format % vmax), num_val
     )
+
+    # if all bound values are 0, return None
+    if np.all(bounds == 0):
+        bounds = None
+
+    return bounds
 
 
 def _remove_close_values(ticks, step_size, threshold, vmin, vmax):

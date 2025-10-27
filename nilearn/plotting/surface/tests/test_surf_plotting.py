@@ -1114,6 +1114,24 @@ def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni, kwargs):
     )
 
 
+@pytest.mark.parametrize(
+    "tick_format",
+    ["%i", "%.2g", "%.1f"],
+)
+def test_plot_img_on_surf_colorbar_tick_format(
+    matplotlib_pyplot, img_3d_mni, tick_format
+):
+    """Smoke test for nilearn.plotting.surface.plot_img_on_surf for
+    different tick_formats.
+    """
+    plot_img_on_surf(
+        img_3d_mni,
+        hemispheres=["right"],
+        views=["lateral"],
+        cbar_tick_format=tick_format,
+    )
+
+
 def test_plot_img_on_surf_inflate(matplotlib_pyplot, img_3d_mni):
     """Smoke test for nilearn.plotting.surface.plot_img_on_surf inflate
     parameter.
