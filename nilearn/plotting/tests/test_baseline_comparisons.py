@@ -273,6 +273,7 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
 
 
 @pytest.mark.mpl_image_compare(tolerance=5)
+@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize(
     "view",
@@ -283,7 +284,6 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
         "ventral",
     ],
 )
-@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
 def test_plot_surf_surface(plot_func, view, hemi):
     """Test surface plotting functions with views and hemispheres."""
@@ -342,6 +342,7 @@ def test_plot_surf_surface_plotly(plot_func, view, hemi):
 
 
 @pytest.mark.mpl_image_compare(tolerance=5)
+@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
