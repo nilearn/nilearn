@@ -234,7 +234,7 @@ jobs:
                 python -m pip install .
 
         -   name: Download build type
-            uses: actions/download-artifact@v5
+            uses: actions/download-artifact@v6
             with:
                 name: build_type
         -   name: Verify build type
@@ -371,7 +371,7 @@ jobs:
                 python-version: ${{ matrix.py }}
 
         -   name: Download build type
-            uses: actions/download-artifact@v5
+            uses: actions/download-artifact@v6
             with:
                 name: build_type
 
@@ -445,7 +445,7 @@ jobs:
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
 
-        -   uses: actions/download-artifact@v5
+        -   uses: actions/download-artifact@v6
             with:
                 name: doc
                 path: doc/_build/html
