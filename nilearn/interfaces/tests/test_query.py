@@ -145,7 +145,7 @@ def _rm_all_json_files_from_bids_dataset(bids_path):
 
 
 def test_get_bids_files_inheritance_principle_root_folder(tmp_path):
-    """Check if json files are found if in root folder of a dataset.
+    """Check if json files are found in root folder of a dataset.
 
     see https://bids-specification.readthedocs.io/en/latest/common-principles.html#the-inheritance-principle
     """
