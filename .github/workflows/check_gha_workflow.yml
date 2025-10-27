@@ -53,7 +53,7 @@ jobs:
         -   name: Collect and plot test suite run time
             run: python maint_tools/check_gha_workflow.py ${{ secrets.GITHUB_TOKEN }}
         -   name: Upload output
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: test_runs_timing_outputs
                 path: maint_tools/*_runs_timing.*

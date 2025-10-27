@@ -195,7 +195,7 @@ jobs:
                 echo "PATTERN = $(cat pattern.txt)"
                 echo "BUILD = $(cat build.txt)"
         -   name: Upload build.txt and pattern.txt
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: build_type
                 path: |
@@ -234,7 +234,7 @@ jobs:
                 python -m pip install .
 
         -   name: Download build type
-            uses: actions/download-artifact@v5
+            uses: actions/download-artifact@v6
             with:
                 name: build_type
         -   name: Verify build type
@@ -371,7 +371,7 @@ jobs:
                 python-version: ${{ matrix.py }}
 
         -   name: Download build type
-            uses: actions/download-artifact@v5
+            uses: actions/download-artifact@v6
             with:
                 name: build_type
 
@@ -412,14 +412,14 @@ jobs:
 
         -   name: Upload doc checks
             if: always()
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: ${{ matrix.env }}_checks
                 path: doc/tmp
 
         -   name: Upload documentation
             if: steps.build-docs.outcome == 'success'
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: ${{ matrix.env }}
                 path: doc/_build/html
@@ -445,7 +445,7 @@ jobs:
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
 
-        -   uses: actions/download-artifact@v5
+        -   uses: actions/download-artifact@v6
             with:
                 name: doc
                 path: doc/_build/html
