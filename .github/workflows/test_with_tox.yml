@@ -123,7 +123,7 @@ jobs:
             # NOTE: skipped versions will just show a green tick on PRs
             if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && (matrix.py =='3.10' || matrix.py =='3.13')) }}
             run: |
-                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
+                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn tests
                 tox run -e plot_test_timing
 
         -   name: Upload test report
