@@ -1323,12 +1323,83 @@ class FirstLevelModel(BaseGLM):
 
         self.n_elements_ = self.masker_.n_elements_
 
+    def _plotting_pred_and_res(
+        self,
+        observed_ts,
+        predicted_ts,
+        residuals_ts,
+        figsize=(10, 8),
+        close=True,
+    ):
+        """Helper function to plot observed vs predicted signal and residuals.
+
+        Parameters
+        ----------
+        observed_ts : array-like
+            The observed time series.
+        predicted_ts : array-like
+            The predicted time series.
+        residuals_ts : array-like
+            The residuals time series.
+        figsize : tuple, optional
+            Size of the figure. Default is (10, 6).
+        close : bool, optional
+            Whether to close the figure after creation. Default is True.
+
+        Returns
+        -------
+        fig : matplotlib.figure.Figure
+            The generated figure.
+        """
+
+        # Generate a time axis
+        n_timepoints = len(observed_ts)
+        time_axis = np.arange(n_timepoints)
+        x_label = "Time"
+
+        fig, axes = plt.subplots(3, 1, figsize=figsize)
+
+        # Plot observed vs predicted signal
+        axes[0].plot(time_axis, observed_ts, label="Observed", color="blue")
+        axes[0].plot(
+            time_axis, predicted_ts, label="Predicted", color="orange"
+        )
+        axes[0].axhline(y=0, color="black", linestyle="--", alpha=0.7)
+        axes[0].set_title("Observed vs Predicted Signal")
+        axes[0].set_ylabel("Signal Intensity")
+        axes[0].legend()
+        axes[0].set_xlabel(x_label)
+
+        # Plot residuals
+        axes[1].plot(time_axis, residuals_ts, label="Residuals", color="red")
+        axes[1].axhline(y=0, color="black", linestyle="--", alpha=0.7)
+        axes[1].set_title("Residuals Over Time")
+        axes[1].set_ylabel("Residuals")
+        axes[1].set_xlabel(x_label)
+        axes[1].legend()
+
+        # Center the y-axis around zero
+        max_abs_residual = np.max(np.abs(residuals_ts))
+        axes[1].set_ylim(-max_abs_residual * 1.1, max_abs_residual * 1.1)
+
+        # Plot histogram of residuals
+        axes[2].hist(residuals_ts, bins=30, color="green", alpha=0.7)
+        axes[2].set_title("Histogram of Residuals")
+        axes[2].set_xlabel("Residuals")
+        axes[2].set_ylabel("Frequency")
+
+        plt.tight_layout()
+        if close:
+            plt.close(fig)
+        return fig
+
     def plot_predicted_signal_and_residuals(
         self,
         coords=(0, 0, 0),
         masker=None,
         radius=3.0,
-        figsize=(10, 6),
+        figsize=(10, 8),
+        show=False,
     ):
         """Plot the predicted time series and residuals for a voxel \
         or small region.
@@ -1348,13 +1419,16 @@ class FirstLevelModel(BaseGLM):
             Radius of the sphere if `masker` is None. Default is 3mm.
         figsize : tuple, optional
             Size of the figure. Default is (10, 6).
+        show : bool, optional
+            Whether to display the figure. Default is False.
 
         Returns
         -------
+        timeseries_df : :class:`pandas.DataFrame`
+            DataFrame containing the observed, predicted, and residuals \
+            time series.
         fig : matplotlib.figure.Figure
-            The matplotlib figure containing two subplots:
-            - Top: observed vs predicted signal
-            - Bottom: residuals
+            The generated figure.
 
         Notes
         -----
@@ -1392,24 +1466,25 @@ class FirstLevelModel(BaseGLM):
         residuals_ts = masker.transform(resid[0])
         observed_ts = predicted_ts + residuals_ts
 
-        # Plot observed vs predicted signal
-        fig, axes = plt.subplots(2, 1, figsize=figsize, sharex=True)
-        axes[0].plot(observed_ts, label="Observed", color="blue")
-        axes[0].plot(predicted_ts, label="Predicted", color="orange")
-        axes[0].set_title("Observed vs Predicted Signal")
-        axes[0].set_ylabel("Signal Intensity")
-        axes[0].legend()
+        # Plot the results
+        fig = self._plotting_pred_and_res(
+            observed_ts.flatten(),
+            predicted_ts.flatten(),
+            residuals_ts.flatten(),
+            figsize=figsize,
+            close=not show,
+        )
+        if show:
+            plt.show(fig)
 
-        # Plot residuals
-        axes[1].plot(residuals_ts, label="Residuals", color="red")
-        axes[1].set_title("Residuals")
-        axes[1].set_xlabel("Time")
-        axes[1].set_ylabel("Residuals")
-        axes[1].legend()
-
-        plt.tight_layout()
-        plt.close(fig)
-        return fig
+        timeseries_df = pd.DataFrame(
+            {
+                "observed": observed_ts.flatten(),
+                "predicted": predicted_ts.flatten(),
+                "residuals": residuals_ts.flatten(),
+            }
+        )
+        return timeseries_df, fig
 
     @fill_doc
     def generate_report(
