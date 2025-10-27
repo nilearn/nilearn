@@ -1,3 +1,10 @@
+# /// script
+# requires-python = ">=3.10"
+# dependencies = [
+#   "nilearn[min_plotting]",
+#    "tabulate"
+# ]
+# ///
 """Generate markdown files with table summarizing information about atlases."""
 
 from pathlib import Path
