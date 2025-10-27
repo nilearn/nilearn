@@ -122,7 +122,7 @@ jobs:
             # or PR for oldest and latest supported python versions
             #
             # NOTE: skipped versions will just show a green tick on PRs
-            if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && (matrix.py =='3.10' || matrix.py =='3.13')) }}
+            if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && (matrix.py =='3.10' || matrix.py =='3.14')) }}
             run: |
                 tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
                 tox run -e plot_test_timing
