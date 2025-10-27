@@ -16,10 +16,14 @@ Otherwise it checks if any examples must be built
 Must be run after running build_tools/github/merge_upstream.sh
 """
 
+import builtins
+import contextlib
 import os
 import subprocess
-import sys
 from pathlib import Path
+
+with contextlib.suppress(builtins.BaseException):
+    from rich import print
 
 
 def run(cmd, capture_output=True, check=True, text=True):
@@ -45,8 +49,7 @@ def main():
             "by 'build_tools/github/merge_upstream.sh'"
         )
 
-    # ----- Set missing variables
-
+    # Set missing variables
     CI = os.getenv("CI")
     if CI is None:
         print("Running locally")
@@ -65,7 +68,7 @@ def main():
     # Ensure pattern.txt exists even if empty
     Path("pattern.txt").touch()
 
-    # ----- Check for full build
+    # Check for full build
     if (
         GITHUB_REF_NAME == "main"
         or GITHUB_REF_TYPE == "tag"
@@ -73,29 +76,28 @@ def main():
     ):
         print("Doing a full build")
         Path("build.txt").write_text("html-strict\n")
-        sys.exit(0)
+        return
 
-    # ----- Check for [example] in commit message
-    EXAMPLE = ""
+    # Check for [example] in commit message
+    example = []
     if "[example]" in GITLOG:
         print("Building selected example")
         # Extract everything after the first "] "
         try:
-            COMMIT_MESSAGE = GITLOG.split("] ", 1)[1].strip()
-            EXAMPLE = f"examples/*/{COMMIT_MESSAGE}"
+            examples_in_message = GITLOG.split("] ", 1)[1].strip()
+            for ex in examples_in_message.split(" "):
+                example.extend([f"examples/*/{ex.strip()}"])
         except IndexError:
-            COMMIT_MESSAGE = ""
-            EXAMPLE = ""
+            ...
 
-    # ----- Generate examples.txt
+    # Generate examples.txt
     merge_base = run(f"git merge-base {COMMIT_SHA} upstream/main")
     changed_files = run(
         f"git diff --name-only {merge_base} {COMMIT_SHA}"
     ).splitlines()
 
-    # Append EXAMPLE to the list
-    if EXAMPLE:
-        changed_files.append(EXAMPLE)
+    # Append examples to the list
+    changed_files.extend(example)
 
     Path("examples.txt").write_text("\n".join(changed_files) + "\n")
 
@@ -124,3 +126,66 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+try:
+    import pytest
+
+    @pytest.fixture
+    def clean_up():
+        """Remove files created."""
+        yield
+        Path("build.txt").unlink()
+        Path("examples.txt").unlink()
+        Path("pattern.txt").unlink()
+
+    @pytest.fixture
+    def gitlog(log):
+        """Create dumy content of a commit message."""
+        Path("gitlog.txt").write_text(log)
+        yield
+        Path("gitlog.txt").unlink()
+
+    @pytest.fixture
+    def merge():
+        """Create dummy file containing files changed in a PR."""
+        Path("merge.txt").write_text("")
+        yield
+        Path("merge.txt").unlink()
+
+    @pytest.mark.parametrize(
+        "log, expected_in_pattern",
+        [
+            ("", [""]),
+            ("[example] ", [""]),
+            ("[example] plot_3d_and_4d_niimg.py", ["plot_3d_and_4d_niimg.py"]),
+            (
+                "[example] plot_3d_and_4d_niimg.py plot_oasis.py",
+                ["plot_3d_and_4d_niimg.py", "plot_oasis.py"],
+            ),
+            (
+                "[example] plot_second_level*",
+                ["plot_3d_and_4d_niimg.py", "plot_oasis.py"],
+            ),
+        ],
+    )
+    def test_main_commit_msg(
+        log,  # noqa: ARG001
+        gitlog,  # noqa: ARG001
+        merge,  # noqa: ARG001
+        expected_in_pattern,
+        clean_up,  # noqa: ARG001
+    ):
+        """Test proper examples will be added when passed in commit msg."""
+        main()
+        assert Path("build.txt").exists()
+        assert Path("examples.txt").exists()
+        assert Path("pattern.txt").exists()
+
+        with Path("pattern.txt").open("r") as f:
+            content = f.read()
+            for ex in expected_in_pattern:
+                assert ex in content
+
+except ImportError:
+    ...
