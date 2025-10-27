@@ -128,21 +128,21 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
-                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report.html
-                path: report.html
+                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
+                path: report
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
 
         -   name: Upload html coverage
             if: success() || failure()
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_htmlcov
                 path: htmlcov
