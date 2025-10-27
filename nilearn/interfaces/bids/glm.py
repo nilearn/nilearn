@@ -15,7 +15,7 @@ def save_glm_to_bids(*args, **kwgars):
     warnings.warn(
         (
             "'save_glm_to_bids' has been moved "
-            "to 'nilear.glm' in version 0.13.\n"
+            "to 'nilearn.glm' in version 0.13.\n"
             "Importing from 'nilearn.interfaces' will be possible "
             "until Nilearn 0.15.0.\n"
             "Please import from 'nilearn.glm' instead."
