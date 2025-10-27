@@ -36,12 +36,14 @@ def _skip_module(module_name: str):
 
 
 def _is_abstract(c):
+    """Determine if an object has abstract methods."""
     if not (hasattr(c, "__abstractmethods__")):
         return False
     return len(c.__abstractmethods__)
 
 
 def _get_all_classes():
+    """List all classes in the public API of Nilearn."""
     all_classes = []
     # Ignore deprecation warnings triggered at import time and from walking
     # packages
