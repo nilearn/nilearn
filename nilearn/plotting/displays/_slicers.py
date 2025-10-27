@@ -7,7 +7,6 @@ from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import ListedColormap
 from matplotlib.transforms import Bbox
 
@@ -18,12 +17,10 @@ from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, new_img_like, reorder_img
 from nilearn.image.image import _check_fov, check_niimg_3d
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
-from nilearn.plotting._engine_utils import threshold_cmap
+from nilearn.plotting._engine_utils import create_colorbar_for_fig
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
     check_threshold_not_negative,
-    get_cbar_bounds,
-    get_cbar_ticks,
 )
 from nilearn.plotting.displays import CutAxes
 from nilearn.plotting.displays._utils import (
@@ -715,9 +712,6 @@ class BaseSlicer:
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
         """
-        cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
-        cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
-
         # create new  axis for the colorbar
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect
@@ -734,32 +728,21 @@ class BaseSlicer:
         self._colorbar_ax = figure.add_axes(lt_wid_top_ht)
         self._colorbar_ax.set_facecolor("w")
 
-        if cbar_vmin == cbar_vmax:  # len(np.unique(data)) == 1 ?
-            return
-        else:
-            our_cmap = threshold_cmap(
-                cmap, norm, threshold, (*self._brain_color, 0.0)
-            )
-
-        ticks = get_cbar_ticks(
-            cbar_vmin, cbar_vmax, threshold, tick_format=self._cbar_tick_format
-        )
-        bounds = get_cbar_bounds(
-            cbar_vmin, cbar_vmax, our_cmap.N, self._cbar_tick_format
-        )
-
-        self._cbar = ColorbarBase(
+        self._cbar = create_colorbar_for_fig(
+            figure,
             self._colorbar_ax,
-            ticks=ticks,
-            norm=norm,
-            orientation="vertical",
-            cmap=our_cmap,
-            boundaries=bounds,
+            cmap,
+            norm,
+            threshold,
+            cbar_vmin,
+            cbar_vmax,
+            tick_format=self._cbar_tick_format,
             spacing="proportional",
-            format=self._cbar_tick_format,
+            orientation="vertical",
+            threshold_color=(*self._brain_color, 0.0),
         )
-        self._cbar.ax.set_facecolor(self._brain_color)
 
+        self._cbar.ax.set_facecolor(self._brain_color)
         self._colorbar_ax.yaxis.tick_left()
         tick_color = "w" if self._black_bg else "k"
         outline_color = "w" if self._black_bg else "k"
