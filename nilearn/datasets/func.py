@@ -3088,7 +3088,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     description = get_dataset_descr("fiac")
 
     # maybe data_dir already contains the data ?
-    data = _glob_fiac_data()
+    data = _glob_fiac_data(verbose)
     if data is not None:
         data.description = description
         return data
@@ -3109,7 +3109,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         data.description = description
         return data
 
-    data = _glob_fiac_data()
+    data = _glob_fiac_data(verbose)
     data.description = description
     return data
 
