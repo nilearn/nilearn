@@ -77,7 +77,7 @@ def test_plotly_show(plotly, renderer):
 
 
 @pytest.mark.xfail(
-    os.name == "nt",
+    condition=os.name == "nt",
     reason=(
         "Bug in kaleido library. "
         "See https://github.com/nilearn/nilearn/issues/5801."
