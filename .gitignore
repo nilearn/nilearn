@@ -48,6 +48,7 @@ venv/
 
 # testing
 .pytest_cache
+tests_to_run.txt
 # do not use report*.html below
 # otherwise some of the report*.html files used in masker reports
 # are ignored from package build
