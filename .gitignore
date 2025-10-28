@@ -48,7 +48,12 @@ venv/
 
 # testing
 .pytest_cache
-report*.html
+# do not use report*.html below
+# otherwise some of the report*.html files used in masker reports
+# are ignored from package build
+report.html
+report_doc.html
+report_slow.html
 
 # CI benchmark
 maint_tools/*_runs_timing.*
