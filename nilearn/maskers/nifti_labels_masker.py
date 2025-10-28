@@ -34,6 +34,7 @@ from nilearn.maskers.base_masker import (
     mask_logger,
 )
 from nilearn.masking import load_mask_img
+from nilearn.reporting._mixin import ReportingMixin
 
 
 class _ExtractionFunctor:
@@ -69,7 +70,7 @@ class _ExtractionFunctor:
 
 
 @fill_doc
-class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
+class NiftiLabelsMasker(ReportingMixin, _LabelMaskerMixin, BaseMasker):
     """Class for extracting data from Niimg-like objects \
        using labels of non-overlapping brain regions.
 
@@ -258,6 +259,15 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         self.strategy = strategy
 
+        self._report_content = {
+            "description": (
+                "This reports shows the regions "
+                "defined by the labels of the mask."
+            ),
+            "number_of_regions": 0,
+            "warning_message": None,
+        }
+
     @property
     def _region_id_name(self):
         """Return dictionary used to store region names and
@@ -306,25 +316,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             display = plot_roi(masked_atlas, title="Masked atlas")
 
         return masked_atlas, removed_region_ids, removed_region_names, display
-
-    def generate_report(self, title=None):
-        """Generate a report.
-
-        Parameters
-        ----------
-        title : str, default=None
-            title for the report
-
-        Returns
-        -------
-        list(None) or HTMLReport
-        """
-        from nilearn.reporting.html_report import generate_report
-
-        self._init_report_content()
-        self._report_content["title"] = title
-
-        return generate_report(self)
 
     def _reporting(self):
         """Return a list of all displays to be rendered.
@@ -480,8 +471,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         del y
         check_params(self.__dict__)
 
-        self._init_report_content()
-
         check_reduction_strategy(self.strategy)
         check_parameter_in_allowed(
             self.resampling_target,
@@ -580,25 +569,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
-
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-        if not hasattr(self, "_report_content"):
-            self._report_content = {
-                "description": (
-                    "This reports shows the regions "
-                    "defined by the labels of the mask."
-                ),
-                "warning_message": None,
-                "number_of_regions": 0,
-            }
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = None
 
     def _check_labels(self):
         """Check labels.

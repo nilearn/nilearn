@@ -21,6 +21,7 @@ from nilearn._utils.param_validation import (
 from nilearn.image import mean_img
 from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
+from nilearn.reporting._mixin import ReportingMixin
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -51,7 +52,9 @@ def signals_to_surf_img_labels(
 
 
 @fill_doc
-class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
+class SurfaceLabelsMasker(
+    ReportingMixin, _LabelMaskerMixin, _BaseSurfaceMasker
+):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
     .. nilearn_versionadded:: 0.11.0
@@ -199,6 +202,19 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
+        self._report_content = {
+            "description": (
+                "This report shows the input surface image overlaid "
+                "with the outlines of the mask. "
+                "We recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "n_vertices": {},
+            "number_of_regions": 0,
+            "summary": {},
+            "warning_message": None,
+        }
+
     @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
@@ -309,29 +325,6 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
-
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-        if not hasattr(self, "_report_content"):
-            self._report_content = {
-                "description": (
-                    "This report shows the input surface image overlaid "
-                    "with the outlines of the mask. "
-                    "We recommend to inspect the report for the overlap "
-                    "between the mask and its input image. "
-                ),
-                "n_vertices": {},
-                "number_of_regions": 0,
-                "summary": {},
-                "warning_message": None,
-            }
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = None
 
     def _generate_reporting_data(self):
         for part in self.labels_img_.data.parts:
@@ -480,24 +473,6 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
                 imgs.data.parts[k] = v.squeeze()
 
         return imgs
-
-    def generate_report(self, title=None):
-        """Generate a report for the SurfaceLabelsMasker.
-
-        Parameters
-        ----------
-        title : str, default=None
-            title for the report
-
-        Returns
-        -------
-        list(None) or HTMLReport
-        """
-        from nilearn.reporting.html_report import generate_report
-
-        self._report_content["title"] = title
-
-        return generate_report(self)
 
     def _reporting(self):
         """Load displays needed for report.

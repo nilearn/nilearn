@@ -352,7 +352,15 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.reports = reports
         self.verbose = verbose
 
-    def generate_report(self, displayed_spheres="all", title=None):
+        self._report_content = {
+            "description": (
+                "This reports shows the regions defined "
+                "by the spheres of the masker."
+            ),
+            "warning_message": None,
+        }
+
+    def generate_report(self, title=None, displayed_spheres="all"):
         """Generate an HTML report for current ``NiftiSpheresMasker`` object.
 
         .. note::
@@ -360,6 +368,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Parameters
         ----------
+        title : :obj:`str`, default=None
+            title for the report. If None, title will be the class name.
         displayed_spheres : :obj:`int`, or :obj:`list`,\
                             or :class:`~numpy.ndarray`, or "all", default="all"
             Indicates which spheres will be displayed in the HTML report.
@@ -394,32 +404,24 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
                 masker.generate_report(16)
 
-        title : str, default=None
-            title for the report
-
         Returns
         -------
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        from nilearn.reporting.html_report import generate_report
+        if is_matplotlib_installed():
+            if displayed_spheres != "all" and not isinstance(
+                displayed_spheres, (list, np.ndarray, int)
+            ):
+                raise TypeError(
+                    "Parameter ``displayed_spheres`` of "
+                    "``generate_report()`` should be either 'all' or "
+                    "an int, or a list/array of ints. You provided a "
+                    f"{type(displayed_spheres)}"
+                )
+            self.displayed_spheres = displayed_spheres
 
-        if not is_matplotlib_installed():
-            return generate_report(self)
-
-        if displayed_spheres != "all" and not isinstance(
-            displayed_spheres, (list, np.ndarray, int)
-        ):
-            raise TypeError(
-                "Parameter ``displayed_spheres`` of "
-                "``generate_report()`` should be either 'all' or "
-                "an int, or a list/array of ints. You provided a "
-                f"{type(displayed_spheres)}"
-            )
-        self.displayed_spheres = displayed_spheres
-        self._report_content["title"] = title
-
-        return generate_report(self)
+        return super().generate_report(title)
 
     def _reporting(self):
         """Return a list of all displays to be rendered.
@@ -638,24 +640,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
-
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-        if not hasattr(self, "_report_content"):
-            self._report_content = {
-                "description": (
-                    "This reports shows the regions defined "
-                    "by the spheres of the masker."
-                ),
-                "warning_message": None,
-            }
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = None
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
