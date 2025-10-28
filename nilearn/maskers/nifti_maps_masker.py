@@ -240,8 +240,8 @@ class NiftiMapsMasker(
 
         Parameters
         ----------
-        title : str, default=None
-            title for the report
+        title : :obj:`str`, default=None
+            title for the report. If None, title will be the class name.
 
         displayed_maps : :obj:`int`, or :obj:`list`, \
                          or :class:`~numpy.ndarray`, or "all", default=10
