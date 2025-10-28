@@ -123,7 +123,7 @@ def main():
             pattern_parts.append(Path(filename).name)
 
     if pattern_parts:
-        PATTERN = "(" + "\\|".join(pattern_parts) + ")"
+        PATTERN = r"\(" + "\\|".join(pattern_parts) + r"\)"
         Path("build.txt").write_text("html-modified-examples-only\n")
     else:
         PATTERN = ""
@@ -146,7 +146,7 @@ try:
         """Remove files created."""
         yield
         Path("build.txt").unlink()
-        Path("pattern.txt").unlink()
+        # Path("pattern.txt").unlink()
         Path("examples.txt").unlink(missing_ok=True)
 
     @pytest.fixture
@@ -170,7 +170,10 @@ try:
             ("", [""]),
             ("[full doc]", [""]),
             ("[example] ", [""]),
-            ("[example] plot_3d_and_4d_niimg.py", ["plot_3d_and_4d_niimg.py"]),
+            (
+                "[example] plot_3d_and_4d_niimg.py",
+                [r"\(plot_3d_and_4d_niimg.py\)"],
+            ),
             (
                 "[example] plot_3d_and_4d_niimg.py plot_oasis.py",
                 ["plot_3d_and_4d_niimg.py", "plot_oasis.py"],
