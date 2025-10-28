@@ -32,9 +32,19 @@ on:
     push:
         branches:
         -   main
+        paths:
+        -   nilearn/**/*
+        -   tox.ini
+        -   pyproject.toml
+        -   .github/workflows/test_with_tox.yml
     pull_request:
         branches:
         -   '*'
+        paths:
+        -   nilearn/**/*
+        -   tox.ini
+        -   pyproject.toml
+        -   .github/workflows/test_with_tox.yml
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -119,29 +129,42 @@ jobs:
                     os: ubuntu-latest
                     env: pytest_mpl
 
-
         steps:
         -   uses: actions/checkout@v5
+
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v7
+
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
                 python-version: ${{ matrix.py }}
                 allow-prereleases: true
+
         -   name: Install tox
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+
         -   name: Show tox config
             run: tox c
 
+        -   name: Merge with upstream
+            # We do this so that when on a PR,
+            # we only get the files involved in a PR
+            # to avoid running more tests than needed.
+            shell: bash -el {0}
+            run: ./build_tools/github/merge_upstream.sh
+
         -   name: Run test suite
+            shell: bash -el {0}
             # only run on main
             # or PR for oldest and latest supported python versions
             #
             # NOTE: skipped versions will just show a green tick on PRs
             if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && (matrix.py =='3.10' || matrix.py =='3.13')) }}
             run: |
-                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
+                python build_tools/github/restrict_tests_to_run.py
+                tests_to_run=$(cat tests_to_run.txt)
+                tox run --list-dependencies -e ${{ matrix.env }} -- ${tests_to_run}
                 tox run -e plot_test_timing
 
         -   name: Upload test report
@@ -164,6 +187,7 @@ jobs:
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_htmlcov
                 path: htmlcov
+
         -   name: Upload coverage to CodeCov
             uses: codecov/codecov-action@v5
             with:
