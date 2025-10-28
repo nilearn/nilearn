@@ -1,13 +1,19 @@
 ---
 # similar to scikit-learn .codecov.yml
+# https://docs.codecov.com/docs/codecovyml-reference
 coverage:
     status:
+        # Commits should not make the overall
+        # project coverage decrease by more than 1%:
         project:
             default:
-        # Commits pushed to main should not make the overall
-        # project coverage decrease by more than 1%:
                 target: auto
                 threshold: 1%
+        # OFF on PR
+        patch: off
+
+github_checks:
+    annotations: false
 
 ignore:
 -   '*externals/.*'  # ignore folders and all its contents
