@@ -2003,7 +2003,7 @@ def iter_check_niimg(
     Parameters
     ----------
     niimgs : list of niimg or glob pattern or itertools.tee instance
-        Image to iterate over.
+        Images to iterate over.
 
     ensure_ndim : integer, default=None
         If specified, an error is raised if the data does not have the
