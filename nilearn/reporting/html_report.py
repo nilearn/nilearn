@@ -11,7 +11,6 @@ from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
 from nilearn.externals import tempita
-from nilearn.maskers import NiftiSpheresMasker
 from nilearn.reporting._utils import (
     dataframe_to_html,
     model_attributes_to_dataframe,
@@ -217,6 +216,7 @@ def _define_overlay(estimator):
     update the report text as appropriate.
     """
     displays = estimator._reporting()
+    from nilearn.maskers import NiftiSpheresMasker
 
     if len(displays) == 1:  # set overlay to None
         return None, displays[0]
