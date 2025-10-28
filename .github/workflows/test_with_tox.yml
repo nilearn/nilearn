@@ -172,7 +172,10 @@ jobs:
             uses: actions/upload-artifact@v5
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
-                path: report*.html
+                path: |
+                    report.html
+                    report_slow.html
+                    report_doc.html
 
         -   name: Upload test timings
             if: success() || failure()
