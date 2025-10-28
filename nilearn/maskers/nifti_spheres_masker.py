@@ -354,7 +354,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self._report_content = {
             "description": (
-                "This reports shows the regions defined "
+                "This report shows the regions defined "
                 "by the spheres of the masker."
             ),
             "warning_message": None,
