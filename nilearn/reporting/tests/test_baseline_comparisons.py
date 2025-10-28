@@ -7,6 +7,7 @@ https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-f
 
 from collections import OrderedDict
 
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
 import pytest
@@ -75,6 +76,7 @@ def test_stat_map_to_png_volume(
 
 
 @pytest.mark.mpl_image_compare
+@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize(
     "height_control, two_sided, threshold",
     [
