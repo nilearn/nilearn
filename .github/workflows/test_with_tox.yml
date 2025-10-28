@@ -18,12 +18,12 @@
 #
 # - ``htmlcov`` containing the html version of the code coverage.
 #
-# .. admonition:: Not all python version run on pull requests
+# .. admonition:: Not all python version run on pull requests.
 #    :class: warning
 #
 #    When this workflow is triggered by a pull-request,
 #    it will run using only the oldest and latest python version we support.
-#    When running on main all combination of operating system
+#    When running on main all combinations of operating system
 #    and python versions are run.
 ###
 name: test
@@ -72,8 +72,26 @@ jobs:
                     exit 1
                 fi
 
-    test_and_coverage:
+    define-matrix:
+        runs-on: ubuntu-latest
         needs: check_skip_flags
+        outputs:
+            py: ${{ steps.py.outputs.py }}
+
+        steps:
+        -   name: Define python version to test
+            # only run latest and oldest python versions on PR
+            id: py
+            run: |
+                versions='py=["3.13", "3.12", "3.11", "3.10"]'
+                if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+                    versions='py=["3.13", "3.10"]'
+                fi
+                echo "Will run on the following python: ${versions}"
+                echo ${versions} >> "$GITHUB_OUTPUT"
+
+    test_and_coverage:
+        needs: [check_skip_flags, define-matrix]
 
         if: github.repository == 'nilearn/nilearn'
 
@@ -85,7 +103,7 @@ jobs:
             fail-fast: true
             matrix:
                 description: [latest dependencies]
-                py: ['3.13', '3.12', '3.11', '3.10']
+                py: ${{ fromJSON(needs.define-matrix.outputs.py) }}
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 env: [plotting]
                 include:
@@ -113,6 +131,10 @@ jobs:
 
         steps:
         -   uses: actions/checkout@v5
+            with:
+                # If pull request, checkout HEAD commit with all commit history
+                ref: ${{ github.event.pull_request.head.sha }}
+                fetch-depth: 0
 
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v7
@@ -138,11 +160,6 @@ jobs:
 
         -   name: Run test suite
             shell: bash -el {0}
-            # only run on main
-            # or PR for oldest and latest supported python versions
-            #
-            # NOTE: skipped versions will just show a green tick on PRs
-            if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request' && (matrix.py =='3.10' || matrix.py =='3.13')) }}
             run: |
                 python build_tools/github/restrict_tests_to_run.py
                 tests_to_run=$(cat tests_to_run.txt)
