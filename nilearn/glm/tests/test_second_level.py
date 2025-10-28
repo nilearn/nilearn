@@ -1332,7 +1332,7 @@ def test_non_parametric_inference_contrast_computation(
     )
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "second_level_contrast", [[1, 0], "r1", "r1-r2", [-1, 1]]
 )
