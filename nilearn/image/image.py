@@ -1940,7 +1940,7 @@ def check_same_fov(*args, **kwargs) -> bool:
         as img_#1 in the error message (replace 1 with the appropriate index).
 
     kwargs : images
-        Images to be checked. In case of error, images will be reference by
+        Images to be checked. In case of error, images will be referenced by
         their keyword name in the error message.
 
     raise_error : boolean, optional
