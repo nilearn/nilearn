@@ -265,7 +265,7 @@ def _load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
         bg_img, black_bg, bg_min, bg_max = load_anat(
             bg_img, dim=dim, black_bg=black_bg
         )
-    bg_img = reorder_img(bg_img, resample="nearest", copy_header=True)
+    bg_img = reorder_img(bg_img, resample="nearest")
     return bg_img, bg_min, bg_max, black_bg
 
 
@@ -281,19 +281,10 @@ def _resample_stat_map(
     mask_img
     """
     stat_map_img = resample_to_img(
-        stat_map_img,
-        bg_img,
-        interpolation=resampling_interpolation,
-        copy_header=True,
-        force_resample=False,  # TODO (nilearn >= 0.13.0) update to True
+        stat_map_img, bg_img, interpolation=resampling_interpolation
     )
     mask_img = resample_to_img(
-        mask_img,
-        bg_img,
-        fill_value=1,
-        interpolation="nearest",
-        copy_header=True,
-        force_resample=False,  # TODO (nilearn >= 0.13.0) update to True
+        mask_img, bg_img, fill_value=1, interpolation="nearest"
     )
 
     return stat_map_img, mask_img
@@ -625,6 +616,11 @@ def view_img(
 
     opacity : :obj:`float` in [0,1], default=1
         The level of opacity of the overlay (0: transparent, 1: opaque).
+
+    %(radiological)s
+
+    show_lr : :obj:`bool`, default=True
+        Show left and right labels on the figure
 
     Returns
     -------

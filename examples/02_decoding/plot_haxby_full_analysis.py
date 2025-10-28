@@ -146,7 +146,7 @@ plt.figure(constrained_layout=True)
 tick_position = np.arange(len(categories))
 plt.xticks(tick_position, categories, rotation=45)
 
-for color, mask_name in zip("rgb", mask_names):
+for color, mask_name in zip("rgb", mask_names, strict=False):
     score_means = [
         np.mean(mask_scores[mask_name][category]) for category in categories
     ]

@@ -32,7 +32,7 @@ from nilearn import plotting
 # confounds.tsv files.
 from nilearn.datasets import fetch_language_localizer_demo_dataset
 
-data = fetch_language_localizer_demo_dataset(legacy_output=False)
+data = fetch_language_localizer_demo_dataset()
 
 # %%
 # Here is the location of the dataset on disk.
@@ -118,7 +118,9 @@ nrows = ceil(len(models) / ncols)
 
 fig, axes = plt.subplots(nrows=nrows, ncols=ncols, figsize=(10, 12))
 axes = np.atleast_2d(axes)
-model_and_args = zip(models, models_run_imgs, models_events, models_confounds)
+model_and_args = zip(
+    models, models_run_imgs, models_events, models_confounds, strict=False
+)
 for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
     # fit the GLM
     model.fit(imgs, events, confounds)

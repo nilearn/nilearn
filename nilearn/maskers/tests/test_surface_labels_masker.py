@@ -10,23 +10,11 @@ from nilearn._utils.estimator_checks import (
     return_expected_failed_checks,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.conftest import _make_mesh
 from nilearn.maskers import SurfaceLabelsMasker
+from nilearn.maskers.tests.conftest import sklearn_surf_label_img
 from nilearn.surface import SurfaceImage
 
-
-def _sklearn_surf_label_img():
-    """Create a sample surface label image using the sample mesh,
-    just to use for scikit-learn checks.
-    """
-    labels = {
-        "left": np.asarray([1, 1, 2, 2]),
-        "right": np.asarray([1, 1, 2, 2, 2]),
-    }
-    return SurfaceImage(_make_mesh(), labels)
-
-
-ESTIMATORS_TO_CHECK = [SurfaceLabelsMasker(_sklearn_surf_label_img())]
+ESTIMATORS_TO_CHECK = [SurfaceLabelsMasker(sklearn_surf_label_img())]
 
 if SKLEARN_LT_1_6:
 
@@ -58,6 +46,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -187,9 +176,77 @@ def test_surface_label_masker_fit_with_lut(surf_label_img, tmp_path):
     for lut in [lut_tsv, lut_csv, lut_df, str(lut_tsv)]:
         masker = SurfaceLabelsMasker(labels_img=surf_label_img, lut=lut).fit()
 
+        if isinstance(lut, pd.DataFrame):
+            assert list(masker.lut.columns) == list(masker.lut_.columns)
         assert masker.n_elements_ == 1
         assert masker.labels_ == [0, 1]
         assert masker.lut_["name"].to_list() == ["Background", "bar"]
+
+
+@pytest.mark.parametrize(
+    "background_label, n_expected_regions", [(0, 3), (1, 2)]
+)
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {
+            "lut": pd.DataFrame(
+                {
+                    "index": [0, 1, 2, 3],
+                    "name": ["Background", "Foo", "Bar", "Baz"],
+                }
+            )
+        },
+        {
+            "lut": pd.DataFrame(
+                {
+                    "index": [0, 1, 2, 3],
+                    "name": ["Unknown", "Foo", "Bar", "Baz"],
+                }
+            )
+        },
+        {"labels": ["background", "Foo", "Bar", "Baz"]},
+    ],
+)
+def test_label_image_no_background_missing_regions(
+    surf_mesh, surf_img_2d, background_label, n_expected_regions, kwargs
+):
+    """Test label image with no background.
+
+    Compare behavior when background is present in label image
+    (background_label=1) or not (background_label=0).
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5596
+    """
+    data = {
+        "left": np.asarray([3, 3, 1, 1]),
+        "right": np.asarray([1, 1, 3, 2, 3]),
+    }
+    label_img = SurfaceImage(surf_mesh, data)
+
+    labels_masker = SurfaceLabelsMasker(
+        labels_img=label_img, background_label=background_label, **kwargs
+    ).fit()
+
+    if "lut" in kwargs:
+        # when reset_index() does not use drop=True,
+        # extra columns were added
+        assert list(kwargs["lut"].columns) == list(labels_masker.lut_.columns)
+
+    masked_data = labels_masker.transform(surf_img_2d(2))
+
+    assert masked_data.shape[1] == n_expected_regions
+    assert len(labels_masker.region_names_) == n_expected_regions
+
+    if background_label == 1:
+        assert "Background" in labels_masker.lut_["name"].to_list()
+        assert len(labels_masker.labels_) == n_expected_regions + 1
+        assert len(labels_masker.region_ids_) == n_expected_regions + 1
+    else:
+        assert "Background" not in labels_masker.lut_["name"].to_list()
+        assert len(labels_masker.labels_) == n_expected_regions
+        assert len(labels_masker.region_ids_) == n_expected_regions
 
 
 def test_surface_label_masker_error_names_and_lut(surf_label_img):
@@ -200,7 +257,7 @@ def test_surface_label_masker_error_names_and_lut(surf_label_img):
     )
     with pytest.raises(
         ValueError,
-        match="Pass either labels or a lookup table .* but not both.",
+        match=r"Pass either labels or a lookup table .* but not both.",
     ):
         masker.fit()
 
@@ -448,6 +505,7 @@ def test_surface_label_masker_lut_unsorted(
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, lut=lut)
     masker = masker.fit()
 
+    assert list(masker.lut.columns) == list(masker.lut_.columns)
     assert masker.labels_ == [0.0, 1.0, 2.0, 10.0, 20.0]
     assert masker.lut_["name"].to_list() == [
         "Background",
@@ -632,5 +690,5 @@ def test_surface_label_masker_labels_img_none():
 def test_error_wrong_strategy(surf_label_img):
     """Throw error for unsupported strategies."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, strategy="foo")
-    with pytest.raises(ValueError, match="Invalid strategy 'foo'."):
+    with pytest.raises(ValueError, match="'strategy' must be one of"):
         masker.fit()

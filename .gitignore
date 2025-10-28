@@ -48,14 +48,20 @@ venv/
 
 # testing
 .pytest_cache
+tests_to_run.txt
+# do not use report*.html below
+# otherwise some of the report*.html files used in masker reports
+# are ignored from package build
 report.html
 report_doc.html
+report_slow.html
 
 # CI benchmark
 maint_tools/*_runs_timing.*
 
 # coverage
 .coverage
+.coverage*
 coverage
 coverage.xml
 nosetests_coverage/
@@ -84,3 +90,6 @@ results/
 # node
 package.json
 package-lock.json
+
+# pydeps output
+nilearn.svg

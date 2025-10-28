@@ -7,7 +7,7 @@ from packaging.version import parse
 
 from nilearn._utils.logger import find_stack_level
 
-OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.3.0"
+OPTIONAL_MATPLOTLIB_MIN_VERSION = "3.8.0"
 
 
 def set_mpl_backend(message=None):
@@ -68,6 +68,19 @@ def set_mpl_backend(message=None):
             # Matplotlib backend has been changed, let's warn the user
             warnings.warn(
                 f"Backend changed to {new_backend}...",
+                stacklevel=find_stack_level(),
+            )
+
+        if new_backend == "agg":
+            warnings.warn(
+                (
+                    f"\nYou are using the '{matplotlib.get_backend()}' "
+                    "matplotlib backend that is non-interactive."
+                    "\nNo figure will be plotted when calling "
+                    "matplotlib.pyplot.show() or nilearn.plotting.show()."
+                    "\nYou can fix this by installing a different backend: "
+                    "for example via\n\tpip install PyQt6"
+                ),
                 stacklevel=find_stack_level(),
             )
 
@@ -142,7 +155,7 @@ def _warn_deprecated_params(replacement_params, end_version, lib_name, kwargs):
             f'Please use the parameter "{replacement_param}" instead.'
         )
         warnings.warn(
-            category=DeprecationWarning,
+            category=FutureWarning,
             message=param_deprecation_msg,
             stacklevel=find_stack_level(),
         )
@@ -207,7 +220,7 @@ def remove_parameters(removed_params, reason, end_version="future"):
                     f"{reason}"
                 )
                 warnings.warn(
-                    category=DeprecationWarning,
+                    category=FutureWarning,
                     message=message,
                     stacklevel=find_stack_level(),
                 )
@@ -318,42 +331,3 @@ def is_kaleido_installed():
     except ImportError:
         return False
     return True
-
-
-# TODO (nilearn >= 0.13.0) remove
-def check_copy_header(copy_header):
-    """Check the value of the `copy_header` parameter.
-
-    Only being used with `nilearn.image` and resampling functions to warn
-    users that `copy_header` will default to `True` from release 0.13.0
-    onwards.
-
-    Parameters
-    ----------
-    copy_header : :obj:`bool"
-
-    """
-    if not copy_header:
-        # TODO (nilearn 0.13.0)
-        copy_header_default = (
-            "From release 0.13.0 onwards, this function will, by default, "
-            "copy the header of the input image to the output. "
-            "Currently, the header is reset to the default Nifti1Header. "
-            "To suppress this warning and use the new behavior, set "
-            "`copy_header=True`."
-        )
-        warnings.warn(
-            category=FutureWarning,
-            message=copy_header_default,
-            stacklevel=find_stack_level(),
-        )
-
-
-# TODO (matplotlib >= 3.5.0) This can be removed
-def constrained_layout_kwargs():
-    import matplotlib
-
-    if compare_version(matplotlib.__version__, ">=", "3.5"):
-        return {"layout": "constrained"}
-    else:
-        return {"constrained_layout": True}

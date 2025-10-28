@@ -11,6 +11,7 @@ from mpl_toolkits.axes_grid1.anchored_artists import AnchoredSizeBar
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.image import coord_transform
 from nilearn.plotting.displays._utils import coords_3d_to_2d
 from nilearn.plotting.glass_brain import plot_brain_schematics
@@ -77,6 +78,10 @@ class BaseAxes:
             )
         kwargs["alpha"] = transparency
 
+        check_parameter_in_allowed(
+            self.direction, ["y", "x", "l", "r", "z"], "direction"
+        )
+
         if self.direction == "y":
             (xmin, xmax), (_, _), (zmin, zmax) = data_bounds
             (xmin_, xmax_), (_, _), (zmin_, zmax_) = bounding_box
@@ -86,8 +91,7 @@ class BaseAxes:
         elif self.direction == "z":
             (xmin, xmax), (zmin, zmax), (_, _) = data_bounds
             (xmin_, xmax_), (zmin_, zmax_), (_, _) = bounding_box
-        else:
-            raise ValueError(f"Invalid value for direction {self.direction}")
+
         ax = self.ax
         # Here we need to do a copy to avoid having the image changing as
         # we change the data
@@ -306,8 +310,9 @@ class CutAxes(BaseAxes):
 
         """
         coords = [0, 0, 0]
-        if self.direction not in ["x", "y", "z"]:
-            raise ValueError(f"Invalid value for direction {self.direction}")
+        check_parameter_in_allowed(
+            self.direction, ["x", "y", "z"], "direction"
+        )
         coords["xyz".index(self.direction)] = self.coord
         x_map, y_map, z_map = (
             int(np.round(c))
@@ -588,7 +593,9 @@ class GlassBrainAxes(BaseAxes):
             line_coords = np.array(line_coords)[relevant_lines]
             line_values = line_values[relevant_lines]
 
-        for start_end_point_3d, line_value in zip(line_coords, line_values):
+        for start_end_point_3d, line_value in zip(
+            line_coords, line_values, strict=False
+        ):
             start_end_point_2d = coords_3d_to_2d(
                 start_end_point_3d, self.direction
             )

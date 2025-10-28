@@ -11,12 +11,16 @@ from scipy import linalg
 from scipy.ndimage import affine_transform, find_objects
 
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import check_copy_header, stringify_path
+from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
 from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
 from nilearn._utils.numpy_conversions import as_ndarray
-from nilearn.image.image import copy_img, crop_img
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
+from nilearn.image.image import copy_img, crop_img, new_img_like
 
 ###############################################################################
 # Affine utils
@@ -194,7 +198,7 @@ def get_bounds(shape, affine):
         ]
     ).T
     box = np.dot(affine, box)[:3]
-    return list(zip(box.min(axis=-1), box.max(axis=-1)))
+    return list(zip(box.min(axis=-1), box.max(axis=-1), strict=False))
 
 
 def get_mask_bounds(img):
@@ -333,22 +337,6 @@ def _resample_one_img(
     return out
 
 
-def _check_force_resample(force_resample):
-    # TODO (nilearn 0.13.0)
-    if force_resample is None:
-        force_resample = False
-        warnings.warn(
-            (
-                "'force_resample' will be set to 'True'"
-                " by default in Nilearn 0.13.0.\n"
-                "Use 'force_resample=True' to suppress this warning."
-            ),
-            FutureWarning,
-            stacklevel=find_stack_level(),
-        )
-    return force_resample
-
-
 @fill_doc
 def resample_img(
     img,
@@ -359,8 +347,8 @@ def resample_img(
     order="F",
     clip=True,
     fill_value=0,
-    force_resample=None,
-    copy_header=False,
+    force_resample=True,
+    copy_header=True,
 ):
     """Resample a Niimg-like object.
 
@@ -399,18 +387,17 @@ def resample_img(
     fill_value : :obj:`float`, default=0
         Use a fill value for points outside of input volume.
 
-    force_resample : :obj:`bool`, default=None
+    force_resample : :obj:`bool`, default=True
         False is intended for testing,
         this prevents the use of a padding optimization.
-        Will be set to ``False`` if ``None`` is passed.
-        The default value will be set to ``True`` for Nilearn >=0.13.0.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+        .. nilearn_versionchanged:: 0.13.0dev
 
-        .. versionadded:: 0.11.0
+            Default changed to True.
 
-        This parameter will be set to True by default in 0.13.0.
+    %(copy_header)s
+
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -463,12 +450,7 @@ def resample_img(
     homogeneous.
 
     """
-    from .image import new_img_like  # avoid circular imports
-
-    force_resample = _check_force_resample(force_resample)
-    # TODO (nilearn >= 0.13.0) remove this warning
-    check_copy_header(copy_header)
-
+    check_params(locals())
     _check_resample_img_inputs(target_shape, target_affine, interpolation)
 
     img = stringify_path(img)
@@ -585,9 +567,7 @@ def resample_img(
 
         # ... special case: can be solved with padding alone
         # crop source image and keep N voxels offset before/after volume
-        cropped_img, offsets = crop_img(
-            img, pad=False, return_offset=True, copy_header=True
-        )
+        cropped_img, offsets = crop_img(img, pad=False, return_offset=True)
 
         # TODO: flip axes that are flipped
         # TODO: un-shuffle permuted dimensions
@@ -596,13 +576,15 @@ def resample_img(
         # translation, b.
         indices = [
             (int(off.start - dim_b), int(off.stop - dim_b))
-            for off, dim_b in zip(offsets[:3], b[:3])
+            for off, dim_b in zip(offsets[:3], b[:3], strict=False)
         ]
 
         # If image are not fully overlapping, place only portion of image.
         slices = [
             slice(np.max((0, index[0])), np.min((dimsize, index[1])))
-            for dimsize, index in zip(resampled_data.shape, indices)
+            for dimsize, index in zip(
+                resampled_data.shape, indices, strict=False
+            )
         ]
         slices = tuple(slices)
 
@@ -695,11 +677,9 @@ def _check_resample_img_inputs(target_shape, target_affine, interpolation):
         )
 
     allowed_interpolations = ("continuous", "linear", "nearest")
-    if interpolation not in allowed_interpolations:
-        raise ValueError(
-            f"interpolation must be one of {allowed_interpolations}.\n"
-            f" Got '{interpolation}' instead."
-        )
+    check_parameter_in_allowed(
+        interpolation, allowed_interpolations, "interpolation"
+    )
 
 
 def _get_resampled_data_dtype(data, interpolation, A):
@@ -738,6 +718,7 @@ def _get_resampled_data_dtype(data, interpolation, A):
     return resampled_data_dtype
 
 
+@fill_doc
 def resample_to_img(
     source_img,
     target_img,
@@ -746,14 +727,14 @@ def resample_to_img(
     order="F",
     clip=False,
     fill_value=0,
-    force_resample=None,
-    copy_header=False,
+    force_resample=True,
+    copy_header=True,
 ):
     """Resample a Niimg-like source image on a target Niimg-like image.
 
     No registration is performed: the image should already be aligned.
 
-    .. versionadded:: 0.2.4
+    .. nilearn_versionadded:: 0.2.4
 
     Parameters
     ----------
@@ -786,18 +767,13 @@ def resample_to_img(
     fill_value : :obj:`float`, default=0
         Use a fill value for points outside of input volume.
 
-    force_resample : :obj:`bool`, default=None
+    force_resample : :obj:`bool`, default=True
         False is intended for testing,
         this prevents the use of a padding optimization.
-        Will be set to ``False`` if ``None`` is passed.
-        The default value will be set to ``True`` for Nilearn >=0.13.0.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+    %(copy_header)s
 
-        .. versionadded:: 0.11.0
-
-        This parameter will be set to True by default in 0.13.0.
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -810,8 +786,6 @@ def resample_to_img(
     nilearn.image.resample_img
 
     """
-    force_resample = _check_force_resample(force_resample)
-
     target = check_niimg(target_img)
     target_shape = target.shape
 
@@ -834,7 +808,8 @@ def resample_to_img(
     )
 
 
-def reorder_img(img, resample=None, copy_header=False):
+@fill_doc
+def reorder_img(img, resample=None, copy_header=True):
     """Return an image with the affine diagonal (by permuting axes).
 
     The orientation of the new image will be RAS (Right, Anterior, Superior).
@@ -855,16 +830,14 @@ def reorder_img(img, resample=None, copy_header=False):
         be passed as the 'interpolation' argument into
         resample_img.
 
-    copy_header : :obj:`bool`, default=False
-        Whether to copy the header of the input image to the output.
+    %(copy_header)s
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
-        This parameter will be set to True by default in 0.13.0.
     """
     from .image import new_img_like
 
-    check_copy_header(copy_header)
+    check_params(locals())
     img = check_niimg(img)
     # The copy is needed in order not to modify the input img affine
     # see https://github.com/nilearn/nilearn/issues/325 for a concrete bug
@@ -880,13 +853,8 @@ def reorder_img(img, resample=None, copy_header=False):
         # Identify the voxel size using a QR decomposition of the affine
         Q, R = np.linalg.qr(affine[:3, :3])
         target_affine = np.diag(np.abs(np.diag(R))[np.abs(Q).argmax(axis=1)])
-        # TODO (nilearn >= 0.13.0) force_resample=True
         return resample_img(
-            img,
-            target_affine=target_affine,
-            interpolation=resample,
-            force_resample=False,
-            copy_header=True,
+            img, target_affine=target_affine, interpolation=resample
         )
 
     axis_numbers = np.argmax(np.abs(A), axis=0)

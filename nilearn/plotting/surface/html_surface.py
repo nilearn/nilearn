@@ -1,16 +1,17 @@
 """Handle plotting of surfaces for html rendering."""
 
 import json
-from warnings import warn
 
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
-from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_niimg_3d
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import (
@@ -37,6 +38,8 @@ from nilearn.surface.surface import (
     get_data,
 )
 
+ALLOWED_VIEWS = {"left", "right", "front", "back", "top", "bottom"}
+
 
 class SurfaceView(HTMLDocument):  # noqa: D101
     pass
@@ -51,7 +54,6 @@ def _one_mesh_info(
     bg_map=None,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     vmax=None,
     vmin=None,
 ):
@@ -79,50 +81,12 @@ def _one_mesh_info(
         absolute_threshold=colors["abs_threshold"],
         bg_map=bg_map,
         bg_on_data=bg_on_data,
-        darkness=darkness,
     )
     info["cmin"], info["cmax"] = float(colors["vmin"]), float(colors["vmax"])
     info["black_bg"] = black_bg
     info["full_brain_mesh"] = False
     info["colorscale"] = colors["colors"]
     return info
-
-
-def one_mesh_info(
-    surf_map,
-    surf_mesh,
-    threshold=None,
-    cmap=DEFAULT_DIVERGING_CMAP,
-    black_bg=False,
-    bg_map=None,
-    symmetric_cmap=True,
-    bg_on_data=False,
-    darkness=0.7,
-    vmax=None,
-    vmin=None,
-):
-    """Deprecate public function. See _one_mesh_info."""
-    warn(
-        category=DeprecationWarning,
-        message="one_mesh_info is a private function and is renamed "
-        "to _one_mesh_info. Using the deprecated name will "
-        "raise an error in release 0.13",
-        stacklevel=find_stack_level(),
-    )
-
-    return _one_mesh_info(
-        surf_map,
-        surf_mesh,
-        threshold=threshold,
-        cmap=cmap,
-        black_bg=black_bg,
-        bg_map=bg_map,
-        symmetric_cmap=symmetric_cmap,
-        bg_on_data=bg_on_data,
-        darkness=darkness,
-        vmax=vmax,
-        vmin=vmin,
-    )
 
 
 def _get_combined_curvature_map(mesh_left, mesh_right):
@@ -147,7 +111,6 @@ def _full_brain_info(
     black_bg=False,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     vmax=None,
     vmin=None,
     vol_to_surf_kwargs=None,
@@ -199,7 +162,6 @@ def _full_brain_info(
             absolute_threshold=colors["abs_threshold"],
             bg_map=bg_map,
             bg_on_data=bg_on_data,
-            darkness=darkness,
         )
 
     # also add info for both hemispheres
@@ -232,50 +194,12 @@ def _full_brain_info(
             mesh["curv_left"], mesh["curv_right"]
         ),
         bg_on_data=bg_on_data,
-        darkness=darkness,
     )
     info["cmin"], info["cmax"] = float(colors["vmin"]), float(colors["vmax"])
     info["black_bg"] = black_bg
     info["full_brain_mesh"] = True
     info["colorscale"] = colors["colors"]
     return info
-
-
-def full_brain_info(
-    volume_img,
-    mesh="fsaverage5",
-    threshold=None,
-    cmap=DEFAULT_DIVERGING_CMAP,
-    black_bg=False,
-    symmetric_cmap=True,
-    bg_on_data=False,
-    darkness=0.7,
-    vmax=None,
-    vmin=None,
-    vol_to_surf_kwargs=None,
-):
-    """Deprecate public function. See _full_brain_info."""
-    warn(
-        category=DeprecationWarning,
-        message="full_brain_info is a private function and is renamed to "
-        "_full_brain_info. Using the deprecated name will raise an error "
-        "in release 0.13",
-        stacklevel=find_stack_level(),
-    )
-
-    return _full_brain_info(
-        volume_img,
-        mesh=mesh,
-        threshold=threshold,
-        cmap=cmap,
-        black_bg=black_bg,
-        symmetric_cmap=symmetric_cmap,
-        bg_on_data=bg_on_data,
-        darkness=darkness,
-        vmax=vmax,
-        vmin=vmin,
-        vol_to_surf_kwargs=vol_to_surf_kwargs,
-    )
 
 
 def _fill_html_template(info, embed_js=True):
@@ -301,12 +225,12 @@ def view_img_on_surf(
     vmin=None,
     symmetric_cmap=True,
     bg_on_data=False,
-    darkness=0.7,
     colorbar=True,
     colorbar_height=0.5,
     colorbar_fontsize=25,
     title=None,
     title_fontsize=25,
+    view="left",
     vol_to_surf_kwargs=None,
 ):
     """Insert a surface plot of a statistical map into an HTML page.
@@ -342,9 +266,6 @@ def view_img_on_surf(
 
     %(bg_on_data)s
 
-    %(darkness)s
-        Default=1.
-
     vmax : :obj:`float` or None, default=None
         upper bound for the colorbar. if None, use the absolute max of the
         brain map.
@@ -375,6 +296,10 @@ def view_img_on_surf(
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
+    view : one of {"left", "right", "front", "back", "top", "bottom"}, \
+      default="left"
+        Default view used for displaying the surface.
+
     vol_to_surf_kwargs : :obj:`dict`, default=None
         Dictionary of keyword arguments that are passed on to
         :func:`nilearn.surface.vol_to_surf` when extracting a surface from
@@ -400,7 +325,10 @@ def view_img_on_surf(
     """
     if vol_to_surf_kwargs is None:
         vol_to_surf_kwargs = {}
+
     stat_map_img = check_niimg_3d(stat_map_img)
+    check_parameter_in_allowed(view, ALLOWED_VIEWS, "view")
+
     info = _full_brain_info(
         volume_img=stat_map_img,
         mesh=surf_mesh,
@@ -410,7 +338,6 @@ def view_img_on_surf(
         vmax=vmax,
         vmin=vmin,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         symmetric_cmap=symmetric_cmap,
         vol_to_surf_kwargs=vol_to_surf_kwargs,
     )
@@ -419,6 +346,7 @@ def view_img_on_surf(
     info["cbar_fontsize"] = colorbar_fontsize
     info["title"] = title
     info["title_fontsize"] = title_fontsize
+    info["view"] = view
     return _fill_html_template(info, embed_js=True)
 
 
@@ -434,13 +362,13 @@ def view_surf(
     vmax=None,
     vmin=None,
     bg_on_data=False,
-    darkness=0.7,
     symmetric_cmap=True,
     colorbar=True,
     colorbar_height=0.5,
     colorbar_fontsize=25,
     title=None,
     title_fontsize=25,
+    view="left",
 ):
     """Insert a surface plot of a surface map into an HTML page.
 
@@ -471,12 +399,9 @@ def view_surf(
         and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
         Otherwise a warning will be displayed.
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     %(bg_on_data)s
-
-    %(darkness)s
-        Default=1.
 
     threshold : :obj:`str`, number or None, default=None
         If None, no thresholding.
@@ -523,6 +448,10 @@ def view_surf(
     title_fontsize : :obj:`int`, default=25
         Fontsize of the title.
 
+    view : one of {"left", "right", "front", "back", "top", "bottom"}, \
+      default="left"
+        Default view used for displaying the surface.
+
     Returns
     -------
     SurfaceView : plot of the stat map.
@@ -541,6 +470,7 @@ def view_surf(
     surf_map, surf_mesh, bg_map = check_surface_plotting_inputs(
         surf_map, surf_mesh, hemi, bg_map, map_var_name="surf_map"
     )
+    check_parameter_in_allowed(view, ALLOWED_VIEWS, "view")
 
     surf_mesh = load_surf_mesh(surf_mesh)
     if surf_map is None:
@@ -557,7 +487,6 @@ def view_surf(
         black_bg=black_bg,
         bg_map=bg_map,
         bg_on_data=bg_on_data,
-        darkness=darkness,
         symmetric_cmap=symmetric_cmap,
         vmax=vmax,
         vmin=vmin,
@@ -567,4 +496,5 @@ def view_surf(
     info["cbar_fontsize"] = colorbar_fontsize
     info["title"] = title
     info["title_fontsize"] = title_fontsize
+    info["view"] = view
     return _fill_html_template(info, embed_js=True)

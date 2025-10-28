@@ -2,14 +2,25 @@ import re
 
 import numpy as np
 import pytest
+from matplotlib.colors import Normalize
 
-from nilearn.plotting._engine_utils import colorscale, to_color_strings
+from nilearn.plotting._engine_utils import (
+    colorscale,
+    create_colorbar_for_fig,
+    threshold_cmap,
+    to_color_strings,
+)
+
+pytest.importorskip(
+    "matplotlib",
+    reason="Matplotlib is not installed; required to run the tests!",
+)
 
 
 def check_colors(colors):
     """Perform several checks on colors obtained from function colorscale."""
     assert len(colors) == 100
-    val, cstring = zip(*colors)
+    val, cstring = zip(*colors, strict=False)
     assert np.allclose(np.linspace(0, 1, 100), val, atol=1e-3)
     assert val[0] == 0
     assert val[-1] == 1
@@ -38,6 +49,33 @@ def expected_abs_threshold(threshold):
         if isinstance(threshold, str)
         else abs(threshold)
     )
+
+
+@pytest.mark.parametrize(
+    "threshold, min_th, max_th",
+    [(1, 63, 127), (3, 0, 191), (5, 0, 255), (0, 95, 95)],
+)
+def test_threshold_cmap(threshold, min_th, max_th):
+    """Test nilearn.plotting._engine_utils.threshold_cmap function for valid
+    threshold values.
+    """
+    norm = Normalize(-3, 5)
+    cmap = "RdBu"
+    thrs_cmap = threshold_cmap(cmap, norm, threshold)
+
+    for i in range(min_th, max_th):
+        assert thrs_cmap(i) == (0.5, 0.5, 0.5, 1.0)
+
+
+def test_threshold_cmap_invalid():
+    """Test nilearn.plotting._engine_utils.threshold_cmap function for negative
+    threshold.
+    """
+    threshold = -1
+    norm = Normalize(-3, 5)
+    cmap = "RdBu"
+    with pytest.raises(ValueError, match="Threshold should be a"):
+        threshold_cmap(cmap, norm, threshold)
 
 
 @pytest.mark.parametrize("threshold", ["0%", "50%", "99%", 0.5, 7.25])
@@ -120,3 +158,39 @@ def test_to_color_strings(colors):
     else:
         expected = ["#ff0000", "#008000", "#000000", "#ffffff"]
     assert to_color_strings(colors) == expected
+
+
+@pytest.mark.parametrize(
+    "threshold, cbar_vmin, cbar_vmax, vmin, vmax, expected_ticks",
+    [
+        (0, -10, 10, -5, 5, [-10, -5, 0, 5, 10]),
+        (0.1, None, None, -10, 10, [-10, -5, -0.1, 0.1, 5, 10]),
+        (0.9, -10, 10, -5, 5, [-10, -5, -0.9, 0.9, 5, 10]),
+        (1.3, None, 10, -10, 10, [-10, -5, -1.3, 1.3, 5, 10]),
+        (3, -10, None, -10, 10, [-10, -5, -3, 0, 3, 5, 10]),
+    ],
+)
+def test_create_colorbar_for_fig(
+    matplotlib_pyplot,
+    threshold,
+    cbar_vmin,
+    cbar_vmax,
+    vmin,
+    vmax,
+    expected_ticks,
+):
+    """Test nilearn.plotting._engine_utils.create_colorbar_for_fig function for
+    valid values.
+    """
+    fig, ax = matplotlib_pyplot.subplots()
+    cmap = matplotlib_pyplot.get_cmap("Greys")
+    norm = Normalize(vmin, vmax)
+
+    colorbar = create_colorbar_for_fig(
+        fig, ax, cmap, norm, threshold, cbar_vmin, cbar_vmax
+    )
+
+    assert colorbar is not None
+    assert [
+        float(tick.get_text()) for tick in colorbar.ax.get_yticklabels()
+    ] == expected_ticks

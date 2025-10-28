@@ -19,7 +19,6 @@ def main(args=sys.argv) -> None:
     datasets.fetch_icbm152_2009()
 
     datasets.fetch_atlas_difumo(dimension=64, resolution_mm=2)
-    datasets.fetch_atlas_msdl()
     datasets.fetch_atlas_schaefer_2018()
     datasets.fetch_atlas_yeo_2011()
 
@@ -92,6 +91,7 @@ def main(args=sys.argv) -> None:
                 "left button press (auditory cue)",
             ],
             [16, 16, 16, 94],
+            strict=False,
         ):
             datasets.fetch_localizer_contrasts(
                 contrasts=[contrast],

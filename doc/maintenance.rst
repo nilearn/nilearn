@@ -246,7 +246,7 @@ the docstring should be updated to:
         param2 : type
             Description of param2.
 
-        .. versionadded:: x.y.z
+        .. nilearn_versionadded:: x.y.z
 
         Returns
         -------
@@ -273,6 +273,7 @@ this may silently (without causing warnings or errors) "break" the documentation
 
 It is not possible to list all the places to check,
 but care should be taken that at least the following have not been affected:
+
 - ``.rst`` files containing the string ``image:: ../auto_examples``,
 - the tables in the :ref:`plotting` section,
 - ...

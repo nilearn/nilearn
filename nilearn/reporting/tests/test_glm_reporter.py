@@ -23,11 +23,13 @@ from nilearn.surface import SurfaceImage
 
 @pytest.fixture
 def rk():
+    """Return rank for design martrix."""
     return 3
 
 
 @pytest.fixture
 def contrasts(rk):
+    """Return a contrast vector."""
     c = np.zeros((1, rk))
     c[0][0] = 1
     return c
@@ -37,7 +39,7 @@ def contrasts(rk):
 def flm(rk):
     """Generate first level model."""
     shapes = ((7, 7, 7, 5),)
-    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
     )
     # generate_fake_fmri_data_and_design
@@ -83,7 +85,6 @@ def test_flm_reporting_no_contrasts(flm):
         contrasts=None,
         min_distance=15,
         alpha=0.01,
-        threshold=2,
     )
     assert "No statistical map was provided." in report.__str__()
 
@@ -94,18 +95,25 @@ def test_mask_coverage_in_report(flm):
     assert "The mask includes" in report.__str__()
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("height_control", ["fdr", "bonferroni", None])
 def test_flm_reporting_height_control(flm, height_control, contrasts):
-    """Test for first level model reporting."""
-    report_flm = flm.generate_report(
-        contrasts=contrasts,
-        plot_type="glass",
-        height_control=height_control,
-        min_distance=15,
-        alpha=0.01,
-        threshold=2,
-    )
+    """Test for first level model reporting.
+
+    Also checks that passing threshold different from the default
+    will throw a warning when height_control is not None.
+    """
+    with warnings.catch_warnings(record=True) as warnings_list:
+        report_flm = flm.generate_report(
+            contrasts=contrasts,
+            plot_type="glass",
+            height_control=height_control,
+            min_distance=15,
+            alpha=0.01,
+            threshold=2,
+        )
+    if height_control is not None:
+        assert any("will not be used with" in str(x) for x in warnings_list)
     # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
     # in case certain unicode characters are mishandled,
     # like the greek alpha symbol.
@@ -118,19 +126,19 @@ def test_flm_reporting_height_control(flm, height_control, contrasts):
     assert "cosine" in report_flm.__str__()
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_slm_reporting_method(slm, height_control):
     """Test for the second level reporting."""
     c1 = np.eye(len(slm.design_matrix_.columns))[0]
     report_slm = slm.generate_report(
-        c1, height_control=height_control, threshold=2, alpha=0.01
+        c1, height_control=height_control, alpha=0.01
     )
     # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
     report_slm.get_iframe()
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_slm_with_flm_as_inputs(flm, contrasts):
     """Test second level reporting when inputs are first level models."""
     model = SecondLevelModel()
@@ -167,17 +175,17 @@ def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
     model.generate_report(c1, first_level_contrast="a")
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 def test_report_plot_type(flm, plot_type, contrasts):
     """Smoke test for valid plot type."""
     flm.generate_report(
         contrasts=contrasts,
         plot_type=plot_type,
-        threshold=2.76,
     )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
 def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
@@ -187,32 +195,27 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
         cut_coords=cut_coords,
         display_mode="z",
         plot_type=plot_type,
-        threshold=2.76,
     )
 
 
+@pytest.mark.timeout(0)
 def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: ARG001
+    """Check errors when wrong plot type is requested."""
     with pytest.raises(KeyError, match="junk"):
         flm.generate_report(
             contrasts=contrasts,
             plot_type="junk",
-            threshold=2.76,
         )
 
-    expected_error = (
-        "Invalid plot type provided. "
-        "Acceptable options are 'slice' or 'glass'."
-    )
-
-    with pytest.raises(ValueError, match=expected_error):
+    with pytest.raises(ValueError, match="'plot_type' must be one of"):
         flm.generate_report(
             contrasts=contrasts,
             display_mode="glass",
             plot_type="junk",
-            threshold=2.76,
         )
 
 
+@pytest.mark.timeout(0)
 def test_masking_first_level_model(contrasts):
     """Check that using NiftiMasker when instantiating FirstLevelModel \
        doesn't raise Error when calling generate_report().
@@ -234,12 +237,12 @@ def test_masking_first_level_model(contrasts):
         height_control=None,
         min_distance=15,
         alpha=0.01,
-        threshold=2,
     )
 
     report_flm.get_iframe()
 
 
+@pytest.mark.slow
 def test_fir_delays_in_params(contrasts):
     """Check that fir_delays is in the report when hrf_model is fir.
 
@@ -252,12 +255,12 @@ def test_fir_delays_in_params(contrasts):
     model = FirstLevelModel(hrf_model="fir", fir_delays=[1, 2, 3])
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    report = model.generate_report(contrasts=contrasts, threshold=0.1)
+    report = model.generate_report(contrasts=contrasts)
 
     assert "fir_delays" in report.__str__()
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_drift_order_in_params(contrasts):
     """Check that drift_order is in the report when parameter is drift_model is
     polynomial.
@@ -274,6 +277,7 @@ def test_drift_order_in_params(contrasts):
     assert "drift_order" in report.__str__()
 
 
+@pytest.mark.slow
 def test_flm_generate_report_surface_data(rng):
     """Generate report from flm fitted surface.
 
@@ -326,7 +330,7 @@ def test_flm_generate_report_surface_data_error(
         )
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_carousel_two_runs(
     matplotlib_pyplot,  # noqa: ARG001
     flm,
@@ -363,6 +367,7 @@ def test_carousel_two_runs(
     assert 'id="carousel-navbar"' in report.__str__()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("threshold", [3.09, 2.9, DEFAULT_Z_THRESHOLD])
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_report_threshold_deprecation_warning(

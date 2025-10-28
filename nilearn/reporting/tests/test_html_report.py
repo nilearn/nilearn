@@ -8,7 +8,6 @@ from numpy.testing import assert_almost_equal
 from nilearn._utils.data_gen import generate_random_img
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.html_document import WIDTH_DEFAULT, HTMLDocument
-from nilearn._utils.testing import on_windows_with_old_mpl_and_new_numpy
 from nilearn.conftest import _img_maps
 from nilearn.image import get_data
 from nilearn.maskers import (
@@ -48,13 +47,15 @@ def _check_html(html_view, reports_requested=True, is_fit=True):
         html_view.width = "foo"
     assert html_view.width == WIDTH_DEFAULT
 
+    assert html_view._repr_html_() == html_view.body
+
     if reports_requested and is_fit:
         assert "<th>Parameter</th>" in str(html_view)
+
     if "Surface" in str(html_view):
         assert "data:image/png;base64," in str(html_view)
     else:
         assert "data:image/svg+xml;base64," in str(html_view)
-    assert html_view._repr_html_() == html_view.body
 
 
 @pytest.fixture
@@ -125,6 +126,7 @@ def test_nifti_maps_masker_report_maps_number_errors(
         masker.generate_report(displayed_maps)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("displayed_maps", [[1, 2], np.array([0, 1, 2])])
 def test_nifti_maps_masker_report_list_and_arrays_maps_number(
     niftimapsmasker_inputs, displayed_maps
@@ -148,6 +150,7 @@ def test_nifti_maps_masker_report_list_and_arrays_maps_number(
     assert html.body.count("<img") == len(displayed_maps)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("displayed_maps", [1, 3, 4, "all"])
 def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
     niftimapsmasker_inputs, displayed_maps
@@ -252,7 +255,7 @@ def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
     seeds = [(1, 1, 1)]
     masker = NiftiSpheresMasker(seeds=seeds)
     masker.fit()
-    with pytest.raises(ValueError, match="masker only has 1 seeds."):
+    with pytest.raises(ValueError, match=r"masker only has 1 seeds."):
         masker.generate_report(displayed_spheres=displayed_spheres)
 
 
@@ -305,7 +308,10 @@ def test_nifti_labels_masker_report(
 ):
     """Check content nifti label masker."""
     masker = NiftiLabelsMasker(
-        img_labels, labels=labels, mask_img=img_mask_eye
+        img_labels,
+        labels=labels,
+        mask_img=img_mask_eye,
+        keep_masked_labels=True,
     )
     masker.fit_transform(img_3d_rand_eye)
     report = masker.generate_report()
@@ -355,6 +361,7 @@ def test_nifti_labels_masker_report(
         )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
 def test_nifti_labels_masker_report_cut_coords(
     masker_class, input_parameters, img_3d_rand_eye
@@ -382,14 +389,14 @@ def test_4d_reports(img_mask_eye, affine_eye):
     masker = NiftiMasker(mask_strategy="epi")
     masker.fit(data_img_4d)
 
-    assert masker._report_content["coverage"] > 0
+    assert float(masker._report_content["coverage"]) > 0
 
     html = masker.generate_report()
     _check_html(html)
     assert "The mask includes" in str(html)
 
     # test .fit_transform method
-    masker = NiftiMasker(mask_img=img_mask_eye, standardize=True)
+    masker = NiftiMasker(mask_img=img_mask_eye, standardize="zscore_sample")
     masker.fit_transform(data_img_4d)
 
     html = masker.generate_report()
@@ -502,7 +509,7 @@ def test_surface_masker_minimal_report_fit(
     if not reports:
         assert 'src="data:image/svg+xml;base64,"' in str(report)
     else:
-        assert masker._report_content["coverage"] > 0
+        assert float(masker._report_content["coverage"]) > 0
         assert "The mask includes" in str(report)
 
 
@@ -512,7 +519,7 @@ def test_generate_report_engine_error(surf_maps_img, surf_img_2d):
     masker.fit_transform(surf_img_2d(10))
     with pytest.raises(
         ValueError,
-        match="should be either 'matplotlib' or 'plotly'",
+        match="'engine' must be one of",
     ):
         masker.generate_report(engine="invalid")
 
@@ -600,10 +607,6 @@ def test_generate_report_before_transform_warn(surf_maps_img):
         masker.generate_report()
 
 
-@pytest.mark.skipif(
-    on_windows_with_old_mpl_and_new_numpy(),
-    reason="Old matplotlib not compatible with numpy 2.0 on windows.",
-)
 def test_generate_report_plotly_out_figure_type(
     plotly, surf_maps_img, surf_img_2d
 ):

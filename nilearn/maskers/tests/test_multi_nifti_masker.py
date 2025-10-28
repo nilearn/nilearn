@@ -1,5 +1,7 @@
 """Test the multi_nifti_masker module."""
 
+import warnings
+
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -15,7 +17,7 @@ from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data
 from nilearn.maskers import MultiNiftiMasker
 
-ESTIMATORS_TO_CHECK = [MultiNiftiMasker()]
+ESTIMATORS_TO_CHECK = [MultiNiftiMasker(standardize=None)]
 
 if SKLEARN_LT_1_6:
 
@@ -48,7 +50,7 @@ else:
 
 
 # check_multi_masker_transformer_high_variance_confounds is slow
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -80,7 +82,7 @@ def img_2(data_2, affine_eye):
 
 def test_auto_mask(data_1, img_1, data_2, img_2):
     """Test that a proper mask is generated from fitted image."""
-    masker = MultiNiftiMasker(mask_args={"opening": 0})
+    masker = MultiNiftiMasker(mask_args={"opening": 0}, standardize=None)
 
     # Smoke test the fit
     masker.fit([[img_1]])
@@ -132,7 +134,7 @@ def test_different_affines():
     epi_img1 = Nifti1Image(np.ones((4, 4, 4, 3)), affine=np.diag((2, 2, 2, 1)))
     epi_img2 = Nifti1Image(np.ones((3, 3, 3, 3)), affine=np.diag((3, 3, 3, 1)))
 
-    masker = MultiNiftiMasker(mask_img=mask_img)
+    masker = MultiNiftiMasker(mask_img=mask_img, standardize=None)
     epis = masker.fit_transform([epi_img1, epi_img2])
     for this_epi in epis:
         masker.inverse_transform(this_epi)
@@ -148,7 +150,7 @@ def test_3d_images(rng):
     )
     epi_img1 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
     epi_img2 = Nifti1Image(rng.random((2, 2, 2)), affine=np.diag((4, 4, 4, 1)))
-    masker = MultiNiftiMasker(mask_img=mask_img)
+    masker = MultiNiftiMasker(mask_img=mask_img, standardize=None)
 
     masker.fit_transform([epi_img1, epi_img2])
 
@@ -182,13 +184,11 @@ def test_mask_strategy_errors(list_random_imgs):
 )
 def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
     """Check different strategies to compute masks."""
-    masker = MultiNiftiMasker(mask_strategy=strategy, mask_args={"opening": 1})
+    masker = MultiNiftiMasker(mask_strategy=strategy)
     masker.fit(list_random_imgs)
 
     # Check that the order of the images does not change the output
-    masker2 = MultiNiftiMasker(
-        mask_strategy=strategy, mask_args={"opening": 1}
-    )
+    masker2 = MultiNiftiMasker(mask_strategy=strategy)
     masker2.fit(list_random_imgs[::-1])
     mask_ref = np.zeros(shape_3d_default, dtype="int8")
 
@@ -196,41 +196,35 @@ def test_compute_mask_strategy(strategy, shape_3d_default, list_random_imgs):
     np.testing.assert_array_equal(get_data(masker2.mask_img_), mask_ref)
 
 
-def test_standardization(rng, shape_3d_default, affine_eye):
-    """Check output properly standardized with 'standardize' parameter."""
-    n_samples = 500
+@pytest.mark.parametrize(
+    "strategy",
+    ["background", *[f"{p}-template" for p in ["whole-brain", "gm", "wm"]]],
+)
+def test_invalid_mask_arg_for_strategy(strategy, list_random_imgs):
+    """Pass mask_args specific to epi strategy should not fail.
 
-    signals = rng.standard_normal(
-        size=(2, np.prod(shape_3d_default), n_samples)
+    But a warning should be thrown.
+    """
+    masker = MultiNiftiMasker(
+        mask_strategy=strategy,
+        mask_args={"lower_cutoff": 0.1, "ensure_finite": False},
     )
-    means = (
-        rng.standard_normal(size=(2, np.prod(shape_3d_default), 1)) * 50 + 1000
+    with pytest.warns(
+        UserWarning, match="The following arguments are not supported by"
+    ):
+        masker.fit(list_random_imgs)
+
+
+@pytest.mark.parametrize(
+    "strategy", [f"{p}-template" for p in ["whole-brain", "gm", "wm"]]
+)
+def test_no_warning_partial_joblib(strategy, list_random_imgs):
+    """Check different strategies to compute masks."""
+    masker = MultiNiftiMasker(mask_strategy=strategy, mask_args={"opening": 1})
+    with warnings.catch_warnings(record=True) as warning_list:
+        masker.fit(list_random_imgs)
+
+    assert all(
+        "Cannot inspect object functools.partial" not in str(x)
+        for x in warning_list
     )
-    signals += means
-
-    img1 = Nifti1Image(
-        signals[0].reshape((*shape_3d_default, n_samples)), affine_eye
-    )
-    img2 = Nifti1Image(
-        signals[1].reshape((*shape_3d_default, n_samples)), affine_eye
-    )
-
-    mask = Nifti1Image(np.ones(shape_3d_default), affine_eye)
-
-    # z-score
-    masker = MultiNiftiMasker(mask, standardize="zscore_sample")
-    trans_signals = masker.fit_transform([img1, img2])
-
-    for ts in trans_signals:
-        np.testing.assert_almost_equal(ts.mean(0), 0)
-        np.testing.assert_almost_equal(ts.std(0), 1, decimal=3)
-
-    # psc
-    masker = MultiNiftiMasker(mask, standardize="psc")
-    trans_signals = masker.fit_transform([img1, img2])
-
-    for ts, s in zip(trans_signals, signals):
-        np.testing.assert_almost_equal(ts.mean(0), 0)
-        np.testing.assert_almost_equal(
-            ts, (s / s.mean(1)[:, np.newaxis] * 100 - 100).T
-        )

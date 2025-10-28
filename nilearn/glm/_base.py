@@ -212,14 +212,14 @@ class BaseGLM(CacheMixin, BaseEstimator):
         contrasts = coerce_to_dict(contrasts)
         for k, v in contrasts.items():
             if not isinstance(k, str):
-                raise ValueError(
+                raise TypeError(
                     f"contrast names must be strings, not {type(k)}"
                 )
 
             if not isinstance(v, (str, np.ndarray, list)):
-                raise ValueError(
+                raise TypeError(
                     "contrast definitions must be strings or array_likes, "
-                    f"not {type(v)}"
+                    f"not {v.__class__.__name__}"
                 )
 
         entities = {
@@ -412,6 +412,7 @@ def _generate_statistical_maps(
                 "p_value",
             ],
             ["effect", stat_type, "variance", "z", "p"],
+            strict=False,
         ):
             fields["entities"]["stat"] = stat_label
             tmp[key] = create_bids_filename(fields, entities_to_include)
@@ -468,6 +469,7 @@ def _generate_model_level_mapping(
         for key, stat_label in zip(
             ["residuals", "r_square"],
             ["errorts", "rsquared"],
+            strict=False,
         ):
             fields["entities"]["stat"] = stat_label
             tmp[key] = create_bids_filename(fields, entities_to_include)
@@ -507,6 +509,7 @@ def _generate_design_matrices_dict(
             for key, suffix in zip(
                 ["design_matrix", "correlation_matrix"],
                 ["design", "corrdesign"],
+                strict=False,
             ):
                 fields["extension"] = extension
                 fields["suffix"] = suffix
@@ -591,7 +594,7 @@ def _is_flm_with_single_run(model) -> bool:
 def _clean_contrast_name(contrast_name):
     """Remove prohibited characters from name and convert to camelCase.
 
-    .. versionadded:: 0.9.2
+    .. nilearn_versionadded:: 0.9.2
 
     BIDS filenames, in which the contrast name will appear as a
     contrast-<name> key/value pair, must be alphanumeric strings.

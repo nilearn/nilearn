@@ -27,11 +27,11 @@ subject_data = fetch_spm_auditory()
 fmri_img = subject_data.func[0]
 
 # Make an average
-mean_img = image.mean_img(fmri_img, copy_header=True)
+mean_img = image.mean_img(fmri_img)
 mask = masking.compute_epi_mask(mean_img)
 
 # Clean and smooth data
-fmri_img = image.clean_img(fmri_img, standardize=False)
+fmri_img = image.clean_img(fmri_img, standardize=None)
 fmri_img = image.smooth_img(fmri_img, 5.0)
 
 # load events
@@ -48,7 +48,7 @@ events = pd.read_csv(subject_data.events, sep="\t")
 from nilearn.glm.first_level import FirstLevelModel
 
 fmri_glm = FirstLevelModel(
-    t_r=7,
+    t_r=subject_data.t_r,
     drift_model="cosine",
     signal_scaling=False,
     mask_img=mask,

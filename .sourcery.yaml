@@ -28,6 +28,7 @@ rule_settings:
     -   no-loop-in-tests
     -   no-conditionals-in-tests
     -   low-code-quality
+    -   inline-immediately-returned-variable
     # --------------------
     -   raise-from-previous-error   # │    21 │
     -   use-named-expression        # │    16 │
@@ -40,7 +41,7 @@ rule_settings:
 
     rule_types:
     -   refactoring
-    python_version: '3.9'
+    python_version: '3.10'
 
 metrics:
     quality_threshold: 25.0

@@ -96,7 +96,7 @@ def test_instantiation_error_plotly_surface_figure(input_obj):
     """
     with pytest.raises(
         TypeError,
-        match=("`PlotlySurfaceFigure` accepts only plotly Figure objects."),
+        match=(r"'PlotlySurfaceFigure' accepts only plotly Figure objects."),
     ):
         PlotlySurfaceFigure(input_obj)
 
@@ -128,7 +128,9 @@ def test_value_error_add_contours_levels_labels(
     figure = plot_surf(in_memory_mesh, engine=ENGINE)
     with pytest.raises(
         ValueError,
-        match=("levels and labels need to be either the same length or None."),
+        match=(
+            r"levels and labels need to be either the same length or None."
+        ),
     ):
         figure.add_contours(
             levels=levels, labels=labels, roi_map=np.ones((10,))
@@ -146,7 +148,7 @@ def test_value_error_add_contours_levels_lines(levels, lines, in_memory_mesh):
     figure = plot_surf(in_memory_mesh, engine=ENGINE)
     with pytest.raises(
         ValueError,
-        match=("levels and lines need to be either the same length or None."),
+        match=(r"levels and lines need to be either the same length or None."),
     ):
         figure.add_contours(levels=levels, lines=lines, roi_map=np.ones((10,)))
 

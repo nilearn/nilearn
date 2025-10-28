@@ -260,7 +260,7 @@ from nilearn import image
 
 # Compute voxel-wise mean functional image across time dimension. Now we have
 # functional image in 3D assigned in mean_haxby_img
-mean_haxby_img = image.mean_img(haxby_func_filename, copy_header=True)
+mean_haxby_img = image.mean_img(haxby_func_filename)
 
 # %%
 # Overlay anatomical image as edges: `add_edges`

@@ -13,6 +13,10 @@ from scipy.stats import norm
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn.image import get_data, math_img, threshold_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -218,6 +222,7 @@ def cluster_level_inference(
     return proportion_true_discoveries_img
 
 
+@fill_doc
 def threshold_stats_img(
     stat_img=None,
     mask_img=None,
@@ -249,14 +254,40 @@ def threshold_stats_img(
        Desired threshold in z-scale.
        This is used only if height_control is None.
 
+       .. note::
+
+            - When ``two_sided`` is True:
+
+              ``'threshold'`` cannot be negative.
+
+              The given value should be within the range of minimum and maximum
+              intensity of the input image.
+              All intensities in the interval ``[-threshold, threshold]``
+              will be set to zero.
+
+            - When ``two_sided`` is False:
+
+              - If the threshold is negative:
+
+                It should be greater than the minimum intensity
+                of the input data.
+                All intensities greater than or equal
+                to the specified threshold will be set to zero.
+                All other intensities keep their original values.
+
+              - If the threshold is positive:
+
+                It should be less than the maximum intensity
+                of the input data.
+                All intensities less than or equal
+                to the specified threshold will be set to zero.
+                All other intensities keep their original values.
+
     height_control : :obj:`str`, or None, default='fpr'
         False positive control meaning of cluster forming
         threshold: None|'fpr'|'fdr'|'bonferroni'
 
-    cluster_threshold : :obj:`float`, default=0
-        cluster size threshold. In the returned thresholded map,
-        sets of connected voxels (`clusters`) with size smaller
-        than this number will be removed.
+    %(cluster_threshold)s
 
     two_sided : :obj:`bool`, default=True
         Whether the thresholding should yield both positive and negative
@@ -283,19 +314,31 @@ def threshold_stats_img(
         without correction.
 
     """
+    check_params(locals())
     height_control_methods = [
         "fpr",
         "fdr",
         "bonferroni",
         None,
     ]
-    if height_control not in height_control_methods:
-        raise ValueError(
-            f"'height_control' should be one of {height_control_methods}. \n"
-            f"Got: '{height_control_methods}'"
-        )
+    check_parameter_in_allowed(
+        height_control, height_control_methods, "height_control"
+    )
 
     parameters = dict(**inspect.signature(threshold_stats_img).parameters)
+    if height_control is not None and float(threshold) != float(
+        parameters["threshold"].default
+    ):
+        warnings.warn(
+            (
+                f"'{threshold=}' will not be used with '{height_control=}'. "
+                "'threshold' is only used when 'height_control=None'. "
+                f"Set 'threshold' to '{parameters['threshold'].default}' "
+                "to avoid this warning."
+            ),
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
     warn_default_threshold(
         threshold,
         parameters["threshold"].default,
@@ -354,7 +397,6 @@ def threshold_stats_img(
         two_sided=two_sided,
         mask_img=mask_img,
         copy=True,
-        copy_header=True,
     )
 
     return stat_img, threshold

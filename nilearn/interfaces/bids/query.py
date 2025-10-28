@@ -1,7 +1,5 @@
 """Functions for working with BIDS datasets."""
 
-from __future__ import annotations
-
 import glob
 import json
 from pathlib import Path
@@ -51,6 +49,7 @@ def _get_metadata_from_bids(
             warn(
                 f"'{field}' not found in file {json_files[0]}.",
                 stacklevel=find_stack_level(),
+                category=RuntimeWarning,
             )
     else:
         msg_suffix = f" in:\n {bids_path}" if bids_path else ""
@@ -252,7 +251,7 @@ def get_bids_files(
 
     filters = filters or []
     if filters:
-        files = [parse_bids_filename(file_, legacy=False) for file_ in files]
+        files = [parse_bids_filename(file_) for file_ in files]
         for entity, label in filters:
             files = [
                 file_
@@ -268,7 +267,7 @@ def get_bids_files(
     return files
 
 
-def parse_bids_filename(img_path, legacy=True):
+def parse_bids_filename(img_path):
     r"""Return dictionary with parsed information from file path.
 
     Parameters
@@ -276,39 +275,25 @@ def parse_bids_filename(img_path, legacy=True):
     img_path : :obj:`str`
         Path to file from which to parse information.
 
-    legacy : :obj:`bool`, default=True
-        Whether to return a dictionary that uses BIDS terms (``False``)
-        or the legacy content for the output (``True``).
-        ``False`` will become the default in version >= 0.13.0.
-
-        .. versionadded :: 0.12.0
-
     Returns
     -------
     reference : :obj:`dict`
         Returns a dictionary with all key-value pairs in the file name
         parsed and other useful fields.
 
-        The dictionary will contain ``'file_path'``, ``'file_basename'``.
+        .. nilearn_versionadded :: 0.13.0dev
 
-        If ``legacy`` is set to ``True``,
-        the dictionary will also contain
-        'file_tag', 'file_type' and 'file_fields'.
-        The 'file_tag' field refers to the last part of the file under the
-        :term:`BIDS` convention that is of the form \*_tag.type.
-        Contrary to the rest of the file name it is not a key-value pair.
-        This notion should be revised in the case we are handling derivatives
-        since so far the convention will keep the tag prepended to any fields
-        added in the case of preprocessed files that also end with another tag.
-        This parser will consider any tag in the middle of the file name as a
-        key with no value and will be included in the 'file_fields' key.
+        The dictionary will contain:
 
-        If ``legacy`` is set to ``False``,
-        the dictionary will instead contain
-        ``'extension'``, ``'suffix'`` and ``'entities'``.
-        (See the documentation on
+        - ``'file_path'``,
+        - ``'file_basename'``,
+        - ``'extension'``,
+        - ``'suffix'``
+        - and ``'entities'``.
+
+        See the documentation on
         `typical bids filename <https://bids.neuroimaging.io/getting_started/folders_and_files/files.html#filename-template>`_
-        for more information).
+        for more information.
 
     """
     reference = {
@@ -318,43 +303,17 @@ def parse_bids_filename(img_path, legacy=True):
     parts = reference["file_basename"].split("_")
     suffix, extension = parts[-1].split(".", 1)
 
-    if legacy:
-        # TODO (nilearn >= 0.13.0)
-        warn(
-            (
-                "For versions >= 0.13.0 this function will always return "
-                "a dictionary that uses BIDS terms as keys. "
-                "Set 'legacy=False' to start using this new behavior."
-            ),
-            DeprecationWarning,
-            stacklevel=find_stack_level(),
-        )
-
-        reference["file_tag"] = suffix
-        reference["file_type"] = extension
-        reference["file_fields"] = []
-        for part in parts[:-1]:
-            field = part.split("-")[0]
-            reference["file_fields"].append(field)
-            # In derivatives is not clear if the source file name will
-            # be parsed as a field with no value.
-            reference[field] = None
-            if len(part.split("-")) > 1:
-                value = part.split("-")[1]
-                reference[field] = value
-
-    else:
-        reference["extension"] = extension
-        reference["suffix"] = suffix
-        reference["entities"] = {}
-        for part in parts[:-1]:
-            entity = part.split("-")[0]
-            # In derivatives is not clear if the source file name will
-            # be parsed as a field with no value.
-            label = None
-            if len(part.split("-")) > 1:
-                value = part.split("-")[1]
-                label = value
-            reference["entities"][entity] = label
+    reference["extension"] = extension
+    reference["suffix"] = suffix
+    reference["entities"] = {}
+    for part in parts[:-1]:
+        entity = part.split("-")[0]
+        # In derivatives is not clear if the source file name will
+        # be parsed as a field with no value.
+        label = None
+        if len(part.split("-")) > 1:
+            value = part.split("-")[1]
+            label = value
+        reference["entities"][entity] = label
 
     return reference

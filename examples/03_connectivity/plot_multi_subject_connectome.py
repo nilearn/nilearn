@@ -70,7 +70,7 @@ masker = NiftiMapsMasker(
     high_variance_confounds=True,
     low_pass=None,
     high_pass=0.01,
-    t_r=2,
+    t_r=rest_dataset.t_r,
     standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
@@ -82,7 +82,7 @@ subject_time_series = []
 func_filenames = rest_dataset.func
 confound_filenames = rest_dataset.confounds
 for func_filename, confound_filename in zip(
-    func_filenames, confound_filenames
+    func_filenames, confound_filenames, strict=False
 ):
     print(f"Processing file {func_filename}")
 
