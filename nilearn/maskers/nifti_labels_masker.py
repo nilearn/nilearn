@@ -261,7 +261,7 @@ class NiftiLabelsMasker(ReportingMixin, _LabelMaskerMixin, BaseMasker):
 
         self._report_content = {
             "description": (
-                "This reports shows the regions "
+                "This report shows the regions "
                 "defined by the labels of the mask."
             ),
             "number_of_regions": 0,
