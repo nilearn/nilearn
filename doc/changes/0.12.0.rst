@@ -62,7 +62,7 @@ Enhancements
 
 - :bdg-dark:`Code` Add surface support for :class:`~nilearn.decomposition.DictLearning` and :class:`~nilearn.decomposition.CanICA` (:gh:`5377` by `Himanshu Aggarwal`_ and `Rémi Gau`_).
 
-- :bdg-dark:`Code` :func:`~nilearn.interfaces.bids.save_glm_to_bids` can infer the naming scheme for output files from the input files passed at fit time to :class:`~nilearn.glm.first_level.FirstLevelModel`. It will also now save the GLM mask to disk (:gh:`5256`, :gh:`5279` by `Rémi Gau`_).
+- :bdg-dark:`Code` :func:`~glm.save_glm_to_bids` can infer the naming scheme for output files from the input files passed at fit time to :class:`~nilearn.glm.first_level.FirstLevelModel`. It will also now save the GLM mask to disk (:gh:`5256`, :gh:`5279` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add a ``timeout`` parameter to the neurovault fetching functions (:gh:`5268` by `Rémi Gau`_).
 
@@ -76,7 +76,7 @@ Enhancements
 
 - :bdg-dark:`Code` Add reports for the surface based GLMs (:gh:`4442` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` Add support for surface based GLMs to :func:`~nilearn.interfaces.bids.save_glm_to_bids` (:gh:`5309` by `Rémi Gau`_).
+- :bdg-dark:`Code` Add support for surface based GLMs to :func:`~glm.save_glm_to_bids` (:gh:`5309` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Enhance :func:`~nilearn.glm.second_level.non_parametric_inference` to support surface data. Please, note that cluster analysis, TFCE and smoothing are not yet implemented. (:gh:`5078` by `Rémi Gau`_).
 
@@ -98,9 +98,9 @@ Enhancements
 
 - :bdg-info:`Plotting` ``transparency`` and ``transparency_range`` parameters have been added to the :meth:`nilearn.plotting.displays.BaseSlicer.add_overlay` (and therefore to the all classes inheriting :class:`~nilearn.plotting.displays.BaseSlicer`). These parameters were also explicitly added to the plotting functions :func:`~nilearn.plotting.plot_img`, :func:`~nilearn.plotting.plot_stat_map`, :func:`~nilearn.plotting.plot_glass_brain` (:gh:`5151` by `Rémi Gau`_ and :gh:`5371` by `Hande Gözükan`_).
 
-- :bdg-info:`Plotting` Add a :func:`~nilearn.plotting.img_comparison.plot_bland_altman` to create Bland-Altman plots to compare images (:gh:`5112` by `Rémi Gau`_).
+- :bdg-info:`Plotting` Add a :func:`~nilearn.plotting.plot_bland_altman` to create Bland-Altman plots to compare images (:gh:`5112` by `Rémi Gau`_).
 
-- :bdg-info:`Plotting` Allow a :func:`~nilearn.plotting.img_comparison.plot_img_comparison` to compare images :class:`~nilearn.surface.SurfaceImage` (:gh:`5132` by `Rémi Gau`_).
+- :bdg-info:`Plotting` Allow a :func:`~nilearn.plotting.plot_img_comparison` to compare images :class:`~nilearn.surface.SurfaceImage` (:gh:`5132` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Colormaps can be passed as BIDS compliant look-up table via a :class:`pandas.DataFrame` to :func:`~nilearn.plotting.plot_roi` and :func:`~nilearn.plotting.plot_surf_roi` (:gh:`5160` by `Rémi Gau`_).
 
@@ -129,7 +129,7 @@ Changes
 
 - :bdg-danger:`Deprecation` Deprecate passing cleaning arguments to maskers for NiftiImages via ``kwargs``. Introduce a ``clean_args`` parameter to match API of Surface maskers.  (:gh:`5082` by `Rémi Gau`_).
 
-- :bdg-danger:`Deprecation` ``nilearn.plotting.img_plotting.plot_img_comparison`` was moved to :func:`~nilearn.plotting.img_comparison.plot_img_comparison` (:gh:`5120` by `Rémi Gau`_).
+- :bdg-danger:`Deprecation` ``nilearn.plotting.plot_img_comparison`` was moved to :func:`~nilearn.plotting.plot_img_comparison` (:gh:`5120` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Using the transform method of nifti maskers on 3D images now returns 1D arrays. Similarly, using the transform method of surface maskers on 1D surface images now returns 1D arrays.  (:gh:`5381` by `Rémi Gau`_).
 
@@ -141,7 +141,7 @@ Changes
 
 - :bdg-info:`Plotting` Improve layout of GLM reports (:gh:`5202` by `Rémi Gau`_).
 
-- :bdg-info:`Plotting` Allow a :func:`~nilearn.plotting.img_comparison.plot_img_comparison` to accept 3D Niimg-like image and to be run without a masker (:gh:`5132` by `Rémi Gau`_).
+- :bdg-info:`Plotting` Allow a :func:`~nilearn.plotting.plot_img_comparison` to accept 3D Niimg-like image and to be run without a masker (:gh:`5132` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Change the default map to be ``"RdBu_r"`` or ``"gray"`` for most plotting functions. In several examples, use the "inferno" colormap when a sequential colormap is preferable (:gh:`4807`, :gh:`4851` by `Rémi Gau`_).
 
