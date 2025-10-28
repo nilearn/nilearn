@@ -7,9 +7,21 @@ import numpy as np
 import pytest
 from matplotlib.figure import Figure
 
-from nilearn._utils.helpers import is_kaleido_installed
+from nilearn._utils.helpers import (
+    compare_version,
+    is_kaleido_installed,
+    is_plotly_installed,
+)
 from nilearn.plotting import plot_surf
 from nilearn.plotting.displays import PlotlySurfaceFigure
+from nilearn.plotting.surface._plotly_backend import (
+    OPTIONAL_MATPLOTLIB_MIN_VERSION,
+)
+
+if is_plotly_installed():
+    from plotly import __version__ as plotly_version
+else:
+    plotly_version = OPTIONAL_MATPLOTLIB_MIN_VERSION
 
 try:
     import IPython.display  # noqa:F401
@@ -77,7 +89,8 @@ def test_plotly_show(plotly, renderer):
 
 
 @pytest.mark.xfail(
-    condition=os.name == "nt",
+    condition=os.name == "nt"
+    and compare_version(plotly_version, ">=", "6.0.0"),
     reason=(
         "Bug in kaleido library. "
         "See https://github.com/nilearn/nilearn/issues/5801."

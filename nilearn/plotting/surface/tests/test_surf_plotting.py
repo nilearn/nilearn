@@ -2,6 +2,7 @@
 
 # ruff: noqa: ARG001
 
+import os
 import re
 import tempfile
 
@@ -11,6 +12,7 @@ import pytest
 from numpy.testing import assert_array_equal
 
 from nilearn._utils.helpers import (
+    compare_version,
     is_kaleido_installed,
     is_plotly_installed,
 )
@@ -23,6 +25,14 @@ from nilearn.plotting import (
     plot_surf_roi,
     plot_surf_stat_map,
 )
+from nilearn.plotting.surface._plotly_backend import (
+    OPTIONAL_MATPLOTLIB_MIN_VERSION,
+)
+
+if is_plotly_installed():
+    from plotly import __version__ as plotly_version
+else:
+    plotly_version = OPTIONAL_MATPLOTLIB_MIN_VERSION
 
 
 @pytest.fixture
@@ -113,7 +123,7 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
 
 
 @pytest.mark.slow
-def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
+def test_plot_surf(plt, engine, in_memory_mesh, bg_map):
     """Test nilearn.plotting.surface.surf_plotting.plot_surf function with
     available engine backends.
     """
@@ -135,7 +145,6 @@ def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
         in_memory_mesh,
         bg_map=bg_map,
         alpha=alpha,
-        output_file=tmp_path / "tmp.png",
         engine=engine,
     )
 
@@ -148,6 +157,31 @@ def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
         cbar_vmin=cbar_vmin,
         cbar_vmax=cbar_vmax,
         cbar_tick_format="%i",
+        engine=engine,
+    )
+
+
+@pytest.mark.slow
+@pytest.mark.xfail(
+    condition=os.name == "nt"
+    and compare_version(plotly_version, ">=", "6.0.0"),
+    reason=(
+        "Bug in kaleido library. "
+        "See https://github.com/nilearn/nilearn/issues/5801."
+    ),
+)
+def test_plot_surf_output_file(plt, engine, tmp_path, in_memory_mesh, bg_map):
+    """Test plot_surf with an output_file."""
+    # to avoid extra warnings
+    alpha = None
+    if engine == "matplotlib":
+        alpha = 0.5
+
+    # Plot mesh with background
+    plot_surf(
+        in_memory_mesh,
+        alpha=alpha,
+        output_file=tmp_path / "tmp.png",
         engine=engine,
     )
 

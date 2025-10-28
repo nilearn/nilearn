@@ -25,6 +25,8 @@ from nilearn.plotting.surface._utils import (
 )
 from nilearn.surface import load_surf_data, load_surf_mesh
 
+OPTIONAL_MATPLOTLIB_MIN_VERSION = "5.0.0"
+
 try:
     import plotly.graph_objects as go
 except ImportError:
