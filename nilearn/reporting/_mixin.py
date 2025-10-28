@@ -33,7 +33,7 @@ class ReportingMixin:
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        self.update_report_content("title", title)
+        self._report_content["title"] = title
         return generate_report(self)
 
     @abc.abstractmethod
