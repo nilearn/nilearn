@@ -19,6 +19,8 @@ BASE_TESTS = [
     "nilearn/tests/test_init.py",
     "nilearn/tests/test_package_import.py",
 ]
+
+HIGHEST_LAYER = ["nilearn/utils"]
 TOP_LAYER = ["nilearn/glm", "nilearn/decoding", "nilearn/decomposition"]
 MID_LAYER = [
     "nilearn/datasets",
@@ -48,6 +50,7 @@ all_folders = sorted(
 )
 known_dirs = sorted(
     [
+        *HIGHEST_LAYER,
         *TOP_LAYER,
         *MID_LAYER,
         "nilearn/_utils",
@@ -119,23 +122,40 @@ def restrict_tests(changed_files: list[str]) -> list[str]:
     tests_to_run = []
     for x in subpackages_changed:
         # higher layers
+        tests_to_run.extend(
+            [x for higher_level in HIGHEST_LAYER if x == higher_level]
+        )
+
+        # higher layers
         for top_level in [*TOP_LAYER, "nilearn/connectome"]:
             if x == top_level:
-                tests_to_run.extend([top_level])
+                tests_to_run.extend([x, *HIGHEST_LAYER])
+
         if "nilearn/mass_univariate" in x:
-            tests_to_run.extend(["nilearn/glm", "nilearn/mass_univariate"])
+            tests_to_run.extend(
+                ["nilearn/glm", "nilearn/mass_univariate", *HIGHEST_LAYER]
+            )
 
         # middle layers: all imported by top layers
-        for mid_level in MID_LAYER:
-            if x == mid_level:
-                tests_to_run.extend(
-                    ["nilearn/tests/test_masking.py", *MID_LAYER, *TOP_LAYER]
-                )
+        if any(x == mid_level for mid_level in MID_LAYER):
+            tests_to_run.extend(
+                [
+                    "nilearn/tests/test_masking.py",
+                    *MID_LAYER,
+                    *TOP_LAYER,
+                    *HIGHEST_LAYER,
+                ]
+            )
 
         # lower levels
         if x == "nilearn/masking.py":
             tests_to_run.extend(
-                ["nilearn/tests/test_masking.py", *MID_LAYER, *TOP_LAYER]
+                [
+                    "nilearn/tests/test_masking.py",
+                    *MID_LAYER,
+                    *TOP_LAYER,
+                    *HIGHEST_LAYER,
+                ]
             )
 
         # if lowest layers or _utils or test config is touched:
@@ -157,16 +177,21 @@ def restrict_tests(changed_files: list[str]) -> list[str]:
                     "nilearn/connectome",
                     *MID_LAYER,
                     *TOP_LAYER,
+                    *HIGHEST_LAYER,
                 ]
             )
 
         # edge case where some tests files where changed
-        for test_file in [
-            "nilearn/tests/test_masking.py",
-            "nilearn/tests/test_signal.py",
-        ]:
-            if x == test_file:
-                tests_to_run.extend([x])
+        tests_to_run.extend(
+            [
+                x
+                for test_file in [
+                    "nilearn/tests/test_masking.py",
+                    "nilearn/tests/test_signal.py",
+                ]
+                if x == test_file
+            ]
+        )
 
     # we always run some base tests
     tests_to_run.extend(BASE_TESTS)
@@ -219,31 +244,42 @@ try:
             ([], []),
             (
                 ["nilearn/glm/first_level/first_level.py"],
-                ["nilearn/glm"],
+                ["nilearn/glm", *HIGHEST_LAYER],
             ),
             (
                 ["nilearn/decoding/decoder.py"],
-                ["nilearn/decoding"],
+                ["nilearn/decoding", *HIGHEST_LAYER],
             ),
             (
                 ["nilearn/connectome/group_sparse_cov.py"],
-                ["nilearn/connectome"],
+                ["nilearn/connectome", *HIGHEST_LAYER],
             ),
             (
                 ["nilearn/mass_univariate/permuted_least_squares.py"],
-                ["nilearn/glm", "nilearn/mass_univariate"],
+                ["nilearn/glm", "nilearn/mass_univariate", *HIGHEST_LAYER],
             ),
             (
                 ["nilearn/plotting/cm.py"],
-                [*TOP_LAYER, *MID_LAYER, "nilearn/tests/test_masking.py"],
+                [
+                    *HIGHEST_LAYER,
+                    *TOP_LAYER,
+                    *MID_LAYER,
+                    "nilearn/tests/test_masking.py",
+                ],
             ),
             (
                 ["nilearn/maskers/nifti_masker.py"],
-                [*TOP_LAYER, *MID_LAYER, "nilearn/tests/test_masking.py"],
+                [
+                    *HIGHEST_LAYER,
+                    *TOP_LAYER,
+                    *MID_LAYER,
+                    "nilearn/tests/test_masking.py",
+                ],
             ),
             (
                 ["nilearn/signal.py"],
                 [
+                    *HIGHEST_LAYER,
                     *TOP_LAYER,
                     *MID_LAYER,
                     "nilearn/tests/test_masking.py",
@@ -254,6 +290,7 @@ try:
             (
                 ["nilearn/conftest.py"],
                 [
+                    *HIGHEST_LAYER,
                     *TOP_LAYER,
                     *MID_LAYER,
                     "nilearn/tests/test_masking.py",
