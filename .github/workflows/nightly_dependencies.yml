@@ -55,7 +55,8 @@ jobs:
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
-                python-version: 3.13
+                python-version: 3.14
+                allow-prereleases: true
 
         -   name: Install tox
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions

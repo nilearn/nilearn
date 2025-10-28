@@ -30,7 +30,7 @@ HIGHLIGHTS
 
 - :bdg-success:`API` :func:`~mass_univariate.permuted_ols` and :func:`~glm.second_level.non_parametric_inference` now support cluster-level Family-wise error correction (:gh:`3181` by `Taylor Salo`_).
 
-- :bdg-success:`API` :func:`~interfaces.bids.save_glm_to_bids` has been added, which writes model outputs to disk according to BIDS convention (:gh:`2715` by `Taylor Salo`_).
+- :bdg-success:`API` :func:`~glm.save_glm_to_bids` has been added, which writes model outputs to disk according to BIDS convention (:gh:`2715` by `Taylor Salo`_).
 
 - :bdg-primary:`Doc` Updated docs with a new theme using `furo <https://github.com/pradyunsg/furo>`_ (:gh:`3125` by `Alexis Thual`_).
 

@@ -83,9 +83,9 @@ jobs:
             # only run latest and oldest python versions on PR
             id: py
             run: |
-                versions='py=["3.13", "3.12", "3.11", "3.10"]'
+                versions='py=["3.14", "3.13", "3.12", "3.11", "3.10"]'
                 if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
-                    versions='py=["3.13", "3.10"]'
+                    versions='py=["3.14", "3.10"]'
                 fi
                 echo "Will run on the following python: ${versions}"
                 echo ${versions} >> "$GITHUB_OUTPUT"
@@ -100,7 +100,8 @@ jobs:
         runs-on: ${{ matrix.os }}
 
         strategy:
-            fail-fast: true
+            # reset to true before merging
+            fail-fast: false
             matrix:
                 description: [latest dependencies]
                 py: ${{ fromJSON(needs.define-matrix.outputs.py) }}
@@ -108,7 +109,7 @@ jobs:
                 env: [plotting]
                 include:
                 -   description: pre-release dependencies
-                    py: '3.13'
+                    py: '3.14'
                     os: ubuntu-latest
                     env: pre
                 # Using macos on the following as tests run faster on macos.
