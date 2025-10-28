@@ -1,5 +1,6 @@
 """Test nilearn.plotting.displays.PlotlySurfaceFigure."""
 
+import os
 from unittest import mock
 
 import numpy as np
@@ -75,6 +76,13 @@ def test_plotly_show(plotly, renderer):
     assert f"image/{key}" in mock_display.call_args.args[0]
 
 
+@pytest.mark.xfail(
+    os.name == "nt",
+    reason=(
+        "Bug in kaleido library. "
+        "See https://github.com/nilearn/nilearn/issues/5801."
+    ),
+)
 @pytest.mark.skipif(
     not is_kaleido_installed(),
     reason="Kaleido is not installed; required for this test.",
