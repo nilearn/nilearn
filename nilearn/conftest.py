@@ -6,7 +6,6 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn import image
 from nilearn._utils.data_gen import (
     generate_fake_fmri,
     generate_labeled_regions,
@@ -19,6 +18,7 @@ from nilearn.datasets.tests._testing import (
     request_mocker,  # noqa: F401
     temp_nilearn_data_dir,  # noqa: F401
 )
+from nilearn.image.image import get_data
 from nilearn.surface import (
     InMemoryMesh,
     PolyMesh,
@@ -99,7 +99,7 @@ def no_int64_nifti(monkeypatch):
     to_filename = nibabel.nifti1.Nifti1Image.to_filename
 
     def checked_to_filename(img, filename):
-        assert image.get_data(img).dtype not in forbidden_types, error_msg
+        assert get_data(img).dtype not in forbidden_types, error_msg
         return to_filename(img, filename)
 
     monkeypatch.setattr(

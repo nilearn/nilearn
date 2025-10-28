@@ -29,6 +29,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-success:`API` The functions :func:`~image.check_niimg`, :func:`~image.check_niimg_3d` and :func:`~image.check_niimg_4d` are now part of our public API. The content of ``nilearn._utils.niimg_conversion`` and ``nilearn.image.utils`` was moved to ``nilearn.image.image``. For a smoother transition some functions from ``nilearn._utils.niimg_conversion`` will still be importable from this module till Nilearn 0.14.0 (:gh:`5788` by `Rémi Gau`_).
+
 - :bdg-success:`API` Add :func:`~utils.all_estimators`, :func:`~utils.all_displays`, :func:`~utils.all_functions` to provide list all estimators and functions available in Nilearn (:gh:`5535` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add an ``exclude_subjects`` parameter to :func:`~glm.first_level.first_level_from_bids` to skip some subjects when creating GLM models from a BIDS dataset (:gh:`5741` by `Rémi Gau`_).
