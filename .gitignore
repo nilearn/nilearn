@@ -48,6 +48,7 @@ venv/
 
 # testing
 .pytest_cache
+tests_to_run.txt
 report*.html
 
 # CI benchmark
