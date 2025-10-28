@@ -886,7 +886,7 @@ def test_fmri_img_inputs_errors(confounds):
         SecondLevelModel().fit([*niimgs, []], confounds)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_fmri_inputs_for_non_parametric_inference_errors(
     rng, confounds, shape_3d_default, shape_4d_default
 ):
