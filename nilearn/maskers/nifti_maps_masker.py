@@ -227,7 +227,7 @@ class NiftiMapsMasker(
 
         self._report_content = {
             "description": (
-                "This reports shows the spatial maps provided to the mask."
+                "This report shows the spatial maps provided to the mask."
             ),
             "warning_message": None,
         }
