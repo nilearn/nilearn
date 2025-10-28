@@ -71,9 +71,9 @@ from .struct import (
 from .utils import get_data_dirs
 
 __all__ = [
-    "GM_MNI152_FILE_PATH",
-    "MNI152_FILE_PATH",
-    "WM_MNI152_FILE_PATH",
+    "GM_MNI152_FILE_PATH",  # not in the doc or used in the codebase
+    "MNI152_FILE_PATH",  # not in the doc, only used in one example
+    "WM_MNI152_FILE_PATH",  # not in the doc or used in the codebase
     "fetch_abide_pcp",
     "fetch_adhd",
     "fetch_atlas_aal",
