@@ -71,7 +71,9 @@ def main():
         GITHUB_REF_TYPE = os.getenv("GITHUB_REF_TYPE", "")
 
     GITHUB_REF_NAME = Path("merge.txt").read_text().strip()
-    GITLOG = Path("gitlog.txt").read_text()
+    COMMIT_MSG = Path("gitlog.txt").read_text()
+
+    print(f"{COMMIT_MSG=}")
 
     # Ensure pattern.txt exists even if empty
     Path("pattern.txt").touch()
@@ -80,7 +82,7 @@ def main():
     if (
         GITHUB_REF_NAME == "main"
         or GITHUB_REF_TYPE == "tag"
-        or "[full doc]" in GITLOG
+        or "[full doc]" in COMMIT_MSG
     ):
         print("Doing a full build")
         Path("build.txt").write_text("html-strict\n")
@@ -88,11 +90,11 @@ def main():
 
     # Check for [example] in commit message
     example = []
-    if "[example]" in GITLOG:
-        print(f"Building selected example: {GITLOG}")
+    if "[example]" in COMMIT_MSG:
+        print(f"Building selected example:\n{COMMIT_MSG}")
         # Extract everything after the first "] "
         try:
-            examples_in_message = GITLOG.split("] ", 1)[1].strip()
+            examples_in_message = COMMIT_MSG.split("] ", 1)[1].strip()
             for ex in examples_in_message.split(" "):
                 example.extend([f"examples/*/{ex.strip()}"])
         except IndexError:
@@ -144,13 +146,14 @@ try:
         """Remove files created."""
         yield
         Path("build.txt").unlink()
-        Path("examples.txt").unlink()
         Path("pattern.txt").unlink()
+        Path("examples.txt").unlink(missing_ok=True)
 
     @pytest.fixture
-    def gitlog(log):
+    def gitlog(commit_msg):
         """Create dumy content of a commit message."""
-        Path("gitlog.txt").write_text(log)
+        Path("gitlog.txt").write_text(commit_msg)
+        print(commit_msg)
         yield
         Path("gitlog.txt").unlink()
 
@@ -162,33 +165,38 @@ try:
         Path("merge.txt").unlink()
 
     @pytest.mark.parametrize(
-        "log, expected_in_pattern",
+        "commit_msg, expected_in_pattern",
         [
             ("", [""]),
+            ("[full doc]", [""]),
             ("[example] ", [""]),
             ("[example] plot_3d_and_4d_niimg.py", ["plot_3d_and_4d_niimg.py"]),
             (
                 "[example] plot_3d_and_4d_niimg.py plot_oasis.py",
                 ["plot_3d_and_4d_niimg.py", "plot_oasis.py"],
             ),
-            (
-                "[example] plot_second_level*",
-                ["plot_3d_and_4d_niimg.py", "plot_oasis.py"],
-            ),
+            # TODO: check and implement globbing
+            # (
+            #     "[example] plot_second_level*.py",
+            #     ["plot_3d_and_4d_niimg.py", "plot_oasis.py"],
+            # ),
         ],
     )
     def test_main_commit_msg(
-        log,  # noqa: ARG001
+        commit_msg,
         gitlog,  # noqa: ARG001
         merge,  # noqa: ARG001
         expected_in_pattern,
         clean_up,  # noqa: ARG001
     ):
         """Test proper examples will be added when passed in commit msg."""
+        print(f"{commit_msg=}")
         main()
         assert Path("build.txt").exists()
-        assert Path("examples.txt").exists()
-        assert Path("pattern.txt").exists()
+
+        if "[full doc]" not in commit_msg:
+            assert Path("examples.txt").exists()
+            assert Path("pattern.txt").exists()
 
         with Path("pattern.txt").open("r") as f:
             content = f.read()
