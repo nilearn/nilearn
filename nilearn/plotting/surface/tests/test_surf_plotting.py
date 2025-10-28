@@ -26,13 +26,13 @@ from nilearn.plotting import (
     plot_surf_stat_map,
 )
 from nilearn.plotting.surface._plotly_backend import (
-    OPTIONAL_MATPLOTLIB_MIN_VERSION,
+    OPTIONAL_PLOTLY_MIN_VERSION,
 )
 
 if is_plotly_installed():
     from plotly import __version__ as plotly_version
 else:
-    plotly_version = OPTIONAL_MATPLOTLIB_MIN_VERSION
+    plotly_version = OPTIONAL_PLOTLY_MIN_VERSION
 
 
 @pytest.fixture
