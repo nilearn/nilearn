@@ -425,7 +425,7 @@ def test_multi_nifti_masker_generate_report_imgs(img_fmri):
 
     masker = MultiNiftiMasker(reports=False)
     masker.fit([img_fmri, img_fmri])
-    assert not hasattr(masker, "_reporting_data")
+    assert masker.has_report_data() is False
     masker.generate_report()
 
 
@@ -474,7 +474,7 @@ def test_surface_masker_mask_img_generate_no_report(surf_img_2d, surf_mask_1d):
     """Smoke test generate report."""
     masker = SurfaceMasker(surf_mask_1d, reports=False).fit()
 
-    assert not hasattr(masker, "_reporting_data")
+    assert masker.has_report_data() is False
 
     img = surf_img_2d(5)
     masker.transform(img)

@@ -266,7 +266,7 @@ def test_surface_label_masker_fit_no_report(surf_label_img):
     """Check no report data is stored."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, reports=False)
     masker = masker.fit()
-    assert not hasattr(masker, "_reporting_data")
+    assert masker.has_report_data() is False
 
 
 @pytest.mark.parametrize(
