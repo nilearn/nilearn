@@ -32,7 +32,7 @@ from nilearn.maskers.base_masker import (
     mask_logger,
 )
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
-from nilearn.reporting._mixin import ReportingMixin
+from nilearn.reporting.mixin import ReportingMixin
 
 
 def apply_mask_and_get_affinity(

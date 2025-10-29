@@ -24,7 +24,7 @@ from nilearn.maskers.base_masker import (
     mask_logger,
 )
 from nilearn.masking import load_mask_img
-from nilearn.reporting._mixin import ReportingMixin
+from nilearn.reporting.mixin import ReportingMixin
 
 
 class _ExtractionFunctor:

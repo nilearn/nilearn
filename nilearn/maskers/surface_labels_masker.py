@@ -21,7 +21,7 @@ from nilearn._utils.param_validation import (
 from nilearn.image import mean_img
 from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
-from nilearn.reporting._mixin import ReportingMixin
+from nilearn.reporting.mixin import ReportingMixin
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,

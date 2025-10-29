@@ -30,7 +30,7 @@ from nilearn.masking import (
     compute_multi_brain_mask,
     load_mask_img,
 )
-from nilearn.reporting._mixin import ReportingMixin
+from nilearn.reporting.mixin import ReportingMixin
 
 
 class _ExtractionFunctor:
