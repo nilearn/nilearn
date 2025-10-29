@@ -303,7 +303,7 @@ class NiftiMapsMasker(
 
         return super().generate_report(title)
 
-    def _reporting(self):
+    def _get_displays(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -312,9 +312,7 @@ class NiftiMapsMasker(
             A list of all displays to be rendered.
 
         """
-        maps_image = None
-        if self._reporting_data is not None:
-            maps_image = self._reporting_data["maps_image"]
+        maps_image = self._reporting_data["maps_image"]
 
         if maps_image is None:
             return [None]

@@ -426,7 +426,7 @@ class NiftiSpheresMasker(
 
         return super().generate_report(title)
 
-    def _reporting(self):
+    def _get_displays(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -434,13 +434,7 @@ class NiftiSpheresMasker(
         displays : list
             A list of all displays to be rendered.
         """
-        if self._reporting_data is not None:
-            seeds = self._reporting_data["seeds"]
-        else:
-            self._report_content["summary"] = None
-
-            return [None]
-
+        seeds = self._reporting_data["seeds"]
         img = self._reporting_data["img"]
         if img is None:
             img = load_mni152_template()

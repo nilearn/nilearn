@@ -382,7 +382,7 @@ class NiftiMasker(ReportingMixin, ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "warning_message": None,
         }
 
-    def _reporting(self):
+    def _get_displays(self):
         """Load displays needed for report.
 
         Returns
@@ -391,11 +391,6 @@ class NiftiMasker(ReportingMixin, ClassNamePrefixFeaturesOutMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        # Handle the edge case where this function is
-        # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
-            return [None]
-
         img = self._reporting_data["images"]
         mask = self._reporting_data["mask"]
 

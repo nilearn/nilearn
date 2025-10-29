@@ -317,7 +317,7 @@ class NiftiLabelsMasker(ReportingMixin, _LabelMaskerMixin, BaseMasker):
 
         return masked_atlas, removed_region_ids, removed_region_names, display
 
-    def _reporting(self):
+    def _get_displays(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -326,16 +326,9 @@ class NiftiLabelsMasker(ReportingMixin, _LabelMaskerMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        labels_image = None
-        if self._reporting_data is not None:
-            labels_image = self._reporting_data["labels_image"]
+        labels_image = self._reporting_data["labels_image"]
 
-        if (
-            labels_image is None
-            or not self.__sklearn_is_fitted__
-            or not self.reports
-        ):
-            self._report_content["summary"] = None
+        if labels_image is None:
             return [None]
 
         # Remove warning message in case where the masker was

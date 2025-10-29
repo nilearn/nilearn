@@ -512,7 +512,7 @@ class SurfaceMapsMasker(
 
         return super().generate_report(title)
 
-    def _reporting(self):
+    def _get_displays(self):
         """Load displays needed for report.
 
         Returns
@@ -523,11 +523,6 @@ class SurfaceMapsMasker(
         import matplotlib.pyplot as plt
 
         from nilearn.reporting.utils import figure_to_png_base64
-
-        # Handle the edge case where this function is
-        # called with a masker having report capabilities disabled
-        if not self.reports:
-            return [None]
 
         maps_img = self._reporting_data["maps_img"]
 
