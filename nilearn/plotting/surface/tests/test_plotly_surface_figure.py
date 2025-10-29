@@ -1,27 +1,14 @@
 """Test nilearn.plotting.displays.PlotlySurfaceFigure."""
 
-import os
 from unittest import mock
 
 import numpy as np
 import pytest
 from matplotlib.figure import Figure
 
-from nilearn._utils.helpers import (
-    compare_version,
-    is_kaleido_installed,
-    is_plotly_installed,
-)
+from nilearn._utils.helpers import is_kaleido_installed
 from nilearn.plotting import plot_surf
 from nilearn.plotting.displays import PlotlySurfaceFigure
-from nilearn.plotting.surface._plotly_backend import (
-    OPTIONAL_PLOTLY_MIN_VERSION,
-)
-
-if is_plotly_installed():
-    from plotly import __version__ as plotly_version
-else:
-    plotly_version = OPTIONAL_PLOTLY_MIN_VERSION
 
 try:
     import IPython.display  # noqa:F401
@@ -88,14 +75,6 @@ def test_plotly_show(plotly, renderer):
     assert f"image/{key}" in mock_display.call_args.args[0]
 
 
-@pytest.mark.xfail(
-    condition=os.name == "nt"
-    and compare_version(plotly_version, ">=", "6.0.0"),
-    reason=(
-        "Bug in kaleido library. "
-        "See https://github.com/nilearn/nilearn/issues/5801."
-    ),
-)
 @pytest.mark.skipif(
     not is_kaleido_installed(),
     reason="Kaleido is not installed; required for this test.",
