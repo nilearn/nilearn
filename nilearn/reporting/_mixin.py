@@ -11,6 +11,10 @@ class ReportingMixin:
     """A mixin class to be used with classes that require reporting
     functionality.
 
+    ReportingMixin uses one public attribute of type bool:
+
+    reports: The value to indicate if reporting is enabled.
+
     ReportingMixin uses two private attributes of type dict:
 
     _report_content : The content to enrich the report. Some fields can be
