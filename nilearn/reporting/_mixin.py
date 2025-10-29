@@ -31,6 +31,13 @@ class ReportingMixin:
         self._report_content["title"] = title
         return generate_report(self)
 
-    @abc.abstractmethod
     def _reporting(self):
+        # if report is disabled or the model is not yet fitted
+        if not self.reports or not self.__sklearn_is_fitted__:
+            self._report_content["summary"] = None
+            return None
+        return self._get_displays()
+
+    @abc.abstractmethod
+    def _get_displays(self):
         raise NotImplementedError()
