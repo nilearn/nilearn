@@ -5,6 +5,8 @@ import warnings
 from string import Template
 
 import pandas as pd
+from sklearn.exceptions import NotFittedError
+from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
@@ -278,7 +280,9 @@ def generate_report(estimator):
             "\nReport generation not enabled!\nNo visual outputs created."
         )
 
-    if not estimator.has_report_data() or not estimator._reporting_data:
+    try:
+        check_is_fitted(estimator)
+    except NotFittedError:
         warning_messages.append(
             "\nThis report was not generated.\n"
             "Make sure to run `fit` before inspecting reports."
