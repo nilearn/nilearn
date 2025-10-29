@@ -12,13 +12,15 @@ class ReportingMixin:
     functionality.
     """
 
-    def __init__(self):
-        self._report_content = {
-            "description": None,
-            "summary": None,
-            "warning_message": None,
-        }
-        self._reporting_data = None
+    def _init_report(self):
+        if not hasattr(self, "_report_content"):
+            self._report_content = {
+                "description": None,
+                "summary": None,
+                "warning_message": None,
+            }
+        if not (hasattr(self, "_reporting_data")):
+            self._reporting_data = None
 
     def generate_report(self, title=None):
         """Generate an HTML report for the current object.
@@ -33,6 +35,7 @@ class ReportingMixin:
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
+        self._init_report()
         self._report_content["title"] = title
         return generate_report(self)
 
