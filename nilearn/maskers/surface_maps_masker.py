@@ -488,8 +488,7 @@ class SurfaceMapsMasker(
                     "Switching to matplotlib for report generation.",
                     stacklevel=find_stack_level(),
                 )
-            if hasattr(self, "_report_content"):
-                self._report_content["engine"] = engine
+            self._report_content["engine"] = engine
 
             incorrect_type = not isinstance(
                 displayed_maps, (list, np.ndarray, int, str)
@@ -527,7 +526,7 @@ class SurfaceMapsMasker(
 
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
+        if not self.reports:
             return [None]
 
         maps_img = self._reporting_data["maps_img"]
