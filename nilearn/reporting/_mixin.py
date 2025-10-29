@@ -35,7 +35,7 @@ class ReportingMixin:
         # if report is disabled or the model is not yet fitted
         if not self.reports or not self.__sklearn_is_fitted__:
             self._report_content["summary"] = None
-            return None
+            return [None]
         return self._get_displays()
 
     @abc.abstractmethod
