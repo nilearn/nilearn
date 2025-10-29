@@ -29,7 +29,9 @@ Fixes
 Enhancements
 ------------
 
-- :bdg-success:`API` Add an ``exclude_subjects`` parameter to :func:`~glm.first_level.first_level_from_bids` to skip some subjects when creating GLM models from a BIDS dataset (:gh:`XXXX` by `Rémi Gau`_).
+- :bdg-success:`API` Add :func:`~utils.all_estimators`, :func:`~utils.all_displays`, :func:`~utils.all_functions` to provide list all estimators and functions available in Nilearn (:gh:`5535` by `Rémi Gau`_).
+
+- :bdg-success:`API` Add an ``exclude_subjects`` parameter to :func:`~glm.first_level.first_level_from_bids` to skip some subjects when creating GLM models from a BIDS dataset (:gh:`5741` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add ``view`` parameter to :func:`~plotting.view_img_on_surf` to select the default view that will be used when displaying the figure  (:gh:`5692` by `Rémi Gau`_).
 
@@ -45,9 +47,10 @@ Enhancements
 
 - :bdg-success:`API` Add support for ``cluster_threshold`` for :func:`~image.threshold_img`, :func:`~glm.threshold_stats_img`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report` and :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5715` by `Rémi Gau`_).
 
-
 Changes
 -------
+
+- :bdg-danger:`Deprecation` The function :func:`~nilearn.glm.save_glm_to_bids` was moved to the :mod:`~nilearn.glm` module. It will be importable from its original :mod:`~nilearn.interfaces` till Nilearn version 0.15.0 (:gh:`5770` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Extra key-words arguments (``kwargs``) have been removed from the constructor of all the Nifti maskers. Any extra-parameters to pass to the call to :func:`~image.clean_img` done by ``transform`` must be done via the parameter ``clean_args`` (:gh:`5628` by `Rémi Gau`_).
 
@@ -102,3 +105,7 @@ Changes
 - :bdg-danger:`Deprecation` Set ``copy_header`` default to True in :func:`~image` functions (:gh:`5656` by `Rémi Gau`_ and `Himanshu Aggarwal`_).
 
 - :bdg-primary:`Doc` Home-made sphinx directives are used instead of default sphinx directives relative to version changes (``versionadded``, ``versionchanged``, ``deprecated``...) to more easily distinguish between feature changes introduced in Nilearn versus those introduced in upstream dependencies (like in Scikit-Learn) (:gh:`5654` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Change cmap to ``'RdBu_r'`` for :func:`~plotting.plot_contrast_matrix` (:gh:`5780` by `Hande Gözükan`_).
+
+- :bdg-info:`Plotting` Change background to ``'black'`` for functions :func:`~plotting.plot_img_comparison` and :func:`~plotting.plot_bland_altman` (:gh:`5785` by `Hande Gözükan`_).

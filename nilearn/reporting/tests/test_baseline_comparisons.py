@@ -7,6 +7,7 @@ https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-f
 
 from collections import OrderedDict
 
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
 import pytest
@@ -35,7 +36,7 @@ from nilearn.reporting.glm_reporter import _stat_map_to_png
 from nilearn.surface.surface import at_least_2d, find_surface_clusters
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 @pytest.mark.parametrize(
@@ -90,6 +91,7 @@ def test_stat_map_to_png_volume(
 
 
 @pytest.mark.mpl_image_compare
+@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize(
     "height_control, two_sided, threshold",
     [
