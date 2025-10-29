@@ -63,7 +63,19 @@ class ReportingMixin:
         # if report is disabled or the model is not yet fitted
         if not self.reports or not self.__sklearn_is_fitted__:
             self._report_content["summary"] = None
+
+            warning_message = ""
+            if not self.reports:
+                warning_message = "Reporting is disabled.\n"
+            if not self.__sklearn_is_fitted__:
+                warning_message += "The model is not fitted.\n"
+
+            warning_message += (
+                "The report will not have fitted model results. "
+            )
+            self._report_content["warning_message"] = warning_message
             return [None]
+
         return self._get_displays()
 
     @abc.abstractmethod
