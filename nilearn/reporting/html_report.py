@@ -207,10 +207,9 @@ def _update_template(
     # revert HTML safe substitutions in CSS sections
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
 
-    head_template_name = "report_head_template.html"
-    head_template_path = HTML_TEMPLATE_PATH / head_template_name
-    with head_template_path.open() as head_file:
-        head_tpl = Template(head_file.read())
+    env = return_jinja_env()
+
+    head_tpl = env.get_template("html/head.jinja")
 
     head_css_file_path = CSS_PATH / "head.css"
     with head_css_file_path.open(encoding="utf-8") as head_css_file:
