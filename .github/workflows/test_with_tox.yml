@@ -18,7 +18,13 @@
 #
 # - ``htmlcov`` containing the html version of the code coverage.
 #
+# .. admonition:: Not all python version run on pull requests.
+#    :class: warning
 #
+#    When this workflow is triggered by a pull-request,
+#    it will run using only the oldest and latest python version we support.
+#    When running on main all combinations of operating system
+#    and python versions are run.
 ###
 name: test
 
@@ -26,9 +32,19 @@ on:
     push:
         branches:
         -   main
+        paths:
+        -   nilearn/**/*
+        -   tox.ini
+        -   pyproject.toml
+        -   .github/workflows/test_with_tox.yml
     pull_request:
         branches:
         -   '*'
+        paths:
+        -   nilearn/**/*
+        -   tox.ini
+        -   pyproject.toml
+        -   .github/workflows/test_with_tox.yml
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -56,8 +72,26 @@ jobs:
                     exit 1
                 fi
 
-    test_and_coverage:
+    define-matrix:
+        runs-on: ubuntu-latest
         needs: check_skip_flags
+        outputs:
+            py: ${{ steps.py.outputs.py }}
+
+        steps:
+        -   name: Define python version to test
+            # only run latest and oldest python versions on PR
+            id: py
+            run: |
+                versions='py=["3.14", "3.13", "3.12", "3.11", "3.10"]'
+                if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+                    versions='py=["3.14", "3.10"]'
+                fi
+                echo "Will run on the following python: ${versions}"
+                echo ${versions} >> "$GITHUB_OUTPUT"
+
+    test_and_coverage:
+        needs: [check_skip_flags, define-matrix]
 
         if: github.repository == 'nilearn/nilearn'
 
@@ -69,12 +103,12 @@ jobs:
             fail-fast: true
             matrix:
                 description: [latest dependencies]
-                py: ['3.13', '3.12', '3.11', '3.10']
+                py: ${{ fromJSON(needs.define-matrix.outputs.py) }}
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 env: [plotting]
                 include:
                 -   description: pre-release dependencies
-                    py: '3.13'
+                    py: '3.14'
                     os: ubuntu-latest
                     env: pre
                 # Using macos on the following as tests run faster on macos.
@@ -95,47 +129,67 @@ jobs:
                     os: ubuntu-latest
                     env: pytest_mpl
 
-
         steps:
-
         -   uses: actions/checkout@v5
+            with:
+                # If pull request, checkout HEAD commit with all commit history
+                ref: ${{ github.event.pull_request.head.sha }}
+                fetch-depth: 0
+
         -   name: Install the latest version of uv
             uses: astral-sh/setup-uv@v7
+
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
                 python-version: ${{ matrix.py }}
                 allow-prereleases: true
+
         -   name: Install tox
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+
         -   name: Show tox config
             run: tox c
 
+        -   name: Merge with upstream
+            # We do this so that when on a PR,
+            # we only get the files involved in a PR
+            # to avoid running more tests than needed.
+            shell: bash -el {0}
+            run: ./build_tools/github/merge_upstream.sh
+
         -   name: Run test suite
+            shell: bash -el {0}
             run: |
-                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
+                python build_tools/github/restrict_tests_to_run.py
+                tests_to_run=$(cat tests_to_run.txt)
+                tox run --list-dependencies -e ${{ matrix.env }} -- ${tests_to_run}
                 tox run -e plot_test_timing
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
-                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report.html
-                path: report.html
+                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
+                path: |
+                    report.html
+                    report_slow.html
+                    report_doc.html
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
 
         -   name: Upload html coverage
             if: success() || failure()
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_htmlcov
                 path: htmlcov
+
         -   name: Upload coverage to CodeCov
             uses: codecov/codecov-action@v5
             with:

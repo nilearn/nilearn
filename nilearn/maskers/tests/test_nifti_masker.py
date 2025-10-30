@@ -58,7 +58,7 @@ else:
         check(estimator)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -198,7 +198,7 @@ def test_matrix_orientation():
     np.testing.assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_mask_4d(shape_3d_default, affine_eye):
     """Test performance with 4D data."""
     # Dummy mask
@@ -371,7 +371,7 @@ def test_compute_brain_mask_empty_mask_error(strategy):
         masker.fit(img)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "strategy",
     [f"{p}-template" for p in ["whole-brain", "gm", "wm"]],
@@ -464,7 +464,7 @@ def test_filter_and_mask(affine_eye):
     data_img = Nifti1Image(data, affine_eye)
     mask_img = Nifti1Image(mask, affine_eye)
 
-    masker = NiftiMasker()
+    masker = NiftiMasker(standardize=None)
     params = get_params(NiftiMasker, masker)
     params["clean_kwargs"] = {}
 
