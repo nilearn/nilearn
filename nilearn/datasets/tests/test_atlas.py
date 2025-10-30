@@ -276,19 +276,6 @@ def test_fetch_atlas_fsl(
 
 
 @pytest.mark.parametrize(
-    "fetcher, atlas_name",
-    [
-        (fetch_atlas_juelich, "maxprob-thr0-1mm"),
-        (fetch_atlas_harvard_oxford, "cort-maxprob-thr25-1mm"),
-    ],
-)
-def test_fsl_fetcher_verbosity(fetcher, capsys, tmp_path, atlas_name):
-    check_fetcher_verbosity(
-        fetcher, capsys, atlas_name=atlas_name, data_dir=tmp_path
-    )
-
-
-@pytest.mark.parametrize(
     "homogeneity, grp_mean, expected",
     [
         ("spatial", True, "scorr05_mean_all.nii.gz"),

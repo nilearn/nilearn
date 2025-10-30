@@ -990,7 +990,7 @@ def test_download_spm_auditory_data(tmp_path, request_mocker):
     request_mocker.url_mapping[re.compile(r".*MoAEpilot.bids.zip")] = (
         list_to_archive([Path("spm_auditory", "MoAEpilot", "README.txt")])
     )
-    func._download_spm_auditory_data(data_dir=tmp_path)
+    func._download_spm_auditory_data(data_dir=tmp_path, verbose=0)
 
     assert (tmp_path / "spm_auditory" / "MoAEpilot" / "README.txt").exists()
 
