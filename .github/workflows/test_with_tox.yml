@@ -101,7 +101,7 @@ jobs:
 
         strategy:
             # reset to true before merging
-            fail-fast: false
+            fail-fast: true
             matrix:
                 description: [latest dependencies]
                 py: ${{ fromJSON(needs.define-matrix.outputs.py) }}
