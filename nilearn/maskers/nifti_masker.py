@@ -11,6 +11,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
@@ -438,6 +439,9 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
               :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
             Returns ``None`` in case the masker was not fitted.
         """
+        if not is_matplotlib_installed():
+            return [None]
+
         import matplotlib.pyplot as plt
 
         from nilearn.plotting import plot_img
