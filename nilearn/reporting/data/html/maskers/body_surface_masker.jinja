@@ -1,44 +1,44 @@
-{{inherit "base.html"}}
-<!--  -->
-{{def navbar}} {{enddef}}
-<!--  -->
-{{def report}}
+{% extends "html/body_base.jinja" %}
+
+{% block report %}
+
 <div class="pure-g">
   <div class="pure-u-1 pure-u-md-2-3">
     <div class="image">
       <img
         class="pure-img"
         width="100%"
-        src="data:image/png;base64,{{content}}"
+        src="data:image/png;base64,{{ content }}"
         alt="image"
       />
-      {{if overlay}}
+      {% if overlay %}
       <div class="overlay">
         <img
           class="pure-img"
           width="100%"
-          src="data:image/png;base64,{{overlay}}"
+          src="data:image/png;base64,{{ overlay }}"
           alt="overlay"
         />
       </div>
-      {{endif}}
+      {% endif %}
     </div>
   </div>
   <div class="pure-u-1 pure-u-md-1-3">
-    {{if description}}
-    <p>{{description}}</p>
-    {{endif}}
-    <!--  -->
-    {{if n_elements }}
+
+    {%if description %}
+    <p>{{ description }}</p>
+    {% endif %}
+
+    {% if n_elements %}
     <div class="pure-u-1 pure-u-md-3-3">
       <p>
         The mask includes {{ n_elements }} vertices ({{ coverage }} %) of the
         image.
       </p>
     </div>
-    {{endif}}
-    <!--  -->
-    {{if n_vertices}}
+    {% endif %}
+
+    {% if n_vertices %}
     <div>
       <table class="pure-table">
         <thead>
@@ -49,46 +49,41 @@
         </thead>
 
         <tbody>
-          {{py: vertices = n_vertices.items()}} {{for hemi, nb in vertices}}
+          {% for hemi in n_vertices %}
           <tr>
-            <td data-column="Hemisphere">{{hemi}}</td>
-            <td data-column="Number of vertices">{{nb}}</td>
+            <td data-column="Hemisphere">{{ hemi }}</td>
+            <td data-column="Number of vertices">{{ n_vertices[hemi] }}</td>
           </tr>
-          {{endfor}}
+          {% endfor %}
         </tbody>
       </table>
     </div>
-    {{endif}}
-    <!--  -->
-    {{if number_of_regions}}
+    {% endif %}
+
+    {% if number_of_regions %}
     <p>
-      The masker has <b>{{number_of_regions}}</b> different non-overlapping
-      regions.
+      The masker has <b>{{ number_of_regions }}</b> different non-overlapping regions.
     </p>
-    {{endif}}
+    {% endif %}
   </div>
 </div>
 <div class="pure-g">
   <div class="pure-u-1 pure-u-md-3-3">
     <div class="d-flex flex-column">
-      <div class="table-container">{{ parameters|html}}</div>
-      <!--  -->
-      {{if summary }}
+      <div class="table-container">{{ parameters|safe }}</div>
+      {% if summary %}
       <!--  tables listing each region for each part  -->
       <div
         style="display: flex; justify-content: space-around; flex-wrap: wrap"
       >
-        {{py: parts = summary_html.items()}}
-        <!--  -->
-        {{for region, region_table in parts}}
-        <!--  -->
+        {% for region in summary_html %}
         <details>
           <summary class="pure-button">Regions summary - {{ region }}</summary>
-          <div class="table-container">{{region_table|html}}</div>
+          <div class="table-container">{{ summary_html[region]|safe }}</div>
         </details>
-        {{endfor}}
+        {% endfor %}
       </div>
-      {{endif}}
+      {% endif %}
     </div>
   </div>
 </div>
@@ -99,4 +94,4 @@
     transform time.
   </p>
 </div>
-{{enddef}}
+{% endblock %}

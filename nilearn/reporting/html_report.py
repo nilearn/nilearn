@@ -12,7 +12,6 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
-from nilearn.externals import tempita
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.reporting._utils import (
     dataframe_to_html,
@@ -20,7 +19,6 @@ from nilearn.reporting._utils import (
 )
 from nilearn.reporting.utils import (
     CSS_PATH,
-    HTML_PARTIALS_PATH,
     TEMPLATE_ROOT_PATH,
     figure_to_svg_base64,
 )
@@ -31,10 +29,10 @@ ESTIMATOR_TEMPLATES = {
     "NiftiMapsMasker": "report_body_template_niftimapsmasker.html",
     "MultiNiftiMapsMasker": "report_body_template_niftimapsmasker.html",
     "NiftiSpheresMasker": "report_body_template_niftispheresmasker.html",
-    "SurfaceMasker": "report_body_template_surfacemasker.html",
-    "MultiSurfaceMasker": "report_body_template_surfacemasker.html",
-    "SurfaceLabelsMasker": "report_body_template_surfacemasker.html",
-    "MultiSurfaceLabelsMasker": "report_body_template_surfacemasker.html",
+    "SurfaceMasker": "body_surface_masker.jinja",
+    "MultiSurfaceMasker": "body_surface_masker.jinja",
+    "SurfaceLabelsMasker": "body_surface_masker.jinja",
+    "MultiSurfaceLabelsMasker": "body_surface_masker.jinja",
     "SurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
     "MultiSurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
     "default": "body_masker.jinja",
@@ -145,7 +143,7 @@ def _update_template(
 
     template_name : str, optional
         The name of the template to use. If not provided, the
-        default template `report_body_template.html` will be
+        default template `"body_masker.jinja"` will be
         used.
 
     Returns
@@ -189,7 +187,7 @@ def _update_template(
         ),
         **data,
         carousel=False,
-        warning_messages=_render_warnings_partial(warning_messages),
+        warning_messages=warning_messages,
         summary_html=summary_html,
     )
 
@@ -304,12 +302,13 @@ def generate_report(estimator):
 
 
 def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(HTML_PARTIALS_PATH / "figure.html"), encoding="utf-8"
-    )
+    env = return_jinja_env()
+
+    tpl = env.get_template("html/partials/figure.jinja")
+
     if not isinstance(content, list):
         content = [content]
-    return tpl.substitute(
+    return tpl.render(
         engine=engine,
         content=content,
         displayed_maps=displayed_maps,
@@ -317,14 +316,8 @@ def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
     )
 
 
-def _render_warnings_partial(warning_messages) -> str:
-    env = return_jinja_env()
-    tpl = env.get_template("html/partials/warnings.jinja")
-    return tpl.render(warning_messages=warning_messages)
-
-
 def _create_report(estimator, data):
-    html_template = _get_estimator_template(estimator)
+    template_name = _get_estimator_template(estimator)
 
     # note that some surface images are passed via data
     # for surface maps masker
@@ -381,7 +374,7 @@ def _create_report(estimator, data):
         overlay=embed_img(overlay),
         parameters=parameters,
         data=data,
-        template_name=html_template,
+        template_name=template_name,
         summary_html=summary_html,
     )
 
