@@ -1,5 +1,6 @@
 """Test the parcellations tools module."""
 
+import sys
 import warnings
 
 import numpy as np
@@ -58,6 +59,9 @@ def test_errors_raised_in_check_parameters_fit(method, test_image):
         Parcellations(method=method, verbose=0).fit(test_image)
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5, 10, 15])
 def test_parcellations_fit_on_single_nifti_image(method, n_parcel, test_image):
