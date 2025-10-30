@@ -24,8 +24,8 @@ from nilearn.reporting.utils import (
 )
 
 ESTIMATOR_TEMPLATES = {
-    "NiftiLabelsMasker": "report_body_template_niftilabelsmasker.html",
-    "MultiNiftiLabelsMasker": "report_body_template_niftilabelsmasker.html",
+    "NiftiLabelsMasker": "body_nifti_labels_masker.jinja",
+    "MultiNiftiLabelsMasker": "body_nifti_labels_masker.jinja",
     "NiftiMapsMasker": "report_body_template_niftimapsmasker.html",
     "MultiNiftiMapsMasker": "report_body_template_niftimapsmasker.html",
     "NiftiSpheresMasker": "report_body_template_niftispheresmasker.html",
