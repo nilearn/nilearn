@@ -5,9 +5,9 @@ import warnings
 from string import Template
 
 import pandas as pd
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_is_fitted
-from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
