@@ -26,8 +26,8 @@ from nilearn.reporting.utils import (
 ESTIMATOR_TEMPLATES = {
     "NiftiLabelsMasker": "body_nifti_labels_masker.jinja",
     "MultiNiftiLabelsMasker": "body_nifti_labels_masker.jinja",
-    "NiftiMapsMasker": "report_body_template_niftimapsmasker.html",
-    "MultiNiftiMapsMasker": "report_body_template_niftimapsmasker.html",
+    "NiftiMapsMasker": "body_nifti_maps_masker.jinja",
+    "MultiNiftiMapsMasker": "body_nifti_maps_masker.jinja",
     "NiftiSpheresMasker": "report_body_template_niftispheresmasker.html",
     "SurfaceMasker": "body_surface_masker.jinja",
     "MultiSurfaceMasker": "body_surface_masker.jinja",
@@ -35,30 +35,7 @@ ESTIMATOR_TEMPLATES = {
     "MultiSurfaceLabelsMasker": "body_surface_masker.jinja",
     "SurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
     "MultiSurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
-    "default": "body_masker.jinja",
 }
-
-
-def _get_estimator_template(estimator):
-    """Return the HTML template to use for a given estimator \
-    if a specific template was defined in ESTIMATOR_TEMPLATES, \
-    otherwise return the default template.
-
-    Parameters
-    ----------
-    estimator : object instance of BaseEstimator
-        The object we wish to retrieve template of.
-
-    Returns
-    -------
-    template : str
-        Name of the template file to use.
-
-    """
-    if estimator.__class__.__name__ in ESTIMATOR_TEMPLATES:
-        return ESTIMATOR_TEMPLATES[estimator.__class__.__name__]
-    else:
-        return ESTIMATOR_TEMPLATES["default"]
 
 
 def return_jinja_env() -> Environment:
@@ -257,10 +234,9 @@ def generate_report(estimator):
             )
             return [None]
 
+    data = {}
     if hasattr(estimator, "_report_content"):
         data = estimator._report_content
-    else:
-        data = {}
 
     # Generate a unique ID for this report
     data["unique_id"] = str(uuid.uuid4()).replace("-", "")
@@ -304,7 +280,7 @@ def generate_report(estimator):
 def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
     env = return_jinja_env()
 
-    tpl = env.get_template("html/partials/figure.jinja")
+    tpl = env.get_template("html/maskers/partials/figure.jinja")
 
     if not isinstance(content, list):
         content = [content]
@@ -317,7 +293,7 @@ def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
 
 
 def _create_report(estimator, data):
-    template_name = _get_estimator_template(estimator)
+    template_name = ESTIMATOR_TEMPLATES.get(estimator.__class__.__name__, None)
 
     # note that some surface images are passed via data
     # for surface maps masker
