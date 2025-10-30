@@ -28,9 +28,6 @@ if SKLEARN_LT_1_6:
     def tags(
         niimg_like=True,
         surf_img=False,
-        masker=False,
-        multi_masker=False,
-        glm=False,
         **kwargs,
     ):
         """Add nilearn tags to estimator.
@@ -45,12 +42,6 @@ if SKLEARN_LT_1_6:
             X_types.append("niimg_like")
         if surf_img:
             X_types.append("surf_img")
-        if masker:
-            X_types.append("masker")
-        if multi_masker:
-            X_types.append("multi_masker")
-        if glm:
-            X_types.append("glm")
         X_types = list(set(X_types))
 
         return dict(X_types=X_types, **kwargs)
@@ -87,14 +78,6 @@ else:
         # estimator accepts SurfaceImage object
         surf_img: bool = False
 
-        # estimator that are maskers
-        # TODO: implement a masker_tags attribute
-        masker: bool = False
-        multi_masker: bool = False
-
-        # glm
-        glm: bool = False
-
 
 def get_tag(estimator: BaseEstimator, tag: str) -> bool:
     tags = estimator.__sklearn_tags__()
@@ -107,14 +90,14 @@ def get_tag(estimator: BaseEstimator, tag: str) -> bool:
 
 
 def is_masker(estimator: BaseEstimator) -> bool:
+    if SKLEARN_LT_1_6:
+        return estimator._estimator_type == "masker"
     return get_tag(estimator, "masker")
 
 
-def is_multimasker(estimator: BaseEstimator) -> bool:
-    return get_tag(estimator, "multi_masker")
-
-
 def is_glm(estimator: BaseEstimator) -> bool:
+    if SKLEARN_LT_1_6:
+        return estimator._estimator_type == "glm"
     return get_tag(estimator, "glm")
 
 
