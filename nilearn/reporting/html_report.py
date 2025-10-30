@@ -2,6 +2,7 @@
 
 import uuid
 import warnings
+from pathlib import Path
 from string import Template
 
 import pandas as pd
@@ -20,8 +21,6 @@ from nilearn.reporting._utils import (
 from nilearn.reporting.utils import (
     CSS_PATH,
     HTML_PARTIALS_PATH,
-    HTML_TEMPLATE_PATH,
-    JS_PATH,
     TEMPLATE_ROOT_PATH,
     figure_to_svg_base64,
 )
@@ -38,7 +37,7 @@ ESTIMATOR_TEMPLATES = {
     "MultiSurfaceLabelsMasker": "report_body_template_surfacemasker.html",
     "SurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
     "MultiSurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
-    "default": "report_body_template.html",
+    "default": "body_masker.jinja",
 }
 
 
@@ -156,22 +155,13 @@ def _update_template(
 
     """
     if template_name is None:
-        body_template_name = "report_body_template.html"
-    else:
-        body_template_name = template_name
-    body_template_path = HTML_TEMPLATE_PATH / body_template_name
-    if not body_template_path.exists():
-        raise FileNotFoundError(f"No template {body_template_path}")
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(body_template_path), encoding="utf-8"
-    )
+        template_name = "body_masker.jinja"
 
-    with (JS_PATH / "carousel.js").open(encoding="utf-8") as js_file:
-        js_carousel = js_file.read()
+    body_tpl_path = Path("html") / "maskers" / template_name
 
-    css_file_path = CSS_PATH / "report.css"
-    with css_file_path.open(encoding="utf-8") as css_file:
-        css = css_file.read()
+    env = return_jinja_env()
+
+    body_tpl = env.get_template(str(body_tpl_path))
 
     if "n_elements" not in data:
         data["n_elements"] = 0
@@ -181,7 +171,7 @@ def _update_template(
     if not isinstance(data["coverage"], str):
         data["coverage"] = f"{data['coverage']:0.1f}"
 
-    body = tpl.substitute(
+    body = body_tpl.render(
         title=title,
         content=content,
         overlay=overlay,
@@ -198,16 +188,10 @@ def _update_template(
             else None
         ),
         **data,
-        css=css,
-        js_carousel=js_carousel,
+        carousel=False,
         warning_messages=_render_warnings_partial(warning_messages),
         summary_html=summary_html,
     )
-
-    # revert HTML safe substitutions in CSS sections
-    body = body.replace(".pure-g &gt; div", ".pure-g > div")
-
-    env = return_jinja_env()
 
     head_tpl = env.get_template("html/head.jinja")
 
