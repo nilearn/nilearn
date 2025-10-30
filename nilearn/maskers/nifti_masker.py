@@ -16,6 +16,7 @@ from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
 from nilearn._utils.param_validation import check_params
 from nilearn.image import crop_img, resample_img
+from nilearn.maskers._mixin import _ReportingMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -30,7 +31,6 @@ from nilearn.masking import (
     compute_multi_brain_mask,
     load_mask_img,
 )
-from nilearn.reporting.mixin import ReportingMixin
 
 
 class _ExtractionFunctor:
@@ -204,7 +204,9 @@ def filter_and_mask(
 
 
 @fill_doc
-class NiftiMasker(ReportingMixin, ClassNamePrefixFeaturesOutMixin, BaseMasker):
+class NiftiMasker(
+    _ReportingMixin, ClassNamePrefixFeaturesOutMixin, BaseMasker
+):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,

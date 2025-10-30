@@ -25,6 +25,7 @@ from nilearn._utils.niimg_conversions import (
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
+from nilearn.maskers._mixin import _ReportingMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -32,7 +33,6 @@ from nilearn.maskers.base_masker import (
     mask_logger,
 )
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
-from nilearn.reporting.mixin import ReportingMixin
 
 
 def apply_mask_and_get_affinity(
@@ -227,7 +227,7 @@ class _ExtractionFunctor:
 
 @fill_doc
 class NiftiSpheresMasker(
-    ReportingMixin, ClassNamePrefixFeaturesOutMixin, BaseMasker
+    _ReportingMixin, ClassNamePrefixFeaturesOutMixin, BaseMasker
 ):
     """Class for masking of Niimg-like objects using seeds.
 

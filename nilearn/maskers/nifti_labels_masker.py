@@ -26,7 +26,7 @@ from nilearn._utils.param_validation import (
     check_reduction_strategy,
 )
 from nilearn.image import get_data, load_img, resample_img
-from nilearn.maskers._mixin import _LabelMaskerMixin
+from nilearn.maskers._mixin import _LabelMaskerMixin, _ReportingMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -34,7 +34,6 @@ from nilearn.maskers.base_masker import (
     mask_logger,
 )
 from nilearn.masking import load_mask_img
-from nilearn.reporting.mixin import ReportingMixin
 
 
 class _ExtractionFunctor:
@@ -70,7 +69,7 @@ class _ExtractionFunctor:
 
 
 @fill_doc
-class NiftiLabelsMasker(ReportingMixin, _LabelMaskerMixin, BaseMasker):
+class NiftiLabelsMasker(_ReportingMixin, _LabelMaskerMixin, BaseMasker):
     """Class for extracting data from Niimg-like objects \
        using labels of non-overlapping brain regions.
 
