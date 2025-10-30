@@ -92,13 +92,13 @@ def get_tag(estimator: BaseEstimator, tag: str) -> bool:
 def is_masker(estimator: BaseEstimator) -> bool:
     if SKLEARN_LT_1_6:
         return estimator._estimator_type == "masker"
-    return estimator.__sklearn_tags__()._estimator_type == "masker"
+    return estimator.__sklearn_tags__().estimator_type == "masker"
 
 
 def is_glm(estimator: BaseEstimator) -> bool:
     if SKLEARN_LT_1_6:
         return estimator._estimator_type == "glm"
-    return estimator.__sklearn_tags__()._estimator_type == "glm"
+    return estimator.__sklearn_tags__().estimator_type == "glm"
 
 
 def accept_niimg_input(estimator: BaseEstimator) -> bool:
