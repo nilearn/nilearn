@@ -44,15 +44,4 @@
   </p>
 </div>
 
-{% if carousel %}
-{{ displayed_runs }}
-<script>
-  {% include 'js/carousel.js' %}
-  document.addEventListener("DOMContentLoaded", function () {
-    new Carousel("{{ unique_id }}", {{ displayed_runs }}, false);
-}
-);
-</script>
-{% endif %}
-
 {% endblock %}

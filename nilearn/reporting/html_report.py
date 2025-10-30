@@ -33,8 +33,8 @@ ESTIMATOR_TEMPLATES = {
     "MultiSurfaceMasker": "body_surface_masker.jinja",
     "SurfaceLabelsMasker": "body_surface_masker.jinja",
     "MultiSurfaceLabelsMasker": "body_surface_masker.jinja",
-    "SurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
-    "MultiSurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
+    "SurfaceMapsMasker": "body_surface_maps_masker.jinja",
+    "MultiSurfaceMapsMasker": "body_surface_maps_masker.jinja",
 }
 
 
