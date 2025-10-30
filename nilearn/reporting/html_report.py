@@ -28,7 +28,7 @@ ESTIMATOR_TEMPLATES = {
     "MultiNiftiLabelsMasker": "body_nifti_labels_masker.jinja",
     "NiftiMapsMasker": "body_nifti_maps_masker.jinja",
     "MultiNiftiMapsMasker": "body_nifti_maps_masker.jinja",
-    "NiftiSpheresMasker": "report_body_template_niftispheresmasker.html",
+    "NiftiSpheresMasker": "body_nifti_spheres_masker.jinja",
     "SurfaceMasker": "body_surface_masker.jinja",
     "MultiSurfaceMasker": "body_surface_masker.jinja",
     "SurfaceLabelsMasker": "body_surface_masker.jinja",
