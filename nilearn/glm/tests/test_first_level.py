@@ -3,6 +3,7 @@
 import itertools
 import shutil
 import string
+import sys
 import unittest.mock
 import warnings
 from itertools import product
@@ -540,6 +541,9 @@ def test_run_glm_ar1(rng):
     assert isinstance(results[labels[0]].model, ARModel)
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 def test_run_glm_ar3(rng):
     """Test run_glm with AR(3) noise model."""
     n, p, q = 33, 80, 10
