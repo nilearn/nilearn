@@ -17,6 +17,11 @@ HIGHLIGHTS
  | - matplotlib -- 3.8.0
  | - scipy -- 1.9.0
  | - requests -- 2.30.0
+ |
+ | **A new dependency has been added:**
+ | - Jinja2 >= 3.1.2
+ |
+
 
 NEW
 ---
@@ -30,6 +35,8 @@ Fixes
 
 Enhancements
 ------------
+
+- :bdg-dark:`Code` Parameter ``head_tpl`` in  :class:`~reporting.HTMLReport` can now be a Jinja2 template (:gh:`5710` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` NaN values contained in the first row of the confounds loaded by :func:`~glm.first_level.first_level_from_bids` will be turned into 0 to avoid downstream errors when creating design matrices (:gh:`5739` by `Rémi Gau`_).
 

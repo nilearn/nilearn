@@ -9,11 +9,11 @@ from pathlib import Path
 from sklearn.base import BaseEstimator, ClusterMixin, TransformerMixin
 from sklearn.utils._testing import ignore_warnings
 
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers.base_masker import BaseMasker, _BaseSurfaceMasker
-from nilearn.plotting.displays import BaseAxes, BaseSlicer
 
 ROOT = str(Path(__file__).parent.parent)  # nilearn package
 
@@ -218,6 +218,10 @@ def all_displays(type_filter=None):
         List of (name, class), where ``name`` is the display class name as
         string and ``class`` is the actual type of the class.
     """
+    if not is_matplotlib_installed():
+        return []
+    from nilearn.plotting.displays import BaseAxes, BaseSlicer
+
     allowed_filters = {
         "slicer": BaseSlicer,
         "axe": BaseAxes,
