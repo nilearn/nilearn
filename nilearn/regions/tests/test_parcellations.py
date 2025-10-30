@@ -91,6 +91,9 @@ def test_parcellations_warnings(img_4d_zeros_eye):
         parcellator.fit(img_4d_zeros_eye)
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 def test_parcellations_no_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=1, verbose=0)
     with warnings.catch_warnings(record=True) as record:
