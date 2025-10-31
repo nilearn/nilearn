@@ -374,7 +374,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             plot_img,
             plot_stat_map,
         )
-        from nilearn.reporting.html_report import embed_img
 
         maps_image = self._reporting_data["maps_image"]
 
@@ -386,8 +385,10 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         if img is None:
             for component in maps_to_be_displayed:
-                display = plot_stat_map(index_img(maps_image, component))
-                embedded_images.append(embed_img(display))
+                display = plot_stat_map(
+                    index_img(maps_image, component), cmap=cm.black_blue
+                )
+                embedded_images.append(display)
                 display.close()
 
         else:
@@ -403,10 +404,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     cmap=self.cmap,
                 )
                 display.add_overlay(
-                    index_img(maps_image, component),
-                    cmap=cm.black_blue,
+                    index_img(maps_image, component), cmap=cm.black_blue
                 )
-                embedded_images.append(embed_img(display))
+                embedded_images.append(display)
                 display.close()
 
         return embedded_images

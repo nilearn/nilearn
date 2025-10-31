@@ -547,16 +547,22 @@ def _plot_surf_contours(
     _, faces = load_surf_mesh(surf_mesh)
     roi = load_surf_data(roi_map)
 
+    collections = axes.collections[0]
+
     patch_list = []
     for level, color, label in zip(levels, colors, labels, strict=False):
         roi_indices = np.where(roi == level)[0]
         faces_outside = get_faces_on_edge(faces, roi_indices)
-        axes.collections[0]._facecolor3d[faces_outside] = color
-        if axes.collections[0]._edgecolor3d.size == 0:
-            axes.collections[0].set_edgecolor(axes.collections[0]._facecolor3d)
-        axes.collections[0]._edgecolor3d[faces_outside] = color
+
+        collections._facecolor3d[faces_outside] = color
+
+        if collections._edgecolor3d.size == 0:
+            collections.set_edgecolor(collections._facecolor3d)
+        collections._edgecolor3d[faces_outside] = color
+
         if label and legend:
             patch_list.append(Patch(color=color, label=label))
+
     # plot legend only if indicated and labels provided
     if legend and np.any([lbl is not None for lbl in labels]):
         figure.legend(handles=patch_list)
