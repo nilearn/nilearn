@@ -6,13 +6,13 @@ from pathlib import Path
 import numpy as np
 from nibabel.onetime import auto_attr
 from sklearn.base import BaseEstimator
+from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.externals import tempita
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -428,7 +428,7 @@ def _generate_statistical_maps(
         fields["extension"] = "json"
         tmp["metadata"] = create_bids_filename(fields, entities_to_include)
 
-        statistical_maps[contrast_name] = tempita.bunch(**tmp)
+        statistical_maps[contrast_name] = Bunch(**tmp)
 
     return statistical_maps
 
@@ -477,7 +477,7 @@ def _generate_model_level_mapping(
             fields["entities"]["stat"] = stat_label
             tmp[key] = create_bids_filename(fields, entities_to_include)
 
-        model_level_mapping[i_run] = tempita.bunch(**tmp)
+        model_level_mapping[i_run] = Bunch(**tmp)
 
     return model_level_mapping
 
@@ -497,7 +497,7 @@ def _generate_design_matrices_dict(
     if generate_bids_name:
         fields["prefix"] = None  # type: ignore[assignment]
 
-    design_matrices_dict = tempita.bunch()
+    design_matrices_dict = Bunch()
 
     for i_run, _ in enumerate(design_matrices):
         if _is_flm_with_single_run(model):
@@ -520,7 +520,7 @@ def _generate_design_matrices_dict(
                     fields, entities_to_include
                 )
 
-        design_matrices_dict[i_run] = tempita.bunch(**tmp)
+        design_matrices_dict[i_run] = Bunch(**tmp)
 
     return design_matrices_dict
 
@@ -547,7 +547,7 @@ def _generate_contrasts_dict(
     if generate_bids_name:
         fields["prefix"] = None
 
-    contrasts_dict = tempita.bunch()
+    contrasts_dict = Bunch()
 
     for i_run, _ in enumerate(design_matrices):
         if _is_flm_with_single_run(model):
@@ -566,7 +566,7 @@ def _generate_contrasts_dict(
                 fields, entities_to_include
             )
 
-        contrasts_dict[i_run] = tempita.bunch(**tmp)
+        contrasts_dict[i_run] = Bunch(**tmp)
 
     return contrasts_dict
 

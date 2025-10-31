@@ -121,7 +121,7 @@ def n_cols_design_matrix():
 
 
 @pytest.fixture
-def two_runs_model(n_cols_design_matrix):
+def two_runs_model(n_cols_design_matrix) -> FirstLevelModel:
     """Create two runs of data."""
     shapes, rk = [(7, 8, 9, 10), (7, 8, 9, 10)], n_cols_design_matrix
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -362,9 +362,9 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
 
     with (tmp_path / "report.html").open("r") as f:
         content = f.read()
-    assert "BBB-AAA" in content
-    for file in EXPECTED_FILENAMES:
-        assert f'src="{file}"' in content
+        assert "BBB-AAA" in content
+        for file in EXPECTED_FILENAMES:
+            assert f'src="{file}"' in content
 
     report = model.generate_report()
 

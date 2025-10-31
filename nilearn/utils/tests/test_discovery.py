@@ -39,7 +39,7 @@ def test_all_functions(
     """Check number of functions in public API."""
     fn = all_functions()
     print(fn)
-    assert len(fn) == 170
+    assert len(fn) == 169
 
 
 @pytest.mark.parametrize(
