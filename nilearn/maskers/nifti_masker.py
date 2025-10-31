@@ -16,6 +16,7 @@ from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
 from nilearn._utils.param_validation import check_params
 from nilearn.image import crop_img, resample_img
+from nilearn.maskers._mixin import _ReportingMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -203,7 +204,9 @@ def filter_and_mask(
 
 
 @fill_doc
-class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
+class NiftiMasker(
+    _ReportingMixin, ClassNamePrefixFeaturesOutMixin, BaseMasker
+):
     """Applying a mask to extract time-series from Niimg-like objects.
 
     NiftiMasker is useful when preprocessing (detrending, standardization,
@@ -369,13 +372,19 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-    def generate_report(self):
-        """Generate a report of the masker."""
-        from nilearn.reporting.html_report import generate_report
+        self._report_content = {
+            "description": (
+                "This report shows the input Nifti image overlaid "
+                "with the outlines of the mask (in green). We "
+                "recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "n_elements": 0,
+            "coverage": 0,
+            "warning_message": None,
+        }
 
-        return generate_report(self)
-
-    def _reporting(self):
+    def _get_displays(self):
         """Load displays needed for report.
 
         Returns
@@ -384,11 +393,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        # Handle the edge case where this function is
-        # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
-            return [None]
-
         img = self._reporting_data["images"]
         mask = self._reporting_data["mask"]
 
@@ -495,8 +499,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         del y
         check_params(self.__dict__)
-
-        self._init_report_content()
 
         self._overlay_text = (
             "\n To see the input Nifti image before resampling, "
@@ -618,28 +620,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
-
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-        if not hasattr(self, "_report_content"):
-            self._report_content = {
-                "description": (
-                    "This report shows the input Nifti image overlaid "
-                    "with the outlines of the mask (in green). We "
-                    "recommend to inspect the report for the overlap "
-                    "between the mask and its input image. "
-                ),
-                "warning_message": None,
-                "n_elements": 0,
-                "coverage": 0,
-            }
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = None
 
     @fill_doc
     def transform_single_imgs(

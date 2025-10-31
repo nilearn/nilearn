@@ -3710,7 +3710,7 @@ def check_masker_generate_report_false(estimator):
 
     estimator.fit(input_img)
 
-    assert estimator._reporting_data is None
+    assert estimator.has_report_data() is False
     assert estimator._reporting() == [None]
     with pytest.warns(
         UserWarning,
