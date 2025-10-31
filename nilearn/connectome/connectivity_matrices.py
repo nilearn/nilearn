@@ -13,7 +13,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import signal
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
@@ -411,6 +411,8 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             This parameter will be changed to "zscore_sample"
             in version 0.14 and removed in version 0.15.
 
+    %(verbose0)s
+
     Attributes
     ----------
     cov_estimator_ : estimator object, default=None
@@ -445,12 +447,14 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         vectorize=False,
         discard_diagonal=False,
         standardize=True,
+        verbose=0,
     ):
         self.cov_estimator = cov_estimator
         self.kind = kind
         self.vectorize = vectorize
         self.discard_diagonal = discard_diagonal
         self.standardize = standardize
+        self.verbose = verbose
 
     def _more_tags(self):
         """Return estimator tags.
@@ -607,6 +611,8 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 self.mean_ = self.mean_ + self.mean_.T
                 self.mean_ *= 0.5
                 self.whitening_ = None
+
+                log("Finished fit", verbose=self.verbose)
 
         # Compute the vector we return on transform
         if do_transform:

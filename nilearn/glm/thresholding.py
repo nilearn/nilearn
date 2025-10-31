@@ -177,11 +177,6 @@ def cluster_level_inference(
     .. footbibliography::
 
     """
-    if verbose is False:
-        verbose = 0
-    if verbose is True:
-        verbose = 1
-
     parameters = dict(**inspect.signature(cluster_level_inference).parameters)
     warn_default_threshold(threshold, parameters["threshold"].default, 3.0)
 

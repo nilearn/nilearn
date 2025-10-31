@@ -33,6 +33,7 @@ nifti_masker = NiftiMasker(
     memory="nilearn_cache",
     memory_level=1,
     smoothing_fwhm=8,
+    verbose=1,
 )
 nifti_masker.fit(func_filename)
 mask_img = nifti_masker.mask_img_

@@ -232,6 +232,7 @@ classifier = LogisticRegressionCV(
     solver="liblinear",
     Cs=np.geomspace(1e-3, 1e4, 8),
     refit=True,
+    verbose=1,
 )
 
 # %%
@@ -299,6 +300,7 @@ decoder = Decoder(
     cv=logo_cv,
     screening_percentile=screening_percentile,
     scoring="roc_auc_ovr",
+    verbose=1,
 )
 decoder.fit(fmri_img, y, groups=run)
 scores_nilearn = np.concatenate(list(decoder.cv_scores_.values()))
