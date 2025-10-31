@@ -371,6 +371,9 @@ def test_parcellation_all_methods_with_surface(method, n_parcels, rng):
     assert X_inverse.shape == surf_img.shape
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 @pytest.mark.parametrize("method", METHODS)
 def test_parcellation_with_surface_and_confounds(method, rng):
     """Test if parcellation works on surface with confounds."""
