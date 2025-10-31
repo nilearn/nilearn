@@ -2139,7 +2139,9 @@ def compute_adjacency_matrix(mesh: InMemoryMesh, dtype=None):
     return csr_matrix((ee, (uv, vu)), shape=(n, n))
 
 
-def find_surface_clusters(mesh, mask) -> tuple[pd.DataFrame, np.ndarray]:
+def find_surface_clusters(
+    mesh, mask, offset: int = 1
+) -> tuple[pd.DataFrame, np.ndarray]:
     """Find clusters of truthy vertices on a surface mesh.
 
     Parameters
@@ -2149,6 +2151,9 @@ def find_surface_clusters(mesh, mask) -> tuple[pd.DataFrame, np.ndarray]:
 
     mask : (n_vertices,) array_like of bool
         Boolean mask, True where vertex is part of a cluster.
+
+    offset: int, default=1
+        Base value to use to index the different clusters.
 
     Returns
     -------
@@ -2181,7 +2186,7 @@ def find_surface_clusters(mesh, mask) -> tuple[pd.DataFrame, np.ndarray]:
 
     # full label array (0 = background)
     labels = np.zeros(mesh.n_vertices, dtype=int)
-    labels[mask] = labels_sub + 1
+    labels[mask] = labels_sub + offset
 
     unique, counts = np.unique(labels[labels > 0], return_counts=True)
     clusters = pd.DataFrame(
