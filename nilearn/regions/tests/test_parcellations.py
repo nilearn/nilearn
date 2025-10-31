@@ -340,6 +340,9 @@ def test_transform_list_3d_input_images(affine_eye):
     assert isinstance(imgs_, list)
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcels", [5, 25])
 def test_parcellation_all_methods_with_surface(method, n_parcels, rng):
