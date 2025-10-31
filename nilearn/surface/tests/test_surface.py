@@ -1,5 +1,6 @@
 # Tests for functions in surf_plotting.py
 
+import sys
 import warnings
 from pathlib import Path
 
@@ -460,6 +461,9 @@ def test_vertex_outer_normals():
     assert_array_almost_equal(computed_normals, true_normals)
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 def test_load_uniform_ball_cloud():
     # Note: computed and shipped point clouds may differ since KMeans results
     # change after

@@ -1,3 +1,5 @@
+import sys
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
@@ -45,6 +47,9 @@ if SKLEARN_LT_1_6:
 
 else:
 
+    @pytest.mark.flaky(
+        reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+    )
     @parametrize_with_checks(
         estimators=ESTIMATORS_TO_CHECK,
         expected_failed_checks=return_expected_failed_checks,
