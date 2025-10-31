@@ -410,7 +410,7 @@ def report_nifti_maps_masker(build_type):
     )
     masker.fit(data.func[0])
 
-    report = masker.generate_report(displayed_maps=[2, 6, 7, 16, 21])
+    report = masker.generate_report(displayed_maps=[2, 6, 7])
     report.save_as_html(REPORTS_DIR / "nifti_maps_masker.html")
 
     return report
@@ -732,10 +732,10 @@ def report_surface_maps_masker(build_type):
     masker = SurfaceMapsMasker(surf_atlas)
     masker.fit_transform(surf_img)
     # generate report with plotly engine
-    report_plotly = masker.generate_report(engine="plotly")
+    report_plotly = masker.generate_report(engine="plotly", displayed_maps=3)
     report_plotly.save_as_html(REPORTS_DIR / "surface_maps_masker_plotly.html")
     # now with matplotlib
-    report_mpl = masker.generate_report(engine="matplotlib")
+    report_mpl = masker.generate_report(engine="matplotlib", displayed_maps=3)
     report_mpl.save_as_html(
         REPORTS_DIR / "surface_maps_masker_matplotlib.html"
     )

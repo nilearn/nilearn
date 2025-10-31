@@ -21,7 +21,6 @@ ROOT = str(Path(__file__).parent.parent)  # nilearn package
 _MODULE_TO_IGNORE = {
     "_utils",
     "conftest",
-    "externals",
     "input_data",
     "tests",
 }

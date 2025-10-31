@@ -228,7 +228,7 @@ warn_unreachable = true
 
 [[tool.mypy.overrides]]
 ignore_errors = true
-module = ["nilearn.externals.*", "nilearn._version"]
+module = ["nilearn._version"]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true

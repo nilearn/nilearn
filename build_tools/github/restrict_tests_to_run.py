@@ -32,7 +32,7 @@ MID_LAYER = [
     "nilearn/regions",
     "nilearn/surface",
 ]
-IGNORE = ["input_data", "__pycache__", "externals", "tests"]
+IGNORE = ["input_data", "__pycache__", "tests"]
 
 
 def root_folder():
