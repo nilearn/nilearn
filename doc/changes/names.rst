@@ -221,6 +221,8 @@
 
 .. _Michelle Wang: https://michellewang.github.io
 
+.. _Milton Camacho: https://github.com/miltoncamacho
+
 .. _Mohammad Torabi: https://github.com/mtorabi59
 
 .. _Moritz Boos: https://github.com/mjboos
