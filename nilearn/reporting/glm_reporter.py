@@ -48,10 +48,11 @@ from nilearn.reporting.get_clusters_table import (
 )
 from nilearn.reporting.html_report import (
     HTMLReport,
+    assemble_report,
     is_notebook,
     return_jinja_env,
 )
-from nilearn.reporting.utils import CSS_PATH, figure_to_png_base64
+from nilearn.reporting.utils import figure_to_png_base64
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
@@ -436,22 +437,7 @@ def make_glm_report(
         **mask_info,
     )
 
-    head_tpl = env.get_template("html/head.jinja")
-
-    head_css_file_path = CSS_PATH / "head.css"
-    with head_css_file_path.open(encoding="utf-8") as head_css_file:
-        head_css = head_css_file.read()
-
-    report = HTMLReport(
-        body=body,
-        head_tpl=head_tpl,
-        head_values={
-            "head_css": head_css,
-            "version": __version__,
-            "page_title": title,
-            "display_footer": "style='display: none'" if is_notebook() else "",
-        },
-    )
+    report = assemble_report(body, title)
 
     report.resize(*report_dims)
 

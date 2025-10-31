@@ -38,6 +38,67 @@ ESTIMATOR_TEMPLATES = {
 }
 
 
+class HTMLReport(HTMLDocument):
+    """A report written as HTML.
+
+    Methods such as ``save_as_html``, or ``open_in_browser``
+    are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
+
+    Parameters
+    ----------
+    head_tpl : str.Template or Jinja Template
+        This is meant for display as a full page, like writing on disk.
+        This is the Template object used to generate the HTML head
+        section of the report. The template should be filled with:
+
+            - title: The title of the HTML page.
+            - body: The full body of the HTML page. Provided through
+                the ``body`` input.
+
+    body : :obj:`str`
+        This parameter is used for embedding in the provided
+        ``head_tpl`` template. It contains the full body of the
+        HTML page.
+
+    head_values : :obj:`dict`, default=None
+        Additional substitutions in ``head_tpl``.
+        if ``None`` is passed, defaults to ``{}``
+
+        .. note::
+            This can be used to provide additional values
+            with custom templates.
+
+    """
+
+    def __init__(self, head_tpl, body, head_values=None):
+        """Construct the ``HTMLReport`` class."""
+        if head_values is None:
+            head_values = {}
+
+        if isinstance(head_tpl, Template):
+            html = head_tpl.safe_substitute(body=body, **head_values)
+            self.head_tpl = head_tpl.safe_substitute(**head_values)
+        else:
+            # in this case we are working with jinja template
+            html = head_tpl.render(body=body, **head_values)
+            self.head_tpl = head_tpl.render(**head_values)
+
+        self.body = body
+
+        super().__init__(html)
+
+    def _repr_html_(self):
+        """Return body of the report.
+
+        Method used by the Jupyter notebook.
+        Users normally won't call this method explicitly.
+        """
+        return self.body
+
+    def __str__(self):
+        return self.body
+
+
 def return_jinja_env() -> Environment:
     """Set up the jinja Environment."""
     return Environment(
@@ -80,7 +141,7 @@ def _update_template(
     summary_html=None,
     template_name=None,
     warning_messages=None,
-):
+) -> HTMLReport:
     """Populate a report with content.
 
     Parameters
@@ -168,6 +229,13 @@ def _update_template(
         summary_html=summary_html,
     )
 
+    return assemble_report(body, f"{title} report")
+
+
+def assemble_report(body: str, title: str) -> HTMLReport:
+    """Put together head and body of report."""
+    env = return_jinja_env()
+
     head_tpl = env.get_template("html/head.jinja")
 
     head_css_file_path = CSS_PATH / "head.css"
@@ -180,7 +248,7 @@ def _update_template(
         head_values={
             "head_css": head_css,
             "version": __version__,
-            "page_title": f"{title} report",
+            "page_title": title,
             "display_footer": "style='display: none'" if is_notebook() else "",
         },
     )
@@ -204,7 +272,7 @@ def _define_overlay(estimator):
     return None, displays
 
 
-def generate_report(estimator):
+def generate_report(estimator) -> list[None] | HTMLReport:
     """Generate a report for Nilearn objects.
 
     Reports are useful to visualize steps in a processing pipeline.
@@ -292,7 +360,7 @@ def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
     )
 
 
-def _create_report(estimator, data):
+def _create_report(estimator, data) -> HTMLReport:
     template_name = ESTIMATOR_TEMPLATES.get(estimator.__class__.__name__, None)
 
     # note that some surface images are passed via data
@@ -304,7 +372,7 @@ def _create_report(estimator, data):
         else embed_img(image)
     )
 
-    summary_html = None
+    summary_html: None | dict | str = None
     # only convert summary to html table if summary exists
     if "summary" in data and data["summary"] is not None:
         # convert region summary to html table
@@ -324,9 +392,8 @@ def _create_report(estimator, data):
                 )
         # otherwise we just have one table
         elif "Nifti" in estimator.__class__.__name__:
-            summary_html = pd.DataFrame.from_dict(data["summary"])
             summary_html = dataframe_to_html(
-                summary_html,
+                pd.DataFrame.from_dict(data["summary"]),
                 precision=2,
                 header=True,
                 index=False,
@@ -365,64 +432,3 @@ def is_notebook() -> bool:
         return shell == "ZMQInteractiveShell"
     except NameError:
         return False  # Probably standard Python interpreter
-
-
-class HTMLReport(HTMLDocument):
-    """A report written as HTML.
-
-    Methods such as ``save_as_html``, or ``open_in_browser``
-    are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
-
-    Parameters
-    ----------
-    head_tpl : str.Template or Jinja Template
-        This is meant for display as a full page, like writing on disk.
-        This is the Template object used to generate the HTML head
-        section of the report. The template should be filled with:
-
-            - title: The title of the HTML page.
-            - body: The full body of the HTML page. Provided through
-                the ``body`` input.
-
-    body : :obj:`str`
-        This parameter is used for embedding in the provided
-        ``head_tpl`` template. It contains the full body of the
-        HTML page.
-
-    head_values : :obj:`dict`, default=None
-        Additional substitutions in ``head_tpl``.
-        if ``None`` is passed, defaults to ``{}``
-
-        .. note::
-            This can be used to provide additional values
-            with custom templates.
-
-    """
-
-    def __init__(self, head_tpl, body, head_values=None):
-        """Construct the ``HTMLReport`` class."""
-        if head_values is None:
-            head_values = {}
-
-        if isinstance(head_tpl, Template):
-            html = head_tpl.safe_substitute(body=body, **head_values)
-            self.head_tpl = head_tpl.safe_substitute(**head_values)
-        else:
-            # in this case we are working with jinja template
-            html = head_tpl.render(body=body, **head_values)
-            self.head_tpl = head_tpl.render(**head_values)
-
-        self.body = body
-
-        super().__init__(html)
-
-    def _repr_html_(self):
-        """Return body of the report.
-
-        Method used by the Jupyter notebook.
-        Users normally won't call this method explicitly.
-        """
-        return self.body
-
-    def __str__(self):
-        return self.body
