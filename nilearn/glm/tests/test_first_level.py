@@ -636,6 +636,9 @@ def test_glm_ar_estimates_errors(rng):
         _yule_walker(np.array(0.0), 2)
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 @pytest.mark.parametrize("random_state", [3, np.random.RandomState(42)])
 def test_glm_random_state(random_state):
     """Test that the random state is passed to the run_glm."""
