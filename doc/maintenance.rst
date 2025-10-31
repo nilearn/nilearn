@@ -282,7 +282,7 @@ but care should be taken that at least the following have not been affected:
 - ...
 
 Update links
-""""""""""""
+............
 
 Update the links for the new version of the documentation in ``doc/versions.rst``.
 For example:
@@ -296,7 +296,7 @@ For example:
     * `Nilearn x.y.z documentation <http://nilearn.github.io/x.y.z/>`_
 
 Update atlas figures
-""""""""""""""""""""
+....................
 
 The :ref:`datasets_ref <dataset API page>` has tables with figures listing all the atlases
 that Nilearn provides.
