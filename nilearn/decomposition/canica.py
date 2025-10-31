@@ -140,6 +140,7 @@ class CanICA(_MultiPCA):
         memory_level=0,
         n_jobs=1,
         verbose=0,
+        estimator_args=None,
     ):
         super().__init__(
             n_components=n_components,
@@ -165,11 +166,15 @@ class CanICA(_MultiPCA):
 
         self.threshold = threshold
         self.n_init = n_init
+        self.estimator_args = estimator_args
 
     def _unmix_components(self, components):
         """Core function of CanICA than rotate components_ to maximize \
         independence.
         """
+        estimator_args = (
+            {} if self.estimator_args is None else self.estimator_args
+        )
         random_state = check_random_state(self.random_state)
 
         seeds = random_state.randint(np.iinfo(np.int32).max, size=self.n_init)
@@ -180,6 +185,7 @@ class CanICA(_MultiPCA):
                 whiten="arbitrary-variance",
                 fun="cube",
                 random_state=seed,
+                **estimator_args,
             )
             for seed in seeds
         )
