@@ -25,6 +25,8 @@ class BaseGLM(CacheMixin, BaseEstimator):
     for the :term:`General Linear Model<GLM>`.
     """
 
+    _estimator_type = "glm"  # TODO (sklearn >= 1.8) remove
+
     def _is_volume_glm(self):
         """Return if model is run on volume data or not."""
         return not (
@@ -105,7 +107,8 @@ class BaseGLM(CacheMixin, BaseEstimator):
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(surf_img=True, niimg_like=True, glm=True)
+        tags.input_tags = InputTags(surf_img=True, niimg_like=True)
+        tags.estimator_type = "glm"
         return tags
 
     # @auto_attr store the value as an object attribute after initial call
