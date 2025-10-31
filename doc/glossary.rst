@@ -130,7 +130,7 @@ If you wish to add a missing term, please
         volume-based statistics, etc.
 
     Tedana
-        `Tedana`_ is a multi-echo :term:`fMRI` data denoising pipeline.
+        `Tedana` is a multi-echo :term:`fMRI` data denoising pipeline.
         `Tedana` originally came about as a part of the ME-ICA pipeline,
         although it has since diverged. An important distinction is that
         the ME-ICA pipeline was written for python v2.7,
