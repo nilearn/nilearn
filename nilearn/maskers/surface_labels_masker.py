@@ -481,9 +481,15 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         return imgs
 
-    def generate_report(self):
+    def generate_report(self, engine="matplotlib"):
         """Generate a report."""
         from nilearn.reporting.html_report import generate_report
+
+        engine = self._validate_reporting_engine(engine)
+
+        if hasattr(self, "_report_content"):
+            self._report_content["displayed_maps"] = [1]
+            self._report_content["engine"] = engine
 
         return generate_report(self)
 
@@ -497,8 +503,6 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         """
         import matplotlib.pyplot as plt
 
-        from nilearn.reporting.utils import figure_to_png_base64
-
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
         if self._reporting_data is None:
@@ -506,11 +510,14 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         fig = self._create_figure_for_report()
 
-        plt.close()
+        embeded_images = []
+        if self._report_content["engine"] == "plotly":
+            embeded_images.append(fig)
+        elif self._report_content["engine"] == "matplotlib":
+            embeded_images.append(fig)
+            plt.close()
 
-        init_display = figure_to_png_base64(fig)
-
-        return [init_display]
+        return embeded_images
 
     def _create_figure_for_report(self):
         """Create a figure of the contours of label image.

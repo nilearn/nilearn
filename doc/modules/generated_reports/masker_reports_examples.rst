@@ -81,6 +81,9 @@ Surface masker
 .. raw:: html
    :file: surface_masker_with_mask.html
 
+.. raw:: html
+   :file: surface_masker_with_mask_plotly.html
+
 Surface labels masker
 ---------------------
 
@@ -88,7 +91,13 @@ Surface labels masker
    :file: surface_label_masker_unfitted.html
 
 .. raw:: html
+   :file: surface_label_masker_unfitted_plotly.html
+
+.. raw:: html
    :file: surface_label_masker.html
+
+.. raw:: html
+   :file: surface_label_masker_plotly.html
 
 Surface maps masker
 -------------------
