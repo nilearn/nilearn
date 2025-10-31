@@ -103,6 +103,7 @@ def test_parcellations_no_int64_warnings(img_4d_zeros_eye):
             assert "image contains 64-bit ints" not in str(r.message)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
 def test_parcellations_fit_on_multi_nifti_images(
     method, test_image, affine_eye
@@ -123,7 +124,7 @@ def test_parcellations_fit_on_multi_nifti_images(
     parcellator.fit(fmri_imgs)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_single_nifti_image(
@@ -145,7 +146,7 @@ def test_parcellations_transform_single_nifti_image(
     assert signals.shape == (test_image_2.shape[3], n_parcel)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("verbose", [True, False, -1, 0, 1, 2])
 def test_parcellations_transform_verbose(test_image_2, verbose):
     """Test verbose mostly for coverage purpose."""
@@ -154,7 +155,7 @@ def test_parcellations_transform_verbose(test_image_2, verbose):
     parcellator.transform(test_image_2)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_multi_nifti_images(
@@ -214,7 +215,7 @@ def test_check_parameters_transform(test_image_2, rng):
         _check_parameters_transform(fmri_imgs, not_match_confounds_list)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_parcellations_transform_with_multi_confounds_multi_images(
@@ -234,7 +235,7 @@ def test_parcellations_transform_with_multi_confounds_multi_images(
     assert signals[0].shape == (10, n_parcel)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_fit_transform(method, n_parcel, test_image_2):
@@ -249,7 +250,7 @@ def test_fit_transform(method, n_parcel, test_image_2):
     assert parcellator.masker_ is not None
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_fit_transform_with_confounds(method, n_parcel, test_image_2, rng):
@@ -264,7 +265,7 @@ def test_fit_transform_with_confounds(method, n_parcel, test_image_2, rng):
     assert signals[0].shape == (10, n_parcel)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5])
 def test_inverse_transform_single_nifti_image(method, n_parcel, test_image_2):
@@ -310,7 +311,7 @@ def test_transform_single_3d_input_images(affine_eye):
     assert X.shape == (1, 20)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_transform_list_3d_input_images(affine_eye):
     """Test fit_transform list 3D image."""
     data = np.ones((10, 11, 12))

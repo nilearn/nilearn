@@ -5,6 +5,7 @@ import warnings
 from string import Template
 
 import pandas as pd
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
@@ -21,6 +22,7 @@ from nilearn.reporting.utils import (
     HTML_PARTIALS_PATH,
     HTML_TEMPLATE_PATH,
     JS_PATH,
+    TEMPLATE_ROOT_PATH,
     figure_to_svg_base64,
 )
 
@@ -33,6 +35,7 @@ ESTIMATOR_TEMPLATES = {
     "SurfaceMasker": "report_body_template_surfacemasker.html",
     "MultiSurfaceMasker": "report_body_template_surfacemasker.html",
     "SurfaceLabelsMasker": "report_body_template_surfacemasker.html",
+    "MultiSurfaceLabelsMasker": "report_body_template_surfacemasker.html",
     "SurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
     "MultiSurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
     "default": "report_body_template.html",
@@ -59,6 +62,16 @@ def _get_estimator_template(estimator):
         return ESTIMATOR_TEMPLATES[estimator.__class__.__name__]
     else:
         return ESTIMATOR_TEMPLATES["default"]
+
+
+def return_jinja_env() -> Environment:
+    """Set up the jinja Environment."""
+    return Environment(
+        loader=FileSystemLoader(TEMPLATE_ROOT_PATH),
+        autoescape=select_autoescape(),
+        lstrip_blocks=True,
+        trim_blocks=True,
+    )
 
 
 def embed_img(display):
@@ -156,7 +169,7 @@ def _update_template(
     with (JS_PATH / "carousel.js").open(encoding="utf-8") as js_file:
         js_carousel = js_file.read()
 
-    css_file_path = CSS_PATH / "masker_report.css"
+    css_file_path = CSS_PATH / "report.css"
     with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
 
@@ -321,13 +334,10 @@ def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
     )
 
 
-def _render_warnings_partial(warning_messages):
-    if not warning_messages:
-        return ""
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(HTML_PARTIALS_PATH / "warnings.html"), encoding="utf-8"
-    )
-    return tpl.substitute(warning_messages=warning_messages)
+def _render_warnings_partial(warning_messages) -> str:
+    env = return_jinja_env()
+    tpl = env.get_template("html/partials/warnings.jinja")
+    return tpl.render(warning_messages=warning_messages)
 
 
 def _create_report(estimator, data):
@@ -413,8 +423,8 @@ class HTMLReport(HTMLDocument):
 
     Parameters
     ----------
-    head_tpl : Template
-        This is meant for display as a full page, eg writing on disk.
+    head_tpl : str.Template or Jinja Template
+        This is meant for display as a full page, like writing on disk.
         This is the Template object used to generate the HTML head
         section of the report. The template should be filled with:
 
@@ -441,10 +451,18 @@ class HTMLReport(HTMLDocument):
         """Construct the ``HTMLReport`` class."""
         if head_values is None:
             head_values = {}
-        html = head_tpl.safe_substitute(body=body, **head_values)
-        super().__init__(html)
-        self.head_tpl = head_tpl
+
+        if isinstance(head_tpl, Template):
+            html = head_tpl.safe_substitute(body=body, **head_values)
+            self.head_tpl = head_tpl.safe_substitute(**head_values)
+        else:
+            # in this case we are working with jinja template
+            html = head_tpl.render(body=body, **head_values)
+            self.head_tpl = head_tpl.render(**head_values)
+
         self.body = body
+
+        super().__init__(html)
 
     def _repr_html_(self):
         """Return body of the report.

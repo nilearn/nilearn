@@ -5,6 +5,7 @@ See the  maintenance page of our documentation for more information
 https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-for-plotting-tests
 """
 
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
 import pytest
@@ -166,7 +167,7 @@ def test_plot_carpet_default_params(img_4d_mni, img_3d_ones_mni):
     return plot_carpet(img_4d_mni, mask_img=img_3d_ones_mni)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 def test_plot_prob_atlas_default_params(img_3d_mni, img_4d_mni):
     """Smoke-test for plot_prob_atlas with default arguments."""
@@ -272,6 +273,7 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
 
 
 @pytest.mark.mpl_image_compare(tolerance=5)
+@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize(
     "view",
@@ -340,6 +342,7 @@ def test_plot_surf_surface_plotly(plot_func, view, hemi):
 
 
 @pytest.mark.mpl_image_compare(tolerance=5)
+@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])

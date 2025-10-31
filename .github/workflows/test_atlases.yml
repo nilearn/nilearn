@@ -5,10 +5,23 @@
 name: test atlases
 
 on:
-    push:
-        branches:
-        -   main
-    workflow_dispatch:  # This enables manual triggering from GitHub UI
+    schedule:
+        # Uses the cron schedule for github actions
+        # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+        # Run every Monday at midnight UTC
+        #     ┌───────────── minute (0 - 59)
+        #     │ ┌───────────── hour (0 - 23)
+        #     │ │ ┌───────────── day of the month (1 - 31)
+        #     │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+        #     │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     * * * * *
+    -   cron: 0 0 * * 1
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
+    workflow_dispatch:
 
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
@@ -20,20 +33,18 @@ env:
 
 jobs:
     test_atlases:
-
         if: github.repository == 'nilearn/nilearn'
 
         runs-on: ubuntu-latest
 
         steps:
-
         -   name: Checkout nilearn
             uses: actions/checkout@v5
 
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
-                python-version: 3.13
+                python-version: 3.14
 
         -   name: Install dependencies for building Nilearn
             run: python -m pip install --upgrade pip setuptools rich templateflow
@@ -42,11 +53,30 @@ jobs:
             run: pip install .[plotting]
 
         -   name: Test atlases
+            id: test_atlas
+            continue-on-error: true
             run: python maint_tools/check_atlas.py
 
         -   name: Upload masker reports
             if: success() || failure()
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: label_masker_reports
                 path: maint_tools/tmp
+
+        -   name: Create issue
+            if: ${{ steps.test_atlas.outcome != 'success' }}
+            uses: JasonEtco/create-an-issue@v2.9.2
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run_id: ${{ github.run_id }}
+                repository: ${{ github.repository }}
+                workflow_name: TEST ATLAS
+            with:
+                filename: .github/workflow_failure.md
+                update_existing: true
+                search_existing: open
+
+        -   name: Return failure
+            if: ${{ steps.test_atlas.outcome != 'success' }}
+            run: exit 1

@@ -112,7 +112,7 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
     """Test nilearn.plotting.surface.surf_plotting.plot_surf function with
     available engine backends.
@@ -1111,6 +1111,24 @@ def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni, kwargs):
     """
     plot_img_on_surf(
         img_3d_mni, hemispheres=["right"], views=["lateral"], **kwargs
+    )
+
+
+@pytest.mark.parametrize(
+    "tick_format",
+    ["%i", "%.2g", "%.1f"],
+)
+def test_plot_img_on_surf_colorbar_tick_format(
+    matplotlib_pyplot, img_3d_mni, tick_format
+):
+    """Smoke test for nilearn.plotting.surface.plot_img_on_surf for
+    different tick_formats.
+    """
+    plot_img_on_surf(
+        img_3d_mni,
+        hemispheres=["right"],
+        views=["lateral"],
+        cbar_tick_format=tick_format,
     )
 
 
