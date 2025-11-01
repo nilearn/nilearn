@@ -1,0 +1,37 @@
+{% extends "html/body_base.jinja" %}
+
+
+{% block report %}
+
+<div class="report">
+
+
+  <section id="mask-{{ unique_id }}">
+    <h2>Mask</h2>
+    {% if mask_plot %}
+    <div class="scroll-y">
+      <img
+        class="pure-img"
+        src="data:image/png;base64,{{ mask_plot }}"
+        alt="Mask image"
+        title="Mask image"
+        style="min-width: 600px"
+      />
+    </div>
+    {% else %}
+    <p>No mask was provided.</p>
+    {% endif %}
+
+  </section>
+
+  <section id="about-{{ unique_id }}" style="text-align: left">
+    <h2>About</h2>
+    <ul>
+      <li>Date preprocessed: <time>{{ date }}</time></li>
+    </ul>
+  </section>
+
+</div>
+
+
+{% endblock %}

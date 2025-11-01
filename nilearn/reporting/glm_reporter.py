@@ -308,7 +308,7 @@ def make_glm_report(
         mask_plot = _mask_to_plot(model, bg_img, cut_coords)
 
         # We try to rely on the content of glm object only
-        # by reading images from disk rarther than recomputing them
+        # by reading images from disk rather than recomputing them
         mask_info = {
             k: v
             for k, v in model.masker_._report_content.items()
@@ -544,7 +544,9 @@ def _mask_to_plot(model, bg_img, cut_coords):
         plt.close()
         return mask_plot
 
-    if isinstance(model.mask_img, NiftiMasker):
+    if (
+        hasattr(model, "mask_img") and isinstance(model.mask_img, NiftiMasker)
+    ) or (hasattr(model, "mask") and isinstance(model.mask, NiftiMasker)):
         mask_img = model.masker_.mask_img_
     else:
         try:

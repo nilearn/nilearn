@@ -51,7 +51,11 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
+from nilearn.decoding._mixin import (
+    _ClassifierMixin,
+    _RegressorMixin,
+    _ReportMixin,
+)
 from nilearn.decoding._utils import check_feature_screening
 from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
@@ -446,7 +450,7 @@ def _parallel_fit(
 
 
 @fill_doc
-class _BaseDecoder(CacheMixin, BaseEstimator):
+class _BaseDecoder(_ReportMixin, CacheMixin, BaseEstimator):
     """A wrapper for popular classification/regression strategies in \
     neuroimaging.
 
