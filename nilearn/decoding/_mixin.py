@@ -8,9 +8,7 @@ from sklearn.preprocessing import LabelBinarizer
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.param_validation import (
-    check_params,
-)
+from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._version import __version__
 from nilearn.maskers import SurfaceMasker
