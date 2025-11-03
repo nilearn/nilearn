@@ -2873,8 +2873,8 @@ def check_masker_shelving(estimator):
 
         assert_array_equal(epi_shelved, epi)
 
-        del epi_shelved
         masker_shelved.memory.clear(warn=False)
+        del epi_shelved
 
 
 @ignore_warnings()
@@ -3367,8 +3367,8 @@ def check_multi_nifti_masker_shelving(estimator):
             e_shelved = e_shelved.get()
             assert_array_equal(e_shelved, e)
 
-        del epis_shelved
         masker_shelved.memory.clear(warn=False)
+        del epis_shelved
 
 
 @ignore_warnings()
