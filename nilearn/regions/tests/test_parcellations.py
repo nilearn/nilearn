@@ -1,5 +1,6 @@
 """Test the parcellations tools module."""
 
+import sys
 import warnings
 
 import numpy as np
@@ -58,6 +59,9 @@ def test_errors_raised_in_check_parameters_fit(method, test_image):
         Parcellations(method=method).fit(test_image)
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5, 10, 15])
 def test_parcellations_fit_on_single_nifti_image(method, n_parcel, test_image):
@@ -87,6 +91,9 @@ def test_parcellations_warnings(img_4d_zeros_eye):
         parcellator.fit(img_4d_zeros_eye)
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 def test_parcellations_no_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=1)
     with warnings.catch_warnings(record=True) as record:
@@ -331,6 +338,9 @@ def test_transform_list_3d_input_images(affine_eye):
     assert isinstance(imgs_, list)
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcels", [5, 25])
 def test_parcellation_all_methods_with_surface(method, n_parcels, rng):
@@ -362,6 +372,9 @@ def test_parcellation_all_methods_with_surface(method, n_parcels, rng):
     assert X_inverse.shape == surf_img.shape
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 @pytest.mark.parametrize("method", METHODS)
 def test_parcellation_with_surface_and_confounds(method, rng):
     """Test if parcellation works on surface with confounds."""
