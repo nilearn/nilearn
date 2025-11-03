@@ -6,8 +6,6 @@ from string import Template
 
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from sklearn.exceptions import NotFittedError
-from sklearn.utils.validation import check_is_fitted
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
@@ -292,7 +290,7 @@ def generate_report(estimator):
             "\nReport generation not enabled!\nNo visual outputs created."
         )
 
-    if not estimator.__sklearn_is_fitted__()
+    if not estimator.__sklearn_is_fitted__():
         warning_messages.append(
             "\nThis report was not generated.\n"
             "Make sure to run `fit` before inspecting reports."
