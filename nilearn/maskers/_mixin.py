@@ -420,7 +420,7 @@ class _ReportingMixin:
     to return the displays to be embedded to the report.
     """
 
-    def has_report_data(self):
+    def _has_report_data(self):
         """
         Check if the model is fitted and _reporting_data is populated.
 
