@@ -1,4 +1,5 @@
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -11,14 +12,142 @@ from nilearn._utils.data_gen import (
 )
 from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.datasets import load_fsaverage
-from nilearn.glm.first_level import (
-    FirstLevelModel,
-)
+from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import HTMLReport
 from nilearn.surface import SurfaceImage
+
+
+def check_glm_report(
+    model: FirstLevelModel | SecondLevelModel,
+    view=False,
+    pth: Path | None = None,
+    extend_includes: list[str] | None = None,
+    extend_excludes: list[str] | None = None,
+    **kwargs,
+) -> HTMLReport:
+    """Generate a GLM report and run generic checks on it.
+
+    Parameters
+    ----------
+    model : FirstLevelModel or SecondLevelModel
+        Model that generated the report
+
+    view: bool, default=False
+        if True the report is open in browser
+        only used for debugging locally
+
+    pth: Path or None, default=None
+        Where to save the report
+
+    extend_includes : Iterable[str] | None, default=None
+        The function will check
+        for the presence in the report
+        of each string in this iterable.
+
+    extend_includes : Iterable[str] | None, default=None
+        The function will check
+        for the absence in the report
+        of each string in this iterable.
+    """
+    report = model.generate_report(**kwargs)
+
+    assert isinstance(report, HTMLReport)
+
+    # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
+    # in case certain unicode characters are mishandled,
+    # like the greek alpha symbol.
+    report.get_iframe()
+
+    # only for debugging
+    if view:
+        report.open_in_browser()
+
+    if pth:
+        # save to disk
+        # useful for visual inspection
+        # for manual checks or in case of test failure
+        report.save_as_html(pth / "tmp.html")
+        assert (pth / "tmp.html").exists()
+
+    includes = []
+    excludes = []
+    # check the navbar is there
+    includes.append('<nav class="navbar pure-g fw-bold" id="menu"')
+
+    # 'Contrasts' and 'Statistical maps' should appear
+    # as section and in navbar
+    # if report was generated with contrasts.
+    contrast_present_checks = [
+        '<a id="navbar-contrasts-link',
+        '<a href="#statistical-maps',
+    ]
+    # There should be a warning
+    # that no contrast was passed
+    # if that's the case
+    contrasts_missing_checks = [
+        "No contrast passed during report generation.",
+    ]
+
+    has_contrasts = "contrasts" in kwargs and kwargs["contrasts"] is not None
+
+    if has_contrasts:
+        includes.extend(contrast_present_checks)
+        excludes.extend(contrasts_missing_checks)
+    else:
+        excludes.extend(contrast_present_checks)
+
+    if not model.__sklearn_is_fitted__():
+        includes.extend(
+            [
+                "The model has not been fit yet.",
+                "No mask was provided.",
+                "No statistical map was provided.",
+            ]
+        )
+
+        # no design matrix in navbar if model not fitted
+        excludes.append('<a id="navbar-matrix-link')
+
+    else:
+        includes.extend(
+            [
+                'id="design-matrix-',
+                'id="mask-',
+                'id="statistical-maps-',
+                "The mask includes",  # check that mask coverage is there
+            ]
+        )
+
+        if not has_contrasts:
+            # the no contrast warning only appears for fitted models
+            includes.extend(contrasts_missing_checks)
+        elif not model._is_volume_glm():
+            includes.append("Results table not available for surface data.")
+
+        if (
+            isinstance(model, SecondLevelModel)
+            or len(model.design_matrices_) < 2
+        ):
+            # SecondLevelModel have a single "run" and do not need a carousel
+            # FirstLevelModel with a single neither
+            excludes.append('id="carousel-navbar"')
+        else:
+            includes.append('id="carousel-navbar"')
+
+    if extend_includes is not None:
+        includes.extend(extend_includes)
+    for check in set(includes):
+        assert check in str(report)
+
+    if extend_excludes is not None:
+        excludes.extend(extend_excludes)
+    for check in set(excludes):
+        assert check not in str(report)
+
+    return report
 
 
 @pytest.fixture
@@ -57,54 +186,62 @@ def slm():
     return model.fit(Y, design_matrix=X)
 
 
-def test_flm_report_no_activation_found(flm, contrasts):
+def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
     """Check presence message of no activation found.
 
     We use random data, so we should not get activations.
     """
-    report = flm.generate_report(contrasts=contrasts)
-    assert "No suprathreshold cluster" in report.__str__()
+    check_glm_report(
+        model=flm,
+        pth=tmp_path,
+        extend_includes=["No suprathreshold cluster"],
+        contrasts=contrasts,
+    )
 
 
 @pytest.mark.parametrize("model", [FirstLevelModel, SecondLevelModel])
 @pytest.mark.parametrize("bg_img", [_img_mask_mni(), _make_surface_mask()])
-def test_empty_surface_reports(tmp_path, model, bg_img):
-    """Test that empty reports on unfitted model can be generated."""
-    report = model(smoothing_fwhm=None).generate_report(bg_img=bg_img)
+def test_empty_reports(tmp_path, model, bg_img):
+    """Test that empty reports on unfitted model can be generated.
 
-    assert isinstance(report, HTMLReport)
+    Both for volume and surface data.
+    """
+    check_glm_report(
+        model=model(smoothing_fwhm=None),
+        pth=tmp_path,
+        bg_img=bg_img,
+    )
 
-    report.save_as_html(tmp_path / "tmp.html")
-    assert (tmp_path / "tmp.html").exists()
 
-
-def test_flm_reporting_no_contrasts(flm):
+def test_flm_reporting_no_contrasts(flm, tmp_path):
     """Test for model report can be generated with no contrasts."""
-    report = flm.generate_report(
+    check_glm_report(
+        model=flm,
+        pth=tmp_path,
         plot_type="glass",
         contrasts=None,
         min_distance=15,
         alpha=0.01,
     )
-    assert "No statistical map was provided." in report.__str__()
-
-
-def test_mask_coverage_in_report(flm):
-    """Check that how much image is included in mask is in the report."""
-    report = flm.generate_report()
-    assert "The mask includes" in report.__str__()
 
 
 @pytest.mark.slow
 @pytest.mark.parametrize("height_control", ["fdr", "bonferroni", None])
-def test_flm_reporting_height_control(flm, height_control, contrasts):
+def test_flm_reporting_height_control(
+    flm, height_control, contrasts, tmp_path
+):
     """Test for first level model reporting.
 
     Also checks that passing threshold different from the default
     will throw a warning when height_control is not None.
     """
     with warnings.catch_warnings(record=True) as warnings_list:
-        report_flm = flm.generate_report(
+        check_glm_report(
+            model=flm,
+            pth=tmp_path,
+            # glover / cosine are the default
+            # hrf / drift model so they should appear in report
+            extend_includes=["glover", "cosine"],
             contrasts=contrasts,
             plot_type="glass",
             height_control=height_control,
@@ -114,16 +251,6 @@ def test_flm_reporting_height_control(flm, height_control, contrasts):
         )
     if height_control is not None:
         assert any("will not be used with" in str(x) for x in warnings_list)
-    # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
-    # in case certain unicode characters are mishandled,
-    # like the greek alpha symbol.
-    report_flm.get_iframe()
-
-    # glover is the default hrf so it should appear in report
-    assert "glover" in report_flm.__str__()
-
-    # cosine is the default drift model so it should appear in report
-    assert "cosine" in report_flm.__str__()
 
 
 @pytest.mark.slow
@@ -131,11 +258,10 @@ def test_flm_reporting_height_control(flm, height_control, contrasts):
 def test_slm_reporting_method(slm, height_control):
     """Test for the second level reporting."""
     c1 = np.eye(len(slm.design_matrix_.columns))[0]
-    report_slm = slm.generate_report(
-        c1, height_control=height_control, alpha=0.01
+
+    check_glm_report(
+        slm, contrasts=c1, height_control=height_control, alpha=0.01
     )
-    # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
-    report_slm.get_iframe()
 
 
 @pytest.mark.slow
@@ -151,7 +277,14 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
 
     c1 = np.eye(len(model.design_matrix_.columns))[0]
 
-    model.generate_report(c1, first_level_contrast=first_level_contrast)
+    check_glm_report(
+        model,
+        contrasts=c1,
+        first_level_contrast=first_level_contrast,
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
+    )
 
 
 def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
@@ -172,16 +305,27 @@ def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
 
     c1 = np.eye(len(model.design_matrix_.columns))[0]
 
-    model.generate_report(c1, first_level_contrast="a")
+    check_glm_report(
+        model,
+        contrasts=c1,
+        first_level_contrast="a",
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
+    )
 
 
 @pytest.mark.slow
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 def test_report_plot_type(flm, plot_type, contrasts):
     """Smoke test for valid plot type."""
-    flm.generate_report(
+    check_glm_report(
+        flm,
         contrasts=contrasts,
         plot_type=plot_type,
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
     )
 
 
@@ -190,21 +334,28 @@ def test_report_plot_type(flm, plot_type, contrasts):
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
 def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
     """Smoke test for valid cut_coords."""
-    flm.generate_report(
+    check_glm_report(
+        flm,
         contrasts=contrasts,
         cut_coords=cut_coords,
         display_mode="z",
         plot_type=plot_type,
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
     )
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: ARG001
     """Check errors when wrong plot type is requested."""
     with pytest.raises(KeyError, match="junk"):
         flm.generate_report(
             contrasts=contrasts,
             plot_type="junk",
+            # the following are to avoid warnings
+            threshold=1e-8,
+            height_control=None,
         )
 
     with pytest.raises(ValueError, match="'plot_type' must be one of"):
@@ -212,10 +363,13 @@ def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: A
             contrasts=contrasts,
             display_mode="glass",
             plot_type="junk",
+            # the following are to avoid warnings
+            threshold=1e-8,
+            height_control=None,
         )
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_masking_first_level_model(contrasts):
     """Check that using NiftiMasker when instantiating FirstLevelModel \
        doesn't raise Error when calling generate_report().
@@ -231,15 +385,16 @@ def test_masking_first_level_model(contrasts):
         fmri_data, design_matrices=design_matrices
     )
 
-    report_flm = flm.generate_report(
+    check_glm_report(
+        flm,
         contrasts=contrasts,
         plot_type="glass",
-        height_control=None,
         min_distance=15,
         alpha=0.01,
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
     )
-
-    report_flm.get_iframe()
 
 
 @pytest.mark.slow
@@ -255,9 +410,18 @@ def test_fir_delays_in_params(contrasts):
     model = FirstLevelModel(hrf_model="fir", fir_delays=[1, 2, 3])
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    report = model.generate_report(contrasts=contrasts)
-
-    assert "fir_delays" in report.__str__()
+    # FIXME:
+    # matrices were passed at fit time
+    # so fir_delays should not appear in report
+    # as we do not know which HRF was used to build the matrix
+    check_glm_report(
+        model,
+        contrasts=contrasts,
+        extend_includes=["fir_delays"],
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
+    )
 
 
 @pytest.mark.slow
@@ -272,9 +436,14 @@ def test_drift_order_in_params(contrasts):
     model = FirstLevelModel(drift_model="polynomial", drift_order=3)
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    report = model.generate_report(contrasts=contrasts)
-
-    assert "drift_order" in report.__str__()
+    check_glm_report(
+        model,
+        contrasts=contrasts,
+        extend_includes=["drift_order"],
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
+    )
 
 
 @pytest.mark.slow
@@ -300,13 +469,13 @@ def test_flm_generate_report_surface_data(rng):
 
     model.fit(fmri_data, events=events)
 
-    report = model.generate_report(
-        "c0", height_control=None, threshold=DEFAULT_Z_THRESHOLD
+    check_glm_report(
+        model,
+        contrasts="c0",
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
     )
-
-    assert isinstance(report, HTMLReport)
-
-    assert "Results table not available for surface data." in report.__str__()
 
 
 def test_flm_generate_report_surface_data_error(
@@ -325,32 +494,24 @@ def test_flm_generate_report_surface_data_error(
         model.generate_report(
             "c0",
             bg_img=img_3d_mni,
+            # the following are to avoid warnings
+            threshold=1e-8,
             height_control=None,
-            threshold=DEFAULT_Z_THRESHOLD,
         )
 
 
 @pytest.mark.slow
-def test_carousel_two_runs(
+def test_carousel_several_runs(
     matplotlib_pyplot,  # noqa: ARG001
-    flm,
-    slm,
     contrasts,
 ):
     """Check that a carousel is present when there is more than 1 run."""
-    # Second level have a single "run" and do not need a carousel
-    report_slm = slm.generate_report()
-
-    assert 'id="carousel-navbar"' not in report_slm.__str__()
-
-    # first level model with one run : no run carousel
-    report_one_run = flm.generate_report(contrasts=contrasts)
-
-    assert 'id="carousel-navbar"' not in report_one_run.__str__()
-
-    # first level model with 2 runs : run carousel
+    # first level model with 3 runs : run carousel
+    # TODO
+    # change name of design matrix columns and use contrast expression
+    # to have different plots for each run
     rk = 6
-    shapes = ((7, 7, 7, 5), (7, 7, 7, 10))
+    shapes = ((7, 7, 7, 5), (7, 7, 7, 10), (7, 7, 7, 15))
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes, rk=rk
     )
@@ -362,9 +523,16 @@ def test_carousel_two_runs(
         fmri_data, design_matrices=design_matrices
     )
 
-    report = flm_two_runs.generate_report(contrasts=contrasts)
+    report = check_glm_report(
+        flm_two_runs,
+        contrasts=contrasts,
+        # the following are to avoid warnings
+        threshold=1e-8,
+        height_control=None,
+    )
 
-    assert 'id="carousel-navbar"' in report.__str__()
+    # 3 runs should be in the carousel
+    assert str(report).count('id="carousel-obj-') == len(shapes)
 
 
 @pytest.mark.slow
