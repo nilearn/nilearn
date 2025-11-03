@@ -292,9 +292,7 @@ def generate_report(estimator):
             "\nReport generation not enabled!\nNo visual outputs created."
         )
 
-    try:
-        check_is_fitted(estimator)
-    except NotFittedError:
+    if not estimator.__sklearn_is_fitted__()
         warning_messages.append(
             "\nThis report was not generated.\n"
             "Make sure to run `fit` before inspecting reports."
