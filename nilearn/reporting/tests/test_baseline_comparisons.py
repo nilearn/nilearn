@@ -30,6 +30,7 @@ from nilearn.maskers import (
     NiftiMapsMasker,
     NiftiMasker,
     NiftiSpheresMasker,
+    SurfaceMapsMasker,
     SurfaceMasker,
 )
 from nilearn.reporting.glm_reporter import _stat_map_to_png
@@ -279,7 +280,7 @@ def _surface_mask_img():
         [_surface_mask_img(), _fs_inflated_sulcal()],
     ),
 )
-@pytest.mark.parametrize("masker", [SurfaceMasker, MultiSurfaceMasker])
+@pytest.mark.parametrize("src_masker", [SurfaceMasker, MultiSurfaceMasker])
 def test_surface_masker_create_figure_for_report(src_masker, mask_img, img):
     """Check figure generated in report of (Multi)SurfaceMasker."""
     masker = src_masker(mask_img)
@@ -312,7 +313,9 @@ def test_surface_masker_create_figure_for_report(src_masker, mask_img, img):
 @pytest.mark.parametrize("hemi", ["left", "right"])
 @pytest.mark.parametrize("mask_img", [_surface_mask_img(), None])
 @pytest.mark.parametrize("img", [None, _fs_inflated_sulcal()])
-@pytest.mark.parametrize("masker", [SurfaceMasker, MultiSurfaceMapsMasker])
+@pytest.mark.parametrize(
+    "src_masker", [SurfaceMapsMasker, MultiSurfaceMapsMasker]
+)
 def test_surface_maps_masker_create_figure_for_report(
     src_masker, mask_img, img, hemi
 ):
