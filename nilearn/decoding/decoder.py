@@ -699,13 +699,13 @@ class _BaseDecoder(_ReportMixin, CacheMixin, BaseEstimator):
         else:
             self.screening_percentile_ = self.screening_percentile
 
-        n_final_features = int(
+        self._n_final_features_ = int(
             X.shape[1]
             * self.screening_percentile_
             * self._clustering_percentile
             / 10000
         )
-        if n_final_features < 50:
+        if self._n_final_features_ < 50:
             extra_msg = ""
             screening_percentile_lt_100 = self.screening_percentile_ < 100
             clustering_percentile_lt_100 = (
@@ -722,7 +722,7 @@ class _BaseDecoder(_ReportMixin, CacheMixin, BaseEstimator):
                 extra_msg += "'clustering_percentile'"
             warning_msg = (
                 "The decoding model will be trained only "
-                f"on {n_final_features} features. "
+                f"on {self._n_final_features_} features. "
                 f"{extra_msg}."
             )
             warnings.warn(

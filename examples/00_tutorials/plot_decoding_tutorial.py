@@ -370,6 +370,10 @@ dummy_decoder.fit(fmri_niimgs, conditions, groups=run_label)
 print(f"{dummy_decoder.cv_scores_=}")
 
 # %%
+report = decoder.generate_report(bg_img=mean_img(fmri_niimgs))
+report
+
+# %%
 # References
 # ----------
 #

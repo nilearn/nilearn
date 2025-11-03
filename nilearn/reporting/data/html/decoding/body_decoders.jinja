@@ -1,10 +1,18 @@
 {% extends "html/body_base.jinja" %}
 
-
 {% block report %}
 
 <div class="report">
 
+  <section>
+    <h2>Description</h2>
+    {% include 'html/decoding/partials/method_section.jinja' %}
+  </section>
+
+  <section id="model-details-{{ unique_id }}">
+    <h2>Model details</h2>
+    <div class="table-container">{{ parameters|safe }}</div>
+  </section>
 
   <section id="mask-{{ unique_id }}">
     <h2>Mask</h2>
