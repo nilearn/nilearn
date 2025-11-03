@@ -659,7 +659,7 @@ learn how to use those tools to build documentation.
 Reports
 -------
 
-Reports (for maskers and GLM) are generated using `Jinja templates <https://jinja.palletsprojects.com>`_.
+Reports (for maskers and GLM) are generated using `Jinja templates <https://jinja.palletsprojects.com/en/stable/>`_.
 
 Reports HTML, CSS, javascript and templates are stored in ``nilearn/reporting/data``.
 
