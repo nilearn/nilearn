@@ -358,11 +358,22 @@ def _plot_surf(
     }
     check_engine_params(parameters_not_implemented_in_matplotlib, "matplotlib")
 
-    # adjust values
-    avg_method = "mean" if avg_method is None else avg_method
-    alpha = "auto" if alpha is None else alpha
-    if cbar_tick_format == "auto":
+    # adjust common params
+    if cbar_tick_format is None or cbar_tick_format == "auto":
         cbar_tick_format = DEFAULT_TICK_FORMAT
+    # if no cmap is given, set to matplotlib default
+    if cmap is None:
+        cmap = plt.get_cmap(plt.rcParamsDefault["image.cmap"])
+    # if cmap is given as string, translate to matplotlib cmap
+    elif isinstance(cmap, str):
+        cmap = plt.get_cmap(cmap)
+
+    # adjust non-common params
+    if avg_method is None:
+        avg_method = "mean"
+    if alpha is None:
+        alpha = "auto"
+
     # Leave space for colorbar
     figsize = [4.7, 5] if colorbar else [4, 5]
 
@@ -375,13 +386,6 @@ def _plot_surf(
 
     # Get elevation and azimut from view
     elev, azim = _get_view_plot_surf(hemi, view)
-
-    # if no cmap is given, set to matplotlib default
-    if cmap is None:
-        cmap = plt.get_cmap(plt.rcParamsDefault["image.cmap"])
-    # if cmap is given as string, translate to matplotlib cmap
-    elif isinstance(cmap, str):
-        cmap = plt.get_cmap(cmap)
 
     # initiate figure and 3d axes
     if axes is None:

@@ -308,13 +308,17 @@ def _plot_surf(
     }
     check_engine_params(parameters_not_implemented_in_plotly, "plotly")
 
-    # adjust values
-    cbar_tick_format = (
-        ".1f" if cbar_tick_format == "auto" else cbar_tick_format
-    )
-    cmap = DEFAULT_DIVERGING_CMAP if cmap is None else cmap
-    symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
-    title_font_size = 18 if title_font_size is None else title_font_size
+    # adjust common params
+    if cbar_tick_format is None or cbar_tick_format == "auto":
+        cbar_tick_format = ".1f"
+    if cmap is None:
+        cmap = DEFAULT_DIVERGING_CMAP
+
+    # adjust non-common params
+    if symmetric_cmap is None:
+        symmetric_cmap = False
+    if title_font_size is None:
+        title_font_size = 18
 
     coords, faces = load_surf_mesh(surf_mesh)
 
