@@ -285,14 +285,6 @@ class BaseMasker(
         """Present only to comply with sklearn estimators checks."""
 
     @abc.abstractmethod
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-
-    @abc.abstractmethod
     def _create_figure_for_report(self):
         """Generate figure for report."""
 
@@ -599,14 +591,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     @abc.abstractmethod
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
-
-    @abc.abstractmethod
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
 
     @abc.abstractmethod
     def _create_figure_for_report(self):

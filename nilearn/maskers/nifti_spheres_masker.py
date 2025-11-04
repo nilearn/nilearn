@@ -570,7 +570,6 @@ class NiftiSpheresMasker(
 
         """
         del y
-        self._init_report_content()
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
