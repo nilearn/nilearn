@@ -2873,9 +2873,6 @@ def check_masker_shelving(estimator):
 
         assert_array_equal(epi_shelved, epi)
 
-        masker_shelved.memory.clear(warn=False)
-        del epi_shelved
-
 
 @ignore_warnings()
 def check_masker_joblib_cache(estimator):
@@ -3366,9 +3363,6 @@ def check_multi_nifti_masker_shelving(estimator):
         for e_shelved, e in zip(epis_shelved, epis, strict=False):
             e_shelved = e_shelved.get()
             assert_array_equal(e_shelved, e)
-
-        masker_shelved.memory.clear(warn=False)
-        del epis_shelved
 
 
 @ignore_warnings()
