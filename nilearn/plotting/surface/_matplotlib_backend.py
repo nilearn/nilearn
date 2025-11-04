@@ -73,52 +73,6 @@ MATPLOTLIB_VIEWS = {
 }
 
 
-def _adjust_colorbar_and_data_ranges(
-    stat_map, vmin=None, vmax=None, symmetric_cbar=None
-):
-    """Adjust colorbar and data ranges for 'matplotlib' engine.
-
-    Parameters
-    ----------
-    stat_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
-
-    %(vmin)s
-
-    %(vmax)s
-
-    %(symmetric_cbar)s
-
-    Returns
-    -------
-        cbar_vmin, cbar_vmax, vmin, vmax
-    """
-    return get_colorbar_and_data_ranges(
-        stat_map,
-        vmin=vmin,
-        vmax=vmax,
-        symmetric_cbar=symmetric_cbar,
-    )
-
-
-def _adjust_plot_roi_params(params):
-    """Adjust avg_method and cbar_tick_format values for 'matplotlib' engine.
-
-    Sets the values in params dict.
-
-    Parameters
-    ----------
-    params : dict
-        dictionary to set the adjusted parameters
-    """
-    avg_method = params.get("avg_method", None)
-    if avg_method is None:
-        params["avg_method"] = "median"
-
-    cbar_tick_format = params.get("cbar_tick_format", "auto")
-    if cbar_tick_format == "auto":
-        params["cbar_tick_format"] = DEFAULT_TICK_FORMAT
-
-
 def _normalize_bg_data(data):
     """Normalize specified ``data`` and return.
 
@@ -651,7 +605,7 @@ def _plot_img_on_surf(
 
         # derive symmetric vmin, vmax and colorbar limits depending on
         # symmetric_cbar settings
-        _, _, vmin, vmax = _adjust_colorbar_and_data_ranges(
+        _, _, vmin, vmax = get_colorbar_and_data_ranges(
             loaded_stat_map,
             vmin=vmin,
             vmax=vmax,

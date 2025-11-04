@@ -12,6 +12,7 @@ from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
     check_threshold_not_negative,
+    get_colorbar_and_data_ranges,
 )
 from nilearn.plotting.surface._utils import (
     DEFAULT_HEMI,
@@ -574,13 +575,11 @@ def plot_surf_stat_map(
     backend = get_surface_backend(engine)
     # derive symmetric vmin, vmax and colorbar limits depending on
     # symmetric_cbar settings
-    cbar_vmin, cbar_vmax, vmin, vmax = (
-        backend._adjust_colorbar_and_data_ranges(
-            loaded_stat_map,
-            vmin=vmin,
-            vmax=vmax,
-            symmetric_cbar=symmetric_cbar,
-        )
+    cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
+        loaded_stat_map,
+        vmin=vmin,
+        vmax=vmax,
+        symmetric_cbar=symmetric_cbar,
     )
 
     fig = plot_surf(
@@ -758,7 +757,7 @@ def plot_img_on_surf(
 
     backend = get_surface_backend(DEFAULT_ENGINE)
     # get vmin and vmax for entire data (all hemis)
-    _, _, vmin, vmax = backend._adjust_colorbar_and_data_ranges(
+    _, _, vmin, vmax = get_colorbar_and_data_ranges(
         get_data(stat_map),
         vmin=vmin,
         vmax=vmax,
@@ -1004,14 +1003,7 @@ def plot_surf_roi(
     if isinstance(cmap, pd.DataFrame):
         cmap = create_colormap_from_lut(cmap)
 
-    params = {
-        "avg_method": avg_method,
-        "cbar_tick_format": cbar_tick_format,
-    }
-
     backend = get_surface_backend(engine)
-    backend._adjust_plot_roi_params(params)
-
     fig = backend._plot_surf(
         mesh,
         surf_map=roi,
@@ -1020,13 +1012,13 @@ def plot_surf_roi(
         view=view,
         cmap=cmap,
         colorbar=colorbar,
-        avg_method=params["avg_method"],
+        avg_method=avg_method,
         threshold=threshold,
         alpha=alpha,
         bg_on_data=bg_on_data,
         vmin=vmin,
         vmax=vmax,
-        cbar_tick_format=params["cbar_tick_format"],
+        cbar_tick_format=cbar_tick_format,
         title=title,
         title_font_size=title_font_size,
         output_file=output_file,
