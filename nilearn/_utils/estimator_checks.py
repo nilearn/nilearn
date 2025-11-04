@@ -3645,6 +3645,12 @@ def check_masker_generate_report(estimator):
 
         return
 
+    assert (
+        estimator._report_content is not None
+        and estimator._report_content != ""
+    )
+    assert estimator._has_report_data() is False
+
     with warnings.catch_warnings(record=True) as warning_list:
         report = _generate_report(estimator)
         assert len(warning_list) == 1
@@ -3652,11 +3658,6 @@ def check_masker_generate_report(estimator):
     _check_html(report, is_fit=False)
     assert "Make sure to run `fit`" in str(report)
 
-    assert (
-        estimator._report_content is not None
-        and estimator._report_content != ""
-    )
-    assert estimator._has_report_data() is False
     if accept_niimg_input(estimator):
         input_img = _img_3d_rand()
     else:
