@@ -172,8 +172,6 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         del y
         check_params(self.__dict__)
 
-        self._init_report_content()
-
         if imgs is not None:
             self._check_imgs(imgs)
 
