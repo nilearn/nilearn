@@ -16,16 +16,13 @@ from nilearn._utils.masker_validation import (
 )
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
-from nilearn.maskers._mixin import _ReportingMixin
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
-class SurfaceMasker(
-    _ReportingMixin, ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker
-):
+class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     """Extract data from a :obj:`~nilearn.surface.SurfaceImage`.
 
     .. nilearn_versionadded:: 0.11.0

@@ -17,7 +17,6 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn.image import clean_img, get_data, index_img, resample_img
-from nilearn.maskers._mixin import _ReportingMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -47,9 +46,7 @@ class _ExtractionFunctor:
 
 
 @fill_doc
-class NiftiMapsMasker(
-    _ReportingMixin, ClassNamePrefixFeaturesOutMixin, BaseMasker
-):
+class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     """Class for extracting data from Niimg-like objects \
        using maps of potentially overlapping brain regions.
 

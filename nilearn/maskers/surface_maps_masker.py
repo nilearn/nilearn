@@ -25,7 +25,6 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn.image import index_img, mean_img
-from nilearn.maskers._mixin import _ReportingMixin
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -37,9 +36,7 @@ from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
-class SurfaceMapsMasker(
-    _ReportingMixin, ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker
-):
+class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     """Extract data from a SurfaceImage, using maps of potentially overlapping
     brain regions.
 

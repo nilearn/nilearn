@@ -25,7 +25,6 @@ from nilearn._utils.niimg_conversions import (
 from nilearn.datasets import load_mni152_template
 from nilearn.image import resample_img
 from nilearn.image.resampling import coord_transform
-from nilearn.maskers._mixin import _ReportingMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -226,9 +225,7 @@ class _ExtractionFunctor:
 
 
 @fill_doc
-class NiftiSpheresMasker(
-    _ReportingMixin, ClassNamePrefixFeaturesOutMixin, BaseMasker
-):
+class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     """Class for masking of Niimg-like objects using seeds.
 
     NiftiSpheresMasker is useful when data from given seeds should be
