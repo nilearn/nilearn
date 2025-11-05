@@ -23,7 +23,7 @@ def masker(request, img_maps, surf_maps_img, img_labels, surf_label_img):
     """Fixture to construct a masker instance with proper input."""
     cls, arg = request.param
 
-    creators = {
+    img_generators = {
         "img_maps": img_maps,
         "surf_maps_img": surf_maps_img,
         "img_labels": img_labels,
@@ -31,11 +31,11 @@ def masker(request, img_maps, surf_maps_img, img_labels, surf_label_img):
     }
     if arg is None:
         return cls()
-    if isinstance(arg, dict):
+    elif isinstance(arg, dict):
         return cls(**arg)
-
-    img = creators[arg]
-    return cls(img)
+    else:
+        img = img_generators[arg]
+        return cls(img)
 
 
 @pytest.mark.parametrize(
