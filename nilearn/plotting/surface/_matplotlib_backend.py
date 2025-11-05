@@ -605,7 +605,7 @@ def _plot_img_on_surf(
 
         # derive symmetric vmin, vmax and colorbar limits depending on
         # symmetric_cbar settings
-        _, _, vmin, vmax = get_colorbar_and_data_ranges(
+        _, _, vmin_iter, vmax_iter = get_colorbar_and_data_ranges(
             loaded_stat_map,
             vmin=vmin,
             vmax=vmax,
@@ -621,8 +621,8 @@ def _plot_img_on_surf(
             colorbar=False,  # Colorbar created externally.
             threshold=threshold,
             bg_on_data=bg_on_data,
-            vmin=vmin,
-            vmax=vmax,
+            vmin=vmin_iter,
+            vmax=vmax_iter,
             axes=ax,
             **kwargs,
         )
