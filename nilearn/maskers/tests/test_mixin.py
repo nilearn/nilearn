@@ -64,21 +64,25 @@ def test_masker_reporting_init(masker, img_func):
     """Test nilearn.maskers._mixin._ReportingMixin on concrete masker
     instances.
     """
-    # check estimator at initialization
+    # check masker at initialization
     assert masker._report_content is not None
     assert masker._report_content["description"] is not None
     assert masker._report_content["warning_message"] is None
     assert masker._has_report_data() is False
 
-    # check report before fit
+    # check masker report before fit
     masker.generate_report()
     assert masker._report_content["title"] == "Empty Report"
 
-    # check estimator after fit
+    # check masker after fit
     input_img = img_func()
     masker.fit(input_img)
-    assert hasattr(masker, "_reporting_data")
+    assert masker._has_report_data()
 
+    # check masker report without title specified
+    masker.generate_report()
+    assert masker._report_content["title"] == masker.__class__.__name__
+
+    # check masker report with title specified
     masker.generate_report(title="masker report title")
-
     assert masker._report_content["title"] == "masker report title"
