@@ -3628,6 +3628,9 @@ def check_masker_generate_report(estimator):
       - when matplotlib is not installed
       - when generating reports before fit
     - check content of report before fit and after fit
+    - check that the masker has a non empty _report_content after
+      initialization
+    - check that the masker has report data after fit
 
     """
     if not is_matplotlib_installed():
@@ -3639,6 +3642,12 @@ def check_masker_generate_report(estimator):
         assert report == [None]
 
         return
+
+    assert (
+        estimator._report_content is not None
+        and estimator._report_content != ""
+    )
+    assert estimator._has_report_data() is False
 
     with warnings.catch_warnings(record=True) as warning_list:
         report = _generate_report(estimator)
@@ -3655,6 +3664,7 @@ def check_masker_generate_report(estimator):
     estimator.fit(input_img)
 
     assert estimator._report_content["warning_message"] is None
+    assert estimator._has_report_data() is True
 
     # TODO
     # SurfaceMapsMasker, RegionExtractor still throws a warning
@@ -3714,7 +3724,7 @@ def check_masker_generate_report_false(estimator):
 
     estimator.fit(input_img)
 
-    assert estimator._reporting_data is None
+    assert estimator._has_report_data() is False
     assert estimator._reporting() == [None]
     with pytest.warns(
         UserWarning,
