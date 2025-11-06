@@ -256,7 +256,6 @@ def _define_overlay(estimator):
     update the report text as appropriate.
     """
     displays = estimator._reporting()
-    from nilearn.maskers import NiftiSpheresMasker
 
     if len(displays) == 1:  # set overlay to None
         return None, displays[0]
