@@ -1,5 +1,6 @@
 """Test the datasets module."""
 
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -68,6 +69,9 @@ def _make_oasis_data(dartel=True):
     return dict_to_archive(data)
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 def test_fetch_oasis_vbm(tmp_path, request_mocker, capsys):
     request_mocker.url_mapping["*archive_dartel.tgz*"] = _make_oasis_data()
     request_mocker.url_mapping["*archive.tgz*"] = _make_oasis_data(False)

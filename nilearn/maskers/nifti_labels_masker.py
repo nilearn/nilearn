@@ -258,6 +258,15 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         self.strategy = strategy
 
+        self._report_content = {
+            "description": (
+                "This report shows the regions "
+                "defined by the labels of the mask."
+            ),
+            "number_of_regions": 0,
+            "warning_message": None,
+        }
+
     @property
     def _region_id_name(self):
         """Return dictionary used to store region names and
@@ -307,15 +316,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return masked_atlas, removed_region_ids, removed_region_names, display
 
-    def generate_report(self):
-        """Generate a report."""
-        from nilearn.reporting.html_report import generate_report
-
-        self._init_report_content()
-
-        return generate_report(self)
-
-    def _reporting(self):
+    def _get_displays(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -324,16 +325,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        labels_image = None
-        if self._reporting_data is not None:
-            labels_image = self._reporting_data["labels_image"]
+        labels_image = self._reporting_data["labels_image"]
 
-        if (
-            labels_image is None
-            or not self.__sklearn_is_fitted__
-            or not self.reports
-        ):
-            self._report_content["summary"] = None
+        if labels_image is None:
             return [None]
 
         # Remove warning message in case where the masker was
@@ -469,8 +463,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         del y
         check_params(self.__dict__)
 
-        self._init_report_content()
-
         check_reduction_strategy(self.strategy)
         check_parameter_in_allowed(
             self.resampling_target,
@@ -569,25 +561,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
-
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-        if not hasattr(self, "_report_content"):
-            self._report_content = {
-                "description": (
-                    "This reports shows the regions "
-                    "defined by the labels of the mask."
-                ),
-                "warning_message": None,
-                "number_of_regions": 0,
-            }
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = None
 
     def _check_labels(self):
         """Check labels.
