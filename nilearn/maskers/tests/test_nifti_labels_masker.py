@@ -1189,3 +1189,36 @@ def test_no_background(n_regions, img_labels, shape_3d_default, affine_eye):
     assert len(masker.labels_) == n_expected_regions
     assert len(masker.region_ids_) == n_expected_regions
     assert len(masker.region_names_) == n_expected_regions
+
+
+@pytest.mark.parametrize(
+    "lut",
+    [
+        pd.Series({0: "Background", 1: "Frontal", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Correct lut
+        pd.Series({0: "background", 1: "Frontal", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Background not capitalized
+        pd.Series({0: "unknown", 1: "Frontal", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Background other label
+    ],
+)
+def test_lut_shift(lut):
+    """Test order of labels in lut.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5813
+    """
+    # Labels: 0=background, 1=Frontal, 2=Temporal
+    labels_data = np.zeros((4, 4, 4), dtype=np.int32)
+    labels_data[0:2, :, :] = 1  # top half = region 1
+    labels_data[2:, :, :] = 2  # bottom half = region 2
+    labels_img = Nifti1Image(labels_data, affine=np.eye(4))
+
+    masker = NiftiLabelsMasker(
+        labels_img=labels_img,
+        lut=lut,
+    ).fit()
+
+    assert masker.region_names_ == {0: "Frontal", 1: "Temporal"}
