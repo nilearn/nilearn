@@ -53,6 +53,16 @@ def test_plot_img_comparison_masker(matplotlib_pyplot, img_3d_mni, masker):
     )
 
 
+def test_plot_img_comparison_file(matplotlib_pyplot, img_3d_mni, tmp_path):
+    """Tests plot_img_comparison with files."""
+    img_3d_mni.to_filename(tmp_path / "img_compare.nii.gz")
+    plot_img_comparison(
+        tmp_path / "img_compare.nii.gz",
+        str(tmp_path / "img_compare.nii.gz"),
+        plot_hist=False,
+    )
+
+
 @pytest.mark.parametrize(
     "masker",
     [
