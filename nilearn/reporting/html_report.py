@@ -132,7 +132,6 @@ def embed_img(display):
 
 
 def _update_template(
-    title,
     docstring,
     content,
     overlay,
@@ -146,9 +145,6 @@ def _update_template(
 
     Parameters
     ----------
-    title : str
-        The title for the report.
-
     docstring : str
         The introductory docstring for the reported object.
 
@@ -165,6 +161,7 @@ def _update_template(
         A dictionary holding the data to be added to the report.
         The keys must match exactly the ones used in the template.
         The default template accepts the following:
+            - title (str) : Title of the report
             - description (str) : Description of the content.
             - warning_message (str) : An optional warning
               message to be displayed in red. This is used
@@ -229,7 +226,7 @@ def _update_template(
         summary_html=summary_html,
     )
 
-    return assemble_report(body, f"{title} report")
+    return assemble_report(body, f"{data['title']} report")
 
 
 def assemble_report(body: str, title: str) -> HTMLReport:
@@ -259,6 +256,7 @@ def _define_overlay(estimator):
     update the report text as appropriate.
     """
     displays = estimator._reporting()
+    from nilearn.maskers import NiftiSpheresMasker
 
     if len(displays) == 1:  # set overlay to None
         return None, displays[0]
@@ -309,6 +307,9 @@ def generate_report(estimator) -> list[None] | HTMLReport:
     # Generate a unique ID for this report
     data["unique_id"] = str(uuid.uuid4()).replace("-", "")
 
+    if data.get("title") is None:
+        data["title"] = estimator.__class__.__name__
+
     warning_messages = []
 
     if estimator.reports is False:
@@ -316,10 +317,7 @@ def generate_report(estimator) -> list[None] | HTMLReport:
             "\nReport generation not enabled!\nNo visual outputs created."
         )
 
-    if (
-        not hasattr(estimator, "_reporting_data")
-        or not estimator._reporting_data
-    ):
+    if not estimator.__sklearn_is_fitted__():
         warning_messages.append(
             "\nThis report was not generated.\n"
             "Make sure to run `fit` before inspecting reports."
@@ -332,8 +330,9 @@ def generate_report(estimator) -> list[None] | HTMLReport:
                 stacklevel=find_stack_level(),
             )
 
+        data["title"] = "Empty Report"
+
         return _update_template(
-            title="Empty Report",
             docstring="Empty Report",
             content=embed_img(None),
             overlay=None,
@@ -411,7 +410,6 @@ def _create_report(estimator, data) -> HTMLReport:
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
     return _update_template(
-        title=estimator.__class__.__name__,
         docstring=snippet,
         content=embeded_images,
         overlay=embed_img(overlay),

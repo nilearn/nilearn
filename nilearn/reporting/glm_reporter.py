@@ -38,7 +38,6 @@ from nilearn.glm.thresholding import (
     threshold_stats_img,
     warn_default_threshold,
 )
-from nilearn.maskers import NiftiMasker
 from nilearn.reporting._utils import (
     dataframe_to_html,
 )
@@ -529,6 +528,7 @@ def _mask_to_plot(model, bg_img, cut_coords):
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
         return mask_plot
+    from nilearn.maskers import NiftiMasker
 
     if isinstance(model.mask_img, NiftiMasker):
         mask_img = model.masker_.mask_img_
