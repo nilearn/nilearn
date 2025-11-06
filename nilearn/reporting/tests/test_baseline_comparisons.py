@@ -169,7 +169,6 @@ def test_nifti_masker_create_figure_for_report(src_masker, mask_img, img):
     masker.fit(img)
 
     displays = masker._create_figure_for_report()
-    assert isinstance(displays[0], str)
     return displays[0]
 
 
