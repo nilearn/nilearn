@@ -38,6 +38,7 @@ def masker(request, img_maps, surf_maps_img, img_labels, surf_label_img):
         return cls(img, reports=reports)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "masker, img_func",
     [
