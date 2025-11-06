@@ -33,6 +33,9 @@ Fixes
 
 - :bdg-dark:`Code` Improve errors thrown when the confounds for a subject or group level analysis GLM contain NaN (:gh:`5739` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Make sure names in atlas labels look up tables are not shifted when the background name is not properly indicated (:gh:`XXXX` by `Rémi Gau`_).
+
+
 Enhancements
 ------------
 
