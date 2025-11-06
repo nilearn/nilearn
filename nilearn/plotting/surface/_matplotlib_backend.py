@@ -72,6 +72,8 @@ MATPLOTLIB_VIEWS = {
     },
 }
 
+PARAMS_NOT_IMPLEMENTED = ["symmetric_cmap", "title_font_size"]
+
 
 def _normalize_bg_data(data):
     """Normalize specified ``data`` and return.

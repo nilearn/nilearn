@@ -90,6 +90,15 @@ LAYOUT = {
     "font_family": "Arial",
 }
 
+PARAMS_NOT_IMPLEMENTED = [
+    "avg_method",
+    "alpha",
+    "cbar_vmin",
+    "cbar_vmax",
+    "axes",
+    "figure",
+]
+
 
 def _configure_title(title, font_size, color="black"):
     """Help for plot_surf with plotly engine.
