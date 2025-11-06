@@ -1197,12 +1197,21 @@ def test_no_background(n_regions, img_labels, shape_3d_default, affine_eye):
         pd.Series({0: "Background", 1: "Frontal", 2: "Temporal"}).reset_index(
             name="name"
         ),  # Correct lut
+        pd.Series({1: "Frontal", 2: "Temporal", 0: "Background"}).reset_index(
+            name="name"
+        ),  # Correct lut but wrong order
         pd.Series({0: "background", 1: "Frontal", 2: "Temporal"}).reset_index(
             name="name"
         ),  # Background not capitalized
+        pd.Series({1: "Frontal", 0: "background", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Background not capitalized and wrong order
         pd.Series({0: "unknown", 1: "Frontal", 2: "Temporal"}).reset_index(
             name="name"
         ),  # Background other label
+        pd.Series({1: "Frontal", 0: "unknown", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Background other label and wrong order
     ],
 )
 def test_lut_shift(lut):
@@ -1219,3 +1228,4 @@ def test_lut_shift(lut):
     masker = NiftiLabelsMasker(labels_img=labels_img, lut=lut).fit()
 
     assert masker.region_names_ == {0: "Frontal", 1: "Temporal"}
+    assert masker.lut_["name"].to_list() == ["Frontal", "Temporal"]
