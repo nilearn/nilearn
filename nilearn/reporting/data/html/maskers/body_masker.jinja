@@ -25,6 +25,9 @@
 </div>
 
 <div class="pure-g">
+
+  <p>{{ description }}</p>
+
   {% if n_elements %}
   <div class="pure-u-1 pure-u-md-3-3">
     <p>
@@ -32,16 +35,13 @@
     </p>
   </div>
   {% endif %}
+
   <div class="pure-u-1 pure-u-md-3-3 table-container">
-    {% if parameters %} {{ parameters|safe }} {% endif %}
+    {{ parameters|safe }}
   </div>
+
 </div>
 
-<div class="pure-u-1 pure-u-md-3-3 d-flex justify-content-center">
-  <p>
-    This report was generated based on information provided at instantiation and fit time.
-    Note that the masker can potentially perform resampling at transform time.
-  </p>
-</div>
+{% include 'html/maskers/partials/info_transfom.jinja' %}
 
 {% endblock %}

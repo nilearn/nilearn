@@ -3647,6 +3647,7 @@ def check_masker_generate_report(estimator):
         estimator._report_content is not None
         and estimator._report_content != ""
     )
+    assert estimator._report_content["description"] != ""
     assert estimator._has_report_data() is False
 
     with warnings.catch_warnings(record=True) as warning_list:

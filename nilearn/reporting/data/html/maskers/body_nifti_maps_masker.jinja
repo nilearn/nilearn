@@ -49,9 +49,8 @@
     </div>
   </div>
   <div class="pure-u-1 pure-u-md-1-3">
-    {% if description %}
+
     <p>{{ description }}</p>
-    {% endif %}
 
     {% if number_of_maps %}
       <p>The masker has <b>{{ number_of_maps }}</b> spatial maps in total.</p>
@@ -70,13 +69,8 @@
     {{ parameters|safe }}
   </div>
 </div>
-<div class="pure-u-1 pure-u-md-3-3 d-flex justify-content-center">
-  <p>
-    This report was generated based on information provided at instantiation and fit time.
-    Note that the masker can potentially perform resampling at transform time.
-  </p>
-</div>
 
+{% include 'html/maskers/partials/info_transfom.jinja' %}
 
 <script>
   {% include 'js/carousel.js' %}
