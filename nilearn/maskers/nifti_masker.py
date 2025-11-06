@@ -420,7 +420,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        List of :class:`~matplotlib.figure.Figure`
+        List of :class:`~nilearn.plotting.displays.OrthoSlicer`
         """
         import matplotlib.pyplot as plt
 
