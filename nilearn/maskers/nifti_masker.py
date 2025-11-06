@@ -395,6 +395,24 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if self._reporting_data is None:
             return [None]
 
+        img = self._reporting_data["images"]
+
+        if img is None:  # images were not provided to fit
+            msg = (
+                "No image provided to fit in NiftiMasker. "
+                "Setting image to mask for reporting."
+            )
+            warnings.warn(msg, stacklevel=find_stack_level())
+            self._report_content["warning_message"] = msg
+
+        elif self._reporting_data["dim"] == 5:
+            msg = (
+                "A list of 4D subject images were provided to fit. "
+                "Only first subject is shown in the report."
+            )
+            warnings.warn(msg, stacklevel=find_stack_level())
+            self._report_content["warning_message"] = msg
+
         return self._create_figure_for_report()
 
     def _create_figure_for_report(self):
@@ -412,21 +430,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask = self._reporting_data["mask"]
 
         if img is None:  # images were not provided to fit
-            msg = (
-                "No image provided to fit in NiftiMasker. "
-                "Setting image to mask for reporting."
-            )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
             img = mask
-
-        if self._reporting_data["dim"] == 5:
-            msg = (
-                "A list of 4D subject images were provided to fit. "
-                "Only first subject is shown in the report."
-            )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
 
         resampled_img = None
         resampled_mask = None
