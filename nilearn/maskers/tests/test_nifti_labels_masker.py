@@ -1216,9 +1216,6 @@ def test_lut_shift(lut):
     labels_data[2:, :, :] = 2  # bottom half = region 2
     labels_img = Nifti1Image(labels_data, affine=np.eye(4))
 
-    masker = NiftiLabelsMasker(
-        labels_img=labels_img,
-        lut=lut,
-    ).fit()
+    masker = NiftiLabelsMasker(labels_img=labels_img, lut=lut).fit()
 
     assert masker.region_names_ == {0: "Frontal", 1: "Temporal"}
