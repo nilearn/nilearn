@@ -4,6 +4,7 @@ import abc
 import itertools
 from copy import deepcopy
 from pathlib import Path
+from typing import Any, ClassVar
 
 import numpy as np
 import pandas as pd
@@ -20,6 +21,7 @@ from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import high_variance_confounds
 from nilearn.image.utils import get_indices_from_image
+from nilearn.reporting import HTMLReport
 from nilearn.surface.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
@@ -420,6 +422,8 @@ class _ReportingMixin:
     to return the displays to be embedded to the report.
     """
 
+    _report_content: ClassVar[dict[str, Any]] = {}
+
     def _has_report_data(self):
         """
         Check if the model is fitted and _reporting_data is populated.
@@ -432,7 +436,7 @@ class _ReportingMixin:
         """
         return hasattr(self, "_reporting_data")
 
-    def generate_report(self, title=None):
+    def generate_report(self, title=None) -> list[None] | HTMLReport:
         """Generate an HTML report for the current object.
 
         Parameters

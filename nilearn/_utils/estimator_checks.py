@@ -3643,10 +3643,7 @@ def check_masker_generate_report(estimator):
 
         return
 
-    assert (
-        estimator._report_content is not None
-        and estimator._report_content != ""
-    )
+    assert isinstance(estimator._report_content, dict)
     assert estimator._report_content["description"] != ""
     assert estimator._has_report_data() is False
 
