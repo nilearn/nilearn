@@ -253,8 +253,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         del y
         check_params(self.__dict__)
 
-        self._init_report_content()
-
         self._overlay_text = (
             "\n To see the input Nifti image before resampling, "
             "hover over the displayed image."
