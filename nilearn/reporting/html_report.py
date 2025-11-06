@@ -205,7 +205,7 @@ def _update_template(
         data["coverage"] = f"{data['coverage']:0.1f}"
 
     body = body_tpl.render(
-        title=title,
+        title=data["title"],
         content=content,
         overlay=overlay,
         docstring=docstring,
