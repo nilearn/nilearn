@@ -12,7 +12,6 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
-from nilearn.maskers import NiftiSpheresMasker
 from nilearn.reporting._utils import (
     dataframe_to_html,
     model_attributes_to_dataframe,
@@ -255,6 +254,8 @@ def _define_overlay(estimator):
     """Determine whether an overlay was provided and \
     update the report text as appropriate.
     """
+    from nilearn.maskers import NiftiSpheresMasker
+
     displays = estimator._reporting()
 
     if len(displays) == 1:  # set overlay to None
