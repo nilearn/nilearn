@@ -159,6 +159,20 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
+        self._report_content = {
+            "description": (
+                "This report shows the input surface image "
+                "(if provided via img) overlaid with the regions provided "
+                "via maps_img."
+            ),
+            "n_vertices": {},
+            "number_of_regions": getattr(self, "n_elements_", 0),
+            "displayed_maps": [],
+            "number_of_maps": 0,
+            "summary": {},
+            "warning_message": None,
+        }
+
     @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
@@ -176,8 +190,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
-
-        self._init_report_content()
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -243,30 +255,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
-
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-        if not hasattr(self, "_report_content"):
-            self._report_content = {
-                "description": (
-                    "This report shows the input surface image "
-                    "(if provided via img) overlaid with the regions provided "
-                    "via maps_img."
-                ),
-                "n_vertices": {},
-                "number_of_regions": getattr(self, "n_elements_", 0),
-                "displayed_maps": [],
-                "number_of_maps": 0,
-                "summary": {},
-                "warning_message": None,
-            }
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = None
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "n_elements_")
@@ -423,7 +411,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return imgs
 
-    def generate_report(self, displayed_maps=10, engine="matplotlib"):
+    def generate_report(
+        self, title=None, displayed_maps=10, engine="matplotlib"
+    ):
         """Generate an HTML report for the current ``SurfaceMapsMasker``
         object.
 
@@ -432,6 +422,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         Parameters
         ----------
+        title : :obj:`str`, default=None
+            title for the report. If None, title will be the class name.
         displayed_maps : :obj:`int`, or :obj:`list`, \
                          or :class:`~numpy.ndarray`, or "all", default=10
             Indicates which maps will be displayed in the HTML report.
@@ -480,47 +472,44 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         # need to have matplotlib installed to generate reports no matter what
         # engine is selected
-        from nilearn.reporting.html_report import generate_report
-
-        if not is_matplotlib_installed():
-            return generate_report(self)
-
-        check_parameter_in_allowed(engine, ["plotly", "matplotlib"], "engine")
-
-        # switch to matplotlib if plotly is selected but not installed
-        if engine == "plotly" and not is_plotly_installed():
-            engine = "matplotlib"
-            warnings.warn(
-                "Plotly is not installed. "
-                "Switching to matplotlib for report generation.",
-                stacklevel=find_stack_level(),
+        if is_matplotlib_installed():
+            check_parameter_in_allowed(
+                engine, ["plotly", "matplotlib"], "engine"
             )
-        if hasattr(self, "_report_content"):
+
+            # switch to matplotlib if plotly is selected but not installed
+            if engine == "plotly" and not is_plotly_installed():
+                engine = "matplotlib"
+                warnings.warn(
+                    "Plotly is not installed. "
+                    "Switching to matplotlib for report generation.",
+                    stacklevel=find_stack_level(),
+                )
             self._report_content["engine"] = engine
 
-        incorrect_type = not isinstance(
-            displayed_maps, (list, np.ndarray, int, str)
-        )
-        incorrect_string = (
-            isinstance(displayed_maps, str) and displayed_maps != "all"
-        )
-        not_integer = (
-            not isinstance(displayed_maps, str)
-            and np.array(displayed_maps).dtype != int
-        )
-        if incorrect_type or incorrect_string or not_integer:
-            raise TypeError(
-                "Parameter ``displayed_maps`` of "
-                "``generate_report()`` should be either 'all' or "
-                "an int, or a list/array of ints. You provided a "
-                f"{type(displayed_maps)}"
+            incorrect_type = not isinstance(
+                displayed_maps, (list, np.ndarray, int, str)
             )
+            incorrect_string = (
+                isinstance(displayed_maps, str) and displayed_maps != "all"
+            )
+            not_integer = (
+                not isinstance(displayed_maps, str)
+                and np.array(displayed_maps).dtype != int
+            )
+            if incorrect_type or incorrect_string or not_integer:
+                raise TypeError(
+                    "Parameter ``displayed_maps`` of "
+                    "``generate_report()`` should be either 'all' or "
+                    "an int, or a list/array of ints. You provided a "
+                    f"{type(displayed_maps)}"
+                )
 
-        self.displayed_maps = displayed_maps
+            self.displayed_maps = displayed_maps
 
-        return generate_report(self)
+        return super().generate_report(title)
 
-    def _reporting(self):
+    def _get_displays(self):
         """Load displays needed for report.
 
         Returns
@@ -531,11 +520,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         import matplotlib.pyplot as plt
 
         from nilearn.reporting.utils import figure_to_png_base64
-
-        # Handle the edge case where this function is
-        # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
-            return [None]
 
         maps_img = self._reporting_data["maps_img"]
 
