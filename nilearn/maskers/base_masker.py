@@ -286,10 +286,6 @@ class BaseMasker(
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
 
-    @abc.abstractmethod
-    def _create_figure_for_report(self):
-        """Generate figure for report."""
-
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
 
@@ -595,10 +591,6 @@ class _BaseSurfaceMasker(
     @abc.abstractmethod
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
-
-    @abc.abstractmethod
-    def _create_figure_for_report(self):
-        """Generate figure for report."""
 
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
