@@ -447,10 +447,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if not is_matplotlib_installed():
             return [None]
 
-        import matplotlib.pyplot as plt
-
-        from nilearn.plotting import plot_img
-
         # create display of retained input mask, image
         # for visual comparison
         init_display = plot_img(

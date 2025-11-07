@@ -409,8 +409,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        from nilearn.reporting.html_report import generate_report
-
         if displayed_spheres != "all" and not isinstance(
             displayed_spheres, (list, np.ndarray, int)
         ):

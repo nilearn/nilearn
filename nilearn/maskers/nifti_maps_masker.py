@@ -278,8 +278,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        from nilearn.reporting.html_report import generate_report
-
         incorrect_type = not isinstance(
             displayed_maps, (list, np.ndarray, int, str)
         )
