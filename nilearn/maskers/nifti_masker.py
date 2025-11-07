@@ -423,6 +423,9 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         -------
         List of :class:`~nilearn.plotting.displays.OrthoSlicer`
         """
+        if not is_matplotlib_installed():
+            return [None]
+
         import matplotlib.pyplot as plt
 
         from nilearn.plotting import plot_img
@@ -443,9 +446,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             resampled_img, resampled_mask = self._reporting_data["transform"]
             if resampled_img is None:  # images were not provided to fit
                 resampled_img = resampled_mask
-
-        if not is_matplotlib_installed():
-            return [None]
 
         # create display of retained input mask, image
         # for visual comparison
