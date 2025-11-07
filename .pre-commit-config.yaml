@@ -28,6 +28,7 @@ repos:
     -   id: check-yaml
     -   id: end-of-file-fixer
     -   id: mixed-line-ending
+        args: [--fix=crlf]
     -   id: trailing-whitespace
 
     # Checks for .rst files
