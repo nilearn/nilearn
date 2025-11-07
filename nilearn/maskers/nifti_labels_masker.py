@@ -257,6 +257,15 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         self.strategy = strategy
 
+        self._report_content = {
+            "description": (
+                "This report shows the regions "
+                "defined by the labels of the mask."
+            ),
+            "number_of_regions": 0,
+            "warning_message": None,
+        }
+
     @property
     def _region_id_name(self):
         """Return dictionary used to store region names and
@@ -306,15 +315,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return masked_atlas, removed_region_ids, removed_region_names, display
 
-    def generate_report(self):
-        """Generate a report."""
-        from nilearn.reporting.html_report import generate_report
-
-        self._init_report_content()
-
-        return generate_report(self)
-
-    def _reporting(self):
+    def _get_displays(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -323,16 +324,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        labels_image = None
-        if self._reporting_data is not None:
-            labels_image = self._reporting_data["labels_image"]
+        labels_image = self._reporting_data["labels_image"]
 
-        if (
-            labels_image is None
-            or not self.__sklearn_is_fitted__
-            or not self.reports
-        ):
-            self._report_content["summary"] = None
+        if labels_image is None:
             return [None]
 
         # Remove warning message in case where the masker was
@@ -385,19 +379,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         img = self._reporting_data["img"]
 
-        # If we have a func image to show in the report, use it
-        if img is not None:
-            if self._reporting_data["dim"] == 5:
-                msg = (
-                    "A list of 4D subject images were provided to fit. "
-                    "Only first subject is shown in the report."
-                )
-                warnings.warn(msg, stacklevel=find_stack_level())
-                self._report_content["warning_message"] = msg
-
-        # Otherwise, simply plot the ROI of the label image
-        # and give a warning to the user
-        else:
+        if img is None:
             msg = (
                 "No image provided to fit in NiftiLabelsMasker. "
                 "Plotting ROIs of label image on the "
@@ -406,9 +388,17 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
 
-        return self._create_figure_for_report(labels_image, img)
+        elif self._reporting_data["dim"] == 5:
+            msg = (
+                "A list of 4D subject images were provided to fit. "
+                "Only first subject is shown in the report."
+            )
+            warnings.warn(msg, stacklevel=find_stack_level())
+            self._report_content["warning_message"] = msg
 
-    def _create_figure_for_report(self, labels_image, img):
+        return self._create_figure_for_report(labels_image)
+
+    def _create_figure_for_report(self, labels_image):
         """Generate figure to include in the report.
 
         Returns
@@ -420,17 +410,19 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         import matplotlib.pyplot as plt
 
-        from nilearn import plotting
+        from nilearn.plotting import find_xyz_cut_coords, plot_img, plot_roi
 
         # compute the cut coordinates on the label image in case
         # we have a functional image
-        cut_coords = plotting.find_xyz_cut_coords(
+        cut_coords = find_xyz_cut_coords(
             labels_image, activation_threshold=0.5
         )
 
+        img = self._reporting_data["img"]
+
         # If we have a func image to show in the report, use it
         if img is not None:
-            display = plotting.plot_img(
+            display = plot_img(
                 img,
                 cut_coords=cut_coords,
                 black_bg=False,
@@ -442,7 +434,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         # Otherwise, simply plot the ROI of the label image
         # and give a warning to the user
         else:
-            display = plotting.plot_roi(labels_image)
+            display = plot_roi(labels_image)
             plt.close()
 
         # If we have a mask, show its contours
@@ -470,8 +462,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         """
         del y
         check_params(self.__dict__)
-
-        self._init_report_content()
 
         check_reduction_strategy(self.strategy)
         check_parameter_in_allowed(
@@ -571,25 +561,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
-
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-        if not hasattr(self, "_report_content"):
-            self._report_content = {
-                "description": (
-                    "This reports shows the regions "
-                    "defined by the labels of the mask."
-                ),
-                "warning_message": None,
-                "number_of_regions": 0,
-            }
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = None
 
     def _check_labels(self):
         """Check labels.

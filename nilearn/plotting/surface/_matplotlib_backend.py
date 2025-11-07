@@ -12,11 +12,12 @@ import numpy as np
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn.image import get_data
 from nilearn.plotting import cm
-from nilearn.plotting._engine_utils import threshold_cmap, to_color_strings
+from nilearn.plotting._engine_utils import (
+    create_colorbar_for_fig,
+    to_color_strings,
+)
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
-    get_cbar_bounds,
-    get_cbar_ticks,
     get_colorbar_and_data_ranges,
 )
 from nilearn.plotting.cm import mix_colormaps
@@ -34,7 +35,6 @@ from nilearn.surface import load_surf_data, load_surf_mesh
 
 try:
     import matplotlib.pyplot as plt
-    from matplotlib.cm import ScalarMappable
     from matplotlib.colorbar import make_axes
     from matplotlib.colors import Normalize, to_rgba
     from matplotlib.gridspec import GridSpec, GridSpecFromSubplotSpec
@@ -172,56 +172,6 @@ def _get_vertexcolor(
     vertex_colors = cm.mix_colormaps(surf_colors, bg_colors)
 
     return to_color_strings(vertex_colors)
-
-
-def _colorbar_from_array(
-    array,
-    vmin,
-    vmax,
-    threshold,
-    symmetric_cbar=True,
-    cmap=DEFAULT_DIVERGING_CMAP,
-):
-    """Generate a custom colorbar for the specified ``array``.
-
-    array : :class:`np.ndarray`
-        Any 3D array.
-
-    vmin : :obj:`float`
-        lower bound for plotting of stat_map values.
-
-    vmax : :obj:`float`
-        upper bound for plotting of stat_map values.
-
-    threshold : :obj:`float`
-        If None is given, the colorbar is not thresholded.
-        If a number is given, it is used to threshold the colorbar.
-        Absolute values lower than threshold are shown in gray.
-
-    kwargs : :obj:`dict`
-        Extra arguments passed to get_colorbar_and_data_ranges.
-
-    cmap : :obj:`str`, default='cold_hot'
-        The name of a matplotlib or nilearn colormap.
-
-    """
-    _, _, vmin, vmax = get_colorbar_and_data_ranges(
-        array,
-        vmin=vmin,
-        vmax=vmax,
-        symmetric_cbar=symmetric_cbar,
-    )
-    if threshold is None:
-        threshold = 0.0
-    norm = Normalize(vmin=vmin, vmax=vmax)
-    thrs_cmap = threshold_cmap(cmap, norm, threshold)
-
-    sm = ScalarMappable(cmap=thrs_cmap, norm=norm)
-
-    # fake up the array of the scalar mappable.
-    sm._A = []
-
-    return sm
 
 
 def _compute_facecolors(bg_map, faces, n_vertices, alpha):
@@ -418,6 +368,9 @@ def _plot_surf(
 
     coords, faces = load_surf_mesh(surf_mesh)
 
+    # Center the mesh
+    coords -= np.mean(coords, axis=0)
+
     limits = [coords.min(), coords.max()]
 
     # Get elevation and azimut from view
@@ -492,30 +445,7 @@ def _plot_surf(
         face_colors = mix_colormaps(surf_map_face_colors, bg_face_colors)
 
         if colorbar:
-            cbar_vmin = cbar_vmin if cbar_vmin is not None else vmin
-            cbar_vmax = cbar_vmax if cbar_vmax is not None else vmax
-
-            # in rare cases where plotting an image of zeroes
-            # this avoids a matplolib error
-            if cbar_vmax == cbar_vmin:
-                cbar_vmax += 1
-                cbar_vmin += -1
-
-            ticks = get_cbar_ticks(
-                cbar_vmin,
-                cbar_vmax,
-                threshold=threshold,
-                tick_format=cbar_tick_format,
-            )
             norm = Normalize(vmin, vmax)
-            thrs_cmap = threshold_cmap(cmap, norm, threshold)
-            bounds = get_cbar_bounds(
-                cbar_vmin, cbar_vmax, thrs_cmap.N, cbar_tick_format
-            )
-
-            # we need to create a proxy mappable
-            proxy_mappable = ScalarMappable(cmap=thrs_cmap, norm=norm)
-            proxy_mappable.set_array(surf_map_faces)
             figure._colorbar_ax, _ = make_axes(
                 axes,
                 location="right",
@@ -524,13 +454,16 @@ def _plot_surf(
                 pad=0.0,
                 aspect=10.0,
             )
-            figure._cbar = figure.colorbar(
-                proxy_mappable,
-                cax=figure._colorbar_ax,
-                ticks=ticks,
-                boundaries=bounds,
+            figure._cbar = create_colorbar_for_fig(
+                figure,
+                figure._colorbar_ax,
+                cmap,
+                norm,
+                threshold,
+                cbar_vmin,
+                cbar_vmax,
+                tick_format=cbar_tick_format,
                 spacing="proportional",
-                format=cbar_tick_format,
                 orientation="vertical",
             )
 
@@ -614,16 +547,22 @@ def _plot_surf_contours(
     _, faces = load_surf_mesh(surf_mesh)
     roi = load_surf_data(roi_map)
 
+    collections = axes.collections[0]
+
     patch_list = []
     for level, color, label in zip(levels, colors, labels, strict=False):
         roi_indices = np.where(roi == level)[0]
         faces_outside = get_faces_on_edge(faces, roi_indices)
-        axes.collections[0]._facecolor3d[faces_outside] = color
-        if axes.collections[0]._edgecolor3d.size == 0:
-            axes.collections[0].set_edgecolor(axes.collections[0]._facecolor3d)
-        axes.collections[0]._edgecolor3d[faces_outside] = color
+
+        collections._facecolor3d[faces_outside] = color
+
+        if collections._edgecolor3d.size == 0:
+            collections.set_edgecolor(collections._facecolor3d)
+        collections._edgecolor3d[faces_outside] = color
+
         if label and legend:
             patch_list.append(Patch(color=color, label=label))
+
     # plot legend only if indicated and labels provided
     if legend and np.any([lbl is not None for lbl in labels]):
         figure.legend(handles=patch_list)
@@ -742,28 +681,29 @@ def _plot_img_on_surf(
         ax.set_box_aspect(None, zoom=1.3)
 
     if colorbar:
-        sm = _colorbar_from_array(
-            get_data(stat_map),
-            vmin,
-            vmax,
-            threshold,
-            symmetric_cbar=symmetric_cbar,
-            cmap=plt.get_cmap(cmap),
-        )
-
         cbar_grid = GridSpecFromSubplotSpec(3, 3, grid[-1, :])
         cbar_ax = fig.add_subplot(cbar_grid[1])
         axes.append(cbar_ax)
-        # Get custom ticks to set in colorbar
-        ticks = get_cbar_ticks(
-            vmin, vmax, threshold=threshold, tick_format=cbar_tick_format
+
+        _, _, vmin, vmax = get_colorbar_and_data_ranges(
+            get_data(stat_map),
+            vmin=vmin,
+            vmax=vmax,
+            symmetric_cbar=symmetric_cbar,
         )
-        fig.colorbar(
-            sm,
-            cax=cbar_ax,
+        cmap = plt.get_cmap(cmap)
+        norm = Normalize(vmin, vmax)
+
+        create_colorbar_for_fig(
+            fig,
+            cbar_ax,
+            cmap,
+            norm,
+            threshold,
+            None,
+            None,
             orientation="horizontal",
-            ticks=ticks,
-            format=cbar_tick_format,
+            tick_format=cbar_tick_format,
         )
 
     if title is not None:

@@ -5,13 +5,13 @@ import warnings
 from string import Template
 
 import pandas as pd
+from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
 from nilearn.externals import tempita
-from nilearn.maskers import NiftiSpheresMasker
 from nilearn.reporting._utils import (
     dataframe_to_html,
     model_attributes_to_dataframe,
@@ -21,6 +21,7 @@ from nilearn.reporting.utils import (
     HTML_PARTIALS_PATH,
     HTML_TEMPLATE_PATH,
     JS_PATH,
+    TEMPLATE_ROOT_PATH,
     figure_to_svg_base64,
 )
 
@@ -33,7 +34,9 @@ ESTIMATOR_TEMPLATES = {
     "SurfaceMasker": "report_body_template_surfacemasker.html",
     "MultiSurfaceMasker": "report_body_template_surfacemasker.html",
     "SurfaceLabelsMasker": "report_body_template_surfacemasker.html",
+    "MultiSurfaceLabelsMasker": "report_body_template_surfacemasker.html",
     "SurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
+    "MultiSurfaceMapsMasker": "report_body_template_surfacemapsmasker.html",
     "default": "report_body_template.html",
 }
 
@@ -60,6 +63,16 @@ def _get_estimator_template(estimator):
         return ESTIMATOR_TEMPLATES["default"]
 
 
+def return_jinja_env() -> Environment:
+    """Set up the jinja Environment."""
+    return Environment(
+        loader=FileSystemLoader(TEMPLATE_ROOT_PATH),
+        autoescape=select_autoescape(),
+        lstrip_blocks=True,
+        trim_blocks=True,
+    )
+
+
 def embed_img(display):
     """Embed an image or just return its instance if already embedded.
 
@@ -83,7 +96,6 @@ def embed_img(display):
 
 
 def _update_template(
-    title,
     docstring,
     content,
     overlay,
@@ -97,9 +109,6 @@ def _update_template(
 
     Parameters
     ----------
-    title : str
-        The title for the report.
-
     docstring : str
         The introductory docstring for the reported object.
 
@@ -116,6 +125,7 @@ def _update_template(
         A dictionary holding the data to be added to the report.
         The keys must match exactly the ones used in the template.
         The default template accepts the following:
+            - title (str) : Title of the report
             - description (str) : Description of the content.
             - warning_message (str) : An optional warning
               message to be displayed in red. This is used
@@ -155,7 +165,7 @@ def _update_template(
     with (JS_PATH / "carousel.js").open(encoding="utf-8") as js_file:
         js_carousel = js_file.read()
 
-    css_file_path = CSS_PATH / "masker_report.css"
+    css_file_path = CSS_PATH / "report.css"
     with css_file_path.open(encoding="utf-8") as css_file:
         css = css_file.read()
 
@@ -168,7 +178,6 @@ def _update_template(
         data["coverage"] = f"{data['coverage']:0.1f}"
 
     body = tpl.substitute(
-        title=title,
         content=content,
         overlay=overlay,
         docstring=docstring,
@@ -208,7 +217,7 @@ def _update_template(
         head_values={
             "head_css": head_css,
             "version": __version__,
-            "page_title": f"{title} report",
+            "page_title": f"{data['title']} report",
             "display_footer": "style='display: none'" if is_notebook() else "",
         },
     )
@@ -219,6 +228,7 @@ def _define_overlay(estimator):
     update the report text as appropriate.
     """
     displays = estimator._reporting()
+    from nilearn.maskers import NiftiSpheresMasker
 
     if len(displays) == 1:  # set overlay to None
         return None, displays[0]
@@ -270,6 +280,9 @@ def generate_report(estimator):
     # Generate a unique ID for this report
     data["unique_id"] = str(uuid.uuid4()).replace("-", "")
 
+    if data.get("title") is None:
+        data["title"] = estimator.__class__.__name__
+
     warning_messages = []
 
     if estimator.reports is False:
@@ -277,10 +290,7 @@ def generate_report(estimator):
             "\nReport generation not enabled!\nNo visual outputs created."
         )
 
-    if (
-        not hasattr(estimator, "_reporting_data")
-        or not estimator._reporting_data
-    ):
+    if not estimator.__sklearn_is_fitted__():
         warning_messages.append(
             "\nGenerating empty report.\n"
             "Make sure to run `fit` before inspecting reports."
@@ -293,8 +303,9 @@ def generate_report(estimator):
                 stacklevel=find_stack_level(),
             )
 
+        data["title"] = "Empty Report"
+
         return _update_template(
-            title="Empty Report",
             docstring="Empty Report",
             content=embed_img(None),
             overlay=None,
@@ -320,13 +331,10 @@ def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
     )
 
 
-def _render_warnings_partial(warning_messages):
-    if not warning_messages:
-        return ""
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(HTML_PARTIALS_PATH / "warnings.html"), encoding="utf-8"
-    )
-    return tpl.substitute(warning_messages=warning_messages)
+def _render_warnings_partial(warning_messages) -> str:
+    env = return_jinja_env()
+    tpl = env.get_template("html/partials/warnings.jinja")
+    return tpl.render(warning_messages=warning_messages)
 
 
 def _create_report(estimator, data):
@@ -381,7 +389,6 @@ def _create_report(estimator, data):
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
     return _update_template(
-        title=estimator.__class__.__name__,
         docstring=snippet,
         content=embeded_images,
         overlay=embed_img(overlay),
@@ -412,8 +419,8 @@ class HTMLReport(HTMLDocument):
 
     Parameters
     ----------
-    head_tpl : Template
-        This is meant for display as a full page, eg writing on disk.
+    head_tpl : str.Template or Jinja Template
+        This is meant for display as a full page, like writing on disk.
         This is the Template object used to generate the HTML head
         section of the report. The template should be filled with:
 
@@ -440,10 +447,18 @@ class HTMLReport(HTMLDocument):
         """Construct the ``HTMLReport`` class."""
         if head_values is None:
             head_values = {}
-        html = head_tpl.safe_substitute(body=body, **head_values)
-        super().__init__(html)
-        self.head_tpl = head_tpl
+
+        if isinstance(head_tpl, Template):
+            html = head_tpl.safe_substitute(body=body, **head_values)
+            self.head_tpl = head_tpl.safe_substitute(**head_values)
+        else:
+            # in this case we are working with jinja template
+            html = head_tpl.render(body=body, **head_values)
+            self.head_tpl = head_tpl.render(**head_values)
+
         self.body = body
+
+        super().__init__(html)
 
     def _repr_html_(self):
         """Return body of the report.

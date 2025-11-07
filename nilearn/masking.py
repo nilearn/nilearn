@@ -927,13 +927,13 @@ def apply_mask_fmri(
     if not np.allclose(mask_affine, imgs_img.affine):
         raise ValueError(
             f"Mask affine:\n{mask_affine}\n is different from img affine:"
-            "\n{imgs_img.affine}"
+            f"\n{imgs_img.affine}"
         )
 
     if mask_data.shape != imgs_img.shape[:3]:
         raise ValueError(
-            f"Mask shape: {mask_data.shape!s} is different "
-            f"from img shape:{imgs_img.shape[:3]!s}"
+            f"Mask shape: {mask_data.shape!s}\n is different from img shape:"
+            f"{imgs_img.shape[:3]!s}"
         )
 
     # All the following has been optimized for C order.

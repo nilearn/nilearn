@@ -58,6 +58,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -100,12 +101,33 @@ def test_fit_transform_warning(img_3d_rand_eye, mask_img_1):
         assert np.any(X != 0)
 
 
-def test_resample(img_3d_rand_eye, mask_img_1):
-    """Check that target_affine triggers the right resampling."""
-    masker = NiftiMasker(mask_img=mask_img_1, target_affine=2 * np.eye(3))
+@pytest.mark.parametrize(
+    "target_affine", [2 * np.eye(3), (2 * np.eye(3)).tolist()]
+)
+def test_resample(img_3d_rand_eye, mask_img_1, target_affine):
+    """Check that target_affine triggers the right resampling.
+
+    Also check that target affine can be passed as a list.
+    """
+    masker = NiftiMasker(mask_img=mask_img_1, target_affine=target_affine)
     # Smoke test the fit
     X = masker.fit_transform(img_3d_rand_eye)
     assert np.any(X != 0)
+
+
+@pytest.mark.parametrize(
+    "target_affine",
+    [
+        [1, 2, 3],
+        [[1, 2, 3]],
+    ],
+)
+def test_target_affine_error(img_3d_rand_eye, target_affine):
+    """Check errors when passing affine as list with wrong dimensions."""
+    masker = NiftiMasker(target_affine=target_affine)
+
+    with pytest.raises(np.linalg.LinAlgError):
+        masker.fit_transform(img_3d_rand_eye)
 
 
 def test_resample_to_mask_warning(img_3d_rand_eye, affine_eye):
@@ -176,6 +198,7 @@ def test_matrix_orientation():
     np.testing.assert_array_almost_equal(get_data(recovered), get_data(fmri))
 
 
+@pytest.mark.slow
 def test_mask_4d(shape_3d_default, affine_eye):
     """Test performance with 4D data."""
     # Dummy mask
@@ -348,7 +371,7 @@ def test_compute_brain_mask_empty_mask_error(strategy):
         masker.fit(img)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "strategy",
     [f"{p}-template" for p in ["whole-brain", "gm", "wm"]],
@@ -441,7 +464,7 @@ def test_filter_and_mask(affine_eye):
     data_img = Nifti1Image(data, affine_eye)
     mask_img = Nifti1Image(mask, affine_eye)
 
-    masker = NiftiMasker()
+    masker = NiftiMasker(standardize=None)
     params = get_params(NiftiMasker, masker)
     params["clean_kwargs"] = {}
 

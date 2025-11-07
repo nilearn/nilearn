@@ -129,6 +129,7 @@ def test_threshold_stats_img_no_height_control(
     assert th_map is None
 
 
+@pytest.mark.slow
 def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0

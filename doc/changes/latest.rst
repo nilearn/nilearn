@@ -15,7 +15,13 @@ HIGHLIGHTS
  |
  | **Minimum supported versions of the following packages have been bumped up:**
  | - matplotlib -- 3.8.0
- | - SciPy -- v1.9.0
+ | - scipy -- 1.9.0
+ | - requests -- 2.30.0
+ |
+ | **A new dependency has been added:**
+ | - Jinja2 >= 3.1.2
+ |
+
 
 NEW
 ---
@@ -25,10 +31,20 @@ Fixes
 
 - :bdg-primary:`Doc` Update allowed values for the parameter ``standardize`` to match those of :func:`~signal.clean` in :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMClassifier`, :class:`~decoding.FREMRegressor`, :class:`~decoding.SpaceNetClassifier`, :class:`~decoding.SpaceNetRegressor`, :class:`~connectome.ConnectivityMeasure`, :class:`~decomposition.DictLearning`, :class:`~decomposition.CanICA` as well as for all maskers  (:gh:`5668` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Improve errors thrown when the confounds for a subject or group level analysis GLM contain NaN (:gh:`5739` by `Rémi Gau`_).
+
 Enhancements
 ------------
 
-- :bdg-success:`API` Add an ``exclude_subjects`` parameter to :func:`~glm.first_level.first_level_from_bids` to skip some subjects when creating GLM models from a BIDS dataset (:gh:`XXXX` by `Rémi Gau`_).
+- :bdg-dark:`Code` Add tedana support for load_confounds and testing for tedana load_confounds support (:gh:`5410` by `Milton Camacho`_).
+
+- :bdg-dark:`Code` Parameter ``head_tpl`` in  :class:`~reporting.HTMLReport` can now be a Jinja2 template (:gh:`5710` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` NaN values contained in the first row of the confounds loaded by :func:`~glm.first_level.first_level_from_bids` will be turned into 0 to avoid downstream errors when creating design matrices (:gh:`5739` by `Rémi Gau`_).
+
+- :bdg-success:`API` Add :func:`~utils.all_estimators`, :func:`~utils.all_displays`, :func:`~utils.all_functions` to provide list all estimators and functions available in Nilearn (:gh:`5535` by `Rémi Gau`_).
+
+- :bdg-success:`API` Add an ``exclude_subjects`` parameter to :func:`~glm.first_level.first_level_from_bids` to skip some subjects when creating GLM models from a BIDS dataset (:gh:`5741` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add ``view`` parameter to :func:`~plotting.view_img_on_surf` to select the default view that will be used when displaying the figure  (:gh:`5692` by `Rémi Gau`_).
 
@@ -38,13 +54,18 @@ Enhancements
 
 - :bdg-success:`API` Add support for Scikit-Learn ``set_output()`` in several Nilearn feature extractors (nifti and surface non-multi maskers, and :class:`~regions.HierarchicalKMeans`) to allow ``transform()`` to output to either Pandas or Polars dataframe and not just numpy arrays (:gh:`5508` by `Rémi Gau`_).
 
-- :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker` (:gh:`5679` by `Rémi Gau`_).
+- :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker`, a :class:`~maskers.MultiSurfaceLabelsMasker` (:gh:`5679`, :gh:`5726` by `Rémi Gau`_).
+
+- :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker`, a :class:`~maskers.MultiSurfaceMapsMasker` (:gh:`5679`, :gh:`5727` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add support for ``cluster_threshold`` for :func:`~image.threshold_img`, :func:`~glm.threshold_stats_img`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report` and :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5715` by `Rémi Gau`_).
 
+- :bdg-success:`API` Add support for ``title`` parameter for Nilearn maskers ``generate_report`` method. (:gh:`5790` by `Hande Gözükan`_).
 
 Changes
 -------
+
+- :bdg-danger:`Deprecation` The function :func:`~nilearn.glm.save_glm_to_bids` was moved to the :mod:`~nilearn.glm` module. It will be importable from its original :mod:`~nilearn.interfaces` till Nilearn version 0.15.0 (:gh:`5770` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Extra key-words arguments (``kwargs``) have been removed from the constructor of all the Nifti maskers. Any extra-parameters to pass to the call to :func:`~image.clean_img` done by ``transform`` must be done via the parameter ``clean_args`` (:gh:`5628` by `Rémi Gau`_).
 
@@ -99,3 +120,7 @@ Changes
 - :bdg-danger:`Deprecation` Set ``copy_header`` default to True in :func:`~image` functions (:gh:`5656` by `Rémi Gau`_ and `Himanshu Aggarwal`_).
 
 - :bdg-primary:`Doc` Home-made sphinx directives are used instead of default sphinx directives relative to version changes (``versionadded``, ``versionchanged``, ``deprecated``...) to more easily distinguish between feature changes introduced in Nilearn versus those introduced in upstream dependencies (like in Scikit-Learn) (:gh:`5654` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Change cmap to ``'RdBu_r'`` for :func:`~plotting.plot_contrast_matrix` (:gh:`5780` by `Hande Gözükan`_).
+
+- :bdg-info:`Plotting` Change background to ``'black'`` for functions :func:`~plotting.plot_img_comparison` and :func:`~plotting.plot_bland_altman` (:gh:`5785` by `Hande Gözükan`_).

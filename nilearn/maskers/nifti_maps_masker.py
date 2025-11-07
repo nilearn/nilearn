@@ -222,7 +222,14 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self.keep_masked_maps = keep_masked_maps
 
-    def generate_report(self, displayed_maps=10):
+        self._report_content = {
+            "description": (
+                "This report shows the spatial maps provided to the mask."
+            ),
+            "warning_message": None,
+        }
+
+    def generate_report(self, title=None, displayed_maps=10):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 
         .. note::
@@ -230,6 +237,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Parameters
         ----------
+        title : :obj:`str`, default=None
+            title for the report. If None, title will be the class name.
+
         displayed_maps : :obj:`int`, or :obj:`list`, \
                          or :class:`~numpy.ndarray`, or "all", default=10
             Indicates which maps will be displayed in the HTML report.
@@ -289,9 +299,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             )
         self.displayed_maps = displayed_maps
 
-        return generate_report(self)
+        return super().generate_report(title)
 
-    def _reporting(self):
+    def _get_displays(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -300,9 +310,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        maps_image = None
-        if self._reporting_data is not None:
-            maps_image = self._reporting_data["maps_image"]
+        maps_image = self._reporting_data["maps_image"]
 
         if maps_image is None:
             return [None]
@@ -348,7 +356,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
 
-        if self._reporting_data["dim"] == 5:
+        elif self._reporting_data["dim"] == 5:
             msg = (
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
@@ -363,7 +371,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        list of :class:`~matplotlib.figure.Figure`
+        list of :class:`~nilearn.plotting.displays.OrthoSlicer`
         """
         if not is_matplotlib_installed():
             return [None]
@@ -385,7 +393,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         if img is None:
             for component in maps_to_be_displayed:
-                display = plot_stat_map(index_img(maps_image, component))
+                display = plot_stat_map(
+                    index_img(maps_image, component), cmap=cm.black_blue
+                )
                 embedded_images.append(display)
                 display.close()
 
@@ -402,8 +412,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     cmap=self.cmap,
                 )
                 display.add_overlay(
-                    index_img(maps_image, component),
-                    cmap=cm.black_blue,
+                    index_img(maps_image, component), cmap=cm.black_blue
                 )
                 embedded_images.append(display)
                 display.close()
@@ -424,8 +433,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         del y
         check_params(self.__dict__)
-
-        self._init_report_content()
 
         check_parameter_in_allowed(
             self.resampling_target,
@@ -460,7 +467,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.maps_img_ = clean_img(
             self.maps_img_,
             detrend=False,
-            standardize=False,
+            standardize=None,
             ensure_finite=True,
         )
 
@@ -492,12 +499,25 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             ):
                 mask_logger("resample_regions", verbose=self.verbose)
 
-                self.maps_img_ = self._cache(resample_img)(
-                    self.maps_img_,
-                    interpolation="linear",
-                    target_shape=ref_img.shape[:3],
-                    target_affine=ref_img.affine,
-                )
+                with warnings.catch_warnings():
+                    # in case all voxel maps contains same value,
+                    # it will be seen as a binary image
+                    # silence warnings for this
+                    # as user cannot change the interpolation type
+                    warnings.filterwarnings(
+                        action="ignore",
+                        category=UserWarning,
+                        message=(
+                            "Resampling binary images "
+                            "with continuous or linear interpolation"
+                        ),
+                    )
+                    self.maps_img_ = self._cache(resample_img)(
+                        self.maps_img_,
+                        interpolation="linear",
+                        target_shape=ref_img.shape[:3],
+                        target_affine=ref_img.affine,
+                    )
             if self.mask_img_ is not None and not check_same_fov(
                 ref_img, self.mask_img_
             ):
@@ -532,23 +552,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
-
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-        if not hasattr(self, "_report_content"):
-            self._report_content = {
-                "description": (
-                    "This reports shows the spatial maps provided to the mask."
-                ),
-                "warning_message": None,
-            }
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = None
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")
@@ -647,12 +650,25 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     ),
                     stacklevel=find_stack_level(),
                 )
-                maps_img_ = self._cache(resample_img)(
-                    self.maps_img_,
-                    interpolation="linear",
-                    target_shape=ref_img.shape[:3],
-                    target_affine=ref_img.affine,
-                )
+                with warnings.catch_warnings():
+                    # in case all voxel maps contains same value,
+                    # it will be seen as a binary image
+                    # silence warnings for this
+                    # as user cannot change the interpolation type
+                    warnings.filterwarnings(
+                        action="ignore",
+                        category=UserWarning,
+                        message=(
+                            "Resampling binary images "
+                            "with continuous or linear interpolation"
+                        ),
+                    )
+                    maps_img_ = self._cache(resample_img)(
+                        self.maps_img_,
+                        interpolation="linear",
+                        target_shape=ref_img.shape[:3],
+                        target_affine=ref_img.affine,
+                    )
 
             if self.mask_img_ is not None and not check_same_fov(
                 ref_img,
