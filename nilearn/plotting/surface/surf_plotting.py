@@ -572,7 +572,6 @@ def plot_surf_stat_map(
     check_extensions(stat_map, DATA_EXTENSIONS, FREESURFER_DATA_EXTENSIONS)
     loaded_stat_map = load_surf_data(stat_map)
 
-    backend = get_surface_backend(engine)
     # derive symmetric vmin, vmax and colorbar limits depending on
     # symmetric_cbar settings
     cbar_vmin, cbar_vmax, vmin, vmax = get_colorbar_and_data_ranges(
@@ -581,14 +580,17 @@ def plot_surf_stat_map(
         vmax=vmax,
         symmetric_cbar=symmetric_cbar,
     )
+    backend = get_surface_backend(engine)
+    if "cbar_vmin" in backend.PARAMS_NOT_IMPLEMENTED:
+        cbar_vmin = None
+        cbar_vmax = None
 
-    fig = plot_surf(
+    fig = backend._plot_surf(
         surf_mesh,
         surf_map=loaded_stat_map,
         bg_map=bg_map,
         hemi=hemi,
         view=view,
-        engine=engine,
         cmap=cmap,
         colorbar=colorbar,
         avg_method=avg_method,
@@ -1004,6 +1006,13 @@ def plot_surf_roi(
         cmap = create_colormap_from_lut(cmap)
 
     backend = get_surface_backend(engine)
+
+    if (
+        avg_method is None
+        and "avg_method" not in backend.PARAMS_NOT_IMPLEMENTED
+    ):
+        avg_method = "median"
+
     fig = backend._plot_surf(
         mesh,
         surf_map=roi,
