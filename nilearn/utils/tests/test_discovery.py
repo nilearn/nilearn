@@ -4,6 +4,7 @@ import contextlib
 
 import pytest
 
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.utils.discovery import all_displays, all_estimators, all_functions
 
 with contextlib.suppress(ImportError):
@@ -46,7 +47,7 @@ def test_all_functions():
 
     print(fn)
 
-    expected = (
+    expected = [
         "all_displays",
         "all_estimators",
         "all_functions",
@@ -156,7 +157,6 @@ def test_all_functions():
         "load_nki",
         "load_surf_data",
         "load_surf_mesh",
-        "make_glm_report",
         "make_first_level_design_matrix",
         "make_second_level_design_matrix",
         "math_img",
@@ -217,7 +217,9 @@ def test_all_functions():
         "view_markers",
         "view_surf",
         "vol_to_surf",
-    )
+    ]
+    if is_matplotlib_installed():
+        expected.append("make_glm_report")
     assert len(fn) == len(expected), (
         f"Difference: {set(fn).symmetric_difference(expected)}"
     )
