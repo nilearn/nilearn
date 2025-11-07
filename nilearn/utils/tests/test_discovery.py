@@ -4,7 +4,6 @@ import contextlib
 
 import pytest
 
-from nilearn._utils.helpers import is_windows_platform
 from nilearn.utils.discovery import all_displays, all_estimators, all_functions
 
 with contextlib.suppress(ImportError):
@@ -36,11 +35,11 @@ def test_all_estimators(
 
 # TODO
 # for some reason this test is flaky
-# and the number of functions found can vary on Windows
+# and the number of functions found can vary
 # usually make_glm_report is missing sometimes
 # making sure that make_glm_report is part of the API
 # even when matplotlib is not available should help
-@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
+@pytest.mark.flaky(reruns=5, reruns_delay=2)
 def test_all_functions():
     """Check number of functions in public API."""
     fn = [x[0] for x in all_functions()]
