@@ -484,7 +484,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         if not is_matplotlib_installed() or self._reporting_data is None:
             return [None]
 
-        from matplotlib.pyplot import plt
+        import matplotlib.pyplot as plt
 
         from nilearn.reporting.utils import figure_to_png_base64
 
