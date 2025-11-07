@@ -10,7 +10,6 @@ import itertools
 import numpy as np
 
 from nilearn import DEFAULT_DIVERGING_CMAP
-from nilearn.image import get_data
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import (
     create_colorbar_for_fig,
@@ -18,7 +17,6 @@ from nilearn.plotting._engine_utils import (
 )
 from nilearn.plotting._utils import (
     DEFAULT_TICK_FORMAT,
-    get_colorbar_and_data_ranges,
 )
 from nilearn.plotting.cm import mix_colormaps
 from nilearn.plotting.displays._slicers import save_figure_if_needed
@@ -532,7 +530,6 @@ def _plot_surf_contours(
 def _plot_img_on_surf(
     surf,
     surf_mesh,
-    stat_map,
     texture,
     hemis,
     modes,
@@ -605,14 +602,6 @@ def _plot_img_on_surf(
         )
         loaded_stat_map = load_surf_data(stat_map_iter)
 
-        # derive symmetric vmin, vmax and colorbar limits depending on
-        # symmetric_cbar settings
-        _, _, vmin_iter, vmax_iter = get_colorbar_and_data_ranges(
-            loaded_stat_map,
-            vmin=vmin,
-            vmax=vmax,
-            symmetric_cbar=symmetric_cbar,
-        )
         _plot_surf(
             surf_mesh=surf_mesh_iter,
             surf_map=loaded_stat_map,
@@ -623,8 +612,8 @@ def _plot_img_on_surf(
             colorbar=False,  # Colorbar created externally.
             threshold=threshold,
             bg_on_data=bg_on_data,
-            vmin=vmin_iter,
-            vmax=vmax_iter,
+            vmin=vmin,
+            vmax=vmax,
             axes=ax,
             **kwargs,
         )
@@ -639,12 +628,6 @@ def _plot_img_on_surf(
         cbar_ax = fig.add_subplot(cbar_grid[1])
         axes.append(cbar_ax)
 
-        _, _, vmin, vmax = get_colorbar_and_data_ranges(
-            get_data(stat_map),
-            vmin=vmin,
-            vmax=vmax,
-            symmetric_cbar=symmetric_cbar,
-        )
         cmap = plt.get_cmap(cmap)
         norm = Normalize(vmin, vmax)
 
