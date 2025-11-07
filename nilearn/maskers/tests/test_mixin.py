@@ -76,7 +76,6 @@ def test_masker_reporting_true(masker, img_func):
 
     # check masker report before fit
     masker.generate_report()
-    assert masker._report_content["title"] == "Empty Report"
     assert masker._has_report_data() is False
 
     # check masker after fit
@@ -130,7 +129,6 @@ def test_masker_reporting_false(masker, img_func):
 
     # check masker report before fit
     masker.generate_report()
-    assert masker._report_content["title"] == "Empty Report"
     assert masker._has_report_data() is False
 
     # check masker after fit
@@ -140,8 +138,6 @@ def test_masker_reporting_false(masker, img_func):
 
     # check masker report without title specified
     masker.generate_report()
-    assert masker._report_content["title"] == "Empty Report"
 
     # check masker report with title specified
     masker.generate_report(title="masker report title")
-    assert masker._report_content["title"] == "Empty Report"

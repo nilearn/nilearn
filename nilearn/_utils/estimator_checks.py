@@ -3724,8 +3724,6 @@ def check_masker_generate_report_false(estimator):
 
     _check_html(report, reports_requested=False)
 
-    assert "Empty Report" in str(report)
-
 
 @ignore_warnings()
 def check_multimasker_generate_report(estimator):

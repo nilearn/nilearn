@@ -297,6 +297,42 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             )
         self.displayed_maps = displayed_maps
 
+        self._report_content["number_of_maps"] = 0
+        self._report_content["displayed_maps"] = []
+
+        if self._has_report_data():
+            maps_image = self._reporting_data["maps_image"]
+            n_maps = get_data(maps_image).shape[-1]
+
+            maps_to_be_displayed = range(n_maps)
+            if isinstance(self.displayed_maps, int):
+                if n_maps < self.displayed_maps:
+                    msg = (
+                        "`generate_report()` received "
+                        f"{self.displayed_maps} to be displayed. "
+                        f"But masker only has {n_maps} maps. "
+                        f"Setting number of displayed maps to {n_maps}."
+                    )
+                    warnings.warn(
+                        category=UserWarning,
+                        message=msg,
+                        stacklevel=find_stack_level(),
+                    )
+                    self.displayed_maps = n_maps
+                maps_to_be_displayed = range(self.displayed_maps)
+
+            elif isinstance(self.displayed_maps, (list, np.ndarray)):
+                if max(self.displayed_maps) > n_maps:
+                    raise ValueError(
+                        "Report cannot display the following maps "
+                        f"{self.displayed_maps} because "
+                        f"masker only has {n_maps} maps."
+                    )
+                maps_to_be_displayed = self.displayed_maps
+
+            self._report_content["number_of_maps"] = n_maps
+            self._report_content["displayed_maps"] = list(maps_to_be_displayed)
+
         return super().generate_report(title)
 
     def _get_displays(self):
@@ -341,7 +377,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 )
             maps_to_be_displayed = self.displayed_maps
 
-        self._report_content["number_of_maps"] = n_maps
         self._report_content["displayed_maps"] = list(maps_to_be_displayed)
 
         img = self._reporting_data["img"]

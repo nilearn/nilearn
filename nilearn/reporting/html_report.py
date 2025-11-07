@@ -95,6 +95,7 @@ def embed_img(display):
     return figure_to_svg_base64(display.frame_axes.figure)
 
 
+# TODO : inline this function in generate_report
 def _update_template(
     docstring,
     content,
@@ -270,12 +271,10 @@ def generate_report(estimator):
                 message=mpl_unavail_msg,
                 stacklevel=find_stack_level(),
             )
-            # return [None]
 
+    data = {}
     if hasattr(estimator, "_report_content"):
         data = estimator._report_content
-    else:
-        data = {}
 
     # Generate a unique ID for this report
     data["unique_id"] = str(uuid.uuid4()).replace("-", "")
@@ -303,51 +302,19 @@ def generate_report(estimator):
                 stacklevel=find_stack_level(),
             )
 
-        data["title"] = "Empty Report"
-
-        return _update_template(
-            docstring="Empty Report",
-            content=embed_img(None),
-            overlay=None,
-            parameters={},
-            data=data,
-            warning_messages=warning_messages,
-        )
-
-    return _create_report(estimator, data)
-
-
-def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(HTML_PARTIALS_PATH / "figure.html"), encoding="utf-8"
-    )
-    if not isinstance(content, list):
-        content = [content]
-    return tpl.substitute(
-        engine=engine,
-        content=content,
-        displayed_maps=displayed_maps,
-        unique_id=unique_id,
-    )
-
-
-def _render_warnings_partial(warning_messages) -> str:
-    env = return_jinja_env()
-    tpl = env.get_template("html/partials/warnings.jinja")
-    return tpl.render(warning_messages=warning_messages)
-
-
-def _create_report(estimator, data):
     html_template = _get_estimator_template(estimator)
 
-    # note that some surface images are passed via data
-    # for surface maps masker
-    overlay, image = _define_overlay(estimator)
-    embeded_images = (
-        [embed_img(i) for i in image]
-        if isinstance(image, list)
-        else embed_img(image)
-    )
+    embeded_images = embed_img(None)
+    overlay = None
+    if not warning_messages:
+        # note that some surface images are passed via data
+        # for surface maps masker
+        overlay, image = _define_overlay(estimator)
+        embeded_images = (
+            [embed_img(i) for i in image]
+            if isinstance(image, list)
+            else embed_img(image)
+        )
 
     summary_html = None
     # only convert summary to html table if summary exists
@@ -396,7 +363,28 @@ def _create_report(estimator, data):
         data=data,
         template_name=html_template,
         summary_html=summary_html,
+        warning_messages=warning_messages,
     )
+
+
+def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(HTML_PARTIALS_PATH / "figure.html"), encoding="utf-8"
+    )
+    if not isinstance(content, list):
+        content = [content]
+    return tpl.substitute(
+        engine=engine,
+        content=content,
+        displayed_maps=displayed_maps,
+        unique_id=unique_id,
+    )
+
+
+def _render_warnings_partial(warning_messages) -> str:
+    env = return_jinja_env()
+    tpl = env.get_template("html/partials/warnings.jinja")
+    return tpl.render(warning_messages=warning_messages)
 
 
 def is_notebook() -> bool:

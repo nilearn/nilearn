@@ -420,6 +420,48 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             )
         self.displayed_spheres = displayed_spheres
 
+        self._report_content["number_of_seeds"] = 0
+        self._report_content["displayed_maps"] = [0]
+        if self._has_report_data():
+            seeds = self._reporting_data["seeds"]
+            self._report_content["number_of_seeds"] = len(seeds)
+
+            spheres_to_be_displayed = range(len(seeds))
+
+            if isinstance(self.displayed_spheres, int):
+                if len(seeds) < self.displayed_spheres:
+                    msg = (
+                        "generate_report() received "
+                        f"{self.displayed_spheres} spheres to be displayed. "
+                        f"But masker only has {len(seeds)} seeds. "
+                        "Setting number of displayed spheres "
+                        f"to {len(seeds)}."
+                    )
+                    warnings.warn(
+                        category=UserWarning,
+                        message=msg,
+                        stacklevel=find_stack_level(),
+                    )
+                    self.displayed_spheres = len(seeds)
+                spheres_to_be_displayed = range(self.displayed_spheres)
+
+            elif isinstance(self.displayed_spheres, (list, np.ndarray)):
+                if max(self.displayed_spheres) > len(seeds):
+                    raise ValueError(
+                        "Report cannot display the "
+                        "following spheres "
+                        f"{self.displayed_spheres} because "
+                        f"masker only has {len(seeds)} seeds."
+                    )
+                spheres_to_be_displayed = self.displayed_spheres
+
+            # extend spheres_to_be_displayed by 1
+            # as the default image is a glass brain with all the spheres
+            tmp = [0]
+            spheres_to_be_displayed = np.asarray(spheres_to_be_displayed) + 1
+            tmp.extend(spheres_to_be_displayed.tolist())
+            self._report_content["displayed_maps"] = tmp
+
         return super().generate_report(title)
 
     def _get_displays(self):
@@ -448,44 +490,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 ).astype(int)
                 for seed in seeds
             ]
-
-        self._report_content["number_of_seeds"] = len(seeds)
-
-        spheres_to_be_displayed = range(len(seeds))
-
-        if isinstance(self.displayed_spheres, int):
-            if len(seeds) < self.displayed_spheres:
-                msg = (
-                    "generate_report() received "
-                    f"{self.displayed_spheres} spheres to be displayed. "
-                    f"But masker only has {len(seeds)} seeds. "
-                    "Setting number of displayed spheres "
-                    f"to {len(seeds)}."
-                )
-                warnings.warn(
-                    category=UserWarning,
-                    message=msg,
-                    stacklevel=find_stack_level(),
-                )
-                self.displayed_spheres = len(seeds)
-            spheres_to_be_displayed = range(self.displayed_spheres)
-
-        elif isinstance(self.displayed_spheres, (list, np.ndarray)):
-            if max(self.displayed_spheres) > len(seeds):
-                raise ValueError(
-                    "Report cannot display the "
-                    "following spheres "
-                    f"{self.displayed_spheres} because "
-                    f"masker only has {len(seeds)} seeds."
-                )
-            spheres_to_be_displayed = self.displayed_spheres
-
-        # extend spheres_to_be_displayed by 1
-        # as the default image is a glass brain with all the spheres
-        tmp = [0]
-        spheres_to_be_displayed = np.asarray(spheres_to_be_displayed) + 1
-        tmp.extend(spheres_to_be_displayed.tolist())
-        self._report_content["displayed_maps"] = tmp
 
         columns = [
             "seed number",
