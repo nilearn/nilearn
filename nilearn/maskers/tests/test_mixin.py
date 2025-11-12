@@ -142,3 +142,10 @@ def test_masker_reporting_false(masker, img_func):
     # check masker report with title specified
     masker.generate_report(title="masker report title")
     assert masker._report_content["title"] == "Empty Report"
+
+    # check masker report if the model is fit when reports=False
+    # and reports=True is set and report generation is required
+    # Regression test for https://github.com/nilearn/nilearn/issues/5831
+    masker.reports = True
+    masker.generate_report()
+    assert masker._report_content["title"] == "Empty Report"
