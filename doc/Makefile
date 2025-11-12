@@ -87,13 +87,13 @@ dummy_reports:
 reports:
 	python visual_testing/reporter_visual_inspection_suite.py full
 
-html: ci.rst sym_links sym_links_datasets report
+html: ci.rst sym_links sym_links_datasets reports
 	rm -rf $(BUILDDIR)/html/_images
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-strict: ci.rst sym_links sym_links_datasets report
+html-strict: ci.rst sym_links sym_links_datasets reports
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
 	make check

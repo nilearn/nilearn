@@ -131,7 +131,7 @@ def main():
         build_type = "html-modified-examples-only"
 
     if GENERATE_REPORT:
-        build_type += "-report"
+        build_type += "-reports"
 
     Path("build.txt").write_text(build_type + "\n")
 
@@ -217,14 +217,14 @@ try:
         [
             ("", "ci-html-noplot\n"),
             ("[full doc]", "html-strict\n"),
-            ("[report]", "ci-html-noplot-report\n"),
+            ("[report]", "ci-html-noplot-reports\n"),
             (
                 "[example] plot_3d_and_4d_niimg.py",
                 "html-modified-examples-only\n",
             ),
             (
                 "[report][example] plot_3d_and_4d_niimg.py",
-                "html-modified-examples-only-report\n",
+                "html-modified-examples-only-reports\n",
             ),
         ],
     )
