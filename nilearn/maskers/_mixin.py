@@ -350,10 +350,6 @@ class _LabelMaskerMixin:
             other_rows = lut[~mask_background_index]
             lut = pd.concat([first_rows, other_rows], ignore_index=True)
 
-            mask_background_name = lut["name"] == "Background"
-            if not (mask_background_name).any():
-                lut["name"] = lut["name"].shift(1)
-
             lut.loc[0, "name"] = "Background"
 
         else:
@@ -363,8 +359,7 @@ class _LabelMaskerMixin:
                 "color": "FFFFFF",
             }
             first_row = {
-                col: first_row[col] if col in lut else np.nan
-                for col in lut.columns
+                col: first_row.get(col, np.nan) for col in lut.columns
             }
             lut = pd.concat(
                 [pd.DataFrame([first_row]), lut], ignore_index=True
