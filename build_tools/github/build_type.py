@@ -88,7 +88,7 @@ def main():
         Path("build.txt").write_text("html-strict\n")
         return
 
-    GENERATE_REPORT = "[report]" in COMMIT_MSG
+    GENERATE_REPORT = "[reports]" in COMMIT_MSG
 
     # Check for [example] in commit message
     example = []
