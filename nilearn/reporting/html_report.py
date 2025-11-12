@@ -97,178 +97,6 @@ class HTMLReport(HTMLDocument):
         return self.body
 
 
-def return_jinja_env() -> Environment:
-    """Set up the jinja Environment."""
-    return Environment(
-        loader=FileSystemLoader(TEMPLATE_ROOT_PATH),
-        autoescape=select_autoescape(),
-        lstrip_blocks=True,
-        trim_blocks=True,
-    )
-
-
-def embed_img(display):
-    """Embed an image or just return its instance if already embedded.
-
-    Parameters
-    ----------
-    display : obj
-        A Nilearn plotting object to display.
-
-    Returns
-    -------
-    embed : str
-        Binary image string.
-
-    """
-    if display is None:  # no image to display
-        return None
-    # If already embedded, simply return as is
-    if isinstance(display, str):
-        return display
-    return figure_to_svg_base64(display.frame_axes.figure)
-
-
-# TODO : inline this function in generate_report
-def _update_template(
-    docstring,
-    content,
-    overlay,
-    parameters,
-    data,
-    summary_html=None,
-    template_name=None,
-    warning_messages=None,
-) -> HTMLReport:
-    """Populate a report with content.
-
-    Parameters
-    ----------
-    docstring : str
-        The introductory docstring for the reported object.
-
-    content : img
-        The content to display.
-
-    overlay : img
-        Overlaid content, to appear on hover.
-
-    parameters : dict
-        A dictionary of object parameters and their values.
-
-    data : dict
-        A dictionary holding the data to be added to the report.
-        The keys must match exactly the ones used in the template.
-        The default template accepts the following:
-            - title (str) : Title of the report
-            - description (str) : Description of the content.
-            - warning_message (str) : An optional warning
-              message to be displayed in red. This is used
-              for example when no image was provided to the
-              estimator when fitting.
-        The NiftiLabelsMasker template accepts the additional
-        fields:
-            - summary (dict) : A summary description of the
-              region labels and sizes. This will be displayed
-              as an expandable table in the report.
-
-    summary_html : dict if estimator is Surface masker str otherwise, optional
-        Summary of the region labels and sizes converted to html table.
-
-    template_name : str, optional
-        The name of the template to use. If not provided, the
-        default template `"body_masker.jinja"` will be
-        used.
-
-    Returns
-    -------
-    report : HTMLReport
-        An instance of a populated HTML report.
-
-    """
-    if template_name is None:
-        template_name = "body_masker.jinja"
-
-    body_tpl_path = f"html/maskers/{template_name}"
-
-    env = return_jinja_env()
-
-    body_tpl = env.get_template(body_tpl_path)
-
-    if "n_elements" not in data:
-        data["n_elements"] = 0
-
-    if "coverage" not in data:
-        data["coverage"] = ""
-    if not isinstance(data["coverage"], str):
-        data["coverage"] = f"{data['coverage']:0.1f}"
-
-    body = body_tpl.render(
-        content=content,
-        overlay=overlay,
-        docstring=docstring,
-        parameters=parameters,
-        figure=(
-            _insert_figure_partial(
-                data["engine"],
-                content,
-                data["displayed_maps"],
-                data["unique_id"],
-            )
-            if "engine" in data
-            else None
-        ),
-        **data,
-        carousel=False,
-        warning_messages=warning_messages,
-        summary_html=summary_html,
-    )
-
-    return assemble_report(body, f"{data['title']} report")
-
-
-def assemble_report(body: str, title: str) -> HTMLReport:
-    """Put together head and body of report."""
-    env = return_jinja_env()
-
-    head_tpl = env.get_template("html/head.jinja")
-
-    head_css_file_path = CSS_PATH / "head.css"
-    with head_css_file_path.open(encoding="utf-8") as head_css_file:
-        head_css = head_css_file.read()
-
-    return HTMLReport(
-        body=body,
-        head_tpl=head_tpl,
-        head_values={
-            "head_css": head_css,
-            "version": __version__,
-            "page_title": title,
-            "display_footer": "style='display: none'" if is_notebook() else "",
-        },
-    )
-
-
-def _define_overlay(estimator):
-    """Determine whether an overlay was provided and \
-    update the report text as appropriate.
-    """
-    from nilearn.maskers import NiftiSpheresMasker
-
-    displays = estimator._reporting()
-
-    if len(displays) == 1:  # set overlay to None
-        return None, displays[0]
-
-    elif isinstance(estimator, NiftiSpheresMasker):
-        return None, displays
-
-    elif len(displays) == 2:
-        return displays[0], displays[1]
-
-    return None, displays
-
-
 def generate_report(estimator) -> list[None] | HTMLReport:
     """Generate a report for Nilearn objects.
 
@@ -328,41 +156,13 @@ def generate_report(estimator) -> list[None] | HTMLReport:
                 stacklevel=find_stack_level(),
             )
 
-
-    html_template = _get_estimator_template(estimator)
-
-        data["title"] = "Empty Report"
-
-        return _update_template(
-            docstring="Empty Report",
-            content=embed_img(None),
-            overlay=None,
-            parameters={},
-            data=data,
-            warning_messages=warning_messages,
-        )
-
-    return _create_report(estimator, data)
+    return _create_report(estimator, data, warning_messages)
 
 
-def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
-    env = return_jinja_env()
-
-    tpl = env.get_template("html/maskers/partials/figure.jinja")
-
-    if not isinstance(content, list):
-        content = [content]
-    return tpl.render(
-        engine=engine,
-        content=content,
-        displayed_maps=displayed_maps,
-        unique_id=unique_id,
-    )
-
-
-def _create_report(estimator, data) -> HTMLReport:
+def _create_report(estimator, data, warning_messages) -> HTMLReport:
     template_name = ESTIMATOR_TEMPLATES.get(estimator.__class__.__name__, None)
-
+    if template_name is None:
+        template_name = "body_masker.jinja"
 
     embeded_images = embed_img(None)
     overlay = None
@@ -412,38 +212,114 @@ def _create_report(estimator, data) -> HTMLReport:
             sparsify=False,
         )
     docstring = estimator.__doc__
-    snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
-    return _update_template(
-        docstring=snippet,
-        content=embeded_images,
-        overlay=embed_img(overlay),
+    content = embeded_images
+    overlay = embed_img(overlay)
+
+    env = return_jinja_env()
+
+    body_tpl_path = f"html/maskers/{template_name}"
+    body_tpl = env.get_template(body_tpl_path)
+
+    if "n_elements" not in data:
+        data["n_elements"] = 0
+
+    if "coverage" not in data:
+        data["coverage"] = ""
+    if not isinstance(data["coverage"], str):
+        data["coverage"] = f"{data['coverage']:0.1f}"
+
+    body = body_tpl.render(
+        content=content,
+        overlay=overlay,
+        docstring=docstring.partition("Parameters\n    ----------\n")[0],
         parameters=parameters,
-        data=data,
-        template_name=template_name,
-        summary_html=summary_html,
+        figure=(
+            _insert_figure_partial(
+                data["engine"],
+                content,
+                data["displayed_maps"],
+                data["unique_id"],
+            )
+            if "engine" in data
+            else None
+        ),
+        **data,
+        carousel=False,
         warning_messages=warning_messages,
+        summary_html=summary_html,
     )
+
+    return assemble_report(body, f"{data['title']} report")
+
+
+def return_jinja_env() -> Environment:
+    """Set up the jinja Environment."""
+    return Environment(
+        loader=FileSystemLoader(TEMPLATE_ROOT_PATH),
+        autoescape=select_autoescape(),
+        lstrip_blocks=True,
+        trim_blocks=True,
+    )
+
+
+def assemble_report(body: str, title: str) -> HTMLReport:
+    """Put together head and body of report."""
+    env = return_jinja_env()
+
+    head_tpl = env.get_template("html/head.jinja")
+
+    head_css_file_path = CSS_PATH / "head.css"
+    with head_css_file_path.open(encoding="utf-8") as head_css_file:
+        head_css = head_css_file.read()
+
+    return HTMLReport(
+        body=body,
+        head_tpl=head_tpl,
+        head_values={
+            "head_css": head_css,
+            "version": __version__,
+            "page_title": title,
+            "display_footer": "style='display: none'" if is_notebook() else "",
+        },
+    )
+
+
+def embed_img(display):
+    """Embed an image or just return its instance if already embedded.
+
+    Parameters
+    ----------
+    display : obj
+        A Nilearn plotting object to display.
+
+    Returns
+    -------
+    embed : str
+        Binary image string.
+
+    """
+    if display is None:  # no image to display
+        return None
+    # If already embedded, simply return as is
+    if isinstance(display, str):
+        return display
+    return figure_to_svg_base64(display.frame_axes.figure)
 
 
 def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(HTML_PARTIALS_PATH / "figure.html"), encoding="utf-8"
-    )
+    env = return_jinja_env()
+
+    tpl = env.get_template("html/maskers/partials/figure.jinja")
+
     if not isinstance(content, list):
         content = [content]
-    return tpl.substitute(
+    return tpl.render(
         engine=engine,
         content=content,
         displayed_maps=displayed_maps,
         unique_id=unique_id,
     )
-
-
-def _render_warnings_partial(warning_messages) -> str:
-    env = return_jinja_env()
-    tpl = env.get_template("html/partials/warnings.jinja")
-    return tpl.render(warning_messages=warning_messages)
 
 
 def is_notebook() -> bool:
@@ -456,3 +332,23 @@ def is_notebook() -> bool:
         return shell == "ZMQInteractiveShell"
     except NameError:
         return False  # Probably standard Python interpreter
+
+
+def _define_overlay(estimator):
+    """Determine whether an overlay was provided and \
+    update the report text as appropriate.
+    """
+    from nilearn.maskers import NiftiSpheresMasker
+
+    displays = estimator._reporting()
+
+    if len(displays) == 1:  # set overlay to None
+        return None, displays[0]
+
+    elif isinstance(estimator, NiftiSpheresMasker):
+        return None, displays
+
+    elif len(displays) == 2:
+        return displays[0], displays[1]
+
+    return None, displays

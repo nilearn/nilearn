@@ -3646,13 +3646,11 @@ def check_masker_generate_report(estimator):
         ):
             report = _generate_report(estimator)
 
-
     assert isinstance(estimator._report_content, dict)
     assert estimator._report_content["description"] != ""
     assert estimator._has_report_data() is False
 
-    with warnings.catch_warnings(record=True) as warning_list:
-
+    with warnings.catch_warnings(record=True):
         report = _generate_report(estimator)
 
     _check_html(report, is_fit=False)
