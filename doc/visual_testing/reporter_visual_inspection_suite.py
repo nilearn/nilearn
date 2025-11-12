@@ -424,57 +424,24 @@ def _generate_dummy_masker_report_files(masker) -> tuple[None, None]:
 
 def report_nifti_masker(build_type):
     if build_type == "partial":
-        return _generate_dummy_masker_report_files(NiftiMasker)
+        return _generate_dummy_masker_report_files(NiftiMasker())
 
     masker = NiftiMasker(
         standardize="zscore_sample",
         mask_strategy="epi",
         memory="nilearn_cache",
         memory_level=1,
-        smoothing_fwhm=8,
-        cmap="gray",
+        reports=False,
     )
 
     data = fetch_development_fmri(n_subjects=1)
-
-    # report = masker.generate_report(
-    #     title="Reporting disabled and Unfitted Nifti Maps Masker Report"
-    # )
-    # report.save_as_html(
-    #     REPORTS_DIR / "nifti_maps_masker_no_reporting_unfitted.html"
-    # )
-
-    # masker.reports = True
-    # report = masker.generate_report(
-    # title="Unfitted Nifti Maps Masker Report",
-    #                                 displayed_maps=3)
-    # report.save_as_html(REPORTS_DIR / "nifti_maps_masker_unfitted.html")
-
-    # masker.reports = False
-    # masker.fit(data.func[0])
-    # report = masker.generate_report(
-    #     title="Reporting disabled - Fitted Nifti Maps Masker Report",
-    #     displayed_maps=3
-    # )
-    # report.save_as_html(
-    #     REPORTS_DIR / "nifti_maps_masker_no_reporting_fitted.html"
-    # )
-
-    # masker.reports = True
-    # masker.fit(data.func[0])
-
-    # report = masker.generate_report(
-    #     title="Nifti Maps Masker - Fitted with Development FMRI",
-    #     displayed_maps=[2, 6, 7],
-    # )
-    # report.save_as_html(REPORTS_DIR / "nifti_maps_masker.html")
 
     return _generate_masker_report_files(masker, data=data.func[0])
 
 
 def report_nifti_labels_masker(build_type):
     if build_type == "partial":
-        return _generate_dummy_masker_report_files(NiftiLabelsMasker)
+        return _generate_dummy_masker_report_files(NiftiLabelsMasker())
 
     atlas = fetch_atlas_schaefer_2018()
     masker = NiftiLabelsMasker(
@@ -488,7 +455,7 @@ def report_nifti_labels_masker(build_type):
 
 def report_nifti_maps_masker(build_type):
     if build_type == "partial":
-        return _generate_dummy_masker_report_files(NiftiMapsMasker)
+        return _generate_dummy_masker_report_files(NiftiMapsMasker())
 
     atlas = fetch_atlas_difumo(dimension=64, resolution_mm=2)
     atlas_filename = atlas["maps"]
@@ -513,7 +480,7 @@ def report_nifti_maps_masker(build_type):
 def report_sphere_masker(build_type):
     """Generate masker with 3 spheres but only 2 in the report."""
     if build_type == "partial":
-        return _generate_dummy_masker_report_files(NiftiSpheresMasker)
+        return _generate_dummy_masker_report_files(NiftiSpheresMasker())
 
     data = fetch_development_fmri(n_subjects=1)
 
@@ -546,7 +513,7 @@ def load_sample_motor_activation_image_on_surface():
 
 def report_surface_masker(build_type):
     if build_type == "partial":
-        return _generate_dummy_masker_report_files(SurfaceMasker)
+        return _generate_dummy_masker_report_files(SurfaceMasker())
 
     fsaverage = load_fsaverage("fsaverage5")
     destrieux = fetch_atlas_surf_destrieux()
@@ -571,7 +538,7 @@ def report_surface_masker(build_type):
 
 def report_surface_label_masker(build_type):
     if build_type == "partial":
-        return _generate_dummy_masker_report_files(SurfaceLabelsMasker)
+        return _generate_dummy_masker_report_files(SurfaceLabelsMasker())
 
     fsaverage = load_fsaverage("fsaverage5")
     destrieux = fetch_atlas_surf_destrieux()
@@ -592,7 +559,7 @@ def report_surface_label_masker(build_type):
 
 def report_surface_maps_masker(build_type):
     if build_type == "partial":
-        return _generate_dummy_masker_report_files(SurfaceMapsMasker)
+        return _generate_dummy_masker_report_files(SurfaceMapsMasker())
 
     atlas = fetch_atlas_difumo(dimension=64, resolution_mm=2)
     fsaverage5_mesh = load_fsaverage("fsaverage5")["pial"]
@@ -630,7 +597,7 @@ def _generate_dummy_html(filenames: list[str]):
     />
 </head>
 <body>
-    <p>Not content displayed on partial doc build.</p>
+    <p>No content displayed on partial doc build.</p>
 </body>
 </html>""")
 
