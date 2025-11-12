@@ -403,6 +403,15 @@ def _generate_masker_report_files(
         REPORTS_DIR / f"{masker_class_name}_unfitted.html"
     )
 
+    masker.reports = False
+    unfitted_report = masker.generate_report(
+        title=f"{masker_class_name} unfitted - reports=False", **kwargs
+    )
+    unfitted_report.save_as_html(
+        REPORTS_DIR / f"{masker_class_name}_unfitted_reports-False.html"
+    )
+
+    masker.reports = True
     masker.fit(data)
     report = masker.generate_report(**kwargs)
     report.save_as_html(REPORTS_DIR / f"{masker_class_name}.html")
