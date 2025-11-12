@@ -17,7 +17,6 @@ from nilearn._utils.bids import (
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
-from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import high_variance_confounds
 from nilearn.image.utils import get_indices_from_image
 from nilearn.surface.surface import SurfaceImage
@@ -26,24 +25,6 @@ from nilearn.typing import NiimgLike
 
 class _MultiMixin:
     """Mixin class to add common MultiMasker functionalities."""
-
-    def __sklearn_tags__(self):
-        """Return estimator tags.
-
-        See the sklearn documentation for more details on tags
-        https://scikit-learn.org/1.6/developers/develop.html#estimator-tags
-        """
-        # TODO (sklearn  >= 1.6.0) remove if block
-        if SKLEARN_LT_1_6:
-            from nilearn._utils.tags import tags
-
-            return tags(masker=True, multi_masker=True)
-
-        from nilearn._utils.tags import InputTags
-
-        tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(masker=True, multi_masker=True)
-        return tags
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):
@@ -369,10 +350,6 @@ class _LabelMaskerMixin:
             other_rows = lut[~mask_background_index]
             lut = pd.concat([first_rows, other_rows], ignore_index=True)
 
-            mask_background_name = lut["name"] == "Background"
-            if not (mask_background_name).any():
-                lut["name"] = lut["name"].shift(1)
-
             lut.loc[0, "name"] = "Background"
 
         else:
@@ -382,8 +359,7 @@ class _LabelMaskerMixin:
                 "color": "FFFFFF",
             }
             first_row = {
-                col: first_row[col] if col in lut else np.nan
-                for col in lut.columns
+                col: first_row.get(col, np.nan) for col in lut.columns
             }
             lut = pd.concat(
                 [pd.DataFrame([first_row]), lut], ignore_index=True
@@ -461,4 +437,9 @@ class _ReportingMixin:
 
     @abc.abstractmethod
     def _get_displays(self):
+        raise NotImplementedError()
+
+    @abc.abstractmethod
+    def _create_figure_for_report(self):
+        """Generate figure for report."""
         raise NotImplementedError()
