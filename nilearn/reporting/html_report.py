@@ -2,7 +2,6 @@
 
 import uuid
 import warnings
-from pathlib import Path
 from string import Template
 
 import pandas as pd
@@ -189,11 +188,11 @@ def _update_template(
     if template_name is None:
         template_name = "body_masker.jinja"
 
-    body_tpl_path = Path("html") / "maskers" / template_name
+    body_tpl_path = f"html/maskers/{template_name}"
 
     env = return_jinja_env()
 
-    body_tpl = env.get_template(str(body_tpl_path))
+    body_tpl = env.get_template(body_tpl_path)
 
     if "n_elements" not in data:
         data["n_elements"] = 0
