@@ -222,7 +222,14 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self.keep_masked_maps = keep_masked_maps
 
-    def generate_report(self, displayed_maps=10):
+        self._report_content = {
+            "description": (
+                "This report shows the spatial maps provided to the mask."
+            ),
+            "warning_message": None,
+        }
+
+    def generate_report(self, title=None, displayed_maps=10):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 
         .. note::
@@ -230,6 +237,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Parameters
         ----------
+        title : :obj:`str`, default=None
+            title for the report. If None, title will be the class name.
+
         displayed_maps : :obj:`int`, or :obj:`list`, \
                          or :class:`~numpy.ndarray`, or "all", default=10
             Indicates which maps will be displayed in the HTML report.
@@ -268,33 +278,29 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        from nilearn.reporting.html_report import generate_report
-
-        if not is_matplotlib_installed():
-            return generate_report(self)
-
-        incorrect_type = not isinstance(
-            displayed_maps, (list, np.ndarray, int, str)
-        )
-        incorrect_string = (
-            isinstance(displayed_maps, str) and displayed_maps != "all"
-        )
-        not_integer = (
-            not isinstance(displayed_maps, str)
-            and np.array(displayed_maps).dtype != int
-        )
-        if incorrect_type or incorrect_string or not_integer:
-            raise TypeError(
-                "Parameter ``displayed_maps`` of "
-                "``generate_report()`` should be either 'all' or "
-                "an int, or a list/array of ints. You provided a "
-                f"{type(displayed_maps)}"
+        if is_matplotlib_installed():
+            incorrect_type = not isinstance(
+                displayed_maps, (list, np.ndarray, int, str)
             )
-        self.displayed_maps = displayed_maps
+            incorrect_string = (
+                isinstance(displayed_maps, str) and displayed_maps != "all"
+            )
+            not_integer = (
+                not isinstance(displayed_maps, str)
+                and np.array(displayed_maps).dtype != int
+            )
+            if incorrect_type or incorrect_string or not_integer:
+                raise TypeError(
+                    "Parameter ``displayed_maps`` of "
+                    "``generate_report()`` should be either 'all' or "
+                    "an int, or a list/array of ints. You provided a "
+                    f"{type(displayed_maps)}"
+                )
+            self.displayed_maps = displayed_maps
 
-        return generate_report(self)
+        return super().generate_report(title)
 
-    def _reporting(self):
+    def _get_displays(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -303,9 +309,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        maps_image = None
-        if self._reporting_data is not None:
-            maps_image = self._reporting_data["maps_image"]
+        maps_image = self._reporting_data["maps_image"]
 
         if maps_image is None:
             return [None]
@@ -351,7 +355,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
 
-        if self._reporting_data["dim"] == 5:
+        elif self._reporting_data["dim"] == 5:
             msg = (
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
@@ -366,7 +370,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        list of :class:`~matplotlib.figure.Figure`
+        list of :class:`~nilearn.plotting.displays.OrthoSlicer`
         """
         from nilearn.plotting import (
             cm,
@@ -374,7 +378,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             plot_img,
             plot_stat_map,
         )
-        from nilearn.reporting.html_report import embed_img
 
         maps_image = self._reporting_data["maps_image"]
 
@@ -386,8 +389,10 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         if img is None:
             for component in maps_to_be_displayed:
-                display = plot_stat_map(index_img(maps_image, component))
-                embedded_images.append(embed_img(display))
+                display = plot_stat_map(
+                    index_img(maps_image, component), cmap=cm.black_blue
+                )
+                embedded_images.append(display)
                 display.close()
 
         else:
@@ -403,10 +408,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     cmap=self.cmap,
                 )
                 display.add_overlay(
-                    index_img(maps_image, component),
-                    cmap=cm.black_blue,
+                    index_img(maps_image, component), cmap=cm.black_blue
                 )
-                embedded_images.append(embed_img(display))
+                embedded_images.append(display)
                 display.close()
 
         return embedded_images
@@ -425,8 +429,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         del y
         check_params(self.__dict__)
-
-        self._init_report_content()
 
         check_parameter_in_allowed(
             self.resampling_target,
@@ -546,23 +548,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
-
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-        if not hasattr(self, "_report_content"):
-            self._report_content = {
-                "description": (
-                    "This reports shows the spatial maps provided to the mask."
-                ),
-                "warning_message": None,
-            }
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = None
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "maps_img_") and hasattr(self, "n_elements_")

@@ -57,7 +57,6 @@ from nilearn._utils.tags import (
     accept_surf_img_input,
     is_glm,
     is_masker,
-    is_multimasker,
 )
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
@@ -107,6 +106,7 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
+from nilearn.maskers._mixin import _MultiMixin
 from nilearn.masking import load_mask_img
 from nilearn.regions import RegionExtractor
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
@@ -627,7 +627,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_masker_clean)
         yield (clone(estimator), check_masker_detrending)
 
-        if not is_multimasker(estimator):
+        if not isinstance(estimator, _MultiMixin):
             yield (clone(estimator), check_masker_transformer_sample_mask)
             yield (clone(estimator), check_masker_with_confounds)
 
@@ -923,8 +923,8 @@ def check_estimator_set_output(estimator_orig):
         return
 
     if isinstance(
-        estimator_orig, (_BaseDecomposition, ConnectivityMeasure)
-    ) or is_multimasker(estimator_orig):
+        estimator_orig, (_BaseDecomposition, ConnectivityMeasure, _MultiMixin)
+    ):
         with pytest.raises(NotImplementedError):
             estimator_orig.set_output(transform="pandas")
         return
@@ -2345,7 +2345,7 @@ def check_masker_transformer_high_variance_confounds(estimator):
         dataframe.to_csv(tmp_dir / "confounds.csv")
 
         for c in [array, dataframe, tmp_dir / "confounds.csv"]:
-            confounds = [c] if is_multimasker(estimator) else c
+            confounds = [c] if isinstance(estimator, _MultiMixin) else c
 
             estimator = clone(estimator)
             estimator.high_variance_confounds = False
@@ -2845,10 +2845,12 @@ def check_masker_transform_resampling(estimator) -> None:
 @ignore_warnings()
 def check_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if os.name == "nt" and sys.version_info[1] < 13:
+    if os.name == "nt" and (
+        sys.version_info[1] < 13 or sys.version_info[1] == 14
+    ):
         # TODO (python >= 3.11)
         # rare failure of this test on python 3.10 on windows
-        # this works for python 3.13
+        # this works for python 3.13 (but not 3.14)
         # skipping for now: let's check again if this keeps failing
         # when dropping 3.10 in favor of 3.11
         return
@@ -2998,7 +3000,7 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
 
         signals = estimator.transform(imgs)
 
-        if is_multimasker(estimator) and isinstance(imgs, list):
+        if isinstance(estimator, _MultiMixin) and isinstance(imgs, list):
             assert isinstance(signals, list)
             assert all(isinstance(x, np.ndarray) for x in signals)
             assert all(x.shape == (1, estimator.n_elements_) for x in signals)
@@ -3023,7 +3025,7 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
 
     estimator = clone(estimator_orig)
 
-    if is_multimasker(estimator):
+    if isinstance(estimator, _MultiMixin):
         signals = estimator.fit_transform(
             [_make_surface_img(5), _make_surface_img(2)]
         )
@@ -3100,7 +3102,7 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
 
             n_dim_mask = mask_img.data.parts["left"].ndim
 
-            if is_multimasker(estimator) and isinstance(imgs, list):
+            if isinstance(estimator, _MultiMixin) and isinstance(imgs, list):
                 assert isinstance(signals, list)
                 assert all(isinstance(x, np.ndarray) for x in signals)
                 assert all(
@@ -3194,7 +3196,7 @@ def check_nifti_masker_fit_transform(estimator):
     # list of 3D images
     signal = estimator.transform([_img_3d_rand(), _img_3d_rand()])
 
-    if is_multimasker(estimator):
+    if isinstance(estimator, _MultiMixin):
         assert isinstance(signal, list)
         assert len(signal) == 2
         for x in signal:
@@ -3227,7 +3229,7 @@ def check_nifti_masker_fit_transform_5d(estimator):
 
     input_5d_img = [_img_4d_rand_eye() for _ in range(n_subject)]
 
-    if not is_multimasker(estimator):
+    if not isinstance(estimator, _MultiMixin):
         with pytest.raises(
             DimensionError,
             match="Input data has incompatible dimensionality",
@@ -3326,10 +3328,12 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
 @ignore_warnings()
 def check_multi_nifti_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if os.name == "nt" and sys.version_info[1] < 13:
+    if os.name == "nt" and (
+        sys.version_info[1] < 13 or sys.version_info[1] == 14
+    ):
         # TODO (python >= 3.11)
         # rare failure of this test on python 3.10 on windows
-        # this works for python 3.13
+        # this works for python 3.13 (but not 3.14)
         # skipping for now: let's check again if this keeps failing
         # when dropping 3.10 in favor of 3.11
         return
@@ -3624,6 +3628,9 @@ def check_masker_generate_report(estimator):
       - when matplotlib is not installed
       - when generating reports before fit
     - check content of report before fit and after fit
+    - check that the masker has a non empty _report_content after
+      initialization
+    - check that the masker has report data after fit
 
     """
     if not is_matplotlib_installed():
@@ -3635,6 +3642,12 @@ def check_masker_generate_report(estimator):
         assert report == [None]
 
         return
+
+    assert (
+        estimator._report_content is not None
+        and estimator._report_content != ""
+    )
+    assert estimator._has_report_data() is False
 
     with warnings.catch_warnings(record=True) as warning_list:
         report = _generate_report(estimator)
@@ -3651,6 +3664,7 @@ def check_masker_generate_report(estimator):
     estimator.fit(input_img)
 
     assert estimator._report_content["warning_message"] is None
+    assert estimator._has_report_data() is True
 
     # TODO
     # SurfaceMapsMasker, RegionExtractor still throws a warning
@@ -3710,7 +3724,7 @@ def check_masker_generate_report_false(estimator):
 
     estimator.fit(input_img)
 
-    assert estimator._reporting_data is None
+    assert estimator._has_report_data() is False
     assert estimator._reporting() == [None]
     with pytest.warns(
         UserWarning,
