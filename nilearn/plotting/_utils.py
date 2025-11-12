@@ -158,7 +158,7 @@ def get_cbar_ticks(
         ]
 
     # we do this here to include the case where threshold is None
-    if vmin < 0 and vmax > 0:
+    if vmin < 0 < vmax:
         ticks = np.append(ticks, 0)
 
     ticks = np.sort(np.unique(ticks))
