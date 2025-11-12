@@ -74,7 +74,7 @@ repos:
 
     # Lint and format Python code
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.3
+    rev: v0.14.4
     hooks:
     -   id: ruff-check
         # args: [--statistics]
@@ -84,7 +84,7 @@ repos:
 
     # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter
-    rev: v2.5.2
+    rev: v2.6
     hooks:
     -   id: import-linter
         args: [--verbose]
