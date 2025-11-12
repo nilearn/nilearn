@@ -34,11 +34,8 @@ from nilearn.image import (
     resample_img,
     smooth_img,
 )
-
 from nilearn.image.image import check_niimg
-
 from nilearn.maskers._mixin import _ReportingMixin
-
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
