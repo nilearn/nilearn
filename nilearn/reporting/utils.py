@@ -9,12 +9,6 @@ TEMPLATE_ROOT_PATH = Path(__file__).parent / "data"
 
 CSS_PATH = TEMPLATE_ROOT_PATH / "css"
 
-JS_PATH = TEMPLATE_ROOT_PATH / "js"
-
-HTML_TEMPLATE_PATH = TEMPLATE_ROOT_PATH / "html"
-
-HTML_PARTIALS_PATH = HTML_TEMPLATE_PATH / "partials"
-
 
 def _figure_to_bytes(fig, format, **kwargs):
     """Save figure as as certain format and return it as bytes.

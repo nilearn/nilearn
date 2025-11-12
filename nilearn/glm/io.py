@@ -14,6 +14,7 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn.exceptions import MISSING_ENGINE_MSG
 from nilearn.glm.thresholding import threshold_stats_img
 from nilearn.surface import SurfaceImage
 
@@ -243,7 +244,7 @@ def save_glm_to_bids(
 
     if not is_matplotlib_installed():
         warnings.warn(
-            ("No plotting backend detected. Output will be missing figures."),
+            MISSING_ENGINE_MSG,
             UserWarning,
             stacklevel=find_stack_level(),
         )

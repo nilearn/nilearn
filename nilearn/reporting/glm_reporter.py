@@ -34,12 +34,14 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn._version import __version__
+from nilearn.exceptions import MISSING_ENGINE_MSG
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
     get_clusters_table,
 )
 from nilearn.reporting.html_report import (
+    UNFITTED_MSG,
     HTMLReport,
     assemble_report,
     is_notebook,
@@ -221,7 +223,7 @@ def make_glm_report(
     check_params(locals())
     if not is_matplotlib_installed():
         warnings.warn(
-            ("No plotting back-end detected. Output will be missing figures."),
+            MISSING_ENGINE_MSG,
             UserWarning,
             stacklevel=find_stack_level(),
         )
@@ -270,10 +272,7 @@ def make_glm_report(
     mask_plot = None
     mask_info = {"n_elements": 0, "coverage": "0"}
     results = None
-    warning_messages = [
-        "\nThis estimator has not been fit yet.\n"
-        "Make sure to run `fit` before inspecting reports."
-    ]
+    warning_messages = [UNFITTED_MSG]
     if model.__sklearn_is_fitted__():
         design_matrices = (
             [model.design_matrix_]

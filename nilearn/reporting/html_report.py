@@ -36,6 +36,12 @@ ESTIMATOR_TEMPLATES = {
 }
 
 
+UNFITTED_MSG = (
+    "\nThis estimator has not been fit yet.\n"
+    "Make sure to run `fit` before inspecting reports."
+)
+
+
 class HTMLReport(HTMLDocument):
     """A report written as HTML.
 
@@ -144,10 +150,7 @@ def generate_report(estimator) -> list[None] | HTMLReport:
         )
 
     if not estimator.__sklearn_is_fitted__():
-        warning_messages.append(
-            "\nThis estimator has not been fit yet.\n"
-            "Make sure to run `fit` before inspecting reports."
-        )
+        warning_messages.append(UNFITTED_MSG)
 
     if warning_messages:
         for msg in warning_messages:
