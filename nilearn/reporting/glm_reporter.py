@@ -34,10 +34,6 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn._version import __version__
-from nilearn.glm.thresholding import (
-    threshold_stats_img,
-    warn_default_threshold,
-)
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
@@ -220,6 +216,8 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
+    from nilearn.glm.thresholding import warn_default_threshold
+
     check_params(locals())
     if not is_matplotlib_installed():
         warnings.warn(
@@ -638,6 +636,8 @@ def _make_stat_maps_contrast_clusters(
         contrast name, contrast plot, statistical map, cluster table.
 
     """
+    from nilearn.glm.thresholding import threshold_stats_img
+
     check_params(locals())
     if not display_mode:
         display_mode_selector = {"slice": "z", "glass": "lzry"}
