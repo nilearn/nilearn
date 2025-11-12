@@ -390,11 +390,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             A list of all displays to be rendered.
             Returns None when masker is not fitted
         """
-        # Handle the edge case where this function is
-        # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
-            return [None]
-
         img = self._reporting_data["images"]
 
         if img is None:  # images were not provided to fit
