@@ -531,6 +531,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 load_mask_img(self.mask_img_)
 
         if self.reports:
+            self._report_content["reports_at_fit_time"] = True
             self._reporting_data = {
                 "maps_image": self.maps_img_,
                 "mask": self.mask_img_,

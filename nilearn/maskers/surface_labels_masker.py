@@ -307,15 +307,14 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         else:
             self.clean_args_ = self.clean_args
 
-        if not self.reports:
-            return self
+        if self.reports:
+            self._report_content["reports_at_fit_time"] = True
+            for part in self.labels_img_.data.parts:
+                self._report_content["n_vertices"][part] = (
+                    self.labels_img_.mesh.parts[part].n_vertices
+                )
 
-        for part in self.labels_img_.data.parts:
-            self._report_content["n_vertices"][part] = (
-                self.labels_img_.mesh.parts[part].n_vertices
-            )
-
-        self._reporting_data = self._generate_reporting_data()
+            self._reporting_data = self._generate_reporting_data()
 
         mask_logger("fit_done", verbose=self.verbose)
 

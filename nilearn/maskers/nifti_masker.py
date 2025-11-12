@@ -555,6 +555,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             )
 
         if self.reports:  # save inputs for reporting
+            self._report_content["reports_at_fit_time"] = True
             self._reporting_data = {
                 "mask": self.mask_img_,
                 "dim": None,
