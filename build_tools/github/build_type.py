@@ -88,6 +88,8 @@ def main():
         Path("build.txt").write_text("html-strict\n")
         return
 
+    GENERATE_REPORT = "[report]" in COMMIT_MSG
+
     # Check for [example] in commit message
     example = []
     if "[example]" in COMMIT_MSG:
@@ -122,16 +124,20 @@ def main():
             print(f"Checking example {filename} ...")
             pattern_parts.append(Path(filename).name)
 
+    build_type = "ci-html-noplot"
+    pattern = ""
     if pattern_parts:
-        PATTERN = r"\(" + "\\|".join(pattern_parts) + r"\)"
-        Path("build.txt").write_text("html-modified-examples-only\n")
-    else:
-        PATTERN = ""
-        Path("build.txt").write_text("ci-html-noplot\n")
+        pattern = r"\(" + "\\|".join(pattern_parts) + r"\)"
+        build_type = "html-modified-examples-only"
 
-    Path("pattern.txt").write_text(PATTERN + "\n")
+    if GENERATE_REPORT:
+        build_type += "-report"
 
-    print(f"{PATTERN=}")
+    Path("build.txt").write_text(build_type + "\n")
+
+    Path("pattern.txt").write_text(pattern + "\n")
+
+    print(f"{pattern=}")
 
 
 if __name__ == "__main__":
@@ -146,7 +152,7 @@ try:
         """Remove files created."""
         yield
         Path("build.txt").unlink()
-        # Path("pattern.txt").unlink()
+        Path("pattern.txt").unlink()
         Path("examples.txt").unlink(missing_ok=True)
 
     @pytest.fixture
@@ -185,7 +191,7 @@ try:
             # ),
         ],
     )
-    def test_main_commit_msg(
+    def test_examples_in_commit_msg(
         commit_msg,
         gitlog,  # noqa: ARG001
         merge,  # noqa: ARG001
@@ -205,6 +211,37 @@ try:
             content = f.read()
             for ex in expected_in_pattern:
                 assert ex in content
+
+    @pytest.mark.parametrize(
+        "commit_msg, expected_in_pattern",
+        [
+            ("", "ci-html-noplot\n"),
+            ("[full doc]", "html-strict\n"),
+            ("[report]", "ci-html-noplot-report\n"),
+            (
+                "[example] plot_3d_and_4d_niimg.py",
+                "html-modified-examples-only\n",
+            ),
+            (
+                "[report][example] plot_3d_and_4d_niimg.py",
+                "html-modified-examples-only-report\n",
+            ),
+        ],
+    )
+    def test_build(
+        commit_msg,
+        gitlog,  # noqa: ARG001
+        merge,  # noqa: ARG001
+        expected_in_pattern,
+        clean_up,  # noqa: ARG001
+    ):
+        """Test build type depending on commit message."""
+        print(f"{commit_msg=}")
+        main()
+        assert Path("build.txt").exists()
+        with Path("build.txt").open("r") as f:
+            assert f.read() == expected_in_pattern
+
 
 except ImportError:
     ...
