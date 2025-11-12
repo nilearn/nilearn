@@ -383,17 +383,12 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             A list of all displays figures encoded as bytes to be rendered.
             Or a list with a single None element.
         """
-        # avoid circular import
-        import matplotlib.pyplot as plt
-
         from nilearn.reporting.utils import figure_to_png_base64
 
         fig = self._create_figure_for_report()
 
         if not fig:
             return [None]
-
-        plt.close()
 
         init_display = figure_to_png_base64(fig)
 

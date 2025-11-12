@@ -517,8 +517,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         displays : list
             A list of all displays to be rendered.
         """
-        import matplotlib.pyplot as plt
-
         from nilearn.reporting.utils import figure_to_png_base64
 
         maps_img = self._reporting_data["maps_img"]
@@ -572,7 +570,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 embeded_images.append(fig)
             elif self._report_content["engine"] == "matplotlib":
                 embeded_images.append(figure_to_png_base64(fig))
-                plt.close()
 
         return embeded_images
 
@@ -582,11 +579,11 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         If transform() was applied to an image, this image is used as
         background on which the maps are plotted.
         """
-        from nilearn.plotting import view_surf
-
         threshold = 1e-6
 
         if self._report_content["engine"] == "plotly":
+            from nilearn.plotting import view_surf
+
             # squeeze the last dimension
             for part in roi.data.parts:
                 roi.data.parts[part] = np.squeeze(
