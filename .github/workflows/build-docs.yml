@@ -17,6 +17,7 @@
 #    - ``[skip doc]`` skip build of the documentation.
 #    - ``[example] name_of_example.py`` trigger build of some specific examples.
 #    - ``[force download]`` do not rely of cached datasets and force to redownload them.
+#    - ``[report]`` build estimators report that are embedded in the documentation.
 #
 # On Pull Requests, "partial builds" are run by default which render all the rst files,
 # but only build examples modified in the Pull Request.
