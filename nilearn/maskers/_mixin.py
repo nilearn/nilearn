@@ -4,6 +4,7 @@ import abc
 import itertools
 from copy import deepcopy
 from pathlib import Path
+from typing import Any, ClassVar
 
 import numpy as np
 import pandas as pd
@@ -19,6 +20,7 @@ from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn.image import high_variance_confounds
 from nilearn.image.utils import get_indices_from_image
+from nilearn.reporting import HTMLReport
 from nilearn.surface.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
@@ -350,10 +352,6 @@ class _LabelMaskerMixin:
             other_rows = lut[~mask_background_index]
             lut = pd.concat([first_rows, other_rows], ignore_index=True)
 
-            mask_background_name = lut["name"] == "Background"
-            if not (mask_background_name).any():
-                lut["name"] = lut["name"].shift(1)
-
             lut.loc[0, "name"] = "Background"
 
         else:
@@ -363,8 +361,7 @@ class _LabelMaskerMixin:
                 "color": "FFFFFF",
             }
             first_row = {
-                col: first_row[col] if col in lut else np.nan
-                for col in lut.columns
+                col: first_row.get(col, np.nan) for col in lut.columns
             }
             lut = pd.concat(
                 [pd.DataFrame([first_row]), lut], ignore_index=True
@@ -401,6 +398,8 @@ class _ReportingMixin:
     to return the displays to be embedded to the report.
     """
 
+    _report_content: ClassVar[dict[str, Any]] = {}
+
     def _has_report_data(self):
         """
         Check if the model is fitted and _reporting_data is populated.
@@ -413,7 +412,7 @@ class _ReportingMixin:
         """
         return hasattr(self, "_reporting_data")
 
-    def generate_report(self, title=None):
+    def generate_report(self, title=None) -> list[None] | HTMLReport:
         """Generate an HTML report for the current object.
 
         Parameters
