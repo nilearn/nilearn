@@ -287,6 +287,7 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
     )
 
 
+@pytest.mark.slow
 def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
     """Test second level reporting when input is a dataframe."""
     file_path = write_fake_bold_img(

@@ -409,6 +409,8 @@ def _generate_masker_report_files_partial(
         REPORTS_DIR / f"{masker_class_name}_unfitted_reports-False.html"
     )
 
+    _generate_dummy_html(filenames=[f"{masker_class_name}_fitted.html"])
+
     return unfitted_report, None
 
 
@@ -437,7 +439,7 @@ def _generate_masker_report_files(
     masker.reports = True
     masker.fit(data)
     report = masker.generate_report(**kwargs)
-    report.save_as_html(REPORTS_DIR / f"{masker_class_name}.html")
+    report.save_as_html(REPORTS_DIR / f"{masker_class_name}_fitted.html")
 
     return unfitted_report, report
 
@@ -576,20 +578,32 @@ def report_surface_maps_masker(build_type):
     masker = SurfaceMapsMasker(surf_atlas)
 
     if build_type == "partial":
+        _generate_dummy_html(
+            filenames=[
+                "SurfaceMapsMasker_fitted_plotly.html",
+                "SurfaceMapsMasker_fitted_matplotlib.html",
+            ]
+        )
         return _generate_masker_report_files_partial(masker)
     else:
         surface_stat_image = load_sample_motor_activation_image_on_surface()
-        _generate_masker_report_files(
+        _, plotly_reports = _generate_masker_report_files(
             masker,
             surface_stat_image,
             engine="plotly",
             displayed_maps=[2, 6, 7],
         )
-        _generate_masker_report_files(
+        plotly_reports.save_as_html(
+            REPORTS_DIR / "SurfaceMapsMasker_fitted_plotly.html"
+        )
+        _, matplotlib_reports = _generate_masker_report_files(
             masker,
             surface_stat_image,
             engine="matplotlib",
             displayed_maps=[2, 6, 7],
+        )
+        matplotlib_reports.save_as_html(
+            REPORTS_DIR / "SurfaceMapsMasker_fitted_matplotlib.html"
         )
 
 

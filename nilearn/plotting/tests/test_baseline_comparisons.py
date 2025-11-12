@@ -93,6 +93,7 @@ def test_plot_functions_annotate(plot_func, img_3d_mni):
     return plot_func(img_3d_mni, annotate=False)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize(
     "display_mode", ["x", "y", "z", "yx", "xz", "yz", "ortho"]

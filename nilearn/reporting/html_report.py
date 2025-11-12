@@ -214,7 +214,6 @@ def _create_report(estimator, data, warning_messages) -> HTMLReport:
             header=True,
             sparsify=False,
         )
-    docstring = estimator.__doc__
 
     content = embeded_images
     overlay = embed_img(overlay)
@@ -232,10 +231,13 @@ def _create_report(estimator, data, warning_messages) -> HTMLReport:
     if not isinstance(data["coverage"], str):
         data["coverage"] = f"{data['coverage']:0.1f}"
 
+    # TODO clean up docstring from RST formatting
+    docstring = estimator.__doc__.split("Parameters\n")[0]
+
     body = body_tpl.render(
         content=content,
         overlay=overlay,
-        docstring=docstring.partition("Parameters\n    ----------\n")[0],
+        docstring=docstring,
         parameters=parameters,
         figure=(
             _insert_figure_partial(
