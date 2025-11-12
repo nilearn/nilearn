@@ -3646,7 +3646,13 @@ def check_masker_generate_report(estimator):
         ):
             report = _generate_report(estimator)
 
-    with pytest.warns(UserWarning, match="Generating empty report"):
+
+    assert isinstance(estimator._report_content, dict)
+    assert estimator._report_content["description"] != ""
+    assert estimator._has_report_data() is False
+
+    with warnings.catch_warnings(record=True) as warning_list:
+
         report = _generate_report(estimator)
 
     _check_html(report, is_fit=False)
