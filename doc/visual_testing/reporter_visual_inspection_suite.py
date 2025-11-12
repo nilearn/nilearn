@@ -422,7 +422,6 @@ def report_nifti_maps_masker(build_type):
 
     masker.reports = False
     masker.fit(data.func[0])
-
     report = masker.generate_report(
         title="Reporting disabled - Fitted Nifti Maps Masker Report"
     )
@@ -431,6 +430,8 @@ def report_nifti_maps_masker(build_type):
     )
 
     masker.reports = True
+    masker.fit(data.func[0])
+    print(masker._reporting_data)
     report = masker.generate_report(
         title="Nifti Maps Masker - Fitted with Development FMRI",
         displayed_maps=[2, 6, 7],

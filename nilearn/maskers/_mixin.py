@@ -466,3 +466,8 @@ class _ReportingMixin:
     @abc.abstractmethod
     def _get_displays(self):
         raise NotImplementedError()
+
+    @abc.abstractmethod
+    def _create_figure_for_report(self):
+        """Generate figure for report."""
+        raise NotImplementedError()
