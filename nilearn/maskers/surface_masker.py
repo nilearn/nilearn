@@ -374,7 +374,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
-    def _get_displays(self):
+    def _reporting(self):
         """Load displays needed for report.
 
         Returns

@@ -423,7 +423,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return super().generate_report(title)
 
-    def _get_displays(self):
+    def _reporting(self):
         """Return a list of all displays to be rendered.
 
         Returns

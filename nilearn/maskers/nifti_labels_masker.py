@@ -316,7 +316,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return masked_atlas, removed_region_ids, removed_region_names, display
 
-    def _get_displays(self):
+    def _reporting(self):
         """Return a list of all displays to be rendered.
 
         Returns
