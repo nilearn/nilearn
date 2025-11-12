@@ -20,7 +20,6 @@ def main(args=sys.argv) -> None:
 
     datasets.fetch_atlas_difumo(dimension=64, resolution_mm=2)
     datasets.fetch_atlas_schaefer_2018()
-    datasets.fetch_atlas_yeo_2011()
 
     _, urls = datasets.fetch_ds000030_urls()
     exclusion_patterns = [
@@ -46,7 +45,6 @@ def main(args=sys.argv) -> None:
     datasets.fetch_adhd(n_subjects=1)
     datasets.fetch_development_fmri(n_subjects=5)
     datasets.fetch_fiac_first_level()
-    datasets.fetch_miyawaki2008()
     datasets.fetch_oasis_vbm(n_subjects=5)
     datasets.fetch_localizer_first_level()
 
@@ -65,6 +63,7 @@ def main(args=sys.argv) -> None:
         datasets.fetch_atlas_juelich("maxprob-thr0-1mm")
         for dimension in [10, 20]:
             datasets.fetch_atlas_smith_2009(resting=False, dimension=dimension)
+        datasets.fetch_atlas_yeo_2011()
 
         datasets.fetch_surf_fsaverage()
         datasets.fetch_surf_fsaverage("fsaverage")
@@ -108,6 +107,7 @@ def main(args=sys.argv) -> None:
             matrices="partial_correlation",
         )
         datasets.fetch_mixed_gambles(n_subjects=16)
+        datasets.fetch_miyawaki2008()
         datasets.fetch_oasis_vbm(n_subjects=100)
         datasets.fetch_spm_multimodal_fmri()
         datasets.fetch_spm_auditory()
