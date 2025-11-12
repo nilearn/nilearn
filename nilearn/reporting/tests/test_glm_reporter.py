@@ -102,7 +102,7 @@ def check_glm_report(
     if not model.__sklearn_is_fitted__():
         includes.extend(
             [
-                "The model has not been fit yet.",
+                "This estimator has not been fit yet.",
                 "No mask was provided.",
                 "No statistical map was provided.",
             ]

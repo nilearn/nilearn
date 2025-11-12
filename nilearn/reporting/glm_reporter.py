@@ -270,7 +270,10 @@ def make_glm_report(
     mask_plot = None
     mask_info = {"n_elements": 0, "coverage": "0"}
     results = None
-    warning_messages = ["The model has not been fit yet."]
+    warning_messages = [
+        "\nThis estimator has not been fit yet.\n"
+        "Make sure to run `fit` before inspecting reports."
+    ]
     if model.__sklearn_is_fitted__():
         design_matrices = (
             [model.design_matrix_]

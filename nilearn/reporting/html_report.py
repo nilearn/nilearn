@@ -145,7 +145,7 @@ def generate_report(estimator) -> list[None] | HTMLReport:
 
     if not estimator.__sklearn_is_fitted__():
         warning_messages.append(
-            "\nGenerating empty report.\n"
+            "\nThis estimator has not been fit yet.\n"
             "Make sure to run `fit` before inspecting reports."
         )
 
