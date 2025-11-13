@@ -403,7 +403,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 self,
                 displayed_spheres,
                 len(seeds),
-                var_name="displayed_spheres",
+                var_name="sphere",
             )
 
             # offset spheres_to_be_displayed by 1

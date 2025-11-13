@@ -240,9 +240,9 @@ def check_displayed_maps(
                 f"of { {i.__class__.__name__ for i in displayed_maps} }"
             )
         raise TypeError(
-            f"Parameter {var_name} of "
+            f"Parameter '{var_name}' of "
             "``generate_report()`` should be either 'all' or "
-            "a positive 'int', or a list/array of ints."
+            "a positive 'int', or a list/array of ints. "
             f"You provided a {input_type}."
         )
 
@@ -251,7 +251,7 @@ def sanitize_displayed_maps(
     estimator,
     displayed_maps: Any,
     n_maps: int,
-    var_name: str = "displayed_maps",
+    var_name: str = "map",
 ) -> tuple[Any, list[int]]:
     """Check and sanitize displayed_maps parameter for report generation.
 
@@ -267,9 +267,9 @@ def sanitize_displayed_maps(
         if n_maps < displayed_maps:
             msg = (
                 "`generate_report()` received "
-                f"'{var_name}={displayed_maps}' to be displayed. "
-                f"But masker only has {n_maps} maps. "
-                f"'{var_name}' was set to {n_maps}."
+                f"'displayed_{var_name}s={displayed_maps}' to be displayed. "
+                f"But masker only has {n_maps} {var_name}(s). "
+                f"'displayed_{var_name}s' was set to {n_maps}."
             )
             estimator._report_content["warning_messages"].append(msg)
 
@@ -287,10 +287,10 @@ def sanitize_displayed_maps(
     if unvailable_maps:
         msg = (
             "`generate_report()` received "
-            f"'{var_name}={list(displayed_maps)}' to be displayed. "
-            "Report cannot display the following maps "
+            f"'displayed_{var_name}s={list(displayed_maps)}' to be displayed. "
+            f"Report cannot display the following {var_name} "
             f"{unvailable_maps} because "
-            f"masker only has {n_maps} maps."
+            f"masker only has {n_maps} {var_name}(s)."
         )
         estimator._report_content["warning_messages"].append(msg)
 
