@@ -210,7 +210,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             "n_vertices": {},
             "number_of_regions": 0,
             "summary": {},
-            "warning_messages": None,
+            "warning_messages": [],
         }
 
     @fill_doc

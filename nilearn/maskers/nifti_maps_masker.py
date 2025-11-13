@@ -231,7 +231,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "displayed_maps": [],
             "number_of_maps": 0,
             "summary": {},
-            "warning_messages": None,
+            "warning_messages": [],
         }
 
     def generate_report(self, title=None, displayed_maps=10) -> HTMLReport:

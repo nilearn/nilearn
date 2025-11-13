@@ -264,7 +264,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             ),
             "number_of_regions": 0,
             "summary": {},
-            "warning_messages": None,
+            "warning_messages": [],
         }
 
     @property

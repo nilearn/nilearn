@@ -130,7 +130,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             # unused but required in HTML template
             "number_of_regions": None,
             "summary": {},
-            "warning_messages": None,
+            "warning_messages": [],
             "n_elements": 0,
             "coverage": 0,
         }

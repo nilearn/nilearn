@@ -358,7 +358,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "by the spheres of the masker."
             ),
             "summary": {},
-            "warning_messages": None,
+            "warning_messages": [],
         }
 
     def generate_report(self, title=None, displayed_spheres="all"):

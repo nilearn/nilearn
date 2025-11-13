@@ -171,7 +171,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             "displayed_maps": [],
             "number_of_maps": 0,
             "summary": {},
-            "warning_messages": None,
+            "warning_messages": [],
         }
 
     @fill_doc

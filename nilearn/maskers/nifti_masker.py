@@ -380,7 +380,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "n_elements": 0,
             "coverage": 0,
             "summary": {},
-            "warning_messages": None,
+            "warning_messages": [],
         }
 
     def _reporting(self):
