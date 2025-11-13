@@ -591,23 +591,27 @@ def report_surface_maps_masker(build_type):
         return _generate_masker_report_files_partial(masker)
     else:
         surface_stat_image = load_sample_motor_activation_image_on_surface()
-        _, plotly_reports = _generate_masker_report_files(
-            masker,
-            surface_stat_image,
-            engine="plotly",
-            displayed_maps=[2, 6, 7],
-        )
-        plotly_reports.save_as_html(
-            REPORTS_DIR / "SurfaceMapsMasker_fitted_plotly.html"
-        )
+
+        print("Use mpl")
         _, matplotlib_reports = _generate_masker_report_files(
             masker,
             surface_stat_image,
             engine="matplotlib",
-            displayed_maps=[2, 6, 7],
+            displayed_maps=[6, 2],
         )
         matplotlib_reports.save_as_html(
             REPORTS_DIR / "SurfaceMapsMasker_fitted_matplotlib.html"
+        )
+
+        print("Use plotly")
+        _, plotly_reports = _generate_masker_report_files(
+            masker,
+            surface_stat_image,
+            engine="plotly",
+            displayed_maps=[6, 2],
+        )
+        plotly_reports.save_as_html(
+            REPORTS_DIR / "SurfaceMapsMasker_fitted_plotly.html"
         )
 
 
@@ -639,12 +643,12 @@ def main(args=sys.argv):
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 
-    report_nifti_masker(build_type)
-    report_nifti_maps_masker(build_type)
-    report_nifti_labels_masker(build_type)
-    report_sphere_masker(build_type)
-    report_surface_masker(build_type)
-    report_surface_label_masker(build_type)
+    # report_nifti_masker(build_type)
+    # report_nifti_maps_masker(build_type)
+    # report_nifti_labels_masker(build_type)
+    # report_sphere_masker(build_type)
+    # report_surface_masker(build_type)
+    # report_surface_label_masker(build_type)
     report_surface_maps_masker(build_type)
 
     t1 = time.time()
@@ -653,12 +657,12 @@ def main(args=sys.argv):
     print("\nGenerating GLM reports templates\n")
     t0 = time.time()
 
-    report_flm_adhd_dmn(build_type)
-    report_flm_bids_features(build_type)
-    report_flm_fiac(build_type)
-    report_slm_oasis(build_type)
-    report_surface_flm(build_type)
-    report_surface_slm()
+    # report_flm_adhd_dmn(build_type)
+    # report_flm_bids_features(build_type)
+    # report_flm_fiac(build_type)
+    # report_slm_oasis(build_type)
+    # report_surface_flm(build_type)
+    # report_surface_slm()
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")

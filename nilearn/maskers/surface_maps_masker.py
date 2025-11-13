@@ -252,7 +252,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self._report_content["number_of_regions"] = self.n_elements_
 
         self._reporting_data = {
-            "maps_img": self.maps_img_,
+            "maps_image": self.maps_img_,
             "mask": self.mask_img_,
             "images": None,  # we will update image in transform
         }

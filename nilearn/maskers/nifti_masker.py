@@ -373,7 +373,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._report_content = {
             "description": (
                 "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (selfin green). We "
+                "with the outlines of the mask (in green). We "
                 "recommend to inspect the report for the overlap "
                 "between the mask and its input image. "
             ),
