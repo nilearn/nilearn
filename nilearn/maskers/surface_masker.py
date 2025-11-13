@@ -128,7 +128,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             "n_vertices": {},
             # unused but required in HTML template
             "number_of_regions": None,
-            "summary": None,
+            "summary": {},
             "warning_message": None,
             "n_elements": 0,
             "coverage": 0,

@@ -169,7 +169,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             "number_of_regions": getattr(self, "n_elements_", 0),
             "displayed_maps": [],
             "number_of_maps": 0,
-            "summary": None,
+            "summary": {},
             "warning_message": None,
         }
 
