@@ -3,6 +3,7 @@
 import uuid
 import warnings
 from string import Template
+from typing import Any
 
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -11,7 +12,6 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
-from nilearn.exceptions import MISSING_ENGINE_MSG
 from nilearn.reporting._utils import (
     dataframe_to_html,
     model_attributes_to_dataframe,
@@ -40,6 +40,10 @@ ESTIMATOR_TEMPLATES = {
 UNFITTED_MSG = (
     "\nThis estimator has not been fit yet.\n"
     "Make sure to run `fit` before inspecting reports."
+)
+
+MISSING_ENGINE_MSG = (
+    "\nNo plotting back-end detected.\nOutput will be missing figures."
 )
 
 
@@ -155,7 +159,9 @@ def generate_report(estimator) -> list[None] | HTMLReport:
     return _create_report(estimator, data, warning_messages)
 
 
-def _create_report(estimator, data, warning_messages) -> HTMLReport:
+def _create_report(
+    estimator, data: dict[str, Any], warning_messages: list[str]
+) -> HTMLReport:
     template_name = ESTIMATOR_TEMPLATES.get(estimator.__class__.__name__, None)
     if template_name is None:
         template_name = "body_masker.jinja"
@@ -305,7 +311,9 @@ def embed_img(display):
     return figure_to_svg_base64(display.frame_axes.figure)
 
 
-def _insert_figure_partial(engine, content, displayed_maps, unique_id=None):
+def _insert_figure_partial(
+    engine, content, displayed_maps, unique_id: str
+) -> str:
     env = return_jinja_env()
 
     tpl = env.get_template("html/maskers/partials/figure.jinja")

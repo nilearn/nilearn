@@ -34,13 +34,13 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn._version import __version__
-from nilearn.exceptions import MISSING_ENGINE_MSG
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
     get_clusters_table,
 )
 from nilearn.reporting.html_report import (
+    MISSING_ENGINE_MSG,
     UNFITTED_MSG,
     HTMLReport,
     assemble_report,

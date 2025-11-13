@@ -9,7 +9,6 @@ from nilearn._utils.data_gen import generate_random_img
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.html_document import WIDTH_DEFAULT, HTMLDocument
 from nilearn.conftest import _img_maps
-from nilearn.exceptions import MISSING_ENGINE_MSG
 from nilearn.image import get_data
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -22,6 +21,7 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
+from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 from nilearn.surface import SurfaceImage
 
 # ruff: noqa: ARG001

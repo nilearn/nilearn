@@ -13,12 +13,12 @@ from nilearn._utils.data_gen import (
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.datasets import load_fsaverage
-from nilearn.exceptions import MISSING_ENGINE_MSG
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import HTMLReport
+from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 from nilearn.surface import SurfaceImage
 
 

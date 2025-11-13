@@ -14,8 +14,8 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
-from nilearn.exceptions import MISSING_ENGINE_MSG
 from nilearn.glm.thresholding import threshold_stats_img
+from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 from nilearn.surface import SurfaceImage
 
 

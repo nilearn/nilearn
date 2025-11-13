@@ -24,10 +24,6 @@ AuthorizedException = (
     ValueError,
 )
 
-MISSING_ENGINE_MSG = (
-    "\nNo plotting back-end detected.\nOutput will be missing figures."
-)
-
 
 class NotImplementedWarning(UserWarning):
     """Custom warning to warn about not implemented features.
