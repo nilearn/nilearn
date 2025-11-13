@@ -244,8 +244,8 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             start = stop
         self.n_elements_ = int(stop)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
-            self._report_content["reports_at_fit_time"] = True
             self._report_content["n_elements"] = self.n_elements_
             for part in self.mask_img_.data.parts:
                 self._report_content["n_vertices"][part] = (

@@ -621,8 +621,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
             self.seeds_.append(seed)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
-            self._report_content["reports_at_fit_time"] = True
             self._reporting_data = {
                 "seeds": self.seeds_,
                 "mask": self.mask_img_,

@@ -230,9 +230,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         # initialize reporting content and data
         if self.reports:
-            self._report_content["reports_at_fit_time"] = True
             for part in self.maps_img.data.parts:
                 self._report_content["n_vertices"][part] = (
                     self.maps_img.mesh.parts[part].n_vertices
