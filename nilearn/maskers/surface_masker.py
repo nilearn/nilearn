@@ -129,8 +129,8 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             "n_vertices": {},
             # unused but required in HTML template
             "number_of_regions": None,
-            "summary": None,
-            "warning_message": None,
+            "summary": {},
+            "warning_messages": None,
             "n_elements": 0,
             "coverage": 0,
         }
@@ -214,6 +214,10 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = None
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -375,7 +379,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
-    def _get_displays(self):
+    def _reporting(self):
         """Load displays needed for report.
 
         Returns

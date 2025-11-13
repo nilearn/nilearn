@@ -263,7 +263,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 "defined by the labels of the mask."
             ),
             "number_of_regions": 0,
-            "warning_message": None,
+            "summary": {},
+            "warning_messages": None,
         }
 
     @property
@@ -315,7 +316,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return masked_atlas, removed_region_ids, removed_region_names, display
 
-    def _get_displays(self):
+    def _reporting(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -328,11 +329,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         if labels_image is None:
             return [None]
-
-        # Remove warning message in case where the masker was
-        # previously fitted with no func image and is re-fitted
-        if "warning_message" in self._report_content:
-            self._report_content["warning_message"] = None
 
         table = self.lut_.copy()
         if hasattr(self, "_lut_"):
@@ -385,16 +381,14 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 "Plotting ROIs of label image on the "
                 "MNI152Template for reporting."
             )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
+            self._report_content["warning_messages"] = msg
 
         elif self._reporting_data["dim"] == 5:
             msg = (
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
+            self._report_content["warning_messages"] = msg
 
         return self._create_figure_for_report(labels_image)
 
@@ -472,6 +466,10 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             ("labels", "data", None),
             "resampling_target",
         )
+
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = None
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 

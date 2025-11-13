@@ -26,6 +26,7 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
+from nilearn.reporting import HTMLReport
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -170,7 +171,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             "displayed_maps": [],
             "number_of_maps": 0,
             "summary": {},
-            "warning_message": None,
+            "warning_messages": None,
         }
 
     @fill_doc
@@ -190,6 +191,10 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = None
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -413,7 +418,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     def generate_report(
         self, title=None, displayed_maps=10, engine="matplotlib"
-    ):
+    ) -> HTMLReport:
         """Generate an HTML report for the current ``SurfaceMapsMasker``
         object.
 
@@ -470,6 +475,26 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
+        incorrect_type = not isinstance(
+            displayed_maps, (list, np.ndarray, int, str)
+        )
+        incorrect_string = (
+            isinstance(displayed_maps, str) and displayed_maps != "all"
+        )
+        not_integer = (
+            not isinstance(displayed_maps, str)
+            and np.array(displayed_maps).dtype != int
+        )
+        if incorrect_type or incorrect_string or not_integer:
+            raise TypeError(
+                "Parameter ``displayed_maps`` of "
+                "``generate_report()`` should be either 'all' or "
+                "an int, or a list/array of ints. You provided a "
+                f"{type(displayed_maps)}"
+            )
+
+        self.displayed_maps = displayed_maps
+
         # need to have matplotlib installed to generate reports no matter what
         # engine is selected
         if is_matplotlib_installed():
@@ -487,29 +512,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 )
             self._report_content["engine"] = engine
 
-            incorrect_type = not isinstance(
-                displayed_maps, (list, np.ndarray, int, str)
-            )
-            incorrect_string = (
-                isinstance(displayed_maps, str) and displayed_maps != "all"
-            )
-            not_integer = (
-                not isinstance(displayed_maps, str)
-                and np.array(displayed_maps).dtype != int
-            )
-            if incorrect_type or incorrect_string or not_integer:
-                raise TypeError(
-                    "Parameter ``displayed_maps`` of "
-                    "``generate_report()`` should be either 'all' or "
-                    "an int, or a list/array of ints. You provided a "
-                    f"{type(displayed_maps)}"
-                )
-
-            self.displayed_maps = displayed_maps
-
         return super().generate_report(title)
 
-    def _get_displays(self):
+    def _reporting(self):
         """Load displays needed for report.
 
         Returns
@@ -517,16 +522,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         displays : list
             A list of all displays to be rendered.
         """
-        # Handle the edge case where this function is called
-        # without matplolib or
-        # with a masker having report capabilities disabled
-        if not is_matplotlib_installed() or self._reporting_data is None:
-            return [None]
-
-        import matplotlib.pyplot as plt
-
-        from nilearn.reporting.utils import figure_to_png_base64
-
         maps_img = self._reporting_data["maps_img"]
 
         img = self._reporting_data["images"]
@@ -543,11 +538,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                     f"But masker only has {n_maps} maps. "
                     f"Setting number of displayed maps to {n_maps}."
                 )
-                warnings.warn(
-                    category=UserWarning,
-                    message=msg,
-                    stacklevel=find_stack_level(),
-                )
+                self._report_content["warning_messages"] = msg
                 self.displayed_maps = n_maps
             maps_to_be_displayed = range(self.displayed_maps)
 
@@ -562,6 +553,17 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         self._report_content["number_of_maps"] = n_maps
         self._report_content["displayed_maps"] = list(maps_to_be_displayed)
+
+        # Handle the edge case where this function is called
+        # without matplolib or
+        # with a masker having report capabilities disabled
+        if not is_matplotlib_installed():
+            return [None]
+
+        import matplotlib.pyplot as plt
+
+        from nilearn.reporting.utils import figure_to_png_base64
+
         embeded_images = []
 
         if img is None:
@@ -569,7 +571,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 "SurfaceMapsMasker has not been transformed (via transform() "
                 "method) on any image yet. Plotting only maps for reporting."
             )
-            warnings.warn(msg, stacklevel=find_stack_level())
+            self._report_content["warning_messages"] = msg
 
         for roi in maps_to_be_displayed:
             roi = index_img(maps_img, roi)

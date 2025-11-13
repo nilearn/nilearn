@@ -2,6 +2,7 @@
 
 import warnings
 from copy import deepcopy
+from typing import Any
 
 import numpy as np
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
@@ -24,6 +25,7 @@ from nilearn.maskers.base_masker import (
     mask_logger,
 )
 from nilearn.masking import load_mask_img
+from nilearn.reporting import HTMLReport
 
 
 class _ExtractionFunctor:
@@ -226,10 +228,11 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "description": (
                 "This report shows the spatial maps provided to the mask."
             ),
-            "warning_message": None,
+            "summary": {},
+            "warning_messages": None,
         }
 
-    def generate_report(self, title=None, displayed_maps=10):
+    def generate_report(self, title=None, displayed_maps=10) -> HTMLReport:
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 
         .. note::
@@ -301,6 +304,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._report_content["displayed_maps"] = []
 
         if self._has_report_data():
+            maps_to_be_displayed: list[Any] | np.ndarray[Any, Any] | range
+
             maps_image = self._reporting_data["maps_image"]
             n_maps = get_data(maps_image).shape[-1]
 
@@ -313,11 +318,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                         f"But masker only has {n_maps} maps. "
                         f"Setting number of displayed maps to {n_maps}."
                     )
-                    warnings.warn(
-                        category=UserWarning,
-                        message=msg,
-                        stacklevel=find_stack_level(),
-                    )
+                    self._report_content["warning_messages"] = msg
                     self.displayed_maps = n_maps
                 maps_to_be_displayed = range(self.displayed_maps)
 
@@ -335,7 +336,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return super().generate_report(title)
 
-    def _get_displays(self):
+    def _reporting(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -349,36 +350,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if maps_image is None:
             return [None]
 
-        n_maps = get_data(maps_image).shape[-1]
-
-        maps_to_be_displayed = range(n_maps)
-        if isinstance(self.displayed_maps, int):
-            if n_maps < self.displayed_maps:
-                msg = (
-                    "`generate_report()` received "
-                    f"{self.displayed_maps} to be displayed. "
-                    f"But masker only has {n_maps} maps. "
-                    f"Setting number of displayed maps to {n_maps}."
-                )
-                warnings.warn(
-                    category=UserWarning,
-                    message=msg,
-                    stacklevel=find_stack_level(),
-                )
-                self.displayed_maps = n_maps
-            maps_to_be_displayed = range(self.displayed_maps)
-
-        elif isinstance(self.displayed_maps, (list, np.ndarray)):
-            if max(self.displayed_maps) > n_maps:
-                raise ValueError(
-                    "Report cannot display the following maps "
-                    f"{self.displayed_maps} because "
-                    f"masker only has {n_maps} maps."
-                )
-            maps_to_be_displayed = self.displayed_maps
-
-        self._report_content["displayed_maps"] = list(maps_to_be_displayed)
-
         img = self._reporting_data["img"]
 
         if img is None:
@@ -386,16 +357,14 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "No image provided to fit in NiftiMapsMasker. "
                 "Plotting only spatial maps for reporting."
             )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
+            self._report_content["warning_messages"] = msg
 
         elif self._reporting_data["dim"] == 5:
             msg = (
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
+            self._report_content["warning_messages"] = msg
 
         return self._create_figure_for_report()
 
@@ -475,6 +444,10 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             ("mask", "maps", "data", None),
             "resampling_target",
         )
+
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = None
 
         if self.mask_img is None and self.resampling_target == "mask":
             raise ValueError(

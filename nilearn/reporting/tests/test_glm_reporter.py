@@ -79,12 +79,12 @@ def check_glm_report(
     # check the navbar is there
     includes.append('<nav class="navbar pure-g fw-bold" id="menu"')
 
-    if not is_matplotlib_installed():
-        includes.extend(
+    if is_matplotlib_installed():
+        excludes.extend(
             [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
         )
     else:
-        excludes.extend(
+        includes.extend(
             [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
         )
 
@@ -114,10 +114,15 @@ def check_glm_report(
         includes.extend(
             [
                 "This estimator has not been fit yet.",
-                "No mask was provided.",
                 "No statistical map was provided.",
             ]
         )
+        if is_matplotlib_installed():
+            includes.extend(
+                [
+                    "No mask was provided.",
+                ]
+            )
 
         # no design matrix in navbar if model not fitted
         excludes.append('<a id="navbar-matrix-link')
@@ -125,12 +130,17 @@ def check_glm_report(
     else:
         includes.extend(
             [
-                'id="design-matrix-',
-                'id="mask-',
-                'id="statistical-maps-',
                 "The mask includes",  # check that mask coverage is there
             ]
         )
+        if is_matplotlib_installed():
+            includes.extend(
+                [
+                    'id="design-matrix-',
+                    'id="mask-',
+                    'id="statistical-maps-',
+                ]
+            )
 
         if not has_contrasts:
             # the no contrast warning only appears for fitted models
@@ -359,7 +369,7 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
 
 
 @pytest.mark.slow
-def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: ARG001
+def test_report_invalid_plot_type(flm, contrasts):
     """Check errors when wrong plot type is requested."""
     with pytest.raises(KeyError, match="junk"):
         flm.generate_report(
@@ -369,16 +379,16 @@ def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: A
             threshold=1e-8,
             height_control=None,
         )
-
-    with pytest.raises(ValueError, match="'plot_type' must be one of"):
-        flm.generate_report(
-            contrasts=contrasts,
-            display_mode="glass",
-            plot_type="junk",
-            # the following are to avoid warnings
-            threshold=1e-8,
-            height_control=None,
-        )
+    if is_matplotlib_installed():
+        with pytest.raises(ValueError, match="'plot_type' must be one of"):
+            flm.generate_report(
+                contrasts=contrasts,
+                display_mode="glass",
+                plot_type="junk",
+                # the following are to avoid warnings
+                threshold=1e-8,
+                height_control=None,
+            )
 
 
 @pytest.mark.slow

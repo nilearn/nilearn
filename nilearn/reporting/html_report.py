@@ -43,7 +43,7 @@ UNFITTED_MSG = (
 )
 
 MISSING_ENGINE_MSG = (
-    "\nNo plotting back-end detected.\nOutput will be missing figures."
+    "\nNo plotting back-end detected.\nReport will be missing figures."
 )
 
 
@@ -108,7 +108,7 @@ class HTMLReport(HTMLDocument):
         return self.body
 
 
-def generate_report(estimator) -> list[None] | HTMLReport:
+def generate_report(estimator) -> HTMLReport:
     """Generate a report for Nilearn objects.
 
     Reports are useful to visualize steps in a processing pipeline.
@@ -135,48 +135,51 @@ def generate_report(estimator) -> list[None] | HTMLReport:
     if data.get("title") is None:
         data["title"] = estimator.__class__.__name__
 
-    warning_messages = []
+    if estimator._report_content["warning_messages"] is None:
+        estimator._report_content["warning_messages"] = []
 
     data["has_plotting_engine"] = is_matplotlib_installed()
     if not is_matplotlib_installed():
-        warning_messages.append(MISSING_ENGINE_MSG)
+        estimator._report_content["warning_messages"].append(
+            MISSING_ENGINE_MSG
+        )
 
     if estimator.reports is False:
-        warning_messages.append(
+        estimator._report_content["warning_messages"].append(
             "\nReport generation not enabled!\nNo visual outputs created."
         )
 
     if not estimator.__sklearn_is_fitted__():
-        warning_messages.append(UNFITTED_MSG)
+        estimator._report_content["warning_messages"].append(UNFITTED_MSG)
 
-    if warning_messages:
-        for msg in warning_messages:
+    if estimator._report_content["warning_messages"]:
+        estimator._report_content["warning_messages"] = sorted(
+            set(estimator._report_content["warning_messages"])
+        )
+        for msg in estimator._report_content["warning_messages"]:
             warnings.warn(
                 msg,
                 stacklevel=find_stack_level(),
+                category=UserWarning,
             )
 
-    return _create_report(estimator, data, warning_messages)
+    return _create_report(estimator, data)
 
 
 def _create_report(
-    estimator, data: dict[str, Any], warning_messages: list[str]
+    estimator,
+    data: dict[str, Any],
 ) -> HTMLReport:
     template_name = ESTIMATOR_TEMPLATES.get(estimator.__class__.__name__, None)
     if template_name is None:
         template_name = "body_masker.jinja"
 
-    embeded_images = embed_img(None)
-    overlay = None
-    if not warning_messages:
-        # note that some surface images are passed via data
-        # for surface maps masker
-        overlay, image = _define_overlay(estimator)
-        embeded_images = (
-            [embed_img(i) for i in image]
-            if isinstance(image, list)
-            else embed_img(image)
-        )
+    overlay, image = _define_overlay(estimator)
+    embeded_images = (
+        [embed_img(i) for i in image]
+        if isinstance(image, list)
+        else embed_img(image)
+    )
 
     summary_html: None | dict | str = None
     # only convert summary to html table if summary exists
@@ -250,7 +253,6 @@ def _create_report(
         ),
         **data,
         carousel=False,
-        warning_messages=warning_messages,
         summary_html=summary_html,
     )
 

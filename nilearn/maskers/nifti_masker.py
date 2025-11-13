@@ -379,10 +379,11 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             ),
             "n_elements": 0,
             "coverage": 0,
-            "warning_message": None,
+            "summary": {},
+            "warning_messages": None,
         }
 
-    def _get_displays(self):
+    def _reporting(self):
         """Load displays needed for report.
 
         Returns
@@ -403,16 +404,14 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "No image provided to fit in NiftiMasker. "
                 "Setting image to mask for reporting."
             )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
+            self._report_content["warning_messages"] = msg
 
         elif self._reporting_data["dim"] == 5:
             msg = (
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
+            self._report_content["warning_messages"] = msg
 
         return self._create_figure_for_report()
 
@@ -507,6 +506,10 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "\n To see the input Nifti image before resampling, "
             "hover over the displayed image."
         )
+
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = None
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 

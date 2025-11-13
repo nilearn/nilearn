@@ -107,25 +107,26 @@ def input_parameters(masker_class, img_mask_eye, labels, img_labels):
     "masker_class",
     [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker, NiftiSpheresMasker],
 )
-def test_warning_in_report_after_empty_fit(
-    matplotlib_pyplot, masker_class, input_parameters
-):
+def test_warning_in_report_after_empty_fit(masker_class, input_parameters):
     """Tests that a warning is both given and written in the report \
        if no images were provided to fit.
     """
     masker = masker_class(**input_parameters)
     masker.fit()
 
-    warn_message = f"No image provided to fit in {masker_class.__name__}."
-    with pytest.warns(UserWarning, match=warn_message):
+    match = "Report will be missing figures"
+    if is_matplotlib_installed():
+        match = f"No image provided to fit in {masker_class.__name__}."
+    with pytest.warns(UserWarning, match=match):
         html = masker.generate_report()
-    assert warn_message in masker._report_content["warning_message"]
+    assert 'id="warnings"' in str(html)
+    assert match in str(html)
     _check_html(html)
 
 
 @pytest.mark.parametrize("displayed_maps", ["foo", "1", {"foo": "bar"}])
 def test_nifti_maps_masker_report_displayed_maps_errors(
-    matplotlib_pyplot, niftimapsmasker_inputs, displayed_maps
+    niftimapsmasker_inputs, displayed_maps
 ):
     """Tests that a TypeError is raised when the argument `displayed_maps` \
        of `generate_report()` is not valid.
@@ -138,7 +139,7 @@ def test_nifti_maps_masker_report_displayed_maps_errors(
 
 @pytest.mark.parametrize("displayed_maps", [[2, 5, 10], [0, 66, 1, 260]])
 def test_nifti_maps_masker_report_maps_number_errors(
-    matplotlib_pyplot, niftimapsmasker_inputs, displayed_maps
+    niftimapsmasker_inputs, displayed_maps
 ):
     """Tests that a ValueError is raised when the argument `displayed_maps` \
        contains invalid map numbers.
@@ -171,7 +172,7 @@ def test_nifti_maps_masker_report_list_and_arrays_maps_number(
         "No image provided to fit in NiftiMapsMasker. "
         "Plotting only spatial maps for reporting."
     )
-    assert masker._report_content["warning_message"] == msg
+    assert masker._report_content["warning_messages"] == msg
     assert html.body.count("<img") == len(displayed_maps)
 
 
@@ -206,7 +207,7 @@ def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
         "No image provided to fit in NiftiMapsMasker. "
         "Plotting only spatial maps for reporting."
     )
-    assert masker._report_content["warning_message"] == msg
+    assert masker._report_content["warning_messages"] == msg
     assert html.body.count("<img") == expected_n_maps
 
 
@@ -228,7 +229,6 @@ def test_nifti_maps_masker_report_image_in_fit(
 
 @pytest.mark.parametrize("displayed_spheres", ["foo", "1", {"foo": "bar"}])
 def test_nifti_spheres_masker_report_displayed_spheres_errors(
-    matplotlib_pyplot,
     displayed_spheres,
 ):
     """Tests that a TypeError is raised when the argument `displayed_spheres` \
@@ -240,9 +240,7 @@ def test_nifti_spheres_masker_report_displayed_spheres_errors(
         masker.generate_report(displayed_spheres=displayed_spheres)
 
 
-def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds(
-    matplotlib_pyplot,
-):
+def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds():
     """Tests that a warning is raised when number of `displayed_spheres` \
        is greater than number of seeds.
     """
@@ -259,7 +257,7 @@ def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds(
     [("all", [0, 1, 2, 3]), ([1], [0, 2]), ([0, 2], [0, 1, 3])],
 )
 def test_nifti_spheres_masker_report_displayed_spheres_list(
-    matplotlib_pyplot, displayed_spheres, expected_displayed_maps
+    displayed_spheres, expected_displayed_maps
 ):
     """Tests that spheres_to_be_displayed is set correctly.
 
@@ -275,9 +273,7 @@ def test_nifti_spheres_masker_report_displayed_spheres_list(
     assert masker._report_content["displayed_maps"] == expected_displayed_maps
 
 
-def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds(
-    matplotlib_pyplot,
-):
+def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
     """Tests that a ValueError is raised when list of `displayed_spheres` \
        maximum is greater than number of seeds.
     """
@@ -339,7 +335,6 @@ EXPECTED_COLUMNS = [
 
 
 def test_nifti_labels_masker_report(
-    matplotlib_pyplot,
     img_3d_rand_eye,
     img_mask_eye,
     affine_eye,
@@ -418,7 +413,7 @@ def test_nifti_labels_masker_report_cut_coords(
     assert display[0].cut_coords == display_data[0].cut_coords
 
 
-def test_4d_reports(matplotlib_pyplot, img_mask_eye, affine_eye):
+def test_4d_reports(img_mask_eye, affine_eye):
     # Dummy 4D data
     data = np.zeros((10, 10, 10, 3), dtype="int32")
     data[..., 0] = 1
@@ -526,7 +521,7 @@ def test_surface_masker_mask_img_generate_no_report(surf_img_2d, surf_mask_1d):
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize("empty_mask", [True, False])
 def test_surface_masker_minimal_report_no_fit(
-    matplotlib_pyplot, surf_mask_1d, empty_mask, reports
+    surf_mask_1d, empty_mask, reports
 ):
     """Test minimal report generation with no fit."""
     mask = None if empty_mask else surf_mask_1d
@@ -539,7 +534,7 @@ def test_surface_masker_minimal_report_no_fit(
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize("empty_mask", [True, False])
 def test_surface_masker_minimal_report_fit(
-    matplotlib_pyplot, surf_mask_1d, empty_mask, surf_img_1d, reports
+    surf_mask_1d, empty_mask, surf_img_1d, reports
 ):
     """Test minimal report generation with fit."""
     mask = None if empty_mask else surf_mask_1d
@@ -568,7 +563,7 @@ def test_generate_report_engine_error(
 
 
 @pytest.mark.skipif(
-    is_plotly_installed() or not is_matplotlib_installed(),
+    is_plotly_installed(),
     reason="Test requires plotly not to be installed.",
 )
 def test_generate_report_engine_no_plotly_warning(surf_maps_img, surf_img_2d):
@@ -595,7 +590,7 @@ def test_generate_report_displayed_maps_valid_inputs(
 
 @pytest.mark.parametrize("displayed_maps", [4.5, [8.4, 3], "invalid"])
 def test_generate_report_displayed_maps_type_error(
-    matplotlib_pyplot, surf_maps_img, surf_img_2d, displayed_maps
+    surf_maps_img, surf_img_2d, displayed_maps
 ):
     """Test error is raised when displayed_maps is not a list or int or
     np.ndarray or str(all).
@@ -610,7 +605,7 @@ def test_generate_report_displayed_maps_type_error(
 
 
 def test_generate_report_displayed_maps_more_than_regions_warn_int(
-    matplotlib_pyplot, surf_maps_img, surf_img_2d
+    surf_maps_img, surf_img_2d
 ):
     """Test error is raised when displayed_maps is int and is more than n
     regions.
@@ -627,7 +622,7 @@ def test_generate_report_displayed_maps_more_than_regions_warn_int(
 
 
 def test_generate_report_displayed_maps_more_than_regions_warn_list(
-    matplotlib_pyplot, surf_maps_img, surf_img_2d
+    surf_maps_img, surf_img_2d
 ):
     """Test error is raised when displayed_maps is list has more elements than
     n regions.
@@ -641,19 +636,21 @@ def test_generate_report_displayed_maps_more_than_regions_warn_list(
         masker.generate_report(displayed_maps=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
 
 
-def test_generate_report_before_transform_warn(
-    matplotlib_pyplot, surf_maps_img
-):
+def test_generate_report_before_transform_warn(surf_maps_img):
     """Test warning is raised when generate_report is called before
     transform.
     """
     masker = SurfaceMapsMasker(surf_maps_img).fit()
-    with pytest.warns(match="SurfaceMapsMasker has not been transformed"):
+
+    match = "Report will be missing figures"
+    if not is_matplotlib_installed():
+        match = "SurfaceMapsMasker has not been transformed"
+    with pytest.warns(match=match):
         masker.generate_report()
 
 
 def test_generate_report_plotly_out_figure_type(
-    plotly, surf_maps_img, surf_img_2d
+    plotly, matplotlib_pyplot, surf_maps_img, surf_img_2d
 ):
     """Test that the report has a iframe tag when engine is plotly
     (default).

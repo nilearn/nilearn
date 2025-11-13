@@ -357,7 +357,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "This report shows the regions defined "
                 "by the spheres of the masker."
             ),
-            "warning_message": None,
+            "summary": {},
+            "warning_messages": None,
         }
 
     def generate_report(self, title=None, displayed_spheres="all"):
@@ -437,11 +438,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                         "Setting number of displayed spheres "
                         f"to {len(seeds)}."
                     )
-                    warnings.warn(
-                        category=UserWarning,
-                        message=msg,
-                        stacklevel=find_stack_level(),
-                    )
+                    self._report_content["warning_messages"] = msg
                     self.displayed_spheres = len(seeds)
                 spheres_to_be_displayed = range(self.displayed_spheres)
 
@@ -464,7 +461,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return super().generate_report(title)
 
-    def _get_displays(self):
+    def _reporting(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -481,8 +478,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "No image provided to fit in NiftiSpheresMasker. "
                 "Spheres are plotted on top of the MNI152 template."
             )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
+            self._report_content["warning_messages"] = msg
         else:
             positions = [
                 np.round(
@@ -526,12 +522,13 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         -------
         list of :class:`~nilearn.plotting.displays.OrthoSlicer`
         """
+        seeds = self._reporting_data["seeds"]
+
         if not is_matplotlib_installed():
             return [None, None]
 
         from nilearn.plotting import plot_img, plot_markers
 
-        seeds = self._reporting_data["seeds"]
         radius = 1.0 if self.radius is None else self.radius
 
         display = plot_markers(
@@ -574,6 +571,10 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         del y
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
+
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = None
 
         error = (
             "Seeds must be a list of triplets of coordinates in "

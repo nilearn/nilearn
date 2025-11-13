@@ -3641,9 +3641,7 @@ def check_masker_generate_report(estimator):
 
     """
     if not is_matplotlib_installed():
-        with pytest.warns(
-            ImportWarning, match="Report will be missing figures"
-        ):
+        with pytest.warns(UserWarning, match="Report will be missing figures"):
             report = _generate_report(estimator)
 
     assert isinstance(estimator._report_content, dict)
@@ -3663,7 +3661,7 @@ def check_masker_generate_report(estimator):
 
     estimator.fit(input_img)
 
-    assert estimator._report_content["warning_message"] is None
+    assert estimator._report_content["warning_messages"] is None
     assert estimator._has_report_data() is True
 
     # TODO
@@ -3688,10 +3686,14 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     estimator.fit()
 
-    assert estimator._report_content["warning_message"] is None
+    assert estimator._report_content["warning_messages"] is None
 
-    with pytest.warns(UserWarning, match="No image provided to fit."):
+    match = "Report will be missing figures"
+    if is_matplotlib_installed():
+        match = "No image provided to fit"
+    with pytest.warns(UserWarning, match=match):
         report = _generate_report(estimator)
+
     _check_html(report)
 
     input_img = _img_4d_rand_eye_medium()
@@ -3719,7 +3721,6 @@ def check_masker_generate_report_false(estimator):
     estimator.fit(input_img)
 
     assert estimator._has_report_data() is False
-    assert estimator._reporting() == [None]
     with pytest.warns(
         UserWarning,
         match=("No visual outputs created."),
@@ -3742,10 +3743,11 @@ def check_multimasker_generate_report(estimator):
             estimator.maps_img = _img_3d_ones()
 
         estimator.fit(input_img)
-        with pytest.warns(
-            UserWarning,
-            match="A list of 4D subject images were provided to fit. ",
-        ):
+
+        match = "Report will be missing figures"
+        if is_matplotlib_installed():
+            match = "A list of 4D subject images were provided to fit"
+        with pytest.warns(UserWarning, match=match):
             _generate_report(estimator)
     else:
         # TODO add a warning

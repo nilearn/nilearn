@@ -69,7 +69,7 @@ def test_masker_reporting_true(masker, img_func):
     instances when ``reports=True``.
     """
     # check masker at initialization
-    assert masker._report_content["warning_message"] is None
+    assert masker._report_content["warning_messages"] is None
 
     # check masker report before fit
     masker.generate_report()
@@ -121,7 +121,7 @@ def test_masker_reporting_false(masker, img_func):
     # check masker at initialization
     assert masker._report_content is not None
     assert masker._report_content["description"] is not None
-    assert masker._report_content["warning_message"] is None
+    assert masker._report_content["warning_messages"] is None
     assert masker._has_report_data() is False
 
     # check masker report before fit

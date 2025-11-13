@@ -210,7 +210,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             "n_vertices": {},
             "number_of_regions": 0,
             "summary": {},
-            "warning_message": None,
+            "warning_messages": None,
         }
 
     @fill_doc
@@ -230,6 +230,10 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = None
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -470,7 +474,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         return imgs
 
-    def _get_displays(self):
+    def _reporting(self):
         """Load displays needed for report.
 
         Returns

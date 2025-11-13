@@ -20,6 +20,7 @@ from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn.image import high_variance_confounds
 from nilearn.image.utils import get_indices_from_image
+from nilearn.reporting.html_report import HTMLReport, generate_report
 from nilearn.surface.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
@@ -411,12 +412,12 @@ class _ReportingMixin:
         """
         return hasattr(self, "_reporting_data")
 
-    def generate_report(self, title=None):
+    def generate_report(self, title: str | None = None) -> HTMLReport:
         """Generate an HTML report for the current object.
 
         Parameters
         ----------
-        title : :obj:`str`, default=None
+        title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
 
         Returns
@@ -426,20 +427,10 @@ class _ReportingMixin:
         """
         self._report_content["title"] = title
 
-        from nilearn.reporting.html_report import generate_report
-
         return generate_report(self)
 
-    def _reporting(self):
-        # if report is disabled or the model is not yet fitted
-        if self.reports is False or self.__sklearn_is_fitted__() is False:
-            self._report_content["summary"] = None
-            return [None]
-
-        return self._get_displays()
-
     @abc.abstractmethod
-    def _get_displays(self):
+    def _reporting(self):
         raise NotImplementedError()
 
     @abc.abstractmethod
