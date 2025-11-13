@@ -2,7 +2,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any
+from typing import Any, Literal
 
 import numpy as np
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
@@ -21,6 +21,7 @@ from nilearn.image import clean_img, get_data, index_img, resample_img
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
+    check_displayed_maps,
     filter_and_extract,
     mask_logger,
 )
@@ -233,7 +234,15 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "warning_messages": [],
         }
 
-    def generate_report(self, title=None, displayed_maps=10):
+    @fill_doc
+    def generate_report(
+        self,
+        title: str | None = None,
+        displayed_maps: list[int]
+        | np.typing.NDArray[np.int_]
+        | int
+        | Literal["all"] = 10,
+    ):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 
         .. note::
@@ -241,64 +250,18 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Parameters
         ----------
-        title : :obj:`str`, default=None
+        title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
 
-        displayed_maps : :obj:`int`, or :obj:`list`, \
-                         or :class:`~numpy.ndarray`, or "all", default=10
-            Indicates which maps will be displayed in the HTML report.
-
-            - If ``"all"``: All maps will be displayed in the report.
-
-            .. code-block:: python
-
-                masker.generate_report("all")
-
-            .. warning:
-                If there are too many maps, this might be time and
-                memory consuming, and will result in very heavy
-                reports.
-
-            - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
-                the indices of the maps to be displayed in the report. For
-                example, the following code will generate a report with maps
-                6, 3, and 12, displayed in this specific order:
-
-            .. code-block:: python
-
-                masker.generate_report([6, 3, 12])
-
-            - If an :obj:`int`: This will only display the first n maps,
-                n being the value of the parameter. By default, the report
-                will only contain the first 10 maps. Example to display the
-                first 16 maps:
-
-            .. code-block:: python
-
-                masker.generate_report(16)
+        %(displayed_maps)s
 
         Returns
         -------
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        incorrect_type = not isinstance(
-            displayed_maps, (list, np.ndarray, int, str)
-        )
-        incorrect_string = (
-            isinstance(displayed_maps, str) and displayed_maps != "all"
-        )
-        not_integer = (
-            not isinstance(displayed_maps, str)
-            and np.array(displayed_maps).dtype != int
-        )
-        if incorrect_type or incorrect_string or not_integer:
-            raise TypeError(
-                "Parameter ``displayed_maps`` of "
-                "``generate_report()`` should be either 'all' or "
-                "an int, or a list/array of ints. You provided a "
-                f"{type(displayed_maps)}"
-            )
+        check_displayed_maps(displayed_maps, "displayed_maps")
+
         self.displayed_maps = displayed_maps
 
         self._report_content["number_of_maps"] = 0

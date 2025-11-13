@@ -5,6 +5,7 @@ Mask nifti images by spherical volumes for seed-region analyses
 
 import contextlib
 import warnings
+from typing import Literal
 
 import numpy as np
 from scipy import sparse
@@ -28,6 +29,7 @@ from nilearn.image.resampling import coord_transform
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
+    check_displayed_maps,
     filter_and_extract,
     mask_logger,
 )
@@ -361,7 +363,15 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "warning_messages": [],
         }
 
-    def generate_report(self, title=None, displayed_spheres="all"):
+    @fill_doc
+    def generate_report(
+        self,
+        title: str | None = None,
+        displayed_spheres: list[int]
+        | np.typing.NDArray[np.int_]
+        | int
+        | Literal["all"] = "all",
+    ):
         """Generate an HTML report for current ``NiftiSpheresMasker`` object.
 
         .. note::
@@ -369,56 +379,18 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Parameters
         ----------
-        title : :obj:`str`, default=None
+        title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
-        displayed_spheres : :obj:`int`, or :obj:`list`,\
-                            or :class:`~numpy.ndarray`, or "all", default="all"
-            Indicates which spheres will be displayed in the HTML report.
 
-            - If "all": All spheres will be displayed in the report.
-
-            .. code-block:: python
-
-                masker.generate_report("all")
-
-            .. warning::
-
-                If there are too many spheres, this might be time and
-                memory consuming, and will result in very heavy
-                reports.
-
-            - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
-                the indices of the spheres to be displayed in the report.
-                For example, the following code will generate a report with
-                spheres 6, 3, and 12, displayed in this specific order:
-
-            .. code-block:: python
-
-                masker.generate_report([6, 3, 12])
-
-            - If an :obj:`int`: This will only display the first n
-                spheres, n being the value of the parameter. By default,
-                the report will only contain the first 10 spheres.
-                Example to display the first 16 spheres:
-
-            .. code-block:: python
-
-                masker.generate_report(16)
+        %(displayed_spheres)s
 
         Returns
         -------
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        if displayed_spheres != "all" and not isinstance(
-            displayed_spheres, (list, np.ndarray, int)
-        ):
-            raise TypeError(
-                "Parameter ``displayed_spheres`` of "
-                "``generate_report()`` should be either 'all' or "
-                "an int, or a list/array of ints. You provided a "
-                f"{type(displayed_spheres)}"
-            )
+        check_displayed_maps(displayed_spheres, "displayed_spheres")
+
         self.displayed_spheres = displayed_spheres
 
         self._report_content["number_of_seeds"] = 0

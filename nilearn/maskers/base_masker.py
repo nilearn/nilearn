@@ -5,6 +5,7 @@ import contextlib
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
+from typing import Any
 
 import numpy as np
 from joblib import Memory
@@ -212,6 +213,36 @@ def mask_logger(step, img=None, verbose=0):
         return
 
     logger.log(messages[step], verbose=verbose)
+
+
+def check_displayed_maps(displayed_maps: Any, var_name: str):
+    """Validate displayed_maps parameter for report generation."""
+    incorrect_type = not isinstance(
+        displayed_maps, (list, np.ndarray, int, str)
+    )
+    incorrect_string = (
+        isinstance(displayed_maps, str) and displayed_maps != "all"
+    )
+    not_integer = (
+        isinstance(displayed_maps, np.ndarray)
+        and (np.array(displayed_maps).dtype != int)
+    ) or (
+        isinstance(displayed_maps, list)
+        and not all(isinstance(i, int) for i in displayed_maps)
+    )
+    if incorrect_type or incorrect_string or not_integer:
+        input_type = displayed_maps.__class__.__name__
+        if isinstance(displayed_maps, (np.ndarray, list)):
+            input_type = (
+                f"{displayed_maps.__class__.__name__} "
+                f"of { {i.__class__.__name__ for i in displayed_maps} }"
+            )
+        raise TypeError(
+            f"Parameter {var_name} of "
+            "``generate_report()`` should be either 'all' or "
+            "a positive 'int', or a list/array of ints."
+            f"You provided a {input_type}."
+        )
 
 
 @fill_doc
