@@ -215,8 +215,10 @@ def mask_logger(step, img=None, verbose=0):
     logger.log(messages[step], verbose=verbose)
 
 
-def check_displayed_maps(displayed_maps: Any, var_name: str):
-    """Validate displayed_maps parameter for report generation."""
+def check_displayed_maps(
+    displayed_maps: Any, var_name: str = "displayed_maps"
+) -> None:
+    """Check type displayed_maps parameter for report generation."""
     incorrect_type = not isinstance(
         displayed_maps, (list, np.ndarray, int, str)
     )
@@ -243,6 +245,56 @@ def check_displayed_maps(displayed_maps: Any, var_name: str):
             "a positive 'int', or a list/array of ints."
             f"You provided a {input_type}."
         )
+
+
+def sanitize_displayed_maps(
+    estimator,
+    displayed_maps: Any,
+    n_maps: int,
+    var_name: str = "displayed_maps",
+) -> tuple[Any, list[int]]:
+    """Check and sanitize displayed_maps parameter for report generation.
+
+    Eventually adjust displayed_maps and add warning messages to estimator.
+
+    First coerce displayed_maps to a list of integers.
+    Then check that all requested maps are available in the masker.
+    """
+    if displayed_maps == "all":
+        displayed_maps = n_maps
+
+    if isinstance(displayed_maps, int):
+        if n_maps < displayed_maps:
+            msg = (
+                "`generate_report()` received "
+                f"'{var_name}={displayed_maps}' to be displayed. "
+                f"But masker only has {n_maps} maps. "
+                f"'{var_name}' was set to {n_maps}."
+            )
+            estimator._report_content["warning_messages"].append(msg)
+
+            displayed_maps = n_maps
+
+        displayed_maps = list(range(displayed_maps))
+
+    if isinstance(displayed_maps, np.ndarray):
+        displayed_maps = displayed_maps.tolist()
+
+    displayed_maps = set(displayed_maps)  # Remove duplicates
+
+    unvailable_maps = displayed_maps - set(range(n_maps))
+
+    if unvailable_maps:
+        msg = (
+            "`generate_report()` received "
+            f"'{var_name}={list(displayed_maps)}' to be displayed. "
+            "Report cannot display the following maps "
+            f"{unvailable_maps} because "
+            f"masker only has {n_maps} maps."
+        )
+        estimator._report_content["warning_messages"].append(msg)
+
+    return estimator, list(displayed_maps - unvailable_maps)
 
 
 @fill_doc

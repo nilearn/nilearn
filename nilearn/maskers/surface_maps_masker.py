@@ -30,6 +30,7 @@ from nilearn.maskers.base_masker import (
     _BaseSurfaceMasker,
     check_displayed_maps,
     mask_logger,
+    sanitize_displayed_maps,
 )
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -456,9 +457,21 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        check_displayed_maps(displayed_maps, "displayed_maps")
+        check_displayed_maps(displayed_maps)
 
-        self.displayed_maps = displayed_maps
+        self._report_content["number_of_maps"] = 0
+        self._report_content["displayed_maps"] = []
+
+        if self._has_report_data():
+            maps_image = self._reporting_data["maps_image"]
+            n_maps = maps_image.shape[1]
+
+            self, maps_to_be_displayed = sanitize_displayed_maps(
+                self, displayed_maps, n_maps
+            )
+
+            self._report_content["number_of_maps"] = n_maps
+            self._report_content["displayed_maps"] = maps_to_be_displayed
 
         # need to have matplotlib installed to generate reports no matter what
         # engine is selected
@@ -487,35 +500,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         displays : list
             A list of all displays to be rendered.
         """
-        if self._has_report_data():
-            maps_img = self._reporting_data["maps_img"]
-
-            n_maps = self.maps_img_.shape[1]
-            maps_to_be_displayed = range(n_maps)
-            if isinstance(self.displayed_maps, int):
-                if n_maps < self.displayed_maps:
-                    msg = (
-                        "`generate_report()` received "
-                        f"{self.displayed_maps} maps to be displayed. "
-                        f"But masker only has {n_maps} maps. "
-                        f"Setting number of displayed maps to {n_maps}."
-                    )
-                    self._report_content["warning_messages"].append(msg)
-                    self.displayed_maps = n_maps
-                maps_to_be_displayed = range(self.displayed_maps)
-
-            elif isinstance(self.displayed_maps, (list, np.ndarray)):
-                if max(self.displayed_maps) > n_maps:
-                    raise ValueError(
-                        "Report cannot display the following maps "
-                        f"{self.displayed_maps} because "
-                        f"masker only has {n_maps} maps."
-                    )
-                maps_to_be_displayed = self.displayed_maps
-
-            self._report_content["number_of_maps"] = n_maps
-            self._report_content["displayed_maps"] = list(maps_to_be_displayed)
-
         # Handle the edge case where this function is called
         # without matplolib or
         # with a masker having report capabilities disabled
@@ -530,6 +514,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if img:
             img = mean_img(img)
 
+        maps_image = self._reporting_data["maps_image"]
+
         embeded_images = []
 
         if img is None:
@@ -539,8 +525,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             )
             self._report_content["warning_messages"].append(msg)
 
-        for roi in maps_to_be_displayed:
-            roi = index_img(maps_img, roi)
+        for roi in self._report_content["displayed_maps"]:
+            roi = index_img(maps_image, roi)
             fig = self._create_figure_for_report(roi=roi, bg_img=img)
             if self._report_content["engine"] == "plotly":
                 embeded_images.append(fig)

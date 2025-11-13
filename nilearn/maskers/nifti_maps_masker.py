@@ -2,7 +2,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any, Literal
+from typing import Literal
 
 import numpy as np
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
@@ -24,6 +24,7 @@ from nilearn.maskers.base_masker import (
     check_displayed_maps,
     filter_and_extract,
     mask_logger,
+    sanitize_displayed_maps,
 )
 from nilearn.masking import load_mask_img
 
@@ -260,7 +261,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        check_displayed_maps(displayed_maps, "displayed_maps")
+        check_displayed_maps(displayed_maps)
 
         self.displayed_maps = displayed_maps
 
@@ -268,35 +269,15 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._report_content["displayed_maps"] = []
 
         if self._has_report_data():
-            maps_to_be_displayed: list[Any] | np.ndarray[Any, Any] | range
-
             maps_image = self._reporting_data["maps_image"]
             n_maps = get_data(maps_image).shape[-1]
 
-            maps_to_be_displayed = range(n_maps)
-            if isinstance(self.displayed_maps, int):
-                if n_maps < self.displayed_maps:
-                    msg = (
-                        "`generate_report()` received "
-                        f"{self.displayed_maps} to be displayed. "
-                        f"But masker only has {n_maps} maps. "
-                        f"Setting number of displayed maps to {n_maps}."
-                    )
-                    self._report_content["warning_messages"].append(msg)
-                    self.displayed_maps = n_maps
-                maps_to_be_displayed = range(self.displayed_maps)
-
-            elif isinstance(self.displayed_maps, (list, np.ndarray)):
-                if max(self.displayed_maps) > n_maps:
-                    raise ValueError(
-                        "Report cannot display the following maps "
-                        f"{self.displayed_maps} because "
-                        f"masker only has {n_maps} maps."
-                    )
-                maps_to_be_displayed = self.displayed_maps
+            self, maps_to_be_displayed = sanitize_displayed_maps(
+                self, displayed_maps, n_maps
+            )
 
             self._report_content["number_of_maps"] = n_maps
-            self._report_content["displayed_maps"] = list(maps_to_be_displayed)
+            self._report_content["displayed_maps"] = maps_to_be_displayed
 
         return super().generate_report(title)
 
