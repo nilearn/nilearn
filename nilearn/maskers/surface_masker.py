@@ -217,7 +217,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         # Reset warning message
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = None
+        self._report_content["warning_messages"] = []
 
         if imgs is not None:
             self._check_imgs(imgs)

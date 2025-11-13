@@ -228,6 +228,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "description": (
                 "This report shows the spatial maps provided to the mask."
             ),
+            "displayed_maps": [],
+            "number_of_maps": 0,
             "summary": {},
             "warning_messages": None,
         }
@@ -345,9 +347,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        maps_image = self._reporting_data["maps_image"]
-
-        if maps_image is None:
+        if not self._has_report_data():
             return [None]
 
         img = self._reporting_data["img"]
@@ -447,7 +447,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         # Reset warning message
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = None
+        self._report_content["warning_messages"] = []
 
         if self.mask_img is None and self.resampling_target == "mask":
             raise ValueError(

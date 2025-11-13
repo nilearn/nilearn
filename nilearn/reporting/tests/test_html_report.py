@@ -54,6 +54,7 @@ def _check_html(html_view, reports_requested=True, is_fit=True):
         assert "This estimator has not been fit yet." in str(html_view)
 
     if not is_matplotlib_installed():
+        assert 'id="warnings"' in str(html_view)
         assert MISSING_ENGINE_MSG in str(html_view)
         assert 'color: grey">No plotting engine found</p>' in str(html_view)
 

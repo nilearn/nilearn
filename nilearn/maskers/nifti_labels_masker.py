@@ -469,7 +469,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         # Reset warning message
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = None
+        self._report_content["warning_messages"] = []
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 

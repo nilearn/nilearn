@@ -194,7 +194,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         # Reset warning message
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = None
+        self._report_content["warning_messages"] = []
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -522,47 +522,48 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         displays : list
             A list of all displays to be rendered.
         """
-        maps_img = self._reporting_data["maps_img"]
+        if self._has_report_data():
+            maps_img = self._reporting_data["maps_img"]
 
-        img = self._reporting_data["images"]
-        if img:
-            img = mean_img(img)
+            n_maps = self.maps_img_.shape[1]
+            maps_to_be_displayed = range(n_maps)
+            if isinstance(self.displayed_maps, int):
+                if n_maps < self.displayed_maps:
+                    msg = (
+                        "`generate_report()` received "
+                        f"{self.displayed_maps} maps to be displayed. "
+                        f"But masker only has {n_maps} maps. "
+                        f"Setting number of displayed maps to {n_maps}."
+                    )
+                    self._report_content["warning_messages"] = msg
+                    self.displayed_maps = n_maps
+                maps_to_be_displayed = range(self.displayed_maps)
 
-        n_maps = self.maps_img_.shape[1]
-        maps_to_be_displayed = range(n_maps)
-        if isinstance(self.displayed_maps, int):
-            if n_maps < self.displayed_maps:
-                msg = (
-                    "`generate_report()` received "
-                    f"{self.displayed_maps} maps to be displayed. "
-                    f"But masker only has {n_maps} maps. "
-                    f"Setting number of displayed maps to {n_maps}."
-                )
-                self._report_content["warning_messages"] = msg
-                self.displayed_maps = n_maps
-            maps_to_be_displayed = range(self.displayed_maps)
+            elif isinstance(self.displayed_maps, (list, np.ndarray)):
+                if max(self.displayed_maps) > n_maps:
+                    raise ValueError(
+                        "Report cannot display the following maps "
+                        f"{self.displayed_maps} because "
+                        f"masker only has {n_maps} maps."
+                    )
+                maps_to_be_displayed = self.displayed_maps
 
-        elif isinstance(self.displayed_maps, (list, np.ndarray)):
-            if max(self.displayed_maps) > n_maps:
-                raise ValueError(
-                    "Report cannot display the following maps "
-                    f"{self.displayed_maps} because "
-                    f"masker only has {n_maps} maps."
-                )
-            maps_to_be_displayed = self.displayed_maps
-
-        self._report_content["number_of_maps"] = n_maps
-        self._report_content["displayed_maps"] = list(maps_to_be_displayed)
+            self._report_content["number_of_maps"] = n_maps
+            self._report_content["displayed_maps"] = list(maps_to_be_displayed)
 
         # Handle the edge case where this function is called
         # without matplolib or
         # with a masker having report capabilities disabled
-        if not is_matplotlib_installed():
+        if not is_matplotlib_installed() or not self._has_report_data():
             return [None]
 
         import matplotlib.pyplot as plt
 
         from nilearn.reporting.utils import figure_to_png_base64
+
+        img = self._reporting_data["images"]
+        if img:
+            img = mean_img(img)
 
         embeded_images = []
 

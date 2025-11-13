@@ -469,49 +469,52 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         displays : list
             A list of all displays to be rendered.
         """
-        seeds = self._reporting_data["seeds"]
-        img = self._reporting_data["img"]
-        if img is None:
-            img = load_mni152_template()
-            positions = seeds
-            msg = (
-                "No image provided to fit in NiftiSpheresMasker. "
-                "Spheres are plotted on top of the MNI152 template."
-            )
-            self._report_content["warning_messages"] = msg
-        else:
-            positions = [
-                np.round(
-                    coord_transform(*seed, np.linalg.inv(img.affine))
-                ).astype(int)
-                for seed in seeds
+        if self._has_report_data():
+            seeds = self._reporting_data["seeds"]
+            img = self._reporting_data["img"]
+            if img is None:
+                img = load_mni152_template()
+                positions = seeds
+                msg = (
+                    "No image provided to fit in NiftiSpheresMasker. "
+                    "Spheres are plotted on top of the MNI152 template."
+                )
+                self._report_content["warning_messages"] = msg
+            else:
+                positions = [
+                    np.round(
+                        coord_transform(*seed, np.linalg.inv(img.affine))
+                    ).astype(int)
+                    for seed in seeds
+                ]
+
+            columns = [
+                "seed number",
+                "coordinates",
+                "position",
+                "radius",
+                "size (in mm^3)",
+                "size (in voxels)",
+                "relative size (in %)",
             ]
+            regions_summary = {c: [] for c in columns}
 
-        columns = [
-            "seed number",
-            "coordinates",
-            "position",
-            "radius",
-            "size (in mm^3)",
-            "size (in voxels)",
-            "relative size (in %)",
-        ]
-        regions_summary = {c: [] for c in columns}
+            radius = 1.0 if self.radius is None else self.radius
 
-        radius = 1.0 if self.radius is None else self.radius
+            for idx, seed in enumerate(seeds):
+                regions_summary["seed number"].append(idx)
+                regions_summary["coordinates"].append(str(seed))
+                regions_summary["position"].append(positions[idx])
+                regions_summary["radius"].append(radius)
+                regions_summary["size (in voxels)"].append("not implemented")
+                regions_summary["size (in mm^3)"].append(
+                    round(4.0 / 3.0 * np.pi * radius**3, 2)
+                )
+                regions_summary["relative size (in %)"].append(
+                    "not implemented"
+                )
 
-        for idx, seed in enumerate(seeds):
-            regions_summary["seed number"].append(idx)
-            regions_summary["coordinates"].append(str(seed))
-            regions_summary["position"].append(positions[idx])
-            regions_summary["radius"].append(radius)
-            regions_summary["size (in voxels)"].append("not implemented")
-            regions_summary["size (in mm^3)"].append(
-                round(4.0 / 3.0 * np.pi * radius**3, 2)
-            )
-            regions_summary["relative size (in %)"].append("not implemented")
-
-        self._report_content["summary"] = regions_summary
+            self._report_content["summary"] = regions_summary
 
         return self._create_figure_for_report()
 
@@ -522,13 +525,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         -------
         list of :class:`~nilearn.plotting.displays.OrthoSlicer`
         """
-        seeds = self._reporting_data["seeds"]
-
         if not is_matplotlib_installed():
             return [None, None]
 
         from nilearn.plotting import plot_img, plot_markers
 
+        seeds = self._reporting_data["seeds"]
         radius = 1.0 if self.radius is None else self.radius
 
         display = plot_markers(
@@ -574,7 +576,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         # Reset warning message
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = None
+        self._report_content["warning_messages"] = []
 
         error = (
             "Seeds must be a list of triplets of coordinates in "

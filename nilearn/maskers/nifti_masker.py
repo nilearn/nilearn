@@ -394,7 +394,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
+        if not self._has_report_data():
             return [None]
 
         img = self._reporting_data["images"]
@@ -509,7 +509,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         # Reset warning message
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = None
+        self._report_content["warning_messages"] = []
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 

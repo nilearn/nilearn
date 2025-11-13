@@ -3661,7 +3661,11 @@ def check_masker_generate_report(estimator):
 
     estimator.fit(input_img)
 
-    assert estimator._report_content["warning_messages"] is None
+    if is_matplotlib_installed():
+        assert estimator._report_content["warning_messages"] == []
+    else:
+        assert len(estimator._report_content["warning_messages"]) == 1
+
     assert estimator._has_report_data() is True
 
     # TODO
@@ -3686,7 +3690,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     estimator.fit()
 
-    assert estimator._report_content["warning_messages"] is None
+    assert estimator._report_content["warning_messages"] == []
 
     match = "Report will be missing figures"
     if is_matplotlib_installed():
