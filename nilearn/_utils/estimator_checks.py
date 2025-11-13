@@ -3661,12 +3661,9 @@ def check_masker_generate_report(estimator):
 
     estimator.fit(input_img)
 
-    if is_matplotlib_installed():
-        assert estimator._report_content["warning_messages"] == []
-    else:
-        assert len(estimator._report_content["warning_messages"]) == 1
-
     assert estimator._has_report_data() is True
+
+    assert estimator._report_content["warning_messages"] == []
 
     # TODO
     # SurfaceMapsMasker, RegionExtractor still throws a warning
@@ -3703,6 +3700,8 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     input_img = _img_4d_rand_eye_medium()
 
     estimator.fit(input_img)
+
+    assert estimator._report_content["warning_messages"] == []
 
     # TODO
     # NiftiSpheresMasker still throws a warning

@@ -253,6 +253,10 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         del y
         check_params(self.__dict__)
 
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = []
+
         self._overlay_text = (
             "\n To see the input Nifti image before resampling, "
             "hover over the displayed image."

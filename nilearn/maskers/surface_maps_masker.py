@@ -26,7 +26,6 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.image import index_img, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
-from nilearn.reporting import HTMLReport
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -418,7 +417,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     def generate_report(
         self, title=None, displayed_maps=10, engine="matplotlib"
-    ) -> HTMLReport:
+    ):
         """Generate an HTML report for the current ``SurfaceMapsMasker``
         object.
 
@@ -535,7 +534,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                         f"But masker only has {n_maps} maps. "
                         f"Setting number of displayed maps to {n_maps}."
                     )
-                    self._report_content["warning_messages"] = msg
+                    self._report_content["warning_messages"].append(msg)
                     self.displayed_maps = n_maps
                 maps_to_be_displayed = range(self.displayed_maps)
 
@@ -572,7 +571,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 "SurfaceMapsMasker has not been transformed (via transform() "
                 "method) on any image yet. Plotting only maps for reporting."
             )
-            self._report_content["warning_messages"] = msg
+            self._report_content["warning_messages"].append(msg)
 
         for roi in maps_to_be_displayed:
             roi = index_img(maps_img, roi)

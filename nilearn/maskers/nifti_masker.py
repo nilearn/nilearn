@@ -373,7 +373,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self._report_content = {
             "description": (
                 "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (in green). We "
+                "with the outlines of the mask (selfin green). We "
                 "recommend to inspect the report for the overlap "
                 "between the mask and its input image. "
             ),
@@ -404,14 +404,14 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "No image provided to fit in NiftiMasker. "
                 "Setting image to mask for reporting."
             )
-            self._report_content["warning_messages"] = msg
+            self._report_content["warning_messages"].append(msg)
 
         elif self._reporting_data["dim"] == 5:
             msg = (
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            self._report_content["warning_messages"] = msg
+            self._report_content["warning_messages"].append(msg)
 
         return self._create_figure_for_report()
 

@@ -325,10 +325,10 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             A list of all displays to be rendered.
 
         """
-        labels_image = self._reporting_data["labels_image"]
-
-        if labels_image is None:
+        if not self._has_report_data():
             return [None]
+
+        labels_image = self._reporting_data["labels_image"]
 
         table = self.lut_.copy()
         if hasattr(self, "_lut_"):
@@ -381,14 +381,14 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 "Plotting ROIs of label image on the "
                 "MNI152Template for reporting."
             )
-            self._report_content["warning_messages"] = msg
+            self._report_content["warning_messages"].append(msg)
 
         elif self._reporting_data["dim"] == 5:
             msg = (
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            self._report_content["warning_messages"] = msg
+            self._report_content["warning_messages"].append(msg)
 
         return self._create_figure_for_report(labels_image)
 

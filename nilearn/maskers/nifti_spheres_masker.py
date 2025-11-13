@@ -438,7 +438,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                         "Setting number of displayed spheres "
                         f"to {len(seeds)}."
                     )
-                    self._report_content["warning_messages"] = msg
+                    self._report_content["warning_messages"].append(msg)
                     self.displayed_spheres = len(seeds)
                 spheres_to_be_displayed = range(self.displayed_spheres)
 
@@ -479,7 +479,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     "No image provided to fit in NiftiSpheresMasker. "
                     "Spheres are plotted on top of the MNI152 template."
                 )
-                self._report_content["warning_messages"] = msg
+                self._report_content["warning_messages"].append(msg)
             else:
                 positions = [
                     np.round(

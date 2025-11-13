@@ -391,7 +391,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         # Handle the edge case where this function is called
         # without matplolib or
         # with a masker having report capabilities disabled
-        if not is_matplotlib_installed() or self._reporting_data is None:
+        if not is_matplotlib_installed() or not self._has_report_data():
             return [None]
 
         # avoid circular import

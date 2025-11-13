@@ -25,7 +25,6 @@ from nilearn.maskers.base_masker import (
     mask_logger,
 )
 from nilearn.masking import load_mask_img
-from nilearn.reporting import HTMLReport
 
 
 class _ExtractionFunctor:
@@ -234,7 +233,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "warning_messages": [],
         }
 
-    def generate_report(self, title=None, displayed_maps=10) -> HTMLReport:
+    def generate_report(self, title=None, displayed_maps=10):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 
         .. note::
@@ -320,7 +319,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                         f"But masker only has {n_maps} maps. "
                         f"Setting number of displayed maps to {n_maps}."
                     )
-                    self._report_content["warning_messages"] = msg
+                    self._report_content["warning_messages"].append(msg)
                     self.displayed_maps = n_maps
                 maps_to_be_displayed = range(self.displayed_maps)
 
@@ -357,14 +356,14 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "No image provided to fit in NiftiMapsMasker. "
                 "Plotting only spatial maps for reporting."
             )
-            self._report_content["warning_messages"] = msg
+            self._report_content["warning_messages"].append(msg)
 
         elif self._reporting_data["dim"] == 5:
             msg = (
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
             )
-            self._report_content["warning_messages"] = msg
+            self._report_content["warning_messages"].append(msg)
 
         return self._create_figure_for_report()
 

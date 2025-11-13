@@ -20,7 +20,6 @@ from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn.image import high_variance_confounds
 from nilearn.image.utils import get_indices_from_image
-from nilearn.reporting.html_report import HTMLReport, generate_report
 from nilearn.surface.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
@@ -412,7 +411,7 @@ class _ReportingMixin:
         """
         return hasattr(self, "_reporting_data")
 
-    def generate_report(self, title: str | None = None) -> HTMLReport:
+    def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.
 
         Parameters
@@ -425,6 +424,8 @@ class _ReportingMixin:
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
+        from nilearn.reporting.html_report import generate_report
+
         self._report_content["title"] = title
 
         return generate_report(self)
