@@ -378,6 +378,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             ),
             "n_elements": 0,
             "coverage": 0,
+            "summary": None,
             "warning_message": None,
         }
 

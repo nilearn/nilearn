@@ -226,6 +226,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "description": (
                 "This report shows the spatial maps provided to the mask."
             ),
+            "summary": None,
             "warning_message": None,
         }
 

@@ -357,6 +357,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "This report shows the regions defined "
                 "by the spheres of the masker."
             ),
+            "summary": None,
             "warning_message": None,
         }
 

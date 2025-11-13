@@ -264,6 +264,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 "defined by the labels of the mask."
             ),
             "number_of_regions": 0,
+            "summary": None,
             "warning_message": None,
         }
 
