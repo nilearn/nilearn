@@ -272,11 +272,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             maps_image = self._reporting_data["maps_image"]
             n_maps = get_data(maps_image).shape[-1]
 
+            self._report_content["number_of_maps"] = n_maps
+
             self, maps_to_be_displayed = sanitize_displayed_maps(
                 self, displayed_maps, n_maps
             )
 
-            self._report_content["number_of_maps"] = n_maps
             self._report_content["displayed_maps"] = maps_to_be_displayed
 
         return super().generate_report(title)

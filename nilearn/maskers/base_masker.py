@@ -260,7 +260,7 @@ def sanitize_displayed_maps(
     First coerce displayed_maps to a list of integers.
     Then check that all requested maps are available in the masker.
     """
-    if displayed_maps == "all":
+    if isinstance(displayed_maps, str) and displayed_maps == "all":
         displayed_maps = n_maps
 
     if isinstance(displayed_maps, int):
@@ -280,21 +280,23 @@ def sanitize_displayed_maps(
     if isinstance(displayed_maps, np.ndarray):
         displayed_maps = displayed_maps.tolist()
 
-    displayed_maps = set(displayed_maps)  # Remove duplicates
+    available_maps = list(range(n_maps))
 
-    unvailable_maps = displayed_maps - set(range(n_maps))
+    # we can not rely on using set as we must preserve order
+    unavailable_maps = [x for x in displayed_maps if x not in available_maps]
+    displayed_maps = [x for x in displayed_maps if x in available_maps]
 
-    if unvailable_maps:
+    if unavailable_maps:
         msg = (
             "`generate_report()` received "
             f"'displayed_{var_name}s={list(displayed_maps)}' to be displayed. "
             f"Report cannot display the following {var_name} "
-            f"{unvailable_maps} because "
+            f"{unavailable_maps} because "
             f"masker only has {n_maps} {var_name}(s)."
         )
         estimator._report_content["warning_messages"].append(msg)
 
-    return estimator, list(displayed_maps - unvailable_maps)
+    return estimator, displayed_maps
 
 
 @fill_doc

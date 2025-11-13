@@ -63,14 +63,14 @@
 
   <div class="pure-u-1 pure-u-md-1-3">
     <p>{{ description }}</p>
-    {% if number_of_seeds %}
+    {% if number_of_maps %}
       <p>
-        The masker has <b>{{number_of_seeds}}</b> spheres in total
+        The masker has <b>{{number_of_maps}}</b> spheres in total
         (displayed together on the first image).
       </p>
 
       {% if has_plotting_engine %}
-        {% if n_displayed_maps - 1 != number_of_seeds %}
+        {% if n_displayed_maps - 1 != number_of_maps %}
           <p>
             Only <b>{{ n_displayed_maps }}</b> specific spheres
             can be browsed in this report

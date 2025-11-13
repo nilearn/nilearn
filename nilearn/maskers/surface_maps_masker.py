@@ -303,6 +303,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         imgs = at_least_2d(imgs)
 
+        self._reporting_data["images"] = imgs
+
         img_data = np.concatenate(
             list(imgs.data.parts.values()), axis=0
         ).astype(np.float32)
@@ -466,12 +468,21 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             maps_image = self._reporting_data["maps_image"]
             n_maps = maps_image.shape[1]
 
+            self._report_content["number_of_maps"] = n_maps
+
             self, maps_to_be_displayed = sanitize_displayed_maps(
                 self, displayed_maps, n_maps
             )
 
-            self._report_content["number_of_maps"] = n_maps
             self._report_content["displayed_maps"] = maps_to_be_displayed
+
+            if self._reporting_data.get("images") is None:
+                msg = (
+                    "SurfaceMapsMasker has not been transformed "
+                    "(via transform() method) on any image yet. "
+                    "Plotting only maps for reporting."
+                )
+                self._report_content["warning_messages"].append(msg)
 
         # need to have matplotlib installed to generate reports no matter what
         # engine is selected
@@ -517,13 +528,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         maps_image = self._reporting_data["maps_image"]
 
         embeded_images = []
-
-        if img is None:
-            msg = (
-                "SurfaceMapsMasker has not been transformed (via transform() "
-                "method) on any image yet. Plotting only maps for reporting."
-            )
-            self._report_content["warning_messages"].append(msg)
 
         for roi in self._report_content["displayed_maps"]:
             roi = index_img(maps_image, roi)

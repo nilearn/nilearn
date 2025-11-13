@@ -153,9 +153,6 @@ def test_displayed_maps_valid_inputs(
         expected_displayed_maps = tmp
 
     assert masker._report_content["displayed_maps"] == expected_displayed_maps
-    assert masker._report_content["number_of_maps"] == len(
-        expected_displayed_maps
-    )
 
     assert html.body.count("<img") == len(expected_displayed_maps)
 
@@ -197,6 +194,21 @@ def test_displayed_maps_warning_too_many(
         match="Report cannot display the following",
     ):
         masker.generate_report(displayed_maps)
+
+
+@pytest.mark.parametrize(
+    "masker_class",
+    [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
+)
+def test_displayed_maps_warning_int_too_large(masker_class, input_parameters):
+    """Test invalid inputs for displayed_maps/spheres."""
+    masker = masker_class(**input_parameters)
+    masker.fit()
+    with pytest.warns(
+        UserWarning,
+        match="was set to 6",
+    ):
+        masker.generate_report(7)
 
 
 def test_nifti_spheres_masker_report_1_sphere(matplotlib_pyplot):
@@ -477,7 +489,7 @@ def test_generate_report_before_transform_warn(
 
     match = "SurfaceMapsMasker has not been transformed"
     with pytest.warns(match=match):
-        masker.generate_report(displayd_maps=1)
+        masker.generate_report(displayed_maps=1)
 
 
 def test_generate_report_plotly_out_figure_type(
