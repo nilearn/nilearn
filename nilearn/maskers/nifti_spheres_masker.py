@@ -525,7 +525,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         -------
         list of :class:`~nilearn.plotting.displays.OrthoSlicer`
         """
-        if not is_matplotlib_installed():
+        if not is_matplotlib_installed() or not self._has_report_data():
             return [None, None]
 
         from nilearn.plotting import plot_img, plot_markers
