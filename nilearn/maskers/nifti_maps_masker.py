@@ -238,11 +238,11 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     @fill_doc
     def generate_report(
         self,
-        title: str | None = None,
         displayed_maps: list[int]
         | np.typing.NDArray[np.int_]
         | int
         | Literal["all"] = 10,
+        title: str | None = None,
     ):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 
@@ -251,10 +251,10 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Parameters
         ----------
+        %(displayed_maps)s
+
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
-
-        %(displayed_maps)s
 
         Returns
         -------

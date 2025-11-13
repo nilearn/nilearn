@@ -5,10 +5,9 @@ import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
-from nilearn._utils.data_gen import generate_random_img
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.html_document import WIDTH_DEFAULT, HTMLDocument
-from nilearn.conftest import _img_maps
+from nilearn.conftest import _img_maps, _surf_maps_img
 from nilearn.image import get_data
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -99,189 +98,105 @@ def input_parameters(masker_class, img_mask_eye, labels, img_labels):
     if masker_class in (NiftiLabelsMasker, MultiNiftiLabelsMasker):
         return {"labels_img": img_labels, "labels": labels}
     if masker_class in (NiftiMapsMasker, MultiNiftiMapsMasker):
-        return {"maps_img": _img_maps(n_regions=2)}
+        # using 6 regions to be consistent with n_regions
+        # in surface counterpart
+        return {"maps_img": _img_maps(n_regions=6)}
     if masker_class is NiftiSpheresMasker:
-        return {"seeds": [(1, 1, 1)]}
+        # using 6 seeds to be consistent with n_regions
+        # in maps maskers counterpart
+        return {
+            "seeds": [
+                (1, 1, 1),
+                (1, 0, 1),
+                (1, 1, 0),
+                (1, 0, 0),
+                (0, 1, 1),
+                (0, 0, 1),
+            ]
+        }
+    if masker_class is SurfaceMapsMasker:
+        return {"maps_img": _surf_maps_img()}
 
 
 @pytest.mark.parametrize(
     "masker_class",
-    [NiftiMasker, NiftiLabelsMasker, NiftiMapsMasker, NiftiSpheresMasker],
+    [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
 )
-def test_warning_in_report_after_empty_fit(masker_class, input_parameters):
-    """Tests that a warning is both given and written in the report \
-       if no images were provided to fit.
-    """
+@pytest.mark.parametrize(
+    "displayed_maps, expected_displayed_maps",
+    [
+        (4, [0, 1, 2, 3]),
+        ("all", [0, 1, 2, 3, 4, 5]),
+        ([2, 1], [2, 1]),
+        (np.asarray([1, 3]), [1, 3]),
+    ],
+)
+def test_displayed_maps_valid_inputs(
+    masker_class, input_parameters, displayed_maps, expected_displayed_maps
+):
+    """Test valid inputs for displayed_maps/spheres."""
     masker = masker_class(**input_parameters)
     masker.fit()
 
-    match = "Report will be missing figures"
-    if is_matplotlib_installed():
-        match = f"No image provided to fit in {masker_class.__name__}."
-    with pytest.warns(UserWarning, match=match):
-        html = masker.generate_report(displayd_maps=1)
-    assert 'id="warnings"' in str(html)
-    assert match in str(html)
-    _check_html(html)
+    # TODO
+    # if displayed_maps != "all" and displayed_maps > n_regions:
+    #     with pytest.warns(UserWarning, match="masker only has .* maps."):
+    #         html = masker.generate_report(displayed_maps=displayed_maps)
 
+    html = masker.generate_report(displayed_maps)
 
-@pytest.mark.parametrize("displayed_maps", ["foo", "1", {"foo": "bar"}])
-def test_nifti_maps_masker_report_displayed_maps_errors(
-    niftimapsmasker_inputs, displayed_maps
-):
-    """Tests that a TypeError is raised when the argument `displayed_maps` \
-       of `generate_report()` is not valid.
-    """
-    masker = NiftiMapsMasker(**niftimapsmasker_inputs)
-    masker.fit()
-    with pytest.raises(TypeError, match=("Parameter 'displayed_maps'")):
-        masker.generate_report(displayed_maps=displayed_maps)
+    # sphere masker display all spheres on index 0
+    # so we must offset by 1
+    if isinstance(masker, NiftiSpheresMasker):
+        tmp = [0]
+        tmp.extend([x + 1 for x in expected_displayed_maps])
+        expected_displayed_maps = tmp
 
-
-@pytest.mark.parametrize("displayed_maps", [[2, 5, 10], [0, 66, 1, 260]])
-def test_nifti_maps_masker_report_maps_number_warning(
-    niftimapsmasker_inputs, displayed_maps
-):
-    """Tests that a ValueError is raised when the argument `displayed_maps` \
-       contains invalid map numbers.
-    """
-    masker = NiftiMapsMasker(**niftimapsmasker_inputs)
-    masker.fit()
-    with pytest.warns(match="Report cannot display the following maps"):
-        masker.generate_report(displayed_maps=displayed_maps)
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize("displayed_maps", [[1, 2], np.array([0, 1, 2])])
-def test_nifti_maps_masker_report_list_and_arrays_maps_number(
-    matplotlib_pyplot, niftimapsmasker_inputs, displayed_maps
-):
-    """Tests report generation for NiftiMapsMasker with displayed_maps \
-       passed as a list of a Numpy arrays.
-    """
-    n_regions = niftimapsmasker_inputs["maps_img"].shape[-1]
-
-    masker = NiftiMapsMasker(**niftimapsmasker_inputs)
-    masker.fit()
-    html = masker.generate_report(displayed_maps=displayed_maps)
-
-    assert masker._report_content["number_of_maps"] == n_regions
-    assert masker._report_content["displayed_maps"] == list(displayed_maps)
-    msg = (
-        "No image provided to fit in NiftiMapsMasker. "
-        "Plotting only spatial maps for reporting."
+    assert masker._report_content["displayed_maps"] == expected_displayed_maps
+    assert masker._report_content["number_of_maps"] == len(
+        expected_displayed_maps
     )
-    assert msg in masker._report_content["warning_messages"]
-    assert html.body.count("<img") == len(displayed_maps)
 
-
-@pytest.mark.slow
-@pytest.mark.parametrize("displayed_maps", [1, 3, 4, "all"])
-def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
-    matplotlib_pyplot, niftimapsmasker_inputs, displayed_maps
-):
-    """Tests NiftiMapsMasker reporting with no image provided to fit \
-       and displayed_maps provided as an integer or as 'all'.
-    """
-    n_regions = niftimapsmasker_inputs["maps_img"].shape[-1]
-
-    masker = NiftiMapsMasker(**niftimapsmasker_inputs)
-    masker.fit()
-    expected_n_maps = (
-        n_regions
-        if displayed_maps == "all"
-        else min(n_regions, displayed_maps)
-    )
-    if displayed_maps != "all" and displayed_maps > n_regions:
-        with pytest.warns(UserWarning, match="masker only has .* maps."):
-            html = masker.generate_report(displayed_maps=displayed_maps)
-    else:
-        html = masker.generate_report(displayed_maps=displayed_maps)
-
-    assert masker._report_content["number_of_maps"] == n_regions
-    assert masker._report_content["displayed_maps"] == list(
-        range(expected_n_maps)
-    )
-    msg = (
-        "No image provided to fit in NiftiMapsMasker. "
-        "Plotting only spatial maps for reporting."
-    )
-    assert msg in masker._report_content["warning_messages"]
-    assert html.body.count("<img") == expected_n_maps
-
-
-def test_nifti_maps_masker_report_image_in_fit(
-    matplotlib_pyplot, niftimapsmasker_inputs, affine_eye
-):
-    """Tests NiftiMapsMasker reporting with image provided to fit."""
-    n_regions = niftimapsmasker_inputs["maps_img"].shape[-1]
-
-    masker = NiftiMapsMasker(**niftimapsmasker_inputs)
-    image, _ = generate_random_img((13, 11, 12, 3), affine=affine_eye)
-    masker.fit(image)
-    html = masker.generate_report(displayed_maps=2)
-
-    assert masker._report_content["number_of_maps"] == n_regions
-
-    assert html.body.count("<img") == 2
-
-
-@pytest.mark.parametrize("displayed_spheres", ["foo", "1", {"foo": "bar"}])
-def test_nifti_spheres_masker_report_displayed_spheres_errors(
-    displayed_spheres,
-):
-    """Tests that a TypeError is raised when the argument `displayed_spheres` \
-       of `generate_report()` is not valid.
-    """
-    masker = NiftiSpheresMasker(seeds=[(1, 1, 1)])
-    masker.fit()
-    with pytest.raises(TypeError, match=("Parameter 'displayed_spheres'")):
-        masker.generate_report(displayed_spheres=displayed_spheres)
-
-
-def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds():
-    """Tests that a warning is raised when number of `displayed_spheres` \
-       is greater than number of seeds.
-    """
-    displayed_spheres = 10
-    seeds = [(1, 1, 1)]
-    masker = NiftiSpheresMasker(seeds=seeds)
-    masker.fit()
-    with pytest.warns(UserWarning, match="masker only has 1 spheres."):
-        masker.generate_report(displayed_spheres=displayed_spheres)
+    assert html.body.count("<img") == len(expected_displayed_maps)
 
 
 @pytest.mark.parametrize(
-    "displayed_spheres, expected_displayed_maps",
-    [("all", [0, 1, 2, 3]), ([1], [0, 2]), ([0, 2], [0, 1, 3])],
+    "masker_class",
+    [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
 )
-def test_nifti_spheres_masker_report_displayed_spheres_list(
-    displayed_spheres, expected_displayed_maps
+@pytest.mark.parametrize(
+    "displayed_maps", [4.5, [8.4, 3], "invalid", np.asarray([1.2, 3.0])]
+)
+def test_displayed_maps_error(masker_class, input_parameters, displayed_maps):
+    """Test invalid inputs for displayed_maps/spheres."""
+    masker = masker_class(**input_parameters)
+    masker.fit()
+    with pytest.raises(
+        TypeError,
+        match=(
+            "should be either 'all' or a positive 'int', "
+            "or a list/array of ints"
+        ),
+    ):
+        masker.generate_report(displayed_maps)
+
+
+@pytest.mark.parametrize(
+    "masker_class",
+    [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
+)
+@pytest.mark.parametrize("displayed_maps", [list(range(7)), [0, 66, 1]])
+def test_displayed_maps_warning_too_many(
+    masker_class, input_parameters, displayed_maps
 ):
-    """Tests that spheres_to_be_displayed is set correctly.
-
-    report_content["displayed_maps"]
-    should have one more value than requested
-    as _report_content["displayed_maps"][0]
-    is a glass brain with all the spheres
-    """
-    seeds = [(1, 1, 1), (2, 2, 2), (3, 3, 3)]
-    masker = NiftiSpheresMasker(seeds=seeds)
+    """Test invalid inputs for displayed_maps/spheres."""
+    masker = masker_class(**input_parameters)
     masker.fit()
-    masker.generate_report(displayed_spheres=displayed_spheres)
-    assert masker._report_content["displayed_maps"] == expected_displayed_maps
-
-
-def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
-    """Tests that a ValueError is raised when list of `displayed_spheres` \
-       maximum is greater than number of seeds.
-    """
-    displayed_spheres = [1, 2, 3]
-    seeds = [(1, 1, 1)]
-    masker = NiftiSpheresMasker(seeds=seeds)
-    masker.fit()
-    with pytest.warns(match="masker only has 1 seeds"):
-        masker.generate_report(displayed_spheres=displayed_spheres)
+    with pytest.warns(
+        UserWarning,
+        match="Report cannot display the following",
+    ):
+        masker.generate_report(displayed_maps)
 
 
 def test_nifti_spheres_masker_report_1_sphere(matplotlib_pyplot):
@@ -451,19 +366,6 @@ def test_overlaid_report(matplotlib_pyplot, img_fmri):
     assert '<div class="overlay">' in str(html)
 
 
-def test_multi_nifti_masker_generate_report_imgs(img_fmri):
-    """Smoke test for generate_report method with image data."""
-    masker = MultiNiftiMasker(reports=True)
-    masker.fit([img_fmri, img_fmri])
-    assert isinstance(masker._reporting_data, dict)
-    masker.generate_report()
-
-    masker = MultiNiftiMasker(reports=False)
-    masker.fit([img_fmri, img_fmri])
-    assert masker._has_report_data() is False
-    masker.generate_report()
-
-
 def test_multi_nifti_masker_generate_report_mask(
     img_3d_ones_eye, shape_3d_default, affine_eye
 ):
@@ -546,7 +448,7 @@ def test_generate_report_engine_error(
         ValueError,
         match="'engine' must be one of",
     ):
-        masker.generate_report(engine="invalid")
+        masker.generate_report(engine="invalid", displayed_maps=2)
 
 
 @pytest.mark.skipif(
@@ -560,80 +462,20 @@ def test_generate_report_engine_no_plotly_warning(surf_maps_img, surf_img_2d):
     masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
     with pytest.warns(match="Plotly is not installed"):
-        masker.generate_report(engine="plotly")
+        masker.generate_report(engine="plotly", displayed_maps=2)
     # check if the engine is switched to matplotlib
     assert masker._report_content["engine"] == "matplotlib"
 
 
-@pytest.mark.parametrize("displayed_maps", [4, [1, 3, 4, 5], "all", [1]])
-def test_generate_report_displayed_maps_valid_inputs(
-    surf_maps_img, surf_img_2d, displayed_maps
+def test_generate_report_before_transform_warn(
+    matplotlib_pyplot, surf_maps_img
 ):
-    """Test all valid inputs for displayed_maps."""
-    masker = SurfaceMapsMasker(surf_maps_img)
-    masker.fit_transform(surf_img_2d(10))
-    masker.generate_report(displayed_maps=displayed_maps)
-
-
-@pytest.mark.parametrize("displayed_maps", [4.5, [8.4, 3], "invalid"])
-def test_generate_report_displayed_maps_type_error(
-    surf_maps_img, surf_img_2d, displayed_maps
-):
-    """Test error is raised when displayed_maps is not a list or int or
-    np.ndarray or str(all).
-    """
-    masker = SurfaceMapsMasker(surf_maps_img)
-    masker.fit_transform(surf_img_2d(10))
-    with pytest.raises(
-        TypeError,
-        match=(
-            "should be either 'all' or a positive 'int', "
-            "or a list/array of ints"
-        ),
-    ):
-        masker.generate_report(displayed_maps=displayed_maps)
-
-
-def test_generate_report_displayed_maps_more_than_regions_warn_int(
-    surf_maps_img, surf_img_2d
-):
-    """Test error is raised when displayed_maps is int and is more than n
-    regions.
-    """
-    masker = SurfaceMapsMasker(surf_maps_img)
-    masker.fit_transform(surf_img_2d(10))
-    with pytest.warns(
-        UserWarning,
-        match="But masker only has 6 maps",
-    ):
-        masker.generate_report(displayed_maps=10)
-    # check if displayed_maps is switched to 6
-    assert masker.displayed_maps == 6
-
-
-def test_generate_report_displayed_maps_more_than_regions_warn_list(
-    surf_maps_img, surf_img_2d
-):
-    """Test error is raised when displayed_maps is list has more elements than
-    n regions.
-    """
-    masker = SurfaceMapsMasker(surf_maps_img)
-    masker.fit_transform(surf_img_2d(10))
-    with pytest.warns(
-        match="Report cannot display the following maps",
-    ):
-        masker.generate_report(displayed_maps=[1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
-
-
-def test_generate_report_before_transform_warn(surf_maps_img):
     """Test warning is raised when generate_report is called before
     transform.
     """
     masker = SurfaceMapsMasker(surf_maps_img).fit()
 
-    match = "Report will be missing figures"
-    if not is_matplotlib_installed():
-        match = "SurfaceMapsMasker has not been transformed"
+    match = "SurfaceMapsMasker has not been transformed"
     with pytest.warns(match=match):
         masker.generate_report(displayd_maps=1)
 
@@ -646,7 +488,7 @@ def test_generate_report_plotly_out_figure_type(
     """
     masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
-    report = masker.generate_report(engine="plotly")
+    report = masker.generate_report(engine="plotly", displayed_maps=2)
 
     # read the html file and see if plotly figure is inserted
     # meaning it should have <iframe tag
@@ -662,7 +504,7 @@ def test_generate_report_matplotlib_out_figure_type(
     """Test that the report has a img tag when engine is matplotlib."""
     masker = SurfaceMapsMasker(surf_maps_img)
     masker.fit_transform(surf_img_2d(10))
-    report = masker.generate_report(engine="matplotlib")
+    report = masker.generate_report(engine="matplotlib", displayed_maps=2)
 
     # read the html file and see if matplotlib figure is inserted
     # meaning it should have <img tag

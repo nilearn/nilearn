@@ -3697,6 +3697,9 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     _check_html(report)
 
+    assert 'id="warnings"' in str(report)
+    assert match in str(report)
+
     input_img = _img_4d_rand_eye_medium()
 
     estimator.fit(input_img)

@@ -367,11 +367,11 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     @fill_doc
     def generate_report(
         self,
-        title: str | None = None,
         displayed_spheres: list[int]
         | np.typing.NDArray[np.int_]
         | int
         | Literal["all"] = "all",
+        title: str | None = None,
     ):
         """Generate an HTML report for current ``NiftiSpheresMasker`` object.
 
@@ -380,10 +380,10 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Parameters
         ----------
+        %(displayed_spheres)s
+
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
-
-        %(displayed_spheres)s
 
         Returns
         -------
@@ -392,12 +392,14 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         check_displayed_maps(displayed_spheres, "displayed_spheres")
 
-        self._report_content["number_of_seeds"] = 0
+        # using 'number_of_maps' and 'displayed_maps'
+        # by consistency with maps maskers
+        self._report_content["number_of_maps"] = 0
         self._report_content["displayed_maps"] = [0]
 
         if self._has_report_data():
             seeds = self._reporting_data["seeds"]
-            self._report_content["number_of_seeds"] = len(seeds)
+            self._report_content["number_of_maps"] = len(seeds)
 
             self, spheres_to_be_displayed = sanitize_displayed_maps(
                 self,
