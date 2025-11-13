@@ -11,6 +11,7 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
+from nilearn.exceptions import MISSING_ENGINE_MSG
 from nilearn.reporting._utils import (
     dataframe_to_html,
     model_attributes_to_dataframe,
@@ -120,18 +121,6 @@ def generate_report(estimator) -> list[None] | HTMLReport:
     report : HTMLReport
 
     """
-    if not is_matplotlib_installed():
-        with warnings.catch_warnings():
-            mpl_unavail_msg = (
-                "Matplotlib is not imported! Report will be missing figures."
-            )
-            warnings.filterwarnings("always", message=mpl_unavail_msg)
-            warnings.warn(
-                category=ImportWarning,
-                message=mpl_unavail_msg,
-                stacklevel=find_stack_level(),
-            )
-
     data = {}
     if hasattr(estimator, "_report_content"):
         data = estimator._report_content
@@ -143,6 +132,10 @@ def generate_report(estimator) -> list[None] | HTMLReport:
         data["title"] = estimator.__class__.__name__
 
     warning_messages = []
+
+    data["has_plotting_engine"] = is_matplotlib_installed()
+    if not is_matplotlib_installed():
+        warning_messages.append(MISSING_ENGINE_MSG)
 
     if estimator.reports is False:
         warning_messages.append(

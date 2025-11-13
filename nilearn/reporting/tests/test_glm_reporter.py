@@ -10,8 +10,10 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_bold_img,
 )
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.datasets import load_fsaverage
+from nilearn.exceptions import MISSING_ENGINE_MSG
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
@@ -76,6 +78,15 @@ def check_glm_report(
     excludes = []
     # check the navbar is there
     includes.append('<nav class="navbar pure-g fw-bold" id="menu"')
+
+    if not is_matplotlib_installed():
+        includes.extend(
+            [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
+        )
+    else:
+        excludes.extend(
+            [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
+        )
 
     # 'Contrasts' and 'Statistical maps' should appear
     # as section and in navbar

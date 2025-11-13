@@ -75,57 +75,55 @@
 
       <section id="design-matrix-{{ unique_id }}-{{ loop.index0 }}">
         <h3>Design Matrix</h3>
-        {% if run_content.design_matrix_png %}
-        <div class="scroll-y">
-          {% set is_bytes = not run_content.design_matrix_png.endswith('.png') %}
-          <img
-            class="pure-img"
-            src="{% if is_bytes %}data:image/png;base64,{% endif%}{{ run_content.design_matrix_png }}"
-            title="Plot of design matrix for {{ loop.index0 }}."
-            alt="Plot of design matrix for {{ loop.index0 }}."
-            style="min-width: 600px" />
-        </div>
-
-        {% if run_content.correlation_matrix_png %}
-        <h3>correlation matrix</h3>
-        <div class="scroll-y">
-          {% set is_bytes = not run_content.correlation_matrix_png.endswith('.png') %}
-          <img class="pure-img"
-            src="{% if is_bytes %}data:image/png;base64,{%endif%}{{run_content.correlation_matrix_png}}"
-            title="Plot of correlation of design matrix for run {{ loop.index0 }}."
-            alt="Plot of correlation of design matrix for run {{ loop.index0 }}."
-            style="min-width: 600px" />
-        </div>
-        {% endif %}
-
+        {% if not has_plotting_engine %}
+          {% include 'html/partials/missing_plotting_engine.jinja' %}
+        {% elif run_content.design_matrix_png %}
+          <div class="scroll-y">
+            {% set is_bytes = not run_content.design_matrix_png.endswith('.png') %}
+            <img
+              class="pure-img"
+              src="{% if is_bytes %}data:image/png;base64,{% endif%}{{ run_content.design_matrix_png }}"
+              title="Plot of design matrix for {{ loop.index0 }}."
+              alt="Plot of design matrix for {{ loop.index0 }}."
+              style="min-width: 600px" />
+          </div>
+          {% if run_content.correlation_matrix_png %}
+            <h3>correlation matrix</h3>
+            <div class="scroll-y">
+              {% set is_bytes = not run_content.correlation_matrix_png.endswith('.png') %}
+              <img class="pure-img"
+                src="{% if is_bytes %}data:image/png;base64,{%endif%}{{run_content.correlation_matrix_png}}"
+                title="Plot of correlation of design matrix for run {{ loop.index0 }}."
+                alt="Plot of correlation of design matrix for run {{ loop.index0 }}."
+                style="min-width: 600px" />
+            </div>
+          {% endif %}
         {% else %}
           <p>No design matrix was provided.</p>
-
         {% endif %}
       </section>
 
       <section id="contrasts-{{ unique_id }}-{{ loop.index0 }}">
         <h3>Contrasts</h3>
-
         <div class="d-flex flex-column">
-          {% if run_content.all_contrasts %}
-          {% for contrast_name, contrast_plot in run_content.all_contrasts.items() %}
-          <div class="scroll-y">
-            {% set is_bytes = not contrast_plot.endswith('.png') %}
-            <img
-              class="pure-img"
-              src="{%if is_bytes %}data:image/png;base64,{% endif %}{{ contrast_plot }}"
-              title="Plot of the contrast {{ contrast_name }} (run {{ loop.index0 }})."
-              alt="Plot of the contrast {{ contrast_name }} (run {{ loop.index0 }})."
-              style="min-width: 600px" />
-          </div>
-          {% endfor %}
-
+          {% if not has_plotting_engine %}
+            {% include 'html/partials/missing_plotting_engine.jinja' %}
+          {% elif run_content.all_contrasts %}
+            {% for contrast_name, contrast_plot in run_content.all_contrasts.items() %}
+            <div class="scroll-y">
+              {% set is_bytes = not contrast_plot.endswith('.png') %}
+              <img
+                class="pure-img"
+                src="{%if is_bytes %}data:image/png;base64,{% endif %}{{ contrast_plot }}"
+                title="Plot of the contrast {{ contrast_name }} (run {{ loop.index0 }})."
+                alt="Plot of the contrast {{ contrast_name }} (run {{ loop.index0 }})."
+                style="min-width: 600px" />
+            </div>
+            {% endfor %}
           {% else %}
             <p>No contrast was provided.</p>
           {% endif %}
         </div>
-
       </section>
 
     </div>
@@ -136,26 +134,28 @@
 
   <section id="mask-{{ unique_id }}">
     <h2>Mask</h2>
-    {% if mask_plot %}
-    <div class="scroll-y">
-      <img
-        class="pure-img"
-        src="data:image/png;base64,{{ mask_plot }}"
-        alt="Mask image"
-        title="Mask image"
-        style="min-width: 600px"
-      />
-    </div>
+    {% if not has_plotting_engine %}
+      {% include 'html/partials/missing_plotting_engine.jinja' %}
+    {% elif mask_plot %}
+      <div class="scroll-y">
+        <img
+          class="pure-img"
+          src="data:image/png;base64,{{ mask_plot }}"
+          alt="Mask image"
+          title="Mask image"
+          style="min-width: 600px"
+        />
+      </div>
     {% else %}
-    <p>No mask was provided.</p>
+      <p>No mask was provided.</p>
     {% endif %}
 
     {% if n_elements %}
-    <div class="pure-u-1 pure-u-md-3-3">
-      <p>
-        The mask includes {{ n_elements }} voxels ({{ coverage }} %) of the image.
-      </p>
-    </div>
+      <div class="pure-u-1 pure-u-md-3-3">
+        <p>
+          The mask includes {{ n_elements }} voxels ({{ coverage }} %) of the image.
+        </p>
+      </div>
     {% endif %}
   </section>
 
@@ -163,49 +163,52 @@
     <h2>Statistical Maps</h2>
     <div class="pure-g">
       {% if results %}
-      {% for contrast_name in results %}
-      <div class="pure-u-1">
-        <h3>{{ contrast_name }}</h3>
+        {% for contrast_name in results %}
+        <div class="pure-u-1">
 
-        <div class="d-flex flex-column">
-          {% if results[contrast_name].stat_map_img %}
-            <div class="scroll-y">
-              <img
-                class="pure-img"
-                src="data:image/png;base64,{{ results[contrast_name].stat_map_img }}"
-                alt="Stat map plot for the contrast: {{ contrast_name }}"
-                title="Stat map plot for the contrast: {{ contrast_name }}"
-                style="min-width: 600px"
-              />
-            </div>
-          {% else %}
-            <p style="text-align: center; font-size: 200%; color: grey">No suprathreshold cluster</p>
-          {% endif %}
+          <h3>{{ contrast_name }}</h3>
 
-          <details>
-            <summary class="pure-button button-small contrast-button">
-              Cluster Table
-            </summary>
-            {% if results[contrast_name].cluster_table_details %}
-            {{ results[contrast_name].cluster_table_details|safe }}
-            {% else %}
-            <p>No cluster table parameter provided</p>
-            {% endif %}
-            {% if results[contrast_name].cluster_table %}
-              {{ results[contrast_name].cluster_table|safe }}
+          <div class="d-flex flex-column">
+            {% if not has_plotting_engine %}
+              {% include 'html/partials/missing_plotting_engine.jinja' %}
+            {% elif results[contrast_name].stat_map_img %}
+              <div class="scroll-y">
+                <img
+                  class="pure-img"
+                  src="data:image/png;base64,{{ results[contrast_name].stat_map_img }}"
+                  alt="Stat map plot for the contrast: {{ contrast_name }}"
+                  title="Stat map plot for the contrast: {{ contrast_name }}"
+                  style="min-width: 600px"
+                />
+              </div>
             {% else %}
               <p style="text-align: center; font-size: 200%; color: grey">No suprathreshold cluster</p>
-
             {% endif %}
-          </details>
-        </div>
-      </div>
-      {% endfor %}
-      {% else %}
-      <div class="d-flex flex-wrap justify-content-evenly">
-        <p style="letter-spacing: normal">No statistical map was provided.</p>
-      </div>
 
+            <details>
+              <summary class="pure-button button-small contrast-button">
+                Cluster Table
+              </summary>
+              {% if results[contrast_name].cluster_table_details %}
+                {{ results[contrast_name].cluster_table_details|safe }}
+              {% else %}
+                <p>No cluster table parameter provided</p>
+              {% endif %}
+              {% if results[contrast_name].cluster_table %}
+                {{ results[contrast_name].cluster_table|safe }}
+              {% else %}
+                <p style="text-align: center; font-size: 200%; color: grey">No suprathreshold cluster</p>
+              {% endif %}
+            </details>
+
+          </div>
+        </div>
+        {% endfor %}
+
+      {% else %}
+        <div class="d-flex flex-wrap justify-content-evenly">
+          <p style="letter-spacing: normal">No statistical map was provided.</p>
+        </div>
       {% endif %}
     </div>
   </section>
@@ -225,8 +228,8 @@
   {% include 'js/carousel.js' %}
   document.addEventListener("DOMContentLoaded", function () {
     new Carousel("{{ unique_id }}", {{ displayed_runs }}, false);
-}
-);
+    }
+  );
 </script>
 {% endif %}
 

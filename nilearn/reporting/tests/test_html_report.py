@@ -9,6 +9,7 @@ from nilearn._utils.data_gen import generate_random_img
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.html_document import WIDTH_DEFAULT, HTMLDocument
 from nilearn.conftest import _img_maps
+from nilearn.exceptions import MISSING_ENGINE_MSG
 from nilearn.image import get_data
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -49,17 +50,32 @@ def _check_html(html_view, reports_requested=True, is_fit=True):
 
     assert html_view._repr_html_() == html_view.body
 
+    if not is_fit:
+        assert "This estimator has not been fit yet." in str(html_view)
+
+    if not is_matplotlib_installed():
+        assert MISSING_ENGINE_MSG in str(html_view)
+        assert 'color: grey">No plotting engine found</p>' in str(html_view)
+
+    if not reports_requested:
+        assert (
+            "\nReport generation not enabled!\nNo visual outputs created."
+            in str(html_view)
+        )
+
     if not reports_requested or not is_fit:
         # no image present if reports not requested or masker is not fitted
         assert '<div class="image">' not in str(html_view)
     else:
         if is_fit:
             assert "<th>Parameter</th>" in str(html_view)
+
         if is_matplotlib_installed():
             if "Surface" in str(html_view):
                 assert "data:image/png;base64," in str(html_view)
             else:
                 assert "data:image/svg+xml;base64," in str(html_view)
+
         else:
             assert "data:image/svg+xml;base64," not in str(html_view)
             assert "data:image/png;base64," not in str(html_view)

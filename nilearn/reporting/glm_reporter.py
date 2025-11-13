@@ -221,26 +221,21 @@ def make_glm_report(
     from nilearn.glm.thresholding import warn_default_threshold
 
     check_params(locals())
+
+    warning_messages = []
+
     if not is_matplotlib_installed():
-        warnings.warn(
-            MISSING_ENGINE_MSG,
-            UserWarning,
-            stacklevel=find_stack_level(),
-        )
+        warning_messages.append(MISSING_ENGINE_MSG)
 
     parameters = dict(**inspect.signature(make_glm_report).parameters)
     if height_control is not None and float(threshold) != float(
         parameters["threshold"].default
     ):
-        warnings.warn(
-            (
-                f"'{threshold=}' will not be used with '{height_control=}'. "
-                "'threshold' is only used when 'height_control=None'. "
-                f"Set 'threshold' to '{parameters['threshold'].default}' "
-                "to avoid this warning."
-            ),
-            UserWarning,
-            stacklevel=find_stack_level(),
+        warning_messages.append(
+            f"\n'{threshold=}' is not used with '{height_control=}'."
+            "\n'threshold' is only used when 'height_control=None'. "
+            f"\nSet 'threshold' to '{parameters['threshold'].default}' "
+            "to avoid this warning."
         )
     warn_default_threshold(
         threshold,
@@ -272,8 +267,11 @@ def make_glm_report(
     mask_plot = None
     mask_info = {"n_elements": 0, "coverage": "0"}
     results = None
-    warning_messages = [UNFITTED_MSG]
-    if model.__sklearn_is_fitted__():
+
+    if not model.__sklearn_is_fitted__():
+        warning_messages.append(UNFITTED_MSG)
+
+    else:
         design_matrices = (
             [model.design_matrix_]
             if model.__str__() == "Second Level Model"
@@ -343,11 +341,10 @@ def make_glm_report(
             plot_type=plot_type,
         )
 
-        warning_messages = (
-            ["No contrast passed during report generation."]
-            if contrasts is None
-            else []
-        )
+        if contrasts is None:
+            warning_messages.append(
+                "No contrast passed during report generation."
+            )
 
     design_matrices_dict = Bunch()
     contrasts_dict = Bunch()
@@ -405,12 +402,19 @@ def make_glm_report(
     if smoothing_fwhm == 0:
         smoothing_fwhm = None
 
+    if warning_messages:
+        for msg in warning_messages:
+            warnings.warn(
+                msg,
+                stacklevel=find_stack_level(),
+            )
+
     env = return_jinja_env()
 
     body_tpl = env.get_template("html/glm/body_glm.jinja")
 
     body = body_tpl.render(
-        docstring=model.__doc__.partition("Parameters\n    ----------\n")[0],
+        docstring=model.__doc__.split("Parameters\n")[0],
         contrasts=contrasts,
         date=datetime.datetime.now().replace(microsecond=0).isoformat(),
         mask_plot=mask_plot,
@@ -425,6 +429,7 @@ def make_glm_report(
         version=__version__,
         unique_id=str(uuid.uuid4()).replace("-", ""),
         warning_messages=warning_messages,
+        has_plotting_engine=is_matplotlib_installed(),
         **mask_info,
     )
 
