@@ -135,9 +135,6 @@ def generate_report(estimator) -> HTMLReport:
     if data.get("title") is None:
         data["title"] = estimator.__class__.__name__
 
-    if estimator._report_content["warning_messages"] is None:
-        estimator._report_content["warning_messages"] = []
-
     data["has_plotting_engine"] = is_matplotlib_installed()
     if not is_matplotlib_installed():
         estimator._report_content["warning_messages"].append(
