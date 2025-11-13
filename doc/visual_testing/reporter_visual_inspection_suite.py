@@ -25,6 +25,7 @@ from nilearn.datasets import (
     fetch_openneuro_dataset,
     load_fsaverage,
     load_fsaverage_data,
+    load_mni152_gm_template,
     load_sample_motor_activation_image,
     select_from_index,
 )
@@ -445,18 +446,21 @@ def _generate_masker_report_files(
 
 
 def report_nifti_masker(build_type):
+    gm_template = load_mni152_gm_template()
     masker = NiftiMasker(
+        mask_img=gm_template,
         standardize="zscore_sample",
-        mask_strategy="epi",
         memory="nilearn_cache",
         memory_level=1,
+        target_affine=gm_template.affine,
+        target_shape=gm_template.shape,
     )
 
     if build_type == "partial":
         return _generate_masker_report_files_partial(masker)
     else:
-        data = fetch_development_fmri(n_subjects=1)
-        return _generate_masker_report_files(masker, data=data.func[0])
+        data = load_sample_motor_activation_image()
+        return _generate_masker_report_files(masker, data=data)
 
 
 def report_nifti_labels_masker(build_type):
@@ -635,13 +639,13 @@ def main(args=sys.argv):
     print("\nGenerating masker reports templates\n")
     t0 = time.time()
 
-    report_surface_masker(build_type)
-    report_surface_label_masker(build_type)
-    report_surface_maps_masker(build_type)
     report_nifti_masker(build_type)
     report_nifti_maps_masker(build_type)
     report_nifti_labels_masker(build_type)
     report_sphere_masker(build_type)
+    report_surface_masker(build_type)
+    report_surface_label_masker(build_type)
+    report_surface_maps_masker(build_type)
 
     t1 = time.time()
     print(f"\nTook: {t1 - t0:0.2f} seconds\n")

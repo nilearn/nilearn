@@ -413,8 +413,11 @@ def make_glm_report(
 
     body_tpl = env.get_template("html/glm/body_glm.jinja")
 
+    # TODO clean up docstring from RST formatting
+    docstring = model.__doc__.split("Parameters\n")[0]
+
     body = body_tpl.render(
-        docstring=model.__doc__.split("Parameters\n")[0],
+        docstring=docstring,
         contrasts=contrasts,
         date=datetime.datetime.now().replace(microsecond=0).isoformat(),
         mask_plot=mask_plot,

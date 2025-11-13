@@ -426,6 +426,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 img,
                 cut_coords=cut_coords,
                 black_bg=False,
+                draw_cross=False,
                 cmap=self.cmap,
             )
             plt.close()
@@ -434,7 +435,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         # Otherwise, simply plot the ROI of the label image
         # and give a warning to the user
         else:
-            display = plot_roi(labels_image)
+            display = plot_roi(
+                labels_image, cut_coords=cut_coords, draw_cross=False
+            )
             plt.close()
 
         # If we have a mask, show its contours

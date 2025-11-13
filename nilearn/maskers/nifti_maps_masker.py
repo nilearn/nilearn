@@ -427,7 +427,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if img is None:
             for component in maps_to_be_displayed:
                 display = plot_stat_map(
-                    index_img(maps_image, component), cmap=cm.black_blue
+                    index_img(maps_image, component),
+                    draw_cross=False,
+                    cmap=cm.black_blue,
                 )
                 embedded_images.append(display)
                 display.close()
@@ -442,6 +444,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     img,
                     cut_coords=cut_coords,
                     black_bg=False,
+                    draw_cross=False,
                     cmap=self.cmap,
                 )
                 display.add_overlay(
