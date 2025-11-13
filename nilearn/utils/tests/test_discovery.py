@@ -23,7 +23,6 @@ with contextlib.suppress(ImportError):
     ],
 )
 def test_all_estimators(
-    matplotlib_pyplot,  # noqa : ARG001
     type_filter,
     n_expected,
 ):
@@ -33,9 +32,7 @@ def test_all_estimators(
     assert len(estimators) == n_expected
 
 
-def test_all_functions(
-    matplotlib_pyplot,  # noqa : ARG001
-):
+def test_all_functions():
     """Check number of functions in public API."""
     fn = all_functions()
     print(fn)
@@ -53,7 +50,6 @@ def test_all_functions(
 def test_all_displays(
     type_filter,
     n_expected,
-    matplotlib_pyplot,  # noqa : ARG001
 ):
     """Check number of functions in public API."""
     disp = all_displays(type_filter)
