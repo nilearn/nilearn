@@ -162,23 +162,6 @@ def assemble_report(body: str, title: str) -> HTMLReport:
     )
 
 
-def _insert_figure_partial(
-    engine, content, displayed_maps, unique_id: str
-) -> str:
-    env = return_jinja_env()
-
-    tpl = env.get_template("html/maskers/partials/figure.jinja")
-
-    if not isinstance(content, list):
-        content = [content]
-    return tpl.render(
-        engine=engine,
-        content=content,
-        displayed_maps=displayed_maps,
-        unique_id=unique_id,
-    )
-
-
 def generate_report(estimator) -> HTMLReport:
     """Generate a report for Nilearn objects.
 
@@ -235,6 +218,23 @@ def generate_report(estimator) -> HTMLReport:
             )
 
     return _create_report(estimator, data)
+
+
+def _insert_figure_partial(
+    engine, content, displayed_maps, unique_id: str
+) -> str:
+    env = return_jinja_env()
+
+    tpl = env.get_template("html/maskers/partials/figure.jinja")
+
+    if not isinstance(content, list):
+        content = [content]
+    return tpl.render(
+        engine=engine,
+        content=content,
+        displayed_maps=displayed_maps,
+        unique_id=unique_id,
+    )
 
 
 def _create_report(
