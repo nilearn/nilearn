@@ -428,7 +428,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         # Otherwise, simply plot the ROI of the label image
         # and give a warning to the user
         else:
-            display = plot_roi(labels_image, cut_coords=cut_coords)
+            display = plot_roi(labels_image)
             plt.close()
 
         # If we have a mask, show its contours
