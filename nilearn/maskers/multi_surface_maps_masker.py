@@ -173,6 +173,8 @@ class MultiSurfaceMapsMasker(_MultiMixin, SurfaceMapsMasker):
         check_params(self.__dict__)
 
         if imgs is not None:
+            if not hasattr(imgs, "__iter__"):
+                imgs = [imgs]
             self._check_imgs(imgs)
 
         return self._fit(imgs)
