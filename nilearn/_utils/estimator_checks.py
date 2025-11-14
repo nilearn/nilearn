@@ -604,6 +604,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
             check_masker_fit_with_non_finite_in_mask,
         )
         yield (clone(estimator), check_masker_generate_report)
+        yield (clone(estimator), check_masker_generate_report_constant)
         yield (clone(estimator), check_masker_generate_report_false)
         yield (clone(estimator), check_masker_inverse_transform)
         yield (clone(estimator), check_masker_joblib_cache)
@@ -1304,7 +1305,13 @@ def check_img_estimator_dict_unchanged(estimator):
 
     input_img, y = generate_data_to_fit(estimator)
 
-    for method in ["predict", "transform", "decision_function", "score"]:
+    for method in [
+        "predict",
+        "transform",
+        "decision_function",
+        "score",
+        "generate_report",
+    ]:
         if not hasattr(estimator, method):
             continue
 
@@ -1312,6 +1319,8 @@ def check_img_estimator_dict_unchanged(estimator):
             getattr(estimator, method)([input_img])
         elif method == "score":
             getattr(estimator, method)(input_img, y)
+        elif method == "generate_report":
+            getattr(estimator, method)()
         else:
             getattr(estimator, method)(input_img)
 
@@ -1333,7 +1342,8 @@ def check_img_estimator_dict_unchanged(estimator):
                 )
                 if len(unmatched_keys) > 0:
                     raise ValueError(
-                        "Estimator changes '__dict__' keys during transform.\n"
+                        "Estimator changes '__dict__' keys "
+                        f"during '{method}'.\n"
                         f"{unmatched_keys} \n"
                     )
 
@@ -1363,7 +1373,7 @@ def check_img_estimator_dict_unchanged(estimator):
                 if difference:
                     raise ValueError(
                         "Estimator changes the following '__dict__' keys \n"
-                        "during transform.\n"
+                        f"during '{method}'.\n"
                         f"{difference}"
                     )
                 else:
@@ -3673,6 +3683,20 @@ def check_masker_generate_report(estimator):
     with TemporaryDirectory() as tmp_dir:
         report.save_as_html(Path(tmp_dir) / "report.html")
         assert (Path(tmp_dir) / "report.html").is_file()
+
+
+def check_masker_generate_report_constant(estimator):
+    """Check report is constant across calls."""
+    if accept_niimg_input(estimator):
+        input_img = _img_3d_rand()
+    else:
+        input_img = _make_surface_img(2)
+    estimator.fit(input_img)
+
+    report = _generate_report(estimator)
+    report_new = _generate_report(estimator)
+
+    assert str(report) == str(report_new)
 
 
 def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
