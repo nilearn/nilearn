@@ -280,6 +280,22 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
             self._report_content["displayed_maps"] = maps_to_be_displayed
 
+            img = self._reporting_data["img"]
+
+            if img is None:
+                msg = (
+                    "No image provided to fit in NiftiMapsMasker. "
+                    "Plotting only spatial maps for reporting."
+                )
+                self._report_content["warning_messages"].append(msg)
+
+            elif self._reporting_data["dim"] == 5:
+                msg = (
+                    "A list of 4D subject images were provided to fit. "
+                    "Only first subject is shown in the report."
+                )
+                self._report_content["warning_messages"].append(msg)
+
         return super().generate_report(title)
 
     def _reporting(self):
@@ -293,22 +309,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         if not self._has_report_data():
             return [None]
-
-        img = self._reporting_data["img"]
-
-        if img is None:
-            msg = (
-                "No image provided to fit in NiftiMapsMasker. "
-                "Plotting only spatial maps for reporting."
-            )
-            self._report_content["warning_messages"].append(msg)
-
-        elif self._reporting_data["dim"] == 5:
-            msg = (
-                "A list of 4D subject images were provided to fit. "
-                "Only first subject is shown in the report."
-            )
-            self._report_content["warning_messages"].append(msg)
 
         return self._create_figure_for_report()
 

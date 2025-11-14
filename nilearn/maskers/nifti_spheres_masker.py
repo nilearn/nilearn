@@ -414,6 +414,14 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             tmp.extend((np.asarray(spheres_to_be_displayed) + 1).tolist())
             self._report_content["displayed_maps"] = tmp
 
+            img = self._reporting_data["img"]
+            if img is None:
+                msg = (
+                    "No image provided to fit in NiftiSpheresMasker. "
+                    "Spheres are plotted on top of the MNI152 template."
+                )
+                self._report_content["warning_messages"].append(msg)
+
         return super().generate_report(title)
 
     def _reporting(self):
@@ -430,11 +438,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             if img is None:
                 img = load_mni152_template()
                 positions = seeds
-                msg = (
-                    "No image provided to fit in NiftiSpheresMasker. "
-                    "Spheres are plotted on top of the MNI152 template."
-                )
-                self._report_content["warning_messages"].append(msg)
             else:
                 positions = [
                     np.round(

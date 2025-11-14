@@ -316,6 +316,43 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return masked_atlas, removed_region_ids, removed_region_names, display
 
+    def generate_report(self, title: str | None = None):
+        """Generate an HTML report for the current object.
+
+        Parameters
+        ----------
+        title : :obj:`str` or None, default=None
+            title for the report. If None, title will be the class name.
+
+        Returns
+        -------
+        report : `nilearn.reporting.html_report.HTMLReport`
+            HTML report for the masker.
+        """
+        from nilearn.reporting.html_report import generate_report
+
+        self._report_content["title"] = title
+
+        if self._has_report_data():
+            img = self._reporting_data["images"]
+
+            if img is None:
+                msg = (
+                    "No image provided to fit in NiftiLabelsMasker. "
+                    "Plotting ROIs of label image on the "
+                    "MNI152Template for reporting."
+                )
+                self._report_content["warning_messages"].append(msg)
+
+            elif self._reporting_data["dim"] == 5:
+                msg = (
+                    "A list of 4D subject images were provided to fit. "
+                    "Only first subject is shown in the report."
+                )
+                self._report_content["warning_messages"].append(msg)
+
+        return generate_report(self)
+
     def _reporting(self):
         """Return a list of all displays to be rendered.
 
@@ -372,23 +409,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         self._report_content["summary"] = table
         self._report_content["number_of_regions"] = self.n_elements_
-
-        img = self._reporting_data["img"]
-
-        if img is None:
-            msg = (
-                "No image provided to fit in NiftiLabelsMasker. "
-                "Plotting ROIs of label image on the "
-                "MNI152Template for reporting."
-            )
-            self._report_content["warning_messages"].append(msg)
-
-        elif self._reporting_data["dim"] == 5:
-            msg = (
-                "A list of 4D subject images were provided to fit. "
-                "Only first subject is shown in the report."
-            )
-            self._report_content["warning_messages"].append(msg)
 
         return self._create_figure_for_report(labels_image)
 
