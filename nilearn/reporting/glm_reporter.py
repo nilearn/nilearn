@@ -33,6 +33,10 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
+from nilearn._utils.tags import (
+    accept_niimg_input,
+    is_masker,
+)
 from nilearn._version import __version__
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
@@ -520,19 +524,19 @@ def _mask_to_plot(model, bg_img, cut_coords):
     """
     if not is_matplotlib_installed():
         return None
-    else:
-        from nilearn.plotting import plot_roi
+
+    from nilearn.plotting import plot_roi
+
     # Select mask_img to use for plotting
     if not model._is_volume_glm():
-        model.masker_._create_figure_for_report()
+        model.masker_._create_figure_for_report()[0]
         fig = plt.gcf()
         mask_plot = figure_to_png_base64(fig)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
         return mask_plot
-    from nilearn.maskers import NiftiMasker
 
-    if isinstance(model.mask_img, NiftiMasker):
+    if is_masker(model.mask_img) and accept_niimg_input(model.mask_img):
         mask_img = model.masker_.mask_img_
     else:
         try:
