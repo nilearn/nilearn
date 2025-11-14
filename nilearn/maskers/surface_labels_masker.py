@@ -307,15 +307,14 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         else:
             self.clean_args_ = self.clean_args
 
-        if not self.reports:
-            return self
+        self._report_content["reports_at_fit_time"] = self.reports
+        if self.reports:
+            for part in self.labels_img_.data.parts:
+                self._report_content["n_vertices"][part] = (
+                    self.labels_img_.mesh.parts[part].n_vertices
+                )
 
-        for part in self.labels_img_.data.parts:
-            self._report_content["n_vertices"][part] = (
-                self.labels_img_.mesh.parts[part].n_vertices
-            )
-
-        self._reporting_data = self._generate_reporting_data()
+            self._reporting_data = self._generate_reporting_data()
 
         mask_logger("fit_done", verbose=self.verbose)
 
@@ -469,7 +468,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         return imgs
 
-    def _get_displays(self):
+    def _reporting(self):
         """Load displays needed for report.
 
         Returns
@@ -477,13 +476,12 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         displays : list
             A list of all displays to be rendered.
         """
-        import matplotlib.pyplot as plt
-
         from nilearn.reporting.utils import figure_to_png_base64
 
         fig = self._create_figure_for_report()
 
-        plt.close()
+        if not fig:
+            return [None]
 
         init_display = figure_to_png_base64(fig)
 

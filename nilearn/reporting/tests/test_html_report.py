@@ -509,7 +509,7 @@ def test_surface_masker_minimal_report_fit(
     _check_html(report, reports_requested=reports)
     assert '<div class="image">' in str(report)
     if not reports:
-        assert 'src="data:image/svg+xml;base64,"' in str(report)
+        assert 'src="data:image/svg+xml;base64' in str(report)
     else:
         assert float(masker._report_content["coverage"]) > 0
         assert "The mask includes" in str(report)

@@ -264,6 +264,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 "defined by the labels of the mask."
             ),
             "number_of_regions": 0,
+            "summary": {},
             "warning_message": None,
         }
 
@@ -316,7 +317,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return masked_atlas, removed_region_ids, removed_region_names, display
 
-    def _get_displays(self):
+    def _reporting(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -544,6 +545,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             # Just check that the mask is valid
             load_mask_img(self.mask_img_)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._reporting_data = {
                 "labels_image": self.labels_img_,

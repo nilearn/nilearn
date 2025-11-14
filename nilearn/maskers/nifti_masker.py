@@ -378,10 +378,11 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             ),
             "n_elements": 0,
             "coverage": 0,
+            "summary": {},
             "warning_message": None,
         }
 
-    def _get_displays(self):
+    def _reporting(self):
         """Load displays needed for report.
 
         Returns
@@ -390,11 +391,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             A list of all displays to be rendered.
             Returns None when masker is not fitted
         """
-        # Handle the edge case where this function is
-        # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
-            return [None]
-
         img = self._reporting_data["images"]
 
         if img is None:  # images were not provided to fit
@@ -559,6 +555,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 stacklevel=find_stack_level(),
             )
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:  # save inputs for reporting
             self._reporting_data = {
                 "mask": self.mask_img_,
