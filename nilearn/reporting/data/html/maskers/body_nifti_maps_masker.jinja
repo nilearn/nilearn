@@ -78,13 +78,6 @@
 
 {% include 'html/maskers/partials/info_transfom.jinja' %}
 
-<script>
-  {% include 'js/carousel.js' %}
-  document.addEventListener("DOMContentLoaded", function () {
-    new Carousel("{{ unique_id }}", {{ displayed_maps }}, false);
-}
-);
-</script>
-
+{% include 'html/maskers/partials/carousel.jinja' %}
 
 {% endblock %}
