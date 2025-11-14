@@ -307,27 +307,85 @@ def get_clusters_table(
     """
     check_params(locals())
 
+    is_volume = not isinstance(stat_img, SurfaceImage)
+
+    if is_volume:
+        return _get_clusters_table_volume(
+            stat_img,
+            stat_threshold,
+            cluster_threshold=cluster_threshold,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            return_label_maps=return_label_maps,
+        )
+
+    cols = [
+        "Cluster ID",
+        "Hemisphere",
+        "Peak Stat",
+        "Cluster Size (vertices)",
+    ]
+
+    offset = 1
+    data = {}
+    all_clusters = []
+
+    for hemi in stat_img.data.parts:
+        clusters, labels = find_surface_clusters(
+            stat_img.mesh.parts[hemi],
+            stat_img.data.parts[hemi],
+            offset=offset,
+        )
+
+        peak_stat = []
+        for i in clusters["index"].tolist():
+            mask = labels == i
+            values = stat_img.data.parts[hemi][mask].ravel()
+
+            if np.all(np.isnan(values)):
+                raise ValueError("this should not happen")
+
+            cluster_max = np.nanmax(values)
+            peak_stat.append(cluster_max)
+
+        clusters["Peak Stat"] = peak_stat
+
+        clusters["Hemisphere"] = hemi
+        clusters = clusters.rename(
+            columns={
+                "name": "Cluster ID",
+                "size": "Cluster Size (vertices)",
+            }
+        )
+        clusters = clusters[cols]
+
+        offset = len(clusters)
+
+        data[hemi] = labels
+
+        all_clusters.append(clusters)
+
+    result_table = pd.concat(all_clusters, ignore_index=True)
+
+    label_maps = []
+    if return_label_maps:
+        label_maps = new_img_like(stat_img, data)
+
+    return (result_table, label_maps) if return_label_maps else result_table
+
+
+def _get_clusters_table_volume(
+    stat_img,
+    stat_threshold,
+    cluster_threshold=0,
+    two_sided=False,
+    min_distance=8.0,
+    return_label_maps=False,
+):
+    cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
+
     label_maps = []
 
-    is_surface = isinstance(stat_img, SurfaceImage)
-
-    if is_surface:
-        cols = [
-            "Cluster ID",
-            "Hemisphere",
-            "Peak Stat",
-            "Cluster Size (vertices)",
-        ]
-
-    else:
-        cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
-
-        # check that stat_img is niimg-like object and 3D
-        stat_img = check_niimg_3d(stat_img)
-        affine = stat_img.affine
-        shape = stat_img.shape
-
-    # Apply threshold(s) to image
     stat_img = threshold_img(
         img=stat_img,
         threshold=stat_threshold,
@@ -337,182 +395,133 @@ def get_clusters_table(
         copy=True,
     )
 
-    if is_surface:
-        offset = 1
-        data = {}
-        all_clusters = []
+    # check that stat_img is niimg-like object and 3D
+    stat_img = check_niimg_3d(stat_img)
+    affine = stat_img.affine
+    shape = stat_img.shape
 
-        for hemi in stat_img.data.parts:
-            clusters, labels = find_surface_clusters(
-                stat_img.mesh.parts[hemi],
-                stat_img.data.parts[hemi],
-                offset=offset,
+    # If cluster threshold is used, there is chance that stat_map will be
+    # modified, therefore copy is needed
+    stat_map = safe_get_data(
+        stat_img,
+        ensure_finite=True,
+        copy_data=(cluster_threshold != 0),
+    )
+
+    # Define array for 6-connectivity, aka NN1 or "faces"
+    bin_struct = generate_binary_structure(rank=3, connectivity=1)
+
+    voxel_size = np.prod(stat_img.header.get_zooms())
+
+    clusters_found = False
+    signs = [1, -1] if two_sided else [1]
+    rows = []
+
+    for sign in signs:
+        # Flip map if necessary
+        temp_stat_map = stat_map * sign
+
+        # Binarize using cluster-defining threshold
+        if not two_sided and stat_threshold < 0:
+            binarized = temp_stat_map < stat_threshold
+        else:
+            binarized = temp_stat_map > stat_threshold
+        binarized = binarized.astype(int)
+
+        # If the stat threshold is too high
+        # simply return an empty dataframe
+        if np.sum(binarized) == 0:
+            warnings.warn(
+                "Attention: No clusters "
+                f"with stat {'higher' if sign == 1 else 'lower'} "
+                f"than {stat_threshold * sign}",
+                category=UserWarning,
+                stacklevel=find_stack_level(),
             )
+            continue
 
-            peak_stat = []
-            for i in clusters["index"].tolist():
-                mask = labels == i
-                values = stat_img.data.parts[hemi][mask].ravel()
-
-                if np.all(np.isnan(values)):
-                    raise ValueError("this should not happen")
-
-                cluster_max = np.nanmax(values)
-                peak_stat.append(cluster_max)
-
-            clusters["Peak Stat"] = peak_stat
-
-            clusters["Hemisphere"] = hemi
-            clusters = clusters.rename(
-                columns={
-                    "name": "Cluster ID",
-                    "size": "Cluster Size (vertices)",
-                }
+        # Now re-label and create table
+        label_map = label(binarized, bin_struct)[0]
+        clust_ids = sorted(np.unique(label_map)[1:])
+        if not two_sided and stat_threshold < 0:
+            peak_vals = np.array(
+                [np.min(temp_stat_map * (label_map == c)) for c in clust_ids]
             )
-            clusters = clusters[cols]
-
-            offset = len(clusters)
-
-            data[hemi] = labels
-
-            all_clusters.append(clusters)
-
-        result_table = pd.concat(all_clusters, ignore_index=True)
+        else:
+            peak_vals = np.array(
+                [np.max(temp_stat_map * (label_map == c)) for c in clust_ids]
+            )
+        # Sort by descending max value
+        clust_ids = [clust_ids[c] for c in (-peak_vals).argsort()]
 
         if return_label_maps:
-            label_maps = new_img_like(stat_img, data)
+            # Relabel label_map based on sorted ids
+            relabel_idx = np.insert(clust_ids, 0, 0).argsort().astype(np.int32)
+            relabel_map = relabel_idx[label_map.flatten()].reshape(shape)
+            # Save label maps as nifti objects
+            label_maps.append(
+                new_img_like(stat_img, relabel_map, affine=affine)
+            )
 
-    else:
-        # If cluster threshold is used, there is chance that stat_map will be
-        # modified, therefore copy is needed
-        stat_map = safe_get_data(
-            stat_img,
-            ensure_finite=True,
-            copy_data=(cluster_threshold != 0),
-        )
-
-        # Define array for 6-connectivity, aka NN1 or "faces"
-        bin_struct = generate_binary_structure(rank=3, connectivity=1)
-
-        voxel_size = np.prod(stat_img.header.get_zooms())
-
-        clusters_found = False
-        signs = [1, -1] if two_sided else [1]
-        rows = []
-
-        for sign in signs:
-            # Flip map if necessary
-            temp_stat_map = stat_map * sign
-
-            # Binarize using cluster-defining threshold
+        for c_id, c_val in enumerate(clust_ids):
+            cluster_mask = label_map == c_val
+            masked_data = temp_stat_map * cluster_mask
             if not two_sided and stat_threshold < 0:
-                binarized = temp_stat_map < stat_threshold
-            else:
-                binarized = temp_stat_map > stat_threshold
-            binarized = binarized.astype(int)
+                # in this we will want to find the local minima
+                masked_data *= -1
 
-            # If the stat threshold is too high
-            # simply return an empty dataframe
-            if np.sum(binarized) == 0:
-                warnings.warn(
-                    "Attention: No clusters "
-                    f"with stat {'higher' if sign == 1 else 'lower'} "
-                    f"than {stat_threshold * sign}",
-                    category=UserWarning,
-                    stacklevel=find_stack_level(),
-                )
-                continue
+            cluster_size_mm = int(np.sum(cluster_mask) * voxel_size)
 
-            # Now re-label and create table
-            label_map = label(binarized, bin_struct)[0]
-            clust_ids = sorted(np.unique(label_map)[1:])
-            if not two_sided and stat_threshold < 0:
-                peak_vals = np.array(
-                    [
-                        np.min(temp_stat_map * (label_map == c))
-                        for c in clust_ids
-                    ]
-                )
-            else:
-                peak_vals = np.array(
-                    [
-                        np.max(temp_stat_map * (label_map == c))
-                        for c in clust_ids
-                    ]
-                )
-            # Sort by descending max value
-            clust_ids = [clust_ids[c] for c in (-peak_vals).argsort()]
-
-            if return_label_maps:
-                # Relabel label_map based on sorted ids
-                relabel_idx = (
-                    np.insert(clust_ids, 0, 0).argsort().astype(np.int32)
-                )
-                relabel_map = relabel_idx[label_map.flatten()].reshape(shape)
-                # Save label maps as nifti objects
-                label_maps.append(
-                    new_img_like(stat_img, relabel_map, affine=affine)
-                )
-
-            for c_id, c_val in enumerate(clust_ids):
-                cluster_mask = label_map == c_val
-                masked_data = temp_stat_map * cluster_mask
-                if not two_sided and stat_threshold < 0:
-                    # in this we will want to find the local minima
-                    masked_data *= -1
-
-                cluster_size_mm = int(np.sum(cluster_mask) * voxel_size)
-
-                # Get peaks, subpeaks and associated statistics
-                subpeak_ijk, subpeak_vals = _local_max(
-                    masked_data,
+            # Get peaks, subpeaks and associated statistics
+            subpeak_ijk, subpeak_vals = _local_max(
+                masked_data,
+                stat_img.affine,
+                min_distance=min_distance,
+            )
+            subpeak_vals *= sign  # flip signs if necessary
+            subpeak_xyz = np.asarray(
+                coord_transform(
+                    subpeak_ijk[:, 0],
+                    subpeak_ijk[:, 1],
+                    subpeak_ijk[:, 2],
                     stat_img.affine,
-                    min_distance=min_distance,
                 )
-                subpeak_vals *= sign  # flip signs if necessary
-                subpeak_xyz = np.asarray(
-                    coord_transform(
-                        subpeak_ijk[:, 0],
-                        subpeak_ijk[:, 1],
-                        subpeak_ijk[:, 2],
-                        stat_img.affine,
-                    )
-                ).tolist()
-                subpeak_xyz = np.array(subpeak_xyz).T
+            ).tolist()
+            subpeak_xyz = np.array(subpeak_xyz).T
 
-                # Only report peak and, at most, top 3 subpeaks.
-                n_subpeaks = np.min((len(subpeak_vals), 4))
-                for subpeak in range(n_subpeaks):
-                    if subpeak == 0:
-                        row = [
-                            c_id + 1,
-                            subpeak_xyz[subpeak, 0],
-                            subpeak_xyz[subpeak, 1],
-                            subpeak_xyz[subpeak, 2],
-                            subpeak_vals[subpeak],
-                            cluster_size_mm,
-                        ]
-                    else:
-                        # Subpeak naming convention is cluster num+letter:
-                        # 1a, 1b, etc
-                        sp_id = f"{c_id + 1}{ascii_lowercase[subpeak - 1]}"
-                        row = [
-                            sp_id,
-                            subpeak_xyz[subpeak, 0],
-                            subpeak_xyz[subpeak, 1],
-                            subpeak_xyz[subpeak, 2],
-                            subpeak_vals[subpeak],
-                            "",
-                        ]
-                    rows += [row]
+            # Only report peak and, at most, top 3 subpeaks.
+            n_subpeaks = np.min((len(subpeak_vals), 4))
+            for subpeak in range(n_subpeaks):
+                if subpeak == 0:
+                    row = [
+                        c_id + 1,
+                        subpeak_xyz[subpeak, 0],
+                        subpeak_xyz[subpeak, 1],
+                        subpeak_xyz[subpeak, 2],
+                        subpeak_vals[subpeak],
+                        cluster_size_mm,
+                    ]
+                else:
+                    # Subpeak naming convention is cluster num+letter:
+                    # 1a, 1b, etc
+                    sp_id = f"{c_id + 1}{ascii_lowercase[subpeak - 1]}"
+                    row = [
+                        sp_id,
+                        subpeak_xyz[subpeak, 0],
+                        subpeak_xyz[subpeak, 1],
+                        subpeak_xyz[subpeak, 2],
+                        subpeak_vals[subpeak],
+                        "",
+                    ]
+                rows += [row]
 
-            # If we reach this point, there are clusters in this sign
-            clusters_found = True
+        # If we reach this point, there are clusters in this sign
+        clusters_found = True
 
-        if clusters_found:
-            result_table = pd.DataFrame(columns=cols, data=rows)
-        else:
-            result_table = pd.DataFrame(columns=cols)
+    if clusters_found:
+        result_table = pd.DataFrame(columns=cols, data=rows)
+    else:
+        result_table = pd.DataFrame(columns=cols)
 
     return (result_table, label_maps) if return_label_maps else result_table
 
