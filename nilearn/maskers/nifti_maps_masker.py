@@ -341,7 +341,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             for component in maps_to_be_displayed:
                 display = plot_stat_map(
                     index_img(maps_image, component),
-                    cmap=cm.black_blue,
+                    cmap=cm.black_blue
                 )
                 embedded_images.append(display)
                 display.close()
