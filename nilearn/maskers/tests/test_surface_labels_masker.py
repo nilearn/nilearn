@@ -46,6 +46,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -265,7 +266,7 @@ def test_surface_label_masker_fit_no_report(surf_label_img):
     """Check no report data is stored."""
     masker = SurfaceLabelsMasker(labels_img=surf_label_img, reports=False)
     masker = masker.fit()
-    assert masker._reporting_data is None
+    assert masker._has_report_data() is False
 
 
 @pytest.mark.parametrize(
