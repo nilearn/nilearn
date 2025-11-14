@@ -12,7 +12,6 @@ import numpy as np
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.helpers import is_kaleido_installed
 from nilearn.plotting._engine_utils import colorscale
-from nilearn.plotting._utils import get_colorbar_and_data_ranges
 from nilearn.plotting.displays import PlotlySurfaceFigure
 from nilearn.plotting.surface._utils import (
     DEFAULT_ENGINE,
@@ -91,52 +90,14 @@ LAYOUT = {
     "font_family": "Arial",
 }
 
-
-def _adjust_colorbar_and_data_ranges(
-    stat_map, vmin=None, vmax=None, symmetric_cbar=None
-):
-    """Adjust colorbar and data ranges for 'plotly' engine.
-
-    .. note::
-        colorbar ranges are not used for 'plotly' engine.
-
-    Parameters
-    ----------
-    stat_map : :obj:`str` or :class:`numpy.ndarray` or None, default=None
-
-    %(vmin)s
-
-    %(vmax)s
-
-    %(symmetric_cbar)s
-
-    Returns
-    -------
-        cbar_vmin, cbar_vmax, vmin, vmax
-    """
-    _, _, vmin, vmax = get_colorbar_and_data_ranges(
-        stat_map,
-        vmin=vmin,
-        vmax=vmax,
-        symmetric_cbar=symmetric_cbar,
-    )
-
-    return None, None, vmin, vmax
-
-
-def _adjust_plot_roi_params(params):
-    """Adjust cbar_tick_format value for 'plotly' engine.
-
-    Sets the values in params dict.
-
-    Parameters
-    ----------
-    params : dict
-        dictionary to set the adjusted parameters
-    """
-    cbar_tick_format = params.get("cbar_tick_format", "auto")
-    if cbar_tick_format == "auto":
-        params["cbar_tick_format"] = "."
+PARAMS_NOT_IMPLEMENTED = [
+    "avg_method",
+    "alpha",
+    "cbar_vmin",
+    "cbar_vmax",
+    "axes",
+    "figure",
+]
 
 
 def _configure_title(title, font_size, color="black"):
@@ -308,13 +269,17 @@ def _plot_surf(
     }
     check_engine_params(parameters_not_implemented_in_plotly, "plotly")
 
-    # adjust values
-    cbar_tick_format = (
-        ".1f" if cbar_tick_format == "auto" else cbar_tick_format
-    )
-    cmap = DEFAULT_DIVERGING_CMAP if cmap is None else cmap
-    symmetric_cmap = False if symmetric_cmap is None else symmetric_cmap
-    title_font_size = 18 if title_font_size is None else title_font_size
+    # adjust common params
+    if cbar_tick_format is None or cbar_tick_format == "auto":
+        cbar_tick_format = ".1f"
+    if cmap is None:
+        cmap = DEFAULT_DIVERGING_CMAP
+
+    # adjust non-common params
+    if symmetric_cmap is None:
+        symmetric_cmap = False
+    if title_font_size is None:
+        title_font_size = 18
 
     coords, faces = load_surf_mesh(surf_mesh)
 

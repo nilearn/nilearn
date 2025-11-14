@@ -57,7 +57,6 @@ from nilearn._utils.tags import (
     accept_surf_img_input,
     is_glm,
     is_masker,
-    is_multimasker,
 )
 from nilearn._utils.testing import write_imgs_to_path
 from nilearn.conftest import (
@@ -106,6 +105,7 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
+from nilearn.maskers._mixin import _MultiMixin
 from nilearn.masking import load_mask_img
 from nilearn.regions import RegionExtractor
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
@@ -626,7 +626,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_masker_clean)
         yield (clone(estimator), check_masker_detrending)
 
-        if not is_multimasker(estimator):
+        if not isinstance(estimator, _MultiMixin):
             yield (clone(estimator), check_masker_transformer_sample_mask)
             yield (clone(estimator), check_masker_with_confounds)
 
@@ -922,8 +922,8 @@ def check_estimator_set_output(estimator_orig):
         return
 
     if isinstance(
-        estimator_orig, (_BaseDecomposition, ConnectivityMeasure)
-    ) or is_multimasker(estimator_orig):
+        estimator_orig, (_BaseDecomposition, ConnectivityMeasure, _MultiMixin)
+    ):
         with pytest.raises(NotImplementedError):
             estimator_orig.set_output(transform="pandas")
         return
@@ -2344,7 +2344,7 @@ def check_masker_transformer_high_variance_confounds(estimator):
         dataframe.to_csv(tmp_dir / "confounds.csv")
 
         for c in [array, dataframe, tmp_dir / "confounds.csv"]:
-            confounds = [c] if is_multimasker(estimator) else c
+            confounds = [c] if isinstance(estimator, _MultiMixin) else c
 
             estimator = clone(estimator)
             estimator.high_variance_confounds = False
@@ -2999,7 +2999,7 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
 
         signals = estimator.transform(imgs)
 
-        if is_multimasker(estimator) and isinstance(imgs, list):
+        if isinstance(estimator, _MultiMixin) and isinstance(imgs, list):
             assert isinstance(signals, list)
             assert all(isinstance(x, np.ndarray) for x in signals)
             assert all(x.shape == (1, estimator.n_elements_) for x in signals)
@@ -3024,7 +3024,7 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
 
     estimator = clone(estimator_orig)
 
-    if is_multimasker(estimator):
+    if isinstance(estimator, _MultiMixin):
         signals = estimator.fit_transform(
             [_make_surface_img(5), _make_surface_img(2)]
         )
@@ -3101,7 +3101,7 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
 
             n_dim_mask = mask_img.data.parts["left"].ndim
 
-            if is_multimasker(estimator) and isinstance(imgs, list):
+            if isinstance(estimator, _MultiMixin) and isinstance(imgs, list):
                 assert isinstance(signals, list)
                 assert all(isinstance(x, np.ndarray) for x in signals)
                 assert all(
@@ -3195,7 +3195,7 @@ def check_nifti_masker_fit_transform(estimator):
     # list of 3D images
     signal = estimator.transform([_img_3d_rand(), _img_3d_rand()])
 
-    if is_multimasker(estimator):
+    if isinstance(estimator, _MultiMixin):
         assert isinstance(signal, list)
         assert len(signal) == 2
         for x in signal:
@@ -3228,7 +3228,7 @@ def check_nifti_masker_fit_transform_5d(estimator):
 
     input_5d_img = [_img_4d_rand_eye() for _ in range(n_subject)]
 
-    if not is_multimasker(estimator):
+    if not isinstance(estimator, _MultiMixin):
         with pytest.raises(
             DimensionError,
             match="Input data has incompatible dimensionality",
@@ -3642,10 +3642,8 @@ def check_masker_generate_report(estimator):
 
         return
 
-    assert (
-        estimator._report_content is not None
-        and estimator._report_content != ""
-    )
+    assert isinstance(estimator._report_content, dict)
+    assert estimator._report_content["description"] != ""
     assert estimator._has_report_data() is False
 
     with warnings.catch_warnings(record=True) as warning_list:
@@ -3724,7 +3722,6 @@ def check_masker_generate_report_false(estimator):
     estimator.fit(input_img)
 
     assert estimator._has_report_data() is False
-    assert estimator._reporting() == [None]
     with pytest.warns(
         UserWarning,
         match=("No visual outputs created."),

@@ -59,6 +59,7 @@ def test_errors_raised_in_check_parameters_fit(method, test_image):
         Parcellations(method=method, verbose=0).fit(test_image)
 
 
+@pytest.mark.slow
 @pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("method", METHODS)
 @pytest.mark.parametrize("n_parcel", [5, 10, 15])
