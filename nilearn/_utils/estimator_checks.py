@@ -587,6 +587,8 @@ def nilearn_check_generator(estimator: BaseEstimator):
             yield (clone(estimator), check_decoder_compatibility_mask_image)
             yield (clone(estimator), check_decoder_with_surface_data)
             yield (clone(estimator), check_decoder_with_arrays)
+            yield (clone(estimator), check_decoder_estimator_args)
+            yield (clone(estimator), check_decoder_verbose)
             if is_regressor(estimator):
                 yield (
                     clone(estimator),
@@ -1203,6 +1205,10 @@ def check_img_estimator_fit_idempotent(estimator_orig):
 
     estimator = clone(estimator_orig)
 
+    if isinstance(estimator, FREMClassifier):
+        # relaxes convergence criterion
+        estimator.estimator_args = {"tol": 1e-3}
+
     # Fit for the first time
     set_random_state(estimator)
     estimator = fit_estimator(estimator)
@@ -1229,15 +1235,6 @@ def check_img_estimator_fit_idempotent(estimator_orig):
             else:
                 tol = 2 * np.finfo(np.float64).eps
 
-            if (
-                isinstance(estimator, FREMClassifier)
-                and method == "decision_function"
-            ):
-                # TODO
-                # Fails for FREMClassifier
-                # mostly on Mac and sometimes linux
-                continue
-
             # TODO
             # some estimator can return some pretty different results
             # investigate why
@@ -1245,8 +1242,6 @@ def check_img_estimator_fit_idempotent(estimator_orig):
                 tol = 1e-5
             elif isinstance(estimator, SearchLight):
                 tol = 1e-4
-            elif isinstance(estimator, FREMClassifier):
-                tol = 0.1
 
             assert_allclose_dense_sparse(
                 result[method],
@@ -1931,6 +1926,41 @@ def check_decoder_with_arrays(estimator_orig):
             result_2 = getattr(estimator, method)(X_as_array)
 
         assert_array_equal(result_1, result_2)
+
+
+@ignore_warnings
+def check_decoder_estimator_args(estimator_orig):
+    """Check extra_parameters can be passed to the sklearn estimator."""
+    if isinstance(estimator_orig, BaseSpaceNet):
+        # BaseSpaceNet do not have an embedded sklearn estimator
+        # to pass things to.
+        return
+    estimator = clone(estimator_orig)
+    assert hasattr(estimator, "estimator_args")
+    estimator.estimator_args = {"max_iter": 5000}
+    estimator = fit_estimator(estimator)
+
+    if isinstance(estimator_orig, SearchLight):
+        # SearchLight does not keep track of its embedded masker
+        # TODO: something to fix?
+        return
+    assert estimator.estimator_.max_iter == 5000
+
+
+@ignore_warnings
+def check_decoder_verbose(estimator_orig):
+    """Smoke test verbose parameter.
+
+    verbose = 1: only messages from the estimator
+    verbose > 1: also messages from embedded
+                  nilearn masker / sklearn estimator
+
+    TODO: apply to GLM
+    """
+    for verbose in [0, 1, 2]:
+        estimator = clone(estimator_orig)
+        estimator.verbose = verbose
+        estimator = fit_estimator(estimator)
 
 
 # ------------------ MASKER CHECKS ------------------
