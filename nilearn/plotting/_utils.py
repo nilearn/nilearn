@@ -158,7 +158,7 @@ def get_cbar_ticks(
         ]
 
     # we do this here to include the case where threshold is None
-    if vmin < 0 and vmax > 0:
+    if vmin < 0 < vmax:
         ticks = np.append(ticks, 0)
 
     ticks = np.sort(np.unique(ticks))
@@ -231,10 +231,16 @@ def get_colorbar_and_data_ranges(
             vmin = -vmax
         elif vmax is None:
             vmax = -vmin
-        elif not np.isclose(vmin, -vmax):
-            raise ValueError(
-                "vmin must be equal to -vmax unless symmetric_cbar is False."
+        elif vmin != -vmax:
+            warn(
+                f"Specified {vmin=} and {vmax=} values do not create a "
+                "symmetric colorbar. The values will be modified to be "
+                "symmetric.",
+                stacklevel=find_stack_level(),
             )
+            vmax = max(abs(vmin), abs(vmax))
+            vmin = -vmax
+
         cbar_vmin = vmin
         cbar_vmax = vmax
     # set colorbar limits

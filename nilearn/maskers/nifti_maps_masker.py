@@ -226,6 +226,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "description": (
                 "This report shows the spatial maps provided to the mask."
             ),
+            "summary": {},
             "warning_message": None,
         }
 
@@ -300,7 +301,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return super().generate_report(title)
 
-    def _get_displays(self):
+    def _reporting(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -355,7 +356,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             warnings.warn(msg, stacklevel=find_stack_level())
             self._report_content["warning_message"] = msg
 
-        if self._reporting_data["dim"] == 5:
+        elif self._reporting_data["dim"] == 5:
             msg = (
                 "A list of 4D subject images were provided to fit. "
                 "Only first subject is shown in the report."
@@ -370,7 +371,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        list of :class:`~matplotlib.figure.Figure`
+        list of :class:`~nilearn.plotting.displays.OrthoSlicer`
         """
         from nilearn.plotting import (
             cm,
@@ -378,7 +379,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             plot_img,
             plot_stat_map,
         )
-        from nilearn.reporting.html_report import embed_img
 
         maps_image = self._reporting_data["maps_image"]
 
@@ -390,8 +390,10 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         if img is None:
             for component in maps_to_be_displayed:
-                display = plot_stat_map(index_img(maps_image, component))
-                embedded_images.append(embed_img(display))
+                display = plot_stat_map(
+                    index_img(maps_image, component), cmap=cm.black_blue
+                )
+                embedded_images.append(display)
                 display.close()
 
         else:
@@ -407,10 +409,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     cmap=self.cmap,
                 )
                 display.add_overlay(
-                    index_img(maps_image, component),
-                    cmap=cm.black_blue,
+                    index_img(maps_image, component), cmap=cm.black_blue
                 )
-                embedded_images.append(embed_img(display))
+                embedded_images.append(display)
                 display.close()
 
         return embedded_images
@@ -530,6 +531,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 # Just check that the mask is valid
                 load_mask_img(self.mask_img_)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._reporting_data = {
                 "maps_image": self.maps_img_,

@@ -128,7 +128,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             "n_vertices": {},
             # unused but required in HTML template
             "number_of_regions": None,
-            "summary": None,
+            "summary": {},
             "warning_message": None,
             "n_elements": 0,
             "coverage": 0,
@@ -244,6 +244,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             start = stop
         self.n_elements_ = int(stop)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._report_content["n_elements"] = self.n_elements_
             for part in self.mask_img_.data.parts:
@@ -374,7 +375,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
-    def _get_displays(self):
+    def _reporting(self):
         """Load displays needed for report.
 
         Returns
@@ -383,17 +384,12 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             A list of all displays figures encoded as bytes to be rendered.
             Or a list with a single None element.
         """
-        # avoid circular import
-        import matplotlib.pyplot as plt
-
         from nilearn.reporting.utils import figure_to_png_base64
 
         fig = self._create_figure_for_report()
 
         if not fig:
             return [None]
-
-        plt.close()
 
         init_display = figure_to_png_base64(fig)
 
@@ -404,8 +400,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         Returns
         -------
-        None, :class:`~matplotlib.figure.Figure` or\
-              :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
+        None, :class:`~matplotlib.figure.Figure`
             Returns ``None`` in case the masker was not fitted.
         """
         if not self._reporting_data["images"] and not getattr(

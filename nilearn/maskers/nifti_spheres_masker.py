@@ -357,6 +357,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "This report shows the regions defined "
                 "by the spheres of the masker."
             ),
+            "summary": {},
             "warning_message": None,
         }
 
@@ -423,7 +424,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return super().generate_report(title)
 
-    def _get_displays(self):
+    def _reporting(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -521,10 +522,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        list of :class:`~matplotlib.figure.Figure`
+        list of :class:`~nilearn.plotting.displays.OrthoSlicer`
         """
         from nilearn.plotting import plot_img, plot_markers
-        from nilearn.reporting.html_report import embed_img
 
         seeds = self._reporting_data["seeds"]
         radius = 1.0 if self.radius is None else self.radius
@@ -532,7 +532,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         display = plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
         )
-        embedded_images = [embed_img(display)]
+        embedded_images = [display]
         display.close()
 
         img = self._reporting_data["img"]
@@ -547,7 +547,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     marker_color="g",
                     marker_size=20 * radius,
                 )
-                embedded_images.append(embed_img(display))
+                embedded_images.append(display)
                 display.close()
 
         assert len(embedded_images) == len(
@@ -621,6 +621,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
             self.seeds_.append(seed)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._reporting_data = {
                 "seeds": self.seeds_,
