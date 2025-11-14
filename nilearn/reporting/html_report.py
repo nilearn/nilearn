@@ -137,23 +137,28 @@ def generate_report(estimator) -> HTMLReport:
 
     data["has_plotting_engine"] = is_matplotlib_installed()
     if not is_matplotlib_installed():
-        estimator._report_content["warning_messages"].append(
-            MISSING_ENGINE_MSG
-        )
+        data["warning_messages"].append(MISSING_ENGINE_MSG)
 
     if estimator.reports is False:
-        estimator._report_content["warning_messages"].append(
+        data["warning_messages"].append(
             "\nReport generation not enabled!\nNo visual outputs created."
         )
 
     if not estimator.__sklearn_is_fitted__():
-        estimator._report_content["warning_messages"].append(UNFITTED_MSG)
+        data["warning_messages"].append(UNFITTED_MSG)
 
-    if estimator._report_content["warning_messages"]:
-        estimator._report_content["warning_messages"] = sorted(
-            set(estimator._report_content["warning_messages"])
+    if estimator.__sklearn_is_fitted__() and not data.get(
+        "reports_at_fit_time", False
+    ):
+        data["warning_messages"].append(
+            "\nReport generation was disabled when fit was run. "
+            "No reporting data is available.\n"
+            "Make sure to set estimator.reports=True before fit."
         )
-        for msg in estimator._report_content["warning_messages"]:
+
+    if data["warning_messages"]:
+        data["warning_messages"] = sorted(set(data["warning_messages"]))
+        for msg in data["warning_messages"]:
             warnings.warn(
                 msg,
                 stacklevel=find_stack_level(),
@@ -288,16 +293,6 @@ def assemble_report(body: str, title: str) -> HTMLReport:
     )
 
 
-  if estimator.__sklearn_is_fitted__() and not data.get(
-      "reports_at_fit_time", False
-  ):
-      warning_messages.append(
-          "\nReport generation was disabled when fit was run. "
-          "No reporting data is available.\n"
-          "Make sure to set estimator.reports=True before fit."
-      )
-  
-  
 def embed_img(display):
     """Embed an image or just return its instance if already embedded.
 
