@@ -110,11 +110,14 @@ def plot_img_comparison(
         isinstance(x, NiimgLike) for x in src_imgs
     ):
         image_type = "volume"
+        ref_imgs = [check_niimg_3d(x) for x in ref_imgs]
+        src_imgs = [check_niimg_3d(x) for x in src_imgs]
 
     elif all(isinstance(x, SurfaceImage) for x in ref_imgs) and all(
         isinstance(x, SurfaceImage) for x in src_imgs
     ):
         image_type = "surface"
+
     else:
         types_ref_imgs = {type(x) for x in ref_imgs}
         types_src_imgs = {type(x) for x in src_imgs}
