@@ -434,7 +434,6 @@ class _ReportingMixin:
     def _reporting(self):
         raise NotImplementedError()
 
-    @abc.abstractmethod
-    def _create_figure_for_report(self):
-        """Generate figure for report."""
-        raise NotImplementedError()
+    def _create_overlay_for_report(self):
+        """Generate overlay to include in the report."""
+        return None

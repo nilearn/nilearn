@@ -419,7 +419,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return generate_report(self)
 
-    def _reporting(self):
+    def _reporting(self) -> list:
         """Load displays needed for report.
 
         Returns
@@ -431,19 +431,19 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
         if not self._has_report_data():
-            return [None]
+            return [None, None]
 
         return self._create_figure_for_report()
 
-    def _create_figure_for_report(self):
+    def _create_figure_for_report(self) -> list:
         """Generate figure to include in the report.
 
         Returns
         -------
-        List of :class:`~nilearn.plotting.displays.OrthoSlicer`
+        list of :class:`~matplotlib.figure.Figure` or None
         """
         if not is_matplotlib_installed():
-            return [None]
+            return [None, None]
 
         import matplotlib.pyplot as plt
 
@@ -454,17 +454,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         if img is None:  # images were not provided to fit
             img = mask
-
-        resampled_img = None
-        resampled_mask = None
-        if "transform" in self._reporting_data:
-            # if resampling was performed
-            self._report_content["description"] += self._overlay_text
-
-            # create display of resampled NiftiImage and mask
-            resampled_img, resampled_mask = self._reporting_data["transform"]
-            if resampled_img is None:  # images were not provided to fit
-                resampled_img = resampled_mask
 
         # create display of retained input mask, image
         # for visual comparison
@@ -483,8 +472,33 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 linewidths=2.5,
             )
 
+        return [init_display]
+
+    def _create_overlay_for_report(self):
+        if not is_matplotlib_installed():
+            return None
+
+        import matplotlib.pyplot as plt
+
+        from nilearn.plotting import plot_img
+
+        resampled_img = None
+        resampled_mask = None
+
+        # if resampling was performed
+        if "transform" in self._reporting_data:
+            self._report_content["description"] += (
+                "\n To see the input Nifti image before resampling, "
+                "hover over the displayed image."
+            )
+
+            # create display of resampled NiftiImage and mask
+            resampled_img, resampled_mask = self._reporting_data["transform"]
+            if resampled_img is None:  # images were not provided to fit
+                resampled_img = resampled_mask
+
         if resampled_img is None:
-            return [init_display]
+            return None
 
         final_display = plot_img(
             resampled_img,
@@ -498,8 +512,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             colors="g",
             linewidths=2.5,
         )
-
-        return [init_display, final_display]
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "mask_img_")
@@ -519,11 +531,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         del y
         check_params(self.__dict__)
-
-        self._overlay_text = (
-            "\n To see the input Nifti image before resampling, "
-            "hover over the displayed image."
-        )
 
         # Reset warning message
         # in case where the masker was previously fitted

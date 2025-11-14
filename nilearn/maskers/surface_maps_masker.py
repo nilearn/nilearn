@@ -502,7 +502,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return super().generate_report(title)
 
-    def _reporting(self):
+    def _reporting(self) -> list:
         """Load displays needed for report.
 
         Returns
@@ -528,7 +528,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         for roi in self._report_content["displayed_maps"]:
             roi = index_img(maps_image, roi)
-            fig = self._create_figure_for_report(roi=roi, bg_img=img)
+            fig = self._create_figure_for_report(roi=roi, bg_img=img)[0]
             if self._report_content["engine"] == "plotly":
                 embeded_images.append(fig)
             elif self._report_content["engine"] == "matplotlib":
@@ -536,11 +536,15 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return embeded_images
 
-    def _create_figure_for_report(self, roi, bg_img):
+    def _create_figure_for_report(self, roi, bg_img) -> list:
         """Create a figure of maps image, one region at a time.
 
         If transform() was applied to an image, this image is used as
         background on which the maps are plotted.
+
+        Returns
+        -------
+        list of :class:`~matplotlib.figure.Figure` or None
         """
         threshold = 1e-6
 
@@ -566,4 +570,4 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 img=roi, bg_map=bg_img, threshold=threshold
             )
 
-        return fig
+        return [fig]

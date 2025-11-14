@@ -162,28 +162,6 @@ def assemble_report(body: str, title: str) -> HTMLReport:
     )
 
 
-def _define_overlay(estimator):
-    """Determine whether an overlay was provided and \
-    update the report text as appropriate.
-    """
-    from nilearn.maskers import NiftiSpheresMasker
-
-    displays = estimator._reporting()
-
-    if len(displays) == 1:  # set overlay to None
-        return None, displays[0]
-
-    elif isinstance(estimator, NiftiSpheresMasker):
-        if all(x is None for x in displays):
-            displays = None
-        return None, displays
-
-    elif len(displays) == 2:
-        return displays[0], displays[1]
-
-    return None, displays
-
-
 def generate_report(estimator) -> HTMLReport:
     """Generate a report for Nilearn objects.
 
@@ -267,7 +245,10 @@ def _create_report(
     if template_name is None:
         template_name = "body_masker.jinja"
 
-    overlay, image = _define_overlay(estimator)
+    overlay = estimator._create_overlay_for_report()
+    overlay = embed_img(overlay)
+
+    image = estimator._reporting()
     embeded_images = (
         [embed_img(i) for i in image]
         if isinstance(image, list)
@@ -328,7 +309,7 @@ def _create_report(
 
     body = body_tpl.render(
         content=embeded_images,
-        overlay=embed_img(overlay),
+        overlay=overlay,
         docstring=docstring,
         parameters=parameters,
         figure=(

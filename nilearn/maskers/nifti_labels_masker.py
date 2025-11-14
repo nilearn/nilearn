@@ -2,6 +2,7 @@
 
 import warnings
 from copy import deepcopy
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -353,14 +354,12 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return generate_report(self)
 
-    def _reporting(self):
-        """Return a list of all displays to be rendered.
+    def _reporting(self) -> list:
+        """Return a figure to be rendered.
 
         Returns
         -------
-        displays : list
-            A list of all displays to be rendered.
-
+        :class:`~matplotlib.figure.Figure` or None
         """
         if not self._has_report_data():
             return [None]
@@ -385,7 +384,10 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         voxel_volume = np.abs(np.linalg.det(labels_image_affine[:3, :3]))
 
-        new_columns = {"size (in mm^3)": [], "relative size (in %)": []}
+        new_columns: dict[str, Any] = {
+            "size (in mm^3)": [],
+            "relative size (in %)": [],
+        }
         for label in table["label value"].to_list():
             size = len(labels_image_data[labels_image_data == label])
             new_columns["size (in mm^3)"].append(round(size * voxel_volume))
@@ -412,12 +414,12 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return self._create_figure_for_report(labels_image)
 
-    def _create_figure_for_report(self, labels_image):
+    def _create_figure_for_report(self, labels_image) -> list:
         """Generate figure to include in the report.
 
         Returns
         -------
-        list of :class:`~matplotlib.figure.Figure`
+        list of :class:`~matplotlib.figure.Figure` or None
         """
         if not is_matplotlib_installed():
             return [None]

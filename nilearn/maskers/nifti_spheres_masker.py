@@ -5,7 +5,7 @@ Mask nifti images by spherical volumes for seed-region analyses
 
 import contextlib
 import warnings
-from typing import Literal
+from typing import Any, Literal
 
 import numpy as np
 from scipy import sparse
@@ -424,7 +424,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return super().generate_report(title)
 
-    def _reporting(self):
+    def _reporting(self) -> list:
         """Return a list of all displays to be rendered.
 
         Returns
@@ -432,6 +432,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         displays : list
             A list of all displays to be rendered.
         """
+        if not self._has_report_data():
+            return [None]
+
         if self._has_report_data():
             seeds = self._reporting_data["seeds"]
             img = self._reporting_data["images"]
@@ -441,7 +444,10 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             else:
                 positions = [
                     np.round(
-                        coord_transform(*seed, np.linalg.inv(img.affine))
+                        coord_transform(
+                            *seed,
+                            np.linalg.inv(img.affine),  # type: ignore[call-arg]
+                        )
                     ).astype(int)
                     for seed in seeds
                 ]
@@ -455,7 +461,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "size (in voxels)",
                 "relative size (in %)",
             ]
-            regions_summary = {c: [] for c in columns}
+            regions_summary: dict[str, Any] = {c: [] for c in columns}
 
             radius = 1.0 if self.radius is None else self.radius
 
@@ -476,15 +482,15 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return self._create_figure_for_report()
 
-    def _create_figure_for_report(self):
+    def _create_figure_for_report(self) -> list:
         """Generate figure to include in the report.
 
         Returns
         -------
-        list of :class:`~nilearn.plotting.displays.OrthoSlicer`
+        list of :class:`~matplotlib.figure.Figure` or None
         """
-        if not is_matplotlib_installed() or not self._has_report_data():
-            return [None, None]
+        if not is_matplotlib_installed():
+            return [None]
 
         from nilearn.plotting import plot_img, plot_markers
 

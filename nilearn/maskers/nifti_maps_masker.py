@@ -298,7 +298,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return super().generate_report(title)
 
-    def _reporting(self):
+    def _reporting(self) -> list:
         """Return a list of all displays to be rendered.
 
         Returns
@@ -312,12 +312,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return self._create_figure_for_report()
 
-    def _create_figure_for_report(self):
+    def _create_figure_for_report(self) -> list:
         """Generate figure to include in the report.
 
         Returns
         -------
-        list of :class:`~nilearn.plotting.displays.OrthoSlicer`
+        list of :class:`~matplotlib.figure.Figure` or None
         """
         if not is_matplotlib_installed():
             return [None]
@@ -340,7 +340,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if img is None:
             for component in maps_to_be_displayed:
                 display = plot_stat_map(
-                    index_img(maps_image, component), cmap=cm.black_blue
+                    index_img(maps_image, component),
+                    cmap=cm.black_blue,  # type: ignore[attr-defined]
                 )
                 embedded_images.append(display)
                 display.close()
@@ -358,7 +359,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     cmap=self.cmap,
                 )
                 display.add_overlay(
-                    index_img(maps_image, component), cmap=cm.black_blue
+                    index_img(maps_image, component),
+                    cmap=cm.black_blue,  # type: ignore[attr-defined]
                 )
                 embedded_images.append(display)
                 display.close()

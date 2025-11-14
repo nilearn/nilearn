@@ -473,7 +473,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         return imgs
 
-    def _reporting(self):
+    def _reporting(self) -> list:
         """Load displays needed for report.
 
         Returns
@@ -491,19 +491,23 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         fig = self._create_figure_for_report()
 
-        if not fig:
+        if not fig[0]:
             return [None]
 
-        init_display = figure_to_png_base64(fig)
+        init_display = figure_to_png_base64(fig[0])
 
         return [init_display]
 
-    def _create_figure_for_report(self):
+    def _create_figure_for_report(self) -> list:
         """Create a figure of the contours of label image.
 
         If transform() was applied to an image,
         this image is used as background
         on which the contours are drawn.
+
+        Returns
+        -------
+        list of :class:`~matplotlib.figure.Figure` or None
         """
         roi_map = self._reporting_data["labels_image"]
 
@@ -516,4 +520,4 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         fig = self._generate_figure(img, roi_map=roi_map, vmin=vmin, vmax=vmax)
 
-        return fig
+        return [fig]
