@@ -348,7 +348,7 @@ unfixable = []
 max-complexity = 23
 
 [tool.ruff.lint.per-file-ignores]
-"**/{doc}/*" = ["D103"]
+"**/{doc}/*" = ["B018", "D103"]
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]
 "__init__.py" = ["D104", "E402"]
 "nilearn/**/tests/test_*" = ["D100"]

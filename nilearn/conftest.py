@@ -25,9 +25,7 @@ from nilearn.surface import (
     SurfaceImage,
 )
 
-collect_ignore = ["datasets/data/convert_templates.py"]
-collect_ignore_glob = ["reporting/_visual_testing/*"]
-
+collect_ignore = []
 # Plotting tests are skipped if matplotlib is missing.
 # If the version is greater than the minimum one we support
 # We skip the tests where the generated figures are compared to a baseline.
@@ -58,9 +56,6 @@ else:
         [
             "_utils/plotting.py",
             "plotting",
-            "reporting/html_report.py",
-            "reporting/tests/test_html_report.py",
-            "reporting/tests/test_glm_report.py",
             "reporting/tests/test_baseline_comparisons.py",
         ]
     )

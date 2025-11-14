@@ -10,6 +10,7 @@ from nilearn._utils.data_gen import (
     generate_fake_fmri_data_and_design,
     write_fake_bold_img,
 )
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.datasets import load_fsaverage
 from nilearn.glm.first_level import FirstLevelModel
@@ -17,6 +18,7 @@ from nilearn.glm.second_level import SecondLevelModel
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import HTMLReport
+from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 from nilearn.surface import SurfaceImage
 
 
@@ -77,6 +79,15 @@ def check_glm_report(
     # check the navbar is there
     includes.append('<nav class="navbar pure-g fw-bold" id="menu"')
 
+    if is_matplotlib_installed():
+        excludes.extend(
+            [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
+        )
+    else:
+        includes.extend(
+            [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
+        )
+
     # 'Contrasts' and 'Statistical maps' should appear
     # as section and in navbar
     # if report was generated with contrasts.
@@ -102,11 +113,16 @@ def check_glm_report(
     if not model.__sklearn_is_fitted__():
         includes.extend(
             [
-                "The model has not been fit yet.",
-                "No mask was provided.",
+                "This estimator has not been fit yet.",
                 "No statistical map was provided.",
             ]
         )
+        if is_matplotlib_installed():
+            includes.extend(
+                [
+                    "No mask was provided.",
+                ]
+            )
 
         # no design matrix in navbar if model not fitted
         excludes.append('<a id="navbar-matrix-link')
@@ -114,12 +130,17 @@ def check_glm_report(
     else:
         includes.extend(
             [
-                'id="design-matrix-',
-                'id="mask-',
-                'id="statistical-maps-',
                 "The mask includes",  # check that mask coverage is there
             ]
         )
+        if is_matplotlib_installed():
+            includes.extend(
+                [
+                    'id="design-matrix-',
+                    'id="mask-',
+                    'id="statistical-maps-',
+                ]
+            )
 
         if not has_contrasts:
             # the no contrast warning only appears for fitted models
@@ -287,6 +308,7 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
     )
 
 
+@pytest.mark.slow
 def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
     """Test second level reporting when input is a dataframe."""
     file_path = write_fake_bold_img(
@@ -347,7 +369,7 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
 
 
 @pytest.mark.slow
-def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: ARG001
+def test_report_invalid_plot_type(flm, contrasts):
     """Check errors when wrong plot type is requested."""
     with pytest.raises(KeyError, match="junk"):
         flm.generate_report(
@@ -357,16 +379,16 @@ def test_report_invalid_plot_type(matplotlib_pyplot, flm, contrasts):  # noqa: A
             threshold=1e-8,
             height_control=None,
         )
-
-    with pytest.raises(ValueError, match="'plot_type' must be one of"):
-        flm.generate_report(
-            contrasts=contrasts,
-            display_mode="glass",
-            plot_type="junk",
-            # the following are to avoid warnings
-            threshold=1e-8,
-            height_control=None,
-        )
+    if is_matplotlib_installed():
+        with pytest.raises(ValueError, match="'plot_type' must be one of"):
+            flm.generate_report(
+                contrasts=contrasts,
+                display_mode="glass",
+                plot_type="junk",
+                # the following are to avoid warnings
+                threshold=1e-8,
+                height_control=None,
+            )
 
 
 @pytest.mark.slow
