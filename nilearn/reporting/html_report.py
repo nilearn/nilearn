@@ -162,6 +162,26 @@ def assemble_report(body: str, title: str) -> HTMLReport:
     )
 
 
+def _define_overlay(estimator):
+    """Determine whether an overlay was provided and \
+    update the report text as appropriate.
+    """
+    from nilearn.maskers import NiftiSpheresMasker
+
+    displays = estimator._reporting()
+
+    if len(displays) == 1:  # set overlay to None
+        return None, displays[0]
+
+    elif isinstance(estimator, NiftiSpheresMasker):
+        return None, displays
+
+    elif len(displays) == 2:
+        return displays[0], displays[1]
+
+    return None, displays
+
+
 def generate_report(estimator) -> HTMLReport:
     """Generate a report for Nilearn objects.
 
@@ -340,23 +360,3 @@ def is_notebook() -> bool:
         return shell == "ZMQInteractiveShell"
     except NameError:
         return False  # Probably standard Python interpreter
-
-
-def _define_overlay(estimator):
-    """Determine whether an overlay was provided and \
-    update the report text as appropriate.
-    """
-    from nilearn.maskers import NiftiSpheresMasker
-
-    displays = estimator._reporting()
-
-    if len(displays) == 1:  # set overlay to None
-        return None, displays[0]
-
-    elif isinstance(estimator, NiftiSpheresMasker):
-        return None, displays
-
-    elif len(displays) == 2:
-        return displays[0], displays[1]
-
-    return None, displays
