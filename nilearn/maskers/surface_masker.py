@@ -249,6 +249,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             start = stop
         self.n_elements_ = int(stop)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._report_content["n_elements"] = self.n_elements_
             for part in self.mask_img_.data.parts:
@@ -394,17 +395,12 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if not is_matplotlib_installed() or not self._has_report_data():
             return [None]
 
-        # avoid circular import
-        import matplotlib.pyplot as plt
-
         from nilearn.reporting.utils import figure_to_png_base64
 
         fig = self._create_figure_for_report()
 
         if not fig:
             return [None]
-
-        plt.close()
 
         init_display = figure_to_png_base64(fig)
 

@@ -288,6 +288,16 @@ def assemble_report(body: str, title: str) -> HTMLReport:
     )
 
 
+  if estimator.__sklearn_is_fitted__() and not data.get(
+      "reports_at_fit_time", False
+  ):
+      warning_messages.append(
+          "\nReport generation was disabled when fit was run. "
+          "No reporting data is available.\n"
+          "Make sure to set estimator.reports=True before fit."
+      )
+  
+  
 def embed_img(display):
     """Embed an image or just return its instance if already embedded.
 

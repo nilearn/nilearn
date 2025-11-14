@@ -240,27 +240,26 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         # initialize reporting content and data
-        if not self.reports:
-            return self
+        if self.reports:
+            for part in self.maps_img.data.parts:
+                self._report_content["n_vertices"][part] = (
+                    self.maps_img.mesh.parts[part].n_vertices
+                )
 
-        for part in self.maps_img.data.parts:
-            self._report_content["n_vertices"][part] = (
-                self.maps_img.mesh.parts[part].n_vertices
-            )
+            self._report_content["number_of_regions"] = self.n_elements_
 
-        self._report_content["number_of_regions"] = self.n_elements_
+            self._reporting_data = {
+                "maps_image": self.maps_img_,
+                "mask": self.mask_img_,
+                "images": None,  # we will update image in transform
+            }
 
-        self._reporting_data = {
-            "maps_image": self.maps_img_,
-            "mask": self.mask_img_,
-            "images": None,  # we will update image in transform
-        }
-
-        if self.clean_args is None:
-            self.clean_args_ = {}
-        else:
-            self.clean_args_ = self.clean_args
+            if self.clean_args is None:
+                self.clean_args_ = {}
+            else:
+                self.clean_args_ = self.clean_args
 
         mask_logger("fit_done", verbose=self.verbose)
 
@@ -517,8 +516,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if not is_matplotlib_installed() or not self._has_report_data():
             return [None]
 
-        import matplotlib.pyplot as plt
-
         from nilearn.reporting.utils import figure_to_png_base64
 
         img = self._reporting_data["images"]
@@ -536,7 +533,6 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 embeded_images.append(fig)
             elif self._report_content["engine"] == "matplotlib":
                 embeded_images.append(figure_to_png_base64(fig))
-                plt.close()
 
         return embeded_images
 
@@ -546,11 +542,11 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         If transform() was applied to an image, this image is used as
         background on which the maps are plotted.
         """
-        from nilearn.plotting import view_surf
-
         threshold = 1e-6
 
         if self._report_content["engine"] == "plotly":
+            from nilearn.plotting import view_surf
+
             # squeeze the last dimension
             for part in roi.data.parts:
                 roi.data.parts[part] = np.squeeze(

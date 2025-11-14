@@ -886,6 +886,7 @@ class _BaseSurfaceMasker(
                         colors=colors,
                     )
 
+        plt.close()
         return fig
 
     def _set_contour_colors(self, hemi):
