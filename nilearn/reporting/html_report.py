@@ -140,6 +140,45 @@ def embed_img(display):
     return figure_to_svg_base64(display.frame_axes.figure)
 
 
+def assemble_report(body: str, title: str) -> HTMLReport:
+    """Put together head and body of report."""
+    env = return_jinja_env()
+
+    head_tpl = env.get_template("html/head.jinja")
+
+    head_css_file_path = CSS_PATH / "head.css"
+    with head_css_file_path.open(encoding="utf-8") as head_css_file:
+        head_css = head_css_file.read()
+
+    return HTMLReport(
+        body=body,
+        head_tpl=head_tpl,
+        head_values={
+            "head_css": head_css,
+            "version": __version__,
+            "page_title": title,
+            "display_footer": "style='display: none'" if is_notebook() else "",
+        },
+    )
+
+
+def _insert_figure_partial(
+    engine, content, displayed_maps, unique_id: str
+) -> str:
+    env = return_jinja_env()
+
+    tpl = env.get_template("html/maskers/partials/figure.jinja")
+
+    if not isinstance(content, list):
+        content = [content]
+    return tpl.render(
+        engine=engine,
+        content=content,
+        displayed_maps=displayed_maps,
+        unique_id=unique_id,
+    )
+
+
 def generate_report(estimator) -> HTMLReport:
     """Generate a report for Nilearn objects.
 
@@ -289,45 +328,6 @@ def _create_report(
     )
 
     return assemble_report(body, f"{data['title']} report")
-
-
-def assemble_report(body: str, title: str) -> HTMLReport:
-    """Put together head and body of report."""
-    env = return_jinja_env()
-
-    head_tpl = env.get_template("html/head.jinja")
-
-    head_css_file_path = CSS_PATH / "head.css"
-    with head_css_file_path.open(encoding="utf-8") as head_css_file:
-        head_css = head_css_file.read()
-
-    return HTMLReport(
-        body=body,
-        head_tpl=head_tpl,
-        head_values={
-            "head_css": head_css,
-            "version": __version__,
-            "page_title": title,
-            "display_footer": "style='display: none'" if is_notebook() else "",
-        },
-    )
-
-
-def _insert_figure_partial(
-    engine, content, displayed_maps, unique_id: str
-) -> str:
-    env = return_jinja_env()
-
-    tpl = env.get_template("html/maskers/partials/figure.jinja")
-
-    if not isinstance(content, list):
-        content = [content]
-    return tpl.render(
-        engine=engine,
-        content=content,
-        displayed_maps=displayed_maps,
-        unique_id=unique_id,
-    )
 
 
 def is_notebook() -> bool:
