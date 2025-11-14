@@ -29,6 +29,7 @@ dependencies = [
     "pandas>=2.2.0",
     "requests>=2.30.0",
     "scikit-learn>=1.4.0",
+    "jinja2>=3.1.2",
     "scipy>=1.9.0",
     "packaging"
 ]
@@ -44,7 +45,9 @@ requires-python = ">=3.10"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
-dev = ["nilearn[plotting,doc,style,test]"]
+dev = [
+    "nilearn[plotting,doc,style,test]"
+]
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
@@ -69,7 +72,8 @@ min = [
     "pandas==2.2.0",
     "requests==2.30.0",
     "scikit-learn==1.4.0",
-    "scipy==1.9.0"
+    "scipy==1.9.0",
+    "jinja2==3.1.2"
 ]
 min_plotting = [
     "nilearn[min]",
@@ -101,7 +105,8 @@ test = [
     "pytest-reporter-html1>=0.9.2,<0.9.4",
     "pytest-timeout",
     "pytest-xdist[psutil]",
-    "pytest-mpl"
+    "pytest-mpl",
+    "pytest-rerunfailures"
 ]
 
 [project.urls]
@@ -253,12 +258,13 @@ warn_unreachable = true
 
 [[tool.mypy.overrides]]
 ignore_errors = true
-module = ["nilearn.externals.*", "nilearn._version"]
+module = ["nilearn._version"]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
 module = [
     "IPython.*",
+    "jinja2.*",
     "joblib.*",
     "kaleido",
     "matplotlib.*",
@@ -289,7 +295,7 @@ minversion = "6.0"
 xfail_strict = true
 
 [tool.ruff]
-extend-exclude = ["nilearn/externals/*", "doc/auto_examples/*", "nilearn/_version.py"]
+extend-exclude = ["doc/auto_examples/*", "nilearn/_version.py"]
 include = [
     "pyproject.toml",
     "nilearn/**/*.py",

@@ -253,8 +253,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         del y
         check_params(self.__dict__)
 
-        self._init_report_content()
-
         self._overlay_text = (
             "\n To see the input Nifti image before resampling, "
             "hover over the displayed image."
@@ -329,6 +327,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                 stacklevel=find_stack_level(),
             )
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:  # save inputs for reporting
             self._reporting_data = {
                 "mask": self.mask_img_,
