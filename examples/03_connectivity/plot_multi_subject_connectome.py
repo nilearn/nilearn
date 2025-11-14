@@ -97,13 +97,13 @@ for func_filename, confound_filename in zip(
 # -----------------------------------------
 from nilearn.connectome import GroupSparseCovarianceCV
 
-gsc = GroupSparseCovarianceCV(verbose=2)
+gsc = GroupSparseCovarianceCV(verbose=1)
 gsc.fit(subject_time_series)
 
 
 from sklearn.covariance import GraphicalLassoCV
 
-gl = GraphicalLassoCV(verbose=2)
+gl = GraphicalLassoCV(verbose=True)
 gl.fit(np.concatenate(subject_time_series))
 
 

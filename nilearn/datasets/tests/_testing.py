@@ -50,6 +50,27 @@ from nilearn._utils.testing import serialize_niimg
 from nilearn.surface.surface import PolyMesh, SurfaceImage
 
 
+def check_fetcher_verbosity(fn, capsys, **kwargs):
+    """Check verbosity behavior of fetcher.
+
+    - Default verbosity == 1
+    - Verbose 0 is quiet
+    """
+    capsys.readouterr()  # necessary to flush what is already in system output
+
+    fn(**kwargs)
+    captured_default = capsys.readouterr().out
+
+    fn(verbose=1, **kwargs)
+    captured_verbose = capsys.readouterr().out
+
+    assert captured_default == captured_verbose
+
+    fn(verbose=0, **kwargs)
+    captured_verbose_0 = capsys.readouterr().out
+    assert captured_verbose_0 == ""
+
+
 @pytest.fixture(autouse=True)
 def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
     """Monkeypatch user home directory and NILEARN_DATA env variable.

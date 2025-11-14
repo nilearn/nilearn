@@ -80,11 +80,11 @@ n_jobs = 2
 # The radius is the one of the Searchlight sphere that will scan the volume
 from sklearn.model_selection import KFold
 
-import nilearn.decoding
+from nilearn.decoding import SearchLight
 
 cv = KFold(n_splits=4)
 
-searchlight = nilearn.decoding.SearchLight(
+searchlight = SearchLight(
     mask_img,
     process_mask_img=process_mask_img,
     radius=5.6,

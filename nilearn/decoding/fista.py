@@ -73,7 +73,7 @@ def mfista(
     check_lipschitz=False,
     dgap_factor=None,
     callback=None,
-    verbose=2,
+    verbose=0,
 ):
     """Solve FISTA in a generic way.
 
@@ -126,7 +126,7 @@ def mfista(
 
     %(max_iter1000)s
 
-    %(verbose2)s
+    %(verbose0)s
 
     Returns
     -------

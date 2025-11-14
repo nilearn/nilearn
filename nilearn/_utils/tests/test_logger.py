@@ -22,31 +22,31 @@ from nilearn._utils.logger import (
 
 # Helper functions and classes
 def run():
-    log("function run()", stack_level=1)
+    log("function run()", verbose=1, stack_level=1)
 
 
 def other_run():
     # Test too large values for stack_level
     # stack_level should exceed testrunner's stack levels as well
-    log("function other_run()", stack_level=100)
+    log("function other_run()", verbose=1, stack_level=100)
 
 
 class Run3:
     def run3(self):
-        log("method Test3", stack_level=1)
+        log("method Test3", verbose=1, stack_level=1)
         run()
 
 
 class Run2(BaseEstimator):
     def run2(self):
-        log("method Test2", stack_level=1)
+        log("method Test2", verbose=1, stack_level=1)
         t = Run1()
         t.run()
 
 
 class Run1(BaseEstimator):
     def run(self):
-        log("method Test", stack_level=1)
+        log("method Test", verbose=1, stack_level=1)
         run()
 
 
@@ -123,7 +123,7 @@ def capture_output():
 
 # Will be executed by testrunner upon importing
 with capture_output() as out:
-    log("message from no function", stack_level=1)
+    log("message from no function", verbose=1, stack_level=1)
     if _has_rich() is False:
         if isinstance(out[0], StringIO):
             assert out[0].getvalue() == "[<module>] message from no function\n"

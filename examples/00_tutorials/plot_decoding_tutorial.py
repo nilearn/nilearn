@@ -149,6 +149,7 @@ decoder = Decoder(
     mask=mask_filename,
     standardize="zscore_sample",
     screening_percentile=100,
+    verbose=1,
 )
 
 # %%
@@ -196,6 +197,7 @@ decoder = Decoder(
     mask=mask_filename,
     standardize="zscore_sample",
     screening_percentile=100,
+    verbose=1,
 )
 decoder.fit(fmri_niimgs_train, conditions_train)
 
@@ -226,6 +228,7 @@ for fold, (train, test) in enumerate(cv.split(conditions), start=1):
         mask=mask_filename,
         standardize="zscore_sample",
         screening_percentile=100,
+        verbose=1,
     )
     decoder.fit(index_img(fmri_niimgs, train), conditions[train])
     prediction = decoder.predict(index_img(fmri_niimgs, test))
@@ -252,6 +255,7 @@ decoder = Decoder(
     cv=n_folds,
     scoring="accuracy",
     screening_percentile=100,
+    verbose=1,
 )
 decoder.fit(fmri_niimgs, conditions)
 
@@ -293,6 +297,7 @@ decoder = Decoder(
     standardize="zscore_sample",
     cv=cv,
     screening_percentile=100,
+    verbose=1,
 )
 decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
@@ -363,6 +368,7 @@ dummy_decoder = Decoder(
     cv=cv,
     standardize="zscore_sample",
     screening_percentile=100,
+    verbose=1,
 )
 dummy_decoder.fit(fmri_niimgs, conditions, groups=run_label)
 
