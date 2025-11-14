@@ -52,7 +52,7 @@ else:
         check(estimator)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
@@ -66,7 +66,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_multi_nifti_labels_masker(
     affine_eye, n_regions, shape_3d_default, length, img_labels
 ):
@@ -348,7 +348,7 @@ def test_multi_nifti_labels_masker_atlas_data_different_fov(
     assert_array_equal(masker.labels_img_.affine, affine2)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_multi_nifti_labels_masker_resampling_target():
     """Test labels masker with resampling target in 'data', 'labels'.
 

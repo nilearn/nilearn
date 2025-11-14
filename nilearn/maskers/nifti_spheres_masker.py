@@ -352,7 +352,16 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.reports = reports
         self.verbose = verbose
 
-    def generate_report(self, displayed_spheres="all"):
+        self._report_content = {
+            "description": (
+                "This report shows the regions defined "
+                "by the spheres of the masker."
+            ),
+            "summary": {},
+            "warning_message": None,
+        }
+
+    def generate_report(self, title=None, displayed_spheres="all"):
         """Generate an HTML report for current ``NiftiSpheresMasker`` object.
 
         .. note::
@@ -360,6 +369,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Parameters
         ----------
+        title : :obj:`str`, default=None
+            title for the report. If None, title will be the class name.
         displayed_spheres : :obj:`int`, or :obj:`list`,\
                             or :class:`~numpy.ndarray`, or "all", default="all"
             Indicates which spheres will be displayed in the HTML report.
@@ -399,23 +410,19 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        from nilearn.reporting.html_report import generate_report
+        if is_matplotlib_installed():
+            if displayed_spheres != "all" and not isinstance(
+                displayed_spheres, (list, np.ndarray, int)
+            ):
+                raise TypeError(
+                    "Parameter ``displayed_spheres`` of "
+                    "``generate_report()`` should be either 'all' or "
+                    "an int, or a list/array of ints. You provided a "
+                    f"{type(displayed_spheres)}"
+                )
+            self.displayed_spheres = displayed_spheres
 
-        if not is_matplotlib_installed():
-            return generate_report(self)
-
-        if displayed_spheres != "all" and not isinstance(
-            displayed_spheres, (list, np.ndarray, int)
-        ):
-            raise TypeError(
-                "Parameter ``displayed_spheres`` of "
-                "``generate_report()`` should be either 'all' or "
-                "an int, or a list/array of ints. You provided a "
-                f"{type(displayed_spheres)}"
-            )
-        self.displayed_spheres = displayed_spheres
-
-        return generate_report(self)
+        return super().generate_report(title)
 
     def _reporting(self):
         """Return a list of all displays to be rendered.
@@ -425,13 +432,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         displays : list
             A list of all displays to be rendered.
         """
-        if self._reporting_data is not None:
-            seeds = self._reporting_data["seeds"]
-        else:
-            self._report_content["summary"] = None
-
-            return [None]
-
+        seeds = self._reporting_data["seeds"]
         img = self._reporting_data["img"]
         if img is None:
             img = load_mni152_template()
@@ -521,10 +522,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        list of :class:`~matplotlib.figure.Figure`
+        list of :class:`~nilearn.plotting.displays.OrthoSlicer`
         """
         from nilearn.plotting import plot_img, plot_markers
-        from nilearn.reporting.html_report import embed_img
 
         seeds = self._reporting_data["seeds"]
         radius = 1.0 if self.radius is None else self.radius
@@ -532,7 +532,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         display = plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
         )
-        embedded_images = [embed_img(display)]
+        embedded_images = [display]
         display.close()
 
         img = self._reporting_data["img"]
@@ -547,7 +547,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     marker_color="g",
                     marker_size=20 * radius,
                 )
-                embedded_images.append(embed_img(display))
+                embedded_images.append(display)
                 display.close()
 
         assert len(embedded_images) == len(
@@ -567,7 +567,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         """
         del y
-        self._init_report_content()
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
@@ -622,6 +621,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
             self.seeds_.append(seed)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._reporting_data = {
                 "seeds": self.seeds_,
@@ -634,24 +634,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
-
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-        if not hasattr(self, "_report_content"):
-            self._report_content = {
-                "description": (
-                    "This reports shows the regions defined "
-                    "by the spheres of the masker."
-                ),
-                "warning_message": None,
-            }
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = None
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):

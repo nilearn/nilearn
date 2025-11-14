@@ -35,6 +35,7 @@ from nilearn.image import (
     resample_img,
     smooth_img,
 )
+from nilearn.maskers._mixin import _ReportingMixin
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
@@ -215,11 +216,14 @@ def mask_logger(step, img=None, verbose=0):
 
 @fill_doc
 class BaseMasker(
+    _ReportingMixin,
     TransformerMixin,
     CacheMixin,
     BaseEstimator,
 ):
     """Base class for NiftiMaskers."""
+
+    _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
 
     @abc.abstractmethod
     @fill_doc
@@ -272,7 +276,8 @@ class BaseMasker(
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(masker=True)
+        tags.input_tags = InputTags()
+        tags.estimator_type = "masker"
         return tags
 
     @property
@@ -283,18 +288,6 @@ class BaseMasker(
     @abc.abstractmethod
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
-
-    @abc.abstractmethod
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-
-    @abc.abstractmethod
-    def _create_figure_for_report(self):
-        """Generate figure for report."""
 
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
@@ -504,8 +497,12 @@ class BaseMasker(
         return signals
 
 
-class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class _BaseSurfaceMasker(
+    _ReportingMixin, TransformerMixin, CacheMixin, BaseEstimator
+):
     """Class from which all surface maskers should inherit."""
+
+    _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
 
     def _more_tags(self):
         """Return estimator tags.
@@ -524,14 +521,13 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags(surf_img=True, niimg_like=False, masker=True)
+            return tags(surf_img=True, niimg_like=False)
 
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(
-            surf_img=True, niimg_like=False, masker=True
-        )
+        tags.input_tags = InputTags(surf_img=True, niimg_like=False)
+        tags.estimator_type = "masker"
         return tags
 
     @property
@@ -600,18 +596,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     @abc.abstractmethod
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
-
-    @abc.abstractmethod
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-
-    @abc.abstractmethod
-    def _create_figure_for_report(self):
-        """Generate figure for report."""
 
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
@@ -817,6 +801,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                         colors=colors,
                     )
 
+        plt.close()
         return fig
 
     def _set_contour_colors(self, hemi):
