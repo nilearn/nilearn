@@ -51,7 +51,11 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
+from nilearn.decoding._mixin import (
+    _ClassifierMixin,
+    _RegressorMixin,
+    _ReportMixin,
+)
 from nilearn.decoding._utils import check_feature_screening
 from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
@@ -446,7 +450,7 @@ def _parallel_fit(
 
 
 @fill_doc
-class _BaseDecoder(CacheMixin, BaseEstimator):
+class _BaseDecoder(_ReportMixin, CacheMixin, BaseEstimator):
     """A wrapper for popular classification/regression strategies in \
     neuroimaging.
 
@@ -695,13 +699,13 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         else:
             self.screening_percentile_ = self.screening_percentile
 
-        n_final_features = int(
+        self._n_final_features_ = int(
             X.shape[1]
             * self.screening_percentile_
             * self._clustering_percentile
             / 10000
         )
-        if n_final_features < 50:
+        if self._n_final_features_ < 50:
             extra_msg = ""
             screening_percentile_lt_100 = self.screening_percentile_ < 100
             clustering_percentile_lt_100 = (
@@ -718,7 +722,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
                 extra_msg += "'clustering_percentile'"
             warning_msg = (
                 "The decoding model will be trained only "
-                f"on {n_final_features} features. "
+                f"on {self._n_final_features_} features. "
                 f"{extra_msg}."
             )
             warnings.warn(
