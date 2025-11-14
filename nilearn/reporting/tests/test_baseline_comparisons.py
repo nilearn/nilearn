@@ -239,7 +239,7 @@ def test_nifti_spheres_masker_create_figure_for_report(mask_img, img):
     masker = NiftiSpheresMasker(seeds=[(0, 0, 0)], mask_img=mask_img)
     masker.fit(img)
     masker._report_content["displayed_maps"] = [0, 1]
-    return masker._create_figure_for_report()[0]
+    return masker._create_figure_for_report()[1]
 
 
 @pytest.mark.mpl_image_compare
