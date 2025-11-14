@@ -248,12 +248,14 @@ def _create_report(
     overlay = estimator._create_overlay_for_report()
     overlay = embed_img(overlay)
 
+    embeded_images = None
     image = estimator._reporting()
-    embeded_images = (
-        [embed_img(i) for i in image]
-        if isinstance(image, list)
-        else embed_img(image)
-    )
+    if any(x is not None for x in image):
+        embeded_images = (
+            [embed_img(i) for i in image]
+            if isinstance(image, list)
+            else embed_img(image)
+        )
 
     summary_html: None | dict | str = None
     # only convert summary to html table if summary exists

@@ -486,7 +486,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         resampled_mask = None
 
         # if resampling was performed
-        if "transform" in self._reporting_data:
+        if self._has_report_data() and "transform" in self._reporting_data:
             self._report_content["description"] += (
                 "\n To see the input Nifti image before resampling, "
                 "hover over the displayed image."
@@ -512,6 +512,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             colors="g",
             linewidths=2.5,
         )
+        return final_display
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "mask_img_")
