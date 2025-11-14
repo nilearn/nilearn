@@ -23,8 +23,6 @@ from nilearn.maskers import (
 from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 from nilearn.surface import SurfaceImage
 
-# ruff: noqa: ARG001
-
 # Note: html output by nilearn view_* functions
 # should validate as html5 using https://validator.w3.org/nu/ with no
 # warnings
@@ -211,7 +209,9 @@ def test_displayed_maps_warning_int_too_large(masker_class, input_parameters):
         masker.generate_report(7)
 
 
-def test_nifti_spheres_masker_report_1_sphere(matplotlib_pyplot):
+def test_nifti_spheres_masker_report_1_sphere(
+    matplotlib_pyplot,  # noqa: ARG001
+):
     """Check the report for sphere actually works for one sphere.
 
     See https://github.com/nilearn/nilearn/issues/4268
@@ -326,7 +326,10 @@ def test_nifti_labels_masker_report(
 @pytest.mark.slow
 @pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
 def test_nifti_labels_masker_report_cut_coords(
-    matplotlib_pyplot, masker_class, input_parameters, img_3d_rand_eye
+    matplotlib_pyplot,  # noqa: ARG001
+    masker_class,
+    input_parameters,
+    img_3d_rand_eye,
 ):
     """Test cut coordinate are equal with and without passing data to fit."""
     masker = masker_class(**input_parameters, reports=True)
@@ -365,7 +368,10 @@ def test_4d_reports(img_mask_eye, affine_eye):
     _check_html(html)
 
 
-def test_overlaid_report(matplotlib_pyplot, img_fmri):
+def test_overlaid_report(
+    matplotlib_pyplot,  # noqa: ARG001
+    img_fmri,
+):
     """Check empty report generated before fit and with image after."""
     masker = NiftiMasker(
         mask_strategy="whole-brain-template",
@@ -451,7 +457,9 @@ def test_surface_masker_minimal_report_fit(
 
 
 def test_generate_report_engine_error(
-    matplotlib_pyplot, surf_maps_img, surf_img_2d
+    matplotlib_pyplot,  # noqa: ARG001
+    surf_maps_img,
+    surf_img_2d,
 ):
     """Test error is raised when engine is not 'plotly' or 'matplotlib'."""
     masker = SurfaceMapsMasker(surf_maps_img)
@@ -480,7 +488,8 @@ def test_generate_report_engine_no_plotly_warning(surf_maps_img, surf_img_2d):
 
 
 def test_generate_report_before_transform_warn(
-    matplotlib_pyplot, surf_maps_img
+    matplotlib_pyplot,  # noqa: ARG001
+    surf_maps_img,
 ):
     """Test warning is raised when generate_report is called before
     transform.
@@ -493,7 +502,10 @@ def test_generate_report_before_transform_warn(
 
 
 def test_generate_report_plotly_out_figure_type(
-    plotly, matplotlib_pyplot, surf_maps_img, surf_img_2d
+    plotly,  # noqa: ARG001
+    matplotlib_pyplot,  # noqa: ARG001
+    surf_maps_img,
+    surf_img_2d,
 ):
     """Test that the report has a iframe tag when engine is plotly
     (default).
@@ -511,7 +523,9 @@ def test_generate_report_plotly_out_figure_type(
 
 
 def test_generate_report_matplotlib_out_figure_type(
-    matplotlib_pyplot, surf_maps_img, surf_img_2d
+    matplotlib_pyplot,  # noqa: ARG001
+    surf_maps_img,
+    surf_img_2d,
 ):
     """Test that the report has a img tag when engine is matplotlib."""
     masker = SurfaceMapsMasker(surf_maps_img)

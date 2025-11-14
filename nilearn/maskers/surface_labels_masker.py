@@ -486,7 +486,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         # with a masker having report capabilities disabled
         if not is_matplotlib_installed() or not self._has_report_data():
             return [None]
-          
+
         from nilearn.reporting.utils import figure_to_png_base64
 
         fig = self._create_figure_for_report()
