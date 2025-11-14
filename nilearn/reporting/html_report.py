@@ -174,6 +174,8 @@ def _define_overlay(estimator):
         return None, displays[0]
 
     elif isinstance(estimator, NiftiSpheresMasker):
+        if all(x is None for x in displays):
+            displays = None
         return None, displays
 
     elif len(displays) == 2:
@@ -308,14 +310,6 @@ def _create_report(
             sparsify=False,
         )
 
-    content = embeded_images
-    overlay = embed_img(overlay)
-
-    env = return_jinja_env()
-
-    body_tpl_path = f"html/maskers/{template_name}"
-    body_tpl = env.get_template(body_tpl_path)
-
     if "n_elements" not in data:
         data["n_elements"] = 0
 
@@ -327,15 +321,20 @@ def _create_report(
     # TODO clean up docstring from RST formatting
     docstring = estimator.__doc__.split("Parameters\n")[0]
 
+    env = return_jinja_env()
+
+    body_tpl_path = f"html/maskers/{template_name}"
+    body_tpl = env.get_template(body_tpl_path)
+
     body = body_tpl.render(
-        content=content,
-        overlay=overlay,
+        content=embeded_images,
+        overlay=embed_img(overlay),
         docstring=docstring,
         parameters=parameters,
         figure=(
             _insert_figure_partial(
                 data["engine"],
-                content,
+                embeded_images,
                 data["displayed_maps"],
                 data["unique_id"],
             )

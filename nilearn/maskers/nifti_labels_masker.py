@@ -432,7 +432,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             labels_image, activation_threshold=0.5
         )
 
-        img = self._reporting_data["img"]
+        img = self._reporting_data["images"]
 
         # If we have a func image to show in the report, use it
         if img is not None:
@@ -570,11 +570,11 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 "labels_image": self.labels_img_,
                 "mask": self.mask_img_,
                 "dim": None,
-                "img": imgs,
+                "images": imgs,
             }
             if imgs is not None:
                 imgs, dims = compute_middle_image(imgs)
-                self._reporting_data["img"] = imgs
+                self._reporting_data["images"] = imgs
                 self._reporting_data["dim"] = dims
 
         mask_logger("fit_done", verbose=self.verbose)

@@ -414,7 +414,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             tmp.extend((np.asarray(spheres_to_be_displayed) + 1).tolist())
             self._report_content["displayed_maps"] = tmp
 
-            img = self._reporting_data["img"]
+            img = self._reporting_data["images"]
             if img is None:
                 msg = (
                     "No image provided to fit in NiftiSpheresMasker. "
@@ -434,7 +434,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         if self._has_report_data():
             seeds = self._reporting_data["seeds"]
-            img = self._reporting_data["img"]
+            img = self._reporting_data["images"]
             if img is None:
                 img = load_mni152_template()
                 positions = seeds
@@ -497,7 +497,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         embedded_images = [display]
         display.close()
 
-        img = self._reporting_data["img"]
+        img = self._reporting_data["images"]
         if img is None:
             img = load_mni152_template()
 
@@ -592,7 +592,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             self._reporting_data = {
                 "seeds": self.seeds_,
                 "mask": self.mask_img_,
-                "img": resampl_imgs,
+                "images": resampl_imgs,
             }
 
         self.n_elements_ = len(self.seeds_)

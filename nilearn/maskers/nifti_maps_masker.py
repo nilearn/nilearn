@@ -280,7 +280,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
             self._report_content["displayed_maps"] = maps_to_be_displayed
 
-            img = self._reporting_data["img"]
+            img = self._reporting_data["images"]
 
             if img is None:
                 msg = (
@@ -333,7 +333,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         maps_to_be_displayed = self._report_content["displayed_maps"]
 
-        img = self._reporting_data["img"]
+        img = self._reporting_data["images"]
 
         embedded_images = []
 
@@ -490,11 +490,11 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "maps_image": self.maps_img_,
                 "mask": self.mask_img_,
                 "dim": None,
-                "img": imgs,
+                "images": imgs,
             }
             if imgs is not None:
                 imgs, dims = compute_middle_image(imgs)
-                self._reporting_data["img"] = imgs
+                self._reporting_data["images"] = imgs
                 self._reporting_data["dim"] = dims
 
         # The number of elements is equal to the number of volumes
