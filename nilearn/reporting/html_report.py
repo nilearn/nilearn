@@ -132,7 +132,7 @@ def generate_report(estimator) -> HTMLReport:
     # Generate a unique ID for this report
     data["unique_id"] = str(uuid.uuid4()).replace("-", "")
 
-    if data.get("title") is None:
+    if data["title"] is None:
         data["title"] = estimator.__class__.__name__
 
     data["has_plotting_engine"] = is_matplotlib_installed()
@@ -147,9 +147,7 @@ def generate_report(estimator) -> HTMLReport:
     if not estimator.__sklearn_is_fitted__():
         data["warning_messages"].append(UNFITTED_MSG)
 
-    if estimator.__sklearn_is_fitted__() and not data.get(
-        "reports_at_fit_time", False
-    ):
+    if estimator.__sklearn_is_fitted__() and not data["reports_at_fit_time"]:
         data["warning_messages"].append(
             "\nReport generation was disabled when fit was run. "
             "No reporting data is available.\n"
