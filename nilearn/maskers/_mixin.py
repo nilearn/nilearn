@@ -433,7 +433,3 @@ class _ReportingMixin:
     @abc.abstractmethod
     def _reporting(self):
         raise NotImplementedError()
-
-    def _create_overlay_for_report(self):
-        """Generate overlay to include in the report."""
-        return None

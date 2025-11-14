@@ -245,9 +245,6 @@ def _create_report(
     if template_name is None:
         template_name = "body_masker.jinja"
 
-    overlay = estimator._create_overlay_for_report()
-    overlay = embed_img(overlay)
-
     embeded_images = None
     image = estimator._reporting()
     if any(x is not None for x in image):
@@ -301,6 +298,9 @@ def _create_report(
     if not isinstance(data["coverage"], str):
         data["coverage"] = f"{data['coverage']:0.1f}"
 
+    if "overlay" in data:
+        data["overlay"] = embed_img(data["overlay"])
+
     # TODO clean up docstring from RST formatting
     docstring = estimator.__doc__.split("Parameters\n")[0]
 
@@ -311,7 +311,6 @@ def _create_report(
 
     body = body_tpl.render(
         content=embeded_images,
-        overlay=overlay,
         docstring=docstring,
         parameters=parameters,
         figure=(
@@ -324,9 +323,8 @@ def _create_report(
             if "engine" in data
             else None
         ),
-        **data,
-        carousel=False,
         summary_html=summary_html,
+        **data,
     )
 
     return assemble_report(body, f"{data['title']} report")

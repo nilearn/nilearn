@@ -474,9 +474,11 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return [init_display]
 
-    def _create_overlay_for_report(self):
+    def _create_overlay_for_report(self) -> None:
+        self._report_content["overlay"] = None
+
         if not is_matplotlib_installed():
-            return None
+            return
 
         import matplotlib.pyplot as plt
 
@@ -498,7 +500,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 resampled_img = resampled_mask
 
         if resampled_img is None:
-            return None
+            return
 
         final_display = plot_img(
             resampled_img,
@@ -512,7 +514,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             colors="g",
             linewidths=2.5,
         )
-        return final_display
+        self._report_content["overlay"] = final_display
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "mask_img_")
