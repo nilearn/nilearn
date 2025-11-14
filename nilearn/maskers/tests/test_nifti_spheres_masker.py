@@ -1,7 +1,5 @@
 """Test nilearn.maskers.nifti_spheres_masker."""
 
-import sys
-
 import numpy as np
 import pytest
 from nibabel import Nifti1Image
@@ -13,6 +11,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
+from nilearn._utils.helpers import is_windows_platform
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
@@ -192,9 +191,7 @@ def test_nifti_spheres_masker_overlap(rng, affine_eye):
         noverlapping_masker.fit_transform(fmri_img)
 
 
-@pytest.mark.flaky(
-    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
-)
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_small_radius(rng):
     """Check behavior when radius smaller than voxel size."""
     shape = (3, 3, 3)

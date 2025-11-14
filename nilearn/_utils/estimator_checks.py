@@ -5,7 +5,6 @@ and importing them will fail if pytest is not installed.
 """
 
 import inspect
-import os
 import pickle
 import sys
 import warnings
@@ -48,7 +47,7 @@ from sklearn.utils.estimator_checks import (
 )
 
 from nilearn._utils.cache_mixin import CacheMixin
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import is_matplotlib_installed, is_windows_platform
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_imgs_equal
 from nilearn._utils.param_validation import check_is_of_allowed_type
@@ -2845,7 +2844,7 @@ def check_masker_transform_resampling(estimator) -> None:
 @ignore_warnings()
 def check_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if os.name == "nt" and (
+    if is_windows_platform() and (
         sys.version_info[1] < 13 or sys.version_info[1] == 14
     ):
         # TODO (python >= 3.11)
@@ -3328,7 +3327,7 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
 @ignore_warnings()
 def check_multi_nifti_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if os.name == "nt" and (
+    if is_windows_platform() and (
         sys.version_info[1] < 13 or sys.version_info[1] == 14
     ):
         # TODO (python >= 3.11)
