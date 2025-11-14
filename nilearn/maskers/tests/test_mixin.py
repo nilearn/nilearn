@@ -72,7 +72,10 @@ def test_masker_reporting_true(masker, img_func):
     assert masker._report_content["warning_message"] is None
 
     # check masker report before fit
-    masker.generate_report()
+    with pytest.warns(UserWarning) as warnings:
+        masker.generate_report()
+    assert len(warnings) == 1
+    assert "This report was not generated" in str(warnings[0])
     assert masker._report_content["title"] == "Empty Report"
     assert masker._has_report_data() is False
 
@@ -88,6 +91,13 @@ def test_masker_reporting_true(masker, img_func):
     # check masker report with title specified
     masker.generate_report(title="masker report title")
     assert masker._report_content["title"] == "masker report title"
+
+    masker.reports = False
+    with pytest.warns(UserWarning) as warnings:
+        masker.generate_report()
+    assert len(warnings) == 1
+    assert "Report generation not enabled" in str(warnings[0])
+    assert masker._report_content["title"] == "Empty Report"
 
 
 @pytest.mark.parametrize(
@@ -123,10 +133,15 @@ def test_masker_reporting_false(masker, img_func):
     assert masker._report_content is not None
     assert masker._report_content["description"] is not None
     assert masker._report_content["warning_message"] is None
+    assert masker._report_content["summary"] == {}
     assert masker._has_report_data() is False
 
     # check masker report before fit
-    masker.generate_report()
+    with pytest.warns(UserWarning) as warnings:
+        masker.generate_report()
+    assert len(warnings) == 2
+    assert "Report generation not enabled" in str(warnings[0])
+    assert "This report was not generated" in str(warnings[1])
     assert masker._report_content["title"] == "Empty Report"
     assert masker._has_report_data() is False
 
@@ -136,9 +151,23 @@ def test_masker_reporting_false(masker, img_func):
     assert masker._has_report_data() is False
 
     # check masker report without title specified
-    masker.generate_report()
+    with pytest.warns(UserWarning) as warnings:
+        masker.generate_report()
+    assert len(warnings) == 2
+    assert "Report generation not enabled" in str(warnings[0])
+    assert "Report generation was disabled when fit" in str(warnings[1])
     assert masker._report_content["title"] == "Empty Report"
 
     # check masker report with title specified
     masker.generate_report(title="masker report title")
+    assert masker._report_content["title"] == "Empty Report"
+
+    # check masker report if the model is fit when reports=False
+    # and reports=True is set and report generation is required
+    # Regression test for https://github.com/nilearn/nilearn/issues/5831
+    masker.reports = True
+    with pytest.warns(UserWarning) as warnings:
+        masker.generate_report()
+    assert len(warnings) == 1
+    assert "Report generation was disabled when fit" in str(warnings[0])
     assert masker._report_content["title"] == "Empty Report"
