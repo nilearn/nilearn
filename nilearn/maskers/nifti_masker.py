@@ -451,7 +451,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         init_display = plot_img(
             img,
             black_bg=False,
-            draw_cross=False,
             cmap=self.cmap,
         )
         plt.close()
@@ -470,7 +469,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         final_display = plot_img(
             resampled_img,
             black_bg=False,
-            draw_cross=False,
             cmap=self.cmap,
         )
         plt.close()
