@@ -108,6 +108,38 @@ class HTMLReport(HTMLDocument):
         return self.body
 
 
+def return_jinja_env() -> Environment:
+    """Set up the jinja Environment."""
+    return Environment(
+        loader=FileSystemLoader(TEMPLATE_ROOT_PATH),
+        autoescape=select_autoescape(),
+        lstrip_blocks=True,
+        trim_blocks=True,
+    )
+
+
+def embed_img(display):
+    """Embed an image or just return its instance if already embedded.
+
+    Parameters
+    ----------
+    display : obj
+        A Nilearn plotting object to display.
+
+    Returns
+    -------
+    embed : str
+        Binary image string.
+
+    """
+    if display is None:  # no image to display
+        return None
+    # If already embedded, simply return as is
+    if isinstance(display, str):
+        return display
+    return figure_to_svg_base64(display.frame_axes.figure)
+
+
 def generate_report(estimator) -> HTMLReport:
     """Generate a report for Nilearn objects.
 
@@ -259,16 +291,6 @@ def _create_report(
     return assemble_report(body, f"{data['title']} report")
 
 
-def return_jinja_env() -> Environment:
-    """Set up the jinja Environment."""
-    return Environment(
-        loader=FileSystemLoader(TEMPLATE_ROOT_PATH),
-        autoescape=select_autoescape(),
-        lstrip_blocks=True,
-        trim_blocks=True,
-    )
-
-
 def assemble_report(body: str, title: str) -> HTMLReport:
     """Put together head and body of report."""
     env = return_jinja_env()
@@ -289,28 +311,6 @@ def assemble_report(body: str, title: str) -> HTMLReport:
             "display_footer": "style='display: none'" if is_notebook() else "",
         },
     )
-
-
-def embed_img(display):
-    """Embed an image or just return its instance if already embedded.
-
-    Parameters
-    ----------
-    display : obj
-        A Nilearn plotting object to display.
-
-    Returns
-    -------
-    embed : str
-        Binary image string.
-
-    """
-    if display is None:  # no image to display
-        return None
-    # If already embedded, simply return as is
-    if isinstance(display, str):
-        return display
-    return figure_to_svg_base64(display.frame_axes.figure)
 
 
 def _insert_figure_partial(
