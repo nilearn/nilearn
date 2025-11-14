@@ -35,6 +35,8 @@ Fixes
 
 - :bdg-dark:`Code` Make sure names in atlas labels look up tables are not shifted when the background name is not properly indicated (:gh:`5826` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Inform user correctly when reporting is enabled after the model is fit (:gh:`5836` by `Hande Gözükan`_).
+
 
 Enhancements
 ------------
