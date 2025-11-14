@@ -431,7 +431,8 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
         if not self._has_report_data():
-            return [None, None]
+            self._report_content["overlay"] = None
+            return [None]
 
         return self._create_figure_for_report()
 
@@ -443,7 +444,8 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         list of :class:`~matplotlib.figure.Figure` or None
         """
         if not is_matplotlib_installed():
-            return [None, None]
+            self._report_content["overlay"] = None
+            return [None]
 
         import matplotlib.pyplot as plt
 
@@ -472,23 +474,11 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 linewidths=2.5,
             )
 
-        return [init_display]
-
-    def _create_overlay_for_report(self) -> None:
-        self._report_content["overlay"] = None
-
-        if not is_matplotlib_installed():
-            return
-
-        import matplotlib.pyplot as plt
-
-        from nilearn.plotting import plot_img
-
+        overlay = None
         resampled_img = None
         resampled_mask = None
-
         # if resampling was performed
-        if self._has_report_data() and "transform" in self._reporting_data:
+        if "transform" in self._reporting_data:
             self._report_content["description"] += (
                 "\n To see the input Nifti image before resampling, "
                 "hover over the displayed image."
@@ -499,22 +489,22 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             if resampled_img is None:  # images were not provided to fit
                 resampled_img = resampled_mask
 
-        if resampled_img is None:
-            return
+            overlay = plot_img(
+                resampled_img,
+                black_bg=False,
+                cmap=self.cmap,
+            )
+            plt.close()
+            overlay.add_contours(
+                resampled_mask,
+                levels=[0.5],
+                colors="g",
+                linewidths=2.5,
+            )
 
-        final_display = plot_img(
-            resampled_img,
-            black_bg=False,
-            cmap=self.cmap,
-        )
-        plt.close()
-        final_display.add_contours(
-            resampled_mask,
-            levels=[0.5],
-            colors="g",
-            linewidths=2.5,
-        )
-        self._report_content["overlay"] = final_display
+        self._report_content["overlay"] = overlay
+
+        return [init_display]
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "mask_img_")

@@ -167,9 +167,7 @@ def test_nifti_masker_create_figure_for_report(src_masker, mask_img, img):
     """Check figure generated in report of NiftiMasker."""
     masker = src_masker(mask_img)
     masker.fit(img)
-
-    displays = masker._create_figure_for_report()
-    return displays[0]
+    return masker._create_figure_for_report()[0]
 
 
 @pytest.mark.mpl_image_compare
@@ -210,8 +208,7 @@ def test_nifti_labels_masker_create_figure_for_report(
 
     labels_image = masker._reporting_data["labels_image"]
 
-    displays = masker._create_figure_for_report(labels_image)
-    return displays[0]
+    return masker._create_figure_for_report(labels_image)[0]
 
 
 @pytest.mark.mpl_image_compare
@@ -231,9 +228,7 @@ def test_nifti_maps_masker_create_figure_for_report(src_masker, mask_img, img):
     masker = src_masker(maps_img, mask_img=mask_img)
     masker.fit(img)
     masker._report_content["displayed_maps"] = [0]
-
-    displays = masker._create_figure_for_report()
-    return displays[0]
+    return masker._create_figure_for_report()[0]
 
 
 @pytest.mark.mpl_image_compare
@@ -244,9 +239,7 @@ def test_nifti_spheres_masker_create_figure_for_report(mask_img, img):
     masker = NiftiSpheresMasker(seeds=[(0, 0, 0)], mask_img=mask_img)
     masker.fit(img)
     masker._report_content["displayed_maps"] = [0, 1]
-
-    displays = masker._create_figure_for_report()
-    return displays[1]
+    return masker._create_figure_for_report()[0]
 
 
 @pytest.mark.mpl_image_compare
@@ -255,8 +248,7 @@ def test_nifti_spheres_masker_create_summary_figure_for_report():
     masker = NiftiSpheresMasker(seeds=[(0, 0, 0), (0, 10, 20), (20, 10, 0)])
     masker.fit()
     masker._report_content["displayed_maps"] = [0]
-    displays = masker._create_figure_for_report()
-    return displays[0]
+    return masker._create_figure_for_report()[0]
 
 
 def _fs_inflated_sulcal():
@@ -285,7 +277,7 @@ def test_surface_masker_create_figure_for_report(src_masker, mask_img, img):
     """Check figure generated in report of (Multi)SurfaceMasker."""
     masker = src_masker(mask_img)
     masker.fit(img)
-    return masker._create_figure_for_report()
+    return masker._create_figure_for_report()[0]
 
 
 # TODO: add later as there seem to be some flaky tests failures
@@ -306,7 +298,7 @@ def test_surface_masker_create_figure_for_report(src_masker, mask_img, img):
 
 #     masker = SurfaceLabelsMasker(labels_img, mask_img=mask_img)
 #     masker.fit(img)
-#     return masker._create_figure_for_report()
+#     return masker._create_figure_for_report()[0]
 
 
 @pytest.mark.mpl_image_compare
@@ -345,4 +337,4 @@ def test_surface_maps_masker_create_figure_for_report(
     masker = src_masker(maps_imgs, mask_img=mask_img)
     masker.fit(img)
     masker._report_content["engine"] = "matplotlib"
-    return masker._create_figure_for_report(maps_imgs, bg_img=img)
+    return masker._create_figure_for_report(maps_imgs, bg_img=img)[0]

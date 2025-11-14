@@ -489,12 +489,12 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         from nilearn.reporting.utils import figure_to_png_base64
 
-        fig = self._create_figure_for_report()
+        fig = self._create_figure_for_report()[0]
 
-        if not fig[0]:
+        if not fig:
             return [None]
 
-        init_display = figure_to_png_base64(fig[0])
+        init_display = figure_to_png_base64(fig)
 
         return [init_display]
 
