@@ -136,11 +136,6 @@ def test_displayed_maps_valid_inputs(
     masker = masker_class(**input_parameters)
     masker.fit()
 
-    # TODO
-    # if displayed_maps != "all" and displayed_maps > n_regions:
-    #     with pytest.warns(UserWarning, match="masker only has .* maps."):
-    #         html = masker.generate_report(displayed_maps=displayed_maps)
-
     html = masker.generate_report(displayed_maps)
 
     # sphere masker display all spheres on index 0

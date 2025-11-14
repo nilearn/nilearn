@@ -3648,8 +3648,7 @@ def check_masker_generate_report(estimator):
     assert estimator._report_content["description"] != ""
     assert estimator._has_report_data() is False
 
-    with warnings.catch_warnings(record=True):
-        report = _generate_report(estimator)
+    report = _generate_report(estimator)
 
     _check_html(report, is_fit=False)
     assert "Make sure to run `fit`" in str(report)
