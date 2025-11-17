@@ -357,6 +357,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 "This report shows the regions defined "
                 "by the spheres of the masker."
             ),
+            "summary": {},
             "warning_message": None,
         }
 
@@ -423,7 +424,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return super().generate_report(title)
 
-    def _get_displays(self):
+    def _reporting(self):
         """Return a list of all displays to be rendered.
 
         Returns
@@ -620,6 +621,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
             self.seeds_.append(seed)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._reporting_data = {
                 "seeds": self.seeds_,

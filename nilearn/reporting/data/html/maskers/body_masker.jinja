@@ -1,47 +1,47 @@
-{{inherit "base.html"}}
-<!--  -->
-{{def navbar}} {{enddef}}
-<!--  -->
-{{def report}}
+{% extends "html/body_base.jinja" %}
+
+{% block report %}
 <div class="pure-g">
   <div class="pure-u-1 pure-u-md-2-3">
     <div class="image">
       <img
         class="pure-img"
         width="100%"
-        src="data:image/svg+xml;base64,{{content}}"
+        src="data:image/svg+xml;base64,{{ content }}"
         alt="No image provided."
       />
-      {{if overlay}}
+      {% if overlay %}
       <div class="overlay">
         <img
           class="pure-img"
           width="100%"
-          src="data:image/svg+xml;base64,{{overlay}}"
+          src="data:image/svg+xml;base64,{{ overlay }}"
           alt="No overlay found."
         />
       </div>
-      {{endif}}
+      {% endif %}
     </div>
   </div>
 </div>
+
 <div class="pure-g">
-  {{if n_elements }}
+
+  <p>{{ description }}</p>
+
+  {% if n_elements %}
   <div class="pure-u-1 pure-u-md-3-3">
     <p>
       The mask includes {{ n_elements }} voxels ({{ coverage }} %) of the image.
     </p>
   </div>
-  {{endif}}
+  {% endif %}
+
   <div class="pure-u-1 pure-u-md-3-3 table-container">
-    {{if parameters}} {{ parameters|html }} {{endif}}
+    {{ parameters|safe }}
   </div>
+
 </div>
-<div class="pure-u-1 pure-u-md-3-3 d-flex justify-content-center">
-  <p>
-    This report was generated based on information provided at instantiation and
-    fit time. Note that the masker can potentially perform resampling at
-    transform time.
-  </p>
-</div>
-{{enddef}}
+
+{% include 'html/maskers/partials/info_transfom.jinja' %}
+
+{% endblock %}

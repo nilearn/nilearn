@@ -351,6 +351,7 @@ def test_glm_target_shape_affine(shape_3d_default, affine_eye):
     assert z_image.shape == (10, 11, 12)
 
 
+@pytest.mark.slow
 def test_high_level_glm_with_data_with_mask(shape_3d_default):
     """Test GLM can be run with mask."""
     shapes, rk = [(*shape_3d_default, 5)], 3
@@ -412,6 +413,7 @@ def test_fmri_inputs_type_data_smoke(tmp_path, shape_4d_default):
     )
 
 
+@pytest.mark.slow
 def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
     """Test processing of FMRI inputs with path, str for design matrix."""
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
@@ -778,6 +780,7 @@ def test_fmri_inputs_events_type(tmp_path):
     )
 
 
+@pytest.mark.slow
 def test_fmri_inputs_with_confounds(tmp_path):
     """Test with confounds and, events."""
     n_timepoints = 10

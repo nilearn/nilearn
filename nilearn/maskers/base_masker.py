@@ -385,8 +385,7 @@ class BaseMasker(
         imgs : Niimg-like object
             See :ref:`extracting_data`.
 
-        y : numpy array of shape [n_samples], default=None
-            Target values.
+        %(y_dummy)s
 
         %(confounds)s
 
@@ -399,34 +398,7 @@ class BaseMasker(
         %(signals_transform_nifti)s
 
         """
-        # non-optimized default implementation; override when a better
-        # method is possible for a given clustering algorithm
-        if y is None:
-            # fit method of arity 1 (unsupervised transformation)
-            if self.mask_img is None:
-                return self.fit(imgs, **fit_params).transform(
-                    imgs, confounds=confounds, sample_mask=sample_mask
-                )
-
-            return self.fit(**fit_params).transform(
-                imgs, confounds=confounds, sample_mask=sample_mask
-            )
-
-        # fit method of arity 2 (supervised transformation)
-        if self.mask_img is None:
-            return self.fit(imgs, y, **fit_params).transform(
-                imgs, confounds=confounds, sample_mask=sample_mask
-            )
-
-        warnings.warn(
-            f"[{self.__class__.__name__}.fit] "
-            "Generation of a mask has been"
-            " requested (y != None) while a mask was"
-            " given at masker creation. Given mask"
-            " will be used.",
-            stacklevel=find_stack_level(),
-        )
-        return self.fit(**fit_params).transform(
+        return self.fit(imgs, y, **fit_params).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
@@ -801,6 +773,7 @@ class _BaseSurfaceMasker(
                         colors=colors,
                     )
 
+        plt.close()
         return fig
 
     def _set_contour_colors(self, hemi):

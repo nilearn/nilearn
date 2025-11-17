@@ -3740,10 +3740,8 @@ def check_masker_generate_report(estimator):
 
         return
 
-    assert (
-        estimator._report_content is not None
-        and estimator._report_content != ""
-    )
+    assert isinstance(estimator._report_content, dict)
+    assert estimator._report_content["description"] != ""
     assert estimator._has_report_data() is False
 
     with warnings.catch_warnings(record=True) as warning_list:
@@ -3822,7 +3820,6 @@ def check_masker_generate_report_false(estimator):
     estimator.fit(input_img)
 
     assert estimator._has_report_data() is False
-    assert estimator._reporting() == [None]
     with pytest.warns(
         UserWarning,
         match=("No visual outputs created."),

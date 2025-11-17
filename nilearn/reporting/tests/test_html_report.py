@@ -1,3 +1,4 @@
+import warnings
 from collections import Counter
 
 import numpy as np
@@ -8,7 +9,7 @@ from numpy.testing import assert_almost_equal
 from nilearn._utils.data_gen import generate_random_img
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.html_document import WIDTH_DEFAULT, HTMLDocument
-from nilearn.conftest import _img_maps
+from nilearn.conftest import _img_maps, _img_mask_eye
 from nilearn.image import get_data
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -416,6 +417,25 @@ def test_overlaid_report(img_fmri):
     assert '<div class="overlay">' in str(html)
 
 
+@pytest.mark.parametrize("mask_img", [None, _img_mask_eye()])
+def test_nifti_label_masker_no_warning_in_report_after_fit_transform(
+    mask_img, img_fmri
+):
+    """Check no warning about fitted image in report generation \
+        after fit_transform on image.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5121.
+    """
+    masker = NiftiMasker(mask_img=mask_img)
+    masker.fit_transform(img_fmri)
+    with warnings.catch_warnings(record=True) as warning_list:
+        masker.generate_report()
+    if warning_list:
+        assert not any(
+            "No image provided to fit" in str(x) for x in warning_list
+        )
+
+
 def test_multi_nifti_masker_generate_report_imgs(img_fmri):
     """Smoke test for generate_report method with image data."""
     masker = MultiNiftiMasker(reports=True)
@@ -509,7 +529,7 @@ def test_surface_masker_minimal_report_fit(
     _check_html(report, reports_requested=reports)
     assert '<div class="image">' in str(report)
     if not reports:
-        assert 'src="data:image/svg+xml;base64,"' in str(report)
+        assert 'src="data:image/svg+xml;base64' in str(report)
     else:
         assert float(masker._report_content["coverage"]) > 0
         assert "The mask includes" in str(report)
