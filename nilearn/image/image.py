@@ -1943,7 +1943,7 @@ def check_same_fov(*args, **kwargs) -> bool:
         Images to be checked. In case of error, images will be referenced by
         their keyword name in the error message.
 
-    raise_error : boolean, optional
+    raise_error : :obj:`bool`, optional
         If True, an error will be raised in case of error.
 
     """
@@ -2002,17 +2002,17 @@ def iter_check_niimg(
 
     Parameters
     ----------
-    niimgs : list of niimg or glob pattern or itertools.tee instance
+    niimgs : :obj:`list` of niimg or glob pattern or itertools.tee instance
         Images to iterate over.
 
-    ensure_ndim : integer, default=None
+    ensure_ndim : :obj:`int`, default=None
         If specified, an error is raised if the data does not have the
         required dimension.
 
-    atleast_4d : boolean, default=False
+    atleast_4d : :obj:`bool`, default=False
         If True, any 3D image is converted to a 4D single scan.
 
-    target_fov : tuple of affine and shape, optional
+    target_fov : :obj:`tuple` of affine and shape, or None, default=None
        If specified, images are resampled to this field of view.
 
     %(dtype)s
@@ -2021,9 +2021,7 @@ def iter_check_niimg(
         default=None
         If ``None`` is passed will default to ``Memory(location=None)``.
 
-    memory_level : integer, default=0
-        Rough estimator of the amount of memory used by caching.
-        Higher value means more memory for caching.
+    %(memory_level)s
 
     See Also
     --------
