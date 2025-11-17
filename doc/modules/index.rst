@@ -26,3 +26,4 @@ the :ref:`user guide <user_guide>` for more information and usage examples.
    reporting.rst
    signal.rst
    surface.rst
+   utils.rst

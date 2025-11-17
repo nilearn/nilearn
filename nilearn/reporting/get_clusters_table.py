@@ -16,9 +16,11 @@ from scipy.ndimage import (
     minimum_filter,
 )
 
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn._utils.param_validation import check_params
 from nilearn.image import new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
 from nilearn.surface import SurfaceImage
@@ -211,10 +213,11 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
     return ijk, vals
 
 
+@fill_doc
 def get_clusters_table(
     stat_img,
     stat_threshold,
-    cluster_threshold=None,
+    cluster_threshold=0,
     two_sided=False,
     min_distance=8.0,
     return_label_maps=False,
@@ -234,7 +237,7 @@ def get_clusters_table(
 
         This center of mass may, in some cases, appear outside of the cluster.
 
-        .. versionchanged:: 0.9.2
+        .. nilearn_versionchanged:: 0.9.2
             In this case, the cluster voxel nearest to the center of mass is
             reported.
 
@@ -257,9 +260,7 @@ def get_clusters_table(
         Cluster forming threshold. This value must be in the same scale as
         ``stat_img``.
 
-    cluster_threshold : :obj:`int` or None, default=None
-        Cluster size threshold, in :term:`voxels<voxel>`.
-        If None, then no cluster size threshold will be applied.
+    %(cluster_threshold)s
 
     two_sided : :obj:`bool`, default=False
         Whether to employ two-sided thresholding or to evaluate positive values
@@ -275,7 +276,7 @@ def get_clusters_table(
     return_label_maps : :obj:`bool`, default=False
         Whether or not to additionally output cluster label map images.
 
-        .. versionadded:: 0.10.1
+        .. nilearn_versionadded:: 0.10.1
 
     Returns
     -------
@@ -301,9 +302,10 @@ def get_clusters_table(
         If two_sided==True, first and second maps correspond
         to positive and negative tails.
 
-        .. versionadded:: 0.10.1
+        .. nilearn_versionadded:: 0.10.1
 
     """
+    check_params(locals())
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
 
     label_maps = []
@@ -313,9 +315,6 @@ def get_clusters_table(
         return (
             (result_table, label_maps) if return_label_maps else result_table
         )
-
-    # Replace None with 0
-    cluster_threshold = 0 if cluster_threshold is None else cluster_threshold
 
     # check that stat_img is niimg-like object and 3D
     stat_img = check_niimg_3d(stat_img)
@@ -330,7 +329,6 @@ def get_clusters_table(
         two_sided=two_sided,
         mask_img=None,
         copy=True,
-        copy_header=True,
     )
 
     # If cluster threshold is used, there is chance that stat_map will be
@@ -458,6 +456,7 @@ def get_clusters_table(
     return (result_table, label_maps) if return_label_maps else result_table
 
 
+@fill_doc
 def clustering_params_to_dataframe(
     threshold,
     cluster_threshold,
@@ -476,8 +475,7 @@ def clustering_params_to_dataframe(
         Cluster forming threshold in same scale as `stat_img` (either a
         p-value or z-scale value).
 
-    cluster_threshold : int or None
-        Cluster size threshold, in voxels.
+    %(cluster_threshold)s
 
     min_distance : float
         For display purposes only.
@@ -501,6 +499,7 @@ def clustering_params_to_dataframe(
         Dataframe with clustering parameters.
 
     """
+    check_params(locals())
     table_details = OrderedDict()
     threshold = np.around(threshold, 3)
 

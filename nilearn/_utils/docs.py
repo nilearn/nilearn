@@ -231,6 +231,14 @@ docdict["clean_args_"] = docdict["clean_args"].replace(
     "clean_args_ : :obj:`dict`",
 )
 
+# cluster_threshold
+docdict["cluster_threshold"] = """
+    cluster_threshold : :obj:`int`, default=0
+        Cluster size threshold.
+        Sets of connected voxels / vertices (`clusters`)
+        with size smaller than this number will be removed.
+"""
+
 # cmap
 docdict["cmap"] = """
 cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
@@ -283,6 +291,14 @@ confounds : :obj:`list` of confounds, default=None
     Must be of same length than imgs.
 """
 
+# copy_header
+docdict["copy_header"] = """
+copy_header : :obj:`bool`, default=True
+    Indicated if the header of the reference image
+    should be used to create the new image.
+    Ignored for :obj:`~nilearn.surface.SurfaceImage`.
+"""
+
 # cut_coords
 docdict["cut_coords"] = """
 cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
@@ -309,6 +325,26 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
         in which case it specifies the number of cuts to perform.
 
 """
+
+
+# cross-validation
+cv = """
+cv : cross-validation generator, :obj:`int` or None, default={}
+    A cross-validation generator.
+    See: https://scikit-learn.org/stable/modules/cross_validation.html.
+    If None is passed, cv={} will be used.
+    It can be an integer, in which case it is the number of folds in a
+    KFold using :class:`~sklearn.model_selection.StratifiedKFold`
+    when groups is None in the ``fit`` method for this class.
+    If groups is specified but ``cv``
+    is not set to custom CV splitter, default is
+    :class:`~sklearn.model_selection.LeaveOneGroupOut`.
+"""
+docdict["cv10"] = cv.format(10, 10)
+docdict["cv30"] = cv.format(30, 30)
+docdict["cv8_5"] = cv.format(8, 5)
+docdict["cvNone_3"] = cv.format("None", 3)
+
 
 # data_dir
 docdict["debias"] = """
@@ -568,9 +604,9 @@ keep_masked_labels : :obj:`bool`, default=False
     zeros only. If False, the empty labels will be removed from the
     output, ensuring no empty time series are present.
 
-    .. deprecated:: 0.10.2
+    .. nilearn_deprecated:: 0.10.2
 
-    .. versionchanged:: 0.13.0dev
+    .. nilearn_versionchanged:: 0.13.0dev
 
         The ``keep_masked_labels`` parameter will be removed in 0.15.
 
@@ -585,9 +621,9 @@ keep_masked_maps : :obj:`bool`, optional
     invalid maps will be removed from the trimmed atlas, resulting in
     no empty time series in the output.
 
-    .. deprecated:: 0.10.2
+    .. nilearn_deprecated:: 0.10.2
 
-    .. versionchanged:: 0.13.0dev
+    .. nilearn_versionchanged:: 0.13.0dev
 
         The ``keep_masked_maps`` parameter will be removed in 0.15.
 
@@ -612,6 +648,21 @@ low_pass : :obj:`float` or :obj:`int` or None, default=None
 docdict["lower_cutoff"] = """
 lower_cutoff : :obj:`float`, optional
     Lower fraction of the histogram to be discarded.
+"""
+
+# mask_decomposition
+docdict["mask_decomposition"] = """
+mask : Niimg-like object,  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
+        :obj:`~nilearn.surface.SurfaceImage` or \
+        :obj:`~nilearn.maskers.MultiSurfaceMasker` object, or None \
+        default=None
+    Mask to be used on data.
+    If an instance of masker is passed,
+    then its mask will be used.
+    If no mask is given, for Nifti images,
+    it will be computed automatically by a MultiNiftiMasker
+    with default parameters;
+    for surface images, all the vertices will be used.
 """
 
 # masker_lut
@@ -664,14 +715,14 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
       data's field of view. Uses
       :func:`nilearn.masking.compute_brain_mask` with ``mask_type="gm"``.
 
-      .. versionadded:: 0.8.1
+      .. nilearn_versionadded:: 0.8.1
 
     - ``"wm-template"``: This will extract the white matter part of your
       data by resampling the corresponding MNI152 template for your
       data's field of view. Uses
       :func:`nilearn.masking.compute_brain_mask` with ``mask_type="wm"``.
 
-      .. versionadded:: 0.8.1
+      .. nilearn_versionadded:: 0.8.1
 """
 
 # mask_type
@@ -694,7 +745,7 @@ docdict["max_iter10"] = verbose.format(10)
 docdict["max_iter50"] = verbose.format(50)
 docdict["max_iter100"] = verbose.format(100)
 docdict["max_iter1000"] = verbose.format(1000)
-docdict["max_iter1000"] = verbose.format(5000)
+docdict["max_iter5000"] = verbose.format(5000)
 
 # memory
 docdict["memory"] = """
@@ -1034,25 +1085,23 @@ smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
 
 # standardize
 standardize = """
-standardize : :obj:`bool`, default={}
-    If `standardize` is `True`, the data are centered and normed:
-    their mean is put to 0 and their variance is put to 1
-    in the time dimension.
-"""
-docdict["standardize"] = standardize.format("True")
-docdict["standardize_false"] = standardize.format("False")
-
-# standardize as used within maskers module
-docdict["standardize_maskers"] = """
-standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
+standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
+              default={}
     Strategy to standardize the signal:
 
-    - ``'zscore_sample'``: The signal is z-scored. Timeseries are shifted
-      to zero mean and scaled to unit variance. Uses sample std.
+    - ``'zscore_sample'``: The signal is z-scored.
+      Timeseries are shifted to zero mean and scaled to unit variance.
+      Uses sample std.
 
-    - ``'zscore'``: The signal is z-scored. Timeseries are shifted
-      to zero mean and scaled to unit variance. Uses population std
-      by calling default :obj:`numpy.std` with N - ``ddof=0``.
+    - ``'zscore'``: The signal is z-scored.
+      Timeseries are shifted to zero mean and scaled to unit variance.
+      Uses population std by calling default
+      :obj:`numpy.std` with N - ``ddof=0``.
+
+      .. nilearn_deprecated:: 0.10.1
+
+        This option will be removed in Nilearn version 0.14.0.
+        Use ``zscore_sample`` instead.
 
     - ``'psc'``:  Timeseries are shifted to zero mean value and scaled
       to percent signal change (as compared to original mean signal).
@@ -1060,9 +1109,65 @@ standardize : {'zscore_sample', 'zscore', 'psc', True, False}, default=False
     - ``True``: The signal is z-scored (same as option `zscore`).
       Timeseries are shifted to zero mean and scaled to unit variance.
 
+      .. nilearn_deprecated:: 0.13.0dev
+
+        In nilearn version 0.15.0,
+        ``True`` will be replaced by  ``'zscore_sample'``.
+
     - ``False``: Do not standardize the data.
 
+      .. nilearn_deprecated:: 0.13.0dev
+
+        In nilearn version 0.15.0,
+        ``False`` will be replaced by ``None``.
+
+
 """
+# TODO (nilearn >= 0.14.0) update to ..versionchanged
+deprecation_notice = """
+
+    .. nilearn_deprecated:: 0.10.1
+
+        The default will be changed to ``'zscore_sample'``
+        and ``'zscore'`` will be removed in
+        in version 0.14.0.
+
+"""
+
+# TODO (nilearn >= 0.15.0) update to ..versionchanged
+deprecation_notice_false_to_none = """
+
+    .. nilearn_deprecated:: 0.15.0dev
+
+        The default will be changed to ``None``
+        in version 0.15.0.
+
+"""
+
+# TODO (nilearn >= 0.15.0) update to ..versionchanged
+deprecation_notice_true_to_zscore_sample = """
+
+    .. nilearn_deprecated:: 0.15.0dev
+
+        The default will be changed to ``'zscore_sample'``
+        in version 0.15.0.
+
+"""
+
+docdict["standardize_false"] = (
+    standardize.format("False") + deprecation_notice_false_to_none
+)
+# TODO (nilearn >= 0.14.0 and 0.15.0)
+# adapt the deprecation notices
+docdict["standardize_true"] = (
+    standardize.format("True")
+    + deprecation_notice
+    + deprecation_notice_true_to_zscore_sample
+)
+docdict["standardize_zscore"] = (
+    standardize.format("zscore") + deprecation_notice
+)
+
 
 # standardize_confounds
 docdict["standardize_confounds"] = """
@@ -1071,7 +1176,7 @@ standardize_confounds : :obj:`bool`, default=True
     their mean is put to 0 and their variance to 1 in the time dimension.
 """
 
-# standardize_confounds
+# strategy
 docdict["strategy"] = """
 strategy : :obj:`str`, default="mean"
     The name of a valid function to reduce the region with.
@@ -1114,9 +1219,9 @@ t_r : :obj:`float` or :obj:`int` or None, default=None
 
 # target_affine
 docdict["target_affine"] = """
-target_affine : :class:`numpy.ndarray` or None, default=None
+target_affine : 3x3 or a 4x4 array-like, or None, \
+       default=None
     If specified, the image is resampled corresponding to this new affine.
-    `target_affine` can be a 3x3 or a 4x4 matrix.
 """
 
 # target_shape
@@ -1145,7 +1250,7 @@ tfce : :obj:`bool`, default=False
        The number of thresholds used in the TFCE procedure
        will set between 10 and 1000.
 
-       .. versionadded:: 0.12.0
+       .. nilearn_versionadded:: 0.12.0
 
     .. warning::
 
@@ -1185,7 +1290,7 @@ transparency : :obj:`float` between 0 and 1, \
     If an image is passed, voxel-wise alpha blending will be applied,
     by relying on the absolute value of ``transparency`` at each voxel.
 
-    .. versionadded:: 0.12.0
+    .. nilearn_versionadded:: 0.12.0
 """
 
 # transparency
@@ -1214,7 +1319,7 @@ transparency_range : :obj:`tuple` or :obj:`list` of 2 non-negative numbers, \
     if ``None`` is passed,
     this will be set to ``[0, max(abs(transparency))]``.
 
-    .. versionadded:: 0.12.0
+    .. nilearn_versionadded:: 0.12.0
 """
 
 # upper_cutoff
@@ -1307,7 +1412,7 @@ maps_masker_ : instance of NiftiMapsMasker or SurfaceMapsMasker
     This masker was initialized with
     ``components_img_``, ``masker_.mask_img_``
     and is the masker used
-    when calliing transform and inverse_transform.
+    when calling transform and inverse_transform.
 
 mask_img_ : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
     See :ref:`extracting_data`.
@@ -1337,16 +1442,16 @@ components_img_ : 4D Nifti image \
     The image giving the extracted components.
     Each 3D Nifti image or 1D SurfaceImage is a component.
 
-    .. versionadded:: 0.4.1
+    .. nilearn_versionadded:: 0.4.1
 
 masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
-        :obj:`~nilearn.maskers.SurfaceMasker`
+        :obj:`~nilearn.maskers.MultiSurfaceMasker`
     Masker used to filter and mask data as first step.
     If :obj:`~nilearn.maskers.MultiNiftiMasker`
-    or :obj:`~nilearn.maskers.SurfaceMasker` is given in
+    or :obj:`~nilearn.maskers.MultiSurfaceMasker` is given in
     ``mask`` parameter, this is a copy of it.
     Otherwise, a masker is created using the value of ``mask`` and
-    other NiftiMasker/SurfaceMasker
+    other Masker
     related parameters as initialization.
 
 memory_ : joblib memory cache
@@ -1423,7 +1528,7 @@ memory_ : joblib memory cache
 n_elements_ : :obj:`int`
     The number of voxels or vertices in the mask.
 
-    .. versionadded:: 0.12.1
+    .. nilearn_versionadded:: 0.12.1
 
 n_outputs_ : :obj:`int`
     Number of outputs (column-wise)
@@ -1510,7 +1615,7 @@ memory_ : joblib memory cache
 n_elements_ : :obj:`int`
     The number of features in the mask.
 
-    .. versionadded:: 0.12.1
+    .. nilearn_versionadded:: 0.12.1
 
 screening_percentile_ : float
     Screening percentile corrected according to volume of mask,
@@ -1600,15 +1705,36 @@ docdict["lut"] = """lut : :obj:`pandas.DataFrame`
         Formatted according to 'dseg.tsv' format from
         `BIDS <https://bids-specification.readthedocs.io/en/latest/derivatives/imaging.html#common-image-derived-labels>`_."""
 
-# signals returned Nifti maskers by transform, fit_transform...
-docdict["signals_transform_nifti"] = """signals : :obj:`numpy.ndarray`
-        Signal for each :term:`voxel`.
+
+signals_transform = """signals : :obj:`numpy.ndarray`, \
+            :obj:`pandas.DataFrame` or \
+            `polars.DataFrame`
+
+        Signal for each element.
+
+        .. nilearn_versionchanged:: 0.13.0dev
+
+            Added ``set_output`` support.
+
+        The type of the output is determined by ``set_output()``:
+        see `the scikit-learn documentation <https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html>`_.
+
         Output shape for :
 
-        - 3D images: (number of elements,) array
-        - 4D images: (number of scans, number of elements) array
+        - For Numpy outputs:
+
+          - {}D images: (number of elements,)
+          - {}D images: (number of scans, number of elements) array
+
+        - For DataFrame outputs:
+
+          - {}D or {}D images: (number of scans, number of elements) array
         """
-# signals returned Mulit Nifti maskers by transform, fit_transform...
+# signals returned Nifti/Surface maskers by transform, fit_transform...
+docdict["signals_transform_nifti"] = signals_transform.format(3, 4, 3, 4)
+docdict["signals_transform_surface"] = signals_transform.format(1, 2, 1, 2)
+
+# signals returned Multi Nifti maskers by transform, fit_transform...
 docdict[
     "signals_transform_multi_nifti"
 ] = """signals : :obj:`list` of :obj:`numpy.ndarray` or :obj:`numpy.ndarray`
@@ -1621,7 +1747,7 @@ docdict[
         - list of 4D images: list of (number of scans, number of elements)
           array
         """
-# signals returned Mulit Nifti maskers by transform, fit_transform...
+# signals returned Multi Nifti maskers by transform_imgs
 docdict[
     "signals_transform_imgs_multi_nifti"
 ] = """signals : :obj:`list` of :obj:`numpy.ndarray`
@@ -1632,14 +1758,7 @@ docdict[
         - list of 4D images: list of (number of scans, number of elements)
           array
         """
-# signals returned surface maskers by transform, fit_transform...
-docdict["signals_transform_surface"] = """signals : :obj:`numpy.ndarray`
-        Signal for each element.
-        Output shape for :
 
-        - 1D images: (number of elements,) array
-        - 2D images: (number of scans, number of elements) array
-        """
 
 # template
 docdict["template"] = """'template' : :obj:`str`
@@ -1735,5 +1854,8 @@ def fill_doc(f):
     except (TypeError, ValueError, KeyError) as exp:
         funcname = f.__name__
         funcname = docstring.split("\n")[0] if funcname is None else funcname
-        raise RuntimeError(f"Error documenting {funcname}:\n{exp!s}")
+        raise RuntimeError(
+            f"Error documenting {funcname}:\n{exp!s}.\n"
+            "Did you forget to escape a character with an extra '%'"
+        )
     return f

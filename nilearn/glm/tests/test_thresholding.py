@@ -129,6 +129,7 @@ def test_threshold_stats_img_no_height_control(
     assert th_map is None
 
 
+@pytest.mark.slow
 def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
@@ -193,7 +194,8 @@ def test_threshold_stats_img_errors(img_3d_rand_eye):
         threshold_stats_img(None, None, alpha=0.05, height_control="plop")
 
     with pytest.raises(
-        ValueError, match="should not be a negative value when two_sided=True."
+        ValueError,
+        match=r"should not be a negative value when two_sided=True.",
     ):
         threshold_stats_img(
             img_3d_rand_eye, height_control=None, threshold=-2, two_sided=True
@@ -366,13 +368,25 @@ def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
 
 
 def test_threshold_stats_img_surface_output(surf_img_1d):
-    """Check output threshold_stats_img surface with no height_control."""
+    """Check output threshold_stats_img surface with no height_control.
+
+    Also check the user of cluster_threshold.
+    """
     surf_img_1d.data.parts["left"] = np.asarray([1.0, -1.0, 3.0, 4.0])
     surf_img_1d.data.parts["right"] = np.asarray([2.0, -2.0, 6.0, 8.0, 0.0])
 
     # two sided
     result, _ = threshold_stats_img(
         surf_img_1d, height_control=None, threshold=2
+    )
+
+    assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
+    assert_equal(
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
+    )
+
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, threshold=2, cluster_threshold=2
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 3.0, 4.0]))
@@ -391,13 +405,39 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     )
 
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=-0.5, two_sided=False
+        surf_img_1d,
+        height_control=None,
+        threshold=3,
+        two_sided=False,
+        cluster_threshold=2,
+    )
+
+    assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 0.0]))
+    assert_equal(
+        result.data.parts["right"], np.asarray([0.0, 0.0, 6.0, 8.0, 0.0])
     )
 
     # one sided negative
+    result, _ = threshold_stats_img(
+        surf_img_1d, height_control=None, threshold=-0.5, two_sided=False
+    )
+
     assert_equal(result.data.parts["left"], np.asarray([0.0, -1.0, 0.0, 0.0]))
     assert_equal(
         result.data.parts["right"], np.asarray([0.0, -2.0, 0.0, 0.0, 0.0])
+    )
+
+    result, _ = threshold_stats_img(
+        surf_img_1d,
+        height_control=None,
+        threshold=-0.5,
+        two_sided=False,
+        cluster_threshold=3,
+    )
+
+    assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 0.0]))
+    assert_equal(
+        result.data.parts["right"], np.asarray([0.0, 0.0, 0.0, 0.0, 0.0])
     )
 
 
@@ -432,7 +472,7 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
 def test_deprecation_threshold(surf_img_1d, height_control, threshold):
     """Check warning thrown when threshold==old threshold.
 
-    # TODO (nilearn >= 0.15)
+    # TODO (nilearn >= 0.15.0)
     # remove
     """
     with warnings.catch_warnings(record=True) as warning_list:
@@ -455,7 +495,7 @@ def test_deprecation_threshold_cluster_level_inference(
 ):
     """Check cluster_level_inference warns when threshold==old threshold .
 
-    # TODO (nilearn >= 0.15)
+    # TODO (nilearn >= 0.15.0)
     # remove
     """
     data = data_norm_isf

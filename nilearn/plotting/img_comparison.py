@@ -110,11 +110,14 @@ def plot_img_comparison(
         isinstance(x, NiimgLike) for x in src_imgs
     ):
         image_type = "volume"
+        ref_imgs = [check_niimg_3d(x) for x in ref_imgs]
+        src_imgs = [check_niimg_3d(x) for x in src_imgs]
 
     elif all(isinstance(x, SurfaceImage) for x in ref_imgs) and all(
         isinstance(x, SurfaceImage) for x in src_imgs
     ):
         image_type = "surface"
+
     else:
         types_ref_imgs = {type(x) for x in ref_imgs}
         types_src_imgs = {type(x) for x in src_imgs}
@@ -168,6 +171,7 @@ def plot_img_comparison(
                 np.max(src_data),
             ]
 
+            ax1.set_facecolor("black")
             hb = ax1.hexbin(
                 ref_data,
                 src_data,
@@ -352,6 +356,7 @@ def plot_bland_altman(
     )
 
     ax1 = figure.add_subplot(gs[:-1, 1:5])
+    ax1.set_facecolor("black")
     hb = ax1.hexbin(
         mean,
         diff,
@@ -394,9 +399,7 @@ def plot_bland_altman(
 
     if colorbar:
         ax4 = figure.add_subplot(gs[:-1, 5])
-        ax4.set_aspect(20)
-        pos1 = ax4.get_position()
-        ax4.set_position([pos1.x0 - 0.025, pos1.y0, pos1.width, pos1.height])
+        ax4.set_aspect(3)
 
         cb = figure.colorbar(hb, cax=ax4)
         cb.set_label("log10(N)")

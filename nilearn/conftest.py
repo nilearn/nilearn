@@ -1,7 +1,5 @@
 """Configuration and extra fixtures for pytest."""
 
-import warnings
-
 import nibabel
 import numpy as np
 import pandas as pd
@@ -21,7 +19,6 @@ from nilearn.datasets.tests._testing import (
     request_mocker,  # noqa: F401
     temp_nilearn_data_dir,  # noqa: F401
 )
-from nilearn.exceptions import NotImplementedWarning
 from nilearn.surface import (
     InMemoryMesh,
     PolyMesh,
@@ -63,6 +60,7 @@ else:
             "plotting",
             "reporting/html_report.py",
             "reporting/tests/test_html_report.py",
+            "reporting/tests/test_glm_report.py",
             "reporting/tests/test_baseline_comparisons.py",
         ]
     )
@@ -128,27 +126,6 @@ def close_all():
         plt.close("all")  # takes < 1 us so just always do it
 
 
-@pytest.fixture(autouse=True)
-def suppress_specific_warning():
-    """Ignore internal deprecation warnings."""
-    with warnings.catch_warnings():
-        # TODO (nilearn >= 0.13.0) deprecate nearest interpolation
-        messages = (
-            "In release 0.13, this fetcher will return a dictionary.*|"
-            "The default strategy for standardize.*|"
-        )
-        warnings.filterwarnings(
-            "ignore",
-            message=messages,
-            category=DeprecationWarning,
-        )
-        warnings.filterwarnings(
-            "ignore",
-            category=NotImplementedWarning,
-        )
-        yield
-
-
 # ------------------------   RNG   ------------------------#
 
 
@@ -165,7 +142,7 @@ def rng():
 # ------------------------ AFFINES ------------------------#
 
 
-def _affine_mni():
+def _affine_mni() -> np.ndarray:
     """Return an affine corresponding to 2mm isotropic MNI template.
 
     Mostly used for set up in other fixtures in other testing modules.
@@ -186,7 +163,7 @@ def affine_mni():
     return _affine_mni()
 
 
-def _affine_eye():
+def _affine_eye() -> np.ndarray:
     """Return an identity matrix affine.
 
     Mostly used for set up in other fixtures in other testing modules.
@@ -612,24 +589,32 @@ def _make_surface_img(n_samples=1):
 
 @pytest.fixture
 def surf_img_2d():
-    """Create a sample surface image using the sample mesh.
-    This will add some random data to the vertices of the mesh.
+    """Return a 2D SurfaceImage with random data.
+
     The shape of the data will be (n_vertices, n_samples).
     n_samples by default is 1.
     """
     return _make_surface_img
 
 
-@pytest.fixture
-def surf_img_1d():
-    """Create a sample surface image using the sample mesh.
-    This will add some random data to the vertices of the mesh.
+def _surf_img_1d():
+    """Return a 1D SurfaceImage with random data.
+
     The shape of the data will be (n_vertices,).
     """
     img = _make_surface_img(n_samples=1)
     img.data.parts["left"] = np.squeeze(img.data.parts["left"])
     img.data.parts["right"] = np.squeeze(img.data.parts["right"])
     return img
+
+
+@pytest.fixture
+def surf_img_1d():
+    """Return a 1D SurfaceImage with random data.
+
+    The shape of the data will be (n_vertices,).
+    """
+    return _surf_img_1d()
 
 
 def _make_surface_mask(n_zeros=4):

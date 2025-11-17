@@ -71,7 +71,7 @@ seed_masker = NiftiSpheresMasker(
     standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
-    t_r=2,
+    t_r=dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
     verbose=0,
@@ -98,7 +98,7 @@ brain_masker = NiftiMasker(
     standardize_confounds=True,
     low_pass=0.1,
     high_pass=0.01,
-    t_r=2,
+    t_r=dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
     verbose=0,
@@ -139,6 +139,7 @@ plt.plot(brain_time_series[:, [10, 45, 100, 5000, 10000]])
 plt.title("Time series from 5 random voxels")
 plt.xlabel("Scan number")
 plt.ylabel("Normalized signal")
+plt.show()
 
 # %%
 # Performing the seed-to-voxel correlation analysis

@@ -29,7 +29,7 @@ def test_cropping_code_paths(rng):
     # we now crop the mask to its non-zero part. Masking with this
     # mask must yield the same result
 
-    cropped_mask_img = image.crop_img(mask_img, copy_header=True)
+    cropped_mask_img = image.crop_img(mask_img)
 
     parameters = {
         "smoothing_fwhm": None,
@@ -37,7 +37,7 @@ def test_cropping_code_paths(rng):
         "low_pass": None,
         "t_r": None,
         "detrend": False,
-        "standardize": "zscore",
+        "standardize": "zscore_sample",
         "standardize_confounds": True,
         "clean_kwargs": {},
     }

@@ -1,16 +1,8 @@
 """Transformer for computing ROI signals of multiple 4D images."""
 
-import itertools
-
-from joblib import Parallel, delayed
-from sklearn.utils.estimator_checks import check_is_fitted
-
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn.maskers._mixin import _MultiMixin
-from nilearn.maskers.base_masker import prepare_confounds_multimaskers
 from nilearn.maskers.nifti_labels_masker import NiftiLabelsMasker
-from nilearn.typing import NiimgLike
 
 
 @fill_doc
@@ -54,7 +46,7 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 
@@ -178,106 +170,4 @@ class MultiNiftiLabelsMasker(_MultiMixin, NiftiLabelsMasker):
             cmap=cmap,
             clean_args=clean_args,
             keep_masked_labels=keep_masked_labels,
-        )
-
-    @fill_doc
-    def transform_imgs(
-        self, imgs_list, confounds=None, n_jobs=1, sample_mask=None
-    ):
-        """Extract signals from a list of 4D niimgs.
-
-        Parameters
-        ----------
-        %(imgs)s
-            Images to process.
-
-        %(confounds_multi)s
-
-        %(n_jobs)s
-
-        %(sample_mask_multi)s
-
-        Returns
-        -------
-        %(signals_transform_imgs_multi_nifti)s
-
-        """
-        check_is_fitted(self)
-
-        # We handle the resampling of labels separately because the affine of
-        # the labels image should not impact the extraction of the signal.
-
-        niimg_iter = iter_check_niimg(
-            imgs_list,
-            ensure_ndim=None,
-            atleast_4d=False,
-            memory=self.memory_,
-            memory_level=self.memory_level,
-        )
-
-        confounds = prepare_confounds_multimaskers(self, imgs_list, confounds)
-
-        if sample_mask is None:
-            sample_mask = itertools.repeat(None, len(imgs_list))
-        elif len(sample_mask) != len(imgs_list):
-            raise ValueError(
-                f"number of sample_mask ({len(sample_mask)}) unequal to "
-                f"number of images ({len(imgs_list)})."
-            )
-
-        func = self._cache(self.transform_single_imgs)
-
-        region_signals = Parallel(n_jobs=n_jobs)(
-            delayed(func)(imgs=imgs, confounds=cfs, sample_mask=sms)
-            for imgs, cfs, sms in zip(
-                niimg_iter, confounds, sample_mask, strict=False
-            )
-        )
-        return region_signals
-
-    @fill_doc
-    def transform(self, imgs, confounds=None, sample_mask=None):
-        """Apply mask, spatial and temporal preprocessing.
-
-        Parameters
-        ----------
-        imgs : Niimg-like object, or a :obj:`list` of Niimg-like objects
-            See :ref:`extracting_data`.
-            Data to be preprocessed
-
-        %(confounds_multi)s
-
-        %(sample_mask_multi)s
-
-        Returns
-        -------
-        %(signals_transform_multi_nifti)s
-
-        """
-        check_is_fitted(self)
-
-        if not (confounds is None or isinstance(confounds, list)):
-            raise TypeError(
-                "'confounds' must be a None or a list. "
-                f"Got {confounds.__class__.__name__}."
-            )
-        if not (sample_mask is None or isinstance(sample_mask, list)):
-            raise TypeError(
-                "'sample_mask' must be a None or a list. "
-                f"Got {sample_mask.__class__.__name__}."
-            )
-        if isinstance(imgs, NiimgLike):
-            if isinstance(confounds, list):
-                confounds = confounds[0]
-            if isinstance(sample_mask, list):
-                sample_mask = sample_mask[0]
-            return super().transform(
-                imgs, confounds=confounds, sample_mask=sample_mask
-            )
-
-        return self.transform_imgs(
-            imgs,
-            confounds=confounds,
-            sample_mask=sample_mask,
-            n_jobs=self.n_jobs,
         )

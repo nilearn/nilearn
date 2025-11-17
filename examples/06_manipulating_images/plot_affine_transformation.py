@@ -102,18 +102,16 @@ img = Nifti1Image(
 from nilearn.image import resample_img
 
 img_in_mm_space = resample_img(
-    img, target_affine=np.eye(4), target_shape=(512, 512, 1), copy_header=True
+    img,
+    target_affine=np.eye(4),
+    target_shape=(512, 512, 1),
 )
 
 target_affine_3x3 = np.eye(3) * 2
 target_affine_4x4 = np.eye(4) * 2
 target_affine_4x4[3, 3] = 1.0
-img_3d_affine = resample_img(
-    img, target_affine=target_affine_3x3, copy_header=True
-)
-img_4d_affine = resample_img(
-    img, target_affine=target_affine_4x4, copy_header=True
-)
+img_3d_affine = resample_img(img, target_affine=target_affine_3x3)
+img_4d_affine = resample_img(img, target_affine=target_affine_4x4)
 target_affine_mm_space_offset_changed = np.eye(4)
 target_affine_mm_space_offset_changed[:3, 3] = img_3d_affine.affine[:3, 3]
 
@@ -121,14 +119,12 @@ img_3d_affine_in_mm_space = resample_img(
     img_3d_affine,
     target_affine=target_affine_mm_space_offset_changed,
     target_shape=(np.array(img_3d_affine.shape) * 2).astype(int),
-    copy_header=True,
 )
 
 img_4d_affine_in_mm_space = resample_img(
     img_4d_affine,
     target_affine=np.eye(4),
     target_shape=(np.array(img_4d_affine.shape) * 2).astype(int),
-    copy_header=True,
 )
 
 # %%

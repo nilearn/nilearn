@@ -38,15 +38,14 @@ than using a subject-tailored mesh.
 # Prepare data and analysis parameters
 # ------------------------------------
 #
-# Prepare the timing parameters.
-t_r = 2.4
-slice_time_ref = 0.5
 
 # %%
 # Fetch the data.
 from nilearn.datasets import fetch_localizer_first_level
 
 data = fetch_localizer_first_level()
+t_r = data.t_r
+slice_time_ref = data.slice_time_ref
 
 # %%
 # Project the :term:`fMRI` image to the surface
@@ -205,7 +204,7 @@ show()
 # Or we can save as an html file.
 from pathlib import Path
 
-from nilearn.interfaces.bids import save_glm_to_bids
+from nilearn.glm import save_glm_to_bids
 
 output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
 output_dir.mkdir(exist_ok=True, parents=True)
@@ -218,6 +217,7 @@ save_glm_to_bids(
     height_control=None,
     prefix="sub-01",
     out_dir=output_dir,
+    cluster_threshold=10,
 )
 
 report = glm.generate_report(
@@ -225,6 +225,7 @@ report = glm.generate_report(
     threshold=threshold,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=None,
+    cluster_threshold=10,
 )
 
 # %%

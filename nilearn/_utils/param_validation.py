@@ -3,7 +3,7 @@
 import numbers
 import warnings
 from collections.abc import Iterable
-from typing import Any
+from typing import Any, Literal, get_args, get_origin
 
 import numpy as np
 
@@ -44,7 +44,7 @@ def check_threshold(
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
     Returns
     -------
@@ -170,11 +170,14 @@ TYPE_MAPS = {
     "border_size": nilearn_typing.BorderSize,
     "bg_on_data": nilearn_typing.BgOnData,
     "colorbar": nilearn_typing.ColorBar,
+    "cluster_threshold": nilearn_typing.ClusterThreshold,
     "connected": nilearn_typing.Connected,
+    "copy_header": nilearn_typing.CopyHeader,
     "data_dir": nilearn_typing.DataDir,
     "design_only": nilearn_typing.DesignOnly,
     "draw_cross": nilearn_typing.DrawCross,
     "detrend": nilearn_typing.Detrend,
+    "force_resample": nilearn_typing.ForceResample,
     "high_pass": nilearn_typing.HighPass,
     "hrf_model": nilearn_typing.HrfModel,
     "keep_masked_labels": nilearn_typing.KeepMaskedLabels,
@@ -192,6 +195,7 @@ TYPE_MAPS = {
     "resume": nilearn_typing.Resume,
     "screening_percentile": nilearn_typing.ScreeningPercentile,
     "smoothing_fwhm": nilearn_typing.SmoothingFwhm,
+    "standardize": nilearn_typing.Standardize,
     "standardize_confounds": nilearn_typing.StandardizeConfounds,
     "t_r": nilearn_typing.Tr,
     "tfce": nilearn_typing.Tfce,
@@ -261,7 +265,12 @@ def check_params(fn_dict):
         type_to_check = TYPE_MAPS[k]
         value = fn_dict[k]
 
-        check_is_of_allowed_type(value, type_to_check, k)
+        if get_origin(type_to_check) is Literal:
+            allowed_values = get_args(type_to_check)
+            check_parameter_in_allowed(value, allowed_values, k)
+
+        else:
+            check_is_of_allowed_type(value, type_to_check, k)
 
 
 def check_is_of_allowed_type(
@@ -269,12 +278,12 @@ def check_is_of_allowed_type(
 ):
     if not isinstance(type_to_check, tuple):
         type_to_check = (type_to_check,)
-    type_to_check_str = ", ".join([str(x) for x in type_to_check])
-    error_msg = (
-        f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
-        f"Got: '{value.__class__.__name__}'"
-    )
     if not isinstance(value, type_to_check):
+        type_to_check_str = ", ".join([str(x) for x in type_to_check])
+        error_msg = (
+            f"'{parameter_name}' must be of type(s): '{type_to_check_str}'.\n"
+            f"Got: '{value.__class__.__name__}'"
+        )
         raise TypeError(error_msg)
 
 

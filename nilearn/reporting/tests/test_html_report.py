@@ -1,3 +1,4 @@
+import warnings
 from collections import Counter
 
 import numpy as np
@@ -8,7 +9,7 @@ from numpy.testing import assert_almost_equal
 from nilearn._utils.data_gen import generate_random_img
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.html_document import WIDTH_DEFAULT, HTMLDocument
-from nilearn.conftest import _img_maps
+from nilearn.conftest import _img_maps, _img_mask_eye
 from nilearn.image import get_data
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -47,13 +48,15 @@ def _check_html(html_view, reports_requested=True, is_fit=True):
         html_view.width = "foo"
     assert html_view.width == WIDTH_DEFAULT
 
+    assert html_view._repr_html_() == html_view.body
+
     if reports_requested and is_fit:
         assert "<th>Parameter</th>" in str(html_view)
+
     if "Surface" in str(html_view):
         assert "data:image/png;base64," in str(html_view)
     else:
         assert "data:image/svg+xml;base64," in str(html_view)
-    assert html_view._repr_html_() == html_view.body
 
 
 @pytest.fixture
@@ -106,7 +109,7 @@ def test_nifti_maps_masker_report_displayed_maps_errors(
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
     with pytest.raises(TypeError, match=("Parameter ``displayed_maps``")):
-        masker.generate_report(displayed_maps)
+        masker.generate_report(displayed_maps=displayed_maps)
 
 
 @pytest.mark.parametrize("displayed_maps", [[2, 5, 10], [0, 66, 1, 260]])
@@ -121,9 +124,10 @@ def test_nifti_maps_masker_report_maps_number_errors(
     with pytest.raises(
         ValueError, match="Report cannot display the following maps"
     ):
-        masker.generate_report(displayed_maps)
+        masker.generate_report(displayed_maps=displayed_maps)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("displayed_maps", [[1, 2], np.array([0, 1, 2])])
 def test_nifti_maps_masker_report_list_and_arrays_maps_number(
     niftimapsmasker_inputs, displayed_maps
@@ -135,7 +139,7 @@ def test_nifti_maps_masker_report_list_and_arrays_maps_number(
 
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     masker.fit()
-    html = masker.generate_report(displayed_maps)
+    html = masker.generate_report(displayed_maps=displayed_maps)
 
     assert masker._report_content["number_of_maps"] == n_regions
     assert masker._report_content["displayed_maps"] == list(displayed_maps)
@@ -147,6 +151,7 @@ def test_nifti_maps_masker_report_list_and_arrays_maps_number(
     assert html.body.count("<img") == len(displayed_maps)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("displayed_maps", [1, 3, 4, "all"])
 def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
     niftimapsmasker_inputs, displayed_maps
@@ -165,9 +170,9 @@ def test_nifti_maps_masker_report_integer_and_all_displayed_maps(
     )
     if displayed_maps != "all" and displayed_maps > n_regions:
         with pytest.warns(UserWarning, match="masker only has .* maps."):
-            html = masker.generate_report(displayed_maps)
+            html = masker.generate_report(displayed_maps=displayed_maps)
     else:
-        html = masker.generate_report(displayed_maps)
+        html = masker.generate_report(displayed_maps=displayed_maps)
 
     assert masker._report_content["number_of_maps"] == n_regions
     assert masker._report_content["displayed_maps"] == list(
@@ -190,7 +195,7 @@ def test_nifti_maps_masker_report_image_in_fit(
     masker = NiftiMapsMasker(**niftimapsmasker_inputs)
     image, _ = generate_random_img((13, 11, 12, 3), affine=affine_eye)
     masker.fit(image)
-    html = masker.generate_report(2)
+    html = masker.generate_report(displayed_maps=2)
 
     assert masker._report_content["number_of_maps"] == n_regions
 
@@ -207,7 +212,7 @@ def test_nifti_spheres_masker_report_displayed_spheres_errors(
     masker = NiftiSpheresMasker(seeds=[(1, 1, 1)])
     masker.fit()
     with pytest.raises(TypeError, match=("Parameter ``displayed_spheres``")):
-        masker.generate_report(displayed_spheres)
+        masker.generate_report(displayed_spheres=displayed_spheres)
 
 
 def test_nifti_spheres_masker_report_displayed_spheres_more_than_seeds():
@@ -251,7 +256,7 @@ def test_nifti_spheres_masker_report_displayed_spheres_list_more_than_seeds():
     seeds = [(1, 1, 1)]
     masker = NiftiSpheresMasker(seeds=seeds)
     masker.fit()
-    with pytest.raises(ValueError, match="masker only has 1 seeds."):
+    with pytest.raises(ValueError, match=r"masker only has 1 seeds."):
         masker.generate_report(displayed_spheres=displayed_spheres)
 
 
@@ -317,7 +322,7 @@ def test_nifti_labels_masker_report(
     # Check that background label was left as default
     assert masker.background_label == 0
     assert masker._report_content["description"] == (
-        "This reports shows the regions defined by the labels of the mask."
+        "This report shows the regions defined by the labels of the mask."
     )
 
     # Check that the number of regions is correct
@@ -357,6 +362,7 @@ def test_nifti_labels_masker_report(
         )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("masker_class", [NiftiLabelsMasker])
 def test_nifti_labels_masker_report_cut_coords(
     masker_class, input_parameters, img_3d_rand_eye
@@ -384,14 +390,14 @@ def test_4d_reports(img_mask_eye, affine_eye):
     masker = NiftiMasker(mask_strategy="epi")
     masker.fit(data_img_4d)
 
-    assert masker._report_content["coverage"] > 0
+    assert float(masker._report_content["coverage"]) > 0
 
     html = masker.generate_report()
     _check_html(html)
     assert "The mask includes" in str(html)
 
     # test .fit_transform method
-    masker = NiftiMasker(mask_img=img_mask_eye, standardize=True)
+    masker = NiftiMasker(mask_img=img_mask_eye, standardize="zscore_sample")
     masker.fit_transform(data_img_4d)
 
     html = masker.generate_report()
@@ -411,14 +417,35 @@ def test_overlaid_report(img_fmri):
     assert '<div class="overlay">' in str(html)
 
 
-@pytest.mark.parametrize(
-    "reports,expected", [(True, dict), (False, type(None))]
-)
-def test_multi_nifti_masker_generate_report_imgs(reports, expected, img_fmri):
+@pytest.mark.parametrize("mask_img", [None, _img_mask_eye()])
+def test_nifti_label_masker_no_warning_in_report_after_fit_transform(
+    mask_img, img_fmri
+):
+    """Check no warning about fitted image in report generation \
+        after fit_transform on image.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5121.
+    """
+    masker = NiftiMasker(mask_img=mask_img)
+    masker.fit_transform(img_fmri)
+    with warnings.catch_warnings(record=True) as warning_list:
+        masker.generate_report()
+    if warning_list:
+        assert not any(
+            "No image provided to fit" in str(x) for x in warning_list
+        )
+
+
+def test_multi_nifti_masker_generate_report_imgs(img_fmri):
     """Smoke test for generate_report method with image data."""
-    masker = MultiNiftiMasker(reports=reports)
+    masker = MultiNiftiMasker(reports=True)
     masker.fit([img_fmri, img_fmri])
-    assert isinstance(masker._reporting_data, expected)
+    assert isinstance(masker._reporting_data, dict)
+    masker.generate_report()
+
+    masker = MultiNiftiMasker(reports=False)
+    masker.fit([img_fmri, img_fmri])
+    assert masker._has_report_data() is False
     masker.generate_report()
 
 
@@ -467,7 +494,7 @@ def test_surface_masker_mask_img_generate_no_report(surf_img_2d, surf_mask_1d):
     """Smoke test generate report."""
     masker = SurfaceMasker(surf_mask_1d, reports=False).fit()
 
-    assert masker._reporting_data is None
+    assert masker._has_report_data() is False
 
     img = surf_img_2d(5)
     masker.transform(img)
@@ -502,9 +529,9 @@ def test_surface_masker_minimal_report_fit(
     _check_html(report, reports_requested=reports)
     assert '<div class="image">' in str(report)
     if not reports:
-        assert 'src="data:image/svg+xml;base64,"' in str(report)
+        assert 'src="data:image/svg+xml;base64' in str(report)
     else:
-        assert masker._report_content["coverage"] > 0
+        assert float(masker._report_content["coverage"]) > 0
         assert "The mask includes" in str(report)
 
 

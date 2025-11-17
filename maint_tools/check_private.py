@@ -1,7 +1,5 @@
 """Check that private functions are not used in public modules."""
 
-from __future__ import annotations
-
 import pandas as pd
 from rich import print
 from utils import list_functions, list_modules

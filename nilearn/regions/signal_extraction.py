@@ -175,7 +175,7 @@ def _get_labels_data(
                 "In version 0.15.0, "
                 '"keep_masked_labels" parameter will be removed.'
             ),
-            DeprecationWarning,
+            FutureWarning,
             stacklevel=find_stack_level(),
         )
 
@@ -260,11 +260,11 @@ def img_to_signals_labels(
     return_masked_atlas : :obj:`bool`, default=False
         If True, the masked atlas is returned.
 
-        .. versionchanged :: 0.13.0dev
+        .. nilearn_versionchanged :: 0.13.0dev
 
             Default changed to False.
 
-        .. deprecated:: 0.13.0dev
+        .. nilearn_deprecated:: 0.13.0dev
 
             This parameter will be removed in versions >= 0.15.0
 
@@ -338,7 +338,7 @@ def img_to_signals_labels(
                 "In version 0.15, "
                 '"return_masked_atlas" parameter will be removed.'
             ),
-            DeprecationWarning,
+            FutureWarning,
             stacklevel=find_stack_level(),
         )
         return signals, labels
@@ -354,7 +354,7 @@ def signals_to_img_labels(
 
     labels_img, mask_img must have the same shapes and affines.
 
-    .. versionchanged:: 0.9.2
+    .. nilearn_versionchanged:: 0.9.2
         Support 1D signals.
 
     Parameters
@@ -502,7 +502,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None, keep_masked_maps=False):
                 '"keep_masked_maps" parameter will be removed '
                 "in version 0.15. "
                 'Set "keep_masked_maps=False" to silence this warning.',
-                DeprecationWarning,
+                FutureWarning,
                 stacklevel=find_stack_level(),
             )
         else:

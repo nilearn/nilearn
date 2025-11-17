@@ -60,7 +60,8 @@ def test_check_masker_dict_unchanged():
     estimator = DummyEstimator()
 
     with pytest.raises(
-        ValueError, match="Estimator changes '__dict__' keys during transform."
+        ValueError,
+        match=r"Estimator changes '__dict__' keys during transform.",
     ):
         check_img_estimator_dict_unchanged(estimator)
 

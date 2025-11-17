@@ -6,6 +6,7 @@ import warnings
 
 import numpy as np
 from scipy import linalg
+from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
@@ -35,16 +36,16 @@ from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
-class SurfaceMapsMasker(_BaseSurfaceMasker):
+class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     """Extract data from a SurfaceImage, using maps of potentially overlapping
     brain regions.
 
-    .. versionadded:: 0.11.1
+    .. nilearn_versionadded:: 0.11.1
 
     Parameters
     ----------
     maps_img : :obj:`~nilearn.surface.SurfaceImage`
-        Set of maps that define the regions. representative time course \
+        Set of maps that define the regions. A representative time course \
         per map is extracted using least square regression. The data for \
         each hemisphere is of shape (n_vertices_per_hemisphere, n_regions).
 
@@ -60,7 +61,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 
@@ -158,6 +159,20 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
+        self._report_content = {
+            "description": (
+                "This report shows the input surface image "
+                "(if provided via img) overlaid with the regions provided "
+                "via maps_img."
+            ),
+            "n_vertices": {},
+            "number_of_regions": getattr(self, "n_elements_", 0),
+            "displayed_maps": [],
+            "number_of_maps": 0,
+            "summary": {},
+            "warning_message": None,
+        }
+
     @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
@@ -175,9 +190,23 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
         if imgs is not None:
             self._check_imgs(imgs)
 
+            if isinstance(imgs, SurfaceImage) and any(
+                hemi.ndim > 2 for hemi in imgs.data.parts.values()
+            ):
+                raise ValueError(
+                    "should only be SurfaceImage should 1D or 2D."
+                )
+            elif hasattr(imgs, "__iter__"):
+                for i, x in enumerate(imgs):
+                    x.data._check_n_samples(1, f"imgs[{i}]")
+
+        return self._fit(imgs)
+
+    def _fit(self, imgs):
         if self.maps_img is None:
             raise ValueError(
                 "Please provide a maps_img during initialization. "
@@ -201,39 +230,26 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         # initialize reporting content and data
-        if not self.reports:
-            self._reporting_data = None
-            return self
+        if self.reports:
+            for part in self.maps_img.data.parts:
+                self._report_content["n_vertices"][part] = (
+                    self.maps_img.mesh.parts[part].n_vertices
+                )
 
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image "
-                "(if provided via img) overlaid with the regions provided "
-                "via maps_img."
-            ),
-            "n_vertices": {},
-            "number_of_regions": self.n_elements_,
-            "summary": {},
-            "warning_message": None,
-        }
+            self._report_content["number_of_regions"] = self.n_elements_
 
-        for part in self.maps_img.data.parts:
-            self._report_content["n_vertices"][part] = (
-                self.maps_img.mesh.parts[part].n_vertices
-            )
+            self._reporting_data = {
+                "maps_img": self.maps_img_,
+                "mask": self.mask_img_,
+                "images": None,  # we will update image in transform
+            }
 
-        self._reporting_data = {
-            "maps_img": self.maps_img_,
-            "mask": self.mask_img_,
-            "images": None,  # we will update image in transform
-        }
-
-        if self.clean_args is None:
-            self.clean_args_ = {}
-        else:
-            self.clean_args_ = self.clean_args
+            if self.clean_args is None:
+                self.clean_args_ = {}
+            else:
+                self.clean_args_ = self.clean_args
 
         mask_logger("fit_done", verbose=self.verbose)
 
@@ -264,8 +280,15 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         check_is_fitted(self)
 
         check_compatibility_mask_and_images(self.maps_img, imgs)
-
         check_polymesh_equal(self.maps_img.mesh, imgs.mesh)
+
+        if isinstance(imgs, SurfaceImage) and any(
+            hemi.ndim > 2 for hemi in imgs.data.parts.values()
+        ):
+            raise ValueError("should only be SurfaceImage should 1D or 2D.")
+        elif hasattr(imgs, "__iter__"):
+            for i, x in enumerate(imgs):
+                x.data._check_n_samples(1, f"imgs[{i}]")
 
         imgs = at_least_2d(imgs)
 
@@ -387,7 +410,9 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         return imgs
 
-    def generate_report(self, displayed_maps=10, engine="matplotlib"):
+    def generate_report(
+        self, title=None, displayed_maps=10, engine="matplotlib"
+    ):
         """Generate an HTML report for the current ``SurfaceMapsMasker``
         object.
 
@@ -396,6 +421,8 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
 
         Parameters
         ----------
+        title : :obj:`str`, default=None
+            title for the report. If None, title will be the class name.
         displayed_maps : :obj:`int`, or :obj:`list`, \
                          or :class:`~numpy.ndarray`, or "all", default=10
             Indicates which maps will be displayed in the HTML report.
@@ -444,45 +471,42 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         """
         # need to have matplotlib installed to generate reports no matter what
         # engine is selected
-        from nilearn.reporting.html_report import generate_report
-
-        if not is_matplotlib_installed():
-            return generate_report(self)
-
-        check_parameter_in_allowed(engine, ["plotly", "matplotlib"], "engine")
-
-        # switch to matplotlib if plotly is selected but not installed
-        if engine == "plotly" and not is_plotly_installed():
-            engine = "matplotlib"
-            warnings.warn(
-                "Plotly is not installed. "
-                "Switching to matplotlib for report generation.",
-                stacklevel=find_stack_level(),
+        if is_matplotlib_installed():
+            check_parameter_in_allowed(
+                engine, ["plotly", "matplotlib"], "engine"
             )
-        if hasattr(self, "_report_content"):
+
+            # switch to matplotlib if plotly is selected but not installed
+            if engine == "plotly" and not is_plotly_installed():
+                engine = "matplotlib"
+                warnings.warn(
+                    "Plotly is not installed. "
+                    "Switching to matplotlib for report generation.",
+                    stacklevel=find_stack_level(),
+                )
             self._report_content["engine"] = engine
 
-        incorrect_type = not isinstance(
-            displayed_maps, (list, np.ndarray, int, str)
-        )
-        incorrect_string = (
-            isinstance(displayed_maps, str) and displayed_maps != "all"
-        )
-        not_integer = (
-            not isinstance(displayed_maps, str)
-            and np.array(displayed_maps).dtype != int
-        )
-        if incorrect_type or incorrect_string or not_integer:
-            raise TypeError(
-                "Parameter ``displayed_maps`` of "
-                "``generate_report()`` should be either 'all' or "
-                "an int, or a list/array of ints. You provided a "
-                f"{type(displayed_maps)}"
+            incorrect_type = not isinstance(
+                displayed_maps, (list, np.ndarray, int, str)
             )
+            incorrect_string = (
+                isinstance(displayed_maps, str) and displayed_maps != "all"
+            )
+            not_integer = (
+                not isinstance(displayed_maps, str)
+                and np.array(displayed_maps).dtype != int
+            )
+            if incorrect_type or incorrect_string or not_integer:
+                raise TypeError(
+                    "Parameter ``displayed_maps`` of "
+                    "``generate_report()`` should be either 'all' or "
+                    "an int, or a list/array of ints. You provided a "
+                    f"{type(displayed_maps)}"
+                )
 
-        self.displayed_maps = displayed_maps
+            self.displayed_maps = displayed_maps
 
-        return generate_report(self)
+        return super().generate_report(title)
 
     def _reporting(self):
         """Load displays needed for report.
@@ -492,14 +516,7 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         displays : list
             A list of all displays to be rendered.
         """
-        import matplotlib.pyplot as plt
-
         from nilearn.reporting.utils import figure_to_png_base64
-
-        # Handle the edge case where this function is
-        # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
-            return [None]
 
         maps_img = self._reporting_data["maps_img"]
 
@@ -552,7 +569,6 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 embeded_images.append(fig)
             elif self._report_content["engine"] == "matplotlib":
                 embeded_images.append(figure_to_png_base64(fig))
-                plt.close()
 
         return embeded_images
 
@@ -562,12 +578,11 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
         If transform() was applied to an image, this image is used as
         background on which the maps are plotted.
         """
-        import matplotlib.pyplot as plt
-
-        from nilearn.plotting import plot_surf, view_surf
-
         threshold = 1e-6
+
         if self._report_content["engine"] == "plotly":
+            from nilearn.plotting import view_surf
+
             # squeeze the last dimension
             for part in roi.data.parts:
                 roi.data.parts[part] = np.squeeze(
@@ -581,31 +596,10 @@ class SurfaceMapsMasker(_BaseSurfaceMasker):
                 hemi="both",
                 cmap=self.cmap,
             ).get_iframe(width=500)
+
         elif self._report_content["engine"] == "matplotlib":
-            # TODO: possibly allow to generate a report with other views
-            views = ["lateral", "medial"]
-            hemispheres = ["left", "right"]
-            fig, axes = plt.subplots(
-                len(views),
-                len(hemispheres),
-                subplot_kw={"projection": "3d"},
-                figsize=(20, 20),
-                layout="constrained",
+            fig = self._generate_figure(
+                img=roi, bg_map=bg_img, threshold=threshold
             )
-            axes = np.atleast_2d(axes)
-            for ax_row, view in zip(axes, views, strict=False):
-                for ax, hemi in zip(ax_row, hemispheres, strict=False):
-                    # very low threshold to only make 0 values transparent
-                    plot_surf(
-                        surf_map=roi,
-                        bg_map=bg_img,
-                        hemi=hemi,
-                        view=view,
-                        figure=fig,
-                        axes=ax,
-                        cmap=self.cmap,
-                        colorbar=False,
-                        threshold=threshold,
-                        bg_on_data=True,
-                    )
+
         return fig

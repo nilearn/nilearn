@@ -4,7 +4,6 @@ on multi subject MRI data.
 
 import collections.abc
 import inspect
-import itertools
 import warnings
 
 import numpy as np
@@ -22,7 +21,6 @@ from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     mask_logger,
-    prepare_confounds_multimaskers,
 )
 from nilearn.maskers.nifti_masker import (
     NiftiMasker,
@@ -34,7 +32,6 @@ from nilearn.masking import (
     compute_multi_epi_mask,
     load_mask_img,
 )
-from nilearn.typing import NiimgLike
 
 
 def _get_mask_strategy(strategy: str):
@@ -90,7 +87,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
 
     %(smoothing_fwhm)s
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 
@@ -172,7 +169,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     See Also
     --------
@@ -256,23 +253,11 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         del y
         check_params(self.__dict__)
 
-        self._report_content = {
-            "description": (
-                "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (in green). We "
-                "recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "warning_message": None,
-            "n_elements": 0,
-            "coverage": 0,
-        }
         self._overlay_text = (
             "\n To see the input Nifti image before resampling, "
             "hover over the displayed image."
         )
 
-        self._sanitize_cleaning_parameters()
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
         self.mask_img_ = self._load_mask(imgs)
@@ -304,10 +289,11 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             # to the mask computing function
             # depending if they are supported.
             signature = dict(**inspect.signature(compute_mask).parameters)
-            mask_args = {}
-            for arg in ["n_jobs", "target_shape", "target_affine"]:
-                if arg in signature and getattr(self, arg) is not None:
-                    mask_args[arg] = getattr(self, arg)
+            mask_args = {
+                arg: getattr(self, arg)
+                for arg in ["n_jobs", "target_shape", "target_affine"]
+                if arg in signature and getattr(self, arg) is not None
+            }
             if self.mask_args:
                 skipped_args = []
                 for arg in self.mask_args:
@@ -341,7 +327,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                 stacklevel=find_stack_level(),
             )
 
-        self._reporting_data = None
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:  # save inputs for reporting
             self._reporting_data = {
                 "mask": self.mask_img_,
@@ -364,7 +350,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             target_shape=self.target_shape,
             interpolation="nearest",
             copy=False,
-            copy_header=True,
         )
 
         if self.target_affine is not None:
@@ -392,7 +377,6 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                     target_affine=self.affine_,
                     copy=False,
                     interpolation="nearest",
-                    copy_header=True,
                 )
 
             self._reporting_data["transform"] = [resampl_imgs, self.mask_img_]
@@ -416,7 +400,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
 
         %(sample_mask_multi)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         copy : :obj:`bool`, default=True
             If True, guarantees that output array has no memory in common with
@@ -441,15 +425,9 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             memory_level=self.memory_level,
         )
 
-        confounds = prepare_confounds_multimaskers(self, imgs_list, confounds)
+        confounds = self._prepare_confounds(imgs_list, confounds)
 
-        if sample_mask is None:
-            sample_mask = itertools.repeat(None, len(imgs_list))
-        elif len(sample_mask) != len(imgs_list):
-            raise ValueError(
-                f"number of sample_mask ({len(sample_mask)}) unequal to "
-                f"number of images ({len(imgs_list)})."
-            )
+        sample_mask = self._prepare_sample_mask(imgs_list, sample_mask)
 
         # Ignore the mask-computing params: they are not useful and will
         # just invalidate the cache for no good reason
@@ -493,52 +471,3 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             )
         )
         return data
-
-    @fill_doc
-    def transform(self, imgs, confounds=None, sample_mask=None):
-        """Apply mask, spatial and temporal preprocessing.
-
-        Parameters
-        ----------
-        imgs : Niimg-like object, or a :obj:`list` of Niimg-like objects
-            See :ref:`extracting_data`.
-            Data to be preprocessed
-
-        %(confounds_multi)s
-
-        %(sample_mask_multi)s
-
-            .. versionadded:: 0.8.0
-
-        Returns
-        -------
-        %(signals_transform_multi_nifti)s
-
-        """
-        check_is_fitted(self)
-
-        if not (confounds is None or isinstance(confounds, list)):
-            raise TypeError(
-                "'confounds' must be a None or a list. "
-                f"Got {confounds.__class__.__name__}."
-            )
-        if not (sample_mask is None or isinstance(sample_mask, list)):
-            raise TypeError(
-                "'sample_mask' must be a None or a list. "
-                f"Got {sample_mask.__class__.__name__}."
-            )
-        if isinstance(imgs, NiimgLike):
-            if isinstance(confounds, list):
-                confounds = confounds[0]
-            if isinstance(sample_mask, list):
-                sample_mask = sample_mask[0]
-            return super().transform(
-                imgs, confounds=confounds, sample_mask=sample_mask
-            )
-
-        return self.transform_imgs(
-            imgs,
-            confounds=confounds,
-            sample_mask=sample_mask,
-            n_jobs=self.n_jobs,
-        )

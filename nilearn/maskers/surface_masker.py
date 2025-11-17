@@ -1,11 +1,10 @@
 """Masker for surface objects."""
 
-from __future__ import annotations
-
 from copy import deepcopy
 from warnings import warn
 
 import numpy as np
+from sklearn.base import ClassNamePrefixFeaturesOutMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
@@ -23,10 +22,10 @@ from nilearn.surface.utils import check_polymesh_equal
 
 
 @fill_doc
-class SurfaceMasker(_BaseSurfaceMasker):
+class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     """Extract data from a :obj:`~nilearn.surface.SurfaceImage`.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -35,7 +34,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
     %(smoothing_fwhm)s
         This parameter is not implemented yet.
 
-    %(standardize_maskers)s
+    %(standardize_false)s
 
     %(standardize_confounds)s
 
@@ -118,7 +117,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
-        # content to inject in the HTML template
+
         self._report_content = {
             "description": (
                 "This report shows the input surface image overlaid "
@@ -129,13 +128,11 @@ class SurfaceMasker(_BaseSurfaceMasker):
             "n_vertices": {},
             # unused but required in HTML template
             "number_of_regions": None,
-            "summary": None,
+            "summary": {},
             "warning_message": None,
             "n_elements": 0,
             "coverage": 0,
         }
-        # data necessary to construct figure for the report
-        self._reporting_data = None
 
     def __sklearn_is_fitted__(self):
         return (
@@ -159,7 +156,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
                 warn(
                     f"[{self.__class__.__name__}.fit] "
                     "Generation of a mask has been"
-                    " requested (y != None) while a mask was"
+                    " requested (img != None) while a mask was"
                     " given at masker creation. Given mask"
                     " will be used.",
                     stacklevel=find_stack_level(),
@@ -216,9 +213,24 @@ class SurfaceMasker(_BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
         if imgs is not None:
             self._check_imgs(imgs)
 
+            if isinstance(imgs, SurfaceImage) and any(
+                hemi.ndim > 2 for hemi in imgs.data.parts.values()
+            ):
+                raise ValueError(
+                    "should only be SurfaceImage should 1D or 2D."
+                )
+            elif hasattr(imgs, "__iter__"):
+                for i, x in enumerate(imgs):
+                    x.data._check_n_samples(1, f"imgs[{i}]")
+
+        return self._fit(imgs)
+
+    def _fit(self, imgs):
+        """Keep private to call it with MultiSurfaceMasker too."""
         self._fit_cache()
 
         self._fit_mask_img(imgs)
@@ -232,6 +244,7 @@ class SurfaceMasker(_BaseSurfaceMasker):
             start = stop
         self.n_elements_ = int(stop)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._report_content["n_elements"] = self.n_elements_
             for part in self.mask_img_.data.parts:
@@ -283,8 +296,15 @@ class SurfaceMasker(_BaseSurfaceMasker):
         check_is_fitted(self)
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
-
         check_polymesh_equal(self.mask_img_.mesh, imgs.mesh)
+
+        if isinstance(imgs, SurfaceImage) and any(
+            hemi.ndim > 2 for hemi in imgs.data.parts.values()
+        ):
+            raise ValueError("should only be SurfaceImage should 1D or 2D.")
+        elif hasattr(imgs, "__iter__"):
+            for i, x in enumerate(imgs):
+                x.data._check_n_samples(1, f"imgs[{i}]")
 
         if self.reports:
             self._reporting_data["images"] = imgs
@@ -355,17 +375,6 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
-    def generate_report(self):
-        """Generate a report for the SurfaceMasker.
-
-        Returns
-        -------
-        list(None) or HTMLReport
-        """
-        from nilearn.reporting.html_report import generate_report
-
-        return generate_report(self)
-
     def _reporting(self):
         """Load displays needed for report.
 
@@ -375,22 +384,12 @@ class SurfaceMasker(_BaseSurfaceMasker):
             A list of all displays figures encoded as bytes to be rendered.
             Or a list with a single None element.
         """
-        # avoid circular import
-        import matplotlib.pyplot as plt
-
         from nilearn.reporting.utils import figure_to_png_base64
-
-        # Handle the edge case where this function is
-        # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
-            return [None]
 
         fig = self._create_figure_for_report()
 
         if not fig:
             return [None]
-
-        plt.close()
 
         init_display = figure_to_png_base64(fig)
 
@@ -401,67 +400,47 @@ class SurfaceMasker(_BaseSurfaceMasker):
 
         Returns
         -------
-        None, :class:`~matplotlib.figure.Figure` or\
-              :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
+        None, :class:`~matplotlib.figure.Figure`
             Returns ``None`` in case the masker was not fitted.
         """
-        # avoid circular import
-        import matplotlib.pyplot as plt
-
-        from nilearn.plotting import plot_surf, plot_surf_contours
-
         if not self._reporting_data["images"] and not getattr(
             self, "mask_img_", None
         ):
             return None
 
-        background_data = self.mask_img_
+        img = self.mask_img_
         vmin = None
         vmax = None
         if self._reporting_data["images"]:
-            background_data = self._reporting_data["images"]
-            background_data = mean_img(background_data)
-            vmin, vmax = background_data.data._get_min_max()
+            img = self._reporting_data["images"]
+            img = mean_img(img)
+            vmin, vmax = img.data._get_min_max()
 
-        views = ["lateral", "medial"]
-        hemispheres = ["left", "right"]
-
-        fig, axes = plt.subplots(
-            len(views),
-            len(hemispheres),
-            subplot_kw={"projection": "3d"},
-            figsize=(20, 20),
-            layout="constrained",
+        fig = self._generate_figure(
+            img=img, roi_map=self.mask_img_, vmin=vmin, vmax=vmax
         )
-        axes = np.atleast_2d(axes)
-
-        for ax_row, view in zip(axes, views, strict=False):
-            for ax, hemi in zip(ax_row, hemispheres, strict=False):
-                plot_surf(
-                    surf_map=background_data,
-                    hemi=hemi,
-                    view=view,
-                    figure=fig,
-                    axes=ax,
-                    cmap=self.cmap,
-                    vmin=vmin,
-                    vmax=vmax,
-                )
-
-                colors = None
-                n_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
-                if n_regions == 1:
-                    colors = "b"
-                elif n_regions == 2:
-                    colors = ["w", "b"]
-
-                plot_surf_contours(
-                    roi_map=self.mask_img_,
-                    hemi=hemi,
-                    view=view,
-                    figure=fig,
-                    axes=ax,
-                    colors=colors,
-                )
 
         return fig
+
+    def _set_contour_colors(self, hemi) -> str | list[str] | None:
+        """Set the colors for the contours in the report."""
+        if hemi in ["left", "right"]:
+            n_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
+        else:
+            n_regions = len(
+                np.unique(
+                    np.concatenate(
+                        [
+                            self.mask_img_.data.parts["left"],
+                            self.mask_img_.data.parts["right"],
+                        ]
+                    )
+                )
+            )
+
+        if n_regions == 1:
+            return "b"
+        elif n_regions == 2:
+            return ["w", "b"]
+        else:
+            return None

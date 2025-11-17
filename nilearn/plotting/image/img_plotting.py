@@ -46,6 +46,7 @@ from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
+    DEFAULT_TICK_FORMAT,
     check_threshold_not_negative,
     get_colorbar_and_data_ranges,
 )
@@ -53,7 +54,6 @@ from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.plotting.image.utils import (
     MNI152TEMPLATE,
-    get_cropped_cbar_ticks,
     load_anat,
 )
 from nilearn.signal import clean
@@ -98,7 +98,7 @@ def _plot_img_with_bg(
     display_factory=get_slicer,
     cbar_vmin=None,
     cbar_vmax=None,
-    cbar_tick_format="%.2g",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     brain_color=(0.5, 0.5, 0.5),
     decimals=False,
     radiological=False,
@@ -280,12 +280,6 @@ def _plot_img_with_bg(
         display.draw_cross()
     if title is not None and title != "":
         display.title(title)
-    if hasattr(display, "_cbar"):
-        cbar = display._cbar
-        new_tick_locs = get_cropped_cbar_ticks(
-            cbar.vmin, cbar.vmax, threshold, n_ticks=len(cbar.locator.locs)
-        )
-        cbar.set_ticks(new_tick_locs)
 
     return save_figure_if_needed(display, output_file)
 
@@ -304,7 +298,7 @@ def plot_img(
     draw_cross=True,
     black_bg=False,
     colorbar=True,
-    cbar_tick_format="%.2g",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     resampling_interpolation="continuous",
     bg_img=None,
     vmin=None,
@@ -463,7 +457,7 @@ def plot_anat(
     dim="auto",
     cmap="gray",
     colorbar=True,
-    cbar_tick_format="%.2g",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     radiological=False,
     vmin=None,
     vmax=None,
@@ -592,7 +586,7 @@ def plot_epi(
     draw_cross=True,
     black_bg=True,
     colorbar=True,
-    cbar_tick_format="%.2g",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     cmap="gray",
     vmin=None,
     vmax=None,
@@ -751,7 +745,7 @@ def plot_roi(
     cmap="gist_ncar",
     dim="auto",
     colorbar=True,
-    cbar_tick_format="%i",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     vmin=None,
     vmax=None,
     resampling_interpolation="nearest",
@@ -953,7 +947,7 @@ def plot_prob_atlas(
         To turn off background image, just pass "bg_img=False".
         Default=MNI152TEMPLATE.
 
-        .. versionadded:: 0.4.0
+        .. nilearn_versionadded:: 0.4.0
 
     view_type : {'auto', 'contours', 'filled_contours', 'continuous'}, \
                 default='auto'
@@ -1197,7 +1191,7 @@ def plot_stat_map(
     output_file=None,
     display_mode="ortho",
     colorbar=True,
-    cbar_tick_format="%.2g",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     figure=None,
     axes=None,
     title=None,
@@ -1366,7 +1360,7 @@ def plot_glass_brain(
     output_file=None,
     display_mode="ortho",
     colorbar=True,
-    cbar_tick_format="%.2g",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     figure=None,
     axes=None,
     title=None,
@@ -1899,7 +1893,7 @@ def plot_carpet(
             If ``t_r`` is not provided, it will be inferred from ``img``'s
             header (``img.header.get_zooms()[-1]``).
 
-        .. versionadded:: 0.9.1
+        .. nilearn_versionadded:: 0.9.1
             Prior to this, ``t_r`` would be inferred from ``img`` without
             user input.
 
@@ -1920,14 +1914,15 @@ def plot_carpet(
         can be used to define the colormap for coloring the labels placed
         on the side of the carpet plot.
 
-    %(standardize)s
+    %(standardize_true)s
 
         .. note::
 
             Added to control passing value to `standardize` of ``signal.clean``
             to call new behavior since passing "zscore" or True (default) is
-            deprecated. This parameter will be deprecated in version 0.13 and
-            removed in version 0.15.
+            deprecated.
+            This parameter will be changed to "zscore_sample"
+            in version 0.14 and removed in version 0.15.
 
     Returns
     -------
@@ -1962,13 +1957,7 @@ def plot_carpet(
     if is_atlas:
         background_label = 0
 
-        atlas_img_res = resample_to_img(
-            mask_img,
-            img,
-            interpolation="nearest",
-            copy_header=True,
-            force_resample=False,  # TODO (nilearn  >= 0.13.0) change to True
-        )
+        atlas_img_res = resample_to_img(mask_img, img, interpolation="nearest")
         atlas_bin = math_img(
             f"img != {background_label}",
             img=atlas_img_res,
@@ -2143,7 +2132,7 @@ def plot_img_comparison(
             "from 'nilearn.plotting.img_comparison' "
             "to silence this warning."
         ),
-        DeprecationWarning,
+        FutureWarning,
         stacklevel=find_stack_level(),
     )
 

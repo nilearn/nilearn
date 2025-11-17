@@ -26,7 +26,7 @@ def test_deprecation_function_moved(matplotlib_pyplot, img_3d_mni):
         plot_img_comparison as old_fn,
     )
 
-    with pytest.warns(DeprecationWarning, match="moved"):
+    with pytest.warns(FutureWarning, match="moved"):
         old_fn(
             img_3d_mni,
             img_3d_mni,
@@ -49,6 +49,16 @@ def test_plot_img_comparison_masker(matplotlib_pyplot, img_3d_mni, masker):
         img_3d_mni,
         img_3d_mni,
         masker=masker,
+        plot_hist=False,
+    )
+
+
+def test_plot_img_comparison_file(matplotlib_pyplot, img_3d_mni, tmp_path):
+    """Tests plot_img_comparison with files."""
+    img_3d_mni.to_filename(tmp_path / "img_compare.nii.gz")
+    plot_img_comparison(
+        tmp_path / "img_compare.nii.gz",
+        str(tmp_path / "img_compare.nii.gz"),
         plot_hist=False,
     )
 
@@ -78,7 +88,7 @@ def test_plot_img_comparison_error(surf_img_1d, img_3d_mni):
         plot_img_comparison(surf_img_1d, img_3d_mni)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     """Tests for plot_img_comparison."""
     _, axes = plt.subplots(2, 1)
@@ -131,7 +141,7 @@ def test_plot_img_comparison(matplotlib_pyplot, rng, tmp_path):
     assert len(ax_1.patches) == length * 2 * gridsize
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_plot_img_comparison_without_plot(matplotlib_pyplot, rng):
     """Tests for plot_img_comparison no plot should return same result."""
     _, axes = plt.subplots(2, 1)
@@ -242,7 +252,7 @@ def test_plot_bland_altman_errors(
     ):
         plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[-1])
 
-    with pytest.raises(TypeError, match="with all values different from 0."):
+    with pytest.raises(TypeError, match=r"with all values different from 0."):
         plot_bland_altman(img_3d_rand_eye, img_3d_rand_eye, lims=[0, 1, -2, 0])
 
 

@@ -141,7 +141,7 @@ neg_log_pvals_bonferroni_unmasked = nifti_masker.inverse_transform(
 from nilearn.image import get_data
 
 # Use the fMRI mean image as a surrogate of anatomical data
-mean_fmri_img = image.mean_img(func_filename, copy_header=True)
+mean_fmri_img = image.mean_img(func_filename)
 
 threshold = -np.log10(0.1)  # 10% corrected
 

@@ -17,6 +17,8 @@ import sys
 from pathlib import Path
 
 from nilearn._version import __version__
+from sphinx.domains import changeset
+from sphinx.locale import _
 
 # ----------------------------------------------------------------------------
 
@@ -171,7 +173,7 @@ pygments_dark_style = "monokai"
 suppress_warnings = ["image.not_readable", "config.cache"]
 
 linkcheck_allowed_redirects = {
-    "https://db.humanconnectome.org/": r"https://db.humanconnectome.org/app/template/.*",
+    "https://balsa.wustl.edu": r"https://balsa.wustl.eduapp/template/.*",
     r"http://humanconnectome.org/.*": r"https://store.humanconnectome.org/.*",
     # Issue redirect to PR
     r"https://github.com/nilearn/nilearn/issues/.*": r"https://github.com/nilearn/nilearn/pull/.*",
@@ -182,35 +184,38 @@ linkcheck_allowed_redirects = {
 }
 
 linkcheck_ignore = [
-    r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
-    r"https://fcon_1000.projects.nitrc.org/.*",
-    r"https://www.cambridge.org/be/universitypress/.*",
-    r"https://sites.wustl.edu/oasisbrains/.*"
-    "http://brainomics.cea.fr/localizer/",
+    # ignore nilearn github issues mostly for the sake of speed
+    # given that there many of those in our changelog
+    r"https://github.com/nilearn/nilearn/issues/.*",
+    # those are needed because figures
+    # cannot take sphinx gallery reference as target
+    r"../auto_examples/.*html",
+    r"auto_examples/.*html",
     "https://github.com/nilearn/nilearn/issues/new/choose",
-    "https://pages.saclay.inria.fr/bertrand.thirion/",
-    "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
-    "http://brainomics.cea.fr/localizer/",
-    "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
+    "https://rrid.site/data/record/nlx_144509-1/SCR_001362/resolver?q=nilearn&l=nilearn&i=rrid:scr_001362",
     (
         "https://www.info.gouv.fr/"
         "organisation/"  # codespell:ignore organisation
         "secretariat-general-pour-l-investissement-sgpi"
     ),
-    "https://pkgs.org/search/.*",
-    # ignore nilearn github issues mostly for the sake of speed
-    # given that there many of those in our changelog
-    r"https://github.com/nilearn/nilearn/issues/.*",
-    # those are needed because figures cannot take sphinx gallery reference
-    # as target
-    r"../auto_examples/.*html",
-    r"auto_examples/.*html",
     # give a 403 Client Error: Forbidden for url:
     r"https://sites.wustl.edu/oasisbrains/.*",
     # similarly below are publishers that do not like doi redirects:
     r"https://doi.org/.*",
     # do not check download links for OSF
     r"https://osf.io/.*/download",
+    # neurovault and some of our datasets websites can be flaky
+    r"https://neurovault.org/",
+    r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
+    r"https://fcon_1000.projects.nitrc.org/.*",
+    r"https://www.cambridge.org/be/universitypress/.*",
+    r"https://sites.wustl.edu/oasisbrains/.*",
+    "http://brainomics.cea.fr/localizer/",
+    "https://childmind.org/science/global-open-science/healthy-brain-network/",
+    "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
+    "https://pages.saclay.inria.fr/bertrand.thirion/",
+    "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
+    "https://pkgs.org/search/.*",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
@@ -456,7 +461,25 @@ def touch_example_backreferences(
         examples_path.touch()
 
 
+# adapting https://github.com/sphinx-doc/sphinx/blob/master/sphinx/domains/changeset.py
+changeset.versionlabels["nilearn_versionadded"] = _("Added in Nilearn %s")
+changeset.versionlabels["nilearn_versionchanged"] = _("Changed in Nilearn %s")
+changeset.versionlabels["nilearn_deprecated"] = _(
+    "Deprecated since Nilearn %s"
+)
+changeset.versionlabels["nilearn_versionremoved"] = _("Removed in Nilearn %s")
+changeset.versionlabel_classes["nilearn_versionadded"] = "added"
+changeset.versionlabel_classes["nilearn_versionchanged"] = "changed"
+changeset.versionlabel_classes["nilearn_deprecated"] = "deprecated"
+changeset.versionlabel_classes["nilearn_versionremoved"] = "removed"
+
+
 def setup(app):
+    app.add_directive("nilearn_versionadded", changeset.VersionChange)
+    app.add_directive("nilearn_versionchanged", changeset.VersionChange)
+    app.add_directive("nilearn_deprecated", changeset.VersionChange)
+    app.add_directive("nilearn_versionremoved", changeset.VersionChange)
+
     app.connect("autodoc-process-docstring", touch_example_backreferences)
 
 

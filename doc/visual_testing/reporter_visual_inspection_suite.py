@@ -17,7 +17,6 @@ import pandas as pd
 from nilearn.datasets import (
     fetch_adhd,
     fetch_atlas_difumo,
-    fetch_atlas_msdl,
     fetch_atlas_schaefer_2018,
     fetch_atlas_surf_destrieux,
     fetch_atlas_yeo_2011,
@@ -69,9 +68,7 @@ def report_flm_adhd_dmn(build_type):
         _generate_dummy_html(filenames=["flm_adhd_dmn.html"])
         return None
 
-    t_r = 2.0
-    slice_time_ref = 0.0
-    n_scans = 176
+    adhd_dataset = fetch_adhd(n_subjects=1)
 
     pcc_coords = (0, -53, 26)
 
@@ -79,18 +76,18 @@ def report_flm_adhd_dmn(build_type):
         [pcc_coords],
         radius=10,
         detrend=True,
-        standardize=True,
+        standardize="zscore_sample",
         low_pass=0.1,
         high_pass=0.01,
-        t_r=t_r,
+        t_r=adhd_dataset.t_r,
         memory="nilearn_cache",
         memory_level=1,
     )
 
-    adhd_dataset = fetch_adhd(n_subjects=1)
     seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
+    n_scans = seed_time_series.shape[0]
 
-    frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
+    frametimes = np.linspace(0, (n_scans - 1) * adhd_dataset.t_r, n_scans)
 
     design_matrix = make_first_level_design_matrix(
         frametimes,
@@ -101,7 +98,7 @@ def report_flm_adhd_dmn(build_type):
     dmn_contrast = np.array([1] + [0] * (design_matrix.shape[1] - 1))
     contrasts = {"seed_based_glm": dmn_contrast}
 
-    first_level_model = FirstLevelModel(slice_time_ref=slice_time_ref)
+    first_level_model = FirstLevelModel(slice_time_ref=0)
     first_level_model = first_level_model.fit(
         run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
     )
@@ -233,7 +230,7 @@ def report_flm_fiac(build_type):
     data = fetch_fiac_first_level()
     fmri_img = [data["func1"], data["func2"]]
 
-    mean_img_ = mean_img(fmri_img[0], copy_header=True)
+    mean_img_ = mean_img(fmri_img[0])
 
     design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 
@@ -289,7 +286,6 @@ def report_slm_oasis(build_type):
         fetch_icbm152_brain_gm_mask(),
         oasis_dataset.gray_matter_maps[0],
         interpolation="nearest",
-        copy_header=True,
     )
 
     design_matrix = _make_design_matrix_slm_oasis(oasis_dataset, n_subjects)
@@ -399,7 +395,7 @@ def report_nifti_maps_masker(build_type):
         _generate_dummy_html(filenames=["nifti_maps_masker.html"])
         return None
 
-    atlas = fetch_atlas_msdl()
+    atlas = fetch_atlas_difumo(dimension=64, resolution_mm=2)
     atlas_filename = atlas["maps"]
 
     data = fetch_development_fmri(n_subjects=1)
@@ -411,10 +407,35 @@ def report_nifti_maps_masker(build_type):
         memory="nilearn_cache",
         cmap="gray",
         memory_level=1,
+        reports=False,
     )
-    masker.fit(data.func[0])
+    report = masker.generate_report(
+        title="Reporting disabled and Unfitted Nifti Maps Masker Report"
+    )
+    report.save_as_html(
+        REPORTS_DIR / "nifti_maps_masker_no_reporting_unfitted.html"
+    )
 
-    report = masker.generate_report(displayed_maps=[2, 6, 7, 16, 21])
+    masker.reports = True
+    report = masker.generate_report(title="Unfitted Nifti Maps Masker Report")
+    report.save_as_html(REPORTS_DIR / "nifti_maps_masker_unfitted.html")
+
+    masker.reports = False
+    masker.fit(data.func[0])
+    report = masker.generate_report(
+        title="Reporting disabled - Fitted Nifti Maps Masker Report"
+    )
+    report.save_as_html(
+        REPORTS_DIR / "nifti_maps_masker_no_reporting_fitted.html"
+    )
+
+    masker.reports = True
+    masker.fit(data.func[0])
+    print(masker._reporting_data)
+    report = masker.generate_report(
+        title="Nifti Maps Masker - Fitted with Development FMRI",
+        displayed_maps=[2, 6, 7],
+    )
     report.save_as_html(REPORTS_DIR / "nifti_maps_masker.html")
 
     return report
@@ -439,13 +460,16 @@ def report_nifti_labels_masker(build_type):
         lut=atlas.lut,
         standardize="zscore_sample",
     )
+
     masker.fit()
     report = masker.generate_report()
     report.save_as_html(REPORTS_DIR / "nifti_labels_masker_atlas.html")
 
     data = fetch_development_fmri(n_subjects=1)
     masker.fit(data.func[0])
-    report = masker.generate_report()
+    report = masker.generate_report(
+        title="Nifti Labels Masker Report - Fitted with Development FMRI"
+    )
     report.save_as_html(REPORTS_DIR / "nifti_labels_masker_fitted.html")
 
     return report
@@ -469,7 +493,9 @@ def report_nifti_masker(build_type):
 
     data = fetch_development_fmri(n_subjects=1)
     masker.fit(data.func[0])
-    report = masker.generate_report()
+    report = masker.generate_report(
+        title="Nifti Masker Fitted with Development FMRI"
+    )
     report.save_as_html(REPORTS_DIR / "nifti_masker.html")
     return report
 
@@ -496,12 +522,14 @@ def report_multi_nifti_masker(build_type):
         cmap="gray",
     )
     masker.fit()
-    empty_report = masker.generate_report()
+    empty_report = masker.generate_report(title="Multi Nifti Masker Empty")
     empty_report.save_as_html(REPORTS_DIR / "multi_nifti_masker.html")
 
     fmri_random_runs_filenames = data.func[12:]
     masker.fit(fmri_random_runs_filenames)
-    report = masker.generate_report()
+    report = masker.generate_report(
+        title="Multi Nifti Masker Fitted with Miyawaki 2008"
+    )
     report.save_as_html(REPORTS_DIR / "multi_nifti_masker_fitted.html")
 
     return empty_report, report
@@ -592,7 +620,9 @@ def report_sphere_masker(build_type):
         )
         return None
 
-    t_r = 2.0
+    data = fetch_development_fmri(n_subjects=1)
+
+    t_r = data.t_r
 
     pcc_coords = [(0, -53, 26), (5, 53, -26), (0, 0, 0)]
 
@@ -600,7 +630,7 @@ def report_sphere_masker(build_type):
         pcc_coords,
         radius=10,
         detrend=True,
-        standardize=True,
+        standardize="zscore_sample",
         low_pass=0.1,
         high_pass=0.01,
         t_r=t_r,
@@ -610,8 +640,6 @@ def report_sphere_masker(build_type):
 
     report_unfitted = masker.generate_report([0, 2])
     report_unfitted.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
-
-    data = fetch_development_fmri(n_subjects=1)
 
     masker.fit(data.func[0])
 
@@ -723,7 +751,7 @@ def report_surface_maps_masker(build_type):
         return None, None
 
     # Fetch a volumetric probabilistic atlas
-    atlas = fetch_atlas_msdl()
+    atlas = fetch_atlas_difumo(dimension=64, resolution_mm=2)
     # Fetch the fsaverage5 mesh
     fsaverage5_mesh = load_fsaverage("fsaverage5")["pial"]
     # project atlas to the surface
@@ -736,10 +764,10 @@ def report_surface_maps_masker(build_type):
     masker = SurfaceMapsMasker(surf_atlas)
     masker.fit_transform(surf_img)
     # generate report with plotly engine
-    report_plotly = masker.generate_report(engine="plotly")
+    report_plotly = masker.generate_report(engine="plotly", displayed_maps=3)
     report_plotly.save_as_html(REPORTS_DIR / "surface_maps_masker_plotly.html")
     # now with matplotlib
-    report_mpl = masker.generate_report(engine="matplotlib")
+    report_mpl = masker.generate_report(engine="matplotlib", displayed_maps=3)
     report_mpl.save_as_html(
         REPORTS_DIR / "surface_maps_masker_matplotlib.html"
     )

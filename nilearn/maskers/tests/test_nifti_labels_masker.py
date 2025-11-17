@@ -60,7 +60,7 @@ else:
         check(estimator)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
@@ -134,10 +134,10 @@ def test_nifti_labels_masker_errors(
     # Test all kinds of mismatch between shapes and between affines
     masker11.fit()
     with pytest.raises(
-        ValueError, match="Images have different affine matrices."
+        ValueError, match=r"Images have different affine matrices."
     ):
         masker11.transform(fmri12_img)
-    with pytest.raises(ValueError, match="Images have incompatible shapes."):
+    with pytest.raises(ValueError, match=r"Images have incompatible shapes."):
         masker11.transform(fmri21_img)
 
     masker11 = NiftiLabelsMasker(
@@ -488,46 +488,6 @@ def test_nifti_labels_masker_resampling_to_none(
         ValueError, match="Following field of view errors were detected"
     ):
         masker.fit_transform(fmri_img)
-
-
-def test_standardization(rng, affine_eye, shape_3d_default, img_labels):
-    """Check output properly standardized with 'standardize' parameter."""
-    n_samples = 400
-
-    signals = rng.standard_normal(size=(np.prod(shape_3d_default), n_samples))
-    means = (
-        rng.standard_normal(size=(np.prod(shape_3d_default), 1)) * 50 + 1000
-    )
-    signals += means
-    img = Nifti1Image(
-        signals.reshape((*shape_3d_default, n_samples)), affine_eye
-    )
-
-    # Unstandarized
-    masker = NiftiLabelsMasker(img_labels, standardize=False)
-    unstandarized_label_signals = masker.fit_transform(img)
-
-    # z-score
-    masker = NiftiLabelsMasker(img_labels, standardize="zscore_sample")
-    trans_signals = masker.fit_transform(img)
-
-    assert_almost_equal(trans_signals.mean(0), 0)
-    assert_almost_equal(trans_signals.std(0), 1, decimal=3)
-
-    # psc
-    masker = NiftiLabelsMasker(img_labels, standardize="psc")
-    trans_signals = masker.fit_transform(img)
-
-    assert_almost_equal(trans_signals.mean(0), 0)
-    assert_almost_equal(
-        trans_signals,
-        (
-            unstandarized_label_signals
-            / unstandarized_label_signals.mean(0)
-            * 100
-            - 100
-        ),
-    )
 
 
 def test_nifti_labels_masker_with_mask(
@@ -928,7 +888,7 @@ def test_check_labels_errors(shape_3d_default, affine_eye):
         shape_3d_default, affine=affine_eye, n_regions=2
     )
 
-    with pytest.raises(TypeError, match="'labels' must be a list."):
+    with pytest.raises(TypeError, match=r"'labels' must be a list."):
         NiftiLabelsMasker(labels_img, labels={"foo", "bar", "baz"}).fit()
 
     with pytest.raises(
@@ -1229,3 +1189,43 @@ def test_no_background(n_regions, img_labels, shape_3d_default, affine_eye):
     assert len(masker.labels_) == n_expected_regions
     assert len(masker.region_ids_) == n_expected_regions
     assert len(masker.region_names_) == n_expected_regions
+
+
+@pytest.mark.parametrize(
+    "lut",
+    [
+        pd.Series({0: "Background", 1: "Frontal", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Correct lut
+        pd.Series({1: "Frontal", 2: "Temporal", 0: "Background"}).reset_index(
+            name="name"
+        ),  # Correct lut but wrong order
+        pd.Series({0: "background", 1: "Frontal", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Background not capitalized
+        pd.Series({1: "Frontal", 0: "background", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Background not capitalized and wrong order
+        pd.Series({0: "unknown", 1: "Frontal", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Background other label
+        pd.Series({1: "Frontal", 0: "unknown", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Background other label and wrong order
+    ],
+)
+def test_lut_shift(lut):
+    """Test order of labels in lut.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5813
+    """
+    # Labels: 0=background, 1=Frontal, 2=Temporal
+    labels_data = np.zeros((4, 4, 4), dtype=np.int32)
+    labels_data[0:2, :, :] = 1  # top half = region 1
+    labels_data[2:, :, :] = 2  # bottom half = region 2
+    labels_img = Nifti1Image(labels_data, affine=np.eye(4))
+
+    masker = NiftiLabelsMasker(labels_img=labels_img, lut=lut).fit()
+
+    assert masker.region_names_ == {0: "Frontal", 1: "Temporal"}
+    assert masker.lut_["name"].to_list() == ["Frontal", "Temporal"]

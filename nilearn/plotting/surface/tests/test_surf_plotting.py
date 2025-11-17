@@ -112,7 +112,7 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
         plot_surf(in_memory_mesh, engine="plotly")
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
     """Test nilearn.plotting.surface.surf_plotting.plot_surf function with
     available engine backends.
@@ -166,7 +166,7 @@ def test_plot_surf_swap_hemi(plt, engine, surf_img_1d, hemi, flip_surf_img):
     """Check error is raised if background image is incompatible."""
     with pytest.raises(
         MeshDimensionError,
-        match="Number of vertices do not match for between meshes.",
+        match=r"Number of vertices do not match for between meshes.",
     ):
         plot_surf(
             surf_map=surf_img_1d,
@@ -427,7 +427,7 @@ def test_plot_surf_with_title(matplotlib_pyplot, in_memory_mesh, bg_map):
 
 def test_surface_plotting_axes_error(matplotlib_pyplot, surf_img_1d):
     """Test error msg for invalid axes."""
-    figure, axes = matplotlib_pyplot.subplots()
+    _, axes = matplotlib_pyplot.subplots()
     with pytest.raises(AttributeError, match="the projection must be '3d'"):
         plot_surf_stat_map(stat_map=surf_img_1d, axes=axes)
 
@@ -551,12 +551,12 @@ def test_plot_surf_contours_error(
     # we need an invalid parcellation for testing
     invalid_parcellation = rng.uniform(size=(in_memory_mesh.n_vertices))
     with pytest.raises(
-        ValueError, match="Vertices in parcellation do not form region."
+        ValueError, match=r"Vertices in parcellation do not form region."
     ):
         plot_surf_contours(in_memory_mesh, invalid_parcellation)
 
     _, axes = matplotlib_pyplot.subplots(1, 1)
-    with pytest.raises(ValueError, match="Axes must be 3D."):
+    with pytest.raises(ValueError, match=r"Axes must be 3D."):
         plot_surf_contours(in_memory_mesh, parcellation, axes=axes)
 
     msg = "All elements of colors .* matplotlib .* RGBA"
@@ -866,17 +866,17 @@ def test_plot_surf_roi_error(engine, rng, in_memory_mesh, surf_roi_data):
 
     # negative value in roi map
     surf_roi_data[0] = -1
-    with pytest.warns(
-        DeprecationWarning,
-        match="Negative values in roi_map will no longer be allowed",
+    with pytest.raises(
+        ValueError,
+        match="Negative values in roi_map",
     ):
         plot_surf_roi(in_memory_mesh, roi_map=surf_roi_data, engine=engine)
 
     # float value in roi map
     surf_roi_data[0] = 1.2
-    with pytest.warns(
-        DeprecationWarning,
-        match="Non-integer values in roi_map will no longer be allowed",
+    with pytest.raises(
+        ValueError,
+        match="Non-integer values in roi_map",
     ):
         plot_surf_roi(in_memory_mesh, roi_map=surf_roi_data, engine=engine)
 
@@ -1111,6 +1111,24 @@ def test_plot_img_on_surf_colorbar(matplotlib_pyplot, img_3d_mni, kwargs):
     """
     plot_img_on_surf(
         img_3d_mni, hemispheres=["right"], views=["lateral"], **kwargs
+    )
+
+
+@pytest.mark.parametrize(
+    "tick_format",
+    ["%i", "%.2g", "%.1f"],
+)
+def test_plot_img_on_surf_colorbar_tick_format(
+    matplotlib_pyplot, img_3d_mni, tick_format
+):
+    """Smoke test for nilearn.plotting.surface.plot_img_on_surf for
+    different tick_formats.
+    """
+    plot_img_on_surf(
+        img_3d_mni,
+        hemispheres=["right"],
+        views=["lateral"],
+        cbar_tick_format=tick_format,
     )
 
 

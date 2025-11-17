@@ -205,7 +205,7 @@ class Parcellations(_MultiPCA):
     kmeans, ward, complete, average are leveraged from scikit-learn.
     rena is built into nilearn.
 
-    .. versionadded:: 0.4.1
+    .. nilearn_versionadded:: 0.4.1
 
     Parameters
     ----------
@@ -224,22 +224,13 @@ class Parcellations(_MultiPCA):
     %(random_state)s
         Default=0.
 
-    mask : Niimg-like object or :class:`~nilearn.surface.SurfaceImage`,\
-           or :class:`nilearn.maskers.NiftiMasker`,\
-           :class:`nilearn.maskers.MultiNiftiMasker` or \
-           :class:`nilearn.maskers.SurfaceMasker`, optional
-        Mask/Masker used for masking the data.
-        If mask image if provided, it will be used in the MultiNiftiMasker or
-        SurfaceMasker (depending on the type of mask image).
-        If an instance of either maskers is provided, then this instance
-        parameters will be used in masking the data by overriding the default
-        masker parameters.
-        If None, mask will be automatically computed by a MultiNiftiMasker
-        with default parameters for Nifti images and no mask will be used for
-        SurfaceImage.
+    %(mask_decomposition)s
+
     %(smoothing_fwhm)s
         Default=4.0.
+
     %(standardize_false)s
+
     %(detrend)s
 
         .. note::

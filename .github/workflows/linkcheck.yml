@@ -8,14 +8,23 @@
 name: linkcheck
 
 on:
-    push:
-        branches:
-        -   main
     schedule:
-    # Run every Monday at 8am UTC
-    -   cron: 0 8 * * 1
+        # Uses the cron schedule for github actions
+        # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+        # Run every Monday at midnight UTC
+        #     ┌───────────── minute (0 - 59)
+        #     │ ┌───────────── hour (0 - 23)
+        #     │ │ ┌───────────── day of the month (1 - 31)
+        #     │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+        #     │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     * * * * *
+    -   cron: 0 0 * * 1
 
-    # Allows you to run this workflow manually from the Actions tab
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
     workflow_dispatch:
 
 concurrency:
@@ -27,7 +36,6 @@ env:
     FORCE_COLOR: true
 
 jobs:
-
     # check the links in the doc
     linkcheck:
         if: github.repository == 'nilearn/nilearn'
@@ -36,12 +44,31 @@ jobs:
         -   name: Checkout nilearn
             uses: actions/checkout@v5
         -   name: Install the latest version of uv
-            uses: astral-sh/setup-uv@v6
+            uses: astral-sh/setup-uv@v7
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
-                python-version: '3.13'
+                python-version: '3.14'
         -   name: Install packages
             run: uv tool install tox --with=tox-uv --with=tox-gh-actions
         -   name: check links
+            id: linkcheck
             run: tox run -e linkcheck
+            continue-on-error: true
+
+        -   name: Create issue
+            if: ${{ steps.linkcheck.outcome != 'success' }}
+            uses: JasonEtco/create-an-issue@v2.9.2
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run_id: ${{ github.run_id }}
+                repository: ${{ github.repository }}
+                workflow_name: LINKCHECK
+            with:
+                filename: .github/workflow_failure.md
+                update_existing: true
+                search_existing: open
+
+        -   name: Return failure
+            if: ${{ steps.linkcheck.outcome != 'success' }}
+            run: exit 1

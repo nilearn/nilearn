@@ -74,6 +74,7 @@ Some other past or present contributors are:
 * `Bertrand Thirion`_: Inria, Saclay, France
 * `Binh Nguyen`_
 * `Caglar Cakan`_: Technische Universität Berlin, Berlin, Germany
+* `Chloe Hampson`_: Florida International University, Miami, United States
 * `Chris Gorgolewski`_: Google LLC
 * `Chris Markiewicz`_: Stanford University, Stanford, California, USA
 * `Christian Horea`_: Dartmouth College, PBS, Hanover, New Hampshire, USA
@@ -157,6 +158,7 @@ Some other past or present contributors are:
 * `Michael Notter`_: ams OSRAM, Martigny, Lausanne, Switzerland
 * `Michael Waskom`_: Flatiron health, New York, USA
 * `Michelle Wang`_: Origami lab, McGill University, Montréal, Canada
+* `Milton Camacho`_: University of Calgary, Calgary, Alberta, Canada
 * `Mohammad Torabi`_: Origami lab, McGill University, Montréal, Canada
 * `Moritz Boos`_
 * `Mudassir Chapra`_

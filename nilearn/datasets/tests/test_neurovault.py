@@ -1142,11 +1142,11 @@ def test_timeout_error(capsys, request_mocker):
     assert len(data.images) == 0
 
     captured = capsys.readouterr()
-    match = re.search("Try increasing", captured.out)
+    match = re.search(r"Try increasing", captured.out)
     assert match is not None
 
 
 def test_fetch_neurovault_motor_task():
     """Test deprecation fetch_neurovault_motor_task."""
-    with pytest.warns(DeprecationWarning, match="will be removed"):
+    with pytest.warns(FutureWarning, match="will be removed"):
         neurovault.fetch_neurovault_motor_task(verbose=0)

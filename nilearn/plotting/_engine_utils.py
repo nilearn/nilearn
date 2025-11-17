@@ -6,6 +6,7 @@ from warnings import warn
 
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.cm import ScalarMappable
 from matplotlib.colors import (
     LinearSegmentedColormap,
     ListedColormap,
@@ -15,7 +16,13 @@ from matplotlib.colors import (
 from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_threshold
-from nilearn.plotting._utils import check_threshold_not_negative
+from nilearn.plotting._utils import (
+    DEFAULT_TICK_FORMAT,
+    check_threshold_not_negative,
+    get_cbar_bounds,
+    get_cbar_ticks,
+    get_colorbar_and_data_ranges,
+)
 
 
 def threshold_cmap(
@@ -66,30 +73,9 @@ def colorscale(
     specified vmin, vmax, and threshold values. Return the results as dict to
     be used in plotly.
     """
-    abs_values = np.abs(values)
-
-    if (
-        symmetric_cmap
-        and vmin is not None
-        and vmax is not None
-        and vmin != -vmax
-    ):
-        warn(
-            f"Specified {vmin=} and {vmax=} values do not create a symmetric"
-            " colorbar. The values will be modified to be symmetric.",
-            stacklevel=find_stack_level(),
-        )
-    if vmax is None:
-        vmax = abs_values.max()
-    if vmin is None:
-        vmin = values.min()
-    # cast to float to avoid TypeError if vmax/vmin is a numpy boolean
-    vmax = float(vmax)
-    vmin = float(vmin)
-
-    if symmetric_cmap:
-        vmax = max(abs(vmin), abs(vmax))
-        vmin = -vmax
+    _, _, vmin, vmax = get_colorbar_and_data_ranges(
+        values, vmin, vmax, symmetric_cmap
+    )
 
     if threshold is not None:
         threshold = check_threshold(threshold, values, fast_abs_percentile)
@@ -153,4 +139,53 @@ def create_colormap_from_lut(cmap, default_cmap="gist_ncar"):
     # Create a colormap from the list of colors
     return LinearSegmentedColormap.from_list(
         "custom_colormap", colors, N=len(colors)
+    )
+
+
+def create_colorbar_for_fig(
+    fig,
+    axes,
+    cmap,
+    norm,
+    threshold,
+    cbar_vmin=None,
+    cbar_vmax=None,
+    n_ticks=5,
+    tick_format=DEFAULT_TICK_FORMAT,
+    spacing="proportional",
+    orientation="vertical",
+    threshold_color=(0.5, 0.5, 0.5, 1.0),
+):
+    """Create a colorbar for the specified figure and return."""
+    cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
+    cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
+
+    # in rare cases where plotting an image of zeroes
+    # this avoids a matplolib error
+    if cbar_vmax == cbar_vmin:
+        cbar_vmax += 1
+        cbar_vmin += -1
+
+    ticks = get_cbar_ticks(
+        cbar_vmin,
+        cbar_vmax,
+        threshold=threshold,
+        n_ticks=n_ticks,
+        tick_format=tick_format,
+    )
+    thrs_cmap = threshold_cmap(cmap, norm, threshold, threshold_color)
+    bounds = get_cbar_bounds(cbar_vmin, cbar_vmax, thrs_cmap.N, tick_format)
+
+    mappable = ScalarMappable(norm=norm, cmap=thrs_cmap)
+    # if norm is specified, no need to set data
+    mappable.set_array([])
+
+    return fig.colorbar(
+        mappable,
+        cax=axes,
+        ticks=ticks,
+        boundaries=bounds,
+        spacing=spacing,
+        orientation=orientation,
+        format=tick_format,
     )

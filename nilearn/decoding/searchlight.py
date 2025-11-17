@@ -70,10 +70,7 @@ def search_light(
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator or None, default=None
-        A cross-validation generator. If None, a 3-fold cross
-        validation is used or 3-fold stratified cross-validation
-        when y is supplied.
+    %(cvNone_3)s
 
     %(n_jobs_all)s
 
@@ -129,6 +126,7 @@ class GroupIterator:
         yield from np.array_split(np.arange(self.n_features), self.n_jobs)
 
 
+@fill_doc
 def _group_iter_search_light(
     list_rows,
     estimator,
@@ -174,9 +172,7 @@ def _group_iter_search_light(
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator or None, default=None
-        A cross-validation generator. If None, a 3-fold cross validation is
-        used or 3-fold stratified cross-validation when y is supplied.
+    %(cvNone_3)s
 
     thread_id : int
         process id, used for display.
@@ -195,7 +191,7 @@ def _group_iter_search_light(
     t0 = time.time()
     for i, row in enumerate(list_rows):
         kwargs = {"scoring": scoring, "groups": groups}
-        if isinstance(cv, KFold):
+        if isinstance(cv, (KFold)):
             kwargs = {"scoring": scoring}
 
         with warnings.catch_warnings():  # might not converge
@@ -266,10 +262,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
         test data (X_test) and the test target (y_test) if y is
         not None.
 
-    cv : cross-validation generator or None, default=None
-        A cross-validation generator. If None, a 3-fold cross
-        validation is used or 3-fold stratified cross-validation
-        when y is supplied.
+    %(cvNone_3)s
 
     %(verbose0)s
 
@@ -282,24 +275,24 @@ class SearchLight(TransformerMixin, BaseEstimator):
         1D array containing the searchlight scores corresponding
         to the masked region only.
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
-        .. versionadded:: 0.12.1
+        .. nilearn_versionadded:: 0.12.1
 
     scores_ : numpy.ndarray
         3D array containing searchlight scores for each voxel, aligned
          with the mask.
 
-         .. versionadded:: 0.11.0
+         .. nilearn_versionadded:: 0.11.0
 
     process_mask_ : numpy.ndarray
         Boolean mask array representing the voxels included in the
          searchlight computation.
 
-         .. versionadded:: 0.11.0
+         .. nilearn_versionadded:: 0.11.0
 
     Notes
     -----
@@ -384,7 +377,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     @property
     def _estimator_type(self):
-        # TODO (sklearn >= 1.6.0) remove
+        # TODO (sklearn >= 1.8.0) remove
         if self.estimator == "svr":
             return "regressor"
         elif self.estimator == "svc":

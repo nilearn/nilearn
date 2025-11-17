@@ -222,7 +222,7 @@ def check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse):
     assert_array_less(np.diff(all_mse.mean(1)), 0)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("model_intercept", [True, False])
 def test_permuted_ols_check_h0_noeffect_labelswap_centered(model_intercept):
     """Check distributions of permutations when tested vars are centered."""
@@ -240,7 +240,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap_centered(model_intercept):
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_permuted_ols_check_h0_noeffect_labelswap_uncentered():
     """Check distributions of permutations when tested vars are uncentered."""
     # create dummy design with no effect
@@ -256,7 +256,7 @@ def test_permuted_ols_check_h0_noeffect_labelswap_uncentered():
     check_ktest_p_values_distribution_and_mse(all_kstest_pvals, all_mse)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_permuted_ols_check_h0_noeffect_signswap():
     """Check that h0 is close to the theoretical distribution \
     for permuted OLS with sign swap.
@@ -801,8 +801,8 @@ def test_cluster_level_parameters_warnings(cluster_level_design, masker):
     # masker is defined, but threshold is not.
     # no cluster-level inference is performed, but there's a warning.
     with pytest.warns(
-        DeprecationWarning,
-        match='The ``"output_type"`` parameter for "permuted_ols"',
+        FutureWarning,
+        match="'output_type'.*is deprecated",
     ):
         out = permuted_ols(
             tested_var,
@@ -821,7 +821,7 @@ def test_cluster_level_parameters_warnings(cluster_level_design, masker):
     # raise a warning, and get a dictionary.
     with pytest.warns(
         Warning,
-        match='If "threshold" is not None',
+        match="If 'threshold' is not None",
     ):
         out = permuted_ols(
             tested_var,
@@ -953,7 +953,7 @@ def test_permuted_ols_no_covar_n_job_error(dummy_design):
     target_var, tested_var, *_ = dummy_design
 
     with pytest.raises(
-        ValueError, match="'n_jobs == 0' is not a valid choice."
+        ValueError, match=r"'n_jobs == 0' is not a valid choice."
     ):
         permuted_ols(
             tested_var,
@@ -967,7 +967,7 @@ def test_permuted_ols_target_vars_error(dummy_design):
     target_var, tested_var, *_ = dummy_design
 
     with pytest.raises(
-        ValueError, match="'target_vars' should be a 2D array."
+        ValueError, match=r"'target_vars' should be a 2D array."
     ):
         permuted_ols(
             tested_var,
@@ -1006,7 +1006,7 @@ def test_cluster_level_parameters_error_no_masker(cluster_level_design):
     # but masker is not defined.
     with pytest.raises(
         ValueError,
-        match='If "threshold" is not None, masker must be defined as well.',
+        match=r"If 'threshold' is not None, masker must be defined as well.",
     ):
         permuted_ols(
             tested_var,

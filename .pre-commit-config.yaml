@@ -10,7 +10,6 @@ ci:
 exclude: |
     (?x)^(
         nilearn/datasets/tests/data/localizer_behavioural.tsv
-        | nilearn/externals/.*
         | nilearn/plotting/data/js/.*js
         | nilearn/_version.py
         | asv_benchmarks/asv.conf.json
@@ -34,12 +33,9 @@ repos:
 -   repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
     hooks:
+    -   id: rst-backticks
     -   id: rst-directive-colons
     -   id: rst-inline-touching-normal
--   repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.10.0
-    hooks:
-    -   id: rst-backticks
 
     # Checks for spelling errors
 -   repo: https://github.com/codespell-project/codespell
@@ -75,20 +71,19 @@ repos:
                 maint_tools/templates/index.html
             )$
 
+    # Lint and format Python code
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.12
+    rev: v0.14.4
     hooks:
-    # Run the linter.
     -   id: ruff-check
         # args: [--statistics]
-        args: [--fix, --show-fixes]
-    # Run the formatter.
+        args: [--fix, --show-fixes, --unsafe-fixes]
     -   id: ruff-format
         # args: [--diff]
 
-    # check imports contracts
+    # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter
-    rev: v2.4
+    rev: v2.6
     hooks:
     -   id: import-linter
         args: [--verbose]
@@ -101,7 +96,7 @@ repos:
         args: [--config=pyproject.toml, nilearn]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.17.1
+    rev: v1.18.2
     hooks:
     -   id: mypy
         files: nilearn
