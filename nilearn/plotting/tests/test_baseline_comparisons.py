@@ -35,6 +35,7 @@ from nilearn.plotting import (
     plot_glass_brain,
     plot_img,
     plot_img_comparison,
+    plot_img_on_surf,
     plot_matrix,
     plot_prob_atlas,
     plot_roi,
@@ -391,6 +392,32 @@ def test_plot_surf_surface_colorbar_plotly(
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
     )
+
+
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("bg_on_data", [True, False])
+@pytest.mark.parametrize("symmetric_cmap", [True, False])
+@pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.parametrize("title", [None, "Foo"])
+def test_plot_img_on_surf(bg_on_data, symmetric_cmap, colorbar, title):
+    stat_img = load_sample_motor_activation_image()
+    fig, _ = plot_img_on_surf(
+        stat_map=stat_img,
+        views=[
+            "lateral",
+            "medial",
+            "dorsal",
+            "ventral",
+            "anterior",
+            "posterior",
+        ],
+        hemispheres=["left", "right"],
+        bg_on_data=bg_on_data,
+        symmetric_cmap=symmetric_cmap,
+        colorbar=colorbar,
+        title=title,
+    )
+    return fig
 
 
 # ---------------------- design matrix plotting -------------------------------
