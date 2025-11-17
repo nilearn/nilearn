@@ -99,7 +99,9 @@ def list_parameters_with_defaults(ast_def):
     return default_args
 
 
-def get_missing(docstring, default_args):
+def get_missing(
+    docstring, default_args
+) -> tuple[list[str], list[str], list[str]]:
     """Return missing default values documentation.
 
     Returns
