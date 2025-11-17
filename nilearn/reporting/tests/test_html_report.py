@@ -1,4 +1,3 @@
-import warnings
 from collections import Counter
 
 import numpy as np
@@ -9,7 +8,6 @@ from numpy.testing import assert_almost_equal
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 from nilearn._utils.html_document import WIDTH_DEFAULT, HTMLDocument
 from nilearn.conftest import _img_maps, _surf_maps_img
-from nilearn.conftest import _img_maps, _img_mask_eye
 from nilearn.image import get_data
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
