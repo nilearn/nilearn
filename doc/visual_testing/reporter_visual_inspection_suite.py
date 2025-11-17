@@ -379,9 +379,7 @@ def report_surface_slm():
 # %%%%%%%%%% MASKER REPORTS %%%%%%%%%%
 
 
-def _generate_masker_report_files_partial(
-    masker, **kwargs
-) -> tuple[HTMLReport, None]:
+def _generate_masker_report_files_partial(masker, **kwargs) -> HTMLReport:
     """Generate masker report files for partial doc build.
 
     Should generate reports for:
@@ -390,8 +388,7 @@ def _generate_masker_report_files_partial(
 
     Returns
     -------
-    tuple[HTMLReport, None]
-        First element is the unfitted masker report.
+    HTMLReport: First element is the unfitted masker report.
     """
     masker_class_name = masker.__class__.__name__
 
@@ -412,7 +409,7 @@ def _generate_masker_report_files_partial(
 
     _generate_dummy_html(filenames=[f"{masker_class_name}_fitted.html"])
 
-    return unfitted_report, None
+    return unfitted_report
 
 
 def _generate_masker_report_files(
@@ -433,9 +430,7 @@ def _generate_masker_report_files(
     """
     masker_class_name = masker.__class__.__name__
 
-    unfitted_report = _generate_masker_report_files_partial(masker, **kwargs)[
-        0
-    ]
+    unfitted_report = _generate_masker_report_files_partial(masker, **kwargs)
 
     masker.reports = True
     masker.fit(data)
@@ -457,7 +452,7 @@ def report_nifti_masker(build_type):
     )
 
     if build_type == "partial":
-        return _generate_masker_report_files_partial(masker)
+        return _generate_masker_report_files_partial(masker), None
     else:
         data = load_sample_motor_activation_image()
         return _generate_masker_report_files(masker, data=data)
@@ -470,7 +465,7 @@ def report_nifti_labels_masker(build_type):
     )
 
     if build_type == "partial":
-        return _generate_masker_report_files_partial(masker)
+        return _generate_masker_report_files_partial(masker), None
     else:
         data = fetch_development_fmri(n_subjects=1)
         return _generate_masker_report_files(masker, data=data.func[0])
@@ -489,7 +484,7 @@ def report_nifti_maps_masker(build_type):
     )
 
     if build_type == "partial":
-        return _generate_masker_report_files_partial(masker)
+        return _generate_masker_report_files_partial(masker), None
     else:
         data = fetch_development_fmri(n_subjects=1)
         return _generate_masker_report_files(
@@ -511,7 +506,7 @@ def report_sphere_masker(build_type):
     )
 
     if build_type == "partial":
-        return _generate_masker_report_files_partial(masker)
+        return _generate_masker_report_files_partial(masker), None
     else:
         data = fetch_development_fmri(n_subjects=1)
         masker.t_r = data.t_r
@@ -547,7 +542,7 @@ def report_surface_masker(build_type):
     masker = SurfaceMasker(mask)
 
     if build_type == "partial":
-        return _generate_masker_report_files_partial(masker)
+        return _generate_masker_report_files_partial(masker), None
     else:
         surface_stat_image = load_sample_motor_activation_image_on_surface()
         return _generate_masker_report_files(masker, surface_stat_image)
@@ -566,7 +561,7 @@ def report_surface_label_masker(build_type):
     masker = SurfaceLabelsMasker(labels_img, lut=destrieux.lut)
 
     if build_type == "partial":
-        return _generate_masker_report_files_partial(masker)
+        return _generate_masker_report_files_partial(masker), None
     else:
         surface_stat_image = load_sample_motor_activation_image_on_surface()
         return _generate_masker_report_files(masker, surface_stat_image)
@@ -588,7 +583,7 @@ def report_surface_maps_masker(build_type):
                 "SurfaceMapsMasker_fitted_matplotlib.html",
             ]
         )
-        return _generate_masker_report_files_partial(masker)
+        return _generate_masker_report_files_partial(masker), None
     else:
         surface_stat_image = load_sample_motor_activation_image_on_surface()
 

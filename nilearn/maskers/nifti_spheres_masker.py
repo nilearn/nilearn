@@ -435,50 +435,47 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if not self._has_report_data():
             return [None]
 
-        if self._has_report_data():
-            seeds = self._reporting_data["seeds"]
-            img = self._reporting_data["images"]
-            if img is None:
-                img = load_mni152_template()
-                positions = seeds
-            else:
-                positions = [
-                    np.round(
-                        coord_transform(
-                            *seed,
-                            np.linalg.inv(img.affine),  # type: ignore[call-arg]
-                        )
-                    ).astype(int)
-                    for seed in seeds
-                ]
-
-            columns = [
-                "seed number",
-                "coordinates",
-                "position",
-                "radius",
-                "size (in mm^3)",
-                "size (in voxels)",
-                "relative size (in %)",
+        seeds = self._reporting_data["seeds"]
+        img = self._reporting_data["images"]
+        if img is None:
+            img = load_mni152_template()
+            positions = seeds
+        else:
+            positions = [
+                np.round(
+                    coord_transform(
+                        *seed,
+                        np.linalg.inv(img.affine),  # type: ignore[call-arg]
+                    )
+                ).astype(int)
+                for seed in seeds
             ]
-            regions_summary: dict[str, Any] = {c: [] for c in columns}
 
-            radius = 1.0 if self.radius is None else self.radius
+        columns = [
+            "seed number",
+            "coordinates",
+            "position",
+            "radius",
+            "size (in mm^3)",
+            "size (in voxels)",
+            "relative size (in %)",
+        ]
+        regions_summary: dict[str, Any] = {c: [] for c in columns}
 
-            for idx, seed in enumerate(seeds):
-                regions_summary["seed number"].append(idx)
-                regions_summary["coordinates"].append(str(seed))
-                regions_summary["position"].append(positions[idx])
-                regions_summary["radius"].append(radius)
-                regions_summary["size (in voxels)"].append("not implemented")
-                regions_summary["size (in mm^3)"].append(
-                    round(4.0 / 3.0 * np.pi * radius**3, 2)
-                )
-                regions_summary["relative size (in %)"].append(
-                    "not implemented"
-                )
+        radius = 1.0 if self.radius is None else self.radius
 
-            self._report_content["summary"] = regions_summary
+        for idx, seed in enumerate(seeds):
+            regions_summary["seed number"].append(idx)
+            regions_summary["coordinates"].append(str(seed))
+            regions_summary["position"].append(positions[idx])
+            regions_summary["radius"].append(radius)
+            regions_summary["size (in voxels)"].append("not implemented")
+            regions_summary["size (in mm^3)"].append(
+                round(4.0 / 3.0 * np.pi * radius**3, 2)
+            )
+            regions_summary["relative size (in %)"].append("not implemented")
+
+        self._report_content["summary"] = regions_summary
 
         return self._create_figure_for_report()
 
