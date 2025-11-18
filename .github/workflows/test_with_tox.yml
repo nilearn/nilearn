@@ -100,7 +100,7 @@ jobs:
         runs-on: ${{ matrix.os }}
 
         strategy:
-            fail-fast: false
+            fail-fast: true
             matrix:
                 description: [latest dependencies]
                 py: ${{ fromJSON(needs.define-matrix.outputs.py) }}
