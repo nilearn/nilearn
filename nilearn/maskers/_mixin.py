@@ -23,6 +23,7 @@ from nilearn.image.image import (
     iter_check_niimg,
 )
 from nilearn.reporting import HTMLReport
+from nilearn.image.utils import get_indices_from_image
 from nilearn.surface.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
@@ -414,12 +415,12 @@ class _ReportingMixin:
         """
         return hasattr(self, "_reporting_data")
 
-    def generate_report(self, title=None) -> list[None] | HTMLReport:
+    def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.
 
         Parameters
         ----------
-        title : :obj:`str`, default=None
+        title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
 
         Returns
@@ -427,17 +428,12 @@ class _ReportingMixin:
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        self._report_content["title"] = title
-
         from nilearn.reporting.html_report import generate_report
+
+        self._report_content["title"] = title
 
         return generate_report(self)
 
     @abc.abstractmethod
     def _reporting(self):
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def _create_figure_for_report(self):
-        """Generate figure for report."""
         raise NotImplementedError()

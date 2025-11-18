@@ -4,6 +4,7 @@ import contextlib
 
 import pytest
 
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn.utils.discovery import all_displays, all_estimators, all_functions
 
 with contextlib.suppress(ImportError):
@@ -23,7 +24,6 @@ with contextlib.suppress(ImportError):
     ],
 )
 def test_all_estimators(
-    matplotlib_pyplot,  # noqa : ARG001
     type_filter,
     n_expected,
 ):
@@ -33,13 +33,14 @@ def test_all_estimators(
     assert len(estimators) == n_expected
 
 
-def test_all_functions(
-    matplotlib_pyplot,  # noqa : ARG001
-):
+def test_all_functions():
     """Check number of functions in public API."""
     fn = all_functions()
     print(fn)
-    assert len(fn) == 173
+    if is_matplotlib_installed():
+        assert len(fn) == 170
+    else:
+        assert len(fn) == 136
 
 
 @pytest.mark.parametrize(
@@ -53,9 +54,11 @@ def test_all_functions(
 def test_all_displays(
     type_filter,
     n_expected,
-    matplotlib_pyplot,  # noqa : ARG001
 ):
     """Check number of functions in public API."""
     disp = all_displays(type_filter)
     print(disp)
-    assert len(disp) == n_expected
+    if is_matplotlib_installed():
+        assert len(disp) == n_expected
+    else:
+        assert len(disp) == 0

@@ -11,6 +11,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
 from nilearn._utils.param_validation import check_params
@@ -379,8 +380,44 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "n_elements": 0,
             "coverage": 0,
             "summary": {},
-            "warning_message": None,
+            "warning_messages": [],
         }
+
+    def generate_report(self, title: str | None = None):
+        """Generate an HTML report for the current object.
+
+        Parameters
+        ----------
+        title : :obj:`str` or None, default=None
+            title for the report. If None, title will be the class name.
+
+        Returns
+        -------
+        report : `nilearn.reporting.html_report.HTMLReport`
+            HTML report for the masker.
+        """
+        from nilearn.reporting.html_report import generate_report
+
+        self._report_content["title"] = title
+
+        if self._has_report_data():
+            img = self._reporting_data["images"]
+
+            if img is None:  # images were not provided to fit
+                msg = (
+                    "No image provided to fit in NiftiMasker. "
+                    "Setting image to mask for reporting."
+                )
+                self._report_content["warning_messages"].append(msg)
+
+            elif self._reporting_data["dim"] == 5:
+                msg = (
+                    "A list of 4D subject images were provided to fit. "
+                    "Only first subject is shown in the report."
+                )
+                self._report_content["warning_messages"].append(msg)
+
+        return generate_report(self)
 
     def _reporting(self):
         """Load displays needed for report.
@@ -391,23 +428,11 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             A list of all displays to be rendered.
             Returns None when masker is not fitted
         """
-        img = self._reporting_data["images"]
-
-        if img is None:  # images were not provided to fit
-            msg = (
-                "No image provided to fit in NiftiMasker. "
-                "Setting image to mask for reporting."
-            )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
-
-        elif self._reporting_data["dim"] == 5:
-            msg = (
-                "A list of 4D subject images were provided to fit. "
-                "Only first subject is shown in the report."
-            )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
+        # Handle the edge case where this function is
+        # called with a masker having report capabilities disabled
+        if not self._has_report_data():
+            self._report_content["overlay"] = None
+            return None
 
         return self._create_figure_for_report()
 
@@ -416,8 +441,12 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Returns
         -------
-        List of :class:`~nilearn.plotting.displays.OrthoSlicer`
+        list of :class:`~matplotlib.figure.Figure` or None
         """
+        if not is_matplotlib_installed():
+            self._report_content["overlay"] = None
+            return None
+
         import matplotlib.pyplot as plt
 
         from nilearn.plotting import plot_img
@@ -427,17 +456,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         if img is None:  # images were not provided to fit
             img = mask
-
-        resampled_img = None
-        resampled_mask = None
-        if "transform" in self._reporting_data:
-            # if resampling was performed
-            self._report_content["description"] += self._overlay_text
-
-            # create display of resampled NiftiImage and mask
-            resampled_img, resampled_mask = self._reporting_data["transform"]
-            if resampled_img is None:  # images were not provided to fit
-                resampled_img = resampled_mask
 
         # create display of retained input mask, image
         # for visual comparison
@@ -456,23 +474,37 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 linewidths=2.5,
             )
 
-        if resampled_img is None:
-            return [init_display]
+        overlay = None
+        resampled_img = None
+        resampled_mask = None
+        # if resampling was performed
+        if "transform" in self._reporting_data:
+            self._report_content["description"] += (
+                "\n To see the input Nifti image before resampling, "
+                "hover over the displayed image."
+            )
 
-        final_display = plot_img(
-            resampled_img,
-            black_bg=False,
-            cmap=self.cmap,
-        )
-        plt.close()
-        final_display.add_contours(
-            resampled_mask,
-            levels=[0.5],
-            colors="g",
-            linewidths=2.5,
-        )
+            # create display of resampled NiftiImage and mask
+            resampled_img, resampled_mask = self._reporting_data["transform"]
+            if resampled_img is None:  # images were not provided to fit
+                resampled_img = resampled_mask
 
-        return [init_display, final_display]
+            overlay = plot_img(
+                resampled_img,
+                black_bg=False,
+                cmap=self.cmap,
+            )
+            plt.close()
+            overlay.add_contours(
+                resampled_mask,
+                levels=[0.5],
+                colors="g",
+                linewidths=2.5,
+            )
+
+        self._report_content["overlay"] = overlay
+
+        return init_display
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "mask_img_")
@@ -493,10 +525,9 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         del y
         check_params(self.__dict__)
 
-        self._overlay_text = (
-            "\n To see the input Nifti image before resampling, "
-            "hover over the displayed image."
-        )
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = []
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
