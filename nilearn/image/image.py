@@ -427,6 +427,10 @@ def crop_img(
     if coords.shape[1] == 0:
         start, end = [0, 0, 0], list(data.shape)
         pad = False
+        warnings.warn(
+            f"No values above {rtol}. Returning original image.",
+            stacklevel=find_stack_level(),
+        )
     else:
         start = coords.min(axis=1)
         end = coords.max(axis=1) + 1

@@ -485,7 +485,8 @@ def test_crop_image_empty_image(affine_eye, pad):
     img = Nifti1Image(data, affine=affine_eye)
 
     img_copy = new_img_like(img, get_data(img), img.affine)
-    cropped_img = crop_img(img_copy, pad=pad)
+    with pytest.warns(UserWarning, match="No values above "):
+        cropped_img = crop_img(img_copy, pad=pad)
     assert_array_equal(get_data(img), get_data(cropped_img))
 
 
