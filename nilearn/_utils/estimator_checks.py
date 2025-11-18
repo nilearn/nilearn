@@ -107,11 +107,11 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers._mixin import _MultiMixin
+from nilearn.maskers.tests.test_html_report import _check_html
 from nilearn.masking import load_mask_img
 from nilearn.regions import RegionExtractor
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
 from nilearn.regions.rena_clustering import ReNA
-from nilearn.reporting.tests.test_html_report import _check_html
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import (

@@ -1,3 +1,9 @@
+"""Centralize tests for masker reports.
+
+More generic tests (those that apply to all maskers)
+should go into nilearn/_utils/estimator_checks.
+"""
+
 from collections import Counter
 
 import numpy as np
@@ -81,16 +87,19 @@ def _check_html(html_view, reports_requested=True, is_fit=True):
 
 @pytest.fixture
 def niftimapsmasker_inputs():
+    """Return inputs for nifti maps masker."""
     return {"maps_img": _img_maps(n_regions=3)}
 
 
 @pytest.fixture
 def labels(n_regions):
+    """Return labels for label masker."""
     return ["background"] + [f"region_{i}" for i in range(1, n_regions + 1)]
 
 
 @pytest.fixture
 def input_parameters(masker_class, img_mask_eye, labels, img_labels):
+    """Define inputs for each type masker."""
     if masker_class in (NiftiMasker, MultiNiftiMasker):
         return {"mask_img": img_mask_eye}
     if masker_class in (NiftiLabelsMasker, MultiNiftiLabelsMasker):
@@ -337,7 +346,8 @@ def test_nifti_labels_masker_report_cut_coords(
     assert display.cut_coords == display_data.cut_coords
 
 
-def test_4d_reports(img_mask_eye, affine_eye):
+def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
+    """Test for NiftiMasker reports with 4D data."""
     # Dummy 4D data
     data = np.zeros((10, 10, 10, 3), dtype="int32")
     data[..., 0] = 1
@@ -363,7 +373,7 @@ def test_4d_reports(img_mask_eye, affine_eye):
     _check_html(html)
 
 
-def test_overlaid_report(
+def test_nifti_masker_overlaid_report(
     matplotlib_pyplot,  # noqa: ARG001
     img_fmri,
 ):
@@ -451,7 +461,7 @@ def test_surface_masker_minimal_report_fit(
         assert "The mask includes" in str(report)
 
 
-def test_generate_report_engine_error(
+def test_surface_maps_masker_generate_report_engine_error(
     matplotlib_pyplot,  # noqa: ARG001
     surf_maps_img,
     surf_img_2d,
@@ -470,7 +480,9 @@ def test_generate_report_engine_error(
     is_plotly_installed(),
     reason="Test requires plotly not to be installed.",
 )
-def test_generate_report_engine_no_plotly_warning(surf_maps_img, surf_img_2d):
+def test_surface_maps_masker_generate_report_engine_no_plotly_warning(
+    surf_maps_img, surf_img_2d
+):
     """Test warning is raised when engine selected is plotly but it is not
     installed. Only run when plotly is not installed but matplotlib is.
     """
@@ -482,7 +494,7 @@ def test_generate_report_engine_no_plotly_warning(surf_maps_img, surf_img_2d):
     assert masker._report_content["engine"] == "matplotlib"
 
 
-def test_generate_report_before_transform_warn(
+def test_surface_maps_masker_generate_report_before_transform_warn(
     matplotlib_pyplot,  # noqa: ARG001
     surf_maps_img,
 ):
@@ -496,7 +508,7 @@ def test_generate_report_before_transform_warn(
         masker.generate_report(displayed_maps=1)
 
 
-def test_generate_report_plotly_out_figure_type(
+def test_surface_maps_masker_generate_report_plotly_out_figure_type(
     plotly,  # noqa: ARG001
     matplotlib_pyplot,  # noqa: ARG001
     surf_maps_img,
@@ -517,7 +529,7 @@ def test_generate_report_plotly_out_figure_type(
     assert "<img" not in report_str
 
 
-def test_generate_report_matplotlib_out_figure_type(
+def test_surface_maps_masker_generate_report_matplotlib_out_figure_type(
     matplotlib_pyplot,  # noqa: ARG001
     surf_maps_img,
     surf_img_2d,
