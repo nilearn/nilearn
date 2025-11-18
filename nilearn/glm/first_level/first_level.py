@@ -60,7 +60,6 @@ from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
-from nilearn.reporting import HTMLReport
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike, Tr
 
@@ -1340,7 +1339,7 @@ class FirstLevelModel(BaseGLM):
         cut_coords=None,
         display_mode=None,
         report_dims=(1600, 800),
-    ) -> HTMLReport:
+    ):
         """Return a :class:`~nilearn.reporting.HTMLReport` \
         which shows all important aspects of a fitted :term:`GLM`.
 

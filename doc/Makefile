@@ -53,6 +53,7 @@ clean:
 	-rm -rf ../examples/**/nilearn_cache
 	-rm -rf ../**/nilearn_cache
 	-rm -rf modules/description/
+	-rm -rf modules/generated_reports/*.html
 
 sym_links_datasets:
 	# copy datasets RST from nilearn package to doc folder

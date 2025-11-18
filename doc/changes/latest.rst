@@ -37,6 +37,8 @@ Fixes
 
 - :bdg-dark:`Code` Make sure names in atlas labels look up tables are not shifted when the background name is not properly indicated (:gh:`5826` by `Rémi Gau`_).
 
+- :bdg-dark:`Code` Inform user correctly when reporting is enabled after the model is fit (:gh:`5836` by `Hande Gözükan`_).
+
 
 Enhancements
 ------------
@@ -131,3 +133,5 @@ Changes
 - :bdg-info:`Plotting` Change cmap to ``'RdBu_r'`` for :func:`~plotting.plot_contrast_matrix` (:gh:`5780` by `Hande Gözükan`_).
 
 - :bdg-info:`Plotting` Change background to ``'black'`` for functions :func:`~plotting.plot_img_comparison` and :func:`~plotting.plot_bland_altman` (:gh:`5785` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Reports (for maskers, GLMs...)  can now be generated even when no plotting engine is available (:gh:`5757` by `Rémi Gau`_).
