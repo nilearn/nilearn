@@ -233,18 +233,18 @@ def test_nifti_labels_masker_report_no_image_for_fit(
     display = masker._reporting()
 
     if not is_matplotlib_installed():
-        assert display == [None]
+        assert display is None
         return
 
     for d in ["x", "y", "z"]:
-        assert len(display[0].axes[d].ax.collections) == 0
+        assert len(display.axes[d].ax.collections) == 0
 
     masker.fit(img_3d_rand_eye)
 
     display = masker._reporting()
     for d in ["x", "y", "z"]:
-        assert len(display[0].axes[d].ax.collections) > 0
-        assert len(display[0].axes[d].ax.collections) <= n_regions
+        assert len(display.axes[d].ax.collections) > 0
+        assert len(display.axes[d].ax.collections) <= n_regions
 
 
 EXPECTED_COLUMNS = [
