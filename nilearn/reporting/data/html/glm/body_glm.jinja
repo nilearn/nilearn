@@ -78,8 +78,10 @@
       >
 
       <section id="design-matrix-{{ unique_id }}-{{ loop.index0 }}">
-        <h3>Design Matrix</h3>
-        {% if run_content.design_matrix_png %}
+      <h3>Design Matrix</h3>
+      {% if not has_plotting_engine %}
+        {% include 'html/partials/missing_plotting_engine.jinja' %}
+      {% elif run_content.design_matrix_png %}
         <div class="scroll-y">
           {% set is_bytes = not run_content.design_matrix_png.endswith('.png') %}
           <img
@@ -89,7 +91,6 @@
             alt="Plot of design matrix for {{ loop.index0 }}."
             style="min-width: 600px" />
         </div>
-
         {% if run_content.correlation_matrix_png %}
         <h3>correlation matrix</h3>
         <div class="scroll-y">
@@ -101,18 +102,17 @@
             style="min-width: 600px" />
         </div>
         {% endif %}
-
         {% else %}
           <p>No design matrix was provided.</p>
-
         {% endif %}
       </section>
 
       <section id="contrasts-{{ unique_id }}-{{ loop.index0 }}">
         <h3>Contrasts</h3>
-
         <div class="d-flex flex-column">
-          {% if run_content.all_contrasts %}
+          {% if not has_plotting_engine %}
+            {% include 'html/partials/missing_plotting_engine.jinja' %}
+          {% elif run_content.all_contrasts %}
           {% for contrast_name, contrast_plot in run_content.all_contrasts.items() %}
           <div class="scroll-y">
             {% set is_bytes = not contrast_plot.endswith('.png') %}
@@ -124,12 +124,10 @@
               style="min-width: 600px" />
           </div>
           {% endfor %}
-
           {% else %}
             <p>No contrast was provided.</p>
           {% endif %}
         </div>
-
       </section>
 
     </div>
@@ -140,7 +138,9 @@
 
   <section id="mask-{{ unique_id }}">
     <h2>Mask</h2>
-    {% if mask_plot %}
+    {% if not has_plotting_engine %}
+      {% include 'html/partials/missing_plotting_engine.jinja' %}
+    {% elif mask_plot %}
     <div class="scroll-y">
       <img
         class="pure-img"
@@ -172,7 +172,9 @@
         <h3>{{ contrast_name }}</h3>
 
         <div class="d-flex flex-column">
-          {% if results[contrast_name].stat_map_img %}
+          {% if not has_plotting_engine %}
+            {% include 'html/partials/missing_plotting_engine.jinja' %}
+          {% elif results[contrast_name].stat_map_img %}
             <div class="scroll-y">
               <img
                 class="pure-img"
