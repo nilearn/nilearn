@@ -208,7 +208,7 @@ def test_nifti_labels_masker_create_figure_for_report(
 
     labels_image = masker._reporting_data["labels_image"]
 
-    return masker._create_figure_for_report(labels_image)[0]
+    return masker._create_figure_for_report(labels_image)
 
 
 @pytest.mark.mpl_image_compare
