@@ -2,7 +2,7 @@
 
 import marimo
 
-__generated_with = "0.17.7"
+__generated_with = "0.17.8"
 app = marimo.App(width="medium")
 
 
@@ -37,6 +37,8 @@ def _():
         report_nifti_maps_masker,
         report_nifti_masker,
         report_slm_oasis,
+        report_surface_flm,
+        report_surface_slm,
     )
 
     return (
@@ -47,6 +49,8 @@ def _():
         report_nifti_maps_masker,
         report_nifti_masker,
         report_slm_oasis,
+        report_surface_flm,
+        report_surface_slm,
     )
 
 
@@ -146,6 +150,28 @@ def _(BUILD_TYPE, report_slm_oasis):
 @app.cell
 def _(slm_reports):
     slm_reports
+
+
+@app.cell
+def _(BUILD_TYPE, report_surface_flm):
+    surface_flm = report_surface_flm(build_type=BUILD_TYPE)
+    return (surface_flm,)
+
+
+@app.cell
+def _(surface_flm):
+    surface_flm[0]
+
+
+@app.cell
+def _(report_surface_slm):
+    surface_slm = report_surface_slm()
+    return (surface_slm,)
+
+
+@app.cell
+def _(surface_slm):
+    surface_slm
 
 
 @app.cell

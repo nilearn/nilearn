@@ -3651,7 +3651,6 @@ def check_masker_generate_report(estimator):
     report = _generate_report(estimator)
 
     _check_html(report, is_fit=False)
-    assert "Make sure to run `fit`" in str(report)
 
     if accept_niimg_input(estimator):
         input_img = _img_3d_rand()

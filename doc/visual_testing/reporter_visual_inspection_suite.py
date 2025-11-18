@@ -9,6 +9,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
+from sklearn import clone
 
 from nilearn.datasets import (
     fetch_adhd,
@@ -599,6 +600,7 @@ def report_surface_maps_masker(build_type):
         )
 
         print("Use plotly")
+        masker = clone(masker)
         _, plotly_reports = _generate_masker_report_files(
             masker,
             surface_stat_image,
