@@ -4,6 +4,9 @@ from collections import OrderedDict
 
 import pandas as pd
 
+from nilearn._utils.niimg import repr_niimgs
+from nilearn.typing import NiimgLike
+
 
 def dataframe_to_html(df, precision, **kwargs):
     """Make HTML table from provided dataframe.
@@ -30,6 +33,7 @@ def dataframe_to_html(df, precision, **kwargs):
     with pd.option_context("display.precision", precision):
         html_table = df.to_html(**kwargs)
     html_table = html_table.replace('border="1" ', "")
+    html_table = html_table.replace("\\n", "<br>")
     return html_table.replace('class="dataframe"', 'class="pure-table"')
 
 
@@ -56,6 +60,11 @@ def model_attributes_to_dataframe(model):
         )
         for attr_name in model.get_params()
     )
+
+    for k, v in attributes_df.items():
+        if isinstance(v, NiimgLike):
+            attributes_df[k] = repr_niimgs(v, shorten=False)
+
     attributes_df = pd.DataFrame.from_dict(attributes_df, orient="index")
     attributes_df.index.names = ["Parameter"]
     attributes_df.columns = ["Value"]
