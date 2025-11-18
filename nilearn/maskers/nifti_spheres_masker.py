@@ -541,7 +541,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         for idx, seed in enumerate(seeds):
             if idx + 1 in self._report_content["displayed_maps"]:
-                display = plot_img(img, cut_coords=seed, cmap="gray")
+                display = plot_img(
+                    img, cut_coords=seed, cmap="gray", draw_cross=False
+                )
                 display.add_markers(
                     marker_coords=[seed],
                     marker_color="g",
