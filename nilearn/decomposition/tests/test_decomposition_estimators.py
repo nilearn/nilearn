@@ -296,6 +296,7 @@ def test_transform_errors(
         est.transform(canica_data, confounds=confounds)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_pass_masker_arg_to_estimator(
@@ -332,6 +333,7 @@ def test_pass_masker_arg_to_estimator(
 
 # TODO passing confounds does not affect output with CanICA, DictLearning
 # @pytest.mark.parametrize("estimator", [CanICA, _MultiPCA, DictLearning])
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [_MultiPCA])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_with_confounds(
