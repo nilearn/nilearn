@@ -426,6 +426,7 @@ def crop_img(
     # Sets full range if no data are found along the axis
     if coords.shape[1] == 0:
         start, end = [0, 0, 0], list(data.shape)
+        pad = False
     else:
         start = coords.min(axis=1)
         end = coords.max(axis=1) + 1

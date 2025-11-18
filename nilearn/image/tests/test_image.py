@@ -474,7 +474,8 @@ def test_crop_threshold_tolerance(affine_eye):
     assert cropped_img.shape == active_shape
 
 
-def test_crop_image_empty_image(affine_eye):
+@pytest.mark.parametrize("pad", [True, False])
+def test_crop_image_empty_image(affine_eye, pad):
     """Test nilearn.image.image.crop_img with empty image specified.
 
     Added as a regression test for
@@ -483,12 +484,8 @@ def test_crop_image_empty_image(affine_eye):
     data = np.zeros([10, 14, 12])
     img = Nifti1Image(data, affine=affine_eye)
 
-    with pytest.raises(TypeError):
-        crop_img(img, pad=True)
-
     img_copy = new_img_like(img, get_data(img), img.affine)
-    cropped_img = crop_img(img_copy, pad=False)
-
+    cropped_img = crop_img(img_copy, pad=pad)
     assert_array_equal(get_data(img), get_data(cropped_img))
 
 
