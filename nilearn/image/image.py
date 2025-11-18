@@ -409,6 +409,8 @@ def crop_img(
         removed (before, after) the cropped volumes, i.e.:
         *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
 
+        If the image is empty, or becomes empty after removing the values below
+        `rtol`, the original image will be returned.
     """
     check_params(locals())
 
