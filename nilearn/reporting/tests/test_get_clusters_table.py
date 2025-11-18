@@ -146,6 +146,7 @@ def test_get_clusters_table_negative_threshold(shape, affine_eye):
     assert_array_equal(stat_img.get_fdata(), data_orig)
 
 
+@pytest.mark.slow
 def test_get_clusters_table_more(shape, affine_eye, tmp_path):
     """Run more tests get_clusters_table.
 

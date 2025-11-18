@@ -229,6 +229,7 @@ def test_plot_bland_altman_surface(matplotlib_pyplot, surf_img_1d, masker):
     )
 
 
+@pytest.mark.slow
 def test_plot_bland_altman_errors(
     surf_img_1d, surf_mask_1d, img_3d_rand_eye, img_3d_ones_eye
 ):
