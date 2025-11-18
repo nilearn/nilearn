@@ -419,7 +419,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return generate_report(self)
 
-    def _reporting(self) -> list:
+    def _reporting(self):
         """Load displays needed for report.
 
         Returns
@@ -432,11 +432,11 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         # called with a masker having report capabilities disabled
         if not self._has_report_data():
             self._report_content["overlay"] = None
-            return [None]
+            return None
 
         return self._create_figure_for_report()
 
-    def _create_figure_for_report(self) -> list:
+    def _create_figure_for_report(self):
         """Generate figure to include in the report.
 
         Returns
@@ -445,7 +445,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         if not is_matplotlib_installed():
             self._report_content["overlay"] = None
-            return [None]
+            return None
 
         import matplotlib.pyplot as plt
 
@@ -504,7 +504,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self._report_content["overlay"] = overlay
 
-        return [init_display]
+        return init_display
 
     def __sklearn_is_fitted__(self):
         return hasattr(self, "mask_img_")

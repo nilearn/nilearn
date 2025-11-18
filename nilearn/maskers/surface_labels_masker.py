@@ -473,7 +473,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         return imgs
 
-    def _reporting(self) -> list:
+    def _reporting(self) -> None | str:
         """Load displays needed for report.
 
         Returns
@@ -485,18 +485,16 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         # without matplolib or
         # with a masker having report capabilities disabled
         if not is_matplotlib_installed() or not self._has_report_data():
-            return [None]
+            return None
 
         from nilearn.reporting.utils import figure_to_png_base64
 
-        fig = self._create_figure_for_report()[0]
+        fig = self._create_figure_for_report()
 
         if not fig:
-            return [None]
+            return None
 
-        init_display = figure_to_png_base64(fig)
-
-        return [init_display]
+        return figure_to_png_base64(fig)
 
     def _create_figure_for_report(self) -> list:
         """Create a figure of the contours of label image.
@@ -518,6 +516,6 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             img = mean_img(img)
             vmin, vmax = img.data._get_min_max()
 
-        fig = self._generate_figure(img, roi_map=roi_map, vmin=vmin, vmax=vmax)
-
-        return [fig]
+        return self._generate_figure(
+            img, roi_map=roi_map, vmin=vmin, vmax=vmax
+        )

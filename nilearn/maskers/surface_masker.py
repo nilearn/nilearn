@@ -380,7 +380,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
-    def _reporting(self) -> list:
+    def _reporting(self) -> None | str:
         """Load displays needed for report.
 
         Returns
@@ -393,20 +393,18 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         # without matplolib or
         # with a masker having report capabilities disabled
         if not is_matplotlib_installed() or not self._has_report_data():
-            return [None]
+            return None
 
         from nilearn.reporting.utils import figure_to_png_base64
 
-        fig = self._create_figure_for_report()[0]
+        fig = self._create_figure_for_report()
 
         if not fig:
-            return [None]
+            return None
 
-        init_display = figure_to_png_base64(fig)
+        return figure_to_png_base64(fig)
 
-        return [init_display]
-
-    def _create_figure_for_report(self) -> list:
+    def _create_figure_for_report(self):
         """Generate figure to include in the report.
 
         Returns
@@ -416,7 +414,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if not self._reporting_data["images"] and not getattr(
             self, "mask_img_", None
         ):
-            return [None]
+            return None
 
         img = self.mask_img_
         vmin = None
@@ -426,11 +424,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             img = mean_img(img)
             vmin, vmax = img.data._get_min_max()
 
-        fig = self._generate_figure(
+        return self._generate_figure(
             img=img, roi_map=self.mask_img_, vmin=vmin, vmax=vmax
         )
-
-        return [fig]
 
     def _set_contour_colors(self, hemi) -> str | list[str] | None:
         """Set the colors for the contours in the report."""

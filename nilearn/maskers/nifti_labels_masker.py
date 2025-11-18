@@ -354,7 +354,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return generate_report(self)
 
-    def _reporting(self) -> list:
+    def _reporting(self):
         """Return a figure to be rendered.
 
         Returns
@@ -362,7 +362,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         :class:`~matplotlib.figure.Figure` or None
         """
         if not self._has_report_data():
-            return [None]
+            return None
 
         labels_image = self._reporting_data["labels_image"]
 
@@ -414,7 +414,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         return self._create_figure_for_report(labels_image)
 
-    def _create_figure_for_report(self, labels_image) -> list:
+    def _create_figure_for_report(self, labels_image):
         """Generate figure to include in the report.
 
         Returns
@@ -422,7 +422,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         list of :class:`~matplotlib.figure.Figure` or None
         """
         if not is_matplotlib_installed():
-            return [None]
+            return None
 
         import matplotlib.pyplot as plt
 
@@ -462,7 +462,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 linewidths=3,
             )
 
-        return [display]
+        return display
 
     @fill_doc
     def fit(self, imgs=None, y=None):

@@ -247,12 +247,14 @@ def _create_report(
 
     embeded_images = None
     image = estimator._reporting()
-    if any(x is not None for x in image):
-        embeded_images = (
-            [embed_img(i) for i in image]
-            if isinstance(image, list)
-            else embed_img(image)
-        )
+    if image is None:
+        embeded_images = None
+    elif not isinstance(image, list):
+        embeded_images = embed_img(image)
+    elif all(x is None for x in image):
+        embeded_images = None
+    else:
+        embeded_images = [embed_img(i) for i in image]
 
     summary_html: None | dict | str = None
     # only convert summary to html table if summary exists

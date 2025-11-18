@@ -529,7 +529,7 @@ def _mask_to_plot(model, bg_img, cut_coords):
 
     # Select mask_img to use for plotting
     if not model._is_volume_glm():
-        model.masker_._create_figure_for_report()[0]
+        model.masker_._create_figure_for_report()
         fig = plt.gcf()
         mask_plot = figure_to_png_base64(fig)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots

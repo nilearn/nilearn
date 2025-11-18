@@ -167,7 +167,7 @@ def test_nifti_masker_create_figure_for_report(src_masker, mask_img, img):
     """Check figure generated in report of NiftiMasker."""
     masker = src_masker(mask_img)
     masker.fit(img)
-    return masker._create_figure_for_report()[0]
+    return masker._create_figure_for_report()
 
 
 @pytest.mark.mpl_image_compare
@@ -277,7 +277,7 @@ def test_surface_masker_create_figure_for_report(src_masker, mask_img, img):
     """Check figure generated in report of (Multi)SurfaceMasker."""
     masker = src_masker(mask_img)
     masker.fit(img)
-    return masker._create_figure_for_report()[0]
+    return masker._create_figure_for_report()
 
 
 # TODO: add later as there seem to be some flaky tests failures
