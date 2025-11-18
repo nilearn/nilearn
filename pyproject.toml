@@ -140,7 +140,8 @@ version-file = "nilearn/_version.py"
 [tool.hatch.build.targets.wheel]
 exclude = [
     "nilearn/plotting/tests/baseline",
-    "nilearn/reporting/tests/baseline"
+    "nilearn/maskers/tests/baseline",
+    "nilearn/glm/tests/baseline"
 ]
 packages = ["nilearn"]
 
