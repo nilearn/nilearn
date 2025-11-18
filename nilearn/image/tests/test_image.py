@@ -474,6 +474,14 @@ def test_crop_threshold_tolerance(affine_eye):
     assert cropped_img.shape == active_shape
 
 
+def test_crop_image_empty_image(affine_eye):
+    data = np.zeros([10, 14, 12])
+    img = Nifti1Image(data, affine=affine_eye)
+
+    with pytest.raises(TypeError):
+        crop_img(img)
+
+
 @pytest.mark.parametrize("images_to_mean", _images_to_mean())
 def test_mean_img(images_to_mean, tmp_path):
     affine = np.diag((4, 3, 2, 1))
