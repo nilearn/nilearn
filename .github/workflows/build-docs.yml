@@ -17,6 +17,7 @@
 #    - ``[skip doc]`` skip build of the documentation.
 #    - ``[example] name_of_example.py`` trigger build of some specific examples.
 #    - ``[force download]`` do not rely of cached datasets and force to redownload them.
+#    - ``[reports]`` build estimators reports that are embedded in the documentation.
 #
 # On Pull Requests, "partial builds" are run by default which render all the rst files,
 # but only build examples modified in the Pull Request.
@@ -184,10 +185,16 @@ jobs:
                   # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
                 fetch-depth: 0
+        -   name: Setup python
+            uses: actions/setup-python@v6
+            with:
+                python-version: ${{ env.MIN_PYTHON_VERSION }}
+        -   name: Install dependencies
+            run: python -m pip install --upgrade pip rich
         -   name: Merge with upstream
             run: ./build_tools/github/merge_upstream.sh
         -   name: Check if we are doing a full or partial build
-            run: ./build_tools/github/build_type.sh
+            run: python build_tools/github/build_type.py
             env:
                 COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
         -   name: Verify build type
@@ -423,6 +430,12 @@ jobs:
             with:
                 name: ${{ matrix.env }}
                 path: doc/_build/html
+
+        -   name: Upload reports
+            uses: actions/upload-artifact@v5
+            with:
+                name: ${{ matrix.env }}_reports
+                path: doc/modules/generated_reports
 
     deploy_on_main:
         runs-on: ubuntu-latest

@@ -5,6 +5,7 @@ Mask nifti images by spherical volumes for seed-region analyses
 
 import contextlib
 import warnings
+from typing import Any, Literal
 
 import numpy as np
 from scipy import sparse
@@ -28,8 +29,10 @@ from nilearn.image.resampling import coord_transform
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
+    check_displayed_maps,
     filter_and_extract,
     mask_logger,
+    sanitize_displayed_maps,
 )
 from nilearn.masking import apply_mask_fmri, load_mask_img, unmask
 
@@ -352,7 +355,24 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.reports = reports
         self.verbose = verbose
 
-    def generate_report(self, displayed_spheres="all"):
+        self._report_content = {
+            "description": (
+                "This report shows the regions defined "
+                "by the spheres of the masker."
+            ),
+            "summary": {},
+            "warning_messages": [],
+        }
+
+    @fill_doc
+    def generate_report(
+        self,
+        displayed_spheres: list[int]
+        | np.typing.NDArray[np.int_]
+        | int
+        | Literal["all"] = "all",
+        title: str | None = None,
+    ):
         """Generate an HTML report for current ``NiftiSpheresMasker`` object.
 
         .. note::
@@ -360,64 +380,51 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         Parameters
         ----------
-        displayed_spheres : :obj:`int`, or :obj:`list`,\
-                            or :class:`~numpy.ndarray`, or "all", default="all"
-            Indicates which spheres will be displayed in the HTML report.
+        %(displayed_spheres)s
 
-            - If "all": All spheres will be displayed in the report.
-
-            .. code-block:: python
-
-                masker.generate_report("all")
-
-            .. warning::
-
-                If there are too many spheres, this might be time and
-                memory consuming, and will result in very heavy
-                reports.
-
-            - If a :obj:`list` or :class:`~numpy.ndarray`: This indicates
-                the indices of the spheres to be displayed in the report.
-                For example, the following code will generate a report with
-                spheres 6, 3, and 12, displayed in this specific order:
-
-            .. code-block:: python
-
-                masker.generate_report([6, 3, 12])
-
-            - If an :obj:`int`: This will only display the first n
-                spheres, n being the value of the parameter. By default,
-                the report will only contain the first 10 spheres.
-                Example to display the first 16 spheres:
-
-            .. code-block:: python
-
-                masker.generate_report(16)
+        title : :obj:`str` or None, default=None
+            title for the report. If None, title will be the class name.
 
         Returns
         -------
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        from nilearn.reporting.html_report import generate_report
+        check_displayed_maps(displayed_spheres, "displayed_spheres")
 
-        if not is_matplotlib_installed():
-            return generate_report(self)
+        # using 'number_of_maps' and 'displayed_maps'
+        # by consistency with maps maskers
+        self._report_content["number_of_maps"] = 0
+        self._report_content["displayed_maps"] = [0]
 
-        if displayed_spheres != "all" and not isinstance(
-            displayed_spheres, (list, np.ndarray, int)
-        ):
-            raise TypeError(
-                "Parameter ``displayed_spheres`` of "
-                "``generate_report()`` should be either 'all' or "
-                "an int, or a list/array of ints. You provided a "
-                f"{type(displayed_spheres)}"
+        if self._has_report_data():
+            seeds = self._reporting_data["seeds"]
+            self._report_content["number_of_maps"] = len(seeds)
+
+            self, spheres_to_be_displayed = sanitize_displayed_maps(
+                self,
+                displayed_spheres,
+                len(seeds),
+                var_name="sphere",
             )
-        self.displayed_spheres = displayed_spheres
 
-        return generate_report(self)
+            # offset spheres_to_be_displayed by 1
+            # as the default image is a glass brain with all the spheres
+            tmp = [0]
+            tmp.extend((np.asarray(spheres_to_be_displayed) + 1).tolist())
+            self._report_content["displayed_maps"] = tmp
 
-    def _reporting(self):
+            img = self._reporting_data["images"]
+            if img is None:
+                msg = (
+                    "No image provided to fit in NiftiSpheresMasker. "
+                    "Spheres are plotted on top of the MNI152 template."
+                )
+                self._report_content["warning_messages"].append(msg)
+
+        return super().generate_report(title)
+
+    def _reporting(self) -> list:
         """Return a list of all displays to be rendered.
 
         Returns
@@ -425,68 +432,24 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         displays : list
             A list of all displays to be rendered.
         """
-        if self._reporting_data is not None:
-            seeds = self._reporting_data["seeds"]
-        else:
-            self._report_content["summary"] = None
-
+        if not self._has_report_data():
             return [None]
 
-        img = self._reporting_data["img"]
+        seeds = self._reporting_data["seeds"]
+        img = self._reporting_data["images"]
         if img is None:
             img = load_mni152_template()
             positions = seeds
-            msg = (
-                "No image provided to fit in NiftiSpheresMasker. "
-                "Spheres are plotted on top of the MNI152 template."
-            )
-            warnings.warn(msg, stacklevel=find_stack_level())
-            self._report_content["warning_message"] = msg
         else:
             positions = [
                 np.round(
-                    coord_transform(*seed, np.linalg.inv(img.affine))
+                    coord_transform(
+                        *seed,
+                        np.linalg.inv(img.affine),  # type: ignore[call-arg]
+                    )
                 ).astype(int)
                 for seed in seeds
             ]
-
-        self._report_content["number_of_seeds"] = len(seeds)
-
-        spheres_to_be_displayed = range(len(seeds))
-
-        if isinstance(self.displayed_spheres, int):
-            if len(seeds) < self.displayed_spheres:
-                msg = (
-                    "generate_report() received "
-                    f"{self.displayed_spheres} spheres to be displayed. "
-                    f"But masker only has {len(seeds)} seeds. "
-                    "Setting number of displayed spheres "
-                    f"to {len(seeds)}."
-                )
-                warnings.warn(
-                    category=UserWarning,
-                    message=msg,
-                    stacklevel=find_stack_level(),
-                )
-                self.displayed_spheres = len(seeds)
-            spheres_to_be_displayed = range(self.displayed_spheres)
-
-        elif isinstance(self.displayed_spheres, (list, np.ndarray)):
-            if max(self.displayed_spheres) > len(seeds):
-                raise ValueError(
-                    "Report cannot display the "
-                    "following spheres "
-                    f"{self.displayed_spheres} because "
-                    f"masker only has {len(seeds)} seeds."
-                )
-            spheres_to_be_displayed = self.displayed_spheres
-
-        # extend spheres_to_be_displayed by 1
-        # as the default image is a glass brain with all the spheres
-        tmp = [0]
-        spheres_to_be_displayed = np.asarray(spheres_to_be_displayed) + 1
-        tmp.extend(spheres_to_be_displayed.tolist())
-        self._report_content["displayed_maps"] = tmp
 
         columns = [
             "seed number",
@@ -497,7 +460,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "size (in voxels)",
             "relative size (in %)",
         ]
-        regions_summary = {c: [] for c in columns}
+        regions_summary: dict[str, Any] = {c: [] for c in columns}
 
         radius = 1.0 if self.radius is None else self.radius
 
@@ -516,15 +479,17 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         return self._create_figure_for_report()
 
-    def _create_figure_for_report(self):
+    def _create_figure_for_report(self) -> list:
         """Generate figure to include in the report.
 
         Returns
         -------
-        list of :class:`~matplotlib.figure.Figure`
+        list of :class:`~matplotlib.figure.Figure` or None
         """
+        if not is_matplotlib_installed():
+            return [None]
+
         from nilearn.plotting import plot_img, plot_markers
-        from nilearn.reporting.html_report import embed_img
 
         seeds = self._reporting_data["seeds"]
         radius = 1.0 if self.radius is None else self.radius
@@ -532,10 +497,10 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         display = plot_markers(
             [1 for _ in seeds], seeds, node_size=20 * radius, colorbar=False
         )
-        embedded_images = [embed_img(display)]
+        embedded_images = [display]
         display.close()
 
-        img = self._reporting_data["img"]
+        img = self._reporting_data["images"]
         if img is None:
             img = load_mni152_template()
 
@@ -547,7 +512,7 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                     marker_color="g",
                     marker_size=20 * radius,
                 )
-                embedded_images.append(embed_img(display))
+                embedded_images.append(display)
                 display.close()
 
         assert len(embedded_images) == len(
@@ -567,9 +532,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         """
         del y
-        self._init_report_content()
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
+
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = []
 
         error = (
             "Seeds must be a list of triplets of coordinates in "
@@ -622,11 +590,12 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
             self.seeds_.append(seed)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._reporting_data = {
                 "seeds": self.seeds_,
                 "mask": self.mask_img_,
-                "img": resampl_imgs,
+                "images": resampl_imgs,
             }
 
         self.n_elements_ = len(self.seeds_)
@@ -634,24 +603,6 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         mask_logger("fit_done", verbose=self.verbose)
 
         return self
-
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-        if not hasattr(self, "_report_content"):
-            self._report_content = {
-                "description": (
-                    "This reports shows the regions defined "
-                    "by the spheres of the masker."
-                ),
-                "warning_message": None,
-            }
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = None
 
     @fill_doc
     def fit_transform(self, imgs, y=None, confounds=None, sample_mask=None):

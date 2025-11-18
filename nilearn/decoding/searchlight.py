@@ -384,7 +384,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     @property
     def _estimator_type(self):
-        # TODO (sklearn >= 1.6.0) remove
+        # TODO (sklearn >= 1.8.0) remove
         if self.estimator == "svr":
             return "regressor"
         elif self.estimator == "svc":

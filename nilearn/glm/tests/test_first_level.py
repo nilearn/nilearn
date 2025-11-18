@@ -3,6 +3,7 @@
 import itertools
 import shutil
 import string
+import sys
 import unittest.mock
 import warnings
 from itertools import product
@@ -312,6 +313,7 @@ def test_glm_target_shape_affine(shape_3d_default, affine_eye):
     assert z_image.shape == (10, 11, 12)
 
 
+@pytest.mark.slow
 def test_high_level_glm_with_data_with_mask(shape_3d_default):
     """Test GLM can be run with mask."""
     shapes, rk = [(*shape_3d_default, 5)], 3
@@ -373,6 +375,7 @@ def test_fmri_inputs_type_data_smoke(tmp_path, shape_4d_default):
     )
 
 
+@pytest.mark.slow
 def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
     """Test processing of FMRI inputs with path, str for design matrix."""
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
@@ -540,6 +543,9 @@ def test_run_glm_ar1(rng):
     assert isinstance(results[labels[0]].model, ARModel)
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 def test_run_glm_ar3(rng):
     """Test run_glm with AR(3) noise model."""
     n, p, q = 33, 80, 10
@@ -579,6 +585,9 @@ def test_run_glm_errors(rng):
         run_glm(Y, X, "3ar")
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 @pytest.mark.parametrize(
     "ar_vals", [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]
 )
@@ -629,6 +638,9 @@ def test_glm_ar_estimates_errors(rng):
         _yule_walker(np.array(0.0), 2)
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 @pytest.mark.parametrize("random_state", [3, np.random.RandomState(42)])
 def test_glm_random_state(random_state):
     """Test that the random state is passed to the run_glm."""
@@ -730,6 +742,7 @@ def test_fmri_inputs_events_type(tmp_path):
     )
 
 
+@pytest.mark.slow
 def test_fmri_inputs_with_confounds(tmp_path):
     """Test with confounds and, events."""
     n_timepoints = 10

@@ -233,15 +233,11 @@ def get_legal_confound(
         fmriprep_version=fmriprep_version,
     )
     if tedana:  # tedana has two confounds files
-        conf_list = []
-        conf_list.append(conf)
-        conf_list.append(meta)
-        tmp_conf = [
+        conf = [
             pd.read_csv(confounds, delimiter="\t", encoding="utf-8")
-            for confounds in conf_list
+            for confounds in (conf, meta)
         ]
         meta = None
-        conf = tmp_conf
         return conf, meta
 
     conf = pd.read_csv(conf, delimiter="\t", encoding="utf-8")

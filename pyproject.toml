@@ -105,7 +105,8 @@ test = [
     "pytest-reporter-html1>=0.9.2,<0.9.4",
     "pytest-timeout",
     "pytest-xdist[psutil]",
-    "pytest-mpl"
+    "pytest-mpl",
+    "pytest-rerunfailures"
 ]
 
 [project.urls]
@@ -228,7 +229,7 @@ warn_unreachable = true
 
 [[tool.mypy.overrides]]
 ignore_errors = true
-module = ["nilearn.externals.*", "nilearn._version"]
+module = ["nilearn._version"]
 
 [[tool.mypy.overrides]]
 ignore_missing_imports = true
@@ -265,7 +266,7 @@ minversion = "6.0"
 xfail_strict = true
 
 [tool.ruff]
-extend-exclude = ["nilearn/externals/*", "doc/auto_examples/*", "nilearn/_version.py"]
+extend-exclude = ["doc/auto_examples/*", "nilearn/_version.py"]
 include = [
     "pyproject.toml",
     "nilearn/**/*.py",
@@ -347,7 +348,7 @@ unfixable = []
 max-complexity = 23
 
 [tool.ruff.lint.per-file-ignores]
-"**/{doc}/*" = ["D103"]
+"**/{doc}/*" = ["B018", "D103"]
 "**/{examples}/*" = ["B018", "D103", "D400", "E402"]
 "__init__.py" = ["D104", "E402"]
 "nilearn/**/tests/test_*" = ["D100"]

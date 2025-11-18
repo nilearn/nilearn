@@ -31,7 +31,14 @@ Fixes
 
 - :bdg-primary:`Doc` Update allowed values for the parameter ``standardize`` to match those of :func:`~signal.clean` in :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMClassifier`, :class:`~decoding.FREMRegressor`, :class:`~decoding.SpaceNetClassifier`, :class:`~decoding.SpaceNetRegressor`, :class:`~connectome.ConnectivityMeasure`, :class:`~decomposition.DictLearning`, :class:`~decomposition.CanICA` as well as for all maskers  (:gh:`5668` by `Rémi Gau`_).
 
+- :bdg-info:`Plotting` Allow to pass files to :func:`~nilearn.plotting.plot_img_comparison` (:gh:`5825` by `Rémi Gau`_).
+
 - :bdg-dark:`Code` Improve errors thrown when the confounds for a subject or group level analysis GLM contain NaN (:gh:`5739` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Make sure names in atlas labels look up tables are not shifted when the background name is not properly indicated (:gh:`5826` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Inform user correctly when reporting is enabled after the model is fit (:gh:`5836` by `Hande Gözükan`_).
+
 
 Enhancements
 ------------
@@ -61,6 +68,8 @@ Enhancements
 - :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker`, a :class:`~maskers.MultiSurfaceMapsMasker` (:gh:`5679`, :gh:`5727` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add support for ``cluster_threshold`` for :func:`~image.threshold_img`, :func:`~glm.threshold_stats_img`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report` and :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5715` by `Rémi Gau`_).
+
+- :bdg-success:`API` Add support for ``title`` parameter for Nilearn maskers ``generate_report`` method. (:gh:`5790` by `Hande Gözükan`_).
 
 Changes
 -------
@@ -124,3 +133,5 @@ Changes
 - :bdg-info:`Plotting` Change cmap to ``'RdBu_r'`` for :func:`~plotting.plot_contrast_matrix` (:gh:`5780` by `Hande Gözükan`_).
 
 - :bdg-info:`Plotting` Change background to ``'black'`` for functions :func:`~plotting.plot_img_comparison` and :func:`~plotting.plot_bland_altman` (:gh:`5785` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Reports (for maskers, GLMs...)  can now be generated even when no plotting engine is available (:gh:`5757` by `Rémi Gau`_).
