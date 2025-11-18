@@ -431,6 +431,12 @@ jobs:
                 name: ${{ matrix.env }}
                 path: doc/_build/html
 
+        -   name: Upload reports
+            uses: actions/upload-artifact@v5
+            with:
+                name: ${{ matrix.env }}_reports
+                path: doc/modules/generated_reports
+
     deploy_on_main:
         runs-on: ubuntu-latest
         needs: [build_docs]
