@@ -475,6 +475,7 @@ def test_crop_threshold_tolerance(affine_eye):
 
 
 def test_crop_image_empty_image(affine_eye):
+    """Test nilearn.image.image.crop_img with empty image specified."""
     data = np.zeros([10, 14, 12])
     img = Nifti1Image(data, affine=affine_eye)
 
