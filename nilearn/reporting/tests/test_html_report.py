@@ -334,7 +334,7 @@ def test_nifti_labels_masker_report_cut_coords(
     # Get display with data
     masker.fit(img_3d_rand_eye)
     display_data = masker._reporting()
-    assert display[0].cut_coords == display_data[0].cut_coords
+    assert display.cut_coords == display_data.cut_coords
 
 
 def test_4d_reports(img_mask_eye, affine_eye):
