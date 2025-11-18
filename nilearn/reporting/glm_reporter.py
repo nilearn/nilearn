@@ -33,19 +33,19 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
+from nilearn._utils.tags import (
+    accept_niimg_input,
+    is_masker,
+)
 from nilearn._version import __version__
-from nilearn.glm.thresholding import (
-    threshold_stats_img,
-    warn_default_threshold,
-)
-from nilearn.reporting._utils import (
-    dataframe_to_html,
-)
+from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
     get_clusters_table,
 )
 from nilearn.reporting.html_report import (
+    MISSING_ENGINE_MSG,
+    UNFITTED_MSG,
     HTMLReport,
     assemble_report,
     is_notebook,
@@ -59,17 +59,6 @@ MNI152TEMPLATE = None
 if is_matplotlib_installed():
     from matplotlib import pyplot as plt
 
-    from nilearn._utils.plotting import (
-        generate_contrast_matrices_figures,
-        generate_design_matrices_figures,
-        resize_plot_inches,
-    )
-    from nilearn.plotting import (
-        plot_glass_brain,
-        plot_roi,
-        plot_stat_map,
-        plot_surf_stat_map,
-    )
     from nilearn.plotting.image.utils import (  # type: ignore[assignment]
         MNI152TEMPLATE,
     )
@@ -233,27 +222,24 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
+    from nilearn.glm.thresholding import warn_default_threshold
+
     check_params(locals())
+
+    warning_messages = []
+
     if not is_matplotlib_installed():
-        warnings.warn(
-            ("No plotting back-end detected. Output will be missing figures."),
-            UserWarning,
-            stacklevel=find_stack_level(),
-        )
+        warning_messages.append(MISSING_ENGINE_MSG)
 
     parameters = dict(**inspect.signature(make_glm_report).parameters)
     if height_control is not None and float(threshold) != float(
         parameters["threshold"].default
     ):
-        warnings.warn(
-            (
-                f"'{threshold=}' will not be used with '{height_control=}'. "
-                "'threshold' is only used when 'height_control=None'. "
-                f"Set 'threshold' to '{parameters['threshold'].default}' "
-                "to avoid this warning."
-            ),
-            UserWarning,
-            stacklevel=find_stack_level(),
+        warning_messages.append(
+            f"\n'{threshold=}' is not used with '{height_control=}'."
+            "\n'threshold' is only used when 'height_control=None'. "
+            f"\nSet 'threshold' to '{parameters['threshold'].default}' "
+            "to avoid this warning."
         )
     warn_default_threshold(
         threshold,
@@ -285,8 +271,11 @@ def make_glm_report(
     mask_plot = None
     mask_info = {"n_elements": 0, "coverage": "0"}
     results = None
-    warning_messages = ["The model has not been fit yet."]
-    if model.__sklearn_is_fitted__():
+
+    if not model.__sklearn_is_fitted__():
+        warning_messages.append(UNFITTED_MSG)
+
+    else:
         design_matrices = (
             [model.design_matrix_]
             if model.__str__() == "Second Level Model"
@@ -361,11 +350,10 @@ def make_glm_report(
             plot_type=plot_type,
         )
 
-        warning_messages = (
-            ["No contrast passed during report generation."]
-            if contrasts is None
-            else []
-        )
+        if contrasts is None:
+            warning_messages.append(
+                "No contrast passed during report generation."
+            )
 
     design_matrices_dict = Bunch()
     contrasts_dict = Bunch()
@@ -374,6 +362,11 @@ def make_glm_report(
         contrasts_dict = output["contrasts_dict"]
 
     if is_matplotlib_installed():
+        from nilearn._utils.plotting import (
+            generate_contrast_matrices_figures,
+            generate_design_matrices_figures,
+        )
+
         logger.log(
             "Generating design matrices figures...", verbose=model.verbose
         )
@@ -418,12 +411,22 @@ def make_glm_report(
     if smoothing_fwhm == 0:
         smoothing_fwhm = None
 
+    if warning_messages:
+        for msg in warning_messages:
+            warnings.warn(
+                msg,
+                stacklevel=find_stack_level(),
+            )
+
     env = return_jinja_env()
 
     body_tpl = env.get_template("html/glm/body_glm.jinja")
 
+    # TODO clean up docstring from RST formatting
+    docstring = model.__doc__.split("Parameters\n")[0]
+
     body = body_tpl.render(
-        docstring=model.__doc__.partition("Parameters\n    ----------\n")[0],
+        docstring=docstring,
         contrasts=contrasts,
         date=datetime.datetime.now().replace(microsecond=0).isoformat(),
         mask_plot=mask_plot,
@@ -438,6 +441,7 @@ def make_glm_report(
         version=__version__,
         unique_id=str(uuid.uuid4()).replace("-", ""),
         warning_messages=warning_messages,
+        has_plotting_engine=is_matplotlib_installed(),
         **mask_info,
     )
 
@@ -526,17 +530,17 @@ def _mask_to_plot(model, bg_img, cut_coords):
     if not is_matplotlib_installed():
         return None
 
+    from nilearn.plotting import plot_roi
+
     # Select mask_img to use for plotting
     if not model.design_only and not model._is_volume_glm():
-        model.masker_._create_figure_for_report()
-        fig = plt.gcf()
+        fig = model.masker_._create_figure_for_report()
         mask_plot = figure_to_png_base64(fig)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
         return mask_plot
-    from nilearn.maskers import NiftiMasker
 
-    if isinstance(model.mask_img, NiftiMasker):
+    if is_masker(model.mask_img) and accept_niimg_input(model.mask_img):
         mask_img = model.masker_.mask_img_
     else:
         try:
@@ -652,6 +656,8 @@ def _make_stat_maps_contrast_clusters(
         contrast name, contrast plot, statistical map, cluster table.
 
     """
+    from nilearn.glm.thresholding import threshold_stats_img
+
     check_params(locals())
     if not display_mode:
         display_mode_selector = {"slice": "z", "glass": "lzry"}
@@ -840,6 +846,12 @@ def _stat_map_to_png(
     """
     if not is_matplotlib_installed():
         return None, None
+    else:
+        from nilearn.plotting import (
+            plot_glass_brain,
+            plot_stat_map,
+            plot_surf_stat_map,
+        )
 
     cmap = DEFAULT_DIVERGING_CMAP
 
@@ -945,6 +957,8 @@ def _add_params_to_plot(table_details, stat_map_plot):
         Axes object of the stat map plot, with the added suptitle.
 
     """
+    from nilearn._utils.plotting import resize_plot_inches
+
     thresholding_params = [
         ":".join([name, str(val)]) for name, val in table_details[0].items()
     ]
