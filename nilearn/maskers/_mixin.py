@@ -312,7 +312,6 @@ class _LabelMaskerMixin:
         labels = self.labels
 
         labels_present = get_indices_from_image(labels_img)
-
         add_background_to_lut = (
             None
             if background_label not in labels_present
