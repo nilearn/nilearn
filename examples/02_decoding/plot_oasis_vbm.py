@@ -156,7 +156,6 @@ display = plot_stat_map(
     display_mode="z",
     cut_coords=[z_slice],
     title="SVM weights",
-    cmap="cold_hot",
 )
 show()
 
