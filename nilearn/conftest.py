@@ -9,7 +9,7 @@ from nibabel import Nifti1Image
 from nilearn import image
 from nilearn._utils.data_gen import (
     generate_labeled_regions,
-    generate_maps,
+    generate_regions_ts,
 )
 from nilearn._utils.helpers import is_matplotlib_installed
 
@@ -18,6 +18,7 @@ from nilearn.datasets.tests._testing import (
     request_mocker,  # noqa: F401
     temp_nilearn_data_dir,  # noqa: F401
 )
+from nilearn.masking import unmask
 from nilearn.surface import (
     InMemoryMesh,
     PolyMesh,
@@ -466,12 +467,24 @@ def n_regions():
 
 
 def _img_maps(n_regions=None):
-    """Generate a default map image."""
+    """Generate a default map image.
+
+    adapted from nilearn._utils.data_gen.generate_maps
+    """
     if n_regions is None:
         n_regions = _n_regions()
-    return generate_maps(
-        shape=_shape_3d_default(), n_regions=n_regions, affine=_affine_eye()
-    )[0]
+
+    border = 1
+
+    mask = np.zeros(_shape_3d_default(), dtype=np.int8)
+    mask[border:-border, border:-border, border:-border] = 1
+    ts = generate_regions_ts(
+        mask.sum(),
+        n_regions,
+        random_state=_rng(),
+    )
+    mask_img = Nifti1Image(mask, _affine_eye())
+    return unmask(ts, mask_img)
 
 
 @pytest.fixture
