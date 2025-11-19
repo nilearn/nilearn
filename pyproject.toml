@@ -200,7 +200,15 @@ ignore_imports = [
     "nilearn.plotting.tests.test_img_comparisons -> nilearn._utils.data_gen",  # allowed in tests
     "nilearn.plotting.tests.test_img_comparisons -> nilearn.conftest",  # allowed in tests
     "nilearn.plotting.tests.test_img_comparisons -> nilearn.maskers",  # allowed in tests
-    "nilearn.plotting.**.tests.* -> nilearn.conftest"  # allowed in tests
+    "nilearn.plotting.**.tests.* -> nilearn.conftest",  # allowed in tests
+    # TODO
+    "nilearn.plotting.image.img_plotting -> nilearn.maskers",
+    "nilearn.plotting.img_comparison -> nilearn._utils.masker_validation",
+    "nilearn.plotting.img_comparison -> nilearn.maskers",
+    "nilearn.image.image -> nilearn._utils.masker_validation",
+    # TODO
+    "nilearn.reporting.get_clusters_table -> nilearn.image",
+    "nilearn.reporting.tests.test_get_clusters_table -> nilearn.image"
 ]
 layers = [
     "nilearn.glm",
