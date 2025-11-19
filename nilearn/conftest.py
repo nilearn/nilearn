@@ -8,7 +8,6 @@ from nibabel import Nifti1Image
 
 from nilearn import image
 from nilearn._utils.data_gen import (
-    generate_fake_fmri,
     generate_labeled_regions,
     generate_maps,
 )
@@ -506,11 +505,28 @@ def length():
 
 
 @pytest.fixture
-def img_fmri(shape_3d_default, affine_eye, length):
-    """Return a default length for fmri images."""
-    return generate_fake_fmri(
-        shape_3d_default, affine=affine_eye, length=length
-    )[0]
+def img_fmri(shape_3d_default, affine_eye, length, rng) -> Nifti1Image:
+    """Return a default length for fmri images.
+
+    adapted from nilearn._utils.data_gen.generate_fmri_image
+    """
+    full_shape = (*shape_3d_default, length)
+    fmri = np.zeros(full_shape)
+
+    # Fill central voxels timeseries with random signals
+    width = [s // 2 for s in shape_3d_default]
+    shift = [s // 4 for s in shape_3d_default]
+
+    signals = rng.integers(256, size=([*width, length]))
+
+    fmri[
+        shift[0] : shift[0] + width[0],
+        shift[1] : shift[1] + width[1],
+        shift[2] : shift[2] + width[2],
+        :,
+    ] = signals
+
+    return Nifti1Image(fmri, affine_eye)
 
 
 # ------------------------ SURFACE ------------------------#
