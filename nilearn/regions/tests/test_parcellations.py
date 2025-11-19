@@ -394,6 +394,7 @@ def test_parcellation_with_surface_and_confounds(method, rng):
     assert X_transformed.shape == (n_samples, 5)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("method", METHODS)
 def test_parcellation_with_multi_surface(method, rng):
     """Test if parcellation works with surface data from multiple

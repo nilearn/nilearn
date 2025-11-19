@@ -35,8 +35,7 @@ def test_all_estimators(
 
 def test_all_functions():
     """Check number of functions in public API."""
-    fn = [x[0] for x in all_functions()]
-
+    fn = all_functions()
     print(fn)
     if is_matplotlib_installed():
         assert len(fn) == 170
