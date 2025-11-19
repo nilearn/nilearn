@@ -5,6 +5,7 @@ Can be for GLM reports or masker reports.
 
 import sys
 import time
+from argparse import ArgumentParser
 from pathlib import Path
 
 import numpy as np
@@ -235,11 +236,6 @@ def report_flm_fiac(build_type):
 
     contrasts = {
         "SStSSp_minus_DStDSp": np.array([[1, 0, 0, -1]]),
-        "DStDSp_minus_SStSSp": np.array([[-1, 0, 0, 1]]),
-        "DSt_minus_SSt": np.array([[-1, -1, 1, 1]]),
-        "DSp_minus_SSp": np.array([[-1, 1, -1, 1]]),
-        "DSt_minus_SSt_for_DSp": np.array([[0, -1, 0, 1]]),
-        "DSp_minus_SSp_for_DSt": np.array([[0, 0, -1, 1]]),
         "Deactivation": np.array([[-1, -1, -1, -1, 4]]),
         "Effects_of_interest": np.eye(n_columns)[:5, :],  # An F-contrast
     }
@@ -291,12 +287,6 @@ def report_slm_oasis(build_type):
         oasis_dataset.gray_matter_maps, design_matrix=design_matrix
     )
 
-    # TODO the following crashes
-    # contrast = [np.array([1, 0]), np.array([0, 1])]
-    # contrast = [[1, 0, 0], [0, 1, 0]]
-
-    # The following are equivalent
-    # contrast = [np.array([1, 0, 0]), np.array([0, 1, 0])]
     contrast = ["age", "sex"]
 
     report = make_glm_report(
@@ -319,7 +309,7 @@ def report_surface_flm(build_type):
 
     if build_type == "partial":
         _generate_dummy_html(filenames=["flm_surf.html"])
-        return None
+        return report_flm_empty, None
 
     data = fetch_localizer_first_level()
 
@@ -586,6 +576,8 @@ def report_surface_maps_masker(build_type):
         )
         return _generate_masker_report_files_partial(masker), None
     else:
+        empty_report = _generate_masker_report_files_partial(masker)
+
         surface_stat_image = load_sample_motor_activation_image_on_surface()
 
         print("Use mpl")
@@ -611,6 +603,8 @@ def report_surface_maps_masker(build_type):
             REPORTS_DIR / "SurfaceMapsMasker_fitted_plotly.html"
         )
 
+        return empty_report, matplotlib_reports, plotly_reports
+
 
 def _generate_dummy_html(filenames: list[str]):
     for x in filenames:
@@ -632,8 +626,27 @@ def _generate_dummy_html(filenames: list[str]):
 </html>""")
 
 
+def cli_parser():
+    parser = ArgumentParser(
+        description="Build all types of nilearn reports.",
+    )
+    parser.add_argument(
+        "--build_type",
+        help="""
+        build_type.
+        """,
+        choices=["full", "partial"],
+        default="partial",
+        type=str,
+        nargs=1,
+    )
+    return parser
+
+
 def main(args=sys.argv):
-    build_type = args[1] if len(args) > 1 else "partial"
+    parser = cli_parser()
+    args = parser.parse_args(args[1:])
+    build_type = args.build_type
 
     print(f"Generating reports for a build: {build_type}")
 

@@ -16,9 +16,10 @@ import re
 import sys
 from pathlib import Path
 
-from nilearn._version import __version__
 from sphinx.domains import changeset
 from sphinx.locale import _
+
+from nilearn._version import __version__
 
 # ----------------------------------------------------------------------------
 
@@ -334,7 +335,7 @@ html_favicon = "logos/favicon.ico"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["images", "themes"]
+html_static_path = ["images", "themes", "reports"]
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
