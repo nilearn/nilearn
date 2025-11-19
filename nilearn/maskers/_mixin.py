@@ -22,8 +22,6 @@ from nilearn.image.image import (
     get_indices_from_image,
     iter_check_niimg,
 )
-from nilearn.reporting import HTMLReport
-from nilearn.image.utils import get_indices_from_image
 from nilearn.surface.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
