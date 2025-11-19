@@ -116,6 +116,7 @@ def input_parameters(masker_class, img_mask_eye, labels, img_labels):
         return {"maps_img": _surf_maps_img()}
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "masker_class",
     [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
@@ -171,6 +172,7 @@ def test_displayed_maps_error(masker_class, input_parameters, displayed_maps):
         masker.generate_report(displayed_maps)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "masker_class",
     [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
@@ -189,6 +191,7 @@ def test_displayed_maps_warning_too_many(
         masker.generate_report(displayed_maps)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "masker_class",
     [NiftiMapsMasker, NiftiSpheresMasker, SurfaceMapsMasker],
