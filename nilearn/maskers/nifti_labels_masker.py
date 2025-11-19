@@ -193,6 +193,8 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     """
 
+    _template_name = "body_nifti_maps_masker.jinja"
+
     # memory and memory_level are used by _utils.CacheMixin.
 
     def __init__(
