@@ -97,13 +97,18 @@ def test_nifti_labels_masker(
     # Check attributes defined at fit
     assert masker.n_elements_ == n_regions
 
-    # now with mask_img
+    # transform
+    signals = masker.fit_transform(fmri_img)
+
+    assert signals.shape == (length, n_regions)
+
+    # now with a mask_img that excludes one region
     masker = NiftiLabelsMasker(
         img_labels, mask_img=mask11_img, resampling_target=None
     )
     signals = masker.fit_transform(fmri_img)
 
-    assert signals.shape == (length, n_regions)
+    assert signals.shape == (length, n_regions - 1)
 
 
 def test_nifti_labels_masker_errors(
@@ -158,18 +163,13 @@ def test_nifti_labels_masker_errors(
 
 
 def test_nifti_labels_masker_with_nans_and_infs(
-    affine_eye, shape_3d_default, n_regions, length, img_labels
+    affine_eye, n_regions, length, img_labels, img_fmri
 ):
     """Deal with NaNs and infs in label image.
 
     The masker should replace those NaNs and infs with zeros,
     while raising a warning.
     """
-    fmri_img, mask_img = generate_random_img(
-        (*shape_3d_default, length),
-        affine=affine_eye,
-    )
-
     # Introduce nans with data type float
     # See issue: https://github.com/nilearn/nilearn/issues/2580
     data = get_data(img_labels).astype(np.float32)
@@ -177,44 +177,47 @@ def test_nifti_labels_masker_with_nans_and_infs(
     data[:, :, 4] = np.inf
     img_labels = Nifti1Image(data, affine_eye)
 
-    masker = NiftiLabelsMasker(img_labels, mask_img=mask_img)
+    # image also contains 0, inf and nan
+    unique = np.unique(data)
+    assert len(unique) == n_regions + 3
+
+    masker = NiftiLabelsMasker(img_labels)
 
     with pytest.warns(UserWarning, match="Non-finite values detected."):
-        sig = masker.fit_transform(fmri_img)
+        sig = masker.fit_transform(img_fmri)
 
-    assert sig.shape == (length, n_regions)
+    assert "nan" not in masker.lut_.name.to_list()
+    assert "inf" not in masker.lut_.name.to_list()
+    assert "unknown" not in masker.lut_.name.to_list()
+
     assert np.all(np.isfinite(sig))
+    assert sig.shape == (length, n_regions)
 
 
 def test_nifti_labels_masker_with_nans_and_infs_in_data(
-    affine_eye, shape_3d_default, n_regions, length, img_labels
+    affine_eye, img_fmri, n_regions, length, img_labels
 ):
     """Apply a NiftiLabelsMasker to 4D data containing NaNs and infs.
 
     The masker should replace those NaNs and infs with zeros,
     while raising a warning.
     """
-    fmri_img, mask_img = generate_random_img(
-        (*shape_3d_default, length),
-        affine=affine_eye,
-    )
-
     # Introduce nans with data type float
     # See issues:
     # - https://github.com/nilearn/nilearn/issues/2580 (why floats)
     # - https://github.com/nilearn/nilearn/issues/2711 (why test)
-    fmri_data = get_data(fmri_img).astype(np.float32)
+    fmri_data = get_data(img_fmri).astype(np.float32)
     fmri_data[:, :, 7, :] = np.nan
     fmri_data[:, :, 4, 0] = np.inf
     fmri_img = Nifti1Image(fmri_data, affine_eye)
 
-    masker = NiftiLabelsMasker(img_labels, mask_img=mask_img)
+    masker = NiftiLabelsMasker(img_labels)
 
     with pytest.warns(UserWarning, match="Non-finite values detected."):
         sig = masker.fit_transform(fmri_img)
 
-    assert sig.shape == (length, n_regions)
     assert np.all(np.isfinite(sig))
+    assert sig.shape == (length, n_regions)
 
 
 @pytest.mark.parametrize(
