@@ -7,9 +7,7 @@ import pytest
 from nibabel import Nifti1Image
 
 from nilearn import image
-from nilearn._utils.data_gen import (
-    generate_regions_ts,
-)
+from nilearn._utils.data_gen import generate_regions_ts
 from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
