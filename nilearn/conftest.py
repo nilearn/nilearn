@@ -8,7 +8,6 @@ from nibabel import Nifti1Image
 
 from nilearn import image
 from nilearn._utils.data_gen import (
-    generate_labeled_regions,
     generate_regions_ts,
 )
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -496,13 +495,26 @@ def img_maps():
 def _img_labels():
     """Generate fixture for default label image.
 
+    adapted from nilearn._utils.data_gen.generate_labeled_regions
+
     DO NOT CHANGE n_regions (some tests expect this value).
     """
-    return generate_labeled_regions(
-        shape=_shape_3d_default(),
-        affine=_affine_eye(),
-        n_regions=_n_regions(),
-    )
+    shape = _shape_3d_default()
+    n_voxels = shape[0] * shape[1] * shape[2]
+
+    n_regions = _n_regions()
+
+    n_regions += 1
+    labels = range(n_regions)
+
+    regions = generate_regions_ts(n_voxels, n_regions, random_state=_rng())
+    # replace weights with labels
+    for n, row in zip(labels, regions, strict=False):
+        row[row > 0] = n
+    data = np.zeros(shape, dtype="int32")
+    data[np.ones(shape, dtype=bool)] = regions.sum(axis=0).T
+
+    return Nifti1Image(data, _affine_eye())
 
 
 @pytest.fixture
