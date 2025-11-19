@@ -176,7 +176,7 @@ show()
 # which we do here.
 from pathlib import Path
 
-from nilearn.interfaces.bids import save_glm_to_bids
+from nilearn.glm import save_glm_to_bids
 
 output_dir = Path.cwd() / "results" / "plot_oasis"
 output_dir.mkdir(exist_ok=True, parents=True)

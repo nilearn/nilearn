@@ -82,7 +82,9 @@ def frame_times(n_frames):
 
 
 def test_design_matrix_no_experimental_paradigm(frame_times):
-    # Test design matrix creation when no experimental paradigm is provided
+    """Test design matrix creation \
+        when no experimental paradigm is provided.
+    """
     _, X, names = check_design_matrix(
         make_first_level_design_matrix(
             frame_times, drift_model="polynomial", drift_order=3
@@ -457,11 +459,27 @@ def test_create_second_level_design():
     subjects_label = ["02", "01"]  # change order to test right output order
     regressors = [["01", 0.1], ["02", 0.75]]
     regressors = pd.DataFrame(regressors, columns=["subject_label", "f1"])
+
     design = make_second_level_design_matrix(subjects_label, regressors)
+
     expected_design = np.array([[0.75, 1.0], [0.1, 1.0]])
     assert_array_equal(design, expected_design)
     assert len(design.columns) == 2
     assert len(design) == 2
+
+
+def test_create_second_level_design_nan():
+    """Ensure second level matrix can be generated with nan in confounds."""
+    subjects_label = ["01", "02", "03"]
+    regressors = [
+        ["01", 0.1],
+        ["02", 0.75],
+        ["03", np.nan],
+    ]
+    regressors = pd.DataFrame(regressors, columns=["subject_label", "f1"])
+
+    with pytest.raises(ValueError, match="Confounds contain NaN values"):
+        make_second_level_design_matrix(subjects_label, regressors)
 
 
 def test_designs_with_negative_onsets_warning(frame_times):

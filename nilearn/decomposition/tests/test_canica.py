@@ -1,5 +1,7 @@
 """Test CanICA."""
 
+import sys
+
 import numpy as np
 import pytest
 from numpy.testing import assert_array_almost_equal
@@ -28,7 +30,7 @@ def test_threshold_bound_error(canica_data_single_img):
         canica.fit(canica_data_single_img)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_percentile_range(rng, canica_data_single_img):
     """Test that a warning is given when thresholds are stressed."""
@@ -46,6 +48,9 @@ def test_percentile_range(rng, canica_data_single_img):
         canica.fit(canica_data_single_img)
 
 
+@pytest.mark.flaky(
+    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
+)
 @pytest.mark.parametrize("data_type", ["nifti"])
 def test_canica_square_img(
     decomposition_mask_img, canica_components, canica_data
@@ -86,7 +91,7 @@ def test_canica_square_img(
     assert_array_almost_equal(K_abs, 0, 1)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_component_sign(canica_data, data_type):
     """Check sign of extracted components.

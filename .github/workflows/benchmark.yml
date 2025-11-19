@@ -36,14 +36,24 @@
 name: Run and deploy Nilearn benchmarks
 
 on:
-    push:
-        branches:
-        -   main
     schedule:
-    # every Monday at 12noon UTC
-    -   cron: 0 12 * * TUE
+        # Uses the cron schedule for github actions
+        # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+        # Run every Monday at midnight UTC
+        #     ┌───────────── minute (0 - 59)
+        #     │ ┌───────────── hour (0 - 23)
+        #     │ │ ┌───────────── day of the month (1 - 31)
+        #     │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+        #     │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     * * * * *
+    -   cron: 0 0 * * 1
 
-    workflow_dispatch:  # This enables manual triggering from GitHub UI
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
+    workflow_dispatch:
 
 jobs:
     benchmark:
@@ -60,11 +70,11 @@ jobs:
         steps:
         -   uses: actions/checkout@v5
             with:
-                # fetch all branches and tags
+                  # fetch all branches and tags
                 fetch-depth: 0
         -   uses: actions/setup-python@v6
             with:
-                # TODO bump to 3.10 when minimum python is 3.10
+                  # TODO bump to 3.10 when minimum python is 3.10
                 python-version: 3.9
         -   name: Install asv and switch to asv_benchmarks directory
             run: |
@@ -97,7 +107,7 @@ jobs:
         -   name: Create html with all results
             run: |
                 asv publish
-        -   uses: actions/upload-artifact@v4
+        -   uses: actions/upload-artifact@v5
             with:
                 name: Upload asv benchmark results as artifacts
                 path: |

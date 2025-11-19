@@ -15,10 +15,10 @@ import uuid
 import warnings
 from html import escape
 from pathlib import Path
-from string import Template
 
 import numpy as np
 import pandas as pd
+from sklearn.utils import Bunch
 
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils import logger
@@ -33,32 +33,25 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
+from nilearn._utils.tags import (
+    accept_niimg_input,
+    is_masker,
+)
 from nilearn._version import __version__
-from nilearn.externals import tempita
-from nilearn.glm.thresholding import (
-    threshold_stats_img,
-    warn_default_threshold,
-)
-from nilearn.maskers import NiftiMasker
-from nilearn.reporting._utils import (
-    dataframe_to_html,
-)
+from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
     get_clusters_table,
 )
 from nilearn.reporting.html_report import (
+    MISSING_ENGINE_MSG,
+    UNFITTED_MSG,
     HTMLReport,
-    _render_warnings_partial,
+    assemble_report,
     is_notebook,
+    return_jinja_env,
 )
-from nilearn.reporting.utils import (
-    CSS_PATH,
-    HTML_TEMPLATE_PATH,
-    JS_PATH,
-    TEMPLATE_ROOT_PATH,
-    figure_to_png_base64,
-)
+from nilearn.reporting.utils import figure_to_png_base64
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
@@ -66,17 +59,6 @@ MNI152TEMPLATE = None
 if is_matplotlib_installed():
     from matplotlib import pyplot as plt
 
-    from nilearn._utils.plotting import (
-        generate_contrast_matrices_figures,
-        generate_design_matrices_figures,
-        resize_plot_inches,
-    )
-    from nilearn.plotting import (
-        plot_glass_brain,
-        plot_roi,
-        plot_stat_map,
-        plot_surf_stat_map,
-    )
     from nilearn.plotting.image.utils import (  # type: ignore[assignment]
         MNI152TEMPLATE,
     )
@@ -99,7 +81,7 @@ def make_glm_report(
     cut_coords=None,
     display_mode=None,
     report_dims=(WIDTH_DEFAULT, HEIGHT_DEFAULT),
-):
+) -> HTMLReport:
     """Return HTMLReport object \
     for a report which shows all important aspects of a fitted GLM.
 
@@ -240,27 +222,24 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
+    from nilearn.glm.thresholding import warn_default_threshold
+
     check_params(locals())
+
+    warning_messages = []
+
     if not is_matplotlib_installed():
-        warnings.warn(
-            ("No plotting back-end detected. Output will be missing figures."),
-            UserWarning,
-            stacklevel=find_stack_level(),
-        )
+        warning_messages.append(MISSING_ENGINE_MSG)
 
     parameters = dict(**inspect.signature(make_glm_report).parameters)
     if height_control is not None and float(threshold) != float(
         parameters["threshold"].default
     ):
-        warnings.warn(
-            (
-                f"'{threshold=}' will not be used with '{height_control=}'. "
-                "'threshold' is only used when 'height_control=None'. "
-                f"Set 'threshold' to '{parameters['threshold'].default}' "
-                "to avoid this warning."
-            ),
-            UserWarning,
-            stacklevel=find_stack_level(),
+        warning_messages.append(
+            f"\n'{threshold=}' is not used with '{height_control=}'."
+            "\n'threshold' is only used when 'height_control=None'. "
+            f"\nSet 'threshold' to '{parameters['threshold'].default}' "
+            "to avoid this warning."
         )
     warn_default_threshold(
         threshold,
@@ -268,20 +247,6 @@ def make_glm_report(
         3.0,
         height_control=height_control,
     )
-
-    unique_id = str(uuid.uuid4()).replace("-", "")
-
-    title = f"<br>{title}" if title else ""
-    title = f"Statistical Report - {model.__str__()}{title}"
-
-    docstring = model.__doc__
-    snippet = docstring.partition("Parameters\n    ----------\n")[0]
-
-    date = datetime.datetime.now().replace(microsecond=0).isoformat()
-
-    smoothing_fwhm = getattr(model, "smoothing_fwhm", 0)
-    if smoothing_fwhm == 0:
-        smoothing_fwhm = None
 
     model_attributes = _glm_model_attributes_to_dataframe(model)
     with pd.option_context("display.max_colwidth", 100):
@@ -304,16 +269,18 @@ def make_glm_report(
 
     design_matrices = None
     mask_plot = None
-    mask_info = {"n_elements": 0, "coverage": 0}
+    mask_info = {"n_elements": 0, "coverage": "0"}
     results = None
-    warning_messages = ["The model has not been fit yet."]
-    if model.__sklearn_is_fitted__():
-        warning_messages = []
 
-        if model.__str__() == "Second Level Model":
-            design_matrices = [model.design_matrix_]
-        else:
-            design_matrices = model.design_matrices_
+    if not model.__sklearn_is_fitted__():
+        warning_messages.append(UNFITTED_MSG)
+
+    else:
+        design_matrices = (
+            [model.design_matrix_]
+            if model.__str__() == "Second Level Model"
+            else model.design_matrices_
+        )
 
         if bg_img == "MNI152TEMPLATE":
             bg_img = MNI152TEMPLATE if model._is_volume_glm() else None
@@ -378,13 +345,23 @@ def make_glm_report(
             plot_type=plot_type,
         )
 
-    design_matrices_dict = tempita.bunch()
-    contrasts_dict = tempita.bunch()
+        if contrasts is None:
+            warning_messages.append(
+                "No contrast passed during report generation."
+            )
+
+    design_matrices_dict = Bunch()
+    contrasts_dict = Bunch()
     if output is not None:
         design_matrices_dict = output["design_matrices_dict"]
         contrasts_dict = output["contrasts_dict"]
 
     if is_matplotlib_installed():
+        from nilearn._utils.plotting import (
+            generate_contrast_matrices_figures,
+            generate_design_matrices_figures,
+        )
+
         logger.log(
             "Generating design matrices figures...", verbose=model.verbose
         )
@@ -404,9 +381,9 @@ def make_glm_report(
             output=output,
         )
 
-    run_wise_dict = tempita.bunch()
+    run_wise_dict = Bunch()
     for i_run in design_matrices_dict:
-        tmp = tempita.bunch()
+        tmp = Bunch()
         tmp["design_matrix_png"] = design_matrices_dict[i_run][
             "design_matrix_png"
         ]
@@ -421,89 +398,65 @@ def make_glm_report(
     # for methods writing, only keep the contrast expressed as strings
     if contrasts is not None:
         contrasts = [x for x in contrasts.values() if isinstance(x, str)]
-    method_section_template_path = HTML_TEMPLATE_PATH / "method_section.html"
-    method_tpl = tempita.HTMLTemplate.from_filename(
-        str(method_section_template_path),
-        encoding="utf-8",
-    )
-    method_section = method_tpl.substitute(
-        version=__version__,
-        model_type=model.__str__(),
-        reporting_data=tempita.bunch(**model._reporting_data),
-        smoothing_fwhm=smoothing_fwhm,
+
+    title = f"<br>{title}" if title else ""
+    title = f"Statistical Report - {model.__str__()}{title}"
+
+    smoothing_fwhm = getattr(model, "smoothing_fwhm", 0)
+    if smoothing_fwhm == 0:
+        smoothing_fwhm = None
+
+    if warning_messages:
+        for msg in warning_messages:
+            warnings.warn(
+                msg,
+                stacklevel=find_stack_level(),
+            )
+
+    env = return_jinja_env()
+
+    body_tpl = env.get_template("html/glm/body_glm.jinja")
+
+    # TODO clean up docstring from RST formatting
+    docstring = model.__doc__.split("Parameters\n")[0]
+
+    body = body_tpl.render(
+        docstring=docstring,
         contrasts=contrasts,
-    )
-
-    body_template_path = HTML_TEMPLATE_PATH / "glm_report.html"
-    tpl = tempita.HTMLTemplate.from_filename(
-        str(body_template_path),
-        encoding="utf-8",
-    )
-
-    css_file_path = CSS_PATH / "masker_report.css"
-    with css_file_path.open(encoding="utf-8") as css_file:
-        css = css_file.read()
-
-    with (JS_PATH / "carousel.js").open(encoding="utf-8") as js_file:
-        js_carousel = js_file.read()
-
-    body = tpl.substitute(
-        css=css,
-        title=title,
-        docstring=snippet,
-        warning_messages=_render_warnings_partial(warning_messages),
-        parameters=model_attributes_html,
+        date=datetime.datetime.now().replace(microsecond=0).isoformat(),
         mask_plot=mask_plot,
+        model_type=model.__str__(),
+        parameters=model_attributes_html,
+        reporting_data=Bunch(**model._reporting_data),
         results=results,
         run_wise_dict=run_wise_dict,
-        unique_id=unique_id,
-        date=date,
         show_navbar="style='display: none;'" if is_notebook() else "",
-        method_section=method_section,
-        js_carousel=js_carousel,
-        displayed_runs=list(range(len(run_wise_dict))),
+        smoothing_fwhm=smoothing_fwhm,
+        title=title,
+        version=__version__,
+        unique_id=str(uuid.uuid4()).replace("-", ""),
+        warning_messages=warning_messages,
+        has_plotting_engine=is_matplotlib_installed(),
         **mask_info,
     )
 
-    # revert HTML safe substitutions in CSS sections
-    body = body.replace(".pure-g &gt; div", ".pure-g > div")
-
-    head_template_path = (
-        TEMPLATE_ROOT_PATH / "html" / "report_head_template.html"
-    )
-    with head_template_path.open() as head_file:
-        head_tpl = Template(head_file.read())
-
-    head_css_file_path = CSS_PATH / "head.css"
-    with head_css_file_path.open(encoding="utf-8") as head_css_file:
-        head_css = head_css_file.read()
-
-    report = HTMLReport(
-        body=body,
-        head_tpl=head_tpl,
-        head_values={
-            "head_css": head_css,
-            "version": __version__,
-            "page_title": title,
-            "display_footer": "style='display: none'" if is_notebook() else "",
-        },
-    )
+    report = assemble_report(body, title)
 
     report.resize(*report_dims)
 
     return report
 
 
-def _turn_into_full_path(bunch, dir: Path) -> str | tempita.bunch:
+def _turn_into_full_path(bunch, dir: Path) -> str | Bunch:
     """Recursively turns str values of a dict into path.
 
     Used to turn relative paths into full paths.
     """
     if isinstance(bunch, str) and not bunch.startswith(str(dir)):
         return str(dir / bunch)
-    tmp = tempita.bunch()
+    tmp = Bunch()
     for k in bunch:
-        if isinstance(bunch[k], (dict, str, tempita.bunch)):
+        if isinstance(bunch[k], (dict, str, Bunch)):
             tmp[k] = _turn_into_full_path(bunch[k], dir)
         else:
             tmp[k] = bunch[k]
@@ -571,16 +524,18 @@ def _mask_to_plot(model, bg_img, cut_coords):
     """
     if not is_matplotlib_installed():
         return None
+
+    from nilearn.plotting import plot_roi
+
     # Select mask_img to use for plotting
     if not model._is_volume_glm():
-        model.masker_._create_figure_for_report()
-        fig = plt.gcf()
+        fig = model.masker_._create_figure_for_report()
         mask_plot = figure_to_png_base64(fig)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
         plt.close()
         return mask_plot
 
-    if isinstance(model.mask_img, NiftiMasker):
+    if is_masker(model.mask_img) and accept_niimg_input(model.mask_img):
         mask_img = model.masker_.mask_img_
     else:
         try:
@@ -694,6 +649,8 @@ def _make_stat_maps_contrast_clusters(
         contrast name, contrast plot, statistical map, cluster table.
 
     """
+    from nilearn.glm.thresholding import threshold_stats_img
+
     check_params(locals())
     if not display_mode:
         display_mode_selector = {"slice": "z", "glass": "lzry"}
@@ -808,7 +765,7 @@ def _make_stat_maps_contrast_clusters(
             cluster_table_html = None
             stat_map_png = None
 
-        results[escape(contrast_name)] = tempita.bunch(
+        results[escape(contrast_name)] = Bunch(
             stat_map_img=stat_map_png,
             cluster_table_details=table_details_html,
             cluster_table=cluster_table_html,
@@ -882,6 +839,12 @@ def _stat_map_to_png(
     """
     if not is_matplotlib_installed():
         return None, None
+    else:
+        from nilearn.plotting import (
+            plot_glass_brain,
+            plot_stat_map,
+            plot_surf_stat_map,
+        )
 
     cmap = DEFAULT_DIVERGING_CMAP
 
@@ -987,6 +950,8 @@ def _add_params_to_plot(table_details, stat_map_plot):
         Axes object of the stat map plot, with the added suptitle.
 
     """
+    from nilearn._utils.plotting import resize_plot_inches
+
     thresholding_params = [
         ":".join([name, str(val)]) for name, val in table_details[0].items()
     ]

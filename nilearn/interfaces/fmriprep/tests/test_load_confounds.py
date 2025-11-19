@@ -136,6 +136,7 @@ def _regression(confounds, tmp_path):
         (("high_pass", "compcor"), {"compcor": "anat_separated"}),
         (("high_pass", "compcor"), {"compcor": "temporal"}),
         (("ica_aroma",), {"ica_aroma": "basic"}),
+        (("tedana",), {"tedana": "aggressive"}),
     ],
 )
 def test_nilearn_regress(tmp_path, test_strategy, param, fmriprep_version):
@@ -145,6 +146,7 @@ def test_nilearn_regress(tmp_path, test_strategy, param, fmriprep_version):
         copy_confounds=True,
         copy_json=True,
         fmriprep_version=fmriprep_version,
+        image_type="tedana" if test_strategy == ("tedana",) else "regular",
     )
     if fmriprep_version == "21.x.x" and test_strategy == ("ica_aroma",):
         return
@@ -243,7 +245,7 @@ def test_nilearn_standardize_false(tmp_path):
     assert np.mean(tseries_std > 0.9)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore")
 @pytest.mark.parametrize("standardize_signal", ["zscore", "psc"])
 @pytest.mark.parametrize(
@@ -648,6 +650,79 @@ def test_ica_aroma(tmp_path, fmriprep_version):
         conf, _ = load_confounds(
             regular_nii, strategy=("ica_aroma",), ica_aroma="invalid"
         )
+
+
+def test_tedana_happy_path(tmp_path):
+    """Test TEDANA related file input."""
+    # create a tedana nifti file with no confounds
+    tedana_nii, _ = create_tmp_filepath(
+        tmp_path, image_type="tedana", copy_confounds=True
+    )
+
+    # check that the tedana nifti file loads correctly
+    conf, _ = load_confounds(tedana_nii, strategy=("tedana",))
+    assert conf.size > 0
+
+    # check the different strategies for tedana
+    conf, _ = load_confounds(
+        tedana_nii, strategy=("tedana",), tedana="aggressive"
+    )
+    assert conf.size > 0 and any("rejected" in col for col in conf.columns)
+
+    conf, _ = load_confounds(
+        tedana_nii, strategy=("tedana",), tedana="non-aggressive"
+    )
+    assert (
+        conf.size > 0
+        and any("rejected" in col for col in conf.columns)
+        and any("accepted" in col for col in conf.columns)
+    )
+
+
+def test_tedana_errors_warnings(tmp_path):
+    """Test TEDANA related file input."""
+    # create a regular nifti file with no confounds
+    regular_nii, _ = create_tmp_filepath(
+        tmp_path, image_type="regular", copy_confounds=False
+    )
+    # create a tedana nifti file with no confounds
+    tedana_nii, _ = create_tmp_filepath(
+        tmp_path, image_type="tedana", copy_confounds=True
+    )
+
+    # check that the regular nifti file raises an error
+    with pytest.raises(ValueError) as exc_info:
+        load_confounds(regular_nii, strategy=("tedana",))
+    assert (
+        "Input must be the ~desc-optcom_bold.nii.gz" in exc_info.value.args[0]
+    )
+
+    # check that the tedana nifti file raises an error with other strategies
+    with pytest.raises(ValueError) as exc_info:
+        load_confounds(tedana_nii, strategy=("motion",))
+    assert (
+        "Invalid file type for the selected 'nii.gz' method"
+        in exc_info.value.args[0]
+    )
+
+    # check that combining tedana with other strategies raises an warning
+    with pytest.warns(UserWarning, match="TEDANA strategy"):
+        load_confounds(
+            tedana_nii, strategy=("tedana", "motion"), motion="basic"
+        )
+
+    # check that combining tedana with other strategies raises an warning
+    with pytest.warns(UserWarning, match="TEDANA strategy"):
+        load_confounds(
+            tedana_nii,
+            strategy=("tedana", "high_pass", "ica_aroma", "global_signal"),
+            motion="basic",
+        )
+
+    # tedana strategy with invalid option
+    with pytest.raises(ValueError) as exc_info:
+        load_confounds(tedana_nii, strategy=("tedana",), tedana="invalid")
+    assert "Current input: invalid" in exc_info.value.args[0]
 
 
 @pytest.mark.parametrize(

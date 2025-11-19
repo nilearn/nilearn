@@ -25,9 +25,7 @@ from nilearn.surface import (
     SurfaceImage,
 )
 
-collect_ignore = ["datasets/data/convert_templates.py"]
-collect_ignore_glob = ["reporting/_visual_testing/*"]
-
+collect_ignore = []
 # Plotting tests are skipped if matplotlib is missing.
 # If the version is greater than the minimum one we support
 # We skip the tests where the generated figures are compared to a baseline.
@@ -58,8 +56,6 @@ else:
         [
             "_utils/plotting.py",
             "plotting",
-            "reporting/html_report.py",
-            "reporting/tests/test_html_report.py",
             "reporting/tests/test_baseline_comparisons.py",
         ]
     )
@@ -141,7 +137,7 @@ def rng():
 # ------------------------ AFFINES ------------------------#
 
 
-def _affine_mni():
+def _affine_mni() -> np.ndarray:
     """Return an affine corresponding to 2mm isotropic MNI template.
 
     Mostly used for set up in other fixtures in other testing modules.
@@ -162,7 +158,7 @@ def affine_mni():
     return _affine_mni()
 
 
-def _affine_eye():
+def _affine_eye() -> np.ndarray:
     """Return an identity matrix affine.
 
     Mostly used for set up in other fixtures in other testing modules.

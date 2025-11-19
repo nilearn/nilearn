@@ -31,7 +31,7 @@ mean_img = image.mean_img(fmri_img)
 mask = masking.compute_epi_mask(mean_img)
 
 # Clean and smooth data
-fmri_img = image.clean_img(fmri_img, standardize=False)
+fmri_img = image.clean_img(fmri_img, standardize=None)
 fmri_img = image.smooth_img(fmri_img, 5.0)
 
 # load events

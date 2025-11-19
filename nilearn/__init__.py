@@ -42,6 +42,7 @@ reporting               --- Implements functions useful
                             to report analysis results
 signal                  --- Set of preprocessing functions for time series
 surface                 --- Functions and classes to work with surfaces
+utils                   --- Utilities
 """
 
 try:
@@ -78,4 +79,5 @@ __all__ = [
     "reporting",
     "signal",
     "surface",
+    "utils",
 ]
