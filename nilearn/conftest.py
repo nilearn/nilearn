@@ -5,9 +5,9 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
+from scipy.signal import get_window
 
 from nilearn import image
-from nilearn._utils.data_gen import generate_regions_ts
 from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
@@ -457,6 +457,54 @@ def _n_regions():
     return 9
 
 
+def generate_regions_ts(n_features, n_regions):
+    """Generate some regions as timeseries.
+
+    adapted from nilearn._utils.data_gen.generate_regions_ts
+
+    Parameters
+    ----------
+    n_features : :obj:`int`
+        Number of features.
+
+    n_regions : :obj:`int`
+        Number of regions.
+
+    Returns
+    -------
+    regions : :obj:`numpy.ndarray`
+        Regions, represented as signals.
+        shape (n_features, n_regions)
+
+    """
+    rand_gen = _rng()
+    window = "boxcar"
+    overlap = 0
+
+    assert n_features > n_regions
+
+    # Compute region boundaries indices.
+    # Start at 1 to avoid getting an empty region
+    boundaries = np.zeros(n_regions + 1)
+    boundaries[-1] = n_features
+    boundaries[1:-1] = rand_gen.permutation(np.arange(1, n_features))[
+        : n_regions - 1
+    ]
+    boundaries.sort()
+
+    regions = np.zeros((n_regions, n_features), order="C")
+    overlap_end = int((overlap + 1) / 2.0)
+    overlap_start = int(overlap / 2.0)
+    for n in range(len(boundaries) - 1):
+        start = int(max(0, boundaries[n] - overlap_start))
+        end = int(min(n_features, boundaries[n + 1] + overlap_end))
+        win = get_window(window, end - start)
+        win /= win.mean()  # unity mean
+        regions[n, start:end] = win
+
+    return regions
+
+
 @pytest.fixture
 def n_regions():
     """Return a default number of regions for maps."""
@@ -475,11 +523,7 @@ def _img_maps(n_regions=None):
 
     mask = np.zeros(_shape_3d_default(), dtype=np.int8)
     mask[border:-border, border:-border, border:-border] = 1
-    ts = generate_regions_ts(
-        mask.sum(),
-        n_regions,
-        random_state=_rng(),
-    )
+    ts = generate_regions_ts(mask.sum(), n_regions)
     mask_img = Nifti1Image(mask, _affine_eye())
     return unmask(ts, mask_img)
 
@@ -505,7 +549,7 @@ def _img_labels():
     n_regions += 1
     labels = range(n_regions)
 
-    regions = generate_regions_ts(n_voxels, n_regions, random_state=_rng())
+    regions = generate_regions_ts(n_voxels, n_regions)
     # replace weights with labels
     for n, row in zip(labels, regions, strict=False):
         row[row > 0] = n
