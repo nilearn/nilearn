@@ -331,3 +331,8 @@ def is_kaleido_installed():
     except ImportError:
         return False
     return True
+
+
+def is_windows_platform():
+    """Check if the current platform is Windows."""
+    return os.name == "nt"

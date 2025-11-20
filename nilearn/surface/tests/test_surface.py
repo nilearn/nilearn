@@ -1,6 +1,5 @@
 # Tests for functions in surf_plotting.py
 
-import sys
 import warnings
 from pathlib import Path
 
@@ -461,28 +460,33 @@ def test_vertex_outer_normals():
     assert_array_almost_equal(computed_normals, true_normals)
 
 
-@pytest.mark.flaky(
-    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
-)
-def test_load_uniform_ball_cloud():
+@pytest.mark.parametrize("n_points", [10, 20, 40, 80, 160])
+def test_load_uniform_ball_cloud_no_warning(n_points):
+    """Test that loading precomputed point clouds does not raise warnings.
+
+    Only for number of points: 10, 20, 40, 80, 160
+    """
     # Note: computed and shipped point clouds may differ since KMeans results
     # change after
     # https://github.com/scikit-learn/scikit-learn/pull/9288
     # but the exact position of the points does not matter as long as they are
     # well spread inside the unit ball
-    for n_points in [10, 20, 40, 80, 160]:
-        with warnings.catch_warnings(record=True) as w:
-            points = _load_uniform_ball_cloud(n_points=n_points)
-            assert_array_equal(points.shape, (n_points, 3))
-            assert len(w) == 0
+    with warnings.catch_warnings(record=True) as w:
+        points = _load_uniform_ball_cloud(n_points=n_points)
+        assert_array_equal(points.shape, (n_points, 3))
+        assert len(w) == 0
+
+
+@pytest.mark.parametrize("n_points", [3, 7])
+def test_load_uniform_ball_cloud(n_points):
+    """Test requesting n points with no cached results match computation."""
     with pytest.warns(EfficiencyWarning):
-        _load_uniform_ball_cloud(n_points=3)
-    for n_points in [3, 7]:
-        computed = _uniform_ball_cloud(n_points)
         loaded = _load_uniform_ball_cloud(n_points)
-        assert_array_almost_equal(computed, loaded)
-        assert (np.std(computed, axis=0) > 0.1).all()
-        assert (np.linalg.norm(computed, axis=1) <= 1).all()
+
+    computed = _uniform_ball_cloud(n_points)
+    assert_array_almost_equal(computed, loaded)
+    assert (np.std(computed, axis=0) > 0.1).all()
+    assert (np.linalg.norm(computed, axis=1) <= 1).all()
 
 
 def test_sample_locations():
