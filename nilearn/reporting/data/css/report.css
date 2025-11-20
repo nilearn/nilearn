@@ -248,7 +248,6 @@ End pure-button class definition from pure-min.css
   background-color: #f5f5f5;
 }
 
-
 /* -----------------------  Carousel navbar  ----------------------- */
 
 .carousel-navbar {
@@ -376,5 +375,3 @@ h6 {
 .nilearn-report .main-container {
   min-height: 700px !important;
 }
-
-{% block navbar_css %}{% endblock %}
