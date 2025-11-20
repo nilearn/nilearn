@@ -1,6 +1,20 @@
 """Checks for nilearn estimators.
 
-Most of those estimators have pytest dependencies
+This module contains the code to run systematic checks
+from sklearn or nilearn
+on the nilearn 'estimators' (maskers, decoders, ...).
+
+Some of the code here will help specify which of the sklearn
+are expected to fail for some of the nilearn estimators.
+In most cases, there will then be a homemade replacement
+for that sklearn check:
+for example for estimators that expect an image as input and not an array.
+
+This module also contains several nilearn specific checks
+that have no equivalent in sklearn:
+for example report generation for the maskers.
+
+Most of those checks have pytest dependencies
 and importing them will fail if pytest is not installed.
 """
 
@@ -51,7 +65,7 @@ from sklearn.utils.estimator_checks import (
 )
 
 from nilearn._utils.cache_mixin import CacheMixin
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import is_matplotlib_installed, is_windows_platform
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_imgs_equal
 from nilearn._utils.param_validation import check_is_of_allowed_type
@@ -129,7 +143,7 @@ def nilearn_dir() -> Path:
 
 
 def check_estimator(estimators: list[BaseEstimator], valid: bool = True):
-    """Yield a valid or invalid scikit-learn estimators check.
+    """Yield a valid or invalid sklearn estimators check.
 
     ONLY USED FOR sklearn<1.6
 
@@ -189,6 +203,10 @@ def return_expected_failed_checks(
     estimator: BaseEstimator,
 ) -> dict[str, str]:
     """Return the expected failures for a given estimator.
+
+    This will say which of the sklearn checks are expected to fail
+    for a given nilearn estimator,
+    with the reason why or saying what home made check replaces it.
 
     This is where all the "expected_failed_checks" for all Nilearn estimators
     are centralized.
@@ -544,6 +562,9 @@ def nilearn_check_estimator(estimators: list[BaseEstimator]):
 
 def nilearn_check_generator(estimator: BaseEstimator):
     """Yield (estimator, check) tuples.
+
+    This will yield only the nilearn specific checks
+    for a nilearn estimator.
 
     Each nilearn check can be run on an initialized estimator.
     """
@@ -2942,7 +2963,7 @@ def check_masker_transform_resampling(estimator) -> None:
 @ignore_warnings()
 def check_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if os.name == "nt" and (
+    if is_windows_platform() and (
         sys.version_info[1] < 13 or sys.version_info[1] == 14
     ):
         # TODO (python >= 3.11)
@@ -3425,7 +3446,7 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
 @ignore_warnings()
 def check_multi_nifti_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if os.name == "nt" and (
+    if is_windows_platform() and (
         sys.version_info[1] < 13 or sys.version_info[1] == 14
     ):
         # TODO (python >= 3.11)

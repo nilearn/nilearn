@@ -1,6 +1,5 @@
 """Test the datasets module."""
 
-import sys
 from pathlib import Path
 
 import pandas as pd
@@ -73,8 +72,8 @@ def _make_oasis_data(dartel=True):
     reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
 )
 def test_fetch_oasis_vbm(tmp_path, request_mocker, capsys):
+    """Test fetching OASIS VBM dataset with dartel version."""
     request_mocker.url_mapping["*archive_dartel.tgz*"] = _make_oasis_data()
-    request_mocker.url_mapping["*archive.tgz*"] = _make_oasis_data(False)
 
     dataset = fetch_oasis_vbm(data_dir=str(tmp_path), verbose=0)
 
@@ -87,6 +86,11 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker, capsys):
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 1
 
+
+def test_fetch_oasis_vbm_dartel_false(tmp_path, request_mocker, capsys):
+    """Test fetching OASIS VBM dataset without dartel version."""
+    request_mocker.url_mapping["*archive.tgz*"] = _make_oasis_data(False)
+
     dataset = fetch_oasis_vbm(
         data_dir=str(tmp_path), dartel_version=False, verbose=0
     )
@@ -98,7 +102,7 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker, capsys):
     assert isinstance(dataset.white_matter_maps[0], str)
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.data_usage_agreement, str)
-    assert request_mocker.url_count == 2
+    assert request_mocker.url_count == 1
 
     check_fetcher_verbosity(fetch_oasis_vbm, capsys, data_dir=tmp_path)
 
