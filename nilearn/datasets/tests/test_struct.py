@@ -7,6 +7,7 @@ import pytest
 from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
+from nilearn._utils.helpers import is_windows_platform
 from nilearn.datasets.struct import (
     fetch_icbm152_2009,
     fetch_icbm152_brain_gm_mask,
@@ -68,9 +69,7 @@ def _make_oasis_data(dartel=True):
     return dict_to_archive(data)
 
 
-@pytest.mark.flaky(
-    reruns=5, reruns_delay=2, condition=sys.platform.startswith("win32")
-)
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_fetch_oasis_vbm(tmp_path, request_mocker, capsys):
     """Test fetching OASIS VBM dataset with dartel version."""
     request_mocker.url_mapping["*archive_dartel.tgz*"] = _make_oasis_data()
@@ -85,6 +84,8 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker, capsys):
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 1
+
+    check_fetcher_verbosity(fetch_oasis_vbm, capsys, data_dir=tmp_path)
 
 
 def test_fetch_oasis_vbm_dartel_false(tmp_path, request_mocker, capsys):
