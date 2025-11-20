@@ -21,7 +21,6 @@ and importing them will fail if pytest is not installed.
 import contextlib
 import inspect
 import io
-import os
 import pickle
 import re
 import sys
