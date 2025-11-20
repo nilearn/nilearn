@@ -59,16 +59,21 @@ repos:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
 
-    # Check formatting of CSS and HTML
-    # prettier: https://prettier.io/
--   repo: https://github.com/rbubley/mirrors-prettier
-    rev: v3.6.2
+# -   repo: https://github.com/standard/standard
+#     rev: v17.1.2
+#     hooks:
+#     -   id: standard
+
+-   repo: https://github.com/djlint/djLint
+    rev: v1.36.4
     hooks:
-    -   id: prettier
-        types_or: [css, html]
+    -   id: djlint
+    -   id: djlint-reformat
+    -   id: djlint-jinja
+    -   id: djlint-reformat-jinja
         exclude: |
             (?x)^(
-                maint_tools/templates/index.html
+                doc/ci.jinja
             )$
 
     # Lint and format Python code

@@ -1,45 +1,32 @@
 <!-- CSS for the report -->
-
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/purecss@1.0.0/build/pure-min.css"
-  integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
-  crossorigin="anonymous"
-/>
-<link
-  rel="stylesheet"
-  href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css"
-/>
-
+<link rel="stylesheet"
+      href="https://unpkg.com/purecss@1.0.0/build/pure-min.css"
+      integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
+      crossorigin="anonymous" />
+<link rel="stylesheet"
+      href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css" />
 <style type="text/css">
-  {% include 'css/report.css' %}
+     {
+          % include 'css/report.css' %
+     }
 </style>
-
 <section class="nilearn-report pt-0 border border-1 rounded-2 scroll-y">
+    <h1 class="withtooltip m-0 pl-3 pt-3 rounded-top-2 fs-5">
+        {{ title|safe }}
+        <span class="tooltiptext m-1 p-1 fw-200 fs-3 border border-1 rounded-2">{{ docstring }}</span>
+    </h1>
 
-  <h1 class="withtooltip m-0 pl-3 pt-3 rounded-top-2 fs-5">
+    {% block navbar %}
+    {% endblock navbar %}
 
-    {{ title|safe }}
+    <div class="pure-g d-flex justify-content-center my-1">
+        <div class="pure-u-7-8 pure-u-md-7-8 d-flex flex-column justify-content-space-around main-container">
 
-    <span class="tooltiptext m-1 p-1 fw-200 fs-3 border border-1 rounded-2"
-      >{{ docstring }}</span
-    >
+            {% include "html/partials/warnings.jinja" %}
 
-  </h1>
+            {% block report %}
+            {% endblock report %}
 
-  {% block navbar %}{% endblock %}
-
-  <div class="pure-g d-flex justify-content-center my-1">
-    <div
-      class="pure-u-7-8 pure-u-md-7-8 d-flex flex-column justify-content-space-around main-container"
-    >
-
-      {% include 'html/partials/warnings.jinja' %}
-
-      {% block report %}
-      {% endblock %}
-
+        </div>
     </div>
-  </div>
-
 </section>
