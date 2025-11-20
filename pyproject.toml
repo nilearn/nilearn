@@ -242,6 +242,7 @@ module = [
     "matplotlib.*",
     "memory_profiler.*",
     "mpl_toolkits.*",
+    "marimo.*",
     "nibabel.*",
     "nilearn._version",
     "numpydoc.*",

@@ -326,6 +326,7 @@ def _create_report(
             else None
         ),
         summary_html=summary_html,
+        is_notebook=is_notebook(),
         **data,
     )
 
@@ -335,10 +336,29 @@ def _create_report(
 def is_notebook() -> bool:
     """Detect if we are running in a notebook.
 
-    From https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
+    Adapted from https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
     """
     try:
         shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
-        return shell == "ZMQInteractiveShell"
     except NameError:
-        return False  # Probably standard Python interpreter
+        shell = False
+
+    try:
+        import marimo as mo
+
+        is_marimo = mo.running_in_notebook()
+    except ImportError:
+        is_marimo = False
+
+    if shell:
+        if shell == "ZMQInteractiveShell":
+            return True  # Jupyter notebook or qtconsole
+        elif shell == "TerminalInteractiveShell":
+            return False  # Terminal running IPython
+        else:
+            return False  # Other type (?)
+
+    if is_marimo:
+        return is_marimo
+
+    return False

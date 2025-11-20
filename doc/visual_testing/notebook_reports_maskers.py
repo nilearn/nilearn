@@ -49,7 +49,10 @@ def _():
 @app.cell
 def _(cli_parser):
     args = cli_parser().parse_args()
-    BUILD_TYPE = args.build_type[0]
+    BUILD_TYPE = args.build_type
+    if isinstance(BUILD_TYPE, list):
+        BUILD_TYPE = BUILD_TYPE[0]
+    # BUILD_TYPE = "full"
     print(f"{BUILD_TYPE=}")
     return (BUILD_TYPE,)
 
