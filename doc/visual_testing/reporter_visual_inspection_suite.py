@@ -3,6 +3,7 @@
 Can be for GLM reports or masker reports.
 """
 
+import contextlib
 import sys
 import time
 from argparse import ArgumentParser
@@ -50,8 +51,18 @@ from nilearn.maskers import (
 from nilearn.reporting.glm_reporter import HTMLReport, make_glm_report
 from nilearn.surface import SurfaceImage
 
+with contextlib.suppress(Exception):
+    from rich import print
+
 REPORTS_DIR = Path(__file__).parent.parent / "modules" / "generated_reports"
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def verbose_save(report, file: str) -> None:
+    """Save reportas html  and say where it was saved."""
+    report.save_as_html(REPORTS_DIR / file)
+    print(f"Report saved to {REPORTS_DIR / file}")
+
 
 # %%%%%%%%%% GLM REPORTS %%%%%%%%%%
 
@@ -98,7 +109,7 @@ def report_flm_adhd_dmn(build_type):
         run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
     )
 
-    glm_report = make_glm_report(
+    report = make_glm_report(
         first_level_model,
         contrasts=contrasts,
         title="ADHD DMN Report",
@@ -109,9 +120,10 @@ def report_flm_adhd_dmn(build_type):
         plot_type="glass",
         report_dims=(1200, "a"),
     )
-    glm_report.save_as_html(REPORTS_DIR / "flm_adhd_dmn.html")
 
-    return glm_report
+    verbose_save(report, "flm_adhd_dmn.html")
+
+    return report
 
 
 # %%
@@ -210,7 +222,7 @@ def report_flm_bids_features(build_type):
         plot_type="glass",
     )
 
-    report.save_as_html(REPORTS_DIR / "flm_bids_features.html")
+    verbose_save(report, "flm_bids_features.html")
 
     return report
 
@@ -245,7 +257,8 @@ def report_flm_fiac(build_type):
         bg_img=mean_img_,
         height_control="fdr",
     )
-    report.save_as_html(REPORTS_DIR / "flm_fiac.html")
+
+    verbose_save(report, "flm_fiac.html")
 
     return report
 
@@ -296,7 +309,8 @@ def report_slm_oasis(build_type):
         height_control=None,
         plot_type="glass",
     )
-    report.save_as_html(REPORTS_DIR / "slm_oasis.html")
+
+    verbose_save(report, "slm_oasis.html")
 
     return report
 
@@ -305,7 +319,8 @@ def report_surface_flm(build_type):
     """FirstLevelGLM surface reports."""
     flm = FirstLevelModel(mask_img=SurfaceMasker())
     report_flm_empty = flm.generate_report(height_control=None)
-    report_flm_empty.save_as_html(REPORTS_DIR / "flm_surf_empty.html")
+
+    verbose_save(report_flm_empty, "flm_surf_empty.html")
 
     if build_type == "partial":
         _generate_dummy_html(filenames=["flm_surf.html"])
@@ -354,7 +369,7 @@ def report_surface_flm(build_type):
         height_control=None,
     )
 
-    report_flm.save_as_html(REPORTS_DIR / "flm_surf.html")
+    verbose_save(report_flm, "flm_surf.html")
 
     return report_flm, report_flm_empty
 
@@ -362,7 +377,8 @@ def report_surface_flm(build_type):
 def report_surface_slm():
     slm = SecondLevelModel(mask_img=SurfaceMasker())
     report_slm_empty = slm.generate_report(height_control="bonferroni")
-    report_slm_empty.save_as_html(REPORTS_DIR / "slm_surf_empty.html")
+
+    verbose_save(report_slm_empty, "slm_surf_empty.html")
 
     return report_slm_empty
 
@@ -386,16 +402,15 @@ def _generate_masker_report_files_partial(masker, **kwargs) -> HTMLReport:
     unfitted_report = masker.generate_report(
         title=f"{masker_class_name} unfitted", **kwargs
     )
-    unfitted_report.save_as_html(
-        REPORTS_DIR / f"{masker_class_name}_unfitted.html"
-    )
+    verbose_save(unfitted_report, f"{masker_class_name}_unfitted.html")
 
     masker.reports = False
     unfitted_report_no_reporting = masker.generate_report(
         title=f"{masker_class_name} unfitted - reports=False", **kwargs
     )
-    unfitted_report_no_reporting.save_as_html(
-        REPORTS_DIR / f"{masker_class_name}_unfitted_reports-False.html"
+    verbose_save(
+        unfitted_report_no_reporting,
+        f"{masker_class_name}_unfitted_reports-False.html",
     )
 
     _generate_dummy_html(filenames=[f"{masker_class_name}_fitted.html"])
@@ -426,7 +441,7 @@ def _generate_masker_report_files(
     masker.reports = True
     masker.fit(data)
     report = masker.generate_report(**kwargs)
-    report.save_as_html(REPORTS_DIR / f"{masker_class_name}_fitted.html")
+    verbose_save(report, f"{masker_class_name}_fitted.html")
 
     return unfitted_report, report
 
@@ -587,8 +602,8 @@ def report_surface_maps_masker(build_type):
             engine="matplotlib",
             displayed_maps=[6, 2],
         )
-        matplotlib_reports.save_as_html(
-            REPORTS_DIR / "SurfaceMapsMasker_fitted_matplotlib.html"
+        verbose_save(
+            matplotlib_reports, "SurfaceMapsMasker_fitted_matplotlib.html"
         )
 
         print("Use plotly")
@@ -599,9 +614,7 @@ def report_surface_maps_masker(build_type):
             engine="plotly",
             displayed_maps=[6, 2],
         )
-        plotly_reports.save_as_html(
-            REPORTS_DIR / "SurfaceMapsMasker_fitted_plotly.html"
-        )
+        verbose_save(plotly_reports, "SurfaceMapsMasker_fitted_plotly.html")
 
         return empty_report, matplotlib_reports, plotly_reports
 
