@@ -503,14 +503,9 @@ Code inside ``maskers._validation.py``:
 Guidelines for HTML and CSS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We use `prettier <https://prettier.io/>`_ to format HTML and CSS.
+We use `djlint <https://github.com/djlint/djlint>`_ to format HTML and CSS.
 
-This is implemented via a pre-commit hook (see below)
-that can be run with
-
-.. code-block:: bash
-
-      pre-commit run --all-files prettier
+This is implemented via a pre-commit hook.
 
 Pre-commit
 ----------
