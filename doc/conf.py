@@ -16,9 +16,10 @@ import re
 import sys
 from pathlib import Path
 
-from nilearn._version import __version__
 from sphinx.domains import changeset
 from sphinx.locale import _
+
+from nilearn._version import __version__
 
 # ----------------------------------------------------------------------------
 
@@ -208,14 +209,18 @@ linkcheck_ignore = [
     r"https://neurovault.org/",
     r"https://fsl.fmrib.ox.ac.uk/fsl/docs.*",
     r"https://fcon_1000.projects.nitrc.org/.*",
-    r"https://www.cambridge.org/be/universitypress/.*",
+    r"https://pkgs.org/search/.*",
+    r"https://pubmed.ncbi.nlm.nih.gov/.*",
+    r"https://rrid.site/.*"
     r"https://sites.wustl.edu/oasisbrains/.*",
+    r"https://www.cambridge.org/be/universitypress/.*",
     "http://brainomics.cea.fr/localizer/",
     "https://childmind.org/science/global-open-science/healthy-brain-network/",
+    "https://digicosme.cnrs.fr/en/digicosme-paris-saclay-english/",
     "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
+    "https://octave.org",
     "https://pages.saclay.inria.fr/bertrand.thirion/",
     "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
-    "https://pkgs.org/search/.*",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
