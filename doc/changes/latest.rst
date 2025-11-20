@@ -39,6 +39,8 @@ Fixes
 
 - :bdg-dark:`Code` Inform user correctly when reporting is enabled after the model is fit (:gh:`5836` by `Hande Gözükan`_).
 
+- :bdg-dark:`Code` Raise warning when :func:`~nilearn.image.crop_img` is called with an empty image and return the original image (:gh:`5837` by `Hande Gözükan`_).
+
 
 Enhancements
 ------------
