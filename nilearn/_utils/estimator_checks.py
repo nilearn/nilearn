@@ -21,6 +21,7 @@ and importing them will fail if pytest is not installed.
 import inspect
 import os
 import pickle
+import re
 import sys
 import warnings
 from copy import deepcopy
@@ -3716,7 +3717,27 @@ def check_masker_generate_report_constant(estimator):
     report = _generate_report(estimator)
     report_new = _generate_report(estimator)
 
-    assert str(report) == str(report_new)
+    # svg/xml of images and UUID may be slightly different across calls
+    # so we redact them out
+    report_str = re.sub(
+        r'src="data:image/svg\+xml;base64,.*"',
+        'src="data:image/..."',
+        str(report),
+    )
+    report_str = re.sub(r"UUID-.*-", "UUID-XXXX-", report_str)
+    report_str = re.sub(r'Carousel\(".*"', 'Carousel("XXXX"', report_str)
+
+    report_new_str = re.sub(
+        r'src="data:image/svg\+xml;base64,.*"',
+        'src="data:image/..."',
+        str(report_new),
+    )
+    report_new_str = re.sub(r"UUID-.*-", "UUID-XXXX-", report_new_str)
+    report_new_str = re.sub(
+        r'Carousel\(".*"', 'Carousel("XXXX"', report_new_str
+    )
+
+    assert report_str == report_new_str
 
 
 def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
