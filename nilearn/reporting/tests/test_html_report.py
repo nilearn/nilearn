@@ -47,6 +47,9 @@ def _check_html(html_view, reports_requested=True, is_fit=True):
 
     assert html_view._repr_html_() == html_view.body
 
+    # navbar and its css is only for GLM reports
+    assert "Adapted from Pure CSS navbar" not in str(html_view)
+
     if not is_fit:
         assert "This estimator has not been fit yet." in str(html_view)
 
