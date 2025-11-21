@@ -106,7 +106,7 @@ show()
 # %%
 # Using the wrong template
 
-n_subjects = 50
+n_subjects = 25
 
 data = fetch_development_fmri(n_subjects=n_subjects)
 print(data.func[0])
