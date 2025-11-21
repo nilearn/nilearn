@@ -3724,6 +3724,7 @@ def check_masker_generate_report_constant(estimator):
         str(report),
     )
     report_str = re.sub(r"UUID-.*-", "UUID-XXXX-", report_str)
+    report_str = re.sub(r"UUID-.*", "UUID-XXXX", report_str)
     report_str = re.sub(r'Carousel\(".*"', 'Carousel("XXXX"', report_str)
 
     report_new_str = re.sub(
@@ -3732,6 +3733,7 @@ def check_masker_generate_report_constant(estimator):
         str(report_new),
     )
     report_new_str = re.sub(r"UUID-.*-", "UUID-XXXX-", report_new_str)
+    report_new_str = re.sub(r"UUID-.*", "UUID-XXXX", report_new_str)
     report_new_str = re.sub(
         r'Carousel\(".*"', 'Carousel("XXXX"', report_new_str
     )

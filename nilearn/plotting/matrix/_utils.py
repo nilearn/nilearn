@@ -82,6 +82,8 @@ def sanitize_labels(mat_shape, labels):
             f"Length of labels ({len(labels)}) "
             f"unequal to length of matrix ({mat_shape[0]})."
         )
+    if all(x == "" for x in labels):
+        labels = None
     return labels
 
 
