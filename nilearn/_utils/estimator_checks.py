@@ -19,7 +19,6 @@ and importing them will fail if pytest is not installed.
 """
 
 import inspect
-import os
 import pickle
 import sys
 import warnings
@@ -62,7 +61,7 @@ from sklearn.utils.estimator_checks import (
 )
 
 from nilearn._utils.cache_mixin import CacheMixin
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import is_matplotlib_installed, is_windows_platform
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_imgs_equal
 from nilearn._utils.param_validation import check_is_of_allowed_type
@@ -121,11 +120,11 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers._mixin import _MultiMixin
+from nilearn.maskers.tests.test_html_report import _check_html
 from nilearn.masking import load_mask_img
 from nilearn.regions import RegionExtractor
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
 from nilearn.regions.rena_clustering import ReNA
-from nilearn.reporting.tests.test_html_report import _check_html
 from nilearn.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import (
@@ -2866,7 +2865,7 @@ def check_masker_transform_resampling(estimator) -> None:
 @ignore_warnings()
 def check_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if os.name == "nt" and (
+    if is_windows_platform() and (
         sys.version_info[1] < 13 or sys.version_info[1] == 14
     ):
         # TODO (python >= 3.11)
@@ -3349,7 +3348,7 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
 @ignore_warnings()
 def check_multi_nifti_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if os.name == "nt" and (
+    if is_windows_platform() and (
         sys.version_info[1] < 13 or sys.version_info[1] == 14
     ):
         # TODO (python >= 3.11)
