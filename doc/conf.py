@@ -16,9 +16,10 @@ import re
 import sys
 from pathlib import Path
 
-from nilearn._version import __version__
 from sphinx.domains import changeset
 from sphinx.locale import _
+
+from nilearn._version import __version__
 
 # ----------------------------------------------------------------------------
 
@@ -217,9 +218,11 @@ linkcheck_ignore = [
     "https://childmind.org/science/global-open-science/healthy-brain-network/",
     "https://digicosme.cnrs.fr/en/digicosme-paris-saclay-english/",
     "https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615",
+    "https://imaging.mrc-cbu.cam.ac.uk/imaging/DesignEfficiency",
     "https://octave.org",
     "https://pages.saclay.inria.fr/bertrand.thirion/",
     "https://pages.stern.nyu.edu/~wgreene/Text/econometricanalysis.htm",
+    "https://surfer.nmr.mgh.harvard.edu/",
 ]
 
 linkcheck_exclude_documents = [r".*/sg_execution_times.rst"]
