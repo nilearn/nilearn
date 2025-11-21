@@ -1,4 +1,9 @@
-"""Example to show how fetch and use templates from templateflow."""
+"""
+Using the proper brain template
+===============================
+
+Example to show how fetch and use templates from templateflow.
+"""
 
 import pandas as pd
 from templateflow import api as tflow
