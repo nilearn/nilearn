@@ -206,6 +206,10 @@ class MultiSurfaceLabelsMasker(_MultiMixin, SurfaceLabelsMasker):
         del y
         check_params(self.__dict__)
 
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = []
+
         if imgs is not None:
             if not hasattr(imgs, "__iter__"):
                 imgs = [imgs]

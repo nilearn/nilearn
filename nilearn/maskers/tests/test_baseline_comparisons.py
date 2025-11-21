@@ -5,20 +5,14 @@ See the  maintenance page of our documentation for more information
 https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-for-plotting-tests
 """
 
-from collections import OrderedDict
-
-import matplotlib as mpl
 import numpy as np
-import pandas as pd
 import pytest
 
 from nilearn.datasets import (
     load_fsaverage_data,
     load_mni152_gm_mask,
-    load_mni152_template,
     load_sample_motor_activation_image,
 )
-from nilearn.glm.thresholding import threshold_stats_img
 from nilearn.image import load_img, math_img, new_img_like, threshold_img
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -33,116 +27,7 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
-from nilearn.reporting.glm_reporter import _stat_map_to_png
 from nilearn.surface.surface import at_least_2d, find_surface_clusters
-
-
-@pytest.mark.slow
-@pytest.mark.mpl_image_compare
-@pytest.mark.parametrize("plot_type", ["slice", "glass"])
-@pytest.mark.parametrize(
-    "height_control, two_sided, threshold",
-    [
-        (None, False, 3),
-        (None, False, -3),
-        (None, True, 3),
-        ("fpr", True, 3),
-        ("fpr", False, 3),
-    ],
-)
-@pytest.mark.parametrize("cluster_threshold", [0, 200])
-def test_stat_map_to_png_volume(
-    plot_type, height_control, two_sided, threshold, cluster_threshold
-):
-    """Check figures plotting for GLM report."""
-    alpha = 0.001
-
-    thresholded_img, threshold = threshold_stats_img(
-        stat_img=load_sample_motor_activation_image(),
-        threshold=threshold,
-        alpha=alpha,
-        cluster_threshold=cluster_threshold,
-        height_control=height_control,
-        two_sided=two_sided,
-    )
-
-    table_details = OrderedDict()
-    table_details.update({"Threshold Z": np.around(threshold, 3)})
-    table_details.update({"two_sided": two_sided})
-    table_details.update({"cluster_threshold": cluster_threshold})
-    table_details.update({"plot_type": plot_type})
-    table_details.update({"height_control": height_control})
-    table_details = pd.DataFrame.from_dict(
-        table_details,
-        orient="index",
-    )
-
-    _, fig = _stat_map_to_png(
-        stat_img=thresholded_img,
-        threshold=threshold,
-        bg_img=load_mni152_template(),
-        cut_coords=None,
-        display_mode="ortho",
-        plot_type=plot_type,
-        table_details=table_details,
-        two_sided=two_sided,
-    )
-
-    return fig
-
-
-@pytest.mark.mpl_image_compare
-@mpl.rc_context({"axes.autolimit_mode": "data"})
-@pytest.mark.parametrize(
-    "height_control, two_sided, threshold",
-    [
-        (None, False, 0.5),
-        (None, False, -0.5),
-        (None, True, 0.5),
-        ("bonferroni", True, 3),
-        ("bonferroni", False, 3),
-    ],
-)
-@pytest.mark.parametrize("cluster_threshold", [0, 200])
-def test_stat_map_to_png_surface(
-    height_control, two_sided, threshold, cluster_threshold
-):
-    """Check figures plotting for GLM report for surface data."""
-    alpha = 0.05
-
-    surf_img = load_fsaverage_data(mesh_type="inflated")
-
-    thresholded_img, threshold = threshold_stats_img(
-        stat_img=surf_img,
-        threshold=threshold,
-        alpha=alpha,
-        cluster_threshold=cluster_threshold,
-        height_control=height_control,
-        two_sided=two_sided,
-    )
-
-    table_details = OrderedDict()
-    table_details.update({"Threshold Z": np.around(threshold, 3)})
-    table_details.update({"two_sided": two_sided})
-    table_details.update({"height_control": height_control})
-    table_details.update({"cluster_threshold": cluster_threshold})
-    table_details = pd.DataFrame.from_dict(
-        table_details,
-        orient="index",
-    )
-
-    _, fig = _stat_map_to_png(
-        stat_img=thresholded_img,
-        threshold=threshold,
-        bg_img=surf_img,
-        cut_coords=None,
-        display_mode="ortho",
-        plot_type="slice",
-        table_details=table_details,
-        two_sided=two_sided,
-    )
-
-    return fig
 
 
 def loaded_motor_activation_image():
@@ -167,9 +52,7 @@ def test_nifti_masker_create_figure_for_report(src_masker, mask_img, img):
     """Check figure generated in report of NiftiMasker."""
     masker = src_masker(mask_img)
     masker.fit(img)
-
-    displays = masker._create_figure_for_report()
-    return displays[0]
+    return masker._create_figure_for_report()
 
 
 @pytest.mark.mpl_image_compare
@@ -210,8 +93,7 @@ def test_nifti_labels_masker_create_figure_for_report(
 
     labels_image = masker._reporting_data["labels_image"]
 
-    displays = masker._create_figure_for_report(labels_image)
-    return displays[0]
+    return masker._create_figure_for_report(labels_image)
 
 
 @pytest.mark.mpl_image_compare
@@ -231,9 +113,7 @@ def test_nifti_maps_masker_create_figure_for_report(src_masker, mask_img, img):
     masker = src_masker(maps_img, mask_img=mask_img)
     masker.fit(img)
     masker._report_content["displayed_maps"] = [0]
-
-    displays = masker._create_figure_for_report()
-    return displays[0]
+    return masker._create_figure_for_report()[0]
 
 
 @pytest.mark.mpl_image_compare
@@ -244,9 +124,7 @@ def test_nifti_spheres_masker_create_figure_for_report(mask_img, img):
     masker = NiftiSpheresMasker(seeds=[(0, 0, 0)], mask_img=mask_img)
     masker.fit(img)
     masker._report_content["displayed_maps"] = [0, 1]
-
-    displays = masker._create_figure_for_report()
-    return displays[1]
+    return masker._create_figure_for_report()[1]
 
 
 @pytest.mark.mpl_image_compare
@@ -255,8 +133,7 @@ def test_nifti_spheres_masker_create_summary_figure_for_report():
     masker = NiftiSpheresMasker(seeds=[(0, 0, 0), (0, 10, 20), (20, 10, 0)])
     masker.fit()
     masker._report_content["displayed_maps"] = [0]
-    displays = masker._create_figure_for_report()
-    return displays[0]
+    return masker._create_figure_for_report()[0]
 
 
 def _fs_inflated_sulcal():
@@ -306,7 +183,7 @@ def test_surface_masker_create_figure_for_report(src_masker, mask_img, img):
 
 #     masker = SurfaceLabelsMasker(labels_img, mask_img=mask_img)
 #     masker.fit(img)
-#     return masker._create_figure_for_report()
+#     return masker._create_figure_for_report()[0]
 
 
 @pytest.mark.mpl_image_compare
@@ -345,4 +222,4 @@ def test_surface_maps_masker_create_figure_for_report(
     masker = src_masker(maps_imgs, mask_img=mask_img)
     masker.fit(img)
     masker._report_content["engine"] = "matplotlib"
-    return masker._create_figure_for_report(maps_imgs, bg_img=img)
+    return masker._create_figure_for_report(maps_imgs, bg_img=img)[0]

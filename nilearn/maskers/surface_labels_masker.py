@@ -10,6 +10,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -208,7 +209,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             "n_vertices": {},
             "number_of_regions": 0,
             "summary": {},
-            "warning_message": None,
+            "warning_messages": [],
         }
 
     @fill_doc
@@ -228,6 +229,10 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = []
 
         if imgs is not None:
             self._check_imgs(imgs)
@@ -455,7 +460,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         return imgs
 
-    def _reporting(self):
+    def _reporting(self) -> None | str:
         """Load displays needed for report.
 
         Returns
@@ -463,23 +468,31 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         displays : list
             A list of all displays to be rendered.
         """
+        # Handle the edge case where this function is called
+        # without matplolib or
+        # with a masker having report capabilities disabled
+        if not is_matplotlib_installed() or not self._has_report_data():
+            return None
+
         from nilearn.reporting.utils import figure_to_png_base64
 
         fig = self._create_figure_for_report()
 
         if not fig:
-            return [None]
+            return None
 
-        init_display = figure_to_png_base64(fig)
+        return figure_to_png_base64(fig)
 
-        return [init_display]
-
-    def _create_figure_for_report(self):
+    def _create_figure_for_report(self) -> list:
         """Create a figure of the contours of label image.
 
         If transform() was applied to an image,
         this image is used as background
         on which the contours are drawn.
+
+        Returns
+        -------
+        list of :class:`~matplotlib.figure.Figure` or None
         """
         roi_map = self._reporting_data["labels_image"]
 
@@ -490,6 +503,6 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             img = mean_img(img)
             vmin, vmax = img.data._get_min_max()
 
-        fig = self._generate_figure(img, roi_map=roi_map, vmin=vmin, vmax=vmax)
-
-        return fig
+        return self._generate_figure(
+            img, roi_map=roi_map, vmin=vmin, vmax=vmax
+        )

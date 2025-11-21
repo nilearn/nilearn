@@ -27,6 +27,7 @@ repos:
     -   id: check-yaml
     -   id: end-of-file-fixer
     -   id: mixed-line-ending
+        args: [--fix=lf]
     -   id: trailing-whitespace
 
     # Checks for .rst files
@@ -73,7 +74,7 @@ repos:
 
     # Lint and format Python code
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.4
+    rev: v0.14.5
     hooks:
     -   id: ruff-check
         # args: [--statistics]
