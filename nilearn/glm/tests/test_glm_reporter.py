@@ -79,7 +79,7 @@ def check_glm_report(
 
     # check the navbar and its css is there
     includes.append('<nav class="navbar pure-g fw-bold" id="menu"')
-    includes.append('"Adapted from Pure CSS navbar" ')  # css
+    includes.append("Adapted from Pure CSS navbar")  # css
 
     if is_matplotlib_installed():
         excludes.extend(
