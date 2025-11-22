@@ -606,6 +606,7 @@ class _BaseSurfaceMasker(
                 "an iterable of SurfaceImage."
                 f"Got: {imgs.__class__.__name__}"
             )
+        check_surf_img(imgs)
 
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
@@ -679,7 +680,6 @@ class _BaseSurfaceMasker(
         if not isinstance(imgs, list):
             imgs = [imgs]
         imgs = concat_imgs(imgs)
-        check_surf_img(imgs)
 
         check_compatibility_mask_and_images(self.mask_img_, imgs)
 

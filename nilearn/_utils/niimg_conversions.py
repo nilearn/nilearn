@@ -143,7 +143,7 @@ def iter_check_niimg(
 
     """
     # TODO move this function to avoid circular import
-    from nilearn.surface.surface import SurfaceImage
+    from nilearn.surface.surface import SurfaceImage, check_surf_img
 
     if memory is None:
         memory = Memory(location=None)
@@ -160,6 +160,7 @@ def iter_check_niimg(
     for i, niimg in enumerate(niimgs):
         if isinstance(niimg, SurfaceImage):
             # TODO do some checks
+            check_surf_img(niimg)
             yield niimg
 
         else:
