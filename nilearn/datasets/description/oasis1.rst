@@ -67,6 +67,13 @@ https://sites.wustl.edu/oasisbrains/,
 :footcite:t:`OASISbrain`,
 and :footcite:t:`Marcus2007`.
 
+Source
+------
+Source files for this dataset can be found at:
+
+- with dartel: https://www.nitrc.org/frs/download.php/6364/archive_dartel.tgz?i_agree=1&download_now=1
+- without dartel: https://www.nitrc.org/frs/download.php/6359/archive.tgz?i_agree=1&download_now=1
+
 References
 ----------
 .. footbibliography::

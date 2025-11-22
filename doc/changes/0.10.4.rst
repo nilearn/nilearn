@@ -83,4 +83,4 @@ Changes
 
 - :bdg-primary:`Doc` Render examples of GLM and masker reports as part of the documentation (:gh:`4267` and :gh:`4295` by `Rémi Gau`_).
 
-- :bdg-secondary:`Maint` HTML, CSS are now linted using prettier. (:gh:`4302`,  by `Rémi Gau`_).
+- :bdg-secondary:`Maint` HTML, CSS are now linted using prettier. (:gh:`4302`, by `Rémi Gau`_).
