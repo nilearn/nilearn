@@ -430,7 +430,7 @@ def make_glm_report(
         reporting_data=Bunch(**model._reporting_data),
         results=results,
         run_wise_dict=run_wise_dict,
-        show_navbar="style='display: none;'" if is_notebook() else "",
+        is_notebook=is_notebook(),
         smoothing_fwhm=smoothing_fwhm,
         title=title,
         version=__version__,
