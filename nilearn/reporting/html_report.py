@@ -22,21 +22,6 @@ from nilearn.reporting.utils import (
     figure_to_svg_base64,
 )
 
-ESTIMATOR_TEMPLATES = {
-    "NiftiLabelsMasker": "body_nifti_labels_masker.jinja",
-    "MultiNiftiLabelsMasker": "body_nifti_labels_masker.jinja",
-    "NiftiMapsMasker": "body_nifti_maps_masker.jinja",
-    "MultiNiftiMapsMasker": "body_nifti_maps_masker.jinja",
-    "NiftiSpheresMasker": "body_nifti_spheres_masker.jinja",
-    "SurfaceMasker": "body_surface_masker.jinja",
-    "MultiSurfaceMasker": "body_surface_masker.jinja",
-    "SurfaceLabelsMasker": "body_surface_masker.jinja",
-    "MultiSurfaceLabelsMasker": "body_surface_masker.jinja",
-    "SurfaceMapsMasker": "body_surface_maps_masker.jinja",
-    "MultiSurfaceMapsMasker": "body_surface_maps_masker.jinja",
-}
-
-
 UNFITTED_MSG = (
     "\nThis estimator has not been fit yet.\n"
     "Make sure to run `fit` before inspecting reports."
@@ -241,10 +226,6 @@ def _create_report(
     estimator,
     data: dict[str, Any],
 ) -> HTMLReport:
-    template_name = ESTIMATOR_TEMPLATES.get(estimator.__class__.__name__, None)
-    if template_name is None:
-        template_name = "body_masker.jinja"
-
     embeded_images = None
     image = estimator._reporting()
     if image is None:
@@ -308,7 +289,7 @@ def _create_report(
 
     env = return_jinja_env()
 
-    body_tpl_path = f"html/maskers/{template_name}"
+    body_tpl_path = f"html/maskers/{estimator._template_name}"
     body_tpl = env.get_template(body_tpl_path)
 
     body = body_tpl.render(

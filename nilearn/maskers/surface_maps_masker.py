@@ -127,6 +127,8 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     """
 
+    _template_name = "body_surface_maps_masker.jinja"
+
     def __init__(
         self,
         maps_img=None,
