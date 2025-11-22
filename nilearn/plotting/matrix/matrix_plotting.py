@@ -163,7 +163,9 @@ def plot_matrix(
     ----------
     mat : 2-D :class:`numpy.ndarray`
         Matrix to be plotted.
+
     %(title)s
+
     labels : :obj:`list`, or :class:`numpy.ndarray` of :obj:`str`,\
     or False, or None, default=None
         The label of each row and column. Needs to be the same

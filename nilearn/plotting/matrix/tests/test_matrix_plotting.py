@@ -126,6 +126,18 @@ def test_matrix_plotting_reorder(mat, labels):
     ax = plot_matrix(mat, labels=labels, reorder="complete")
 
 
+def test_plot_matrix_empty_labels():
+    """When all labels are empty, they are turned to None.
+
+    Regression smoke test for https://github.com/nilearn/nilearn/pull/5839/files#r2550441937
+    """
+    mat = np.zeros((3, 3))
+
+    col_labels = ["", "", ""]
+
+    plot_matrix(mat, labels=col_labels)
+
+
 def test_show_design_matrix(tmp_path):
     """Test plot_design_matrix saving to file."""
     frame_times = np.linspace(0, 127 * 1.0, 128)

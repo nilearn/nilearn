@@ -77,11 +77,14 @@ def sanitize_labels(mat_shape, labels):
     # we need a list so an empty one will be cast to False
     if isinstance(labels, np.ndarray):
         labels = labels.tolist()
-    if labels and len(labels) != mat_shape[0]:
-        raise ValueError(
-            f"Length of labels ({len(labels)}) "
-            f"unequal to length of matrix ({mat_shape[0]})."
-        )
+    if labels:
+        if len(labels) != mat_shape[0]:
+            raise ValueError(
+                f"Length of labels ({len(labels)}) "
+                f"unequal to length of matrix ({mat_shape[0]})."
+            )
+        if all(x == "" for x in labels):
+            labels = None
     return labels
 
 

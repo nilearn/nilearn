@@ -6,7 +6,7 @@
     <div
       class="pure-img"
       width="100%"
-      id="carousel-obj-{{ unique_id }}-0"
+      id="carousel-obj-UUID-{{ unique_id }}-0"
       style="display: block"
       alt="plotly image"
     >
@@ -14,7 +14,7 @@
     </div>
 
     {% for map in range(1, n_displayed_maps) %}
-    <div id="carousel-obj-{{ unique_id }}-{{ map }}" style="display: none">
+    <div id="carousel-obj-UUID-{{ unique_id }}-{{ map }}" style="display: none">
       {{ content[map]|safe }}
     </div>
     {% endfor %}
@@ -23,7 +23,7 @@
 {% else %}
 
   <img
-    id="carousel-obj-{{ unique_id }}-0"
+    id="carousel-obj-UUID-{{ unique_id }}-0"
     class="pure-img"
     width="100%"
     src="data:image/png;base64,{{ content[0] }}"
@@ -33,7 +33,7 @@
 
   {% for map in range(1, n_displayed_maps) %}
   <img
-    id="carousel-obj-{{ unique_id }}-{{ map }}"
+    id="carousel-obj-UUID-{{ unique_id }}-{{ map }}"
     class="pure-img"
     width="100%"
     src="data:image/png;base64,{{ content[map] }}"
