@@ -242,6 +242,16 @@ source_modules = [
 type = "forbidden"
 
 [[tool.importlinter.contracts]]
+forbidden_modules = [
+    "nilearn._utils.data_gen"
+]
+name = "fixtures from 'nilearn.conftest' should not rely on data generated in 'nilearn._utils.data_gen'"
+source_modules = [
+    "nilearn.conftest"
+]
+type = "forbidden"
+
+[[tool.importlinter.contracts]]
 allowed_importers = ["nilearn.glm"]
 name = "only 'nilearn.glm' imports from 'nilearn.mass_univariate'"
 protected_modules = ["nilearn.mass_univariate"]

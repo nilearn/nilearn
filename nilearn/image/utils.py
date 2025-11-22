@@ -28,4 +28,7 @@ def get_indices_from_image(image) -> np.ndarray:
             "Niimg-Like, SurfaceImage, numpy array. "
             f"Got {image.__class__.__name__}"
         )
-    return np.unique(data)
+
+    labels_present = np.unique(data)
+
+    return labels_present[np.isfinite(labels_present)]
