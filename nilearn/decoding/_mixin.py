@@ -2,11 +2,8 @@
 
 import numpy as np
 from sklearn.preprocessing import LabelBinarizer
+from sklearn.utils.validation import check_is_fitted
 
-from nilearn._utils.docs import fill_doc
-from nilearn._utils.param_validation import (
-    check_params,
-)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
 
@@ -33,27 +30,26 @@ class _ClassifierMixin:
 
         return tags
 
-    def _n_problems(self):
-        if self.n_classes_ > 2:
-            return self.n_classes_
-        else:
-            return 1
-
-    def _binarize_y(self, y):
+    def _set_classes(self, y):
         """Encode target classes as -1 and 1.
 
         Helper function invoked just before fitting a classifier.
         """
         y = np.array(y)
 
-        self._enc = LabelBinarizer(pos_label=1, neg_label=-1)
-        y = self._enc.fit_transform(y)
-        self.classes_ = self._enc.classes_
-        self.n_classes_ = len(self.classes_)
+        enc = LabelBinarizer(pos_label=1, neg_label=-1)
+        y = enc.fit_transform(y)
+        self.classes_ = enc.classes_
         return y
 
     def _get_classes(self):
         return self.classes_
+
+    @property
+    def n_classes_(self) -> int:
+        """Return number of classes."""
+        check_is_fitted(self)
+        return len(self.classes_)
 
 
 class _RegressorMixin:
@@ -79,34 +75,8 @@ class _RegressorMixin:
 
         return tags
 
-    @fill_doc
-    def fit(self, X, y, groups=None):
-        """Fit the decoder (learner).
-
-        Parameters
-        ----------
-        X : list of Niimg-like or :obj:`~nilearn.surface.SurfaceImage` objects
-            See :ref:`extracting_data`.
-            Data on which model is to be fitted.
-            If this is a list,
-            the affine is considered the same for all.
-
-        y : numpy.ndarray of shape=(n_samples) or list of length n_samples
-            The dependent variable (age, sex, IQ, yes/no, etc.).
-            Target variable to predict.
-            Must have exactly as many elements as the input images.
-
-        %(groups)s
-
-        """
-        check_params(self.__dict__)
+    def _set_classes(self, y):
         self._classes_ = ["beta"]
-        return super().fit(X, y, groups=groups)
-
-    def _n_problems(self):
-        return 1
-
-    def _binarize_y(self, y):
         return y[:, np.newaxis]
 
     def _get_classes(self):
