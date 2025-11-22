@@ -23,7 +23,7 @@ from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.image import new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
-from nilearn.surface import SurfaceImage
+from nilearn.surface.surface import SurfaceImage, find_surface_clusters
 
 
 def _local_max(data, affine, min_distance):
@@ -306,22 +306,86 @@ def get_clusters_table(
 
     """
     check_params(locals())
+
+    is_volume = not isinstance(stat_img, SurfaceImage)
+
+    if is_volume:
+        return _get_clusters_table_volume(
+            stat_img,
+            stat_threshold,
+            cluster_threshold=cluster_threshold,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            return_label_maps=return_label_maps,
+        )
+
+    cols = [
+        "Cluster ID",
+        "Hemisphere",
+        "Peak Stat",
+        "Cluster Size (vertices)",
+    ]
+
+    offset = 1
+    data = {}
+    all_clusters = []
+
+    for hemi in stat_img.data.parts:
+        clusters, labels = find_surface_clusters(
+            stat_img.mesh.parts[hemi],
+            stat_img.data.parts[hemi],
+            offset=offset,
+        )
+
+        peak_stat = []
+        for i in clusters["index"].tolist():
+            mask = labels == i
+            values = stat_img.data.parts[hemi][mask].ravel()
+
+            if np.all(np.isnan(values)):
+                raise ValueError("this should not happen")
+
+            cluster_max = np.nanmax(values)
+            peak_stat.append(cluster_max)
+
+        clusters["Peak Stat"] = peak_stat
+
+        clusters["Hemisphere"] = hemi
+        clusters = clusters.rename(
+            columns={
+                "name": "Cluster ID",
+                "size": "Cluster Size (vertices)",
+            }
+        )
+        clusters = clusters[cols]
+
+        offset = len(clusters)
+
+        data[hemi] = labels
+
+        all_clusters.append(clusters)
+
+    result_table = pd.concat(all_clusters, ignore_index=True)
+
+    label_maps = []
+    if return_label_maps:
+        label_maps = new_img_like(stat_img, data)
+
+    return (result_table, label_maps) if return_label_maps else result_table
+
+
+def _get_clusters_table_volume(
+    stat_img,
+    stat_threshold,
+    cluster_threshold=0,
+    two_sided=False,
+    min_distance=8.0,
+    return_label_maps=False,
+):
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
 
     label_maps = []
 
-    if isinstance(stat_img, SurfaceImage):
-        result_table = pd.DataFrame(columns=cols)
-        return (
-            (result_table, label_maps) if return_label_maps else result_table
-        )
-
-    # check that stat_img is niimg-like object and 3D
-    stat_img = check_niimg_3d(stat_img)
-    affine = stat_img.affine
-    shape = stat_img.shape
-
-    # Apply threshold(s) to image
     stat_img = threshold_img(
         img=stat_img,
         threshold=stat_threshold,
@@ -330,6 +394,11 @@ def get_clusters_table(
         mask_img=None,
         copy=True,
     )
+
+    # check that stat_img is niimg-like object and 3D
+    stat_img = check_niimg_3d(stat_img)
+    affine = stat_img.affine
+    shape = stat_img.shape
 
     # If cluster threshold is used, there is chance that stat_map will be
     # modified, therefore copy is needed
@@ -344,10 +413,10 @@ def get_clusters_table(
 
     voxel_size = np.prod(stat_img.header.get_zooms())
 
+    clusters_found = False
     signs = [1, -1] if two_sided else [1]
-
-    no_clusters_found = True
     rows = []
+
     for sign in signs:
         # Flip map if necessary
         temp_stat_map = stat_map * sign
@@ -359,7 +428,8 @@ def get_clusters_table(
             binarized = temp_stat_map > stat_threshold
         binarized = binarized.astype(int)
 
-        # If the stat threshold is too high simply return an empty dataframe
+        # If the stat threshold is too high
+        # simply return an empty dataframe
         if np.sum(binarized) == 0:
             warnings.warn(
                 "Attention: No clusters "
@@ -446,12 +516,12 @@ def get_clusters_table(
                 rows += [row]
 
         # If we reach this point, there are clusters in this sign
-        no_clusters_found = False
+        clusters_found = True
 
-    if no_clusters_found:
-        result_table = pd.DataFrame(columns=cols)
-    else:
+    if clusters_found:
         result_table = pd.DataFrame(columns=cols, data=rows)
+    else:
+        result_table = pd.DataFrame(columns=cols)
 
     return (result_table, label_maps) if return_label_maps else result_table
 
