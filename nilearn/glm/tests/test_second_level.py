@@ -552,6 +552,19 @@ def test_affine_shape_output_when_provided(affine_eye, n_subjects):
     assert_array_equal(z_image.affine, target_affine)
 
 
+def test_slm_4d_image_design_only(img_4d_mni):
+    """Check design only mode with volume data."""
+    model = SecondLevelModel(design_only=True)
+    Y = img_4d_mni
+    X = pd.DataFrame([[1]] * img_4d_mni.shape[3], columns=["intercept"])
+    model = model.fit(Y, design_matrix=X)
+    c1 = np.eye(len(model.design_matrix_.columns))[0]
+    with pytest.raises(
+        RuntimeError, match="Cannot compute contrasts on 'design_only' models."
+    ):
+        model.compute_contrast(c1, output_type="z_score")
+
+
 def test_slm_4d_image(img_4d_mni):
     """Compute contrast with 4D images as input.
 
@@ -876,9 +889,26 @@ def test_fmri_img_inputs_errors(confounds):
     fmri_data = fmri_data[0]
 
     # test niimgs requirements
+    with pytest.raises(
+        TypeError, match="can only be None for design only models"
+    ):
+        SecondLevelModel().fit(second_level_input=None)
+
+    with pytest.raises(
+        TypeError,
+        match=(
+            "'second_level_input' and 'design_matrix' "
+            "cannot both be None for design only models."
+        ),
+    ):
+        SecondLevelModel(design_only=True).fit(
+            second_level_input=None, design_matrix=None
+        )
+
     niimgs = [fmri_data, fmri_data, fmri_data]
     with pytest.raises(ValueError, match="require a design matrix"):
         SecondLevelModel().fit(niimgs)
+
     with pytest.raises(
         TypeError,
         match=r"Elements of second_level_input must be of the same type.",
@@ -1354,7 +1384,10 @@ def test_non_parametric_inference_contrast_computation_errors(rng, n_subjects):
     func_img, mask = fake_fmri_data()
 
     # asking for contrast before model fit gives error
-    with pytest.raises(TypeError, match="second_level_input must be either"):
+    with pytest.raises(
+        TypeError,
+        match="'second_level_input' can only be None for design only models.",
+    ):
         non_parametric_inference(
             second_level_input=None,
             second_level_contrast="intercept",
@@ -1456,6 +1489,34 @@ def test_second_level_input_as_surface_image(surf_img_1d, n_subjects):
 
     model = SecondLevelModel()
     model = model.fit(second_level_input, design_matrix=design_matrix)
+
+
+def test_second_level_input_as_surface_image_design_only(surf_img_1d):
+    """Test slm with surface data in design_only mode."""
+    n_subjects = 5
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
+
+    design_matrix = pd.DataFrame(
+        [1] * len(second_level_input), columns=["intercept"]
+    )
+
+    model = SecondLevelModel(design_only=True)
+    with pytest.raises(
+        TypeError,
+        match=(
+            "'second_level_input' and 'design_matrix' "
+            "cannot both be None for design only models."
+        ),
+    ):
+        model.fit(second_level_input=None, design_matrix=None)
+
+    model = SecondLevelModel(design_only=True)
+    model = model.fit(second_level_input, design_matrix=design_matrix)
+
+    with pytest.raises(
+        RuntimeError, match="Cannot compute contrasts on 'design_only' models."
+    ):
+        model.compute_contrast()
 
 
 def test_second_level_input_as_surface_image_3d(surf_img_2d, n_subjects):

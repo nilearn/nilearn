@@ -298,35 +298,40 @@ def make_glm_report(
 
         # We try to rely on the content of glm object only
         # by reading images from disk rarther than recomputing them
-        mask_info = {
-            k: v
-            for k, v in model.masker_._report_content.items()
-            if k in ["n_elements", "coverage"]
-        }
-        if "coverage" in mask_info:
-            mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
+        # TODO: the default value should depend on the presence of a mask
+        mask_info = {"n_elements": 0, "coverage": 0}
+        if not model.design_only and model.masker_.__sklearn_is_fitted__():
+            mask_info = {
+                k: v
+                for k, v in model.masker_._report_content.items()
+                if k in ["n_elements", "coverage"]
+            }
+            if "coverage" in mask_info:
+                mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
 
         statistical_maps = {}
-        if model._is_volume_glm() and output is not None:
-            try:
-                statistical_maps = {
-                    contrast_name: output["dir"]
-                    / output["statistical_maps"][contrast_name]["z_score"]
-                    for contrast_name in output["statistical_maps"]
-                }
-            except KeyError:  # pragma: no cover
-                if contrasts is not None:
-                    statistical_maps = model._make_stat_maps(
-                        contrasts,
-                        output_type="z_score",
-                        first_level_contrast=first_level_contrast,
-                    )
-        elif contrasts is not None:
-            statistical_maps = model._make_stat_maps(
-                contrasts,
-                output_type="z_score",
-                first_level_contrast=first_level_contrast,
-            )
+
+        if not model.design_only:
+            if model._is_volume_glm() and output is not None:
+                try:
+                    statistical_maps = {
+                        contrast_name: output["dir"]
+                        / output["statistical_maps"][contrast_name]["z_score"]
+                        for contrast_name in output["statistical_maps"]
+                    }
+                except KeyError:  # pragma: no cover
+                    if contrasts is not None:
+                        statistical_maps = model._make_stat_maps(
+                            contrasts,
+                            output_type="z_score",
+                            first_level_contrast=first_level_contrast,
+                        )
+            elif contrasts is not None:
+                statistical_maps = model._make_stat_maps(
+                    contrasts,
+                    output_type="z_score",
+                    first_level_contrast=first_level_contrast,
+                )
 
         logger.log(
             "Generating contrast-level figures...", verbose=model.verbose
@@ -528,7 +533,7 @@ def _mask_to_plot(model, bg_img, cut_coords):
     from nilearn.plotting import plot_roi
 
     # Select mask_img to use for plotting
-    if not model._is_volume_glm():
+    if not model.design_only and not model._is_volume_glm():
         fig = model.masker_._create_figure_for_report()
         mask_plot = figure_to_png_base64(fig)
         # prevents sphinx-gallery & jupyter from scraping & inserting plots
@@ -543,6 +548,8 @@ def _mask_to_plot(model, bg_img, cut_coords):
             check_niimg(model.mask_img)
             mask_img = model.mask_img
         except Exception:
+            if model.design_only:
+                return None
             mask_img = model.masker_.mask_img_
 
     plot_roi(

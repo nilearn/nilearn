@@ -174,6 +174,7 @@ TYPE_MAPS = {
     "connected": nilearn_typing.Connected,
     "copy_header": nilearn_typing.CopyHeader,
     "data_dir": nilearn_typing.DataDir,
+    "design_only": nilearn_typing.DesignOnly,
     "draw_cross": nilearn_typing.DrawCross,
     "detrend": nilearn_typing.Detrend,
     "force_resample": nilearn_typing.ForceResample,
