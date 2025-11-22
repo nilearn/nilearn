@@ -66,8 +66,6 @@
   <div class="pure-u-1 pure-u-md-3-3">
     <div class="d-flex flex-column">
 
-      <div class="table-container">{{ parameters|safe }}</div>
-
       {% if summary %}
       <!--  tables listing each region for each part  -->
       <div
@@ -84,5 +82,7 @@
     </div>
   </div>
 </div>
+
+{% include 'html/maskers/partials/parameters.jinja' %}
 
 {% endblock %}

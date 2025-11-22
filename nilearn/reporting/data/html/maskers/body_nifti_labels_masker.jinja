@@ -44,10 +44,11 @@
       </details>
       {% endif %}
 
-      <div class="table-container">{{ parameters|safe }}</div>
     </div>
   </div>
 </div>
+
+{% include 'html/maskers/partials/parameters.jinja' %}
 
 {% include 'html/maskers/partials/info_transfom.jinja' %}
 
