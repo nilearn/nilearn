@@ -515,10 +515,12 @@ class BaseSlicer:
                         transparency, transparency_affine
                     )
             except IndexError:
-               raise ValueError(
-            "The requested cut coordinate is out of bounds for the image. "
-            "Please check that your cut_coords are within the image field of view."
-        )
+                raise ValueError(
+                    "The requested cut coordinate is out "
+                    "of bounds for the image. "
+                    "Please check that your cut_coords"
+                    " are within the image field of view."
+                )
             data_2d_list.append(data_2d)
             transparency_list.append(transparency_2d)
 
