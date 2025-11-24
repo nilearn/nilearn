@@ -529,12 +529,12 @@ def _img_maps(n_regions=None):
 
 
 @pytest.fixture
-def img_maps():
+def img_maps(n_regions):
     """Generate fixture for default map image."""
-    return _img_maps()
+    return _img_maps(n_regions)
 
 
-def _img_labels():
+def _img_labels(n_regions=None):
     """Generate fixture for default label image.
 
     adapted from nilearn._utils.data_gen.generate_labeled_regions
@@ -544,7 +544,8 @@ def _img_labels():
     shape = _shape_3d_default()
     n_voxels = shape[0] * shape[1] * shape[2]
 
-    n_regions = _n_regions()
+    if n_regions is None:
+        n_regions = _n_regions()
 
     n_regions += 1
     labels = range(n_regions)
@@ -560,9 +561,9 @@ def _img_labels():
 
 
 @pytest.fixture
-def img_labels():
+def img_labels(n_regions):
     """Generate fixture for default label image."""
-    return _img_labels()
+    return _img_labels(n_regions)
 
 
 @pytest.fixture
