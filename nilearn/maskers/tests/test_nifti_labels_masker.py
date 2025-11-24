@@ -72,6 +72,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+@pytest.mark.slow
 def test_nifti_labels_masker(
     affine_eye, shape_3d_default, n_regions, length, img_labels
 ):
@@ -322,6 +323,7 @@ def test_nifti_labels_masker_resampling_to_data(affine_eye, n_regions, length):
     assert_array_equal(masker.labels_img_.affine, affine2)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("resampling_target", ["data", "labels"])
 def test_nifti_labels_masker_resampling(
     affine_eye,
@@ -493,6 +495,7 @@ def test_nifti_labels_masker_resampling_to_none(
         masker.fit_transform(fmri_img)
 
 
+@pytest.mark.slow
 def test_nifti_labels_masker_with_mask(
     shape_3d_default, affine_eye, length, img_labels
 ):
@@ -901,6 +904,7 @@ def test_check_labels_errors(shape_3d_default, affine_eye):
         masker.fit()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "background",
     [
@@ -963,6 +967,7 @@ def test_region_names(
     )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "background",
     [None, "background", "Background"],
@@ -1107,6 +1112,7 @@ def test_more_labels_than_actual_region_in_atlas(
     assert len(masker.lut_) == n_regions + 1
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("background", [None, "Background"])
 def test_pass_lut(
     shape_3d_default, affine_eye, n_regions, img_labels, tmp_path, background
