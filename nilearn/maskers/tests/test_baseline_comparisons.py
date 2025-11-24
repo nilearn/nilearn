@@ -97,6 +97,7 @@ def test_nifti_labels_masker_create_figure_for_report(
     return masker._create_figure_for_report(labels_image)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("mask_img", [load_mni152_gm_mask(), None])
 @pytest.mark.parametrize("img", [None, loaded_motor_activation_image()])
