@@ -108,6 +108,10 @@ test = [
     "pytest-mpl",
     "pytest-rerunfailures"
 ]
+# For running unit and docstring tests
+test_free_threaded = [
+    "pytest>=6.0.0"
+]
 
 [project.urls]
 Changelog = "https://nilearn.github.io/stable/changes/whats_new.html"
@@ -288,7 +292,7 @@ module = [
 ]
 
 [tool.pytest.ini_options]
-addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -v --template=maint_tools/templates/index.html"
+addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -s -v"
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
