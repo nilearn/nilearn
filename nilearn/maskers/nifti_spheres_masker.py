@@ -306,6 +306,8 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     """
 
+    _template_name = "body_nifti_spheres_masker.jinja"
+
     # memory and memory_level are used by CacheMixin.
     def __init__(
         self,
