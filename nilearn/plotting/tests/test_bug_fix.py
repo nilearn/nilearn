@@ -12,4 +12,4 @@ def test_out_of_bounds_error():
     # This should crash with ValueError because 50 is > 10
     # We use pytest.raises to "catch" the crash and mark the test as PASS if it crashes correctly
     with pytest.raises(ValueError, match="out of bounds"):
-        plotting.plot_anat(img, display_mode="x", cut_coords=[50])
+        plotting.plot_img(img, display_mode="x", cut_coords=[50])
