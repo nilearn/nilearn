@@ -40,7 +40,7 @@ Fixes
 - :bdg-dark:`Code` Inform user correctly when reporting is enabled after the model is fit (:gh:`5836` by `Hande Gözükan`_).
 
 - :bdg-dark:`Code` Raise warning when :func:`~nilearn.image.crop_img` is called with an empty image and return the original image (:gh:`5837` by `Hande Gözükan`_).
-
+- :Fix :func:~nilearn.plotting.plot_img error handling when cut coordinates are out of bounds (:gh:5861) by :user:isha822.
 
 Enhancements
 ------------
@@ -135,3 +135,5 @@ Changes
 - :bdg-info:`Plotting` Change background to ``'black'`` for functions :func:`~plotting.plot_img_comparison` and :func:`~plotting.plot_bland_altman` (:gh:`5785` by `Hande Gözükan`_).
 
 - :bdg-dark:`Code` Reports (for maskers, GLMs...)  can now be generated even when no plotting engine is available (:gh:`5757` by `Rémi Gau`_).
+
+

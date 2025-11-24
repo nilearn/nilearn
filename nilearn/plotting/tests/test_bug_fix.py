@@ -6,9 +6,8 @@ from nilearn import plotting
 
 
 def test_out_of_bounds_error():
-    """Regression test: Ensure plotting out-of-bounds slice raises
-    ValueError.
-    """
+    """Ensure plotting out-of-bounds slice raises
+    ValueError."""
     # Create a small dummy image (10x10x10 voxels)
     data = np.zeros((10, 10, 10))
     img = nib.Nifti1Image(data, np.eye(4))
