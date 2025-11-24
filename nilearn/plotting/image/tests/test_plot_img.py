@@ -5,10 +5,10 @@
 import matplotlib.pyplot as plt
 import nibabel as nib
 import numpy as np
-from nilearn import plotting
 import pytest
 from nibabel import Nifti1Image
 
+from nilearn import plotting
 from nilearn._utils.niimg import is_binary_niimg
 from nilearn.image import get_data
 from nilearn.plotting import plot_img
