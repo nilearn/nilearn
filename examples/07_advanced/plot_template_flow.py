@@ -255,7 +255,8 @@ masker.fit(stat_map)
 
 report = masker.generate_report()
 
-report.open_in_browser()
+#  %%
+report
 
 #  %%
 # Probabilistic segmentation: maps
@@ -273,8 +274,6 @@ maps_img = tflow.get(
     extension="nii.gz",
 )
 
-assert maps_img, maps_img
-
 lut = tflow.get(
     template,
     desc="64dimensions",
@@ -283,16 +282,16 @@ lut = tflow.get(
     extension="tsv",
 )
 
-assert lut, lut
-
 masker = NiftiMapsMasker(maps_img)
 
 masker.fit(stat_map)
 
 report = masker.generate_report(displayed_maps=[1, 3])
 
-report.open_in_browser()
+#  %%
+report
 
+#  %%
 lut_df = pd.read_csv(lut, sep="\t")
 
 print(lut_df)
