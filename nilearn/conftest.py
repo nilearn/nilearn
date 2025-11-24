@@ -12,11 +12,11 @@ from nilearn._utils.data_gen import (
 )
 from nilearn._utils.helpers import is_matplotlib_installed
 
-# we need to import these fixtures even if not used in this module
-from nilearn.datasets.tests._testing import (
-    request_mocker,  # noqa: F401
-    temp_nilearn_data_dir,  # noqa: F401
-)
+# # we need to import these fixtures even if not used in this module
+# from nilearn.datasets.tests.conftest import (
+#     request_mocker,
+#     temp_nilearn_data_dir,
+# )
 from nilearn.surface import (
     InMemoryMesh,
     PolyMesh,

@@ -92,3 +92,35 @@ jobs:
         -   name: Return failure
             if: ${{ steps.test_free_threaded.outcome != 'success' }}
             run: exit 1
+
+
+    free_threaded:
+        if: github.repository == 'nilearn/nilearn'
+        name: 'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: true
+            matrix:
+                description: [latest dependencies]
+                py: [3.14t]
+                os: [ubuntu-latest, macos-latest, windows-latest]
+                env: [free_threaded]
+        steps:
+        -   uses: actions/checkout@v5
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v7
+        -   name: Setup python
+            uses: actions/setup-python@v6
+            with:
+                python-version: ${{ matrix.py }}
+                allow-prereleases: true
+
+        -   name: Install tox
+            run: |
+                uv pip install -e '.[plotting,test_free_threaded]'
+                uv pip install -e rich pytest-run-parallel
+                uv pip install --verbose --upgrade --pre --index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple pandas scikit-learn
+
+        -   name: Run test suite
+            id: test_free_threaded
+            run: pytest --parallel-threads 2 nilearn/utils nilearn/tests nilearn/_utils
