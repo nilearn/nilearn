@@ -60,10 +60,13 @@ repos:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
 
-# -   repo: https://github.com/standard/standard
-#     rev: v17.1.2
-#     hooks:
-#     -   id: standard
+    # Check formatting of CSS
+    # prettier: https://prettier.io/
+-   repo: https://github.com/rbubley/mirrors-prettier
+    rev: v3.6.2
+    hooks:
+    -   id: prettier
+        types_or: [css]
 
 -   repo: https://github.com/djlint/djLint
     rev: v1.36.4

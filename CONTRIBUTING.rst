@@ -503,7 +503,7 @@ Code inside ``maskers._validation.py``:
 Guidelines for HTML and CSS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We use `djlint <https://github.com/djlint/djlint>`_ to format HTML and CSS.
+We use `prettier <https://prettier.io/>`_ and `djlint <https://github.com/djlint/djlint>`_ to format HTML and CSS.
 
 This is implemented via a pre-commit hook.
 

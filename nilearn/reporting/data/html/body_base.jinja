@@ -5,8 +5,17 @@
 <link rel="stylesheet"
       href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css" />
 <style type="text/css">
-  {% include 'css/report.css' %}
-  {% block navbar_css %}{% endblock %}
+     {
+          % include 'css/report.css' %
+     }
+
+          {
+          % block navbar_css %
+     }
+
+          {
+          % endblock %
+     }
 </style>
 <section class="nilearn-report pt-0 border border-1 rounded-2 scroll-y">
     <h1 class="withtooltip m-0 pl-3 pt-3 rounded-top-2 fs-5">
