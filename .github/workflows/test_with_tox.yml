@@ -61,7 +61,7 @@ jobs:
         runs-on: ubuntu-latest
         steps:
         -   name: Get repo
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
             with:
                 ref: ${{ github.event.pull_request.head.sha }}
         -   name: Check head git commit message
@@ -130,7 +130,7 @@ jobs:
                     env: pytest_mpl
 
         steps:
-        -   uses: actions/checkout@v5
+        -   uses: actions/checkout@v6
             with:
                 # If pull request, checkout HEAD commit with all commit history
                 ref: ${{ github.event.pull_request.head.sha }}
