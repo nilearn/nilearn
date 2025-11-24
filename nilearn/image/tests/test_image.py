@@ -811,7 +811,7 @@ def test_new_img_like_non_iterable_header(rng):
     assert new_img_like(fake_spatial_image, data=fake_fmri_data)
 
 
-@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
+# @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_new_img_like_int64(shape_3d_default):
     img = generate_labeled_regions(shape=shape_3d_default, n_regions=2)
 

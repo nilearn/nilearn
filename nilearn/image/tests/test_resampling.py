@@ -1150,7 +1150,7 @@ def test_resampling_with_int_types_no_crash(affine_eye, dtype, force_resample):
 
 @pytest.mark.parametrize("force_resample", [False, True])
 @pytest.mark.parametrize("dtype", ["int64", "uint64", "<i8", ">i8"])
-@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
+# @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_resampling_with_int64_types_no_crash(
     affine_eye, dtype, force_resample
 ):
