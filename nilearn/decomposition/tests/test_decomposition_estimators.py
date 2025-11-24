@@ -269,6 +269,7 @@ def test_transform_single_image(
     assert isinstance(signals, list)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [CanICA, DictLearning])
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_transform_errors(
