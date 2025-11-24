@@ -115,7 +115,7 @@ jobs:
                 python-version: ${{ matrix.py }}
                 allow-prereleases: true
 
-        -   name: Install tox
+        -   name: Install dependencies
             run: |
                 uv venv -p 3.14t
                 source .venv/bin/activate
@@ -125,4 +125,6 @@ jobs:
 
         -   name: Run test suite
             id: test_free_threaded
-            run: pytest --parallel-threads 2 nilearn/utils nilearn/tests nilearn/_utils
+            run: |
+                source .venv/bin/activate
+                pytest --parallel-threads 2 nilearn/utils nilearn/tests nilearn/_utils
