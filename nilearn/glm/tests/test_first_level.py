@@ -1435,6 +1435,7 @@ def test_first_level_residuals(shape_4d_default):
     assert_array_almost_equal(mean_residuals, 0)
 
 
+@pytest.mark.slow
 def test_first_level_residuals_errors(shape_4d_default):
     """Access residuals needs fit and minimize_memory set to True."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
