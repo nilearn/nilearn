@@ -120,7 +120,7 @@ jobs:
                 uv venv -p 3.14t
                 source .venv/bin/activate
                 uv pip install -e '.[plotting,test_free_threaded]'
-                uv pip install -e rich pytest-run-parallel
+                uv pip install rich pytest-run-parallel
                 uv pip install --verbose --upgrade --pre --index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple pandas scikit-learn
 
         -   name: Run test suite
