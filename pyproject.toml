@@ -23,7 +23,6 @@ classifiers = [
 ]
 dependencies = [
     "joblib>=1.2.0",
-    "lxml",
     "nibabel>=5.2.0",
     "numpy>=1.22.4",
     "pandas>=2.2.0",
@@ -106,11 +105,14 @@ test = [
     "pytest-timeout",
     "pytest-xdist[psutil]",
     "pytest-mpl",
-    "pytest-rerunfailures"
+    "pytest-rerunfailures",
+    "lxml"
 ]
 # For running unit and docstring tests
 test_free_threaded = [
-    "pytest>=6.0.0"
+    "pytest>=6.0.0",
+    "lxml",
+    "numpydoc>=1.8.0"
 ]
 
 [project.urls]
