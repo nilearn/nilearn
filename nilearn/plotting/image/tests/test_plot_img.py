@@ -5,6 +5,7 @@
 import matplotlib.pyplot as plt
 import nibabel as nib
 import numpy as np
+from nilearn import plotting
 import pytest
 from nibabel import Nifti1Image
 
