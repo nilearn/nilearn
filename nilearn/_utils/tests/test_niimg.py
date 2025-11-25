@@ -24,7 +24,6 @@ def test_new_img_like_side_effect(img1):
     assert hash1 == hash2
 
 
-# @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_get_target_dtype(affine_eye):
     img = Nifti1Image(np.ones((2, 2, 2), dtype=np.float64), affine=affine_eye)
     assert get_data(img).dtype.kind == "f"
@@ -45,7 +44,6 @@ def test_get_target_dtype(affine_eye):
     assert dtype_kind_int == np.int32
 
 
-# @pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_img_data_dtype(rng, affine_eye, tmp_path):
     # Ignoring complex, binary, 128+ bit, RGBA
     nifti1_dtypes = (
