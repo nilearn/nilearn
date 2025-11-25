@@ -453,7 +453,6 @@ class _MaskerReportMixin(ReportMixin):
 
         body = body_tpl.render(
             content=embeded_images,
-            docstring=report["docstring"],
             parameters=parameters,
             figure=figure,
             summary_html=summary_html,
@@ -463,6 +462,9 @@ class _MaskerReportMixin(ReportMixin):
         return self._assemble_report(body, title)
 
     def _create_partial_figures(self):
+        """Using partial template for masker figures, creates partial image
+        htmls.
+        """
         embeded_images = None
         image = self._reporting()
         if image is None:

@@ -394,10 +394,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        from nilearn.reporting.html_report import generate_report
-
-        self._report_content["title"] = title
-
         if self._has_report_data():
             img = self._reporting_data["images"]
 
@@ -415,7 +411,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 )
                 self._report_content["warning_messages"].append(msg)
 
-        return generate_report(self)
+        return super().generate_report(title)
 
     def _reporting(self):
         """Load displays needed for report.

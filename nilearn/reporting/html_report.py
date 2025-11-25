@@ -205,6 +205,38 @@ class ReportMixin:
         """
         return is_notebook()
 
+    def _run_report_checks(self):
+
+        if self.reports is False:
+            self._append_warning(
+                "\nReport generation not enabled!\nNo visual outputs created."
+            )
+
+        if not self.__sklearn_is_fitted__():
+            self._append_warning(UNFITTED_MSG)
+
+        report = self._report_content
+        if self.__sklearn_is_fitted__() and not report["reports_at_fit_time"]:
+            self._append_warning(
+                "\nReport generation was disabled when fit was run. "
+                "No reporting data is available.\n"
+                "Make sure to set self.reports=True before fit."
+            )
+
+        report["has_plotting_engine"] = is_matplotlib_installed()
+
+        if not is_matplotlib_installed():
+            self._append_warning(MISSING_ENGINE_MSG)
+
+        report_warnings = self._get_warnings()
+        if report_warnings:
+            for msg in report_warnings:
+                warnings.warn(
+                    msg,
+                    stacklevel=find_stack_level(),
+                    category=UserWarning,
+                )
+
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.
 
@@ -218,7 +250,7 @@ class ReportMixin:
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        _run_report_checks(self)
+        self._run_report_checks()
 
         report = self._report_content
 
@@ -349,40 +381,7 @@ def assemble_report(body: str, title: str) -> HTMLReport:
     )
 
 
-def _run_report_checks(estimator):
-
-    if estimator.reports is False:
-        estimator._append_warning(
-            "\nReport generation not enabled!\nNo visual outputs created."
-        )
-
-    if not estimator.__sklearn_is_fitted__():
-        estimator._append_warning(UNFITTED_MSG)
-
-    report = estimator._report_content
-    if estimator.__sklearn_is_fitted__() and not report["reports_at_fit_time"]:
-        estimator._append_warning(
-            "\nReport generation was disabled when fit was run. "
-            "No reporting data is available.\n"
-            "Make sure to set estimator.reports=True before fit."
-        )
-
-    report["has_plotting_engine"] = is_matplotlib_installed()
-
-    if not is_matplotlib_installed():
-        estimator._append_warning(MISSING_ENGINE_MSG)
-
-    report_warnings = estimator._get_warnings()
-    if report_warnings:
-        for msg in report_warnings:
-            warnings.warn(
-                msg,
-                stacklevel=find_stack_level(),
-                category=UserWarning,
-            )
-
-
-def _is_notebook():
+def is_notebook():
     """Detect if we are running in a notebook.
 
     From https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
