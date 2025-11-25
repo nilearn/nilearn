@@ -2,8 +2,9 @@
 
 import uuid
 import warnings
+from copy import deepcopy
 from string import Template
-from typing import Any
+from typing import Any, ClassVar
 
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
@@ -30,6 +31,89 @@ UNFITTED_MSG = (
 MISSING_ENGINE_MSG = (
     "\nNo plotting back-end detected.\nReport will be missing figures."
 )
+
+
+def _update_defaults(base_dict: dict, update_dict: dict):
+    """Return a new dictionary with the values of dictionary base_dict updated
+    recursively with the values of update_dict.
+    """
+    new_dict = deepcopy(base_dict)
+    for k, v in update_dict.items():
+        if (
+            k in new_dict
+            and isinstance(new_dict[k], dict)
+            and isinstance(v, dict)
+        ):
+            v = _update_defaults(new_dict[k], v)
+        new_dict[k] = v
+    return new_dict
+
+
+class ReportMixin:
+    """Mixin class to be inherited by the estimators with reporting
+    functionality.
+
+    Provides interfaces and implementations for common methods.
+
+    Each inheriting estimator has below fields in its reporting content:
+
+    title: Title of the report.
+           Can be set by the user at report generation; otherwise set to class
+           name.
+    description: Description of the report for that specific estimator.
+    summary: Summary of the report.
+           Created depending on report data when generating report.
+    warning_messages: Warnings while generating the report.
+           If there are warnings an empty report displaying the warnings is
+           generated.
+
+    Inheriting estimators can define additional fields or update existing
+    fields defining _REPORT_DEFAULTS class variable.
+
+
+    Ex.
+
+    class Reportable1(ReportMixin):
+        _REPORT_DEFAULTS = {
+            "description": (
+                "This report shows the input Nifti image overlaid "
+                "with the outlines of the mask (in green). We "
+                "recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "n_elements": 0,
+            "coverage": 0,
+        }
+
+    A non-empty report has the following section:
+
+    - head (title, description, estimator params, etc)
+    - plots
+    - summary
+
+    If empty:
+
+    - head (title, description, estimator params, etc)
+    - warnings
+
+    """
+
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "title": None,
+        "description": "",
+        "summary": {},
+        "warning_messages": [],
+        "engine": "matplotlib",
+        "has_plotting_engine": True,
+    }
+
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+        # sets implementing class _REPORT_DEFAULTS
+        # updating the base class value with implementing class value
+        cls._REPORT_DEFAULTS = _update_defaults(
+            ReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
+        )
 
 
 class HTMLReport(HTMLDocument):
