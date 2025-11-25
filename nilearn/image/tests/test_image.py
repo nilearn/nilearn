@@ -26,7 +26,13 @@ from nilearn._utils.data_gen import (
     generate_labeled_regions,
     generate_maps,
 )
-from nilearn.conftest import _affine_eye, _img_3d_rand, _rng, _shape_4d_default
+from nilearn.conftest import (
+    _affine_eye,
+    _img_3d_rand,
+    _img_4d_rand_eye,
+    _rng,
+    _shape_4d_default,
+)
 from nilearn.exceptions import DimensionError
 from nilearn.image import (
     binarize_img,
@@ -637,24 +643,25 @@ def test_index_img():
         assert_array_equal(this_img.affine, img_4d.affine)
 
 
-def test_index_img_error_4d(affine_eye):
-    img_4d, _ = generate_fake_fmri(affine=affine_eye)
-    fourth_dim_size = img_4d.shape[3]
-    for i in [
-        fourth_dim_size,
-        -fourth_dim_size - 1,
-        [0, fourth_dim_size],
-        np.repeat(True, fourth_dim_size + 1),
-    ]:
-        with pytest.raises(
-            IndexError,
-            match=r"out of bounds|invalid index|out of range|boolean index",
-        ):
-            index_img(img_4d, i)
+@pytest.mark.parametrize(
+    "index",
+    [
+        _img_4d_rand_eye().shape[3],
+        -_img_4d_rand_eye().shape[3] - 1,
+        [0, _img_4d_rand_eye().shape[3]],
+        np.repeat(True, _img_4d_rand_eye().shape[3] + 1),
+    ],
+)
+def test_index_img_error_4d(index):
+    with pytest.raises(
+        IndexError,
+        match=r"bounds|invalid|range|boolean|too large",
+    ):
+        index_img(_img_4d_rand_eye(), index)
 
 
 def test_pd_index_img(rng, img_4d_rand_eye):
-    # confirm indices from pandas dataframes are handled correctly
+    """Confirm indices from pandas dataframes are handled correctly."""
     fourth_dim_size = img_4d_rand_eye.shape[3]
 
     arr = rng.uniform(size=fourth_dim_size) > 0.5

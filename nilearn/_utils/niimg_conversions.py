@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 from joblib import Memory
+from nibabel.fileslice import is_fancy
 from nibabel.spatialimages import SpatialImage
 from numpy.testing import assert_array_equal
 
@@ -96,7 +97,13 @@ def _index_img(img, index):
     """Helper function for check_niimg_4d."""  # noqa: D401
     from nilearn.image.image import new_img_like  # avoid circular imports
 
-    return new_img_like(img, _get_data(img.slicer[..., index]), img.affine)
+    if is_fancy(index):
+        data = _get_data(img)[:, :, :, index]
+    else:
+        # this should be faster
+        data = _get_data(img.slicer[..., index])
+
+    return new_img_like(img, data, img.affine)
 
 
 def iter_check_niimg(
