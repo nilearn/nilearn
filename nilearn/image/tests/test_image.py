@@ -655,7 +655,7 @@ def test_index_img():
 def test_index_img_error_4d(index):
     with pytest.raises(
         IndexError,
-        match=r"bounds|invalid|range|boolean|too large",
+        match=r"bounds|boolean|large",
     ):
         index_img(_img_4d_rand_eye(), index)
 
