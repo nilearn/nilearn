@@ -478,6 +478,14 @@ class _ReportingMixin:
                 sparsify=False,
             )
 
+    def _get_body_template(self):
+        from nilearn.reporting.html_report import return_jinja_env
+
+        env = return_jinja_env()
+
+        body_tpl_path = f"html/{self._estimator_type}/{self._template_name}"
+        return env.get_template(body_tpl_path)
+
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.
 

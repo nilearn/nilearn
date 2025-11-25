@@ -257,10 +257,7 @@ def _create_report(
     # TODO clean up docstring from RST formatting
     docstring = estimator.__doc__.split("Parameters\n")[0]
 
-    env = return_jinja_env()
-
-    body_tpl_path = f"html/maskers/{estimator._template_name}"
-    body_tpl = env.get_template(body_tpl_path)
+    body_tpl = estimator._get_body_template()
 
     body = body_tpl.render(
         content=embeded_images,
