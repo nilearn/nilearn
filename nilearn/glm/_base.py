@@ -28,6 +28,8 @@ class BaseGLM(GLMReportMixin, CacheMixin, BaseEstimator):
 
     _estimator_type = "glm"  # TODO (sklearn >= 1.8) remove
 
+    _template_name = "body_glm.jinja"
+
     def _is_volume_glm(self):
         """Return if model is run on volume data or not."""
         return not (

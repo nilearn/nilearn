@@ -434,8 +434,11 @@ class _MaskerReportMixin(ReportMixin):
             _MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
 
-    def _create_report(self):
+    def generate_report(self, title: str | None = None):
+        self._run_report_checks()
+        self._set_report_basics(title)
         report = self._report_content
+
         if not isinstance(report["coverage"], str):
             report["coverage"] = f"{report['coverage']:0.1f}"
 
@@ -446,7 +449,6 @@ class _MaskerReportMixin(ReportMixin):
         parameters = self._model_params_to_html()
         figure, embeded_images = self._create_partial_figures()
 
-        title = f"<br>{report['title']}" if report["title"] else self.__class__.__name__
         title = f"{title} report"
 
         body_tpl = self._get_body_template("maskers")
@@ -459,6 +461,7 @@ class _MaskerReportMixin(ReportMixin):
             **report,
         )
 
+        self._display_report_warnings()
         return self._assemble_report(body, title)
 
     def _create_partial_figures(self):

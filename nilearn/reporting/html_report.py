@@ -1,5 +1,6 @@
 """Generate HTML reports."""
 
+import abc
 import uuid
 import warnings
 from copy import deepcopy
@@ -157,17 +158,28 @@ class ReportMixin:
         """
         return sorted(set(self._report_content["warning_messages"]))
 
-    def _dict_to_html(self, dict_cvrt):
+    def _dataframe_to_html(self, df_cvrt, precision=2, header=True, index=False, sparcify=False):
+        """Creates html content from the specified dataframe content.
+        """
+        return dataframe_to_html(
+                df_cvrt,
+                precision=precision,
+                header=header,
+                index=index,
+                sparsify=sparcify,
+            )
+
+    def _dict_to_html(self, dict_cvrt, precision=2, header=True, index=False, sparcify=False):
         """Creates html content from the specified dictionary content. The
         dictionary is expected to be key value pairs without depth.
         """
         df_cvrt = pd.DataFrame.from_dict(dict_cvrt)
-        return dataframe_to_html(
+        return self._dataframe_to_html(
                 df_cvrt,
-                precision=2,
-                header=True,
-                index=False,
-                sparsify=False,
+                precision=precision,
+                header=header,
+                index=index,
+                sparsify=sparcify,
             )
 
     def _get_body_template(self, estimator_type):
@@ -206,7 +218,6 @@ class ReportMixin:
         return is_notebook()
 
     def _run_report_checks(self):
-
         if self.reports is False:
             self._append_warning(
                 "\nReport generation not enabled!\nNo visual outputs created."
@@ -223,11 +234,10 @@ class ReportMixin:
                 "Make sure to set self.reports=True before fit."
             )
 
-        report["has_plotting_engine"] = is_matplotlib_installed()
-
         if not is_matplotlib_installed():
             self._append_warning(MISSING_ENGINE_MSG)
 
+    def _display_report_warnings(self):
         report_warnings = self._get_warnings()
         if report_warnings:
             for msg in report_warnings:
@@ -237,6 +247,21 @@ class ReportMixin:
                     category=UserWarning,
                 )
 
+    def _set_report_basics(self, title):
+        report = self._report_content
+
+        # Generate a unique ID for report
+        report["unique_id"] = str(uuid.uuid4()).replace("-", "")
+
+        # Set title for report
+        report["title"] = title if title else self.__class__.__name__
+
+        # TODO clean up docstring from RST formatting
+        report["docstring"] = self.__doc__.split("Parameters\n")[0]
+
+        report["has_plotting_engine"] = is_matplotlib_installed()
+
+    @abc.abstractmethod
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.
 
@@ -250,20 +275,7 @@ class ReportMixin:
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        self._run_report_checks()
-
-        report = self._report_content
-
-        # Generate a unique ID for report
-        report["unique_id"] = str(uuid.uuid4()).replace("-", "")
-
-        # Set title for report
-        report["title"] = title
-
-        # TODO clean up docstring from RST formatting
-        report["docstring"] = self.__doc__.split("Parameters\n")[0]
-
-        return self._create_report()
+        raise NotImplementedError()
 
 
 class HTMLReport(HTMLDocument):

@@ -37,7 +37,10 @@ from nilearn._utils.tags import (
     is_masker,
 )
 from nilearn._version import __version__
-from nilearn.glm.thresholding import warn_default_threshold
+from nilearn.glm.thresholding import (
+    warn_default_threshold,
+    threshold_stats_img,
+)
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
@@ -61,6 +64,7 @@ if is_matplotlib_installed():
 
 
 class GLMReportMixin(ReportMixin):
+
     @fill_doc
     def _make_glm_report(
         self,
@@ -219,11 +223,18 @@ class GLMReportMixin(ReportMixin):
             Contains the HTML code for the :term:`GLM` Report.
 
         """
-
         check_params(locals())
-        parameters = inspect.signature(self._make_glm_report).parameters
+        self._run_report_checks()
+        self._set_report_basics(title)
 
-        warning_messages = []
+        parameters = inspect.signature(self._make_glm_report).parameters
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = {
+                "trial_types": [],
+                "noise_model": getattr(self, "noise_model", None),
+                "hrf_model": getattr(self, "hrf_model", None),
+                "drift_model": None,
+            }
 
         if height_control is not None and float(threshold) != float(
             parameters["threshold"].default
@@ -237,7 +248,7 @@ class GLMReportMixin(ReportMixin):
         warn_default_threshold(
             threshold,
             parameters["threshold"].default,
-            3.0,
+            3.09,
             height_control=height_control,
         )
 
@@ -249,9 +260,9 @@ class GLMReportMixin(ReportMixin):
                 model_attributes,
                 precision=2,
                 header=True,
-                sparsify=False,
+                index=True,
+                sparcify=False,
             )
-
         contrasts = coerce_to_dict(contrasts)
 
         # If some contrasts are passed
@@ -338,7 +349,7 @@ class GLMReportMixin(ReportMixin):
             )
 
             if contrasts is None:
-                warning_messages.append(
+                self._append_warning(
                     "No contrast passed during report generation."
                 )
 
@@ -391,7 +402,6 @@ class GLMReportMixin(ReportMixin):
         if contrasts is not None:
             contrasts = [x for x in contrasts.values() if isinstance(x, str)]
 
-        title = f"<br>{title}" if title else ""
         title = f"Statistical Report - {self.__str__()}{title}"
 
         smoothing_fwhm = getattr(self, "smoothing_fwhm", 0)
@@ -400,13 +410,7 @@ class GLMReportMixin(ReportMixin):
 
         show_navbar = "style='display: none;'" if self._is_notebook() else ""
 
-        report_warnings = report._get_warnings()
-        if report_warnings:
-            for msg in report_warnings:
-                warnings.warn(
-                    msg,
-                    stacklevel=find_stack_level(),
-                )
+        self._display_report_warnings()
 
         body_tpl = self._get_body_template("glm")
         body = body_tpl.render(
@@ -424,8 +428,8 @@ class GLMReportMixin(ReportMixin):
             title=title,
             version=__version__,
             unique_id=report["unique_id"],
-            warning_messages=warning_messages,
-            has_plotting_engine=is_matplotlib_installed(),
+            warning_messages=self._get_warnings(),
+            has_plotting_engine=report["has_plotting_engine"],
             **mask_info,
         )
 

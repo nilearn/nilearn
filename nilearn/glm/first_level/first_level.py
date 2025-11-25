@@ -49,7 +49,6 @@ from nilearn.glm.regression import (
     RegressionResults,
     SimpleRegressionResults,
 )
-from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids.query import (
@@ -506,6 +505,7 @@ class FirstLevelModel(BaseGLM):
         minimize_memory=True,
         subject_label=None,
         random_state=None,
+        reports=True,
     ):
         # design matrix parameters
         self.t_r = t_r
@@ -535,6 +535,8 @@ class FirstLevelModel(BaseGLM):
         # attributes
         self.subject_label = subject_label
         self.random_state = random_state
+
+        self.reports = reports
         self._reset_report()
 
     def _check_fit_inputs(
@@ -981,6 +983,7 @@ class FirstLevelModel(BaseGLM):
             drift_model_str = (
                 f"and a {self.drift_model} drift model ({param_str})"
             )
+        self._report_content["reports_at_fit_time"] = self.reports
         self._reporting_data = {
             "trial_types": [],
             "noise_model": self.noise_model,
@@ -1362,28 +1365,7 @@ class FirstLevelModel(BaseGLM):
             Contains the HTML code for the :term:`GLM` report.
 
         """
-        from nilearn.reporting.glm_reporter import make_glm_report
-
-        parameters = inspect.signature(
-            FirstLevelModel.generate_report
-        ).parameters
-        warn_default_threshold(
-            threshold,
-            parameters["threshold"].default,
-            3.09,
-            height_control=height_control,
-        )
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = {
-                "trial_types": [],
-                "noise_model": getattr(self, "noise_model", None),
-                "hrf_model": getattr(self, "hrf_model", None),
-                "drift_model": None,
-            }
-
-        return make_glm_report(
-            self,
+        return self._make_glm_report(
             contrasts,
             title=title,
             bg_img=bg_img,

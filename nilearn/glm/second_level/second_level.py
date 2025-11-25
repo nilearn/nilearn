@@ -555,6 +555,7 @@ class SecondLevelModel(BaseGLM):
         verbose=0,
         n_jobs=1,
         minimize_memory=True,
+        reports=True,
     ):
         self.mask_img = mask_img
         self.target_affine = target_affine
@@ -566,6 +567,7 @@ class SecondLevelModel(BaseGLM):
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
 
+        self.reports = True
         self._reset_report()
 
     @fill_doc
@@ -659,6 +661,7 @@ class SecondLevelModel(BaseGLM):
             verbose=self.verbose,
         )
 
+        self._report_content["reports_at_fit_time"] = self.reports
         self._reporting_data = {}
 
         return self
@@ -931,26 +934,7 @@ class SecondLevelModel(BaseGLM):
             Contains the HTML code for the :term:`GLM` report.
 
         """
-        from nilearn.reporting.glm_reporter import make_glm_report
-
-        sig = inspect.signature(SecondLevelModel.generate_report).parameters
-        warn_default_threshold(
-            threshold,
-            sig["threshold"].default,
-            3.09,
-            height_control=height_control,
-        )
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = {
-                "trial_types": [],
-                "noise_model": getattr(self, "noise_model", None),
-                "hrf_model": getattr(self, "hrf_model", None),
-                "drift_model": None,
-            }
-
-        return make_glm_report(
-            self,
+        return self._make_glm_report(
             contrasts,
             first_level_contrast=first_level_contrast,
             title=title,
