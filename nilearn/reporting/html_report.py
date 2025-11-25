@@ -206,16 +206,18 @@ class ReportMixin:
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        # Set title for report
-        if title is None:
-            title = self.__class__.__name__
-        self._report_content["title"] = title
-
-        # Generate a unique ID for report
-        self._report_content["unique_id"] = str(uuid.uuid4()).replace("-", "")
-
         _run_report_checks(self)
 
+        report = self._report_content
+
+        # Generate a unique ID for report
+        report["unique_id"] = str(uuid.uuid4()).replace("-", "")
+
+        # Set title for report
+        self.report["title"] = title
+
+        # TODO clean up docstring from RST formatting
+        self._report["docstring"] = self.__doc__.split("Parameters\n")[0]
         return self._create_report()
 
 
