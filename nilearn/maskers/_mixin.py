@@ -420,7 +420,7 @@ class _ReportingMixin:
         "warning_messages": [],
         "engine": "matplotlib",
         "has_plotting_engine": True,
-        "coverage": 0,
+        "coverage": "",
         "n_elements": 0,
         "displayed_maps": [],
     }
@@ -463,6 +463,20 @@ class _ReportingMixin:
     def _get_summary_html(self):
         """Convert summary part of the report content to html."""
         raise NotImplementedError
+
+    def _dict_to_html(self, dict_cvrt):
+        """Creates html content from the specified dictionary content. The
+        dictionary is expected to be key value pairs without depth.
+        """
+        from nilearn.reporting._utils import dataframe_to_html
+        df_cvrt = pd.DataFrame.from_dict(dict_cvrt)
+        return dataframe_to_html(
+                df_cvrt,
+                precision=2,
+                header=True,
+                index=False,
+                sparsify=False,
+            )
 
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.

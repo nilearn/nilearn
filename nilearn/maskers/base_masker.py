@@ -375,20 +375,12 @@ class BaseMasker(
 
     def _get_summary_html(self):
         """Convert summary part of the report content to html."""
-        from nilearn.reporting._utils import dataframe_to_html
         summary = self._report_content.get("summary", None)
 
         if summary is None:
             return None
 
-        summary_html = dataframe_to_html(
-                pd.DataFrame.from_dict(summary),
-                precision=2,
-                header=True,
-                index=False,
-                sparsify=False,
-            )
-        return summary_html
+        return self._dict_to_html(summary)
 
     @abc.abstractmethod
     def fit(self, imgs=None, y=None):
@@ -672,7 +664,6 @@ class _BaseSurfaceMasker(
         return mask_img_
 
     def _get_summary_html(self):
-        from nilearn.reporting._utils import dataframe_to_html
         summary = self._report_content.get("summary", None)
 
         if summary is None:
@@ -680,14 +671,7 @@ class _BaseSurfaceMasker(
 
         summary_html = {}
         for part in summary:
-            df_part = pd.DataFrame.from_dict(summary[part])
-            summary_html[part] = dataframe_to_html(
-                df_part,
-                precision=2,
-                header=True,
-                index=False,
-                sparsify=False,
-            )
+            summary_html[part] = self._dict_to_html(summary[part])
         return summary_html
 
     @abc.abstractmethod
