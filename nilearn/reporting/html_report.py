@@ -212,7 +212,6 @@ class ReportMixin:
         self._report_content["title"] = title
 
         # Generate a unique ID for report
-        import uuid
         self._report_content["unique_id"] = str(uuid.uuid4()).replace("-", "")
 
         _run_report_checks(self)
