@@ -486,6 +486,13 @@ class _ReportingMixin:
         body_tpl_path = f"html/{self._estimator_type}/{self._template_name}"
         return env.get_template(body_tpl_path)
 
+    def _get_partial_template(self, tpl_name, is_common=False):
+        from nilearn.reporting.html_report import return_jinja_env
+
+        env = return_jinja_env()
+        loc = f"/{self._estimator_type}" if not is_common else ""
+        return env.get_template(f"html{loc}/partials/{tpl_name}.jinja")
+
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.
 
