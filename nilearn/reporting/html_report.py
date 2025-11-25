@@ -168,7 +168,7 @@ class ReportMixin:
     def _get_body_template(self):
         env = return_jinja_env()
 
-        body_tpl_path = f"html/{self._estimator_type}/{self._template_name}"
+        body_tpl_path = f"html/{self._estimator_type}s/{self._template_name}"
         return env.get_template(body_tpl_path)
 
     def _get_partial_template(self, tpl_name, is_common=False):
