@@ -203,11 +203,7 @@ class ReportMixin:
 
         From https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
         """
-        try:
-            shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
-            return shell == "ZMQInteractiveShell"
-        except NameError:
-            return False  # Probably standard Python interpreter
+        return is_notebook()
 
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.
@@ -386,36 +382,16 @@ def _run_report_checks(estimator):
             )
 
 
-def generate_report(estimator) -> HTMLReport:
-    """Generate a report for Nilearn objects.
+def _is_notebook():
+    """Detect if we are running in a notebook.
 
-    Reports are useful to visualize steps in a processing pipeline.
-    Example use case: visualize the overlap of a mask and reference image
-    in NiftiMasker.
-
-    Parameters
-    ----------
-    estimator : Object instance of BaseEstimator.
-        Object for which the report should be generated.
-
-    Returns
-    -------
-    report : HTMLReport
-
+    From https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
     """
-    data = {}
-    if hasattr(estimator, "_report_content"):
-        data = estimator._report_content
-
-    # Generate a unique ID for this report
-    data["unique_id"] = str(uuid.uuid4()).replace("-", "")
-
-    if data["title"] is None:
-        data["title"] = estimator.__class__.__name__
-
-    _run_report_checks(estimator)
-
-    return _create_report(estimator, data)
+    try:
+        shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
+        return shell == "ZMQInteractiveShell"
+    except NameError:
+        return False  # Probably standard Python interpreter
 
 
 @fill_doc
@@ -470,61 +446,3 @@ def _insert_figure_partial(
         displayed_maps=displayed_maps,
         unique_id=unique_id,
     )
-
-
-def _create_report(
-    estimator,
-    data: dict[str, Any],
-) -> HTMLReport:
-    embeded_images = None
-    image = estimator._reporting()
-    if image is None:
-        embeded_images = None
-    elif not isinstance(image, list):
-        embeded_images = embed_img(image)
-    elif all(x is None for x in image):
-        embeded_images = None
-    else:
-        embeded_images = [embed_img(i) for i in image]
-
-    summary_html = estimator._get_summary_html()
-
-    parameters = model_attributes_to_dataframe(estimator)
-    with pd.option_context("display.max_colwidth", 100):
-        parameters = dataframe_to_html(
-            parameters,
-            precision=2,
-            header=True,
-            sparsify=False,
-        )
-
-    if not isinstance(data["coverage"], str):
-        data["coverage"] = f"{data['coverage']:0.1f}"
-
-    if "overlay" in data:
-        data["overlay"] = embed_img(data["overlay"])
-
-    # TODO clean up docstring from RST formatting
-    docstring = estimator.__doc__.split("Parameters\n")[0]
-
-    body_tpl = estimator._get_body_template("maskers")
-
-    body = body_tpl.render(
-        content=embeded_images,
-        docstring=docstring,
-        parameters=parameters,
-        figure=(
-            _insert_figure_partial(
-                data["engine"],
-                embeded_images,
-                data["displayed_maps"],
-                data["unique_id"],
-            )
-            if "engine" in data
-            else None
-        ),
-        summary_html=summary_html,
-        **data,
-    )
-
-    return assemble_report(body, f"{data['title']} report")
