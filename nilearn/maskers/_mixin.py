@@ -460,6 +460,16 @@ class _MaskerReportMixin:
         """
         self._report_content["warning_messages"].append(warning)
 
+    def _get_warnings(self):
+        """Return the sorted list of report warnings.
+
+        Returns
+        -------
+        list of str
+            the list of warnings, empty list if there are no warnings
+        """
+        return sorted(set(self._report_content["warning_messages"]))
+
     def _get_summary_html(self):
         """Convert summary part of the report content to html."""
         raise NotImplementedError

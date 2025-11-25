@@ -171,9 +171,9 @@ def _run_report_checks(estimator):
         if not is_matplotlib_installed():
             estimator._append_warning(MISSING_ENGINE_MSG)
 
-    if report["warning_messages"]:
-        report["warning_messages"] = sorted(set(report["warning_messages"]))
-        for msg in report["warning_messages"]:
+    report_warnings = estimator._get_warnings()
+    if report_warnings:
+        for msg in report_warnings:
             warnings.warn(
                 msg,
                 stacklevel=find_stack_level(),
