@@ -108,7 +108,7 @@ test = [
     "pytest-rerunfailures",
     "lxml"
 ]
-# For running unit and docstring tests
+# Running test for free threaded python requires fewer extensions
 test_free_threaded = [
     "numpydoc>=1.8.0",
     "pytest>=6.0.0",
