@@ -148,10 +148,6 @@ def assemble_report(body: str, title: str) -> HTMLReport:
 
 
 def _run_report_checks(estimator):
-    report = estimator._report_content
-    report["has_plotting_engine"] = is_matplotlib_installed()
-    if not is_matplotlib_installed():
-        estimator._append_warning(MISSING_ENGINE_MSG)
 
     if estimator.reports is False:
         estimator._append_warning(
@@ -161,12 +157,19 @@ def _run_report_checks(estimator):
     if not estimator.__sklearn_is_fitted__():
         estimator._append_warning(UNFITTED_MSG)
 
+    report = estimator._report_content
     if estimator.__sklearn_is_fitted__() and not report["reports_at_fit_time"]:
         estimator._append_warning(
             "\nReport generation was disabled when fit was run. "
             "No reporting data is available.\n"
             "Make sure to set estimator.reports=True before fit."
         )
+
+    if estimator._has_report_data():
+        report["has_plotting_engine"] = is_matplotlib_installed()
+
+        if not is_matplotlib_installed():
+            estimator._append_warning(MISSING_ENGINE_MSG)
 
     if report["warning_messages"]:
         report["warning_messages"] = sorted(set(report["warning_messages"]))
