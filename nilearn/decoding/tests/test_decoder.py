@@ -1036,6 +1036,7 @@ def test_decoder_multiclass_classification_screening(
 
 
 @ignore_warnings
+@pytest.mark.slow
 @pytest.mark.parametrize("clustering_percentile", [100, 99])
 @pytest.mark.parametrize("estimator", ["svc_l2", "svc_l1"])
 def test_decoder_multiclass_classification_clustering(
