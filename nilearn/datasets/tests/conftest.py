@@ -43,7 +43,7 @@ from nilearn._utils.testing import serialize_niimg
 from nilearn.datasets.tests._testing import list_to_archive
 
 
-@pytest.fixture(autouse=True, scope="package")
+@pytest.fixture(autouse=True)
 def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
     """Monkeypatch user home directory and NILEARN_DATA env variable.
 
@@ -65,7 +65,7 @@ def temp_nilearn_data_dir(tmp_path_factory, monkeypatch):
     monkeypatch.setenv("NILEARN_SHARED_DATA", str(shared_data_dir))
 
 
-@pytest.fixture(autouse=True, scope="package")
+@pytest.fixture(autouse=True)
 def request_mocker(monkeypatch):
     """Monkeypatch requests and urllib functions for sending requests.
 
