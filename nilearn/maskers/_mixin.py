@@ -506,11 +506,22 @@ class _MaskerReportMixin:
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        from nilearn.reporting.html_report import generate_report
+        from nilearn.reporting.html_report import (
+            _run_report_checks, _create_report
+        )
 
+        # Set title for report
+        if title is None:
+            title = self.__class__.__name__
         self._report_content["title"] = title
 
-        return generate_report(self)
+        # Generate a unique ID for report
+        import uuid
+        self._report_content["unique_id"] = str(uuid.uuid4()).replace("-", "")
+
+        _run_report_checks(self)
+
+        return _create_report(self, self._report_content)
 
     @abc.abstractmethod
     def _reporting(self):
