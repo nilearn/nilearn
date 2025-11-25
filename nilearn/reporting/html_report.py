@@ -193,6 +193,17 @@ class ReportMixin:
     def _assemble_report(self, body, title):
         return assemble_report(body, title)
 
+    def _is_notebook(self):
+        """Detect if we are running in a notebook.
+
+        From https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
+        """
+        try:
+            shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
+            return shell == "ZMQInteractiveShell"
+        except NameError:
+            return False  # Probably standard Python interpreter
+
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.
 
@@ -475,15 +486,3 @@ def _create_report(
     )
 
     return assemble_report(body, f"{data['title']} report")
-
-
-def is_notebook() -> bool:
-    """Detect if we are running in a notebook.
-
-    From https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
-    """
-    try:
-        shell = get_ipython().__class__.__name__  # type: ignore[name-defined]
-        return shell == "ZMQInteractiveShell"
-    except NameError:
-        return False  # Probably standard Python interpreter
