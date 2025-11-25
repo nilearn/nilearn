@@ -214,10 +214,11 @@ class ReportMixin:
         report["unique_id"] = str(uuid.uuid4()).replace("-", "")
 
         # Set title for report
-        self.report["title"] = title
+        report["title"] = title
 
         # TODO clean up docstring from RST formatting
-        self._report["docstring"] = self.__doc__.split("Parameters\n")[0]
+        report["docstring"] = self.__doc__.split("Parameters\n")[0]
+
         return self._create_report()
 
 
