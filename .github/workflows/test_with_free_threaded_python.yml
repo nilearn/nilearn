@@ -127,4 +127,29 @@ jobs:
             id: test_free_threaded
             run: |
                 source .venv/bin/activate
-                pytest --parallel-threads 2 nilearn/utils nilearn/tests nilearn/_utils
+                pytest --report=report.html --csv results/pytest_output/pytest_output_slow_tests.csv --parallel-threads 2 nilearn/utils nilearn/tests nilearn/_utils
+
+        -   name: Upload test report
+            if: success() || failure()
+            uses: actions/upload-artifact@v5
+            with:
+                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report.html
+                path: report.html
+
+
+        -   name: Create issue
+            if: ${{ steps.test_free_threaded.outcome != 'success' }}
+            uses: JasonEtco/create-an-issue@v2.9.2
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run_id: ${{ github.run_id }}
+                repository: ${{ github.repository }}
+                workflow_name: TEST FREE THREADED PYTHON
+            with:
+                filename: .github/workflow_failure.md
+                update_existing: true
+                search_existing: open
+
+        -   name: Return failure
+            if: ${{ steps.test_free_threaded.outcome != 'success' }}
+            run: exit 1
