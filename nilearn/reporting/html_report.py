@@ -147,6 +147,37 @@ def assemble_report(body: str, title: str) -> HTMLReport:
     )
 
 
+def _run_report_checks(estimator):
+    report = estimator._report_content
+    report["has_plotting_engine"] = is_matplotlib_installed()
+    if not is_matplotlib_installed():
+        estimator._append_warning(MISSING_ENGINE_MSG)
+
+    if estimator.reports is False:
+        estimator._append_warning(
+            "\nReport generation not enabled!\nNo visual outputs created."
+        )
+
+    if not estimator.__sklearn_is_fitted__():
+        estimator._append_warning(UNFITTED_MSG)
+
+    if estimator.__sklearn_is_fitted__() and not report["reports_at_fit_time"]:
+        estimator._append_warning(
+            "\nReport generation was disabled when fit was run. "
+            "No reporting data is available.\n"
+            "Make sure to set estimator.reports=True before fit."
+        )
+
+    if report["warning_messages"]:
+        report["warning_messages"] = sorted(set(report["warning_messages"]))
+        for msg in report["warning_messages"]:
+            warnings.warn(
+                msg,
+                stacklevel=find_stack_level(),
+                category=UserWarning,
+            )
+
+
 def generate_report(estimator) -> HTMLReport:
     """Generate a report for Nilearn objects.
 
@@ -174,33 +205,7 @@ def generate_report(estimator) -> HTMLReport:
     if data["title"] is None:
         data["title"] = estimator.__class__.__name__
 
-    data["has_plotting_engine"] = is_matplotlib_installed()
-    if not is_matplotlib_installed():
-        data["warning_messages"].append(MISSING_ENGINE_MSG)
-
-    if estimator.reports is False:
-        data["warning_messages"].append(
-            "\nReport generation not enabled!\nNo visual outputs created."
-        )
-
-    if not estimator.__sklearn_is_fitted__():
-        data["warning_messages"].append(UNFITTED_MSG)
-
-    if estimator.__sklearn_is_fitted__() and not data["reports_at_fit_time"]:
-        data["warning_messages"].append(
-            "\nReport generation was disabled when fit was run. "
-            "No reporting data is available.\n"
-            "Make sure to set estimator.reports=True before fit."
-        )
-
-    if data["warning_messages"]:
-        data["warning_messages"] = sorted(set(data["warning_messages"]))
-        for msg in data["warning_messages"]:
-            warnings.warn(
-                msg,
-                stacklevel=find_stack_level(),
-                category=UserWarning,
-            )
+    _run_report_checks(estimator)
 
     return _create_report(estimator, data)
 
