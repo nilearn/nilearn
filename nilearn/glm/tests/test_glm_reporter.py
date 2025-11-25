@@ -76,8 +76,10 @@ def check_glm_report(
 
     includes = []
     excludes = []
-    # check the navbar is there
+
+    # check the navbar and its css is there
     includes.append('<nav class="navbar pure-g fw-bold" id="menu"')
+    includes.append("Adapted from Pure CSS navbar")  # css
 
     if is_matplotlib_installed():
         excludes.extend(
@@ -207,6 +209,7 @@ def slm():
     return model.fit(Y, design_matrix=X)
 
 
+@pytest.mark.slow
 def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
     """Check presence message of no activation found.
 
