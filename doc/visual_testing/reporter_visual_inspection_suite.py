@@ -46,7 +46,7 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
-from nilearn.reporting.glm_reporter import HTMLReport, make_glm_report
+from nilearn.reporting.html_report import HTMLReport, make_glm_report
 from nilearn.surface import SurfaceImage
 
 REPORTS_DIR = Path(__file__).parent.parent / "modules" / "generated_reports"

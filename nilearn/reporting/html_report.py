@@ -158,7 +158,7 @@ class ReportMixin:
         """
         return sorted(set(self._report_content["warning_messages"]))
 
-    def _dataframe_to_html(self, df_cvrt, precision=2, header=True, index=False, sparcify=False):
+    def _dataframe_to_html(self, df_cvrt, precision=2, header=True, index=False, sparsify=False):
         """Creates html content from the specified dataframe content.
         """
         return dataframe_to_html(
@@ -166,10 +166,10 @@ class ReportMixin:
                 precision=precision,
                 header=header,
                 index=index,
-                sparsify=sparcify,
+                sparsify=sparsify,
             )
 
-    def _dict_to_html(self, dict_cvrt, precision=2, header=True, index=False, sparcify=False):
+    def _dict_to_html(self, dict_cvrt, precision=2, header=True, index=False, sparsify=False):
         """Creates html content from the specified dictionary content. The
         dictionary is expected to be key value pairs without depth.
         """
@@ -179,7 +179,7 @@ class ReportMixin:
                 precision=precision,
                 header=header,
                 index=index,
-                sparsify=sparcify,
+                sparsify=sparsify,
             )
 
     def _get_body_template(self, estimator_type):

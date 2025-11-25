@@ -261,7 +261,7 @@ class GLMReportMixin(ReportMixin):
                 precision=2,
                 header=True,
                 index=True,
-                sparcify=False,
+                sparsify=False,
             )
         contrasts = coerce_to_dict(contrasts)
 
