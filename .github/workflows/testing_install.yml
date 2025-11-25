@@ -38,7 +38,7 @@ jobs:
                 shell: bash
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
@@ -70,7 +70,7 @@ jobs:
                 shell: bash
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
@@ -100,7 +100,7 @@ jobs:
                 shell: bash
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
