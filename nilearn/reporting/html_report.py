@@ -9,8 +9,13 @@ from typing import Any, ClassVar
 import pandas as pd
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.html_document import HTMLDocument
+from nilearn._utils.html_document import (
+    HTMLDocument,
+    HEIGHT_DEFAULT,
+    WIDTH_DEFAULT
+)
 from nilearn._utils.logger import find_stack_level
 from nilearn._version import __version__
 from nilearn.reporting._utils import (
@@ -411,6 +416,43 @@ def generate_report(estimator) -> HTMLReport:
     _run_report_checks(estimator)
 
     return _create_report(estimator, data)
+
+
+@fill_doc
+def make_glm_report(
+    model,
+    contrasts=None,
+    first_level_contrast=None,
+    title=None,
+    bg_img="MNI152TEMPLATE",
+    threshold=3.09,
+    alpha=0.001,
+    cluster_threshold=0,
+    height_control="fpr",
+    two_sided=False,
+    min_distance=8.0,
+    plot_type="slice",
+    cut_coords=None,
+    display_mode=None,
+    report_dims=(WIDTH_DEFAULT, HEIGHT_DEFAULT),
+) -> HTMLReport:
+
+    return model._make_glm_report(
+        contrasts=contrasts,
+        first_level_contrast=first_level_contrast,
+        title=title,
+        bg_img=bg_img,
+        threshold=threshold,
+        alpha=alpha,
+        cluster_threshold=cluster_threshold,
+        height_control=height_control,
+        two_sided=two_sided,
+        min_distance=min_distance,
+        plot_type=plot_type,
+        cut_coords=cut_coords,
+        display_mode=display_mode,
+        report_dims=report_dims,
+    )
 
 
 def _insert_figure_partial(
