@@ -36,7 +36,7 @@ from nilearn.image import (
     resample_img,
     smooth_img,
 )
-from nilearn.maskers._mixin import _ReportingMixin
+from nilearn.maskers._mixin import _MaskerReportMixin
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
@@ -301,7 +301,7 @@ def sanitize_displayed_maps(
 
 @fill_doc
 class BaseMasker(
-    _ReportingMixin,
+    _MaskerReportMixin,
     TransformerMixin,
     CacheMixin,
     BaseEstimator,
@@ -566,7 +566,7 @@ class BaseMasker(
 
 
 class _BaseSurfaceMasker(
-    _ReportingMixin, TransformerMixin, CacheMixin, BaseEstimator
+    _MaskerReportMixin, TransformerMixin, CacheMixin, BaseEstimator
 ):
     """Class from which all surface maskers should inherit."""
 
