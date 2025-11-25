@@ -353,11 +353,10 @@ def _run_report_checks(estimator):
             "Make sure to set estimator.reports=True before fit."
         )
 
-    if estimator._has_report_data():
-        report["has_plotting_engine"] = is_matplotlib_installed()
+    report["has_plotting_engine"] = is_matplotlib_installed()
 
-        if not is_matplotlib_installed():
-            estimator._append_warning(MISSING_ENGINE_MSG)
+    if not is_matplotlib_installed():
+        estimator._append_warning(MISSING_ENGINE_MSG)
 
     report_warnings = estimator._get_warnings()
     if report_warnings:
