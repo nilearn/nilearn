@@ -446,21 +446,21 @@ class _MaskerReportMixin(ReportMixin):
         parameters = self._model_params_to_html()
         figure, embeded_images = self._create_partial_figures()
 
-        # TODO clean up docstring from RST formatting
-        docstring = self.__doc__.split("Parameters\n")[0]
+        title = f"<br>{report['title']}" if report["title"] else self.__class__.__name__
+        title = f"{title} report"
 
         body_tpl = self._get_body_template("maskers")
 
         body = body_tpl.render(
             content=embeded_images,
-            docstring=docstring,
+            docstring=report["docstring"],
             parameters=parameters,
             figure=figure,
             summary_html=summary_html,
             **report,
         )
 
-        return self._assemble_report(body, f"{report['title']} report")
+        return self._assemble_report(body, title)
 
     def _create_partial_figures(self):
         embeded_images = None
