@@ -23,7 +23,6 @@ classifiers = [
 ]
 dependencies = [
     "joblib>=1.2.0",
-    "lxml",
     "nibabel>=5.2.0",
     "numpy>=1.22.4",
     "pandas>=2.2.0",
@@ -97,6 +96,7 @@ style = ['tox']
 # For running unit and docstring tests
 test = [
     "coverage",
+    "lxml",
     "numpydoc>=1.8.0",
     "pytest>=6.0.0",
     "pytest-cov",
