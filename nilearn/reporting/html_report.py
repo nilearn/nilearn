@@ -165,16 +165,33 @@ class ReportMixin:
                 sparsify=False,
             )
 
-    def _get_body_template(self):
+    def _get_body_template(self, estimator_type):
         env = return_jinja_env()
 
-        body_tpl_path = f"html/{self._estimator_type}s/{self._template_name}"
+        body_tpl_path = f"html/{estimator_type}/{self._template_name}"
         return env.get_template(body_tpl_path)
 
-    def _get_partial_template(self, tpl_name, is_common=False):
+    def _get_partial_template(self, estimator_type, tpl_name, is_common=False):
         env = return_jinja_env()
-        loc = f"/{self._estimator_type}" if not is_common else ""
+        loc = f"/{estimator_type}" if not is_common else ""
         return env.get_template(f"html{loc}/partials/{tpl_name}.jinja")
+
+    def _model_params_to_html(self):
+        parameters = model_attributes_to_dataframe(self)
+        with pd.option_context("display.max_colwidth", 100):
+            parameters = dataframe_to_html(
+                parameters,
+                precision=2,
+                header=True,
+                sparsify=False,
+            )
+        return parameters
+
+    def _embed_img(self, img):
+        return embed_img(img)
+
+    def _assemble_report(self, body, title):
+        return assemble_report(body, title)
 
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.
@@ -200,7 +217,7 @@ class ReportMixin:
 
         _run_report_checks(self)
 
-        return _create_report(self, self._report_content)
+        return self._create_report()
 
 
 class HTMLReport(HTMLDocument):
@@ -436,7 +453,7 @@ def _create_report(
     # TODO clean up docstring from RST formatting
     docstring = estimator.__doc__.split("Parameters\n")[0]
 
-    body_tpl = estimator._get_body_template()
+    body_tpl = estimator._get_body_template("maskers")
 
     body = body_tpl.render(
         content=embeded_images,

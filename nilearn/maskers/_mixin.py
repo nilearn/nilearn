@@ -434,6 +434,60 @@ class _MaskerReportMixin(ReportMixin):
             _MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
 
+    def _create_report(self):
+        report = self._report_content
+        if not isinstance(report["coverage"], str):
+            report["coverage"] = f"{report['coverage']:0.1f}"
+
+        if "overlay" in report:
+            report["overlay"] = self._embed_img(report["overlay"])
+
+        summary_html = self._get_summary_html()
+        parameters = self._model_params_to_html()
+        figure, embeded_images = self._create_partial_figures()
+
+        # TODO clean up docstring from RST formatting
+        docstring = self.__doc__.split("Parameters\n")[0]
+
+        body_tpl = self._get_body_template("maskers")
+
+        body = body_tpl.render(
+            content=embeded_images,
+            docstring=docstring,
+            parameters=parameters,
+            figure=figure,
+            summary_html=summary_html,
+            **report,
+        )
+
+        return self._assemble_report(body, f"{report['title']} report")
+
+    def _create_partial_figures(self):
+        embeded_images = None
+        image = self._reporting()
+        if image is None:
+            embeded_images = None
+        elif not isinstance(image, list):
+            embeded_images = self._embed_img(image)
+        elif all(x is None for x in image):
+            embeded_images = None
+        else:
+            embeded_images = [self._embed_img(i) for i in image]
+
+        content = embeded_images
+        if not isinstance(content, list):
+            content = [content]
+
+        tpl = self._get_partial_template("maskers", "figure")
+        tpl_rendered = tpl.render(
+            engine=self._report_content["engine"],
+            content=content,
+            displayed_maps=self._report_content["displayed_maps"],
+            unique_id=self._report_content["unique_id"],
+        )
+
+        return tpl_rendered, embeded_images
+
     @abc.abstractmethod
     def _get_summary_html(self):
         """Convert summary part of the report content to html."""
