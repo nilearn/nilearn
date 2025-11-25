@@ -96,7 +96,7 @@ def _index_img(img, index):
     """Helper function for check_niimg_4d."""  # noqa: D401
     from nilearn.image.image import new_img_like  # avoid circular imports
 
-    return new_img_like(img, _get_data(img)[:, :, :, index], img.affine)
+    return new_img_like(img, _get_data(img.slicer[..., index]), img.affine)
 
 
 def iter_check_niimg(
