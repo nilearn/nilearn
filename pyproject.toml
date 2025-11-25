@@ -106,8 +106,7 @@ test = [
     "pytest-timeout",
     "pytest-xdist[psutil]",
     "pytest-mpl",
-    "pytest-rerunfailures",
-    "lxml"
+    "pytest-rerunfailures"
 ]
 # Running test for free threaded python
 # requires fewer extensions
@@ -118,8 +117,7 @@ test_free_threaded = [
     "pytest-randomly",
     "pytest-reporter-html1>=0.9.2,<0.9.4",
     "pytest-mpl",
-    "pytest-rerunfailures",
-    "lxml"
+    "pytest-rerunfailures"
 ]
 
 [project.urls]

@@ -3,7 +3,6 @@ import re
 
 import numpy as np
 import pytest
-from lxml import etree
 
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.js_plotting_utils import (
@@ -102,6 +101,13 @@ def check_html(
     assert 'width="33" height="37"' in html.get_iframe(33, 37)
     if title is not None:
         assert f"<title>{title}</title>" in str(html)
+
+    # when testing without the GIL
+    # we cannot import lxml as it requires the GIL
+    try:
+        from lxml import etree
+    except ImportError:
+        return None
 
     root = etree.HTML(
         html.html.encode("utf-8"), parser=etree.HTMLParser(huge_tree=True)
