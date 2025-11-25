@@ -127,7 +127,7 @@ jobs:
             id: test_free_threaded
             run: |
                 source .venv/bin/activate
-                pytest --report=report.html --csv results/pytest_output/pytest_output_slow_tests.csv --parallel-threads 2 nilearn/utils nilearn/tests nilearn/_utils
+                pytest --report=report.html --csv results/pytest_output/pytest_output_slow_tests.csv --parallel-threads 2 nilearn
 
         -   name: Upload test report
             if: success() || failure()
