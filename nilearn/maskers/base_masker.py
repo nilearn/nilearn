@@ -8,7 +8,6 @@ from copy import deepcopy
 from typing import Any
 
 import numpy as np
-import pandas as pd
 from joblib import Memory
 from sklearn.base import (
     BaseEstimator,

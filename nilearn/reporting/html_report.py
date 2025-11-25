@@ -248,9 +248,6 @@ def _create_report(
             sparsify=False,
         )
 
-    if "n_elements" not in data:
-        data["n_elements"] = 0
-
     if not isinstance(data["coverage"], str):
         data["coverage"] = f"{data['coverage']:0.1f}"
 
