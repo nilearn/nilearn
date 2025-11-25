@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 from warnings import warn
+from typing import Any, ClassVar
 
 import numpy as np
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
@@ -84,6 +85,17 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         number of vertices included in mask
 
     """
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the input surface image overlaid "
+            "with the outlines of the mask. "
+            "We recommend to inspect the report for the overlap "
+            "between the mask and its input image. "
+        ),
+        "n_vertices": {},
+        # unused but required in HTML template
+        "number_of_regions": None,
+    }
 
     def __init__(
         self,
@@ -119,21 +131,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            # unused but required in HTML template
-            "number_of_regions": None,
-            "summary": {},
-            "warning_messages": [],
-            "n_elements": 0,
-            "coverage": 0,
-        }
+        self._reset_report()
 
     def __sklearn_is_fitted__(self):
         return (

@@ -3,6 +3,7 @@
 import inspect
 import warnings
 from copy import copy as copy_object
+from typing import Any, ClassVar
 
 import numpy as np
 from joblib import Memory
@@ -322,6 +323,14 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     nilearn.signal.clean
 
     """
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the input Nifti image overlaid "
+            "with the outlines of the mask (in green). We "
+            "recommend to inspect the report for the overlap "
+            "between the mask and its input image. "
+        ),
+    }
 
     def __init__(
         self,
@@ -370,18 +379,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        self._report_content = {
-            "description": (
-                "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (in green). We "
-                "recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_elements": 0,
-            "coverage": 0,
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.

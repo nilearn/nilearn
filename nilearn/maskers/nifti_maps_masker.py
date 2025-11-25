@@ -2,7 +2,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Literal
+from typing import Literal, Any, ClassVar
 
 import numpy as np
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
@@ -167,6 +167,12 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     """
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the spatial maps provided to the mask."
+        ),
+        "number_of_maps": 0,
+    }
     _template_name = "body_nifti_maps_masker.jinja"
 
     # memory and memory_level are used by CacheMixin.
@@ -227,15 +233,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self.keep_masked_maps = keep_masked_maps
 
-        self._report_content = {
-            "description": (
-                "This report shows the spatial maps provided to the mask."
-            ),
-            "displayed_maps": [],
-            "number_of_maps": 0,
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
     @fill_doc
     def generate_report(

@@ -2,6 +2,7 @@
 
 import warnings
 from copy import deepcopy
+from typing import Any, ClassVar
 
 import numpy as np
 from scipy import ndimage
@@ -155,6 +156,16 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
     memory_ : joblib memory cache
 
     """
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the input surface image overlaid "
+            "with the outlines of the mask. "
+            "We recommend to inspect the report for the overlap "
+            "between the mask and its input image. "
+        ),
+        "n_vertices": {},
+        "number_of_regions": 0,
+    }
 
     def __init__(
         self,
@@ -200,18 +211,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            "number_of_regions": 0,
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
     @fill_doc
     def fit(self, imgs=None, y=None):

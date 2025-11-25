@@ -373,6 +373,22 @@ class _LabelMaskerMixin:
         )
 
 
+def _update_defaults(base_dict: dict, update_dict: dict):
+    """Return a new dictionary with the values of dictionary base_dict updated
+    recursively with the values of update_dict.
+    """
+    new_dict = deepcopy(base_dict)
+    for k, v in update_dict.items():
+        if (
+            k in new_dict
+            and isinstance(new_dict[k], dict)
+            and isinstance(v, dict)
+        ):
+            v = _update_defaults(new_dict[k], v)
+        new_dict[k] = v
+    return new_dict
+
+
 class _ReportingMixin:
     """A mixin class to be used with classes that require reporting
     functionality.
@@ -397,7 +413,30 @@ class _ReportingMixin:
     to return the displays to be embedded to the report.
     """
 
-    _report_content: ClassVar[dict[str, Any]] = {}
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "title": None,
+        "description": "",
+        "summary": {},
+        "warning_messages": [],
+        "engine": "matplotlib",
+        "has_plotting_engine": True,
+        "coverage": 0,
+        "n_elements": 0,
+        "displayed_maps": [],
+    }
+
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+        # sets implementing class _REPORT_DEFAULTS
+        # updating the base class value with implementing class value
+        cls._REPORT_DEFAULTS = _update_defaults(
+            _ReportingMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
+        )
+
+    def _reset_report(self):
+        self._report_content = deepcopy(self._REPORT_DEFAULTS)
+        if self._has_report_data():
+            del self._reporting_data
 
     def _has_report_data(self):
         """

@@ -3,7 +3,7 @@ brain regions.
 """
 
 import warnings
-from typing import Literal
+from typing import Literal, Any, ClassVar
 
 import numpy as np
 from scipy import linalg
@@ -129,6 +129,17 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
     _template_name = "body_surface_maps_masker.jinja"
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the input surface image "
+            "(if provided via img) overlaid with the regions provided "
+            "via maps_img."
+        ),
+        "n_vertices": {},
+        "number_of_regions": 0,
+        "number_of_maps": 0,
+    }
+
     def __init__(
         self,
         maps_img=None,
@@ -167,19 +178,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image "
-                "(if provided via img) overlaid with the regions provided "
-                "via maps_img."
-            ),
-            "n_vertices": {},
-            "number_of_regions": getattr(self, "n_elements_", 0),
-            "displayed_maps": [],
-            "number_of_maps": 0,
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
     @fill_doc
     def fit(self, imgs=None, y=None):
