@@ -115,6 +115,93 @@ class ReportMixin:
             ReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
 
+    def _reset_report(self):
+        self._report_content = deepcopy(self._REPORT_DEFAULTS)
+        if self._has_report_data():
+            del self._reporting_data
+
+    def _has_report_data(self):
+        """
+        Check if the model is fitted and _reporting_data is populated.
+
+        Returns
+        -------
+        bool
+            True if reporting is enabled, the model is fitted and
+        _reporting_data is populated; False otherwise.
+        """
+        return hasattr(self, "_reporting_data")
+
+    def _append_warning(self, warning):
+        """Append the specified warning to the warning list of the report.
+
+        Parameters
+        ----------
+        warning: str
+            warning to be added to the list of warnings.
+        """
+        self._report_content["warning_messages"].append(warning)
+
+    def _get_warnings(self):
+        """Return the sorted list of report warnings.
+
+        Returns
+        -------
+        list of str
+            the list of warnings, empty list if there are no warnings
+        """
+        return sorted(set(self._report_content["warning_messages"]))
+
+    def _dict_to_html(self, dict_cvrt):
+        """Creates html content from the specified dictionary content. The
+        dictionary is expected to be key value pairs without depth.
+        """
+        df_cvrt = pd.DataFrame.from_dict(dict_cvrt)
+        return dataframe_to_html(
+                df_cvrt,
+                precision=2,
+                header=True,
+                index=False,
+                sparsify=False,
+            )
+
+    def _get_body_template(self):
+        env = return_jinja_env()
+
+        body_tpl_path = f"html/{self._estimator_type}/{self._template_name}"
+        return env.get_template(body_tpl_path)
+
+    def _get_partial_template(self, tpl_name, is_common=False):
+        env = return_jinja_env()
+        loc = f"/{self._estimator_type}" if not is_common else ""
+        return env.get_template(f"html{loc}/partials/{tpl_name}.jinja")
+
+    def generate_report(self, title: str | None = None):
+        """Generate an HTML report for the current object.
+
+        Parameters
+        ----------
+        title : :obj:`str` or None, default=None
+            title for the report. If None, title will be the class name.
+
+        Returns
+        -------
+        report : `nilearn.reporting.html_report.HTMLReport`
+            HTML report for the masker.
+        """
+        # Set title for report
+        if title is None:
+            title = self.__class__.__name__
+        self._report_content["title"] = title
+
+        # Generate a unique ID for report
+        import uuid
+        self._report_content["unique_id"] = str(uuid.uuid4()).replace("-", "")
+
+        _run_report_checks(self)
+
+        return _create_report(self, self._report_content)
+
 
 class HTMLReport(HTMLDocument):
     """A report written as HTML.
