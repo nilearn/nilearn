@@ -100,12 +100,11 @@
       </details>
       {% endif %}
 
-      {% if parameters %}
-      <div class="table-container">{{ parameters|safe }}</div>
-      {% endif %}
     </div>
   </div>
 </div>
+
+{% include 'html/maskers/partials/parameters.jinja' %}
 
 {% include 'html/maskers/partials/carousel.jinja' %}
 

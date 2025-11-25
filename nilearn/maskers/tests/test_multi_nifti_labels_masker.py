@@ -233,6 +233,7 @@ def test_multi_nifti_labels_masker_reduction_strategies(
     assert default_masker.strategy == "mean"
 
 
+@pytest.mark.slow
 def test_multi_nifti_labels_masker_resampling(
     affine_eye, n_regions, length, img_labels
 ):

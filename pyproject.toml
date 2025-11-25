@@ -96,6 +96,7 @@ style = ['tox']
 # For running unit and docstring tests
 test = [
     "coverage",
+    "lxml",
     "numpydoc>=1.8.0",
     "pytest>=6.0.0",
     "pytest-cov",
