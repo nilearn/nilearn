@@ -450,6 +450,16 @@ class _ReportingMixin:
         """
         return hasattr(self, "_reporting_data")
 
+    def _append_warning(self, warning):
+        """Append the specified warning to the warning list of the report.
+
+        Parameters
+        ----------
+        warning: str
+            warning to be added to the list of warnings.
+        """
+        self._report_content["warning_messages"].append(warning)
+
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.
 
