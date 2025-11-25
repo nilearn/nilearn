@@ -566,6 +566,8 @@ class SecondLevelModel(BaseGLM):
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
 
+        self._reset_report()
+
     @fill_doc
     def fit(self, second_level_input, confounds=None, design_matrix=None):
         """Fit the second-level :term:`GLM`.

@@ -13,6 +13,7 @@ from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.glm._mixin import GLMReportMixin
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -20,7 +21,7 @@ from nilearn.surface import SurfaceImage
 FIGURE_FORMAT = "png"
 
 
-class BaseGLM(CacheMixin, BaseEstimator):
+class BaseGLM(GLMReportMixin, CacheMixin, BaseEstimator):
     """Implement a base class \
     for the :term:`General Linear Model<GLM>`.
     """

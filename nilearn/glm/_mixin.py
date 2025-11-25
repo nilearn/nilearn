@@ -11,7 +11,6 @@ make_glm_report(model, contrasts):
 
 import datetime
 import inspect
-import uuid
 import warnings
 from html import escape
 from pathlib import Path
@@ -38,18 +37,15 @@ from nilearn._utils.tags import (
     is_masker,
 )
 from nilearn._version import __version__
+from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
     get_clusters_table,
 )
 from nilearn.reporting.html_report import (
-    MISSING_ENGINE_MSG,
-    UNFITTED_MSG,
     HTMLReport,
-    assemble_report,
-    is_notebook,
-    return_jinja_env,
+    ReportMixin,
 )
 from nilearn.reporting.utils import figure_to_png_base64
 from nilearn.surface.surface import SurfaceImage
@@ -64,387 +60,380 @@ if is_matplotlib_installed():
     )
 
 
-@fill_doc
-def make_glm_report(
-    model,
-    contrasts=None,
-    first_level_contrast=None,
-    title=None,
-    bg_img="MNI152TEMPLATE",
-    threshold=3.09,
-    alpha=0.001,
-    cluster_threshold=0,
-    height_control="fpr",
-    two_sided=False,
-    min_distance=8.0,
-    plot_type="slice",
-    cut_coords=None,
-    display_mode=None,
-    report_dims=(WIDTH_DEFAULT, HEIGHT_DEFAULT),
-) -> HTMLReport:
-    """Return HTMLReport object \
-    for a report which shows all important aspects of a fitted GLM.
+class GLMReportMixin(ReportMixin):
+    @fill_doc
+    def _make_glm_report(
+        self,
+        contrasts=None,
+        first_level_contrast=None,
+        title=None,
+        bg_img="MNI152TEMPLATE",
+        threshold=3.09,
+        alpha=0.001,
+        cluster_threshold=0,
+        height_control="fpr",
+        two_sided=False,
+        min_distance=8.0,
+        plot_type="slice",
+        cut_coords=None,
+        display_mode=None,
+        report_dims=(WIDTH_DEFAULT, HEIGHT_DEFAULT),
+    ) -> HTMLReport:
+        """Return HTMLReport object \
+        for a report which shows all important aspects of a fitted GLM.
 
-    The object can be opened in a browser, displayed in a notebook,
-    or saved to disk as a standalone HTML file.
+        The object can be opened in a browser, displayed in a notebook,
+        or saved to disk as a standalone HTML file.
 
-    Examples
-    --------
-    report = make_glm_report(model, contrasts)
-    report.open_in_browser()
-    report.save_as_html(destination_path)
+        Examples
+        --------
+        report = make_glm_report(model, contrasts)
+        report.open_in_browser()
+        report.save_as_html(destination_path)
 
-    Parameters
-    ----------
-    model : FirstLevelModel or SecondLevelModel object
-        A fitted first or second level model object.
-        Must have the computed design matrix(ces).
+        Parameters
+        ----------
+        model : FirstLevelModel or SecondLevelModel object
+            A fitted first or second level model object.
+            Must have the computed design matrix(ces).
 
-    contrasts : :obj:`dict` with :obj:`str` - ndarray key-value pairs \
-        or :obj:`str` \
-        or :obj:`list` of :obj:`str` \
-        or ndarray or \
-        :obj:`list` of ndarray, Default=None
+        contrasts : :obj:`dict` with :obj:`str` - ndarray key-value pairs \
+            or :obj:`str` \
+            or :obj:`list` of :obj:`str` \
+            or ndarray or \
+            :obj:`list` of ndarray, Default=None
 
-        Contrasts information for a first or second level model.
+            Contrasts information for a first or second level model.
 
-        Example:
+            Example:
 
-            Dict of :term:`contrast` names and coefficients,
-            or list of :term:`contrast` names
-            or list of :term:`contrast` coefficients
-            or :term:`contrast` name
-            or :term:`contrast` coefficient
+                Dict of :term:`contrast` names and coefficients,
+                or list of :term:`contrast` names
+                or list of :term:`contrast` coefficients
+                or :term:`contrast` name
+                or :term:`contrast` coefficient
 
-            Each :term:`contrast` name must be a string.
-            Each :term:`contrast` coefficient must be a list
-            or numpy array of ints.
+                Each :term:`contrast` name must be a string.
+                Each :term:`contrast` coefficient must be a list
+                or numpy array of ints.
 
-        Contrasts are passed to ``contrast_def`` for FirstLevelModel
-        (:func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast`)
-        & second_level_contrast for SecondLevelModel
-        (:func:`nilearn.glm.second_level.SecondLevelModel.compute_contrast`)
+            Contrasts are passed to ``contrast_def`` for FirstLevelModel
+            (:func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast`)
+            & second_level_contrast for SecondLevelModel
+            (:func:`nilearn.glm.second_level.SecondLevelModel.compute_contrast`)
 
-    %(first_level_contrast)s
+        %(first_level_contrast)s
 
-        .. nilearn_versionadded:: 0.12.0
+            .. nilearn_versionadded:: 0.12.0
 
-    title : :obj:`str`, default=None
-        If string, represents the web page's title and primary heading,
-        model type is sub-heading.
-        If None, page titles and headings are autogenerated
-        using :term:`contrast` names.
+        title : :obj:`str`, default=None
+            If string, represents the web page's title and primary heading,
+            model type is sub-heading.
+            If None, page titles and headings are autogenerated
+            using :term:`contrast` names.
 
-    bg_img : Niimg-like object, default='MNI152TEMPLATE'
-        See :ref:`extracting_data`.
-        The background image for mask and stat maps to be plotted on upon.
-        To turn off background image, just pass "bg_img=None".
+        bg_img : Niimg-like object, default='MNI152TEMPLATE'
+            See :ref:`extracting_data`.
+            The background image for mask and stat maps to be plotted on upon.
+            To turn off background image, just pass "bg_img=None".
 
-    threshold : :obj:`float`, default=3.09
-        Cluster forming threshold in same scale as `stat_img` (either a
-        t-scale or z-scale value). Used only if height_control is None.
+        threshold : :obj:`float`, default=3.09
+            Cluster forming threshold in same scale as `stat_img` (either a
+            t-scale or z-scale value). Used only if height_control is None.
 
-        .. note::
+            .. note::
 
-            - When ``two_sided`` is True:
+                - When ``two_sided`` is True:
 
-              ``'threshold'`` cannot be negative.
+                  ``'threshold'`` cannot be negative.
 
-              The given value should be within the range of minimum and maximum
-              intensity of the input image.
-              All intensities in the interval ``[-threshold, threshold]``
-              will be set to zero.
+                  The given value should be within the range of minimum and maximum
+                  intensity of the input image.
+                  All intensities in the interval ``[-threshold, threshold]``
+                  will be set to zero.
 
-            - When ``two_sided`` is False:
+                - When ``two_sided`` is False:
 
-              - If the threshold is negative:
+                  - If the threshold is negative:
 
-                It should be greater than the minimum intensity
-                of the input data.
-                All intensities greater than or equal
-                to the specified threshold will be set to zero.
-                All other intensities keep their original values.
+                    It should be greater than the minimum intensity
+                    of the input data.
+                    All intensities greater than or equal
+                    to the specified threshold will be set to zero.
+                    All other intensities keep their original values.
 
-              - If the threshold is positive:
+                  - If the threshold is positive:
 
-                It should be less than the maximum intensity
-                of the input data.
-                All intensities less than or equal
-                to the specified threshold will be set to zero.
-                All other intensities keep their original values.
+                    It should be less than the maximum intensity
+                    of the input data.
+                    All intensities less than or equal
+                    to the specified threshold will be set to zero.
+                    All other intensities keep their original values.
 
-    alpha : :obj:`float`, default=0.001
-        Number controlling the thresholding (either a p-value or q-value).
-        Its actual meaning depends on the height_control parameter.
-        This function translates alpha to a z-scale threshold.
+        alpha : :obj:`float`, default=0.001
+            Number controlling the thresholding (either a p-value or q-value).
+            Its actual meaning depends on the height_control parameter.
+            This function translates alpha to a z-scale threshold.
 
-    %(cluster_threshold)s
+        %(cluster_threshold)s
 
-    height_control :  :obj:`str`, default='fpr'
-        false positive control meaning of cluster forming
-        threshold: 'fpr' or 'fdr' or 'bonferroni' or None.
+        height_control :  :obj:`str`, default='fpr'
+            false positive control meaning of cluster forming
+            threshold: 'fpr' or 'fdr' or 'bonferroni' or None.
 
-    two_sided : :obj:`bool`, default=False
-        Whether to employ two-sided thresholding or to evaluate positive values
-        only.
+        two_sided : :obj:`bool`, default=False
+            Whether to employ two-sided thresholding or to evaluate positive values
+            only.
 
-    min_distance : :obj:`float`, default=8.0
-        For display purposes only.
-        Minimum distance between subpeaks in mm.
+        min_distance : :obj:`float`, default=8.0
+            For display purposes only.
+            Minimum distance between subpeaks in mm.
 
-    plot_type : :obj:`str`, {'slice', 'glass'}, default='slice'
-        Specifies the type of plot to be drawn for the statistical maps.
+        plot_type : :obj:`str`, {'slice', 'glass'}, default='slice'
+            Specifies the type of plot to be drawn for the statistical maps.
 
-    %(cut_coords)s
+        %(cut_coords)s
 
-    display_mode :  :obj:`str`, default=None
-        Default is 'z' if plot_type is 'slice'; '
-        ortho' if plot_type is 'glass'.
+        display_mode :  :obj:`str`, default=None
+            Default is 'z' if plot_type is 'slice'; '
+            ortho' if plot_type is 'glass'.
 
-        Choose the direction of the cuts:
-        'x' - sagittal, 'y' - coronal, 'z' - axial,
-        'l' - sagittal left hemisphere only,
-        'r' - sagittal right hemisphere only,
-        'ortho' - three cuts are performed in orthogonal directions.
+            Choose the direction of the cuts:
+            'x' - sagittal, 'y' - coronal, 'z' - axial,
+            'l' - sagittal left hemisphere only,
+            'r' - sagittal right hemisphere only,
+            'ortho' - three cuts are performed in orthogonal directions.
 
-        Possible values are:
-        'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
-        'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
+            Possible values are:
+            'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
+            'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
 
-    report_dims : Sequence[:obj:`int`, :obj:`int`], default=(1600, 800)
-        Specifies width, height (in pixels) of report window within a notebook.
-        Only applicable when inserting the report into a Jupyter notebook.
-        Can be set after report creation using report.width, report.height.
+        report_dims : Sequence[:obj:`int`, :obj:`int`], default=(1600, 800)
+            Specifies width, height (in pixels) of report window within a notebook.
+            Only applicable when inserting the report into a Jupyter notebook.
+            Can be set after report creation using report.width, report.height.
 
-    Returns
-    -------
-    report_text : HTMLReport Object
-        Contains the HTML code for the :term:`GLM` Report.
+        Returns
+        -------
+        report_text : HTMLReport Object
+            Contains the HTML code for the :term:`GLM` Report.
 
-    """
-    from nilearn.glm.thresholding import warn_default_threshold
+        """
 
-    check_params(locals())
+        check_params(locals())
+        parameters = inspect.signature(self._make_glm_report).parameters
 
-    warning_messages = []
+        warning_messages = []
 
-    if not is_matplotlib_installed():
-        warning_messages.append(MISSING_ENGINE_MSG)
-
-    parameters = dict(**inspect.signature(make_glm_report).parameters)
-    if height_control is not None and float(threshold) != float(
-        parameters["threshold"].default
-    ):
-        warning_messages.append(
-            f"\n'{threshold=}' is not used with '{height_control=}'."
-            "\n'threshold' is only used when 'height_control=None'. "
-            f"\nSet 'threshold' to '{parameters['threshold'].default}' "
-            "to avoid this warning."
-        )
-    warn_default_threshold(
-        threshold,
-        parameters["threshold"].default,
-        3.0,
-        height_control=height_control,
-    )
-
-    model_attributes = _glm_model_attributes_to_dataframe(model)
-    with pd.option_context("display.max_colwidth", 100):
-        model_attributes_html = dataframe_to_html(
-            model_attributes,
-            precision=2,
-            header=True,
-            sparsify=False,
-        )
-
-    contrasts = coerce_to_dict(contrasts)
-
-    # If some contrasts are passed
-    # we do not rely on filenames stored in the model.
-    output = None
-    if contrasts is None:
-        output = model._reporting_data.get("filenames", None)
-        if output is not None and output["use_absolute_path"]:
-            output = _turn_into_full_path(output, output["dir"])
-
-    design_matrices = None
-    mask_plot = None
-    mask_info = {"n_elements": 0, "coverage": "0"}
-    results = None
-
-    if not model.__sklearn_is_fitted__():
-        warning_messages.append(UNFITTED_MSG)
-
-    else:
-        design_matrices = (
-            [model.design_matrix_]
-            if model.__str__() == "Second Level Model"
-            else model.design_matrices_
-        )
-
-        if bg_img == "MNI152TEMPLATE":
-            bg_img = MNI152TEMPLATE if model._is_volume_glm() else None
-        if (
-            not model._is_volume_glm()
-            and bg_img
-            and not isinstance(bg_img, SurfaceImage)
+        if height_control is not None and float(threshold) != float(
+            parameters["threshold"].default
         ):
-            raise TypeError(
-                "'bg_img' must a SurfaceImage instance. "
-                f"Got {bg_img.__class__.__name__}"
+            self._append_warning(
+                f"\n'{threshold=}' is not used with '{height_control=}'."
+                "\n'threshold' is only used when 'height_control=None'. "
+                f"\nSet 'threshold' to '{parameters['threshold'].default}' "
+                "to avoid this warning."
             )
-
-        mask_plot = _mask_to_plot(model, bg_img, cut_coords)
-
-        # We try to rely on the content of glm object only
-        # by reading images from disk rarther than recomputing them
-        mask_info = {
-            k: v
-            for k, v in model.masker_._report_content.items()
-            if k in ["n_elements", "coverage"]
-        }
-        if "coverage" in mask_info:
-            mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
-
-        statistical_maps = {}
-        if model._is_volume_glm() and output is not None:
-            try:
-                statistical_maps = {
-                    contrast_name: output["dir"]
-                    / output["statistical_maps"][contrast_name]["z_score"]
-                    for contrast_name in output["statistical_maps"]
-                }
-            except KeyError:  # pragma: no cover
-                if contrasts is not None:
-                    statistical_maps = model._make_stat_maps(
-                        contrasts,
-                        output_type="z_score",
-                        first_level_contrast=first_level_contrast,
-                    )
-        elif contrasts is not None:
-            statistical_maps = model._make_stat_maps(
-                contrasts,
-                output_type="z_score",
-                first_level_contrast=first_level_contrast,
-            )
-
-        logger.log(
-            "Generating contrast-level figures...", verbose=model.verbose
-        )
-        results = _make_stat_maps_contrast_clusters(
-            stat_img=statistical_maps,
-            threshold_orig=threshold,
-            alpha=alpha,
-            cluster_threshold=cluster_threshold,
+        warn_default_threshold(
+            threshold,
+            parameters["threshold"].default,
+            3.0,
             height_control=height_control,
-            two_sided=two_sided,
-            min_distance=min_distance,
-            bg_img=bg_img,
-            cut_coords=cut_coords,
-            display_mode=display_mode,
-            plot_type=plot_type,
         )
 
+        report = self._report_content
+
+        model_attributes = _glm_model_attributes_to_dataframe(self)
+        with pd.option_context("display.max_colwidth", 100):
+            model_attributes_html = self._dataframe_to_html(
+                model_attributes,
+                precision=2,
+                header=True,
+                sparsify=False,
+            )
+
+        contrasts = coerce_to_dict(contrasts)
+
+        # If some contrasts are passed
+        # we do not rely on filenames stored in the model.
+        output = None
         if contrasts is None:
-            warning_messages.append(
-                "No contrast passed during report generation."
+            output = self._reporting_data.get("filenames", None)
+            if output is not None and output["use_absolute_path"]:
+                output = _turn_into_full_path(output, output["dir"])
+
+        design_matrices = None
+        mask_plot = None
+        mask_info = {"n_elements": 0, "coverage": "0"}
+        results = None
+
+        if self.__sklearn_is_fitted__():
+            design_matrices = (
+                [self.design_matrix_]
+                if self.__str__() == "Second Level Model"
+                else self.design_matrices_
             )
 
-    design_matrices_dict = Bunch()
-    contrasts_dict = Bunch()
-    if output is not None:
-        design_matrices_dict = output["design_matrices_dict"]
-        contrasts_dict = output["contrasts_dict"]
+            if bg_img == "MNI152TEMPLATE":
+                bg_img = MNI152TEMPLATE if self._is_volume_glm() else None
+            if (
+                not self._is_volume_glm()
+                and bg_img
+                and not isinstance(bg_img, SurfaceImage)
+            ):
+                raise TypeError(
+                    "'bg_img' must a SurfaceImage instance. "
+                    f"Got {bg_img.__class__.__name__}"
+                )
 
-    if is_matplotlib_installed():
-        from nilearn._utils.plotting import (
-            generate_contrast_matrices_figures,
-            generate_design_matrices_figures,
-        )
+            mask_plot = _mask_to_plot(self, bg_img, cut_coords)
 
-        logger.log(
-            "Generating design matrices figures...", verbose=model.verbose
-        )
-        design_matrices_dict = generate_design_matrices_figures(
-            design_matrices,
-            design_matrices_dict=design_matrices_dict,
-            output=output,
-        )
+            # We try to rely on the content of glm object only
+            # by reading images from disk rarther than recomputing them
+            mask_info = {
+                k: v
+                for k, v in self.masker_._report_content.items()
+                if k in ["n_elements", "coverage"]
+            }
+            if "coverage" in mask_info:
+                mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
 
-        logger.log(
-            "Generating contrast matrices figures...", verbose=model.verbose
-        )
-        contrasts_dict = generate_contrast_matrices_figures(
-            design_matrices,
-            contrasts,
-            contrasts_dict=contrasts_dict,
-            output=output,
-        )
+            statistical_maps = {}
+            if self._is_volume_glm() and output is not None:
+                try:
+                    statistical_maps = {
+                        contrast_name: output["dir"]
+                        / output["statistical_maps"][contrast_name]["z_score"]
+                        for contrast_name in output["statistical_maps"]
+                    }
+                except KeyError:  # pragma: no cover
+                    if contrasts is not None:
+                        statistical_maps = self._make_stat_maps(
+                            contrasts,
+                            output_type="z_score",
+                            first_level_contrast=first_level_contrast,
+                        )
+            elif contrasts is not None:
+                statistical_maps = self._make_stat_maps(
+                    contrasts,
+                    output_type="z_score",
+                    first_level_contrast=first_level_contrast,
+                )
 
-    run_wise_dict = Bunch()
-    for i_run in design_matrices_dict:
-        tmp = Bunch()
-        tmp["design_matrix_png"] = design_matrices_dict[i_run][
-            "design_matrix_png"
-        ]
-        tmp["correlation_matrix_png"] = design_matrices_dict[i_run][
-            "correlation_matrix_png"
-        ]
-        tmp["all_contrasts"] = None
-        if i_run in contrasts_dict:
-            tmp["all_contrasts"] = contrasts_dict[i_run]
-        run_wise_dict[i_run] = tmp
-
-    # for methods writing, only keep the contrast expressed as strings
-    if contrasts is not None:
-        contrasts = [x for x in contrasts.values() if isinstance(x, str)]
-
-    title = f"<br>{title}" if title else ""
-    title = f"Statistical Report - {model.__str__()}{title}"
-
-    smoothing_fwhm = getattr(model, "smoothing_fwhm", 0)
-    if smoothing_fwhm == 0:
-        smoothing_fwhm = None
-
-    if warning_messages:
-        for msg in warning_messages:
-            warnings.warn(
-                msg,
-                stacklevel=find_stack_level(),
+            logger.log(
+                "Generating contrast-level figures...", verbose=self.verbose
+            )
+            results = _make_stat_maps_contrast_clusters(
+                stat_img=statistical_maps,
+                threshold_orig=threshold,
+                alpha=alpha,
+                cluster_threshold=cluster_threshold,
+                height_control=height_control,
+                two_sided=two_sided,
+                min_distance=min_distance,
+                bg_img=bg_img,
+                cut_coords=cut_coords,
+                display_mode=display_mode,
+                plot_type=plot_type,
             )
 
-    env = return_jinja_env()
+            if contrasts is None:
+                warning_messages.append(
+                    "No contrast passed during report generation."
+                )
 
-    body_tpl = env.get_template("html/glm/body_glm.jinja")
+        design_matrices_dict = Bunch()
+        contrasts_dict = Bunch()
+        if output is not None:
+            design_matrices_dict = output["design_matrices_dict"]
+            contrasts_dict = output["contrasts_dict"]
 
-    # TODO clean up docstring from RST formatting
-    docstring = model.__doc__.split("Parameters\n")[0]
+        if is_matplotlib_installed():
+            from nilearn._utils.plotting import (
+                generate_contrast_matrices_figures,
+                generate_design_matrices_figures,
+            )
 
-    body = body_tpl.render(
-        docstring=docstring,
-        contrasts=contrasts,
-        date=datetime.datetime.now().replace(microsecond=0).isoformat(),
-        mask_plot=mask_plot,
-        model_type=model.__str__(),
-        parameters=model_attributes_html,
-        reporting_data=Bunch(**model._reporting_data),
-        results=results,
-        run_wise_dict=run_wise_dict,
-        show_navbar="style='display: none;'" if is_notebook() else "",
-        smoothing_fwhm=smoothing_fwhm,
-        title=title,
-        version=__version__,
-        unique_id=str(uuid.uuid4()).replace("-", ""),
-        warning_messages=warning_messages,
-        has_plotting_engine=is_matplotlib_installed(),
-        **mask_info,
-    )
+            logger.log(
+                "Generating design matrices figures...", verbose=self.verbose
+            )
+            design_matrices_dict = generate_design_matrices_figures(
+                design_matrices,
+                design_matrices_dict=design_matrices_dict,
+                output=output,
+            )
 
-    report = assemble_report(body, title)
+            logger.log(
+                "Generating contrast matrices figures...", verbose=self.verbose
+            )
+            contrasts_dict = generate_contrast_matrices_figures(
+                design_matrices,
+                contrasts,
+                contrasts_dict=contrasts_dict,
+                output=output,
+            )
 
-    report.resize(*report_dims)
+        run_wise_dict = Bunch()
+        for i_run in design_matrices_dict:
+            tmp = Bunch()
+            tmp["design_matrix_png"] = design_matrices_dict[i_run][
+                "design_matrix_png"
+            ]
+            tmp["correlation_matrix_png"] = design_matrices_dict[i_run][
+                "correlation_matrix_png"
+            ]
+            tmp["all_contrasts"] = None
+            if i_run in contrasts_dict:
+                tmp["all_contrasts"] = contrasts_dict[i_run]
+            run_wise_dict[i_run] = tmp
 
-    return report
+        # for methods writing, only keep the contrast expressed as strings
+        if contrasts is not None:
+            contrasts = [x for x in contrasts.values() if isinstance(x, str)]
+
+        title = f"<br>{title}" if title else ""
+        title = f"Statistical Report - {self.__str__()}{title}"
+
+        smoothing_fwhm = getattr(self, "smoothing_fwhm", 0)
+        if smoothing_fwhm == 0:
+            smoothing_fwhm = None
+
+        show_navbar = "style='display: none;'" if self._is_notebook() else ""
+
+        report_warnings = report._get_warnings()
+        if report_warnings:
+            for msg in report_warnings:
+                warnings.warn(
+                    msg,
+                    stacklevel=find_stack_level(),
+                )
+
+        body_tpl = self._get_body_template("glm")
+        body = body_tpl.render(
+            docstring=report["docstring"],
+            contrasts=contrasts,
+            date=datetime.datetime.now().replace(microsecond=0).isoformat(),
+            mask_plot=mask_plot,
+            model_type=self.__str__(),
+            parameters=model_attributes_html,
+            reporting_data=Bunch(**self._reporting_data),
+            results=results,
+            run_wise_dict=run_wise_dict,
+            show_navbar=show_navbar,
+            smoothing_fwhm=smoothing_fwhm,
+            title=title,
+            version=__version__,
+            unique_id=report["unique_id"],
+            warning_messages=warning_messages,
+            has_plotting_engine=is_matplotlib_installed(),
+            **mask_info,
+        )
+
+        report = self._assemble_report(body, title)
+
+        report.resize(*report_dims)
+
+        return report
 
 
 def _turn_into_full_path(bunch, dir: Path) -> str | Bunch:
@@ -649,8 +638,6 @@ def _make_stat_maps_contrast_clusters(
         contrast name, contrast plot, statistical map, cluster table.
 
     """
-    from nilearn.glm.thresholding import threshold_stats_img
-
     check_params(locals())
     if not display_mode:
         display_mode_selector = {"slice": "z", "glass": "lzry"}

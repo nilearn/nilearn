@@ -535,6 +535,7 @@ class FirstLevelModel(BaseGLM):
         # attributes
         self.subject_label = subject_label
         self.random_state = random_state
+        self._reset_report()
 
     def _check_fit_inputs(
         self,
