@@ -407,33 +407,38 @@ def plot_img(
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
-
-    display = _plot_img_with_bg(
-        img,
-        cut_coords=cut_coords,
-        output_file=output_file,
-        display_mode=display_mode,
-        figure=figure,
-        axes=axes,
-        title=title,
-        threshold=threshold,
-        annotate=annotate,
-        draw_cross=draw_cross,
-        resampling_interpolation=resampling_interpolation,
-        black_bg=black_bg,
-        colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format,
-        bg_img=bg_img,
-        vmin=vmin,
-        vmax=vmax,
-        radiological=radiological,
-        decimals=decimals,
-        cmap=cmap,
-        transparency=transparency,
-        transparency_range=transparency_range,
-        **kwargs,
-    )
-
+   
+    try:
+        display = _plot_img_with_bg(
+            img,
+            cut_coords=cut_coords,
+            output_file=output_file,
+            display_mode=display_mode,
+            figure=figure,
+            axes=axes,
+            title=title,
+            threshold=threshold,
+            annotate=annotate,
+            draw_cross=draw_cross,
+            resampling_interpolation=resampling_interpolation,
+            black_bg=black_bg,
+            colorbar=colorbar,
+            cbar_tick_format=cbar_tick_format,
+            bg_img=bg_img,
+            vmin=vmin,
+            vmax=vmax,
+            radiological=radiological,
+            decimals=decimals,
+            cmap=cmap,
+            transparency=transparency,
+            transparency_range=transparency_range,
+            **kwargs,
+        )
+    except IndexError:
+        raise ValueError(
+            "The requested cut coordinate is out of bounds for the image. "
+            "Please check that your cut_coords are within the image field of view."
+        )
     return display
 
 
