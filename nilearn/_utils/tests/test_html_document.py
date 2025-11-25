@@ -7,6 +7,7 @@ import requests
 from numpy.testing import assert_no_warnings
 
 from nilearn._utils import html_document
+from nilearn.datasets.tests.conftest import request_mocker  # noqa : F401
 
 # Note: html output by nilearn view_* functions
 # should validate as html5 using https://validator.w3.org/nu/ with no
