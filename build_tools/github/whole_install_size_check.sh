@@ -7,7 +7,7 @@ set -euo pipefail
 
 EXTRA=${1:-}
 
-THRESHOLD=$((560 * 1024 * 1024))   # adjust as needed
+THRESHOLD=$((550 * 1024 * 1024))   # adjust as needed
 
 rm -rf dist build *.egg-info
 

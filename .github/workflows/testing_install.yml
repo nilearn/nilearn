@@ -106,5 +106,5 @@ jobs:
             with:
                 python-version: ${{ matrix.python }}
 
-        -   name: Check wheel size
+        -   name: Check install size
             run: bash build_tools/github/whole_install_size_check.sh  ${{ matrix.dependencies }}
