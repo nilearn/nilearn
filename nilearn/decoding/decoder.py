@@ -570,6 +570,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         cv=10,
         param_grid=None,
         screening_percentile=20,
+        screening_n_voxels=None,
         scoring=None,
         smoothing_fwhm=None,
         standardize=True,
@@ -589,6 +590,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         self.cv = cv
         self.param_grid = param_grid
         self.screening_percentile = screening_percentile
+        self.screening_n_voxels = screening_n_voxels
         self.scoring = scoring
         self.smoothing_fwhm = smoothing_fwhm
         self.standardize = standardize
@@ -684,6 +686,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
             self.screening_percentile,
             self.mask_img_,
             is_classifier(self),
+            screening_n_voxels=self.screening_n_voxels,
             verbose=self.verbose,
         )
 
@@ -1109,6 +1112,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     Parameters
     ----------
+  
     estimator : :obj:`str`, default='svc'
         The estimator to choose among:
         %(classifier_options)s
@@ -1143,6 +1147,9 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         predictions are estimated using default strategy.
 
     %(screening_percentile)s
+    screening_n_voxels : int, optional
+        Number of voxels to select. Default is None.
+
 
     scoring : :obj:`str`, callable or None, default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1154,7 +1161,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'.
-
+      
     %(smoothing_fwhm)s
 
     %(standardize_true)s
@@ -1213,6 +1220,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         cv=10,
         param_grid=None,
         screening_percentile=20,
+        screening_n_voxels=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
         standardize=True,
@@ -1233,6 +1241,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_voxels=screening_n_voxels,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1282,6 +1291,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
+   
     estimator : :obj:`str`, optional
         The estimator to choose among:
         %(regressor_options)s
@@ -1312,6 +1322,8 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         predictions are estimated using default strategy.
 
     %(screening_percentile)s
+    screening_n_voxels : int, optional
+        Number of voxels to select. Default is None.
 
     scoring : :obj:`str`, callable or None, optional. default='r2'
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1323,6 +1335,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
+   
 
     %(smoothing_fwhm)s
 
@@ -1376,6 +1389,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         cv=10,
         param_grid=None,
         screening_percentile=20,
+        screening_n_voxels=None,
         scoring="r2",
         smoothing_fwhm=None,
         standardize=True,
@@ -1396,6 +1410,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_voxels=screening_n_voxels,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1440,6 +1455,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
+   
     estimator : :obj:`str`, optional
         The estimator to choose among:
         %(regressor_options)s
@@ -1476,6 +1492,8 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         equal to 10.
 
     %(screening_percentile)s
+    screening_n_voxels : int, optional
+        Number of voxels to select. Default is None.
 
     scoring : :obj:`str`, callable or None, default= 'r2'
 
@@ -1488,6 +1506,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
+       
     %(smoothing_fwhm)s
 
     %(standardize_true)s
@@ -1535,6 +1554,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         param_grid=None,
         clustering_percentile=10,
         screening_percentile=20,
+        screening_n_voxels=None,
         scoring="r2",
         smoothing_fwhm=None,
         standardize=True,
@@ -1555,6 +1575,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_voxels=screening_n_voxels,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
@@ -1600,6 +1621,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
 
     Parameters
     ----------
+   
     estimator : :obj:`str`, default 'svc')
         The estimator to choose among:
         %(classifier_options)s
@@ -1643,6 +1665,8 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         feature selection based on the Anova F-value for the input data will be
         performed. A float according to a percentile of the highest
         scores.
+    screening_n_voxels : int, optional
+        Number of voxels to select. Default is None.
 
     scoring : :obj:`str`, callable or None, optional. default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1710,6 +1734,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         param_grid=None,
         clustering_percentile=10,
         screening_percentile=20,
+        screening_n_voxels=None,
         scoring="roc_auc",
         smoothing_fwhm=None,
         standardize=True,
@@ -1730,6 +1755,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
             cv=cv,
             param_grid=param_grid,
             screening_percentile=screening_percentile,
+            screening_n_voxels=screening_n_voxels,
             scoring=scoring,
             smoothing_fwhm=smoothing_fwhm,
             standardize=standardize,
