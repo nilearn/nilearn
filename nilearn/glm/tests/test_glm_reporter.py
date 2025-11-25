@@ -209,6 +209,7 @@ def slm():
     return model.fit(Y, design_matrix=X)
 
 
+@pytest.mark.slow
 def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
     """Check presence message of no activation found.
 
