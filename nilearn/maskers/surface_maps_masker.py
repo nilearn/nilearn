@@ -3,7 +3,7 @@ brain regions.
 """
 
 import warnings
-from typing import Literal, Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import numpy as np
 from scipy import linalg

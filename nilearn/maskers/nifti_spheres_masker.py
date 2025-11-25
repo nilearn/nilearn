@@ -5,7 +5,7 @@ Mask nifti images by spherical volumes for seed-region analyses
 
 import contextlib
 import warnings
-from typing import Any, Literal, ClassVar
+from typing import Any, ClassVar, Literal
 
 import numpy as np
 from scipy import sparse

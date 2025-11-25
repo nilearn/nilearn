@@ -156,6 +156,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
     memory_ : joblib memory cache
 
     """
+
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
         "description": (
             "This report shows the input surface image overlaid "

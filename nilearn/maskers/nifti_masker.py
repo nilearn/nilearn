@@ -323,6 +323,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
     nilearn.signal.clean
 
     """
+
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
         "description": (
             "This report shows the input Nifti image overlaid "

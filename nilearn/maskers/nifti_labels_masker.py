@@ -197,8 +197,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
         "description": (
-            "This report shows the regions "
-            "defined by the labels of the mask."
+            "This report shows the regions defined by the labels of the mask."
         ),
         "number_of_regions": 0,
     }

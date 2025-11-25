@@ -1,8 +1,8 @@
 """Masker for surface objects."""
 
 from copy import deepcopy
-from warnings import warn
 from typing import Any, ClassVar
+from warnings import warn
 
 import numpy as np
 from sklearn.base import ClassNamePrefixFeaturesOutMixin
@@ -85,6 +85,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         number of vertices included in mask
 
     """
+
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
         "description": (
             "This report shows the input surface image overlaid "

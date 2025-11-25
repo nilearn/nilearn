@@ -465,8 +465,8 @@ class _MaskerReportMixin(ReportMixin):
         return self._assemble_report(body, title)
 
     def _create_partial_figures(self):
-        """Using partial template for masker figures, creates partial image
-        htmls.
+        """Create partial image htmls Using partial template for masker
+        figures.
         """
         embeded_images = None
         image = self._reporting()

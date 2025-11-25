@@ -2,7 +2,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Literal, Any, ClassVar
+from typing import Any, ClassVar, Literal
 
 import numpy as np
 from sklearn.base import ClassNamePrefixFeaturesOutMixin

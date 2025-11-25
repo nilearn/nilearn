@@ -25,7 +25,6 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
-from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
@@ -38,8 +37,8 @@ from nilearn._utils.tags import (
 )
 from nilearn._version import __version__
 from nilearn.glm.thresholding import (
-    warn_default_threshold,
     threshold_stats_img,
+    warn_default_threshold,
 )
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
@@ -64,7 +63,6 @@ if is_matplotlib_installed():
 
 
 class GLMReportMixin(ReportMixin):
-
     @fill_doc
     def _make_glm_report(
         self,
@@ -151,8 +149,8 @@ class GLMReportMixin(ReportMixin):
 
                   ``'threshold'`` cannot be negative.
 
-                  The given value should be within the range of minimum and maximum
-                  intensity of the input image.
+                  The given value should be within the range of minimum and
+                  maximum intensity of the input image.
                   All intensities in the interval ``[-threshold, threshold]``
                   will be set to zero.
 
@@ -186,8 +184,8 @@ class GLMReportMixin(ReportMixin):
             threshold: 'fpr' or 'fdr' or 'bonferroni' or None.
 
         two_sided : :obj:`bool`, default=False
-            Whether to employ two-sided thresholding or to evaluate positive values
-            only.
+            Whether to employ two-sided thresholding or to evaluate positive
+            values only.
 
         min_distance : :obj:`float`, default=8.0
             For display purposes only.
@@ -213,7 +211,8 @@ class GLMReportMixin(ReportMixin):
             'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
 
         report_dims : Sequence[:obj:`int`, :obj:`int`], default=(1600, 800)
-            Specifies width, height (in pixels) of report window within a notebook.
+            Specifies width, height (in pixels) of report window within a
+            notebook.
             Only applicable when inserting the report into a Jupyter notebook.
             Can be set after report creation using report.width, report.height.
 
@@ -270,7 +269,7 @@ class GLMReportMixin(ReportMixin):
         output = None
         if contrasts is None:
             output = self._reporting_data.get("filenames", None)
-            if output is not None and output["use_absolute_path"]:
+            if output is not None and output.get("use_absolute_path", True):
                 output = _turn_into_full_path(output, output["dir"])
 
         design_matrices = None
