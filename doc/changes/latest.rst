@@ -19,9 +19,9 @@ HIGHLIGHTS
  | - requests -- 2.30.0
  |
  | **A new dependency has been added:**
- | - jinja2 >= 3.1.2
+ | - jinja2 -- 3.1.2
  |
-|  **A dependency has been removed:**
+ | **A dependency has been removed:**
  | - lxml
 
 
