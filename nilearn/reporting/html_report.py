@@ -237,33 +237,8 @@ def _create_report(
     else:
         embeded_images = [embed_img(i) for i in image]
 
-    summary_html: None | dict | str = None
-    # only convert summary to html table if summary exists
-    if "summary" in data and data["summary"] is not None:
-        # convert region summary to html table
-        # for Surface maskers create a table for each part
-        if "Surface" in estimator.__class__.__name__:
-            summary_html = {}
-            for part in data["summary"]:
-                summary_html[part] = pd.DataFrame.from_dict(
-                    data["summary"][part]
-                )
-                summary_html[part] = dataframe_to_html(
-                    summary_html[part],
-                    precision=2,
-                    header=True,
-                    index=False,
-                    sparsify=False,
-                )
-        # otherwise we just have one table
-        elif "Nifti" in estimator.__class__.__name__:
-            summary_html = dataframe_to_html(
-                pd.DataFrame.from_dict(data["summary"]),
-                precision=2,
-                header=True,
-                index=False,
-                sparsify=False,
-            )
+    summary_html = estimator._get_summary_html()
+
     parameters = model_attributes_to_dataframe(estimator)
     with pd.option_context("display.max_colwidth", 100):
         parameters = dataframe_to_html(

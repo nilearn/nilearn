@@ -8,6 +8,7 @@ from copy import deepcopy
 from typing import Any
 
 import numpy as np
+import pandas as pd
 from joblib import Memory
 from sklearn.base import (
     BaseEstimator,
@@ -372,6 +373,23 @@ class BaseMasker(
         """Needed by sklearn machinery for set_ouput."""
         return self.n_elements_
 
+    def _get_summary_html(self):
+        """Convert summary part of the report content to html."""
+        from nilearn.reporting._utils import dataframe_to_html
+        summary = self._report_content.get("summary", None)
+
+        if summary is None:
+            return None
+
+        summary_html = dataframe_to_html(
+                pd.DataFrame.from_dict(summary),
+                precision=2,
+                header=True,
+                index=False,
+                sparsify=False,
+            )
+        return summary_html
+
     @abc.abstractmethod
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
@@ -652,6 +670,25 @@ class _BaseSurfaceMasker(
                 check_polymesh_equal(mask_img_.mesh, x.mesh)
 
         return mask_img_
+
+    def _get_summary_html(self):
+        from nilearn.reporting._utils import dataframe_to_html
+        summary = self._report_content.get("summary", None)
+
+        if summary is None:
+            return None
+
+        summary_html = {}
+        for part in summary:
+            df_part = pd.DataFrame.from_dict(summary[part])
+            summary_html[part] = dataframe_to_html(
+                df_part,
+                precision=2,
+                header=True,
+                index=False,
+                sparsify=False,
+            )
+        return summary_html
 
     @abc.abstractmethod
     def fit(self, imgs=None, y=None):

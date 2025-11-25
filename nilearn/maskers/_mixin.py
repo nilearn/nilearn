@@ -460,6 +460,10 @@ class _ReportingMixin:
         """
         self._report_content["warning_messages"].append(warning)
 
+    def _get_summary_html(self):
+        """Convert summary part of the report content to html."""
+        raise NotImplementedError
+
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.
 
