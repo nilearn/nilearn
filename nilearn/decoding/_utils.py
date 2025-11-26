@@ -3,7 +3,12 @@
 import warnings
 
 import numpy as np
-from sklearn.feature_selection import SelectPercentile, f_classif, f_regression, SelectKBest
+from sklearn.feature_selection import (
+    SelectKBest,
+    SelectPercentile,
+    f_classif,
+    f_regression,
+)
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
@@ -140,7 +145,9 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
 
 @fill_doc
 def check_feature_screening(
-    screening_percentile, mask_img, is_classification, verbose=0,screening_n_voxels=None,
+    screening_percentile,
+    mask_img, is_classification,
+    verbose=0,screening_n_voxels=None,
 ):
     """Check feature screening method.
 

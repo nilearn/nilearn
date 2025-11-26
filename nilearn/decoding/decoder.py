@@ -1112,7 +1112,6 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     Parameters
     ----------
-  
     estimator : :obj:`str`, default='svc'
         The estimator to choose among:
         %(classifier_options)s
@@ -1161,7 +1160,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
         For classification, valid entries are: 'accuracy', 'f1', 'precision',
         'recall' or 'roc_auc'.
-      
+
     %(smoothing_fwhm)s
 
     %(standardize_true)s
@@ -1291,7 +1290,6 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-   
     estimator : :obj:`str`, optional
         The estimator to choose among:
         %(regressor_options)s
@@ -1335,7 +1333,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
-   
+
 
     %(smoothing_fwhm)s
 
@@ -1455,7 +1453,6 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     Parameters
     ----------
-   
     estimator : :obj:`str`, optional
         The estimator to choose among:
         %(regressor_options)s
@@ -1506,7 +1503,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
         For regression, valid entries are: 'r2', 'neg_mean_absolute_error',
         or 'neg_mean_squared_error'.
-       
+
     %(smoothing_fwhm)s
 
     %(standardize_true)s
@@ -1621,7 +1618,6 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
 
     Parameters
     ----------
-   
     estimator : :obj:`str`, default 'svc')
         The estimator to choose among:
         %(classifier_options)s
