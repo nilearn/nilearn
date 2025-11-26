@@ -411,6 +411,7 @@ def plot_img(
     # We load the image header to get the shape and affine
     from nilearn._utils.niimg_conversions import check_niimg
     from nilearn.image.resampling import coord_transform
+
     img = check_niimg(img)
 
     if (
@@ -458,7 +459,7 @@ def plot_img(
                     f"The valid range for this image on axis '{display_mode}' is "
                     f"[{valid_min:.2f}, {valid_max:.2f}]."
                 )
-    # --- End Validation --- 
+    # --- End Validation ---
     display = _plot_img_with_bg(
         img,
         cut_coords=cut_coords,
@@ -483,8 +484,8 @@ def plot_img(
         transparency=transparency,
         transparency_range=transparency_range,
         **kwargs,
-        )
-            
+    )
+
     return display
 
 
