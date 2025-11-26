@@ -17,8 +17,8 @@ from nilearn.datasets import (
     load_mni152_template,
     load_sample_motor_activation_image,
 )
+from nilearn.glm._mixin import _stat_map_to_png
 from nilearn.glm.thresholding import threshold_stats_img
-from nilearn.reporting.glm_reporter import _stat_map_to_png
 
 
 @pytest.mark.slow
