@@ -249,7 +249,7 @@ report
 
 # %%
 # Or in a separate browser window
-report.open_in_browser()
+# report.open_in_browser()
 
 report.save_as_html(output_dir / "report.html")
 
