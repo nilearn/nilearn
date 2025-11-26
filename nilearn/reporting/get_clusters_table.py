@@ -25,6 +25,7 @@ from nilearn._utils.param_validation import check_params
 from nilearn.image import new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
 from nilearn.surface.surface import SurfaceImage, find_surface_clusters
+from nilearn.typing import ClusterThreshold
 
 
 def _local_max(data, affine, min_distance):
@@ -217,10 +218,10 @@ def _pare_subpeaks(xyz, ijk, vals, min_distance):
 @fill_doc
 def get_clusters_table(
     stat_img,
-    stat_threshold,
-    cluster_threshold=0,
+    stat_threshold: float | int | np.floating | np.integer,
+    cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
-    min_distance=8.0,
+    min_distance: float | int | np.floating | np.integer = 8.0,
     return_label_maps: bool = False,
 ):
     """Create pandas dataframe with img cluster statistics.
@@ -257,7 +258,7 @@ def get_clusters_table(
     stat_img : Niimg-like object or :class:`~nilearn.surface.SurfaceImage`
        Statistical image to threshold and summarize.
 
-    stat_threshold : :obj:`float`
+    stat_threshold : :obj:`float` or :obj:`int`
         Cluster forming threshold. This value must be in the same scale as
         ``stat_img``.
 
@@ -420,9 +421,9 @@ def _get_clusters_table_surface(stat_img, return_label_maps: bool = False):
 def _get_clusters_table_volume(
     stat_img,
     stat_threshold,
-    cluster_threshold=0,
+    cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
-    min_distance=8.0,
+    min_distance: float | int | np.floating | np.integer = 8.0,
     return_label_maps: bool = False,
 ):
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
