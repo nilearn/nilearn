@@ -6,7 +6,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
 
 from nilearn.datasets import load_fsaverage_data
-from nilearn.image import get_data
+from nilearn.image import get_data, math_img
 from nilearn.reporting.get_clusters_table import (
     _cluster_nearest_neighbor,
     _local_max,
@@ -132,8 +132,8 @@ def test_get_clusters_table(
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, expected_n_cluster",
     [
-        (4, 2, 1),
         (4, 0, 2),
+        (4, 2, 1),
         (6, 0, 0),
     ],
 )
@@ -159,10 +159,8 @@ def test_get_clusters_table_surface(
     assert len(label_maps) == 1
 
     # label_maps should have the correct n_cluster + 1 for background
-    assert (
-        np.unique(get_surface_data(label_maps[0])).size
-        == expected_n_cluster + 1
-    )
+    cluster_labels = np.unique(get_surface_data(label_maps[0]))
+    assert cluster_labels.size == expected_n_cluster + 1
 
 
 @pytest.mark.parametrize(
@@ -171,7 +169,7 @@ def test_get_clusters_table_surface(
         "expected_n_cluster_left, expected_n_cluster_right"
     ),
     [
-        (4, 0, 1, 1),
+        (4, 0, 2, 2),
         (4, 2, 1, 1),
         (6, 0, 0, 0),
     ],
@@ -205,14 +203,11 @@ def test_get_clusters_table_surface_two_sided(
     assert all(isinstance(x, SurfaceImage) for x in label_maps)
 
     # label_maps should have the correct n_cluster + 1 for background
-    assert (
-        np.unique(get_surface_data(label_maps[0])).size
-        == expected_n_cluster_left + 1
-    )
-    assert (
-        np.unique(get_surface_data(label_maps[1])).size
-        == expected_n_cluster_right + 1
-    )
+    cluster_labals_positive = np.unique(get_surface_data(label_maps[0]))
+    assert cluster_labals_positive.size == expected_n_cluster_left + 1
+
+    cluster_labals_negative = np.unique(get_surface_data(label_maps[1]))
+    assert cluster_labals_negative.size == expected_n_cluster_right + 1
 
 
 def check_sum_negative_positive_clusters(
@@ -229,6 +224,9 @@ def check_sum_negative_positive_clusters(
         two_sided=True,
     )
 
+    assert not any(clusters_table_two_sided["Peak Stat"].to_numpy() == np.nan)
+    assert len(clusters_table_two_sided) == expected_n_cluster_two_sided
+
     clusters_table_positive = get_clusters_table(
         stat_img,
         stat_threshold=np.abs(stat_threshold),
@@ -237,8 +235,8 @@ def check_sum_negative_positive_clusters(
     )
 
     clusters_table_negative = get_clusters_table(
-        stat_img,
-        stat_threshold=np.abs(stat_threshold) * -1,
+        math_img("img*-1", img=stat_img),
+        stat_threshold=stat_threshold,
         cluster_threshold=cluster_threshold,
         two_sided=False,
     )
@@ -246,10 +244,6 @@ def check_sum_negative_positive_clusters(
     assert len(clusters_table_two_sided) == len(clusters_table_positive) + len(
         clusters_table_negative
     )
-    assert len(clusters_table_two_sided) == expected_n_cluster_two_sided
-
-    #
-    # assert not any(clusters_table["Peak Stat"].to_numpy() == np.nan)
 
 
 @pytest.mark.parametrize(

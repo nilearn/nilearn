@@ -446,8 +446,8 @@ def _get_clusters_table_surface(
 
     if return_label_maps:
         return (result_table, label_maps)
-    else:
-        return result_table
+
+    return result_table
 
 
 def _get_clusters_table_volume(
