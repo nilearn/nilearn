@@ -474,8 +474,6 @@ def _get_clusters_table_volume(
     min_distance: float | int | np.floating | np.integer = 8.0,
     return_label_maps: bool = False,
 ):
-    # TODO
-    # add test
     if min_distance <= 0:
         raise ValueError("'min_distance' must be positive.")
 
