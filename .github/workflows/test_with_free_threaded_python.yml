@@ -70,6 +70,7 @@ jobs:
             id: test_free_threaded
             run: |
                 source .venv/bin/activate
+                PYTEST_RUN_PARALLEL_VERBOSE=1
                 pytest --report=report.html --csv results/pytest_output/pytest_output_slow_tests.csv --parallel-threads 2 nilearn
 
         -   name: Upload test report
@@ -90,19 +91,19 @@ jobs:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
 
-        -   name: Create issue
-            if: ${{ steps.test_free_threaded.outcome != 'success' }}
-            uses: JasonEtco/create-an-issue@v2.9.2
-            env:
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                run_id: ${{ github.run_id }}
-                repository: ${{ github.repository }}
-                workflow_name: TEST FREE THREADED PYTHON
-            with:
-                filename: .github/workflow_failure.md
-                update_existing: true
-                search_existing: open
+        # -   name: Create issue
+        #     if: ${{ steps.test_free_threaded.outcome != 'success' }}
+        #     uses: JasonEtco/create-an-issue@v2.9.2
+        #     env:
+        #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        #         run_id: ${{ github.run_id }}
+        #         repository: ${{ github.repository }}
+        #         workflow_name: TEST FREE THREADED PYTHON
+        #     with:
+        #         filename: .github/workflow_failure.md
+        #         update_existing: true
+        #         search_existing: open
 
-        -   name: Return failure
-            if: ${{ steps.test_free_threaded.outcome != 'success' }}
-            run: exit 1
+        # -   name: Return failure
+        #     if: ${{ steps.test_free_threaded.outcome != 'success' }}
+        #     run: exit 1

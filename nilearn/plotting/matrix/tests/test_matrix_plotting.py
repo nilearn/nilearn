@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from nilearn._utils.helpers import is_gil_enabled
 from nilearn.glm.first_level.design_matrix import (
     make_first_level_design_matrix,
 )
@@ -126,7 +127,11 @@ def test_matrix_plotting_reorder(mat, labels):
     ax = plot_matrix(mat, labels=labels, reorder="complete")
 
 
-def test_show_design_matrix(tmp_path):
+@pytest.mark.skipif(
+    not is_gil_enabled(),
+    reason="Saving figures is not supported when GIL is disabled.",
+)
+def test_save_design_matrix(tmp_path):
     """Test plot_design_matrix saving to file."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
@@ -195,6 +200,9 @@ def test_show_event_plot(tmp_path):
 
     assert fig is not None
 
+    if not is_gil_enabled():
+        pytest.skip("Saving figures is not supported when GIL is disabled.")
+
     # Test save
     fig = plot_event(model_event, output_file=tmp_path / "event.png")
 
@@ -248,8 +256,12 @@ def test_plot_event_path_tsv_csv(tmp_path, suffix, sep):
     plot_event([filename, str(filename)])
 
 
-def test_show_contrast_matrix(tmp_path):
-    """Test that the show code indeed (formally) runs."""
+@pytest.mark.skipif(
+    not is_gil_enabled(),
+    reason="Saving figures is not supported when GIL is disabled.",
+)
+def test_save_contrast_matrix(tmp_path):
+    """Check saving matrices to file."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
     dmtx = make_first_level_design_matrix(
         frame_times, drift_model="polynomial", drift_order=3
