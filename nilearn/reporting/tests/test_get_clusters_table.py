@@ -22,6 +22,16 @@ def shape():
     return (9, 10, 11)
 
 
+@pytest.fixture
+def simple_stat_img(shape, affine_eye):
+    """Create a simple stat image for more tests."""
+    data = np.zeros(shape)
+    data[2:4, 5:7, 6:8] = 5.0
+    data[4:6, 7:9, 8:10] = -5.0
+    stat_img = Nifti1Image(data, affine_eye)
+    return stat_img
+
+
 def test_local_max_two_maxima(shape, affine_eye):
     """Basic test of nilearn.reporting._get_clusters_table._local_max()."""
     # Two maxima (one global, one local), 10 voxels apart.
@@ -103,21 +113,15 @@ def test_cluster_nearest_neighbor(shape):
     ],
 )
 def test_get_clusters_table(
-    shape,
-    affine_eye,
+    simple_stat_img,
     stat_threshold,
     cluster_threshold,
     two_sided,
     expected_n_cluster,
 ):
     """Test several combination of input parameters."""
-    data = np.zeros(shape)
-    data[2:4, 5:7, 6:8] = 5.0
-    data[4:6, 7:9, 8:10] = -5.0
-    stat_img = Nifti1Image(data, affine_eye)
-
     clusters_table = get_clusters_table(
-        stat_img,
+        simple_stat_img,
         stat_threshold=stat_threshold,
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
@@ -126,14 +130,17 @@ def test_get_clusters_table(
 
 
 @pytest.mark.parametrize(
-    "stat_threshold, cluster_threshold, two_sided, expected_n_cluster",
+    (
+        "stat_threshold, cluster_threshold, two_sided, "
+        "expected_n_cluster_left, expected_n_cluster_right"
+    ),
     [
-        (4, 2, False, 1),  # one cluster in left hemisphere
-        (4, 0, False, 2),  # one cluster in each hemisphere
-        (4, 0, True, 2),  # one cluster in each hemisphere
-        (4, 2, True, 2),  # one cluster in each hemisphere
-        (6, 0, True, 0),  # test empty table on high stat threshold
-        (6, 0, False, 0),  # test empty table on high stat threshold
+        (4, 2, False, 1, 0),
+        (4, 0, False, 1, 1),
+        (4, 0, True, 1, 1),
+        (4, 2, True, 1, 1),
+        (6, 0, True, 0, 0),
+        (6, 0, False, 0, 0),
     ],
 )
 def test_get_clusters_table_surface(
@@ -141,7 +148,8 @@ def test_get_clusters_table_surface(
     stat_threshold,
     cluster_threshold,
     two_sided,
-    expected_n_cluster,
+    expected_n_cluster_left,
+    expected_n_cluster_right,
 ):
     """Test several combination of input parameters.
 
@@ -159,13 +167,22 @@ def test_get_clusters_table_surface(
         return_label_maps=True,
     )
 
-    assert len(clusters_table) == expected_n_cluster
+    assert (
+        len(clusters_table)
+        == expected_n_cluster_left + expected_n_cluster_right
+    )
 
-    assert isinstance(label_maps, SurfaceImage)
+    assert isinstance(label_maps, list)
+    assert all(isinstance(x, SurfaceImage) for x in label_maps)
 
     # label_maps should have the correct n_cluster + 1 for background
     assert (
-        np.unique(get_surface_data(label_maps)).size == expected_n_cluster + 1
+        np.unique(get_surface_data(label_maps[0])).size
+        == expected_n_cluster_left + 1
+    )
+    assert (
+        np.unique(get_surface_data(label_maps[1])).size
+        == expected_n_cluster_right + 1
     )
 
 
@@ -253,63 +270,43 @@ def test_get_clusters_table_negative_threshold(shape, affine_eye):
     assert_array_equal(stat_img.get_fdata(), data_orig)
 
 
-@pytest.mark.slow
-def test_get_clusters_table_more(shape, affine_eye, tmp_path):
-    """Run more tests get_clusters_table.
-
-    - with input image as filename
-    - test returning label maps
-    - test on 4D image
-    - test with nans
-    - test subpeaks
-    """
-    data = np.zeros(shape)
-    data[2:4, 5:7, 6:8] = 5.0
-    data[4:6, 7:9, 8:10] = -5.0
-    stat_img = Nifti1Image(data, affine_eye)
-
-    # test with filename
+def test_smoke_get_clusters_table_filename(tmp_path, simple_stat_img):
+    """Run get_clusters_table on a file."""
     fname = str(tmp_path / "stat_img.nii.gz")
-    stat_img.to_filename(fname)
+    simple_stat_img.to_filename(fname)
     cluster_table = get_clusters_table(fname, 4, 0, two_sided=True)
     assert len(cluster_table) == 2
 
-    # test with returning label maps
-    cluster_table, label_maps = get_clusters_table(
+
+def test_get_clusters_table_4d_image(shape, affine_eye):
+    """Run get_clusters_table on 4D image."""
+    data = np.zeros((*shape, 1))
+    data[2:4, 5:7, 6:8] = 5.0
+    data[4:6, 7:9, 8:10] = -5.0
+    stat_img = Nifti1Image(data, affine_eye)
+    cluster_table = get_clusters_table(
         stat_img,
         4,
         0,
         two_sided=True,
-        return_label_maps=True,
-    )
-    label_map_positive_data = label_maps[0].get_fdata()
-    label_map_negative_data = label_maps[1].get_fdata()
-    # make sure positive and negative clusters are returned in the label maps
-    assert np.sum(label_map_positive_data[2:4, 5:7, 6:8] != 0) == 8
-    assert np.sum(label_map_negative_data[4:6, 7:9, 8:10] != 0) == 8
-
-    # test with extra dimension
-    data_extra_dim = data[..., np.newaxis]
-    stat_img_extra_dim = Nifti1Image(data_extra_dim, affine_eye)
-    cluster_table = get_clusters_table(
-        stat_img_extra_dim,
-        4,
-        0,
-        two_sided=True,
     )
     assert len(cluster_table) == 2
 
-    # Test that nans are handled correctly (No numpy axis errors are raised)
+
+def test_get_clusters_table_nans(shape, affine_eye):
+    """Test nans are handled correctly (No numpy axis errors are raised)."""
+    data = np.zeros((*shape, 1))
+    data[2:4, 5:7, 6:8] = 5.0
+    data[4:6, 7:9, 8:10] = -5.0
     data[data == 0] = np.nan
-    stat_img_nans = Nifti1Image(data, affine=affine_eye)
+    stat_img = Nifti1Image(data, affine_eye)
     with pytest.warns(UserWarning, match="Non-finite values detected"):
-        cluster_table = get_clusters_table(
-            stat_img_nans, 1e-2, 0, two_sided=False
-        )
+        cluster_table = get_clusters_table(stat_img, 1e-2, 0, two_sided=False)
     assert len(cluster_table) == 1
 
-    # Test that subpeaks are handled correctly for len(subpeak_vals) > 1
 
+def test_get_clusters_table_more(shape, affine_eye):
+    """Test subpeaks are handled correctly for len(subpeak_vals) > 1."""
     # 1 cluster and two subpeaks, 10 voxels apart.
     data = np.zeros(shape)
     data[4, 5, :] = [4, 3, 2, 1, 1, 1, 1, 1, 2, 3, 4]
@@ -325,18 +322,12 @@ def test_get_clusters_table_more(shape, affine_eye, tmp_path):
     assert "1a" in cluster_table["Cluster ID"].to_numpy()
 
 
-def test_get_clusters_table_relabel_label_maps(shape, affine_eye):
+def test_get_clusters_table_relabel_label_maps(simple_stat_img):
     """Check that the cluster's labels in label_maps match \
        their corresponding cluster IDs in the clusters table.
     """
-    data = np.zeros(shape)
-    data[2:4, 5:7, 6:8] = 6.0
-    data[5:7, 7:9, 7:9] = 5.5
-    data[0:3, 0:3, 0:3] = 5.0
-    stat_img = Nifti1Image(data, affine_eye)
-
     cluster_table, label_maps = get_clusters_table(
-        stat_img,
+        simple_stat_img,
         4,
         0,
         return_label_maps=True,
@@ -347,9 +338,28 @@ def test_get_clusters_table_relabel_label_maps(shape, affine_eye):
 
     # Find the cluster ids in the label map using the coords from the table.
     coords = cluster_table[["X", "Y", "Z"]].to_numpy().astype(int)
+
+    assert len(label_maps) == 1
     lb_cluster_ids = label_maps[0].get_fdata()[tuple(coords.T)]
 
     assert np.array_equal(cluster_ids, lb_cluster_ids)
+
+
+def test_get_clusters_table_return_label_maps(simple_stat_img):
+    """Test with returning label maps."""
+    _, label_maps = get_clusters_table(
+        simple_stat_img,
+        4,
+        0,
+        two_sided=True,
+        return_label_maps=True,
+    )
+
+    assert len(label_maps) == 2
+    label_map_positive_data = label_maps[0].get_fdata()
+    assert np.sum(label_map_positive_data[2:4, 5:7, 6:8] != 0) == 8
+    label_map_negative_data = label_maps[1].get_fdata()
+    assert np.sum(label_map_negative_data[4:6, 7:9, 8:10] != 0) == 8
 
 
 @pytest.mark.parametrize(
@@ -361,26 +371,20 @@ def test_get_clusters_table_relabel_label_maps(shape, affine_eye):
     ],
 )
 def test_get_clusters_table_not_modifying_stat_image(
-    shape,
-    affine_eye,
+    simple_stat_img,
     stat_threshold,
     cluster_threshold,
     two_sided,
     expected_n_cluster,
 ):
     """Make sure original image is not changed."""
-    data = np.zeros(shape)
-    data[2:4, 5:7, 6:8] = 5.0
-    data[0:3, 0:3, 0:3] = 6.0
-
-    stat_img = Nifti1Image(data, affine_eye)
-    data_orig = get_data(stat_img).copy()
+    data_orig = get_data(simple_stat_img).copy()
 
     clusters_table = get_clusters_table(
-        stat_img,
+        simple_stat_img,
         stat_threshold=stat_threshold,
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
     )
-    assert np.allclose(data_orig, get_data(stat_img))
+    assert np.allclose(data_orig, get_data(simple_stat_img))
     assert len(clusters_table) == expected_n_cluster
