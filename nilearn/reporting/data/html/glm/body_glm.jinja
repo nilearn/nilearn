@@ -22,12 +22,12 @@
     {% include 'html/glm/partials/method_section.jinja' %}
   </section>
 
-  <section id="model-details-{{ unique_id }}">
+  <section id="model-details-UUID-{{ unique_id }}">
     <h2>Model details</h2>
     <div class="table-container">{{ parameters|safe }}</div>
   </section>
 
-  <div id="carousel-container-{{ unique_id }}"
+  <div id="carousel-container-UUID-{{ unique_id }}"
       {#
         add a border when more than one run
         to make it visually clear
@@ -43,16 +43,16 @@
     <div class="pure-g d-flex justify-content-center align-items-stretch mt-1"
          id="carousel-navbar">
       <button class="btn pure-u-1-3 text-center rounded-2 carousel-navbar-element"
-              id="prev-btn-{{ unique_id }}">
+              id="prev-btn-UUID-{{ unique_id }}">
         Previous Run
       </button>
       <!-- the content will be injected by javascript -->
       <h2 class="pure-u-1-4 py-3 text-center carousel-navbar-element"
           style="margin: 0px; padding: 0px">
-        Run <span id="comp-{{ unique_id }}"></span>
+        Run <span id="comp-UUID-{{ unique_id }}"></span>
       </h2>
       <button class="btn pure-u-1-3 text-center rounded-2 carousel-navbar-element"
-              id="next-btn-{{ unique_id }}">
+              id="next-btn-UUID-{{ unique_id }}">
         Next Run
       </button>
     </div>
@@ -76,10 +76,10 @@
       {% if  n_runs > 1 %}
       style="display: none"
       {% endif %}
-      id="carousel-obj-{{ unique_id }}-{{ loop.index0 }}"
+      id="carousel-obj-UUID-{{ unique_id }}-{{ loop.index0 }}"
       >
 
-      <section id="design-matrix-{{ unique_id }}-{{ loop.index0 }}">
+      <section id="design-matrix-UUID-{{ unique_id }}-{{ loop.index0 }}">
       <h3>Design Matrix</h3>
       {% if not has_plotting_engine %}
         {% include 'html/partials/missing_plotting_engine.jinja' %}
@@ -109,7 +109,7 @@
         {% endif %}
       </section>
 
-      <section id="contrasts-{{ unique_id }}-{{ loop.index0 }}">
+      <section id="contrasts-UUID-{{ unique_id }}-{{ loop.index0 }}">
         <h3>Contrasts</h3>
         <div class="d-flex flex-column">
           {% if not has_plotting_engine %}
@@ -138,7 +138,7 @@
 
   </div>
 
-  <section id="mask-{{ unique_id }}">
+  <section id="mask-UUID-{{ unique_id }}">
     <h2>Mask</h2>
     {% if not has_plotting_engine %}
       {% include 'html/partials/missing_plotting_engine.jinja' %}
@@ -165,7 +165,7 @@
     {% endif %}
   </section>
 
-  <section id="statistical-maps-{{ unique_id }}">
+  <section id="statistical-maps-UUID-{{ unique_id }}">
     <h2>Statistical Maps</h2>
     <div class="pure-g">
       {% if results %}
@@ -218,7 +218,7 @@
     </div>
   </section>
 
-  <section id="about-{{ unique_id }}" style="text-align: left">
+  <section id="about-UUID-{{ unique_id }}" style="text-align: left">
     <h2>About</h2>
     <ul>
       <li>Date preprocessed: <time>{{ date }}</time></li>
@@ -232,7 +232,7 @@
 <script>
   {% include 'js/carousel.js' %}
   document.addEventListener("DOMContentLoaded", function () {
-    new Carousel("{{ unique_id }}", {{ displayed_runs }}, false);
+    new Carousel("UUID-{{ unique_id }}", {{ displayed_runs }}, false);
 }
 );
 </script>
