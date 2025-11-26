@@ -319,6 +319,13 @@ def get_clusters_table(
             return_label_maps=return_label_maps,
         )
 
+    return _get_clusters_table_surface(
+        stat_img,
+        return_label_maps=return_label_maps,
+    )
+
+
+def _get_clusters_table_surface(stat_img, return_label_maps=False):
     cols = [
         "Cluster ID",
         "Hemisphere",
