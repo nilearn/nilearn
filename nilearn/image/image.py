@@ -925,10 +925,10 @@ def threshold_img(
     img,
     threshold,
     cluster_threshold: ClusterThreshold = 0,
-    two_sided=True,
+    two_sided: bool = True,
     mask_img=None,
-    copy=True,
-    copy_header=True,
+    copy: bool = True,
+    copy_header: bool = True,
 ):
     """Threshold the given input image, mostly statistical or atlas images.
 

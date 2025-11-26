@@ -412,11 +412,18 @@ def _get_clusters_table_surface(
             )
             clusters = clusters[cols]
 
-            offset += len(clusters)
+            all_clusters.append(clusters)
 
             data[hemi] = labels
 
-            all_clusters.append(clusters)
+            offset += len(clusters)
+
+        if offset == 1:
+            warnings.warn(
+                f"No clusters found for than '{stat_threshold=}'.",
+                category=UserWarning,
+                stacklevel=find_stack_level(),
+            )
 
         label_maps = [new_img_like(stat_img, data)]
 
@@ -446,19 +453,6 @@ def _get_clusters_table_surface(
             label_maps.append(label_map[0])
 
     result_table = pd.concat(all_clusters, ignore_index=True)
-
-    # TODO
-    # # If the stat threshold is too high
-    # # simply return an empty dataframe
-    # if np.sum(binarized) == 0:
-    #     warnings.warn(
-    #         "Attention: No clusters "
-    #         f"with stat {'higher' if sign == 1 else 'lower'} "
-    #         f"than {stat_threshold * sign}",
-    #         category=UserWarning,
-    #         stacklevel=find_stack_level(),
-    #     )
-    #     continue
 
     if return_label_maps:
         return (result_table, label_maps)
@@ -520,7 +514,7 @@ def _get_clusters_table_volume(
         # simply return an empty dataframe
         if np.sum(binarized) == 0:
             warnings.warn(
-                "Attention: No clusters "
+                "No clusters found "
                 f"with stat {'higher' if sign == 1 else 'lower'} "
                 f"than {stat_threshold * sign}",
                 category=UserWarning,

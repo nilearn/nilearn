@@ -309,6 +309,33 @@ def test_get_clusters_table_negative_min_distance_error(simple_stat_img):
         )
 
 
+def test_get_clusters_table_no_cluster_found_warning(
+    surf_img_1d, simple_stat_img
+):
+    """Check warning is thrown when too high threshold or no cluster found."""
+    with pytest.warns(UserWarning, match="But, you have given threshold=1000"):
+        clusters_table = get_clusters_table(
+            simple_stat_img, stat_threshold=1000
+        )
+    validate_clusters_table(clusters_table, expected_n_cluster=0)
+
+    with pytest.warns(UserWarning, match="But, you have given threshold=1000"):
+        clusters_table = get_clusters_table(surf_img_1d, stat_threshold=1000)
+    validate_clusters_table(clusters_table, expected_n_cluster=0)
+
+    with pytest.warns(UserWarning, match="No clusters found"):
+        clusters_table = get_clusters_table(
+            simple_stat_img, stat_threshold=4.9, cluster_threshold=1000
+        )
+    validate_clusters_table(clusters_table, expected_n_cluster=0)
+
+    with pytest.warns(UserWarning, match="No clusters found"):
+        clusters_table = get_clusters_table(
+            surf_img_1d, stat_threshold=1, cluster_threshold=1000
+        )
+    validate_clusters_table(clusters_table, expected_n_cluster=0)
+
+
 def test_get_clusters_table_negative_threshold(shape, affine_eye):
     """Check that one sided negative thresholds are handled well."""
     data = np.zeros(shape)
