@@ -1,5 +1,6 @@
 """Implement plotting functions useful to report analysis results."""
 
+import inspect
 import warnings
 from collections import OrderedDict
 from decimal import Decimal
@@ -253,7 +254,7 @@ def get_clusters_table(
 
     Parameters
     ----------
-    stat_img : Niimg-like object
+    stat_img : Niimg-like object or :class:`~nilearn.surface.SurfaceImage`
        Statistical image to threshold and summarize.
 
     stat_threshold : :obj:`float`
@@ -273,6 +274,9 @@ def get_clusters_table(
             If two different clusters are closer than ``min_distance``, it can
             result in peaks closer than ``min_distance``.
 
+        .. note::
+            Not used for surface data.
+
     return_label_maps : :obj:`bool`, default=False
         Whether or not to additionally output cluster label map images.
 
@@ -281,8 +285,10 @@ def get_clusters_table(
     Returns
     -------
     result_table : :obj:`pandas.DataFrame`
-                   Table with peaks and subpeaks from thresholded ``stat_img``.
-                   The columns in this table include:
+
+        For volume data the dataframe contains
+        the peaks and subpeaks from thresholded ``stat_img``.
+        In this case, the columns in this table include:
 
         ================== ====================================================
         Cluster ID         The cluster number. Subpeaks have letters after the
@@ -296,10 +302,23 @@ def get_clusters_table(
                            in this column.
         ================== ====================================================
 
-    label_maps : :obj:`list`
-        Returned if return_label_maps=True
-        List of Niimg-like objects of cluster label maps.
-        If two_sided==True, first and second maps correspond
+        For surface data, the columns in this table include:
+
+        ======================= ===============================================
+        Cluster ID              The cluster number.
+        Hemisphere              The hemisphere in which the cluster is found.
+        Peak Stat               The statistical value associated
+                                with the cluster.
+                                The statistic type is dependent
+                                on the type of the statistical image.
+        Cluster Size (vertices) The size of the cluster, in vertices.
+        ======================= ===============================================
+
+    label_maps : :obj:`list` of  Niimg-like objects \
+                 or :class:`~nilearn.surface.SurfaceImage`
+        List of of cluster label maps.
+        Returned if ``return_label_maps=True``.
+        If ``two_sided==True``, first and second maps correspond
         to positive and negative tails.
 
         .. nilearn_versionadded:: 0.10.1
@@ -317,6 +336,14 @@ def get_clusters_table(
             two_sided=two_sided,
             min_distance=min_distance,
             return_label_maps=return_label_maps,
+        )
+
+    parameters = dict(**inspect.signature(get_clusters_table).parameters)
+    if parameters["min_distance"].default != 8.0:
+        warnings.warn(
+            "The 'min_distance' parameter is not used for surface data "
+            "and will be ignored.",
+            stacklevel=find_stack_level(),
         )
 
     return _get_clusters_table_surface(
