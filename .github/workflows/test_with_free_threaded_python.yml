@@ -40,7 +40,7 @@ jobs:
         name: 'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
         runs-on: ${{ matrix.os }}
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 # TODO:
                 # Run with nightly dependencies and with just latest stable
