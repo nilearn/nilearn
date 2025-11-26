@@ -407,7 +407,7 @@ def plot_img(
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
-   
+
     try:
         display = _plot_img_with_bg(
             img,
@@ -437,7 +437,8 @@ def plot_img(
     except IndexError:
         raise ValueError(
             "The requested cut coordinate is out of bounds for the image. "
-            "Please check that your cut_coords are within the image field of view."
+            "Please check that your cut_coords"
+            " are within the image field of view."
         )
     return display
 

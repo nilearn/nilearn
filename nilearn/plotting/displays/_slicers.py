@@ -508,13 +508,12 @@ class BaseSlicer:
             if transparency is None or isinstance(transparency, (float, int)):
                 transparency_2d = transparency
 
-            
                 data_2d = display_ax.transform_to_2d(data, affine)
                 if isinstance(transparency, np.ndarray):
                     transparency_2d = display_ax.transform_to_2d(
                         transparency, transparency_affine
                     )
-            
+
                 data_2d_list.append(data_2d)
                 transparency_list.append(transparency_2d)
 
