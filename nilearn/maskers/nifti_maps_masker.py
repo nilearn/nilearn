@@ -265,8 +265,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         """
         check_displayed_maps(displayed_maps)
 
-        self.displayed_maps = displayed_maps
-
         self._report_content["number_of_maps"] = 0
         self._report_content["displayed_maps"] = []
 
