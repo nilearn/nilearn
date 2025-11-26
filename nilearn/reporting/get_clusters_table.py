@@ -22,7 +22,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
-from nilearn.image import new_img_like, threshold_img
+from nilearn.image import math_img, new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
 from nilearn.surface.surface import SurfaceImage, find_surface_clusters
 from nilearn.typing import ClusterThreshold
@@ -334,8 +334,6 @@ def get_clusters_table(
         threshold=stat_threshold,
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
-        mask_img=None,
-        copy=True,
     )
 
     if is_volume:
@@ -358,11 +356,20 @@ def get_clusters_table(
 
     return _get_clusters_table_surface(
         stat_img,
+        stat_threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=two_sided,
         return_label_maps=return_label_maps,
     )
 
 
-def _get_clusters_table_surface(stat_img, return_label_maps: bool = False):
+def _get_clusters_table_surface(
+    stat_img,
+    stat_threshold,
+    cluster_threshold: ClusterThreshold = 0,
+    two_sided: bool = False,
+    return_label_maps: bool = False,
+):
     cols = [
         "Cluster ID",
         "Hemisphere",
@@ -373,59 +380,87 @@ def _get_clusters_table_surface(stat_img, return_label_maps: bool = False):
     offset = 1
     data = {}
     all_clusters = []
+    label_maps = []
 
-    for hemi in stat_img.data.parts:
-        clusters, labels = find_surface_clusters(
-            stat_img.mesh.parts[hemi],
-            stat_img.data.parts[hemi],
-            offset=offset,
-        )
+    if not two_sided:
+        for hemi in stat_img.data.parts:
+            clusters, labels = find_surface_clusters(
+                stat_img.mesh.parts[hemi],
+                stat_img.data.parts[hemi],
+                offset=offset,
+            )
 
-        peak_stat = []
-        for i in clusters["index"].tolist():
-            mask = labels == i
-            values = stat_img.data.parts[hemi][mask].ravel()
+            peak_stat = []
+            for i in clusters["index"].tolist():
+                mask = labels == i
+                values = stat_img.data.parts[hemi][mask].ravel()
 
-            if np.all(np.isnan(values)):
-                raise ValueError("this should not happen")
+                if np.all(np.isnan(values)):
+                    raise ValueError("this should not happen")
 
-            cluster_max = np.nanmax(values)
-            peak_stat.append(cluster_max)
+                cluster_max = np.nanmax(values)
+                peak_stat.append(cluster_max)
 
-        clusters["Peak Stat"] = peak_stat
+            clusters["Peak Stat"] = peak_stat
 
-        clusters["Hemisphere"] = hemi
-        clusters = clusters.rename(
-            columns={
-                "name": "Cluster ID",
-                "size": "Cluster Size (vertices)",
-            }
-        )
-        clusters = clusters[cols]
+            clusters["Hemisphere"] = hemi
+            clusters = clusters.rename(
+                columns={
+                    "name": "Cluster ID",
+                    "size": "Cluster Size (vertices)",
+                }
+            )
+            clusters = clusters[cols]
 
-        offset = len(clusters)
+            offset = len(clusters)
 
-        data[hemi] = labels
+            data[hemi] = labels
 
-        all_clusters.append(clusters)
+            all_clusters.append(clusters)
+
+        label_maps = [new_img_like(stat_img, data)]
+
+    else:
+        signs = [1, -1]
+        for sign in signs:
+            temp_stat_map = math_img(f"img * {sign}", img=stat_img)
+            temp_stat_map = threshold_img(
+                img=stat_img,
+                threshold=stat_threshold,
+                cluster_threshold=cluster_threshold,
+                two_sided=False,
+            )
+            clusters, label_map = _get_clusters_table_surface(
+                temp_stat_map,
+                stat_threshold,
+                cluster_threshold=cluster_threshold,
+                two_sided=False,
+                return_label_maps=True,
+            )
+
+            all_clusters.append(clusters)
+
+            label_maps.append(label_map[0])
 
     result_table = pd.concat(all_clusters, ignore_index=True)
 
-    label_maps = []
     if return_label_maps:
-        label_maps = [new_img_like(stat_img, data)]
-
-    return (result_table, label_maps) if return_label_maps else result_table
+        return (result_table, label_maps)
+    else:
+        return result_table
 
 
 def _get_clusters_table_volume(
     stat_img,
-    stat_threshold,
+    stat_threshold: float | int | np.floating | np.integer,
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
     min_distance: float | int | np.floating | np.integer = 8.0,
     return_label_maps: bool = False,
 ):
+    if min_distance <= 0:
+        raise ValueError("'min_distance' must be positive.")
+
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
 
     label_maps = []

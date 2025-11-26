@@ -255,10 +255,10 @@ def check_sum_negative_positive_clusters(
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, expected_n_cluster_two_sided",
     [
-        (1, 0, 63),
-        (1, 20, 25),
-        (0.5, 0, 81),
-        (0.5, 20, 50),
+        (1, 0, 58),
+        (1, 20, 40),
+        (0.5, 0, 94),
+        (0.5, 20, 70),
     ],
 )
 def test_get_clusters_table_surface_real_data(
