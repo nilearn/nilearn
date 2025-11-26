@@ -219,9 +219,9 @@ def get_clusters_table(
     stat_img,
     stat_threshold,
     cluster_threshold=0,
-    two_sided=False,
+    two_sided: bool = False,
     min_distance=8.0,
-    return_label_maps=False,
+    return_label_maps: bool = False,
 ):
     """Create pandas dataframe with img cluster statistics.
 
@@ -361,7 +361,7 @@ def get_clusters_table(
     )
 
 
-def _get_clusters_table_surface(stat_img, return_label_maps=False):
+def _get_clusters_table_surface(stat_img, return_label_maps: bool = False):
     cols = [
         "Cluster ID",
         "Hemisphere",
@@ -412,7 +412,7 @@ def _get_clusters_table_surface(stat_img, return_label_maps=False):
 
     label_maps = []
     if return_label_maps:
-        label_maps = new_img_like(stat_img, data)
+        label_maps = [new_img_like(stat_img, data)]
 
     return (result_table, label_maps) if return_label_maps else result_table
 
@@ -421,9 +421,9 @@ def _get_clusters_table_volume(
     stat_img,
     stat_threshold,
     cluster_threshold=0,
-    two_sided=False,
+    two_sided: bool = False,
     min_distance=8.0,
-    return_label_maps=False,
+    return_label_maps: bool = False,
 ):
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
 

@@ -403,20 +403,26 @@ def test_get_clusters_table_return_label_maps(simple_stat_img):
     ],
 )
 def test_get_clusters_table_not_modifying_stat_image(
-    simple_stat_img,
+    affine_eye,
+    shape,
     stat_threshold,
     cluster_threshold,
     two_sided,
     expected_n_cluster,
 ):
     """Make sure original image is not changed."""
-    data_orig = get_data(simple_stat_img).copy()
+    data = np.zeros(shape)
+    data[2:4, 5:7, 6:8] = 5.0
+    data[0:3, 0:3, 0:3] = 6.0
+
+    stat_img = Nifti1Image(data, affine_eye)
+    data_orig = get_data(stat_img).copy()
 
     clusters_table = get_clusters_table(
-        simple_stat_img,
+        stat_img,
         stat_threshold=stat_threshold,
         cluster_threshold=cluster_threshold,
         two_sided=two_sided,
     )
-    assert np.allclose(data_orig, get_data(simple_stat_img))
+    assert np.allclose(data_orig, get_data(stat_img))
     assert len(clusters_table) == expected_n_cluster
