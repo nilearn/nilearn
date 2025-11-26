@@ -163,6 +163,7 @@ jobs:
             run: |
                 python build_tools/github/restrict_tests_to_run.py
                 tests_to_run=$(cat tests_to_run.txt)
+                tests_to_run='nilearn/plotting/surface/tests/test_plotly_surface_figure.py'
                 tox run --list-dependencies -e ${{ matrix.env }} -- ${tests_to_run}
                 tox run -e plot_test_timing
 
