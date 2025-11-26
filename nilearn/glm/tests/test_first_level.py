@@ -104,6 +104,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+@pytest.mark.slow
 def test_glm_fit_invalid_mask_img(shape_4d_default):
     """Raise error when invalid mask are passed to FirstLevelModel."""
     rk = 3
