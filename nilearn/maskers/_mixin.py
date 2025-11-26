@@ -390,7 +390,7 @@ def _update_defaults(base_dict: dict, update_dict: dict):
     return new_dict
 
 
-class _MaskerReportMixin(ReportMixin):
+class MaskerReportMixin(ReportMixin):
     """A mixin class to be used with classes that require reporting
     functionality.
 
@@ -431,7 +431,7 @@ class _MaskerReportMixin(ReportMixin):
         # sets implementing class _REPORT_DEFAULTS
         # updating the base class value with implementing class value
         cls._REPORT_DEFAULTS = _update_defaults(
-            _MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
+            MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
 
     def generate_report(self, title: str | None = None):
