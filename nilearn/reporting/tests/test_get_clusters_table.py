@@ -151,12 +151,18 @@ def test_get_clusters_table(
         (4, 0, 2),
         (4, 2, 1),
         (6, 0, 0),
+        (-4, 0, 2),
+        (-4, 2, 0),
+        (-6, 0, 0),
     ],
 )
 def test_get_clusters_table_surface(
     surf_img_1d, stat_threshold, cluster_threshold, expected_n_cluster
 ):
-    """Test n_clusters detected."""
+    """Test n_clusters detected.
+
+    Also check negative thresholds for one sided.
+    """
     surf_img_1d.data.parts["left"] = np.asarray([5, 5, 5, -5])
     surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5, -5])
     stat_img = surf_img_1d
@@ -357,6 +363,28 @@ def test_get_clusters_table_negative_threshold(shape, affine_eye):
     # sanity check that any sign flip done by get_clusters_table
     # leaves the original data untouched.
     assert_array_equal(stat_img.get_fdata(), data_orig)
+
+
+def test_get_clusters_table_negative_threshold_one_sided(
+    simple_stat_img, surf_img_1d
+):
+    """Check that one sided negative thresholds errs when two_sided=True."""
+    with pytest.raises(
+        ValueError, match='"threshold" should not be a negative'
+    ):
+        get_clusters_table(
+            surf_img_1d,
+            stat_threshold=-1,
+            two_sided=True,
+        )
+    with pytest.raises(
+        ValueError, match='"threshold" should not be a negative'
+    ):
+        get_clusters_table(
+            simple_stat_img,
+            stat_threshold=-1,
+            two_sided=True,
+        )
 
 
 def test_smoke_get_clusters_table_filename(tmp_path, simple_stat_img):
