@@ -567,7 +567,6 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
-
     return model._make_glm_report(
         contrasts=contrasts,
         first_level_contrast=first_level_contrast,
@@ -585,19 +584,3 @@ def make_glm_report(
         report_dims=report_dims,
     )
 
-
-def _insert_figure_partial(
-    engine, content, displayed_maps, unique_id: str
-) -> str:
-    env = return_jinja_env()
-
-    tpl = env.get_template("html/maskers/partials/figure.jinja")
-
-    if not isinstance(content, list):
-        content = [content]
-    return tpl.render(
-        engine=engine,
-        content=content,
-        displayed_maps=displayed_maps,
-        unique_id=unique_id,
-    )
