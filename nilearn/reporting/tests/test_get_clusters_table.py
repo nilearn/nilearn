@@ -301,6 +301,14 @@ def test_get_clusters_table_surface_min_distance(surf_img_1d, simple_stat_img):
     assert len(w) == 0
 
 
+def test_get_clusters_table_negative_min_distance_error(simple_stat_img):
+    """Check min_distance cannot be negative."""
+    with pytest.raises(ValueError, match="'min_distance' must be positive"):
+        get_clusters_table(
+            simple_stat_img, stat_threshold=0.1, min_distance=-4
+        )
+
+
 def test_get_clusters_table_negative_threshold(shape, affine_eye):
     """Check that one sided negative thresholds are handled well."""
     data = np.zeros(shape)
