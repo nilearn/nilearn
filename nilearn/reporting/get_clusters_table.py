@@ -346,6 +346,8 @@ def get_clusters_table(
             return_label_maps=return_label_maps,
         )
 
+    # TODO
+    # add test
     parameters = dict(**inspect.signature(get_clusters_table).parameters)
     if parameters["min_distance"].default != 8.0:
         warnings.warn(
@@ -369,6 +371,7 @@ def _get_clusters_table_surface(
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = False,
     return_label_maps: bool = False,
+    offset=1,
 ):
     cols = [
         "Cluster ID",
@@ -377,7 +380,6 @@ def _get_clusters_table_surface(
         "Cluster Size (vertices)",
     ]
 
-    offset = 1
     data = {}
     all_clusters = []
     label_maps = []
@@ -412,7 +414,7 @@ def _get_clusters_table_surface(
             )
             clusters = clusters[cols]
 
-            offset = len(clusters)
+            offset += len(clusters)
 
             data[hemi] = labels
 
@@ -436,13 +438,29 @@ def _get_clusters_table_surface(
                 cluster_threshold=cluster_threshold,
                 two_sided=False,
                 return_label_maps=True,
+                offset=offset,
             )
+
+            offset += len(clusters)
 
             all_clusters.append(clusters)
 
             label_maps.append(label_map[0])
 
     result_table = pd.concat(all_clusters, ignore_index=True)
+
+    # TODO
+    # # If the stat threshold is too high
+    # # simply return an empty dataframe
+    # if np.sum(binarized) == 0:
+    #     warnings.warn(
+    #         "Attention: No clusters "
+    #         f"with stat {'higher' if sign == 1 else 'lower'} "
+    #         f"than {stat_threshold * sign}",
+    #         category=UserWarning,
+    #         stacklevel=find_stack_level(),
+    #     )
+    #     continue
 
     if return_label_maps:
         return (result_table, label_maps)
@@ -458,6 +476,8 @@ def _get_clusters_table_volume(
     min_distance: float | int | np.floating | np.integer = 8.0,
     return_label_maps: bool = False,
 ):
+    # TODO
+    # add test
     if min_distance <= 0:
         raise ValueError("'min_distance' must be positive.")
 
@@ -485,9 +505,11 @@ def _get_clusters_table_volume(
 
     clusters_found = False
     signs = [1, -1] if two_sided else [1]
-    rows = []
+    rows: list = []
 
     for sign in signs:
+        offset = len(rows)
+
         # Flip map if necessary
         temp_stat_map = stat_map * sign
 
@@ -564,7 +586,7 @@ def _get_clusters_table_volume(
             for subpeak in range(n_subpeaks):
                 if subpeak == 0:
                     row = [
-                        c_id + 1,
+                        c_id + offset + 1,
                         subpeak_xyz[subpeak, 0],
                         subpeak_xyz[subpeak, 1],
                         subpeak_xyz[subpeak, 2],
@@ -574,7 +596,9 @@ def _get_clusters_table_volume(
                 else:
                     # Subpeak naming convention is cluster num+letter:
                     # 1a, 1b, etc
-                    sp_id = f"{c_id + 1}{ascii_lowercase[subpeak - 1]}"
+                    sp_id = (
+                        f"{c_id + offset + 1}{ascii_lowercase[subpeak - 1]}"
+                    )
                     row = [
                         sp_id,
                         subpeak_xyz[subpeak, 0],
