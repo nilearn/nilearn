@@ -130,31 +130,17 @@ def test_get_clusters_table(
 
 
 @pytest.mark.parametrize(
-    (
-        "stat_threshold, cluster_threshold, two_sided, "
-        "expected_n_cluster_left, expected_n_cluster_right"
-    ),
+    "stat_threshold, cluster_threshold, expected_n_cluster",
     [
-        (4, 2, False, 1, 0),
-        (4, 0, False, 1, 1),
-        (4, 0, True, 1, 1),
-        (4, 2, True, 1, 1),
-        (6, 0, True, 0, 0),
-        (6, 0, False, 0, 0),
+        (4, 2, 1),
+        (4, 0, 2),
+        (6, 0, 0),
     ],
 )
 def test_get_clusters_table_surface(
-    surf_img_1d,
-    stat_threshold,
-    cluster_threshold,
-    two_sided,
-    expected_n_cluster_left,
-    expected_n_cluster_right,
+    surf_img_1d, stat_threshold, cluster_threshold, expected_n_cluster
 ):
-    """Test several combination of input parameters.
-
-    Do some light checks on the label image output.
-    """
+    """Test n_clusters detected."""
     surf_img_1d.data.parts["left"] = np.asarray([5, 5, 5, -5])
     surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5, -5])
     stat_img = surf_img_1d
@@ -163,7 +149,50 @@ def test_get_clusters_table_surface(
         stat_img,
         stat_threshold=stat_threshold,
         cluster_threshold=cluster_threshold,
-        two_sided=two_sided,
+        return_label_maps=True,
+    )
+
+    assert len(clusters_table) == expected_n_cluster
+
+    assert isinstance(label_maps, list)
+    assert all(isinstance(x, SurfaceImage) for x in label_maps)
+    assert len(label_maps) == 1
+
+    # label_maps should have the correct n_cluster + 1 for background
+    assert (
+        np.unique(get_surface_data(label_maps[0])).size
+        == expected_n_cluster + 1
+    )
+
+
+@pytest.mark.parametrize(
+    (
+        "stat_threshold, cluster_threshold, "
+        "expected_n_cluster_left, expected_n_cluster_right"
+    ),
+    [
+        (4, 0, 1, 1),
+        (4, 2, 1, 1),
+        (6, 0, 0, 0),
+    ],
+)
+def test_get_clusters_table_surface_two_sided(
+    surf_img_1d,
+    stat_threshold,
+    cluster_threshold,
+    expected_n_cluster_left,
+    expected_n_cluster_right,
+):
+    """Test n_clusters detected with two sided."""
+    surf_img_1d.data.parts["left"] = np.asarray([5, 5, 5, -5])
+    surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5, -5])
+    stat_img = surf_img_1d
+
+    clusters_table, label_maps = get_clusters_table(
+        stat_img,
+        stat_threshold=stat_threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=True,
         return_label_maps=True,
     )
 
@@ -305,7 +334,7 @@ def test_get_clusters_table_nans(shape, affine_eye):
     assert len(cluster_table) == 1
 
 
-def test_get_clusters_table_more(shape, affine_eye):
+def test_get_clusters_table_subpeaks(shape, affine_eye):
     """Test subpeaks are handled correctly for len(subpeak_vals) > 1."""
     # 1 cluster and two subpeaks, 10 voxels apart.
     data = np.zeros(shape)
@@ -315,7 +344,10 @@ def test_get_clusters_table_more(shape, affine_eye):
     stat_img = Nifti1Image(data, affine_eye)
 
     cluster_table = get_clusters_table(
-        stat_img, 0, 0, min_distance=9, two_sided=True
+        stat_img,
+        0,
+        0,
+        min_distance=9,
     )
     assert len(cluster_table) == 2
     assert 1 in cluster_table["Cluster ID"].to_numpy()

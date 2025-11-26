@@ -328,6 +328,15 @@ def get_clusters_table(
 
     is_volume = not isinstance(stat_img, SurfaceImage)
 
+    stat_img = threshold_img(
+        img=stat_img,
+        threshold=stat_threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=two_sided,
+        mask_img=None,
+        copy=True,
+    )
+
     if is_volume:
         return _get_clusters_table_volume(
             stat_img,
@@ -419,15 +428,6 @@ def _get_clusters_table_volume(
     cols = ["Cluster ID", "X", "Y", "Z", "Peak Stat", "Cluster Size (mm3)"]
 
     label_maps = []
-
-    stat_img = threshold_img(
-        img=stat_img,
-        threshold=stat_threshold,
-        cluster_threshold=cluster_threshold,
-        two_sided=two_sided,
-        mask_img=None,
-        copy=True,
-    )
 
     # check that stat_img is niimg-like object and 3D
     stat_img = check_niimg_3d(stat_img)
