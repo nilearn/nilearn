@@ -1,3 +1,4 @@
+import warnings
 from copy import deepcopy
 
 import numpy as np
@@ -5,6 +6,7 @@ import pandas as pd
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_array_equal
+from sklearn.utils.estimator_checks import ignore_warnings
 
 from nilearn.datasets import load_fsaverage_data
 from nilearn.image import get_data
@@ -85,7 +87,8 @@ def test_local_max_donut(shape, affine_eye):
     data[5, 5, :] = [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0]
     data[6, 5, :] = [0, 0, 0, 0, 1, 1, 1, 0, 0, 0, 0]
 
-    ijk, vals = _local_max(data, affine_eye, min_distance=9)
+    with pytest.warns(UserWarning, match="falls outside of the cluster body."):
+        ijk, vals = _local_max(data, affine_eye, min_distance=9)
     assert np.array_equal(ijk, np.array([[4.0, 5.0, 5.0]]))
     assert np.array_equal(vals, np.array([1]))
 
@@ -112,6 +115,7 @@ def test_cluster_nearest_neighbor(shape):
     assert np.array_equal(nbrs, np.array([[4, 7, 5], [4, 5, 5], [4, 2, 6]]))
 
 
+@ignore_warnings
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, two_sided, expected_n_cluster",
     [
@@ -140,6 +144,7 @@ def test_get_clusters_table(
     validate_clusters_table(clusters_table, expected_n_cluster)
 
 
+@ignore_warnings
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, expected_n_cluster",
     [
@@ -174,6 +179,7 @@ def test_get_clusters_table_surface(
     assert cluster_labels.size == expected_n_cluster + 1
 
 
+@ignore_warnings
 @pytest.mark.parametrize(
     (
         "stat_threshold, cluster_threshold, "
@@ -281,6 +287,18 @@ def test_get_clusters_table_surface_real_data(
         cluster_threshold,
         expected_n_cluster_two_sided,
     )
+
+
+def test_get_clusters_table_surface_min_distance(surf_img_1d, simple_stat_img):
+    """Change min_distance parameter raise warning when using surface data."""
+    with pytest.warns(
+        UserWarning, match="'min_distance' parameter is not used"
+    ):
+        get_clusters_table(surf_img_1d, stat_threshold=0.1, min_distance=5)
+
+    with warnings.catch_warnings(record=True) as w:
+        get_clusters_table(simple_stat_img, stat_threshold=0.1, min_distance=5)
+    assert len(w) == 0
 
 
 def test_get_clusters_table_negative_threshold(shape, affine_eye):
@@ -404,6 +422,7 @@ def test_get_clusters_table_return_label_maps(simple_stat_img):
     assert np.sum(label_map_negative_data[4:6, 7:9, 8:10] != 0) == 8
 
 
+@ignore_warnings
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, two_sided, expected_n_cluster",
     [

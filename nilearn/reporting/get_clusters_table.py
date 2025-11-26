@@ -346,10 +346,8 @@ def get_clusters_table(
             return_label_maps=return_label_maps,
         )
 
-    # TODO
-    # add test
     parameters = dict(**inspect.signature(get_clusters_table).parameters)
-    if parameters["min_distance"].default != 8.0:
+    if min_distance != parameters["min_distance"].default:
         warnings.warn(
             "The 'min_distance' parameter is not used for surface data "
             "and will be ignored.",
