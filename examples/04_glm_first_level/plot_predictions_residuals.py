@@ -88,7 +88,7 @@ table = get_clusters_table(
     z_map, stat_threshold=threshold, cluster_threshold=20
 )
 table.set_index("Cluster ID", drop=True)
-print(table.head())
+print(table)
 
 coords = table.loc[range(1, 7), ["X", "Y", "Z"]].to_numpy()
 
@@ -96,6 +96,11 @@ masker = NiftiSpheresMasker(coords)
 real_timeseries = masker.fit_transform(fmri_img)
 predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
 
+# %%
+# Let's have a look at the report to make sure
+# the spheres are well placed.
+report = masker.generate_report()
+report
 
 # %%
 # Plot predicted and actual time series for 6 most significant clusters
