@@ -43,12 +43,14 @@ def data_masked(data_pos_neg):
 
 def test_get_colorbar_and_data_ranges_error():
     """Tests for expected errors in get_colorbar_and_data_ranges."""
+    vmin = 0
+    vmax = 1.0
     # incompatible vmin and vmax if symmetric_cbar is True
-    with pytest.raises(ValueError, match="vmin must be equal to -vmax"):
+    with pytest.warns(UserWarning, match=f"Specified {vmin=} and {vmax=}"):
         get_colorbar_and_data_ranges(
             data_pos_neg,
-            vmin=0,
-            vmax=1.0,
+            vmin=vmin,
+            vmax=vmax,
             symmetric_cbar=True,
         )
 

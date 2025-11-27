@@ -5,6 +5,7 @@ See the  maintenance page of our documentation for more information
 https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-for-plotting-tests
 """
 
+import matplotlib as mpl
 import numpy as np
 import pandas as pd
 import pytest
@@ -34,6 +35,7 @@ from nilearn.plotting import (
     plot_glass_brain,
     plot_img,
     plot_img_comparison,
+    plot_img_on_surf,
     plot_matrix,
     plot_prob_atlas,
     plot_roi,
@@ -92,6 +94,7 @@ def test_plot_functions_annotate(plot_func, img_3d_mni):
     return plot_func(img_3d_mni, annotate=False)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize(
     "display_mode", ["x", "y", "z", "yx", "xz", "yz", "ortho"]
@@ -272,6 +275,7 @@ def test_plot_connectome_node_and_edge_kwargs(adjacency, node_coords):
 
 
 @pytest.mark.mpl_image_compare(tolerance=5)
+@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize(
     "view",
@@ -340,6 +344,7 @@ def test_plot_surf_surface_plotly(plot_func, view, hemi):
 
 
 @pytest.mark.mpl_image_compare(tolerance=5)
+@mpl.rc_context({"axes.autolimit_mode": "data"})
 @pytest.mark.parametrize("plot_func", SURFACE_FUNCS)
 @pytest.mark.parametrize("colorbar", [True, False])
 @pytest.mark.parametrize("cbar_tick_format", ["auto", "%f"])
@@ -387,6 +392,32 @@ def test_plot_surf_surface_colorbar_plotly(
         colorbar=colorbar,
         cbar_tick_format=cbar_tick_format,
     )
+
+
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("bg_on_data", [True, False])
+@pytest.mark.parametrize("symmetric_cmap", [True, False])
+@pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.parametrize("title", [None, "Foo"])
+def test_plot_img_on_surf(bg_on_data, symmetric_cmap, colorbar, title):
+    stat_img = load_sample_motor_activation_image()
+    fig, _ = plot_img_on_surf(
+        stat_map=stat_img,
+        views=[
+            "lateral",
+            "medial",
+            "dorsal",
+            "ventral",
+            "anterior",
+            "posterior",
+        ],
+        hemispheres=["left", "right"],
+        bg_on_data=bg_on_data,
+        symmetric_cmap=symmetric_cmap,
+        colorbar=colorbar,
+        title=title,
+    )
+    return fig
 
 
 # ---------------------- design matrix plotting -------------------------------
