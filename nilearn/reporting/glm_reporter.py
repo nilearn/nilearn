@@ -1,3 +1,12 @@
+"""
+Legacy module to create an HTML report using a fitted GLM & contrasts.
+
+Functions
+---------
+make_glm_report(model, contrasts):
+    Creates an HTMLReport Object which can be viewed or saved as a report.
+"""
+
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
 from nilearn.reporting.html_report import HTMLReport

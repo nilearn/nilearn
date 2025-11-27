@@ -1,12 +1,5 @@
 """
-Functionality to create an HTML report using a fitted GLM & contrasts.
-
-Functions
----------
-
-make_glm_report(model, contrasts):
-    Creates an HTMLReport Object which can be viewed or saved as a report.
-
+Utility functions to create an HTML report using a fitted GLM & contrasts.
 """
 
 import warnings
