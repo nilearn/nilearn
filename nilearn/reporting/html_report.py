@@ -155,6 +155,9 @@ class ReportMixin:
         "has_plotting_engine": True,
     }
 
+    # report body template name for the estimator
+    _template_name = ""
+
     def __init_subclass__(cls):
         super().__init_subclass__()
         # sets implementing class _REPORT_DEFAULTS
