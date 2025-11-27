@@ -5,13 +5,9 @@ import numpy as np
 import pandas as pd
 import pytest
 from nibabel import Nifti1Image
+from scipy.signal import get_window
 
 from nilearn import image
-from nilearn._utils.data_gen import (
-    generate_fake_fmri,
-    generate_labeled_regions,
-    generate_maps,
-)
 from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
@@ -19,6 +15,7 @@ from nilearn.datasets.tests._testing import (
     request_mocker,  # noqa: F401
     temp_nilearn_data_dir,  # noqa: F401
 )
+from nilearn.masking import unmask
 from nilearn.surface import (
     InMemoryMesh,
     PolyMesh,
@@ -460,6 +457,54 @@ def _n_regions():
     return 9
 
 
+def generate_regions_ts(n_features, n_regions):
+    """Generate some regions as timeseries.
+
+    adapted from nilearn._utils.data_gen.generate_regions_ts
+
+    Parameters
+    ----------
+    n_features : :obj:`int`
+        Number of features.
+
+    n_regions : :obj:`int`
+        Number of regions.
+
+    Returns
+    -------
+    regions : :obj:`numpy.ndarray`
+        Regions, represented as signals.
+        shape (n_features, n_regions)
+
+    """
+    rand_gen = _rng()
+    window = "boxcar"
+    overlap = 0
+
+    assert n_features > n_regions
+
+    # Compute region boundaries indices.
+    # Start at 1 to avoid getting an empty region
+    boundaries = np.zeros(n_regions + 1)
+    boundaries[-1] = n_features
+    boundaries[1:-1] = rand_gen.permutation(np.arange(1, n_features))[
+        : n_regions - 1
+    ]
+    boundaries.sort()
+
+    regions = np.zeros((n_regions, n_features), order="C")
+    overlap_end = int((overlap + 1) / 2.0)
+    overlap_start = int(overlap / 2.0)
+    for n in range(len(boundaries) - 1):
+        start = int(max(0, boundaries[n] - overlap_start))
+        end = int(min(n_features, boundaries[n + 1] + overlap_end))
+        win = get_window(window, end - start)
+        win /= win.mean()  # unity mean
+        regions[n, start:end] = win
+
+    return regions
+
+
 @pytest.fixture
 def n_regions():
     """Return a default number of regions for maps."""
@@ -467,36 +512,58 @@ def n_regions():
 
 
 def _img_maps(n_regions=None):
-    """Generate a default map image."""
+    """Generate a default map image.
+
+    adapted from nilearn._utils.data_gen.generate_maps
+    """
     if n_regions is None:
         n_regions = _n_regions()
-    return generate_maps(
-        shape=_shape_3d_default(), n_regions=n_regions, affine=_affine_eye()
-    )[0]
+
+    border = 1
+
+    mask = np.zeros(_shape_3d_default(), dtype=np.int8)
+    mask[border:-border, border:-border, border:-border] = 1
+    ts = generate_regions_ts(mask.sum(), n_regions)
+    mask_img = Nifti1Image(mask, _affine_eye())
+    return unmask(ts, mask_img)
 
 
 @pytest.fixture
-def img_maps():
+def img_maps(n_regions):
     """Generate fixture for default map image."""
-    return _img_maps()
+    return _img_maps(n_regions)
 
 
-def _img_labels():
+def _img_labels(n_regions=None):
     """Generate fixture for default label image.
+
+    adapted from nilearn._utils.data_gen.generate_labeled_regions
 
     DO NOT CHANGE n_regions (some tests expect this value).
     """
-    return generate_labeled_regions(
-        shape=_shape_3d_default(),
-        affine=_affine_eye(),
-        n_regions=_n_regions(),
-    )
+    shape = _shape_3d_default()
+    n_voxels = shape[0] * shape[1] * shape[2]
+
+    if n_regions is None:
+        n_regions = _n_regions()
+
+    n_regions += 1
+    labels = range(n_regions)
+
+    regions = generate_regions_ts(n_voxels, n_regions)
+    # replace weights with labels
+    for n, row in zip(labels, regions, strict=False):
+        row[row > 0] = n
+    data = np.zeros(shape, dtype="int32")
+    data[np.ones(shape, dtype=bool)] = regions.sum(axis=0).T
+
+    return Nifti1Image(data, _affine_eye())
 
 
 @pytest.fixture
-def img_labels():
+def img_labels(n_regions):
     """Generate fixture for default label image."""
-    return _img_labels()
+    return _img_labels(n_regions)
 
 
 @pytest.fixture
@@ -506,11 +573,28 @@ def length():
 
 
 @pytest.fixture
-def img_fmri(shape_3d_default, affine_eye, length):
-    """Return a default length for fmri images."""
-    return generate_fake_fmri(
-        shape_3d_default, affine=affine_eye, length=length
-    )[0]
+def img_fmri(shape_3d_default, affine_eye, length, rng) -> Nifti1Image:
+    """Return a default length for fmri images.
+
+    adapted from nilearn._utils.data_gen.generate_fmri_image
+    """
+    full_shape = (*shape_3d_default, length)
+    fmri = np.zeros(full_shape)
+
+    # Fill central voxels timeseries with random signals
+    width = [s // 2 for s in shape_3d_default]
+    shift = [s // 4 for s in shape_3d_default]
+
+    signals = rng.integers(256, size=([*width, length]))
+
+    fmri[
+        shift[0] : shift[0] + width[0],
+        shift[1] : shift[1] + width[1],
+        shift[2] : shift[2] + width[2],
+        :,
+    ] = signals
+
+    return Nifti1Image(fmri, affine_eye)
 
 
 # ------------------------ SURFACE ------------------------#

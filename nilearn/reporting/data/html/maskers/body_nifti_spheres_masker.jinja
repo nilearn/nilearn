@@ -16,18 +16,18 @@
       >
         <button
           class="btn pure-u-1-3 text-center rounded-2"
-          id="prev-btn-{{ unique_id }}"
+          id="prev-btn-UUID-{{ unique_id }}"
           style="height: 70px"
         >
           Previous Sphere
         </button>
         <!-- the content of the h4 will be injected by javascript -->
         <h4 class="pure-u-1-4 py-3 text-center" style="margin: 0px">
-          <span id="comp-{{ unique_id }}"></span>
+          <span id="comp-UUID-{{ unique_id }}"></span>
         </h4>
         <button
           class="btn pure-u-1-3 text-center rounded-2"
-          id="next-btn-{{ unique_id }}"
+          id="next-btn-UUID-{{ unique_id }}"
           style="height: 70px"
         >
           Next Sphere
@@ -36,7 +36,7 @@
 
       <!-- glass brain with all spheres -->
       <img
-        id="carousel-obj-{{ unique_id }}-0"
+        id="carousel-obj-UUID-{{ unique_id }}-0"
         class="pure-img"
         width="100%"
         style="display: block"
@@ -47,7 +47,7 @@
       <!-- individual spheres -->
       {% for map in range(1, n_displayed_maps)|list %}
       <img
-        id="carousel-obj-{{ unique_id }}-{{ map }}"
+        id="carousel-obj-UUID-{{ unique_id }}-{{ map }}"
         class="pure-img"
         width="100%"
         style="display: none"
@@ -100,12 +100,11 @@
       </details>
       {% endif %}
 
-      {% if parameters %}
-      <div class="table-container">{{ parameters|safe }}</div>
-      {% endif %}
     </div>
   </div>
 </div>
+
+{% include 'html/maskers/partials/parameters.jinja' %}
 
 {% include 'html/maskers/partials/carousel.jinja' %}
 
