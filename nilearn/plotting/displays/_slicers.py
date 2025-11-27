@@ -508,21 +508,14 @@ class BaseSlicer:
             if transparency is None or isinstance(transparency, (float, int)):
                 transparency_2d = transparency
 
-            try:
                 data_2d = display_ax.transform_to_2d(data, affine)
                 if isinstance(transparency, np.ndarray):
                     transparency_2d = display_ax.transform_to_2d(
                         transparency, transparency_affine
                     )
-            except IndexError:
-                raise ValueError(
-                    "The requested cut coordinate is out "
-                    "of bounds for the image. "
-                    "Please check that your cut_coords"
-                    " are within the image field of view."
-                )
-            data_2d_list.append(data_2d)
-            transparency_list.append(transparency_2d)
+
+                data_2d_list.append(data_2d)
+                transparency_list.append(transparency_2d)
 
         if kwargs.get("vmin") is None:
             kwargs["vmin"] = np.ma.min(
