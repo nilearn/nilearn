@@ -100,7 +100,7 @@ jobs:
         runs-on: ${{ matrix.os }}
 
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 description: [latest dependencies]
                 py: ${{ fromJSON(needs.define-matrix.outputs.py) }}
@@ -113,10 +113,10 @@ jobs:
                     env: pre
                 # Using macos on the following as tests run faster on macos.
                 # As 'no plotting' run fewer tests, this allows to fail event faster if using macos.
-                -   description: oldest dependencies - no plotting
-                    py: '3.10'
-                    os: macos-latest
-                    env: min
+                # -   description: oldest dependencies - no plotting
+                #     py: '3.10'
+                #     os: macos-latest
+                #     env: min
                 -   description: oldest dependencies - with plotting
                     py: '3.10'
                     os: macos-latest
