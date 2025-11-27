@@ -146,8 +146,10 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
 @fill_doc
 def check_feature_screening(
     screening_percentile,
-    mask_img, is_classification,
-    verbose=0,screening_n_voxels=None,
+    mask_img, 
+    is_classification,
+    screening_n_voxels=None,
+    verbose=0,
 ):
     """Check feature screening method.
 

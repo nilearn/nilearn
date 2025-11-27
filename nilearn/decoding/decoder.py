@@ -1147,7 +1147,9 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
 
     %(screening_percentile)s
     screening_n_voxels : int, optional
-        Number of voxels to select. Default is None.
+        Number of voxels to select. If `None, ``screening_percentile` is used.
+        If both are set, `screening_n_voxels` takes priority. 
+        Default is None.
 
 
     scoring : :obj:`str`, callable or None, default='roc_auc'
@@ -1321,7 +1323,9 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_percentile)s
     screening_n_voxels : int, optional
-        Number of voxels to select. Default is None.
+        Number of voxels to select. If `None, ``screening_percentile` is used.
+        If both are set, `screening_n_voxels` takes priority. 
+        Default is None.
 
     scoring : :obj:`str`, callable or None, optional. default='r2'
         The scoring strategy to use. See the scikit-learn documentation at
@@ -1490,7 +1494,9 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
 
     %(screening_percentile)s
     screening_n_voxels : int, optional
-        Number of voxels to select. Default is None.
+        Number of voxels to select. If `None, ``screening_percentile` is used.
+        If both are set, `screening_n_voxels` takes priority. 
+        Default is None.
 
     scoring : :obj:`str`, callable or None, default= 'r2'
 
@@ -1662,7 +1668,9 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         performed. A float according to a percentile of the highest
         scores.
     screening_n_voxels : int, optional
-        Number of voxels to select. Default is None.
+        Number of voxels to select. If `None, ``screening_percentile` is used.
+        If both are set, `screening_n_voxels` takes priority. 
+        Default is None.
 
     scoring : :obj:`str`, callable or None, optional. default='roc_auc'
         The scoring strategy to use. See the scikit-learn documentation at
