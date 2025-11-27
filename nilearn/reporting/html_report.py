@@ -420,7 +420,7 @@ def assemble_report(body: str, page_title: str) -> HTMLReport:
     )
 
 
-def is_notebook():
+def is_notebook() -> bool:
     """Detect if we are running in a notebook.
 
     From https://stackoverflow.com/questions/15411967/how-can-i-check-if-code-is-executed-in-the-ipython-notebook
