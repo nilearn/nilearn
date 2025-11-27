@@ -163,7 +163,9 @@ def plot_matrix(
     ----------
     mat : 2-D :class:`numpy.ndarray`
         Matrix to be plotted.
+
     %(title)s
+
     labels : :obj:`list`, or :class:`numpy.ndarray` of :obj:`str`,\
     or False, or None, default=None
         The label of each row and column. Needs to be the same
@@ -307,18 +309,21 @@ def plot_contrast_matrix(
     max_len = np.max([len(str(name)) for name in design_column_names])
 
     n_columns_design_matrix = len(design_column_names)
+    fig_width = max(0.4 * n_columns_design_matrix, 5)
+    fig_height = max(1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len, 3)
+
     if axes is None:
         _, axes = plt.subplots(
-            figsize=(
-                0.4 * n_columns_design_matrix,
-                1 + 0.5 * con_matrix.shape[0] + 0.04 * max_len,
-            ),
-            layout="constrained",
+            figsize=(fig_width, fig_height), layout="constrained"
         )
 
     maxval = np.max(np.abs(contrast_def))
     mat = axes.matshow(
-        con_matrix, aspect="equal", cmap="gray", vmin=-maxval, vmax=maxval
+        con_matrix,
+        aspect="equal",
+        cmap=DEFAULT_DIVERGING_CMAP,
+        vmin=-maxval,
+        vmax=maxval,
     )
 
     axes.set_label("conditions")
@@ -554,6 +559,8 @@ def plot_design_matrix_correlation(
         - ``"bwr"``
         - ``"RdBu_r"``
         - ``"seismic_r"``
+
+    %(colorbar)s
 
     %(output_file)s
 

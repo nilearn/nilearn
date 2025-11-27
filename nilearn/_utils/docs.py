@@ -231,6 +231,14 @@ docdict["clean_args_"] = docdict["clean_args"].replace(
     "clean_args_ : :obj:`dict`",
 )
 
+# cluster_threshold
+docdict["cluster_threshold"] = """
+    cluster_threshold : :obj:`int`, default=0
+        Cluster size threshold.
+        Sets of connected voxels / vertices (`clusters`)
+        with size smaller than this number will be removed.
+"""
+
 # cmap
 docdict["cmap"] = """
 cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
@@ -318,6 +326,26 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
 
 """
 
+
+# cross-validation
+cv = """
+cv : cross-validation generator, :obj:`int` or None, default={}
+    A cross-validation generator.
+    See: https://scikit-learn.org/stable/modules/cross_validation.html.
+    If None is passed, cv={} will be used.
+    It can be an integer, in which case it is the number of folds in a
+    KFold using :class:`~sklearn.model_selection.StratifiedKFold`
+    when groups is None in the ``fit`` method for this class.
+    If groups is specified but ``cv``
+    is not set to custom CV splitter, default is
+    :class:`~sklearn.model_selection.LeaveOneGroupOut`.
+"""
+docdict["cv10"] = cv.format(10, 10)
+docdict["cv30"] = cv.format(30, 30)
+docdict["cv8_5"] = cv.format(8, 5)
+docdict["cvNone_3"] = cv.format("None", 3)
+
+
 # data_dir
 docdict["debias"] = """
 debias : :obj:`bool`, default=False
@@ -366,6 +394,46 @@ display_mode : {"ortho", "tiled", "mosaic", "x", \
       multiple rows and columns
 
 """
+
+# displayed_maps
+docdict["displayed_maps"] = """
+displayed_maps : :obj:`int`, \
+                  :class:`~numpy.ndarray` or :obj:`list` of :obj:`int`, \
+                  or "all", default=10
+    Indicates which maps will be displayed in the HTML report.
+
+    - If ``"all"``: All maps will be displayed in the report.
+
+    .. code-block:: python
+
+        masker.generate_report("all")
+
+    .. warning:
+        If there are too many maps, this might be time and
+        memory consuming, and will result in very heavy
+        reports.
+
+    - If a :obj:`list` or :class:`~numpy.ndarray`:
+        This indicates the indices of the maps to be displayed in the report.
+        For example, the following code will generate a report with maps
+        6, 3, and 12, displayed in this specific order:
+
+    .. code-block:: python
+
+        masker.generate_report([6, 3, 12])
+
+    - If an :obj:`int`: This will only display the first n maps,
+        n being the value of the parameter. By default, the report
+        will only contain the first 10 maps. Example to display the
+        first 16 maps:
+
+    .. code-block:: python
+
+        masker.generate_report(16)
+"""
+docdict["displayed_spheres"] = docdict["displayed_maps"].replace(
+    "maps", "spheres"
+)
 
 # draw_cross
 docdict["draw_cross"] = """
@@ -717,7 +785,7 @@ docdict["max_iter10"] = verbose.format(10)
 docdict["max_iter50"] = verbose.format(50)
 docdict["max_iter100"] = verbose.format(100)
 docdict["max_iter1000"] = verbose.format(1000)
-docdict["max_iter1000"] = verbose.format(5000)
+docdict["max_iter5000"] = verbose.format(5000)
 
 # memory
 docdict["memory"] = """
@@ -1057,7 +1125,8 @@ smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
 
 # standardize
 standardize = """
-standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
+standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
+              default={}
     Strategy to standardize the signal:
 
     - ``'zscore_sample'``: The signal is z-scored.
@@ -1080,7 +1149,18 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
     - ``True``: The signal is z-scored (same as option `zscore`).
       Timeseries are shifted to zero mean and scaled to unit variance.
 
+      .. nilearn_deprecated:: 0.13.0dev
+
+        In nilearn version 0.15.0,
+        ``True`` will be replaced by  ``'zscore_sample'``.
+
     - ``False``: Do not standardize the data.
+
+      .. nilearn_deprecated:: 0.13.0dev
+
+        In nilearn version 0.15.0,
+        ``False`` will be replaced by ``None``.
+
 
 """
 # TODO (nilearn >= 0.14.0) update to ..versionchanged
@@ -1094,11 +1174,36 @@ deprecation_notice = """
 
 """
 
-docdict["standardize_false"] = standardize.format("False")
-# TODO (nilearn >= 0.14.0)
-# create a single  standardize_zscore_sample
-# with the updated deprecation notice
-docdict["standardize_true"] = standardize.format("True") + deprecation_notice
+# TODO (nilearn >= 0.15.0) update to ..versionchanged
+deprecation_notice_false_to_none = """
+
+    .. nilearn_deprecated:: 0.15.0dev
+
+        The default will be changed to ``None``
+        in version 0.15.0.
+
+"""
+
+# TODO (nilearn >= 0.15.0) update to ..versionchanged
+deprecation_notice_true_to_zscore_sample = """
+
+    .. nilearn_deprecated:: 0.15.0dev
+
+        The default will be changed to ``'zscore_sample'``
+        in version 0.15.0.
+
+"""
+
+docdict["standardize_false"] = (
+    standardize.format("False") + deprecation_notice_false_to_none
+)
+# TODO (nilearn >= 0.14.0 and 0.15.0)
+# adapt the deprecation notices
+docdict["standardize_true"] = (
+    standardize.format("True")
+    + deprecation_notice
+    + deprecation_notice_true_to_zscore_sample
+)
 docdict["standardize_zscore"] = (
     standardize.format("zscore") + deprecation_notice
 )
@@ -1111,7 +1216,7 @@ standardize_confounds : :obj:`bool`, default=True
     their mean is put to 0 and their variance to 1 in the time dimension.
 """
 
-# standardize_confounds
+# strategy
 docdict["strategy"] = """
 strategy : :obj:`str`, default="mean"
     The name of a valid function to reduce the region with.
@@ -1154,9 +1259,9 @@ t_r : :obj:`float` or :obj:`int` or None, default=None
 
 # target_affine
 docdict["target_affine"] = """
-target_affine : :class:`numpy.ndarray` or None, default=None
+target_affine : 3x3 or a 4x4 array-like, or None, \
+       default=None
     If specified, the image is resampled corresponding to this new affine.
-    `target_affine` can be a 3x3 or a 4x4 matrix.
 """
 
 # target_shape

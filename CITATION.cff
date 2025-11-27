@@ -535,6 +535,11 @@ authors:
     family-names: Wang
     website: https://michellewang.github.io
     affiliation: Origami lab, McGill University, Montréal, Canada
+  - given-names: Milton
+    family-names: Camacho
+    website: https://github.com/miltoncamacho
+    affiliation: University of Calgary, Calgary, Alberta, Canada
+    email: miltoncamachoicc@gmail.com
   - given-names: Mohammad
     family-names: Torabi
     website: https://github.com/mtorabi59
@@ -658,6 +663,7 @@ authors:
     family-names: Jepegnanam
     website: https://github.com/rohan3412
     affiliation: Cognitive Neuroscience & Clinical Phenomenology Lab, Christian Medical College, Vellore, India
+    orcid: https://orcid.org/0009-0000-6982-3038
   - given-names: Ronald
     family-names: Phlypo
     website: https://github.com/rphlypo

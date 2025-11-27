@@ -16,8 +16,6 @@ To expand the functionality of check_params you need to:
     to pair the name of the parameter / attribute with its expected type.
 """
 
-from __future__ import annotations
-
 import pathlib
 from collections.abc import Callable
 from pathlib import Path
@@ -33,6 +31,7 @@ Annotate: TypeAlias = bool
 BgOnData: TypeAlias = bool
 BorderSize: TypeAlias = int | np.integer
 ColorBar: TypeAlias = bool
+ClusterThreshold: TypeAlias = int | np.integer
 Connected: TypeAlias = bool
 CopyHeader: TypeAlias = bool
 DType: TypeAlias = DTypeLike | None
@@ -66,9 +65,11 @@ Resolution: TypeAlias = int | np.integer | None
 Resume: TypeAlias = bool
 ScreeningPercentile: TypeAlias = float | int | np.floating | np.integer | None
 SmoothingFwhm: TypeAlias = float | int | np.floating | np.integer | None
-Standardize: TypeAlias = Literal["zscore", "zscore_sample", "psc", True, False]
+Standardize: TypeAlias = Literal[
+    "zscore", "zscore_sample", "psc", True, False, None
+]
 StandardizeConfounds: TypeAlias = bool
-TargetAffine: TypeAlias = ndarray | list | None
+TargetAffine: TypeAlias = ndarray | list | tuple | None
 
 # Note that this is usable as for static type checking,
 # as type checkers will complain

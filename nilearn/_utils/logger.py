@@ -154,7 +154,9 @@ def find_stack_level() -> int:
     # list of stack frames to skip
     skip_list = [
         Path("sklearn") / "utils" / "_set_output.py",
+        Path("sklearn") / "base.py",
         Path("joblib") / "memory.py",
+        Path("joblib") / "parallel.py",
     ]
 
     # https://stackoverflow.com/questions/17407119/python-inspect-stack-is-slow

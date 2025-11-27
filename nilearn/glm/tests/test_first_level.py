@@ -21,6 +21,7 @@ from numpy.testing import (
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
+import nilearn as nil
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
     basic_paradigm,
@@ -33,6 +34,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
+from nilearn._utils.helpers import is_windows_platform
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.contrasts import compute_fixed_effects
@@ -92,6 +94,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -161,7 +164,7 @@ def test_glm_fit_valid_mask_img(shape_4d_default):
     assert isinstance(z1, Nifti1Image)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_explicit_fixed_effects(shape_3d_default):
     """Test the fixed effects performed manually/explicitly."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3
@@ -221,7 +224,7 @@ def test_explicit_fixed_effects(shape_3d_default):
         compute_fixed_effects(contrasts, variance, mask, dofs=[100])
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_explicit_fixed_effects_without_mask(shape_3d_default):
     """Test the fixed effects performed manually/explicitly with no mask."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3
@@ -310,6 +313,7 @@ def test_glm_target_shape_affine(shape_3d_default, affine_eye):
     assert z_image.shape == (10, 11, 12)
 
 
+@pytest.mark.slow
 def test_high_level_glm_with_data_with_mask(shape_3d_default):
     """Test GLM can be run with mask."""
     shapes, rk = [(*shape_3d_default, 5)], 3
@@ -371,6 +375,7 @@ def test_fmri_inputs_type_data_smoke(tmp_path, shape_4d_default):
     )
 
 
+@pytest.mark.slow
 def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
     """Test processing of FMRI inputs with path, str for design matrix."""
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
@@ -423,6 +428,7 @@ def test_high_level_glm_null_contrasts(shape_3d_default):
     np.testing.assert_almost_equal(get_data(z1), get_data(z2))
 
 
+@pytest.mark.slow
 def test_high_level_glm_different_design_matrices():
     """Test can estimate a contrast when design matrices are different."""
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
@@ -538,6 +544,7 @@ def test_run_glm_ar1(rng):
     assert isinstance(results[labels[0]].model, ARModel)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_run_glm_ar3(rng):
     """Test run_glm with AR(3) noise model."""
     n, p, q = 33, 80, 10
@@ -577,6 +584,7 @@ def test_run_glm_errors(rng):
         run_glm(Y, X, "3ar")
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize(
     "ar_vals", [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]
 )
@@ -627,6 +635,7 @@ def test_glm_ar_estimates_errors(rng):
         _yule_walker(np.array(0.0), 2)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("random_state", [3, np.random.RandomState(42)])
 def test_glm_random_state(random_state):
     """Test that the random state is passed to the run_glm."""
@@ -728,7 +737,8 @@ def test_fmri_inputs_events_type(tmp_path):
     )
 
 
-def test_fmri_inputs_with_confounds():
+@pytest.mark.slow
+def test_fmri_inputs_with_confounds(tmp_path):
     """Test with confounds and, events."""
     n_timepoints = 10
     shapes = ((3, 4, 5, n_timepoints),)
@@ -744,6 +754,22 @@ def test_fmri_inputs_with_confounds():
     flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
         fmri_data,
         confounds=conf,
+        events=events,
+    )
+    assert "conf" in flm.design_matrices_[0]
+
+    # confounds as files are OK
+    conf.to_csv(tmp_path / "confounds.csv")
+    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        fmri_data,
+        confounds=str(tmp_path / "confounds.csv"),
+        events=events,
+    )
+    assert "conf" in flm.design_matrices_[0]
+
+    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        fmri_data,
+        confounds=tmp_path / "confounds.csv",
         events=events,
     )
     assert "conf" in flm.design_matrices_[0]
@@ -769,6 +795,37 @@ def test_fmri_inputs_with_confounds():
         events=events,
     )
     assert "confound_0" in flm.design_matrices_[0]
+
+
+def test_fmri_inputs_with_confounds_with_nan():
+    """Test with confounds and, events."""
+    confound_file = (
+        Path(nil.__file__).parent
+        / "interfaces"
+        / "fmriprep"
+        / "data"
+        / "test_desc-confounds_regressors.tsv"
+    )
+    confounds = pd.read_csv(confound_file, sep="\t")
+    confounds = confounds["framewise_displacement"]
+    assert_array_equal(confounds.to_numpy()[0], np.nan)
+
+    n_timepoints = len(confounds)
+    shapes = ((3, 4, 5, n_timepoints),)
+    mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
+
+    events = basic_paradigm()
+
+    fmri_data = fmri_data[0]
+
+    with pytest.raises(
+        ValueError, match="Extra regressors contain NaN values"
+    ):
+        FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+            fmri_data,
+            confounds=confound_file,
+            events=events,
+        )
 
 
 def test_fmri_inputs_confounds_ignored_with_design_matrix():
@@ -1011,7 +1068,7 @@ def test_first_level_from_bids_set_repetition_time_warnings(tmp_path):
             space_label="MNI",
             img_filters=[("desc", "preproc")],
             t_r=t_r,
-            slice_time_ref=None,
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
             verbose=1,
         )
 
@@ -1141,13 +1198,13 @@ def test_first_level_from_bids_get_repetition_time_from_derivatives(tmp_path):
         metadata={"RepetitionTime": RepetitionTime},
     )
 
-    with pytest.warns(UserWarning, match="StartTime' not found in file"):
+    with pytest.warns(RuntimeWarning, match="StartTime' not found in file"):
         models, *_ = first_level_from_bids(
             dataset_path=str(tmp_path / bids_path),
             task_label="main",
             space_label="MNI",
-            slice_time_ref=None,
             img_filters=[("desc", "preproc")],
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
         assert models[0].t_r == 6.0
         assert models[0].slice_time_ref == 0.0
@@ -1167,7 +1224,9 @@ def test_first_level_from_bids_get_start_time_from_derivatives(tmp_path):
         bids_path=tmp_path / bids_path, metadata={"StartTime": StartTime}
     )
 
-    with pytest.warns(UserWarning, match="RepetitionTime' not found in file"):
+    with pytest.warns(
+        RuntimeWarning, match="RepetitionTime' not found in file"
+    ):
         models, *_ = first_level_from_bids(
             dataset_path=str(tmp_path / bids_path),
             task_label="main",
@@ -1377,6 +1436,7 @@ def test_first_level_residuals(shape_4d_default):
     assert_array_almost_equal(mean_residuals, 0)
 
 
+@pytest.mark.slow
 def test_first_level_residuals_errors(shape_4d_default):
     """Access residuals needs fit and minimize_memory set to True."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -1596,6 +1656,34 @@ def test_first_level_from_bids(
     assert len(imgs[0]) == n_imgs_expected
 
 
+def test_first_level_from_bids_exclude_subject(tmp_path):
+    """Test several BIDS structure."""
+    n_sub = 2
+    n_ses = 1
+    n_runs = [1]
+    task_label = "main"
+    space_label = "MNI"
+
+    bids_path = create_fake_bids_dataset(
+        base_dir=tmp_path,
+        n_sub=n_sub,
+        n_ses=n_ses,
+        tasks=[task_label],
+        n_runs=n_runs,
+    )
+
+    models, _, _, _ = first_level_from_bids(
+        dataset_path=bids_path,
+        task_label=task_label,
+        space_label=space_label,
+        img_filters=[("desc", "preproc")],
+        exclude_subjects=["01"],
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
+    )
+
+    assert len(models) == 1
+
+
 @pytest.mark.parametrize("slice_time_ref", [None, 0.0, 0.5, 1.0])
 def test_first_level_from_bids_slice_time_ref(bids_dataset, slice_time_ref):
     """Test several valid values of slice_time_ref."""
@@ -1625,7 +1713,7 @@ def test_first_level_from_bids_space_none(tmp_path):
         task_label="main",
         space_label=None,
         img_filters=[("run", "01"), ("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -1926,7 +2014,7 @@ def test_first_level_from_bids_no_tr(tmp_path_factory):
         Path(f).unlink()
 
     with pytest.warns(
-        UserWarning, match="'t_r' not provided and cannot be inferred"
+        RuntimeWarning, match="'t_r' not provided and cannot be inferred"
     ):
         first_level_from_bids(
             dataset_path=bids_dataset,
@@ -2161,6 +2249,7 @@ def test_first_level_from_bids_load_confounds(tmp_path):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc")],
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     assert len(confounds[0][0].columns) == 189
@@ -2173,6 +2262,7 @@ def test_first_level_from_bids_load_confounds(tmp_path):
         confounds_strategy=("motion", "wm_csf"),
         confounds_motion="full",
         confounds_wm_csf="basic",
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
@@ -2205,6 +2295,7 @@ def test_first_level_from_bids_load_confounds_warnings(tmp_path):
         img_filters=[("desc", "preproc")],
         drift_model=None,
         confounds_strategy=("high_pass",),
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     with pytest.warns(
@@ -2219,6 +2310,7 @@ def test_first_level_from_bids_load_confounds_warnings(tmp_path):
             img_filters=[("desc", "preproc")],
             drift_model="cosine",
             confounds_strategy=("high_pass",),
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
     with pytest.warns(
@@ -2233,6 +2325,7 @@ def test_first_level_from_bids_load_confounds_warnings(tmp_path):
             img_filters=[("desc", "preproc")],
             drift_model="polynomial",
             confounds_strategy=("high_pass",),
+            slice_time_ref=0.0,  # set to 0.0 to avoid warnings
         )
 
 
@@ -2487,7 +2580,7 @@ def test_first_level_from_bids_subject_order(tmp_path):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     # Check if the subjects are returned in order
@@ -2512,7 +2605,7 @@ def test_first_level_from_bids_subject_order_with_labels(tmp_path):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc")],
-        slice_time_ref=None,
+        slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
     # Check if the subjects are returned in order

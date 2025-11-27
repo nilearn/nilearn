@@ -54,6 +54,7 @@ def check_polymesh_equal(mesh_1, mesh_2) -> None:
         warn(
             "Meshes are not identical but have compatible number of vertices.",
             stacklevel=find_stack_level(),
+            category=RuntimeWarning,
         )
 
 

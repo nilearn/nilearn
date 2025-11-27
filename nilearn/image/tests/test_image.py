@@ -474,6 +474,22 @@ def test_crop_threshold_tolerance(affine_eye):
     assert cropped_img.shape == active_shape
 
 
+@pytest.mark.parametrize("pad", [True, False])
+def test_crop_image_empty_image(affine_eye, pad):
+    """Test nilearn.image.image.crop_img with empty image specified.
+
+    Added as a regression test for
+    https://github.com/nilearn/nilearn/issues/5837.
+    """
+    data = np.zeros([10, 14, 12])
+    img = Nifti1Image(data, affine=affine_eye)
+
+    img_copy = new_img_like(img, get_data(img), img.affine)
+    with pytest.warns(UserWarning, match="No values above "):
+        cropped_img = crop_img(img_copy, pad=pad)
+    assert_array_equal(get_data(img), get_data(cropped_img))
+
+
 @pytest.mark.parametrize("images_to_mean", _images_to_mean())
 def test_mean_img(images_to_mean, tmp_path):
     affine = np.diag((4, 3, 2, 1))
@@ -660,7 +676,7 @@ def test_iter_img_3d_imag_error(affine_eye):
         iter_img(img_3d)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_iter_img(tmp_path):
     img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
 
@@ -912,13 +928,9 @@ def test_input_in_threshold_img_errors(
         threshold_img(surf_img_1d, threshold=1, mask_img=vol_mask)
 
 
-def test_threshold_img_warning(surf_img_1d):
-    """Check warnings thrown by threshold_img."""
-    with pytest.warns(
-        UserWarning,
-        match="Cluster thresholding not implemented for SurfaceImage.",
-    ):
-        threshold_img(surf_img_1d, threshold=1, cluster_threshold=10)
+def test_threshold_img_warning_smoke(surf_img_1d):
+    """Check threshold_img with cluster."""
+    threshold_img(surf_img_1d, threshold=1, cluster_threshold=10)
 
 
 @pytest.mark.parametrize("two_sided", [True, False])
@@ -1296,12 +1308,11 @@ def test_math_img_surface(surf_img_2d):
     img1 = surf_img_2d(1)
     img2 = surf_img_2d(3)
 
-    tmp = {}
-    for part in img1.data.parts:
-        tmp[part] = np.mean(img1.data.parts[part], axis=-1) - np.mean(
-            img2.data.parts[part], axis=-1
-        )
-
+    tmp = {
+        part: np.mean(img1.data.parts[part], axis=-1)
+        - np.mean(img2.data.parts[part], axis=-1)
+        for part in img1.data.parts
+    }
     expected_result = SurfaceImage(mesh=img1.mesh, data=tmp)
 
     formula = "np.mean(img1, axis=-1) - np.mean(img2, axis=-1)"

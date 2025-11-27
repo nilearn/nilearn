@@ -37,7 +37,9 @@ from nilearn.surface.surface import (
     check_mesh_and_data,
     check_mesh_is_fsaverage,
     check_surf_img,
+    compute_adjacency_matrix,
     extract_data,
+    find_surface_clusters,
     get_data,
     load_surf_data,
     load_surf_mesh,
@@ -458,25 +460,33 @@ def test_vertex_outer_normals():
     assert_array_almost_equal(computed_normals, true_normals)
 
 
-def test_load_uniform_ball_cloud():
+@pytest.mark.parametrize("n_points", [10, 20, 40, 80, 160])
+def test_load_uniform_ball_cloud_no_warning(n_points):
+    """Test that loading precomputed point clouds does not raise warnings.
+
+    Only for number of points: 10, 20, 40, 80, 160
+    """
     # Note: computed and shipped point clouds may differ since KMeans results
     # change after
     # https://github.com/scikit-learn/scikit-learn/pull/9288
     # but the exact position of the points does not matter as long as they are
     # well spread inside the unit ball
-    for n_points in [10, 20, 40, 80, 160]:
-        with warnings.catch_warnings(record=True) as w:
-            points = _load_uniform_ball_cloud(n_points=n_points)
-            assert_array_equal(points.shape, (n_points, 3))
-            assert len(w) == 0
+    with warnings.catch_warnings(record=True) as w:
+        points = _load_uniform_ball_cloud(n_points=n_points)
+        assert_array_equal(points.shape, (n_points, 3))
+        assert len(w) == 0
+
+
+@pytest.mark.parametrize("n_points", [3, 7])
+def test_load_uniform_ball_cloud(n_points):
+    """Test requesting n points with no cached results match computation."""
     with pytest.warns(EfficiencyWarning):
-        _load_uniform_ball_cloud(n_points=3)
-    for n_points in [3, 7]:
-        computed = _uniform_ball_cloud(n_points)
         loaded = _load_uniform_ball_cloud(n_points)
-        assert_array_almost_equal(computed, loaded)
-        assert (np.std(computed, axis=0) > 0.1).all()
-        assert (np.linalg.norm(computed, axis=1) <= 1).all()
+
+    computed = _uniform_ball_cloud(n_points)
+    assert_array_almost_equal(computed, loaded)
+    assert (np.std(computed, axis=0) > 0.1).all()
+    assert (np.linalg.norm(computed, axis=1) <= 1).all()
 
 
 def test_sample_locations():
@@ -1247,3 +1257,49 @@ def test_check_surf_img_dtype_error(surf_img_1d):
 
     with pytest.raises(TypeError, match=r"All parts should have same dtype."):
         SurfaceImage(surf_img_1d.mesh, data)
+
+
+# TODO check that clusters with same number of faces do not get same label
+
+
+def test_compute_adjacency_matrix(surf_mesh):
+    """Check basic content of an adjacency matrix.
+
+    - should be a square matrix determined by number of edges in mesh
+    - number of actually connected faces will actually depend on the
+      size of the mesh so it's very much hard coded for the mesh used here.
+    """
+    adjacency_matrix = compute_adjacency_matrix(surf_mesh.parts["left"])
+    assert adjacency_matrix.shape == (4, 4)
+    assert np.sum(np.sum(adjacency_matrix)) == 12
+
+    adjacency_matrix = compute_adjacency_matrix(surf_mesh.parts["right"])
+    assert adjacency_matrix.shape == (5, 5)
+    assert np.sum(np.sum(adjacency_matrix)) == 18
+
+
+@pytest.mark.parametrize(
+    "mask, expected_n_clusters",
+    [
+        ([False, False, False, False], 0),
+        ([True, False, False, False], 1),
+        ([True, True, True, True], 1),
+    ],
+)
+def test_find_surface_clusters_4_faces(mask, expected_n_clusters, surf_mesh):
+    clusters, _ = find_surface_clusters(surf_mesh.parts["left"], mask)
+    assert len(clusters) == expected_n_clusters
+
+
+@pytest.mark.parametrize(
+    "mask, expected_n_clusters",
+    [
+        ([False, False, False, False, False], 0),
+        ([True, False, False, False, False], 1),
+        ([False, True, False, True, False], 1),
+        ([True, True, True, True, True], 1),
+    ],
+)
+def test_find_surface_clusters_5_faces(mask, expected_n_clusters, surf_mesh):
+    clusters, _ = find_surface_clusters(surf_mesh.parts["right"], mask)
+    assert len(clusters) == expected_n_clusters
