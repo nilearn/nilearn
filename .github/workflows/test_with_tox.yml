@@ -191,8 +191,56 @@ jobs:
                 path: htmlcov
 
         -   name: Upload coverage to CodeCov
+            if: success()
             uses: codecov/codecov-action@v5
             with:
                 flags: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.env }}
                 token: ${{ secrets.CODECOV_TOKEN }}
-            if: success()
+
+
+    test_flaky:
+        # Some tests are marked as flaky in order to reduce the noise in CI results.
+        # These tests are run separately here to monitor their status.
+        # We also run them on a single processor to reduce the chance of intermittent failures.
+        needs: [check_skip_flags, define-matrix]
+
+        if: github.repository == 'nilearn/nilearn'
+
+        name: 'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
+
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+            fail-fast: false
+            matrix:
+                description: [flaky tests]
+                py: ${{ fromJSON(needs.define-matrix.outputs.py) }}
+                os: [ubuntu-latest, macos-latest, windows-latest]
+                env: [flaky]
+
+        steps:
+        -   uses: actions/checkout@v6
+            with:
+                # If pull request, checkout HEAD commit with all commit history
+                ref: ${{ github.event.pull_request.head.sha }}
+                fetch-depth: 0
+
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v7
+
+        -   name: Setup python
+            uses: actions/setup-python@v6
+            with:
+                python-version: ${{ matrix.py }}
+                allow-prereleases: true
+
+        -   name: Install tox
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+
+        -   name: Show tox config
+            run: tox c
+
+        -   name: Run test suite
+            shell: bash -el {0}
+            run: |
+                tox run --list-dependencies -e ${{ matrix.env }} -- nilearn
