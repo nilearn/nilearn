@@ -420,7 +420,9 @@ class MaskerReportMixin(ReportMixin):
             report_content["coverage"] = f"{report_content['coverage']:0.1f}"
 
         if "overlay" in report_content:
-            report_content["overlay"] = self._embed_img(report_content["overlay"])
+            report_content["overlay"] = self._embed_img(
+                report_content["overlay"]
+            )
 
         report_info = self._report_info
         report_info["page_title"] = f"{report_content['title']} report"

@@ -4,11 +4,11 @@ import abc
 import uuid
 import warnings
 from copy import deepcopy
+from datetime import datetime
 from string import Template
 from typing import Any, ClassVar
 
 import pandas as pd
-from datetime import datetime
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from nilearn._utils.helpers import is_matplotlib_installed
@@ -217,8 +217,12 @@ class ReportMixin:
         return sorted(set(self._report_content["warning_messages"]))
 
     def _dataframe_to_html(
-        self, df_cvrt, precision: int = 2, header: bool = True,
-        index: bool = False, sparsify: bool = False
+        self,
+        df_cvrt,
+        precision: int = 2,
+        header: bool = True,
+        index: bool = False,
+        sparsify: bool = False,
     ):
         """Create html content from the specified dataframe content."""
         return dataframe_to_html(
@@ -230,8 +234,12 @@ class ReportMixin:
         )
 
     def _dict_to_html(
-        self, dict_cvrt, precision: int = 2, header: bool = True,
-        index: bool = False, sparsify: bool = False
+        self,
+        dict_cvrt,
+        precision: int = 2,
+        header: bool = True,
+        index: bool = False,
+        sparsify: bool = False,
     ):
         """Create html content from the specified dictionary content. The
         dictionary is expected to be key value pairs without depth.
@@ -246,15 +254,14 @@ class ReportMixin:
         )
 
     def _get_body_template(self, estimator_type: str):
-        """Return body template for the specified `estimator_type`.
-        """
+        """Return body template for the specified `estimator_type`."""
         env = return_jinja_env()
 
         body_tpl_path = f"html/{estimator_type}/{self._template_name}"
         return env.get_template(body_tpl_path)
 
     def _get_partial_template(
-            self, estimator_type: str, tpl_name: str, is_common: bool = False
+        self, estimator_type: str, tpl_name: str, is_common: bool = False
     ):
         """Return a partial template for the specified `estimator_type`.
         If `is_common=True`, the template is not searched in estimator's

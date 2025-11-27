@@ -13,20 +13,20 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.glm import coerce_to_dict
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.glm._reporting_utils import (
     _get_runwise_dict,
     _glm_model_attributes_to_dataframe,
     _make_stat_maps_contrast_clusters,
     _mask_to_plot,
-    _turn_into_full_path
+    _turn_into_full_path,
 )
 from nilearn.glm.thresholding import warn_default_threshold
+from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.reporting.html_report import ReportMixin
 from nilearn.surface import SurfaceImage
@@ -354,10 +354,14 @@ class BaseGLM(ReportMixin, CacheMixin, BaseEstimator):
 
         report_info = self._report_info
 
-        report_info["page_title"] = f"Statistical Report - {self.__str__()}{title}"
+        report_info["page_title"] = (
+            f"Statistical Report - {self.__str__()}{title}"
+        )
         report_info["estimator_type"] = "glm"
         report_info["model_type"] = self.__str__()
-        report_info["show_navbar"] = "style='display: none;'" if self._is_notebook() else ""
+        report_info["show_navbar"] = (
+            "style='display: none;'" if self._is_notebook() else ""
+        )
         report_info["is_volume_glm"] = self._is_volume_glm()
         smoothing_fwhm = getattr(self, "smoothing_fwhm", 0)
         if smoothing_fwhm == 0:
@@ -441,7 +445,9 @@ class BaseGLM(ReportMixin, CacheMixin, BaseEstimator):
         if self.__sklearn_is_fitted__():
             if contrasts is None:
                 output = self._reporting_data.get("filenames", None)
-                if output is not None and output.get("use_absolute_path", True):
+                if output is not None and output.get(
+                    "use_absolute_path", True
+                ):
                     output = _turn_into_full_path(output, output["dir"])
 
                 self._append_warning(
@@ -474,9 +480,7 @@ class BaseGLM(ReportMixin, CacheMixin, BaseEstimator):
             statistical_maps = self._get_report_statistical_maps(
                 contrasts, output, first_level_contrast=first_level_contrast
             )
-            log(
-                "Generating contrast-level figures...", verbose=self.verbose
-            )
+            log("Generating contrast-level figures...", verbose=self.verbose)
             report_info["results"] = _make_stat_maps_contrast_clusters(
                 stat_img=statistical_maps,
                 threshold_orig=threshold,
@@ -521,6 +525,7 @@ class BaseGLM(ReportMixin, CacheMixin, BaseEstimator):
         if bg_img == "MNI152TEMPLATE":
             if self._is_volume_glm() and is_matplotlib_installed():
                 from nilearn.plotting.image.utils import MNI152TEMPLATE
+
                 bg_img = MNI152TEMPLATE
             else:
                 bg_img = None
@@ -535,8 +540,9 @@ class BaseGLM(ReportMixin, CacheMixin, BaseEstimator):
             )
         return bg_img
 
-    def _get_report_statistical_maps(self, contrasts, output,
-                                     first_level_contrast=None):
+    def _get_report_statistical_maps(
+        self, contrasts, output, first_level_contrast=None
+    ):
         if contrasts is None:
             self._append_warning(
                 "No contrast passed during report generation."

@@ -8,6 +8,7 @@ make_glm_report(model, contrasts):
     Creates an HTMLReport Object which can be viewed or saved as a report.
 
 """
+
 import warnings
 from html import escape
 from pathlib import Path
@@ -17,9 +18,9 @@ import pandas as pd
 from sklearn.utils import Bunch
 
 from nilearn import DEFAULT_DIVERGING_CMAP
+from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils import logger
 from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
@@ -54,18 +55,14 @@ def _get_runwise_dict(design_matrices, contrasts, output, verbose):
             generate_design_matrices_figures,
         )
 
-        logger.log(
-            "Generating design matrices figures...", verbose=verbose
-        )
+        logger.log("Generating design matrices figures...", verbose=verbose)
         design_matrices_dict = generate_design_matrices_figures(
             design_matrices,
             design_matrices_dict=design_matrices_dict,
             output=output,
         )
 
-        logger.log(
-            "Generating contrast matrices figures...", verbose=verbose
-        )
+        logger.log("Generating contrast matrices figures...", verbose=verbose)
         contrasts_dict = generate_contrast_matrices_figures(
             design_matrices,
             contrasts,
@@ -169,6 +166,7 @@ def _mask_to_plot(model, bg_img, cut_coords):
         return None
 
     from matplotlib import pyplot as plt
+
     from nilearn.plotting import plot_roi
 
     # Select mask_img to use for plotting
@@ -594,8 +592,9 @@ def _add_params_to_plot(table_details, stat_map_plot):
         Axes object of the stat map plot, with the added suptitle.
 
     """
-    from nilearn._utils.plotting import resize_plot_inches
     from matplotlib import pyplot as plt
+
+    from nilearn._utils.plotting import resize_plot_inches
 
     thresholding_params = [
         ":".join([name, str(val)]) for name, val in table_details[0].items()
