@@ -508,14 +508,19 @@ class BaseSlicer:
             if transparency is None or isinstance(transparency, (float, int)):
                 transparency_2d = transparency
 
+            try:
                 data_2d = display_ax.transform_to_2d(data, affine)
                 if isinstance(transparency, np.ndarray):
                     transparency_2d = display_ax.transform_to_2d(
                         transparency, transparency_affine
                     )
+            except IndexError:
+                # We are cutting outside the indices of the data
+                data_2d = None
+                transparency_2d = None
 
-                data_2d_list.append(data_2d)
-                transparency_list.append(transparency_2d)
+            data_2d_list.append(data_2d)
+            transparency_list.append(transparency_2d)
 
         if kwargs.get("vmin") is None:
             kwargs["vmin"] = np.ma.min(

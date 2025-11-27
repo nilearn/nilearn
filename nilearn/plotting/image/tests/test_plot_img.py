@@ -7,7 +7,6 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 
-from nilearn import plotting
 from nilearn._utils.niimg import is_binary_niimg
 from nilearn.image import get_data
 from nilearn.plotting import plot_img
@@ -147,14 +146,3 @@ def test_plot_img_transparency_binary_image(
         img_3d_ones_mni,
         transparency=transparency_image,
     )
-
-
-def test_out_of_bounds_error(matplotlib_pyplot, img_3d_mni):
-    """Ensure plotting out-of-bounds slice raises ValueError.
-
-    This should crash with ValueError
-    because the default 3D image fixture
-    has less than 50 slices on the x axis.
-    """
-    with pytest.raises(ValueError, match="out of bounds"):
-        plotting.plot_img(img_3d_mni, display_mode="x", cut_coords=[50])
