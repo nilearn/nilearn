@@ -163,6 +163,7 @@ class ReportMixin:
             ReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
 
+    @classmethod
     def _update_defaults(cls, base_dict: dict, update_dict: dict):
         """Return a new dictionary with the values of dictionary base_dict
         updated recursively with the values of update_dict.
