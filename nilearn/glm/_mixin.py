@@ -8,7 +8,6 @@ make_glm_report(model, contrasts):
     Creates an HTMLReport Object which can be viewed or saved as a report.
 
 """
-
 import warnings
 from html import escape
 from pathlib import Path
@@ -20,6 +19,7 @@ from sklearn.utils import Bunch
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils import logger
 from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
@@ -39,6 +39,55 @@ from nilearn.reporting.get_clusters_table import (
 from nilearn.reporting.utils import figure_to_png_base64
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
+
+
+def _get_runwise_dict(design_matrices, contrasts, output, verbose):
+    design_matrices_dict = Bunch()
+    contrasts_dict = Bunch()
+    if output is not None:
+        design_matrices_dict = output["design_matrices_dict"]
+        contrasts_dict = output["contrasts_dict"]
+
+    if is_matplotlib_installed():
+        from nilearn._utils.plotting import (
+            generate_contrast_matrices_figures,
+            generate_design_matrices_figures,
+        )
+
+        logger.log(
+            "Generating design matrices figures...", verbose=verbose
+        )
+        design_matrices_dict = generate_design_matrices_figures(
+            design_matrices,
+            design_matrices_dict=design_matrices_dict,
+            output=output,
+        )
+
+        logger.log(
+            "Generating contrast matrices figures...", verbose=verbose
+        )
+        contrasts_dict = generate_contrast_matrices_figures(
+            design_matrices,
+            contrasts,
+            contrasts_dict=contrasts_dict,
+            output=output,
+        )
+
+    run_wise_dict = Bunch()
+    for i_run in design_matrices_dict:
+        tmp = Bunch()
+        tmp["design_matrix_png"] = design_matrices_dict[i_run][
+            "design_matrix_png"
+        ]
+        tmp["correlation_matrix_png"] = design_matrices_dict[i_run][
+            "correlation_matrix_png"
+        ]
+        tmp["all_contrasts"] = None
+        if i_run in contrasts_dict:
+            tmp["all_contrasts"] = contrasts_dict[i_run]
+        run_wise_dict[i_run] = tmp
+
+    return run_wise_dict
 
 
 def _turn_into_full_path(bunch, dir: Path) -> str | Bunch:

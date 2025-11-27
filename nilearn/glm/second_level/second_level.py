@@ -494,6 +494,9 @@ class SecondLevelModel(BaseGLM):
         further inspection of model details. This has an important impact
         on memory consumption.
 
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
     Attributes
     ----------
     confounds_ : :obj:`pandas.DataFrame` or None
@@ -892,62 +895,6 @@ class SecondLevelModel(BaseGLM):
                 self.results_[label_], attribute
             )
         return self.masker_.inverse_transform(voxelwise_attribute)
-
-    def generate_report(
-        self,
-        contrasts=None,
-        first_level_contrast=None,
-        title=None,
-        bg_img="MNI152TEMPLATE",
-        threshold=3.09,
-        alpha=0.001,
-        cluster_threshold=0,
-        height_control="fpr",
-        two_sided=False,
-        min_distance=8.0,
-        plot_type="slice",
-        cut_coords=None,
-        display_mode=None,
-        report_dims=(1600, 800),
-    ):
-        """Return a :class:`~nilearn.reporting.HTMLReport` \
-        which shows all important aspects of a fitted :term:`GLM`.
-
-        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
-        browser, displayed in a notebook, or saved to disk as a standalone
-        HTML file.
-
-        The :term:`GLM` must be fitted and have the computed design
-        matrix(ces).
-
-        .. note::
-
-            Refer to the documentation of
-            :func:`~nilearn.reporting.make_glm_report`
-            for details about the parameters
-
-        Returns
-        -------
-        report_text : :class:`~nilearn.reporting.HTMLReport`
-            Contains the HTML code for the :term:`GLM` report.
-
-        """
-        return self._make_glm_report(
-            contrasts,
-            first_level_contrast=first_level_contrast,
-            title=title,
-            bg_img=bg_img,
-            threshold=threshold,
-            alpha=alpha,
-            cluster_threshold=cluster_threshold,
-            height_control=height_control,
-            two_sided=two_sided,
-            min_distance=min_distance,
-            plot_type=plot_type,
-            cut_coords=cut_coords,
-            display_mode=display_mode,
-            report_dims=report_dims,
-        )
 
 
 @fill_doc

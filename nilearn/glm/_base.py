@@ -1,4 +1,3 @@
-import datetime
 import inspect
 import warnings
 from collections import OrderedDict
@@ -12,37 +11,27 @@ from sklearn.base import BaseEstimator
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn._version import __version__
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
-from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
+from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.glm._mixin import (
+    _get_runwise_dict,
     _glm_model_attributes_to_dataframe,
     _make_stat_maps_contrast_clusters,
     _mask_to_plot,
-    _turn_into_full_path,
+    _turn_into_full_path
 )
 from nilearn.glm.thresholding import warn_default_threshold
-from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
-from nilearn.reporting.html_report import (
-    HTMLReport,
-    ReportMixin,
-)
+from nilearn.reporting.html_report import ReportMixin
 from nilearn.surface import SurfaceImage
 
 FIGURE_FORMAT = "png"
-
-MNI152TEMPLATE = None
-if is_matplotlib_installed():
-    from nilearn.plotting.image.utils import (  # type: ignore[assignment]
-        MNI152TEMPLATE,
-    )
 
 
 class BaseGLM(ReportMixin, CacheMixin, BaseEstimator):
@@ -360,8 +349,23 @@ class BaseGLM(ReportMixin, CacheMixin, BaseEstimator):
             "model_level_mapping": model_level_mapping,
         }
 
+    def _set_report_basics(self, title):
+        super()._set_report_basics(title)
+
+        report_info = self._report_info
+
+        report_info["page_title"] = f"Statistical Report - {self.__str__()}{title}"
+        report_info["estimator_type"] = "glm"
+        report_info["model_type"] = self.__str__()
+        report_info["show_navbar"] = "style='display: none;'" if self._is_notebook() else ""
+        report_info["is_volume_glm"] = self._is_volume_glm()
+        smoothing_fwhm = getattr(self, "smoothing_fwhm", 0)
+        if smoothing_fwhm == 0:
+            smoothing_fwhm = None
+        report_info["smoothing_fwhm"] = smoothing_fwhm
+
     @fill_doc
-    def _make_glm_report(
+    def generate_report(
         self,
         contrasts=None,
         first_level_contrast=None,
@@ -376,162 +380,33 @@ class BaseGLM(ReportMixin, CacheMixin, BaseEstimator):
         plot_type="slice",
         cut_coords=None,
         display_mode=None,
-        report_dims=(WIDTH_DEFAULT, HEIGHT_DEFAULT),
-    ) -> HTMLReport:
-        """Return HTMLReport object \
-        for a report which shows all important aspects of a fitted GLM.
+        report_dims=(1600, 800),
+    ):
+        """Return a :class:`~nilearn.reporting.HTMLReport` \
+        which shows all important aspects of a fitted :term:`GLM`.
 
-        The object can be opened in a browser, displayed in a notebook,
-        or saved to disk as a standalone HTML file.
+        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
+        browser, displayed in a notebook, or saved to disk as a standalone
+        HTML file.
 
-        Examples
-        --------
-        report = make_glm_report(model, contrasts)
-        report.open_in_browser()
-        report.save_as_html(destination_path)
+        The :term:`GLM` must be fitted and have the computed design
+        matrix(ces).
 
-        Parameters
-        ----------
-        model : FirstLevelModel or SecondLevelModel object
-            A fitted first or second level model object.
-            Must have the computed design matrix(ces).
+        .. note::
 
-        contrasts : :obj:`dict` with :obj:`str` - ndarray key-value pairs \
-            or :obj:`str` \
-            or :obj:`list` of :obj:`str` \
-            or ndarray or \
-            :obj:`list` of ndarray, Default=None
-
-            Contrasts information for a first or second level model.
-
-            Example:
-
-                Dict of :term:`contrast` names and coefficients,
-                or list of :term:`contrast` names
-                or list of :term:`contrast` coefficients
-                or :term:`contrast` name
-                or :term:`contrast` coefficient
-
-                Each :term:`contrast` name must be a string.
-                Each :term:`contrast` coefficient must be a list
-                or numpy array of ints.
-
-            Contrasts are passed to ``contrast_def`` for FirstLevelModel
-            (:func:`nilearn.glm.first_level.FirstLevelModel.compute_contrast`)
-            & second_level_contrast for SecondLevelModel
-            (:func:`nilearn.glm.second_level.SecondLevelModel.compute_contrast`)
-
-        %(first_level_contrast)s
-
-            .. nilearn_versionadded:: 0.12.0
-
-        title : :obj:`str`, default=None
-            If string, represents the web page's title and primary heading,
-            model type is sub-heading.
-            If None, page titles and headings are autogenerated
-            using :term:`contrast` names.
-
-        bg_img : Niimg-like object, default='MNI152TEMPLATE'
-            See :ref:`extracting_data`.
-            The background image for mask and stat maps to be plotted on upon.
-            To turn off background image, just pass "bg_img=None".
-
-        threshold : :obj:`float`, default=3.09
-            Cluster forming threshold in same scale as `stat_img` (either a
-            t-scale or z-scale value). Used only if height_control is None.
-
-            .. note::
-
-                - When ``two_sided`` is True:
-
-                  ``'threshold'`` cannot be negative.
-
-                  The given value should be within the range of minimum and
-                  maximum intensity of the input image.
-                  All intensities in the interval ``[-threshold, threshold]``
-                  will be set to zero.
-
-                - When ``two_sided`` is False:
-
-                  - If the threshold is negative:
-
-                    It should be greater than the minimum intensity
-                    of the input data.
-                    All intensities greater than or equal
-                    to the specified threshold will be set to zero.
-                    All other intensities keep their original values.
-
-                  - If the threshold is positive:
-
-                    It should be less than the maximum intensity
-                    of the input data.
-                    All intensities less than or equal
-                    to the specified threshold will be set to zero.
-                    All other intensities keep their original values.
-
-        alpha : :obj:`float`, default=0.001
-            Number controlling the thresholding (either a p-value or q-value).
-            Its actual meaning depends on the height_control parameter.
-            This function translates alpha to a z-scale threshold.
-
-        %(cluster_threshold)s
-
-        height_control :  :obj:`str`, default='fpr'
-            false positive control meaning of cluster forming
-            threshold: 'fpr' or 'fdr' or 'bonferroni' or None.
-
-        two_sided : :obj:`bool`, default=False
-            Whether to employ two-sided thresholding or to evaluate positive
-            values only.
-
-        min_distance : :obj:`float`, default=8.0
-            For display purposes only.
-            Minimum distance between subpeaks in mm.
-
-        plot_type : :obj:`str`, {'slice', 'glass'}, default='slice'
-            Specifies the type of plot to be drawn for the statistical maps.
-
-        %(cut_coords)s
-
-        display_mode :  :obj:`str`, default=None
-            Default is 'z' if plot_type is 'slice'; '
-            ortho' if plot_type is 'glass'.
-
-            Choose the direction of the cuts:
-            'x' - sagittal, 'y' - coronal, 'z' - axial,
-            'l' - sagittal left hemisphere only,
-            'r' - sagittal right hemisphere only,
-            'ortho' - three cuts are performed in orthogonal directions.
-
-            Possible values are:
-            'ortho', 'x', 'y', 'z', 'xz', 'yx', 'yz',
-            'l', 'r', 'lr', 'lzr', 'lyr', 'lzry', 'lyrz'.
-
-        report_dims : Sequence[:obj:`int`, :obj:`int`], default=(1600, 800)
-            Specifies width, height (in pixels) of report window within a
-            notebook.
-            Only applicable when inserting the report into a Jupyter notebook.
-            Can be set after report creation using report.width, report.height.
+            Refer to the documentation of
+            :func:`~nilearn.reporting.make_glm_report`
+            for details about the parameters
 
         Returns
         -------
-        report_text : HTMLReport Object
-            Contains the HTML code for the :term:`GLM` Report.
+        report_text : :class:`~nilearn.reporting.HTMLReport`
+            Contains the HTML code for the :term:`GLM` report.
 
         """
         check_params(locals())
-        self._run_report_checks()
-        self._set_report_basics(title)
 
-        parameters = inspect.signature(self._make_glm_report).parameters
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = {
-                "trial_types": [],
-                "noise_model": getattr(self, "noise_model", None),
-                "hrf_model": getattr(self, "hrf_model", None),
-                "drift_model": None,
-            }
-
+        parameters = inspect.signature(self.generate_report).parameters
         if height_control is not None and float(threshold) != float(
             parameters["threshold"].default
         ):
@@ -547,90 +422,62 @@ class BaseGLM(ReportMixin, CacheMixin, BaseEstimator):
             3.09,
             height_control=height_control,
         )
+        self._run_report_checks()
+        self._set_report_basics(title)
 
-        report = self._report_content
+        report_info = self._report_info
 
-        model_attributes = _glm_model_attributes_to_dataframe(self)
-        with pd.option_context("display.max_colwidth", 100):
-            model_attributes_html = self._dataframe_to_html(
-                model_attributes,
-                precision=2,
-                header=True,
-                index=True,
-                sparsify=False,
-            )
         contrasts = coerce_to_dict(contrasts)
 
         # If some contrasts are passed
         # we do not rely on filenames stored in the model.
         output = None
-        if contrasts is None:
-            output = self._reporting_data.get("filenames", None)
-            if output is not None and output.get("use_absolute_path", True):
-                output = _turn_into_full_path(output, output["dir"])
-
+        report_info["mask_plot"] = None
+        mask_info = {"n_elements": 0, "coverage": ""}
+        report_info["results"] = None
         design_matrices = None
-        mask_plot = None
-        mask_info = {"n_elements": 0, "coverage": "0"}
-        results = None
+        report_info["reporting_data"] = {}
 
-        if self._has_report_data():
+        if self.__sklearn_is_fitted__():
+            if contrasts is None:
+                output = self._reporting_data.get("filenames", None)
+                if output is not None and output.get("use_absolute_path", True):
+                    output = _turn_into_full_path(output, output["dir"])
+
+                self._append_warning(
+                    "No contrast passed during report generation."
+                )
+
+            bg_img = self._check_bg_img(bg_img)
+            # set mask plot
+            report_info["mask_plot"] = _mask_to_plot(self, bg_img, cut_coords)
+
+            # set mask_info
+            # We try to rely on the content of glm object only
+            # by reading images from disk rarther than recomputing them
+            for k, v in self.masker_._report_content.items():
+                if k in ["n_elements", "coverage"]:
+                    mask_info[k] = v
+            if "coverage" in mask_info:
+                mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
+            for k, v in mask_info.items():
+                report_info[k] = v
+
+            # set design_matrices
             design_matrices = (
                 [self.design_matrix_]
                 if self.__str__() == "Second Level Model"
                 else self.design_matrices_
             )
 
-            if bg_img == "MNI152TEMPLATE":
-                bg_img = MNI152TEMPLATE if self._is_volume_glm() else None
-            if (
-                not self._is_volume_glm()
-                and bg_img
-                and not isinstance(bg_img, SurfaceImage)
-            ):
-                raise TypeError(
-                    "'bg_img' must a SurfaceImage instance. "
-                    f"Got {bg_img.__class__.__name__}"
-                )
-
-            mask_plot = _mask_to_plot(self, bg_img, cut_coords)
-
-            # We try to rely on the content of glm object only
-            # by reading images from disk rarther than recomputing them
-            mask_info = {
-                k: v
-                for k, v in self.masker_._report_content.items()
-                if k in ["n_elements", "coverage"]
-            }
-            if "coverage" in mask_info:
-                mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
-
-            statistical_maps = {}
-            if self._is_volume_glm() and output is not None:
-                try:
-                    statistical_maps = {
-                        contrast_name: output["dir"]
-                        / output["statistical_maps"][contrast_name]["z_score"]
-                        for contrast_name in output["statistical_maps"]
-                    }
-                except KeyError:  # pragma: no cover
-                    if contrasts is not None:
-                        statistical_maps = self._make_stat_maps(
-                            contrasts,
-                            output_type="z_score",
-                            first_level_contrast=first_level_contrast,
-                        )
-            elif contrasts is not None:
-                statistical_maps = self._make_stat_maps(
-                    contrasts,
-                    output_type="z_score",
-                    first_level_contrast=first_level_contrast,
-                )
-
+            # set results
+            statistical_maps = self._get_report_statistical_maps(
+                contrasts, output, first_level_contrast=first_level_contrast
+            )
             log(
                 "Generating contrast-level figures...", verbose=self.verbose
             )
-            results = _make_stat_maps_contrast_clusters(
+            report_info["results"] = _make_stat_maps_contrast_clusters(
                 stat_img=statistical_maps,
                 threshold_orig=threshold,
                 alpha=alpha,
@@ -644,96 +491,79 @@ class BaseGLM(ReportMixin, CacheMixin, BaseEstimator):
                 plot_type=plot_type,
             )
 
-            if contrasts is None:
-                self._append_warning(
-                    "No contrast passed during report generation."
-                )
+            report_info["reporting_data"] = Bunch(**self._reporting_data)
 
-        design_matrices_dict = Bunch()
-        contrasts_dict = Bunch()
-        if output is not None:
-            design_matrices_dict = output["design_matrices_dict"]
-            contrasts_dict = output["contrasts_dict"]
-
-        if is_matplotlib_installed():
-            from nilearn._utils.plotting import (
-                generate_contrast_matrices_figures,
-                generate_design_matrices_figures,
-            )
-
-            log(
-                "Generating design matrices figures...", verbose=self.verbose
-            )
-            design_matrices_dict = generate_design_matrices_figures(
-                design_matrices,
-                design_matrices_dict=design_matrices_dict,
-                output=output,
-            )
-
-            log(
-                "Generating contrast matrices figures...", verbose=self.verbose
-            )
-            contrasts_dict = generate_contrast_matrices_figures(
-                design_matrices,
-                contrasts,
-                contrasts_dict=contrasts_dict,
-                output=output,
-            )
-
-        run_wise_dict = Bunch()
-        for i_run in design_matrices_dict:
-            tmp = Bunch()
-            tmp["design_matrix_png"] = design_matrices_dict[i_run][
-                "design_matrix_png"
-            ]
-            tmp["correlation_matrix_png"] = design_matrices_dict[i_run][
-                "correlation_matrix_png"
-            ]
-            tmp["all_contrasts"] = None
-            if i_run in contrasts_dict:
-                tmp["all_contrasts"] = contrasts_dict[i_run]
-            run_wise_dict[i_run] = tmp
-
+        report_info["run_wise_dict"] = _get_runwise_dict(
+            design_matrices, contrasts, output, self.verbose
+        )
         # for methods writing, only keep the contrast expressed as strings
         if contrasts is not None:
-            contrasts = [x for x in contrasts.values() if isinstance(x, str)]
-
-        title = f"Statistical Report - {self.__str__()}{title}"
-
-        smoothing_fwhm = getattr(self, "smoothing_fwhm", 0)
-        if smoothing_fwhm == 0:
-            smoothing_fwhm = None
-
-        show_navbar = "style='display: none;'" if self._is_notebook() else ""
+            report_info["contrasts"] = [
+                x for x in contrasts.values() if isinstance(x, str)
+            ]
 
         self._display_report_warnings()
+        return self._assemble_report()
 
-        body_tpl = self._get_body_template("glm")
-        body = body_tpl.render(
-            docstring=report["docstring"],
-            contrasts=contrasts,
-            date=datetime.datetime.now().replace(microsecond=0).isoformat(),
-            mask_plot=mask_plot,
-            model_type=self.__str__(),
-            parameters=model_attributes_html,
-            reporting_data=Bunch(**self._reporting_data),
-            results=results,
-            run_wise_dict=run_wise_dict,
-            show_navbar=show_navbar,
-            smoothing_fwhm=smoothing_fwhm,
-            title=title,
-            version=__version__,
-            unique_id=report["unique_id"],
-            warning_messages=self._get_warnings(),
-            has_plotting_engine=report["has_plotting_engine"],
-            **mask_info,
-        )
+    def _model_params_to_html(self):
+        model_attributes = _glm_model_attributes_to_dataframe(self)
+        with pd.option_context("display.max_colwidth", 100):
+            model_attributes_html = self._dataframe_to_html(
+                model_attributes,
+                precision=2,
+                header=True,
+                index=True,
+                sparsify=False,
+            )
+        return model_attributes_html
 
-        report = self._assemble_report(body, title)
+    def _check_bg_img(self, bg_img):
+        if bg_img == "MNI152TEMPLATE":
+            if self._is_volume_glm() and is_matplotlib_installed():
+                from nilearn.plotting.image.utils import MNI152TEMPLATE
+                bg_img = MNI152TEMPLATE
+            else:
+                bg_img = None
+        if (
+            not self._is_volume_glm()
+            and bg_img
+            and not isinstance(bg_img, SurfaceImage)
+        ):
+            raise TypeError(
+                "'bg_img' must a SurfaceImage instance. "
+                f"Got {bg_img.__class__.__name__}"
+            )
+        return bg_img
 
-        report.resize(*report_dims)
+    def _get_report_statistical_maps(self, contrasts, output,
+                                     first_level_contrast=None):
+        if contrasts is None:
+            self._append_warning(
+                "No contrast passed during report generation."
+            )
+        statistical_maps = {}
+        if self._is_volume_glm() and output is not None:
+            try:
+                statistical_maps = {
+                    contrast_name: output["dir"]
+                    / output["statistical_maps"][contrast_name]["z_score"]
+                    for contrast_name in output["statistical_maps"]
+                }
+            except KeyError:  # pragma: no cover
+                if contrasts is not None:
+                    statistical_maps = self._make_stat_maps(
+                        contrasts,
+                        output_type="z_score",
+                        first_level_contrast=first_level_contrast,
+                    )
+        elif contrasts is not None:
+            statistical_maps = self._make_stat_maps(
+                contrasts,
+                output_type="z_score",
+                first_level_contrast=first_level_contrast,
+            )
 
-        return report
+        return statistical_maps
 
 
 def _generate_mask(

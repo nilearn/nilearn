@@ -443,6 +443,10 @@ class FirstLevelModel(BaseGLM):
 
         .. nilearn_versionadded:: 0.9.1
 
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
+
     Attributes
     ----------
     design_matrices_ : :obj:`list` of :obj:`pandas.DataFrame`
@@ -1365,7 +1369,7 @@ class FirstLevelModel(BaseGLM):
             Contains the HTML code for the :term:`GLM` report.
 
         """
-        return self._make_glm_report(
+        return super().generate_report(
             contrasts,
             title=title,
             bg_img=bg_img,
