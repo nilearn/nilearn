@@ -568,7 +568,7 @@ class SecondLevelModel(BaseGLM):
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
 
-        self.reports = True
+        self.reports = reports
         self._reset_report()
 
     @fill_doc
