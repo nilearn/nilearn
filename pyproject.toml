@@ -23,7 +23,6 @@ classifiers = [
 ]
 dependencies = [
     "joblib>=1.2.0",
-    "lxml",
     "nibabel>=5.2.0",
     "numpy>=1.22.4",
     "pandas>=2.2.0",
@@ -97,6 +96,7 @@ style = ['tox']
 # For running unit and docstring tests
 test = [
     "coverage",
+    "lxml",
     "numpydoc>=1.8.0",
     "pytest>=6.0.0",
     "pytest-cov",
@@ -238,6 +238,16 @@ ignore_imports = [
 name = "'nilearn.connectome' only imports from 'nilearn.signal'"
 source_modules = [
     "nilearn.connectome"
+]
+type = "forbidden"
+
+[[tool.importlinter.contracts]]
+forbidden_modules = [
+    "nilearn._utils.data_gen"
+]
+name = "fixtures from 'nilearn.conftest' should not rely on data generated in 'nilearn._utils.data_gen'"
+source_modules = [
+    "nilearn.conftest"
 ]
 type = "forbidden"
 

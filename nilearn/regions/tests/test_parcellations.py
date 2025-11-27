@@ -83,6 +83,7 @@ def test_parcellations_fit_on_single_nifti_image(method, n_parcel, test_image):
         assert parcellator.connectivity_ is not None
 
 
+@pytest.mark.slow
 def test_parcellations_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=7)
 

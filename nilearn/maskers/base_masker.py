@@ -310,6 +310,8 @@ class BaseMasker(
 
     _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
 
+    _template_name = "body_masker.jinja"
+
     @abc.abstractmethod
     @fill_doc
     def transform_single_imgs(
@@ -560,6 +562,8 @@ class _BaseSurfaceMasker(
     """Class from which all surface maskers should inherit."""
 
     _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
+
+    _template_name = "body_surface_masker.jinja"
 
     def _more_tags(self):
         """Return estimator tags.
