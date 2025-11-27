@@ -603,6 +603,8 @@ class SecondLevelModel(BaseGLM):
 
         _check_confounds(confounds)
 
+        self._reset_report()
+
         if isinstance(second_level_input, pd.DataFrame):
             second_level_input = _sort_input_dataframe(second_level_input)
         if isinstance(second_level_input, Nifti1Image):
@@ -663,7 +665,8 @@ class SecondLevelModel(BaseGLM):
         )
 
         self._report_content["reports_at_fit_time"] = self.reports
-        self._reporting_data = {}
+        if self.reports:
+            self._reporting_data = {}
 
         return self
 

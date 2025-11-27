@@ -972,6 +972,8 @@ class FirstLevelModel(BaseGLM):
             )
         )
 
+        self._reset_report()
+
         # Initialize masker_ to None such that attribute exists
         self.masker_ = None
 
@@ -988,6 +990,9 @@ class FirstLevelModel(BaseGLM):
                 f"and a {self.drift_model} drift model ({param_str})"
             )
         self._report_content["reports_at_fit_time"] = self.reports
+        # TODO populate _report_data only if self.reports=True
+        # currently the values in reports_data is used in other places and
+        # tests fail if only populated when reports is True.
         self._reporting_data = {
             "trial_types": [],
             "noise_model": self.noise_model,
