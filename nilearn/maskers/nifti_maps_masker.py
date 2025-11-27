@@ -167,6 +167,8 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     """
 
+    _template_name = "body_nifti_maps_masker.jinja"
+
     # memory and memory_level are used by CacheMixin.
 
     def __init__(
@@ -262,8 +264,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             HTML report for the masker.
         """
         check_displayed_maps(displayed_maps)
-
-        self.displayed_maps = displayed_maps
 
         self._report_content["number_of_maps"] = 0
         self._report_content["displayed_maps"] = []

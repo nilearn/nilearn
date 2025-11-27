@@ -23,7 +23,6 @@ classifiers = [
 ]
 dependencies = [
     "joblib>=1.2.0",
-    "lxml",
     "nibabel>=5.2.0",
     "numpy>=1.22.4",
     "pandas>=2.2.0",
@@ -97,6 +96,7 @@ style = ['tox']
 # For running unit and docstring tests
 test = [
     "coverage",
+    "lxml",
     "numpydoc>=1.8.0",
     "pytest>=6.0.0",
     "pytest-cov",
@@ -140,7 +140,8 @@ version-file = "nilearn/_version.py"
 [tool.hatch.build.targets.wheel]
 exclude = [
     "nilearn/plotting/tests/baseline",
-    "nilearn/reporting/tests/baseline"
+    "nilearn/maskers/tests/baseline",
+    "nilearn/glm/tests/baseline"
 ]
 packages = ["nilearn"]
 
@@ -156,7 +157,6 @@ ignore_imports = [
     "nilearn._utils.estimator_checks -> nilearn.glm.*",  # allowed in tests
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
-    "nilearn.reporting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
     "nilearn.reporting.glm_reporter -> nilearn.glm.thresholding",
     "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
@@ -187,6 +187,39 @@ name = "main architecture"
 type = "layers"
 
 [[tool.importlinter.contracts]]
+ignore_imports = [
+    "nilearn.*.tests.* -> nilearn._utils.estimator_checks",  # allowed in tests
+    "nilearn._utils.estimator_checks -> nilearn.glm.*",  # allowed in tests
+    "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
+    "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
+    "nilearn.plotting.matrix.* -> nilearn.glm.**",
+    "nilearn.reporting.glm_reporter -> nilearn.glm.thresholding",
+    "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
+    "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level",  # TODO: (nilearn >= 0.15.0) remove
+    # additional on top of those of "main architecture"
+    "nilearn.plotting.tests.test_img_comparisons -> nilearn._utils.data_gen",  # allowed in tests
+    "nilearn.plotting.tests.test_img_comparisons -> nilearn.conftest",  # allowed in tests
+    "nilearn.plotting.tests.test_img_comparisons -> nilearn.maskers",  # allowed in tests
+    "nilearn.plotting.**.tests.* -> nilearn.conftest",  # allowed in tests
+    # TODO
+    "nilearn.plotting.image.img_plotting -> nilearn.maskers",
+    "nilearn.plotting.img_comparison -> nilearn._utils.masker_validation",
+    "nilearn.plotting.img_comparison -> nilearn.maskers",
+    "nilearn.image.image -> nilearn._utils.masker_validation",
+    # TODO
+    "nilearn.reporting.get_clusters_table -> nilearn.image",
+    "nilearn.reporting.tests.test_get_clusters_table -> nilearn.image"
+]
+layers = [
+    "nilearn.glm",
+    "nilearn.maskers",
+    "nilearn.reporting",
+    "nilearn.plotting"
+]
+name = "reporting"
+type = "layers"
+
+[[tool.importlinter.contracts]]
 forbidden_modules = [
     "nilearn.mass_univariate",
     "nilearn.reporting",
@@ -205,6 +238,16 @@ ignore_imports = [
 name = "'nilearn.connectome' only imports from 'nilearn.signal'"
 source_modules = [
     "nilearn.connectome"
+]
+type = "forbidden"
+
+[[tool.importlinter.contracts]]
+forbidden_modules = [
+    "nilearn._utils.data_gen"
+]
+name = "fixtures from 'nilearn.conftest' should not rely on data generated in 'nilearn._utils.data_gen'"
+source_modules = [
+    "nilearn.conftest"
 ]
 type = "forbidden"
 
@@ -388,7 +431,6 @@ max-complexity = 23
 "nilearn/plotting/tests/test_html_stat_map.py" = ["D103"]
 "nilearn/plotting/tests/test_img_comparisons.py" = ["D103"]
 "nilearn/regions/**/{tests}/*" = ["D103"]  # 64 errors to fix
-"nilearn/reporting/tests/test_html_report.py" = ["D103"]
 "nilearn/surface/**/{tests}/*" = ["D103"]  # 43 errors to fix
 
 [tool.ruff.lint.pydocstyle]

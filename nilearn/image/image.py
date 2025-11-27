@@ -414,6 +414,7 @@ def crop_img(
         removed (before, after) the cropped volumes, i.e.:
         *[(x1_pre, x1_post), (x2_pre, x2_post), ..., (xN_pre, xN_post)]*
 
+        If the specified image is empty, the original image will be returned.
     """
     check_params(locals())
 
@@ -431,6 +432,11 @@ def crop_img(
     # Sets full range if no data are found along the axis
     if coords.shape[1] == 0:
         start, end = [0, 0, 0], list(data.shape)
+        pad = False
+        warnings.warn(
+            f"No values above {rtol}. Returning original image.",
+            stacklevel=find_stack_level(),
+        )
     else:
         start = coords.min(axis=1)
         end = coords.max(axis=1) + 1

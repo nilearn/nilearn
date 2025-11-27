@@ -19,8 +19,10 @@ HIGHLIGHTS
  | - requests -- 2.30.0
  |
  | **A new dependency has been added:**
- | - Jinja2 >= 3.1.2
+ | - jinja2 -- 3.1.2
  |
+ | **A dependency has been removed:**
+ | - lxml
 
 
 NEW
@@ -38,6 +40,8 @@ Fixes
 - :bdg-dark:`Code` Make sure names in atlas labels look up tables are not shifted when the background name is not properly indicated (:gh:`5826` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Inform user correctly when reporting is enabled after the model is fit (:gh:`5836` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Raise warning when :func:`~nilearn.image.crop_img` is called with an empty image and return the original image (:gh:`5837` by `Hande Gözükan`_).
 
 
 Enhancements
@@ -135,3 +139,5 @@ Changes
 - :bdg-info:`Plotting` Change background to ``'black'`` for functions :func:`~plotting.plot_img_comparison` and :func:`~plotting.plot_bland_altman` (:gh:`5785` by `Hande Gözükan`_).
 
 - :bdg-dark:`Code` Reports (for maskers, GLMs...)  can now be generated even when no plotting engine is available (:gh:`5757` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Dependency on ``lxml`` has been removed as it is only used during testing (:gh:`5862` by `Rémi Gau`_).
