@@ -5,6 +5,7 @@ import contextlib
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
+from typing import Any
 
 import numpy as np
 from joblib import Memory
@@ -35,6 +36,7 @@ from nilearn.image import (
     resample_img,
     smooth_img,
 )
+from nilearn.maskers._mixin import _ReportingMixin
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
@@ -213,13 +215,102 @@ def mask_logger(step, img=None, verbose=0):
     logger.log(messages[step], verbose=verbose)
 
 
+def check_displayed_maps(
+    displayed_maps: Any, var_name: str = "displayed_maps"
+) -> None:
+    """Check type displayed_maps parameter for report generation."""
+    incorrect_type = not isinstance(
+        displayed_maps, (list, np.ndarray, int, str)
+    )
+    incorrect_string = (
+        isinstance(displayed_maps, str) and displayed_maps != "all"
+    )
+    not_integer = (
+        isinstance(displayed_maps, np.ndarray)
+        and (np.array(displayed_maps).dtype != int)
+    ) or (
+        isinstance(displayed_maps, list)
+        and not all(isinstance(i, int) for i in displayed_maps)
+    )
+    if incorrect_type or incorrect_string or not_integer:
+        input_type = displayed_maps.__class__.__name__
+        if isinstance(displayed_maps, (np.ndarray, list)):
+            input_type = (
+                f"{displayed_maps.__class__.__name__} "
+                f"of { {i.__class__.__name__ for i in displayed_maps} }"
+            )
+        raise TypeError(
+            f"Parameter '{var_name}' of "
+            "``generate_report()`` should be either 'all' or "
+            "a positive 'int', or a list/array of ints. "
+            f"You provided a {input_type}."
+        )
+
+
+def sanitize_displayed_maps(
+    estimator,
+    displayed_maps: Any,
+    n_maps: int,
+    var_name: str = "map",
+) -> tuple[Any, list[int]]:
+    """Check and sanitize displayed_maps parameter for report generation.
+
+    Eventually adjust displayed_maps and add warning messages to estimator.
+
+    First coerce displayed_maps to a list of integers.
+    Then check that all requested maps are available in the masker.
+    """
+    if isinstance(displayed_maps, str) and displayed_maps == "all":
+        displayed_maps = n_maps
+
+    if isinstance(displayed_maps, int):
+        if n_maps < displayed_maps:
+            msg = (
+                "`generate_report()` received "
+                f"'displayed_{var_name}s={displayed_maps}' to be displayed. "
+                f"But masker only has {n_maps} {var_name}(s). "
+                f"'displayed_{var_name}s' was set to {n_maps}."
+            )
+            estimator._report_content["warning_messages"].append(msg)
+
+            displayed_maps = n_maps
+
+        displayed_maps = list(range(displayed_maps))
+
+    if isinstance(displayed_maps, np.ndarray):
+        displayed_maps = displayed_maps.tolist()
+
+    available_maps = list(range(n_maps))
+
+    # we can not rely on using set as we must preserve order
+    unavailable_maps = [x for x in displayed_maps if x not in available_maps]
+    displayed_maps = [x for x in displayed_maps if x in available_maps]
+
+    if unavailable_maps:
+        msg = (
+            "`generate_report()` received "
+            f"'displayed_{var_name}s={list(displayed_maps)}' to be displayed. "
+            f"Report cannot display the following {var_name} "
+            f"{unavailable_maps} because "
+            f"masker only has {n_maps} {var_name}(s)."
+        )
+        estimator._report_content["warning_messages"].append(msg)
+
+    return estimator, displayed_maps
+
+
 @fill_doc
 class BaseMasker(
+    _ReportingMixin,
     TransformerMixin,
     CacheMixin,
     BaseEstimator,
 ):
     """Base class for NiftiMaskers."""
+
+    _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
+
+    _template_name = "body_masker.jinja"
 
     @abc.abstractmethod
     @fill_doc
@@ -272,7 +363,8 @@ class BaseMasker(
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(masker=True)
+        tags.input_tags = InputTags()
+        tags.estimator_type = "masker"
         return tags
 
     @property
@@ -283,18 +375,6 @@ class BaseMasker(
     @abc.abstractmethod
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
-
-    @abc.abstractmethod
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-
-    @abc.abstractmethod
-    def _create_figure_for_report(self):
-        """Generate figure for report."""
 
     def _load_mask(self, imgs):
         """Load and validate mask if one passed at init.
@@ -392,8 +472,7 @@ class BaseMasker(
         imgs : Niimg-like object
             See :ref:`extracting_data`.
 
-        y : numpy array of shape [n_samples], default=None
-            Target values.
+        %(y_dummy)s
 
         %(confounds)s
 
@@ -406,34 +485,7 @@ class BaseMasker(
         %(signals_transform_nifti)s
 
         """
-        # non-optimized default implementation; override when a better
-        # method is possible for a given clustering algorithm
-        if y is None:
-            # fit method of arity 1 (unsupervised transformation)
-            if self.mask_img is None:
-                return self.fit(imgs, **fit_params).transform(
-                    imgs, confounds=confounds, sample_mask=sample_mask
-                )
-
-            return self.fit(**fit_params).transform(
-                imgs, confounds=confounds, sample_mask=sample_mask
-            )
-
-        # fit method of arity 2 (supervised transformation)
-        if self.mask_img is None:
-            return self.fit(imgs, y, **fit_params).transform(
-                imgs, confounds=confounds, sample_mask=sample_mask
-            )
-
-        warnings.warn(
-            f"[{self.__class__.__name__}.fit] "
-            "Generation of a mask has been"
-            " requested (y != None) while a mask was"
-            " given at masker creation. Given mask"
-            " will be used.",
-            stacklevel=find_stack_level(),
-        )
-        return self.fit(**fit_params).transform(
+        return self.fit(imgs, y, **fit_params).transform(
             imgs, confounds=confounds, sample_mask=sample_mask
         )
 
@@ -504,8 +556,14 @@ class BaseMasker(
         return signals
 
 
-class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
+class _BaseSurfaceMasker(
+    _ReportingMixin, TransformerMixin, CacheMixin, BaseEstimator
+):
     """Class from which all surface maskers should inherit."""
+
+    _estimator_type = "masker"  # TODO (sklearn >= 1.8) remove
+
+    _template_name = "body_surface_masker.jinja"
 
     def _more_tags(self):
         """Return estimator tags.
@@ -524,14 +582,13 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
         if SKLEARN_LT_1_6:
             from nilearn._utils.tags import tags
 
-            return tags(surf_img=True, niimg_like=False, masker=True)
+            return tags(surf_img=True, niimg_like=False)
 
         from nilearn._utils.tags import InputTags
 
         tags = super().__sklearn_tags__()
-        tags.input_tags = InputTags(
-            surf_img=True, niimg_like=False, masker=True
-        )
+        tags.input_tags = InputTags(surf_img=True, niimg_like=False)
+        tags.estimator_type = "masker"
         return tags
 
     @property
@@ -599,18 +656,6 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
     @abc.abstractmethod
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
-
-    @abc.abstractmethod
-    def _init_report_content(self):
-        """Initialize report content.
-
-        Prepare basing content to inject in the HTML template
-        during report generation.
-        """
-
-    @abc.abstractmethod
-    def _create_figure_for_report(self):
-        """Generate figure for report."""
 
     @fill_doc
     def transform(self, imgs, confounds=None, sample_mask=None):
@@ -817,6 +862,7 @@ class _BaseSurfaceMasker(TransformerMixin, CacheMixin, BaseEstimator):
                         colors=colors,
                     )
 
+        plt.close()
         return fig
 
     def _set_contour_colors(self, hemi):

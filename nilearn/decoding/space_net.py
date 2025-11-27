@@ -606,11 +606,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
     %(memory_level1)s
 
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+    %(cv8_5)s
 
     %(debias)s
 
@@ -711,7 +707,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         # when dropping sklearn>=1.5 and replaced by just:
         #   self.__sklearn_tags__().estimator_type == "classifier"
         if SKLEARN_LT_1_6:
-            # TODO remove for sklearn>=1.6
+            # TODO remove for sklearn>=1.8
             return self._estimator_type == "classifier"
         return self.__sklearn_tags__().estimator_type == "classifier"
 
@@ -1070,11 +1066,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+    %(cv8_5)s
 
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
@@ -1306,11 +1298,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+    %(cv8_5)s
 
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.

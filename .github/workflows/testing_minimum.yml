@@ -11,29 +11,24 @@
 ###
 name: test minimal version of each dependency
 
-
 on:
-    push:
-        branches:
-        -   main
-    # Uses the cron schedule for github actions
-    #
-    # https://docs.github.com/en/free-pro-team@latest/actions/reference/events-that-trigger-workflows#scheduled-events
-    #
-    #            ┌───────────── minute (0 - 59)
-    #            │ ┌───────────── hour (0 - 23)
-    #            │ │ ┌───────────── day of the month (1 - 31)
-    #            │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
-    #            │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
-    #            │ │ │ │ │
-    #            │ │ │ │ │
-    #            │ │ │ │ │
-    #            * * * * *
     schedule:
-    # Run first day of the month at midnight UTC
-    -   cron: 0 0 1 * *
+        # Uses the cron schedule for github actions
+        # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#schedule
+        # Run every Monday at midnight UTC
+        #     ┌───────────── minute (0 - 59)
+        #     │ ┌───────────── hour (0 - 23)
+        #     │ │ ┌───────────── day of the month (1 - 31)
+        #     │ │ │ ┌───────────── month (1 - 12 or JAN-DEC)
+        #     │ │ │ │ ┌───────────── day of the week (0 - 6 or SUN-SAT)
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     │ │ │ │ │
+        #     * * * * *
+    -   cron: 0 0 * * 1
 
-    # Allows you to run this workflow manually from the Actions tab
+    # This enables manual triggering from GitHub UI
+    # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
     workflow_dispatch:
 
 concurrency:
@@ -46,7 +41,6 @@ env:
 
 jobs:
     test_min_install:
-
         if: github.repository == 'nilearn/nilearn'
 
         runs-on: ${{ matrix.os }}
@@ -61,9 +55,8 @@ jobs:
         name: ${{ matrix.os }} with Python ${{ matrix.python-version }} and ${{ matrix.min_dep }}
 
         steps:
-
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
 
         -   name: Setup python
             uses: actions/setup-python@v6
@@ -89,6 +82,7 @@ jobs:
             run: pip install .[plotting,test]
 
         -   name: Run tests
+            id: test_minimum
             run: |
                 pip install pytest-mpl
                 pytest --pyargs nilearn --report=report.html -n auto --csv results/pytest_output/pytest_output.csv
@@ -101,14 +95,31 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: ${{ matrix.os }}_${{ matrix.min_dep }}_report.html
                 path: report.html
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v4
+            uses: actions/upload-artifact@v5
             with:
                 name: ${{ matrix.os }}_${{ matrix.min_dep }}_pytest_output
                 path: results/pytest_output
+
+        -   name: Create issue
+            if: ${{ steps.test_minimum.outcome != 'success' }}
+            uses: JasonEtco/create-an-issue@v2.9.2
+            env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                run_id: ${{ github.run_id }}
+                repository: ${{ github.repository }}
+                workflow_name: TEST MINIMUM DEPENDENCIES
+            with:
+                filename: .github/workflow_failure.md
+                update_existing: true
+                search_existing: open
+
+        -   name: Return failure
+            if: ${{ steps.test_minimum.outcome != 'success' }}
+            run: exit 1
