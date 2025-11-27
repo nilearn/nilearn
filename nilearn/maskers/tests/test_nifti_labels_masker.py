@@ -60,7 +60,7 @@ else:
         check(estimator)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
@@ -72,6 +72,7 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
+@pytest.mark.slow
 def test_nifti_labels_masker(
     affine_eye, shape_3d_default, n_regions, length, img_labels
 ):
@@ -97,13 +98,18 @@ def test_nifti_labels_masker(
     # Check attributes defined at fit
     assert masker.n_elements_ == n_regions
 
-    # now with mask_img
+    # transform
+    signals = masker.fit_transform(fmri_img)
+
+    assert signals.shape == (length, n_regions)
+
+    # now with a mask_img that excludes one region
     masker = NiftiLabelsMasker(
         img_labels, mask_img=mask11_img, resampling_target=None
     )
     signals = masker.fit_transform(fmri_img)
 
-    assert signals.shape == (length, n_regions)
+    assert signals.shape == (length, n_regions - 1)
 
 
 def test_nifti_labels_masker_errors(
@@ -158,18 +164,13 @@ def test_nifti_labels_masker_errors(
 
 
 def test_nifti_labels_masker_with_nans_and_infs(
-    affine_eye, shape_3d_default, n_regions, length, img_labels
+    affine_eye, n_regions, length, img_labels, img_fmri
 ):
     """Deal with NaNs and infs in label image.
 
     The masker should replace those NaNs and infs with zeros,
     while raising a warning.
     """
-    fmri_img, mask_img = generate_random_img(
-        (*shape_3d_default, length),
-        affine=affine_eye,
-    )
-
     # Introduce nans with data type float
     # See issue: https://github.com/nilearn/nilearn/issues/2580
     data = get_data(img_labels).astype(np.float32)
@@ -177,44 +178,47 @@ def test_nifti_labels_masker_with_nans_and_infs(
     data[:, :, 4] = np.inf
     img_labels = Nifti1Image(data, affine_eye)
 
-    masker = NiftiLabelsMasker(img_labels, mask_img=mask_img)
+    # image also contains 0, inf and nan
+    unique = np.unique(data)
+    assert len(unique) == n_regions + 3
+
+    masker = NiftiLabelsMasker(img_labels)
 
     with pytest.warns(UserWarning, match="Non-finite values detected."):
-        sig = masker.fit_transform(fmri_img)
+        sig = masker.fit_transform(img_fmri)
 
-    assert sig.shape == (length, n_regions)
+    assert "nan" not in masker.lut_.name.to_list()
+    assert "inf" not in masker.lut_.name.to_list()
+    assert "unknown" not in masker.lut_.name.to_list()
+
     assert np.all(np.isfinite(sig))
+    assert sig.shape == (length, n_regions)
 
 
 def test_nifti_labels_masker_with_nans_and_infs_in_data(
-    affine_eye, shape_3d_default, n_regions, length, img_labels
+    affine_eye, img_fmri, n_regions, length, img_labels
 ):
     """Apply a NiftiLabelsMasker to 4D data containing NaNs and infs.
 
     The masker should replace those NaNs and infs with zeros,
     while raising a warning.
     """
-    fmri_img, mask_img = generate_random_img(
-        (*shape_3d_default, length),
-        affine=affine_eye,
-    )
-
     # Introduce nans with data type float
     # See issues:
     # - https://github.com/nilearn/nilearn/issues/2580 (why floats)
     # - https://github.com/nilearn/nilearn/issues/2711 (why test)
-    fmri_data = get_data(fmri_img).astype(np.float32)
+    fmri_data = get_data(img_fmri).astype(np.float32)
     fmri_data[:, :, 7, :] = np.nan
     fmri_data[:, :, 4, 0] = np.inf
     fmri_img = Nifti1Image(fmri_data, affine_eye)
 
-    masker = NiftiLabelsMasker(img_labels, mask_img=mask_img)
+    masker = NiftiLabelsMasker(img_labels)
 
     with pytest.warns(UserWarning, match="Non-finite values detected."):
         sig = masker.fit_transform(fmri_img)
 
-    assert sig.shape == (length, n_regions)
     assert np.all(np.isfinite(sig))
+    assert sig.shape == (length, n_regions)
 
 
 @pytest.mark.parametrize(
@@ -319,6 +323,7 @@ def test_nifti_labels_masker_resampling_to_data(affine_eye, n_regions, length):
     assert_array_equal(masker.labels_img_.affine, affine2)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("resampling_target", ["data", "labels"])
 def test_nifti_labels_masker_resampling(
     affine_eye,
@@ -490,6 +495,7 @@ def test_nifti_labels_masker_resampling_to_none(
         masker.fit_transform(fmri_img)
 
 
+@pytest.mark.slow
 def test_nifti_labels_masker_with_mask(
     shape_3d_default, affine_eye, length, img_labels
 ):
@@ -898,6 +904,7 @@ def test_check_labels_errors(shape_3d_default, affine_eye):
         masker.fit()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "background",
     [
@@ -960,6 +967,7 @@ def test_region_names(
     )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "background",
     [None, "background", "Background"],
@@ -1104,6 +1112,7 @@ def test_more_labels_than_actual_region_in_atlas(
     assert len(masker.lut_) == n_regions + 1
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("background", [None, "Background"])
 def test_pass_lut(
     shape_3d_default, affine_eye, n_regions, img_labels, tmp_path, background
@@ -1189,3 +1198,43 @@ def test_no_background(n_regions, img_labels, shape_3d_default, affine_eye):
     assert len(masker.labels_) == n_expected_regions
     assert len(masker.region_ids_) == n_expected_regions
     assert len(masker.region_names_) == n_expected_regions
+
+
+@pytest.mark.parametrize(
+    "lut",
+    [
+        pd.Series({0: "Background", 1: "Frontal", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Correct lut
+        pd.Series({1: "Frontal", 2: "Temporal", 0: "Background"}).reset_index(
+            name="name"
+        ),  # Correct lut but wrong order
+        pd.Series({0: "background", 1: "Frontal", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Background not capitalized
+        pd.Series({1: "Frontal", 0: "background", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Background not capitalized and wrong order
+        pd.Series({0: "unknown", 1: "Frontal", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Background other label
+        pd.Series({1: "Frontal", 0: "unknown", 2: "Temporal"}).reset_index(
+            name="name"
+        ),  # Background other label and wrong order
+    ],
+)
+def test_lut_shift(lut):
+    """Test order of labels in lut.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5813
+    """
+    # Labels: 0=background, 1=Frontal, 2=Temporal
+    labels_data = np.zeros((4, 4, 4), dtype=np.int32)
+    labels_data[0:2, :, :] = 1  # top half = region 1
+    labels_data[2:, :, :] = 2  # bottom half = region 2
+    labels_img = Nifti1Image(labels_data, affine=np.eye(4))
+
+    masker = NiftiLabelsMasker(labels_img=labels_img, lut=lut).fit()
+
+    assert masker.region_names_ == {0: "Frontal", 1: "Temporal"}
+    assert masker.lut_["name"].to_list() == ["Frontal", "Temporal"]

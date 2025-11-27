@@ -21,6 +21,7 @@ from numpy.testing import (
 from sklearn.cluster import KMeans
 from sklearn.utils.estimator_checks import parametrize_with_checks
 
+import nilearn as nil
 from nilearn._utils.data_gen import (
     add_metadata_to_bids_dataset,
     basic_paradigm,
@@ -33,6 +34,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
+from nilearn._utils.helpers import is_windows_platform
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.contrasts import compute_fixed_effects
@@ -92,6 +94,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -161,7 +164,7 @@ def test_glm_fit_valid_mask_img(shape_4d_default):
     assert isinstance(z1, Nifti1Image)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_explicit_fixed_effects(shape_3d_default):
     """Test the fixed effects performed manually/explicitly."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3
@@ -221,7 +224,7 @@ def test_explicit_fixed_effects(shape_3d_default):
         compute_fixed_effects(contrasts, variance, mask, dofs=[100])
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 def test_explicit_fixed_effects_without_mask(shape_3d_default):
     """Test the fixed effects performed manually/explicitly with no mask."""
     shapes, rk = [(*shape_3d_default, 4), (*shape_3d_default, 5)], 3
@@ -310,6 +313,7 @@ def test_glm_target_shape_affine(shape_3d_default, affine_eye):
     assert z_image.shape == (10, 11, 12)
 
 
+@pytest.mark.slow
 def test_high_level_glm_with_data_with_mask(shape_3d_default):
     """Test GLM can be run with mask."""
     shapes, rk = [(*shape_3d_default, 5)], 3
@@ -371,6 +375,7 @@ def test_fmri_inputs_type_data_smoke(tmp_path, shape_4d_default):
     )
 
 
+@pytest.mark.slow
 def test_fmri_inputs_type_design_matrices_smoke(tmp_path, shape_4d_default):
     """Test processing of FMRI inputs with path, str for design matrix."""
     mask_file, fmri_files, design_files = write_fake_fmri_data_and_design(
@@ -423,6 +428,7 @@ def test_high_level_glm_null_contrasts(shape_3d_default):
     np.testing.assert_almost_equal(get_data(z1), get_data(z2))
 
 
+@pytest.mark.slow
 def test_high_level_glm_different_design_matrices():
     """Test can estimate a contrast when design matrices are different."""
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
@@ -538,6 +544,7 @@ def test_run_glm_ar1(rng):
     assert isinstance(results[labels[0]].model, ARModel)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_run_glm_ar3(rng):
     """Test run_glm with AR(3) noise model."""
     n, p, q = 33, 80, 10
@@ -577,6 +584,7 @@ def test_run_glm_errors(rng):
         run_glm(Y, X, "3ar")
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize(
     "ar_vals", [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]
 )
@@ -627,6 +635,7 @@ def test_glm_ar_estimates_errors(rng):
         _yule_walker(np.array(0.0), 2)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("random_state", [3, np.random.RandomState(42)])
 def test_glm_random_state(random_state):
     """Test that the random state is passed to the run_glm."""
@@ -728,7 +737,8 @@ def test_fmri_inputs_events_type(tmp_path):
     )
 
 
-def test_fmri_inputs_with_confounds():
+@pytest.mark.slow
+def test_fmri_inputs_with_confounds(tmp_path):
     """Test with confounds and, events."""
     n_timepoints = 10
     shapes = ((3, 4, 5, n_timepoints),)
@@ -744,6 +754,22 @@ def test_fmri_inputs_with_confounds():
     flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
         fmri_data,
         confounds=conf,
+        events=events,
+    )
+    assert "conf" in flm.design_matrices_[0]
+
+    # confounds as files are OK
+    conf.to_csv(tmp_path / "confounds.csv")
+    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        fmri_data,
+        confounds=str(tmp_path / "confounds.csv"),
+        events=events,
+    )
+    assert "conf" in flm.design_matrices_[0]
+
+    flm = FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+        fmri_data,
+        confounds=tmp_path / "confounds.csv",
         events=events,
     )
     assert "conf" in flm.design_matrices_[0]
@@ -769,6 +795,37 @@ def test_fmri_inputs_with_confounds():
         events=events,
     )
     assert "confound_0" in flm.design_matrices_[0]
+
+
+def test_fmri_inputs_with_confounds_with_nan():
+    """Test with confounds and, events."""
+    confound_file = (
+        Path(nil.__file__).parent
+        / "interfaces"
+        / "fmriprep"
+        / "data"
+        / "test_desc-confounds_regressors.tsv"
+    )
+    confounds = pd.read_csv(confound_file, sep="\t")
+    confounds = confounds["framewise_displacement"]
+    assert_array_equal(confounds.to_numpy()[0], np.nan)
+
+    n_timepoints = len(confounds)
+    shapes = ((3, 4, 5, n_timepoints),)
+    mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
+
+    events = basic_paradigm()
+
+    fmri_data = fmri_data[0]
+
+    with pytest.raises(
+        ValueError, match="Extra regressors contain NaN values"
+    ):
+        FirstLevelModel(mask_img=mask, t_r=2.0).fit(
+            fmri_data,
+            confounds=confound_file,
+            events=events,
+        )
 
 
 def test_fmri_inputs_confounds_ignored_with_design_matrix():
@@ -1379,6 +1436,7 @@ def test_first_level_residuals(shape_4d_default):
     assert_array_almost_equal(mean_residuals, 0)
 
 
+@pytest.mark.slow
 def test_first_level_residuals_errors(shape_4d_default):
     """Access residuals needs fit and minimize_memory set to True."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(

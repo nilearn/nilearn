@@ -29,6 +29,7 @@ Classes
    SurfaceMasker
    MultiSurfaceMasker
    SurfaceLabelsMasker
+   MultiSurfaceLabelsMasker
    SurfaceMapsMasker
    MultiSurfaceMapsMasker
 
