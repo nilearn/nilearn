@@ -13,7 +13,7 @@ More specifically:
    (the FreeSurfer template, fsaverage).
 3. A :term:`GLM` is applied to the dataset
    (effect/covariance, then contrast estimation).
-3. Inspect GLM reports and save the results to disk.
+4. Inspect GLM reports and save the results to disk.
 
 The result of the analysis are statistical maps that are defined
 on the brain mesh.
