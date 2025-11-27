@@ -27,7 +27,10 @@ def shape():
 
 @pytest.fixture
 def simple_stat_img(shape, affine_eye):
-    """Create a simple stat image for more tests."""
+    """Create a simple stat image for more tests.
+
+    Contains both positive and negative clusters.
+    """
     data = np.zeros(shape)
     data[2:4, 5:7, 6:8] = 5.0
     data[4:6, 7:9, 8:10] = -5.0
