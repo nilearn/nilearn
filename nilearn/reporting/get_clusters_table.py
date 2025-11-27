@@ -22,7 +22,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_params
-from nilearn.image import math_img, new_img_like, threshold_img
+from nilearn.image import new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
 from nilearn.surface.surface import SurfaceImage, find_surface_clusters
 from nilearn.typing import ClusterThreshold
@@ -430,16 +430,15 @@ def _get_clusters_table_surface(
     else:
         signs = [1, -1]
         for sign in signs:
-            temp_stat_map = math_img(f"img * {sign}", img=stat_img)
             temp_stat_map = threshold_img(
-                img=temp_stat_map,
-                threshold=stat_threshold,
+                img=stat_img,
+                threshold=stat_threshold * sign,
                 cluster_threshold=cluster_threshold,
                 two_sided=False,
             )
             clusters, label_map = _get_clusters_table_surface(
                 temp_stat_map,
-                stat_threshold,
+                stat_threshold * sign,
                 cluster_threshold=cluster_threshold,
                 two_sided=False,
                 return_label_maps=True,

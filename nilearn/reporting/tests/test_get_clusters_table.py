@@ -198,12 +198,13 @@ def test_get_clusters_table_surface(
 @pytest.mark.parametrize(
     (
         "stat_threshold, cluster_threshold, "
-        "expected_n_cluster_left, expected_n_cluster_right"
+        "expected_n_cluster_left, expected_n_cluster_right, "
+        "contain_neg_and_pos"
     ),
     [
-        (4, 0, 2, 2),
-        (4, 2, 1, 0),
-        (6, 0, 0, 0),
+        (4, 0, 2, 2, True),
+        (4, 2, 1, 0, False),
+        (6, 0, 0, 0, False),
     ],
 )
 def test_get_clusters_table_surface_two_sided(
@@ -212,6 +213,7 @@ def test_get_clusters_table_surface_two_sided(
     cluster_threshold,
     expected_n_cluster_left,
     expected_n_cluster_right,
+    contain_neg_and_pos,
 ):
     """Test n_clusters detected with two sided."""
     surf_img_1d.data.parts["left"] = np.asarray([5.1, 5.2, 5.3, -5])
@@ -229,6 +231,10 @@ def test_get_clusters_table_surface_two_sided(
     validate_clusters_table(
         clusters_table, expected_n_cluster_left + expected_n_cluster_right
     )
+
+    if contain_neg_and_pos:
+        assert np.any(clusters_table["Peak Stat"].to_numpy() > 0)
+        assert np.any(clusters_table["Peak Stat"].to_numpy() < 0)
 
     assert isinstance(label_maps, list)
     assert all(isinstance(x, SurfaceImage) for x in label_maps)
