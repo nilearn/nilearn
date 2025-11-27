@@ -368,14 +368,34 @@ def test_all_resolution_inference_one_sided(
 
 
 @pytest.mark.parametrize("alpha", [-1, 2])
-def test_all_resolution_inference_errors(alpha, data_norm_isf, affine_eye):
-    # test aberrant alpha
+def test_all_resolution_inference_alpha_errors(
+    alpha, data_norm_isf, affine_eye
+):
+    """Test aberrant alpha."""
     data = data_norm_isf
     stat_img = Nifti1Image(data, affine_eye)
 
     with pytest.raises(ValueError, match="alpha should be between 0 and 1"):
         cluster_level_inference(
             stat_img, threshold=DEFAULT_Z_THRESHOLD, alpha=alpha
+        )
+
+
+@pytest.mark.parametrize("threshold", [-1, [-1, 2]])
+def test_all_resolution_inference_threshold_errors(
+    data_norm_isf, affine_eye, threshold
+):
+    """Test aberrant threshold."""
+    data = data_norm_isf
+    stat_img = Nifti1Image(data, affine_eye)
+
+    with pytest.raises(
+        ValueError,
+        match=("'threshold' cannot be negative or contain negative values"),
+    ):
+        cluster_level_inference(
+            stat_img,
+            threshold=threshold,
         )
 
 

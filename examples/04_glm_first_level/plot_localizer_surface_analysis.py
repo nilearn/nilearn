@@ -183,7 +183,7 @@ from nilearn.glm import cluster_level_inference
 from nilearn.plotting import plot_surf_stat_map, show
 
 p_val = 0.001
-p001_uncorrected = norm.isf(p_val)
+threshold = norm.isf(p_val)
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
@@ -201,7 +201,7 @@ for contrast_id, z_score in results.items():
         stat_map=z_score,
         hemi=hemi,
         title=contrast_id,
-        threshold=p001_uncorrected,
+        threshold=threshold,
         bg_map=fsaverage_data,
     )
 
@@ -242,7 +242,7 @@ output_dir.mkdir(exist_ok=True, parents=True)
 save_glm_to_bids(
     glm,
     contrasts=contrasts,
-    threshold=p001_uncorrected,
+    threshold=threshold,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=None,
     prefix="sub-01",
@@ -254,7 +254,7 @@ save_glm_to_bids(
 # The report can also be generated and saved on its own.
 report = glm.generate_report(
     contrasts,
-    threshold=p001_uncorrected,
+    threshold=threshold,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=None,
     cluster_threshold=10,

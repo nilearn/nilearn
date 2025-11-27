@@ -159,7 +159,9 @@ def cluster_level_inference(
         or None, default=None
         mask image
 
-    threshold : :obj:`float` or :obj:`list` of :obj:`float`, default=3.0
+    threshold : Positive :obj:`float`, :obj:`int`, \
+                 or :obj:`list` of \
+                 positive :obj:`float` or :obj:`int`, default=3.0
        Cluster-forming threshold in z-scale.
 
     alpha : :obj:`float` or :obj:`list`, default=0.05
@@ -186,8 +188,16 @@ def cluster_level_inference(
     parameters = dict(**inspect.signature(cluster_level_inference).parameters)
     warn_default_threshold(threshold, parameters["threshold"].default, 3.0)
 
+    original_threshold = threshold
     if not isinstance(threshold, list):
         threshold = [threshold]
+
+    if any(x < 0 for x in threshold):
+        raise ValueError(
+            "'threshold' cannot be negative or "
+            "contain negative values. "
+            f"Got: 'threshold={original_threshold}'."
+        )
 
     is_surface = isinstance(stat_img, SurfaceImage) or isinstance(
         mask_img, SurfaceImage
@@ -256,7 +266,7 @@ def cluster_level_inference(
             tmp_img = masker.inverse_transform(proportion_true_discoveries)
             data[hemi] = tmp_img.data.parts[hemi]
 
-        proportion_true_discoveries_img = new_img_like(stat_img, data)
+        return new_img_like(stat_img, data)
 
     else:  # data are volume-based
         if mask_img is None:
@@ -288,11 +298,7 @@ def cluster_level_inference(
                 )
                 proportion_true_discoveries[labels == label_] = proportion
 
-        proportion_true_discoveries_img = masker.inverse_transform(
-            proportion_true_discoveries
-        )
-
-    return proportion_true_discoveries_img
+        return masker.inverse_transform(proportion_true_discoveries)
 
 
 @fill_doc
