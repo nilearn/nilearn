@@ -1,6 +1,4 @@
-"""
-Utility functions to create an HTML report using a fitted GLM & contrasts.
-"""
+"""Utility functions to create an GLM HTML report."""
 
 import warnings
 from html import escape

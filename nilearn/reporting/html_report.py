@@ -368,7 +368,10 @@ class ReportMixin:
         report_info = self._report_info
 
         # TODO clean up docstring from RST formatting
-        report_info["docstring"] = self.__doc__.split("Parameters\n")[0]
+        if self.__doc__ is not None:
+            report_info["docstring"] = self.__doc__.split("Parameters\n")[0]
+        else:
+            report_info["docstring"] = ""
 
         report_info["parameters"] = self._model_params_to_html()
 

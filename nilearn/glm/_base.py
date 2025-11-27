@@ -461,9 +461,12 @@ class BaseGLM(ReportMixin, CacheMixin, BaseEstimator):
             # set mask_info
             # We try to rely on the content of glm object only
             # by reading images from disk rarther than recomputing them
-            for k, v in self.masker_._report_content.items():
-                if k in ["n_elements", "coverage"]:
-                    mask_info[k] = v
+            mask_info = {
+                k: v
+                for k, v in self.masker_._report_content.items()
+                if k in ["n_elements", "coverage"]
+            }
+
             if "coverage" in mask_info:
                 mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
             for k, v in mask_info.items():
