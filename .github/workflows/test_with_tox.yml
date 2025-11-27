@@ -208,11 +208,10 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                include:
-                -   description: pre-release dependencies
-                    py: '3.14'
-                    os: ubuntu-latest
-                    env: pre
+                description: [pre-release dependencies]
+                py: ['3.14']
+                os: [ubuntu-latest]
+                env: [pre]
 
         steps:
         -   uses: actions/checkout@v6
