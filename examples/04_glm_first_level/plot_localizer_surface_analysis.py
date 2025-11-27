@@ -185,6 +185,7 @@ from nilearn.plotting import plot_surf_stat_map, show
 from nilearn.reporting import get_clusters_table
 
 threshold = 3.0
+cluster_trhreshold = 20
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
@@ -205,7 +206,10 @@ for contrast_id, contrast_val in contrasts.items():
     )
 
     table = get_clusters_table(
-        z_score, stat_threshold=threshold, cluster_threshold=20
+        z_score,
+        stat_threshold=threshold,
+        cluster_threshold=cluster_trhreshold,
+        two_sided=True,
     )
     print(f"\n{contrast_id=}")
     print(table)
@@ -229,7 +233,8 @@ save_glm_to_bids(
     height_control=None,
     prefix="sub-01",
     out_dir=output_dir,
-    cluster_threshold=10,
+    cluster_threshold=cluster_trhreshold,
+    two_sided=True,
 )
 
 # %%
@@ -240,7 +245,8 @@ report = glm.generate_report(
     threshold=threshold,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=None,
-    cluster_threshold=10,
+    cluster_threshold=cluster_trhreshold,
+    two_sided=True,
 )
 
 # %%
