@@ -16,6 +16,10 @@ import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image
+from scipy.linalg import toeplitz
+from sklearn.cluster import KMeans
+from sklearn.utils.estimator_checks import check_is_fitted
+
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import check_and_load_tables
@@ -59,9 +63,6 @@ from nilearn.maskers import NiftiMasker, NiftiSpheresMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike, Tr
-from scipy.linalg import toeplitz
-from sklearn.cluster import KMeans
-from sklearn.utils.estimator_checks import check_is_fitted
 
 
 def mean_scaling(Y, axis=0):
@@ -1352,7 +1353,6 @@ class FirstLevelModel(BaseGLM):
         fig : matplotlib.figure.Figure
             The generated figure.
         """
-
         # Generate a time axis
         n_timepoints = len(observed_ts)
         time_axis = np.arange(n_timepoints)
