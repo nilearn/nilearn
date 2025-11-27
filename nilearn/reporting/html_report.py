@@ -184,6 +184,8 @@ class ReportMixin:
 
     def _reset_report(self):
         self._report_content = deepcopy(self._REPORT_DEFAULTS)
+        self._report_info = {}
+
         if self._has_report_data():
             del self._reporting_data
 
@@ -354,8 +356,6 @@ class ReportMixin:
         report_generation _report_info is reset to {}. If _report_content can
         safely be reset after report generation, _report_info can be removed.
         """
-        report_info = {}
-
         report_content = self._report_content
         # Generate a unique ID for report
         report_content["unique_id"] = str(uuid.uuid4()).replace("-", "")
@@ -365,6 +365,8 @@ class ReportMixin:
 
         report_content["has_plotting_engine"] = is_matplotlib_installed()
 
+        report_info = self._report_info
+
         # TODO clean up docstring from RST formatting
         report_info["docstring"] = self.__doc__.split("Parameters\n")[0]
 
@@ -373,8 +375,6 @@ class ReportMixin:
         report_info["date"] = datetime.now().replace(microsecond=0).isoformat()
 
         report_info["version"] = __version__
-
-        self._report_info = report_info
 
     def generate_report(self, title: str | None = None) -> HTMLReport:
         """Generate an HTML report for this estimator.
@@ -431,7 +431,7 @@ class ReportMixin:
         body = body_tpl.render(**report)
 
         # clear report_info
-        self._report_info = {}
+        self._report_info.clear()
         return assemble_report(body, page_title)
 
     @abc.abstractmethod
