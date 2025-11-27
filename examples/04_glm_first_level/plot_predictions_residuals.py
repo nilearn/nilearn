@@ -91,6 +91,7 @@ table.set_index("Cluster ID", drop=True)
 print(table)
 
 coords = table.loc[range(1, 7), ["X", "Y", "Z"]].to_numpy()
+print(coords)
 
 masker = NiftiSpheresMasker(coords)
 real_timeseries = masker.fit_transform(fmri_img)

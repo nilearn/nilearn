@@ -13,6 +13,7 @@ More specifically:
    (the FreeSurfer template, fsaverage).
 3. A :term:`GLM` is applied to the dataset
    (effect/covariance, then contrast estimation).
+3. Inspect GLM reports and save the results to disk.
 
 The result of the analysis are statistical maps that are defined
 on the brain mesh.
@@ -122,6 +123,7 @@ basic_contrasts["audio"] = (
     + basic_contrasts["sentence_listening"]
 )
 
+# %%
 # one contrast adding all conditions involving instructions reading
 basic_contrasts["visual"] = (
     basic_contrasts["visual_left_hand_button_press"]
@@ -130,12 +132,14 @@ basic_contrasts["visual"] = (
     + basic_contrasts["sentence_reading"]
 )
 
+# %%
 # one contrast adding all conditions involving computation
 basic_contrasts["computation"] = (
     basic_contrasts["visual_computation"]
     + basic_contrasts["audio_computation"]
 )
 
+# %%
 # one contrast adding all conditions involving sentences
 basic_contrasts["sentences"] = (
     basic_contrasts["sentence_listening"] + basic_contrasts["sentence_reading"]
@@ -169,7 +173,7 @@ contrasts = {
 }
 
 # %%
-# Let's estimate the t contrasts by iterating over them.
+# Let's estimate the t-contrasts by iterating over them.
 #
 # We use the same threshold for all contrasts when displaying them.
 #
@@ -217,7 +221,7 @@ for contrast_id, contrast_val in contrasts.items():
 show()
 
 # %%
-# We can then our GLM results to disk.
+# We can then save our GLM results to disk.
 from pathlib import Path
 
 from nilearn.glm import save_glm_to_bids
