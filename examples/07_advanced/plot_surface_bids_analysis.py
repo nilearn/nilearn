@@ -156,13 +156,6 @@ report_flm
 
 
 # %%
-# Save the report to disk
-output_dir = Path.cwd() / "results" / "plot_surface_bids_analysis"
-output_dir.mkdir(exist_ok=True, parents=True)
-report_flm.save_as_html(output_dir / "report_flm.html")
-
-
-# %%
 # Group level model
 # -----------------
 #
@@ -195,7 +188,3 @@ report_slm
 # %%
 # Or in a separate browser window
 # report_flm.open_in_browser()
-
-# %%
-# Save it as an html file.
-report_slm.save_as_html(output_dir / "report_slm.html")

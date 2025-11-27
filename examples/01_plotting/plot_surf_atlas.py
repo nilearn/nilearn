@@ -149,7 +149,7 @@ view = view_surf(
     cmap="gist_ncar",
     symmetric_cmap=False,
 )
-# In a Jupyter notebook, if ``view`` is the output of a cell,
+# In a notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
 view
 

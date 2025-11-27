@@ -113,36 +113,6 @@ for run in unique_runs:
         conditions_label.append(condition_)
         run_label.append(run)
 
-# %%
-# Generating a report
-# -------------------
-# Since we have already computed the FirstLevelModel
-# and have the :term:`contrast`, we can quickly create a summary report.
-
-from nilearn.image import mean_img
-
-mean_img_ = mean_img(func_filename)
-report = glm.generate_report(
-    contrasts=conditions,
-    bg_img=mean_img_,
-)
-
-# %%
-# This report can be viewed in a notebook.
-report
-
-# %%
-# In a jupyter notebook, the report will be automatically inserted, as above.
-
-# We can access the report via a browser:
-# report.open_in_browser()
-
-# Or we can save as an html file.
-from pathlib import Path
-
-output_dir = Path.cwd() / "results" / "plot_haxby_glm_decoding"
-output_dir.mkdir(exist_ok=True, parents=True)
-report.save_as_html(output_dir / "report.html")
 
 # %%
 # Build the decoding pipeline
