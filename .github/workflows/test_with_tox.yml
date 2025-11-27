@@ -199,6 +199,9 @@ jobs:
 
 
     test_flaky:
+        # Some tests are marked as flaky in order to reduce the noise in CI results.
+        # These tests are run separately here to monitor their status.
+        # We also run them on a single processor to reduce the chance of intermittent failures.
         needs: [check_skip_flags, define-matrix]
 
         if: github.repository == 'nilearn/nilearn'
