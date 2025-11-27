@@ -432,7 +432,7 @@ def _get_clusters_table_surface(
         for sign in signs:
             temp_stat_map = math_img(f"img * {sign}", img=stat_img)
             temp_stat_map = threshold_img(
-                img=stat_img,
+                img=temp_stat_map,
                 threshold=stat_threshold,
                 cluster_threshold=cluster_threshold,
                 two_sided=False,

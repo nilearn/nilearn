@@ -9,7 +9,7 @@ from numpy.testing import assert_array_equal
 from sklearn.utils.estimator_checks import ignore_warnings
 
 from nilearn.datasets import load_fsaverage_data
-from nilearn.image import get_data
+from nilearn.image import get_data, math_img
 from nilearn.reporting.get_clusters_table import (
     _cluster_nearest_neighbor,
     _local_max,
@@ -39,10 +39,16 @@ def validate_clusters_table(
     clusters_table: pd.DataFrame, expected_n_cluster: int
 ):
     """Validate the structure of the clusters table."""
-    assert len(clusters_table) == expected_n_cluster
-    assert len(clusters_table["Cluster ID"].to_list()) == len(
-        set(clusters_table["Cluster ID"].to_list())
-    )
+    assert len(clusters_table) == expected_n_cluster, clusters_table
+
+    duplicated_ID = clusters_table.duplicated(subset=["Cluster ID"])
+    assert not any(duplicated_ID.to_list()), clusters_table
+
+    assert not any(clusters_table["Peak Stat"].to_numpy() == np.nan)
+
+    # VERY unlikely that two different clusters have the same peak stat
+    duplicated_stats = clusters_table.duplicated(subset=["Peak Stat"])
+    assert not any(duplicated_stats.to_list()), clusters_table
 
 
 def test_local_max_two_maxima(shape, affine_eye):
@@ -163,8 +169,8 @@ def test_get_clusters_table_surface(
 
     Also check negative thresholds for one sided.
     """
-    surf_img_1d.data.parts["left"] = np.asarray([5, 5, 5, -5])
-    surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5, -5])
+    surf_img_1d.data.parts["left"] = np.asarray([5.1, 5.2, 5.3, -5])
+    surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5.4, -5.2])
     stat_img = surf_img_1d
 
     clusters_table, label_maps = get_clusters_table(
@@ -193,7 +199,7 @@ def test_get_clusters_table_surface(
     ),
     [
         (4, 0, 2, 2),
-        (4, 2, 1, 1),
+        (4, 2, 1, 0),
         (6, 0, 0, 0),
     ],
 )
@@ -205,8 +211,8 @@ def test_get_clusters_table_surface_two_sided(
     expected_n_cluster_right,
 ):
     """Test n_clusters detected with two sided."""
-    surf_img_1d.data.parts["left"] = np.asarray([5, 5, 5, -5])
-    surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5, -5])
+    surf_img_1d.data.parts["left"] = np.asarray([5.1, 5.2, 5.3, -5])
+    surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5.4, -5.2])
     stat_img = surf_img_1d
 
     clusters_table, label_maps = get_clusters_table(
@@ -246,39 +252,34 @@ def check_sum_negative_positive_clusters(
         two_sided=True,
     )
 
-    assert not any(clusters_table_two_sided["Peak Stat"].to_numpy() == np.nan)
     validate_clusters_table(
         clusters_table_two_sided, expected_n_cluster_two_sided
     )
 
-    # TODO
-    # clusters_table_positive = get_clusters_table(
-    #     stat_img,
-    #     stat_threshold=np.abs(stat_threshold),
-    #     cluster_threshold=cluster_threshold,
-    #     two_sided=False,
-    # )
+    clusters_table_positive = get_clusters_table(
+        stat_img,
+        stat_threshold=np.abs(stat_threshold),
+        cluster_threshold=cluster_threshold,
+        two_sided=False,
+    )
 
-    # clusters_table_negative = get_clusters_table(
-    #     math_img("img*-1", img=stat_img),
-    #     stat_threshold=stat_threshold,
-    #     cluster_threshold=cluster_threshold,
-    #     two_sided=False,
-    # )
+    clusters_table_negative = get_clusters_table(
+        math_img("img*-1", img=stat_img),
+        stat_threshold=stat_threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=False,
+    )
 
-    # assert len(clusters_table_two_sided) == (
-    # len(clusters_table_positive) + len(
-    #     clusters_table_negative
-    # ))
+    assert len(clusters_table_two_sided) == (
+        len(clusters_table_positive) + len(clusters_table_negative)
+    )
 
 
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, expected_n_cluster_two_sided",
     [
-        (1, 0, 58),
-        (1, 20, 40),
-        (0.5, 0, 94),
-        (0.5, 20, 70),
+        (1.4, 0, 8),
+        (1.4, 10, 4),
     ],
 )
 def test_get_clusters_table_surface_real_data(
