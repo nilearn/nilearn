@@ -371,6 +371,21 @@ def _get_clusters_table_surface(
     return_label_maps: bool = False,
     offset=1,
 ):
+    """Generate cluster table for surface data.
+
+    When two_sided is True, this function calls itself recursively
+    for each tail.
+
+    Parameters
+    ----------
+    offset : int, default=1
+        Offset to add to cluster IDs.
+        Useful when calling recursively
+        for two-sided thresholding.
+
+    For other parameters, see `get_clusters_table`.
+
+    """
     cols = [
         "Cluster ID",
         "Hemisphere",
@@ -395,10 +410,7 @@ def _get_clusters_table_surface(
                 mask = labels == i
                 values = stat_img.data.parts[hemi][mask].ravel()
 
-                if np.all(np.isnan(values)):
-                    raise ValueError("this should not happen")
-
-                cluster_max = np.nanmax(values)
+                cluster_max = np.max(values)
                 peak_stat.append(cluster_max)
 
             clusters["Peak Stat"] = peak_stat
@@ -467,6 +479,10 @@ def _get_clusters_table_volume(
     min_distance: float | int | np.floating | np.integer = 8.0,
     return_label_maps: bool = False,
 ):
+    """Generate cluster table for volume data.
+
+    For parameters, see `get_clusters_table`.
+    """
     if min_distance <= 0:
         raise ValueError("'min_distance' must be positive.")
 
