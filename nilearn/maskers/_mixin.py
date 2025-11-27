@@ -399,12 +399,6 @@ class MaskerReportMixin(ReportMixin):
     """
 
     _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
-        "title": None,
-        "description": "",
-        "summary": {},
-        "warning_messages": [],
-        "engine": "matplotlib",
-        "has_plotting_engine": True,
         "coverage": "",
         "n_elements": 0,
         "displayed_maps": [],
