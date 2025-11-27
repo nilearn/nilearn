@@ -179,7 +179,6 @@ contrasts = {
 from scipy.stats import norm
 
 from nilearn.datasets import load_fsaverage_data
-from nilearn.glm import cluster_level_inference
 from nilearn.plotting import plot_surf_stat_map, show
 
 p_val = 0.001
@@ -208,16 +207,21 @@ for contrast_id, z_score in results.items():
 show()
 
 # %%
-# TODO: add explanation
+# Cluster-level inference
+# -----------------------
+#
+# We can also perform cluster-level inference for a given contrast.
+#
+from nilearn.glm import cluster_level_inference
+
 proportion_true_discoveries_img = cluster_level_inference(
-    results["audio - visual"], threshold=[3, 4, 5, 6], alpha=0.05
+    results["audio - visual"], threshold=3, alpha=0.05
 )
 
 plot_surf_stat_map(
     surf_mesh=fsaverage5["inflated"],
     stat_map=proportion_true_discoveries_img,
-    hemi=hemi,
-    threshold=0.0,
+    hemi="left",
     cmap="inferno",
     title="audio - visual, proportion true positives",
     bg_map=fsaverage_data,
@@ -236,6 +240,8 @@ from pathlib import Path
 
 from nilearn.glm import save_glm_to_bids
 
+height_control = None
+
 output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
 output_dir.mkdir(exist_ok=True, parents=True)
 
@@ -244,10 +250,11 @@ save_glm_to_bids(
     contrasts=contrasts,
     threshold=threshold,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
-    height_control=None,
+    height_control=height_control,
+    alpha=0.05,
+    cluster_threshold=10,
     prefix="sub-01",
     out_dir=output_dir,
-    cluster_threshold=10,
 )
 
 # %%
@@ -256,7 +263,8 @@ report = glm.generate_report(
     contrasts,
     threshold=threshold,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
-    height_control=None,
+    height_control=height_control,
+    alpha=0.05,
     cluster_threshold=10,
 )
 

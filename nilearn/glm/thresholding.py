@@ -172,7 +172,8 @@ def cluster_level_inference(
 
     Returns
     -------
-    proportion_true_discoveries_img : Nifti1Image
+    proportion_true_discoveries_img : Nifti1Image \
+          or :obj:`~nilearn.surface.SurfaceImage`
         The statistical map that gives the true positive.
 
     References
