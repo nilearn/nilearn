@@ -241,6 +241,7 @@ from pathlib import Path
 from nilearn.glm import save_glm_to_bids
 
 height_control = None
+two_sided = True
 
 output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
 output_dir.mkdir(exist_ok=True, parents=True)
@@ -251,8 +252,8 @@ save_glm_to_bids(
     threshold=threshold,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=height_control,
-    alpha=0.05,
     cluster_threshold=10,
+    two_sided=two_sided,
     prefix="sub-01",
     out_dir=output_dir,
 )
@@ -264,8 +265,8 @@ report = glm.generate_report(
     threshold=threshold,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=height_control,
-    alpha=0.05,
     cluster_threshold=10,
+    two_sided=two_sided,
 )
 
 # %%
