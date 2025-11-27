@@ -483,9 +483,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             "resampling_target",
         )
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 

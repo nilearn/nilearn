@@ -537,9 +537,9 @@ class NiftiSpheresMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         error = (
             "Seeds must be a list of triplets of coordinates in "

@@ -388,9 +388,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             "resampling_target",
         )
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         if self.mask_img is None and self.resampling_target == "mask":
             raise ValueError(
