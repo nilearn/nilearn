@@ -195,7 +195,7 @@ class ReportMixin:
         """
         return hasattr(self, "_reporting_data")
 
-    def _append_warning(self, warning):
+    def _append_warning(self, warning: str):
         """Append the specified warning to the warning list of the report.
 
         Parameters
@@ -216,7 +216,8 @@ class ReportMixin:
         return sorted(set(self._report_content["warning_messages"]))
 
     def _dataframe_to_html(
-        self, df_cvrt, precision=2, header=True, index=False, sparsify=False
+        self, df_cvrt, precision: int = 2, header: bool = True,
+        index: bool = False, sparsify: bool = False
     ):
         """Create html content from the specified dataframe content."""
         return dataframe_to_html(
@@ -228,7 +229,8 @@ class ReportMixin:
         )
 
     def _dict_to_html(
-        self, dict_cvrt, precision=2, header=True, index=False, sparsify=False
+        self, dict_cvrt, precision: int = 2, header: bool = True,
+        index: bool = False, sparsify: bool = False
     ):
         """Create html content from the specified dictionary content. The
         dictionary is expected to be key value pairs without depth.
@@ -242,18 +244,27 @@ class ReportMixin:
             sparsify=sparsify,
         )
 
-    def _get_body_template(self, estimator_type):
+    def _get_body_template(self, estimator_type: str):
+        """Return body template for the specified `estimator_type`.
+        """
         env = return_jinja_env()
 
         body_tpl_path = f"html/{estimator_type}/{self._template_name}"
         return env.get_template(body_tpl_path)
 
-    def _get_partial_template(self, estimator_type, tpl_name, is_common=False):
+    def _get_partial_template(
+            self, estimator_type: str, tpl_name: str, is_common: bool = False
+    ):
+        """Return a partial template for the specified `estimator_type`.
+        If `is_common=True`, the template is not searched in estimator's
+        template directory but common `partials` directory.
+        """
         env = return_jinja_env()
         loc = f"/{estimator_type}" if not is_common else ""
         return env.get_template(f"html{loc}/partials/{tpl_name}.jinja")
 
     def _model_params_to_html(self):
+        """List model attributes and values in html."""
         parameters = model_attributes_to_dataframe(self)
         with pd.option_context("display.max_colwidth", 100):
             parameters = dataframe_to_html(
@@ -265,6 +276,7 @@ class ReportMixin:
         return parameters
 
     def _embed_img(self, img):
+        """Embed the image."""
         return embed_img(img)
 
     def _is_notebook(self):
@@ -275,6 +287,14 @@ class ReportMixin:
         return is_notebook()
 
     def _run_report_checks(self):
+        """Run standard checks before report is generated.
+
+        Checks if:
+        - reporting is enabled
+        - model is fitted
+        - reporting was enabled at the time of fit
+        - matplotlib is installed
+        """
         if self.reports is False:
             self._append_warning(
                 "\nReport generation not enabled!\nNo visual outputs created."
@@ -304,7 +324,25 @@ class ReportMixin:
                     category=UserWarning,
                 )
 
-    def _set_report_basics(self, title):
+    def _set_report_basics(self, title: str | None = None):
+        """Populate `_report_content` and `report_info` fields with values that
+        will be used in report body template.
+
+        The fields are:
+        - unique_id
+        - title
+        - has_plotting_engine
+        - docstring
+        - parameters
+        - date
+        - version
+
+        TODO
+        ----
+        _report_content could be used instead of _report_info. However after
+        report_generation _report_info is reset to {}. If _report_content can
+        safely be reset after report generation, _report_info can be removed.
+        """
         report_info = {}
 
         report_content = self._report_content
@@ -327,8 +365,8 @@ class ReportMixin:
 
         self._report_info = report_info
 
-    def generate_report(self, title: str | None = None):
-        """Generate an HTML report for the current object.
+    def generate_report(self, title: str | None = None) -> HTMLReport:
+        """Generate an HTML report for this estimator.
 
         Parameters
         ----------
@@ -346,9 +384,33 @@ class ReportMixin:
         self._display_report_warnings()
         return self._assemble_report()
 
-    def _assemble_report(self):
-        page_title = self._report_info["page_title"]
-        estimator_type = self._report_info["estimator_type"]
+    def _assemble_report(self) -> HTMLReport:
+        """Assemble report head and body acquiring body template corresponding
+        to estimator type and populating it with report data.
+
+        `estimator._report_info` should have `page_title` and `estimator_type`
+        fields.
+
+        This method will finally merge the dictionaries
+        `estimator._report_content` and `estimator._report_info` and feed body
+        template with fields in the obtained dictionary.
+
+        Finally, before assembling the report, estimator._report_info is set to
+        {}.
+
+        TODO
+        ----
+        estimator._report_info might not be necessary. However it should be
+        tested if estimator._report_content can safely be reset after report
+        generation is completed.
+        """
+        page_title = self._report_info.get(
+            "page_title", self.__class__.__name__
+        )
+
+        # TODO this is to be removed once masker report templates are moved to
+        # masker directory instead of maskers directory
+        estimator_type = self._report_info.get("estimator_type", "")
 
         body_tpl = self._get_body_template(estimator_type)
 
