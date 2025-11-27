@@ -19,7 +19,7 @@ from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
-from nilearn.glm._mixin import (
+from nilearn.glm._reporting_utils import (
     _get_runwise_dict,
     _glm_model_attributes_to_dataframe,
     _make_stat_maps_contrast_clusters,
