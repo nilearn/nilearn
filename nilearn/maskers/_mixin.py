@@ -374,22 +374,6 @@ class _LabelMaskerMixin:
         )
 
 
-def _update_defaults(base_dict: dict, update_dict: dict):
-    """Return a new dictionary with the values of dictionary base_dict updated
-    recursively with the values of update_dict.
-    """
-    new_dict = deepcopy(base_dict)
-    for k, v in update_dict.items():
-        if (
-            k in new_dict
-            and isinstance(new_dict[k], dict)
-            and isinstance(v, dict)
-        ):
-            v = _update_defaults(new_dict[k], v)
-        new_dict[k] = v
-    return new_dict
-
-
 class MaskerReportMixin(ReportMixin):
     """A mixin class to be used with classes that require reporting
     functionality.
@@ -430,39 +414,31 @@ class MaskerReportMixin(ReportMixin):
         super().__init_subclass__()
         # sets implementing class _REPORT_DEFAULTS
         # updating the base class value with implementing class value
-        cls._REPORT_DEFAULTS = _update_defaults(
+        cls._REPORT_DEFAULTS = cls._update_defaults(
             MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
 
-    def generate_report(self, title: str | None = None):
-        self._run_report_checks()
-        self._set_report_basics(title)
-        report = self._report_content
+    def _set_report_basics(self, title):
+        super()._set_report_basics(title)
+        report_content = self._report_content
 
-        if not isinstance(report["coverage"], str):
-            report["coverage"] = f"{report['coverage']:0.1f}"
+        if not isinstance(report_content["coverage"], str):
+            report_content["coverage"] = f"{report_content['coverage']:0.1f}"
 
-        if "overlay" in report:
-            report["overlay"] = self._embed_img(report["overlay"])
+        if "overlay" in report_content:
+            report_content["overlay"] = self._embed_img(report_content["overlay"])
 
-        summary_html = self._get_summary_html()
-        parameters = self._model_params_to_html()
+        report_info = self._report_info
+        report_info["page_title"] = f"{report_content['title']} report"
+        report_info["estimator_type"] = "maskers"
+
+    def _generate_report_data(self):
+        report_info = self._report_info
+        report_info["summary_html"] = self._get_summary_html()
         figure, embeded_images = self._create_partial_figures()
 
-        title = f"{title} report"
-
-        body_tpl = self._get_body_template("maskers")
-
-        body = body_tpl.render(
-            content=embeded_images,
-            parameters=parameters,
-            figure=figure,
-            summary_html=summary_html,
-            **report,
-        )
-
-        self._display_report_warnings()
-        return self._assemble_report(body, title)
+        report_info["figure"] = figure
+        report_info["content"] = embeded_images
 
     def _create_partial_figures(self):
         """Create partial image htmls Using partial template for masker

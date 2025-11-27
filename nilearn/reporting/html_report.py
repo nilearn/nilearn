@@ -8,6 +8,7 @@ from string import Template
 from typing import Any, ClassVar
 
 import pandas as pd
+from datetime import datetime
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from nilearn._utils.docs import fill_doc
@@ -39,22 +40,6 @@ MISSING_ENGINE_MSG = (
 )
 
 
-def _update_defaults(base_dict: dict, update_dict: dict):
-    """Return a new dictionary with the values of dictionary base_dict updated
-    recursively with the values of update_dict.
-    """
-    new_dict = deepcopy(base_dict)
-    for k, v in update_dict.items():
-        if (
-            k in new_dict
-            and isinstance(new_dict[k], dict)
-            and isinstance(v, dict)
-        ):
-            v = _update_defaults(new_dict[k], v)
-        new_dict[k] = v
-    return new_dict
-
-
 class ReportMixin:
     """Mixin class to be inherited by the estimators with reporting
     functionality.
@@ -67,8 +52,10 @@ class ReportMixin:
            Can be set by the user at report generation; otherwise set to class
            name.
     description: Description of the report for that specific estimator.
+
     summary: Summary of the report.
            Created depending on report data when generating report.
+
     warning_messages: Warnings while generating the report.
            If there are warnings an empty report displaying the warnings is
            generated.
@@ -117,9 +104,24 @@ class ReportMixin:
         super().__init_subclass__()
         # sets implementing class _REPORT_DEFAULTS
         # updating the base class value with implementing class value
-        cls._REPORT_DEFAULTS = _update_defaults(
+        cls._REPORT_DEFAULTS = cls._update_defaults(
             ReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
         )
+
+    def _update_defaults(cls, base_dict: dict, update_dict: dict):
+        """Return a new dictionary with the values of dictionary base_dict
+        updated recursively with the values of update_dict.
+        """
+        new_dict = deepcopy(base_dict)
+        for k, v in update_dict.items():
+            if (
+                k in new_dict
+                and isinstance(new_dict[k], dict)
+                and isinstance(v, dict)
+            ):
+                v = cls._update_defaults(new_dict[k], v)
+            new_dict[k] = v
+        return new_dict
 
     def _reset_report(self):
         self._report_content = deepcopy(self._REPORT_DEFAULTS)
@@ -210,9 +212,6 @@ class ReportMixin:
     def _embed_img(self, img):
         return embed_img(img)
 
-    def _assemble_report(self, body, title):
-        return assemble_report(body, title)
-
     def _is_notebook(self):
         """Detect if we are running in a notebook.
 
@@ -251,20 +250,28 @@ class ReportMixin:
                 )
 
     def _set_report_basics(self, title):
-        report = self._report_content
+        report_info = {}
 
+        report_content = self._report_content
         # Generate a unique ID for report
-        report["unique_id"] = str(uuid.uuid4()).replace("-", "")
+        report_content["unique_id"] = str(uuid.uuid4()).replace("-", "")
 
         # Set title for report
-        report["title"] = title if title else self.__class__.__name__
+        report_content["title"] = title if title else self.__class__.__name__
+
+        report_content["has_plotting_engine"] = is_matplotlib_installed()
 
         # TODO clean up docstring from RST formatting
-        report["docstring"] = self.__doc__.split("Parameters\n")[0]
+        report_info["docstring"] = self.__doc__.split("Parameters\n")[0]
 
-        report["has_plotting_engine"] = is_matplotlib_installed()
+        report_info["parameters"] = self._model_params_to_html()
 
-    @abc.abstractmethod
+        report_info["date"] = datetime.now().replace(microsecond=0).isoformat()
+
+        report_info["version"] = __version__
+
+        self._report_info = report_info
+
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.
 
@@ -278,6 +285,29 @@ class ReportMixin:
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
+        self._run_report_checks()
+        self._set_report_basics(title)
+        self._generate_report_data()
+        self._display_report_warnings()
+        return self._assemble_report()
+
+    def _assemble_report(self):
+        page_title = self._report_info["page_title"]
+        estimator_type = self._report_info["estimator_type"]
+
+        body_tpl = self._get_body_template(estimator_type)
+
+        report = ReportMixin._update_defaults(
+            self._report_content, self._report_info
+        )
+        body = body_tpl.render(**report)
+
+        # clear report_info
+        self._report_info = {}
+        return assemble_report(body, page_title)
+
+    @abc.abstractmethod
+    def _generate_report_data(self):
         raise NotImplementedError()
 
 
@@ -374,7 +404,7 @@ def embed_img(display):
     return figure_to_svg_base64(display.frame_axes.figure)
 
 
-def assemble_report(body: str, title: str) -> HTMLReport:
+def assemble_report(body: str, page_title: str) -> HTMLReport:
     """Put together head and body of report."""
     env = return_jinja_env()
 
@@ -390,7 +420,7 @@ def assemble_report(body: str, title: str) -> HTMLReport:
         head_values={
             "head_css": head_css,
             "version": __version__,
-            "page_title": title,
+            "page_title": page_title,
             "display_footer": "style='display: none'" if is_notebook() else "",
         },
     )
@@ -567,7 +597,7 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
-    return model._make_glm_report(
+    return model.generate_report(
         contrasts=contrasts,
         first_level_contrast=first_level_contrast,
         title=title,
@@ -583,4 +613,3 @@ def make_glm_report(
         display_mode=display_mode,
         report_dims=report_dims,
     )
-
