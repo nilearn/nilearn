@@ -363,6 +363,12 @@ class ReportMixin:
 
     @abc.abstractmethod
     def _generate_report_data(self):
+        """Generate necessary data to be used in report template.
+
+        This method should be implemented in classes which inherit from
+        `ReportMixin` and does not override or call
+        `ReportMixin.generate_report`.
+        """
         raise NotImplementedError()
 
 
