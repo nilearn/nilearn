@@ -7,7 +7,6 @@ import pytest
 from nibabel import Nifti1Image
 from scipy.signal import get_window
 
-from nilearn import image
 from nilearn._utils.helpers import is_matplotlib_installed
 
 # we need to import these fixtures even if not used in this module
@@ -15,6 +14,7 @@ from nilearn.datasets.tests._testing import (
     request_mocker,  # noqa: F401
     temp_nilearn_data_dir,  # noqa: F401
 )
+from nilearn.image import get_data
 from nilearn.masking import unmask
 from nilearn.surface import (
     InMemoryMesh,
@@ -92,7 +92,7 @@ def no_int64_nifti(monkeypatch):
     to_filename = nibabel.nifti1.Nifti1Image.to_filename
 
     def checked_to_filename(img, filename):
-        assert image.get_data(img).dtype not in forbidden_types, error_msg
+        assert get_data(img).dtype not in forbidden_types, error_msg
         return to_filename(img, filename)
 
     monkeypatch.setattr(

@@ -78,7 +78,9 @@ def list_nodes(
     else:
         module = file
     node_definitions = [
-        node for node in module.body if isinstance(node, node_type)
+        node
+        for node in module.body
+        if isinstance(node, node_type) and not is_overload(node)
     ]
 
     if include == "all":
@@ -86,6 +88,16 @@ def list_nodes(
     elif include == "private":
         return [c for c in node_definitions if c.name.startswith("_")]
     return [c for c in node_definitions if not c.name.startswith("_")]
+
+
+def is_overload(node) -> bool:
+    """Return True if node has @overload decorator."""
+    for dec in getattr(node, "decorator_list", []):
+        if isinstance(dec, ast.Name) and dec.id == "overload":
+            return True
+        if isinstance(dec, ast.Attribute) and dec.attr == "overload":
+            return True
+    return False
 
 
 public_api = ["nilearn"]

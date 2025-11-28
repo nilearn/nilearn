@@ -1,10 +1,4 @@
-"""
-Test the class_inspect module.
-
-This test file is in nilearn/tests because Nosetest,
-which we historically used,
-ignores modules whose name starts with an underscore.
-"""
+"""Test the class_inspect module."""
 
 import pytest
 
