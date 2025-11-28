@@ -159,9 +159,9 @@ def cluster_level_inference(
         or None, default=None
         mask image
 
-    threshold : Positive :obj:`float`, :obj:`int`, \
+    threshold : Non-negative :obj:`float`, :obj:`int`, \
                  or :obj:`list` of \
-                 positive :obj:`float` or :obj:`int`, default=3.0
+                 non-negative :obj:`float` or :obj:`int`, default=3.0
        Cluster-forming threshold in z-scale.
 
     alpha : :obj:`float` or :obj:`list`, default=0.05
