@@ -48,7 +48,7 @@ from nilearn.surface.surface import (
 )
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import assert_polymesh_equal, check_polymesh_equal
-from nilearn.typing import NiimgLike
+from nilearn.typing import ClusterThreshold, NiimgLike
 
 
 def get_data(img):
@@ -924,11 +924,11 @@ def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
 def threshold_img(
     img,
     threshold,
-    cluster_threshold=0,
-    two_sided=True,
+    cluster_threshold: ClusterThreshold = 0,
+    two_sided: bool = True,
     mask_img=None,
-    copy=True,
-    copy_header=True,
+    copy: bool = True,
+    copy_header: bool = True,
 ):
     """Threshold the given input image, mostly statistical or atlas images.
 
@@ -1000,7 +1000,7 @@ def threshold_img(
         the given string should be
         within the range of ``"0%%"`` to ``"100%%"``.
 
-    cluster_threshold : :obj:`float`, default=0
+    cluster_threshold : :obj:`float` or :obj:`int`, default=0
         Cluster size threshold, in voxels / vertices.
         In the returned thresholded map,
         sets of connected voxels / vertices (``clusters``)
