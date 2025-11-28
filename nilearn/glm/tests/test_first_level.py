@@ -36,6 +36,7 @@ from nilearn._utils.estimator_checks import (
 )
 from nilearn._utils.helpers import is_windows_platform
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.conftest import _shape_4d_default
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.glm.contrasts import compute_fixed_effects
 from nilearn.glm.first_level import (
@@ -2660,3 +2661,95 @@ def test_first_level_from_bids_surface(tmp_path):
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+
+@pytest.mark.parametrize(
+    "mask_img",
+    [
+        None,
+        generate_fake_fmri_data_and_design(shapes=[_shape_4d_default()])[0],
+    ],
+)
+@pytest.mark.parametrize(
+    "run_imgs",
+    [
+        None,
+        generate_fake_fmri_data_and_design(shapes=[_shape_4d_default()])[1],
+    ],
+)
+def test_first_level_design_only(mask_img, run_imgs, shape_4d_default) -> None:
+    """Check design only GLM fit and generate_report.
+
+    Uses design matrices at fit time.
+    """
+    design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )[2]
+    model = FirstLevelModel(design_only=True)
+
+    report = model.generate_report()
+    assert "The model has not been fit yet." in report.__str__()
+    assert "No mask was provided." in report.__str__()
+    assert "No statistical map was provided." in report.__str__()
+
+    model.mask_img = mask_img
+
+    model.fit(run_imgs=run_imgs, design_matrices=design_matrices)
+
+    assert model.labels_ is None
+    assert model.results_ is None
+
+    report = model.generate_report(
+        np.asarray([1, 0, 0]), title=f"{mask_img is None=}-{run_imgs is None=}"
+    )
+
+    assert "The model has not been fit yet." not in report.__str__()
+    assert "No contrast was provided." not in report.__str__()
+    assert "No statistical map was provided." in report.__str__()
+
+    if mask_img is None:
+        assert "No mask was provided." in report.__str__()
+    else:
+        assert "No mask was provided." not in report.__str__()
+
+
+def test_first_level_design_only_compute_contrast_error(
+    shape_4d_default,
+) -> None:
+    """Check cannot compute contrast on design only GLM."""
+    design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default]
+    )[2]
+    model = FirstLevelModel(design_only=True)
+    model.fit(run_imgs=None, design_matrices=design_matrices)
+
+    with pytest.raises(
+        RuntimeError, match="Cannot compute contrasts on 'design_only' models."
+    ):
+        model.compute_contrast(np.asarray([1, 0, 0]))
+
+
+def test_first_level_design_only_surface(surface_glm_data) -> None:
+    """Check design only GLM fit and generate_report with surface data.
+
+    Uses events at fit time.
+    """
+    mini_img, _ = surface_glm_data(5)
+
+    masker = SurfaceMasker().fit(mini_img)
+    model = FirstLevelModel(mask_img=masker, t_r=2.0, design_only=True)
+
+    events = basic_paradigm()
+
+    model.fit([mini_img, mini_img], events=[events, events])
+
+    assert model.labels_ is None
+    assert model.results_ is None
+
+    report = model.generate_report("c0")
+
+    assert "The model has not been fit yet." not in report.__str__()
+    assert "No contrast was provided." not in report.__str__()
+    assert "No mask was provided." not in report.__str__()
+
+    assert "No statistical map was provided." in report.__str__()

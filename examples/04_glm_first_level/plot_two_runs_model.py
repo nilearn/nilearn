@@ -56,15 +56,39 @@ import numpy as np
 
 design_matrices = [data["design_matrix1"], data["design_matrix2"]]
 
-
 # %%
-# Initialize and run the GLM
-# --------------------------
+# Specify the model and inspect it
+# --------------------------------
 # First, we need to specify the model
 # before fitting it to the data.
+#
+# We can specify the model with fitting it
+# by using the ``design_only=True`` parameter.
+#
 # Note that a brain mask was provided in the dataset,
 # so that is what we will use.
+#
+# We can inspect the model by generating a report.
+#
 from nilearn.glm.first_level import FirstLevelModel
+
+fmri_glm = FirstLevelModel(
+    mask_img=data["mask"],
+    smoothing_fwhm=5,
+    minimize_memory=False,
+    design_only=True,
+)
+report = fmri_glm.generate_report()
+# report.open_in_browser()
+
+# This report can be viewed in a notebook.
+report
+
+# %%
+# Run the GLM
+# -----------
+# Now that we are certain that this is model we want to run,
+# we can fit it.
 
 fmri_glm = FirstLevelModel(
     mask_img=data["mask"],
@@ -258,15 +282,10 @@ report = fmri_glm_multirun.generate_report(
     bg_img=mean_img_,
     title="two-runs fMRI model fitting",
 )
-
-# %%
-# We have several ways to access the report:
-#
-# This report can be viewed in a notebook.
 report
 
 # %%
-# Or in a separate browser window
+# We can also access the report in a separate browser window.
 # report.open_in_browser()
 
 # %%

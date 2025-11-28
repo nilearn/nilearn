@@ -73,6 +73,8 @@ Enhancements
 
 - :bdg-success:`API` Add support for ``title`` parameter for Nilearn maskers ``generate_report`` method. (:gh:`5790` by `Hande Gözükan`_).
 
+- :bdg-success:`API` Add a ``design_only`` parameter to :class:`~glm.first_level.FirstLevelModel` and :class:`~glm.second_level.SecondLevelModel` to be able to only inspect the model specification before fitting if to avoid wasting computation time on a misspecified model (:gh:`54680` by `Rémi Gau`_).
+
 Changes
 -------
 
