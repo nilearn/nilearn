@@ -61,10 +61,14 @@ p001_uncorrected = norm.isf(p_val)
 from nilearn.glm import cluster_level_inference
 
 proportion_true_discoveries_img = cluster_level_inference(
-    z_map, threshold=[3, 4, 5], alpha=0.05
+    z_map, threshold=[1, 2, 3, 4, 5], alpha=0.05
 )
 
 from nilearn import plotting
+
+data = proportion_true_discoveries_img.get_fdata()
+unique_vals = pd.unique(data.ravel())
+print(unique_vals)
 
 plotting.plot_stat_map(
     proportion_true_discoveries_img,

@@ -204,7 +204,7 @@ for contrast_id, z_score in results.items():
         bg_map=fsaverage_data,
     )
 
-show()
+# show()
 
 # %%
 # Cluster-level inference
@@ -220,6 +220,12 @@ from nilearn.glm import cluster_level_inference
 proportion_true_discoveries_img = cluster_level_inference(
     results["audio - visual"], threshold=3, alpha=0.05
 )
+
+from nilearn.surface.surface import get_data as get_surf_data
+
+data = get_surf_data(proportion_true_discoveries_img)
+unique_vals = np.unique(data.ravel())
+print(unique_vals)
 
 plot_surf_stat_map(
     surf_mesh=fsaverage5["inflated"],
