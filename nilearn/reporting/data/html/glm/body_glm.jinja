@@ -8,8 +8,11 @@
 
 {% block navbar %}
 
-    {% include "html/glm/partials/navbar.jinja" %}
+{% if not is_notebook %}
 
+
+    {% include "html/glm/partials/navbar.jinja" %}
+{% endif %}
 {% endblock navbar %}
 
 {% block report %}
