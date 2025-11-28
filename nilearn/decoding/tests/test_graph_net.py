@@ -7,9 +7,7 @@ from numpy.testing import assert_almost_equal
 from scipy import linalg
 
 from nilearn.decoding._objective_functions import divergence, gradient
-from nilearn.decoding.space_net import (
-    SpaceNetRegressor,
-)
+from nilearn.decoding.space_net import SpaceNetRegressor
 from nilearn.decoding.space_net_solvers import (
     _graph_net_adjoint_data_function,
     _graph_net_data_function,
