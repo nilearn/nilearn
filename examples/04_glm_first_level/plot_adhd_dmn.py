@@ -136,11 +136,7 @@ report = first_level_model.generate_report(
 )
 
 # %%
-# We have several ways to access the report:
 #
-# It can be viewed in a notebook
+# .. include:: ../../../examples/report_note.rst
+#
 report
-
-# %%
-# Or in a separate browser window
-# report.open_in_browser()

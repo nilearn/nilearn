@@ -229,12 +229,7 @@ report = glm.generate_report(
 )
 
 # %%
-# This report can be viewed in a notebook.
+#
+# .. include:: ../../../examples/report_note.rst
+#
 report
-
-# %%
-# Or in a separate browser window
-# report.open_in_browser()
-
-
-# sphinx_gallery_thumbnail_number = 1

@@ -189,8 +189,7 @@ report_slm = second_level_model.generate_report(
 
 # %%
 # View the GLM report at the group level.
+#
+# .. include:: ../../../examples/report_note.rst
+#
 report_slm
-
-# %%
-# Or in a separate browser window
-# report_slm.open_in_browser()
