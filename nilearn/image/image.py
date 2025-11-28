@@ -1576,7 +1576,7 @@ def clean_img(
     }
 
     if isinstance(imgs, SurfaceImage):
-        imgs.data._check_ndims(2, "imgs")
+        imgs.data._check_ndims(2)
 
         data = {}
         # Clean signal
