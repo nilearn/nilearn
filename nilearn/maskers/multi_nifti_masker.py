@@ -253,9 +253,9 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         del y
         check_params(self.__dict__)
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 

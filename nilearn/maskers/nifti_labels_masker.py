@@ -2,7 +2,7 @@
 
 import warnings
 from copy import deepcopy
-from typing import Any
+from typing import Any, ClassVar
 
 import numpy as np
 import pandas as pd
@@ -195,6 +195,13 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
     _template_name = "body_nifti_labels_masker.jinja"
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the regions defined by the labels of the mask."
+        ),
+        "number_of_regions": 0,
+    }
+
     # memory and memory_level are used by _utils.CacheMixin.
 
     def __init__(
@@ -260,15 +267,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
         self.strategy = strategy
 
-        self._report_content = {
-            "description": (
-                "This report shows the regions "
-                "defined by the labels of the mask."
-            ),
-            "number_of_regions": 0,
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
     @property
     def _region_id_name(self):
@@ -332,10 +331,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        from nilearn.reporting.html_report import generate_report
-
-        self._report_content["title"] = title
-
         if self._has_report_data():
             img = self._reporting_data["images"]
 
@@ -354,7 +349,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 )
                 self._report_content["warning_messages"].append(msg)
 
-        return generate_report(self)
+        return super().generate_report(title)
 
     def _reporting(self):
         """Return a figure to be rendered.
@@ -488,9 +483,9 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             "resampling_target",
         )
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 

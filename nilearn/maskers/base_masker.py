@@ -36,7 +36,7 @@ from nilearn.image import (
     resample_img,
     smooth_img,
 )
-from nilearn.maskers._mixin import _ReportingMixin
+from nilearn.maskers._mixin import MaskerReportMixin
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
@@ -301,7 +301,7 @@ def sanitize_displayed_maps(
 
 @fill_doc
 class BaseMasker(
-    _ReportingMixin,
+    MaskerReportMixin,
     TransformerMixin,
     CacheMixin,
     BaseEstimator,
@@ -371,6 +371,15 @@ class BaseMasker(
     def _n_features_out(self):
         """Needed by sklearn machinery for set_ouput."""
         return self.n_elements_
+
+    def _get_summary_html(self):
+        """Convert summary part of the report content to html."""
+        summary = self._report_content.get("summary", None)
+
+        if summary is None:
+            return None
+
+        return self._dict_to_html(summary)
 
     @abc.abstractmethod
     def fit(self, imgs=None, y=None):
@@ -557,7 +566,7 @@ class BaseMasker(
 
 
 class _BaseSurfaceMasker(
-    _ReportingMixin, TransformerMixin, CacheMixin, BaseEstimator
+    MaskerReportMixin, TransformerMixin, CacheMixin, BaseEstimator
 ):
     """Class from which all surface maskers should inherit."""
 
@@ -652,6 +661,17 @@ class _BaseSurfaceMasker(
                 check_polymesh_equal(mask_img_.mesh, x.mesh)
 
         return mask_img_
+
+    def _get_summary_html(self):
+        summary = self._report_content.get("summary", None)
+
+        if summary is None:
+            return None
+
+        summary_html = {}
+        for part in summary:
+            summary_html[part] = self._dict_to_html(summary[part])
+        return summary_html
 
     @abc.abstractmethod
     def fit(self, imgs=None, y=None):

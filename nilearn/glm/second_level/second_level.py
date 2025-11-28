@@ -2,7 +2,6 @@
 first level contrasts or directly on fitted first level models.
 """
 
-import inspect
 import operator
 import time
 from pathlib import Path
@@ -39,7 +38,6 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
-from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import concat_imgs, iter_img, mean_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
@@ -496,6 +494,9 @@ class SecondLevelModel(BaseGLM):
         further inspection of model details. This has an important impact
         on memory consumption.
 
+    reports : :obj:`bool`, default=True
+        If set to True, data is saved in order to produce a report.
+
     Attributes
     ----------
     confounds_ : :obj:`pandas.DataFrame` or None
@@ -555,6 +556,7 @@ class SecondLevelModel(BaseGLM):
         verbose=0,
         n_jobs=1,
         minimize_memory=True,
+        reports=True,
     ):
         self.mask_img = mask_img
         self.target_affine = target_affine
@@ -565,6 +567,9 @@ class SecondLevelModel(BaseGLM):
         self.verbose = verbose
         self.n_jobs = n_jobs
         self.minimize_memory = minimize_memory
+
+        self.reports = reports
+        self._reset_report()
 
     @fill_doc
     def fit(self, second_level_input, confounds=None, design_matrix=None):
@@ -597,6 +602,8 @@ class SecondLevelModel(BaseGLM):
         )
 
         _check_confounds(confounds)
+
+        self._reset_report()
 
         if isinstance(second_level_input, pd.DataFrame):
             second_level_input = _sort_input_dataframe(second_level_input)
@@ -657,7 +664,9 @@ class SecondLevelModel(BaseGLM):
             verbose=self.verbose,
         )
 
-        self._reporting_data = {}
+        self._report_content["reports_at_fit_time"] = self.reports
+        if self.reports:
+            self._reporting_data = {}
 
         return self
 
@@ -889,81 +898,6 @@ class SecondLevelModel(BaseGLM):
                 self.results_[label_], attribute
             )
         return self.masker_.inverse_transform(voxelwise_attribute)
-
-    def generate_report(
-        self,
-        contrasts=None,
-        first_level_contrast=None,
-        title=None,
-        bg_img="MNI152TEMPLATE",
-        threshold=3.09,
-        alpha=0.001,
-        cluster_threshold=0,
-        height_control="fpr",
-        two_sided=False,
-        min_distance=8.0,
-        plot_type="slice",
-        cut_coords=None,
-        display_mode=None,
-        report_dims=(1600, 800),
-    ):
-        """Return a :class:`~nilearn.reporting.HTMLReport` \
-        which shows all important aspects of a fitted :term:`GLM`.
-
-        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
-        browser, displayed in a notebook, or saved to disk as a standalone
-        HTML file.
-
-        The :term:`GLM` must be fitted and have the computed design
-        matrix(ces).
-
-        .. note::
-
-            Refer to the documentation of
-            :func:`~nilearn.reporting.make_glm_report`
-            for details about the parameters
-
-        Returns
-        -------
-        report_text : :class:`~nilearn.reporting.HTMLReport`
-            Contains the HTML code for the :term:`GLM` report.
-
-        """
-        from nilearn.reporting.glm_reporter import make_glm_report
-
-        sig = inspect.signature(SecondLevelModel.generate_report).parameters
-        warn_default_threshold(
-            threshold,
-            sig["threshold"].default,
-            3.09,
-            height_control=height_control,
-        )
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = {
-                "trial_types": [],
-                "noise_model": getattr(self, "noise_model", None),
-                "hrf_model": getattr(self, "hrf_model", None),
-                "drift_model": None,
-            }
-
-        return make_glm_report(
-            self,
-            contrasts,
-            first_level_contrast=first_level_contrast,
-            title=title,
-            bg_img=bg_img,
-            threshold=threshold,
-            alpha=alpha,
-            cluster_threshold=cluster_threshold,
-            height_control=height_control,
-            two_sided=two_sided,
-            min_distance=min_distance,
-            plot_type=plot_type,
-            cut_coords=cut_coords,
-            display_mode=display_mode,
-            report_dims=report_dims,
-        )
 
 
 @fill_doc

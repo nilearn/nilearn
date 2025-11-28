@@ -3,6 +3,7 @@
 import inspect
 import warnings
 from copy import copy as copy_object
+from typing import Any, ClassVar
 
 import numpy as np
 from joblib import Memory
@@ -323,6 +324,15 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
     """
 
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "description": (
+            "This report shows the input Nifti image overlaid "
+            "with the outlines of the mask (in green). We "
+            "recommend to inspect the report for the overlap "
+            "between the mask and its input image. "
+        ),
+    }
+
     def __init__(
         self,
         mask_img=None,
@@ -370,18 +380,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
-        self._report_content = {
-            "description": (
-                "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (in green). We "
-                "recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_elements": 0,
-            "coverage": 0,
-            "summary": {},
-            "warning_messages": [],
-        }
+        self._reset_report()
 
     def generate_report(self, title: str | None = None):
         """Generate an HTML report for the current object.
@@ -396,10 +395,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         report : `nilearn.reporting.html_report.HTMLReport`
             HTML report for the masker.
         """
-        from nilearn.reporting.html_report import generate_report
-
-        self._report_content["title"] = title
-
         if self._has_report_data():
             img = self._reporting_data["images"]
 
@@ -417,7 +412,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 )
                 self._report_content["warning_messages"].append(msg)
 
-        return generate_report(self)
+        return super().generate_report(title)
 
     def _reporting(self):
         """Load displays needed for report.
@@ -525,9 +520,9 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         del y
         check_params(self.__dict__)
 
-        # Reset warning message
+        # Reset report
         # in case where the masker was previously fitted
-        self._report_content["warning_messages"] = []
+        self._reset_report()
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 

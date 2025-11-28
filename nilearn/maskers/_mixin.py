@@ -20,6 +20,7 @@ from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.numpy_conversions import csv_to_array
 from nilearn.image import high_variance_confounds
 from nilearn.image.utils import get_indices_from_image
+from nilearn.reporting.html_report import ReportMixin
 from nilearn.surface.surface import SurfaceImage
 from nilearn.typing import NiimgLike
 
@@ -373,7 +374,7 @@ class _LabelMaskerMixin:
         )
 
 
-class _ReportingMixin:
+class MaskerReportMixin(ReportMixin):
     """A mixin class to be used with classes that require reporting
     functionality.
 
@@ -397,38 +398,77 @@ class _ReportingMixin:
     to return the displays to be embedded to the report.
     """
 
-    _report_content: ClassVar[dict[str, Any]] = {}
+    _REPORT_DEFAULTS: ClassVar[dict[str, Any]] = {
+        "coverage": "",
+        "n_elements": 0,
+        "displayed_maps": [],
+    }
 
-    def _has_report_data(self):
+    def __init_subclass__(cls):
+        super().__init_subclass__()
+        # sets implementing class _REPORT_DEFAULTS
+        # updating the base class value with implementing class value
+        cls._REPORT_DEFAULTS = cls._update_defaults(
+            MaskerReportMixin._REPORT_DEFAULTS, cls._REPORT_DEFAULTS
+        )
+
+    def _set_report_basics(self, title):
+        super()._set_report_basics(title)
+        report_content = self._report_content
+
+        if not isinstance(report_content["coverage"], str):
+            report_content["coverage"] = f"{report_content['coverage']:0.1f}"
+
+        if "overlay" in report_content:
+            report_content["overlay"] = self._embed_img(
+                report_content["overlay"]
+            )
+
+        report_info = self._report_info
+        report_info["page_title"] = f"{report_content['title']} report"
+        report_info["estimator_type"] = "maskers"
+
+    def _generate_report_data(self):
+        report_info = self._report_info
+        report_info["summary_html"] = self._get_summary_html()
+        figure, embeded_images = self._create_partial_figures()
+
+        report_info["figure"] = figure
+        report_info["content"] = embeded_images
+
+    def _create_partial_figures(self):
+        """Create partial image htmls Using partial template for masker
+        figures.
         """
-        Check if the model is fitted and _reporting_data is populated.
+        embeded_images = None
+        image = self._reporting()
+        if image is None:
+            embeded_images = None
+        elif not isinstance(image, list):
+            embeded_images = self._embed_img(image)
+        elif all(x is None for x in image):
+            embeded_images = None
+        else:
+            embeded_images = [self._embed_img(i) for i in image]
 
-        Returns
-        -------
-        bool
-            True if reporting is enabled, the model is fitted and
-        _reporting_data is populated; False otherwise.
-        """
-        return hasattr(self, "_reporting_data")
+        content = embeded_images
+        if not isinstance(content, list):
+            content = [content]
 
-    def generate_report(self, title: str | None = None):
-        """Generate an HTML report for the current object.
+        tpl = self._get_partial_template("maskers", "figure")
+        tpl_rendered = tpl.render(
+            engine=self._report_content["engine"],
+            content=content,
+            displayed_maps=self._report_content["displayed_maps"],
+            unique_id=self._report_content["unique_id"],
+        )
 
-        Parameters
-        ----------
-        title : :obj:`str` or None, default=None
-            title for the report. If None, title will be the class name.
+        return tpl_rendered, embeded_images
 
-        Returns
-        -------
-        report : `nilearn.reporting.html_report.HTMLReport`
-            HTML report for the masker.
-        """
-        from nilearn.reporting.html_report import generate_report
-
-        self._report_content["title"] = title
-
-        return generate_report(self)
+    @abc.abstractmethod
+    def _get_summary_html(self):
+        """Convert summary part of the report content to html."""
+        raise NotImplementedError
 
     @abc.abstractmethod
     def _reporting(self):
