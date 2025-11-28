@@ -189,7 +189,7 @@ from nilearn.plotting import plot_surf_stat_map, show
 from nilearn.reporting import get_clusters_table
 
 threshold = 3.0
-cluster_trhreshold = 20
+cluster_threshold = 20
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
