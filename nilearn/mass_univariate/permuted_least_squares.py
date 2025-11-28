@@ -11,12 +11,20 @@ from nibabel import Nifti1Image
 from scipy import stats
 from scipy.ndimage import generate_binary_structure, label
 from sklearn.utils import check_random_state
+from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import image
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
+from nilearn.image import new_img_like
+from nilearn.maskers import (
+    NiftiMasker,
+    SurfaceMasker,
+)
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
@@ -26,6 +34,7 @@ from nilearn.mass_univariate._utils import (
     orthonormalize_matrix,
     t_score_with_covars_and_normalized_design,
 )
+from nilearn.surface.surface import get_data as get_surface_data
 
 
 def _permuted_ols_on_chunk(
@@ -377,8 +386,11 @@ def permuted_ols(
 
     %(verbose0)s
 
-    masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
-            :class:`~nilearn.maskers.MultiNiftiMasker`, default=None
+    masker : None, :class:`~nilearn.maskers.NiftiMasker`, \
+            :class:`~nilearn.maskers.MultiNiftiMasker`, \
+            :class:`~nilearn.maskers.SurfaceMasker`, \
+            :class:`~nilearn.maskers.MultiSurfaceMasker`, \
+            default=None
         A mask to be used on the data.
         This is required for cluster-level inference, so it must be provided
         if ``threshold`` is not None.
@@ -710,22 +722,39 @@ def permuted_ols(
 
     tfce_original_data = None
     if tfce:
-        scores_4d = masker.inverse_transform(
-            scores_original_data.T
-        ).get_fdata()
-        tfce_original_data = calculate_tfce(
-            scores_4d,
-            bin_struct=bin_struct,
-            two_sided_test=two_sided_test,
-        )
-        tfce_original_data = apply_mask(
-            Nifti1Image(
-                tfce_original_data,
-                masker.mask_img_.affine,
-                masker.mask_img_.header,
-            ),
-            masker.mask_img_,
-        ).T
+        if isinstance(masker, NiftiMasker):
+            scores_4d: np.ndarray = masker.inverse_transform(
+                scores_original_data.T
+            ).get_fdata()
+            tfce_original_data = calculate_tfce(
+                scores_4d,
+                bin_struct=bin_struct,
+                two_sided_test=two_sided_test,
+            )
+            tfce_original_data = apply_mask(
+                Nifti1Image(
+                    tfce_original_data,
+                    masker.mask_img_.affine,
+                    masker.mask_img_.header,
+                ),
+                masker.mask_img_,
+            ).T
+        else:
+            scores_4d: np.ndarray = get_surface_data(
+                masker.inverse_transform(scores_original_data.T)
+            )
+            tfce_original_data = calculate_tfce(
+                scores_4d,
+                bin_struct=bin_struct,
+                two_sided_test=two_sided_test,
+            )
+            tfce_original_data = apply_mask(
+                new_img_like(
+                    masker.mask_img_,
+                    tfce_original_data,
+                ),
+                masker.mask_img_,
+            ).T
 
     # 0 or negative number of permutations => original data scores only
     if n_perm <= 0:
@@ -877,13 +906,21 @@ def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
             "(joblib conventions)."
         )
     # check that masker is provided if it is needed
-    if tfce and not masker:
-        raise ValueError("A masker must be provided if tfce is True.")
+    if masker is None:
+        if tfce:
+            raise ValueError(
+                "If 'tfce' is True, 'masker' must be defined as well."
+            )
 
-    if (threshold is not None) and (masker is None):
-        raise ValueError(
-            "If 'threshold' is not None, masker must be defined as well."
+        if threshold is not None:
+            raise ValueError(
+                "If 'threshold' is not None, 'masker' must be defined as well."
+            )
+    else:
+        check_is_of_allowed_type(
+            masker, (NiftiMasker, SurfaceMasker), "masker"
         )
+        check_is_fitted(masker)
 
     # make target_vars F-ordered to speed-up computation
     if target_vars.ndim != 2:
@@ -1036,13 +1073,13 @@ def _prepare_output_permuted_ols(
             # so we use apply_mask here.
             cluster_dict[f"{metric}_pvals"][i_regressor, :] = np.squeeze(
                 apply_mask(
-                    image.new_img_like(masker.mask_img_, p_map),
+                    new_img_like(masker.mask_img_, p_map),
                     masker.mask_img_,
                 )
             )
             cluster_dict[metric][i_regressor, :] = np.squeeze(
                 apply_mask(
-                    image.new_img_like(masker.mask_img_, metric_map),
+                    new_img_like(masker.mask_img_, metric_map),
                     masker.mask_img_,
                 )
             )

@@ -1149,19 +1149,6 @@ def non_parametric_inference(
         )
         smoothing_fwhm = None
 
-    if (isinstance(sample_map, SurfaceImage)) and (tfce or threshold):
-        tfce = False
-        threshold = None
-        warn(
-            (
-                "Cluster level inference not yet implemented "
-                "for surface data.\n"
-                f"Setting {tfce=} and {threshold=}."
-            ),
-            NotImplementedWarning,
-            stacklevel=find_stack_level(),
-        )
-
     # Report progress
     t0 = time.time()
     logger.log("Fitting second level model...", verbose=verbose)

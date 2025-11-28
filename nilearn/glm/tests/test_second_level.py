@@ -1635,9 +1635,17 @@ def test_second_level_surface_image_contrast_computation(
         )
 
 
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"tfce": True},  # to run cluster inference
+        {"threshold": 0.001},  # to run cluster inference
+    ],
+)
 @pytest.mark.parametrize("two_sided_test", [True, False])
 def test_non_parametric_inference_with_surface_images(
-    surf_img_1d, two_sided_test, n_subjects
+    surf_img_1d, two_sided_test, kwargs, n_subjects
 ):
     """Smoke test non_parametric_inference on list of 1D surfaces."""
     second_level_input = [surf_img_1d for _ in range(n_subjects)]
@@ -1649,6 +1657,7 @@ def test_non_parametric_inference_with_surface_images(
         design_matrix=design_matrix,
         n_perm=N_PERM,
         two_sided_test=two_sided_test,
+        **kwargs,
     )
 
 
@@ -1702,24 +1711,4 @@ def test_non_parametric_inference_with_surface_images_warnings(
             design_matrix=design_matrix,
             n_perm=N_PERM,
             smoothing_fwhm=6,
-        )
-    with pytest.warns(
-        NotImplementedWarning,
-        match="Cluster level inference not yet implemented for surface data.",
-    ):
-        non_parametric_inference(
-            second_level_input=second_level_input,
-            design_matrix=design_matrix,
-            n_perm=N_PERM,
-            tfce=True,
-        )
-    with pytest.warns(
-        NotImplementedWarning,
-        match="Cluster level inference not yet implemented for surface data.",
-    ):
-        non_parametric_inference(
-            second_level_input=second_level_input,
-            design_matrix=design_matrix,
-            n_perm=N_PERM,
-            threshold=0.001,
         )
