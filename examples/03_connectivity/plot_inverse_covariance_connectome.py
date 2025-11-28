@@ -127,7 +127,7 @@ show()
 
 view = view_connectome(-estimator.precision_, coords)
 
-# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# In a notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 view
 
