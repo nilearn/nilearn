@@ -212,7 +212,7 @@ for contrast_id, contrast_val in contrasts.items():
     table = get_clusters_table(
         z_score,
         stat_threshold=threshold,
-        cluster_threshold=cluster_trhreshold,
+        cluster_threshold=cluster_threshold,
         two_sided=True,
     )
     print(f"\n{contrast_id=}")
