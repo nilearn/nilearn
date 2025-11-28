@@ -398,6 +398,7 @@ def path_scores(
     # it is essential to center the data in regression
     # do not unpack tuple completely
     # as it returns more values starting from sklearn 1.8
+    # TODO: try to find a public function in sklearn to do this
     tmp = center_data(X_train, y_train, fit_intercept=True, copy=False)
     X_train = tmp[0]
     y_train = tmp[1]
