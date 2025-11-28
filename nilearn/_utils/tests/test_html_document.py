@@ -27,8 +27,6 @@ class Get:
         self.content = requests.get(url).content
 
 
-# disable request mocking for this test -- note we are accessing localhost only
-@pytest.mark.parametrize("request_mocker", [None])
 def test_open_in_browser(monkeypatch):
     opener = Get()
     monkeypatch.setattr(webbrowser, "open", opener)
