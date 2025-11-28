@@ -192,7 +192,6 @@ def cluster_level_inference(
     original_threshold = threshold
     if not isinstance(threshold, list):
         threshold = [threshold]
-
     if any(x < 0 for x in threshold):
         raise ValueError(
             "'threshold' cannot be negative or "
@@ -200,18 +199,16 @@ def cluster_level_inference(
             f"Got: 'threshold={original_threshold}'."
         )
 
-    is_surface = isinstance(stat_img, SurfaceImage) or isinstance(
+    if isinstance(stat_img, SurfaceImage) or isinstance(
         mask_img, SurfaceImage
-    )
-
-    if is_surface:
+    ):
         return _cluster_level_inference_surface(
             stat_img, mask_img, threshold, alpha, verbose
         )
-    else:
-        return _cluster_level_inference_volume(
-            stat_img, mask_img, threshold, alpha, verbose
-        )
+
+    return _cluster_level_inference_volume(
+        stat_img, mask_img, threshold, alpha, verbose
+    )
 
 
 def _cluster_level_inference_surface(
