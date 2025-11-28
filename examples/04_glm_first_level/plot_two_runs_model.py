@@ -260,15 +260,7 @@ report = fmri_glm_multirun.generate_report(
 )
 
 # %%
-# We have several ways to access the report:
 #
-# This report can be viewed in a notebook.
+# .. include:: ../../../examples/report_note.rst
+#
 report
-
-# %%
-# Or in a separate browser window
-# report.open_in_browser()
-
-# %%
-# Or we can save as an html file.
-report.save_as_html(output_dir / "report.html")
