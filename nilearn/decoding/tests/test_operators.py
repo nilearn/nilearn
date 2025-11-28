@@ -47,7 +47,7 @@ def test_prox_tvl1_approximates_prox_l1_for_lasso(
     assert_almost_equal(np.abs(a - b).max(), 0.0, decimal=decimal)
 
 
-@pytest.mark.parametrize("verbose", [True, False])
+@pytest.mark.parametrize("verbose", [0, 1])
 def test_prox_tvl1_verbose(rng, verbose):
     l1_ratio = 1.0  # pure LASSO
 

@@ -123,6 +123,7 @@ decoder = DecoderRegressor(
     screening_percentile=1,
     n_jobs=2,
     standardize="zscore_sample",
+    verbose=1,
 )
 # Fit and predict with the decoder
 decoder.fit(gm_imgs_train, age_train)
@@ -155,7 +156,6 @@ display = plot_stat_map(
     display_mode="z",
     cut_coords=[z_slice],
     title="SVM weights",
-    cmap="cold_hot",
 )
 show()
 

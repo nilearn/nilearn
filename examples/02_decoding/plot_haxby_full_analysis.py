@@ -102,6 +102,7 @@ for mask_name in mask_names:
             mask=masker,
             scoring="roc_auc",
             standardize="zscore_sample",
+            verbose=1,
         )
 
         with warnings.catch_warnings():
@@ -121,6 +122,7 @@ for mask_name in mask_names:
             mask=masker,
             scoring="roc_auc",
             standardize="zscore_sample",
+            verbose=1,
         )
 
         with warnings.catch_warnings():

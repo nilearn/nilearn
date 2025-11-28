@@ -131,8 +131,7 @@ from nilearn.connectome import ConnectivityMeasure
 correlations = []
 # Initializing ConnectivityMeasure object with kind='correlation'
 connectome_measure = ConnectivityMeasure(
-    kind="correlation",
-    standardize="zscore_sample",
+    kind="correlation", standardize="zscore_sample", verbose=1
 )
 for filename, confound in zip(func_filenames, confounds, strict=False):
     # call transform from RegionExtractor object to extract timeseries signals

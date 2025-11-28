@@ -64,7 +64,6 @@ masker = NiftiSpheresMasker(
     t_r=dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=1,
     clean_args={
         "butterworth__padtype": "even"
     },  # kwarg to modify Butterworth filter
@@ -114,8 +113,7 @@ plt.legend()
 from nilearn.connectome import ConnectivityMeasure
 
 connectivity_measure = ConnectivityMeasure(
-    kind="partial correlation",
-    standardize="zscore_sample",
+    kind="partial correlation", standardize="zscore_sample", verbose=1
 )
 partial_correlation_matrix = connectivity_measure.fit_transform([time_series])[
     0
@@ -358,7 +356,7 @@ timeseries = spheres_masker.fit_transform(
     func_filename, confounds=confounds_filename
 )
 
-covariance_estimator = GraphicalLassoCV()
+covariance_estimator = GraphicalLassoCV(verbose=True)
 covariance_estimator.fit(timeseries)
 matrix = covariance_estimator.covariance_
 
