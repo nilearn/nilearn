@@ -175,7 +175,7 @@ contrasts = {
 # together with a suitable background to give an impression
 # of the cortex folding.
 #
-# We plot threshold the contrasts at uncorrected p < 0.001.
+# We plot thresholded contrasts at uncorrected p < 0.001.
 from scipy.stats import norm
 
 from nilearn.datasets import load_fsaverage_data
