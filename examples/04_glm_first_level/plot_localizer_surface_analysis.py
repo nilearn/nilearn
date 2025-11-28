@@ -210,8 +210,10 @@ show()
 # Cluster-level inference
 # -----------------------
 #
-# We can also perform cluster-level inference (aka "All resolution Inference") for a given contrast.
-# This gives a high-probability lower bound on the proportion of true discoveries in each cluster
+# We can also perform cluster-level inference
+# (aka "All resolution Inference") for a given contrast.
+# This gives a high-probability lower bound
+# on the proportion of true discoveries in each cluster
 #
 from nilearn.glm import cluster_level_inference
 
@@ -226,6 +228,7 @@ plot_surf_stat_map(
     cmap="inferno",
     title="audio - visual, proportion true positives",
     bg_map=fsaverage_data,
+    avg_method="max",
 )
 
 show()
