@@ -5,7 +5,9 @@
 {% endblock %}
 
 {% block navbar %}
+{% if not is_notebook %}
 {% include 'html/glm/partials/navbar.jinja' %}
+{% endif %}
 {% endblock %}
 
 {% block report %}

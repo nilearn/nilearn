@@ -285,7 +285,7 @@ view = view_surf(
     title="3D visualization in a web browser",
 )
 
-# In a Jupyter notebook, if ``view`` is the output of a cell,
+# In a notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
 view
 # view.open_in_browser()

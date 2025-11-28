@@ -62,7 +62,8 @@ doc = [
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
     "sphinxext-opengraph>=0.9.1",
-    "sphinxcontrib-mermaid>=1.0.0"
+    "sphinxcontrib-mermaid>=1.0.0",
+    "marimo"
 ]
 min = [
     "joblib==1.2.0",
@@ -295,6 +296,7 @@ module = [
     "matplotlib.*",
     "memory_profiler.*",
     "mpl_toolkits.*",
+    "marimo.*",
     "nibabel.*",
     "nilearn._version",
     "numpydoc.*",
