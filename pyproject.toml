@@ -37,16 +37,16 @@ description = "Statistical learning for neuroimaging in Python"
 dynamic = ["version"]
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
-maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
+maintainers = [
+    {name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}
+]
 name = "nilearn"
 readme = "README.rst"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
-dev = [
-    "nilearn[plotting,doc,style,test]"
-]
+dev = ["nilearn[plotting,doc,style,test]"]
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
@@ -75,12 +75,7 @@ min = [
     "scipy==1.9.0",
     "jinja2==3.1.2"
 ]
-min_plotting = [
-    "nilearn[min]",
-    "matplotlib==3.8.0",
-    "plotly==5.0.0",
-    "kaleido"
-]
+min_plotting = ["nilearn[min]", "matplotlib==3.8.0", "plotly==5.0.0", "kaleido"]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
 # Necessary req to use nilearn's plotting module
@@ -120,6 +115,20 @@ Homepage = "https://nilearn.github.io"
 builtin = "clear,rare,en-GB_to_en-US"
 ignore-words = ".github/codespell_ignore_words.txt"
 skip = "./.git,*.cff,*.bib,*/tmp,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results,AUTHORS.rst"
+
+[tool.djlint]
+blank_line_after_tag = "load,extends,include,endblock,set"
+blank_line_before_tag = "load,extends,include,block,set"
+format_css = true
+ignore = "H030,H031,H021,H006"
+max_line_length = 79
+use_gitignore = true
+
+[tool.djlint.css]
+indent_size = 5
+
+[tool.djlint.per-file-ignores]
+"doc/ci.jinja" = "H025"
 
 [tool.doc8]
 allow-long-titles = true
@@ -237,9 +246,7 @@ ignore_imports = [
     "nilearn.connectome.tests.test_group_sparse_cov -> nilearn._utils.data_gen"
 ]
 name = "'nilearn.connectome' only imports from 'nilearn.signal'"
-source_modules = [
-    "nilearn.connectome"
-]
+source_modules = ["nilearn.connectome"]
 type = "forbidden"
 
 [[tool.importlinter.contracts]]
@@ -304,9 +311,7 @@ addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
-markers = [
-    "slow"
-]
+markers = ["slow"]
 minversion = "6.0"
 xfail_strict = true
 
