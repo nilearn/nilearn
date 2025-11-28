@@ -71,7 +71,7 @@ jobs:
             run: |
                 source .venv/bin/activate
                 PYTEST_RUN_PARALLEL_VERBOSE=1
-                pytest --report=report.html --csv results/pytest_output/pytest_output_slow_tests.csv --parallel-threads 2 nilearn
+                pytest -m 'not flaky' --report=report.html --parallel-threads 2 nilearn
 
         -   name: Upload test report
             if: success() || failure()
@@ -79,17 +79,6 @@ jobs:
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report.html
                 path: report.html
-
-        -   name: Plot test timings
-            run: |
-                tox run -e plot_test_timing
-
-        -   name: Upload test timings
-            if: success() || failure()
-            uses: actions/upload-artifact@v5
-            with:
-                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
-                path: results/pytest_output
 
         # -   name: Create issue
         #     if: ${{ steps.test_free_threaded.outcome != 'success' }}
