@@ -661,6 +661,7 @@ def test_decoder_binary_classification_clustering(
 
 
 @ignore_warnings
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, data",
     [
