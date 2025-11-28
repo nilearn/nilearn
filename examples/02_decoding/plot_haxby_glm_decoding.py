@@ -113,6 +113,26 @@ for run in unique_runs:
         conditions_label.append(condition_)
         run_label.append(run)
 
+# %%
+# Generating a report
+# -------------------
+# Since we have already computed the FirstLevelModel
+# and have the :term:`contrast`, we can quickly create a summary report.
+
+from nilearn.image import mean_img
+
+mean_img_ = mean_img(func_filename)
+report = glm.generate_report(
+    contrasts=conditions,
+    bg_img=mean_img_,
+)
+
+# %%
+#
+# .. include:: ../../../examples/report_note.rst
+#
+report
+
 
 # %%
 # Build the decoding pipeline
