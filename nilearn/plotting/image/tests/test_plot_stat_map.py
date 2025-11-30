@@ -30,6 +30,7 @@ def test_plot_stat_map_bad_input(matplotlib_pyplot, img_3d_mni, tmp_path):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "params", [{}, {"display_mode": "x", "cut_coords": 3}]
 )
