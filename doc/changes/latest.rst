@@ -41,7 +41,7 @@ Fixes
 
 - :bdg-dark:`Code` Raise warning when :func:`~nilearn.image.crop_img` is called with an empty image and return the original image (:gh:`5837` by `Hande Gözükan`_).
 
-- :Fix :func:~nilearn.plotting.plot_img error handling when cut coordinates are out of bounds (:gh:5861) by :user:isha822.
+- :bdg-dark:`Code` Better handling of errors during plotting when cut coordinates are out of bounds (:gh:`5861` by `Sanjana Soni`_).
 
 Enhancements
 ------------
