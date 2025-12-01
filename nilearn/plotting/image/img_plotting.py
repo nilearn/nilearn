@@ -456,8 +456,8 @@ def plot_img(
             if cut < valid_min or cut > valid_max:
                 raise ValueError(
                     f"The requested cut coordinate {cut} is out of bounds. "
-                    f"The valid range for this image on axis '{display_mode}' is "
-                    f"[{valid_min:.2f}, {valid_max:.2f}]."
+                    f"The valid range for this image on axis '{display_mode}' "
+                    f"is [{valid_min:.2f}, {valid_max:.2f}]."
                 )
     # --- End Validation ---
     display = _plot_img_with_bg(
