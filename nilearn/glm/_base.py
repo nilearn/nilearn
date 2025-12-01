@@ -1,22 +1,44 @@
+import datetime
 import inspect
+import uuid
 import warnings
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 from nibabel.onetime import auto_attr
 from sklearn.base import BaseEstimator
 from sklearn.utils import Bunch
 from sklearn.utils.estimator_checks import check_is_fitted
 
+from nilearn._utils import logger  # TODO just import log
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn._version import __version__
+from nilearn.glm._reporting_utils import (
+    _glm_model_attributes_to_dataframe,
+    _make_stat_maps_contrast_clusters,
+    _mask_to_plot,
+    _turn_into_full_path,
+)
 from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
+from nilearn.reporting._utils import dataframe_to_html
+from nilearn.reporting.html_report import (
+    MISSING_ENGINE_MSG,
+    UNFITTED_MSG,
+    HTMLReport,
+    assemble_report,
+    is_notebook,
+    return_jinja_env,
+)
 from nilearn.surface import SurfaceImage
 
 FIGURE_FORMAT = "png"
@@ -351,7 +373,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         cut_coords=None,
         display_mode=None,
         report_dims=(1600, 800),
-    ):
+    ) -> HTMLReport:
         """Return a :class:`~nilearn.reporting.HTMLReport` \
         which shows all important aspects of a fitted :term:`GLM`.
 
@@ -374,7 +396,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             Contains the HTML code for the :term:`GLM` report.
 
         """
-        from nilearn.reporting.glm_reporter import make_glm_report
+        check_params(locals())
 
         sig = inspect.signature(self.generate_report).parameters
         warn_default_threshold(
@@ -391,24 +413,231 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 "hrf_model": getattr(self, "hrf_model", None),
                 "drift_model": None,
             }
+        warning_messages = []
 
-        return make_glm_report(
-            self,
-            contrasts,
-            first_level_contrast=first_level_contrast,
-            title=title,
-            bg_img=bg_img,
-            threshold=threshold,
-            alpha=alpha,
-            cluster_threshold=cluster_threshold,
+        if not is_matplotlib_installed():
+            warning_messages.append(MISSING_ENGINE_MSG)
+
+        parameters = dict(**sig)
+        if height_control is not None and float(threshold) != float(
+            parameters["threshold"].default
+        ):
+            warning_messages.append(
+                f"\n'{threshold=}' is not used with '{height_control=}'."
+                "\n'threshold' is only used when 'height_control=None'. "
+                f"\nSet 'threshold' to '{parameters['threshold'].default}' "
+                "to avoid this warning."
+            )
+        warn_default_threshold(
+            threshold,
+            parameters["threshold"].default,
+            3.0,
             height_control=height_control,
-            two_sided=two_sided,
-            min_distance=min_distance,
-            plot_type=plot_type,
-            cut_coords=cut_coords,
-            display_mode=display_mode,
-            report_dims=report_dims,
         )
+
+        model_attributes = _glm_model_attributes_to_dataframe(self)
+        with pd.option_context("display.max_colwidth", 100):
+            model_attributes_html = dataframe_to_html(
+                model_attributes,
+                precision=2,
+                header=True,
+                sparsify=False,
+            )
+
+        contrasts = coerce_to_dict(contrasts)
+
+        # If some contrasts are passed
+        # we do not rely on filenames stored in the model.
+        output = None
+        if contrasts is None:
+            output = self._reporting_data.get("filenames", None)
+            if output is not None and output.get("use_absolute_path", True):
+                output = _turn_into_full_path(output, output["dir"])
+
+        design_matrices = None
+        mask_plot = None
+        mask_info = {"n_elements": 0, "coverage": "0"}
+        results = None
+
+        if not self.__sklearn_is_fitted__():
+            warning_messages.append(UNFITTED_MSG)
+
+        else:
+            design_matrices = (
+                [self.design_matrix_]
+                if self.__str__() == "Second Level Model"
+                else self.design_matrices_
+            )
+
+            # TODO move matplotlib check to if condition below
+            MNI152TEMPLATE = None
+            if is_matplotlib_installed():
+                from nilearn.plotting.image.utils import (  # type: ignore[assignment]
+                    MNI152TEMPLATE,
+                )
+            if bg_img == "MNI152TEMPLATE":
+                bg_img = MNI152TEMPLATE if self._is_volume_glm() else None
+            if (
+                not self._is_volume_glm()
+                and bg_img
+                and not isinstance(bg_img, SurfaceImage)
+            ):
+                raise TypeError(
+                    "'bg_img' must a SurfaceImage instance. "
+                    f"Got {bg_img.__class__.__name__}"
+                )
+
+            mask_plot = _mask_to_plot(self, bg_img, cut_coords)
+
+            # We try to rely on the content of glm object only
+            # by reading images from disk rarther than recomputing them
+            mask_info = {
+                k: v
+                for k, v in self.masker_._report_content.items()
+                if k in ["n_elements", "coverage"]
+            }
+            if "coverage" in mask_info:
+                mask_info["coverage"] = f"{mask_info['coverage']:0.1f}"
+
+            statistical_maps = {}
+            if self._is_volume_glm() and output is not None:
+                try:
+                    statistical_maps = {
+                        contrast_name: output["dir"]
+                        / output["statistical_maps"][contrast_name]["z_score"]
+                        for contrast_name in output["statistical_maps"]
+                    }
+                except KeyError:  # pragma: no cover
+                    if contrasts is not None:
+                        statistical_maps = self._make_stat_maps(
+                            contrasts,
+                            output_type="z_score",
+                            first_level_contrast=first_level_contrast,
+                        )
+            elif contrasts is not None:
+                statistical_maps = self._make_stat_maps(
+                    contrasts,
+                    output_type="z_score",
+                    first_level_contrast=first_level_contrast,
+                )
+
+            logger.log(
+                "Generating contrast-level figures...", verbose=self.verbose
+            )
+            results = _make_stat_maps_contrast_clusters(
+                stat_img=statistical_maps,
+                threshold_orig=threshold,
+                alpha=alpha,
+                cluster_threshold=cluster_threshold,
+                height_control=height_control,
+                two_sided=two_sided,
+                min_distance=min_distance,
+                bg_img=bg_img,
+                cut_coords=cut_coords,
+                display_mode=display_mode,
+                plot_type=plot_type,
+            )
+
+            if contrasts is None:
+                warning_messages.append(
+                    "No contrast passed during report generation."
+                )
+
+        design_matrices_dict = Bunch()
+        contrasts_dict = Bunch()
+        if output is not None:
+            design_matrices_dict = output["design_matrices_dict"]
+            contrasts_dict = output["contrasts_dict"]
+
+        if is_matplotlib_installed():
+            from nilearn._utils.plotting import (
+                generate_contrast_matrices_figures,
+                generate_design_matrices_figures,
+            )
+
+            logger.log(
+                "Generating design matrices figures...", verbose=self.verbose
+            )
+            design_matrices_dict = generate_design_matrices_figures(
+                design_matrices,
+                design_matrices_dict=design_matrices_dict,
+                output=output,
+            )
+
+            logger.log(
+                "Generating contrast matrices figures...", verbose=self.verbose
+            )
+            contrasts_dict = generate_contrast_matrices_figures(
+                design_matrices,
+                contrasts,
+                contrasts_dict=contrasts_dict,
+                output=output,
+            )
+
+        run_wise_dict = Bunch()
+        for i_run in design_matrices_dict:
+            tmp = Bunch()
+            tmp["design_matrix_png"] = design_matrices_dict[i_run][
+                "design_matrix_png"
+            ]
+            tmp["correlation_matrix_png"] = design_matrices_dict[i_run][
+                "correlation_matrix_png"
+            ]
+            tmp["all_contrasts"] = None
+            if i_run in contrasts_dict:
+                tmp["all_contrasts"] = contrasts_dict[i_run]
+            run_wise_dict[i_run] = tmp
+
+        # for methods writing, only keep the contrast expressed as strings
+        if contrasts is not None:
+            contrasts = [x for x in contrasts.values() if isinstance(x, str)]
+
+        title = f"<br>{title}" if title else ""
+        title = f"Statistical Report - {self.__str__()}{title}"
+
+        smoothing_fwhm = getattr(self, "smoothing_fwhm", 0)
+        if smoothing_fwhm == 0:
+            smoothing_fwhm = None
+
+        if warning_messages:
+            for msg in warning_messages:
+                warnings.warn(
+                    msg,
+                    stacklevel=find_stack_level(),
+                )
+
+        env = return_jinja_env()
+
+        body_tpl = env.get_template("html/glm/body_glm.jinja")
+
+        # TODO clean up docstring from RST formatting
+        docstring = self.__doc__.split("Parameters\n")[0]
+
+        body = body_tpl.render(
+            docstring=docstring,
+            contrasts=contrasts,
+            date=datetime.datetime.now().replace(microsecond=0).isoformat(),
+            mask_plot=mask_plot,
+            model_type=self.__str__(),
+            parameters=model_attributes_html,
+            reporting_data=Bunch(**self._reporting_data),
+            results=results,
+            run_wise_dict=run_wise_dict,
+            is_notebook=is_notebook(),
+            smoothing_fwhm=smoothing_fwhm,
+            title=title,
+            version=__version__,
+            unique_id=str(uuid.uuid4()).replace("-", ""),
+            warning_messages=warning_messages,
+            has_plotting_engine=is_matplotlib_installed(),
+            **mask_info,
+        )
+
+        report = assemble_report(body, title)
+
+        report.resize(*report_dims)
+
+        return report
 
 
 def _generate_mask(
