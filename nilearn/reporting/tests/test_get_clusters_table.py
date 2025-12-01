@@ -378,7 +378,7 @@ def test_get_clusters_table_negative_threshold(shape, affine_eye):
 def test_get_clusters_table_negative_threshold_one_sided(
     simple_stat_img, surf_img_1d
 ):
-    """Check that one sided negative thresholds errs when two_sided=True."""
+    """Check one sided negative thresholds errors when two_sided=True."""
     with pytest.raises(
         ValueError, match='"threshold" should not be a negative'
     ):

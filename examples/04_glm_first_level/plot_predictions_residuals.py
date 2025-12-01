@@ -78,8 +78,8 @@ show()
 # Extract the largest clusters
 # ----------------------------
 # We can extract the 6 largest clusters surviving our threshold.
-# and get the x, y, and z coordinates of therir peaks.
-# We thennextract the time series from a sphere around each coordinate.
+# and get the x, y, and z coordinates of their peaks.
+# We then extract the time series from a sphere around each coordinate.
 #
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.reporting import get_clusters_table

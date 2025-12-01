@@ -432,7 +432,7 @@ def _get_clusters_table_surface(
 
         if offset == 1:
             warnings.warn(
-                f"No clusters found for than '{stat_threshold=}'.",
+                f"No clusters found for '{stat_threshold=}'.",
                 category=UserWarning,
                 stacklevel=find_stack_level(),
             )
