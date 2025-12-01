@@ -58,14 +58,11 @@ masker = NiftiLabelsMasker(
 # Visualize the atlas
 # -------------------
 #
-# .. note::
+# We need to call fit prior to generating the mask.
+# We can then generate a report to visualize the atlas.
 #
-#   We need to call fit prior to generating the mask.
+# .. include:: ../../../examples/report_note.rst
 #
-# At this point, no functional image has been provided to the masker.
-# We can still generate a report which can be displayed in a Jupyter
-# Notebook, opened in a browser using the .open_in_browser() method,
-# or saved to a file using the .save_as_html(output_filepath) method.
 masker.fit()
 
 report = masker.generate_report()

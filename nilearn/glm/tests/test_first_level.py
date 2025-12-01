@@ -104,25 +104,34 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-def test_glm_fit_invalid_mask_img(shape_4d_default):
-    """Raise error when invalid mask are passed to FirstLevelModel."""
+def test_glm_fit_unfitted_masker(shape_4d_default):
+    """Raise error when using unfitted NiftiMasker as mask_img."""
     rk = 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default], rk=rk
     )
 
-    # Give an unfitted NiftiMasker as mask_img and check that we get an error
     masker = NiftiMasker(mask)
     with pytest.raises(
-        ValueError, match=r"NiftiMasker instance is not fitted yet."
+        ValueError, match="NiftiMasker instance is not fitted yet"
     ):
         FirstLevelModel(mask_img=masker).fit(
             fmri_data[0], design_matrices=design_matrices[0]
         )
 
-    # Give a fitted NiftiMasker with a None mask_img_ attribute
-    # and check that the masker parameters are overridden by the
-    # FirstLevelModel parameters
+
+def test_glm_override_masker_param(shape_4d_default):
+    """Check masker parameters overridden by the FirstLevelModel parameters.
+
+    Give a fitted NiftiMasker with a None mask_img_ attribute
+    and check that the masker parameters are overridden by the
+    FirstLevelModel parameters.
+    """
+    rk = 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default], rk=rk
+    )
+    masker = NiftiMasker(mask)
     masker.fit()
     masker.mask_img_ = None
     with pytest.warns(
@@ -428,6 +437,7 @@ def test_high_level_glm_null_contrasts(shape_3d_default):
     np.testing.assert_almost_equal(get_data(z1), get_data(z2))
 
 
+@pytest.mark.slow
 def test_high_level_glm_different_design_matrices():
     """Test can estimate a contrast when design matrices are different."""
     shapes, rk = ((7, 8, 7, 15), (7, 8, 7, 19)), 3
@@ -1435,6 +1445,7 @@ def test_first_level_residuals(shape_4d_default):
     assert_array_almost_equal(mean_residuals, 0)
 
 
+@pytest.mark.slow
 def test_first_level_residuals_errors(shape_4d_default):
     """Access residuals needs fit and minimize_memory set to True."""
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(

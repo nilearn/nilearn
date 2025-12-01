@@ -49,9 +49,9 @@ plot_roi(mask_img, mean_func_img, display_mode="y", cut_coords=4, title="Mask")
 
 # %%
 # Visualize the mask using the 'generate_report' method
-# This report can be displayed in a Jupyter Notebook,
-# opened in-browser using the .open_in_browser() method,
-# or saved to a file using the .save_as_html(output_filepath) method.
+#
+# .. include:: ../../../examples/report_note.rst
+#
 report = nifti_masker.generate_report()
 report
 

@@ -85,3 +85,15 @@ SurfaceMapsMasker
 
 .. raw:: html
    :file: SurfaceMapsMasker_fitted_matplotlib.html
+
+
+Masker reports in notebooks
+---------------------------
+
+.. warning::
+
+   The reports in this page may appear slightly different
+   than they would in a real report.
+   If you suspect a bug, double check by running in a local notebook.
+
+`View HERE. <../../_static/notebook_reports_maskers.html>`_

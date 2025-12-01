@@ -60,21 +60,29 @@ repos:
     -   id: pretty-format-toml
         args: [--autofix, --indent, '4']
 
-    # Check formatting of CSS and HTML
+    # Check formatting of CSS
     # prettier: https://prettier.io/
 -   repo: https://github.com/rbubley/mirrors-prettier
     rev: v3.6.2
     hooks:
     -   id: prettier
-        types_or: [css, html]
+        types_or: [css]
+
+-   repo: https://github.com/djlint/djLint
+    rev: v1.36.4
+    hooks:
+    -   id: djlint
+    -   id: djlint-reformat
+    -   id: djlint-jinja
+    -   id: djlint-reformat-jinja
         exclude: |
             (?x)^(
-                maint_tools/templates/index.html
+                doc/ci.jinja
             )$
 
     # Lint and format Python code
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.5
+    rev: v0.14.6
     hooks:
     -   id: ruff-check
         # args: [--statistics]
@@ -84,7 +92,7 @@ repos:
 
     # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter
-    rev: v2.6
+    rev: v2.7
     hooks:
     -   id: import-linter
         args: [--verbose]
