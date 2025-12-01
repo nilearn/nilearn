@@ -5,6 +5,7 @@ import warnings
 from collections import OrderedDict
 from copy import deepcopy
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -407,7 +408,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         )
 
         if not hasattr(self, "_reporting_data"):
-            self._reporting_data = {
+            self._reporting_data: dict[str, Any] = {
                 "trial_types": [],
                 "noise_model": getattr(self, "noise_model", None),
                 "hrf_model": getattr(self, "hrf_model", None),
