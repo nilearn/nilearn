@@ -599,12 +599,11 @@ class BaseGLM(CacheMixin, BaseEstimator):
         if smoothing_fwhm == 0:
             smoothing_fwhm = None
 
-        if warning_messages:
-            for msg in warning_messages:
-                warnings.warn(
-                    msg,
-                    stacklevel=find_stack_level(),
-                )
+        for msg in warning_messages:
+            warnings.warn(
+                msg,
+                stacklevel=find_stack_level(),
+            )
 
         env = return_jinja_env()
 
