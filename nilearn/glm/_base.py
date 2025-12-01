@@ -399,14 +399,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
         """
         check_params(locals())
 
-        sig = inspect.signature(self.generate_report).parameters
-        warn_default_threshold(
-            threshold,
-            sig["threshold"].default,
-            3.09,
-            height_control=height_control,
-        )
-
         if not hasattr(self, "_reporting_data"):
             self._reporting_data: dict[str, Any] = {
                 "trial_types": [],
@@ -416,6 +408,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             }
         warning_messages = []
 
+        sig = inspect.signature(self.generate_report).parameters
         parameters = dict(**sig)
         if height_control is not None and float(threshold) != float(
             parameters["threshold"].default
