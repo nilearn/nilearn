@@ -595,7 +595,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         title = f"<br>{title}" if title else ""
         title = f"Statistical Report - {self.__str__()}{title}"
 
-        smoothing_fwhm = getattr(self, "smoothing_fwhm", 0)
+        smoothing_fwhm = getattr(self, "smoothing_fwhm", None)
         if smoothing_fwhm == 0:
             smoothing_fwhm = None
 
