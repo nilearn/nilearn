@@ -1,3 +1,4 @@
+import inspect
 import warnings
 from collections import OrderedDict
 from copy import deepcopy
@@ -13,6 +14,7 @@ from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.surface import SurfaceImage
@@ -332,6 +334,81 @@ class BaseGLM(CacheMixin, BaseEstimator):
             "statistical_maps": statistical_maps,
             "model_level_mapping": model_level_mapping,
         }
+
+    def generate_report(
+        self,
+        contrasts=None,
+        first_level_contrast=None,
+        title=None,
+        bg_img="MNI152TEMPLATE",
+        threshold=3.09,
+        alpha=0.001,
+        cluster_threshold=0,
+        height_control="fpr",
+        two_sided=False,
+        min_distance=8.0,
+        plot_type="slice",
+        cut_coords=None,
+        display_mode=None,
+        report_dims=(1600, 800),
+    ):
+        """Return a :class:`~nilearn.reporting.HTMLReport` \
+        which shows all important aspects of a fitted :term:`GLM`.
+
+        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
+        browser, displayed in a notebook, or saved to disk as a standalone
+        HTML file.
+
+        The :term:`GLM` must be fitted and have the computed design
+        matrix(ces).
+
+        .. note::
+
+            Refer to the documentation of
+            :func:`~nilearn.reporting.make_glm_report`
+            for details about the parameters
+
+        Returns
+        -------
+        report_text : :class:`~nilearn.reporting.HTMLReport`
+            Contains the HTML code for the :term:`GLM` report.
+
+        """
+        from nilearn.reporting.glm_reporter import make_glm_report
+
+        sig = inspect.signature(self.generate_report).parameters
+        warn_default_threshold(
+            threshold,
+            sig["threshold"].default,
+            3.09,
+            height_control=height_control,
+        )
+
+        if not hasattr(self, "_reporting_data"):
+            self._reporting_data = {
+                "trial_types": [],
+                "noise_model": getattr(self, "noise_model", None),
+                "hrf_model": getattr(self, "hrf_model", None),
+                "drift_model": None,
+            }
+
+        return make_glm_report(
+            self,
+            contrasts,
+            first_level_contrast=first_level_contrast,
+            title=title,
+            bg_img=bg_img,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            plot_type=plot_type,
+            cut_coords=cut_coords,
+            display_mode=display_mode,
+            report_dims=report_dims,
+        )
 
 
 def _generate_mask(

@@ -49,7 +49,6 @@ from nilearn.glm.regression import (
     RegressionResults,
     SimpleRegressionResults,
 )
-from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids.query import (
@@ -1361,28 +1360,7 @@ class FirstLevelModel(BaseGLM):
             Contains the HTML code for the :term:`GLM` report.
 
         """
-        from nilearn.reporting.glm_reporter import make_glm_report
-
-        parameters = inspect.signature(
-            FirstLevelModel.generate_report
-        ).parameters
-        warn_default_threshold(
-            threshold,
-            parameters["threshold"].default,
-            3.09,
-            height_control=height_control,
-        )
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = {
-                "trial_types": [],
-                "noise_model": getattr(self, "noise_model", None),
-                "hrf_model": getattr(self, "hrf_model", None),
-                "drift_model": None,
-            }
-
-        return make_glm_report(
-            self,
+        return super().generate_report(
             contrasts,
             title=title,
             bg_img=bg_img,
