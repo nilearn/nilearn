@@ -452,6 +452,10 @@ class BaseGLM(CacheMixin, BaseEstimator):
             if output is not None and output.get("use_absolute_path", True):
                 output = _turn_into_full_path(output, output["dir"])
 
+            warning_messages.append(
+                "No contrast passed during report generation."
+            )
+
         design_matrices = None
         mask_plot = None
         mask_info = {"n_elements": 0, "coverage": "0"}
@@ -535,11 +539,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 display_mode=display_mode,
                 plot_type=plot_type,
             )
-
-            if contrasts is None:
-                warning_messages.append(
-                    "No contrast passed during report generation."
-                )
 
         design_matrices_dict = Bunch()
         contrasts_dict = Bunch()
