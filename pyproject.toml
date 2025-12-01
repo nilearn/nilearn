@@ -168,8 +168,6 @@ ignore_imports = [
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
-    "nilearn.reporting.glm_reporter -> nilearn.glm.thresholding",
-    "nilearn.reporting.glm_reporter -> nilearn.glm._reporting_utils",
     "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
     "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level"  # TODO: (nilearn >= 0.15.0) remove
 ]
@@ -204,8 +202,6 @@ ignore_imports = [
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
-    "nilearn.reporting.glm_reporter -> nilearn.glm.thresholding",
-    "nilearn.reporting.glm_reporter -> nilearn.glm._reporting_utils",
     "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
     "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level",  # TODO: (nilearn >= 0.15.0) remove
     # additional on top of those of "main architecture"
