@@ -64,3 +64,16 @@ Surface GLM
 
 .. raw:: html
    :file: slm_surf_empty.html
+
+
+GLM reports in notebooks
+------------------------
+
+.. warning::
+
+   The reports in this page may appear slightly different
+   than they would in a real report.
+   If you suspect a bug, double check by running in a local notebook.
+
+
+`View HERE. <../../_static/notebook_reports_glm.html>`_

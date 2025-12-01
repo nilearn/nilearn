@@ -396,9 +396,14 @@ def path_scores(
     X_test, y_test = X[test].copy(), y[test].copy()
 
     # it is essential to center the data in regression
-    X_train, y_train, _, y_train_mean, _ = center_data(
-        X_train, y_train, fit_intercept=True, copy=False
-    )
+    # do not unpack tuple completely
+    # as it returns more values starting from sklearn 1.8
+    # TODO: try to find a public function in sklearn to do this
+    tmp = center_data(X_train, y_train, fit_intercept=True, copy=False)
+    X_train = tmp[0]
+    y_train = tmp[1]
+    y_train_mean = tmp[3]
+    del tmp
 
     # misc
     if not isinstance(l1_ratios, collections.abc.Iterable):

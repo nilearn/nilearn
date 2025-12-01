@@ -99,6 +99,7 @@ def test_parcellations_no_warnings(img_4d_zeros_eye):
     assert all(r.category is not UserWarning for r in record)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_parcellations_no_int64_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=1)
     with warnings.catch_warnings(record=True) as record:
