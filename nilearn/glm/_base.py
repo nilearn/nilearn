@@ -416,9 +416,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
             }
         warning_messages = []
 
-        if not is_matplotlib_installed():
-            warning_messages.append(MISSING_ENGINE_MSG)
-
         parameters = dict(**sig)
         if height_control is not None and float(threshold) != float(
             parameters["threshold"].default
@@ -574,6 +571,8 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 contrasts_dict=contrasts_dict,
                 output=output,
             )
+        else:
+            warning_messages.append(MISSING_ENGINE_MSG)
 
         run_wise_dict = Bunch()
         for i_run in design_matrices_dict:
