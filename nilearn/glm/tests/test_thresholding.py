@@ -238,17 +238,20 @@ def test_hommel(alpha, expected):
 
 
 @pytest.mark.parametrize(
-    "kwargs, expected",
+    "kwargs, expected, expected_n_unique_values",
     [
         (
             {"threshold": DEFAULT_Z_THRESHOLD, "verbose": 1},
             8,
+            2,
         ),  # standard case (also test verbose)
-        ({"threshold": 6}, 0),  # high threshold
-        ({"threshold": [3, 6]}, 8),  # list of thresholds
+        ({"threshold": 6}, 0, 1),  # high threshold
+        ({"threshold": [3, 6]}, 8, 2),  # list of thresholds
     ],
 )
-def test_all_resolution_inference(data_norm_isf, affine_eye, kwargs, expected):
+def test_all_resolution_inference(
+    data_norm_isf, affine_eye, kwargs, expected, expected_n_unique_values
+):
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -257,22 +260,29 @@ def test_all_resolution_inference(data_norm_isf, affine_eye, kwargs, expected):
     vals = get_data(th_map)
 
     assert np.sum(vals > 0) == expected
+    # only one unique non zero value: one per cluster
+    assert len(np.unique(vals)) == expected_n_unique_values
 
 
 @pytest.mark.parametrize(
-    "kwargs, expected_left, expected_right",
+    "kwargs, expected_left, expected_right, expected_n_unique_values",
     [
         (
             {"threshold": DEFAULT_Z_THRESHOLD, "verbose": 1},
             2,
             3,
+            2,
         ),  # standard case (also test verbose)
-        ({"threshold": 6}, 0, 0),  # high threshold
-        ({"threshold": [3, 6]}, 2, 3),  # list of thresholds
+        ({"threshold": 6}, 0, 0, 1),  # high threshold
+        ({"threshold": [3, 6]}, 2, 3, 2),  # list of thresholds
     ],
 )
 def test_all_resolution_inference_surface(
-    surf_img_1d, kwargs, expected_left, expected_right
+    surf_img_1d,
+    kwargs,
+    expected_left,
+    expected_right,
+    expected_n_unique_values,
 ):
     """Check cluster_level_inference that runs on each hemisphere."""
     data_left = _data_norm_isf(surf_img_1d.data.parts["left"].shape)
@@ -287,7 +297,15 @@ def test_all_resolution_inference_surface(
     th_map = cluster_level_inference(stat_img, alpha=0.05, **kwargs)
 
     assert np.sum(th_map.data.parts["left"] > 0) == expected_left
+    # only one unique non zero value: one per cluster
+    assert (
+        len(np.unique(th_map.data.parts["left"])) == expected_n_unique_values
+    )
+
     assert np.sum(th_map.data.parts["right"] > 0) == expected_right
+    assert (
+        len(np.unique(th_map.data.parts["right"])) == expected_n_unique_values
+    )
 
 
 def test_all_resolution_inference_with_mask(
@@ -393,10 +411,7 @@ def test_all_resolution_inference_threshold_errors(
         ValueError,
         match=("'threshold' cannot be negative or contain negative values"),
     ):
-        cluster_level_inference(
-            stat_img,
-            threshold=threshold,
-        )
+        cluster_level_inference(stat_img, threshold=threshold)
 
 
 @pytest.mark.parametrize("two_sided", [True, False])
