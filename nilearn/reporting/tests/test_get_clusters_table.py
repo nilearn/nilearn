@@ -247,13 +247,24 @@ def test_get_clusters_table_surface_two_sided(
     assert cluster_labels_negative.size == expected_n_cluster_right + 1
 
 
-def check_sum_negative_positive_clusters(
-    stat_img, stat_threshold, cluster_threshold, expected_n_cluster_two_sided
+@pytest.mark.parametrize(
+    "stat_threshold, cluster_threshold, expected_n_cluster_two_sided",
+    [
+        (1.4, 0, 8),
+        (1.4, 10, 4),
+    ],
+)
+def test_get_clusters_table_surface_real_data(
+    stat_threshold, cluster_threshold, expected_n_cluster_two_sided
 ):
-    """Assert that n_clusters two sided equals \
-        sum of n_clusters one sided \
-        with positive and negative threshold.
+    """Test cluster table generation on real surface data.
+
+    Assert that n_clusters two sided equals
+    sum of n_clusters one sided \
+    with positive and negative threshold.
     """
+    stat_img = load_fsaverage_data(mesh_type="inflated")
+
     clusters_table_two_sided = get_clusters_table(
         stat_img,
         stat_threshold=np.abs(stat_threshold),
@@ -281,27 +292,6 @@ def check_sum_negative_positive_clusters(
 
     assert len(clusters_table_two_sided) == (
         len(clusters_table_positive) + len(clusters_table_negative)
-    )
-
-
-@pytest.mark.parametrize(
-    "stat_threshold, cluster_threshold, expected_n_cluster_two_sided",
-    [
-        (1.4, 0, 8),
-        (1.4, 10, 4),
-    ],
-)
-def test_get_clusters_table_surface_real_data(
-    stat_threshold, cluster_threshold, expected_n_cluster_two_sided
-):
-    """Test cluster table generation on real surface data."""
-    stat_img = load_fsaverage_data(mesh_type="inflated")
-
-    check_sum_negative_positive_clusters(
-        stat_img,
-        stat_threshold,
-        cluster_threshold,
-        expected_n_cluster_two_sided,
     )
 
 
