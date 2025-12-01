@@ -424,6 +424,12 @@ jobs:
                 name: ${{ matrix.env }}_checks
                 path: doc/tmp
 
+        -   name: Check doc size
+            if: always()
+            run: |
+                du -h -d 3 --exclude=".git"
+                du -h doc/_build/html
+
         -   name: Upload documentation
             if: steps.build-docs.outcome == 'success'
             uses: actions/upload-artifact@v5
