@@ -399,11 +399,12 @@ def test_all_resolution_inference_threshold_errors(
         )
 
 
+@pytest.mark.parametrize("two_sided", [True, False])
 @pytest.mark.parametrize("control", ["fdr", "bonferroni"])
 def test_all_resolution_inference_height_control(
-    control, affine_eye, img_3d_ones_eye, data_norm_isf
+    control, affine_eye, img_3d_ones_eye, data_norm_isf, two_sided
 ):
-    # two-side fdr threshold + bonferroni
+    """Test FDR threshold/bonferroni with one/two sided."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     data[0:2, 0:2, 6:8] = -5.0
@@ -415,22 +416,15 @@ def test_all_resolution_inference_height_control(
         alpha=0.05,
         height_control=control,
         cluster_threshold=5,
+        two_sided=two_sided,
     )
-    vals = get_data(th_map)
-    assert_equal(np.sum(vals > 0), 8)
-    assert_equal(np.sum(vals < 0), 8)
-    th_map, _ = threshold_stats_img(
-        stat_img,
-        mask_img=img_3d_ones_eye,
-        alpha=0.05,
-        height_control=control,
-        cluster_threshold=5,
-        two_sided=False,
-    )
-    vals = get_data(th_map)
 
+    vals = get_data(th_map)
     assert_equal(np.sum(vals > 0), 8)
-    assert_equal(np.sum(vals < 0), 0)
+    if two_sided:
+        assert_equal(np.sum(vals < 0), 8)
+    else:
+        assert_equal(np.sum(vals < 0), 0)
 
 
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
