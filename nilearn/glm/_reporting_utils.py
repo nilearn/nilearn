@@ -19,6 +19,13 @@ from nilearn._utils.tags import (
     accept_niimg_input,
     is_masker,
 )
+from nilearn.glm.thresholding import threshold_stats_img
+from nilearn.reporting._utils import dataframe_to_html
+from nilearn.reporting.get_clusters_table import (
+    clustering_params_to_dataframe,
+    get_clusters_table,
+)
+from nilearn.reporting.utils import figure_to_png_base64
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
@@ -101,11 +108,9 @@ def _mask_to_plot(model, bg_img, cut_coords):
     if not is_matplotlib_installed():
         return None
 
-    # TODO these should be removed from here
     from matplotlib import pyplot as plt
 
     from nilearn.plotting import plot_roi
-    from nilearn.reporting.utils import figure_to_png_base64
 
     # Select mask_img to use for plotting
     if not model._is_volume_glm():
@@ -229,8 +234,6 @@ def _make_stat_maps_contrast_clusters(
         contrast name, contrast plot, statistical map, cluster table.
 
     """
-    from nilearn.glm.thresholding import threshold_stats_img
-
     check_params(locals())
     if not display_mode:
         display_mode_selector = {"slice": "z", "glass": "lzry"}
@@ -263,12 +266,6 @@ def _make_stat_maps_contrast_clusters(
             cluster_threshold=cluster_threshold,
             height_control=height_control,
             two_sided=two_sided,
-        )
-        # TODO move these above later
-        from nilearn.reporting._utils import dataframe_to_html
-        from nilearn.reporting.get_clusters_table import (
-            clustering_params_to_dataframe,
-            get_clusters_table,
         )
 
         table_details = clustering_params_to_dataframe(
@@ -510,8 +507,6 @@ def _stat_map_to_png(
         _add_params_to_plot(table_details, stat_map_plot)
 
     from matplotlib import pyplot as plt
-
-    from nilearn.reporting.utils import figure_to_png_base64
 
     fig = plt.gcf()
     stat_map_png = figure_to_png_base64(fig)
