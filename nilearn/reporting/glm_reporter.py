@@ -1,7 +1,11 @@
 """Functionality to create an HTML report using a fitted GLM & contrasts."""
+# TODO (nilearn >= 0.15.0) remove this module
+
+import warnings
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
+from nilearn._utils.logger import find_stack_level
 from nilearn.reporting.html_report import HTMLReport
 
 
@@ -163,6 +167,15 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
+    make_glm_report_deprecation = (
+        "From release 0.15.0, make_glm_report will be deprecated. "
+        "Use generate_report method of the GLM model instead."
+    )
+    warnings.warn(
+        category=DeprecationWarning,
+        message=make_glm_report_deprecation,
+        stacklevel=find_stack_level(),
+    )
     if model.__str__() == "Second Level Model":
         return model.generate_report(
             contrasts=contrasts,

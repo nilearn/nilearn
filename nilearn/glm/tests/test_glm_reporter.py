@@ -17,7 +17,7 @@ from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.maskers import NiftiMasker
-from nilearn.reporting import HTMLReport
+from nilearn.reporting import HTMLReport, make_glm_report
 from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 from nilearn.surface import SurfaceImage
 
@@ -585,3 +585,17 @@ def test_report_threshold_deprecation_warning(
         assert n_warnings == 1
     else:
         assert n_warnings == 0
+
+
+def test_report_make_glm_deprecation_warning(flm, contrasts):
+    """Test deprecation warning for nilearn.reporting.make_glm_report.
+
+    # TODO (nilearn >= 0.15)
+    # remove
+    """
+    with pytest.warns(DeprecationWarning):
+        make_glm_report(
+            flm,
+            contrasts=contrasts,
+            threshold=3.9,
+        )
