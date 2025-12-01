@@ -407,59 +407,6 @@ def plot_img(
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
-    # --- Validation: Check if cut coords are in bounds ---
-    # We load the image header to get the shape and affine
-    from nilearn._utils.niimg_conversions import check_niimg
-    from nilearn.image.resampling import coord_transform
-
-    img = check_niimg(img)
-
-    if (
-        cut_coords is not None
-        and display_mode in ["x", "y", "z"]
-        and not isinstance(cut_coords, int)
-    ):
-        # 1. Calculate the Bounding Box of the image in mm
-        # Get the 8 corners of the image box in voxel space
-        # (0,0,0) to (max_x, max_y, max_z)
-        corners_vox = np.array(
-            [
-                [0, 0, 0],
-                [img.shape[0], 0, 0],
-                [0, img.shape[1], 0],
-                [0, 0, img.shape[2]],
-                [img.shape[0], img.shape[1], 0],
-                [img.shape[0], 0, img.shape[2]],
-                [0, img.shape[1], img.shape[2]],
-                [img.shape[0], img.shape[1], img.shape[2]],
-            ]
-        )
-
-        # 2. Transform these corners to world space (mm) using the affine
-        corners_mm = coord_transform(
-            corners_vox[:, 0], corners_vox[:, 1], corners_vox[:, 2], img.affine
-        )
-        corners_mm = np.array(corners_mm).T
-
-        # 3. Get the valid range (Min and Max) for the specific axis
-        axis_map = {"x": 0, "y": 1, "z": 2}
-        ax_idx = axis_map[display_mode]
-
-        valid_min = corners_mm[:, ax_idx].min()
-        valid_max = corners_mm[:, ax_idx].max()
-
-        # 4. Check user inputs against these bounds
-        # Ensure cut_coords is a list we can loop over
-        check_coords = [cut_coords] if np.isscalar(cut_coords) else cut_coords
-
-        for cut in check_coords:
-            if cut < valid_min or cut > valid_max:
-                raise ValueError(
-                    f"The requested cut coordinate {cut} is out of bounds. "
-                    f"The valid range for this image on axis '{display_mode}' "
-                    f"is [{valid_min:.2f}, {valid_max:.2f}]."
-                )
-    # --- End Validation ---
     display = _plot_img_with_bg(
         img,
         cut_coords=cut_coords,
