@@ -609,9 +609,11 @@ class BaseGLM(CacheMixin, BaseEstimator):
         body_tpl = env.get_template("html/glm/body_glm.jinja")
 
         # TODO clean up docstring from RST formatting
-        docstring = ""
-        if self.__doc__ is not None:
-            docstring = self.__doc__.split("Parameters\n")[0]
+        docstring = (
+            self.__doc__.split("Parameters\n")[0]
+            if self.__doc__ is not None
+            else ""
+        )
 
         body = body_tpl.render(
             docstring=docstring,
