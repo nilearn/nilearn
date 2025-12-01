@@ -1,13 +1,4 @@
-"""
-Functionality to create an HTML report using a fitted GLM & contrasts.
-
-Functions
----------
-
-make_glm_report(model, contrasts):
-    Creates an HTMLReport Object which can be viewed or saved as a report.
-
-"""
+"""Functionality to create an HTML report using a fitted GLM & contrasts."""
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HEIGHT_DEFAULT, WIDTH_DEFAULT
@@ -172,19 +163,36 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
-    return model.generate_report(
-        contrasts,
-        first_level_contrast=first_level_contrast,
-        title=title,
-        bg_img=bg_img,
-        threshold=threshold,
-        alpha=alpha,
-        cluster_threshold=cluster_threshold,
-        height_control=height_control,
-        two_sided=two_sided,
-        min_distance=min_distance,
-        plot_type=plot_type,
-        cut_coords=cut_coords,
-        display_mode=display_mode,
-        report_dims=report_dims,
-    )
+    if model.__str__() == "Second Level Model":
+        return model.generate_report(
+            contrasts=contrasts,
+            first_level_contrast=first_level_contrast,
+            title=title,
+            bg_img=bg_img,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            plot_type=plot_type,
+            cut_coords=cut_coords,
+            display_mode=display_mode,
+            report_dims=report_dims,
+        )
+    else:
+        return model.generate_report(
+            contrasts=contrasts,
+            title=title,
+            bg_img=bg_img,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            two_sided=two_sided,
+            min_distance=min_distance,
+            plot_type=plot_type,
+            cut_coords=cut_coords,
+            display_mode=display_mode,
+            report_dims=report_dims,
+        )
