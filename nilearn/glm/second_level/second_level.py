@@ -485,9 +485,9 @@ class SecondLevelModel(BaseGLM):
     %(memory_level1)s
 
     %(verbose0)s
-        If 0 prints nothing.
-        If 1 prints final computation time.
-        If 2 prints masker computation details.
+        If 0, prints nothing.
+        If 1, prints final computation time.
+       If 2, prints masker computation details.
 
     %(n_jobs)s
 
