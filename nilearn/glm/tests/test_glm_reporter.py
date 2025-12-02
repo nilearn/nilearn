@@ -147,8 +147,6 @@ def check_glm_report(
         if not has_contrasts:
             # the no contrast warning only appears for fitted models
             includes.extend(contrasts_missing_checks)
-        elif not model._is_volume_glm():
-            includes.append("Results table not available for surface data.")
 
         if (
             isinstance(model, SecondLevelModel)
