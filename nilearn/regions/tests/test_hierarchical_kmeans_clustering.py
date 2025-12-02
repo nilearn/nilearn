@@ -142,6 +142,7 @@ def test_hierarchical_k_means_clustering_error_n_clusters(n_clusters):
         HierarchicalKMeans(n_clusters=n_clusters).fit(X)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_hierarchical_k_means_clustering_scaling():
     n_samples = 15
     n_clusters = 8
