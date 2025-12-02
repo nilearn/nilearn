@@ -683,7 +683,7 @@ def test_iter_img_3d_imag_error(affine_eye):
         "Expected dimension is 4D and you provided "
         "a 3D image."
     )
-    with pytest.raises(TypeError, match=expected_error_msg):
+    with pytest.raises(DimensionError, match=expected_error_msg):
         iter_img(img_3d)
 
 
@@ -1942,13 +1942,16 @@ def test_check_niimg_return_iterator_3d_input(img_3d_zeros_eye):
 
 def test_check_niimg_return_iterator_true_3d_input(img_3d_zeros_eye):
     """Check behavior return_iterator=True on 3D image."""
-    with pytest.warns(
-        UserWarning,
-        match="Returning an iterator with a single 3D image",
+    expected_error_msg = (
+        "Input data has incompatible dimensionality: "
+        "Expected dimension is 4D and you provided "
+        "a 3D image."
+    )
+    with pytest.raises(
+        DimensionError,
+        match=expected_error_msg,
     ):
-        img = check_niimg(img_3d_zeros_eye, return_iterator=True)
-    assert isinstance(img, Iterable)
-    assert len(next(img).shape) == 3
+        check_niimg(img_3d_zeros_eye, return_iterator=True)
 
 
 def test_check_niimg_errors(img_3d_zeros_eye, img_4d_zeros_eye):
