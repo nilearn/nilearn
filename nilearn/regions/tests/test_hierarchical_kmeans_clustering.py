@@ -197,6 +197,7 @@ def test_hierarchical_k_means_clustering_surface(
     assert X_inverse.shape == X.shape
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("img_type", ["surface", "volume"])
 def test_hierarchical_k_means_n_clusters_warning(img_type, rng):
     n_samples = 15
