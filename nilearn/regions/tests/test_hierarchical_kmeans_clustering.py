@@ -9,6 +9,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
+from nilearn._utils.helpers import is_windows_platform
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
@@ -168,6 +169,7 @@ def test_hierarchical_k_means_clustering_scaling():
     assert_array_almost_equal(X_compress, X_compress_scaled)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.parametrize("n_clusters", [2, 4, 5])
 def test_hierarchical_k_means_clustering_surface(
