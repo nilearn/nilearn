@@ -1539,14 +1539,7 @@ def fetch_megatrawls_netmats(
 
     Notes
     -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
+    %(fetcher_note)s
 
     Parameters
     ----------
@@ -1772,14 +1765,7 @@ def fetch_surf_nki_enhanced(
 
     Notes
     -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
+    %(fetcher_note)s
 
     Parameters
     ----------
@@ -2160,14 +2146,7 @@ def fetch_development_fmri(
 
     Notes
     -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
+    %(fetcher_note)s
 
     Parameters
     ----------
@@ -2374,14 +2353,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
 
     Notes
     -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
+    %(fetcher_note)s
 
     Parameters
     ----------
@@ -2444,14 +2416,7 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
 
     Notes
     -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
+    %(fetcher_note)s
 
     Parameters
     ----------
@@ -2618,17 +2583,6 @@ def fetch_openneuro_dataset(
     it is up to the user to ensure that the URLs are correct,
     and that they are associated with an OpenNeuro dataset.
 
-    Notes
-    -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
-
     Parameters
     ----------
     urls : :obj:`list` of :obj:`str`, default=None
@@ -2650,6 +2604,8 @@ def fetch_openneuro_dataset(
 
     Notes
     -----
+    %(fetcher_note)s
+
     The default dataset downloaded by this function is the
     "UCLA Consortium for Neuropsychiatric Phenomics LA5c" dataset
     :footcite:p:`Poldrack2016`.
@@ -2757,14 +2713,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
 
     Notes
     -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
+    %(fetcher_note)s
 
     Parameters
     ----------
@@ -2842,14 +2791,7 @@ def fetch_spm_auditory(
 
     Notes
     -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
+    %(fetcher_note)s
 
     Parameters
     ----------
@@ -3063,14 +3005,7 @@ def fetch_spm_multimodal_fmri(
 
     Notes
     -----
-    If the dataset files are already present in the user's Nilearn data
-    directory, this fetcher will **not** re-download them. To force a fresh
-    download, you can remove the existing dataset folder from your local
-    Nilearn data directory.
-
-
-    For more details on how Nilearn stores datasets, see:
-    https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
+    %(fetcher_note)s
 
     Parameters
     ----------

@@ -1832,8 +1832,7 @@ directory, this fetcher will **not** re-download them. To force a fresh
 download, you can remove the existing dataset folder from your local
 Nilearn data directory.
 
-For more details on how Nilearn stores datasets, see:
-https://nilearn.github.io/dev/manipulating_images/input_output.html#datasets
+For more details on :ref:`how Nilearn stores datasets <datasets>`.
 """
 
 ##############################################################################
