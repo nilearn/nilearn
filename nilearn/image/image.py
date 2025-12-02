@@ -2297,7 +2297,12 @@ def check_niimg(
         # This a rare edge case where return_iterator is True
         # but the input image is 3D.
         # In this case we override the atleast_4d default (False).
-        if return_iterator:
+        if return_iterator and not atleast_4d:
+            warnings.warn(
+                "Input image is 3D but 'return_iterator' is 'True'. "
+                "Returning an iterator with a single 3D image.",
+                stacklevel=find_stack_level(),
+            )
             atleast_4d = True
 
         if atleast_4d:

@@ -1930,14 +1930,23 @@ def test_check_niimg_return_iterator_3d_input(img_3d_zeros_eye):
     assert len(img.shape) == 4
 
     # return a generator of 3D images
-    img = check_niimg(img_3d_zeros_eye, atleast_4d=True, return_iterator=True)
+    # warnings only if atleast_4d=False
+    with warnings.catch_warnings(record=True) as w:
+        img = check_niimg(
+            img_3d_zeros_eye, atleast_4d=True, return_iterator=True
+        )
+        assert len(w) == 0
     assert isinstance(img, Iterable)
     assert len(next(img).shape) == 3
 
 
 def test_check_niimg_return_iterator_true_3d_input(img_3d_zeros_eye):
-    # ???
-    img = check_niimg(img_3d_zeros_eye, return_iterator=True)
+    """Check behavior return_iterator=True on 3D image."""
+    with pytest.warns(
+        UserWarning,
+        match="Returning an iterator with a single 3D image",
+    ):
+        img = check_niimg(img_3d_zeros_eye, return_iterator=True)
     assert isinstance(img, Iterable)
     assert len(next(img).shape) == 3
 
