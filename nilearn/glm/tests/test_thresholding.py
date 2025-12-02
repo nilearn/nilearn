@@ -8,6 +8,7 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_equal
 from scipy.stats import norm
 
+from nilearn.datasets import load_sample_motor_activation_image
 from nilearn.glm import (
     cluster_level_inference,
     fdr_threshold,
@@ -324,6 +325,14 @@ def test_all_resolution_inference_with_mask(
     vals = get_data(th_map)
 
     assert np.sum(vals > 0) == 8
+
+
+@pytest.mark.parametrize("threshold", [2.5, [2.5, 3.5], [2.5, 3.0, 3.5]])
+def test_cluster_level_inference_realistic_data(threshold):
+    stat_img = load_sample_motor_activation_image()
+    th_map = cluster_level_inference(stat_img, threshold=threshold)
+    vals = th_map.get_fdata()
+    assert len(np.unique(vals)) == 1
 
 
 def test_all_resolution_inference_surface_mask(surf_img_1d):
