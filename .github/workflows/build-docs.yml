@@ -442,6 +442,8 @@ jobs:
             if: always()
             run: |
                 du -h -d 3 --exclude=".git"
+
+                mkdir -p doc/_build/html # ensure the folder exists
                 du -h doc/_build/html
 
         -   name: Upload documentation
