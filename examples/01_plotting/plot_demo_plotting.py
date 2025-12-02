@@ -74,7 +74,7 @@ plotting.plot_stat_map(
 from nilearn.plotting import view_img
 
 view = view_img(stat_img, threshold=3)
-# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# In a notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 view
 
