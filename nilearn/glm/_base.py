@@ -28,7 +28,6 @@ from nilearn.glm._reporting_utils import (
     _mask_to_plot,
     _turn_into_full_path,
 )
-from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.reporting._utils import dataframe_to_html
@@ -419,13 +418,6 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 f"\nSet 'threshold' to '{parameters['threshold'].default}' "
                 "to avoid this warning."
             )
-        warn_default_threshold(
-            threshold,
-            parameters["threshold"].default,
-            3.0,
-            height_control=height_control,
-        )
-
         model_attributes = _glm_model_attributes_to_dataframe(self)
         with pd.option_context("display.max_colwidth", 100):
             model_attributes_html = dataframe_to_html(
