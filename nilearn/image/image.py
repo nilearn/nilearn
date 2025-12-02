@@ -21,8 +21,7 @@ from numpy.testing import assert_array_equal
 from scipy.ndimage import gaussian_filter1d, generate_binary_structure, label
 from scipy.stats import scoreatpercentile
 
-import nilearn as ni
-from nilearn import signal
+from nilearn import EXPAND_PATH_WILDCARDS, signal
 from nilearn._utils import logger
 from nilearn._utils.cache_mixin import cache
 from nilearn._utils.docs import fill_doc
@@ -2248,7 +2247,7 @@ def check_niimg(
     niimg = stringify_path(niimg)
 
     if isinstance(niimg, str):
-        if wildcards and ni.EXPAND_PATH_WILDCARDS:
+        if wildcards and EXPAND_PATH_WILDCARDS:
             # Expand user path
             expanded_niimg = str(Path(niimg).expanduser())
             # Ascending sorting
