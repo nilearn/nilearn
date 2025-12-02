@@ -64,6 +64,7 @@ masker = NiftiSpheresMasker(
     t_r=dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
+    verbose=1,
     clean_args={
         "butterworth__padtype": "even"
     },  # kwarg to modify Butterworth filter
@@ -210,6 +211,7 @@ spheres_masker = NiftiSpheresMasker(
     low_pass=0.1,
     high_pass=0.01,
     t_r=dataset.t_r,
+    verbose=1,
 )
 
 timeseries = spheres_masker.fit_transform(
@@ -350,6 +352,7 @@ spheres_masker = NiftiSpheresMasker(
     low_pass=0.1,
     high_pass=0.01,
     t_r=dataset.t_r,
+    verbose=1,
 )
 
 timeseries = spheres_masker.fit_transform(

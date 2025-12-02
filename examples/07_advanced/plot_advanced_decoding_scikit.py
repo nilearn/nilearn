@@ -85,6 +85,7 @@ masker = NiftiMasker(
     standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
+    verbose=1,
 )
 fmri_masked = masker.fit_transform(fmri_niimgs)
 

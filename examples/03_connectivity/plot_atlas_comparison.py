@@ -72,6 +72,7 @@ masker = MultiNiftiLabelsMasker(
     standardize_confounds=True,
     memory="nilearn_cache",
     n_jobs=2,
+    verbose=1,
 )
 
 # extract time series from all subjects
@@ -150,6 +151,7 @@ for hemi, img in zip(
         labels_img=img,
         standardize="zscore_sample",
         standardize_confounds=True,
+        verbose=1,
     )
 
     time_series = masker.fit_transform(data.func, confounds=data.confounds)
@@ -232,6 +234,7 @@ masker = MultiNiftiMapsMasker(
     memory="nilearn_cache",
     memory_level=1,
     n_jobs=2,
+    verbose=1,
 )
 
 # extract time series from all subjects

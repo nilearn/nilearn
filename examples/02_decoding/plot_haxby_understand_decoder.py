@@ -87,7 +87,7 @@ print(f"Runs (groups): {np.unique(run)}")
 
 from nilearn.maskers import NiftiMasker
 
-masker = NiftiMasker(mask_img=mask_vt, standardize="zscore_sample")
+masker = NiftiMasker(mask_img=mask_vt, standardize="zscore_sample", verbose=1)
 
 # %%
 # Convert the multi-class labels to binary labels

@@ -86,7 +86,7 @@ print(
 # Preprocess data
 # ---------------
 nifti_masker = NiftiMasker(
-    standardize=False, smoothing_fwhm=2, memory="nilearn_cache"
+    standardize=False, smoothing_fwhm=2, memory="nilearn_cache", verbose=1
 )  # cache options
 gm_maps_masked = nifti_masker.fit_transform(gm_imgs_train)
 
@@ -184,7 +184,9 @@ plt.legend(loc="best")
 # -----------------------------------------
 print("Massively univariate model")
 
-gm_maps_masked = NiftiMasker().fit_transform(gray_matter_map_filenames)
+gm_maps_masked = NiftiMasker(verbose=1).fit_transform(
+    gray_matter_map_filenames
+)
 data = variance_threshold.fit_transform(gm_maps_masked)
 
 # Statistical inference

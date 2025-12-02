@@ -321,6 +321,7 @@ seed_masker = NiftiSpheresMasker(
     standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
+    verbose=1,
 )
 
 brain_masker = NiftiMasker(
@@ -329,6 +330,7 @@ brain_masker = NiftiMasker(
     standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
+    verbose=1,
 )
 
 # Perform the seed-to-voxel correlation for the LSS 'language' beta series

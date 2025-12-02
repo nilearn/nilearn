@@ -140,6 +140,7 @@ nifti_masker = NiftiMasker(
     standardize="zscore_sample",
     memory="nilearn_cache",
     memory_level=1,
+    verbose=1,
 )
 fmri_masked = nifti_masker.fit_transform(fmri_img)
 

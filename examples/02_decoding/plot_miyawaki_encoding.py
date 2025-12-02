@@ -64,6 +64,7 @@ masker = MultiNiftiMasker(
     detrend=True,
     standardize="zscore_sample",
     n_jobs=2,
+    verbose=1,
 )
 masker.fit()
 fmri_data = masker.transform(fmri_random_runs_filenames)

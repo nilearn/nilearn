@@ -53,6 +53,7 @@ masker = NiftiMapsMasker(
     memory_level=1,
     standardize="zscore_sample",
     standardize_confounds=True,
+    verbose=1,
 )
 
 # %%

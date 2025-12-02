@@ -94,7 +94,7 @@ print(table)
 coords = table.loc[range(1, 7), ["X", "Y", "Z"]].to_numpy()
 print(coords)
 
-masker = NiftiSpheresMasker(coords)
+masker = NiftiSpheresMasker(coords, verbose=1)
 real_timeseries = masker.fit_transform(fmri_img)
 predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
 
