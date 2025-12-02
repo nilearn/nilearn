@@ -15,7 +15,6 @@ from nilearn.conftest import _img_mask_mni, _make_surface_mask
 from nilearn.datasets import load_fsaverage
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
-from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import HTMLReport, make_glm_report
 from nilearn.reporting.html_report import MISSING_ENGINE_MSG
@@ -556,33 +555,6 @@ def test_carousel_several_runs(
 
     # 3 runs should be in the carousel
     assert str(report).count('id="carousel-obj-') == len(shapes)
-
-
-@pytest.mark.slow
-@pytest.mark.parametrize("threshold", [3.09, 2.9, DEFAULT_Z_THRESHOLD])
-@pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
-def test_report_threshold_deprecation_warning(
-    flm, contrasts, threshold, height_control
-):
-    """Check a single warning thrown when threshold==old threshold.
-
-    # TODO (nilearn >= 0.15)
-    # remove
-    """
-    with warnings.catch_warnings(record=True) as warning_list:
-        flm.generate_report(
-            contrasts=contrasts,
-            threshold=threshold,
-            height_control=height_control,
-        )
-
-    n_warnings = len(
-        [x for x in warning_list if issubclass(x.category, FutureWarning)]
-    )
-    if height_control is None and threshold == 3.09:
-        assert n_warnings == 1
-    else:
-        assert n_warnings == 0
 
 
 def test_report_make_glm_deprecation_warning(flm, contrasts):
