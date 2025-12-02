@@ -2292,10 +2292,18 @@ def check_niimg(
         data = safe_get_data(niimg)
         affine = niimg.affine
         niimg = new_img_like(niimg, data[:, :, :, 0], affine)
-    if atleast_4d and len(niimg.shape) == 3:
-        data = _get_data(niimg).view()
-        data.shape = (*data.shape, 1)
-        niimg = new_img_like(niimg, data, niimg.affine)
+
+    if len(niimg.shape) == 3:
+        # This a rare edge case where return_iterator is True
+        # but the input image is 3D.
+        # In this case we override the atleast_4d default (False).
+        if return_iterator:
+            atleast_4d = True
+
+        if atleast_4d:
+            data = _get_data(niimg).view()
+            data.shape = (*data.shape, 1)
+            niimg = new_img_like(niimg, data, niimg.affine)
 
     if ensure_ndim is not None and len(niimg.shape) != ensure_ndim:
         raise DimensionError(len(niimg.shape), ensure_ndim)

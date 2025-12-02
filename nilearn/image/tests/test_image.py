@@ -1935,12 +1935,11 @@ def test_check_niimg_return_iterator_3d_input(img_3d_zeros_eye):
     assert len(next(img).shape) == 3
 
 
-@pytest.mark.xfail(reason="undetermined behavior")
 def test_check_niimg_return_iterator_true_3d_input(img_3d_zeros_eye):
     # ???
     img = check_niimg(img_3d_zeros_eye, return_iterator=True)
-    assert isinstance(img, Nifti1Image)
-    assert len(img.shape) == 3
+    assert isinstance(img, Iterable)
+    assert len(next(img).shape) == 3
 
 
 def test_check_niimg_errors(img_3d_zeros_eye, img_4d_zeros_eye):
