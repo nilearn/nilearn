@@ -146,3 +146,49 @@ def test_plot_img_transparency_binary_image(
         img_3d_ones_mni,
         transparency=transparency_image,
     )
+
+
+@pytest.mark.parametrize("cut_coords", [[50], [50, 100]])
+@pytest.mark.parametrize("display_mode", "xyz")
+def test_out_of_bounds_warning_error(
+    matplotlib_pyplot, img_3d_rand_eye, display_mode, cut_coords
+):
+    """Ensure plotting out-of-bounds slices raises warnings and errors."""
+    # Things are OK as long as at least one cut is in the image bounds
+    with pytest.warns(
+        UserWarning,
+        match=(
+            "the cut coordinates seem to be out of the bounds of the image"
+        ),
+    ):
+        plot_img(
+            img_3d_rand_eye, display_mode=display_mode, cut_coords=[1, 50]
+        )
+
+    # This should crash with ValueError
+    # because the default 3D image fixture
+    # has less than 50 slices on the x axis:  all cuts are out of bounds
+    with pytest.raises(ValueError, match="out of the bounds"):
+        plot_img(
+            img_3d_rand_eye, display_mode=display_mode, cut_coords=cut_coords
+        )
+
+
+def test_out_of_bounds_warning_error_ortho(matplotlib_pyplot, img_3d_rand_eye):
+    """Plot out-of-bounds slices in ortho mode raises warnings and errors."""
+    # Things are OK as long as at least one cut is in the image bounds
+    with pytest.warns(
+        UserWarning,
+        match=(
+            "the cut coordinates seem to be out of the bounds of the image"
+        ),
+    ):
+        plot_img(img_3d_rand_eye, display_mode="ortho", cut_coords=[1, 1, 100])
+
+    # This should crash with ValueError
+    # because the default 3D image fixture
+    # has less than 50 slices on the x axis:  all cuts are out of bounds
+    with pytest.raises(ValueError, match="out of the bounds"):
+        plot_img(
+            img_3d_rand_eye, display_mode="ortho", cut_coords=[50, 100, 150]
+        )
