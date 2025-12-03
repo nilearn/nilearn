@@ -88,7 +88,6 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker, capsys):
     check_fetcher_verbosity(fetch_oasis_vbm, capsys, data_dir=tmp_path)
 
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
 def test_fetch_oasis_vbm_dartel_false(tmp_path, request_mocker, capsys):
     """Test fetching OASIS VBM dataset without dartel version."""
     request_mocker.url_mapping["*archive.tgz*"] = _make_oasis_data(False)
@@ -106,7 +105,9 @@ def test_fetch_oasis_vbm_dartel_false(tmp_path, request_mocker, capsys):
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 1
 
-    check_fetcher_verbosity(fetch_oasis_vbm, capsys, data_dir=tmp_path)
+    check_fetcher_verbosity(
+        fetch_oasis_vbm, capsys, data_dir=tmp_path, dartel_version=False
+    )
 
 
 @pytest.mark.parametrize(
