@@ -8,7 +8,10 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_equal
 from scipy.stats import norm
 
-from nilearn.datasets import load_sample_motor_activation_image
+from nilearn.datasets import (
+    load_fsaverage_data,
+    load_sample_motor_activation_image,
+)
 from nilearn.glm import (
     cluster_level_inference,
     fdr_threshold,
@@ -17,6 +20,7 @@ from nilearn.glm import (
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD, _compute_hommel_value
 from nilearn.image import get_data, new_img_like
 from nilearn.surface.surface import PolyData
+from nilearn.surface.surface import get_data as get_surf_data
 
 
 def test_fdr(rng):
@@ -327,12 +331,22 @@ def test_all_resolution_inference_with_mask(
     assert np.sum(vals > 0) == 8
 
 
-@pytest.mark.parametrize("threshold", [2.5, [2.5, 3.5], [2.5, 3.0, 3.5]])
-def test_cluster_level_inference_realistic_data(threshold):
+@pytest.mark.parametrize(
+    "threshold, expected_n_unique_values",
+    [
+        (2.5, 3),
+        ([2.5, 3.5], 6),
+        ([2.5, 3.0, 3.5], 8),
+    ],
+)
+def test_cluster_level_inference_realistic_data(
+    threshold, expected_n_unique_values
+):
+    """Check cluster_level_inference on realistic data."""
     stat_img = load_sample_motor_activation_image()
     th_map = cluster_level_inference(stat_img, threshold=threshold)
     vals = th_map.get_fdata()
-    assert len(np.unique(vals)) == 1
+    assert len(np.unique(vals)) == expected_n_unique_values
 
 
 def test_all_resolution_inference_surface_mask(surf_img_1d):
@@ -466,6 +480,24 @@ def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
     threshold_stats_img(
         surf_img_1d, height_control="bonferroni", mask_img=surf_mask_1d
     )
+
+
+@pytest.mark.parametrize(
+    "threshold, expected_n_unique_values",
+    [
+        (2.5, 19),
+        ([2.5, 3.5], 23),
+        ([2.5, 3.0, 3.5], 27),
+    ],
+)
+def test_cluster_level_inference_surface_realistic_data(
+    threshold, expected_n_unique_values
+):
+    """Check cluster_level_inference on realistic data."""
+    stat_img = load_fsaverage_data(data_type="thickness")
+    th_map = cluster_level_inference(stat_img, threshold=threshold)
+    vals = get_surf_data(th_map)
+    assert len(np.unique(vals)) == expected_n_unique_values
 
 
 def test_threshold_stats_img_surface_output(surf_img_1d):
