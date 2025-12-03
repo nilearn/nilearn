@@ -1127,6 +1127,7 @@ def test_save_dtype(surf_img_1d, tmp_path, dtype):
     surf_img_1d.data.to_filename(tmp_path / "data.gii")
 
 
+@pytest.mark.thread_unsafe
 def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 3D Niftiimage object or file for data."""
     SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_3d_mni)
@@ -1139,6 +1140,7 @@ def test_load_from_volume_3d_nifti(img_3d_mni, surf_mesh, tmp_path):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_load_from_volume_4d_nifti(img_4d_mni, surf_mesh, tmp_path):
     """Instantiate surface image with 4D Niftiimage object or file for data."""
     img = SurfaceImage.from_volume(mesh=surf_mesh, volume_img=img_4d_mni)
