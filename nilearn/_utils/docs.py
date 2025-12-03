@@ -1825,6 +1825,16 @@ docdict["templateflow"] = """
 
 """
 
+
+docdict["fetcher_note"] = """
+If the dataset files are already present in the user's Nilearn data
+directory, this fetcher will **not** re-download them. To force a fresh
+download, you can remove the existing dataset folder from your local
+Nilearn data directory.
+
+For more details on :ref:`how Nilearn stores datasets <datasets>`.
+"""
+
 ##############################################################################
 
 docdict_indented: dict[int, dict[str, str]] = {}
