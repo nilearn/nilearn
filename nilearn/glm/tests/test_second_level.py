@@ -554,6 +554,7 @@ def test_infer_effect_maps_error(tmp_path, shape_3d_default):
         _infer_effect_maps(second_level_input, "b")
 
 
+@pytest.mark.slow
 def test_affine_output_mask(n_subjects):
     func_img, mask = fake_fmri_data()
 
@@ -569,6 +570,7 @@ def test_affine_output_mask(n_subjects):
     assert_array_equal(z_image.affine, mask.affine)
 
 
+@pytest.mark.slow
 def test_affine_shape_output_when_provided(affine_eye, n_subjects):
     """Check fov output corresponds to the one passed to model."""
     func_img, mask = fake_fmri_data()
@@ -1399,6 +1401,7 @@ def test_non_parametric_inference_contrast_formula(
     )
 
 
+@pytest.mark.slow
 def test_non_parametric_inference_contrast_computation_errors(rng, n_subjects):
     func_img, mask = fake_fmri_data()
 

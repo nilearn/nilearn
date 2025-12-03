@@ -630,6 +630,7 @@ def test_two_sided_recover_positive_and_negative_effects():
     )
 
 
+@pytest.mark.slow
 def test_tfce_smoke_legacy_smoke():
     """Check tfce output of dict with or without permutations."""
     (
@@ -688,6 +689,7 @@ def test_tfce_smoke_legacy_smoke():
     assert out["h0_max_tfce"].size == n_perm
 
 
+@pytest.mark.slow
 def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     """Test combinations of parameters related to cluster-level inference."""
     target_var, tested_var = cluster_level_design
