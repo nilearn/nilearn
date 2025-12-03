@@ -174,7 +174,10 @@ def test_out_of_bounds_warning_error(
         )
 
 
-def test_out_of_bounds_warning_error_ortho(matplotlib_pyplot, img_3d_rand_eye):
+@pytest.mark.parametrize("display_mode", ["ortho", "tiled"])
+def test_out_of_bounds_warning_error_3d(
+    matplotlib_pyplot, img_3d_rand_eye, display_mode
+):
     """Plot out-of-bounds slices in ortho mode raises warnings and errors."""
     # Things are OK as long as at least one cut is in the image bounds
     with pytest.warns(
@@ -183,12 +186,16 @@ def test_out_of_bounds_warning_error_ortho(matplotlib_pyplot, img_3d_rand_eye):
             "the cut coordinates seem to be out of the bounds of the image"
         ),
     ):
-        plot_img(img_3d_rand_eye, display_mode="ortho", cut_coords=[1, 1, 100])
+        plot_img(
+            img_3d_rand_eye, display_mode=display_mode, cut_coords=[1, 1, 100]
+        )
 
     # This should crash with ValueError
     # because the default 3D image fixture
     # has less than 50 slices on the x axis:  all cuts are out of bounds
     with pytest.raises(ValueError, match="out of the bounds"):
         plot_img(
-            img_3d_rand_eye, display_mode="ortho", cut_coords=[50, 100, 150]
+            img_3d_rand_eye,
+            display_mode=display_mode,
+            cut_coords=[50, 100, 150],
         )
