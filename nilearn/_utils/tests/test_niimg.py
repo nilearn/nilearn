@@ -97,6 +97,14 @@ def test_load_niimg(img1, tmp_path):
 
 
 def test_repr_niimgs():
+    """Test repr_niimgs.
+
+    - with file path
+    - shortening long names (default)
+    - explicit shortening of long names
+    - explicit shortening of list 3 of long names
+    - explicit shortening of list longer than 3 names
+    """
     # Tests with file path
     assert repr_niimgs("test") == "test"
     assert repr_niimgs("test", shorten=False) == "test"
@@ -105,6 +113,7 @@ def test_repr_niimgs():
     long_name = "this-is-a-very-long-name-for-a-nifti-file.nii"
     short_name = "this-is-a-very-lon..."
     assert repr_niimgs(long_name) == short_name
+
     # Explicit shortening of long names
     assert repr_niimgs(long_name, shorten=True) == short_name
 
@@ -150,6 +159,7 @@ def test_repr_niimgs():
 
 
 def test_repr_niimgs_force_long_names():
+    """Test repr_niimgs without shortening."""
     long_name = "this-is-a-very-long-name-for-a-nifti-file.nii"
     # Force long display of long names
     assert repr_niimgs(long_name, shorten=False) == long_name
@@ -201,6 +211,7 @@ def test_repr_niimgs_force_long_names():
 
 
 def test_repr_niimgs_with_niimg_pathlib():
+    """Test repr_niimgs with Path."""
     # Tests with pathlib
     # Case with very long path and small filename
     long_path = Path("/this/is/a/fake/long/path/to/file.nii")
