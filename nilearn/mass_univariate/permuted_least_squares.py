@@ -729,9 +729,7 @@ def permuted_ols(
                 scores_original_data.T
             ).get_fdata()
             tfce_original_data = calculate_tfce(
-                scores_4d,
-                bin_struct=bin_struct,
-                two_sided_test=two_sided_test,
+                scores_4d, bin_struct=bin_struct, two_sided_test=two_sided_test
             )
             tfce_original_data = apply_mask(
                 Nifti1Image(
@@ -751,10 +749,7 @@ def permuted_ols(
                 two_sided_test=two_sided_test,
             )
             tfce_original_data = apply_mask(
-                new_img_like(
-                    masker.mask_img_,
-                    tfce_original_data,
-                ),
+                new_img_like(masker.mask_img_, tfce_original_data),
                 masker.mask_img_,
             ).T
 
