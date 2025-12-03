@@ -13,6 +13,7 @@ More specifically:
    (the FreeSurfer template, fsaverage).
 3. A :term:`GLM` is applied to the dataset
    (effect/covariance, then contrast estimation).
+4. Inspect GLM reports and save the results to disk.
 
 The result of the analysis are statistical maps that are defined
 on the brain mesh.
@@ -122,6 +123,7 @@ basic_contrasts["audio"] = (
     + basic_contrasts["sentence_listening"]
 )
 
+# %%
 # one contrast adding all conditions involving instructions reading
 basic_contrasts["visual"] = (
     basic_contrasts["visual_left_hand_button_press"]
@@ -130,12 +132,14 @@ basic_contrasts["visual"] = (
     + basic_contrasts["sentence_reading"]
 )
 
+# %%
 # one contrast adding all conditions involving computation
 basic_contrasts["computation"] = (
     basic_contrasts["visual_computation"]
     + basic_contrasts["audio_computation"]
 )
 
+# %%
 # one contrast adding all conditions involving sentences
 basic_contrasts["sentences"] = (
     basic_contrasts["sentence_listening"] + basic_contrasts["sentence_reading"]
@@ -169,26 +173,43 @@ contrasts = {
 }
 
 # %%
-# Let's estimate the contrasts by iterating over them.
+# Let's estimate the t-contrasts,
+# and extract a table of clusters
+# that survive our thresholds.
 #
-# We then plot each contrast on the inflated fsaverage mesh,
+# We use the same threshold (uncorrected p < 0.001)
+# for all contrasts.
+#
+# We plot each contrast map on the inflated fsaverage mesh,
 # together with a suitable background to give an impression
 # of the cortex folding.
 #
-# We plot thresholded contrasts at uncorrected p < 0.001.
+
 from scipy.stats import norm
 
 from nilearn.datasets import load_fsaverage_data
 from nilearn.plotting import plot_surf_stat_map, show
+from nilearn.reporting import get_clusters_table
 
 p_val = 0.001
 threshold = norm.isf(p_val)
+cluster_threshold = 20
+two_sided = True
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
 results = {}
 for contrast_id, contrast_val in contrasts.items():
     results[contrast_id] = glm.compute_contrast(contrast_val, stat_type="t")
+
+    table = get_clusters_table(
+        results[contrast_id],
+        stat_threshold=threshold,
+        cluster_threshold=cluster_threshold,
+        two_sided=two_sided,
+    )
+    print(f"\n{contrast_id=}")
+    print(table)
 
 for contrast_id, z_score in results.items():
     hemi = "left"
@@ -204,7 +225,7 @@ for contrast_id, z_score in results.items():
         bg_map=fsaverage_data,
     )
 
-# show()
+show()
 
 # %%
 # Cluster-level inference
@@ -216,12 +237,11 @@ for contrast_id, z_score in results.items():
 # on the proportion of true discoveries in each cluster
 #
 from nilearn.glm import cluster_level_inference
+from nilearn.surface.surface import get_data as get_surf_data
 
 proportion_true_discoveries_img = cluster_level_inference(
     results["audio - visual"], threshold=3, alpha=0.05
 )
-
-from nilearn.surface.surface import get_data as get_surf_data
 
 data = get_surf_data(proportion_true_discoveries_img)
 unique_vals = np.unique(data.ravel())
@@ -251,7 +271,6 @@ from pathlib import Path
 from nilearn.glm import save_glm_to_bids
 
 height_control = None
-two_sided = True
 
 output_dir = Path.cwd() / "results" / "plot_localizer_surface_analysis"
 output_dir.mkdir(exist_ok=True, parents=True)
@@ -262,20 +281,20 @@ save_glm_to_bids(
     threshold=threshold,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=height_control,
-    cluster_threshold=10,
     two_sided=two_sided,
     prefix="sub-01",
     out_dir=output_dir,
+    cluster_threshold=cluster_threshold,
 )
 
 # %%
-# The report can also be generated and saved on its own.
+# The report can also be generated on its own.
 report = glm.generate_report(
     contrasts,
     threshold=threshold,
     bg_img=load_fsaverage_data(data_type="sulcal", mesh_type="inflated"),
     height_control=height_control,
-    cluster_threshold=10,
+    cluster_threshold=cluster_threshold,
     two_sided=two_sided,
 )
 
