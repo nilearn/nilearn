@@ -253,7 +253,10 @@ def test_repr_niimgs_with_niimg_pathlib():
 def test_repr_niimgs_with_niimg(
     shorten, tmp_path, affine_eye, img_3d_ones_eye, shape_3d_default
 ):
-    # Shorten has no effect in this case
+    """Test repr_niimgs with actual image objects.
+
+    Shorten has no effect in this case.
+    """
     assert repr_niimgs(img_3d_ones_eye, shorten=shorten).replace(
         "10L", "10"
     ) == (
