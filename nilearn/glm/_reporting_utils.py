@@ -89,14 +89,14 @@ def _mask_to_plot(model, bg_img, cut_coords):
 
     Parameters
     ----------
-    model
+    model : FirstLevelModel or SecondLevelModel object.
 
     bg_img : Niimg-like object
         See :ref:`extracting_data`.
         The background image that the mask will be plotted on top of.
         To turn off background image, just pass "bg_img=None".
 
-    cut_coords
+    %(cut_coords)s
 
 
     Returns
