@@ -311,7 +311,7 @@ addopts = "-ra --strict-config --strict-markers --doctest-modules --showlocals -
 doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
-markers = ["slow"]
+markers = ["slow", "single_process"]
 minversion = "6.0"
 xfail_strict = true
 
