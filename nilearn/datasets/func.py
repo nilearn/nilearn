@@ -119,6 +119,8 @@ def fetch_haxby(
 
     Notes
     -----
+    %(fetcher_note)s
+
     PyMVPA provides a tutorial making use of this dataset:
     http://www.pymvpa.org/tutorial.html
 
@@ -130,7 +132,6 @@ def fetch_haxby(
 
     Run 8 in subject 5 does not contain any task labels.
     The anatomical image for subject 6 is unavailable.
-
     """
     check_params(locals())
 
@@ -289,8 +290,6 @@ def adhd_ids():
 def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
     """Download and load the ADHD :term:`resting-state` dataset.
 
-    See :footcite:t:`ADHDdataset`.
-
     Parameters
     ----------
     n_subjects : :obj:`int`, default=30
@@ -319,6 +318,11 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True, verbose=1):
         - 't_r': :obj:`float`
             Repetition time of the functional data.
 
+    Notes
+    -----
+    %(fetcher_note)s
+
+    See :footcite:t:`ADHDdataset`.
 
     References
     ----------
@@ -486,6 +490,8 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     This dataset is available on the `brainliner website
     <http://brainliner.jp/restrictedProject.atr>`_
 
@@ -749,6 +755,10 @@ def fetch_localizer_contrasts(
         - 'anats': :obj:`str`
             Path to nifti files corresponding to the subjects structural images
 
+    Notes
+    -----
+    %(fetcher_note)s
+
     References
     ----------
     .. footbibliography::
@@ -966,6 +976,7 @@ def _is_valid_path(path, index, verbose):
 def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, verbose=1):
     """Fetch calculation task contrast maps from the localizer.
 
+
     Parameters
     ----------
     n_subjects : :obj:`int`, default=1
@@ -984,6 +995,8 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
     The 'calculation (auditory and visual cue)' contrast is used.
@@ -1014,6 +1027,7 @@ def fetch_localizer_button_task(data_dir=None, verbose=1):
     """Fetch left vs right button press :term:`contrast` maps \
        from the localizer.
 
+
     Parameters
     ----------
     %(data_dir)s
@@ -1031,6 +1045,8 @@ def fetch_localizer_button_task(data_dir=None, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
     The 'left vs right button press' contrast is used.
@@ -1039,6 +1055,7 @@ def fetch_localizer_button_task(data_dir=None, verbose=1):
     --------
     nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_contrasts
+
 
     """
     check_params(locals())
@@ -1078,6 +1095,7 @@ def fetch_abide_pcp(
     that can be passed as parameter. Note that this is the preprocessed
     version of ABIDE provided by the preprocess connectome projects (PCP).
     See :footcite:t:`Nielsen2013`.
+
 
     Parameters
     ----------
@@ -1211,6 +1229,8 @@ def fetch_abide_pcp(
 
     Notes
     -----
+    %(fetcher_note)s
+
     Code and description of preprocessing pipelines are provided on the
     `PCP website <http://preprocessed-connectomes-project.org/>`_.
 
@@ -1440,6 +1460,9 @@ def fetch_mixed_gambles(
           else it is ``None``.
         - 'description': data description
 
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -1529,8 +1552,11 @@ def fetch_megatrawls_netmats(
         Valid inputs are 'full_correlation' or 'partial_correlation'.
         By default, partial correlation matrices will be returned
         otherwise if selected full correlation matrices will be returned.
+
     %(data_dir)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -1553,6 +1579,8 @@ def fetch_megatrawls_netmats(
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information
     see the :ref:`dataset description <megatrawls_maps>`.
 
@@ -1738,8 +1766,11 @@ def fetch_surf_nki_enhanced(
         By default, 10 subjects will be loaded. If None is given,
         all 102 subjects will be loaded.
     %(data_dir)s
+
     %(url)s
+
     %(resume)s
+
     %(verbose)s
 
     Returns
@@ -1764,6 +1795,8 @@ def fetch_surf_nki_enhanced(
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information
     see the :ref:`dataset description <nki_dataset>`.
     """
@@ -2108,6 +2141,7 @@ def fetch_development_fmri(
 
     .. nilearn_versionadded:: 0.5.2
 
+
     Parameters
     ----------
     n_subjects : :obj:`int`, default=None
@@ -2151,6 +2185,8 @@ def fetch_development_fmri(
 
     Notes
     -----
+    %(fetcher_note)s
+
     The original data is downloaded from OpenNeuro
     https://openneuro.org/datasets/ds000228/versions/1.0.0
 
@@ -2329,6 +2365,9 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
 
         - ``'description'`` : :obj:`str`, dataset description
 
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -2382,6 +2421,10 @@ def fetch_ds000030_urls(data_dir=None, verbose=1):
 
     urls : :obj:`list` of :obj:`str`
         Sorted list of dataset directories.
+
+    Notes
+    -----
+    %(fetcher_note)s
 
     References
     ----------
@@ -2556,6 +2599,8 @@ def fetch_openneuro_dataset(
 
     Notes
     -----
+    %(fetcher_note)s
+
     The default dataset downloaded by this function is the
     "UCLA Consortium for Neuropsychiatric Phenomics LA5c" dataset
     :footcite:p:`Poldrack2016`.
@@ -2664,6 +2709,7 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     Parameters
     ----------
     %(data_dir)s
+
     %(verbose)s
 
     Returns
@@ -2682,8 +2728,9 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
         - slice_time_ref:
             slice timing reference used during slice timing correction
 
-
-
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -2768,6 +2815,10 @@ def fetch_spm_auditory(
     ----------
     .. footbibliography::
 
+
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -2980,6 +3031,9 @@ def fetch_spm_multimodal_fmri(
         - 't_r' : :obj:`float`. Repetition time in seconds
            of the functional images.
 
+    Notes
+    -----
+    %(fetcher_note)s
     """
     check_params(locals())
 
@@ -3007,6 +3061,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     Parameters
     ----------
     %(data_dir)s
+
     %(verbose)s
 
     Returns
@@ -3025,6 +3080,8 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information
     see the :ref:`dataset description <fiac_dataset>`.
 
