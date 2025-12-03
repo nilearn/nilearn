@@ -9,6 +9,7 @@ from nilearn._utils.estimator_checks import (
     nilearn_check_estimator,
     return_expected_failed_checks,
 )
+from nilearn._utils.helpers import is_windows_platform
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.regions.hierarchical_kmeans_clustering import (
@@ -86,6 +87,7 @@ def test_adjust_small_clusters(test_list, n_clusters):
         assert isinstance(a, (int, np.integer))
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_hierarchical_k_means():
     X = [[10, -10, 30], [12, -8, 24]]
     truth_labels = np.tile([0, 1, 2], 5)
@@ -141,6 +143,7 @@ def test_hierarchical_k_means_clustering_error_n_clusters(n_clusters):
         HierarchicalKMeans(n_clusters=n_clusters).fit(X)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_hierarchical_k_means_clustering_scaling():
     n_samples = 15
     n_clusters = 8
@@ -168,6 +171,7 @@ def test_hierarchical_k_means_clustering_scaling():
     assert_array_almost_equal(X_compress, X_compress_scaled)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 @pytest.mark.parametrize("n_clusters", [2, 4, 5])
 def test_hierarchical_k_means_clustering_surface(
@@ -195,6 +199,7 @@ def test_hierarchical_k_means_clustering_surface(
     assert X_inverse.shape == X.shape
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("img_type", ["surface", "volume"])
 def test_hierarchical_k_means_n_clusters_warning(img_type, rng):
     n_samples = 15

@@ -109,9 +109,10 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information
     see the :ref:`dataset description <icbm_152_template>`.
-
     """
     check_params(locals())
 
@@ -536,6 +537,8 @@ def fetch_icbm152_brain_gm_mask(
 
     Notes
     -----
+    %(fetcher_note)s
+
     This function relies on ICBM152 templates where we particularly pick
     gray matter template and threshold the template at .2 to take one fifth
     of the values. Then, do a bit post processing such as binary closing
@@ -546,7 +549,6 @@ def fetch_icbm152_brain_gm_mask(
 
     For more information
     see the :ref:`dataset description <icbm_152_template>`.
-
     """
     check_params(locals())
 
@@ -662,9 +664,10 @@ def fetch_oasis_vbm(
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information
     see the :ref:`dataset description <oasis_maps>`.
-
     """
     check_params(locals())
 

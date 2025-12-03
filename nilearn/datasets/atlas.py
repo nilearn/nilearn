@@ -89,6 +89,8 @@ def fetch_atlas_difumo(
 
     Notes
     -----
+    %(fetcher_note)s
+
     Direct download links from OSF:
 
     - 64: https://osf.io/pqu9r/download
@@ -1088,9 +1090,10 @@ def fetch_atlas_smith_2009(
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information about this dataset's structure:
     https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
-
     """
     check_params(locals())
 
@@ -1221,8 +1224,9 @@ def fetch_atlas_yeo_2011(
 
     Notes
     -----
-    License: unknown.
+    %(fetcher_note)s
 
+    License: unknown.
     """
     check_params(locals())
 
@@ -1407,8 +1411,9 @@ def fetch_atlas_aal(
 
     Notes
     -----
-    License: unknown.
+    %(fetcher_note)s
 
+    License: unknown.
     """
     check_params(locals())
 
@@ -1560,9 +1565,10 @@ def fetch_atlas_basc_multiscale_2015(
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information on this dataset's structure, see
     https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615
-
     """
     check_params(locals())
 
@@ -1824,11 +1830,12 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     License: unknown
 
     See https://trendscenter.org/data/ for more information
     on this dataset.
-
     """
     check_params(locals())
 
@@ -2284,13 +2291,14 @@ def fetch_atlas_schaefer_2018(
 
     Notes
     -----
+    %(fetcher_note)s
+
     Release v0.14.3 of the Schaefer 2018 parcellation is used by
     default. Versions prior to v0.14.3 are known to contain erroneous region
     label names. For more details, see
     https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/Updates/Update_20190916_README.md
 
     License: MIT.
-
     """
     check_params(locals())
 
