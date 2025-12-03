@@ -327,6 +327,8 @@
 
 .. _Victoria Shevchenko: https://github.com/victoris93
 
+.. _Victoria McCray: https://github.com/victoriamccray
+
 .. _Vincent Michel: https://github.com/vmichel
 
 .. _Virgile Fritsch: https://github.com/VirgileFritsch

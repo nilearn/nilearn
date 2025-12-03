@@ -1288,6 +1288,7 @@ def test_first_level_from_bids_get_start_time_from_derivatives(tmp_path):
         assert models[0].slice_time_ref == StartTime / 1.5
 
 
+@pytest.mark.slow
 def test_first_level_contrast_computation():
     """Check contrast_computation."""
     shapes = ((7, 8, 9, 10),)

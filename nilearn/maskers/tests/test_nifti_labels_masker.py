@@ -786,6 +786,7 @@ def test_regions_id_names_lut(affine_eye, shape_3d_default):
     check_lut(masker, expected_lut)
 
 
+@pytest.mark.slow
 def test_regions_id_names_lut_too_few(affine_eye, shape_3d_default):
     """Check passing LUT with too few entries."""
     atlas = np.zeros((8, 8, 8))

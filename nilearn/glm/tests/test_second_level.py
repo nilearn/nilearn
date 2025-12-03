@@ -236,6 +236,7 @@ def test_slm_verbose(rng, affine_eye, shape_3d_default, n_subjects, capsys):
     assert len(stdout_verbose_2) > len(stdout_verbose_1)
 
 
+@pytest.mark.slow
 def test_process_second_level_input_as_firstlevelmodels(
     shape_4d_default, n_subjects
 ):
@@ -509,6 +510,7 @@ def test_check_n_rows_desmat_vs_n_effect_maps():
         )
 
 
+@pytest.mark.slow
 def test_infer_effect_maps(tmp_path, shape_4d_default):
     """Check that the right input is inferred.
 
@@ -697,6 +699,7 @@ def confounds():
     return _confounds()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("confounds", [None, _confounds()])
 def test_fmri_inputs_flms(rng, confounds, shape_4d_default):
     """Test second level model with first level model as inputs."""
@@ -861,6 +864,7 @@ def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
         )
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "filename, sep", [("design.csv", ","), ("design.tsv", "\t")]
 )
@@ -1021,6 +1025,7 @@ def test_second_level_voxelwise_attribute_errors(attribute, n_subjects):
         model._get_element_wise_model_attribute("foo", True)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("attribute", ["residuals", "predicted", "r_square"])
 def test_second_level_voxelwise_attribute_errors_minimize_memory(
     attribute, n_subjects
@@ -1043,6 +1048,7 @@ def test_second_level_voxelwise_attribute_errors_minimize_memory(
         getattr(model, attribute)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("attribute", ["residuals", "predicted", "r_square"])
 def test_second_level_voxelwise_attribute(attribute, n_subjects):
     """Smoke test for voxelwise attributes for SecondLevelModel."""
@@ -1055,6 +1061,7 @@ def test_second_level_voxelwise_attribute(attribute, n_subjects):
     getattr(model, attribute)
 
 
+@pytest.mark.slow
 def test_second_level_residuals(n_subjects):
     """Tests residuals computation for SecondLevelModel."""
     mask, fmri_data, _ = generate_fake_fmri_data_and_design((SHAPE,))
@@ -1070,6 +1077,7 @@ def test_second_level_residuals(n_subjects):
     assert_array_almost_equal(mean_residuals, 0)
 
 
+@pytest.mark.slow
 def test_non_parametric_inference_permutation_computation(n_subjects):
     func_img, mask = fake_fmri_data()
 
@@ -1335,6 +1343,7 @@ def test_second_level_t_contrast_length_errors(n_subjects):
         model.compute_contrast(second_level_contrast=[1, 2])
 
 
+@pytest.mark.slow
 def test_second_level_f_contrast_length_errors(n_subjects):
     func_img, mask = fake_fmri_data()
 
