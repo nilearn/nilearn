@@ -769,6 +769,11 @@ authors:
     family-names: Shevchenko
     website: https://github.com/victoris93
     affiliation: Inria Saclay, Université Paris Cité, France
+  - given-names: Victoria
+    family-names: McCray
+    website: https://github.com/victoriamccray
+    affiliation: Northeastern University, USA
+    orcid: https://orcid.org/0009-0004-9507-835X
   - given-names: Vincent
     family-names: Michel
     website: https://github.com/vmichel
@@ -802,8 +807,3 @@ authors:
     family-names: Nájera
     website: https://github.com/Titan-C
     affiliation: Checkmk
-  - given-names: Victoria
-    family-names: McCray
-    website: https://github.com/victoriamccray
-    affiliation: Northeastern University, USA
-    orcid: https://orcid.org/0009-0004-9507-835X
