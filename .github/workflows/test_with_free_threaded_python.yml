@@ -63,7 +63,6 @@ jobs:
                 uv venv -p 3.14t
                 source .venv/bin/activate
                 uv pip install -e '.[plotting,test_free_threaded]'
-                uv pip install rich pytest-run-parallel
                 uv pip install --verbose --upgrade --pre \
                     --index-url https://pypi.anaconda.org/scientific-python-nightly-wheels/simple \
                     pandas scikit-learn
@@ -81,20 +80,3 @@ jobs:
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report.html
                 path: report.html
-
-        # -   name: Create issue
-        #     if: ${{ steps.test_free_threaded.outcome != 'success' }}
-        #     uses: JasonEtco/create-an-issue@v2.9.2
-        #     env:
-        #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        #         run_id: ${{ github.run_id }}
-        #         repository: ${{ github.repository }}
-        #         workflow_name: TEST FREE THREADED PYTHON
-        #     with:
-        #         filename: .github/workflow_failure.md
-        #         update_existing: true
-        #         search_existing: open
-
-        # -   name: Return failure
-        #     if: ${{ steps.test_free_threaded.outcome != 'success' }}
-        #     run: exit 1

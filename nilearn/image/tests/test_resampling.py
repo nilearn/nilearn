@@ -419,6 +419,7 @@ def test_resampling_warning_s_form(data, affine_eye, force_resample):
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_resampling_warning_binary_image(affine_eye, rng, force_resample):
     # Resampling a binary image with continuous or
@@ -792,6 +793,7 @@ def test_crop(affine_eye):
     assert_equal(get_data(cropped), data)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_resample_identify_affine_int_translation(
     affine_eye, rng, force_resample

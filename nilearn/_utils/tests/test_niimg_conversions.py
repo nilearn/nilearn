@@ -453,6 +453,7 @@ def _check_memory(list_img_3d):
     return mem_offset
 
 
+@pytest.mark.thread_unsafe
 @with_memory_profiler
 @pytest.mark.xfail(not is_gil_enabled(), reason="fails without GIL")
 def test_iter_check_niimgs_memory(affine_eye):
