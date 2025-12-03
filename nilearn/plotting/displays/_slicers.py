@@ -1385,8 +1385,53 @@ class TiledSlicer(BaseSlicer):
             cut_coords = [
                 cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
             ]
-
+        else:
+            cls._check_cut_coords(img, cut_coords)
         return cut_coords
+
+    @classmethod
+    def _check_cut_coords(cls, img, cut_coords):
+        if isinstance(cut_coords, numbers.Number):
+            raise ValueError(
+                f"cut_coords should to be a list of 3D world coordinates "
+                "in (x, y, z). You provided single cut, "
+                f"cut_coords={cut_coords}"
+            )
+
+        if len(cut_coords) != len(cls._cut_displayed):
+            raise ValueError(
+                f"The number cut_coords ({len(cut_coords)}) "
+                f"passed does not match the expected "
+                f"for that display_mode ({len(cls._cut_displayed)}). "
+            )
+
+        # TODO put check if image is not None
+        bounds_x, bounds_y, bounds_z = cls._get_data_bounds(img)
+
+        x_in = bounds_x[0] <= cut_coords[0] <= bounds_x[1]
+        y_in = bounds_y[0] <= cut_coords[1] <= bounds_y[1]
+        z_in = bounds_z[0] <= cut_coords[2] <= bounds_z[1]
+
+        # if non of the coordinates is in bounds
+        # raise error
+        if not (x_in or y_in or z_in):
+            raise ValueError(
+                f"Specified {cut_coords=} is out of the bounds of the "
+                "image. Please specify coordinates within the bounds:\n"
+                f"{bounds_x}-{bounds_y}-{bounds_z}.\n"
+            )
+        # if at least one (but not all) of the coordinates is out of the
+        # bounds, warn user
+        if not x_in or not y_in or not z_in:
+            warnings.warn(
+                (
+                    f"At least one of the specified {cut_coords=} "
+                    "seem to be out of the bounds of the image:\n"
+                    f"{bounds_x}-{bounds_y}-{bounds_z}.\n"
+                ),
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
 
     def _find_initial_axes_coord(self, index):
         """Find coordinates for initial axes placement for xyz cuts.
@@ -1429,12 +1474,6 @@ class TiledSlicer(BaseSlicer):
         kwargs : :obj:`dict`
             Additional arguments to pass to ``self._axes_class``.
         """
-        cut_coords = self.cut_coords
-        if len(cut_coords) != len(self._cut_displayed):
-            raise ValueError(
-                "The number cut_coords passed does not match the display_mode"
-            )
-
         facecolor = "k" if self._black_bg else "w"
 
         self.axes = {}
