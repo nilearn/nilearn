@@ -754,6 +754,7 @@ def test_trim_maps(shape_3d_default):
     assert_equal(np.asarray(list(range(4))), maps_i_indices)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "target_dtype",
     (float, np.float32, np.float64, int, np.uint),

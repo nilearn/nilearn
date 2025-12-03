@@ -826,6 +826,7 @@ def test_compute_multi_brain_mask_error():
         compute_multi_brain_mask(imgs)
 
 
+@pytest.mark.slow
 def test_compute_multi_brain_mask():
     """Check results are the same if affine is the same."""
     imgs1 = [
