@@ -43,6 +43,7 @@ Fixes
 
 - :bdg-dark:`Code` Raise warning when :func:`~nilearn.image.crop_img` is called with an empty image and return the original image (:gh:`5837` by `Hande Gözükan`_).
 
+- :bdg-dark:`Code` Better handling of errors during plotting when cut coordinates are out of bounds (:gh:`5861` by `Sanjana Soni`_).
 
 Enhancements
 ------------
@@ -133,6 +134,11 @@ Changes
 - :bdg-danger:`Deprecation` :func:`~interfaces.bids.parse_bids_filename` will now always return a dictionary with the keys ``'file_path'``, ``'file_basename'``, ``'extension'``, ``'suffix'`` and ``'entities'`` (:gh:`5663` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Set ``copy_header`` default to True in :func:`~image` functions (:gh:`5656` by `Rémi Gau`_ and `Himanshu Aggarwal`_).
+
+Documentation
+-------------
+
+- :bdg-primary:`Doc` Clarified that ``nilearn.datasets.fetch_*`` functions do not re-download datasets already present locally. Added cross-reference to dataset storage documentation. (:gh:`5690` by `Victoria McCray`_)
 
 - :bdg-primary:`Doc` Home-made sphinx directives are used instead of default sphinx directives relative to version changes (``versionadded``, ``versionchanged``, ``deprecated``...) to more easily distinguish between feature changes introduced in Nilearn versus those introduced in upstream dependencies (like in Scikit-Learn) (:gh:`5654` by `Rémi Gau`_).
 

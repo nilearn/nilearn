@@ -158,7 +158,7 @@ from nilearn.plotting import view_connectome
 
 view = view_connectome(partial_correlation_matrix, dmn_coords)
 
-# In a Jupyter notebook, if ``view`` is the output of a cell, it will
+# In a notebook, if ``view`` is the output of a cell, it will
 # be displayed below the cell
 view
 

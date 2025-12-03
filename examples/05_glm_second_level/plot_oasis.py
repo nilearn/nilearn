@@ -209,4 +209,3 @@ report = second_level_model.generate_report(
     alpha=0.05,
     height_control=None,
 )
-report.save_as_html(output_dir / "report.html")
