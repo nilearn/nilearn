@@ -1148,7 +1148,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
     %(screening_percentile)s
     screening_n_voxels : int, optional
         Number of voxels to select. If `None, ``screening_percentile` is used.
-        If both are set, `screening_n_voxels` takes priority. 
+        If both are set, `screening_percentile` takes priority.
         Default is None.
 
 
@@ -1324,7 +1324,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
     %(screening_percentile)s
     screening_n_voxels : int, optional
         Number of voxels to select. If `None, ``screening_percentile` is used.
-        If both are set, `screening_n_voxels` takes priority. 
+        If both are set, `screening_n_voxels` takes priority.
         Default is None.
 
     scoring : :obj:`str`, callable or None, optional. default='r2'
@@ -1495,7 +1495,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
     %(screening_percentile)s
     screening_n_voxels : int, optional
         Number of voxels to select. If `None, ``screening_percentile` is used.
-        If both are set, `screening_n_voxels` takes priority. 
+        If both are set, `screening_n_voxels` takes priority.
         Default is None.
 
     scoring : :obj:`str`, callable or None, default= 'r2'
@@ -1669,7 +1669,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         scores.
     screening_n_voxels : int, optional
         Number of voxels to select. If `None, ``screening_percentile` is used.
-        If both are set, `screening_n_voxels` takes priority. 
+        If both are set, `screening_n_voxels` takes priority.
         Default is None.
 
     scoring : :obj:`str`, callable or None, optional. default='roc_auc'

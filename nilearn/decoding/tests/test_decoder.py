@@ -1534,3 +1534,30 @@ def test_regressor_vs_sklearn(
     )
     # also check individual scores are within 1% of each other
     assert np.allclose(scores_sklearn, scores_nilearn, atol=0.01)
+
+
+def test_screening_priority_logic():
+    # Test that check_feature_screening prefers percentile over n_voxels
+    import nibabel as nib
+    import numpy as np
+    from sklearn.feature_selection import SelectKBest, SelectPercentile
+
+    from nilearn.decoding._utils import check_feature_screening
+
+    # 1. Create a simple dummy mask
+    mask = nib.Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
+
+    # 2. Call the function with BOTH options (Conflict!)
+    # percentile=10, n_voxels=50
+    selector = check_feature_screening(
+        screening_percentile=10,
+        mask_img=mask,
+        is_classification=True,
+        screening_n_voxels=50,
+    )
+
+    # 3. VERIFY: We should get a SelectPercentile object
+    # (meaning percentile won)
+    # If logic is wrong, this will be SelectKBest and the test will fail.
+    assert isinstance(selector, SelectPercentile)
+    assert not isinstance(selector, SelectKBest)

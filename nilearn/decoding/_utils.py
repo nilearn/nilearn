@@ -146,7 +146,7 @@ def adjust_screening_percentile(screening_percentile, mask_img, verbose=0):
 @fill_doc
 def check_feature_screening(
     screening_percentile,
-    mask_img, 
+    mask_img,
     is_classification,
     screening_n_voxels=None,
     verbose=0,
@@ -176,7 +176,7 @@ def check_feature_screening(
     """
     f_test = f_classif if is_classification else f_regression
 
-    if screening_n_voxels is not None:
+    if screening_percentile is None and screening_n_voxels is not None:
         return SelectKBest(f_test, k=screening_n_voxels)
 
     if screening_percentile == 100 or screening_percentile is None:
