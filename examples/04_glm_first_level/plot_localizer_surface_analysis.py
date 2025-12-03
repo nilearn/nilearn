@@ -240,7 +240,7 @@ from nilearn.glm import cluster_level_inference
 from nilearn.surface.surface import get_data as get_surf_data
 
 proportion_true_discoveries_img = cluster_level_inference(
-    results["audio - visual"], threshold=3, alpha=0.05
+    results["audio - visual"], threshold=[2.5, 3.5, 4.5], alpha=0.05
 )
 
 data = get_surf_data(proportion_true_discoveries_img)

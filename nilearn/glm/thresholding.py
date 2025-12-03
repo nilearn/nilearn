@@ -143,7 +143,11 @@ def fdr_threshold(z_vals, alpha):
 
 @fill_doc
 def cluster_level_inference(
-    stat_img, mask_img=None, threshold=3.0, alpha=0.05, verbose=0
+    stat_img,
+    mask_img=None,
+    threshold: float | int | list[float | int] = 3.0,
+    alpha=0.05,
+    verbose=0,
 ):
     """Report the proportion of active voxels for all clusters \
     defined by the input threshold.
