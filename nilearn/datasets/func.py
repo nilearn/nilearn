@@ -59,9 +59,6 @@ def fetch_haxby(
 ):
     """Download and loads complete haxby dataset.
 
-
-
-
     See :footcite:t:`Haxby2001`.
 
     Parameters
@@ -1768,7 +1765,6 @@ def fetch_surf_nki_enhanced(
         The number of subjects to load from maximum of 102 subjects.
         By default, 10 subjects will be loaded. If None is given,
         all 102 subjects will be loaded.
-
     %(data_dir)s
 
     %(url)s
