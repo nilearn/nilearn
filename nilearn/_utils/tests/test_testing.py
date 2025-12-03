@@ -16,7 +16,6 @@ def create_object(size):
     return mem_use
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.xfail(not is_gil_enabled(), reason="fails without GIL")
 @with_memory_profiler
 def test_memory_usage():
@@ -37,7 +36,6 @@ def test_memory_usage():
         assert_memory_less_than(100, 0.1, create_object, 200 * 1024**2)
 
 
-@pytest.mark.thread_unsafe
 @pytest.mark.xfail(not is_gil_enabled(), reason="fails without GIL")
 def test_int64_niftis(affine_eye, tmp_path):
     data = np.ones((3, 3, 3), dtype=bool)
@@ -49,6 +47,7 @@ def test_int64_niftis(affine_eye, tmp_path):
             Nifti1Image(data.astype(dtype), affine_eye)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("create_files", [True, False])
 @pytest.mark.parametrize("use_wildcards", [True, False])
 def test_write_tmp_imgs_default(

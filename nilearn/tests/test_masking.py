@@ -58,6 +58,7 @@ def _cov_conf(tseries, conf):
     return cov_mat
 
 
+@pytest.mark.thread_unsafe
 def test_load_mask_img_error_inputs(surf_img_2d, img_4d_ones_eye):
     """Check input validation of load_mask_img."""
     with pytest.raises(

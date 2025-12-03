@@ -141,6 +141,7 @@ def data_butterworth_multiple_timeseries(
     return data
 
 
+@pytest.mark.thread_unsafe
 def test_butterworth(data_butterworth_single_timeseries):
     """Check butterworth onsingle timeseries."""
     sampling = 100
@@ -778,6 +779,7 @@ def test_clean_errros(signals):
         clean(signals, high_pass=False)
 
 
+@pytest.mark.thread_unsafe
 def test_clean_confounds():
     """Check output of cleaning when counfoun is passed."""
     signals, noises, confounds = generate_signals(

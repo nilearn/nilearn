@@ -1400,6 +1400,7 @@ def test_math_img_copied_header_data_values_changed(
             assert result.header[key] == img_4d_ones_eye_tr2.header[key]
 
 
+@pytest.mark.thread_unsafe
 def test_binarize_img(img_4d_rand_eye):
     # Test that all output values are 1.
     img1 = binarize_img(img_4d_rand_eye)

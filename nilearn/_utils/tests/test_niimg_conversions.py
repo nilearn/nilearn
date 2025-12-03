@@ -102,6 +102,7 @@ def test_check_same_fov(affine_eye):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_3d(affine_eye, img_3d_zeros_eye, tmp_path):
     # check error for non-forced but necessary resampling
     with pytest.raises(TypeError, match="input should be a NiftiLike object"):
@@ -213,6 +214,7 @@ def test_check_niimg_4d(affine_eye, img_3d_zeros_eye, shape_3d_default):
     check_niimg_4d(phony_img)
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
     img_3_3d = [[[img_3d_zeros_eye, img_3d_zeros_eye]]]
     img_2_4d = [[img_4d_zeros_eye, img_4d_zeros_eye]]
@@ -256,6 +258,7 @@ def test_check_niimg_pathlike(img_3d_zeros_eye, tmp_path):
     check_niimg_3d(filename)
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_wildcards_errors():
     # Check bad filename
     # Non existing file (with no magic) raise a ValueError exception
@@ -272,6 +275,7 @@ def test_check_niimg_wildcards_errors():
         check_niimg(nofile_path_wildcards)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("shape", [(10, 10, 10), (10, 10, 10, 3)])
 @pytest.mark.parametrize(
     "wildcards", [True, False]
@@ -305,6 +309,7 @@ def img_in_home_folder(img_3d_mni):
     created_file.expanduser().unlink()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "filename", ["~/test.nii", r"~/test.nii", Path("~/test.nii")]
 )
@@ -318,6 +323,7 @@ def test_check_niimg_user_expand(img_in_home_folder, filename):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "filename",
     [
@@ -341,6 +347,7 @@ def test_check_niimg_user_expand_4d(img_in_home_folder, filename):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
     file_not_found_msg = "File not found: '%s'"
 
@@ -375,6 +382,7 @@ def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
     assert_array_equal(get_data(check_niimg(globs)), get_data(img_4d))
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_wildcards_no_expand_wildcards(
     img_3d_zeros_eye, img_4d_zeros_eye, tmp_path
 ):
@@ -428,6 +436,7 @@ def test_iter_check_niimgs_error():
         list(iter_check_niimg(nofile_path))
 
 
+@pytest.mark.thread_unsafe
 def test_iter_check_niimgs(tmp_path, img_4d_zeros_eye):
     img_2_4d = [[img_4d_zeros_eye, img_4d_zeros_eye]]
 
@@ -438,7 +447,6 @@ def test_iter_check_niimgs(tmp_path, img_4d_zeros_eye):
     assert_array_equal(
         get_data(niimgs[0]), get_data(check_niimg(img_4d_zeros_eye))
     )
-    del niimgs
 
     # Regular case
     niimgs = list(iter_check_niimg(img_2_4d))
@@ -609,6 +617,7 @@ def test_repr_niimgs_with_niimg_pathlib():
     assert repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("shorten", [True, False])
 def test_repr_niimgs_with_niimg(
     shorten, tmp_path, affine_eye, img_3d_ones_eye, shape_3d_default
