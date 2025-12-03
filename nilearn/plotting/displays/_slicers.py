@@ -12,7 +12,7 @@ from matplotlib.transforms import Bbox
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg import is_binary_niimg, safe_get_data
+from nilearn._utils.niimg import _get_data, is_binary_niimg, safe_get_data
 from nilearn._utils.niimg_conversions import _check_fov, check_niimg_3d
 from nilearn._utils.param_validation import check_params
 from nilearn.image import get_data, new_img_like, reorder_img
@@ -90,6 +90,18 @@ class BaseSlicer:
             "bottom": 0.05 * bb.height,
         }
         self._init_axes(**kwargs)
+
+    @classmethod
+    def _get_data_bounds(cls, img):
+        """Return bounds of the image.
+
+        Parameters
+        ----------
+        img : 3D Nifti1Image
+            The brain map.
+        """
+        data = _get_data(img)
+        return get_bounds(data.shape, img.affine)
 
     @property
     def brain_color(self):
