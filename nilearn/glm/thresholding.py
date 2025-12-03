@@ -194,7 +194,7 @@ def cluster_level_inference(
     )
 
     if is_surface:
-        # for surface we run the inference on each hemisphere indendently
+        # for surface we run the inference on each hemisphere independently
         # by creating a temporary mask that only includes one hemisphere
         if mask_img is None:
             masker = SurfaceMasker().fit(stat_img)
