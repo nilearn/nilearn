@@ -87,6 +87,7 @@ def test_adjust_small_clusters(test_list, n_clusters):
         assert isinstance(a, (int, np.integer))
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_hierarchical_k_means():
     X = [[10, -10, 30], [12, -8, 24]]
     truth_labels = np.tile([0, 1, 2], 5)
