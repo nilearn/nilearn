@@ -307,16 +307,16 @@ def permuted_ols(
     tested_vars,
     target_vars,
     confounding_vars=None,
-    model_intercept=True,
-    n_perm=10000,
-    two_sided_test=True,
+    model_intercept: bool = True,
+    n_perm: int = 10000,
+    two_sided_test: bool = True,
     random_state=None,
-    n_jobs=1,
+    n_jobs: int = 1,
     verbose=0,
     masker=None,
-    tfce=False,
+    tfce: bool = False,
     threshold=None,
-    output_type="dict",
+    output_type: str = "dict",
 ):
     """Massively univariate group analysis with permuted OLS.
 
@@ -720,10 +720,12 @@ def permuted_ols(
     # Define connectivity for TFCE and/or cluster measures
     bin_struct = generate_binary_structure(3, 1)
 
-    tfce_original_data = None
+    tfce_original_data: np.ndarray | None = None
     if tfce:
+        assert isinstance(masker, (NiftiMasker, SurfaceMasker))
+        scores_4d: np.ndarray
         if isinstance(masker, NiftiMasker):
-            scores_4d: np.ndarray = masker.inverse_transform(
+            scores_4d = masker.inverse_transform(
                 scores_original_data.T
             ).get_fdata()
             tfce_original_data = calculate_tfce(
@@ -740,7 +742,7 @@ def permuted_ols(
                 masker.mask_img_,
             ).T
         else:
-            scores_4d: np.ndarray = get_surface_data(
+            scores_4d = get_surface_data(
                 masker.inverse_transform(scores_original_data.T)
             )
             tfce_original_data = calculate_tfce(
@@ -762,7 +764,7 @@ def permuted_ols(
             return np.asarray([]), scores_original_data.T, np.asarray([])
 
         out = {"t": scores_original_data.T}
-        if tfce:
+        if isinstance(tfce_original_data, np.ndarray):
             out["tfce"] = tfce_original_data.T
         return out
 

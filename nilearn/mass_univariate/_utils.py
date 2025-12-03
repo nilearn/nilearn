@@ -17,7 +17,7 @@ def calculate_tfce(
     H=2,
     dh="auto",
     two_sided_test=True,
-):
+) -> np.ndarray:
     """Calculate threshold-free cluster enhancement values for scores maps.
 
     The :term:`TFCE` calculation is mostly implemented as described in [1]_,
