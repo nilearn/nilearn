@@ -1027,8 +1027,104 @@ class BaseSlicer:
         )
 
 
+class ThreeDSlicer(BaseSlicer):
+    _cut_displayed: ClassVar[str] = "yxz"
+    _axes_class = CutAxes
+
+    @classmethod
+    @fill_doc  # the fill_doc decorator must be last applied
+    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
+        """Instantiate the slicer and find cut coordinates.
+
+        Parameters
+        ----------
+        img : 3D :class:`~nibabel.nifti1.Nifti1Image`
+            The brain map.
+
+        threshold : :obj:`int` or :obj:`float` or ``None``, default=None
+            Threshold to apply:
+
+                - If ``None`` is given, the maps are not thresholded.
+                - If number is given, it must be non-negative. The specified
+                  value is used to threshold the image: values below the
+                  threshold (in absolute value) are plotted as transparent.
+
+        cut_coords : 3 :obj:`tuple` of :obj:`int`
+            The cut position, in world space.
+
+        Raises
+        ------
+        ValueError
+            if the specified threshold is a negative number
+        """
+        if cut_coords is None:
+            if img is None or img is False:
+                cut_coords = (0, 0, 0)
+            else:
+                cut_coords = find_xyz_cut_coords(
+                    img, activation_threshold=threshold
+                )
+            cut_coords = [
+                cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
+            ]
+        else:
+            cls._check_cut_coords(img, cut_coords)
+        return cut_coords
+
+    @classmethod
+    def _check_cut_coords(cls, img, cut_coords):
+        """
+
+        Parameters
+        ----------
+        img : 3D :class:`~nibabel.nifti1.Nifti1Image`
+            The brain map.
+        """
+        if isinstance(cut_coords, numbers.Number):
+            raise ValueError(
+                f"cut_coords should to be a list of 3D world coordinates "
+                "in (x, y, z). You provided single cut, "
+                f"cut_coords={cut_coords}"
+            )
+
+        if len(cut_coords) != len(cls._cut_displayed):
+            raise ValueError(
+                f"The number cut_coords ({len(cut_coords)}) "
+                f"passed does not match the expected "
+                f"for that display_mode ({len(cls._cut_displayed)}). "
+            )
+
+        # TODO put check if image is not None
+        bounds_x, bounds_y, bounds_z = cls._get_data_bounds(img)
+
+        x_in = bounds_x[0] <= cut_coords[0] <= bounds_x[1]
+        y_in = bounds_y[0] <= cut_coords[1] <= bounds_y[1]
+        z_in = bounds_z[0] <= cut_coords[2] <= bounds_z[1]
+
+        # if non of the coordinates is in bounds
+        # raise error
+        if not (x_in or y_in or z_in):
+            raise ValueError(
+                f"Specified {cut_coords=} is out of the bounds of the "
+                "image. Please specify coordinates within the bounds:\n"
+                f"{bounds_x}-{bounds_y}-{bounds_z}.\n"
+            )
+        # if at least one (but not all) of the coordinates is out of the
+        # bounds, warn user
+        if not x_in or not y_in or not z_in:
+            warnings.warn(
+                (
+                    f"At least one of the specified {cut_coords=} "
+                    "seem to be out of the bounds of the image:\n"
+                    f"{bounds_x}-{bounds_y}-{bounds_z}.\n"
+                ),
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
+
+
 @fill_doc
-class OrthoSlicer(BaseSlicer):
+class OrthoSlicer(ThreeDSlicer):
     """Class to create 3 linked axes for plotting orthogonal \
     cuts of 3D maps.
 
@@ -1072,91 +1168,7 @@ class OrthoSlicer(BaseSlicer):
 
     """
 
-    _cut_displayed: ClassVar[str] = "yxz"
-    _axes_class = CutAxes
     _default_figsize: ClassVar[list[float]] = [2.2, 3.5]
-
-    @classmethod
-    @fill_doc  # the fill_doc decorator must be last applied
-    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
-        """Instantiate the slicer and find cut coordinates.
-
-        Parameters
-        ----------
-        %(img)s
-        threshold : :obj:`int` or :obj:`float` or ``None``, default=None
-            Threshold to apply:
-
-                - If ``None`` is given, the maps are not thresholded.
-                - If number is given, it must be non-negative. The specified
-                  value is used to threshold the image: values below the
-                  threshold (in absolute value) are plotted as transparent.
-
-        cut_coords : 3 :obj:`tuple` of :obj:`int`
-            The cut position, in world space.
-
-        Raises
-        ------
-        ValueError
-            if the specified threshold is a negative number
-        """
-        if cut_coords is None:
-            if img is None or img is False:
-                cut_coords = (0, 0, 0)
-            else:
-                cut_coords = find_xyz_cut_coords(
-                    img, activation_threshold=threshold
-                )
-            cut_coords = [
-                cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
-            ]
-        else:
-            cls._check_cut_coords(img, cut_coords)
-        return cut_coords
-
-    @classmethod
-    def _check_cut_coords(cls, img, cut_coords):
-        if isinstance(cut_coords, numbers.Number):
-            raise ValueError(
-                f"cut_coords should to be a list of 3D world coordinates "
-                "in (x, y, z). You provided single cut, "
-                f"cut_coords={cut_coords}"
-            )
-
-        if len(cut_coords) != len(cls._cut_displayed):
-            raise ValueError(
-                f"The number cut_coords ({len(cut_coords)}) "
-                f"passed does not match the expected "
-                f"for that display_mode ({len(cls._cut_displayed)}). "
-            )
-
-        # TODO put check if image is not None
-        bounds_x, bounds_y, bounds_z = cls._get_data_bounds(img)
-
-        x_in = bounds_x[0] <= cut_coords[0] <= bounds_x[1]
-        y_in = bounds_y[0] <= cut_coords[1] <= bounds_y[1]
-        z_in = bounds_z[0] <= cut_coords[2] <= bounds_z[1]
-
-        # if non of the coordinates is in bounds
-        # raise error
-        if not (x_in or y_in or z_in):
-            raise ValueError(
-                f"Specified {cut_coords=} is out of the bounds of the "
-                "image. Please specify coordinates within the bounds:\n"
-                f"{bounds_x}-{bounds_y}-{bounds_z}.\n"
-            )
-        # if at least one (but not all) of the coordinates is out of the
-        # bounds, warn user
-        if not x_in or not y_in or not z_in:
-            warnings.warn(
-                (
-                    f"At least one of the specified {cut_coords=} "
-                    "seem to be out of the bounds of the image:\n"
-                    f"{bounds_x}-{bounds_y}-{bounds_z}.\n"
-                ),
-                UserWarning,
-                stacklevel=find_stack_level(),
-            )
 
     def _init_axes(self, **kwargs):
         x0, y0, x1, y1 = self.rect
@@ -1302,7 +1314,7 @@ class OrthoSlicer(BaseSlicer):
                 ax.axhline(y, **kwargs)
 
 
-class TiledSlicer(BaseSlicer):
+class TiledSlicer(ThreeDSlicer):
     """A class to create 3 axes for plotting orthogonal \
     cuts of 3D maps, organized in a 2x2 grid.
 
@@ -1344,94 +1356,7 @@ class TiledSlicer(BaseSlicer):
 
     """
 
-    _cut_displayed: ClassVar[str] = "yxz"
-    _axes_class = CutAxes
     _default_figsize: ClassVar[list[float]] = [2.0, 7.6]
-
-    @classmethod
-    def find_cut_coords(cls, img=None, threshold=None, cut_coords=None):
-        """Instantiate the slicer and find cut coordinates.
-
-        Parameters
-        ----------
-        img : 3D :class:`~nibabel.nifti1.Nifti1Image`
-            The brain map.
-
-        threshold : :obj:`float`, optional
-            The lower threshold to the positive activation.
-            If ``None``, the activation threshold is computed using the
-            80% percentile of the absolute value of the map.
-
-        cut_coords : :obj:`list` of :obj:`float`, optional
-            xyz world coordinates of cuts.
-
-        Returns
-        -------
-        cut_coords : :obj:`list` of :obj:`float`
-            xyz world coordinates of cuts.
-
-        Raises
-        ------
-        ValueError
-            if the specified threshold is a negative number
-        """
-        if cut_coords is None:
-            if img is None or img is False:
-                cut_coords = (0, 0, 0)
-            else:
-                cut_coords = find_xyz_cut_coords(
-                    img, activation_threshold=threshold
-                )
-            cut_coords = [
-                cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
-            ]
-        else:
-            cls._check_cut_coords(img, cut_coords)
-        return cut_coords
-
-    @classmethod
-    def _check_cut_coords(cls, img, cut_coords):
-        if isinstance(cut_coords, numbers.Number):
-            raise ValueError(
-                f"cut_coords should to be a list of 3D world coordinates "
-                "in (x, y, z). You provided single cut, "
-                f"cut_coords={cut_coords}"
-            )
-
-        if len(cut_coords) != len(cls._cut_displayed):
-            raise ValueError(
-                f"The number cut_coords ({len(cut_coords)}) "
-                f"passed does not match the expected "
-                f"for that display_mode ({len(cls._cut_displayed)}). "
-            )
-
-        # TODO put check if image is not None
-        bounds_x, bounds_y, bounds_z = cls._get_data_bounds(img)
-
-        x_in = bounds_x[0] <= cut_coords[0] <= bounds_x[1]
-        y_in = bounds_y[0] <= cut_coords[1] <= bounds_y[1]
-        z_in = bounds_z[0] <= cut_coords[2] <= bounds_z[1]
-
-        # if non of the coordinates is in bounds
-        # raise error
-        if not (x_in or y_in or z_in):
-            raise ValueError(
-                f"Specified {cut_coords=} is out of the bounds of the "
-                "image. Please specify coordinates within the bounds:\n"
-                f"{bounds_x}-{bounds_y}-{bounds_z}.\n"
-            )
-        # if at least one (but not all) of the coordinates is out of the
-        # bounds, warn user
-        if not x_in or not y_in or not z_in:
-            warnings.warn(
-                (
-                    f"At least one of the specified {cut_coords=} "
-                    "seem to be out of the bounds of the image:\n"
-                    f"{bounds_x}-{bounds_y}-{bounds_z}.\n"
-                ),
-                UserWarning,
-                stacklevel=find_stack_level(),
-            )
 
     def _find_initial_axes_coord(self, index):
         """Find coordinates for initial axes placement for xyz cuts.
