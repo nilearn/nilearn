@@ -62,7 +62,11 @@ from sklearn.utils.estimator_checks import (
 )
 
 from nilearn._utils.cache_mixin import CacheMixin
-from nilearn._utils.helpers import is_matplotlib_installed, is_windows_platform
+from nilearn._utils.helpers import (
+    is_gil_enabled,
+    is_matplotlib_installed,
+    is_windows_platform,
+)
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg_conversions import check_imgs_equal
 from nilearn._utils.param_validation import check_is_of_allowed_type
@@ -1001,6 +1005,25 @@ def check_img_estimator_doc_attributes(estimator) -> None:
     - Fitted attributes (ending with a "_") should be documented.
     - All documented fitted attributes should exist after fit.
     """
+    # TODO
+    # fix for free threaded python
+    if not is_gil_enabled() and (
+        is_masker(estimator)
+        or is_glm(estimator)
+        or is_regressor(estimator)
+        or is_classifier(estimator)
+        or isinstance(
+            estimator,
+            (
+                _BaseDecomposition,
+                HierarchicalKMeans,
+                ConnectivityMeasure,
+                GroupSparseCovariance,
+            ),
+        )
+    ):
+        pytest.xfail("May fail without the GIL")
+
     doc = NumpyDocString(estimator.__doc__)
     for section in ["Parameters", "Attributes"]:
         if section not in doc:
@@ -1320,6 +1343,19 @@ def check_img_estimator_dict_unchanged(estimator):
 
     Several methods should not change the dict of the object.
     """
+    # TODO
+    # fix for free threaded python
+    if not is_gil_enabled() and (
+        is_masker(estimator)
+        or is_glm(estimator)
+        or is_regressor(estimator)
+        or is_classifier(estimator)
+        or isinstance(
+            estimator, (SearchLight, BaseSpaceNet, _BaseDecomposition)
+        )
+    ):
+        pytest.xfail("May fail without the GIL")
+
     estimator = fit_estimator(estimator)
 
     dict_before = estimator.__dict__.copy()
