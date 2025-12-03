@@ -130,7 +130,7 @@ Changes
 
 - :bdg-danger:`Deprecation` Set ``copy_header`` default to True in :func:`~image` functions (:gh:`5656` by `Rémi Gau`_ and `Himanshu Aggarwal`_).
 
-- :bdg-danger:`Deprecation` From Nilearn >= 0.15, th function :func:`~reporting.make_glm_report` will be removed. Use :meth:`~glm.first_level.FirstLevelModel.generate_report` or :meth:`~glm.second_level.SecondLevelModel.generate_report` instead. (:gh:`5876` by `Hande Gözükan`_).
+- :bdg-danger:`Deprecation` From Nilearn >= 0.15, the function :func:`~reporting.make_glm_report` will be removed. Use :meth:`~glm.first_level.FirstLevelModel.generate_report` or :meth:`~glm.second_level.SecondLevelModel.generate_report` instead. (:gh:`5876` by `Hande Gözükan`_).
 
 - :bdg-primary:`Doc` Home-made sphinx directives are used instead of default sphinx directives relative to version changes (``versionadded``, ``versionchanged``, ``deprecated``...) to more easily distinguish between feature changes introduced in Nilearn versus those introduced in upstream dependencies (like in Scikit-Learn) (:gh:`5654` by `Rémi Gau`_).
 
