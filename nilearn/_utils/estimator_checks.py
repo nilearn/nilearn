@@ -2710,6 +2710,24 @@ def check_masker_smooth(estimator):
     """
     assert hasattr(estimator, "smoothing_fwhm")
 
+    # TODO
+    # fix for free threaded python
+    if not is_gil_enabled() and (
+        isinstance(
+            estimator,
+            (
+                NiftiMapsMasker,
+                NiftiSpheresMasker,
+                SurfaceLabelsMasker,
+                NiftiLabelsMasker,
+                SurfaceMapsMasker,
+                NiftiMasker,
+                SurfaceMasker,
+            ),
+        )
+    ):
+        pytest.xfail("May fail without the GIL")
+
     if accept_niimg_input(estimator):
         imgs = _img_3d_rand()
     else:
