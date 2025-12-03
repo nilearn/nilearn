@@ -109,6 +109,7 @@ def test_plot_stat_map_display_mode(display_mode):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_no_colorbar(plot_func, img_3d_mni):
@@ -572,6 +573,7 @@ def test_plot_with_transparency(fn):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("fn", [plot_stat_map, plot_img, plot_glass_brain])
 @pytest.mark.parametrize("transparency_range", [None, [0, 2], [2, 4]])

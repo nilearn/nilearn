@@ -77,6 +77,10 @@ show()
 # %%
 # Extract the largest clusters
 # ----------------------------
+# We can extract the 6 largest clusters surviving our threshold.
+# and get the x, y, and z coordinates of their peaks.
+# We then extract the time series from a sphere around each coordinate.
+#
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.reporting import get_clusters_table
 
@@ -84,16 +88,20 @@ table = get_clusters_table(
     z_map, stat_threshold=threshold, cluster_threshold=20
 )
 table.set_index("Cluster ID", drop=True)
-table.head()
+print(table)
 
-# get the 6 largest clusters' max x, y, and z coordinates
 coords = table.loc[range(1, 7), ["X", "Y", "Z"]].to_numpy()
+print(coords)
 
-# extract time series from each coordinate
 masker = NiftiSpheresMasker(coords)
 real_timeseries = masker.fit_transform(fmri_img)
 predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
 
+# %%
+# Let's have a look at the report to make sure
+# the spheres are well placed.
+report = masker.generate_report()
+report
 
 # %%
 # Plot predicted and actual time series for 6 most significant clusters
