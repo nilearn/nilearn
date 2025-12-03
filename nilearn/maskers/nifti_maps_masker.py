@@ -16,8 +16,14 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.image import clean_img, get_data, index_img, resample_img
-from nilearn.image.image import check_niimg, check_same_fov
+from nilearn.image import (
+    check_niimg,
+    clean_img,
+    get_data,
+    index_img,
+    resample_img,
+)
+from nilearn.image.image import check_same_fov
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,

@@ -20,12 +20,14 @@ from nilearn._utils.param_validation import (
     check_params,
     check_reduction_strategy,
 )
-from nilearn.image import get_data, load_img, resample_img
-from nilearn.image.image import (
+from nilearn.image import (
     check_niimg,
     check_niimg_3d,
-    check_same_fov,
+    get_data,
+    load_img,
+    resample_img,
 )
+from nilearn.image.image import check_same_fov
 from nilearn.maskers._mixin import _LabelMaskerMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (

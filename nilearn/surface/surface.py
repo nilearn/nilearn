@@ -798,7 +798,7 @@ def vol_to_surf(
 
     """
     # avoid circular import
-    from nilearn.image.image import check_niimg, load_img
+    from nilearn.image import check_niimg, load_img
     from nilearn.image.image import get_data as get_vol_data
     from nilearn.image.resampling import resample_to_img
 

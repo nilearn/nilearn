@@ -19,7 +19,7 @@ from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.image.image import (
+from nilearn.image import (
     check_niimg,
     check_niimg_3d,
     copy_img,

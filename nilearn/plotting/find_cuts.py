@@ -14,8 +14,14 @@ from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import check_parameter_in_allowed
 
 # Local imports
-from nilearn.image import get_data, iter_img, reorder_img
-from nilearn.image.image import check_niimg_3d, check_niimg_4d, smooth_array
+from nilearn.image import (
+    check_niimg_3d,
+    check_niimg_4d,
+    get_data,
+    iter_img,
+    reorder_img,
+)
+from nilearn.image.image import smooth_array
 from nilearn.image.resampling import coord_transform
 from nilearn.plotting._utils import check_threshold_not_negative
 

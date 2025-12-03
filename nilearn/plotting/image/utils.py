@@ -12,8 +12,7 @@ from scipy.ndimage import binary_fill_holes
 from nilearn._utils.ndimage import get_border_data
 from nilearn._utils.niimg import safe_get_data
 from nilearn.datasets import load_mni152_template
-from nilearn.image import get_data, new_img_like
-from nilearn.image.image import check_niimg_3d
+from nilearn.image import check_niimg_3d, get_data, new_img_like
 from nilearn.image.resampling import reorder_img
 
 

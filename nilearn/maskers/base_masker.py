@@ -29,13 +29,13 @@ from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.image import (
+    check_niimg,
     concat_imgs,
     high_variance_confounds,
     new_img_like,
     resample_img,
     smooth_img,
 )
-from nilearn.image.image import check_niimg
 from nilearn.maskers._mixin import _ReportingMixin
 from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean

@@ -34,13 +34,14 @@ from nilearn._utils.param_validation import (
     check_threshold,
 )
 from nilearn.image import (
+    check_niimg_3d,
+    check_niimg_4d,
     get_data,
     iter_img,
     math_img,
     new_img_like,
     resample_to_img,
 )
-from nilearn.image.image import check_niimg_3d, check_niimg_4d
 from nilearn.maskers import NiftiMasker
 from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm

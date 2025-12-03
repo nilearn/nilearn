@@ -21,8 +21,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
 from nilearn._utils.param_validation import check_params
-from nilearn.image import new_img_like, threshold_img
-from nilearn.image.image import check_niimg_3d
+from nilearn.image import check_niimg_3d, new_img_like, threshold_img
 from nilearn.image.resampling import coord_transform
 from nilearn.surface.surface import SurfaceImage, find_surface_clusters
 from nilearn.typing import ClusterThreshold
