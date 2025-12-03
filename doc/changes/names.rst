@@ -295,6 +295,8 @@
 
 .. _Sami Jawhar: https://github.com/sjawhar
 
+.. _Sanjana Soni: https://github.com/isha822
+
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
 .. _Sin Kim: https://github.com/kimsin98
