@@ -125,6 +125,7 @@ def test_should_raise_import_error_for_version_check():
         set_mpl_backend()
 
 
+@pytest.mark.thread_unsafe
 def test_rename_parameters():
     """Test deprecated mock parameters in a mock function.
 
@@ -202,6 +203,7 @@ def test_transfer_deprecated_param_vals():
     assert actual_output == expected_output
 
 
+@pytest.mark.thread_unsafe
 def test_future_warn_deprecated_params():
     """Check that the correct warning is displayed."""
     mock_input, replacement_params = _mock_args_for_testing_replace_parameter()

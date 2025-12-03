@@ -7,6 +7,7 @@ import requests
 from numpy.testing import assert_no_warnings
 
 from nilearn._utils import html_document
+from nilearn._utils.helpers import is_gil_enabled
 
 # Note: html output by nilearn view_* functions
 # should validate as html5 using https://validator.w3.org/nu/ with no
@@ -27,6 +28,7 @@ class Get:
         self.content = requests.get(url).content
 
 
+@pytest.mark.thread_unsafe
 def test_open_in_browser(monkeypatch):
     opener = Get()
     monkeypatch.setattr(webbrowser, "open", opener)
@@ -35,6 +37,8 @@ def test_open_in_browser(monkeypatch):
     assert opener.content == b"hello"
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.xfail(not is_gil_enabled(), reason="fails without GIL")
 def test_open_in_browser_timeout(monkeypatch):
     opener = Get(delay=1.0)
     monkeypatch.setattr(webbrowser, "open", opener)
@@ -44,6 +48,7 @@ def test_open_in_browser_timeout(monkeypatch):
         doc.open_in_browser()
 
 
+@pytest.mark.thread_unsafe
 def test_open_in_browser_file(tmp_path, monkeypatch):
     opener = Mock()
     monkeypatch.setattr(webbrowser, "open", opener)
@@ -64,6 +69,7 @@ def _open_one_view():
     return v
 
 
+@pytest.mark.thread_unsafe
 def test_open_view_warning():
     # opening many views (without deleting the SurfaceView objects)
     # should raise a warning about memory usage

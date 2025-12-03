@@ -51,6 +51,7 @@ class CacheMixinTest(CacheMixin):
         self._cache(f)
 
 
+@pytest.mark.thread_unsafe
 def test_cache_mixin_with_expand_user():
     # Test the memory cache is correctly created when using ~.
     cache_dir = "~/nilearn_data/test_cache"

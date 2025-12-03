@@ -16,6 +16,7 @@ from nibabel import Nifti1Image, spatialimages
 from numpy.testing import assert_array_equal
 
 import nilearn as ni
+from nilearn._utils.helpers import is_gil_enabled
 from nilearn._utils.niimg import repr_niimgs
 from nilearn._utils.niimg_conversions import (
     check_niimg,
@@ -246,6 +247,7 @@ def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_pathlike(img_3d_zeros_eye, tmp_path):
     filename = write_imgs_to_path(
         img_3d_zeros_eye, file_path=tmp_path, create_files=True
@@ -452,6 +454,7 @@ def _check_memory(list_img_3d):
 
 
 @with_memory_profiler
+@pytest.mark.xfail(not is_gil_enabled(), reason="fails without GIL")
 def test_iter_check_niimgs_memory(affine_eye):
     # Verify that iterating over a list of images doesn't consume extra
     # memory.
