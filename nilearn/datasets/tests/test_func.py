@@ -15,6 +15,7 @@ from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
 from nilearn._utils.data_gen import create_fake_bids_dataset
+from nilearn._utils.helpers import is_gil_enabled
 from nilearn.datasets import fetch_development_fmri, func
 from nilearn.datasets._utils import PACKAGE_DIRECTORY, get_dataset_dir
 from nilearn.datasets.tests._testing import (
@@ -387,6 +388,8 @@ def test_fetch_localizer_button_task(tmp_path, localizer_mocker):  # noqa: ARG00
     assert isinstance(dataset.anat, str)
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize("quality_checked", [False, True])
 def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
     n_subjects = 800

@@ -6,7 +6,7 @@ import pytest
 from nibabel import Nifti1Image
 from scipy.signal import get_window
 
-from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.helpers import is_gil_enabled, is_matplotlib_installed
 from nilearn.masking import unmask
 from nilearn.surface import (
     InMemoryMesh,
@@ -49,6 +49,12 @@ else:
         ]
     )
     matplotlib = None  # type: ignore[assignment]
+
+if not is_gil_enabled():
+    # data fetchers tests are using a monkeypatch fixture
+    # making the tests thread unsafe
+    # therefore we skip them when testing without the GIL
+    collect_ignore.append("datasets")
 
 
 def pytest_configure(config):  # noqa: ARG001
