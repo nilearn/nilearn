@@ -42,7 +42,6 @@ then by selecting the ``host_docs`` job,
 clicking on the ``ARTIFACTS`` tab,
 and opening the the landing page of the deployed doc by clikcing on ``index.html``.
 
-
 GitHub Actions Specification
 ----------------------------
 
@@ -51,7 +50,7 @@ GitHub Actions Specification
 {{ workflow.file }}
 {% for i in range(workflow.file|length) %}^{% endfor %}
 
-Workflow file: `{{workflow.file}} <https://github.com/nilearn/nilearn/blob/main/.github/workflows/{{ workflow.file }}>`_
+Workflow file: `{{ workflow.file }} <https://github.com/nilearn/nilearn/blob/main/.github/workflows/{{ workflow.file }}>`_
 
 {{ workflow.comment }}
 {% endfor %}

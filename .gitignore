@@ -23,7 +23,7 @@ pip-log.txt
 
 tmp
 
-#  prettier and other JS
+#  JS
 node_modules
 
 # Mac OS X
