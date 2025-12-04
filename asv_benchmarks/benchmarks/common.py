@@ -11,7 +11,7 @@ class Benchmark:
     benchmarks.
     """
 
-    def setup_cache(self, n_subjects=10, n_masks=1):
+    def setup_cache(self, n_subjects=50, n_masks=1):
         """Set up the cache directory with the necessary images and masks.
 
         The fMRI image is created by concatenating n_subjects subject images
