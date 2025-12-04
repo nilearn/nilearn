@@ -33,7 +33,6 @@ def warn_default_threshold(
     Can be removed.
     """
     if height_control is None and threshold == current_default == old_default:
-        print(f"{threshold=} {current_default=} {old_default=}")
         warnings.warn(
             category=FutureWarning,
             message=(
