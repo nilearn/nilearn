@@ -1096,6 +1096,7 @@ class ThreeDSlicer(BaseSlicer):
                 cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
             ]
         else:
+            cls._check_cut_coords(cut_coords)
             bounds = cls._get_data_bounds(img)
             cls._check_cut_coords_in_bounds(bounds, cut_coords)
         return cut_coords
@@ -1133,7 +1134,6 @@ class ThreeDSlicer(BaseSlicer):
         cut_coords:
             cut_coords to check
         """
-        cls._check_cut_coords(cut_coords)
         coord_in = []
 
         for c in sorted(cls._cut_displayed):
