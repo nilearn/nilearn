@@ -172,7 +172,7 @@ def make_glm_report(
         "Use generate_report method of the GLM model instead."
     )
     warnings.warn(
-        category=DeprecationWarning,
+        category=FutureWarning,
         message=make_glm_report_deprecation,
         stacklevel=find_stack_level(),
     )
