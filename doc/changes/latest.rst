@@ -43,6 +43,7 @@ Fixes
 
 - :bdg-dark:`Code` Raise warning when :func:`~nilearn.image.crop_img` is called with an empty image and return the original image (:gh:`5837` by `Hande Gözükan`_).
 
+- :bdg-dark:`Code` Better handling of errors during plotting when cut coordinates are out of bounds (:gh:`5861` by `Sanjana Soni`_).
 
 Enhancements
 ------------
@@ -71,7 +72,9 @@ Enhancements
 
 - :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker`, a :class:`~maskers.MultiSurfaceMapsMasker` (:gh:`5679`, :gh:`5727` by `Rémi Gau`_).
 
-- :bdg-success:`API` Add support for ``cluster_threshold`` for :func:`~image.threshold_img`, :func:`~glm.threshold_stats_img`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report` and :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5715` by `Rémi Gau`_).
+- :bdg-success:`API` Add support for ``cluster_threshold`` for :class:`~surface.SurfaceImage` in :func:`~image.threshold_img`, :func:`~glm.threshold_stats_img`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report` and :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5715` by `Rémi Gau`_).
+
+- :bdg-success:`API` Add support for :class:`~surface.SurfaceImage` in :func:`~glm.cluster_level_inference` (:gh:`5733` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add support for ``title`` parameter for Nilearn maskers ``generate_report`` method. (:gh:`5790` by `Hande Gözükan`_).
 

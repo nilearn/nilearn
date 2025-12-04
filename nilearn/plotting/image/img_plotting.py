@@ -408,7 +408,6 @@ def plot_img(
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
-
     display = _plot_img_with_bg(
         img,
         cut_coords=cut_coords,
