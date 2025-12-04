@@ -178,7 +178,9 @@ def test_out_of_bounds_warning_error(
 def test_out_of_bounds_warning_error_3d(
     matplotlib_pyplot, img_3d_rand_eye, display_mode
 ):
-    """Plot out-of-bounds slices in ortho mode raises warnings and errors."""
+    """Plot out-of-bounds slices in ortho and tiled mode raises warnings and
+    errors.
+    """
     # Things are OK as long as at least one cut is in the image bounds
     with pytest.warns(
         UserWarning,
