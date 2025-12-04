@@ -563,7 +563,7 @@ def test_report_make_glm_deprecation_warning(flm, contrasts):
     # TODO (nilearn >= 0.15)
     # remove
     """
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(FutureWarning):
         make_glm_report(
             flm,
             contrasts=contrasts,
