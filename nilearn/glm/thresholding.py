@@ -147,7 +147,7 @@ def cluster_level_inference(
     mask_img=None,
     threshold: float | int | list[float | int] = 3.0,
     alpha=0.05,
-    verbose=0,
+    verbose: int = 0,
 ):
     """Report the proportion of active voxels for all clusters \
     defined by the input threshold.
@@ -156,7 +156,8 @@ def cluster_level_inference(
 
     Parameters
     ----------
-    stat_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+    stat_img : 3D Niimg-like object or \
+        :obj:`~nilearn.surface.SurfaceImage` with a single sample.
        statistical image (presumably in z scale)
 
     mask_img : Niimg-like object, or :obj:`~nilearn.surface.SurfaceImage` \
