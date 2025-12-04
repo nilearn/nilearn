@@ -9,7 +9,7 @@ from nilearn._utils.logger import find_stack_level
 
 MSG = (
     "The function '{}' was moved to 'nilearn.image'.\n"
-    "Importing it from 'nilearn._utils.niimg_conversion' "
+    "Importing it from 'nilearn._utils.niimg_conversions' "
     "will remain possible till Nilearn 0.14.0.\n"
     "Please change to import from 'nilearn.image'."
 )

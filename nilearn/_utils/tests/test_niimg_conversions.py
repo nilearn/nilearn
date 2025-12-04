@@ -1,6 +1,6 @@
 import pytest
 
-from nilearn._utils.niimg_conversion import (
+from nilearn._utils.niimg_conversions import (
     check_niimg,
     check_niimg_3d,
     check_niimg_4d,
