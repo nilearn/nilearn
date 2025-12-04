@@ -1348,12 +1348,6 @@ class FirstLevelModel(BaseGLM):
         The :term:`GLM` must be fitted and have the computed design
         matrix(ces).
 
-        .. note::
-
-            Refer to the documentation of
-            :func:`~nilearn.reporting.make_glm_report`
-            for details about the parameters
-
         Returns
         -------
         report_text : :class:`~nilearn.reporting.HTMLReport`
