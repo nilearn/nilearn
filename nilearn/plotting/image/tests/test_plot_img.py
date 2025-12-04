@@ -199,3 +199,24 @@ def test_out_of_bounds_warning_error_3d(
             display_mode=display_mode,
             cut_coords=[50, 100, 150],
         )
+
+
+@pytest.mark.parametrize("display_mode", ["ortho", "tiled"])
+def test_error_incompatible_cut_coords_3d(
+    matplotlib_pyplot, img_3d_rand_eye, display_mode
+):
+    """Test error when incompatible cut_coords is specified for slicers of type
+    `ortho` and `tiled`.
+    """
+    with pytest.raises(
+        ValueError,
+        match=("cut_coords should to be a list of 3D world coordinates"),
+    ):
+        plot_img(img_3d_rand_eye, display_mode=display_mode, cut_coords=5)
+
+    with pytest.raises(ValueError, match="The number cut_coords"):
+        plot_img(
+            img_3d_rand_eye,
+            display_mode=display_mode,
+            cut_coords=[3, 5],
+        )
