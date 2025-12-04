@@ -1068,17 +1068,23 @@ class ThreeDSlicer(BaseSlicer):
                 cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
             ]
         else:
-            cls._check_cut_coords(img, cut_coords)
+            bounds = cls._get_data_bounds(img)
+            cls._check_cut_coords_in_bounds(bounds, cut_coords)
         return cut_coords
 
     @classmethod
-    def _check_cut_coords(cls, img, cut_coords):
+    def _check_cut_coords_in_bounds(cls, bounds, cut_coords):
         """
+        Check if the specified `cut_coords` is within the specified `bounds`.
 
         Parameters
         ----------
-        img : 3D :class:`~nibabel.nifti1.Nifti1Image`
-            The brain map.
+        bounds:
+            3D bounds to check if the specified cut_coords is inside these
+        bounds.
+
+        cut_coords:
+            cut_coords to check
         """
         if isinstance(cut_coords, numbers.Number):
             raise ValueError(
@@ -1095,7 +1101,7 @@ class ThreeDSlicer(BaseSlicer):
             )
 
         # TODO put check if image is not None
-        bounds_x, bounds_y, bounds_z = cls._get_data_bounds(img)
+        bounds_x, bounds_y, bounds_z = bounds
 
         x_in = bounds_x[0] <= cut_coords[0] <= bounds_x[1]
         y_in = bounds_y[0] <= cut_coords[1] <= bounds_y[1]
