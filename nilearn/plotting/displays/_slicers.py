@@ -103,6 +103,34 @@ class BaseSlicer:
         data = _get_data(img)
         return get_bounds(data.shape, img.affine)
 
+    @classmethod
+    def _check_cut_coords(cls, cut_coords):
+        """Check if the specified cut_coords is compatible with this slicer
+        type.
+
+        Parameters
+        ----------
+        cut_coords:
+            cut_coords to check
+        """
+        raise NotImplementedError()
+
+    @classmethod
+    def _check_cut_coords_in_bounds(cls, bounds, cut_coords):
+        """
+        Check if the specified `cut_coords` is within the specified `bounds`.
+
+        Parameters
+        ----------
+        bounds:
+            3D bounds to check if the specified cut_coords is inside these
+        bounds.
+
+        cut_coords:
+            cut_coords to check
+        """
+        raise NotImplementedError()
+
     @property
     def brain_color(self):
         """Return brain color."""
@@ -1073,18 +1101,9 @@ class ThreeDSlicer(BaseSlicer):
         return cut_coords
 
     @classmethod
-    def _check_cut_coords_in_bounds(cls, bounds, cut_coords):
-        """
-        Check if the specified `cut_coords` is within the specified `bounds`.
-
-        Parameters
-        ----------
-        bounds:
-            3D bounds to check if the specified cut_coords is inside these
-        bounds.
-
-        cut_coords:
-            cut_coords to check
+    def _check_cut_coords(cls, cut_coords):
+        """Check if the specified cut_coords is compatible with this slicer
+        type.
         """
         if isinstance(cut_coords, numbers.Number):
             raise ValueError(
@@ -1100,6 +1119,21 @@ class ThreeDSlicer(BaseSlicer):
                 f"for that display_mode ({len(cls._cut_displayed)}). "
             )
 
+    @classmethod
+    def _check_cut_coords_in_bounds(cls, bounds, cut_coords):
+        """
+        Check if the specified `cut_coords` is within the specified `bounds`.
+
+        Parameters
+        ----------
+        bounds:
+            3D bounds to check if the specified cut_coords is inside these
+        bounds.
+
+        cut_coords:
+            cut_coords to check
+        """
+        cls._check_cut_coords(cut_coords)
         coord_in = []
 
         for c in sorted(cls._cut_displayed):
