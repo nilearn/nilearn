@@ -1100,29 +1100,31 @@ class ThreeDSlicer(BaseSlicer):
                 f"for that display_mode ({len(cls._cut_displayed)}). "
             )
 
-        # TODO put check if image is not None
-        bounds_x, bounds_y, bounds_z = bounds
+        coord_in = []
 
-        x_in = bounds_x[0] <= cut_coords[0] <= bounds_x[1]
-        y_in = bounds_y[0] <= cut_coords[1] <= bounds_y[1]
-        z_in = bounds_z[0] <= cut_coords[2] <= bounds_z[1]
+        for c in sorted(cls._cut_displayed):
+            index = "xyz".find(c)
+            coord_in.append(
+                bounds[index][0] <= cut_coords[index]
+                and cut_coords[index] <= bounds[index][1]
+            )
 
         # if non of the coordinates is in bounds
         # raise error
-        if not (x_in or y_in or z_in):
+        if not any(coord_in):
             raise ValueError(
                 f"Specified {cut_coords=} is out of the bounds of the "
                 "image. Please specify coordinates within the bounds:\n"
-                f"{bounds_x}-{bounds_y}-{bounds_z}.\n"
+                f"{bounds}.\n"
             )
         # if at least one (but not all) of the coordinates is out of the
         # bounds, warn user
-        if not x_in or not y_in or not z_in:
+        if any(coord_in) and not all(coord_in):
             warnings.warn(
                 (
                     f"At least one of the specified {cut_coords=} "
                     "seem to be out of the bounds of the image:\n"
-                    f"{bounds_x}-{bounds_y}-{bounds_z}.\n"
+                    f"{bounds}.\n"
                 ),
                 UserWarning,
                 stacklevel=find_stack_level(),
