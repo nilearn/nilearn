@@ -19,8 +19,10 @@ HIGHLIGHTS
  | - requests -- 2.30.0
  |
  | **A new dependency has been added:**
- | - Jinja2 >= 3.1.2
+ | - jinja2 -- 3.1.2
  |
+ | **A dependency has been removed:**
+ | - lxml
 
 
 NEW
@@ -41,7 +43,7 @@ Fixes
 
 - :bdg-dark:`Code` Raise warning when :func:`~nilearn.image.crop_img` is called with an empty image and return the original image (:gh:`5837` by `Hande Gözükan`_).
 
-- :Fix :func:~nilearn.plotting.plot_img error handling when cut coordinates are out of bounds (:gh:5861) by :user:isha822.
+- :bdg-dark:`Code` Better handling of errors during plotting when cut coordinates are out of bounds (:gh:`5861` by `Sanjana Soni`_).
 
 Enhancements
 ------------
@@ -129,6 +131,11 @@ Changes
 
 - :bdg-danger:`Deprecation` Set ``copy_header`` default to True in :func:`~image` functions (:gh:`5656` by `Rémi Gau`_ and `Himanshu Aggarwal`_).
 
+Documentation
+-------------
+
+- :bdg-primary:`Doc` Clarified that ``nilearn.datasets.fetch_*`` functions do not re-download datasets already present locally. Added cross-reference to dataset storage documentation. (:gh:`5690` by `Victoria McCray`_)
+
 - :bdg-primary:`Doc` Home-made sphinx directives are used instead of default sphinx directives relative to version changes (``versionadded``, ``versionchanged``, ``deprecated``...) to more easily distinguish between feature changes introduced in Nilearn versus those introduced in upstream dependencies (like in Scikit-Learn) (:gh:`5654` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Change cmap to ``'RdBu_r'`` for :func:`~plotting.plot_contrast_matrix` (:gh:`5780` by `Hande Gözükan`_).
@@ -136,3 +143,5 @@ Changes
 - :bdg-info:`Plotting` Change background to ``'black'`` for functions :func:`~plotting.plot_img_comparison` and :func:`~plotting.plot_bland_altman` (:gh:`5785` by `Hande Gözükan`_).
 
 - :bdg-dark:`Code` Reports (for maskers, GLMs...)  can now be generated even when no plotting engine is available (:gh:`5757` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Dependency on ``lxml`` has been removed as it is only used during testing (:gh:`5862` by `Rémi Gau`_).

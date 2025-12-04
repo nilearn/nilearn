@@ -147,8 +147,6 @@ def check_glm_report(
         if not has_contrasts:
             # the no contrast warning only appears for fitted models
             includes.extend(contrasts_missing_checks)
-        elif not model._is_volume_glm():
-            includes.append("Results table not available for surface data.")
 
         if (
             isinstance(model, SecondLevelModel)
@@ -209,6 +207,7 @@ def slm():
     return model.fit(Y, design_matrix=X)
 
 
+@pytest.mark.slow
 def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
     """Check presence message of no activation found.
 

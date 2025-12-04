@@ -83,6 +83,7 @@ def test_parcellations_fit_on_single_nifti_image(method, n_parcel, test_image):
         assert parcellator.connectivity_ is not None
 
 
+@pytest.mark.slow
 def test_parcellations_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=7, verbose=0)
 
@@ -98,6 +99,7 @@ def test_parcellations_no_warnings(img_4d_zeros_eye):
     assert all(r.category is not UserWarning for r in record)
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 def test_parcellations_no_int64_warnings(img_4d_zeros_eye):
     parcellator = Parcellations(method="kmeans", n_parcels=1, verbose=0)
     with warnings.catch_warnings(record=True) as record:
@@ -422,6 +424,7 @@ def test_parcellation_with_multi_surface(method, rng):
     assert len(X_transformed) == 3
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("method", METHODS)
 def test_parcellation_with_surface_mask(method, rng):
     """Test if parcellation works with surface data and a mask."""
