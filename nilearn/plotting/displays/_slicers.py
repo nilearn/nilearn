@@ -1213,6 +1213,11 @@ class OrthoSlicer(ThreeDSlicer):
     _default_figsize: ClassVar[list[float]] = [2.2, 3.5]
 
     def _init_axes(self, **kwargs):
+        # QUESTION : I removed cut_coords check from here
+        # if this class is always to be initialized using factory method and by
+        # specifying image, there is no inconvenience.
+        # However if it can be initialized using class constructor, this check
+        # should be replaced here in all slicer._init_axes methods.
         x0, y0, x1, y1 = self.rect
         facecolor = "k" if self._black_bg else "w"
         # Create our axes:
