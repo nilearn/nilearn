@@ -567,5 +567,4 @@ def test_report_make_glm_deprecation_warning(flm, contrasts):
         make_glm_report(
             flm,
             contrasts=contrasts,
-            threshold=3.9,
         )
