@@ -8,14 +8,19 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal, assert_equal
 from scipy.stats import norm
 
-from nilearn.conftest import _shape_3d_default
+from nilearn.datasets import (
+    load_fsaverage_data,
+    load_sample_motor_activation_image,
+)
 from nilearn.glm import (
     cluster_level_inference,
     fdr_threshold,
     threshold_stats_img,
 )
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD, _compute_hommel_value
-from nilearn.image import get_data
+from nilearn.image import get_data, new_img_like
+from nilearn.surface.surface import PolyData
+from nilearn.surface.surface import get_data as get_surf_data
 
 
 def test_fdr(rng):
@@ -50,12 +55,14 @@ def test_fdr_error(rng):
         fdr_threshold(x, 1.5)
 
 
+def _data_norm_isf(shape):
+    p = np.prod(shape)
+    return norm.isf(np.linspace(1.0 / p, 1.0 - 1.0 / p, p)).reshape(shape)
+
+
 @pytest.fixture
-def data_norm_isf():
-    p = np.prod(_shape_3d_default())
-    return norm.isf(np.linspace(1.0 / p, 1.0 - 1.0 / p, p)).reshape(
-        _shape_3d_default()
-    )
+def data_norm_isf(shape_3d_default):
+    return _data_norm_isf(shape_3d_default)
 
 
 @pytest.mark.parametrize("height_control", [None, "fpr", "fdr", "bonferroni"])
@@ -236,17 +243,20 @@ def test_hommel(alpha, expected):
 
 
 @pytest.mark.parametrize(
-    "kwargs, expected",
+    "kwargs, expected, expected_n_unique_values",
     [
         (
             {"threshold": DEFAULT_Z_THRESHOLD, "verbose": 1},
             8,
+            2,
         ),  # standard case (also test verbose)
-        ({"threshold": 6}, 0),  # high threshold
-        ({"threshold": [3, 6]}, 8),  # list of thresholds
+        ({"threshold": 6}, 0, 1),  # high threshold
+        ({"threshold": [3, 6]}, 8, 2),  # list of thresholds
     ],
 )
-def test_all_resolution_inference(data_norm_isf, affine_eye, kwargs, expected):
+def test_all_resolution_inference(
+    data_norm_isf, affine_eye, kwargs, expected, expected_n_unique_values
+):
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     stat_img = Nifti1Image(data, affine_eye)
@@ -255,6 +265,52 @@ def test_all_resolution_inference(data_norm_isf, affine_eye, kwargs, expected):
     vals = get_data(th_map)
 
     assert np.sum(vals > 0) == expected
+    # only one unique non zero value: one per cluster
+    assert len(np.unique(vals)) == expected_n_unique_values
+
+
+@pytest.mark.parametrize(
+    "kwargs, expected_left, expected_right, expected_n_unique_values",
+    [
+        (
+            {"threshold": DEFAULT_Z_THRESHOLD, "verbose": 1},
+            2,
+            3,
+            2,
+        ),  # standard case (also test verbose)
+        ({"threshold": 6}, 0, 0, 1),  # high threshold
+        ({"threshold": [3, 6]}, 2, 3, 2),  # list of thresholds
+    ],
+)
+def test_all_resolution_inference_surface(
+    surf_img_1d,
+    kwargs,
+    expected_left,
+    expected_right,
+    expected_n_unique_values,
+):
+    """Check cluster_level_inference that runs on each hemisphere."""
+    data_left = _data_norm_isf(surf_img_1d.data.parts["left"].shape)
+    data_left[2:4] = 5.0
+    data_right = _data_norm_isf(surf_img_1d.data.parts["right"].shape)
+    data_right[2:5] = 5.0
+
+    stat_img = new_img_like(
+        surf_img_1d, PolyData(left=data_left, right=data_right)
+    )
+
+    th_map = cluster_level_inference(stat_img, alpha=0.05, **kwargs)
+
+    assert np.sum(th_map.data.parts["left"] > 0) == expected_left
+    # only one unique non zero value: one per cluster
+    assert (
+        len(np.unique(th_map.data.parts["left"])) == expected_n_unique_values
+    )
+
+    assert np.sum(th_map.data.parts["right"] > 0) == expected_right
+    assert (
+        len(np.unique(th_map.data.parts["right"])) == expected_n_unique_values
+    )
 
 
 def test_all_resolution_inference_with_mask(
@@ -273,6 +329,54 @@ def test_all_resolution_inference_with_mask(
     vals = get_data(th_map)
 
     assert np.sum(vals > 0) == 8
+
+
+@pytest.mark.parametrize(
+    "threshold, expected_n_unique_values",
+    [
+        (2.5, 3),
+        ([2.5, 3.5], 6),
+        ([2.5, 3.0, 3.5], 8),
+    ],
+)
+def test_cluster_level_inference_realistic_data(
+    threshold, expected_n_unique_values
+):
+    """Check cluster_level_inference on realistic data."""
+    stat_img = load_sample_motor_activation_image()
+    th_map = cluster_level_inference(stat_img, threshold=threshold)
+    vals = th_map.get_fdata()
+    assert len(np.unique(vals)) == expected_n_unique_values
+
+
+def test_all_resolution_inference_surface_mask(surf_img_1d):
+    """Check cluster_level_inference that runs on each hemisphere.
+
+    Here mask excludes the right hemisphere.
+    """
+    data_left = _data_norm_isf(surf_img_1d.data.parts["left"].shape)
+    data_left[2:4] = 5.0
+    data_right = _data_norm_isf(surf_img_1d.data.parts["right"].shape)
+    data_right[2:5] = 5.0
+    stat_img = new_img_like(
+        surf_img_1d, {"left": data_left, "right": data_right}
+    )
+
+    mask_left = np.ones(surf_img_1d.data.parts["left"].shape)
+    mask_right = np.zeros(surf_img_1d.data.parts["right"].shape)
+    mask_img = new_img_like(
+        surf_img_1d, data={"left": mask_left, "right": mask_right}
+    )
+
+    th_map = cluster_level_inference(
+        stat_img,
+        mask_img=mask_img,
+        threshold=DEFAULT_Z_THRESHOLD,
+        alpha=0.05,
+    )
+
+    assert np.sum(th_map.data.parts["left"] > 0) == 2
+    assert np.sum(th_map.data.parts["right"] > 0) == 0
 
 
 def test_all_resolution_inference_one_voxel(data_norm_isf, affine_eye):
@@ -305,8 +409,10 @@ def test_all_resolution_inference_one_sided(
 
 
 @pytest.mark.parametrize("alpha", [-1, 2])
-def test_all_resolution_inference_errors(alpha, data_norm_isf, affine_eye):
-    # test aberrant alpha
+def test_all_resolution_inference_alpha_errors(
+    alpha, data_norm_isf, affine_eye
+):
+    """Test aberrant alpha."""
     data = data_norm_isf
     stat_img = Nifti1Image(data, affine_eye)
 
@@ -316,11 +422,27 @@ def test_all_resolution_inference_errors(alpha, data_norm_isf, affine_eye):
         )
 
 
+@pytest.mark.parametrize("threshold", [-1, [-1, 2]])
+def test_all_resolution_inference_threshold_errors(
+    data_norm_isf, affine_eye, threshold
+):
+    """Test aberrant threshold."""
+    data = data_norm_isf
+    stat_img = Nifti1Image(data, affine_eye)
+
+    with pytest.raises(
+        ValueError,
+        match=("'threshold' cannot be negative or contain negative values"),
+    ):
+        cluster_level_inference(stat_img, threshold=threshold)
+
+
+@pytest.mark.parametrize("two_sided", [True, False])
 @pytest.mark.parametrize("control", ["fdr", "bonferroni"])
 def test_all_resolution_inference_height_control(
-    control, affine_eye, img_3d_ones_eye, data_norm_isf
+    control, affine_eye, img_3d_ones_eye, data_norm_isf, two_sided
 ):
-    # two-side fdr threshold + bonferroni
+    """Test FDR threshold/bonferroni with one/two sided."""
     data = data_norm_isf
     data[2:4, 5:7, 6:8] = 5.0
     data[0:2, 0:2, 6:8] = -5.0
@@ -332,22 +454,15 @@ def test_all_resolution_inference_height_control(
         alpha=0.05,
         height_control=control,
         cluster_threshold=5,
+        two_sided=two_sided,
     )
-    vals = get_data(th_map)
-    assert_equal(np.sum(vals > 0), 8)
-    assert_equal(np.sum(vals < 0), 8)
-    th_map, _ = threshold_stats_img(
-        stat_img,
-        mask_img=img_3d_ones_eye,
-        alpha=0.05,
-        height_control=control,
-        cluster_threshold=5,
-        two_sided=False,
-    )
-    vals = get_data(th_map)
 
+    vals = get_data(th_map)
     assert_equal(np.sum(vals > 0), 8)
-    assert_equal(np.sum(vals < 0), 0)
+    if two_sided:
+        assert_equal(np.sum(vals < 0), 8)
+    else:
+        assert_equal(np.sum(vals < 0), 0)
 
 
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
@@ -365,6 +480,24 @@ def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
     threshold_stats_img(
         surf_img_1d, height_control="bonferroni", mask_img=surf_mask_1d
     )
+
+
+@pytest.mark.parametrize(
+    "threshold, expected_n_unique_values",
+    [
+        (2.5, 19),
+        ([2.5, 3.5], 23),
+        ([2.5, 3.0, 3.5], 27),
+    ],
+)
+def test_cluster_level_inference_surface_realistic_data(
+    threshold, expected_n_unique_values
+):
+    """Check cluster_level_inference on realistic data."""
+    stat_img = load_fsaverage_data(data_type="thickness")
+    th_map = cluster_level_inference(stat_img, threshold=threshold)
+    vals = get_surf_data(th_map)
+    assert len(np.unique(vals)) == expected_n_unique_values
 
 
 def test_threshold_stats_img_surface_output(surf_img_1d):
