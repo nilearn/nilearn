@@ -189,7 +189,7 @@ If the root mean square of the residual is larger than a user-specified toleranc
 the test will fail.
 
 Failures are expected at times when the output is changed intentionally
-(for example when fixing a bug,  adding features, bumping the python or Matplotlib version...)
+(for example when fixing a bug, adding features, bumping the python or Matplotlib version...)
 for a particular function.
 In such cases, the output needs to be manually updated and visually checked
 as part of the PR review process and to set a new baseline for comparison.
@@ -201,6 +201,19 @@ with the oldest supported Python and Matplotlib:
 
     pip install tox
     tox run -e pytest_mpl_generate
+
+Datasets
+========
+
+The following datasets are "curated" by the Nilearn team.
+
+Structural
+----------
+
+- ICBM 152 template : https://osf.io/hr36b/files/7pj92
+- fsaverage3/4/6/7 templates: https://osf.io/mk53n
+- fsaverage5 template: https://github.com/nilearn/nilearn/tree/main/nilearn/datasets/data/fsaverage5
+
 
 How to make a release?
 ======================
