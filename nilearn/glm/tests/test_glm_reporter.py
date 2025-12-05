@@ -220,6 +220,16 @@ def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
     )
 
 
+def test_flm_report_invalid_param(flm, contrasts):
+    """Check if a warning is raised when first_level_contrast is specified to
+    generate_report.
+    """
+    with pytest.warns(UserWarning, match="'first_level_contrast' is ignored"):
+        flm.generate_report(
+            contrasts=contrasts, first_level_contrast=contrasts
+        )
+
+
 @pytest.mark.parametrize("model", [FirstLevelModel, SecondLevelModel])
 @pytest.mark.parametrize("bg_img", [_img_mask_mni(), _make_surface_mask()])
 def test_empty_reports(tmp_path, model, bg_img):

@@ -521,6 +521,14 @@ class BaseGLM(CacheMixin, BaseEstimator):
         """
         check_params(locals())
 
+        if self._is_first_level_glm() and first_level_contrast is not None:
+            warnings.warn(
+                "'first_level_contrast' is ignored for FirstLevelModel."
+                "Setting first_level_contrast=None.",
+                stacklevel=find_stack_level(),
+            )
+            first_level_contrast = None
+
         if not hasattr(self, "_reporting_data"):
             self._reporting_data: dict[str, Any] = {
                 "trial_types": [],
