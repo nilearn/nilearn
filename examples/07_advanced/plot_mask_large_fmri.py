@@ -144,7 +144,7 @@ from nilearn.maskers import NiftiMasker
 
 
 def nifti_masker_single(fmri, mask):
-    return NiftiMasker(mask_img=mask).fit_transform(fmri)
+    return NiftiMasker(mask_img=mask, verbose=1).fit_transform(fmri)
 
 
 def nifti_masker_parallel_path(fmri_path, mask_paths):

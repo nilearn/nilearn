@@ -46,6 +46,7 @@ masker = NiftiMasker(
     memory_level=1,
     mask_strategy="epi",
     standardize="zscore_sample",
+    verbose=1,
 )
 data_masked = masker.fit_transform(func_filename)
 

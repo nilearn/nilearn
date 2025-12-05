@@ -57,6 +57,7 @@ nifti_masker = NiftiMasker(
     smoothing_fwhm=4,
     memory="nilearn_cache",
     memory_level=1,
+    verbose=1,
 )
 X = nifti_masker.fit_transform(func_filename)
 

@@ -1973,7 +1973,8 @@ def plot_carpet(
             if label_dtype != atlas_values.dtype:
                 logger.log(
                     "Coercing atlas_values to "
-                    f"{label_dtype.__class__.__name__}"
+                    f"{label_dtype.__class__.__name__}",
+                    verbose=1,
                 )
                 atlas_values = atlas_values.astype(type(label_dtype))
 

@@ -132,7 +132,7 @@ def generate_atlas_look_up_table(
     return lut
 
 
-def check_look_up_table(lut: pd.DataFrame, atlas, strict=False, verbose=1):
+def check_look_up_table(lut: pd.DataFrame, atlas, strict=False, verbose=0):
     """Validate atlas look up table (LUT).
 
     Make sure it complies with BIDS requirements.

@@ -57,7 +57,7 @@ print(f"Actual number of subjects after quality check: {int(n_samples)}")
 # %%
 # Mask data
 nifti_masker = NiftiMasker(
-    smoothing_fwhm=5, memory="nilearn_cache", memory_level=1
+    smoothing_fwhm=5, memory="nilearn_cache", memory_level=1, verbose=1
 )
 fmri_masked = nifti_masker.fit_transform(contrast_map_filenames)
 

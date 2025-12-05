@@ -47,6 +47,7 @@ masker = NiftiMapsMasker(
     memory_level=1,
     standardize="zscore_sample",
     standardize_confounds=True,
+    verbose=1,
 )
 
 masked_data = list(
@@ -111,7 +112,6 @@ gs = GridSearchCV(
     param_grid,
     scoring="accuracy",
     cv=cv,
-    verbose=1,
     refit=False,
     n_jobs=2,
 )

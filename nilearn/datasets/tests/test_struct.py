@@ -7,6 +7,7 @@ import pytest
 from nibabel import Nifti1Image
 from sklearn.utils import Bunch
 
+from nilearn._utils.helpers import is_windows_platform
 from nilearn.datasets.struct import (
     fetch_icbm152_2009,
     fetch_icbm152_brain_gm_mask,
@@ -22,6 +23,7 @@ from nilearn.datasets.struct import (
     load_mni152_wm_template,
 )
 from nilearn.datasets.tests._testing import (
+    check_fetcher_verbosity,
     check_type_fetcher,
     dict_to_archive,
     list_to_archive,
@@ -29,7 +31,7 @@ from nilearn.datasets.tests._testing import (
 from nilearn.surface import PolyMesh, SurfaceImage
 
 
-def test_fetch_icbm152_2009(tmp_path, request_mocker):
+def test_fetch_icbm152_2009(tmp_path, request_mocker, capsys):
     dataset = fetch_icbm152_2009(data_dir=str(tmp_path), verbose=0)
 
     check_type_fetcher(dataset)
@@ -44,6 +46,8 @@ def test_fetch_icbm152_2009(tmp_path, request_mocker):
     assert isinstance(dataset.t2_relax, str)
     assert isinstance(dataset.wm, str)
     assert request_mocker.url_count == 1
+
+    check_fetcher_verbosity(fetch_icbm152_2009, capsys, data_dir=tmp_path)
 
 
 def _make_oasis_data(dartel=True):
@@ -65,7 +69,8 @@ def _make_oasis_data(dartel=True):
     return dict_to_archive(data)
 
 
-def test_fetch_oasis_vbm(tmp_path, request_mocker):
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
+def test_fetch_oasis_vbm(tmp_path, request_mocker, capsys):
     """Test fetching OASIS VBM dataset with dartel version."""
     request_mocker.url_mapping["*archive_dartel.tgz*"] = _make_oasis_data()
 
@@ -80,9 +85,10 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker):
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 1
 
+    check_fetcher_verbosity(fetch_oasis_vbm, capsys, data_dir=tmp_path)
 
-@pytest.mark.flaky(reruns=5, reruns_delay=2)
-def test_fetch_oasis_vbm_dartel_false(tmp_path, request_mocker):
+
+def test_fetch_oasis_vbm_dartel_false(tmp_path, request_mocker, capsys):
     """Test fetching OASIS VBM dataset without dartel version."""
     request_mocker.url_mapping["*archive.tgz*"] = _make_oasis_data(False)
 
@@ -98,6 +104,10 @@ def test_fetch_oasis_vbm_dartel_false(tmp_path, request_mocker):
     assert isinstance(dataset.ext_vars, pd.DataFrame)
     assert isinstance(dataset.data_usage_agreement, str)
     assert request_mocker.url_count == 1
+
+    check_fetcher_verbosity(
+        fetch_oasis_vbm, capsys, data_dir=tmp_path, dartel_version=False
+    )
 
 
 @pytest.mark.parametrize(

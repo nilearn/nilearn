@@ -61,6 +61,7 @@ nifti_masker = NiftiMasker(
     mask_img=mask_filename,
     memory="nilearn_cache",  # cache options
     memory_level=1,
+    verbose=1,
 )
 func_filename = haxby_dataset.func[0]
 func_reduced = index_img(func_filename, condition_mask)

@@ -111,7 +111,7 @@ def filter_and_extract(
     target_shape = parameters.get("target_shape")
     target_affine = parameters.get("target_affine")
     if target_shape is not None or target_affine is not None:
-        logger.log("Resampling images")
+        logger.log("Resampling images", verbose=verbose)
 
         imgs = cache(
             resample_img,

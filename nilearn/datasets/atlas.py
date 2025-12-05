@@ -1983,8 +1983,8 @@ def fetch_atlas_surf_destrieux(
     lut = generate_atlas_look_up_table(
         "fetch_atlas_surf_destrieux", name=labels
     )
-    check_look_up_table(lut=lut, atlas=annot_left[0])
-    check_look_up_table(lut=lut, atlas=annot_right[0])
+    check_look_up_table(lut=lut, atlas=annot_left[0], verbose=verbose)
+    check_look_up_table(lut=lut, atlas=annot_right[0], verbose=verbose)
 
     return Bunch(
         labels=labels,
@@ -2419,7 +2419,7 @@ class Atlas(Bunch):
 
             return None
 
-        check_look_up_table(lut=lut, atlas=maps)
+        check_look_up_table(lut=lut, atlas=maps, verbose=1)
 
         super().__init__(
             maps=maps,
