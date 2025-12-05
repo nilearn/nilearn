@@ -16,6 +16,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import logger  # TODO just import log
 from nilearn._utils.cache_mixin import CacheMixin
+from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
@@ -357,6 +358,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             "model_level_mapping": model_level_mapping,
         }
 
+    @fill_doc
     def generate_report(
         self,
         contrasts=None,
