@@ -84,6 +84,23 @@ def _glm_model_attributes_to_dataframe(model):
     return model_attributes
 
 
+def _load_bg_img(bg_img, is_volume_glm):
+    if bg_img == "MNI152TEMPLATE":
+        try:
+            from nilearn.plotting.image.utils import (  # type: ignore[assignment]
+                MNI152TEMPLATE,
+            )
+
+            bg_img = MNI152TEMPLATE if is_volume_glm else None
+        except ImportError:
+            bg_img = None
+    if not is_volume_glm and bg_img and not isinstance(bg_img, SurfaceImage):
+        raise TypeError(
+            "'bg_img' must a SurfaceImage instance. "
+            f"Got {bg_img.__class__.__name__}"
+        )
+
+
 def _mask_to_plot(model, bg_img, cut_coords):
     """Plot a mask image and creates PNG code of it.
 

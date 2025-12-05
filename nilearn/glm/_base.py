@@ -25,6 +25,7 @@ from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._version import __version__
 from nilearn.glm._reporting_utils import (
     _glm_model_attributes_to_dataframe,
+    _load_bg_img,
     _make_stat_maps_contrast_clusters,
     _mask_to_plot,
     _turn_into_full_path,
@@ -578,25 +579,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 else self.design_matrices_
             )
 
-            if bg_img == "MNI152TEMPLATE":
-                try:
-                    from nilearn.plotting.image.utils import (  # type: ignore[assignment]
-                        MNI152TEMPLATE,
-                    )
-
-                    bg_img = MNI152TEMPLATE if self._is_volume_glm() else None
-                except ImportError:
-                    bg_img = None
-            if (
-                not self._is_volume_glm()
-                and bg_img
-                and not isinstance(bg_img, SurfaceImage)
-            ):
-                raise TypeError(
-                    "'bg_img' must a SurfaceImage instance. "
-                    f"Got {bg_img.__class__.__name__}"
-                )
-
+            bg_img = _load_bg_img(bg_img, self._is_volume_glm())
             mask_plot = _mask_to_plot(self, bg_img, cut_coords)
 
             # We try to rely on the content of glm object only
