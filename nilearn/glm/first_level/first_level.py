@@ -11,6 +11,7 @@ from collections.abc import Iterable
 from pathlib import Path
 from warnings import warn
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from joblib import Memory, Parallel, delayed
@@ -57,7 +58,7 @@ from nilearn.interfaces.bids.query import (
 )
 from nilearn.interfaces.bids.utils import bids_entities, check_bids_label
 from nilearn.interfaces.fmriprep.load_confounds import load_confounds
-from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.maskers import NiftiMasker, NiftiSpheresMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike, Tr
@@ -982,9 +983,11 @@ class FirstLevelModel(BaseGLM):
         self._reporting_data = {
             "trial_types": [],
             "noise_model": self.noise_model,
-            "hrf_model": "finite impulse response"
-            if self.hrf_model == "fir"
-            else self.hrf_model,
+            "hrf_model": (
+                "finite impulse response"
+                if self.hrf_model == "fir"
+                else self.hrf_model
+            ),
             "drift_model": drift_model_str,
         }
 
@@ -1320,6 +1323,168 @@ class FirstLevelModel(BaseGLM):
             self.masker_ = self.mask_img
 
         self.n_elements_ = self.masker_.n_elements_
+
+    def _plotting_pred_and_res(
+        self,
+        observed_ts,
+        predicted_ts,
+        residuals_ts,
+        figsize=(10, 8),
+        close=True,
+    ):
+        """Helper function to plot observed vs predicted signal and residuals.
+
+        Parameters
+        ----------
+        observed_ts : array-like
+            The observed time series.
+        predicted_ts : array-like
+            The predicted time series.
+        residuals_ts : array-like
+            The residuals time series.
+        figsize : tuple, optional
+            Size of the figure. Default is (10, 6).
+        close : bool, optional
+            Whether to close the figure after creation. Default is True.
+
+        Returns
+        -------
+        fig : matplotlib.figure.Figure
+            The generated figure.
+        """
+        # Generate a time axis
+        n_timepoints = len(observed_ts)
+        time_axis = np.arange(n_timepoints)
+        x_label = "Time"
+
+        fig, axes = plt.subplots(3, 1, figsize=figsize)
+
+        # Plot observed vs predicted signal
+        axes[0].plot(time_axis, observed_ts, label="Observed", color="blue")
+        axes[0].plot(
+            time_axis, predicted_ts, label="Predicted", color="orange"
+        )
+        axes[0].axhline(y=0, color="black", linestyle="--", alpha=0.7)
+        axes[0].set_title("Observed vs Predicted Signal")
+        axes[0].set_ylabel("Signal Intensity")
+        axes[0].legend()
+        axes[0].set_xlabel(x_label)
+
+        # Plot residuals
+        axes[1].plot(time_axis, residuals_ts, label="Residuals", color="red")
+        axes[1].axhline(y=0, color="black", linestyle="--", alpha=0.7)
+        axes[1].set_title("Residuals Over Time")
+        axes[1].set_ylabel("Residuals")
+        axes[1].set_xlabel(x_label)
+        axes[1].legend()
+
+        # Center the y-axis around zero
+        max_abs_residual = np.max(np.abs(residuals_ts))
+        axes[1].set_ylim(-max_abs_residual * 1.1, max_abs_residual * 1.1)
+
+        # Plot histogram of residuals
+        axes[2].hist(residuals_ts, bins=30, color="green", alpha=0.7)
+        axes[2].set_title("Histogram of Residuals")
+        axes[2].set_xlabel("Residuals")
+        axes[2].set_ylabel("Frequency")
+
+        plt.tight_layout()
+        if close:
+            plt.close(fig)
+        return fig
+
+    def plot_predicted_signal_and_residuals(
+        self,
+        coords=(0, 0, 0),
+        masker=None,
+        radius=3.0,
+        figsize=(10, 8),
+        show=False,
+    ):
+        """Plot the predicted time series and residuals for a voxel \
+        or small region.
+
+        The :term:`GLM` must be fitted and have the computed design
+        matrix(ces).
+
+        Parameters
+        ----------
+        coords: tuple of coordinates
+            Coordinates of the voxel or region center.
+        masker : NiftiMasker or NiftiSpheresMasker, optional
+            Custom masker used to extract the time series. If None, a
+            :class:`~nilearn.maskers.NiftiSpheresMasker` centered on `coords`
+            with radius `radius` is created.
+        radius : float, optional
+            Radius of the sphere if `masker` is None. Default is 3mm.
+        figsize : tuple, optional
+            Size of the figure. Default is (10, 6).
+        show : bool, optional
+            Whether to display the figure. Default is False.
+
+        Returns
+        -------
+        timeseries_df : :class:`pandas.DataFrame`
+            DataFrame containing the observed, predicted, and residuals \
+            time series.
+        fig : matplotlib.figure.Figure
+            The generated figure.
+
+        Notes
+        -----
+        This method requires that the model was fitted with
+        ``minimize_memory=False``, since the voxelwise predicted signal
+        and residuals are only stored in that mode.
+
+        """
+        check_is_fitted(self)
+
+        if self.minimize_memory:
+            raise ValueError(
+                "To plot predicted signal and residuals, "
+                "the `FirstLevelModel`-object needs to store "
+                "there attributes. "
+                "To do so, set `minimize_memory` to `False` "
+                "when initializing the `FirstLevelModel`-object."
+            )
+
+        # Create masker if needed
+        if masker is None:
+            masker = NiftiSpheresMasker([coords], radius=radius)
+            masker.fit()
+
+        # Get observed, predicted, and residual time series
+        y_pred = self._get_element_wise_model_attribute(
+            "predicted", result_as_time_series=True
+        )
+        resid = self._get_element_wise_model_attribute(
+            "residuals", result_as_time_series=True
+        )
+
+        # Extract time series for the observed, predicted, and residuals
+        predicted_ts = masker.transform(y_pred[0])
+        residuals_ts = masker.transform(resid[0])
+        observed_ts = predicted_ts + residuals_ts
+
+        # Plot the results
+        fig = self._plotting_pred_and_res(
+            observed_ts.flatten(),
+            predicted_ts.flatten(),
+            residuals_ts.flatten(),
+            figsize=figsize,
+            close=not show,
+        )
+        if show:
+            plt.show(fig)
+
+        timeseries_df = pd.DataFrame(
+            {
+                "observed": observed_ts.flatten(),
+                "predicted": predicted_ts.flatten(),
+                "residuals": residuals_ts.flatten(),
+            }
+        )
+        return timeseries_df, fig
 
     @fill_doc
     def generate_report(
