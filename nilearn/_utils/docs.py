@@ -497,7 +497,8 @@ first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
       from the :class:`~pandas.DataFrame` ``map_name`` column.
       (it has to be a 't' contrast).
 
-    This parameter is ignored for all other cases.
+    When the model is a :class:`~nilearn.glm.first_level.FirstLevelModel`:
+    This parameter is ignored.
 """
 
 # fwhm
