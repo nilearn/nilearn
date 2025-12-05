@@ -91,46 +91,6 @@ class BaseSlicer:
         }
         self._init_axes(**kwargs)
 
-    @classmethod
-    def _get_data_bounds(cls, img):
-        """Return bounds of the image.
-
-        Parameters
-        ----------
-        img : 3D Nifti1Image
-            The brain map.
-        """
-        data = _get_data(img)
-        return get_bounds(data.shape, img.affine)
-
-    @classmethod
-    def _check_cut_coords(cls, cut_coords):
-        """Check if the specified cut_coords is compatible with this slicer
-        type.
-
-        Parameters
-        ----------
-        cut_coords:
-            cut_coords to check
-        """
-        raise NotImplementedError()
-
-    @classmethod
-    def _check_cut_coords_in_bounds(cls, bounds, cut_coords):
-        """
-        Check if the specified `cut_coords` is within the specified `bounds`.
-
-        Parameters
-        ----------
-        bounds:
-            3D bounds to check if the specified cut_coords is inside these
-        bounds.
-
-        cut_coords:
-            cut_coords to check
-        """
-        raise NotImplementedError()
-
     @property
     def brain_color(self):
         """Return brain color."""
@@ -149,6 +109,103 @@ class BaseSlicer:
         # Implement this as a staticmethod or a classmethod when
         # subclassing
         raise NotImplementedError
+
+    @classmethod
+    def _get_data_bounds(cls, img):
+        """Return bounds of the image.
+
+        Parameters
+        ----------
+        img : 3D Nifti1Image
+            The brain map.
+        """
+        data = _get_data(img)
+        return get_bounds(data.shape, img.affine)
+
+    @classmethod
+    def _check_cut_coords_in_bounds(cls, bounds, cut_coords):
+        """
+        Check if the specified `cut_coords` is within the specified `bounds`.
+
+        Warn if at least one of the coordinates is not in the bounds.
+
+        Raise ValueError if none of the coordinates is within the bounds.
+
+        Parameters
+        ----------
+        bounds:
+            image bounds to check if the specified cut_coords is inside these
+        bounds
+
+        cut_coords:
+            cut_coords to check
+
+        Raises
+        ------
+        ValueError
+            If none of the coords is in the specified bounds.
+        """
+        coord_in = cls._get_coords_in_bounds(bounds, cut_coords)
+
+        # if non of the coordinates is in bounds
+        # raise error
+        if not any(coord_in):
+            raise ValueError(
+                f"Specified {cut_coords=} is out of the bounds of the "
+                "image. Please specify coordinates within the bounds:\n"
+                f"{bounds}.\n"
+            )
+        # if at least one (but not all) of the coordinates is out of the
+        # bounds, warn user
+        if any(coord_in) and not all(coord_in):
+            warnings.warn(
+                (
+                    f"At least one of the specified {cut_coords=} "
+                    "seem to be out of the bounds of the image:\n"
+                    f"{bounds}.\n"
+                ),
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
+
+    @classmethod
+    def _check_cut_coords(cls, cut_coords):
+        """Check if the specified cut_coords is compatible with this slicer
+        type.
+
+        Parameters
+        ----------
+        cut_coords:
+            cut_coords to check
+
+        Raises
+        ------
+        ValueError
+            If the specified cut_coords is not compatible
+        """
+        raise NotImplementedError()
+
+    @classmethod
+    def _get_coords_in_bounds(cls, bounds, cut_coords):
+        """Check for each coordinate in cut_coords if it is within the bounds
+        and return a list of boolean values corresponding to each coordinate.
+
+        Parameters
+        ----------
+        bounds:
+            image bounds to check if the specified cut_coords is inside these
+        bounds
+
+        cut_coords:
+            cut_coords to check
+
+        Return
+        ------
+        list[bool]
+            a list of boolean values corresponding to each coordinate
+        indicating if it is within the bounds or not
+        """
+        raise NotImplementedError()
 
     @classmethod
     @fill_doc  # the fill_doc decorator must be last applied
@@ -1103,9 +1160,6 @@ class ThreeDSlicer(BaseSlicer):
 
     @classmethod
     def _check_cut_coords(cls, cut_coords):
-        """Check if the specified cut_coords is compatible with this slicer
-        type.
-        """
         if isinstance(cut_coords, numbers.Number):
             raise ValueError(
                 f"cut_coords should to be a list of 3D world coordinates "
@@ -1121,19 +1175,7 @@ class ThreeDSlicer(BaseSlicer):
             )
 
     @classmethod
-    def _check_cut_coords_in_bounds(cls, bounds, cut_coords):
-        """
-        Check if the specified `cut_coords` is within the specified `bounds`.
-
-        Parameters
-        ----------
-        bounds:
-            3D bounds to check if the specified cut_coords is inside these
-        bounds.
-
-        cut_coords:
-            cut_coords to check
-        """
+    def _get_coords_in_bounds(cls, bounds, cut_coords):
         coord_in = []
 
         for c in sorted(cls._cut_displayed):
@@ -1142,27 +1184,7 @@ class ThreeDSlicer(BaseSlicer):
                 bounds[index][0] <= cut_coords[index]
                 and cut_coords[index] <= bounds[index][1]
             )
-
-        # if non of the coordinates is in bounds
-        # raise error
-        if not any(coord_in):
-            raise ValueError(
-                f"Specified {cut_coords=} is out of the bounds of the "
-                "image. Please specify coordinates within the bounds:\n"
-                f"{bounds}.\n"
-            )
-        # if at least one (but not all) of the coordinates is out of the
-        # bounds, warn user
-        if any(coord_in) and not all(coord_in):
-            warnings.warn(
-                (
-                    f"At least one of the specified {cut_coords=} "
-                    "seem to be out of the bounds of the image:\n"
-                    f"{bounds}.\n"
-                ),
-                UserWarning,
-                stacklevel=find_stack_level(),
-            )
+        return coord_in
 
 
 @fill_doc
@@ -1733,6 +1755,18 @@ class BaseStackedSlicer(BaseSlicer):
             )
 
         return cut_coords
+
+    @classmethod
+    def _get_coords_in_bounds(cls, bounds, cut_coords):
+        coord_in = []
+
+        for i, c in enumerate(sorted(cls._cut_displayed)):
+            index = "xyz".find(c)
+            coord_in.append(
+                bounds[index][0] <= cut_coords[i]
+                and cut_coords[index] <= bounds[index][1]
+            )
+        return coord_in
 
     def _init_axes(self, **kwargs):
         x0, y0, x1, y1 = self.rect
