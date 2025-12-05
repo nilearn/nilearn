@@ -1321,55 +1321,6 @@ class FirstLevelModel(BaseGLM):
 
         self.n_elements_ = self.masker_.n_elements_
 
-    @fill_doc
-    def generate_report(
-        self,
-        contrasts=None,
-        title=None,
-        bg_img="MNI152TEMPLATE",
-        threshold=3.09,
-        alpha=0.001,
-        cluster_threshold=0,
-        height_control="fpr",
-        two_sided=False,
-        min_distance=8.0,
-        plot_type="slice",
-        cut_coords=None,
-        display_mode=None,
-        report_dims=(1600, 800),
-    ):
-        """Return a :class:`~nilearn.reporting.HTMLReport` \
-        which shows all important aspects of a fitted :term:`GLM`.
-
-        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
-        browser, displayed in a notebook, or saved to disk as a standalone
-        HTML file.
-
-        The :term:`GLM` must be fitted and have the computed design
-        matrix(ces).
-
-        Returns
-        -------
-        report_text : :class:`~nilearn.reporting.HTMLReport`
-            Contains the HTML code for the :term:`GLM` report.
-
-        """
-        return super().generate_report(
-            contrasts,
-            title=title,
-            bg_img=bg_img,
-            threshold=threshold,
-            alpha=alpha,
-            cluster_threshold=cluster_threshold,
-            height_control=height_control,
-            two_sided=two_sided,
-            min_distance=min_distance,
-            plot_type=plot_type,
-            cut_coords=cut_coords,
-            display_mode=display_mode,
-            report_dims=report_dims,
-        )
-
 
 def _check_events_file_uses_tab_separators(events_files):
     """Raise a ValueError if provided list of text based data files \
