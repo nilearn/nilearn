@@ -747,6 +747,7 @@ def test_sanitize_inputs_permuted_ols(design):
     )
 
 
+@pytest.mark.single_process
 def test_permuted_ols_warnings_n_perm_n_job(cluster_level_design, masker):
     """Check that proper warning are thrown depending on n_job VS n_perm."""
     target_var, tested_var = cluster_level_design
