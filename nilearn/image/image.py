@@ -2303,7 +2303,7 @@ def check_niimg(
 
     if return_iterator:
         return (
-            new_img_like(niimg, _get_data(niimg)[:, :, :, i], niimg.affine)
+            new_img_like(niimg, _index_img(niimg, i), niimg.affine)
             for i in range(niimg.shape[3])
         )
 
