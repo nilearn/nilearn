@@ -1,4 +1,5 @@
 import pytest
+from sklearn import clone
 
 from nilearn.conftest import _img_3d_rand, _make_surface_img
 from nilearn.maskers import (
@@ -39,6 +40,7 @@ def masker(request, img_maps, surf_maps_img, img_labels, surf_label_img):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker, img_func, kwargs",
     [
@@ -86,6 +88,8 @@ def test_masker_reporting_true(masker, img_func, kwargs):
     """Test nilearn.maskers._mixin._ReportingMixin on concrete masker
     instances when ``reports=True``.
     """
+    masker = clone(masker)
+
     # check masker at initialization
     assert masker._report_content["warning_messages"] == []
 
@@ -158,6 +162,8 @@ def test_masker_reporting_false(masker, img_func):
     """Test nilearn.maskers._mixin._ReportingMixin on concrete masker
     instances when ``reports=False``.
     """
+    masker = clone(masker)
+
     # check masker at initialization
     assert masker._report_content is not None
     assert masker._report_content["description"] is not None

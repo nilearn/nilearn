@@ -596,6 +596,7 @@ def test_vol_to_surf_errors():
         vol_to_surf(img, mesh, interpolation="bad")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("kind", ["line", "ball"])
 @pytest.mark.parametrize("n_scans", [1, 20])
 @pytest.mark.parametrize("use_mask", [True, False])

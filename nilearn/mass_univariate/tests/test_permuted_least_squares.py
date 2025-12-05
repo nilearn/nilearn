@@ -474,6 +474,7 @@ def test_permuted_ols_nocovar_multivariate(rng):
 # Tests for sign swapping permutation scheme
 
 
+@pytest.mark.thread_unsafe
 def test_permuted_ols_intercept_nocovar(rng):
     """Check output when no covariate is passed."""
     n_descriptors = 10
