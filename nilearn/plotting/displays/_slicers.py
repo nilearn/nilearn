@@ -1746,11 +1746,11 @@ class BaseStackedSlicer(BaseSlicer):
                 bounds = ((-40, 40), (-30, 30), (-30, 75))
                 lower, upper = bounds["xyz".index(cls._direction)]
                 cut_coords = np.linspace(lower, upper, cut_coords).tolist()
+        elif isinstance(cut_coords, numbers.Number):
+            cut_coords = find_cut_slices(
+                img, direction=cls._direction, n_cuts=cut_coords
+            )
         else:
-            if isinstance(cut_coords, numbers.Number):
-                cut_coords = find_cut_slices(
-                    img, direction=cls._direction, n_cuts=cut_coords
-                )
             cls._check_cut_coords(cut_coords)
             bounds = cls._get_data_bounds(img)
             cls._check_cut_coords_in_bounds(bounds, cut_coords)
@@ -2184,14 +2184,11 @@ class MosaicSlicer(BaseSlicer):
             xyz world coordinates of cuts in a direction.
             Each key denotes the direction.
         """
-        if cut_coords is None:
+        if cut_coords is None or cut_coords == []:
             cut_coords = 7
-
-        if not isinstance(cut_coords, collections.abc.Sequence) and isinstance(
-            cut_coords, numbers.Number
-        ):
+        elif isinstance(cut_coords, numbers.Number):
             cut_coords = [cut_coords] * 3
-        elif len(cut_coords) == len(cls._cut_displayed):
+        if len(cut_coords) == 3:
             cut_coords = [
                 cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
             ]
@@ -2202,6 +2199,7 @@ class MosaicSlicer(BaseSlicer):
                 "expects tuple of length 3."
             )
         cut_coords = cls._find_cut_coords(img, cut_coords, cls._cut_displayed)
+
         return cut_coords
 
     @staticmethod
