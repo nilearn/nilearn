@@ -2302,10 +2302,7 @@ def check_niimg(
         raise DimensionError(len(niimg.shape), ensure_ndim)
 
     if return_iterator:
-        return (
-            new_img_like(niimg, _index_img(niimg, i), niimg.affine)
-            for i in range(niimg.shape[3])
-        )
+        return (_index_img(niimg, i) for i in range(niimg.shape[3]))
 
     return niimg
 
