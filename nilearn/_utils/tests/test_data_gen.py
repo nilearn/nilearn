@@ -685,6 +685,7 @@ def test_generate_timeseries(n_timepoints, n_features, rng):
     assert timeseries.shape == (n_timepoints, n_features)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("n_scans", [1, 5])
 @pytest.mark.parametrize("res", [1, 30])
 @pytest.mark.parametrize("mask_dilation", [1, 2])

@@ -248,6 +248,7 @@ def test_repr_niimgs_with_niimg_pathlib():
     assert repr_niimgs(list_of_paths, shorten=False) == long_list_of_paths
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("shorten", [True, False])
 def test_repr_niimgs_with_niimg(
     shorten, tmp_path, affine_eye, img_3d_ones_eye, shape_3d_default
