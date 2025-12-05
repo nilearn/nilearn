@@ -1739,33 +1739,43 @@ class BaseStackedSlicer(BaseSlicer):
         cut_coords : :obj:`list` of :obj:`float`
             xyz world coordinates of cuts.
         """
-        if cut_coords is None:
+        if cut_coords is None or cut_coords == []:
             cut_coords = 7
 
-        if img is None or img is False:
-            bounds = ((-40, 40), (-30, 30), (-30, 75))
-            lower, upper = bounds["xyz".index(cls._direction)]
+        if img is None:
             if isinstance(cut_coords, numbers.Number):
+                bounds = ((-40, 40), (-30, 30), (-30, 75))
+                lower, upper = bounds["xyz".index(cls._direction)]
                 cut_coords = np.linspace(lower, upper, cut_coords).tolist()
-        elif not isinstance(
-            cut_coords, collections.abc.Sequence
-        ) and isinstance(cut_coords, numbers.Number):
-            cut_coords = find_cut_slices(
-                img, direction=cls._direction, n_cuts=cut_coords
-            )
+        else:
+            if isinstance(cut_coords, numbers.Number):
+                cut_coords = find_cut_slices(
+                    img, direction=cls._direction, n_cuts=cut_coords
+                )
+            cls._check_cut_coords(cut_coords)
+            bounds = cls._get_data_bounds(img)
+            cls._check_cut_coords_in_bounds(bounds, cut_coords)
 
         return cut_coords
+
+    @classmethod
+    def _check_cut_coords(cls, cut_coords):
+        if not (
+            isinstance(cut_coords, (numbers.Number, list, tuple, np.ndarray))
+        ):
+            raise ValueError(
+                "cut_coords should to be a number or list of numbers, "
+                f"You provided cut_coords={cut_coords}."
+            )
 
     @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords):
         coord_in = []
 
-        for i, c in enumerate(sorted(cls._cut_displayed)):
-            index = "xyz".find(c)
-            coord_in.append(
-                bounds[index][0] <= cut_coords[i]
-                and cut_coords[index] <= bounds[index][1]
-            )
+        index = "xyz".find(cls._direction)
+        coord_in = [
+            bounds[index][0] <= c <= bounds[index][1] for c in cut_coords
+        ]
         return coord_in
 
     def _init_axes(self, **kwargs):
