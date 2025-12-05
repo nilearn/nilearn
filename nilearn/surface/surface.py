@@ -20,7 +20,6 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
     check_parameter_in_allowed,
@@ -799,8 +798,8 @@ def vol_to_surf(
 
     """
     # avoid circular import
+    from nilearn.image import check_niimg, load_img
     from nilearn.image.image import get_data as get_vol_data
-    from nilearn.image.image import load_img
     from nilearn.image.resampling import resample_to_img
 
     sampling_schemes = {
@@ -1965,9 +1964,6 @@ class SurfaceImage:
             right_kwargs = {"inner_mesh": inner_mesh.parts["right"]}
         else:
             left_kwargs, right_kwargs = {}, {}
-
-        if isinstance(volume_img, (str, Path)):
-            volume_img = check_niimg(volume_img)
 
         texture_left = vol_to_surf(
             volume_img, mesh.parts["left"], **vol_to_surf_kwargs, **left_kwargs

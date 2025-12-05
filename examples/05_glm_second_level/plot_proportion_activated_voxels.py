@@ -55,34 +55,39 @@ z_map = second_level_model.compute_contrast(output_type="z_score")
 # at uncorrected p < 0.001 and plot
 from scipy.stats import norm
 
+from nilearn.glm import cluster_level_inference
+from nilearn.plotting import plot_stat_map, show
+
 p_val = 0.001
 p001_uncorrected = norm.isf(p_val)
 
-from nilearn.glm import cluster_level_inference
-
 proportion_true_discoveries_img = cluster_level_inference(
-    z_map, threshold=[3, 4, 5], alpha=0.05
+    z_map, threshold=[2.5, 3.5, 4.5], alpha=0.05
 )
 
-from nilearn import plotting
+data = proportion_true_discoveries_img.get_fdata()
 
-plotting.plot_stat_map(
+cut_coords = [-24, -9, -18, 33, 45, 57, 66]
+
+plot_stat_map(
     proportion_true_discoveries_img,
     threshold=0.0,
     display_mode="z",
     vmax=1,
     cmap="inferno",
     title="group left-right button press, proportion true positives",
+    cut_coords=cut_coords,
 )
 
-plotting.plot_stat_map(
+plot_stat_map(
     z_map,
     threshold=p001_uncorrected,
     display_mode="z",
     title="group left-right button press (uncorrected p < 0.001)",
+    cut_coords=cut_coords,
 )
 
-plotting.show()
+show()
 
 # %%
 # References

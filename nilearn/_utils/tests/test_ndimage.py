@@ -1,9 +1,4 @@
-"""Test the ndimage module.
-
-This test file is in nilearn/tests because Nosetest,
-which we historically used,
-ignores modules whose name starts with an underscore.
-"""
+"""Test the ndimage module."""
 
 import numpy as np
 import pytest
