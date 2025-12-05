@@ -12,6 +12,7 @@ from nilearn.datasets import (
     load_fsaverage_data,
     load_sample_motor_activation_image,
 )
+from nilearn.exceptions import DimensionError
 from nilearn.glm import (
     cluster_level_inference,
     fdr_threshold,
@@ -437,6 +438,21 @@ def test_all_resolution_inference_threshold_errors(
         cluster_level_inference(stat_img, threshold=threshold)
 
 
+def test_all_resolution_inference_shape_errors(img_4d_rand_eye, surf_img_2d):
+    """Raise error with 4D image or SurfaceImage with n_samples>1."""
+    with pytest.raises(
+        DimensionError,
+        match=("Input data has incompatible dimensionality"),
+    ):
+        cluster_level_inference(img_4d_rand_eye, threshold=0.5)
+
+    with pytest.raises(
+        ValueError,
+        match=("Data for each part of img should be 1D"),
+    ):
+        cluster_level_inference(surf_img_2d(2), threshold=0.5)
+
+
 @pytest.mark.parametrize("two_sided", [True, False])
 @pytest.mark.parametrize("control", ["fdr", "bonferroni"])
 def test_all_resolution_inference_height_control(
@@ -622,26 +638,23 @@ def test_deprecation_threshold(surf_img_1d, height_control, threshold):
         assert n_warnings == 0
 
 
-@pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
+@pytest.mark.parametrize("threshold", [3, 3.0, 2.9, DEFAULT_Z_THRESHOLD])
 def test_deprecation_threshold_cluster_level_inference(
-    threshold, affine_eye, data_norm_isf
+    threshold, img_3d_rand_eye, surf_img_1d
 ):
     """Check cluster_level_inference warns when threshold==old threshold .
 
     # TODO (nilearn >= 0.15.0)
     # remove
     """
-    data = data_norm_isf
-    data[3, 6, 7] = 10
-    stat_img = Nifti1Image(data, affine_eye)
+    for stat_img in [img_3d_rand_eye, surf_img_1d]:
+        with warnings.catch_warnings(record=True) as warning_list:
+            cluster_level_inference(stat_img, threshold=threshold)
 
-    with warnings.catch_warnings(record=True) as warning_list:
-        cluster_level_inference(stat_img, threshold=threshold)
-
-    n_warnings = len(
-        [x for x in warning_list if issubclass(x.category, FutureWarning)]
-    )
-    if threshold == 3.0:
-        assert n_warnings == 1
-    else:
-        assert n_warnings == 0
+        n_warnings = len(
+            [x for x in warning_list if issubclass(x.category, FutureWarning)]
+        )
+        if threshold == 3.0:
+            assert n_warnings == 1
+        else:
+            assert n_warnings == 0

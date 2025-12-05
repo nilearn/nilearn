@@ -13,13 +13,14 @@ from scipy.stats import norm
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
 from nilearn.image import get_data, math_img, new_img_like, threshold_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import SurfaceImage, check_surf_img
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
 
@@ -33,7 +34,6 @@ def warn_default_threshold(
     Can be removed.
     """
     if height_control is None and threshold == current_default == old_default:
-        print(f"{threshold=} {current_default=} {old_default=}")
         warnings.warn(
             category=FutureWarning,
             message=(
@@ -147,7 +147,7 @@ def cluster_level_inference(
     mask_img=None,
     threshold: float | int | list[float | int] = 3.0,
     alpha=0.05,
-    verbose=0,
+    verbose: int = 0,
 ):
     """Report the proportion of active voxels for all clusters \
     defined by the input threshold.
@@ -156,7 +156,8 @@ def cluster_level_inference(
 
     Parameters
     ----------
-    stat_img : Niimg-like object or :obj:`~nilearn.surface.SurfaceImage`
+    stat_img : 3D Niimg-like object or \
+        :obj:`~nilearn.surface.SurfaceImage` with a single sample.
        statistical image (presumably in z scale)
 
     mask_img : Niimg-like object, or :obj:`~nilearn.surface.SurfaceImage` \
@@ -221,6 +222,9 @@ def _cluster_level_inference_surface(
     """Run the inference on each hemisphere indendently
     by creating a temporary mask that only includes one hemisphere.
     """
+    check_surf_img(stat_img)
+    stat_img.data._check_n_samples(1)
+
     if mask_img is None:
         masker = SurfaceMasker().fit(stat_img)
         mask_img = masker.mask_img_
@@ -283,6 +287,7 @@ def _cluster_level_inference_surface(
 def _cluster_level_inference_volume(
     stat_img, mask_img, threshold, alpha, verbose
 ):
+    stat_img = check_niimg_3d(stat_img)
     if mask_img is None:
         masker = NiftiMasker(mask_strategy="background").fit(stat_img)
     else:
