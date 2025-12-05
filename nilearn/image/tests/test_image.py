@@ -625,31 +625,36 @@ def test_index_img_error_3d(affine_eye):
         index_img(img_3d, 0)
 
 
-def test_index_img():
-    img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
-
-    fourth_dim_size = img_4d.shape[3]
-    tested_indices = [
-        *range(fourth_dim_size),
+@pytest.mark.parametrize(
+    "index",
+    [
+        *range(_shape_4d_default()[3]),
         slice(2, 8, 2),
         [1, 2, 3, 2],
-        (np.arange(fourth_dim_size) % 3) == 1,
-    ]
-    for i in tested_indices:
-        this_img = index_img(img_4d, i)
+        (np.arange(_shape_4d_default()[3]) % 3) == 1,
+    ],
+)
+def test_index_img(index):
+    img_4d, _ = generate_fake_fmri(
+        shape=_shape_4d_default()[0:3],
+        length=_shape_4d_default()[3],
+        affine=NON_EYE_AFFINE,
+    )
 
-        expected_data_3d = get_data(img_4d)[..., i]
-        assert_array_equal(get_data(this_img), expected_data_3d)
-        assert_array_equal(this_img.affine, img_4d.affine)
+    this_img = index_img(img_4d, index)
+
+    expected_data_3d = get_data(img_4d)[..., index]
+    assert_array_equal(get_data(this_img), expected_data_3d)
+    assert_array_equal(this_img.affine, img_4d.affine)
 
 
 @pytest.mark.parametrize(
     "index",
     [
-        _img_4d_rand_eye().shape[3],
-        -_img_4d_rand_eye().shape[3] - 1,
-        [0, _img_4d_rand_eye().shape[3]],
-        np.repeat(True, _img_4d_rand_eye().shape[3] + 1),
+        _shape_4d_default()[3],
+        -_shape_4d_default()[3] - 1,
+        [0, _shape_4d_default()[3]],
+        np.repeat(True, _shape_4d_default()[3] + 1),
     ],
 )
 def test_index_img_error_4d(index):

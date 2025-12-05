@@ -1,6 +1,6 @@
 """Benchmarks for image operations under nilearn.image module."""
 
-from nilearn.image import mean_img, index_img
+from nilearn.image import index_img, mean_img
 
 from ..common import Benchmark
 from ..utils import load
@@ -38,13 +38,11 @@ class MeanImgBenchmark(Benchmark):
 
 
 class IndexImgBenchmark(Benchmark):
-    """
-    A benchmark that compares the performance of indexing a 4D image.
-    """
+    """A benchmark that compares the performance of indexing a 4D image."""
 
     def time_index_img(self):
         """Time the loading the image followed by indexing a voxel."""
-        index_img("fmri_10.nii.gz", 5)
+        index_img("fmri_10.nii.gz", slice(1, 40, 2))
 
     # def peakmem_index_img(self):
     #     """Peak memory of loading the image followed by indexing a voxel."""
