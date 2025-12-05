@@ -53,7 +53,7 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import SurfaceImage, extract_data
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import (
     assert_polymesh_equal,
@@ -608,18 +608,28 @@ def test_swap_img_hemispheres(affine_eye, shape_3d_default, rng):
     )
 
 
-def test_index_img_error_3d(affine_eye):
-    img_3d = Nifti1Image(np.ones((3, 4, 5)), affine_eye)
+def test_index_img_error_3d(
+    img_4d_ones_eye, img_3d_ones_eye, surf_img_1d, surf_img_2d
+):
+    """Check index_img only works on 4D volume data or 2D surface data."""
+    index_img(img_4d_ones_eye, 0)
     expected_error_msg = (
         "Input data has incompatible dimensionality: "
         "Expected dimension is 4D and you provided "
         "a 3D image."
     )
-    with pytest.raises(TypeError, match=expected_error_msg):
-        index_img(img_3d, 0)
+    with pytest.raises(DimensionError, match=expected_error_msg):
+        index_img(img_3d_ones_eye, 0)
+
+    index_img(surf_img_2d(2), 0)
+    with pytest.raises(
+        ValueError, match="Data for each part of imgs should be 2D"
+    ):
+        index_img(surf_img_1d, 0)
 
 
-def test_index_img():
+def test_index_img_volume():
+    """Test index_img with volume data."""
     img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
 
     fourth_dim_size = img_4d.shape[3]
@@ -627,7 +637,11 @@ def test_index_img():
         *range(fourth_dim_size),
         slice(2, 8, 2),
         [1, 2, 3, 2],
-        (np.arange(fourth_dim_size) % 3) == 1,
+        np.asarray([1, 2, 3, 2]),
+        (np.arange(fourth_dim_size) % 3) == 1,  # boolean indexing with array
+        (
+            (np.arange(fourth_dim_size) % 3) == 1
+        ).tolist(),  # boolean indexing with list
     ]
     for i in tested_indices:
         this_img = index_img(img_4d, i)
@@ -637,7 +651,37 @@ def test_index_img():
         assert_array_equal(this_img.affine, img_4d.affine)
 
 
-def test_index_img_error_4d(affine_eye):
+@pytest.mark.parametrize("length", [20])
+@pytest.mark.parametrize(
+    "index, expected_n_samples",
+    [
+        ([*range(20)], 20),
+        (slice(2, 8, 2), 3),
+        ([1, 2, 3, 2], 4),
+        (np.asarray([1, 2, 3, 2]), 4),
+        (
+            ((np.arange(20) % 3) == 1).tolist(),
+            7,
+        ),  # boolean indexing with array
+        ((np.arange(20) % 3) == 1, 7),  # boolean indexing with array
+    ],
+)
+def test_index_img_surface(surf_img_2d, length, index, expected_n_samples):
+    """Test index_img with surface data."""
+    input_img = surf_img_2d(length)
+    this_img = index_img(input_img, index)
+
+    assert this_img.data._n_samples == expected_n_samples
+
+    assert_polymesh_equal(this_img.mesh, input_img.mesh)
+
+    expected_data_3d = extract_data(input_img, index)
+    for hemi, value in this_img.data.parts.items():
+        assert_array_equal(value, expected_data_3d[hemi])
+
+
+def test_index_img_error_volumne_4d(affine_eye):
+    """Test impossible indices with volume data."""
     img_4d, _ = generate_fake_fmri(affine=affine_eye)
     fourth_dim_size = img_4d.shape[3]
     for i in [
@@ -651,6 +695,14 @@ def test_index_img_error_4d(affine_eye):
             match=r"out of bounds|invalid index|out of range|boolean index",
         ):
             index_img(img_4d, i)
+
+
+@pytest.mark.parametrize("length", [20])
+@pytest.mark.parametrize("index", [20, -21, [0, 20], np.repeat(True, 21)])
+def test_index_img_error_surface_2d(surf_img_2d, length, index):
+    """Test impossible indices with surface data."""
+    with pytest.raises(IndexError, match=r"out of bounds|boolean"):
+        index_img(surf_img_2d(length), index)
 
 
 def test_pd_index_img(rng, img_4d_rand_eye):
