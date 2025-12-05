@@ -1540,7 +1540,6 @@ def test_regressor_vs_sklearn(
     assert np.allclose(scores_sklearn, scores_nilearn, atol=0.01)
 
 
-
 def test_screening_priority_logic():
     # Test that check_feature_screening prefers percentile over n_voxels
     import nibabel as nib
@@ -1555,10 +1554,10 @@ def test_screening_priority_logic():
     # 2. Call the function with BOTH options (Conflict!)
     # percentile=10, n_voxels=50
     selector = check_feature_screening(
-    screening_percentile=10,
-    mask_img=mask,
-    is_classification=True,
-    screening_n_voxels=50,
+        screening_percentile=10,
+        mask_img=mask,
+        is_classification=True,
+        screening_n_voxels=50,
     )
 
     # 3. VERIFY: We should get a SelectPercentile object
