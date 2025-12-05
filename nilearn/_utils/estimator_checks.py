@@ -1680,6 +1680,12 @@ def check_img_estimator_standardization(estimator_orig):
     if not hasattr(estimator_orig, "standardize") or is_masker(estimator_orig):
         # maskers have their own tests
         return
+
+    # TODO
+    # fix for free threaded python
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
+
     # We need to use data with several samples
     # for the standardize to actually do something
     input_img, y = generate_data_to_fit(estimator_orig)

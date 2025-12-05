@@ -238,6 +238,7 @@ def test_nifti_spheres_masker_report_1_sphere(
     assert empty_div not in report.body
 
 
+@pytest.mark.thread_unsafe
 def test_nifti_labels_masker_report_no_image_for_fit(
     img_3d_rand_eye, n_regions, labels, img_labels
 ):
@@ -414,6 +415,7 @@ def test_multi_nifti_masker_generate_report_mask(
     masker.fit().generate_report()
 
 
+@pytest.mark.thread_unsafe
 def test_multi_nifti_masker_generate_report_imgs_and_mask(
     shape_3d_default, affine_eye, img_fmri
 ):
@@ -455,6 +457,7 @@ def test_surface_masker_minimal_report_no_fit(
     _check_html(report, reports_requested=reports, is_fit=False)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize("empty_mask", [True, False])
 def test_surface_masker_minimal_report_fit(
