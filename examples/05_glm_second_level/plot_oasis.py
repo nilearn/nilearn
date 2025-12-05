@@ -176,36 +176,7 @@ show()
 # which we do here.
 from pathlib import Path
 
-from nilearn.glm import save_glm_to_bids
-
 output_dir = Path.cwd() / "results" / "plot_oasis"
 output_dir.mkdir(exist_ok=True, parents=True)
 
 icbm152_2009 = fetch_icbm152_2009()
-
-second_level_model = save_glm_to_bids(
-    second_level_model,
-    contrasts=["age", "sex"],
-    out_dir=output_dir / "derivatives" / "nilearn_glm",
-    prefix="ageEffectOnGM",
-    bg_img=icbm152_2009["t1"],
-    alpha=0.05,
-    height_control="fdr",
-)
-
-# %%
-# View the generated files
-files = sorted((output_dir / "derivatives" / "nilearn_glm").glob("**/*"))
-print("\n".join([str(x.relative_to(output_dir)) for x in files]))
-
-#  %%
-# Generate a report and view it.
-# If no new contrast is passed to ``generate_report``,
-# the results saved to disk will be reused to generate the report.
-
-report = second_level_model.generate_report(
-    bg_img=icbm152_2009["t1"],
-    plot_type="glass",
-    alpha=0.05,
-    height_control=None,
-)

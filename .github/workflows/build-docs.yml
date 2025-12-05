@@ -337,6 +337,20 @@ jobs:
                 shell: bash -el {0}
 
         steps:
+        -   name: Free Disk Space (Ubuntu)
+            uses: jlumbroso/free-disk-space@main
+            with:
+                # this might remove tools that are actually needed,
+                # if set to "true" but frees about 6 GB
+                tool-cache: false
+                # all of these default to true, but feel free to set to
+                # "false" if necessary for your workflow
+                android: true
+                dotnet: true
+                haskell: true
+                large-packages: true
+                docker-images: true
+                swap-storage: true
         -   name: Checkout nilearn
             uses: actions/checkout@v6
             with:
@@ -423,6 +437,14 @@ jobs:
             with:
                 name: ${{ matrix.env }}_checks
                 path: doc/tmp
+
+        -   name: Check doc size
+            if: always()
+            run: |
+                du -h -d 3 --exclude=".git"
+
+                mkdir -p doc/_build/html # ensure the folder exists
+                du -h doc/_build/html
 
         -   name: Upload documentation
             if: steps.build-docs.outcome == 'success'
