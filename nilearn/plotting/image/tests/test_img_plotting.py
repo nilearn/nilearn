@@ -84,10 +84,10 @@ def test_plot_functions_invalid_threshold(plot_func, img_3d_mni, tmp_path):
     "plot_func", PLOTTING_FUNCS_3D.difference({plot_glass_brain})
 )
 @pytest.mark.parametrize("cut_coords", [None, 5, (5, 4, 3)])
-def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_mni):
+def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_rand_eye):
     """Smoke-test for plotting functions in mosaic mode."""
     plot_func(
-        img_3d_mni,
+        img_3d_rand_eye,
         display_mode="mosaic",
         title="mosaic mode",
         cut_coords=cut_coords,
