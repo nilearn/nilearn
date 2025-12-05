@@ -23,7 +23,6 @@ from sklearn.utils import Bunch
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -41,7 +40,7 @@ from nilearn.datasets._utils import (
     uncompress_file,
 )
 from nilearn.datasets.struct import load_fsaverage
-from nilearn.image import get_data
+from nilearn.image import check_niimg, get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.surface import SurfaceImage
 
