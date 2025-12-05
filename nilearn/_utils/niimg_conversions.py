@@ -7,6 +7,7 @@ from pathlib import Path
 
 import numpy as np
 from joblib import Memory
+from nibabel import Nifti1Image
 from nibabel.fileslice import is_fancy
 from nibabel.spatialimages import SpatialImage
 from numpy.testing import assert_array_equal
@@ -93,7 +94,7 @@ def check_imgs_equal(img1, img2) -> bool:
         raise e
 
 
-def _index_img(img, index):
+def _index_img(img: Nifti1Image, index):
     """Helper function for check_niimg_4d."""  # noqa: D401
     from nilearn.image.image import new_img_like  # avoid circular imports
 
