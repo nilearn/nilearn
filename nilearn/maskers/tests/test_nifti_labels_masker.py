@@ -373,6 +373,7 @@ def test_nifti_labels_masker_resampling(
     assert_array_equal(get_data(compressed_img), get_data(compressed_img2))
 
 
+@pytest.mark.slow
 def test_nifti_labels_masker_resampling_to_labels(
     affine_eye, shape_3d_default, n_regions, length
 ):
