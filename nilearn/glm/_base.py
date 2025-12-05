@@ -578,14 +578,15 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 else self.design_matrices_
             )
 
-            # TODO move matplotlib check to if condition below
-            MNI152TEMPLATE = None
-            if is_matplotlib_installed():
-                from nilearn.plotting.image.utils import (  # type: ignore[assignment]
-                    MNI152TEMPLATE,
-                )
             if bg_img == "MNI152TEMPLATE":
-                bg_img = MNI152TEMPLATE if self._is_volume_glm() else None
+                try:
+                    from nilearn.plotting.image.utils import (  # type: ignore[assignment]
+                        MNI152TEMPLATE,
+                    )
+
+                    bg_img = MNI152TEMPLATE if self._is_volume_glm() else None
+                except ImportError:
+                    bg_img = None
             if (
                 not self._is_volume_glm()
                 and bg_img
