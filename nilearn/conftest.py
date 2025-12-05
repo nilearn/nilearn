@@ -7,12 +7,6 @@ from nibabel import Nifti1Image
 from scipy.signal import get_window
 
 from nilearn._utils.helpers import is_gil_enabled, is_matplotlib_installed
-
-# we need to import these fixtures even if not used in this module
-from nilearn.datasets.tests._testing import (
-    request_mocker,  # noqa: F401
-    temp_nilearn_data_dir,  # noqa: F401
-)
 from nilearn.masking import unmask
 from nilearn.surface import (
     InMemoryMesh,
