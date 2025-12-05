@@ -48,7 +48,6 @@ from nilearn.glm.regression import (
     RegressionResults,
     SimpleRegressionResults,
 )
-from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import check_niimg, get_data
 from nilearn.interfaces.bids import get_bids_files, parse_bids_filename
 from nilearn.interfaces.bids.query import (

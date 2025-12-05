@@ -37,7 +37,6 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
-from nilearn.glm.thresholding import warn_default_threshold
 from nilearn.image import check_niimg, concat_imgs, iter_img, mean_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
