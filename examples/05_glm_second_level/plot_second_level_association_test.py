@@ -140,6 +140,7 @@ neg_log_pvals_permuted_ols_unmasked = non_parametric_inference(
     two_sided_test=False,
     mask=None,
     smoothing_fwhm=5.0,
+    tfce=True,
     n_jobs=2,
 )
 

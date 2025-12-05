@@ -17,7 +17,7 @@ def calculate_tfce(
     H=2,
     dh="auto",
     two_sided_test=True,
-):
+) -> np.ndarray:
     """Calculate threshold-free cluster enhancement values for scores maps.
 
     The :term:`TFCE` calculation is mostly implemented as described in [1]_,
@@ -395,7 +395,7 @@ def orthonormalize_matrix(m, tol=1.0e-12):
 
 def t_score_with_covars_and_normalized_design(
     tested_vars, target_vars, covars_orthonormalized=None
-):
+) -> np.ndarray:
     """t-score in the regression of tested variates against target variates.
 
     Covariates are taken into account (if not None).
