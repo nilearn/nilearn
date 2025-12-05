@@ -84,9 +84,11 @@ jobs:
             id: py
             run: |
                 versions='py=["3.14", "3.13", "3.12", "3.11", "3.10"]'
-                if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
-                    versions='py=["3.14", "3.10"]'
-                fi
+
+                # if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
+                #     versions='py=["3.14", "3.10"]'
+                # fi
+
                 echo "Will run on the following python: ${versions}"
                 echo ${versions} >> "$GITHUB_OUTPUT"
 
