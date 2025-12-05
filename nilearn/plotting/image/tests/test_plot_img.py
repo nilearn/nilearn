@@ -171,7 +171,7 @@ def test_out_of_bounds_warning_error(
         )
 
 
-@pytest.mark.parametrize("display_mode", ["ortho", "tiled"])
+@pytest.mark.parametrize("display_mode", ["ortho", "tiled", "xz", "yz"])
 def test_out_of_bounds_warning_error_3d(
     matplotlib_pyplot, img_3d_rand_eye, display_mode
 ):
