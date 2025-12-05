@@ -718,8 +718,6 @@ def index_img(imgs, index):
 
 def _index_img(img: Nifti1Image, index):
     """Helper function for check_niimg_4d."""  # noqa: D401
-    from nilearn.image.image import new_img_like  # avoid circular imports
-
     if is_fancy(index):
         data = _get_data(img)[:, :, :, index]
     else:
