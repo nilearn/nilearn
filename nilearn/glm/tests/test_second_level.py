@@ -1412,6 +1412,101 @@ def test_non_parametric_inference_contrast_computation_errors(rng, n_subjects):
         )
 
 
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"tfce": True},  # to run cluster inference
+        {"threshold": 0.001},  # to run cluster inference
+    ],
+)
+@pytest.mark.parametrize("two_sided_test", [True, False])
+def test_non_parametric_inference_with_surface_images(
+    surf_img_1d, two_sided_test, kwargs, n_subjects
+):
+    """Smoke test non_parametric_inference on list of 1D surfaces."""
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
+
+    design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
+
+    non_parametric_inference(
+        second_level_input=second_level_input,
+        design_matrix=design_matrix,
+        n_perm=N_PERM,
+        two_sided_test=two_sided_test,
+        **kwargs,
+    )
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"tfce": True},  # to run cluster inference
+        {"threshold": 0.001},  # to run cluster inference
+    ],
+)
+def test_non_parametric_inference_with_surface_images_2d(
+    surf_img_2d, n_subjects
+):
+    """Smoke test non_parametric_inference on 2d surfaces."""
+    second_level_input = surf_img_2d(n_subjects)
+
+    design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
+
+    non_parametric_inference(
+        second_level_input=second_level_input,
+        design_matrix=design_matrix,
+        n_perm=N_PERM,
+    )
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"tfce": True},  # to run cluster inference
+        {"threshold": 0.001},  # to run cluster inference
+    ],
+)
+def test_non_parametric_inference_with_surface_images_2d_mask(
+    surf_img_2d, surf_mask_1d, n_subjects
+):
+    """Smoke test non_parametric_inference on 2d surfaces and a mask."""
+    second_level_input = surf_img_2d(n_subjects)
+
+    design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
+
+    masker = SurfaceMasker(surf_mask_1d)
+
+    non_parametric_inference(
+        second_level_input=second_level_input,
+        design_matrix=design_matrix,
+        n_perm=N_PERM,
+        mask=masker,
+    )
+
+
+def test_non_parametric_inference_with_surface_images_warnings(
+    surf_img_1d, n_subjects
+):
+    """Throw warnings for non implemented features for surface."""
+    second_level_input = [surf_img_1d for _ in range(n_subjects)]
+
+    design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
+
+    with pytest.warns(
+        NotImplementedWarning,
+        match="'smoothing_fwhm' is not yet supported for surface data.",
+    ):
+        non_parametric_inference(
+            second_level_input=second_level_input,
+            design_matrix=design_matrix,
+            n_perm=N_PERM,
+            smoothing_fwhm=6,
+        )
+
+
 @pytest.mark.slow
 def test_second_level_contrast_computation_with_memory_caching(n_subjects):
     func_img, mask = fake_fmri_data()
@@ -1641,83 +1736,4 @@ def test_second_level_surface_image_contrast_computation(
         assert_surface_image_equal(
             all_images[key],
             model.compute_contrast(second_level_contrast=c1, output_type=key),
-        )
-
-
-@pytest.mark.parametrize(
-    "kwargs",
-    [
-        {},
-        {"tfce": True},  # to run cluster inference
-        {"threshold": 0.001},  # to run cluster inference
-    ],
-)
-@pytest.mark.parametrize("two_sided_test", [True, False])
-def test_non_parametric_inference_with_surface_images(
-    surf_img_1d, two_sided_test, kwargs, n_subjects
-):
-    """Smoke test non_parametric_inference on list of 1D surfaces."""
-    second_level_input = [surf_img_1d for _ in range(n_subjects)]
-
-    design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
-
-    non_parametric_inference(
-        second_level_input=second_level_input,
-        design_matrix=design_matrix,
-        n_perm=N_PERM,
-        two_sided_test=two_sided_test,
-        **kwargs,
-    )
-
-
-def test_non_parametric_inference_with_surface_images_2d(
-    surf_img_2d, n_subjects
-):
-    """Smoke test non_parametric_inference on 2d surfaces."""
-    second_level_input = surf_img_2d(n_subjects)
-
-    design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
-
-    non_parametric_inference(
-        second_level_input=second_level_input,
-        design_matrix=design_matrix,
-        n_perm=N_PERM,
-    )
-
-
-def test_non_parametric_inference_with_surface_images_2d_mask(
-    surf_img_2d, surf_mask_1d, n_subjects
-):
-    """Smoke test non_parametric_inference on 2d surfaces and a mask."""
-    second_level_input = surf_img_2d(n_subjects)
-
-    design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
-
-    masker = SurfaceMasker(surf_mask_1d)
-
-    non_parametric_inference(
-        second_level_input=second_level_input,
-        design_matrix=design_matrix,
-        n_perm=N_PERM,
-        mask=masker,
-    )
-
-
-def test_non_parametric_inference_with_surface_images_warnings(
-    surf_img_1d, n_subjects
-):
-    """Throw warnings for non implemented features for surface."""
-    second_level_input = [surf_img_1d for _ in range(n_subjects)]
-
-    design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
-
-    with pytest.warns(
-        NotImplementedWarning,
-        match="'smoothing_fwhm' is not yet supported for surface data.",
-    ):
-        non_parametric_inference(
-            second_level_input=second_level_input,
-            design_matrix=design_matrix,
-            n_perm=N_PERM,
-            smoothing_fwhm=6,
         )

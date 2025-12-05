@@ -152,6 +152,7 @@ for i, (first_level_glm, fmri_img, confound, event) in enumerate(
 # .. include:: ../../../examples/report_note.rst
 #
 report_flm
+report_flm.open_in_browser()
 
 
 # %%
@@ -167,6 +168,8 @@ import pandas as pd
 
 from nilearn.glm.second_level import SecondLevelModel
 
+two_sided = True
+
 second_level_glm = SecondLevelModel()
 design_matrix = pd.DataFrame([1] * len(z_scores), columns=["intercept"])
 second_level_glm.fit(second_level_input=z_scores, design_matrix=design_matrix)
@@ -178,6 +181,7 @@ report_slm = second_level_glm.generate_report(
     alpha=0.001,
     bg_img=curvature,
     title="surface based group-level model",
+    two_sided=two_sided,
 )
 
 # %%
@@ -186,3 +190,31 @@ report_slm = second_level_glm.generate_report(
 # .. include:: ../../../examples/report_note.rst
 #
 report_slm
+report_slm.open_in_browser()
+
+
+# %%
+# Computing the (corrected) negative log p-values with permutation test
+from nilearn.glm.second_level import non_parametric_inference
+
+neg_log_pvals_permuted = non_parametric_inference(
+    z_scores,
+    design_matrix=design_matrix,
+    second_level_contrast="intercept",
+    model_intercept=True,
+    n_perm=1000,
+    two_sided_test=two_sided,
+    tfce=True,
+    n_jobs=2,
+)
+
+# %%
+# Let us plot the (corrected) negative log  p-values
+from nilearn.plotting import plot_surf_stat_map, show
+
+plot_surf_stat_map(
+    stat_map=neg_log_pvals_permuted,
+    title="language-string",
+    cmap="inferno",
+)
+show()
