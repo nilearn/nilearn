@@ -1167,7 +1167,7 @@ class ThreeDSlicer(BaseSlicer):
                 f"cut_coords={cut_coords}"
             )
 
-        if len(cut_coords) != len(cls._cut_displayed):
+        if len(cut_coords) != 3:
             raise ValueError(
                 f"The number cut_coords ({len(cut_coords)}) "
                 f"passed does not match the expected "
