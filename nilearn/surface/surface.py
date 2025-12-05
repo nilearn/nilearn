@@ -6,6 +6,7 @@ import pathlib
 import warnings
 from collections.abc import Iterable, Mapping
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -1364,6 +1365,11 @@ class PolyData:
         self._check_parts()
 
     def _check_parts(self):
+        """Ensure all parts have same shape and type.
+
+        This allows to get the shape of any part
+        and make sure they are the same for all.
+        """
         parts = self.parts
 
         if len(parts) == 1:
@@ -1390,6 +1396,7 @@ class PolyData:
     @property
     def shape(self):
         """Shape of the data."""
+        self._check_parts()
         if len(self.parts) == 1:
             return next(iter(self.parts.values())).shape
 
@@ -1401,6 +1408,16 @@ class PolyData:
             if len(tmp.shape) == 2
             else (sum_vertices,)
         )
+
+    @property
+    def _n_samples(self) -> int:
+        """Return number of sample / timepoints of the Polydata."""
+        self._check_parts()
+        shape = next(iter(self.parts.values())).shape
+        if len(shape) == 1:
+            return 1
+        else:
+            return shape[1]
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.shape}>"
@@ -1418,18 +1435,12 @@ class PolyData:
         vmax = max(x.max() for x in self.parts.values())
         return vmin, vmax
 
-    def _check_n_samples(self, samples: int, var_name="img"):
-        max_n_samples = []
-        for hemi in self.parts.values():
-            if hemi.ndim > 1:
-                max_n_samples.append(hemi.shape[1])
-            else:
-                max_n_samples.append(1)
-        max_n_samples = np.max(max_n_samples)
-        if max_n_samples > samples:
+    def _check_n_samples(self, n_samples: int, var_name="img"):
+        """Check that the PolyData does not have more than n_samples."""
+        if self._n_samples > n_samples:
             raise ValueError(
-                f"Data for each part of {var_name} should be {samples}D. "
-                f"Found: {max_n_samples}."
+                f"Data for each part of {var_name} should be {n_samples}D. "
+                f"Found: {self._n_samples}."
             )
 
     def _check_ndims(self, dim: int, var_name="img"):
@@ -1996,7 +2007,7 @@ def check_surf_img(img: SurfaceImage | Iterable[SurfaceImage]) -> None:
             check_surf_img(x)
 
 
-def get_data(img, ensure_finite=False) -> np.ndarray:
+def get_data(img, ensure_finite: bool = False) -> np.ndarray:
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
 
@@ -2038,7 +2049,7 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
     return data
 
 
-def extract_data(img, index):
+def extract_data(img, index) -> dict[Any, np.ndarray]:
     """Extract data of a SurfaceImage a specified indices.
 
     Parameters
@@ -2056,8 +2067,20 @@ def extract_data(img, index):
     check_is_of_allowed_type(img, (SurfaceImage,), "img")
     mesh = img.mesh
     data = img.data
+    data._check_parts()
 
-    last_dim = 1 if isinstance(index, int) else len(index)
+    if isinstance(index, np.ndarray):
+        return {hemi: data.parts[hemi][:, index].copy() for hemi in data.parts}
+
+    if isinstance(index, int):
+        last_dim = 1
+    elif isinstance(index, slice):
+        start, stop, step = index.indices(data._n_samples)
+        last_dim = max(0, (stop - start + (step - 1)) // step)
+    elif all(isinstance(x, bool) for x in index):
+        last_dim = sum(index)
+    else:
+        last_dim = len(index)
 
     return {
         hemi: data.parts[hemi][:, index]
