@@ -100,6 +100,7 @@ def test_hierarchical_k_means():
     assert_array_almost_equal(test_labels, truth_labels)
 
 
+@pytest.mark.single_process
 def test_hierarchical_k_means_clustering_transform():
     n_samples = 15
     n_clusters = 8
@@ -114,6 +115,7 @@ def test_hierarchical_k_means_clustering_transform():
     assert X_red.shape == (n_samples, n_clusters)
 
 
+@pytest.mark.single_process
 def test_hierarchical_k_means_clustering_inverse_transform():
     n_samples = 15
     n_clusters = 8
