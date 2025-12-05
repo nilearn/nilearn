@@ -66,6 +66,12 @@ class BaseGLM(CacheMixin, BaseEstimator):
             )
         )
 
+    def _is_first_level_glm(self):
+        """Return True if this estimator is of type FirstLevelModel; False
+        otherwise.
+        """
+        return False
+
     def _attributes_to_dict(self):
         """Return dict with pertinent model attributes & information.
 

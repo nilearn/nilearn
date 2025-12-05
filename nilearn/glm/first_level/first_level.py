@@ -535,6 +535,9 @@ class FirstLevelModel(BaseGLM):
         self.subject_label = subject_label
         self.random_state = random_state
 
+    def _is_first_level_glm(self):
+        return True
+
     def _check_fit_inputs(
         self,
         run_imgs,
