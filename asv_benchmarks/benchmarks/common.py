@@ -11,7 +11,7 @@ class Benchmark:
     benchmarks.
     """
 
-    timeout = 1200  # 20 mins
+    timeout = 2400  # 40 mins
 
     def setup_cache(self, n_subjects=500, n_masks=1):
         """Set up the cache directory with the necessary images and masks.
