@@ -27,6 +27,7 @@ ESTIMATORS_TO_CHECK = [HierarchicalKMeans(n_clusters=2)]
 
 if SKLEARN_LT_1_6:
 
+    @pytest.mark.single_process
     @pytest.mark.parametrize(
         "estimator, check, name",
         check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -35,6 +36,7 @@ if SKLEARN_LT_1_6:
         """Check compliance with sklearn estimators."""
         check(estimator)
 
+    @pytest.mark.single_process
     @pytest.mark.xfail(reason="invalid checks should fail")
     @pytest.mark.parametrize(
         "estimator, check, name",
@@ -46,6 +48,7 @@ if SKLEARN_LT_1_6:
 
 else:
 
+    @pytest.mark.single_process
     @parametrize_with_checks(
         estimators=ESTIMATORS_TO_CHECK,
         expected_failed_checks=return_expected_failed_checks,
@@ -97,6 +100,7 @@ def test_hierarchical_k_means():
     assert_array_almost_equal(test_labels, truth_labels)
 
 
+@pytest.mark.single_process
 def test_hierarchical_k_means_clustering_transform():
     n_samples = 15
     n_clusters = 8
@@ -111,6 +115,7 @@ def test_hierarchical_k_means_clustering_transform():
     assert X_red.shape == (n_samples, n_clusters)
 
 
+@pytest.mark.single_process
 def test_hierarchical_k_means_clustering_inverse_transform():
     n_samples = 15
     n_clusters = 8
