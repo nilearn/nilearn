@@ -203,6 +203,7 @@ def test_view_img_on_surf(tmp_path, mni152_template_res_2):
     check_html(tmp_path, html)
 
 
+@pytest.mark.thread_unsafe
 def test_view_img_on_surf_input_as_file(img_3d_mni_as_file):
     view_img_on_surf(img_3d_mni_as_file)
     view_img_on_surf(str(img_3d_mni_as_file))

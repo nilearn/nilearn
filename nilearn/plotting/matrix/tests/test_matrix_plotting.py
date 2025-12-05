@@ -1,3 +1,5 @@
+from itertools import permutations
+
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import numpy as np
@@ -101,9 +103,7 @@ def test_matrix_plotting_set_title(mat, labels, title):
         assert ax._axes.title.get_text() == title
 
 
-def test_matrix_plotting_reorder(mat, labels):
-    from itertools import permutations
-
+def test_matrix_plotting_reorder(matplotlib_pyplot, mat, labels):  # noqa: ARG001
     # test if reordering with default linkage works
     idx = [2, 3, 5]
     # make symmetric matrix of similarities so we can get a block
@@ -120,8 +120,6 @@ def test_matrix_plotting_reorder(mat, labels):
     assert reordered_labels[:3] == idx or reordered_labels[-3:] == idx, (
         "Clustering does not find block structure."
     )
-
-    plt.close()
 
     # test if reordering with specific linkage works
     ax = plot_matrix(mat, labels=labels, reorder="complete")
@@ -305,7 +303,6 @@ def test_show_contrast_matrix_axes():
 
     # to actually check we need get_layout_engine, but even without it the
     # above allows us to test the kwargs are at least okay
-    pytest.importorskip("matplotlib", minversion="3.5.0")
     assert "constrained" in fig.get_layout_engine().__class__.__name__.lower()
 
 

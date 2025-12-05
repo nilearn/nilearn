@@ -4,6 +4,7 @@ import re
 import numpy as np
 import pytest
 
+from nilearn._utils.helpers import is_gil_enabled
 from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting.js_plotting_utils import (
     add_js_lib,
@@ -104,10 +105,10 @@ def check_html(
 
     # when testing without the GIL
     # we cannot import lxml as it requires the GIL
-    try:
-        from lxml import etree
-    except ImportError:
-        return None
+    if not is_gil_enabled():
+        return
+
+    from lxml import etree
 
     root = etree.HTML(
         html.html.encode("utf-8"), parser=etree.HTMLParser(huge_tree=True)

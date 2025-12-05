@@ -113,6 +113,7 @@ def test_plot_surf_engine_error_plotly_not_installed(in_memory_mesh):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
     """Test nilearn.plotting.surface.surf_plotting.plot_surf function with
     available engine backends.
@@ -843,6 +844,7 @@ def test_plot_surf_roi_cmap_as_lookup_table(surface_image_roi):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_roi_error(engine, rng, in_memory_mesh, surf_roi_data):
     """Test for nilearn.plotting.surface.surf_plotting.plot_surf_roi
     for invalid parameter values.
@@ -1264,12 +1266,14 @@ def test_plot_img_on_surf_output_file(matplotlib_pyplot, tmp_path, img_3d_mni):
     assert fname.is_file(), "Saved image file could not be found."
 
 
+@pytest.mark.thread_unsafe
 def test_plot_img_on_surf_input_as_file(matplotlib_pyplot, img_3d_mni_as_file):
     """Test nifti is supported when passed as string or path to a file."""
     plot_img_on_surf(stat_map=img_3d_mni_as_file)
     plot_img_on_surf(stat_map=str(img_3d_mni_as_file))
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "function",
     [plot_surf_roi, plot_surf_stat_map, plot_surf_contours, plot_surf],

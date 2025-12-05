@@ -15,6 +15,7 @@ from nilearn.plotting import plot_stat_map
 from nilearn.plotting.find_cuts import find_cut_slices
 
 
+@pytest.mark.thread_unsafe
 def test_plot_stat_map_bad_input(matplotlib_pyplot, img_3d_mni, tmp_path):
     """Test for bad input arguments (cf. #510)."""
     filename = tmp_path / "temp.png"
@@ -31,6 +32,7 @@ def test_plot_stat_map_bad_input(matplotlib_pyplot, img_3d_mni, tmp_path):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "params", [{}, {"display_mode": "x", "cut_coords": 3}]
 )
@@ -47,6 +49,7 @@ def test_save_plot_stat_map(matplotlib_pyplot, params, img_3d_mni, tmp_path):
     display.savefig(filename)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "display_mode,cut_coords",
     [("ortho", (80, -120, -60)), ("y", 2), ("yx", None)],
@@ -66,6 +69,7 @@ def test_plot_stat_map_cut_coords_and_display_mode(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_stat_map_with_masked_image(
     matplotlib_pyplot, img_3d_mni, affine_mni
 ):
@@ -78,6 +82,7 @@ def test_plot_stat_map_with_masked_image(
     plot_stat_map(masked_img, display_mode="x")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "data",
     [
@@ -122,6 +127,7 @@ def test_plot_stat_map_threshold_for_affine_with_rotation(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "params",
     [
@@ -150,6 +156,7 @@ def test_plot_stat_map_colorbar_variations(
         plot_stat_map(img, cut_coords=(80, -120, -60), **params)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "shape,direction", [((1, 6, 7), "x"), ((5, 1, 7), "y"), ((5, 6, 1), "z")]
 )
@@ -162,6 +169,7 @@ def test_plot_stat_map_singleton_ax_dim(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_outlier_cut_coords(matplotlib_pyplot):
     """Test to plot a subset of a large set of cuts found for a small area."""
     bg_img = load_mni152_template(resolution=2)
@@ -188,6 +196,7 @@ def test_outlier_cut_coords(matplotlib_pyplot):
     plot_stat_map(img, display_mode="z", cut_coords=cuts[-4:], bg_img=bg_img)
 
 
+@pytest.mark.thread_unsafe
 def test_plotting_functions_with_dim_invalid_input(
     matplotlib_pyplot, img_3d_mni
 ):

@@ -169,6 +169,7 @@ def test_save_cmap(cmap, n_colors):
     assert np.allclose(img, expected, atol=0.1)
 
 
+@pytest.mark.thread_unsafe
 def test_mask_stat_map():
     # Generate simple simulated data with one "spot"
     img, data = _simulate_img()
@@ -182,6 +183,7 @@ def test_mask_stat_map():
     assert np.min((data == 0) == get_data(mask_img))
 
 
+@pytest.mark.thread_unsafe
 def test_load_bg_img(affine_eye):
     # Generate simple simulated data with non-diagonal affine
     affine = affine_eye

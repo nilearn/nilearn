@@ -75,6 +75,7 @@ def test_plot_empty_slice(matplotlib_pyplot, affine_mni):
     plot_img(img, display_mode="y", threshold=1)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("binary_img", [True, False])
 def test_plot_img_with_resampling(matplotlib_pyplot, binary_img, img_3d_mni):
     """Tests for plot_img with resampling of the data image."""
