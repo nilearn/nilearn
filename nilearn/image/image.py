@@ -713,7 +713,7 @@ def index_img(imgs, index):
     # duck-type for pandas arrays, and select the 'values' attr
     if hasattr(index, "values") and hasattr(index, "iloc"):
         index = index.to_numpy().flatten()
-    return new_img_like(imgs, _index_img(imgs, index), imgs.affine)
+    return _index_img(imgs, index)
 
 
 def _index_img(img: Nifti1Image, index):
