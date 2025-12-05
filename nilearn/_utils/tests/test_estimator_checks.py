@@ -6,9 +6,12 @@ from nilearn._utils.estimator_checks import (
     check_img_estimator_dict_unchanged,
     check_img_estimator_fit_check_is_fitted,
 )
+from nilearn._utils.helpers import is_gil_enabled
 from nilearn.maskers.base_masker import BaseMasker
 
 
+@pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 def test_check_estimator_has_sklearn_is_fitted():
     """Check errors are thrown for unfitted estimator.
 

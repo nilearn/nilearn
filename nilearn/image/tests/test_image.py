@@ -501,6 +501,7 @@ def test_crop_image_empty_image(affine_eye, pad):
     assert_array_equal(get_data(img), get_data(cropped_img))
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("images_to_mean", _images_to_mean())
 def test_mean_img(images_to_mean, tmp_path):
     affine = np.diag((4, 3, 2, 1))
@@ -822,7 +823,6 @@ def test_new_img_like_non_iterable_header(rng):
     assert new_img_like(fake_spatial_image, data=fake_fmri_data)
 
 
-@pytest.mark.parametrize("no_int64_nifti", ["allow for this test"])
 def test_new_img_like_int64(shape_3d_default):
     img = generate_labeled_regions(shape=shape_3d_default, n_regions=2)
 
@@ -846,6 +846,7 @@ def test_new_img_like_int64(shape_3d_default):
     assert get_data(new_img).dtype == "int64"
 
 
+@pytest.mark.thread_unsafe
 def test_input_in_threshold_img(
     shape_3d_default, surf_img_1d, surf_mask_1d, affine_eye
 ):
@@ -875,6 +876,7 @@ def test_input_in_threshold_img(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_input_in_threshold_img_several_timepoints(
     img_4d_rand_eye, surf_img_2d
 ):
@@ -912,6 +914,7 @@ def _check_thresholded_output(input, output, threshold):
     assert np.all(data[data_to_mask] == 0)
 
 
+@pytest.mark.thread_unsafe
 def test_input_in_threshold_img_errors(
     shape_3d_default, surf_img_1d, surf_mask_1d, affine_eye
 ):
@@ -939,11 +942,13 @@ def test_input_in_threshold_img_errors(
         threshold_img(surf_img_1d, threshold=1, mask_img=vol_mask)
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_img_warning_smoke(surf_img_1d):
     """Check threshold_img with cluster."""
     threshold_img(surf_img_1d, threshold=1, cluster_threshold=10)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("two_sided", [True, False])
 def test_validity_threshold_value_in_threshold_img(
     shape_3d_default, two_sided
@@ -982,6 +987,7 @@ def test_validity_threshold_value_in_threshold_img(
             )
 
 
+@pytest.mark.thread_unsafe
 def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
     """Check that negative values to threshold_img's threshold parameter \
        raise Exceptions.
@@ -1002,6 +1008,7 @@ def test_validity_negative_threshold_value_in_threshold_img(shape_3d_default):
         threshold_img(maps, threshold="-10%", two_sided=False)
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_img(affine_eye):
     """Smoke test for threshold_img with valid threshold inputs."""
     shape = (10, 20, 30)
@@ -1019,6 +1026,7 @@ def test_threshold_img(affine_eye):
         threshold_img(img, threshold="2%")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "threshold, expected_n_non_zero",
     [
@@ -1040,6 +1048,7 @@ def test_threshold_surf_img_1d(surf_img_1d, threshold, expected_n_non_zero):
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "threshold, expected_n_non_zero",
     [
@@ -1067,6 +1076,7 @@ def test_threshold_surf_img_1d_with_mask(
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "threshold, expected_n_non_zero, two_sided",
     [
@@ -1102,6 +1112,7 @@ def test_threshold_surf_img_1d_negative_values(
         assert len(data[np.nonzero(data)]) == expected_n_non_zero[hemi]
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "threshold, two_sided, expected",
     [
@@ -1147,6 +1158,7 @@ def test_threshold_img_with_mask(
     assert len(img_data[np.nonzero(img_data)]) == expected
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "threshold,two_sided,cluster_threshold,expected",
     [
@@ -1174,6 +1186,7 @@ def test_threshold_img_with_cluster_threshold(
     assert np.array_equal(np.unique(thr_img.get_fdata()), np.array(expected))
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_img_threshold_n_clusters(stat_img_test_data):
     """With a cluster threshold of 5 we get 8 clusters with |values| > 2 \
        and cluster sizes > 5.
@@ -1188,6 +1201,7 @@ def test_threshold_img_threshold_n_clusters(stat_img_test_data):
     assert np.sum(thr_img.get_fdata() == 4) == 8
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_img_no_copy_surface(surf_img_1d):
     """Test copy=False on surface data.
 
@@ -1199,6 +1213,7 @@ def test_threshold_img_no_copy_surface(surf_img_1d):
     assert_surface_image_equal(result, surf_img_1d)
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_img_copy_surface(surf_img_1d):
     """Test copy=True on surface data.
 
@@ -1211,6 +1226,7 @@ def test_threshold_img_copy_surface(surf_img_1d):
         assert_surface_image_equal(result, surf_img_1d)
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_img_copy_volume(img_4d_ones_eye):
     """Test the behavior of threshold_img's copy parameter."""
     threshold = 1
@@ -1233,6 +1249,7 @@ def test_threshold_img_copy_volume(img_4d_ones_eye):
     assert_array_equal(get_data(img_to_mutate), get_data(thr_img))
 
 
+@pytest.mark.thread_unsafe
 def test_isnan_threshold_img_data(affine_eye, shape_3d_default):
     """Check threshold_img converges properly when input image has nans."""
     maps, _ = generate_maps(shape_3d_default, n_regions=2)
@@ -1244,6 +1261,7 @@ def test_isnan_threshold_img_data(affine_eye, shape_3d_default):
     threshold_img(maps_img, threshold=0.8)
 
 
+@pytest.mark.thread_unsafe
 def test_threshold_img_copied_header(img_4d_mni_tr2):
     # Test equality of header fields between input and output
     thr_img = threshold_img(img_4d_mni_tr2, threshold=0.5)
@@ -1257,6 +1275,7 @@ def test_threshold_img_copied_header(img_4d_mni_tr2):
     assert thr_img.header["cal_min"] == 0
 
 
+@pytest.mark.thread_unsafe
 def test_math_img_exceptions(affine_eye, img_4d_ones_eye, surf_img_2d):
     img1 = img_4d_ones_eye
     img2 = Nifti1Image(np.zeros((10, 20, 10, 10)), affine_eye)
@@ -1296,6 +1315,7 @@ def test_math_img_exceptions(affine_eye, img_4d_ones_eye, surf_img_2d):
         math_img(formula, img1=img1, img3=img3, copy_header_from="img2")
 
 
+@pytest.mark.thread_unsafe
 def test_math_img(
     affine_eye, img_4d_ones_eye, img_4d_zeros_eye, shape_3d_default, tmp_path
 ):
@@ -1314,6 +1334,7 @@ def test_math_img(
         assert result.shape == expected_result.shape
 
 
+@pytest.mark.thread_unsafe
 def test_math_img_surface(surf_img_2d):
     """Test math_img on surface data."""
     img1 = surf_img_2d(1)
@@ -1333,6 +1354,7 @@ def test_math_img_surface(surf_img_2d):
     assert_surface_image_equal(result, expected_result)
 
 
+@pytest.mark.thread_unsafe
 def test_math_img_copy_default_header(
     img_4d_ones_eye_default_header, img_4d_ones_eye_tr2
 ):
@@ -1349,6 +1371,7 @@ def test_math_img_copy_default_header(
     assert result.header != img_4d_ones_eye_default_header.header
 
 
+@pytest.mark.thread_unsafe
 def test_math_img_copied_header_from_img(img_4d_mni_tr2):
     # case where data values are not changed but header values are copied
     # the result should have the same header values as the given image
@@ -1360,6 +1383,7 @@ def test_math_img_copied_header_from_img(img_4d_mni_tr2):
     assert result.header == img_4d_mni_tr2.header
 
 
+@pytest.mark.thread_unsafe
 def test_math_img_copied_header_data_values_changed(
     img_4d_ones_eye_default_header, img_4d_ones_eye_tr2
 ):
@@ -1387,6 +1411,7 @@ def test_math_img_copied_header_data_values_changed(
             assert result.header[key] == img_4d_ones_eye_tr2.header[key]
 
 
+@pytest.mark.thread_unsafe
 def test_binarize_img(img_4d_rand_eye):
     # Test that all output values are 1.
     img1 = binarize_img(img_4d_rand_eye)
@@ -1574,6 +1599,7 @@ def test_clean_img_surface(surf_img_2d, surf_img_1d, surf_mask_1d) -> None:
     assert cleaned_img.shape[-1] == length - 1
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("create_files", [True, False])
 def test_largest_cc_img(create_files, tmp_path):
     """Check the extraction of the largest connected component, for niftis.
@@ -1602,6 +1628,7 @@ def test_largest_cc_img(create_files, tmp_path):
     assert out.shape == (shapes[0])
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("create_files", [True, False])
 def test_largest_cc_img_non_native_endian_type(create_files, tmp_path):
     # Test whether dimension of 3Dimg and list of 3Dimgs are kept.
@@ -1642,6 +1669,7 @@ def test_largest_cc_img_non_native_endian_type(create_files, tmp_path):
     assert_equal(get_data(out_native), get_data(out_non_native))
 
 
+@pytest.mark.thread_unsafe
 def test_largest_cc_img_error(shape_3d_default):
     # Test whether 4D Nifti throws the right error.
     img_4D = generate_fake_fmri(shape_3d_default)
@@ -1820,11 +1848,13 @@ def test_iterator_generator(img_3d_rand_eye):
     assert len(b) == 10
 
 
+@pytest.mark.thread_unsafe
 def test_copy_img():
     with pytest.raises(TypeError, match="must be of type"):
         copy_img(3)
 
 
+@pytest.mark.thread_unsafe
 def test_copy_img_side_effect(img_4d_ones_eye):
     hash1 = joblib.hash(img_4d_ones_eye)
     copy_img(img_4d_ones_eye)
