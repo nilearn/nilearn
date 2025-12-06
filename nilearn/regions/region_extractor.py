@@ -12,18 +12,16 @@ from nilearn import masking
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import (
-    check_niimg,
-    check_niimg_3d,
-    check_niimg_4d,
-    check_same_fov,
-)
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
 from nilearn._utils.segmentation import random_walker
 from nilearn.image.image import (
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
+    check_same_fov,
     concat_imgs,
     new_img_like,
     smooth_array,
