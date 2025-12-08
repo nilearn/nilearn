@@ -410,6 +410,7 @@ def test_multi_nifti_masker_generate_report_mask(
     masker.fit().generate_report()
 
 
+@pytest.mark.slow
 def test_multi_nifti_masker_generate_report_imgs_and_mask(
     shape_3d_default, affine_eye, img_fmri
 ):

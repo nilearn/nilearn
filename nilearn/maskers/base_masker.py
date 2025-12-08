@@ -25,11 +25,11 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.niimg import repr_niimgs, safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.exceptions import NotImplementedWarning
 from nilearn.image import (
+    check_niimg,
     concat_imgs,
     high_variance_confounds,
     new_img_like,

@@ -1,7 +1,9 @@
 """Test image pre-processing functions."""
 
 import platform
+import re
 import warnings
+from collections.abc import Iterable
 from pathlib import Path
 
 import joblib
@@ -18,6 +20,7 @@ from numpy.testing import (
     assert_equal,
 )
 
+import nilearn as ni
 from nilearn import signal
 from nilearn._utils import testing
 from nilearn._utils.data_gen import (
@@ -26,10 +29,21 @@ from nilearn._utils.data_gen import (
     generate_labeled_regions,
     generate_maps,
 )
+from nilearn._utils.testing import (
+    assert_memory_less_than,
+    with_memory_profiler,
+    write_imgs_to_path,
+)
 from nilearn.conftest import _affine_eye, _img_3d_rand, _rng, _shape_4d_default
 from nilearn.exceptions import DimensionError
-from nilearn.image import (
+from nilearn.image.image import (
+    _crop_img_to,
+    _fast_smooth_array,
     binarize_img,
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
+    check_same_fov,
     clean_img,
     concat_imgs,
     copy_img,
@@ -37,23 +51,20 @@ from nilearn.image import (
     get_data,
     high_variance_confounds,
     index_img,
+    iter_check_niimg,
     iter_img,
     largest_connected_component_img,
     math_img,
     mean_img,
     new_img_like,
+    smooth_array,
     smooth_img,
     swap_img_hemispheres,
     threshold_img,
 )
-from nilearn.image.image import (
-    _crop_img_to,
-    _fast_smooth_array,
-    smooth_array,
-)
 from nilearn.image.resampling import resample_img
 from nilearn.image.tests._testing import match_headers_keys
-from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import SurfaceImage, extract_data
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import (
     assert_polymesh_equal,
@@ -608,18 +619,28 @@ def test_swap_img_hemispheres(affine_eye, shape_3d_default, rng):
     )
 
 
-def test_index_img_error_3d(affine_eye):
-    img_3d = Nifti1Image(np.ones((3, 4, 5)), affine_eye)
+def test_index_img_error_3d(
+    img_4d_ones_eye, img_3d_ones_eye, surf_img_1d, surf_img_2d
+):
+    """Check index_img only works on 4D volume data or 2D surface data."""
+    index_img(img_4d_ones_eye, 0)
     expected_error_msg = (
         "Input data has incompatible dimensionality: "
         "Expected dimension is 4D and you provided "
         "a 3D image."
     )
-    with pytest.raises(TypeError, match=expected_error_msg):
-        index_img(img_3d, 0)
+    with pytest.raises(DimensionError, match=expected_error_msg):
+        index_img(img_3d_ones_eye, 0)
+
+    index_img(surf_img_2d(2), 0)
+    with pytest.raises(
+        ValueError, match="Data for each part of imgs should be 2D"
+    ):
+        index_img(surf_img_1d, 0)
 
 
-def test_index_img():
+def test_index_img_volume():
+    """Test index_img with volume data."""
     img_4d, _ = generate_fake_fmri(affine=NON_EYE_AFFINE)
 
     fourth_dim_size = img_4d.shape[3]
@@ -627,7 +648,11 @@ def test_index_img():
         *range(fourth_dim_size),
         slice(2, 8, 2),
         [1, 2, 3, 2],
-        (np.arange(fourth_dim_size) % 3) == 1,
+        np.asarray([1, 2, 3, 2]),
+        (np.arange(fourth_dim_size) % 3) == 1,  # boolean indexing with array
+        (
+            (np.arange(fourth_dim_size) % 3) == 1
+        ).tolist(),  # boolean indexing with list
     ]
     for i in tested_indices:
         this_img = index_img(img_4d, i)
@@ -637,7 +662,37 @@ def test_index_img():
         assert_array_equal(this_img.affine, img_4d.affine)
 
 
-def test_index_img_error_4d(affine_eye):
+@pytest.mark.parametrize("length", [20])
+@pytest.mark.parametrize(
+    "index, expected_n_samples",
+    [
+        ([*range(20)], 20),
+        (slice(2, 8, 2), 3),
+        ([1, 2, 3, 2], 4),
+        (np.asarray([1, 2, 3, 2]), 4),
+        (
+            ((np.arange(20) % 3) == 1).tolist(),
+            7,
+        ),  # boolean indexing with array
+        ((np.arange(20) % 3) == 1, 7),  # boolean indexing with array
+    ],
+)
+def test_index_img_surface(surf_img_2d, length, index, expected_n_samples):
+    """Test index_img with surface data."""
+    input_img = surf_img_2d(length)
+    this_img = index_img(input_img, index)
+
+    assert this_img.data._n_samples == expected_n_samples
+
+    assert_polymesh_equal(this_img.mesh, input_img.mesh)
+
+    expected_data_3d = extract_data(input_img, index)
+    for hemi, value in this_img.data.parts.items():
+        assert_array_equal(value, expected_data_3d[hemi])
+
+
+def test_index_img_error_volumne_4d(affine_eye):
+    """Test impossible indices with volume data."""
     img_4d, _ = generate_fake_fmri(affine=affine_eye)
     fourth_dim_size = img_4d.shape[3]
     for i in [
@@ -651,6 +706,14 @@ def test_index_img_error_4d(affine_eye):
             match=r"out of bounds|invalid index|out of range|boolean index",
         ):
             index_img(img_4d, i)
+
+
+@pytest.mark.parametrize("length", [20])
+@pytest.mark.parametrize("index", [20, -21, [0, 20], np.repeat(True, 21)])
+def test_index_img_error_surface_2d(surf_img_2d, length, index):
+    """Test impossible indices with surface data."""
+    with pytest.raises(IndexError, match=r"out of bounds|boolean"):
+        index_img(surf_img_2d(length), index)
 
 
 def test_pd_index_img(rng, img_4d_rand_eye):
@@ -672,7 +735,7 @@ def test_iter_img_3d_imag_error(affine_eye):
         "Expected dimension is 4D and you provided "
         "a 3D image."
     )
-    with pytest.raises(TypeError, match=expected_error_msg):
+    with pytest.raises(DimensionError, match=expected_error_msg):
         iter_img(img_3d)
 
 
@@ -1819,3 +1882,547 @@ def test_copy_img_side_effect(img_4d_ones_eye):
     copy_img(img_4d_ones_eye)
     hash2 = joblib.hash(img_4d_ones_eye)
     assert hash1 == hash2
+
+
+def test_check_same_fov(affine_eye):
+    """Check check_same_fov error messages."""
+    affine_b = affine_eye * 2
+
+    shape_a = (2, 2, 2)
+    shape_b = (3, 3, 3)
+
+    shape_a_affine_a = Nifti1Image(np.empty(shape_a), affine_eye)
+    shape_a_affine_a_2 = Nifti1Image(np.empty(shape_a), affine_eye)
+    shape_a_affine_b = Nifti1Image(np.empty(shape_a), affine_b)
+    shape_b_affine_a = Nifti1Image(np.empty(shape_b), affine_eye)
+    shape_b_affine_b = Nifti1Image(np.empty(shape_b), affine_b)
+
+    check_same_fov(a=shape_a_affine_a, b=shape_a_affine_a_2, raise_error=True)
+
+    with pytest.raises(
+        ValueError, match=r"[ac] and [ac] do not have the same affine"
+    ):
+        check_same_fov(
+            a=shape_a_affine_a,
+            b=shape_a_affine_a_2,
+            c=shape_a_affine_b,
+            raise_error=True,
+        )
+    with pytest.raises(
+        ValueError, match=r"[ab] and [ab] do not have the same shape"
+    ):
+        check_same_fov(
+            a=shape_a_affine_a, b=shape_b_affine_a, raise_error=True
+        )
+    with pytest.raises(
+        ValueError, match=r"[ab] and [ab] do not have the same affine"
+    ):
+        check_same_fov(
+            a=shape_b_affine_b, b=shape_a_affine_a, raise_error=True
+        )
+
+    with pytest.raises(
+        ValueError, match=r"[ab] and [ab] do not have the same shape"
+    ):
+        check_same_fov(
+            a=shape_b_affine_b, b=shape_a_affine_a, raise_error=True
+        )
+
+
+def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
+    """Check data dtype equal with dtype='auto'."""
+    img_3d_check = check_niimg(img_3d_zeros_eye, dtype="auto")
+    assert (
+        get_data(img_3d_zeros_eye).dtype.kind
+        == get_data(img_3d_check).dtype.kind
+    )
+
+    img_4d_check = check_niimg(img_4d_zeros_eye, dtype="auto")
+    assert (
+        get_data(img_4d_zeros_eye).dtype.kind
+        == get_data(img_4d_check).dtype.kind
+    )
+
+
+def test_check_niimg_return_iterator_4d_input(
+    img_3d_zeros_eye, img_4d_zeros_eye
+):
+    """Check behavior return_iterator on 4D-like image."""
+    # return a 4D image
+    img = check_niimg(img_4d_zeros_eye)
+    assert isinstance(img, Nifti1Image)
+    assert len(img.shape) == 4
+
+    img = check_niimg([img_3d_zeros_eye, img_3d_zeros_eye])
+    assert isinstance(img, Nifti1Image)
+    assert len(img.shape) == 4
+
+    # return a generator of 3D images
+    img = check_niimg(img_4d_zeros_eye, return_iterator=True)
+    assert isinstance(img, Iterable)
+    assert len(next(img).shape) == 3
+
+    img = check_niimg(
+        [img_3d_zeros_eye, img_3d_zeros_eye], return_iterator=True
+    )
+    assert isinstance(img, Iterable)
+    assert len(next(img).shape) == 3
+
+
+def test_check_niimg_return_iterator_3d_input(img_3d_zeros_eye):
+    """Check behavior return_iterator on 3D image."""
+    # return a 3D image
+    img = check_niimg(img_3d_zeros_eye)
+    assert isinstance(img, Nifti1Image)
+    assert len(img.shape) == 3
+
+    # return a 4D image
+    img = check_niimg(img_3d_zeros_eye, atleast_4d=True)
+    assert isinstance(img, Nifti1Image)
+    assert len(img.shape) == 4
+
+    # return a generator of 3D images
+    # warnings only if atleast_4d=False
+    with warnings.catch_warnings(record=True) as w:
+        img = check_niimg(
+            img_3d_zeros_eye, atleast_4d=True, return_iterator=True
+        )
+        assert len(w) == 0
+    assert isinstance(img, Iterable)
+    assert len(next(img).shape) == 3
+
+
+def test_check_niimg_return_iterator_true_3d_input(img_3d_zeros_eye):
+    """Check behavior return_iterator=True on 3D image."""
+    expected_error_msg = (
+        "Input data has incompatible dimensionality: "
+        "Expected dimension is 4D and you provided "
+        "a 3D image."
+    )
+    with pytest.raises(
+        DimensionError,
+        match=expected_error_msg,
+    ):
+        check_niimg(img_3d_zeros_eye, return_iterator=True)
+
+
+def test_check_niimg_errors(img_3d_zeros_eye, img_4d_zeros_eye):
+    """Check check_niimg errors."""
+    with pytest.raises(TypeError, match="input should be a NiftiLike object"):
+        check_niimg(0)
+
+    with pytest.raises(TypeError, match="empty object"):
+        check_niimg([])
+
+    img_3_3d = [[[img_3d_zeros_eye, img_3d_zeros_eye]]]
+    img_2_4d = [[img_4d_zeros_eye, img_4d_zeros_eye]]
+
+    with pytest.raises(
+        DimensionError,
+        match="Input data has incompatible dimensionality: "
+        "Expected dimension is 2D and you provided "
+        "a list of list of list of 3D images \\(6D\\)",
+    ):
+        check_niimg(img_3_3d, ensure_ndim=2)
+
+    with pytest.raises(
+        DimensionError,
+        match="Input data has incompatible dimensionality: "
+        "Expected dimension is 4D and you provided "
+        "a list of list of 4D images \\(6D\\)",
+    ):
+        check_niimg(img_2_4d, ensure_ndim=4)
+
+
+def test_check_niimg_wildcards_errors():
+    """Check bad filename."""
+    # Non existing file (with no magic) raise a ValueError exception
+    nofile_path = "/tmp/nofile"
+    file_not_found_msg = "File not found: '%s'"
+    with pytest.raises(ValueError, match=file_not_found_msg % nofile_path):
+        check_niimg(nofile_path)
+
+    # Non matching wildcard raises a ValueError exception
+    nofile_path_wildcards = "/tmp/no*file"
+    with pytest.raises(
+        ValueError, match="You may have left wildcards usage activated"
+    ):
+        check_niimg(nofile_path_wildcards)
+
+
+@pytest.mark.parametrize("shape", [(10, 10, 10), (10, 10, 10, 3)])
+@pytest.mark.parametrize(
+    "wildcards", [True, False]
+)  # (With globbing behavior or not)
+def test_check_niimg_wildcards(affine_eye, shape, wildcards, tmp_path):
+    """Test wildcards behavior."""
+    img = Nifti1Image(np.zeros(shape), affine_eye)
+
+    filename = write_imgs_to_path(img, file_path=tmp_path, create_files=True)
+    assert_array_equal(
+        get_data(check_niimg(filename, wildcards=wildcards)),
+        get_data(img),
+    )
+
+
+@pytest.fixture
+def img_in_home_folder(img_3d_mni):
+    """Create a test file in the home folder.
+
+    Teardown: use yield instead of return to make sure the file
+    is deleted after the test,
+    even if the test fails.
+    https://docs.pytest.org/en/stable/how-to/fixtures.html#teardown-cleanup-aka-fixture-finalization
+    """
+    created_file = Path("~/test.nii")
+    img_3d_mni.to_filename(created_file.expanduser())
+    assert created_file.expanduser().exists()
+
+    yield img_3d_mni
+
+    created_file.expanduser().unlink()
+
+
+@pytest.mark.parametrize(
+    "filename", ["~/test.nii", r"~/test.nii", Path("~/test.nii")]
+)
+def test_check_niimg_user_expand(img_in_home_folder, filename):
+    """Check that user path are expanded."""
+    found_file = check_niimg(filename)
+
+    assert_array_equal(
+        get_data(found_file),
+        get_data(img_in_home_folder),
+    )
+
+
+@pytest.mark.parametrize(
+    "filename",
+    [
+        "~/*.nii",
+        r"~/*.nii",
+        ["~/test.nii"],
+        [r"~/test.nii"],
+        [Path("~/test.nii")],
+    ],
+)
+def test_check_niimg_user_expand_4d(img_in_home_folder, filename):
+    """Check that user path are expanded.
+
+    Wildcards and lists should expected 4D data to be returned.
+    """
+    found_file = check_niimg(filename)
+
+    assert_array_equal(
+        get_data(found_file),
+        get_data(check_niimg(img_in_home_folder, atleast_4d=True)),
+    )
+
+
+def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
+    """Test globbing behavior."""
+    file_not_found_msg = "File not found: '%s'"
+
+    # Testing with a glob matching exactly one filename
+    # Using a glob matching one file containing a 3d image returns a 4d image
+    # with 1 as last dimension.
+    globs = write_imgs_to_path(
+        img_3d_zeros_eye,
+        file_path=tmp_path,
+        create_files=True,
+        use_wildcards=True,
+    )
+    assert_array_equal(
+        get_data(check_niimg(globs))[..., 0],
+        get_data(img_3d_zeros_eye),
+    )
+    # Disabled globbing behavior should raise an ValueError exception
+    with pytest.raises(
+        ValueError, match=file_not_found_msg % re.escape(globs)
+    ):
+        check_niimg(globs, wildcards=False)
+
+    # Testing with a glob matching multiple filenames
+    img_4d = check_niimg_4d((img_3d_zeros_eye, img_3d_zeros_eye))
+    globs = write_imgs_to_path(
+        img_3d_zeros_eye,
+        img_3d_zeros_eye,
+        file_path=tmp_path,
+        create_files=True,
+        use_wildcards=True,
+    )
+    assert_array_equal(get_data(check_niimg(globs)), get_data(img_4d))
+
+
+@pytest.fixture
+def set_expand_path_wildcards():
+    """Toggles EXPAND_PATH_WILDCARDS before and after a test."""
+    # Test when global variable is set to False => no globbing allowed
+    ni.EXPAND_PATH_WILDCARDS = False
+    yield
+    # Reverting to default behavior
+    ni.EXPAND_PATH_WILDCARDS = True
+
+
+def test_check_niimg_no_expand_wildcards_errors(
+    set_expand_path_wildcards,  # noqa: ARG001
+):
+    """Test errors when wildcards are not expanded if requested."""
+    nofile_path = "/tmp/nofile"
+
+    file_not_found_msg = "File not found: '%s'"
+
+    # Non existing filename (/tmp/nofile) could match an existing one through
+    # globbing but global wildcards variable overrides this feature => raises
+    # a ValueError
+    with pytest.raises(ValueError, match=file_not_found_msg % nofile_path):
+        check_niimg(nofile_path)
+
+    # Verify wildcards function parameter has no effect
+    with pytest.raises(ValueError, match=file_not_found_msg % nofile_path):
+        check_niimg(nofile_path, wildcards=False)
+
+
+def test_check_niimg_no_expand_wildcards(
+    img_3d_zeros_eye,
+    img_4d_zeros_eye,
+    tmp_path,
+    set_expand_path_wildcards,  # noqa: ARG001
+):
+    """Test wildcards are not expanded if requested."""
+    # Testing with an exact filename matching (3d case)
+    filename = write_imgs_to_path(
+        img_3d_zeros_eye, file_path=tmp_path, create_files=True
+    )
+    assert_array_equal(
+        get_data(check_niimg(filename)), get_data(img_3d_zeros_eye)
+    )
+
+    # Testing with an exact filename matching (4d case)
+    filename = write_imgs_to_path(
+        img_4d_zeros_eye, file_path=tmp_path, create_files=True
+    )
+    assert_array_equal(
+        get_data(check_niimg(filename)), get_data(img_4d_zeros_eye)
+    )
+
+
+def test_check_niimg_3d_error(img_3d_zeros_eye):
+    """Test dimensionality error."""
+    with pytest.raises(
+        DimensionError,
+        match="Input data has incompatible dimensionality",
+    ):
+        check_niimg_3d([img_3d_zeros_eye, img_3d_zeros_eye])
+
+
+def test_check_niimg_3d_filename(affine_eye, tmp_path):
+    """Check that a filename does not raise an error."""
+    data = np.zeros((40, 40, 40, 1))
+    data[20, 20, 20] = 1
+    data_img = Nifti1Image(data, affine_eye)
+
+    filename = write_imgs_to_path(
+        data_img, file_path=tmp_path, create_files=True
+    )
+    check_niimg_3d(filename)
+
+
+def test_check_niimg_3d_datatype(img_3d_zeros_eye):
+    """Check data dtype equal with dtype='auto'."""
+    img_check = check_niimg_3d(img_3d_zeros_eye, dtype="auto")
+    assert (
+        get_data(img_3d_zeros_eye).dtype.kind == get_data(img_check).dtype.kind
+    )
+
+
+def test_check_niimg_3d_pathlike(img_3d_zeros_eye, tmp_path):
+    """Test check_niimg_3d with file."""
+    filename = write_imgs_to_path(
+        img_3d_zeros_eye, file_path=tmp_path, create_files=True
+    )
+    filename = Path(filename)
+    check_niimg_3d(filename)
+
+
+def test_check_niimg_4d_errors(affine_eye, img_3d_zeros_eye, shape_3d_default):
+    """Test check_niimg_4d errors."""
+    with pytest.raises(TypeError, match="input should be a NiftiLike object"):
+        check_niimg_4d(0)
+
+    with pytest.raises(TypeError, match="empty object"):
+        check_niimg_4d([])
+
+    # This should raise an error: a 3D img is given and we want a 4D
+    with pytest.raises(
+        DimensionError,
+        match=(
+            r"Input data has incompatible dimensionality: "
+            r"Expected dimension is 4D and you provided a 3D image."
+        ),
+    ):
+        check_niimg_4d(img_3d_zeros_eye)
+
+    a = img_3d_zeros_eye
+    b = np.zeros(shape_3d_default)
+    c = check_niimg_4d([a, b], return_iterator=True)
+    with pytest.raises(
+        TypeError, match="Error encountered while loading image #1"
+    ):
+        list(c)
+
+    b = Nifti1Image(np.zeros((10, 20, 10)), affine_eye)
+    c = check_niimg_4d([a, b], return_iterator=True)
+    with pytest.raises(
+        ValueError,
+        match="Field of view of image #1 is different from reference FOV",
+    ):
+        list(c)
+
+
+def test_check_niimg_4d(affine_eye, img_3d_zeros_eye, shape_3d_default):
+    """Check check_niimg_4d basic behavior."""
+    img_4d_1 = check_niimg_4d([img_3d_zeros_eye, img_3d_zeros_eye])
+
+    assert get_data(img_4d_1).shape == (*shape_3d_default, 2)
+    assert_array_equal(img_4d_1.affine, affine_eye)
+
+    # check idempotence
+    img_4d_2 = check_niimg_4d(img_4d_1)
+
+    assert_array_equal(get_data(img_4d_2), get_data(img_4d_1))
+    assert_array_equal(img_4d_2.affine, img_4d_1.affine)
+
+
+def test_check_niimg_4d_return_iterator(img_3d_zeros_eye, shape_3d_default):
+    """Check check_niimg_4d with return iterator."""
+    img_4d_1 = check_niimg_4d([img_3d_zeros_eye, img_3d_zeros_eye])
+    img_3d_iterator = check_niimg_4d(
+        [img_3d_zeros_eye, img_3d_zeros_eye], return_iterator=True
+    )
+    img_3d_iterator_length = sum(1 for _ in img_3d_iterator)
+
+    assert img_3d_iterator_length == 2
+
+    img_3d_iterator_1 = check_niimg_4d(
+        [img_3d_zeros_eye, img_3d_zeros_eye], return_iterator=True
+    )
+    img_3d_iterator_2 = check_niimg_4d(img_3d_iterator_1, return_iterator=True)
+
+    for img_1, img_2 in zip(
+        img_3d_iterator_1, img_3d_iterator_2, strict=False
+    ):
+        assert get_data(img_1).shape == shape_3d_default
+        assert_array_equal(get_data(img_1), get_data(img_2))
+        assert_array_equal(img_1.affine, img_2.affine)
+
+    img_3d_iterator_1 = check_niimg_4d(
+        [img_3d_zeros_eye, img_3d_zeros_eye], return_iterator=True
+    )
+    img_3d_iterator_2 = check_niimg_4d(img_4d_1, return_iterator=True)
+
+    for img_1, img_2 in zip(
+        img_3d_iterator_1, img_3d_iterator_2, strict=False
+    ):
+        assert get_data(img_1).shape == shape_3d_default
+        assert_array_equal(get_data(img_1), get_data(img_2))
+        assert_array_equal(img_1.affine, img_2.affine)
+
+
+class PhonyNiimage(spatialimages.SpatialImage):
+    """Dummy image."""
+
+    def __init__(self):
+        self.data = np.ones((9, 9, 9, 9))
+        self.my_affine = np.ones((4, 4))
+
+    def get_data(self):
+        """Return data."""
+        return self.data
+
+    def get_affine(self):
+        """Return affine."""
+        return self.my_affine
+
+    @property
+    def shape(self):
+        """Return shape."""
+        return self.data.shape
+
+    @property
+    def _data_cache(self):
+        return self.data
+
+    @property
+    def _dataobj(self):
+        return self.data
+
+
+def test_check_niimg_4d_phony_image():
+    """Test a Niimg-like object that does not hold a shape attribute."""
+    phony_img = PhonyNiimage()
+    check_niimg_4d(phony_img)
+
+
+def test_check_niimg_4d_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
+    """Testing with a glob matching multiple filenames."""
+    img_4d = check_niimg_4d((img_3d_zeros_eye, img_3d_zeros_eye))
+    globs = write_imgs_to_path(
+        img_3d_zeros_eye,
+        img_3d_zeros_eye,
+        file_path=tmp_path,
+        create_files=True,
+        use_wildcards=True,
+    )
+    assert_array_equal(get_data(check_niimg(globs)), get_data(img_4d))
+
+
+def test_iter_check_niimgs_error():
+    """Test error iter_check_niimg with missing files."""
+    no_file_matching = "No files matching path: %s"
+
+    for empty in ((), [], iter(())):
+        with pytest.raises(ValueError, match=r"Input niimgs list is empty."):
+            list(iter_check_niimg(empty))
+
+    nofile_path = "/tmp/nofile"
+    with pytest.raises(ValueError, match=no_file_matching % nofile_path):
+        list(iter_check_niimg(nofile_path))
+
+
+def test_iter_check_niimgs(tmp_path, img_4d_zeros_eye):
+    """Test iter_check_niimg on file on disk and regular 5D image."""
+    # Create a test file
+    filename = tmp_path / "nilearn_test.nii"
+    img_4d_zeros_eye.to_filename(filename)
+    niimgs = list(iter_check_niimg([filename]))
+    assert_array_equal(
+        get_data(niimgs[0]), get_data(check_niimg(img_4d_zeros_eye))
+    )
+    del niimgs
+
+    # Regular case
+    img_5d = [[img_4d_zeros_eye, img_4d_zeros_eye]]
+    niimgs = list(iter_check_niimg(img_5d))
+    assert_array_equal(get_data(niimgs[0]), get_data(check_niimg(img_5d)))
+
+
+def _check_memory(list_img_3d):
+    # We intentionally add an offset of memory usage to avoid non trustable
+    # measures with memory_profiler.
+    mem_offset = b"a" * 100 * 1024**2
+    list(iter_check_niimg(list_img_3d))
+    return mem_offset
+
+
+@with_memory_profiler
+def test_iter_check_niimgs_memory(affine_eye):
+    """Verify that iterating over a list of images \
+       doesn't consume extra memory.
+    """
+    assert_memory_less_than(
+        100,
+        0.1,
+        _check_memory,
+        [Nifti1Image(np.ones((100, 100, 200)), affine_eye) for _ in range(10)],
+    )

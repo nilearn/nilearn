@@ -344,6 +344,7 @@ def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
     ).fit(X, y)
 
 
+@pytest.mark.slow
 def test_graph_net_classifier_score():
     iris = load_iris()
     X, y = iris.data, iris.target

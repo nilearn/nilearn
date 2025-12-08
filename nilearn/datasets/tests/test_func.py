@@ -1038,7 +1038,7 @@ def _generate_spm_multimodal(subject_dir=None, n_sessions=2, n_vol=390):
         file_.touch()
     return
 
-
+@pytest.mark.single_process
 def test_fetch_spm_multimodal(tmp_path, capsys):
     subject_dir = tmp_path / "spm_multimodal_fmri" / "sub001"
     _generate_spm_multimodal(subject_dir=subject_dir)
