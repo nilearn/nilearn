@@ -236,6 +236,7 @@ def calculate_cluster_measures(
     threshold,
     bin_struct,
     two_sided_test=False,
+    is_volume=True,
 ):
     """Calculate maximum cluster mass and size for an array.
 
@@ -244,65 +245,87 @@ def calculate_cluster_measures(
     arr4d : :obj:`numpy.ndarray` of shape (X, Y, Z, R)
         Unthresholded 4D array of 3D t-statistic maps.
         R = regressor.
+
     threshold : :obj:`float`
         Uncorrected t-statistic threshold for defining clusters.
+
     bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3)
         Connectivity matrix for defining clusters.
+
     two_sided_test : :obj:`bool`, default=False
         Whether to assess both positive and negative clusters (True) or just
         positive ones (False).
+
+    is_volume : :obj:`bool`, default=True
+        Whether the data came from volume data or not.
 
     Returns
     -------
     max_size, max_mass : :obj:`numpy.ndarray` of shape (n_regressors,)
         Maximum cluster size and mass from the matrix, for each regressor.
     """
-    n_regressors = arr4d.shape[3]
+    n_regressors = arr4d.shape[3] if is_volume else arr4d.shape[1]
 
     max_sizes = np.zeros(n_regressors, int)
     max_masses = np.zeros(n_regressors, float)
 
-    for i_regressor in range(n_regressors):
-        arr3d = arr4d[..., i_regressor].copy()
+    if is_volume:
+        for i_regressor in range(n_regressors):
+            arr3d = arr4d[..., i_regressor].copy()
 
-        if two_sided_test:
-            arr3d[np.abs(arr3d) <= threshold] = 0
-        else:
-            arr3d[arr3d <= threshold] = 0
+            if two_sided_test:
+                arr3d[np.abs(arr3d) <= threshold] = 0
+            else:
+                arr3d[arr3d <= threshold] = 0
 
-        labeled_arr3d, _ = label(arr3d > 0, bin_struct)
+            labeled_arr3d, _ = label(arr3d > 0, bin_struct)
 
-        if two_sided_test:
-            # Label positive and negative clusters separately
-            n_positive_clusters = np.max(labeled_arr3d)
-            temp_labeled_arr3d, _ = label(
-                arr3d < 0,
-                bin_struct,
+            if two_sided_test:
+                # Label positive and negative clusters separately
+                n_positive_clusters = np.max(labeled_arr3d)
+                temp_labeled_arr3d, _ = label(
+                    arr3d < 0,
+                    bin_struct,
+                )
+                temp_labeled_arr3d[temp_labeled_arr3d > 0] += (
+                    n_positive_clusters
+                )
+                labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
+                del temp_labeled_arr3d
+
+            clust_vals, clust_sizes = np.unique(
+                labeled_arr3d, return_counts=True
             )
-            temp_labeled_arr3d[temp_labeled_arr3d > 0] += n_positive_clusters
-            labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
-            del temp_labeled_arr3d
+            assert clust_vals[0] == 0
 
-        clust_vals, clust_sizes = np.unique(labeled_arr3d, return_counts=True)
-        assert clust_vals[0] == 0
+            clust_vals = clust_vals[1:]  # First cluster is zeros in matrix
+            clust_sizes = clust_sizes[1:]
 
-        clust_vals = clust_vals[1:]  # First cluster is zeros in matrix
-        clust_sizes = clust_sizes[1:]
+            # Cluster mass-based inference
+            max_mass = 0
+            for unique_val in clust_vals:
+                ss_vals = (
+                    np.abs(arr3d[labeled_arr3d == unique_val]) - threshold
+                )
+                max_mass = np.maximum(max_mass, np.sum(ss_vals))
 
-        # Cluster mass-based inference
-        max_mass = 0
-        for unique_val in clust_vals:
-            ss_vals = np.abs(arr3d[labeled_arr3d == unique_val]) - threshold
-            max_mass = np.maximum(max_mass, np.sum(ss_vals))
+            # Cluster size-based inference
+            max_size = 0
+            if clust_sizes.size:
+                max_size = np.max(clust_sizes)
 
-        # Cluster size-based inference
-        max_size = 0
-        if clust_sizes.size:
-            max_size = np.max(clust_sizes)
+            max_sizes[i_regressor], max_masses[i_regressor] = (
+                max_size,
+                max_mass,
+            )
 
-        max_sizes[i_regressor], max_masses[i_regressor] = max_size, max_mass
+        return max_sizes, max_masses
 
-    return max_sizes, max_masses
+    else:
+        for i_regressor in range(n_regressors):
+            arr3d = arr4d[..., i_regressor].copy()
+
+        return max_sizes, max_masses
 
 
 def normalize_matrix_on_axis(m, axis=0):

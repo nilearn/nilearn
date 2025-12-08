@@ -429,8 +429,8 @@ def test_missing_second_level_contrast_errors(
     "kwargs",
     [
         {},
-        # {"tfce": True},  # to run cluster inference
         {"threshold": 0.001},  # to run cluster inference
+        # {"tfce": True},  # to run cluster inference
     ],
 )
 @pytest.mark.parametrize("two_sided_test", [True, False])
@@ -468,8 +468,8 @@ def test_surface_images(surf_img_1d, two_sided_test, kwargs, n_subjects):
     "kwargs",
     [
         {},
-        # {"tfce": True},  # to run cluster inference
         {"threshold": 0.001},  # to run cluster inference
+        # {"tfce": True},  # to run cluster inference
     ],
 )
 @pytest.mark.parametrize("two_sided_test", [True, False])
@@ -507,8 +507,8 @@ def test_surface_images_2d(surf_img_2d, n_subjects, kwargs, two_sided_test):
     "kwargs",
     [
         {},
-        # {"tfce": True},  # to run cluster inference
         {"threshold": 0.001},  # to run cluster inference
+        # {"tfce": True},  # to run cluster inference
     ],
 )
 @pytest.mark.parametrize("two_sided_test", [True, False])
