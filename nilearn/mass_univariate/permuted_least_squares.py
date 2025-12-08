@@ -20,6 +20,7 @@ from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
     check_params,
 )
+from nilearn.exceptions import NotImplementedWarning
 from nilearn.image import new_img_like
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.masking import apply_mask
@@ -707,7 +708,7 @@ def permuted_ols(
 
     # step 3: original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
-    # scores_original_data is in samples-by-regressors shape
+    # scores_original_data is in samples-by-regressors
     scores_original_data = t_score_with_covars_and_normalized_design(
         testedvars_resid_covars,
         targetvars_resid_covars.T,
@@ -716,6 +717,13 @@ def permuted_ols(
 
     # Define connectivity for TFCE and/or cluster measures
     bin_struct = generate_binary_structure(3, 1)
+
+    if isinstance(masker, SurfaceMasker) and (tfce or threshold is not None):
+        NotImplementedWarning(
+            "cluster based not implemented for surface data."
+        )
+        tfce = False
+        threshold = None
 
     tfce_original_data: np.ndarray | None = None
     if tfce:

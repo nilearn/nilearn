@@ -1,5 +1,7 @@
 """Test non_parametric_inference."""
 
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -437,13 +439,25 @@ def test_surface_images(surf_img_1d, two_sided_test, kwargs, n_subjects):
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
-    non_parametric_inference(
-        second_level_input=second_level_input,
-        design_matrix=design_matrix,
-        n_perm=N_PERM,
-        two_sided_test=two_sided_test,
-        **kwargs,
-    )
+    with warnings.catch_warnings(record=True) as warnings_list:
+        non_parametric_inference(
+            second_level_input=second_level_input,
+            design_matrix=design_matrix,
+            n_perm=N_PERM,
+            two_sided_test=two_sided_test,
+            **kwargs,
+        )
+        if kwargs:
+            assert (
+                len(
+                    [
+                        x
+                        for x in warnings_list
+                        if x.category == "NotImplementedWarning"
+                    ]
+                )
+                == 1
+            )
 
 
 @pytest.mark.parametrize(
@@ -454,18 +468,32 @@ def test_surface_images(surf_img_1d, two_sided_test, kwargs, n_subjects):
         {"threshold": 0.001},  # to run cluster inference
     ],
 )
-def test_surface_images_2d(surf_img_2d, n_subjects, kwargs):
+@pytest.mark.parametrize("two_sided_test", [True, False])
+def test_surface_images_2d(surf_img_2d, n_subjects, kwargs, two_sided_test):
     """Smoke test non_parametric_inference on 2d surfaces."""
     second_level_input = surf_img_2d(n_subjects)
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
-    non_parametric_inference(
-        second_level_input=second_level_input,
-        design_matrix=design_matrix,
-        n_perm=N_PERM,
-        **kwargs,
-    )
+    with warnings.catch_warnings(record=True) as warnings_list:
+        non_parametric_inference(
+            second_level_input=second_level_input,
+            design_matrix=design_matrix,
+            n_perm=N_PERM,
+            two_sided_test=two_sided_test,
+            **kwargs,
+        )
+        if kwargs:
+            assert (
+                len(
+                    [
+                        x
+                        for x in warnings_list
+                        if x.category == "NotImplementedWarning"
+                    ]
+                )
+                == 1
+            )
 
 
 @pytest.mark.parametrize(
@@ -476,21 +504,37 @@ def test_surface_images_2d(surf_img_2d, n_subjects, kwargs):
         {"threshold": 0.001},  # to run cluster inference
     ],
 )
-def test_surface_images_2d_mask(surf_img_2d, surf_mask_1d, n_subjects, kwargs):
-    """Smoke test non_parametric_inference on 2d surfaces and a mask."""
+@pytest.mark.parametrize("two_sided_test", [True, False])
+def test_surface_images_2d_mask(
+    surf_img_2d, surf_mask_1d, n_subjects, kwargs, two_sided_test
+):
+    """Smoke test non_parametric_inference on 2d surfaces and a masker."""
     second_level_input = surf_img_2d(n_subjects)
 
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
     masker = SurfaceMasker(surf_mask_1d)
 
-    non_parametric_inference(
-        second_level_input=second_level_input,
-        design_matrix=design_matrix,
-        n_perm=N_PERM,
-        mask=masker,
-        **kwargs,
-    )
+    with warnings.catch_warnings(record=True) as warnings_list:
+        non_parametric_inference(
+            second_level_input=second_level_input,
+            design_matrix=design_matrix,
+            n_perm=N_PERM,
+            mask=masker,
+            two_sided_test=two_sided_test,
+            **kwargs,
+        )
+        if kwargs:
+            assert (
+                len(
+                    [
+                        x
+                        for x in warnings_list
+                        if x.category == "NotImplementedWarning"
+                    ]
+                )
+                == 1
+            )
 
 
 def test_surface_images_warnings(surf_img_1d, n_subjects):

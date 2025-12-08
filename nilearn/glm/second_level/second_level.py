@@ -1241,6 +1241,12 @@ def non_parametric_inference(
     if (not tfce) and (threshold is None):
         return neg_log10_vfwe_pvals_img
 
+    if isinstance(masker, SurfaceMasker):
+        NotImplementedWarning(
+            "Cluster based permutation not implemented for surface data."
+        )
+        return neg_log10_vfwe_pvals_img
+
     t_img = masker.inverse_transform(np.ravel(outputs["t"]))
 
     out = {
