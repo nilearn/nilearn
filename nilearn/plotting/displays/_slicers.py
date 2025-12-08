@@ -2161,21 +2161,27 @@ class MosaicSlicer(BaseSlicer):
         """
         if cut_coords is None or cut_coords == []:
             cut_coords = 7
-        elif isinstance(cut_coords, numbers.Number):
+        if isinstance(cut_coords, numbers.Number):
             cut_coords = [cut_coords] * 3
-        if len(cut_coords) == 3:
-            cut_coords = [
-                cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
-            ]
-        else:
+        cls._check_cut_coords(cut_coords)
+        cut_coords = [
+            cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
+        ]
+        cut_coords = cls._find_cut_coords(img, cut_coords, cls._cut_displayed)
+
+        return cut_coords
+
+    @classmethod
+    def _check_cut_coords(cls, cut_coords):
+        if not (
+            isinstance(cut_coords, (list, tuple, np.ndarray))
+            and len(cut_coords) == 3
+        ):
             raise ValueError(
                 "The number cut_coords passed does not"
                 " match the display_mode. Mosaic plotting "
                 "expects tuple of length 3."
             )
-        cut_coords = cls._find_cut_coords(img, cut_coords, cls._cut_displayed)
-
-        return cut_coords
 
     @staticmethod
     def _find_cut_coords(img, cut_coords, cut_displayed):
