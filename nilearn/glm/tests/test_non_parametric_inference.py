@@ -197,7 +197,7 @@ def test_with_flm_objects(shape_3d_default):
 
 
 @pytest.mark.slow
-def test_inputs_errors(rng, confounds, shape_4d_default):
+def test_inputs_errors(confounds, shape_4d_default):
     """Check errors for several inputs."""
     # Test processing of FMRI inputs
     # prepare fake data
@@ -210,29 +210,12 @@ def test_inputs_errors(rng, confounds, shape_4d_default):
         fmri_data, design_matrices=design_matrices
     )
 
-    # prepare correct input dataframe and lists
-    p, q = 80, 10
-    X = rng.standard_normal(size=(p, q))
-    sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
-
     _, fmri_data = fake_fmri_data()
     niimgs = [fmri_data] * 3
-    niimg_4d = concat_imgs(niimgs)
-
-    # test missing second-level contrast
-    match = "No second-level contrast is specified."
-    # niimgs as input
-    with pytest.raises(ValueError, match=match):
-        non_parametric_inference(niimgs, None, sdes)
-    with pytest.raises(ValueError, match=match):
-        non_parametric_inference(niimgs, confounds, sdes)
-    # 4d niimg as input
-    with pytest.raises(ValueError, match=match):
-        non_parametric_inference(niimg_4d, None, sdes)
 
     # test wrong input errors
     # test first level model
-    with pytest.raises(TypeError, match="second_level_input must be"):
+    with pytest.raises(TypeError, match="'second_level_input' must be"):
         non_parametric_inference(flm)
 
     # test list of less than two niimgs
@@ -354,7 +337,7 @@ def test_contrast_computation_errors(rng, n_subjects):
     func_img, mask = fake_fmri_data()
 
     # asking for contrast before model fit gives error
-    with pytest.raises(TypeError, match="second_level_input must be either"):
+    with pytest.raises(TypeError, match="'second_level_input' must be either"):
         non_parametric_inference(
             second_level_input=None,
             second_level_contrast="intercept",
@@ -371,7 +354,7 @@ def test_contrast_computation_errors(rng, n_subjects):
     # passing null contrast should give back a value error
     with pytest.raises(
         ValueError,
-        match=("Second_level_contrast must be a valid"),
+        match=("'second_level_contrast' must be a valid"),
     ):
         non_parametric_inference(
             second_level_input=Y,
@@ -381,7 +364,7 @@ def test_contrast_computation_errors(rng, n_subjects):
         )
     with pytest.raises(
         ValueError,
-        match=("Second_level_contrast must be a valid"),
+        match=("'second_level_contrast' must be a valid"),
     ):
         non_parametric_inference(
             second_level_input=Y,
@@ -401,6 +384,39 @@ def test_contrast_computation_errors(rng, n_subjects):
             design_matrix=X,
             second_level_contrast=None,
         )
+
+
+@pytest.mark.slow
+def test_missing_second_level_contrast_errors(
+    rng, confounds, shape_4d_default
+):
+    """Check error when no second level contrast is passed."""
+    # Test processing of FMRI inputs
+    # prepare fake data
+    _, fmri_data, _ = generate_fake_fmri_data_and_design(
+        [shape_4d_default], rk=1
+    )
+
+    # prepare correct input dataframe and lists
+    p, q = 80, 10
+    X = rng.standard_normal(size=(p, q))
+    sdes = pd.DataFrame(X[:3, :3], columns=["intercept", "b", "c"])
+
+    _, fmri_data = fake_fmri_data()
+    niimgs = [fmri_data] * 3
+    niimg_4d = concat_imgs(niimgs)
+
+    match = "No second-level contrast is specified."
+    # niimgs as input
+    with pytest.raises(ValueError, match=match):
+        non_parametric_inference(niimgs, None, sdes)
+
+    with pytest.raises(ValueError, match=match):
+        non_parametric_inference(niimgs, confounds, sdes)
+
+    # 4d niimg as input
+    with pytest.raises(ValueError, match=match):
+        non_parametric_inference(niimg_4d, None, sdes)
 
 
 # -----------------------surface tests----------------------- #

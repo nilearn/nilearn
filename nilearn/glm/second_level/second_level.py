@@ -52,7 +52,7 @@ from nilearn.typing import NiimgLike
 
 def _input_type_error_message(second_level_input):
     return (
-        "second_level_input must be either:\n"
+        "'second_level_input' must be either:\n"
         "- a pandas DataFrame,\n"
         "- a Niimg-like object\n"
         "- a pandas Series of Niimg-like object\n"
@@ -328,7 +328,7 @@ def _get_con_val(second_level_contrast, design_matrix):
         con_val = np.array(second_level_contrast)
         if np.all(con_val == 0) or len(con_val) == 0:
             raise ValueError(
-                "Contrast is null. Second_level_contrast must be a valid "
+                "Contrast is null. 'second_level_contrast' must be a valid "
                 "contrast vector, a list/array of 0s and 1s, a string, or a "
                 "string expression."
             )
