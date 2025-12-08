@@ -1264,30 +1264,18 @@ def non_parametric_inference(
         effect_maps = concat_imgs(effect_maps, verbose=verbose)
 
         data = {
-            "logp_max_t": {
+            k: {
                 "left": np.zeros(effect_maps.data.parts["left"].shape),
                 "right": np.zeros(effect_maps.data.parts["right"].shape),
-            },
-            "t": {
-                "left": np.zeros(effect_maps.data.parts["left"].shape),
-                "right": np.zeros(effect_maps.data.parts["right"].shape),
-            },
-            "logp_max_size": {
-                "left": np.zeros(effect_maps.data.parts["left"].shape),
-                "right": np.zeros(effect_maps.data.parts["right"].shape),
-            },
-            "logp_max_mass": {
-                "left": np.zeros(effect_maps.data.parts["left"].shape),
-                "right": np.zeros(effect_maps.data.parts["right"].shape),
-            },
-            "size": {
-                "left": np.zeros(effect_maps.data.parts["left"].shape),
-                "right": np.zeros(effect_maps.data.parts["right"].shape),
-            },
-            "mass": {
-                "left": np.zeros(effect_maps.data.parts["left"].shape),
-                "right": np.zeros(effect_maps.data.parts["right"].shape),
-            },
+            }
+            for k in [
+                "logp_max_t",
+                "t",
+                "logp_max_size",
+                "logp_max_mass",
+                "size",
+                "mass",
+            ]
         }
 
         for hemi in ["left", "right"]:
@@ -1307,12 +1295,12 @@ def non_parametric_inference(
             if hemi_empty:
                 continue
 
-            tmp_mask = new_img_like(
+            single_hemi_mask = new_img_like(
                 effect_maps, {"left": mask_left, "right": mask_right}
             )
-            tmp_masker = SurfaceMasker(mask_img=tmp_mask).fit()
+            single_hemi_masker = SurfaceMasker(mask_img=single_hemi_mask).fit()
 
-            target_vars = tmp_masker.transform(effect_maps)
+            target_vars = single_hemi_masker.transform(effect_maps)
 
             # Perform massively univariate analysis with permuted OLS
             outputs = permuted_ols(
@@ -1325,45 +1313,30 @@ def non_parametric_inference(
                 random_state=random_state,
                 n_jobs=n_jobs,
                 verbose=max(0, verbose - 1),
-                masker=tmp_masker,
+                masker=single_hemi_masker,
                 threshold=threshold,
                 tfce=tfce,
             )
 
-            tmp_neg_log10_vfwe_pvals_img = tmp_masker.inverse_transform(
-                np.ravel(outputs["logp_max_t"])
-            )
-            data["logp_max_t"][hemi] = tmp_neg_log10_vfwe_pvals_img.data.parts[
-                hemi
-            ]
-
-            tmp_t_img = tmp_masker.inverse_transform(np.ravel(outputs["t"]))
-            data["t"][hemi] = tmp_t_img.data.parts[hemi]
-
-            if threshold is not None:
-                tmp_logp_max_size = tmp_masker.inverse_transform(
-                    np.ravel(outputs["logp_max_size"])
+            for k in [
+                "logp_max_t",
+                "t",
+                "logp_max_size",
+                "logp_max_mass",
+                "size",
+                "mass",
+            ]:
+                tmp = single_hemi_masker.inverse_transform(
+                    np.ravel(outputs[k])
                 )
-                data["logp_max_size"][hemi] = tmp_logp_max_size.data.parts[
-                    hemi
-                ]
-
-                tmp_logp_max_mass = tmp_masker.inverse_transform(
-                    np.ravel(outputs["logp_max_mass"])
-                )
-                data["logp_max_mass"][hemi] = tmp_logp_max_mass.data.parts[
-                    hemi
-                ]
-
-                tmp_size = tmp_masker.inverse_transform(
-                    np.ravel(outputs["size"])
-                )
-                data["size"][hemi] = tmp_size.data.parts[hemi]
-
-                tmp_mass = tmp_masker.inverse_transform(
-                    np.ravel(outputs["mass"])
-                )
-                data["mass"][hemi] = tmp_mass.data.parts[hemi]
+                data[k][hemi] = tmp.data.parts[hemi]
+                if k in [
+                    "logp_max_size",
+                    "logp_max_mass",
+                    "size",
+                    "mass",
+                ] and (threshold is None or not tfce):
+                    continue
 
         neg_log10_vfwe_pvals_img = new_img_like(
             effect_maps, data["logp_max_t"]
