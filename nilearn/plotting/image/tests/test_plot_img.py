@@ -198,7 +198,7 @@ def test_out_of_bounds_warning_error_3d(
         )
 
 
-@pytest.mark.parametrize("display_mode", ["ortho", "tiled"])
+@pytest.mark.parametrize("display_mode", ["ortho", "tiled", "xz", "yz", "yx"])
 def test_error_incompatible_cut_coords_3d(
     matplotlib_pyplot, img_3d_rand_eye, display_mode
 ):
@@ -207,7 +207,7 @@ def test_error_incompatible_cut_coords_3d(
     """
     with pytest.raises(
         ValueError,
-        match=("cut_coords should to be a list of 3D world coordinates"),
+        match=("The number cut_coords passed does not match"),
     ):
         plot_img(img_3d_rand_eye, display_mode=display_mode, cut_coords=5)
 
