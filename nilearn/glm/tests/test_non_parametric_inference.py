@@ -38,7 +38,7 @@ def test_cluster_level_with_covariates(rng, n_subjects):
 
     # make sure there is variability in the images
     kernels = rng.uniform(low=0, high=5, size=n_subjects)
-    Y = [smooth_img(fmri_data[0], kernel) for kernel in kernels]
+    Y = [smooth_img(fmri_data, kernel) for kernel in kernels]
 
     # Set up non-parametric test
     out = non_parametric_inference(
@@ -73,17 +73,20 @@ def test_cluster_level_with_covariates(rng, n_subjects):
 
 
 @pytest.mark.slow
-def test_cluster_level_with_single_covariates(rng, n_subjects):
+def test_cluster_level_with_single_covariates(
+    rng, n_subjects, shape_3d_default
+):
     """Test non-parametric inference with cluster-level inference in \
     the context of covariates.
     """
-    mask, fmri_data = fake_fmri_data()
+    shapes = ((*shape_3d_default, 1),)
+    mask, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
 
     unc_pval = 0.1
 
     # make sure there is variability in the images
     kernels = rng.uniform(low=0, high=5, size=n_subjects)
-    Y = [smooth_img(fmri_data, kernel) for kernel in kernels]
+    Y = [smooth_img(fmri_data[0], kernel) for kernel in kernels]
 
     # Test single covariate
     X = pd.DataFrame({"intercept": [1] * len(Y)})
