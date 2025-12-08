@@ -64,6 +64,7 @@ SURFACE_FUNCS = {
 }
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_black_bg(plot_func, img_3d_mni):
@@ -133,6 +134,7 @@ def test_plot_functions_colorbar_ticks(plot_func, img_3d_mni):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("vmin", [-1, 1])
