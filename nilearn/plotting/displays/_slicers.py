@@ -110,8 +110,8 @@ class BaseSlicer:
         # subclassing
         raise NotImplementedError
 
-    @classmethod
-    def _get_data_bounds(cls, img):
+    @staticmethod
+    def _get_image_bounds(img):
         """Return bounds of the image.
 
         Parameters
@@ -1128,7 +1128,7 @@ class ThreeDSlicer(BaseSlicer):
             ]
         else:
             cls._check_cut_coords(cut_coords)
-            bounds = cls._get_data_bounds(img)
+            bounds = cls._get_image_bounds(img)
             cls._check_cut_coords_in_bounds(bounds, cut_coords)
         return cut_coords
 
@@ -1726,7 +1726,7 @@ class BaseStackedSlicer(BaseSlicer):
             )
         else:
             cls._check_cut_coords(cut_coords)
-            bounds = cls._get_data_bounds(img)
+            bounds = cls._get_image_bounds(img)
             cls._check_cut_coords_in_bounds(bounds, cut_coords)
 
         return cut_coords
