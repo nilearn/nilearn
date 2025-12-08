@@ -32,7 +32,6 @@ from nilearn.mass_univariate._utils import (
     orthonormalize_matrix,
     t_score_with_covars_and_normalized_design,
 )
-from nilearn.surface.surface import get_data as get_surface_data
 
 
 def _permuted_ols_on_chunk(
@@ -719,14 +718,8 @@ def permuted_ols(
     bin_struct = generate_binary_structure(3, 1)
 
     tfce_original_data: np.ndarray | None = None
-    if isinstance(masker, SurfaceMasker) and (tfce or threshold is not None):
-        NotImplementedWarning(
-            "cluster based not implemented for surface data."
-        )
-        tfce = False
-        threshold = None
 
-    elif tfce:
+    if tfce:
         assert isinstance(masker, (NiftiMasker, SurfaceMasker))
         scores_4d: np.ndarray
         if isinstance(masker, NiftiMasker):
@@ -745,18 +738,24 @@ def permuted_ols(
                 masker.mask_img_,
             ).T
         else:
-            scores_4d = get_surface_data(
-                masker.inverse_transform(scores_original_data.T)
+            warnings.warn(
+                "tfce not implemented for surface data.",
+                category=NotImplementedWarning,
+                stacklevel=find_stack_level(),
             )
-            tfce_original_data = calculate_tfce(
-                scores_4d,
-                bin_struct=bin_struct,
-                two_sided_test=two_sided_test,
-            )
-            tfce_original_data = apply_mask(
-                new_img_like(masker.mask_img_, tfce_original_data),
-                masker.mask_img_,
-            ).T
+
+            # scores_4d = get_surface_data(
+            #     masker.inverse_transform(scores_original_data.T)
+            # )
+            # tfce_original_data = calculate_tfce(
+            #     scores_4d,
+            #     bin_struct=bin_struct,
+            #     two_sided_test=two_sided_test,
+            # )
+            # tfce_original_data = apply_mask(
+            #     new_img_like(masker.mask_img_, tfce_original_data),
+            #     masker.mask_img_,
+            # ).T
 
     # 0 or negative number of permutations => original data scores only
     if n_perm <= 0:
