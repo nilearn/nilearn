@@ -1246,6 +1246,20 @@ def non_parametric_inference(
 
         t_img = masker.inverse_transform(np.ravel(outputs["t"]))
 
+        if threshold is not None:
+            # Cluster size-based p-values
+            neg_log10_csfwe_pvals_img = masker.inverse_transform(
+                np.ravel(outputs["logp_max_size"]),
+            )
+
+            # Cluster mass-based p-values
+            neg_log10_cmfwe_pvals_img = masker.inverse_transform(
+                np.ravel(outputs["logp_max_mass"]),
+            )
+
+            size_img = masker.inverse_transform(np.ravel(outputs["size"]))
+            mass_img = masker.inverse_transform(np.ravel(outputs["mass"]))
+
     else:
         effect_maps = concat_imgs(effect_maps, verbose=verbose)
 
@@ -1255,6 +1269,26 @@ def non_parametric_inference(
         }
 
         data2 = {
+            "left": np.zeros(effect_maps.data.parts["left"].shape),
+            "right": np.zeros(effect_maps.data.parts["right"].shape),
+        }
+
+        data3 = {
+            "left": np.zeros(effect_maps.data.parts["left"].shape),
+            "right": np.zeros(effect_maps.data.parts["right"].shape),
+        }
+
+        data4 = {
+            "left": np.zeros(effect_maps.data.parts["left"].shape),
+            "right": np.zeros(effect_maps.data.parts["right"].shape),
+        }
+
+        data5 = {
+            "left": np.zeros(effect_maps.data.parts["left"].shape),
+            "right": np.zeros(effect_maps.data.parts["right"].shape),
+        }
+
+        data6 = {
             "left": np.zeros(effect_maps.data.parts["left"].shape),
             "right": np.zeros(effect_maps.data.parts["right"].shape),
         }
@@ -1307,8 +1341,35 @@ def non_parametric_inference(
             tmp_t_img = tmp_masker.inverse_transform(np.ravel(outputs["t"]))
             data2[hemi] = tmp_t_img.data.parts[hemi]
 
+            if threshold is not None:
+                tmp_logp_max_size = tmp_masker.inverse_transform(
+                    np.ravel(outputs["logp_max_size"])
+                )
+                data3[hemi] = tmp_logp_max_size.data.parts[hemi]
+
+                tmp_logp_max_mass = tmp_masker.inverse_transform(
+                    np.ravel(outputs["logp_max_mass"])
+                )
+                data4[hemi] = tmp_logp_max_mass.data.parts[hemi]
+
+                tmp_size = tmp_masker.inverse_transform(
+                    np.ravel(outputs["size"])
+                )
+                data5[hemi] = tmp_size.data.parts[hemi]
+
+                tmp_mass = tmp_masker.inverse_transform(
+                    np.ravel(outputs["mass"])
+                )
+                data6[hemi] = tmp_mass.data.parts[hemi]
+
         neg_log10_vfwe_pvals_img = new_img_like(effect_maps, data)
-        t_img = new_img_like(effect_maps, data)
+        t_img = new_img_like(effect_maps, data2)
+
+        if threshold is not None:
+            neg_log10_csfwe_pvals_img = new_img_like(effect_maps, data3)
+            neg_log10_cmfwe_pvals_img = new_img_like(effect_maps, data4)
+            size_img = new_img_like(effect_maps, data4)
+            mass_img = new_img_like(effect_maps, data4)
 
     if (not tfce) and (threshold is None):
         return neg_log10_vfwe_pvals_img
@@ -1326,19 +1387,10 @@ def non_parametric_inference(
         out["logp_max_tfce"] = neg_log10_tfce_pvals_img
 
     if threshold is not None:
-        # Cluster size-based p-values
-        neg_log10_csfwe_pvals_img = masker.inverse_transform(
-            np.ravel(outputs["logp_max_size"]),
-        )
-
-        # Cluster mass-based p-values
-        neg_log10_cmfwe_pvals_img = masker.inverse_transform(
-            np.ravel(outputs["logp_max_mass"]),
-        )
-
-        out["size"] = masker.inverse_transform(np.ravel(outputs["size"]))
         out["logp_max_size"] = neg_log10_csfwe_pvals_img
-        out["mass"] = masker.inverse_transform(np.ravel(outputs["mass"]))
         out["logp_max_mass"] = neg_log10_cmfwe_pvals_img
+
+        out["size"] = size_img
+        out["mass"] = mass_img
 
     return out

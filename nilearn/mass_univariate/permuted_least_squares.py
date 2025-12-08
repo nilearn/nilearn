@@ -741,19 +741,6 @@ def permuted_ols(
                 stacklevel=find_stack_level(),
             )
 
-            # scores_4d = get_surface_data(
-            #     masker.inverse_transform(scores_original_data.T)
-            # )
-            # tfce_original_data = calculate_tfce(
-            #     scores_4d,
-            #     bin_struct=bin_struct,
-            #     two_sided_test=two_sided_test,
-            # )
-            # tfce_original_data = apply_mask(
-            #     new_img_like(masker.mask_img_, tfce_original_data),
-            #     masker.mask_img_,
-            # ).T
-
     # 0 or negative number of permutations => original data scores only
     if n_perm <= 0:
         if output_type == "legacy":
@@ -1094,6 +1081,16 @@ def _prepare_output_permuted_ols(
         scores_original_data_4d = get_surface_data(
             masker.inverse_transform(scores_original_data.T)
         )
+
+        # TODO
+        # actually compute something
+
+        outputs["size"] = cluster_dict["size"]
+        outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
+        outputs["h0_max_size"] = cluster_dict["size_h0"]
+        outputs["mass"] = cluster_dict["mass"]
+        outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
+        outputs["h0_max_mass"] = cluster_dict["mass_h0"]
 
     return outputs
 

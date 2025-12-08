@@ -425,16 +425,12 @@ def test_missing_second_level_contrast_errors(
 # -----------------------surface tests----------------------- #
 
 
-@pytest.mark.parametrize(
-    "kwargs",
-    [
-        {},
-        {"threshold": 0.001},  # to run cluster inference
-        # {"tfce": True},  # to run cluster inference
-    ],
-)
 @pytest.mark.parametrize("two_sided_test", [True, False])
-def test_surface_images(surf_img_1d, two_sided_test, kwargs, n_subjects):
+@pytest.mark.parametrize("threshold", [None, 0.001])
+@pytest.mark.parametrize("tfce", [False])
+def test_surface_images(
+    surf_img_1d, two_sided_test, n_subjects, threshold, tfce
+):
     """Smoke test non_parametric_inference on list of 1D surfaces."""
     second_level_input = [surf_img_1d for _ in range(n_subjects)]
 
@@ -446,12 +442,18 @@ def test_surface_images(surf_img_1d, two_sided_test, kwargs, n_subjects):
             design_matrix=design_matrix,
             n_perm=N_PERM,
             two_sided_test=two_sided_test,
-            **kwargs,
+            threshold=threshold,
+            tfce=tfce,
         )
 
-        assert isinstance(out, SurfaceImage)
+        if not (tfce or threshold):
+            assert isinstance(out, SurfaceImage)
+        else:
+            assert isinstance(out, dict)
+            for v in out.values():
+                assert isinstance(v, SurfaceImage)
 
-        if kwargs:
+        if tfce:
             assert (
                 len(
                     [
@@ -464,16 +466,12 @@ def test_surface_images(surf_img_1d, two_sided_test, kwargs, n_subjects):
             )
 
 
-@pytest.mark.parametrize(
-    "kwargs",
-    [
-        {},
-        {"threshold": 0.001},  # to run cluster inference
-        # {"tfce": True},  # to run cluster inference
-    ],
-)
 @pytest.mark.parametrize("two_sided_test", [True, False])
-def test_surface_images_2d(surf_img_2d, n_subjects, kwargs, two_sided_test):
+@pytest.mark.parametrize("threshold", [None, 0.001])
+@pytest.mark.parametrize("tfce", [False])
+def test_surface_images_2d(
+    surf_img_2d, n_subjects, two_sided_test, threshold, tfce
+):
     """Smoke test non_parametric_inference on 2d surfaces."""
     second_level_input = surf_img_2d(n_subjects)
 
@@ -485,12 +483,18 @@ def test_surface_images_2d(surf_img_2d, n_subjects, kwargs, two_sided_test):
             design_matrix=design_matrix,
             n_perm=N_PERM,
             two_sided_test=two_sided_test,
-            **kwargs,
+            threshold=threshold,
+            tfce=tfce,
         )
 
-        assert isinstance(out, SurfaceImage)
+        if not (tfce or threshold):
+            assert isinstance(out, SurfaceImage)
+        else:
+            assert isinstance(out, dict)
+            for v in out.values():
+                assert isinstance(v, SurfaceImage)
 
-        if kwargs:
+        if tfce:
             assert (
                 len(
                     [
@@ -503,17 +507,11 @@ def test_surface_images_2d(surf_img_2d, n_subjects, kwargs, two_sided_test):
             )
 
 
-@pytest.mark.parametrize(
-    "kwargs",
-    [
-        {},
-        {"threshold": 0.001},  # to run cluster inference
-        # {"tfce": True},  # to run cluster inference
-    ],
-)
 @pytest.mark.parametrize("two_sided_test", [True, False])
+@pytest.mark.parametrize("threshold", [None, 0.001])
+@pytest.mark.parametrize("tfce", [False])
 def test_surface_images_2d_mask(
-    surf_img_2d, surf_mask_1d, n_subjects, kwargs, two_sided_test
+    surf_img_2d, surf_mask_1d, n_subjects, two_sided_test, threshold, tfce
 ):
     """Smoke test non_parametric_inference on 2d surfaces and a masker."""
     second_level_input = surf_img_2d(n_subjects)
@@ -529,12 +527,18 @@ def test_surface_images_2d_mask(
             n_perm=N_PERM,
             mask=masker,
             two_sided_test=two_sided_test,
-            **kwargs,
+            threshold=threshold,
+            tfce=tfce,
         )
 
-        assert isinstance(out, SurfaceImage)
+        if not (tfce or threshold):
+            assert isinstance(out, SurfaceImage)
+        else:
+            assert isinstance(out, dict)
+            for v in out.values():
+                assert isinstance(v, SurfaceImage)
 
-        if kwargs:
+        if tfce:
             assert (
                 len(
                     [
