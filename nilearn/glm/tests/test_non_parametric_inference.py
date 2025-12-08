@@ -83,7 +83,7 @@ def test_cluster_level_with_single_covariates(rng, n_subjects):
 
     # make sure there is variability in the images
     kernels = rng.uniform(low=0, high=5, size=n_subjects)
-    Y = [smooth_img(fmri_data[0], kernel) for kernel in kernels]
+    Y = [smooth_img(fmri_data, kernel) for kernel in kernels]
 
     # Test single covariate
     X = pd.DataFrame({"intercept": [1] * len(Y)})
