@@ -21,10 +21,7 @@ from nilearn._utils.param_validation import (
     check_params,
 )
 from nilearn.image import new_img_like
-from nilearn.maskers import (
-    NiftiMasker,
-    SurfaceMasker,
-)
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
