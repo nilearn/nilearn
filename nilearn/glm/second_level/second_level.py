@@ -1244,12 +1244,21 @@ def non_parametric_inference(
             np.ravel(outputs["logp_max_t"])
         )
 
+        t_img = masker.inverse_transform(np.ravel(outputs["t"]))
+
     else:
         effect_maps = concat_imgs(effect_maps, verbose=verbose)
+
         data = {
             "left": np.zeros(effect_maps.data.parts["left"].shape),
             "right": np.zeros(effect_maps.data.parts["right"].shape),
         }
+
+        data2 = {
+            "left": np.zeros(effect_maps.data.parts["left"].shape),
+            "right": np.zeros(effect_maps.data.parts["right"].shape),
+        }
+
         for hemi in ["left", "right"]:
             if hemi == "left":
                 mask_left = masker.mask_img_.data.parts["left"].astype(bool)
@@ -1293,15 +1302,16 @@ def non_parametric_inference(
             tmp_neg_log10_vfwe_pvals_img = tmp_masker.inverse_transform(
                 np.ravel(outputs["logp_max_t"])
             )
-
             data[hemi] = tmp_neg_log10_vfwe_pvals_img.data.parts[hemi]
 
+            tmp_t_img = tmp_masker.inverse_transform(np.ravel(outputs["t"]))
+            data2[hemi] = tmp_t_img.data.parts[hemi]
+
         neg_log10_vfwe_pvals_img = new_img_like(effect_maps, data)
+        t_img = new_img_like(effect_maps, data)
 
     if (not tfce) and (threshold is None):
         return neg_log10_vfwe_pvals_img
-
-    t_img = masker.inverse_transform(np.ravel(outputs["t"]))
 
     out = {
         "t": t_img,
