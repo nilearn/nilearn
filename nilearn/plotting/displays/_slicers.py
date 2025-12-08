@@ -110,20 +110,8 @@ class BaseSlicer:
         # subclassing
         raise NotImplementedError
 
-    @staticmethod
-    def _get_image_bounds(img):
-        """Return bounds of the image.
-
-        Parameters
-        ----------
-        img : 3D Nifti1Image
-            The brain map.
-        """
-        data = _get_data(img)
-        return get_bounds(data.shape, img.affine)
-
     @classmethod
-    def _check_cut_coords_in_bounds(cls, bounds, cut_coords):
+    def _check_cut_coords_in_bounds(cls, img, cut_coords):
         """
         Check if the specified `cut_coords` is within the specified `bounds`.
 
@@ -133,9 +121,8 @@ class BaseSlicer:
 
         Parameters
         ----------
-        bounds:
-            image bounds to check if the specified cut_coords is inside these
-        bounds
+        img : 3D Nifti1Image
+            The brain map.
 
         cut_coords:
             cut_coords to check
@@ -145,6 +132,8 @@ class BaseSlicer:
         ValueError
             If none of the coords is in the specified bounds.
         """
+        data = _get_data(img)
+        bounds = get_bounds(data.shape, img.affine)
         coord_in = cls._get_coords_in_bounds(bounds, cut_coords)
 
         # if non of the coordinates is in bounds
@@ -1128,8 +1117,7 @@ class ThreeDSlicer(BaseSlicer):
             ]
         else:
             cls._check_cut_coords(cut_coords)
-            bounds = cls._get_image_bounds(img)
-            cls._check_cut_coords_in_bounds(bounds, cut_coords)
+            cls._check_cut_coords_in_bounds(img, cut_coords)
         return cut_coords
 
     @classmethod
@@ -1726,8 +1714,7 @@ class BaseStackedSlicer(BaseSlicer):
             )
         else:
             cls._check_cut_coords(cut_coords)
-            bounds = cls._get_image_bounds(img)
-            cls._check_cut_coords_in_bounds(bounds, cut_coords)
+            cls._check_cut_coords_in_bounds(img, cut_coords)
 
         return cut_coords
 
