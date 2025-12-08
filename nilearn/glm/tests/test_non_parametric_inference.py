@@ -20,6 +20,7 @@ from nilearn.glm.tests.conftest import SHAPE, fake_fmri_data
 from nilearn.image import concat_imgs, get_data, new_img_like, smooth_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.reporting import get_clusters_table
+from nilearn.surface import SurfaceImage
 
 N_PERM = 5
 
@@ -440,13 +441,16 @@ def test_surface_images(surf_img_1d, two_sided_test, kwargs, n_subjects):
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
     with warnings.catch_warnings(record=True) as warnings_list:
-        non_parametric_inference(
+        out = non_parametric_inference(
             second_level_input=second_level_input,
             design_matrix=design_matrix,
             n_perm=N_PERM,
             two_sided_test=two_sided_test,
             **kwargs,
         )
+
+        assert isinstance(out, SurfaceImage)
+
         if kwargs:
             assert (
                 len(
@@ -476,13 +480,16 @@ def test_surface_images_2d(surf_img_2d, n_subjects, kwargs, two_sided_test):
     design_matrix = pd.DataFrame([1] * n_subjects, columns=["intercept"])
 
     with warnings.catch_warnings(record=True) as warnings_list:
-        non_parametric_inference(
+        out = non_parametric_inference(
             second_level_input=second_level_input,
             design_matrix=design_matrix,
             n_perm=N_PERM,
             two_sided_test=two_sided_test,
             **kwargs,
         )
+
+        assert isinstance(out, SurfaceImage)
+
         if kwargs:
             assert (
                 len(
@@ -516,7 +523,7 @@ def test_surface_images_2d_mask(
     masker = SurfaceMasker(surf_mask_1d)
 
     with warnings.catch_warnings(record=True) as warnings_list:
-        non_parametric_inference(
+        out = non_parametric_inference(
             second_level_input=second_level_input,
             design_matrix=design_matrix,
             n_perm=N_PERM,
@@ -524,6 +531,9 @@ def test_surface_images_2d_mask(
             two_sided_test=two_sided_test,
             **kwargs,
         )
+
+        assert isinstance(out, SurfaceImage)
+
         if kwargs:
             assert (
                 len(

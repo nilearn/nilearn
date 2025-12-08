@@ -718,6 +718,7 @@ def permuted_ols(
     # Define connectivity for TFCE and/or cluster measures
     bin_struct = generate_binary_structure(3, 1)
 
+    tfce_original_data: np.ndarray | None = None
     if isinstance(masker, SurfaceMasker) and (tfce or threshold is not None):
         NotImplementedWarning(
             "cluster based not implemented for surface data."
@@ -725,8 +726,7 @@ def permuted_ols(
         tfce = False
         threshold = None
 
-    tfce_original_data: np.ndarray | None = None
-    if tfce:
+    elif tfce:
         assert isinstance(masker, (NiftiMasker, SurfaceMasker))
         scores_4d: np.ndarray
         if isinstance(masker, NiftiMasker):
