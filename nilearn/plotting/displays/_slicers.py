@@ -1715,7 +1715,7 @@ class BaseStackedSlicer(BaseSlicer):
         cut_coords : :obj:`list` of :obj:`float`
             xyz world coordinates of cuts.
         """
-        if cut_coords is None or cut_coords == []:
+        if cut_coords is None:
             cut_coords = 7
 
         if img is None:
@@ -2192,7 +2192,7 @@ class MosaicSlicer(BaseSlicer):
             xyz world coordinates of cuts in a direction.
             Each key denotes the direction.
         """
-        if cut_coords is None or cut_coords == []:
+        if cut_coords is None:
             cut_coords = 7
         if isinstance(cut_coords, numbers.Number):
             cut_coords = [cut_coords] * 3
