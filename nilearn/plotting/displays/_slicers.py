@@ -1746,8 +1746,9 @@ class BaseStackedSlicer(BaseSlicer):
         coord_in = []
 
         index = "xyz".find(cls._direction)
+        coord_bounds = bounds[index]
         coord_in = [
-            bounds[index][0] <= c <= bounds[index][1] for c in cut_coords
+            coord_bounds[0] <= c <= coord_bounds[1] for c in cut_coords
         ]
         return coord_in
 
