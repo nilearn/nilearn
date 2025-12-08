@@ -207,11 +207,11 @@ def test_error_incompatible_cut_coords_3d(
     """
     with pytest.raises(
         ValueError,
-        match=("The number cut_coords passed does not match"),
+        match=("cut_coords passed does not match the display mode"),
     ):
         plot_img(img_3d_rand_eye, display_mode=display_mode, cut_coords=5)
 
-    with pytest.raises(ValueError, match="The number cut_coords"):
+    with pytest.raises(ValueError, match="cut_coords passed does not match"):
         plot_img(
             img_3d_rand_eye,
             display_mode=display_mode,

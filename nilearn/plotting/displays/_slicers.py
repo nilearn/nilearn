@@ -139,7 +139,7 @@ class BaseSlicer:
 
         coord_in = cls._get_coords_in_bounds(bounds, cut_coords)
 
-        # if non of the coordinates is in bounds
+        # if none of the coordinates is in bounds
         # raise error
         if not any(coord_in):
             raise ValueError(
@@ -180,9 +180,8 @@ class BaseSlicer:
             and len(cut_coords) == 3
         ):
             raise ValueError(
-                "The number cut_coords passed does not match "
-                "the display_mode. {cls.__name__} plotting "
-                "expects tuple of length 3.\n"
+                "cut_coords passed does not match the display mode"
+                f" {cls.__name__} plotting expects tuple of length 3.\n"
                 f"You provided cut_coords={cut_coords}."
             )
 
