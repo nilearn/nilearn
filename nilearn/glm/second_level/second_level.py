@@ -1326,10 +1326,6 @@ def non_parametric_inference(
                 "size",
                 "mass",
             ]:
-                tmp = single_hemi_masker.inverse_transform(
-                    np.ravel(outputs[k])
-                )
-                data[k][hemi] = tmp.data.parts[hemi]
                 if k in [
                     "logp_max_size",
                     "logp_max_mass",
@@ -1337,6 +1333,10 @@ def non_parametric_inference(
                     "mass",
                 ] and (threshold is None or not tfce):
                     continue
+                tmp = single_hemi_masker.inverse_transform(
+                    np.ravel(outputs[k])
+                )
+                data[k][hemi] = tmp.data.parts[hemi]
 
         neg_log10_vfwe_pvals_img = new_img_like(
             effect_maps, data["logp_max_t"]
