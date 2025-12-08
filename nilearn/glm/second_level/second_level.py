@@ -1264,33 +1264,30 @@ def non_parametric_inference(
         effect_maps = concat_imgs(effect_maps, verbose=verbose)
 
         data = {
-            "left": np.zeros(effect_maps.data.parts["left"].shape),
-            "right": np.zeros(effect_maps.data.parts["right"].shape),
-        }
-
-        data2 = {
-            "left": np.zeros(effect_maps.data.parts["left"].shape),
-            "right": np.zeros(effect_maps.data.parts["right"].shape),
-        }
-
-        data3 = {
-            "left": np.zeros(effect_maps.data.parts["left"].shape),
-            "right": np.zeros(effect_maps.data.parts["right"].shape),
-        }
-
-        data4 = {
-            "left": np.zeros(effect_maps.data.parts["left"].shape),
-            "right": np.zeros(effect_maps.data.parts["right"].shape),
-        }
-
-        data5 = {
-            "left": np.zeros(effect_maps.data.parts["left"].shape),
-            "right": np.zeros(effect_maps.data.parts["right"].shape),
-        }
-
-        data6 = {
-            "left": np.zeros(effect_maps.data.parts["left"].shape),
-            "right": np.zeros(effect_maps.data.parts["right"].shape),
+            "logp_max_t": {
+                "left": np.zeros(effect_maps.data.parts["left"].shape),
+                "right": np.zeros(effect_maps.data.parts["right"].shape),
+            },
+            "t": {
+                "left": np.zeros(effect_maps.data.parts["left"].shape),
+                "right": np.zeros(effect_maps.data.parts["right"].shape),
+            },
+            "logp_max_size": {
+                "left": np.zeros(effect_maps.data.parts["left"].shape),
+                "right": np.zeros(effect_maps.data.parts["right"].shape),
+            },
+            "logp_max_mass": {
+                "left": np.zeros(effect_maps.data.parts["left"].shape),
+                "right": np.zeros(effect_maps.data.parts["right"].shape),
+            },
+            "size": {
+                "left": np.zeros(effect_maps.data.parts["left"].shape),
+                "right": np.zeros(effect_maps.data.parts["right"].shape),
+            },
+            "mass": {
+                "left": np.zeros(effect_maps.data.parts["left"].shape),
+                "right": np.zeros(effect_maps.data.parts["right"].shape),
+            },
         }
 
         for hemi in ["left", "right"]:
@@ -1336,40 +1333,52 @@ def non_parametric_inference(
             tmp_neg_log10_vfwe_pvals_img = tmp_masker.inverse_transform(
                 np.ravel(outputs["logp_max_t"])
             )
-            data[hemi] = tmp_neg_log10_vfwe_pvals_img.data.parts[hemi]
+            data["logp_max_t"][hemi] = tmp_neg_log10_vfwe_pvals_img.data.parts[
+                hemi
+            ]
 
             tmp_t_img = tmp_masker.inverse_transform(np.ravel(outputs["t"]))
-            data2[hemi] = tmp_t_img.data.parts[hemi]
+            data["t"][hemi] = tmp_t_img.data.parts[hemi]
 
             if threshold is not None:
                 tmp_logp_max_size = tmp_masker.inverse_transform(
                     np.ravel(outputs["logp_max_size"])
                 )
-                data3[hemi] = tmp_logp_max_size.data.parts[hemi]
+                data["logp_max_size"][hemi] = tmp_logp_max_size.data.parts[
+                    hemi
+                ]
 
                 tmp_logp_max_mass = tmp_masker.inverse_transform(
                     np.ravel(outputs["logp_max_mass"])
                 )
-                data4[hemi] = tmp_logp_max_mass.data.parts[hemi]
+                data["logp_max_mass"][hemi] = tmp_logp_max_mass.data.parts[
+                    hemi
+                ]
 
                 tmp_size = tmp_masker.inverse_transform(
                     np.ravel(outputs["size"])
                 )
-                data5[hemi] = tmp_size.data.parts[hemi]
+                data["size"][hemi] = tmp_size.data.parts[hemi]
 
                 tmp_mass = tmp_masker.inverse_transform(
                     np.ravel(outputs["mass"])
                 )
-                data6[hemi] = tmp_mass.data.parts[hemi]
+                data["mass"][hemi] = tmp_mass.data.parts[hemi]
 
-        neg_log10_vfwe_pvals_img = new_img_like(effect_maps, data)
-        t_img = new_img_like(effect_maps, data2)
+        neg_log10_vfwe_pvals_img = new_img_like(
+            effect_maps, data["logp_max_t"]
+        )
+        t_img = new_img_like(effect_maps, data["t"])
 
         if threshold is not None:
-            neg_log10_csfwe_pvals_img = new_img_like(effect_maps, data3)
-            neg_log10_cmfwe_pvals_img = new_img_like(effect_maps, data4)
-            size_img = new_img_like(effect_maps, data4)
-            mass_img = new_img_like(effect_maps, data4)
+            neg_log10_csfwe_pvals_img = new_img_like(
+                effect_maps, data["logp_max_size"]
+            )
+            neg_log10_cmfwe_pvals_img = new_img_like(
+                effect_maps, data["logp_max_mass"]
+            )
+            size_img = new_img_like(effect_maps, data["size"])
+            mass_img = new_img_like(effect_maps, data["mass"])
 
     if (not tfce) and (threshold is None):
         return neg_log10_vfwe_pvals_img
@@ -1389,7 +1398,6 @@ def non_parametric_inference(
     if threshold is not None:
         out["logp_max_size"] = neg_log10_csfwe_pvals_img
         out["logp_max_mass"] = neg_log10_cmfwe_pvals_img
-
         out["size"] = size_img
         out["mass"] = mass_img
 
