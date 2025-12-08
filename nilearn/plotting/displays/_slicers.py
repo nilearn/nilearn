@@ -132,8 +132,11 @@ class BaseSlicer:
         ValueError
             If none of the coords is in the specified bounds.
         """
+        cls._check_cut_coords(cut_coords)
+
         data = _get_data(img)
         bounds = get_bounds(data.shape, img.affine)
+
         coord_in = cls._get_coords_in_bounds(bounds, cut_coords)
 
         # if non of the coordinates is in bounds
@@ -1116,7 +1119,6 @@ class ThreeDSlicer(BaseSlicer):
                 cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
             ]
         else:
-            cls._check_cut_coords(cut_coords)
             cls._check_cut_coords_in_bounds(img, cut_coords)
         return cut_coords
 
@@ -1713,7 +1715,6 @@ class BaseStackedSlicer(BaseSlicer):
                 img, direction=cls._direction, n_cuts=cut_coords
             )
         else:
-            cls._check_cut_coords(cut_coords)
             cls._check_cut_coords_in_bounds(img, cut_coords)
 
         return cut_coords
