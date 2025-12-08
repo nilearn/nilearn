@@ -162,20 +162,29 @@ class BaseSlicer:
 
     @classmethod
     def _check_cut_coords(cls, cut_coords):
-        """Check if the specified cut_coords is compatible with this slicer
-        type.
+        """Check if the specified cut_coords is a list of 3D world coordinates.
 
         Parameters
         ----------
-        cut_coords:
+        cut_coords : 3D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
+                    :obj:`float`
             cut_coords to check
 
         Raises
         ------
         ValueError
-            If the specified cut_coords is not compatible
+            If the specified cut_coords is not a list of 3D world coordinates.
         """
-        raise NotImplementedError()
+        if not (
+            isinstance(cut_coords, (list, tuple, np.ndarray))
+            and len(cut_coords) == 3
+        ):
+            raise ValueError(
+                "The number cut_coords passed does not match "
+                "the display_mode. {cls.__name__} plotting "
+                "expects tuple of length 3.\n"
+                f"You provided cut_coords={cut_coords}."
+            )
 
     @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords):
@@ -1123,22 +1132,26 @@ class ThreeDSlicer(BaseSlicer):
         return cut_coords
 
     @classmethod
-    def _check_cut_coords(cls, cut_coords):
-        if isinstance(cut_coords, numbers.Number):
-            raise ValueError(
-                f"cut_coords should to be a list of 3D world coordinates "
-                "in (x, y, z). You provided single cut, "
-                f"cut_coords={cut_coords}"
-            )
-
-        if len(cut_coords) != 3:
-            raise ValueError(
-                f"The number cut_coords ({len(cut_coords)}) "
-                f"passed does not match the expected value : 3."
-            )
-
-    @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords):
+        """Check for each coordinate in cut_coords if it is within the bounds
+        and return a list of boolean values corresponding to each coordinate.
+
+        Parameters
+        ----------
+        bounds:
+            image bounds to check if the specified cut_coords is inside these
+        bounds
+
+        cut_coords : 3D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
+                    :obj:`float`
+            cut_coords to check
+
+        Return
+        ------
+        list[bool]
+            a list of boolean values corresponding to each coordinate
+        indicating if it is within the bounds or not
+        """
         coord_in = []
 
         for c in sorted(cls._cut_displayed):
@@ -1721,16 +1734,48 @@ class BaseStackedSlicer(BaseSlicer):
 
     @classmethod
     def _check_cut_coords(cls, cut_coords):
-        if not (
-            isinstance(cut_coords, (numbers.Number, list, tuple, np.ndarray))
-        ):
+        """Check if the specified cut_coords is a list of 1D coordinates.
+
+        Parameters
+        ----------
+        cut_coords : 1D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
+                    :obj:`float`
+            cut_coords to check
+
+        Raises
+        ------
+        ValueError
+            If the specified cut_coords is not a list of 1D world coordinates
+        corresponding to the direction of this slicer.
+        """
+        if not (isinstance(cut_coords, (list, tuple, np.ndarray))):
             raise ValueError(
-                "cut_coords should to be a number or list of numbers, "
+                "cut_coords should to be list of numbers, "
                 f"You provided cut_coords={cut_coords}."
             )
 
     @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords):
+        """Check for each element in cut_coords if it is within the bounds of
+        the direction of this slicer return a list of boolean values
+        corresponding to each element.
+
+        Parameters
+        ----------
+        bounds:
+            image bounds to check if the specified cut_coords is inside these
+        bounds
+
+        cut_coords : 1D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
+                    :obj:`float`
+            cut_coords to check
+
+        Return
+        ------
+        list[bool]
+            a list of boolean values corresponding to each coordinate
+        indicating if it is within the bounds or not
+        """
         coord_in = []
 
         index = "xyz".find(cls._direction)
@@ -2158,18 +2203,6 @@ class MosaicSlicer(BaseSlicer):
         cut_coords = cls._find_cut_coords(img, cut_coords, cls._cut_displayed)
 
         return cut_coords
-
-    @classmethod
-    def _check_cut_coords(cls, cut_coords):
-        if not (
-            isinstance(cut_coords, (list, tuple, np.ndarray))
-            and len(cut_coords) == 3
-        ):
-            raise ValueError(
-                "The number cut_coords passed does not"
-                " match the display_mode. Mosaic plotting "
-                "expects tuple of length 3."
-            )
 
     @staticmethod
     def _find_cut_coords(img, cut_coords, cut_displayed):
