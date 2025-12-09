@@ -16,9 +16,10 @@ import re
 import sys
 from pathlib import Path
 
-from nilearn._version import __version__
 from sphinx.domains import changeset
 from sphinx.locale import _
+
+from nilearn._version import __version__
 
 # ----------------------------------------------------------------------------
 
@@ -445,7 +446,6 @@ sphinx_gallery_conf = {
     },
     "default_thumb_file": "logos/nilearn-desaturate-100.png",
     "within_subsection_order": "ExampleTitleSortKey",
-    "parallel": 2,
 }
 
 mermaid_version = "11.4.0"
