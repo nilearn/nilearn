@@ -162,28 +162,19 @@ class BaseSlicer:
 
     @classmethod
     def _check_cut_coords(cls, cut_coords):
-        """Check if the specified cut_coords is a list of 3D world coordinates.
+        """Check if the specified cut_coords is compatible with this slicer.
 
         Parameters
         ----------
-        cut_coords : 3D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
-                    :obj:`float`
+        cut_coords :
             cut_coords to check
 
         Raises
         ------
         ValueError
-            If the specified cut_coords is not a list of 3D world coordinates.
+            If the specified cut_coords is not compatible with this slicer.
         """
-        if not (
-            isinstance(cut_coords, (list, tuple, np.ndarray))
-            and len(cut_coords) == 3
-        ):
-            raise ValueError(
-                "cut_coords passed does not match the display mode"
-                f" {cls.__name__} plotting expects tuple of length 3.\n"
-                f"You provided cut_coords={cut_coords}."
-            )
+        raise NotImplementedError()
 
     @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords):
@@ -1131,6 +1122,35 @@ class ThreeDSlicer(BaseSlicer):
         return cut_coords
 
     @classmethod
+    def _check_cut_coords(cls, cut_coords):
+        """Check if the specified cut_coords is a list of world coordinates
+        with number of elements equal to the number of elements in this
+        slicer's cut_displayed attribute.
+
+        Parameters
+        ----------
+        cut_coords : :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
+                    :obj:`float`
+            cut_coords to check
+
+        Raises
+        ------
+        ValueError
+            If the specified cut_coords is not a list of numbers that has the
+        same number of elements with this slicer's cut_displayed attribute.
+        """
+        if not (
+            isinstance(cut_coords, (list, tuple, np.ndarray))
+            and len(cut_coords) == len(cls._cut_displayed)
+        ):
+            raise ValueError(
+                "cut_coords passed does not match the display mode"
+                f" {cls.__name__} plotting expects tuple of length "
+                f"{len(cls._cut_displayed)}.\n"
+                f"You provided cut_coords={cut_coords}."
+            )
+
+    @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords):
         """Check for each coordinate in cut_coords if it is within the bounds
         and return a list of boolean values corresponding to each coordinate.
@@ -1153,11 +1173,11 @@ class ThreeDSlicer(BaseSlicer):
         """
         coord_in = []
 
-        for c in sorted(cls._cut_displayed):
-            index = "xyz".find(c)
+        for index, c in enumerate(sorted(cls._cut_displayed)):
+            bounds_index = "xyz".find(c)
             coord_in.append(
-                bounds[index][0] <= cut_coords[index]
-                and cut_coords[index] <= bounds[index][1]
+                bounds[bounds_index][0] <= cut_coords[index]
+                and cut_coords[index] <= bounds[bounds_index][1]
             )
         return coord_in
 
