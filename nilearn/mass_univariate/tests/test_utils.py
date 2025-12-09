@@ -12,6 +12,7 @@ from nilearn.mass_univariate import _utils
 from nilearn.mass_univariate.tests._testing import (
     get_tvalue_with_alternative_library,
 )
+from nilearn.surface.surface import compute_adjacency_matrix
 
 
 @pytest.fixture
@@ -211,12 +212,47 @@ def test_calculate_cluster_measures(
     assert test_mass[0] == true_mass
 
 
+def test_calculate_cluster_measures_on_surface_image(surf_img_2d):
+    """Check that empty array have 0 mass and size."""
+    hemi = "left"
+    bin_struct = compute_adjacency_matrix(surf_img_2d(1).mesh.parts[hemi])
+    arr4d = surf_img_2d(1).data.parts[hemi]
+    test_size, test_mass = _utils.calculate_cluster_measures(
+        arr4d,
+        threshold=0.001,
+        bin_struct=bin_struct,
+        two_sided_test=True,
+    )
+
+    assert test_size[0] == 12
+    assert test_mass[0] == 14
+
+
 def test_calculate_cluster_measures_on_empty_array():
     """Check that empty array have 0 mass and size."""
     test_size, test_mass = _utils.calculate_cluster_measures(
         np.zeros((10, 10, 10, 1)),
         threshold=0.001,
         bin_struct=generate_binary_structure(3, 1),
+        two_sided_test=True,
+    )
+
+    true_size = 0
+    true_mass = 0
+    assert test_size[0] == true_size
+    assert test_mass[0] == true_mass
+
+
+def test_calculate_cluster_measures_on_empty_surface_image(surf_img_2d):
+    """Check that empty array have 0 mass and size."""
+    hemi = "left"
+    bin_struct = compute_adjacency_matrix(surf_img_2d(1).mesh.parts[hemi])
+    arr4d = surf_img_2d(1).data.parts[hemi]
+    arr4d = np.zeros(arr4d.shape)
+    test_size, test_mass = _utils.calculate_cluster_measures(
+        arr4d,
+        threshold=0.001,
+        bin_struct=bin_struct,
         two_sided_test=True,
     )
 
