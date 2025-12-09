@@ -1138,7 +1138,7 @@ class ThreeDSlicer(BaseSlicer):
             if the specified threshold is a negative number
         """
         if cut_coords is None:
-            if img is None:
+            if img is None or img is False:
                 cut_coords = (0, 0, 0)
             else:
                 cut_coords = find_xyz_cut_coords(
@@ -1744,7 +1744,7 @@ class BaseStackedSlicer(BaseSlicer):
         if cut_coords is None:
             cut_coords = 7
 
-        if img is None:
+        if img is None or img is False:
             if isinstance(cut_coords, numbers.Number):
                 bounds = ((-40, 40), (-30, 30), (-30, 75))
                 lower, upper = bounds["xyz".index(cls._direction)]
