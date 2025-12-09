@@ -1273,6 +1273,10 @@ def _non_parametric_inference_volume(
     threshold,
     tfce: bool,
 ):
+    """Run non parametric inference on volume data.
+
+    For parameters description see non_parametric_inference.
+    """
     # Mask data
     target_vars = masker.transform(effect_maps)
 
@@ -1331,8 +1335,16 @@ def _non_parametric_inference_surface(
     threshold,
     tfce: bool,
 ):
+    """Run non parametric inference on surface data.
+
+    Inference is run on each hemisphere separately.
+    But we keep track of the result in a separate variable.
+
+    For parameters description see non_parametric_inference.
+    """
     effect_maps = concat_imgs(effect_maps, verbose=verbose)
 
+    # To keep track of the result of each hemisphere
     data = {
         k: {
             "left": np.zeros(effect_maps.data.parts["left"].shape),
@@ -1348,6 +1360,7 @@ def _non_parametric_inference_surface(
         ]
     }
 
+    # We create a mask that omits one hemisphere.
     for hemi in ["left", "right"]:
         if hemi == "left":
             mask_left = masker.mask_img_.data.parts["left"].astype(bool)
