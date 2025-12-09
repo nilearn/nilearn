@@ -189,7 +189,7 @@ class BaseSlicer:
             and len(cut_coords) == cls._cut_count()
         ):
             raise ValueError(
-                "cut_coords passed does not match the display mode"
+                "cut_coords passed does not match the display mode."
                 f" {cls.__name__} plotting expects tuple of length "
                 f"{cls._cut_count()}.\n"
                 f"You provided cut_coords={cut_coords}."
