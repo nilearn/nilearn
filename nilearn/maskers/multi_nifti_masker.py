@@ -311,10 +311,16 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                         stacklevel=find_stack_level(),
                     )
 
+            verbose = self.verbose
+            if verbose:
+                verbose = 1
+            elif not verbose:
+                verbose = 0
+
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs,
                 memory=self.memory_,
-                verbose=max(0, self.verbose - 1),
+                verbose=max(0, verbose - 1),
                 **mask_args,
             )
         elif imgs is not None:

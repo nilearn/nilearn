@@ -377,7 +377,11 @@ def path_scores(
 
     # misc
     _, n_features = X.shape
-    verbose = int(verbose if verbose is not None else 0)
+
+    if verbose:
+        verbose = 1
+    elif not verbose:
+        verbose = 0
 
     # Univariate feature screening. Note that if we have only as few as 100
     # features in the mask's support, then we should use all of them to
