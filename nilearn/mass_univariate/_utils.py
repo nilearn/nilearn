@@ -325,6 +325,9 @@ def calculate_cluster_measures(
         for i_regressor in range(n_regressors):
             arr3d = arr4d[..., i_regressor].copy()
 
+        # TODO
+        # Actually do something here
+
         return max_sizes, max_masses
 
 

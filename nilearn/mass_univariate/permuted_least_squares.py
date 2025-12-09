@@ -188,7 +188,8 @@ def _permuted_ols_on_chunk(
         h0_tfce_part = np.empty((n_regressors, n_perm_chunk))
         tfce_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
 
-    h0_csfwe_part, h0_cmfwe_part = None, None
+    h0_csfwe_part = None
+    h0_cmfwe_part = None
     if threshold is not None:
         h0_csfwe_part = np.empty((n_regressors, n_perm_chunk))
         h0_cmfwe_part = np.empty((n_regressors, n_perm_chunk))
@@ -604,38 +605,11 @@ def permuted_ols(
 
     intercept_test = n_regressors == np.unique(tested_vars).size == 1
 
-    # check if confounding vars contains an intercept
-    if confounding_vars is not None:
-        # Search for all constant columns
-        constants = [
-            x
-            for x in range(confounding_vars.shape[1])
-            if np.unique(confounding_vars[:, x]).size == 1
-        ]
-
-        # check if multiple intercepts are defined across all variates
-        if (intercept_test and len(constants) == 1) or len(constants) > 1:
-            # remove all constant columns
-            confounding_vars = np.delete(confounding_vars, constants, axis=1)
-            # warn user if multiple intercepts are found
-            warnings.warn(
-                category=UserWarning,
-                message=(
-                    'Multiple columns across "confounding_vars" and/or '
-                    '"target_vars" are constant. Only one will be used '
-                    "as intercept."
-                ),
-                stacklevel=find_stack_level(),
-            )
-            model_intercept = True
-
-            # remove confounding vars variable if it is empty
-            if confounding_vars.size == 0:
-                confounding_vars = None
-
-        # intercept is only defined in confounding vars
-        if not intercept_test and len(constants) == 1:
-            intercept_test = True
+    confounding_vars, model_intercept, intercept_test = (
+        _intercetp_in_confounding_vars(
+            confounding_vars, model_intercept, intercept_test
+        )
+    )
 
     # optionally add intercept
     if model_intercept and not intercept_test:
@@ -735,6 +709,7 @@ def permuted_ols(
                 masker.mask_img_,
             ).T
         else:
+            # TODO
             warnings.warn(
                 "tfce not implemented for surface data.",
                 category=NotImplementedWarning,
@@ -969,6 +944,47 @@ def _sanitize_inputs_permuted_ols(
         tested_vars = np.atleast_2d(tested_vars).T
 
     return n_jobs, output_type, target_vars, tested_vars
+
+
+def _intercetp_in_confounding_vars(
+    confounding_vars, model_intercept, intercept_test
+):
+    """Check if confounding vars contains an intercept."""
+    if confounding_vars is None:
+        return confounding_vars, model_intercept, intercept_test
+
+    # Search for all constant columns
+    constants = [
+        x
+        for x in range(confounding_vars.shape[1])
+        if np.unique(confounding_vars[:, x]).size == 1
+    ]
+
+    # check if multiple intercepts are defined across all variates
+    if (intercept_test and len(constants) == 1) or len(constants) > 1:
+        # remove all constant columns
+        confounding_vars = np.delete(confounding_vars, constants, axis=1)
+        # warn user if multiple intercepts are found
+        warnings.warn(
+            category=UserWarning,
+            message=(
+                'Multiple columns across "confounding_vars" and/or '
+                '"target_vars" are constant. Only one will be used '
+                "as intercept."
+            ),
+            stacklevel=find_stack_level(),
+        )
+        model_intercept = True
+
+        # remove confounding vars variable if it is empty
+        if confounding_vars.size == 0:
+            confounding_vars = None
+
+    # intercept is only defined in confounding vars
+    if not intercept_test and len(constants) == 1:
+        intercept_test = True
+
+    return confounding_vars, model_intercept, intercept_test
 
 
 def _prepare_output_permuted_ols(

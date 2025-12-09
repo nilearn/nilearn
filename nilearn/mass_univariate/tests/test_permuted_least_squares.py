@@ -988,7 +988,7 @@ def test_tfce_no_masker_error():
     """Raise error when no masker is passed for TFCE."""
     target_var, tested_var, *_ = _tfce_design()
 
-    with pytest.raises(ValueError, match="masker must be provided"):
+    with pytest.raises(ValueError, match="'masker' must be defined"):
         permuted_ols(
             tested_var,
             target_var,
@@ -1007,7 +1007,7 @@ def test_cluster_level_parameters_error_no_masker(cluster_level_design):
     # but masker is not defined.
     with pytest.raises(
         ValueError,
-        match=r"If 'threshold' is not None, masker must be defined as well.",
+        match=r"If 'threshold' is not None, 'masker' must be defined as well.",
     ):
         permuted_ols(
             tested_var,

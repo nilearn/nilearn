@@ -253,7 +253,7 @@ def test_check_shape_first_level_models(shape_4d_default, n_subjects):
 
 def test_check_second_level_input(shape_4d_default):
     """Raise errors when wrong inputs are passed to SecondLevelModel."""
-    with pytest.raises(TypeError, match="second_level_input must be"):
+    with pytest.raises(TypeError, match="'second_level_input' must be"):
         _check_second_level_input(1, None)
 
     with pytest.raises(
@@ -296,7 +296,7 @@ def test_check_second_level_input_list_wrong_type():
     """
     model = SecondLevelModel()
     second_level_input = [1, 2]
-    with pytest.raises(TypeError, match="second_level_input must be"):
+    with pytest.raises(TypeError, match="'second_level_input' must be"):
         model.fit(second_level_input)
 
 
@@ -687,7 +687,7 @@ def test_secondlevelmodel_fit_inputs_errors(confounds, shape_4d_default):
     )
 
     # test first level model requirements
-    with pytest.raises(TypeError, match="second_level_input must be"):
+    with pytest.raises(TypeError, match="'second_level_input' must be"):
         SecondLevelModel().fit(second_level_input=flm)
     with pytest.raises(TypeError, match="at least two"):
         SecondLevelModel().fit(second_level_input=[flm])
