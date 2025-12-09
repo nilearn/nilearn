@@ -426,7 +426,7 @@ def test_missing_second_level_contrast_errors(
 
 
 @pytest.mark.parametrize("two_sided_test", [True, False])
-@pytest.mark.parametrize("threshold", [None, 0.001])
+@pytest.mark.parametrize("threshold", [None, 0.1])
 @pytest.mark.parametrize("tfce", [False])
 def test_surface_images(
     surf_img_1d, two_sided_test, n_subjects, threshold, tfce
@@ -467,7 +467,7 @@ def test_surface_images(
 
 
 @pytest.mark.parametrize("two_sided_test", [True, False])
-@pytest.mark.parametrize("threshold", [None, 0.001])
+@pytest.mark.parametrize("threshold", [None, 0.1])
 @pytest.mark.parametrize("tfce", [False])
 def test_surface_images_2d(
     surf_img_2d, n_subjects, two_sided_test, threshold, tfce
@@ -508,7 +508,7 @@ def test_surface_images_2d(
 
 
 @pytest.mark.parametrize("two_sided_test", [True, False])
-@pytest.mark.parametrize("threshold", [None, 0.001])
+@pytest.mark.parametrize("threshold", [None, 0.1])
 @pytest.mark.parametrize("tfce", [False])
 def test_surface_images_2d_mask(
     surf_img_2d, surf_mask_1d, n_subjects, two_sided_test, threshold, tfce

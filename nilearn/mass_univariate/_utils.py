@@ -331,8 +331,10 @@ def calculate_cluster_measures(
                 arr3d[np.abs(arr3d) <= threshold] = 0
             else:
                 arr3d[arr3d <= threshold] = 0
+            
+            mask = arr3d.astype(bool)
 
-            sub_adj = bin_struct[arr3d][:, arr3d]
+            sub_adj = bin_struct[mask][:, mask]
 
             _, labels_sub = connected_components(sub_adj, directed=False)
             print(labels_sub)
