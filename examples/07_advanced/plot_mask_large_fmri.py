@@ -58,7 +58,7 @@ from nilearn.datasets import fetch_adhd
 from nilearn.image import concat_imgs
 
 N_SUBJECTS = 6
-N_REGIONS = 4
+N_REGIONS = 2
 
 
 def create_large_fmri(n_subjects):
