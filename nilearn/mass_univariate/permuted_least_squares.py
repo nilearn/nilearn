@@ -261,7 +261,9 @@ def _permuted_ols_on_chunk(
 
                 # TODO
                 # rename variable because only 2D for surface
-                arr4d = masker.inverse_transform(perm_scores.T).data.parts[hemi]
+                arr4d = masker.inverse_transform(perm_scores.T).data.parts[
+                    hemi
+                ]
                 bin_struct = compute_adjacency_matrix(
                     mask_img.mesh.parts[hemi]
                 )
