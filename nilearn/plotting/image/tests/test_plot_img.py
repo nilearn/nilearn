@@ -232,6 +232,19 @@ def test_error_incompatible_cut_coords_3d(
         )
 
 
+def test_error_incompatible_cut_coords_mosaic(
+    matplotlib_pyplot, img_3d_rand_eye
+):
+    """Test error when incompatible cut_coords is specified for `mosaic`
+    slicer.
+    """
+    with pytest.raises(
+        ValueError,
+        match=("cut_coords passed does not match the display mode"),
+    ):
+        plot_img(img_3d_rand_eye, display_mode="mosaic", cut_coords=[3, 5])
+
+
 @pytest.mark.parametrize("display_mode", ["xz", "yz", "yx"])
 @pytest.mark.parametrize("cut_coords", [5, [3, 5, 7]])
 def test_error_incompatible_cut_coords_2d(
