@@ -41,8 +41,10 @@ class BaseSlicer:
 
     Attributes
     ----------
-    cut_coords : 3 :obj:`tuple` of :obj:`int`
-        The cut position, in world space.
+    cut_coords: n-D :obj:`tuple`, n-D :obj:`list`,
+                n-D :class:`~numpy.ndarray` of :obj:`int`
+        world coordinates of cuts where ``n`` is the number of directions
+        of this slicer
 
     frame_axes : :class:`matplotlib.axes.Axes`, optional
         The matplotlib axes that will be subdivided in 3.
@@ -113,9 +115,10 @@ class BaseSlicer:
     @classmethod
     def _check_cut_coords_in_bounds(cls, img, cut_coords):
         """
-        Check if the specified `cut_coords` is within the specified `bounds`.
+        Check if the specified ``cut_coords`` is within the bounds of the
+        specified image ``img``.
 
-        Warn if at least one of the coordinates is not in the bounds.
+        Warn if at least one of the coordinates is not within the bounds.
 
         Raise ValueError if none of the coordinates is within the bounds.
 
@@ -124,13 +127,15 @@ class BaseSlicer:
         img : 3D Nifti1Image
             The brain map.
 
-        cut_coords:
-            cut_coords to check
+        cut_coords: n-D :obj:`tuple`, n-D :obj:`list`,
+                    n-D :class:`~numpy.ndarray` of :obj:`int`
+            world coordinates of cuts where ``n`` is the number of directions
+            of this slicer
 
         Raises
         ------
         ValueError
-            If none of the coords is in the specified bounds.
+            If none of the coords is in the specified image bounds.
         """
         cls._check_cut_coords(cut_coords)
 
@@ -153,7 +158,7 @@ class BaseSlicer:
             warnings.warn(
                 (
                     f"At least one of the specified {cut_coords=} "
-                    "seem to be out of the bounds of the image:\n"
+                    "seem to be out of the image bounds:\n"
                     f"{bounds}.\n"
                 ),
                 UserWarning,
@@ -162,21 +167,22 @@ class BaseSlicer:
 
     @classmethod
     def _check_cut_coords(cls, cut_coords):
-        """Check if the specified cut_coords is a list of world coordinates
-        with number of elements equal to the number of elements in this
-        slicer's cut_displayed attribute.
+        """Check if the specified ``cut_coords`` is a list of world coordinates
+        with number of elements equal to the number of directions of this
+        slicer.
 
         Parameters
         ----------
-        cut_coords : :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
-                    :obj:`float`
-            cut_coords to check
+        cut_coords: n-D :obj:`tuple`, n-D :obj:`list`,
+                    n-D :class:`~numpy.ndarray` of :obj:`int`
+            world coordinates of cuts where ``n`` is the number of directions
+            of this slicer
 
         Raises
         ------
         ValueError
-            If the specified cut_coords is not a list of numbers that has the
-        same number of elements with this slicer's cut_displayed attribute.
+            If the number of elements of the specified ``cut_coords`` is not
+        equal to the number of cuts of this slicer.
         """
         if not (
             isinstance(cut_coords, (list, tuple, np.ndarray))
@@ -191,22 +197,25 @@ class BaseSlicer:
 
     @classmethod
     def _cut_count(cls):
-        """Return the number of cuts for this slicer."""
+        """Return the number of directions for this slicer."""
         raise NotImplementedError()
 
     @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords):
-        """Check for each coordinate in cut_coords if it is within the bounds
-        and return a list of boolean values corresponding to each coordinate.
+        """Check for each coordinate in ``cut_coords`` if it is within the
+        specified ``bounds`` and return a list of boolean values corresponding
+        to each coordinate.
 
         Parameters
         ----------
         bounds:
-            image bounds to check if the specified cut_coords is inside these
-        bounds
+            image bounds to check if the specified ``cut_coords`` is inside
+            these bounds
 
-        cut_coords:
-            cut_coords to check
+        cut_coords: n-D :obj:`tuple`, n-D :obj:`list`,
+                    n-D :class:`~numpy.ndarray` of :obj:`int`
+            world coordinates of cuts where ``n`` is the number of directions
+            of this slicer
 
         Return
         ------
@@ -239,8 +248,10 @@ class BaseSlicer:
 
         %(threshold)s
 
-        cut_coords : 3 :obj:`tuple` of :obj:`int`
-            The cut position, in world space.
+        cut_coords: n-D :obj:`tuple`, n-D :obj:`list`,
+                    n-D :class:`~numpy.ndarray` of :obj:`int`
+            world coordinates of cuts where ``n`` is the number of directions
+            of this slicer
 
         axes : :class:`matplotlib.axes.Axes`, optional
             The axes that will be subdivided in 3.
@@ -1117,7 +1128,8 @@ class ThreeDSlicer(BaseSlicer):
                   value is used to threshold the image: values below the
                   threshold (in absolute value) are plotted as transparent.
 
-        cut_coords : 3 :obj:`tuple` of :obj:`int`
+        cut_coords : 3D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
+                    :obj:`int`
             The cut position, in world space.
 
         Raises
@@ -1145,18 +1157,19 @@ class ThreeDSlicer(BaseSlicer):
 
     @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords):
-        """Check for each coordinate in cut_coords if it is within the bounds
-        and return a list of boolean values corresponding to each coordinate.
+        """Check for each coordinate in `cut_coords` if it is within the
+        specified `bounds` and return a list of boolean values corresponding to
+        each coordinate.
 
         Parameters
         ----------
         bounds:
-            image bounds to check if the specified cut_coords is inside these
+            image bounds to check if the specified `cut_coords` is inside these
         bounds
 
         cut_coords : 3D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
-                    :obj:`float`
-            cut_coords to check
+                    :obj:`int`
+            The cut position, in world space.
 
         Return
         ------
@@ -1197,8 +1210,9 @@ class OrthoSlicer(ThreeDSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`list`
-        The cut coordinates.
+    cut_coords : 3D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
+               :obj:`int`
+        The cut position, in world space.
 
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot each view.
@@ -1390,8 +1404,9 @@ class TiledSlicer(ThreeDSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`list`
-        The cut coordinates.
+    cut_coords : 3D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
+               :obj:`int`
+        The cut position, in world space.
 
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot each view.
@@ -1719,13 +1734,15 @@ class BaseStackedSlicer(BaseSlicer):
             If ``None``, the activation threshold is computed using the
             80% percentile of the absolute value of the map.
 
-        cut_coords : :obj:`list` of :obj:`float`, optional
+        cut_coords: :obj:`int`, 1D :obj:`tuple`, 1D :obj:`list`,
+                    1D :class:`~numpy.ndarray` of :obj:`int`
             xyz world coordinates of cuts.
 
         Returns
         -------
-        cut_coords : :obj:`list` of :obj:`float`
-            xyz world coordinates of cuts.
+        cut_coords : :obj:`list` of :obj:`int`
+            xyz world coordinates of cuts corresponding to the direction of
+        this slicer.
         """
         if cut_coords is None:
             cut_coords = 7
@@ -1746,19 +1763,20 @@ class BaseStackedSlicer(BaseSlicer):
 
     @classmethod
     def _check_cut_coords(cls, cut_coords):
-        """Check if the specified cut_coords is a list of 1D coordinates.
+        """Check if the specified ``cut_coords`` is a list of 1D coordinates.
 
         Parameters
         ----------
-        cut_coords : 1D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
-                    :obj:`float`
-            cut_coords to check
+        cut_coords : 1D :obj:`tuple`, 1D :obj:`list`, 1D
+                     :class:`~numpy.ndarray` of :obj:`int`
+            xyz world coordinates of cuts corresponding to the direction of
+            this slicer.cut_coords to check
 
         Raises
         ------
         ValueError
-            If the specified cut_coords is not a list of 1D world coordinates
-        corresponding to the direction of this slicer.
+            If the specified ``cut_coords`` is not a list of 1D world
+        coordinates corresponding to the direction of this slicer.
         """
         if not (isinstance(cut_coords, (list, tuple, np.ndarray))):
             raise ValueError(
@@ -1771,9 +1789,9 @@ class BaseStackedSlicer(BaseSlicer):
 
     @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords):
-        """Check for each element in cut_coords if it is within the bounds of
-        the direction of this slicer return a list of boolean values
-        corresponding to each element.
+        """Check for each element in ``cut_coords`` if it is within the
+        ``bounds`` of the direction of this slicer return a list of boolean
+        values corresponding to each element.
 
         Parameters
         ----------
@@ -1781,9 +1799,10 @@ class BaseStackedSlicer(BaseSlicer):
             image bounds to check if the specified cut_coords is inside these
         bounds
 
-        cut_coords : 1D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
-                    :obj:`float`
-            cut_coords to check
+        cut_coords : 1D :obj:`tuple`, 1D :obj:`list`, 1D
+                    :class:`~numpy.ndarray` of :obj:`int`
+            xyz world coordinates of cuts corresponding to the direction of
+            this slicer.cut_coords to check
 
         Return
         ------
@@ -1920,8 +1939,13 @@ class XSlicer(BaseStackedSlicer):
 
     Attributes
     ----------
-    cut_coords : 1D :class:`~numpy.ndarray`
-        The cut coordinates.
+    cut_coords: :obj:`int`, 1D :obj:`tuple`, 1D :obj:`list`,
+                1D :class:`~numpy.ndarray` of :obj:`int`
+        Cut coordinate in direction x.
+        If specified as a number, generates the specified number of cuts in
+        direction x.
+        If specified as list, generates a cut in direction x for each
+        coordinate specified in the list.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting.
@@ -1959,8 +1983,13 @@ class YSlicer(BaseStackedSlicer):
 
     Attributes
     ----------
-    cut_coords : 1D :class:`~numpy.ndarray`
-        The cut coordinates.
+    cut_coords: :obj:`int`, 1D :obj:`tuple`, 1D :obj:`list`,
+                1D :class:`~numpy.ndarray` of :obj:`int`
+        Cut coordinate in direction y.
+        If specified as a number, generates the specified number of cuts in
+        direction y.
+        If specified as list, generates a cut in direction y for each
+        coordinate specified in the list.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting.
@@ -1998,8 +2027,13 @@ class ZSlicer(BaseStackedSlicer):
 
     Attributes
     ----------
-    cut_coords : 1D :class:`~numpy.ndarray`
-        The cut coordinates.
+    cut_coords: :obj:`int`, 1D :obj:`tuple`, 1D :obj:`list`,
+                1D :class:`~numpy.ndarray` of :obj:`int`
+        Cut coordinate in direction y.
+        If specified as a number, generates the specified number of cuts in
+        direction z.
+        If specified as list, generates a cut in direction z for each
+        coordinate specified in the list.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting.
@@ -2037,8 +2071,9 @@ class XZSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`list` of :obj:`float`
-        The cut coordinates.
+    cut_coords: 2D :obj:`tuple`, 2D :obj:`list`,
+                2D :class:`~numpy.ndarray` of :obj:`int`
+        Cut coordinates in directions x and z.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'z' here).
@@ -2075,8 +2110,9 @@ class YXSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`list` of :obj:`float`
-        The cut coordinates.
+    cut_coords: 2D :obj:`tuple`, 2D :obj:`list`,
+                2D :class:`~numpy.ndarray` of :obj:`int`
+        Cut coordinates in directions x and y.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'y' here).
@@ -2113,8 +2149,9 @@ class YZSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`list` of :obj:`float`
-        The cut coordinates.
+    cut_coords: 2D :obj:`tuple`, 2D :obj:`list`,
+                2D :class:`~numpy.ndarray` of :obj:`int`
+        Cut coordinates in directions y and z.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('y' and 'z' here).
@@ -2152,8 +2189,15 @@ class MosaicSlicer(BaseSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`>
-        The cut coordinates in a dictionary. The keys are the directions
+    cut_coords : :obj:`int`, 3D :obj:`tuple`, 3D :obj:`list`,
+                 3D :class:`~numpy.ndarray` of :obj:`int` or
+                 :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`>
+        If a number is specified, generates the specified number of cuts in
+        each direction xyz.
+        If a list is specified, it should have size 3 each element
+        corresponding to directions xyz. For each direction, generates the
+        specified number of cuts.
+        If specified as a dictionary, the keys are the directions
         ('x', 'y', 'z'), and the values are arrays holding the cut
         coordinates.
 
@@ -2195,8 +2239,8 @@ class MosaicSlicer(BaseSlicer):
             the activation threshold is computed using the 80% percentile of
             the absolute value of the map.
 
-        cut_coords : :obj:`list` / :obj:`tuple` of 3 :obj:`float`,\
-        :obj:`int`, optional
+        cut_coords : :obj:`list` / :obj:`tuple` of 3 :obj:`int`,\
+            :obj:`int`, optional
             xyz world coordinates of cuts. If ``cut_coords``
             are not provided, 7 coordinates of cuts are automatically
             calculated.
@@ -2214,9 +2258,7 @@ class MosaicSlicer(BaseSlicer):
         if isinstance(cut_coords, numbers.Number):
             cut_coords = [cut_coords] * cls._cut_count()
         cls._check_cut_coords(cut_coords)
-        cut_coords = [
-            cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
-        ]
+
         cut_coords = cls._find_cut_coords(img, cut_coords, cls._cut_displayed)
 
         return cut_coords
