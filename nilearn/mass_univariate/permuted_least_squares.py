@@ -32,6 +32,7 @@ from nilearn.mass_univariate._utils import (
     orthonormalize_matrix,
     t_score_with_covars_and_normalized_design,
 )
+from nilearn.surface.surface import compute_adjacency_matrix
 from nilearn.surface.surface import get_data as get_surface_data
 
 
@@ -242,44 +243,60 @@ def _permuted_ols_on_chunk(
         # Prepare data for cluster thresholding
         if tfce or (threshold is not None):
             assert isinstance(masker, (NiftiMasker, SurfaceMasker))
+
             if isinstance(masker, NiftiMasker):
                 arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
+                bin_struct = generate_binary_structure(3, 1)
+
             else:
+                # For surface data
+                # we should have the data of only a single hemisphere
+                # to work with
+                mask_img = masker.mask_img_
+                hemi = (
+                    "right"
+                    if not np.any(mask_img.data.parts["left"].ravel())
+                    else "left"
+                )
+
+                # TODO
+                # rename variable because only 2D for surface
                 arr4d = get_surface_data(
                     masker.inverse_transform(perm_scores.T)
                 )
+                bin_struct = compute_adjacency_matrix(
+                    mask_img.mesh.parts[hemi]
+                )
 
-            bin_struct = generate_binary_structure(3, 1)
+            if tfce:
+                # The TFCE map will contain positive and negative values if
+                # two_sided_test is True, or positive only if it's False.
+                # In either case,
+                # the maximum absolute value is the one we want.
+                h0_tfce_part[:, i_perm] = np.nanmax(
+                    np.fabs(
+                        calculate_tfce(
+                            arr4d,
+                            bin_struct=bin_struct,
+                            two_sided_test=two_sided_test,
+                        )
+                    ),
+                    axis=(0, 1, 2),
+                )
+                tfce_scores_as_ranks_part += h0_tfce_part[:, i_perm].reshape(
+                    (-1, 1)
+                ) < np.fabs(tfce_original_data.T)
 
-        if tfce:
-            # The TFCE map will contain positive and negative values if
-            # two_sided_test is True, or positive only if it's False.
-            # In either case, the maximum absolute value is the one we want.
-            h0_tfce_part[:, i_perm] = np.nanmax(
-                np.fabs(
-                    calculate_tfce(
-                        arr4d,
-                        bin_struct=bin_struct,
-                        two_sided_test=two_sided_test,
-                    )
-                ),
-                axis=(0, 1, 2),
-            )
-            tfce_scores_as_ranks_part += h0_tfce_part[:, i_perm].reshape(
-                (-1, 1)
-            ) < np.fabs(tfce_original_data.T)
-
-        if threshold is not None:
-            (
-                h0_csfwe_part[:, i_perm],
-                h0_cmfwe_part[:, i_perm],
-            ) = calculate_cluster_measures(
-                arr4d,
-                threshold,
-                bin_struct,
-                two_sided_test=two_sided_test,
-                is_volume=isinstance(masker, NiftiMasker),
-            )
+            if threshold is not None:
+                (
+                    h0_csfwe_part[:, i_perm],
+                    h0_cmfwe_part[:, i_perm],
+                ) = calculate_cluster_measures(
+                    arr4d,
+                    threshold,
+                    bin_struct,
+                    two_sided_test=two_sided_test,
+                )
 
         if verbose > 0:
             step = 11 - min(verbose, 10)

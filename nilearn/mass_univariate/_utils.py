@@ -5,6 +5,7 @@ from warnings import warn
 import numpy as np
 from scipy import linalg
 from scipy.ndimage import label
+from scipy.sparse.csgraph import connected_components
 
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
@@ -232,18 +233,19 @@ def null_to_p(test_values, null_array, alternative="two-sided"):
 
 
 def calculate_cluster_measures(
-    arr4d,
+    arr4d: np.ndarray,
     threshold,
     bin_struct,
     two_sided_test=False,
-    is_volume=True,
 ):
     """Calculate maximum cluster mass and size for an array.
 
     Parameters
     ----------
-    arr4d : :obj:`numpy.ndarray` of shape (X, Y, Z, R)
-        Unthresholded 4D array of 3D t-statistic maps.
+    arr4d : :obj:`numpy.ndarray` of shape (X, Y, Z, R) for volume
+            or :obj:`numpy.ndarray` of shape (n_vertices, n_samples, R)
+        Unthresholded 4D array of t-statistic volume maps
+        or unthresholded 2D array of t-statistic surface maps.
         R = regressor.
 
     threshold : :obj:`float`
@@ -256,14 +258,14 @@ def calculate_cluster_measures(
         Whether to assess both positive and negative clusters (True) or just
         positive ones (False).
 
-    is_volume : :obj:`bool`, default=True
-        Whether the data came from volume data or not.
-
     Returns
     -------
     max_size, max_mass : :obj:`numpy.ndarray` of shape (n_regressors,)
         Maximum cluster size and mass from the matrix, for each regressor.
     """
+    is_volume = True
+    if arr4d.ndim == 2:
+        is_volume = False
     n_regressors = arr4d.shape[3] if is_volume else arr4d.shape[1]
 
     max_sizes = np.zeros(n_regressors, int)
@@ -324,6 +326,16 @@ def calculate_cluster_measures(
     else:
         for i_regressor in range(n_regressors):
             arr3d = arr4d[..., i_regressor].copy()
+
+            if two_sided_test:
+                arr3d[np.abs(arr3d) <= threshold] = 0
+            else:
+                arr3d[arr3d <= threshold] = 0
+
+            sub_adj = bin_struct[arr3d][:, arr3d]
+
+            _, labels_sub = connected_components(sub_adj, directed=False)
+            print(labels_sub)
 
         # TODO
         # Actually do something here
