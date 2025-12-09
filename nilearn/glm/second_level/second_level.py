@@ -6,6 +6,7 @@ import inspect
 import operator
 import time
 from pathlib import Path
+from typing import Any
 from warnings import warn
 
 import numpy as np
@@ -1139,6 +1140,11 @@ def non_parametric_inference(
     _check_confounds(confounds)
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
+    if verbose is False:
+        verbose = 0
+    if verbose is True:
+        verbose = 1
+
     if isinstance(second_level_input, pd.DataFrame):
         second_level_input = _sort_input_dataframe(second_level_input)
     sample_map, _ = _process_second_level_input(second_level_input)
@@ -1221,11 +1227,153 @@ def non_parametric_inference(
         confounding_vars = np.asarray(design_matrix[var_names])
 
     if isinstance(masker, NiftiMasker):
-        # Mask data
-        target_vars = masker.transform(effect_maps)
+        return _non_parametric_inference_volume(
+            tested_var,
+            effect_maps,
+            confounding_vars,
+            model_intercept,
+            n_perm,
+            two_sided_test,
+            random_state,
+            n_jobs,
+            verbose,
+            masker,
+            threshold,
+            tfce,
+        )
+
+    else:
+        return _non_parametric_inference_surface(
+            tested_var,
+            effect_maps,
+            confounding_vars,
+            model_intercept,
+            n_perm,
+            two_sided_test,
+            random_state,
+            n_jobs,
+            verbose,
+            masker,
+            threshold,
+            tfce,
+        )
+
+
+def _non_parametric_inference_volume(
+    tested_var,
+    effect_maps,
+    confounding_vars,
+    model_intercept: bool,
+    n_perm: int,
+    two_sided_test: bool,
+    random_state,
+    n_jobs: int,
+    verbose: int,
+    masker: NiftiMasker,
+    threshold,
+    tfce: bool,
+):
+    # Mask data
+    target_vars = masker.transform(effect_maps)
+
+    # Perform massively univariate analysis with permuted OLS
+    outputs: dict[str, Any] = permuted_ols(
+        tested_var,
+        target_vars,
+        confounding_vars=confounding_vars,
+        model_intercept=model_intercept,
+        n_perm=n_perm,
+        two_sided_test=two_sided_test,
+        random_state=random_state,
+        n_jobs=n_jobs,
+        verbose=max(0, verbose - 1),
+        masker=masker,
+        threshold=threshold,
+        tfce=tfce,
+    )
+
+    neg_log10_vfwe_pvals_img = masker.inverse_transform(
+        np.ravel(outputs["logp_max_t"])
+    )
+
+    if (not tfce) and (threshold is None):
+        return neg_log10_vfwe_pvals_img
+
+    t_img = masker.inverse_transform(np.ravel(outputs["t"]))
+
+    out = {
+        "t": t_img,
+        "logp_max_t": neg_log10_vfwe_pvals_img,
+    }
+
+    include = []
+    if tfce:
+        include.extend(["tfce", "logp_max_tfce"])
+    if threshold is not None:
+        include.extend(["logp_max_size", "logp_max_mass", "size", "mass"])
+    for k in include:
+        out[k] = masker.inverse_transform(np.ravel(outputs[k]))
+
+    return out
+
+
+def _non_parametric_inference_surface(
+    tested_var,
+    effect_maps,
+    confounding_vars,
+    model_intercept: bool,
+    n_perm: int,
+    two_sided_test: bool,
+    random_state,
+    n_jobs: int,
+    verbose: int,
+    masker: SurfaceMasker,
+    threshold,
+    tfce: bool,
+):
+    effect_maps = concat_imgs(effect_maps, verbose=verbose)
+
+    data = {
+        k: {
+            "left": np.zeros(effect_maps.data.parts["left"].shape),
+            "right": np.zeros(effect_maps.data.parts["right"].shape),
+        }
+        for k in [
+            "logp_max_t",
+            "t",
+            "logp_max_size",
+            "logp_max_mass",
+            "size",
+            "mass",
+        ]
+    }
+
+    for hemi in ["left", "right"]:
+        if hemi == "left":
+            mask_left = masker.mask_img_.data.parts["left"].astype(bool)
+            hemi_empty = not np.any(mask_left.ravel())
+            mask_right = np.zeros(
+                masker.mask_img_.data.parts["right"].shape, dtype=bool
+            )
+        else:
+            mask_left = np.zeros(
+                masker.mask_img_.data.parts["left"].shape, dtype=bool
+            )
+            mask_right = masker.mask_img_.data.parts["right"].astype(bool)
+            hemi_empty = not np.any(mask_right.ravel())
+
+        if hemi_empty:
+            continue
+
+        single_hemi_mask = new_img_like(
+            effect_maps, {"left": mask_left, "right": mask_right}
+        )
+        single_hemi_masker = SurfaceMasker(mask_img=single_hemi_mask).fit()
+
+        target_vars = single_hemi_masker.transform(effect_maps)
 
         # Perform massively univariate analysis with permuted OLS
-        outputs = permuted_ols(
+        outputs: dict[str, Any] = permuted_ols(
             tested_var,
             target_vars,
             confounding_vars=confounding_vars,
@@ -1235,126 +1383,35 @@ def non_parametric_inference(
             random_state=random_state,
             n_jobs=n_jobs,
             verbose=max(0, verbose - 1),
-            masker=masker,
+            masker=single_hemi_masker,
             threshold=threshold,
             tfce=tfce,
         )
 
-        neg_log10_vfwe_pvals_img = masker.inverse_transform(
-            np.ravel(outputs["logp_max_t"])
-        )
-
-        t_img = masker.inverse_transform(np.ravel(outputs["t"]))
-
-        if threshold is not None:
-            # Cluster size-based p-values
-            neg_log10_csfwe_pvals_img = masker.inverse_transform(
-                np.ravel(outputs["logp_max_size"]),
-            )
-
-            # Cluster mass-based p-values
-            neg_log10_cmfwe_pvals_img = masker.inverse_transform(
-                np.ravel(outputs["logp_max_mass"]),
-            )
-
-            size_img = masker.inverse_transform(np.ravel(outputs["size"]))
-            mass_img = masker.inverse_transform(np.ravel(outputs["mass"]))
-
-    else:
-        effect_maps = concat_imgs(effect_maps, verbose=verbose)
-
-        data = {
-            k: {
-                "left": np.zeros(effect_maps.data.parts["left"].shape),
-                "right": np.zeros(effect_maps.data.parts["right"].shape),
-            }
-            for k in [
-                "logp_max_t",
-                "t",
+        for k in [
+            "logp_max_t",
+            "t",
+            "logp_max_size",
+            "logp_max_mass",
+            "size",
+            "mass",
+        ]:
+            if k in [
                 "logp_max_size",
                 "logp_max_mass",
                 "size",
                 "mass",
-            ]
-        }
-
-        for hemi in ["left", "right"]:
-            if hemi == "left":
-                mask_left = masker.mask_img_.data.parts["left"].astype(bool)
-                hemi_empty = not np.any(mask_left.ravel())
-                mask_right = np.zeros(
-                    masker.mask_img_.data.parts["right"].shape, dtype=bool
-                )
-            else:
-                mask_left = np.zeros(
-                    masker.mask_img_.data.parts["left"].shape, dtype=bool
-                )
-                mask_right = masker.mask_img_.data.parts["right"].astype(bool)
-                hemi_empty = not np.any(mask_right.ravel())
-
-            if hemi_empty:
+            ] and (threshold is None or not tfce):
                 continue
+            tmp = single_hemi_masker.inverse_transform(np.ravel(outputs[k]))
+            data[k][hemi] = tmp.data.parts[hemi]
 
-            single_hemi_mask = new_img_like(
-                effect_maps, {"left": mask_left, "right": mask_right}
-            )
-            single_hemi_masker = SurfaceMasker(mask_img=single_hemi_mask).fit()
-
-            target_vars = single_hemi_masker.transform(effect_maps)
-
-            # Perform massively univariate analysis with permuted OLS
-            outputs = permuted_ols(
-                tested_var,
-                target_vars,
-                confounding_vars=confounding_vars,
-                model_intercept=model_intercept,
-                n_perm=n_perm,
-                two_sided_test=two_sided_test,
-                random_state=random_state,
-                n_jobs=n_jobs,
-                verbose=max(0, verbose - 1),
-                masker=single_hemi_masker,
-                threshold=threshold,
-                tfce=tfce,
-            )
-
-            for k in [
-                "logp_max_t",
-                "t",
-                "logp_max_size",
-                "logp_max_mass",
-                "size",
-                "mass",
-            ]:
-                if k in [
-                    "logp_max_size",
-                    "logp_max_mass",
-                    "size",
-                    "mass",
-                ] and (threshold is None or not tfce):
-                    continue
-                tmp = single_hemi_masker.inverse_transform(
-                    np.ravel(outputs[k])
-                )
-                data[k][hemi] = tmp.data.parts[hemi]
-
-        neg_log10_vfwe_pvals_img = new_img_like(
-            effect_maps, data["logp_max_t"]
-        )
-        t_img = new_img_like(effect_maps, data["t"])
-
-        if threshold is not None:
-            neg_log10_csfwe_pvals_img = new_img_like(
-                effect_maps, data["logp_max_size"]
-            )
-            neg_log10_cmfwe_pvals_img = new_img_like(
-                effect_maps, data["logp_max_mass"]
-            )
-            size_img = new_img_like(effect_maps, data["size"])
-            mass_img = new_img_like(effect_maps, data["mass"])
+    neg_log10_vfwe_pvals_img = new_img_like(effect_maps, data["logp_max_t"])
 
     if (not tfce) and (threshold is None):
         return neg_log10_vfwe_pvals_img
+
+    t_img = new_img_like(effect_maps, data["t"])
 
     out = {
         "t": t_img,
@@ -1362,16 +1419,17 @@ def non_parametric_inference(
     }
 
     if tfce:
-        neg_log10_tfce_pvals_img = masker.inverse_transform(
+        out["tfce"] = masker.inverse_transform(np.ravel(outputs["tfce"]))
+        out["logp_max_tfce"] = masker.inverse_transform(
             np.ravel(outputs["logp_max_tfce"]),
         )
-        out["tfce"] = masker.inverse_transform(np.ravel(outputs["tfce"]))
-        out["logp_max_tfce"] = neg_log10_tfce_pvals_img
 
+    include = []
+    if tfce:
+        include.extend(["tfce", "logp_max_tfce"])
     if threshold is not None:
-        out["logp_max_size"] = neg_log10_csfwe_pvals_img
-        out["logp_max_mass"] = neg_log10_cmfwe_pvals_img
-        out["size"] = size_img
-        out["mass"] = mass_img
+        include.extend(["logp_max_size", "logp_max_mass", "size", "mass"])
+    for k in include:
+        out[k] = new_img_like(effect_maps, data[k])
 
     return out
