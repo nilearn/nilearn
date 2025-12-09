@@ -162,18 +162,36 @@ class BaseSlicer:
 
     @classmethod
     def _check_cut_coords(cls, cut_coords):
-        """Check if the specified cut_coords is compatible with this slicer.
+        """Check if the specified cut_coords is a list of world coordinates
+        with number of elements equal to the number of elements in this
+        slicer's cut_displayed attribute.
 
         Parameters
         ----------
-        cut_coords :
+        cut_coords : :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
+                    :obj:`float`
             cut_coords to check
 
         Raises
         ------
         ValueError
-            If the specified cut_coords is not compatible with this slicer.
+            If the specified cut_coords is not a list of numbers that has the
+        same number of elements with this slicer's cut_displayed attribute.
         """
+        if not (
+            isinstance(cut_coords, (list, tuple, np.ndarray))
+            and len(cut_coords) == cls._cut_count()
+        ):
+            raise ValueError(
+                "cut_coords passed does not match the display mode"
+                f" {cls.__name__} plotting expects tuple of length "
+                f"{cls._cut_count()}.\n"
+                f"You provided cut_coords={cut_coords}."
+            )
+
+    @classmethod
+    def _cut_count(cls):
+        """Return the number of cuts for this slicer."""
         raise NotImplementedError()
 
     @classmethod
@@ -1122,33 +1140,8 @@ class ThreeDSlicer(BaseSlicer):
         return cut_coords
 
     @classmethod
-    def _check_cut_coords(cls, cut_coords):
-        """Check if the specified cut_coords is a list of world coordinates
-        with number of elements equal to the number of elements in this
-        slicer's cut_displayed attribute.
-
-        Parameters
-        ----------
-        cut_coords : :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
-                    :obj:`float`
-            cut_coords to check
-
-        Raises
-        ------
-        ValueError
-            If the specified cut_coords is not a list of numbers that has the
-        same number of elements with this slicer's cut_displayed attribute.
-        """
-        if not (
-            isinstance(cut_coords, (list, tuple, np.ndarray))
-            and len(cut_coords) == len(cls._cut_displayed)
-        ):
-            raise ValueError(
-                "cut_coords passed does not match the display mode"
-                f" {cls.__name__} plotting expects tuple of length "
-                f"{len(cls._cut_displayed)}.\n"
-                f"You provided cut_coords={cut_coords}."
-            )
+    def _cut_count(cls):
+        return len(cls._cut_displayed)
 
     @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords):
@@ -1773,6 +1766,9 @@ class BaseStackedSlicer(BaseSlicer):
                 f"You provided cut_coords={cut_coords}."
             )
 
+    def _cut_count(self):
+        return len(self._direction)
+
     @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords):
         """Check for each element in cut_coords if it is within the bounds of
@@ -2204,6 +2200,8 @@ class MosaicSlicer(BaseSlicer):
             xyz world coordinates of cuts. If ``cut_coords``
             are not provided, 7 coordinates of cuts are automatically
             calculated.
+            If an integer is provided, specified number of cuts are calculated
+            for each direction.
 
         Returns
         -------
@@ -2214,7 +2212,7 @@ class MosaicSlicer(BaseSlicer):
         if cut_coords is None:
             cut_coords = 7
         if isinstance(cut_coords, numbers.Number):
-            cut_coords = [cut_coords] * 3
+            cut_coords = [cut_coords] * cls._cut_count()
         cls._check_cut_coords(cut_coords)
         cut_coords = [
             cut_coords["xyz".find(c)] for c in sorted(cls._cut_displayed)
@@ -2263,6 +2261,10 @@ class MosaicSlicer(BaseSlicer):
                     img, direction=direction, n_cuts=n_cuts
                 )
         return coords
+
+    @classmethod
+    def _cut_count(cls):
+        return len(cls._cut_displayed)
 
     def _init_axes(self, **kwargs):
         """Initialize and place axes for display of 'xyz' multiple cuts.
