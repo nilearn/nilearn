@@ -32,7 +32,9 @@ from nilearn.mass_univariate._utils import (
     orthonormalize_matrix,
     t_score_with_covars_and_normalized_design,
 )
-from nilearn.surface.surface import compute_adjacency_matrix
+from nilearn.surface.surface import (
+    find_surface_clusters,
+)
 from nilearn.surface.surface import get_data as get_surface_data
 
 
@@ -259,14 +261,8 @@ def _permuted_ols_on_chunk(
                     else "left"
                 )
 
-                # TODO
-                # rename variable because only 2D for surface
-                arr4d = masker.inverse_transform(perm_scores.T).data.parts[
-                    hemi
-                ]
-                bin_struct = compute_adjacency_matrix(
-                    mask_img.mesh.parts[hemi]
-                )
+                tmp_img = masker.inverse_transform(perm_scores.T)
+                arr4d = tmp_img.data.parts[hemi]
 
             if tfce:
                 # The TFCE map will contain positive and negative values if
@@ -288,15 +284,31 @@ def _permuted_ols_on_chunk(
                 ) < np.fabs(tfce_original_data.T)
 
             if threshold is not None:
-                (
-                    h0_csfwe_part[:, i_perm],
-                    h0_cmfwe_part[:, i_perm],
-                ) = calculate_cluster_measures(
-                    arr4d,
-                    threshold,
-                    bin_struct,
-                    two_sided_test=two_sided_test,
-                )
+                if isinstance(masker, NiftiMasker):
+                    (
+                        h0_csfwe_part[:, i_perm],
+                        h0_cmfwe_part[:, i_perm],
+                    ) = calculate_cluster_measures(
+                        arr4d,
+                        threshold,
+                        bin_struct,
+                        two_sided_test=two_sided_test,
+                    )
+                else:
+                    for i_regressor in range(arr4d.shape[1]):
+                        arr3d = arr4d[..., i_regressor].copy()
+
+                        if two_sided_test:
+                            arr3d[np.abs(arr3d) <= threshold] = 0
+                        else:
+                            arr3d[arr3d <= threshold] = 0
+
+                        clusters, labels = find_surface_clusters(
+                            tmp_img.mesh.parts[hemi],
+                            arr3d,
+                        )
+                        print(clusters)
+                        print(labels)
 
         if verbose > 0:
             step = 11 - min(verbose, 10)
