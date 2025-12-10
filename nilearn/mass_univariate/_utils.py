@@ -253,8 +253,9 @@ def calculate_cluster_measures(
     threshold : :obj:`float`
         Uncorrected t-statistic threshold for defining clusters.
 
-    bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3)
-        Connectivity matrix for defining clusters.
+    bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3) for volume data
+                 otherwise it's the mesh of the surface image.
+        Connectivity matrix for defining clusters for voume data.
 
     two_sided_test : :obj:`bool`, default=False
         Whether to assess both positive and negative clusters (True) or just
