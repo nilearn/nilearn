@@ -331,6 +331,7 @@ def test_high_level_glm_with_data(shape_3d_default):
     assert get_data(z_image).std() < 3.0
 
 
+@pytest.mark.slow
 def test_glm_target_shape_affine(shape_3d_default, affine_eye):
     """Check that target shape and affine are applied."""
     shapes, rk = [(*shape_3d_default, 5)], 3
