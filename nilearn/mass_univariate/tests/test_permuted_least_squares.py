@@ -170,7 +170,6 @@ def permuted_ols_no_intercept(tested_var, target_var, n_perm, i):
         n_perm=n_perm,
         two_sided_test=False,
         random_state=i,
-        verbose=1,
     )
     assert_equal(output["h0_max_t"].shape, (n_regressors, n_perm))
     return output["h0_max_t"]
@@ -185,7 +184,6 @@ def permuted_ols_with_intercept(tested_var, target_var, n_perm, i):
         n_perm=n_perm,
         two_sided_test=False,
         random_state=i,
-        verbose=1,
     )
     # pval should not be significant
     assert_array_less(output["logp_max_t"], 1.0)
@@ -298,7 +296,6 @@ def test_permuted_ols_no_covar(design):
         model_intercept=False,
         n_perm=0,
         random_state=0,
-        verbose=1,
     )
     compare_to_ref_score(output["t"], tested_var, target_var)
 
@@ -313,7 +310,6 @@ def test_permuted_ols_no_covar_with_ravelized_tested_var(design):
         model_intercept=False,
         n_perm=0,
         random_state=0,
-        verbose=1,
     )
     compare_to_ref_score(output["t"], tested_var, target_var)
 
@@ -329,7 +325,6 @@ def test_permuted_ols_no_covar_with_intercept(design):
         model_intercept=True,
         n_perm=0,
         random_state=0,
-        verbose=1,
     )
     target_var -= target_var.mean(0)
     tested_var -= tested_var.mean(0)
@@ -350,7 +345,6 @@ def test_permuted_ols_with_covar(design, confounding_vars):
         model_intercept=False,
         n_perm=0,
         random_state=0,
-        verbose=1,
     )
 
     ref_score = compare_to_ref_score(
@@ -371,7 +365,6 @@ def test_permuted_ols_with_covar_with_intercept(design, confounding_vars):
         model_intercept=True,
         n_perm=0,
         random_state=0,
-        verbose=1,
     )
 
     confounding_vars = np.hstack((confounding_vars, np.ones((N_SAMPLES, 1))))
@@ -399,7 +392,6 @@ def test_permuted_ols_with_covar_with_intercept_in_confonding_vars(
         model_intercept=model_intercept,
         n_perm=0,
         random_state=0,
-        verbose=1,
     )
     assert output["t"].shape == (n_regressors, n_descriptors)
 
@@ -420,7 +412,6 @@ def test_permuted_ols_with_multiple_constants_and_covars(design, rng):
         model_intercept=False,
         n_perm=0,
         random_state=0,
-        verbose=1,
     )
     assert output["t"].shape == (n_regressors, n_descriptors)
 
@@ -446,7 +437,6 @@ def test_permuted_ols_nocovar_multivariate(rng):
         model_intercept=False,
         n_perm=n_perm,
         random_state=0,
-        verbose=1,
     )
 
     compare_to_ref_score(output["t"], tested_var, target_vars)
@@ -461,7 +451,6 @@ def test_permuted_ols_nocovar_multivariate(rng):
         model_intercept=True,
         n_perm=0,
         random_state=0,
-        verbose=1,
     )
 
     target_vars -= target_vars.mean(0)
@@ -487,7 +476,6 @@ def test_permuted_ols_intercept_nocovar(rng):
         confounding_vars=None,
         n_perm=N_PERM,
         random_state=0,
-        verbose=1,
     )
 
     ref_score = compare_to_ref_score(output["t"], tested_var, target_var)
@@ -506,7 +494,6 @@ def test_permuted_ols_intercept_nocovar(rng):
         model_intercept=False,
         n_perm=0,
         random_state=0,
-        verbose=1,
     )
     compare_to_ref_score(output_addintercept["t"], tested_var, target_var)
     assert output_addintercept["t"].shape == (n_regressors, n_descriptors)
@@ -529,7 +516,6 @@ def test_permuted_ols_intercept_statsmodels_withcovar(
         confounding_vars,
         n_perm=0,
         random_state=0,
-        verbose=1,
     )
     ref_score = compare_to_ref_score(
         output["t"], tested_var, target_var, confounding_vars
@@ -545,7 +531,6 @@ def test_permuted_ols_intercept_statsmodels_withcovar(
         model_intercept=True,
         n_perm=0,
         random_state=0,
-        verbose=1,
     )
     compare_to_ref_score(
         output_intercept["t"], tested_var, target_var, confounding_vars
@@ -570,7 +555,6 @@ def test_one_sided_versus_two_test(rng):
         two_sided_test=False,
         n_perm=N_PERM,
         random_state=0,
-        verbose=1,
     )
     assert output_1_sided["logp_max_t"].shape == (n_regressors, n_descriptors)
 
@@ -582,7 +566,6 @@ def test_one_sided_versus_two_test(rng):
         two_sided_test=True,
         n_perm=N_PERM,
         random_state=0,
-        verbose=1,
     )
     assert output_2_sided["logp_max_t"].shape == (n_regressors, n_descriptors)
 
@@ -613,7 +596,6 @@ def test_two_sided_recover_positive_and_negative_effects():
         two_sided_test=False,
         n_perm=N_PERM,
         random_state=0,
-        verbose=1,
     )
     output_1_sided_1["logp_max_t"]
 
@@ -625,7 +607,6 @@ def test_two_sided_recover_positive_and_negative_effects():
         two_sided_test=False,
         n_perm=N_PERM,
         random_state=0,
-        verbose=1,
     )
 
     # two-sided
@@ -636,7 +617,6 @@ def test_two_sided_recover_positive_and_negative_effects():
         two_sided_test=True,
         n_perm=N_PERM,
         random_state=0,
-        verbose=1,
     )
     output_2_sided["logp_max_t"]
 
@@ -650,6 +630,7 @@ def test_two_sided_recover_positive_and_negative_effects():
     )
 
 
+@pytest.mark.slow
 def test_tfce_smoke_legacy_smoke():
     """Check tfce output of dict with or without permutations."""
     (
@@ -671,7 +652,6 @@ def test_tfce_smoke_legacy_smoke():
         random_state=0,
         masker=masker,
         tfce=True,
-        verbose=1,
     )
 
     assert isinstance(out, dict)
@@ -692,7 +672,6 @@ def test_tfce_smoke_legacy_smoke():
         random_state=0,
         masker=masker,
         tfce=True,
-        verbose=1,
     )
 
     assert isinstance(out, dict)
@@ -710,6 +689,7 @@ def test_tfce_smoke_legacy_smoke():
     assert out["h0_max_tfce"].size == n_perm
 
 
+@pytest.mark.slow
 def test_cluster_level_parameters_smoke(cluster_level_design, masker):
     """Test combinations of parameters related to cluster-level inference."""
     target_var, tested_var = cluster_level_design
@@ -722,7 +702,6 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
         two_sided_test=False,
         n_perm=0,
         random_state=0,
-        verbose=1,
     )
 
     assert isinstance(out, dict)
@@ -740,7 +719,6 @@ def test_cluster_level_parameters_smoke(cluster_level_design, masker):
         random_state=0,
         threshold=0.001,
         masker=masker,
-        verbose=1,
     )
 
     assert isinstance(out, dict)
@@ -865,7 +843,6 @@ def test_permuted_ols_no_covar_warning(rng):
         model_intercept=False,
         n_perm=N_PERM,
         random_state=0,
-        verbose=1,
     )
 
     # test with ravelized tested_var

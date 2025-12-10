@@ -81,6 +81,8 @@ Enhancements
 Changes
 -------
 
+- :bdg-success:`API` The default verbosity of the spacenet estimators was changed to 0 to match the default of all other Nilearn estimators (:gh:`5778` by `Rémi Gau`_).
+
 - :bdg-danger:`Deprecation` The function :func:`~nilearn.glm.save_glm_to_bids` was moved to the :mod:`~nilearn.glm` module. It will be importable from its original :mod:`~nilearn.interfaces` till Nilearn version 0.15.0 (:gh:`5770` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Extra key-words arguments (``kwargs``) have been removed from the constructor of all the Nifti maskers. Any extra-parameters to pass to the call to :func:`~image.clean_img` done by ``transform`` must be done via the parameter ``clean_args`` (:gh:`5628` by `Rémi Gau`_).

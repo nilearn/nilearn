@@ -78,8 +78,7 @@ print(time_series.shape)
 from nilearn.connectome import ConnectivityMeasure
 
 correlation_measure = ConnectivityMeasure(
-    kind="correlation",
-    standardize="zscore_sample",
+    kind="correlation", standardize="zscore_sample", verbose=1
 )
 correlation_matrix = correlation_measure.fit_transform([time_series])[0]
 
