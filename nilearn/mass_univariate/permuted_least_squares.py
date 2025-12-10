@@ -252,11 +252,13 @@ def _permuted_ols_on_chunk(
                 # we should have the data of only a single hemisphere
                 # to work with
                 mask_img = masker.mask_img_
-                hemi = (
-                    "right"
-                    if not np.any(mask_img.data.parts["left"].ravel())
-                    else "left"
-                )
+                left_empty = not np.any(mask_img.data.parts["left"].ravel())
+                right_empty = not np.any(mask_img.data.parts["right"].ravel())
+                if left_empty:
+                    assert not right_empty
+                if right_empty:
+                    assert not left_empty
+                hemi = "right" if left_empty else "left"
 
                 tmp_img = masker.inverse_transform(perm_scores.T)
                 arr4d = tmp_img.data.parts[hemi]
@@ -310,6 +312,14 @@ def _permuted_ols_on_chunk(
                     f"permutations ({percent:0.2f}%, {remaining:0.2f} seconds "
                     f"remaining){crlf}",
                 )
+
+    if threshold is not None:
+        assert (
+            scores_as_ranks_part.shape
+            == h0_csfwe_part.shape
+            == h0_cmfwe_part.shape
+            == h0_fmax_part.shape
+        )
 
     return (
         scores_as_ranks_part,
@@ -1097,24 +1107,29 @@ def _prepare_output_permuted_ols(
                     )
                 )
 
-            outputs["size"] = cluster_dict["size"]
-            outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
-            outputs["h0_max_size"] = cluster_dict["size_h0"]
-            outputs["mass"] = cluster_dict["mass"]
-            outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
-            outputs["h0_max_mass"] = cluster_dict["mass_h0"]
-
     else:
         scores_original_data_img = masker.inverse_transform(
             scores_original_data.T
         )
+        print(scores_original_data)
+        print(csfwe_h0_parts)
+        print(cmfwe_h0_parts)
+        print(vfwe_pvals)
+        img = {
+            "size_h0": masker.inverse_transform(cluster_dict["size_h0"].T),
+            "mass_h0": masker.inverse_transform(cluster_dict["mass_h0"].T),
+        }
 
-        size_regressor = {"left": None, "right": None}
+        for i_regressor in range(n_regressors):
+            tmp = {"size_regressor": {"left": None, "right": None}}
+            p_map = {"left": None, "right": None}
+            metric_map = {"left": None, "right": None}
 
-        for hemi in ["left", "right"]:
-            scores_original_data_4d = scores_original_data_img.data.parts[hemi]
+            for hemi in ["left", "right"]:
+                scores_original_data_4d = scores_original_data_img.data.parts[
+                    hemi
+                ]
 
-            for i_regressor in range(n_regressors):
                 scores_original_data_3d = scores_original_data_4d[
                     ..., i_regressor
                 ]
@@ -1129,40 +1144,40 @@ def _prepare_output_permuted_ols(
                     # TODO : Add negative cluster labels
                     ...
 
-                size_regressor[hemi] = clusters["size"].to_numpy()
+                tmp["size_regressor"][hemi] = clusters["size"].to_numpy()
 
-        # Calculate p-values from size/mass values and associated h0s
-        for metric in ["size"]:
-            p_vals = null_to_p(
-                cluster_dict[f"{metric}_regressor"],
-                cluster_dict[f"{metric}_h0"][i_regressor, :],
-                "larger",
-            )
-            print(p_vals)
+                # Calculate p-values from size/mass values and associated h0s
+                for metric in ["size"]:
+                    p_vals = null_to_p(
+                        tmp[f"{metric}_regressor"][hemi],
+                        img[f"{metric}_h0"].data.parts[hemi][i_regressor, :],
+                        "larger",
+                    )
+                    print(p_vals)
 
-        for metric in ["size"]:
-            # Convert 3D to image, then to 1D
-            # There is a problem if the masker performs preprocessing,
-            # so we use apply_mask here.
-            cluster_dict[f"{metric}_pvals"][i_regressor, :] = np.squeeze(
-                apply_mask(
-                    new_img_like(masker.mask_img_, p_map),
-                    masker.mask_img_,
+            for metric in ["size"]:
+                # Convert 3D to image, then to 1D
+                # There is a problem if the masker performs preprocessing,
+                # so we use apply_mask here.
+                cluster_dict[f"{metric}_pvals"][i_regressor, :] = np.squeeze(
+                    apply_mask(
+                        new_img_like(masker.mask_img_, p_map),
+                        masker.mask_img_,
+                    )
                 )
-            )
-            cluster_dict[metric][i_regressor, :] = np.squeeze(
-                apply_mask(
-                    new_img_like(masker.mask_img_, metric_map),
-                    masker.mask_img_,
+                cluster_dict[metric][i_regressor, :] = np.squeeze(
+                    apply_mask(
+                        new_img_like(masker.mask_img_, metric_map),
+                        masker.mask_img_,
+                    )
                 )
-            )
 
-        outputs["size"] = cluster_dict["size"]
-        outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
-        outputs["h0_max_size"] = cluster_dict["size_h0"]
-        outputs["mass"] = cluster_dict["mass"]
-        outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
-        outputs["h0_max_mass"] = cluster_dict["mass_h0"]
+    outputs["size"] = cluster_dict["size"]
+    outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
+    outputs["h0_max_size"] = cluster_dict["size_h0"]
+    outputs["mass"] = cluster_dict["mass"]
+    outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
+    outputs["h0_max_mass"] = cluster_dict["mass_h0"]
 
     return outputs
 
