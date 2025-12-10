@@ -5,6 +5,7 @@ first level contrasts or directly on fitted first level models.
 import operator
 import time
 from pathlib import Path
+from typing import Any
 from warnings import warn
 
 import numpy as np
@@ -37,20 +38,24 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
-from nilearn.image import check_niimg, concat_imgs, iter_img, mean_img
+from nilearn.image import (
+    check_niimg,
+    concat_imgs,
+    iter_img,
+    mean_img,
+    new_img_like,
+)
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.mass_univariate import permuted_ols
-from nilearn.surface.surface import (
-    SurfaceImage,
-)
+from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.utils import check_polymesh_equal
 from nilearn.typing import NiimgLike
 
 
 def _input_type_error_message(second_level_input):
     return (
-        "second_level_input must be either:\n"
+        "'second_level_input' must be either:\n"
         "- a pandas DataFrame,\n"
         "- a Niimg-like object\n"
         "- a pandas Series of Niimg-like object\n"
@@ -326,7 +331,7 @@ def _get_con_val(second_level_contrast, design_matrix):
         con_val = np.array(second_level_contrast)
         if np.all(con_val == 0) or len(con_val) == 0:
             raise ValueError(
-                "Contrast is null. Second_level_contrast must be a valid "
+                "Contrast is null. 'second_level_contrast' must be a valid "
                 "contrast vector, a list/array of 0s and 1s, a string, or a "
                 "string expression."
             )
@@ -1058,6 +1063,11 @@ def non_parametric_inference(
     _check_confounds(confounds)
     design_matrix = check_and_load_tables(design_matrix, "design_matrix")[0]
 
+    if verbose is False:
+        verbose = 0
+    if verbose is True:
+        verbose = 1
+
     if isinstance(second_level_input, pd.DataFrame):
         second_level_input = _sort_input_dataframe(second_level_input)
     sample_map, _ = _process_second_level_input(second_level_input)
@@ -1070,19 +1080,6 @@ def non_parametric_inference(
             stacklevel=find_stack_level(),
         )
         smoothing_fwhm = None
-
-    if (isinstance(sample_map, SurfaceImage)) and (tfce or threshold):
-        tfce = False
-        threshold = None
-        warn(
-            (
-                "Cluster level inference not yet implemented "
-                "for surface data.\n"
-                f"Setting {tfce=} and {threshold=}."
-            ),
-            NotImplementedWarning,
-            stacklevel=find_stack_level(),
-        )
 
     # Report progress
     t0 = time.time()
@@ -1152,11 +1149,62 @@ def non_parametric_inference(
         # Use remaining vars as confounding vars
         confounding_vars = np.asarray(design_matrix[var_names])
 
+    if isinstance(masker, NiftiMasker):
+        return _non_parametric_inference_volume(
+            tested_var,
+            effect_maps,
+            confounding_vars,
+            model_intercept,
+            n_perm,
+            two_sided_test,
+            random_state,
+            n_jobs,
+            verbose,
+            masker,
+            threshold,
+            tfce,
+        )
+
+    else:
+        return _non_parametric_inference_surface(
+            tested_var,
+            effect_maps,
+            confounding_vars,
+            model_intercept,
+            n_perm,
+            two_sided_test,
+            random_state,
+            n_jobs,
+            verbose,
+            masker,
+            threshold,
+            tfce,
+        )
+
+
+def _non_parametric_inference_volume(
+    tested_var,
+    effect_maps,
+    confounding_vars,
+    model_intercept: bool,
+    n_perm: int,
+    two_sided_test: bool,
+    random_state,
+    n_jobs: int,
+    verbose: int,
+    masker: NiftiMasker,
+    threshold,
+    tfce: bool,
+):
+    """Run non parametric inference on volume data.
+
+    For parameters description see non_parametric_inference.
+    """
     # Mask data
     target_vars = masker.transform(effect_maps)
 
     # Perform massively univariate analysis with permuted OLS
-    outputs = permuted_ols(
+    outputs: dict[str, Any] = permuted_ols(
         tested_var,
         target_vars,
         confounding_vars=confounding_vars,
@@ -1170,6 +1218,7 @@ def non_parametric_inference(
         threshold=threshold,
         tfce=tfce,
     )
+
     neg_log10_vfwe_pvals_img = masker.inverse_transform(
         np.ravel(outputs["logp_max_t"])
     )
@@ -1184,27 +1233,139 @@ def non_parametric_inference(
         "logp_max_t": neg_log10_vfwe_pvals_img,
     }
 
+    include = []
     if tfce:
-        neg_log10_tfce_pvals_img = masker.inverse_transform(
+        include.extend(["tfce", "logp_max_tfce"])
+    if threshold is not None:
+        include.extend(["logp_max_size", "logp_max_mass", "size", "mass"])
+    for k in include:
+        out[k] = masker.inverse_transform(np.ravel(outputs[k]))
+
+    return out
+
+
+def _non_parametric_inference_surface(
+    tested_var,
+    effect_maps,
+    confounding_vars,
+    model_intercept: bool,
+    n_perm: int,
+    two_sided_test: bool,
+    random_state,
+    n_jobs: int,
+    verbose: int,
+    masker: SurfaceMasker,
+    threshold,
+    tfce: bool,
+):
+    """Run non parametric inference on surface data.
+
+    Inference is run on each hemisphere separately.
+    But we keep track of the result in a separate variable.
+
+    For parameters description see non_parametric_inference.
+    """
+    effect_maps = concat_imgs(effect_maps, verbose=verbose)
+
+    # To keep track of the result of each hemisphere
+    data = {
+        k: {
+            "left": np.zeros(effect_maps.data.parts["left"].shape),
+            "right": np.zeros(effect_maps.data.parts["right"].shape),
+        }
+        for k in [
+            "logp_max_t",
+            "t",
+            "logp_max_size",
+            "logp_max_mass",
+            "size",
+            "mass",
+        ]
+    }
+
+    # We create a mask that omits one hemisphere.
+    for hemi in ["left", "right"]:
+        if hemi == "left":
+            mask_left = masker.mask_img_.data.parts["left"].astype(bool)
+            hemi_empty = not np.any(mask_left.ravel())
+            mask_right = np.zeros(
+                masker.mask_img_.data.parts["right"].shape, dtype=bool
+            )
+        else:
+            mask_left = np.zeros(
+                masker.mask_img_.data.parts["left"].shape, dtype=bool
+            )
+            mask_right = masker.mask_img_.data.parts["right"].astype(bool)
+            hemi_empty = not np.any(mask_right.ravel())
+
+        if hemi_empty:
+            continue
+
+        single_hemi_mask = new_img_like(
+            effect_maps, {"left": mask_left, "right": mask_right}
+        )
+        single_hemi_masker = SurfaceMasker(mask_img=single_hemi_mask).fit()
+
+        target_vars = single_hemi_masker.transform(effect_maps)
+
+        # Perform massively univariate analysis with permuted OLS
+        outputs: dict[str, Any] = permuted_ols(
+            tested_var,
+            target_vars,
+            confounding_vars=confounding_vars,
+            model_intercept=model_intercept,
+            n_perm=n_perm,
+            two_sided_test=two_sided_test,
+            random_state=random_state,
+            n_jobs=n_jobs,
+            verbose=max(0, verbose - 1),
+            masker=single_hemi_masker,
+            threshold=threshold,
+            tfce=tfce,
+        )
+
+        for k in [
+            "logp_max_t",
+            "t",
+            "logp_max_size",
+            "logp_max_mass",
+            "size",
+            "mass",
+        ]:
+            if k in [
+                "logp_max_size",
+                "logp_max_mass",
+                "size",
+                "mass",
+            ] and (threshold is None or not tfce):
+                continue
+            tmp = single_hemi_masker.inverse_transform(np.ravel(outputs[k]))
+            data[k][hemi] = tmp.data.parts[hemi]
+
+    neg_log10_vfwe_pvals_img = new_img_like(effect_maps, data["logp_max_t"])
+
+    if (not tfce) and (threshold is None):
+        return neg_log10_vfwe_pvals_img
+
+    t_img = new_img_like(effect_maps, data["t"])
+
+    out = {
+        "t": t_img,
+        "logp_max_t": neg_log10_vfwe_pvals_img,
+    }
+
+    if tfce:
+        out["tfce"] = masker.inverse_transform(np.ravel(outputs["tfce"]))
+        out["logp_max_tfce"] = masker.inverse_transform(
             np.ravel(outputs["logp_max_tfce"]),
         )
-        out["tfce"] = masker.inverse_transform(np.ravel(outputs["tfce"]))
-        out["logp_max_tfce"] = neg_log10_tfce_pvals_img
 
+    include = []
+    if tfce:
+        include.extend(["tfce", "logp_max_tfce"])
     if threshold is not None:
-        # Cluster size-based p-values
-        neg_log10_csfwe_pvals_img = masker.inverse_transform(
-            np.ravel(outputs["logp_max_size"]),
-        )
-
-        # Cluster mass-based p-values
-        neg_log10_cmfwe_pvals_img = masker.inverse_transform(
-            np.ravel(outputs["logp_max_mass"]),
-        )
-
-        out["size"] = masker.inverse_transform(np.ravel(outputs["size"]))
-        out["logp_max_size"] = neg_log10_csfwe_pvals_img
-        out["mass"] = masker.inverse_transform(np.ravel(outputs["mass"]))
-        out["logp_max_mass"] = neg_log10_cmfwe_pvals_img
+        include.extend(["logp_max_size", "logp_max_mass", "size", "mass"])
+    for k in include:
+        out[k] = new_img_like(effect_maps, data[k])
 
     return out

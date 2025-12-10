@@ -11,12 +11,18 @@ from nibabel import Nifti1Image
 from scipy import stats
 from scipy.ndimage import generate_binary_structure, label
 from sklearn.utils import check_random_state
+from sklearn.utils.estimator_checks import check_is_fitted
 
-from nilearn import image
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_is_of_allowed_type,
+    check_params,
+)
+from nilearn.exceptions import NotImplementedWarning
+from nilearn.image import new_img_like
+from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.masking import apply_mask
 from nilearn.mass_univariate._utils import (
     calculate_cluster_measures,
@@ -26,6 +32,7 @@ from nilearn.mass_univariate._utils import (
     orthonormalize_matrix,
     t_score_with_covars_and_normalized_design,
 )
+from nilearn.surface.surface import get_data as get_surface_data
 
 
 def _permuted_ols_on_chunk(
@@ -175,12 +182,14 @@ def _permuted_ols_on_chunk(
 
     # Preallocate null arrays for optional outputs
     # Any unselected outputs will just return a None
-    h0_tfce_part, tfce_scores_as_ranks_part = None, None
+    h0_tfce_part = None
+    tfce_scores_as_ranks_part = None
     if tfce:
         h0_tfce_part = np.empty((n_regressors, n_perm_chunk))
         tfce_scores_as_ranks_part = np.zeros((n_regressors, n_descriptors))
 
-    h0_csfwe_part, h0_cmfwe_part = None, None
+    h0_csfwe_part = None
+    h0_cmfwe_part = None
     if threshold is not None:
         h0_csfwe_part = np.empty((n_regressors, n_perm_chunk))
         h0_cmfwe_part = np.empty((n_regressors, n_perm_chunk))
@@ -232,37 +241,56 @@ def _permuted_ols_on_chunk(
 
         # Prepare data for cluster thresholding
         if tfce or (threshold is not None):
-            arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
-            bin_struct = generate_binary_structure(3, 1)
+            assert isinstance(masker, (NiftiMasker, SurfaceMasker))
 
-        if tfce:
-            # The TFCE map will contain positive and negative values if
-            # two_sided_test is True, or positive only if it's False.
-            # In either case, the maximum absolute value is the one we want.
-            h0_tfce_part[:, i_perm] = np.nanmax(
-                np.fabs(
-                    calculate_tfce(
-                        arr4d,
-                        bin_struct=bin_struct,
-                        two_sided_test=two_sided_test,
-                    )
-                ),
-                axis=(0, 1, 2),
-            )
-            tfce_scores_as_ranks_part += h0_tfce_part[:, i_perm].reshape(
-                (-1, 1)
-            ) < np.fabs(tfce_original_data.T)
+            if isinstance(masker, NiftiMasker):
+                arr4d = masker.inverse_transform(perm_scores.T).get_fdata()
+                bin_struct = generate_binary_structure(3, 1)
 
-        if threshold is not None:
-            (
-                h0_csfwe_part[:, i_perm],
-                h0_cmfwe_part[:, i_perm],
-            ) = calculate_cluster_measures(
-                arr4d,
-                threshold,
-                bin_struct,
-                two_sided_test=two_sided_test,
-            )
+            else:
+                # For surface data
+                # we should have the data of only a single hemisphere
+                # to work with
+                mask_img = masker.mask_img_
+                hemi = (
+                    "right"
+                    if not np.any(mask_img.data.parts["left"].ravel())
+                    else "left"
+                )
+
+                tmp_img = masker.inverse_transform(perm_scores.T)
+                arr4d = tmp_img.data.parts[hemi]
+                bin_struct = tmp_img.mesh.parts[hemi]
+
+            if tfce:
+                # The TFCE map will contain positive and negative values if
+                # two_sided_test is True, or positive only if it's False.
+                # In either case,
+                # the maximum absolute value is the one we want.
+                h0_tfce_part[:, i_perm] = np.nanmax(
+                    np.fabs(
+                        calculate_tfce(
+                            arr4d,
+                            bin_struct=bin_struct,
+                            two_sided_test=two_sided_test,
+                        )
+                    ),
+                    axis=(0, 1, 2),
+                )
+                tfce_scores_as_ranks_part += h0_tfce_part[:, i_perm].reshape(
+                    (-1, 1)
+                ) < np.fabs(tfce_original_data.T)
+
+            if threshold is not None:
+                max_sizes, max_masses = calculate_cluster_measures(
+                    arr4d,
+                    threshold,
+                    bin_struct,
+                    two_sided_test=two_sided_test,
+                )
+
+                h0_csfwe_part[:, i_perm] = max_sizes
+                h0_cmfwe_part[:, i_perm] = max_masses
 
         if verbose > 0:
             step = 11 - min(verbose, 10)
@@ -298,16 +326,16 @@ def permuted_ols(
     tested_vars,
     target_vars,
     confounding_vars=None,
-    model_intercept=True,
-    n_perm=10000,
-    two_sided_test=True,
+    model_intercept: bool = True,
+    n_perm: int = 10000,
+    two_sided_test: bool = True,
     random_state=None,
-    n_jobs=1,
+    n_jobs: int = 1,
     verbose=0,
     masker=None,
-    tfce=False,
+    tfce: bool = False,
     threshold=None,
-    output_type="dict",
+    output_type: str = "dict",
 ):
     """Massively univariate group analysis with permuted OLS.
 
@@ -377,8 +405,11 @@ def permuted_ols(
 
     %(verbose0)s
 
-    masker : None or :class:`~nilearn.maskers.NiftiMasker` or \
-            :class:`~nilearn.maskers.MultiNiftiMasker`, default=None
+    masker : None, :class:`~nilearn.maskers.NiftiMasker`, \
+            :class:`~nilearn.maskers.MultiNiftiMasker`, \
+            :class:`~nilearn.maskers.SurfaceMasker`, \
+            :class:`~nilearn.maskers.MultiSurfaceMasker`, \
+            default=None
         A mask to be used on the data.
         This is required for cluster-level inference, so it must be provided
         if ``threshold`` is not None.
@@ -427,15 +458,11 @@ def permuted_ols(
         n_regressors explanatory variates against the n_descriptors target
         variates. Family-wise corrected p-values.
 
-        .. note::
-
-            This is returned if ``output_type`` == 'legacy'.
-
         .. nilearn_deprecated:: 0.9.2
 
+            This is returned if ``output_type`` == 'legacy'.
             The 'legacy' option for ``output_type`` is deprecated.
-            The default value will change to 'dict' in 0.13,
-            and the ``output_type`` parameter will be removed in 0.15.
+            The ``output_type`` parameter will be removed in 0.15.
 
     score_orig_data : numpy.ndarray, shape=(n_regressors, n_descriptors)
         t-statistic associated with the significance test of the n_regressors
@@ -443,29 +470,21 @@ def permuted_ols(
         The ranks of the scores into the h0 distribution correspond to the
         p-values.
 
-        .. note::
-
-            This is returned if ``output_type`` == 'legacy'.
-
         .. nilearn_deprecated:: 0.9.2
 
+            This is returned if ``output_type`` == 'legacy'.
             The 'legacy' option for ``output_type`` is deprecated.
-            The default value will change to 'dict' in 0.13,
-            and the ``output_type`` parameter will be removed in 0.15.
+            The ``output_type`` parameter will be removed in 0.15.
 
     h0_fmax : array-like, shape=(n_regressors, n_perm)
         Distribution of the (max) t-statistic under the null hypothesis
         (obtained from the permutations). Array is sorted.
 
-        .. note::
-
-            This is returned if ``output_type`` == 'legacy'.
-
         .. nilearn_deprecated:: 0.9.2
 
+            This is returned if ``output_type`` == 'legacy'.
             The 'legacy' option for ``output_type`` is deprecated.
-            The default value will change to 'dict' in 0.13,
-            and the ``output_type`` parameter will be removed in 0.15.
+            The ``output_type`` parameter will be removed in 0.15.
 
         .. nilearn_versionchanged:: 0.9.2
 
@@ -474,12 +493,11 @@ def permuted_ols(
     outputs : :obj:`dict`
         Output arrays, organized in a dictionary.
 
-        .. note::
+        .. nilearn_versionchanged:: 0.9.2
 
             This is returned if ``output_type`` == 'dict'.
-            This will be the default output starting in version 0.13.
+            The ``output_type`` parameter will be removed in 0.15.
 
-        .. nilearn_versionadded:: 0.9.2
 
         Here are the keys:
 
@@ -598,38 +616,11 @@ def permuted_ols(
 
     intercept_test = n_regressors == np.unique(tested_vars).size == 1
 
-    # check if confounding vars contains an intercept
-    if confounding_vars is not None:
-        # Search for all constant columns
-        constants = [
-            x
-            for x in range(confounding_vars.shape[1])
-            if np.unique(confounding_vars[:, x]).size == 1
-        ]
-
-        # check if multiple intercepts are defined across all variates
-        if (intercept_test and len(constants) == 1) or len(constants) > 1:
-            # remove all constant columns
-            confounding_vars = np.delete(confounding_vars, constants, axis=1)
-            # warn user if multiple intercepts are found
-            warnings.warn(
-                category=UserWarning,
-                message=(
-                    'Multiple columns across "confounding_vars" and/or '
-                    '"target_vars" are constant. Only one will be used '
-                    "as intercept."
-                ),
-                stacklevel=find_stack_level(),
-            )
-            model_intercept = True
-
-            # remove confounding vars variable if it is empty
-            if confounding_vars.size == 0:
-                confounding_vars = None
-
-        # intercept is only defined in confounding vars
-        if not intercept_test and len(constants) == 1:
-            intercept_test = True
+    confounding_vars, model_intercept, intercept_test = (
+        _intercetp_in_confounding_vars(
+            confounding_vars, model_intercept, intercept_test
+        )
+    )
 
     # optionally add intercept
     if model_intercept and not intercept_test:
@@ -698,7 +689,7 @@ def permuted_ols(
 
     # step 3: original regression (= regression on residuals + adjust t-score)
     # compute t score map of each tested var for original data
-    # scores_original_data is in samples-by-regressors shape
+    # scores_original_data is in samples-by-regressors
     scores_original_data = t_score_with_covars_and_normalized_design(
         testedvars_resid_covars,
         targetvars_resid_covars.T,
@@ -708,24 +699,33 @@ def permuted_ols(
     # Define connectivity for TFCE and/or cluster measures
     bin_struct = generate_binary_structure(3, 1)
 
-    tfce_original_data = None
+    tfce_original_data: np.ndarray | None = None
+
     if tfce:
-        scores_4d = masker.inverse_transform(
-            scores_original_data.T
-        ).get_fdata()
-        tfce_original_data = calculate_tfce(
-            scores_4d,
-            bin_struct=bin_struct,
-            two_sided_test=two_sided_test,
-        )
-        tfce_original_data = apply_mask(
-            Nifti1Image(
-                tfce_original_data,
-                masker.mask_img_.affine,
-                masker.mask_img_.header,
-            ),
-            masker.mask_img_,
-        ).T
+        assert isinstance(masker, (NiftiMasker, SurfaceMasker))
+        scores_4d: np.ndarray
+        if isinstance(masker, NiftiMasker):
+            scores_4d = masker.inverse_transform(
+                scores_original_data.T
+            ).get_fdata()
+            tfce_original_data = calculate_tfce(
+                scores_4d, bin_struct=bin_struct, two_sided_test=two_sided_test
+            )
+            tfce_original_data = apply_mask(
+                Nifti1Image(
+                    tfce_original_data,
+                    masker.mask_img_.affine,
+                    masker.mask_img_.header,
+                ),
+                masker.mask_img_,
+            ).T
+        else:
+            # TODO
+            warnings.warn(
+                "tfce not implemented for surface data.",
+                category=NotImplementedWarning,
+                stacklevel=find_stack_level(),
+            )
 
     # 0 or negative number of permutations => original data scores only
     if n_perm <= 0:
@@ -733,7 +733,7 @@ def permuted_ols(
             return np.asarray([]), scores_original_data.T, np.asarray([])
 
         out = {"t": scores_original_data.T}
-        if tfce:
+        if isinstance(tfce_original_data, np.ndarray):
             out["tfce"] = tfce_original_data.T
         return out
 
@@ -877,13 +877,21 @@ def _check_inputs_permuted_ols(n_jobs, tfce, masker, threshold, target_vars):
             "(joblib conventions)."
         )
     # check that masker is provided if it is needed
-    if tfce and not masker:
-        raise ValueError("A masker must be provided if tfce is True.")
+    if masker is None:
+        if tfce:
+            raise ValueError(
+                "If 'tfce' is True, 'masker' must be defined as well."
+            )
 
-    if (threshold is not None) and (masker is None):
-        raise ValueError(
-            "If 'threshold' is not None, masker must be defined as well."
+        if threshold is not None:
+            raise ValueError(
+                "If 'threshold' is not None, 'masker' must be defined as well."
+            )
+    else:
+        check_is_of_allowed_type(
+            masker, (NiftiMasker, SurfaceMasker), "masker"
         )
+        check_is_fitted(masker)
 
     # make target_vars F-ordered to speed-up computation
     if target_vars.ndim != 2:
@@ -949,6 +957,47 @@ def _sanitize_inputs_permuted_ols(
     return n_jobs, output_type, target_vars, tested_vars
 
 
+def _intercetp_in_confounding_vars(
+    confounding_vars, model_intercept, intercept_test
+):
+    """Check if confounding vars contains an intercept."""
+    if confounding_vars is None:
+        return confounding_vars, model_intercept, intercept_test
+
+    # Search for all constant columns
+    constants = [
+        x
+        for x in range(confounding_vars.shape[1])
+        if np.unique(confounding_vars[:, x]).size == 1
+    ]
+
+    # check if multiple intercepts are defined across all variates
+    if (intercept_test and len(constants) == 1) or len(constants) > 1:
+        # remove all constant columns
+        confounding_vars = np.delete(confounding_vars, constants, axis=1)
+        # warn user if multiple intercepts are found
+        warnings.warn(
+            category=UserWarning,
+            message=(
+                'Multiple columns across "confounding_vars" and/or '
+                '"target_vars" are constant. Only one will be used '
+                "as intercept."
+            ),
+            stacklevel=find_stack_level(),
+        )
+        model_intercept = True
+
+        # remove confounding vars variable if it is empty
+        if confounding_vars.size == 0:
+            confounding_vars = None
+
+    # intercept is only defined in confounding vars
+    if not intercept_test and len(constants) == 1:
+        intercept_test = True
+
+    return confounding_vars, model_intercept, intercept_test
+
+
 def _prepare_output_permuted_ols(
     outputs,
     vfwe_pvals,
@@ -976,83 +1025,99 @@ def _prepare_output_permuted_ols(
         "mass_pvals": np.zeros_like(vfwe_pvals),
     }
 
-    scores_original_data_4d = masker.inverse_transform(
-        scores_original_data.T
-    ).get_fdata()
+    if isinstance(masker, NiftiMasker):
+        scores_original_data_4d = masker.inverse_transform(
+            scores_original_data.T
+        ).get_fdata()
 
-    for i_regressor in range(n_regressors):
-        scores_original_data_3d = scores_original_data_4d[..., i_regressor]
+        for i_regressor in range(n_regressors):
+            scores_original_data_3d = scores_original_data_4d[..., i_regressor]
 
-        # Label the clusters for both cluster mass and size inference
-        labeled_arr3d, _ = label(
-            scores_original_data_3d > threshold_t,
-            bin_struct,
-        )
-
-        if two_sided_test:
-            # Add negative cluster labels
-            temp_labeled_arr3d, _ = label(
-                scores_original_data_3d < -threshold_t,
+            # Label the clusters for both cluster mass and size inference
+            labeled_arr3d, _ = label(
+                scores_original_data_3d > threshold_t,
                 bin_struct,
             )
-            n_negative_clusters = np.max(temp_labeled_arr3d)
-            labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
-            labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
-            del temp_labeled_arr3d
 
-        cluster_labels, idx, cluster_dict["size_regressor"] = np.unique(
-            labeled_arr3d,
-            return_inverse=True,
-            return_counts=True,
+            if two_sided_test:
+                # Add negative cluster labels
+                temp_labeled_arr3d, _ = label(
+                    scores_original_data_3d < -threshold_t,
+                    bin_struct,
+                )
+                n_negative_clusters = np.max(temp_labeled_arr3d)
+                labeled_arr3d[labeled_arr3d > 0] += n_negative_clusters
+                labeled_arr3d = labeled_arr3d + temp_labeled_arr3d
+                del temp_labeled_arr3d
+
+            cluster_labels, idx, cluster_dict["size_regressor"] = np.unique(
+                labeled_arr3d,
+                return_inverse=True,
+                return_counts=True,
+            )
+            assert cluster_labels[0] == 0  # the background
+
+            # Replace background's "cluster size" w zeros
+            cluster_dict["size_regressor"][0] = 0
+
+            # Calculate mass for each cluster
+            cluster_dict["mass_regressor"] = np.zeros(cluster_labels.shape)
+            for j_val in cluster_labels[1:]:  # skip background
+                cluster_mass = np.sum(
+                    np.fabs(scores_original_data_3d[labeled_arr3d == j_val])
+                    - threshold_t
+                )
+                cluster_dict["mass_regressor"][j_val] = cluster_mass
+
+            # Calculate p-values from size/mass values and associated h0s
+            for metric in ["mass", "size"]:
+                p_vals = null_to_p(
+                    cluster_dict[f"{metric}_regressor"],
+                    cluster_dict[f"{metric}_h0"][i_regressor, :],
+                    "larger",
+                )
+                p_map = p_vals[np.reshape(idx, labeled_arr3d.shape)]
+                metric_map = cluster_dict[f"{metric}_regressor"][
+                    np.reshape(idx, labeled_arr3d.shape)
+                ]
+
+                # Convert 3D to image, then to 1D
+                # There is a problem if the masker performs preprocessing,
+                # so we use apply_mask here.
+                cluster_dict[f"{metric}_pvals"][i_regressor, :] = np.squeeze(
+                    apply_mask(
+                        new_img_like(masker.mask_img_, p_map),
+                        masker.mask_img_,
+                    )
+                )
+                cluster_dict[metric][i_regressor, :] = np.squeeze(
+                    apply_mask(
+                        new_img_like(masker.mask_img_, metric_map),
+                        masker.mask_img_,
+                    )
+                )
+
+            outputs["size"] = cluster_dict["size"]
+            outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
+            outputs["h0_max_size"] = cluster_dict["size_h0"]
+            outputs["mass"] = cluster_dict["mass"]
+            outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
+            outputs["h0_max_mass"] = cluster_dict["mass_h0"]
+
+    else:
+        scores_original_data_4d = get_surface_data(
+            masker.inverse_transform(scores_original_data.T)
         )
-        assert cluster_labels[0] == 0  # the background
 
-        # Replace background's "cluster size" w zeros
-        cluster_dict["size_regressor"][0] = 0
+        # TODO
+        # actually compute something
 
-        # Calculate mass for each cluster
-        cluster_dict["mass_regressor"] = np.zeros(cluster_labels.shape)
-        for j_val in cluster_labels[1:]:  # skip background
-            cluster_mass = np.sum(
-                np.fabs(scores_original_data_3d[labeled_arr3d == j_val])
-                - threshold_t
-            )
-            cluster_dict["mass_regressor"][j_val] = cluster_mass
-
-        # Calculate p-values from size/mass values and associated h0s
-        for metric in ["mass", "size"]:
-            p_vals = null_to_p(
-                cluster_dict[f"{metric}_regressor"],
-                cluster_dict[f"{metric}_h0"][i_regressor, :],
-                "larger",
-            )
-            p_map = p_vals[np.reshape(idx, labeled_arr3d.shape)]
-            metric_map = cluster_dict[f"{metric}_regressor"][
-                np.reshape(idx, labeled_arr3d.shape)
-            ]
-
-            # Convert 3D to image, then to 1D
-            # There is a problem if the masker performs preprocessing,
-            # so we use apply_mask here.
-            cluster_dict[f"{metric}_pvals"][i_regressor, :] = np.squeeze(
-                apply_mask(
-                    image.new_img_like(masker.mask_img_, p_map),
-                    masker.mask_img_,
-                )
-            )
-            cluster_dict[metric][i_regressor, :] = np.squeeze(
-                apply_mask(
-                    image.new_img_like(masker.mask_img_, metric_map),
-                    masker.mask_img_,
-                )
-            )
-
-    outputs["size"] = cluster_dict["size"]
-    outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
-    outputs["h0_max_size"] = cluster_dict["size_h0"]
-    outputs["mass"] = cluster_dict["mass"]
-    outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
-    outputs["h0_max_mass"] = cluster_dict["mass_h0"]
+        outputs["size"] = cluster_dict["size"]
+        outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
+        outputs["h0_max_size"] = cluster_dict["size_h0"]
+        outputs["mass"] = cluster_dict["mass"]
+        outputs["logp_max_mass"] = -np.log10(cluster_dict["mass_pvals"])
+        outputs["h0_max_mass"] = cluster_dict["mass_h0"]
 
     return outputs
 

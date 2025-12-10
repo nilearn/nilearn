@@ -8,6 +8,9 @@ from scipy.ndimage import label
 
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn.surface.surface import (
+    find_surface_clusters,
+)
 
 
 def calculate_tfce(
@@ -17,7 +20,7 @@ def calculate_tfce(
     H=2,
     dh="auto",
     two_sided_test=True,
-):
+) -> np.ndarray:
     """Calculate threshold-free cluster enhancement values for scores maps.
 
     The :term:`TFCE` calculation is mostly implemented as described in [1]_,
@@ -232,22 +235,28 @@ def null_to_p(test_values, null_array, alternative="two-sided"):
 
 
 def calculate_cluster_measures(
-    arr4d,
+    arr4d: np.ndarray,
     threshold,
     bin_struct,
-    two_sided_test=False,
-):
+    two_sided_test: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
     """Calculate maximum cluster mass and size for an array.
 
     Parameters
     ----------
-    arr4d : :obj:`numpy.ndarray` of shape (X, Y, Z, R)
-        Unthresholded 4D array of 3D t-statistic maps.
+    arr4d : :obj:`numpy.ndarray` of shape (X, Y, Z, R) for volume
+            or :obj:`numpy.ndarray` of shape (n_vertices, n_samples, R)
+        Unthresholded 4D array of t-statistic volume maps
+        or unthresholded 2D array of t-statistic surface maps.
         R = regressor.
+
     threshold : :obj:`float`
         Uncorrected t-statistic threshold for defining clusters.
-    bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3)
-        Connectivity matrix for defining clusters.
+
+    bin_struct : :obj:`numpy.ndarray` of shape (3, 3, 3) for volume data
+                 otherwise it's the mesh of the surface image.
+        Connectivity matrix for defining clusters for voume data.
+
     two_sided_test : :obj:`bool`, default=False
         Whether to assess both positive and negative clusters (True) or just
         positive ones (False).
@@ -257,8 +266,29 @@ def calculate_cluster_measures(
     max_size, max_mass : :obj:`numpy.ndarray` of shape (n_regressors,)
         Maximum cluster size and mass from the matrix, for each regressor.
     """
-    n_regressors = arr4d.shape[3]
+    is_volume = True
+    if arr4d.ndim == 2:
+        is_volume = False
+    n_regressors = arr4d.shape[3] if is_volume else arr4d.shape[1]
 
+    if is_volume:
+        return _calculate_cluster_measures_volume(
+            arr4d, threshold, bin_struct, two_sided_test, n_regressors
+        )
+
+    else:
+        return _calculate_cluster_measures_surface(
+            arr4d, threshold, bin_struct, two_sided_test, n_regressors
+        )
+
+
+def _calculate_cluster_measures_volume(
+    arr4d: np.ndarray,
+    threshold,
+    bin_struct,
+    two_sided_test: bool,
+    n_regressors: int,
+) -> tuple[np.ndarray, np.ndarray]:
     max_sizes = np.zeros(n_regressors, int)
     max_masses = np.zeros(n_regressors, float)
 
@@ -300,7 +330,47 @@ def calculate_cluster_measures(
         if clust_sizes.size:
             max_size = np.max(clust_sizes)
 
-        max_sizes[i_regressor], max_masses[i_regressor] = max_size, max_mass
+        max_sizes[i_regressor] = max_size
+        max_masses[i_regressor] = max_mass
+
+    return max_sizes, max_masses
+
+
+def _calculate_cluster_measures_surface(
+    arr4d: np.ndarray,
+    threshold,
+    bin_struct,
+    two_sided_test: bool,
+    n_regressors: int,
+) -> tuple[np.ndarray, np.ndarray]:
+    max_sizes = np.zeros(n_regressors, int)
+    max_masses = np.zeros(n_regressors, float)
+
+    for i_regressor in range(n_regressors):
+        arr3d = arr4d[..., i_regressor].copy()
+
+        if two_sided_test:
+            arr3d[np.abs(arr3d) <= threshold] = 0
+        else:
+            arr3d[arr3d <= threshold] = 0
+
+        clusters, labels = find_surface_clusters(
+            bin_struct,
+            arr3d,
+        )
+        max_size = 0
+        max_mass = 0
+        if len(clusters):
+            # Cluster size-based inference
+            max_size = clusters["size"].max()
+
+            # Cluster mass-based inference
+            for unique_val in clusters["name"].to_list():
+                ss_vals = np.abs(arr3d[labels == int(unique_val)]) - threshold
+                max_mass = np.maximum(max_mass, np.sum(ss_vals))
+
+        max_sizes[i_regressor] = max_size
+        max_masses[i_regressor] = max_mass
 
     return max_sizes, max_masses
 
@@ -395,7 +465,7 @@ def orthonormalize_matrix(m, tol=1.0e-12):
 
 def t_score_with_covars_and_normalized_design(
     tested_vars, target_vars, covars_orthonormalized=None
-):
+) -> np.ndarray:
     """t-score in the regression of tested variates against target variates.
 
     Covariates are taken into account (if not None).
