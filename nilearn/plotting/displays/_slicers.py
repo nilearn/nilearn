@@ -2168,9 +2168,9 @@ class MosaicSlicer(BaseSlicer):
     Attributes
     ----------
     cut_coords : :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`>
-        The cut coordinates in a dictionary. The keys are the
-        directions. Values are the cut coordinates corresponding to the
-        direction.
+        The cut coordinates in a dictionary. The keys are the directions
+        ('x', 'y', 'z'), and the values are arrays holding the cut
+        coordinates.
 
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot multiple views.
@@ -2211,7 +2211,7 @@ class MosaicSlicer(BaseSlicer):
             the absolute value of the map.
 
         cut_coords : :obj:`list` / :obj:`tuple` of 3 :obj:`int`,\
-            :obj:`int`, optional
+                     :obj:`float`, optional
             xyz world coordinates of cuts. If ``cut_coords``
             are not provided, 7 coordinates of cuts are automatically
             calculated.
