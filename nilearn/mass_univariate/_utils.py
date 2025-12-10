@@ -238,8 +238,8 @@ def calculate_cluster_measures(
     arr4d: np.ndarray,
     threshold,
     bin_struct,
-    two_sided_test=False,
-):
+    two_sided_test: bool = False,
+) -> tuple[np.ndarray, np.ndarray]:
     """Calculate maximum cluster mass and size for an array.
 
     Parameters
@@ -288,7 +288,7 @@ def _calculate_cluster_measures_volume(
     bin_struct,
     two_sided_test: bool,
     n_regressors: int,
-):
+) -> tuple[np.ndarray, np.ndarray]:
     max_sizes = np.zeros(n_regressors, int)
     max_masses = np.zeros(n_regressors, float)
 
@@ -342,7 +342,7 @@ def _calculate_cluster_measures_surface(
     bin_struct,
     two_sided_test: bool,
     n_regressors: int,
-):
+) -> tuple[np.ndarray, np.ndarray]:
     max_sizes = np.zeros(n_regressors, int)
     max_masses = np.zeros(n_regressors, float)
 
@@ -361,8 +361,10 @@ def _calculate_cluster_measures_surface(
         max_size = 0
         max_mass = 0
         if len(clusters):
+            # Cluster size-based inference
             max_size = clusters["size"].max()
 
+            # Cluster mass-based inference
             for unique_val in clusters["name"].to_list():
                 ss_vals = np.abs(arr3d[labels == int(unique_val)]) - threshold
                 max_mass = np.maximum(max_mass, np.sum(ss_vals))
