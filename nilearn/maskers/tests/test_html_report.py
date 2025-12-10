@@ -357,6 +357,7 @@ def test_nifti_labels_masker_report_cut_coords(
     assert display.cut_coords == display_data.cut_coords
 
 
+@pytest.mark.slow
 def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
     """Test for NiftiMasker reports with 4D data."""
     # Dummy 4D data
@@ -402,6 +403,7 @@ def test_nifti_masker_overlaid_report(
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.slow
 def test_multi_nifti_masker_generate_report_mask(
     img_3d_ones_eye, shape_3d_default, affine_eye
 ):
@@ -416,6 +418,7 @@ def test_multi_nifti_masker_generate_report_mask(
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.slow
 def test_multi_nifti_masker_generate_report_imgs_and_mask(
     shape_3d_default, affine_eye, img_fmri
 ):

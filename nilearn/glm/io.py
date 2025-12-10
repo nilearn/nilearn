@@ -153,7 +153,6 @@ def save_glm_to_bids(
 
 
     kwargs : extra keywords arguments to pass to ``model.generate_report``
-        See :func:`nilearn.reporting.make_glm_report` for more details.
         Can be any of the following: ``title``, ``bg_img``, ``threshold``,
         ``alpha``, ``cluster_threshold``, ``height_control``,
         ``min_distance``, ``plot_type``, ``display_mode``,

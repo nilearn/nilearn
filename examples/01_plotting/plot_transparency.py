@@ -198,7 +198,7 @@ show()
 from nilearn.datasets import fetch_localizer_contrasts
 
 auditory_image = fetch_localizer_contrasts(
-    contrasts=["left auditory click"], verbose=0, n_subjects=1
+    contrasts=["left auditory click"], n_subjects=1
 )
 auditory_image = auditory_image.cmaps[0]
 
@@ -352,7 +352,7 @@ from nilearn.glm.first_level import FirstLevelModel
 from nilearn.image import mean_img
 from nilearn.plotting import plot_stat_map, show
 
-subject_data = fetch_spm_auditory(verbose=0)
+subject_data = fetch_spm_auditory()
 
 fmri_glm = FirstLevelModel(
     t_r=subject_data.t_r,

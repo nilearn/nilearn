@@ -19,6 +19,7 @@ from nilearn._utils.helpers import is_gil_enabled
 from nilearn.datasets import fetch_development_fmri, func
 from nilearn.datasets._utils import PACKAGE_DIRECTORY, get_dataset_dir
 from nilearn.datasets.tests._testing import (
+    check_fetcher_verbosity,
     check_type_fetcher,
     dict_to_archive,
     list_to_archive,
@@ -38,10 +39,20 @@ def test_is_valid_path():
         func.fetch_miyawaki2008,
     ],
 )
-def test_func_fetcher_return_bunch(fn):
+def test_func_fetcher_generic(fn, capsys):
+    """Run some generic checks on fetchers.
+
+    - Return a Bunch with characteristics checked by check_type_fetcher.
+    - Default verbosity == 1
+    - Verbose 0 is quiet
+    """
     data = fn()
     assert isinstance(data, Bunch)
     check_type_fetcher(data)
+
+    check_fetcher_verbosity(fn, capsys)
+
+    data = fn(verbose=1)
 
 
 def _load_localizer_index():
@@ -100,10 +111,10 @@ def test_fetch_haxby_more_than_6(tmp_path, request_mocker, subjects):
     request_mocker.url_mapping[re.compile(r".*(subj\d).*\.tar\.gz")] = (
         _make_haxby_subject_data
     )
-    func.fetch_haxby(data_dir=tmp_path, subjects=subjects, verbose=1)
+    func.fetch_haxby(data_dir=tmp_path, subjects=subjects)
 
 
-def test_fetch_haxby(tmp_path, request_mocker):
+def test_fetch_haxby(tmp_path, request_mocker, capsys):
     request_mocker.url_mapping[re.compile(r".*(subj\d).*\.tar\.gz")] = (
         _make_haxby_subject_data
     )
@@ -152,6 +163,8 @@ def test_fetch_haxby(tmp_path, request_mocker):
     for sub_id in subjects:
         with pytest.raises(ValueError, match=message.format(sub_id)):
             func.fetch_haxby(data_dir=tmp_path, subjects=[sub_id])
+
+    check_fetcher_verbosity(func.fetch_haxby, capsys, data_dir=tmp_path)
 
 
 def _adhd_example_subject(match, request):  # noqa: ARG001
@@ -227,7 +240,7 @@ def test_fetch_adhd_edge_cases(tmp_path, request_mocker, subjects):
     )
 
 
-def test_fetch_adhd(tmp_path, request_mocker):
+def test_fetch_adhd(tmp_path, request_mocker, capsys):
     request_mocker.url_mapping["*metadata.tgz"] = _adhd_metadata()
     request_mocker.url_mapping[re.compile(r".*adhd40_([0-9]+)\.tgz")] = (
         _adhd_example_subject
@@ -240,8 +253,12 @@ def test_fetch_adhd(tmp_path, request_mocker):
     assert len(adhd.confounds) == 12
     assert request_mocker.url_count == 13  # Subjects + phenotypic
 
+    check_fetcher_verbosity(
+        func.fetch_adhd, capsys, n_subjects=1, data_dir=tmp_path
+    )
 
-def test_miyawaki2008(tmp_path, request_mocker):
+
+def test_miyawaki2008(tmp_path, request_mocker, capsys):
     dataset = func.fetch_miyawaki2008(data_dir=tmp_path, verbose=0)
 
     assert len(dataset.func) == 32
@@ -250,6 +267,8 @@ def test_miyawaki2008(tmp_path, request_mocker):
     assert len(dataset.mask_roi) == 38
     assert isinstance(dataset.background, str)
     assert request_mocker.url_count == 1
+
+    check_fetcher_verbosity(func.fetch_miyawaki2008, capsys, data_dir=tmp_path)
 
 
 def test_fetch_localizer_contrasts_errors(
@@ -279,13 +298,13 @@ def test_fetch_localizer_contrasts_edge_cases(
     subjects,
 ):
     func.fetch_localizer_contrasts(
-        ["checkerboard"], n_subjects=subjects, data_dir=tmp_path, verbose=1
+        ["checkerboard"], n_subjects=subjects, data_dir=tmp_path
     )
 
 
-def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):  # noqa: ARG001
+def test_fetch_localizer_contrasts(tmp_path, localizer_mocker, capsys):  # noqa: ARG001
     dataset = func.fetch_localizer_contrasts(
-        ["checkerboard"], n_subjects=2, data_dir=tmp_path, verbose=1
+        ["checkerboard"], n_subjects=2, data_dir=tmp_path
     )
 
     check_type_fetcher(dataset)
@@ -297,6 +316,14 @@ def test_fetch_localizer_contrasts(tmp_path, localizer_mocker):  # noqa: ARG001
     assert len(dataset.cmaps) == 2
     assert len(dataset["ext_vars"]) == 2
 
+    check_fetcher_verbosity(
+        func.fetch_localizer_contrasts,
+        capsys,
+        contrasts=["checkerboard"],
+        n_subjects=1,
+        data_dir=tmp_path,
+    )
+
 
 def test_fetch_localizer_contrasts_multiple_contrasts(
     tmp_path,
@@ -306,7 +333,6 @@ def test_fetch_localizer_contrasts_multiple_contrasts(
         ["checkerboard", "horizontal checkerboard"],
         n_subjects=2,
         data_dir=tmp_path,
-        verbose=1,
     )
 
     assert isinstance(dataset.ext_vars, pd.DataFrame)
@@ -324,7 +350,6 @@ def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):  # noqa:
         get_anats=True,
         get_masks=True,
         get_tmaps=True,
-        verbose=1,
     )
 
     assert isinstance(dataset.ext_vars, pd.DataFrame)
@@ -342,10 +367,7 @@ def test_fetch_localizer_contrasts_get_all(tmp_path, localizer_mocker):  # noqa:
 def test_fetch_localizer_contrasts_list_subjects(tmp_path, localizer_mocker):  # noqa: ARG001
     # grab a given list of subjects
     dataset2 = func.fetch_localizer_contrasts(
-        ["checkerboard"],
-        n_subjects=[2, 3, 5],
-        data_dir=tmp_path,
-        verbose=1,
+        ["checkerboard"], n_subjects=[2, 3, 5], data_dir=tmp_path
     )
 
     assert len(dataset2["ext_vars"]) == 3
@@ -371,7 +393,7 @@ def test_fetch_localizer_calculation_task(tmp_path, localizer_mocker):  # noqa: 
     assert len(dataset.cmaps) == 2
 
 
-def test_fetch_localizer_button_task(tmp_path, localizer_mocker):  # noqa: ARG001
+def test_fetch_localizer_button_task(tmp_path, localizer_mocker, capsys):  # noqa: ARG001
     # Disabled: cannot be tested without actually fetching covariates CSV file
     # Only one subject
     dataset = func.fetch_localizer_button_task(data_dir=tmp_path, verbose=1)
@@ -387,11 +409,15 @@ def test_fetch_localizer_button_task(tmp_path, localizer_mocker):  # noqa: ARG00
     assert isinstance(dataset.tmap, str)
     assert isinstance(dataset.anat, str)
 
+    check_fetcher_verbosity(
+        func.fetch_localizer_button_task, capsys, data_dir=tmp_path
+    )
+
 
 @pytest.mark.thread_unsafe
 @pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize("quality_checked", [False, True])
-def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
+def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked, capsys):
     n_subjects = 800
     ids = list(range(n_subjects))
     filenames = ["no_filename"] * n_subjects
@@ -440,8 +466,16 @@ def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
         derivatives="func_preproc",
     )
 
+    check_fetcher_verbosity(
+        func.fetch_abide_pcp,
+        capsys,
+        data_dir=tmp_path,
+        quality_checked=quality_checked,
+        derivatives="func_preproc",
+    )
 
-def test__load_mixed_gambles(rng, affine_eye):
+
+def test_load_mixed_gambles(rng, affine_eye):
     n_trials = 48
     for n_subjects in [1, 5, 16]:
         zmaps = [
@@ -455,13 +489,11 @@ def test__load_mixed_gambles(rng, affine_eye):
 
 
 @pytest.mark.parametrize("n_subjects", [1, 5, 16])
-def test_fetch_mixed_gambles(tmp_path, n_subjects):
+def test_fetch_mixed_gambles(tmp_path, n_subjects, capsys):
     mgambles = func.fetch_mixed_gambles(
         n_subjects=n_subjects,
         data_dir=tmp_path,
-        verbose=1,
         return_raw_data=True,
-        url=None,
     )
     datasetdir = tmp_path / "jimura_poldrack_2012_zmaps"
 
@@ -472,6 +504,14 @@ def test_fetch_mixed_gambles(tmp_path, n_subjects):
 
     assert isinstance(mgambles, Bunch)
     check_type_fetcher(mgambles)
+
+    check_fetcher_verbosity(
+        func.fetch_mixed_gambles,
+        capsys,
+        n_subjects=n_subjects,
+        return_raw_data=True,
+        data_dir=tmp_path,
+    )
 
 
 def test_check_parameters_megatrawls_datasets():
@@ -500,7 +540,7 @@ def test_check_parameters_megatrawls_datasets():
             func.fetch_megatrawls_netmats(matrices=invalid_output_name)
 
 
-def test_fetch_megatrawls_netmats(tmp_path):
+def test_fetch_megatrawls_netmats(tmp_path, capsys):
     # smoke test to see that files are fetched and read properly
     # since we are loading data present in it
     for file, folder in zip(
@@ -547,8 +587,12 @@ def test_fetch_megatrawls_netmats(tmp_path):
     assert dataset.timeseries == "multiple_spatial_regression"
     assert dataset.matrices == "full_correlation"
 
+    check_fetcher_verbosity(
+        func.fetch_megatrawls_netmats, capsys, data_dir=tmp_path
+    )
 
-def test_fetch_surf_nki_enhanced(tmp_path, request_mocker):
+
+def test_fetch_surf_nki_enhanced(tmp_path, request_mocker, capsys):
     ids = np.asarray(
         [
             "A00028185",
@@ -581,6 +625,10 @@ def test_fetch_surf_nki_enhanced(tmp_path, request_mocker):
     assert len(nki_data.func_right) == 10
     assert isinstance(nki_data.phenotypic, pd.DataFrame)
     assert nki_data.phenotypic.shape == (9, 4)
+
+    check_fetcher_verbosity(
+        func.fetch_surf_nki_enhanced, capsys, data_dir=tmp_path
+    )
 
 
 def test_load_nki_error():
@@ -667,7 +715,7 @@ def test_fetch_development_fmri_functional(tmp_path):
     assert len(confounds) == 8
 
 
-def test_fetch_development_fmri(tmp_path, request_mocker):
+def test_fetch_development_fmri(tmp_path, request_mocker, capsys):
     """Test for fetch_development_fmri."""
     mock_participants = _mock_participants_data()
     request_mocker.url_mapping["*"] = _mock_development_confounds().to_csv(
@@ -677,7 +725,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
         mock_participants.to_csv(index=False, sep="\t")
     )
 
-    data = fetch_development_fmri(n_subjects=2, data_dir=tmp_path, verbose=1)
+    data = fetch_development_fmri(n_subjects=2, data_dir=tmp_path)
 
     assert isinstance(data, Bunch)
     check_type_fetcher(data)
@@ -685,6 +733,10 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     assert len(data.confounds) == 2
     assert isinstance(data.phenotypic, pd.DataFrame)
     assert data.phenotypic.shape == (2, 6)
+
+    check_fetcher_verbosity(
+        func.fetch_development_fmri, capsys, n_subjects=1, data_dir=tmp_path
+    )
 
 
 def test_fetch_development_fmri_n_confounds(request_mocker):
@@ -697,7 +749,7 @@ def test_fetch_development_fmri_n_confounds(request_mocker):
         mock_participants.to_csv(index=False, sep="\t")
     )
 
-    data = fetch_development_fmri(n_subjects=2, verbose=1)
+    data = fetch_development_fmri(n_subjects=2)
 
     # check reduced confounds
     confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
@@ -705,9 +757,7 @@ def test_fetch_development_fmri_n_confounds(request_mocker):
     assert len(confounds[0]) == 15
 
     # check full confounds
-    data = fetch_development_fmri(
-        n_subjects=2, reduce_confounds=False, verbose=1
-    )
+    data = fetch_development_fmri(n_subjects=2, reduce_confounds=False)
     confounds = np.genfromtxt(data.confounds[0], delimiter="\t")
 
     assert len(confounds[0]) == 28
@@ -724,26 +774,26 @@ def test_fetch_development_fmri_phenotype(request_mocker):
     )
 
     # check first subject is an adult
-    data = fetch_development_fmri(n_subjects=1, verbose=1)
+    data = fetch_development_fmri(n_subjects=1)
     age_group = data.phenotypic["Child_Adult"].to_list()[0]
 
     assert age_group == "adult"
 
     # check one of each age group returned if n_subject == 2
     # and age_group == 'both
-    data = fetch_development_fmri(n_subjects=2, verbose=1, age_group="both")
+    data = fetch_development_fmri(n_subjects=2, age_group="both")
     age_group = data.phenotypic["Child_Adult"]
 
     assert all(age_group == ["adult", "child"])
 
     # check first subject is an child if requested with age_group
-    data = fetch_development_fmri(n_subjects=1, verbose=1, age_group="child")
+    data = fetch_development_fmri(n_subjects=1, age_group="child")
     age_group = data.phenotypic["Child_Adult"][0]
 
     assert age_group == "child"
 
     # check age_group
-    data = fetch_development_fmri(n_subjects=2, verbose=1, age_group="child")
+    data = fetch_development_fmri(n_subjects=2, age_group="child")
 
     assert all(x == "child" for x in data.phenotypic["Child_Adult"])
 
@@ -847,10 +897,7 @@ def test_fetch_ds000030_urls():
             json.dump(mock_json_content, f)
 
         # fetch_ds000030_urls should retrieve the appropriate URLs
-        urls_path, urls = func.fetch_ds000030_urls(
-            data_dir=tmpdir,
-            verbose=1,
-        )
+        urls_path, urls = func.fetch_ds000030_urls(data_dir=tmpdir)
 
         assert urls_path == str(filepath)
         assert urls == mock_json_content
@@ -861,11 +908,7 @@ def test_fetch_openneuro_dataset(tmp_path):
     data_prefix = (
         f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
     )
-    data_dir = get_dataset_dir(
-        data_prefix,
-        data_dir=tmp_path,
-        verbose=1,
-    )
+    data_dir = get_dataset_dir(data_prefix, data_dir=tmp_path)
     url_file = data_dir / "urls.json"
 
     # Prepare url files for subject and filter tests
@@ -902,7 +945,6 @@ def test_fetch_openneuro_dataset(tmp_path):
             urls=None,
             data_dir=tmp_path,
             dataset_version="ds500_v2",
-            verbose=1,
         )
 
 
@@ -924,7 +966,7 @@ def test_fetch_localizer(tmp_path):
     assert isinstance(dataset.epi_img, str)
 
 
-def test_fetch_language_localizer_demo_dataset(tmp_path):
+def test_fetch_language_localizer_demo_dataset(tmp_path, capsys):
     data_dir = tmp_path
     expected_data_dir = tmp_path / "fMRI-language-localizer-demo-dataset"
     contents_dir = Path(__file__).parent / "data" / "archive_contents"
@@ -942,17 +984,21 @@ def test_fetch_language_localizer_demo_dataset(tmp_path):
     assert bunch.data_dir == str(expected_data_dir)
     assert bunch.func == sorted(expected_files)
 
+    check_fetcher_verbosity(
+        func.fetch_language_localizer_demo_dataset, capsys, data_dir=tmp_path
+    )
+
 
 def test_download_spm_auditory_data(tmp_path, request_mocker):
     request_mocker.url_mapping[re.compile(r".*MoAEpilot.bids.zip")] = (
         list_to_archive([Path("spm_auditory", "MoAEpilot", "README.txt")])
     )
-    func._download_spm_auditory_data(data_dir=tmp_path)
+    func._download_spm_auditory_data(data_dir=tmp_path, verbose=0)
 
     assert (tmp_path / "spm_auditory" / "MoAEpilot" / "README.txt").exists()
 
 
-def test_fetch_spm_auditory(tmp_path):
+def test_fetch_spm_auditory(tmp_path, capsys):
     create_fake_bids_dataset(
         base_dir=tmp_path,
         n_sub=1,
@@ -971,6 +1017,8 @@ def test_fetch_spm_auditory(tmp_path):
     assert isinstance(dataset.anat, str)
     assert isinstance(dataset.events, str)
     assert isinstance(dataset.func[0], str)
+
+    check_fetcher_verbosity(func.fetch_spm_auditory, capsys, data_dir=tmp_path)
 
 
 def _generate_spm_multimodal(subject_dir=None, n_sessions=2, n_vol=390):
@@ -994,7 +1042,8 @@ def _generate_spm_multimodal(subject_dir=None, n_sessions=2, n_vol=390):
     return
 
 
-def test_fetch_spm_multimodal(tmp_path):
+@pytest.mark.single_process
+def test_fetch_spm_multimodal(tmp_path, capsys):
     subject_dir = tmp_path / "spm_multimodal_fmri" / "sub001"
     _generate_spm_multimodal(subject_dir=subject_dir)
 
@@ -1011,6 +1060,10 @@ def test_fetch_spm_multimodal(tmp_path):
     assert isinstance(dataset.trials_ses1, str)
     assert isinstance(dataset.trials_ses2, str)
 
+    check_fetcher_verbosity(
+        func.fetch_spm_multimodal_fmri, capsys, data_dir=tmp_path
+    )
+
 
 def test_fetch_spm_multimodal_missing_data(tmp_path, request_mocker):
     request_mocker.url_mapping[re.compile(r".*multimodal_.*mri.zip")] = (
@@ -1020,7 +1073,7 @@ def test_fetch_spm_multimodal_missing_data(tmp_path, request_mocker):
     subject_id = "sub001"
     subject_dir = tmp_path / "spm_multimodal_fmri" / subject_id
 
-    dataset = func.fetch_spm_multimodal_fmri(data_dir=tmp_path, verbose=1)
+    dataset = func.fetch_spm_multimodal_fmri(data_dir=tmp_path)
     assert (subject_dir / "fMRI").exists()
     assert (subject_dir / "sMRI").exists()
     assert isinstance(dataset, Bunch)
@@ -1035,7 +1088,7 @@ def test_fetch_spm_multimodal_missing_data(tmp_path, request_mocker):
     assert isinstance(dataset.trials_ses2, str)
 
 
-def test_fiac(tmp_path):
+def test_fiac(tmp_path, capsys):
     # Create dummy 'files'
     fiac_dir = (
         tmp_path / "fiac_nilearn.glm" / "nipy-data-0.2" / "data" / "fiac"
@@ -1063,6 +1116,10 @@ def test_fiac(tmp_path):
     assert isinstance(dataset.design_matrix1, pd.DataFrame)
     assert isinstance(dataset.design_matrix2, pd.DataFrame)
     assert isinstance(dataset.mask, str)
+
+    check_fetcher_verbosity(
+        func.fetch_fiac_first_level, capsys, data_dir=tmp_path
+    )
 
 
 def test_load_sample_motor_activation_image():

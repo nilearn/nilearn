@@ -126,7 +126,7 @@ def prox_tvl1(
     val_max : None or float, optional
         An optional upper bound constraint on the reconstructed image.
 
-    %(verbose)s
+    %(verbose0)s
 
     fista : bool, optional
         If True, uses a FISTA loop to perform the optimization.
@@ -167,11 +167,6 @@ def prox_tvl1(
     For details on implementing the bound constraints, read the aforementioned
     Beck and Teboulle paper.
     """
-    if verbose is False:
-        verbose = 0
-    if verbose is True:
-        verbose = 1
-
     weight = float(weight)
     input_img_flat = input_img.view()
     input_img_flat.shape = input_img.size
@@ -318,17 +313,12 @@ def prox_tvl1_with_intercept(
 
     %(max_iter5000)s
 
-    %(verbose)s
+    %(verbose0)s
 
     dgap_tol : float
         Dual-gap tolerance for TV-L1 prox operator approximation loop.
 
     """
-    if verbose is False:
-        verbose = 0
-    if verbose is True:
-        verbose = 1
-
     init = init.reshape(shape) if init is not None else init
     out, prox_info = prox_tvl1(
         w[:-1].reshape(shape),

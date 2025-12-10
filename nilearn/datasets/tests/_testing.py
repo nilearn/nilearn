@@ -13,6 +13,27 @@ from sklearn.utils import Bunch
 from nilearn.surface.surface import PolyMesh, SurfaceImage
 
 
+def check_fetcher_verbosity(fn, capsys, **kwargs):
+    """Check verbosity behavior of fetcher.
+
+    - Default verbosity == 1
+    - Verbose 0 is quiet
+    """
+    capsys.readouterr()  # necessary to flush what is already in system output
+
+    fn(**kwargs)
+    captured_default = capsys.readouterr().out
+
+    fn(verbose=1, **kwargs)
+    captured_verbose = capsys.readouterr().out
+
+    assert captured_default == captured_verbose
+
+    fn(verbose=0, **kwargs)
+    captured_verbose_0 = capsys.readouterr().out
+    assert captured_verbose_0 == ""
+
+
 def _add_to_archive(path, content):
     path.parent.mkdir(exist_ok=True, parents=True)
     if hasattr(content, "to_filename"):
