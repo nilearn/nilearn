@@ -12,6 +12,7 @@ from nilearn.mass_univariate import _utils
 from nilearn.mass_univariate.tests._testing import (
     get_tvalue_with_alternative_library,
 )
+from nilearn.surface.surface import at_least_2d
 
 
 @pytest.fixture
@@ -211,20 +212,35 @@ def test_calculate_cluster_measures(
     assert test_mass[0] == true_mass
 
 
-def test_calculate_cluster_measures_on_surface_image(surf_img_2d):
+@pytest.mark.parametrize(
+    "hemi, two_sided_test, expected_max_size, expected_max_mass",
+    [
+        ("left", True, 4, 20.6),
+        ("right", True, 3, 14.6),
+        ("left", False, 3, 15.6),
+        ("right", False, 2, 9.4),
+    ],
+)
+def test_calculate_cluster_measures_on_surface_image(
+    surf_img_1d, hemi, two_sided_test, expected_max_size, expected_max_mass
+):
     """Check that empty array have 0 mass and size."""
-    hemi = "left"
-    bin_struct = surf_img_2d(1).mesh.parts[hemi]
-    arr4d = surf_img_2d(1).data.parts[hemi]
+    surf_img_1d.data.parts["left"] = np.asarray([5.1, 5.2, 5.3, -5])
+    surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5.4, -5.2])
+    stat_img = at_least_2d(surf_img_1d)
+
+    bin_struct = stat_img.mesh.parts[hemi]
+    arr4d = stat_img.data.parts[hemi]
+
     test_size, test_mass = _utils.calculate_cluster_measures(
         arr4d,
         threshold=0.001,
         bin_struct=bin_struct,
-        two_sided_test=True,
+        two_sided_test=two_sided_test,
     )
 
-    assert test_size[0] == 3
-    assert test_mass[0] == 0
+    assert test_size[0] == expected_max_size
+    assert_array_almost_equal(test_mass[0], expected_max_mass, decimal=2)
 
 
 def test_calculate_cluster_measures_on_empty_array():
@@ -242,17 +258,21 @@ def test_calculate_cluster_measures_on_empty_array():
     assert test_mass[0] == true_mass
 
 
-def test_calculate_cluster_measures_on_empty_surface_image(surf_img_2d):
+@pytest.mark.parametrize("hemi", ["left", "right"])
+@pytest.mark.parametrize("two_sided_test", [True, False])
+def test_calculate_cluster_measures_on_empty_surface_image(
+    surf_img_2d, hemi, two_sided_test
+):
     """Check that empty array have 0 mass and size."""
-    hemi = "left"
-    bin_struct = surf_img_2d(1).mesh.parts[hemi]
-    arr4d = surf_img_2d(1).data.parts[hemi]
+    bin_struct = surf_img_2d(2).mesh.parts[hemi]
+    arr4d = surf_img_2d(2).data.parts[hemi]
     arr4d = np.zeros(arr4d.shape)
+
     test_size, test_mass = _utils.calculate_cluster_measures(
         arr4d,
-        threshold=0.001,
+        threshold=0.1,
         bin_struct=bin_struct,
-        two_sided_test=True,
+        two_sided_test=two_sided_test,
     )
 
     true_size = 0

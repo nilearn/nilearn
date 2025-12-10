@@ -298,7 +298,9 @@ def calculate_cluster_measures(
                 max_size = clusters["size"].max()
 
                 for unique_val in clusters["name"].to_list():
-                    ss_vals = np.abs(arr3d[labels == unique_val]) - threshold
+                    ss_vals = (
+                        np.abs(arr3d[labels == int(unique_val)]) - threshold
+                    )
                     max_mass = np.maximum(max_mass, np.sum(ss_vals))
 
             max_sizes[i_regressor] = max_size
