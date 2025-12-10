@@ -126,10 +126,7 @@ class BaseSlicer:
         img : 3D Nifti1Image
             The brain map.
 
-        cut_coords: n-D :obj:`tuple`, n-D :obj:`list`,
-                    n-D :class:`~numpy.ndarray` of :obj:`int`
-            world coordinates of cuts where ``n`` is the number of directions
-            of this slicer
+        %(cut_coords)s
 
         Raises
         ------
@@ -173,10 +170,7 @@ class BaseSlicer:
 
         Parameters
         ----------
-        cut_coords: n-D :obj:`tuple`, n-D :obj:`list`,
-                    n-D :class:`~numpy.ndarray` of :obj:`int`
-            world coordinates of cuts where ``n`` is the number of directions
-            of this slicer
+        %(cut_coords)s
 
         Raises
         ------
@@ -213,10 +207,7 @@ class BaseSlicer:
             image bounds to check if the specified ``cut_coords`` is inside
             these bounds
 
-        cut_coords: n-D :obj:`tuple`, n-D :obj:`list`,
-                    n-D :class:`~numpy.ndarray` of :obj:`int`
-            world coordinates of cuts where ``n`` is the number of directions
-            of this slicer
+        %(cut_coords)s
 
         Return
         ------
@@ -250,10 +241,7 @@ class BaseSlicer:
 
         %(threshold)s
 
-        cut_coords: n-D :obj:`tuple`, n-D :obj:`list`,
-                    n-D :class:`~numpy.ndarray` of :obj:`int`
-            world coordinates of cuts where ``n`` is the number of directions
-            of this slicer
+        %(cut_coords)s
 
         axes : :class:`matplotlib.axes.Axes`, optional
             The axes that will be subdivided in 3.
