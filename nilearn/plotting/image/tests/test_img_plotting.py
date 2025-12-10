@@ -140,7 +140,7 @@ def test_invalid_cut_coords_with_display_mode(
     img_3d_mni,
 ):
     """Tests for invalid combinations of cut_coords and display_mode."""
-    if plot_func is plot_glass_brain and display_mode != "ortho":
+    if plot_func is plot_glass_brain:
         return
     with pytest.raises(
         ValueError, match="cut_coords passed does not match the display mode"
