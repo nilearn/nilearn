@@ -706,7 +706,7 @@ def index_img(imgs, index):
 
     """
     if isinstance(imgs, SurfaceImage):
-        imgs = at_least_2d(imgs)
+        imgs.data._check_ndims(2, var_name="imgs")
         return new_img_like(imgs, data=extract_data(imgs, index))
 
     imgs = check_niimg_4d(imgs)

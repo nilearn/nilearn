@@ -48,7 +48,7 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
-from nilearn.reporting.glm_reporter import HTMLReport, make_glm_report
+from nilearn.reporting.glm_reporter import HTMLReport
 from nilearn.surface import SurfaceImage
 
 with contextlib.suppress(Exception):
@@ -109,8 +109,7 @@ def report_flm_adhd_dmn(build_type):
         run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
     )
 
-    report = make_glm_report(
-        first_level_model,
+    report = first_level_model.generate_report(
         contrasts=contrasts,
         title="ADHD DMN Report",
         cluster_threshold=15,
@@ -214,8 +213,7 @@ def report_flm_bids_features(build_type):
     model, _ = _make_flm(data_dir)
     title = "FLM Bids Features Stat maps"
 
-    report = make_glm_report(
-        model=model,
+    report = model.generate_report(
         contrasts="StopSuccess - Go",
         title=title,
         cluster_threshold=3,
@@ -251,8 +249,7 @@ def report_flm_fiac(build_type):
         "Deactivation": np.array([[-1, -1, -1, -1, 4]]),
         "Effects_of_interest": np.eye(n_columns)[:5, :],  # An F-contrast
     }
-    report = make_glm_report(
-        fmri_glm,
+    report = fmri_glm.generate_report(
         contrasts,
         bg_img=mean_img_,
         height_control="fdr",
@@ -302,8 +299,7 @@ def report_slm_oasis(build_type):
 
     contrast = ["age", "sex"]
 
-    report = make_glm_report(
-        model=second_level_model,
+    report = second_level_model.generate_report(
         contrasts=contrast,
         bg_img=fetch_icbm152_2009()["t1"],
         height_control=None,
