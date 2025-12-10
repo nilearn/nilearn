@@ -2208,7 +2208,6 @@ def find_surface_clusters(
     labels[mask] = labels_sub + offset
 
     unique, counts = np.unique(labels[labels > 0], return_counts=True)
-
     clusters = pd.DataFrame(
         {"name": [str(x) for x in unique], "index": unique, "size": counts}
     )

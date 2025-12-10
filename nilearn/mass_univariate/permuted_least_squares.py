@@ -1140,6 +1140,23 @@ def _prepare_output_permuted_ols(
             )
             print(p_vals)
 
+        for metric in ["size"]:
+            # Convert 3D to image, then to 1D
+            # There is a problem if the masker performs preprocessing,
+            # so we use apply_mask here.
+            cluster_dict[f"{metric}_pvals"][i_regressor, :] = np.squeeze(
+                apply_mask(
+                    new_img_like(masker.mask_img_, p_map),
+                    masker.mask_img_,
+                )
+            )
+            cluster_dict[metric][i_regressor, :] = np.squeeze(
+                apply_mask(
+                    new_img_like(masker.mask_img_, metric_map),
+                    masker.mask_img_,
+                )
+            )
+
         outputs["size"] = cluster_dict["size"]
         outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
         outputs["h0_max_size"] = cluster_dict["size_h0"]
