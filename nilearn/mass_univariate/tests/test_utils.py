@@ -8,6 +8,8 @@ from numpy.testing import assert_array_almost_equal
 from scipy.ndimage import generate_binary_structure
 
 from nilearn.conftest import _rng
+from nilearn.datasets import load_fsaverage_data
+from nilearn.image import math_img
 from nilearn.mass_univariate import _utils
 from nilearn.mass_univariate.tests._testing import (
     get_tvalue_with_alternative_library,
@@ -224,7 +226,7 @@ def test_calculate_cluster_measures(
 def test_calculate_cluster_measures_on_surface_image(
     surf_img_1d, hemi, two_sided_test, expected_max_size, expected_max_mass
 ):
-    """Check that empty array have 0 mass and size."""
+    """Check proper mass and size are returned on dummy real data."""
     surf_img_1d.data.parts["left"] = np.asarray([5.1, 5.2, 5.3, -5])
     surf_img_1d.data.parts["right"] = np.asarray([0, 4, 0, 5.4, -5.2])
     stat_img = at_least_2d(surf_img_1d)
@@ -241,6 +243,58 @@ def test_calculate_cluster_measures_on_surface_image(
 
     assert test_size[0] == expected_max_size
     assert_array_almost_equal(test_mass[0], expected_max_mass, decimal=2)
+
+
+@pytest.mark.parametrize(
+    "hemi, expected_max_size, expected_max_mass",
+    [
+        ("left", 25, 0.69),
+        ("right", 29, 1.02),
+    ],
+)
+def test_calculate_cluster_measures_on_real_surface_image(
+    hemi, expected_max_size, expected_max_mass
+):
+    """Check proper mass and size are returned on real real data.
+
+    Check that the max size / mass of image X with two_sided_test=True
+    corresponds to the max size / mass with with two_sided_test=False
+    for eithr X of -X.
+    """
+    stat_img = at_least_2d(
+        load_fsaverage_data(mesh_type="inflated", data_type="curvature")
+    )
+
+    threshold = 0.3
+
+    max_size, max_mass = _utils.calculate_cluster_measures(
+        stat_img.data.parts[hemi],
+        threshold=threshold,
+        bin_struct=stat_img.mesh.parts[hemi],
+        two_sided_test=True,
+    )
+
+    assert_array_almost_equal(max_mass[0], expected_max_mass, decimal=2)
+    assert max_size[0] == expected_max_size
+
+    test_size_pos, test_mass_pos = _utils.calculate_cluster_measures(
+        stat_img.data.parts[hemi],
+        threshold=threshold,
+        bin_struct=stat_img.mesh.parts[hemi],
+        two_sided_test=False,
+    )
+
+    neg_stat_img = math_img("img * -1", img=stat_img)
+
+    test_size_neg, test_mass_neg = _utils.calculate_cluster_measures(
+        neg_stat_img.data.parts[hemi],
+        threshold=threshold,
+        bin_struct=stat_img.mesh.parts[hemi],
+        two_sided_test=False,
+    )
+
+    assert max_size[0] in test_size_neg or max_size[0] in test_size_pos
+    assert max_mass[0] in test_mass_neg or max_size[0] in test_mass_pos
 
 
 def test_calculate_cluster_measures_on_empty_array():

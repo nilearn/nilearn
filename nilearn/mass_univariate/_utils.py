@@ -277,36 +277,9 @@ def calculate_cluster_measures(
         )
 
     else:
-        max_sizes = np.zeros(n_regressors, int)
-        max_masses = np.zeros(n_regressors, float)
-
-        for i_regressor in range(n_regressors):
-            arr3d = arr4d[..., i_regressor].copy()
-
-            if two_sided_test:
-                arr3d[np.abs(arr3d) <= threshold] = 0
-            else:
-                arr3d[arr3d <= threshold] = 0
-
-            clusters, labels = find_surface_clusters(
-                bin_struct,
-                arr3d,
-            )
-            max_size = 0
-            max_mass = 0
-            if len(clusters):
-                max_size = clusters["size"].max()
-
-                for unique_val in clusters["name"].to_list():
-                    ss_vals = (
-                        np.abs(arr3d[labels == int(unique_val)]) - threshold
-                    )
-                    max_mass = np.maximum(max_mass, np.sum(ss_vals))
-
-            max_sizes[i_regressor] = max_size
-            max_masses[i_regressor] = max_mass
-
-        return max_sizes, max_masses
+        return _calculate_cluster_measures_surface(
+            arr4d, threshold, bin_struct, two_sided_test, n_regressors
+        )
 
 
 def _calculate_cluster_measures_volume(
@@ -356,6 +329,43 @@ def _calculate_cluster_measures_volume(
         max_size = 0
         if clust_sizes.size:
             max_size = np.max(clust_sizes)
+
+        max_sizes[i_regressor] = max_size
+        max_masses[i_regressor] = max_mass
+
+    return max_sizes, max_masses
+
+
+def _calculate_cluster_measures_surface(
+    arr4d: np.ndarray,
+    threshold,
+    bin_struct,
+    two_sided_test: bool,
+    n_regressors: int,
+):
+    max_sizes = np.zeros(n_regressors, int)
+    max_masses = np.zeros(n_regressors, float)
+
+    for i_regressor in range(n_regressors):
+        arr3d = arr4d[..., i_regressor].copy()
+
+        if two_sided_test:
+            arr3d[np.abs(arr3d) <= threshold] = 0
+        else:
+            arr3d[arr3d <= threshold] = 0
+
+        clusters, labels = find_surface_clusters(
+            bin_struct,
+            arr3d,
+        )
+        max_size = 0
+        max_mass = 0
+        if len(clusters):
+            max_size = clusters["size"].max()
+
+            for unique_val in clusters["name"].to_list():
+                ss_vals = np.abs(arr3d[labels == int(unique_val)]) - threshold
+                max_mass = np.maximum(max_mass, np.sum(ss_vals))
 
         max_sizes[i_regressor] = max_size
         max_masses[i_regressor] = max_mass
