@@ -1109,6 +1109,8 @@ def _prepare_output_permuted_ols(
             scores_original_data.T
         )
 
+        size_regressor = {"left": None, "right": None}
+
         for hemi in ["left", "right"]:
             scores_original_data_4d = scores_original_data_img.data.parts[hemi]
 
@@ -1123,7 +1125,20 @@ def _prepare_output_permuted_ols(
                     mask=scores_original_data_3d > threshold_t,
                 )
 
-                cluster_dict["size_regressor"] = clusters["size"].to_numpy()
+                if two_sided_test:
+                    # TODO : Add negative cluster labels
+                    ...
+
+                size_regressor[hemi] = clusters["size"].to_numpy()
+
+        # Calculate p-values from size/mass values and associated h0s
+        for metric in ["size"]:
+            p_vals = null_to_p(
+                cluster_dict[f"{metric}_regressor"],
+                cluster_dict[f"{metric}_h0"][i_regressor, :],
+                "larger",
+            )
+            print(p_vals)
 
         outputs["size"] = cluster_dict["size"]
         outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])
