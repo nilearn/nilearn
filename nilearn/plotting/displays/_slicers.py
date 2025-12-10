@@ -46,11 +46,8 @@ class BaseSlicer:
     frame_axes : :class:`matplotlib.axes.Axes`, optional
         The matplotlib axes that will be subdivided in 3.
 
-    black_bg : :obj:`bool`, default=False
-        If ``True``, the background of the figure will be put to
-        black. If you wish to save figures with a black background,
-        you will need to pass ``facecolor='k', edgecolor='k'``
-        to :func:`~matplotlib.pyplot.savefig`.
+    %(black_bg)s
+        default=False
 
     brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
         The brain color to use as the background color (e.g., for
@@ -246,12 +243,8 @@ class BaseSlicer:
         axes : :class:`matplotlib.axes.Axes`, optional
             The axes that will be subdivided in 3.
 
-        black_bg : :obj:`bool`, default=False
-            If ``True``, the background of the figure will be put to
-            black. If you wish to save figures with a black background,
-            you will need to pass ``facecolor='k', edgecolor='k'``
-            to :func:`matplotlib.pyplot.savefig`.
-
+        %(black_bg)s
+            default=False
 
         brain_color : :obj:`tuple`, default=(0.5, 0.5, 0.5)
             The brain color to use as the background color (e.g., for
