@@ -37,7 +37,6 @@ from nilearn._utils.testing import (
 from nilearn.conftest import (
     _affine_eye,
     _img_3d_rand,
-    _img_4d_rand_eye,
     _rng,
     _shape_4d_default,
 )
