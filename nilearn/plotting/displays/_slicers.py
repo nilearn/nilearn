@@ -1120,9 +1120,7 @@ class ThreeDSlicer(BaseSlicer):
                   value is used to threshold the image: values below the
                   threshold (in absolute value) are plotted as transparent.
 
-        cut_coords : 3D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
-                    :obj:`int`
-            The cut position, in world space.
+        %(cut_coords)s
 
         Raises
         ------
@@ -1160,9 +1158,7 @@ class ThreeDSlicer(BaseSlicer):
             image bounds to check if the specified `cut_coords` is inside these
         bounds
 
-        cut_coords : 3D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
-                    :obj:`int`
-            The cut position, in world space.
+        %(cut_coords)s
 
         Return
         ------
@@ -1204,9 +1200,8 @@ class OrthoSlicer(ThreeDSlicer):
 
     Attributes
     ----------
-    cut_coords : 3D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
-               :obj:`int`
-        The cut position, in world space.
+    cut_coords : 3D :obj:`list` of :obj:`float`
+        MNI coordinates [x, y, z] of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot each view.
@@ -1396,9 +1391,8 @@ class TiledSlicer(ThreeDSlicer):
 
     Attributes
     ----------
-    cut_coords : 3D :obj:`tuple`, :obj:`list`, :class:`~numpy.ndarray` of
-               :obj:`int`
-        The cut position, in world space.
+    cut_coords : 3D :obj:`list` of :obj:`float`
+        MNI coordinates [x, y, z] of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot each view.
@@ -1734,8 +1728,7 @@ class BaseStackedSlicer(BaseSlicer):
             If ``None``, the activation threshold is computed using the
             80% percentile of the absolute value of the map.
 
-        cut_coords: :obj:`int`, 1D :obj:`tuple`, 1D :obj:`list`,
-                    1D :class:`~numpy.ndarray` of :obj:`int`
+        cut_coords: :obj:`tuple`, :obj:`list` of :obj:`float`
             xyz world coordinates of cuts.
 
         Returns
@@ -1768,8 +1761,7 @@ class BaseStackedSlicer(BaseSlicer):
 
         Parameters
         ----------
-        cut_coords : 1D :obj:`tuple`, 1D :obj:`list`, 1D
-                     :class:`~numpy.ndarray` of :obj:`int`
+        cut_coords: :obj:`tuple`, :obj:`list` of :obj:`float`
             xyz world coordinates of cuts corresponding to the direction of
             this slicer.cut_coords to check
 
@@ -1801,8 +1793,7 @@ class BaseStackedSlicer(BaseSlicer):
             image bounds to check if the specified cut_coords is inside these
         bounds
 
-        cut_coords : 1D :obj:`tuple`, 1D :obj:`list`, 1D
-                    :class:`~numpy.ndarray` of :obj:`int`
+        cut_coords: :obj:`tuple`, :obj:`list` of :obj:`float`
             xyz world coordinates of cuts corresponding to the direction of
             this slicer.cut_coords to check
 
@@ -1944,13 +1935,8 @@ class XSlicer(BaseStackedSlicer):
 
     Attributes
     ----------
-    cut_coords: :obj:`int`, 1D :obj:`tuple`, 1D :obj:`list`,
-                1D :class:`~numpy.ndarray` of :obj:`int`
-        Cut coordinate in direction x.
-        If specified as a number, generates the specified number of cuts in
-        direction x.
-        If specified as list, generates a cut in direction x for each
-        coordinate specified in the list.
+    cut_coords : :obj:`list` of :obj:`float`
+        The list of cut positions in direction x.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting.
@@ -1988,13 +1974,8 @@ class YSlicer(BaseStackedSlicer):
 
     Attributes
     ----------
-    cut_coords: :obj:`int`, 1D :obj:`tuple`, 1D :obj:`list`,
-                1D :class:`~numpy.ndarray` of :obj:`int`
-        Cut coordinate in direction y.
-        If specified as a number, generates the specified number of cuts in
-        direction y.
-        If specified as list, generates a cut in direction y for each
-        coordinate specified in the list.
+    cut_coords : :obj:`list` of :obj:`float`
+        The list of cut positions in direction y.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting.
@@ -2032,13 +2013,8 @@ class ZSlicer(BaseStackedSlicer):
 
     Attributes
     ----------
-    cut_coords: :obj:`int`, 1D :obj:`tuple`, 1D :obj:`list`,
-                1D :class:`~numpy.ndarray` of :obj:`int`
-        Cut coordinate in direction y.
-        If specified as a number, generates the specified number of cuts in
-        direction z.
-        If specified as list, generates a cut in direction z for each
-        coordinate specified in the list.
+    cut_coords : :obj:`list` of :obj:`float`
+        The list of cut positions in direction z.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting.
@@ -2076,9 +2052,8 @@ class XZSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords: 2D :obj:`tuple`, 2D :obj:`list`,
-                2D :class:`~numpy.ndarray` of :obj:`int`
-        Cut coordinates in directions x and z.
+    cut_coords: 2D :obj:`list` of :obj:`float`
+        MNI coordinates [x, z] of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'z' here).
@@ -2115,9 +2090,8 @@ class YXSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords: 2D :obj:`tuple`, 2D :obj:`list`,
-                2D :class:`~numpy.ndarray` of :obj:`int`
-        Cut coordinates in directions x and y.
+    cut_coords: 2D :obj:`list` of :obj:`float`
+        MNI coordinates [x, y] of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'y' here).
@@ -2154,9 +2128,8 @@ class YZSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords: 2D :obj:`tuple`, 2D :obj:`list`,
-                2D :class:`~numpy.ndarray` of :obj:`int`
-        Cut coordinates in directions y and z.
+    cut_coords: 2D :obj:`list` of :obj:`float`
+        MNI coordinates [y, z] of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('y' and 'z' here).
@@ -2194,17 +2167,10 @@ class MosaicSlicer(BaseSlicer):
 
     Attributes
     ----------
-    cut_coords : :obj:`int`, 3D :obj:`tuple`, 3D :obj:`list`,
-                 3D :class:`~numpy.ndarray` of :obj:`int` or
-                 :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`>
-        If a number is specified, generates the specified number of cuts in
-        each direction xyz.
-        If a list is specified, it should have size 3 each element
-        corresponding to directions xyz. For each direction, generates the
-        specified number of cuts.
-        If specified as a dictionary, the keys are the directions
-        ('x', 'y', 'z'), and the values are arrays holding the cut
-        coordinates.
+    cut_coords : :obj:`dict` <:obj:`str`: 1D :class:`~numpy.ndarray`>
+        The cut coordinates in a dictionary. The keys are the
+        directions. Values are the cut coordinates corresponding to the
+        direction.
 
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot multiple views.
