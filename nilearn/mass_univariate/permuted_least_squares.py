@@ -32,9 +32,6 @@ from nilearn.mass_univariate._utils import (
     orthonormalize_matrix,
     t_score_with_covars_and_normalized_design,
 )
-from nilearn.surface.surface import (
-    find_surface_clusters,
-)
 from nilearn.surface.surface import get_data as get_surface_data
 
 
@@ -285,30 +282,22 @@ def _permuted_ols_on_chunk(
 
             if threshold is not None:
                 if isinstance(masker, NiftiMasker):
-                    (
-                        h0_csfwe_part[:, i_perm],
-                        h0_cmfwe_part[:, i_perm],
-                    ) = calculate_cluster_measures(
+                    max_sizes, max_masses = calculate_cluster_measures(
                         arr4d,
                         threshold,
                         bin_struct,
                         two_sided_test=two_sided_test,
                     )
                 else:
-                    for i_regressor in range(arr4d.shape[1]):
-                        arr3d = arr4d[..., i_regressor].copy()
+                    max_sizes, max_masses = calculate_cluster_measures(
+                        arr4d,
+                        threshold,
+                        bin_struct=tmp_img.mesh.parts[hemi],
+                        two_sided_test=two_sided_test,
+                    )
 
-                        if two_sided_test:
-                            arr3d[np.abs(arr3d) <= threshold] = 0
-                        else:
-                            arr3d[arr3d <= threshold] = 0
-
-                        clusters, labels = find_surface_clusters(
-                            tmp_img.mesh.parts[hemi],
-                            arr3d,
-                        )
-                        print(clusters)
-                        print(labels)
+                h0_csfwe_part[:, i_perm] = max_sizes
+                h0_cmfwe_part[:, i_perm] = max_masses
 
         if verbose > 0:
             step = 11 - min(verbose, 10)

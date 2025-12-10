@@ -5,10 +5,12 @@ from warnings import warn
 import numpy as np
 from scipy import linalg
 from scipy.ndimage import label
-from scipy.sparse.csgraph import connected_components
 
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn.surface.surface import (
+    find_surface_clusters,
+)
 
 
 def calculate_tfce(
@@ -268,15 +270,15 @@ def calculate_cluster_measures(
         is_volume = False
     n_regressors = arr4d.shape[3] if is_volume else arr4d.shape[1]
 
-    max_sizes = np.zeros(n_regressors, int)
-    max_masses = np.zeros(n_regressors, float)
-
     if is_volume:
         return _calculate_cluster_measures_volume(
             arr4d, threshold, bin_struct, two_sided_test, n_regressors
         )
 
     else:
+        max_sizes = np.zeros(n_regressors, int)
+        max_masses = np.zeros(n_regressors, float)
+
         for i_regressor in range(n_regressors):
             arr3d = arr4d[..., i_regressor].copy()
 
@@ -285,15 +287,21 @@ def calculate_cluster_measures(
             else:
                 arr3d[arr3d <= threshold] = 0
 
-            mask = arr3d.astype(bool)
+            clusters, labels = find_surface_clusters(
+                bin_struct,
+                arr3d,
+            )
+            max_size = 0
+            max_mass = 0
+            if len(clusters):
+                max_size = clusters["size"].max()
 
-            sub_adj = bin_struct[mask][:, mask]
+                for unique_val in clusters["name"].to_list():
+                    ss_vals = np.abs(arr3d[labels == unique_val]) - threshold
+                    max_mass = np.maximum(max_mass, np.sum(ss_vals))
 
-            _, labels_sub = connected_components(sub_adj, directed=False)
-            print(labels_sub)
-
-        # TODO
-        # Actually do something here
+            max_sizes[i_regressor] = max_size
+            max_masses[i_regressor] = max_mass
 
         return max_sizes, max_masses
 
@@ -346,10 +354,8 @@ def _calculate_cluster_measures_volume(
         if clust_sizes.size:
             max_size = np.max(clust_sizes)
 
-        max_sizes[i_regressor], max_masses[i_regressor] = (
-            max_size,
-            max_mass,
-        )
+        max_sizes[i_regressor] = max_size
+        max_masses[i_regressor] = max_mass
 
     return max_sizes, max_masses
 
