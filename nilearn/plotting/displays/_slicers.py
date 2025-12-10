@@ -41,10 +41,7 @@ class BaseSlicer:
 
     Attributes
     ----------
-    cut_coords: n-D :obj:`tuple`, n-D :obj:`list`,
-                n-D :class:`~numpy.ndarray` of :obj:`int`
-        world coordinates of cuts where ``n`` is the number of directions
-        of this slicer
+    %(cut_coords)s
 
     frame_axes : :class:`matplotlib.axes.Axes`, optional
         The matplotlib axes that will be subdivided in 3.
