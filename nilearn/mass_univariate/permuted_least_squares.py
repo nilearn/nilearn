@@ -32,7 +32,7 @@ from nilearn.mass_univariate._utils import (
     orthonormalize_matrix,
     t_score_with_covars_and_normalized_design,
 )
-from nilearn.surface.surface import get_data as get_surface_data
+from nilearn.surface.surface import find_surface_clusters
 
 
 def _permuted_ols_on_chunk(
@@ -617,7 +617,7 @@ def permuted_ols(
     intercept_test = n_regressors == np.unique(tested_vars).size == 1
 
     confounding_vars, model_intercept, intercept_test = (
-        _intercetp_in_confounding_vars(
+        _intercept_in_confounding_vars(
             confounding_vars, model_intercept, intercept_test
         )
     )
@@ -957,7 +957,7 @@ def _sanitize_inputs_permuted_ols(
     return n_jobs, output_type, target_vars, tested_vars
 
 
-def _intercetp_in_confounding_vars(
+def _intercept_in_confounding_vars(
     confounding_vars, model_intercept, intercept_test
 ):
     """Check if confounding vars contains an intercept."""
@@ -1001,15 +1001,15 @@ def _intercetp_in_confounding_vars(
 def _prepare_output_permuted_ols(
     outputs,
     vfwe_pvals,
-    scores_original_data,
-    n_regressors,
+    scores_original_data: np.ndarray,
+    n_regressors: int,
     threshold,
     csfwe_h0_parts,
     cmfwe_h0_parts,
     masker,
     threshold_t,
     bin_struct,
-    two_sided_test,
+    two_sided_test: bool,
 ):
     if threshold is None:
         return outputs
@@ -1105,12 +1105,25 @@ def _prepare_output_permuted_ols(
             outputs["h0_max_mass"] = cluster_dict["mass_h0"]
 
     else:
-        scores_original_data_4d = get_surface_data(
-            masker.inverse_transform(scores_original_data.T)
+        scores_original_data_img = masker.inverse_transform(
+            scores_original_data.T
         )
 
-        # TODO
-        # actually compute something
+        for hemi in ["left", "right"]:
+            scores_original_data_4d = scores_original_data_img.data.parts[hemi]
+
+            for i_regressor in range(n_regressors):
+                scores_original_data_3d = scores_original_data_4d[
+                    ..., i_regressor
+                ]
+
+                # Label the clusters for both cluster mass and size inference
+                clusters, _labels = find_surface_clusters(
+                    scores_original_data_img.mesh.parts[hemi],
+                    mask=scores_original_data_3d > threshold_t,
+                )
+
+                cluster_dict["size_regressor"] = clusters["size"].to_numpy()
 
         outputs["size"] = cluster_dict["size"]
         outputs["logp_max_size"] = -np.log10(cluster_dict["size_pvals"])

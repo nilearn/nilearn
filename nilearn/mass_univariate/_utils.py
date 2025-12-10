@@ -354,10 +354,7 @@ def _calculate_cluster_measures_surface(
         else:
             arr3d[arr3d <= threshold] = 0
 
-        clusters, labels = find_surface_clusters(
-            bin_struct,
-            arr3d,
-        )
+        clusters, labels = find_surface_clusters(bin_struct, arr3d)
         max_size = 0
         max_mass = 0
         if len(clusters):
