@@ -1728,7 +1728,7 @@ class BaseStackedSlicer(BaseSlicer):
             If ``None``, the activation threshold is computed using the
             80% percentile of the absolute value of the map.
 
-        cut_coords: :obj:`tuple`, :obj:`list` of :obj:`float`
+        cut_coords : :obj:`tuple`, :obj:`list` of :obj:`float`
             xyz world coordinates of cuts.
 
         Returns
@@ -1761,7 +1761,7 @@ class BaseStackedSlicer(BaseSlicer):
 
         Parameters
         ----------
-        cut_coords: :obj:`tuple`, :obj:`list` of :obj:`float`
+        cut_coords : :obj:`tuple`, :obj:`list` of :obj:`float`
             xyz world coordinates of cuts corresponding to the direction of
             this slicer.cut_coords to check
 
@@ -1789,11 +1789,11 @@ class BaseStackedSlicer(BaseSlicer):
 
         Parameters
         ----------
-        bounds:
+        bounds :
             image bounds to check if the specified cut_coords is inside these
         bounds
 
-        cut_coords: :obj:`tuple`, :obj:`list` of :obj:`float`
+        cut_coords : :obj:`tuple`, :obj:`list` of :obj:`float`
             xyz world coordinates of cuts corresponding to the direction of
             this slicer.cut_coords to check
 
@@ -2052,7 +2052,7 @@ class XZSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords: 2D :obj:`list` of :obj:`float`
+    cut_coords : 2D :obj:`list` of :obj:`float`
         MNI coordinates [x, z] of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
@@ -2090,7 +2090,7 @@ class YXSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords: 2D :obj:`list` of :obj:`float`
+    cut_coords : 2D :obj:`list` of :obj:`float`
         MNI coordinates [x, y] of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
@@ -2128,7 +2128,7 @@ class YZSlicer(OrthoSlicer):
 
     Attributes
     ----------
-    cut_coords: 2D :obj:`list` of :obj:`float`
+    cut_coords : 2D :obj:`list` of :obj:`float`
         MNI coordinates [y, z] of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
