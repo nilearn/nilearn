@@ -24,7 +24,7 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
-.PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex latexpdf changes linkcheck doctest
+.PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex latexpdf changes linkcheck doctest reports dummy_reports
 
 all: html-noplot
 
@@ -83,10 +83,14 @@ view: _build/html/index.html
 	$(BROWSER) _build/html/index.html
 
 dummy_reports:
-	python visual_testing/reporter_visual_inspection_suite.py partial
+	mkdir -p _build/html/
+	marimo export html  visual_testing/notebook_reports_maskers.py -- --build_type=partial > reports/notebook_reports_maskers.html
+	marimo export html  visual_testing/notebook_reports_glm.py -- --build_type=partial > reports/notebook_reports_glm.html
 
 reports:
-	python visual_testing/reporter_visual_inspection_suite.py full
+	marimo export html  visual_testing/notebook_reports_maskers.py -- --build_type=full > reports/notebook_reports_maskers.html
+	marimo export html  visual_testing/notebook_reports_glm.py -- --build_type=full > reports/notebook_reports_glm.html
+
 
 html: ci.rst sym_links sym_links_datasets reports
 	rm -rf $(BUILDDIR)/html/_images

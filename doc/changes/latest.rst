@@ -19,8 +19,10 @@ HIGHLIGHTS
  | - requests -- 2.30.0
  |
  | **A new dependency has been added:**
- | - Jinja2 >= 3.1.2
+ | - jinja2 -- 3.1.2
  |
+ | **A dependency has been removed:**
+ | - lxml
 
 
 NEW
@@ -39,9 +41,14 @@ Fixes
 
 - :bdg-dark:`Code` Inform user correctly when reporting is enabled after the model is fit (:gh:`5836` by `Hande Gözükan`_).
 
+- :bdg-dark:`Code` Raise warning when :func:`~nilearn.image.crop_img` is called with an empty image and return the original image (:gh:`5837` by `Hande Gözükan`_).
+
+- :bdg-dark:`Code` Better handling of errors during plotting when cut coordinates are out of bounds (:gh:`5861` by `Sanjana Soni`_).
 
 Enhancements
 ------------
+
+- :bdg-success:`API` The functions :func:`~image.check_niimg`, :func:`~image.check_niimg_3d` and :func:`~image.check_niimg_4d` are now part of our public API. The content of ``nilearn._utils.niimg_conversions`` and ``nilearn.image.utils`` was moved to ``nilearn.image.image``. For a smoother transition, ``check_niimg``, ``check_niimg_3d`` and ``check_niimg_4d`` will still be importable from ``nilearn._utils.niimg_conversions`` till Nilearn 0.14.0 (:gh:`5788` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add tedana support for load_confounds and testing for tedana load_confounds support (:gh:`5410` by `Milton Camacho`_).
 
@@ -67,12 +74,16 @@ Enhancements
 
 - :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker`, a :class:`~maskers.MultiSurfaceMapsMasker` (:gh:`5679`, :gh:`5727` by `Rémi Gau`_).
 
-- :bdg-success:`API` Add support for ``cluster_threshold`` for :func:`~image.threshold_img`, :func:`~glm.threshold_stats_img`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report` and :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5715` by `Rémi Gau`_).
+- :bdg-success:`API` Add support for ``cluster_threshold`` for :class:`~surface.SurfaceImage` in :func:`~image.threshold_img`, :func:`~glm.threshold_stats_img`, :func:`~reporting.make_glm_report`, :meth:`~glm.first_level.FirstLevelModel.generate_report` and :meth:`~glm.second_level.SecondLevelModel.generate_report` (:gh:`5715` by `Rémi Gau`_).
+
+- :bdg-success:`API` Add support for :class:`~surface.SurfaceImage` in :func:`~glm.cluster_level_inference` (:gh:`5733` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add support for ``title`` parameter for Nilearn maskers ``generate_report`` method. (:gh:`5790` by `Hande Gözükan`_).
 
 Changes
 -------
+
+- :bdg-success:`API` The default verbosity of the spacenet estimators was changed to 0 to match the default of all other Nilearn estimators (:gh:`5778` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The function :func:`~nilearn.glm.save_glm_to_bids` was moved to the :mod:`~nilearn.glm` module. It will be importable from its original :mod:`~nilearn.interfaces` till Nilearn version 0.15.0 (:gh:`5770` by `Rémi Gau`_).
 
@@ -128,6 +139,13 @@ Changes
 
 - :bdg-danger:`Deprecation` Set ``copy_header`` default to True in :func:`~image` functions (:gh:`5656` by `Rémi Gau`_ and `Himanshu Aggarwal`_).
 
+- :bdg-danger:`Deprecation` From Nilearn >= 0.15, the function :func:`~reporting.make_glm_report` will be removed. Use :meth:`~glm.first_level.FirstLevelModel.generate_report` or :meth:`~glm.second_level.SecondLevelModel.generate_report` instead. (:gh:`5876` by `Hande Gözükan`_).
+
+Documentation
+-------------
+
+- :bdg-primary:`Doc` Clarified that ``nilearn.datasets.fetch_*`` functions do not re-download datasets already present locally. Added cross-reference to dataset storage documentation. (:gh:`5690` by `Victoria McCray`_)
+
 - :bdg-primary:`Doc` Home-made sphinx directives are used instead of default sphinx directives relative to version changes (``versionadded``, ``versionchanged``, ``deprecated``...) to more easily distinguish between feature changes introduced in Nilearn versus those introduced in upstream dependencies (like in Scikit-Learn) (:gh:`5654` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Change cmap to ``'RdBu_r'`` for :func:`~plotting.plot_contrast_matrix` (:gh:`5780` by `Hande Gözükan`_).
@@ -135,3 +153,5 @@ Changes
 - :bdg-info:`Plotting` Change background to ``'black'`` for functions :func:`~plotting.plot_img_comparison` and :func:`~plotting.plot_bland_altman` (:gh:`5785` by `Hande Gözükan`_).
 
 - :bdg-dark:`Code` Reports (for maskers, GLMs...)  can now be generated even when no plotting engine is available (:gh:`5757` by `Rémi Gau`_).
+
+- :bdg-dark:`Code` Dependency on ``lxml`` has been removed as it is only used during testing (:gh:`5862` by `Rémi Gau`_).

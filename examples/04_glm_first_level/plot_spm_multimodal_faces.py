@@ -86,6 +86,7 @@ fmri_glm = FirstLevelModel(
     hrf_model=hrf_model,
     drift_model=drift_model,
     high_pass=high_pass,
+    verbose=1,
 )
 
 

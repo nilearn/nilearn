@@ -13,9 +13,9 @@ from matplotlib.transforms import Bbox
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
-from nilearn._utils.niimg_conversions import _check_fov, check_niimg_3d
 from nilearn._utils.param_validation import check_params
-from nilearn.image import get_data, new_img_like, reorder_img
+from nilearn.image import check_niimg_3d, get_data, new_img_like, reorder_img
+from nilearn.image.image import _check_fov
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
 from nilearn.plotting._engine_utils import create_colorbar_for_fig
 from nilearn.plotting._utils import (
@@ -521,6 +521,32 @@ class BaseSlicer:
 
             data_2d_list.append(data_2d)
             transparency_list.append(transparency_2d)
+
+        n_out_of_bounds = sum(d is None for d in data_2d_list)
+
+        str_image_type = (
+            "Image bounds are:"
+            f"\n\tx: [{xmin_:.2f}, {xmax_:.2f}], "
+            f"\n\ty: [{ymin_:.2f}, {ymax_:.2f}], "
+            f"\n\tz: [{zmin_:.2f}, {zmax_:.2f}]. "
+        )
+        if n_out_of_bounds == len(data_2d_list):
+            raise ValueError(
+                "Nothing to plot. "
+                "This is probably because "
+                "all the cut coordinates are out of the bounds of the image.\n"
+                f"{str_image_type}"
+            )
+        elif n_out_of_bounds > 0:
+            warnings.warn(
+                (
+                    f"{n_out_of_bounds} of the cut coordinates "
+                    "seem to be out of the bounds of the image."
+                    f"\n{str_image_type}"
+                ),
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
 
         if kwargs.get("vmin") is None:
             kwargs["vmin"] = np.ma.min(
@@ -1078,7 +1104,9 @@ class OrthoSlicer(BaseSlicer):
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not match the display_mode"
+                f"The number cut_coords ({len(cut_coords)}) "
+                f"passed does not match the expected "
+                f"for that display_mode ({len(self._cut_displayed)}). "
             )
         x0, y0, x1, y1 = self.rect
         facecolor = "k" if self._black_bg else "w"

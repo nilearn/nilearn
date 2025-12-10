@@ -655,6 +655,12 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
         del y
         check_params(self.__dict__)
 
+        verbose = self.verbose
+        if verbose:
+            verbose = 1
+        elif not verbose:
+            verbose = 0
+
         # casting single arrays to list mostly to help
         # with checking comlpliance with sklearn estimator guidelines
         if isinstance(subjects, np.ndarray):
@@ -677,21 +683,21 @@ class GroupSparseCovariance(CacheMixin, BaseEstimator):
 
         self._fit_cache()
 
-        logger.log("Computing covariance matrices", verbose=self.verbose)
+        logger.log("Computing covariance matrices", verbose=verbose)
         self.covariances_, n_samples = empirical_covariances(
             subjects, assume_centered=False
         )
 
         self.n_features_in_ = next(iter(s.shape[1] for s in subjects))
 
-        logger.log("Computing precision matrices", verbose=self.verbose)
+        logger.log("Computing precision matrices", verbose=verbose)
         ret = self._cache(_group_sparse_covariance)(
             self.covariances_,
             n_samples,
             self.alpha,
             tol=self.tol,
             max_iter=self.max_iter,
-            verbose=max(0, self.verbose - 1),
+            verbose=max(0, verbose - 1),
             debug=False,
         )
 
@@ -1187,6 +1193,12 @@ class GroupSparseCovarianceCV(BaseEstimator):
                 f"Got {subjects.__class__.__name__}"
             )
 
+        verbose = self.verbose
+        if verbose:
+            verbose = 1
+        elif not verbose:
+            verbose = 0
+
         for x in subjects:
             check_array(
                 x,
@@ -1251,22 +1263,20 @@ class GroupSparseCovarianceCV(BaseEstimator):
                 )
             if self.early_stopping:
                 probes = [
-                    EarlyStopProbe(
-                        test_subjs, verbose=max(0, self.verbose - 1)
-                    )
+                    EarlyStopProbe(test_subjs, verbose=max(0, verbose - 1))
                     for _, test_subjs in train_test_subjs
                 ]
             else:
                 probes = itertools.repeat(None)
 
-            this_path = Parallel(n_jobs=self.n_jobs, verbose=self.verbose)(
+            this_path = Parallel(n_jobs=self.n_jobs, verbose=verbose)(
                 delayed(group_sparse_covariance_path)(
                     train_subjs,
                     alphas,
                     test_subjs=test_subjs,
                     max_iter=self.max_iter_cv,
                     tol=self.tol_cv,
-                    verbose=max(0, self.verbose - 1),
+                    verbose=max(0, verbose - 1),
                     debug=self.debug,
                     # Warm restart is useless with early stopping.
                     precisions_init=None if self.early_stopping else prec_init,
@@ -1338,7 +1348,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
                 logger.log(
                     "[GroupSparseCovarianceCV] Done refinement "
                     f"{i: 2} out of {n_refinements}",
-                    verbose=self.verbose,
+                    verbose=verbose,
                 )
 
         path = list(zip(*path, strict=False))
@@ -1350,7 +1360,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
         self.cv_alphas_ = alphas
 
         # Finally, fit the model with the selected alpha
-        logger.log("Final optimization", verbose=self.verbose)
+        logger.log("Final optimization", verbose=verbose)
         self.covariances_ = emp_covs
         self.precisions_ = _group_sparse_covariance(
             emp_covs,
@@ -1358,7 +1368,7 @@ class GroupSparseCovarianceCV(BaseEstimator):
             self.alpha_,
             tol=self.tol,
             max_iter=self.max_iter,
-            verbose=max(0, self.verbose - 1),
+            verbose=max(0, verbose - 1),
             debug=self.debug,
         )
         return self

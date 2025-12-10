@@ -697,6 +697,10 @@ authors:
     website: https://github.com/sjawhar
     email: sami@thecybermonk.com
     orcid: https://orcid.org/0000-0002-9914-2193
+  - given-names: Sanjana
+    family-names: Soni
+    website: https://github.com/isha822
+    affiliation: Goverment Engineering College, Bilaspur, India
   - given-names: Simon
     family-names: Steinkamp
     website: https://github.com/SRSteinkamp
@@ -769,6 +773,11 @@ authors:
     family-names: Shevchenko
     website: https://github.com/victoris93
     affiliation: Inria Saclay, Université Paris Cité, France
+  - given-names: Victoria
+    family-names: McCray
+    website: https://github.com/victoriamccray
+    affiliation: Northeastern University, USA
+    orcid: https://orcid.org/0009-0004-9507-835X
   - given-names: Vincent
     family-names: Michel
     website: https://github.com/vmichel

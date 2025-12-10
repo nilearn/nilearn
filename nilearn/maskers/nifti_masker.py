@@ -14,9 +14,9 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import img_data_dtype
-from nilearn._utils.niimg_conversions import check_niimg, check_same_fov
 from nilearn._utils.param_validation import check_params
-from nilearn.image import crop_img, resample_img
+from nilearn.image import check_niimg, crop_img, resample_img
+from nilearn.image.image import check_same_fov
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
     BaseMasker,
@@ -573,6 +573,12 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                         UserWarning,
                         stacklevel=find_stack_level(),
                     )
+
+            verbose = self.verbose
+            if verbose:
+                verbose = 1
+            elif not verbose:
+                verbose = 0
 
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs, verbose=max(0, self.verbose - 1), **mask_args

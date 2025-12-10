@@ -366,6 +366,7 @@ def test_get_cut_slices(affine_eye):
     assert (cut_slices == [4, 4, 4]).all()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "params, warning_msg",
     [
@@ -397,6 +398,7 @@ def test_view_img_3d_warnings(params, warning_msg):
     _check_html(html_view)
 
 
+@pytest.mark.slow
 def test_view_img_3d_warnings_more():
     """Test warning when viewing 3D images.
 

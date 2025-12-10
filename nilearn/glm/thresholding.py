@@ -13,13 +13,14 @@ from scipy.stats import norm
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
+from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.image import get_data, math_img, threshold_img
+from nilearn.image import get_data, math_img, new_img_like, threshold_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
-from nilearn.surface import SurfaceImage
+from nilearn.surface.surface import SurfaceImage, check_surf_img
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
 
@@ -33,7 +34,6 @@ def warn_default_threshold(
     Can be removed.
     """
     if height_control is None and threshold == current_default == old_default:
-        print(f"{threshold=} {current_default=} {old_default=}")
         warnings.warn(
             category=FutureWarning,
             message=(
@@ -143,7 +143,11 @@ def fdr_threshold(z_vals, alpha):
 
 @fill_doc
 def cluster_level_inference(
-    stat_img, mask_img=None, threshold=3.0, alpha=0.05, verbose=0
+    stat_img,
+    mask_img=None,
+    threshold: float | int | list[float | int] = 3.0,
+    alpha=0.05,
+    verbose: int = 0,
 ):
     """Report the proportion of active voxels for all clusters \
     defined by the input threshold.
@@ -152,13 +156,17 @@ def cluster_level_inference(
 
     Parameters
     ----------
-    stat_img : Niimg-like object
+    stat_img : 3D Niimg-like object or \
+        :obj:`~nilearn.surface.SurfaceImage` with a single sample.
        statistical image (presumably in z scale)
 
-    mask_img : Niimg-like object, default=None
+    mask_img : Niimg-like object, or :obj:`~nilearn.surface.SurfaceImage` \
+        or None, default=None
         mask image
 
-    threshold : :obj:`list` of :obj:`float`, default=3.0
+    threshold : Non-negative :obj:`float`, :obj:`int`, \
+                 or :obj:`list` of \
+                 non-negative :obj:`float` or :obj:`int`, default=3.0
        Cluster-forming threshold in z-scale.
 
     alpha : :obj:`float` or :obj:`list`, default=0.05
@@ -169,7 +177,8 @@ def cluster_level_inference(
 
     Returns
     -------
-    proportion_true_discoveries_img : Nifti1Image
+    proportion_true_discoveries_img : Nifti1Image \
+          or :obj:`~nilearn.surface.SurfaceImage`
         The statistical map that gives the true positive.
 
     References
@@ -177,21 +186,108 @@ def cluster_level_inference(
     .. footbibliography::
 
     """
-    if verbose is False:
-        verbose = 0
-    if verbose is True:
-        verbose = 1
-
     parameters = dict(**inspect.signature(cluster_level_inference).parameters)
     warn_default_threshold(threshold, parameters["threshold"].default, 3.0)
 
+    original_threshold = threshold
     if not isinstance(threshold, list):
         threshold = [threshold]
+    if any(x < 0 for x in threshold):
+        raise ValueError(
+            "'threshold' cannot be negative or "
+            "contain negative values. "
+            f"Got: 'threshold={original_threshold}'."
+        )
 
+    if isinstance(stat_img, SurfaceImage) or isinstance(
+        mask_img, SurfaceImage
+    ):
+        return _cluster_level_inference_surface(
+            stat_img, mask_img, threshold, alpha, verbose
+        )
+
+    return _cluster_level_inference_volume(
+        stat_img, mask_img, threshold, alpha, verbose
+    )
+
+
+def _cluster_level_inference_surface(
+    stat_img, mask_img, threshold, alpha, verbose
+):
+    """Run the inference on each hemisphere indendently
+    by creating a temporary mask that only includes one hemisphere.
+    """
+    check_surf_img(stat_img)
+    stat_img.data._check_n_samples(1)
+
+    if mask_img is None:
+        masker = SurfaceMasker().fit(stat_img)
+        mask_img = masker.mask_img_
+        del masker
+
+    data = {
+        "left": np.zeros(stat_img.data.parts["left"].shape),
+        "right": np.zeros(stat_img.data.parts["right"].shape),
+    }
+    for hemi in ["left", "right"]:
+        if hemi == "left":
+            mask_left = mask_img.data.parts["left"].astype(bool)
+            hemi_empty = not np.any(mask_left.ravel())
+            mask_right = np.zeros(
+                mask_img.data.parts["right"].shape, dtype=bool
+            )
+        else:
+            mask_left = np.zeros(mask_img.data.parts["left"].shape, dtype=bool)
+            mask_right = mask_img.data.parts["right"].astype(bool)
+            hemi_empty = not np.any(mask_right.ravel())
+
+        if hemi_empty:
+            continue
+
+        tmp_mask = new_img_like(
+            stat_img, {"left": mask_left, "right": mask_right}
+        )
+        masker = SurfaceMasker(mask_img=tmp_mask).fit()
+
+        stats = np.ravel(masker.transform(stat_img))
+        hommel_value = _compute_hommel_value(stats, alpha, verbose=verbose)
+
+        # embed it back to image
+        stat_map = masker.inverse_transform(stats).data.parts[hemi]
+
+        # Extract connected components above threshold
+        proportion_true_discoveries_img = math_img("0. * img", img=stat_img)
+        proportion_true_discoveries = masker.transform(
+            proportion_true_discoveries_img
+        ).ravel()
+
+        for threshold_ in sorted(threshold):
+            label_map, n_labels = label(stat_map > threshold_)
+            labels = label_map[masker.mask_img_.data.parts[hemi] > 0]
+
+            for label_ in range(1, n_labels + 1):
+                # get the z-vals in the cluster
+                cluster_vals = stats[labels == label_]
+                proportion = _true_positive_fraction(
+                    cluster_vals, hommel_value, alpha
+                )
+                proportion_true_discoveries[labels == label_] = proportion
+
+        tmp_img = masker.inverse_transform(proportion_true_discoveries)
+        data[hemi] = tmp_img.data.parts[hemi]
+
+    return new_img_like(stat_img, data)
+
+
+def _cluster_level_inference_volume(
+    stat_img, mask_img, threshold, alpha, verbose
+):
+    stat_img = check_niimg_3d(stat_img)
     if mask_img is None:
         masker = NiftiMasker(mask_strategy="background").fit(stat_img)
     else:
         masker = NiftiMasker(mask_img=mask_img).fit()
+
     stats = np.ravel(masker.transform(stat_img))
     hommel_value = _compute_hommel_value(stats, alpha, verbose=verbose)
 
@@ -216,10 +312,7 @@ def cluster_level_inference(
             )
             proportion_true_discoveries[labels == label_] = proportion
 
-    proportion_true_discoveries_img = masker.inverse_transform(
-        proportion_true_discoveries
-    )
-    return proportion_true_discoveries_img
+    return masker.inverse_transform(proportion_true_discoveries)
 
 
 @fill_doc
