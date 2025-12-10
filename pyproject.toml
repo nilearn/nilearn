@@ -208,9 +208,7 @@ ignore_imports = [
     "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level",  # TODO: (nilearn >= 0.15.0) remove
     # additional on top of those of "main architecture"
     "nilearn.plotting.tests.test_img_comparisons -> nilearn._utils.data_gen",  # allowed in tests
-    "nilearn.plotting.tests.test_img_comparisons -> nilearn.conftest",  # allowed in tests
     "nilearn.plotting.tests.test_img_comparisons -> nilearn.maskers",  # allowed in tests
-    "nilearn.plotting.**.tests.* -> nilearn.conftest",  # allowed in tests
     # TODO
     "nilearn.plotting.image.img_plotting -> nilearn.maskers",
     "nilearn.plotting.img_comparison -> nilearn._utils.masker_validation",
