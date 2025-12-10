@@ -260,6 +260,7 @@ def _permuted_ols_on_chunk(
 
                 tmp_img = masker.inverse_transform(perm_scores.T)
                 arr4d = tmp_img.data.parts[hemi]
+                bin_struct = tmp_img.mesh.parts[hemi]
 
             if tfce:
                 # The TFCE map will contain positive and negative values if
@@ -281,20 +282,12 @@ def _permuted_ols_on_chunk(
                 ) < np.fabs(tfce_original_data.T)
 
             if threshold is not None:
-                if isinstance(masker, NiftiMasker):
-                    max_sizes, max_masses = calculate_cluster_measures(
-                        arr4d,
-                        threshold,
-                        bin_struct,
-                        two_sided_test=two_sided_test,
-                    )
-                else:
-                    max_sizes, max_masses = calculate_cluster_measures(
-                        arr4d,
-                        threshold,
-                        bin_struct=tmp_img.mesh.parts[hemi],
-                        two_sided_test=two_sided_test,
-                    )
+                max_sizes, max_masses = calculate_cluster_measures(
+                    arr4d,
+                    threshold,
+                    bin_struct,
+                    two_sided_test=two_sided_test,
+                )
 
                 h0_csfwe_part[:, i_perm] = max_sizes
                 h0_cmfwe_part[:, i_perm] = max_masses
