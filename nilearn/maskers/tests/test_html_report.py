@@ -12,7 +12,6 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
-from nilearn._utils.html_document import WIDTH_DEFAULT, HTMLDocument
 from nilearn.conftest import _img_maps, _surf_maps_img
 from nilearn.image import get_data
 from nilearn.maskers import (
@@ -26,7 +25,6 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
-from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 from nilearn.surface import SurfaceImage
 
 # Note: html output by nilearn view_* functions
@@ -39,30 +37,8 @@ def check_masker_report(html_view, reports_requested=True, is_fit=True):
 
     Also ensure some common behavior to all reports.
     """
-    assert isinstance(html_view, HTMLDocument)
-
-    # resize width and height
-    html_view.resize(1200, 800)
-    assert html_view.width == 1200
-    assert html_view.height == 800
-
-    # invalid values fall back on default dimensions
-    with pytest.warns(UserWarning, match="Using default instead"):
-        html_view.width = "foo"
-    assert html_view.width == WIDTH_DEFAULT
-
-    assert html_view._repr_html_() == html_view.body
-
     # navbar and its css is only for GLM reports
     assert "Adapted from Pure CSS navbar" not in str(html_view)
-
-    if not is_fit:
-        assert "This estimator has not been fit yet." in str(html_view)
-
-    if not is_matplotlib_installed():
-        assert 'id="warnings"' in str(html_view)
-        assert MISSING_ENGINE_MSG in str(html_view)
-        assert 'color: grey">No plotting engine found</p>' in str(html_view)
 
     if not reports_requested:
         assert (

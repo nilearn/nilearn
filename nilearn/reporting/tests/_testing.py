@@ -2,7 +2,10 @@
 
 from pathlib import Path
 
+import pytest
+
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.html_document import WIDTH_DEFAULT
 from nilearn.reporting import HTMLReport
 from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 
@@ -51,6 +54,18 @@ def check_report(
     # like the greek alpha symbol.
     report.get_iframe()
 
+    # resize width and height
+    report.resize(1200, 800)
+    assert report.width == 1200
+    assert report.height == 800
+
+    # invalid values fall back on default dimensions
+    with pytest.warns(UserWarning, match="Using default instead"):
+        report.width = "foo"
+    assert report.width == WIDTH_DEFAULT
+
+    assert report._repr_html_() == report.body
+
     # only for debugging
     if view:
         report.open_in_browser()
@@ -71,7 +86,11 @@ def check_report(
         )
     else:
         includes.extend(
-            [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
+            [
+                'id="warnings"',
+                MISSING_ENGINE_MSG,
+                'grey">No plotting engine found</p>',
+            ]
         )
 
     if not estimator.__sklearn_is_fitted__():
