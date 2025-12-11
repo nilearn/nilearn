@@ -16,6 +16,7 @@ from typing import Any, Literal, overload
 import numpy as np
 from joblib import Memory, Parallel, delayed
 from nibabel import Nifti1Image, Nifti1Pair, load, spatialimages
+from nibabel.fileslice import is_fancy
 from nibabel.spatialimages import SpatialImage
 from numpy.testing import assert_array_equal
 from scipy.ndimage import gaussian_filter1d, generate_binary_structure, label
@@ -712,7 +713,27 @@ def index_img(imgs, index):
     # duck-type for pandas arrays, and select the 'values' attr
     if hasattr(index, "values") and hasattr(index, "iloc"):
         index = index.to_numpy().flatten()
-    return new_img_like(imgs, _get_data(imgs)[:, :, :, index], imgs.affine)
+    return _index_img(imgs, index)
+
+
+def _index_img(img: Nifti1Image, index):
+    """Helper function for check_niimg_4d."""  # noqa: D401
+    # catch too-large negative indices
+    if isinstance(index, int):
+        n = img.shape[3]
+        if index < -n or index >= n:
+            raise IndexError(
+                f"Integer index {index} out of range for last dimension"
+                f" with size {n}"
+            )
+
+    if is_fancy(index):
+        data = _get_data(img)[:, :, :, index]
+    else:
+        # this should be faster
+        data = _get_data(img.slicer[..., index])
+
+    return new_img_like(img, data, img.affine)
 
 
 def iter_img(imgs):
@@ -2290,10 +2311,7 @@ def check_niimg(
         raise DimensionError(len(niimg.shape), ensure_ndim)
 
     if return_iterator:
-        return (
-            new_img_like(niimg, _get_data(niimg)[:, :, :, i], niimg.affine)
-            for i in range(niimg.shape[3])
-        )
+        return (_index_img(niimg, i) for i in range(niimg.shape[3]))
 
     return niimg
 
