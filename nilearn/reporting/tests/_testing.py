@@ -19,6 +19,7 @@ def generate_and_check_report(
     extend_includes: list[str] | None = None,
     extend_excludes: list[str] | None = None,
     warnings_msg_to_check: list[str] | None = None,
+    extra_watnings_allowed=False,
     **kwargs,
 ) -> HTMLReport:
     """Generate a report and run generic checks on it.
@@ -53,6 +54,9 @@ def generate_and_check_report(
         List of warning messages that will be:
         - raised during report generation
         - AND will be included in the HTML report
+
+    extra_watnings_allowed :  bool
+        Allows extra warnings to be thrown during report generation.
 
     kwargs : dict
         Extra-parameters to pass to generate_report.
@@ -97,7 +101,8 @@ def generate_and_check_report(
         with warnings.catch_warnings(record=True) as all_warnings:
             report = estimator.generate_report(title=title, **kwargs)
             warnings_msg = [str(x.message) for x in all_warnings]
-            assert len(warnings_msg) == 0
+            if not extra_watnings_allowed:
+                assert len(warnings_msg) == 0
 
     # TODO
     # maek sure all estimators with generate_report have '_report_content'

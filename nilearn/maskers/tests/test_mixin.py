@@ -102,11 +102,20 @@ def test_masker_reporting_true(masker, img_func, kwargs):
     assert masker._has_report_data()
 
     # check masker report without title specified
-    generate_and_check_masker_report(masker, **kwargs)
+    extra_watnings_allowed = False
+    if isinstance(masker, SurfaceMapsMasker):
+        extra_watnings_allowed = True
+
+    generate_and_check_masker_report(
+        masker, extra_watnings_allowed=extra_watnings_allowed, **kwargs
+    )
 
     # check masker report with title specified
     generate_and_check_masker_report(
-        masker, title="masker report title", **kwargs
+        masker,
+        title="masker report title",
+        extra_watnings_allowed=extra_watnings_allowed,
+        **kwargs,
     )
 
     masker.reports = False

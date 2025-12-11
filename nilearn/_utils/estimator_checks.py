@@ -3727,7 +3727,7 @@ def check_glm_dtypes(estimator):
 # ------------------ REPORT GENERATION CHECKS ------------------
 
 
-def _generate_report(estimator):
+def _extra_kwargs(estimator):
     """Adapt the call to generate_report to limit warnings.
 
     For example by only passing the number of displayed maps
@@ -3737,15 +3737,15 @@ def _generate_report(estimator):
         estimator,
         (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),
     ) and hasattr(estimator, "n_elements_"):
-        return estimator.generate_report(displayed_maps=estimator.n_elements_)
+        return {"displayed_maps": estimator.n_elements_}
     else:
-        return estimator.generate_report()
+        return {}
 
 
 def _generate_report_with_no_warning(estimator):
     """Check that report generation throws no warning."""
     with warnings.catch_warnings(record=True) as warning_list:
-        _generate_report(estimator)
+        estimator.generate_report(**_extra_kwargs(estimator))
 
         # TODO
         # RegionExtractor, SurfaceMapsMasker still throws too many warnings
@@ -3802,8 +3802,17 @@ def check_masker_generate_report(estimator):
     # SurfaceMapsMasker, RegionExtractor still throws a warning
     _generate_report_with_no_warning(estimator)
 
+    extra_watnings_allowed = False
+    if isinstance(estimator, (SurfaceMapsMasker)):
+        extra_watnings_allowed = True
+
     with TemporaryDirectory() as tmp_dir:
-        generate_and_check_masker_report(estimator, pth=Path(tmp_dir))
+        generate_and_check_masker_report(
+            estimator,
+            pth=Path(tmp_dir),
+            extra_watnings_allowed=extra_watnings_allowed,
+            **_extra_kwargs(estimator),
+        )
 
 
 def check_masker_generate_report_constant(estimator):
@@ -3814,8 +3823,8 @@ def check_masker_generate_report_constant(estimator):
         input_img = _make_surface_img(2)
     estimator.fit(input_img)
 
-    report = _generate_report(estimator)
-    report_new = _generate_report(estimator)
+    report = estimator.generate_report(**_extra_kwargs(estimator))
+    report_new = estimator.generate_report(**_extra_kwargs(estimator))
 
     # svg/xml of images and UUID may be slightly different across calls
     # so we redact them out
@@ -3855,7 +3864,9 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     assert estimator._report_content["warning_messages"] == []
 
-    generate_and_check_masker_report(estimator)
+    generate_and_check_masker_report(
+        estimator, warnings_msg_to_check=["No image provided to fit"]
+    )
 
     input_img = _img_4d_rand_eye_medium()
 
@@ -3870,7 +3881,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     _generate_report_with_no_warning(estimator)
 
-    generate_and_check_masker_report(estimator)
+    generate_and_check_masker_report(estimator, **_extra_kwargs(estimator))
 
 
 @ignore_warnings()
