@@ -3,6 +3,7 @@
 from pathlib import Path
 
 import pytest
+from sklearn.utils.estimator_checks import ignore_warnings
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import WIDTH_DEFAULT
@@ -10,10 +11,11 @@ from nilearn.reporting import HTMLReport
 from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 
 
+@ignore_warnings()
 def check_report(
     estimator,
-    title=None,
-    view=False,
+    title: str | None = None,
+    view: bool = False,
     pth: Path | None = None,
     extend_includes: list[str] | None = None,
     extend_excludes: list[str] | None = None,
@@ -26,6 +28,10 @@ def check_report(
     ----------
     model : any estimator with a generate_report method
         Model that generated the report
+
+    title : str | None
+        Title to include in report.
+        If None is passed the estimator name should be in report instead.
 
     view: bool, default=False
         if True the report is open in browser
@@ -43,6 +49,11 @@ def check_report(
         The function will check
         for the absence in the report
         of each string in this iterable.
+
+    warnings_msg_to_check : Iterable[str] | None, default=None
+        List of warning messages that will be:
+        - raised during report generation
+        - AND will be included in the HTML report
 
     kwargs : dict
         Extra-parameters to pass to generate_report.

@@ -29,32 +29,9 @@ def check_glm_report(
     extend_excludes: list[str] | None = None,
     **kwargs,
 ) -> HTMLReport:
-    """Generate a GLM report and run generic checks on it.
+    """Generate and check content of masker report.
 
-    Parameters
-    ----------
-    model : FirstLevelModel or SecondLevelModel
-        Model that generated the report
-
-    view: bool, default=False
-        if True the report is open in browser
-        only used for debugging locally
-
-    pth: Path or None, default=None
-        Where to save the report
-
-    extend_includes : Iterable[str] | None, default=None
-        The function will check
-        for the presence in the report
-        of each string in this iterable.
-
-    extend_includes : Iterable[str] | None, default=None
-        The function will check
-        for the absence in the report
-        of each string in this iterable.
-
-    kwargs : dict
-        Extra-parameters to pass to generate_report.
+    See check_report fo details about the parameters.
     """
     includes = []
     excludes = []

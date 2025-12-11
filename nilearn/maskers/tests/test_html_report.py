@@ -4,7 +4,6 @@ More generic tests (those that apply to all maskers)
 should go into nilearn/_utils/estimator_checks.
 """
 
-import warnings
 from collections import Counter
 from pathlib import Path
 
@@ -12,9 +11,6 @@ import numpy as np
 import pytest
 from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
-from sklearn.utils.estimator_checks import (
-    ignore_warnings,
-)
 
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
 
@@ -39,8 +35,6 @@ from nilearn.reporting import HTMLReport
 from nilearn.reporting.tests._testing import check_report
 from nilearn.surface import SurfaceImage
 
-warnings.simplefilter("ignore", category=UserWarning)
-
 
 def check_masker_report(
     masker,
@@ -52,9 +46,9 @@ def check_masker_report(
     warnings_msg_to_check: list[str] | None = None,
     **kwargs,
 ) -> HTMLReport:
-    """Check the presence of some expected code in the html viewer.
+    """Generate and check content of masker report.
 
-    Also ensure some common behavior to all reports.
+    See check_report fo details about the parameters.
     """
     if warnings_msg_to_check is None:
         warnings_msg_to_check = []
@@ -65,7 +59,11 @@ def check_masker_report(
     # navbar and its css is only for GLM reports
     excludes.append("Adapted from Pure CSS navbar")
 
-    if not masker.reports:
+    report_at_fit_time = masker._report_content.get(
+        "reports_at_fit_time", masker.reports
+    )
+
+    if not report_at_fit_time:
         warnings_msg_to_check.append(
             "\nReport generation not enabled!\nNo visual outputs created."
         )
@@ -74,7 +72,7 @@ def check_masker_report(
             "\nReport generation not enabled!\nNo visual outputs created."
         )
 
-    if not masker.reports or not masker.__sklearn_is_fitted__():
+    if not report_at_fit_time or not masker.__sklearn_is_fitted__():
         # no image present if reports not requested or masker is not fitted
         excludes.append('<div class="image">')
 
@@ -150,7 +148,6 @@ def input_parameters(masker_class, img_mask_eye, labels, img_labels):
         return {"maps_img": _surf_maps_img()}
 
 
-@ignore_warnings()
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "masker_class",
@@ -207,7 +204,6 @@ def test_displayed_maps_error(masker_class, input_parameters, displayed_maps):
         masker.generate_report(displayed_maps)
 
 
-@ignore_warnings()
 @pytest.mark.slow
 @pytest.mark.parametrize(
     "masker_class",
@@ -240,7 +236,6 @@ def test_displayed_maps_warning_int_too_large(masker_class, input_parameters):
         masker.generate_report(7)
 
 
-@ignore_warnings
 def test_nifti_spheres_masker_report_1_sphere(
     matplotlib_pyplot,  # noqa: ARG001
 ):
@@ -292,7 +287,6 @@ EXPECTED_COLUMNS = [
 ]
 
 
-@ignore_warnings
 def test_nifti_labels_masker_report(
     img_3d_rand_eye,
     img_mask_eye,
@@ -410,7 +404,6 @@ def test_nifti_masker_overlaid_report(
     check_masker_report(masker, extend_includes=['<div class="overlay">'])
 
 
-@ignore_warnings
 @pytest.mark.slow
 def test_multi_nifti_masker_generate_report_mask(
     img_3d_ones_eye, shape_3d_default, affine_eye
@@ -458,7 +451,6 @@ def test_surface_masker_mask_img_generate_report(surf_img_1d, surf_mask_1d):
     check_masker_report(masker)
 
 
-@ignore_warnings()
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize("empty_mask", [True, False])
 def test_surface_masker_minimal_report_no_fit(
@@ -537,7 +529,6 @@ def test_surface_maps_masker_generate_report_before_transform_warn(
         masker.generate_report(displayed_maps=1)
 
 
-@ignore_warnings()
 def test_surface_maps_masker_generate_report_plotly_out_figure_type(
     plotly,  # noqa: ARG001
     matplotlib_pyplot,  # noqa: ARG001
