@@ -301,7 +301,7 @@ Update atlas figures
 The :ref:`datasets_ref <dataset API page>` has tables with figures listing all the atlases
 that Nilearn provides.
 
-Run the  script ``doc/make_atlas_table.py`` commit the new output to update the tables.
+Run the script ``doc/make_atlas_table.py`` commit the new output to update the tables.
 
 Prepare the release
 -------------------
