@@ -290,7 +290,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
             if img is None:
                 msg = (
-                    "No image provided to fit in NiftiMapsMasker. "
+                    "No image provided to fit in {self.__class__.__name__}. "
                     "Plotting only spatial maps for reporting."
                 )
                 self._report_content["warning_messages"].append(msg)

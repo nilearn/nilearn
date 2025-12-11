@@ -1,9 +1,9 @@
 """Testing utilities for reporting."""
 
+import warnings
 from pathlib import Path
 
 import pytest
-from sklearn.utils.estimator_checks import ignore_warnings
 
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.html_document import WIDTH_DEFAULT
@@ -11,7 +11,6 @@ from nilearn.reporting import HTMLReport
 from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 
 
-@ignore_warnings()
 def generate_and_check_report(
     estimator,
     title: str | None = None,
@@ -91,12 +90,14 @@ def generate_and_check_report(
         title = estimator.__class__.__name__
     includes.append(title)
 
-    # check masker report before fit
     if len(warnings_msg_to_check) > 0:
         with pytest.warns(UserWarning) as warnings_list:
             report = estimator.generate_report(title=title, **kwargs)
     else:
-        report = estimator.generate_report(title=title, **kwargs)
+        with warnings.catch_warnings(record=True) as all_warnings:
+            report = estimator.generate_report(title=title, **kwargs)
+            warnings_msg = [str(x.message) for x in all_warnings]
+            assert len(warnings_msg) == 0
 
     # TODO
     # maek sure all estimators with generate_report have '_report_content'
@@ -137,6 +138,14 @@ def generate_and_check_report(
         warnings_msg = [str(x.message) for x in warnings_list]
         for msg in warnings_msg_to_check:
             assert any(msg in x for x in warnings_msg), warnings_msg
+
+        # make sure that warnings are not thrown several times
+        # during report generation
+        if len(warnings_msg) != len(set(warnings_msg)):
+            warnings.warn(
+                "Some warnings was thrown several time:\n" + str(warnings_msg),
+                stacklevel=2,
+            )
 
     if extend_includes is not None:
         includes.extend(extend_includes)

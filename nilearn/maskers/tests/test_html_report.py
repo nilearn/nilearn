@@ -393,11 +393,18 @@ def test_nifti_masker_overlaid_report(
     matplotlib_pyplot,  # noqa: ARG001
     img_fmri,
 ):
-    """Check empty report generated before fit and with image after."""
+    """Check that NiftiMasker contain an overlay if resampling happened."""
+    masker = NiftiMasker()
+    masker.fit(img_fmri)
+
+    generate_and_check_masker_report(
+        masker, extend_excludes=['<div class="overlay">']
+    )
+
     masker = NiftiMasker(
         mask_strategy="whole-brain-template",
         mask_args={"threshold": 0.0},
-        target_affine=np.eye(3) * 3,
+        target_affine=np.eye(3),
     )
     masker.fit(img_fmri)
 
@@ -419,7 +426,9 @@ def test_multi_nifti_masker_generate_report_mask(
     )
     masker.fit()
 
-    generate_and_check_masker_report(masker)
+    generate_and_check_masker_report(
+        masker, warnings_msg_to_check=["No image provided to fit"]
+    )
 
 
 @pytest.mark.slow
@@ -436,7 +445,12 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
     )
     masker.fit([img_fmri, img_fmri])
 
-    generate_and_check_masker_report(masker)
+    generate_and_check_masker_report(
+        masker,
+        warnings_msg_to_check=[
+            "A list of 4D subject images were provided to fit"
+        ],
+    )
 
 
 def test_surface_masker_mask_img_generate_report(surf_img_1d, surf_mask_1d):
