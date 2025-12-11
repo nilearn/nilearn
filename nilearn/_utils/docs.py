@@ -395,6 +395,46 @@ display_mode : {"ortho", "tiled", "mosaic", "x", \
 
 """
 
+# displayed_maps
+docdict["displayed_maps"] = """
+displayed_maps : :obj:`int`, \
+                  :class:`~numpy.ndarray` or :obj:`list` of :obj:`int`, \
+                  or "all", default=10
+    Indicates which maps will be displayed in the HTML report.
+
+    - If ``"all"``: All maps will be displayed in the report.
+
+    .. code-block:: python
+
+        masker.generate_report("all")
+
+    .. warning:
+        If there are too many maps, this might be time and
+        memory consuming, and will result in very heavy
+        reports.
+
+    - If a :obj:`list` or :class:`~numpy.ndarray`:
+        This indicates the indices of the maps to be displayed in the report.
+        For example, the following code will generate a report with maps
+        6, 3, and 12, displayed in this specific order:
+
+    .. code-block:: python
+
+        masker.generate_report([6, 3, 12])
+
+    - If an :obj:`int`: This will only display the first n maps,
+        n being the value of the parameter. By default, the report
+        will only contain the first 10 maps. Example to display the
+        first 16 maps:
+
+    .. code-block:: python
+
+        masker.generate_report(16)
+"""
+docdict["displayed_spheres"] = docdict["displayed_maps"].replace(
+    "maps", "spheres"
+)
+
 # draw_cross
 docdict["draw_cross"] = """
 draw_cross : :obj:`bool`, default=True
@@ -408,6 +448,7 @@ dtype : dtype like, "auto" or None, default=None
     Data type toward which the data should be converted.
     If "auto", the data will be converted to int32
     if dtype is discrete and float32 if it is continuous.
+    If None, data will not be converted to a new data type.
 """
 
 # extractor / extract_type
@@ -457,7 +498,8 @@ first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
       from the :class:`~pandas.DataFrame` ``map_name`` column.
       (it has to be a 't' contrast).
 
-    This parameter is ignored for all other cases.
+    When the model is a :class:`~nilearn.glm.first_level.FirstLevelModel`:
+    This parameter is ignored.
 """
 
 # fwhm
@@ -750,7 +792,7 @@ docdict["max_iter5000"] = verbose.format(5000)
 # memory
 docdict["memory"] = """
 memory : None, instance of :class:`joblib.Memory`, :obj:`str`, or \
-:class:`pathlib.Path`
+:class:`pathlib.Path`, default=None
     Used to cache the masking process.
     By default, no caching is done.
     If a :obj:`str` is given, it is the path to the caching directory.
@@ -1349,12 +1391,11 @@ url : :obj:`str` or None, default=None
 
 # verbose
 verbose = """
-verbose : :obj:`int`, default={}
-    Verbosity level (`0` means no message).
+verbose : :obj:`bool` or :obj:`int`, default={}
+    Verbosity level (``0`` or ``False`` means no message).
 """
 docdict["verbose"] = verbose.format(1)
 docdict["verbose0"] = verbose.format(0)
-docdict["verbose2"] = verbose.format(2)
 docdict["verbose3"] = verbose.format(3)
 
 # view
@@ -1783,6 +1824,16 @@ docdict["templateflow"] = """
    If you wish to use the exact same release as :term:`fMRIPrep`,
    please refer to `TemplateFlow <https://www.templateflow.org>`_.
 
+"""
+
+
+docdict["fetcher_note"] = """
+If the dataset files are already present in the user's Nilearn data
+directory, this fetcher will **not** re-download them. To force a fresh
+download, you can remove the existing dataset folder from your local
+Nilearn data directory.
+
+For more details on :ref:`how Nilearn stores datasets <datasets>`.
 """
 
 ##############################################################################

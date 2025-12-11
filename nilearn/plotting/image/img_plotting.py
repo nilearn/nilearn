@@ -27,7 +27,6 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -35,6 +34,8 @@ from nilearn._utils.param_validation import (
     check_threshold,
 )
 from nilearn.image import (
+    check_niimg_3d,
+    check_niimg_4d,
     get_data,
     iter_img,
     math_img,
@@ -407,7 +408,6 @@ def plot_img(
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
-
     display = _plot_img_with_bg(
         img,
         cut_coords=cut_coords,
@@ -1973,7 +1973,8 @@ def plot_carpet(
             if label_dtype != atlas_values.dtype:
                 logger.log(
                     "Coercing atlas_values to "
-                    f"{label_dtype.__class__.__name__}"
+                    f"{label_dtype.__class__.__name__}",
+                    verbose=1,
                 )
                 atlas_values = atlas_values.astype(type(label_dtype))
 

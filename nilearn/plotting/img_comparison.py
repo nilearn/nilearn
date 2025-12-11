@@ -13,7 +13,7 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
-from nilearn._utils.niimg_conversions import check_niimg_3d
+from nilearn.image import check_niimg_3d
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.plotting.displays._slicers import save_figure_if_needed
 from nilearn.surface.surface import SurfaceImage
@@ -110,11 +110,14 @@ def plot_img_comparison(
         isinstance(x, NiimgLike) for x in src_imgs
     ):
         image_type = "volume"
+        ref_imgs = [check_niimg_3d(x) for x in ref_imgs]
+        src_imgs = [check_niimg_3d(x) for x in src_imgs]
 
     elif all(isinstance(x, SurfaceImage) for x in ref_imgs) and all(
         isinstance(x, SurfaceImage) for x in src_imgs
     ):
         image_type = "surface"
+
     else:
         types_ref_imgs = {type(x) for x in ref_imgs}
         types_src_imgs = {type(x) for x in src_imgs}

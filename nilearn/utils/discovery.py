@@ -21,7 +21,6 @@ ROOT = str(Path(__file__).parent.parent)  # nilearn package
 _MODULE_TO_IGNORE = {
     "_utils",
     "conftest",
-    "externals",
     "input_data",
     "tests",
 }
@@ -54,7 +53,11 @@ def _get_all_classes():
             if _skip_module(module_name):
                 continue
 
-            module = import_module(module_name)
+            try:
+                module = import_module(module_name)
+            except ModuleNotFoundError:
+                continue
+
             classes = inspect.getmembers(module, inspect.isclass)
             classes = [
                 (name, est_cls)
@@ -178,7 +181,10 @@ def all_functions():
             if _skip_module(module_name):
                 continue
 
-            module = import_module(module_name)
+            try:
+                module = import_module(module_name)
+            except ModuleNotFoundError:
+                continue
 
             if not hasattr(module, "__all__"):
                 continue

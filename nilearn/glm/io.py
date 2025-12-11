@@ -15,6 +15,7 @@ from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm.thresholding import threshold_stats_img
+from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 from nilearn.surface import SurfaceImage
 
 
@@ -152,7 +153,6 @@ def save_glm_to_bids(
 
 
     kwargs : extra keywords arguments to pass to ``model.generate_report``
-        See :func:`nilearn.reporting.make_glm_report` for more details.
         Can be any of the following: ``title``, ``bg_img``, ``threshold``,
         ``alpha``, ``cluster_threshold``, ``height_control``,
         ``min_distance``, ``plot_type``, ``display_mode``,
@@ -243,7 +243,7 @@ def save_glm_to_bids(
 
     if not is_matplotlib_installed():
         warnings.warn(
-            ("No plotting backend detected. Output will be missing figures."),
+            MISSING_ENGINE_MSG,
             UserWarning,
             stacklevel=find_stack_level(),
         )

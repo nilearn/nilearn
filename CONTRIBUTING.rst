@@ -503,14 +503,9 @@ Code inside ``maskers._validation.py``:
 Guidelines for HTML and CSS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We use `prettier <https://prettier.io/>`_ to format HTML and CSS.
+We use `prettier <https://prettier.io/>`_ and `djlint <https://github.com/djlint/djlint>`_ to format HTML and CSS.
 
-This is implemented via a pre-commit hook (see below)
-that can be run with
-
-.. code-block:: bash
-
-      pre-commit run --all-files prettier
+This is implemented via a pre-commit hook.
 
 Pre-commit
 ----------
@@ -659,7 +654,7 @@ learn how to use those tools to build documentation.
 Reports
 -------
 
-Reports (for maskers and GLM) are generated using `Jinja templates <https://jinja.palletsprojects.com>`_.
+Reports (for maskers and GLM) are generated using `Jinja templates <https://jinja.palletsprojects.com/en/stable/>`_.
 
 Reports HTML, CSS, javascript and templates are stored in ``nilearn/reporting/data``.
 

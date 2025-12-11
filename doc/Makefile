@@ -24,7 +24,7 @@ PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
 ALLSPHINXOPTS   = -d $(BUILDDIR)/doctrees $(PAPEROPT_$(PAPER)) $(SPHINXOPTS) .
 
-.PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex latexpdf changes linkcheck doctest
+.PHONY: help clean html dirhtml pickle json htmlhelp qthelp latex latexpdf changes linkcheck doctest reports dummy_reports
 
 all: html-noplot
 
@@ -53,9 +53,7 @@ clean:
 	-rm -rf ../examples/**/nilearn_cache
 	-rm -rf ../**/nilearn_cache
 	-rm -rf modules/description/
-
-glm_reports:
-	python visual_testing/reporter_visual_inspection_suite.py partial
+	-rm -rf modules/generated_reports/*.html
 
 sym_links_datasets:
 	# copy datasets RST from nilearn package to doc folder
@@ -84,38 +82,55 @@ force:
 view: _build/html/index.html
 	$(BROWSER) _build/html/index.html
 
-html: ci.rst sym_links sym_links_datasets
+dummy_reports:
+	mkdir -p _build/html/
+	marimo export html  visual_testing/notebook_reports_maskers.py -- --build_type=partial > reports/notebook_reports_maskers.html
+	marimo export html  visual_testing/notebook_reports_glm.py -- --build_type=partial > reports/notebook_reports_glm.html
+
+reports:
+	marimo export html  visual_testing/notebook_reports_maskers.py -- --build_type=full > reports/notebook_reports_maskers.html
+	marimo export html  visual_testing/notebook_reports_glm.py -- --build_type=full > reports/notebook_reports_glm.html
+
+
+html: ci.rst sym_links sym_links_datasets reports
 	rm -rf $(BUILDDIR)/html/_images
-	python visual_testing/reporter_visual_inspection_suite.py full
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-strict: ci.rst sym_links sym_links_datasets
-	python visual_testing/reporter_visual_inspection_suite.py full
+html-strict: ci.rst sym_links sym_links_datasets reports
 	# Build html documentation using a strict mode: Warnings are
 	# considered as errors.
 	make check
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-modified-examples-only: ci.rst sym_links sym_links_datasets glm_reports
+html-modified-examples-only-reports: ci.rst sym_links sym_links_datasets reports
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D sphinx_gallery_conf.filename_pattern=$(PATTERN) -D sphinx_gallery_conf.run_stale_examples=True -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-noplot: ci.rst sym_links_datasets
-	python visual_testing/reporter_visual_inspection_suite.py full
+html-modified-examples-only: ci.rst sym_links sym_links_datasets dummy_reports
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D sphinx_gallery_conf.filename_pattern=$(PATTERN) -D sphinx_gallery_conf.run_stale_examples=True -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+html-noplot-reports: ci.rst sym_links_datasets reports
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-html-noplot-noreport: ci.rst sym_links_datasets glm_reports
+html-noplot: ci.rst sym_links_datasets dummy_reports
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
 
-ci-html-noplot: ci.rst sym_links_datasets glm_reports
+ci-html-noplot-reports: ci.rst sym_links_datasets reports
+	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
+	@echo
+	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
+
+ci-html-noplot: ci.rst sym_links_datasets dummy_reports
 	BUILD_DEV_HTML=1 $(SPHINXBUILD) -W --keep-going -D plot_gallery=0 -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
@@ -155,7 +170,7 @@ changes:
 	@echo
 	@echo "The overview file is in $(BUILDDIR)/changes."
 
-linkcheck: sym_links sym_links_datasets glm_reports
+linkcheck: sym_links sym_links_datasets dummy_reports
 	$(SPHINXBUILD) -D plot_gallery=0 -b linkcheck $(ALLSPHINXOPTS) $(BUILDDIR)/linkcheck
 	@echo
 	@echo "Link check complete; look for any errors in the above output " \

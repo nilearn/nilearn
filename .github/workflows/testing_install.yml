@@ -38,7 +38,7 @@ jobs:
                 shell: bash
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
@@ -70,7 +70,7 @@ jobs:
                 shell: bash
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
@@ -100,11 +100,11 @@ jobs:
                 shell: bash
         steps:
         -   name: Checkout nilearn
-            uses: actions/checkout@v5
+            uses: actions/checkout@v6
         -   name: Setup python
             uses: actions/setup-python@v6
             with:
                 python-version: ${{ matrix.python }}
 
-        -   name: Check wheel size
+        -   name: Check install size
             run: bash build_tools/github/whole_install_size_check.sh  ${{ matrix.dependencies }}

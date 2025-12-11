@@ -14,9 +14,9 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn.image import resample_img
+from nilearn.image.image import iter_check_niimg
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
@@ -253,12 +253,9 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         del y
         check_params(self.__dict__)
 
-        self._init_report_content()
-
-        self._overlay_text = (
-            "\n To see the input Nifti image before resampling, "
-            "hover over the displayed image."
-        )
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = []
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
@@ -314,10 +311,16 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                         stacklevel=find_stack_level(),
                     )
 
+            verbose = self.verbose
+            if verbose:
+                verbose = 1
+            elif not verbose:
+                verbose = 0
+
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs,
                 memory=self.memory_,
-                verbose=max(0, self.verbose - 1),
+                verbose=max(0, verbose - 1),
                 **mask_args,
             )
         elif imgs is not None:
@@ -329,6 +332,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                 stacklevel=find_stack_level(),
             )
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:  # save inputs for reporting
             self._reporting_data = {
                 "mask": self.mask_img_,

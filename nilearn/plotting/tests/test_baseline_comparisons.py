@@ -35,6 +35,7 @@ from nilearn.plotting import (
     plot_glass_brain,
     plot_img,
     plot_img_comparison,
+    plot_img_on_surf,
     plot_matrix,
     plot_prob_atlas,
     plot_roi,
@@ -63,6 +64,7 @@ SURFACE_FUNCS = {
 }
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_black_bg(plot_func, img_3d_mni):
@@ -93,6 +95,7 @@ def test_plot_functions_annotate(plot_func, img_3d_mni):
     return plot_func(img_3d_mni, annotate=False)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize(
     "display_mode", ["x", "y", "z", "yx", "xz", "yz", "ortho"]
@@ -107,6 +110,7 @@ def test_plot_stat_map_display_mode(display_mode):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_no_colorbar(plot_func, img_3d_mni):
@@ -130,6 +134,7 @@ def test_plot_functions_colorbar_ticks(plot_func, img_3d_mni):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize("vmin", [-1, 1])
@@ -392,6 +397,32 @@ def test_plot_surf_surface_colorbar_plotly(
     )
 
 
+@pytest.mark.mpl_image_compare(tolerance=5)
+@pytest.mark.parametrize("bg_on_data", [True, False])
+@pytest.mark.parametrize("symmetric_cmap", [True, False])
+@pytest.mark.parametrize("colorbar", [True, False])
+@pytest.mark.parametrize("title", [None, "Foo"])
+def test_plot_img_on_surf(bg_on_data, symmetric_cmap, colorbar, title):
+    stat_img = load_sample_motor_activation_image()
+    fig, _ = plot_img_on_surf(
+        stat_map=stat_img,
+        views=[
+            "lateral",
+            "medial",
+            "dorsal",
+            "ventral",
+            "anterior",
+            "posterior",
+        ],
+        hemispheres=["left", "right"],
+        bg_on_data=bg_on_data,
+        symmetric_cmap=symmetric_cmap,
+        colorbar=colorbar,
+        title=title,
+    )
+    return fig
+
+
 # ---------------------- design matrix plotting -------------------------------
 
 
@@ -544,6 +575,7 @@ def test_plot_with_transparency(fn):
     )
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("fn", [plot_stat_map, plot_img, plot_glass_brain])
 @pytest.mark.parametrize("transparency_range", [None, [0, 2], [2, 4]])

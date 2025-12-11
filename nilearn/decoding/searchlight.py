@@ -19,10 +19,9 @@ from sklearn.utils.estimator_checks import check_is_fitted
 
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
-from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
-from nilearn.image import new_img_like
+from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 
 from .. import masking
@@ -226,6 +225,7 @@ def _group_iter_search_light(
                     f"Job #{thread_id}, processed {i}/{len(list_rows)} steps "
                     f"({percent:0.2f}%, "
                     f"{remaining:0.1f} seconds remaining){crlf}",
+                    verbose,
                 )
     return par_scores
 
@@ -377,7 +377,7 @@ class SearchLight(TransformerMixin, BaseEstimator):
 
     @property
     def _estimator_type(self):
-        # TODO (sklearn >= 1.6.0) remove
+        # TODO (sklearn >= 1.8.0) remove
         if self.estimator == "svr":
             return "regressor"
         elif self.estimator == "svc":
