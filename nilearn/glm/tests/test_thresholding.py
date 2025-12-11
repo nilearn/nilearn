@@ -82,7 +82,7 @@ def test_threshold_stats_img_warn_threshold_unused(
             height_control=height_control,
         )
     if height_control is not None:
-        assert any("will not be used with" in str(x) for x in warnings_list)
+        assert any("is not used with" in str(x) for x in warnings_list)
 
 
 @pytest.mark.slow
