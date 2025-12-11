@@ -111,9 +111,12 @@ def test_view_connectome(tmp_path, kwargs):
     adj, coord = _make_connectome()
 
     html = html_connectome.view_connectome(adj, coord, **kwargs)
-    title = kwargs.get("title", None)
     check_html_surface_plots(
-        tmp_path, html, False, "connectome-plot", title=title
+        tmp_path,
+        html,
+        False,
+        "connectome-plot",
+        title=kwargs.get("title", None),
     )
 
     html = html_connectome.view_connectome(

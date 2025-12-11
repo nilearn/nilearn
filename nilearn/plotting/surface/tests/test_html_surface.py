@@ -110,12 +110,17 @@ def test_fill_html_template(tmp_path, mni152_template_res_2):
         bg_map=fsaverage["sulc_right"],
     )
     info["title"] = None
+
     html = _fill_html_template(info, embed_js=False)
+
     check_html_surface_plots(tmp_path, html)
     assert "jquery.min.js" in html.html
+
     info = _full_brain_info(mni152_template_res_2)
     info["title"] = None
+
     html = _fill_html_template(info)
+
     check_html_surface_plots(tmp_path, html)
     assert "* plotly.js (gl3d - minified) v1." in html.html
 
@@ -124,10 +129,12 @@ def test_view_surf(tmp_path, rng):
     fsaverage = fetch_surf_fsaverage()
     mesh = load_surf_mesh(fsaverage["pial_right"])
     surf_map = mesh.coordinates[:, 0]
+
     html = view_surf(
         fsaverage["pial_right"], surf_map, fsaverage["sulc_right"], "90%"
     )
     check_html_surface_plots(tmp_path, html, title="Surface plot")
+
     html = view_surf(
         fsaverage["pial_right"],
         surf_map,
@@ -136,12 +143,14 @@ def test_view_surf(tmp_path, rng):
         title="SOME_TITLE",
     )
     check_html_surface_plots(tmp_path, html, title="SOME_TITLE")
-    assert "SOME_TITLE" in html.html
+
     html = view_surf(fsaverage["pial_right"])
     check_html_surface_plots(tmp_path, html)
+
     atlas = rng.integers(0, 10, size=len(mesh.coordinates))
     html = view_surf(fsaverage["pial_left"], atlas, symmetric_cmap=False)
     check_html_surface_plots(tmp_path, html)
+
     html = view_surf(
         fsaverage["pial_right"],
         fsaverage["sulc_right"],
@@ -149,48 +158,53 @@ def test_view_surf(tmp_path, rng):
         cmap="Greys",
     )
     check_html_surface_plots(tmp_path, html)
+
+
+def test_view_surf_errors():
+    fsaverage = fetch_surf_fsaverage()
+    mesh = load_surf_mesh(fsaverage["pial_right"])
+
     with pytest.raises(ValueError):
         view_surf(mesh, mesh.coordinates[::2, 0])
+
     with pytest.raises(ValueError):
         view_surf(
             mesh, mesh.coordinates[:, 0], bg_map=mesh.coordinates[::2, 0]
         )
 
 
-def test_view_img_on_surf(tmp_path, mni152_template_res_2):
-    html = view_img_on_surf(mni152_template_res_2, threshold="92.3%")
-    check_html_surface_plots(tmp_path, html)
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"threshold": "92.3%"},
+        {"threshold": 0, "surf_mesh": datasets.fetch_surf_fsaverage()},
+        {"threshold": 0.4, "title": "SOME_TITLE"},
+        {"threshold": 0.4, "cmap": "hot", "black_bg": True},
+    ],
+)
+def test_view_img_on_surf(tmp_path, mni152_template_res_2, kwargs):
+    """Check output of view_img_on_surf."""
+    html = view_img_on_surf(mni152_template_res_2, **kwargs)
+    check_html_surface_plots(tmp_path, html, title=kwargs.get("title", None))
 
-    surfaces = datasets.fetch_surf_fsaverage()
-    html = view_img_on_surf(
-        mni152_template_res_2, threshold=0, surf_mesh=surfaces
-    )
-    check_html_surface_plots(tmp_path, html)
 
-    html = view_img_on_surf(
-        mni152_template_res_2, threshold=0.4, title="SOME_TITLE"
-    )
-    assert "SOME_TITLE" in html.html
-    check_html_surface_plots(tmp_path, html)
-
-    html = view_img_on_surf(
-        mni152_template_res_2, threshold=0.4, cmap="hot", black_bg=True
-    )
-    check_html_surface_plots(tmp_path, html)
-
+def test_view_img_on_surf_clipped_image(tmp_path, mni152_template_res_2):
+    """Check output of view_img_on_surf with clipped input."""
     img_4d = image.new_img_like(
         mni152_template_res_2,
         get_data(mni152_template_res_2)[:, :, :, np.newaxis],
     )
     assert len(img_4d.shape) == 4
-
     np.clip(
         get_data(mni152_template_res_2),
         0,
         None,
         out=get_data(mni152_template_res_2),
     )
+
     html = view_img_on_surf(mni152_template_res_2, symmetric_cmap=False)
+
     check_html_surface_plots(tmp_path, html)
 
     html = view_img_on_surf(
@@ -219,5 +233,6 @@ def test_view_img_on_surf_errors(img_3d_mni):
 def test_view_img_on_surf_view(tmp_path, mni152_template_res_2, view):
     """Smoke test for different views of view_img_on_surf."""
     html = view_img_on_surf(mni152_template_res_2, view=view)
+
     assert f', "view": "{view}"' in str(html)
     check_html_surface_plots(tmp_path, html)
