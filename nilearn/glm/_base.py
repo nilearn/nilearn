@@ -539,9 +539,9 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 warning_messages.append(
                     f"'{threshold=}' is not used with '{height_control=}'."
                     "\n'threshold' is only used when 'height_control=None'. "
-                    "\nEither set 'height_control=None' or do not set "
-                    "threshold value to avoid this warning."
+                    "\nSetting 'height_control' to None. "
                 )
+                height_control = None
         elif threshold != DEFAULT_Z_THRESHOLD:
             warnings.warn(
                 "From nilearn version>=0.15, "
