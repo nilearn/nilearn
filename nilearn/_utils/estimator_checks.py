@@ -3725,10 +3725,25 @@ def check_glm_dtypes(estimator):
 # ------------------ REPORT GENERATION CHECKS ------------------
 
 
+def _generate_report(estimator):
+    """Adapt the call to generate_report to limit warnings.
+
+    For example by only passing the number of displayed maps
+    that a map masker contains.
+    """
+    if isinstance(
+        estimator,
+        (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),
+    ) and hasattr(estimator, "n_elements_"):
+        return estimator.generate_report(displayed_maps=estimator.n_elements_)
+    else:
+        return estimator.generate_report()
+
+
 def _generate_report_with_no_warning(estimator):
     """Check that report generation throws no warning."""
     with warnings.catch_warnings(record=True) as warning_list:
-        report = _generate_report(estimator)
+        _generate_report(estimator)
 
         # TODO
         # RegionExtractor, SurfaceMapsMasker still throws too many warnings
@@ -3751,25 +3766,6 @@ def _generate_report_with_no_warning(estimator):
         if not isinstance(estimator, (RegionExtractor, SurfaceMapsMasker)):
             assert not unknown_warnings, unknown_warnings
 
-    check_masker_report(report)
-
-    return report
-
-
-def _generate_report(estimator):
-    """Adapt the call to generate_report to limit warnings.
-
-    For example by only passing the number of displayed maps
-    that a map masker contains.
-    """
-    if isinstance(
-        estimator,
-        (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),
-    ) and hasattr(estimator, "n_elements_"):
-        return estimator.generate_report(displayed_maps=estimator.n_elements_)
-    else:
-        return estimator.generate_report()
-
 
 def check_masker_generate_report(estimator):
     """Check that maskers can generate report.
@@ -3783,17 +3779,11 @@ def check_masker_generate_report(estimator):
     - check that the masker has report data after fit
 
     """
-    if not is_matplotlib_installed():
-        with pytest.warns(UserWarning, match="Report will be missing figures"):
-            report = _generate_report(estimator)
+    check_masker_report(estimator)
 
     assert isinstance(estimator._report_content, dict)
     assert estimator._report_content["description"] != ""
     assert estimator._has_report_data() is False
-
-    report = _generate_report(estimator)
-
-    check_masker_report(report, is_fit=False)
 
     if accept_niimg_input(estimator):
         input_img = _img_3d_rand()
@@ -3808,13 +3798,10 @@ def check_masker_generate_report(estimator):
 
     # TODO
     # SurfaceMapsMasker, RegionExtractor still throws a warning
-    report = _generate_report_with_no_warning(estimator)
-    report = _generate_report(estimator)
-    check_masker_report(report)
+    _generate_report_with_no_warning(estimator)
 
     with TemporaryDirectory() as tmp_dir:
-        report.save_as_html(Path(tmp_dir) / "report.html")
-        assert (Path(tmp_dir) / "report.html").is_file()
+        check_masker_report(estimator, pth=Path(tmp_dir))
 
 
 def check_masker_generate_report_constant(estimator):
@@ -3866,16 +3853,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     assert estimator._report_content["warning_messages"] == []
 
-    match = "Report will be missing figures"
-    if is_matplotlib_installed():
-        match = "No image provided to fit"
-    with pytest.warns(UserWarning, match=match):
-        report = _generate_report(estimator)
-
-        check_masker_report(report)
-
-    assert 'id="warnings"' in str(report)
-    assert match in str(report)
+    check_masker_report(estimator)
 
     input_img = _img_4d_rand_eye_medium()
 
@@ -3888,8 +3866,9 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     if isinstance(estimator, NiftiSpheresMasker):
         return
 
-    report = _generate_report_with_no_warning(estimator)
-    check_masker_report(report)
+    _generate_report_with_no_warning(estimator)
+
+    check_masker_report(estimator)
 
 
 @ignore_warnings()
@@ -3905,13 +3884,8 @@ def check_masker_generate_report_false(estimator):
     estimator.fit(input_img)
 
     assert estimator._has_report_data() is False
-    with pytest.warns(
-        UserWarning,
-        match=("No visual outputs created."),
-    ):
-        report = _generate_report(estimator)
 
-    check_masker_report(report, reports_requested=False)
+    check_masker_report(estimator)
 
 
 @ignore_warnings()
@@ -3928,12 +3902,14 @@ def check_multimasker_generate_report(estimator):
 
         estimator.fit(input_img)
 
-        match = "Report will be missing figures"
-        if is_matplotlib_installed():
-            match = "A list of 4D subject images were provided to fit"
-        with pytest.warns(UserWarning, match=match):
-            _generate_report(estimator)
+        check_masker_report(
+            estimator,
+            warnings_msg_to_check=[
+                "A list of 4D subject images were provided to fit"
+            ],
+        )
+
     else:
         # TODO add a warning
         estimator.fit(input_img)
-        _generate_report(estimator)
+        check_masker_report(estimator)

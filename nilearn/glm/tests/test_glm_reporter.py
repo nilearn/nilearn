@@ -221,6 +221,9 @@ def test_flm_reporting_height_control(
     Also checks that passing threshold different from the default
     will throw a warning when height_control is not None.
     """
+    warnings_msg_to_check = []
+    if height_control is not None:
+        warnings_msg_to_check = ["is only used when"]
     check_glm_report(
         model=flm,
         pth=tmp_path,
@@ -233,7 +236,7 @@ def test_flm_reporting_height_control(
         min_distance=15,
         alpha=0.01,
         threshold=2,
-        warnings_msg_to_check=["is only used when"],
+        warnings_msg_to_check=warnings_msg_to_check,
     )
 
 
