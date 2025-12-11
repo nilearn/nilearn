@@ -718,6 +718,15 @@ def index_img(imgs, index):
 
 def _index_img(img: Nifti1Image, index):
     """Helper function for check_niimg_4d."""  # noqa: D401
+    # catch too-large negative indices
+    if isinstance(index, int):
+        n = img.shape[3]
+        if index < -n or index >= n:
+            raise IndexError(
+                f"Integer index {index} out of range for last dimension"
+                f" with size {n}"
+            )
+
     if is_fancy(index):
         data = _get_data(img)[:, :, :, index]
     else:

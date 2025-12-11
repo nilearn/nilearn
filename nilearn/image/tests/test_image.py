@@ -708,7 +708,10 @@ def test_index_img_error_volumne_4d(affine_eye):
     ]:
         with pytest.raises(
             IndexError,
-            match=r"out of bounds|invalid index|out of range|boolean index",
+            match=(
+                r"too large|out of bounds|invalid index|out of range|"
+                "boolean index"
+            ),
         ):
             index_img(img_4d, i)
 
