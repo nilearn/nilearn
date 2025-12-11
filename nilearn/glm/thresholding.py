@@ -385,6 +385,15 @@ def threshold_stats_img(
         without correction.
 
     """
+    if threshold is not None and height_control is not None:
+        warnings.warn(
+            f"'{threshold=}' is not used with '{height_control=}'."
+            "\n'threshold' is only used when 'height_control=None'. "
+            "\nEither set 'height_control=None' or do not set "
+            "threshold value to avoid this warning.",
+            UserWarning,
+            stacklevel=find_stack_level(),
+        )
     check_params(locals())
     height_control_methods = [
         "fpr",
