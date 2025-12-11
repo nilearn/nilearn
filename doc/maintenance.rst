@@ -298,7 +298,7 @@ For example:
 Update atlas figures
 ....................
 
-The :ref:`datasets_ref <dataset API page>` has tables with figures listing all the atlases
+The :ref:`datasets_ref <datasets_ref>` has tables with figures listing all the atlases
 that Nilearn provides.
 
 Run the script ``doc/make_atlas_table.py`` commit the new output to update the tables.
