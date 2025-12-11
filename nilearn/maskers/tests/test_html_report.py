@@ -13,10 +13,6 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
-
-# Note: html output by nilearn view_* functions
-# should validate as html5 using https://validator.w3.org/nu/ with no
-# warnings
 from nilearn._utils.tags import accept_surf_img_input
 from nilearn.conftest import _img_maps, _surf_maps_img
 from nilearn.image import get_data

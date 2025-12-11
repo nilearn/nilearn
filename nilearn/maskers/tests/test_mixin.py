@@ -106,7 +106,11 @@ def test_masker_reporting_true(masker, img_func, kwargs):
     check_masker_report(masker, title="masker report title", **kwargs)
 
     masker.reports = False
-    check_masker_report(masker, **kwargs)
+    match = "Report generation not enabled"
+    with pytest.warns(UserWarning, match=match):
+        report = masker.generate_report(**kwargs)
+
+    assert match in str(report)
 
 
 @pytest.mark.parametrize(

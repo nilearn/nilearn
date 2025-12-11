@@ -1,4 +1,3 @@
-import warnings
 from pathlib import Path
 
 import numpy as np
@@ -27,12 +26,15 @@ def check_glm_report(
     pth: Path | None = None,
     extend_includes: list[str] | None = None,
     extend_excludes: list[str] | None = None,
+    warnings_msg_to_check: list[str] | None = None,
     **kwargs,
 ) -> HTMLReport:
     """Generate and check content of masker report.
 
     See check_report fo details about the parameters.
     """
+    if warnings_msg_to_check is None:
+        warnings_msg_to_check = []
     includes = []
     excludes = []
 
@@ -118,6 +120,7 @@ def check_glm_report(
         pth=pth,
         extend_includes=includes,
         extend_excludes=excludes,
+        warnings_msg_to_check=warnings_msg_to_check,
         **kwargs,
     )
 
@@ -218,22 +221,20 @@ def test_flm_reporting_height_control(
     Also checks that passing threshold different from the default
     will throw a warning when height_control is not None.
     """
-    with warnings.catch_warnings(record=True) as warnings_list:
-        check_glm_report(
-            model=flm,
-            pth=tmp_path,
-            # glover / cosine are the default
-            # hrf / drift model so they should appear in report
-            extend_includes=["glover", "cosine"],
-            contrasts=contrasts,
-            plot_type="glass",
-            height_control=height_control,
-            min_distance=15,
-            alpha=0.01,
-            threshold=2,
-        )
-    if height_control is not None:
-        assert any("will not be used with" in str(x) for x in warnings_list)
+    check_glm_report(
+        model=flm,
+        pth=tmp_path,
+        # glover / cosine are the default
+        # hrf / drift model so they should appear in report
+        extend_includes=["glover", "cosine"],
+        contrasts=contrasts,
+        plot_type="glass",
+        height_control=height_control,
+        min_distance=15,
+        alpha=0.01,
+        threshold=2,
+        warnings_msg_to_check=["is only used when"],
+    )
 
 
 @pytest.mark.slow
