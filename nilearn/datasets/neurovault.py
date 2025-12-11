@@ -1559,9 +1559,7 @@ def _download_image_nii_file(image_info, collection, download_params):
         )
 
         # Resample here
-        logger.log(
-            "Resampling...",
-        )
+        logger.log("Resampling...", verbose=1)
         im_resampled = resample_img(
             img=tmp_path,
             target_affine=STD_AFFINE,

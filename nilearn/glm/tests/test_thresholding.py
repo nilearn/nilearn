@@ -85,6 +85,7 @@ def test_threshold_stats_img_warn_threshold_unused(
         assert any("will not be used with" in str(x) for x in warnings_list)
 
 
+@pytest.mark.slow
 def test_threshold_stats_img_no_height_control(
     data_norm_isf, img_3d_ones_eye, affine_eye
 ):
@@ -243,6 +244,7 @@ def test_hommel(alpha, expected):
     assert _compute_hommel_value(z, alpha=alpha) == expected
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "kwargs, expected, expected_n_unique_values",
     [
@@ -332,6 +334,7 @@ def test_all_resolution_inference_with_mask(
     assert np.sum(vals > 0) == 8
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "threshold, expected_n_unique_values",
     [
@@ -453,6 +456,7 @@ def test_all_resolution_inference_shape_errors(img_4d_rand_eye, surf_img_2d):
         cluster_level_inference(surf_img_2d(2), threshold=0.5)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("two_sided", [True, False])
 @pytest.mark.parametrize("control", ["fdr", "bonferroni"])
 def test_all_resolution_inference_height_control(
@@ -638,6 +642,7 @@ def test_deprecation_threshold(surf_img_1d, height_control, threshold):
         assert n_warnings == 0
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("threshold", [3, 3.0, 2.9, DEFAULT_Z_THRESHOLD])
 def test_deprecation_threshold_cluster_level_inference(
     threshold, img_3d_rand_eye, surf_img_1d
