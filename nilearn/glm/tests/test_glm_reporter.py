@@ -17,7 +17,7 @@ from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import HTMLReport, make_glm_report
-from nilearn.reporting.html_report import MISSING_ENGINE_MSG
+from nilearn.reporting.tests._testing import check_report
 from nilearn.surface import SurfaceImage
 
 
@@ -52,42 +52,16 @@ def check_glm_report(
         The function will check
         for the absence in the report
         of each string in this iterable.
+
+    kwargs : dict
+        Extra-parameters to pass to generate_report.
     """
-    report = model.generate_report(**kwargs)
-
-    assert isinstance(report, HTMLReport)
-
-    # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
-    # in case certain unicode characters are mishandled,
-    # like the greek alpha symbol.
-    report.get_iframe()
-
-    # only for debugging
-    if view:
-        report.open_in_browser()
-
-    if pth:
-        # save to disk
-        # useful for visual inspection
-        # for manual checks or in case of test failure
-        report.save_as_html(pth / "tmp.html")
-        assert (pth / "tmp.html").exists()
-
     includes = []
     excludes = []
 
     # check the navbar and its css is there
     includes.append('<nav class="navbar pure-g fw-bold" id="menu"')
     includes.append("Adapted from Pure CSS navbar")  # css
-
-    if is_matplotlib_installed():
-        excludes.extend(
-            [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
-        )
-    else:
-        includes.extend(
-            [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
-        )
 
     # 'Contrasts' and 'Statistical maps' should appear
     # as section and in navbar
@@ -114,7 +88,6 @@ def check_glm_report(
     if not model.__sklearn_is_fitted__():
         includes.extend(
             [
-                "This estimator has not been fit yet.",
                 "No statistical map was provided.",
             ]
         )
@@ -159,15 +132,17 @@ def check_glm_report(
 
     if extend_includes is not None:
         includes.extend(extend_includes)
-    for check in set(includes):
-        assert check in str(report)
-
     if extend_excludes is not None:
         excludes.extend(extend_excludes)
-    for check in set(excludes):
-        assert check not in str(report)
 
-    return report
+    return check_report(
+        model,
+        view=view,
+        pth=pth,
+        extend_includes=extend_includes,
+        extend_excludes=extend_excludes,
+        **kwargs,
+    )
 
 
 @pytest.fixture
