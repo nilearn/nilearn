@@ -3,7 +3,6 @@ cluster-level in brain imaging: cluster-level thresholding, false \
 discovery rate control, false discovery proportion in clusters.
 """
 
-import inspect
 import warnings
 
 import numpy as np
@@ -23,29 +22,6 @@ from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface.surface import SurfaceImage, check_surf_img
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
-
-
-def warn_default_threshold(
-    threshold, current_default, old_default, height_control=None
-):
-    """Throw deprecation warning Z threshold.
-
-    TODO (nilearn>=0.15)
-    Can be removed.
-    """
-    if height_control is None and threshold == current_default == old_default:
-        warnings.warn(
-            category=FutureWarning,
-            message=(
-                "From nilearn version>=0.15, "
-                "the default 'threshold' will be set to "
-                f"{DEFAULT_Z_THRESHOLD}."
-                "If you want to silence this warning, "
-                "set the threshold to "
-                "'nilearn.glm.thresholding.DEFAULT_Z_THRESHOLD'."
-            ),
-            stacklevel=find_stack_level(),
-        )
 
 
 def _compute_hommel_value(z_vals, alpha, verbose=0):
@@ -186,9 +162,6 @@ def cluster_level_inference(
     .. footbibliography::
 
     """
-    parameters = dict(**inspect.signature(cluster_level_inference).parameters)
-    warn_default_threshold(threshold, parameters["threshold"].default, 3.0)
-
     original_threshold = threshold
     if not isinstance(threshold, list):
         threshold = [threshold]
@@ -416,27 +389,6 @@ def threshold_stats_img(
     ]
     check_parameter_in_allowed(
         height_control, height_control_methods, "height_control"
-    )
-
-    parameters = dict(**inspect.signature(threshold_stats_img).parameters)
-    if height_control is not None and float(threshold) != float(
-        parameters["threshold"].default
-    ):
-        warnings.warn(
-            (
-                f"'{threshold=}' will not be used with '{height_control=}'. "
-                "'threshold' is only used when 'height_control=None'. "
-                f"Set 'threshold' to '{parameters['threshold'].default}' "
-                "to avoid this warning."
-            ),
-            UserWarning,
-            stacklevel=find_stack_level(),
-        )
-    warn_default_threshold(
-        threshold,
-        parameters["threshold"].default,
-        3.0,
-        height_control=height_control,
     )
 
     # if two-sided, correct alpha by a factor of 2
