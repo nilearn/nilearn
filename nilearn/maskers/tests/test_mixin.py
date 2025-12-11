@@ -16,6 +16,7 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
+from nilearn.maskers.tests.test_html_report import check_masker_report
 
 
 @pytest.fixture
@@ -90,17 +91,7 @@ def test_masker_reporting_true(masker, img_func, kwargs):
     assert masker._report_content["warning_messages"] == []
 
     # check masker report before fit
-    with pytest.warns(UserWarning) as warnings_list:
-        report = masker.generate_report(**kwargs)
-
-    check_warnings(
-        report,
-        warnings_list,
-        warnings_msg_to_check=["This estimator has not been fit yet"],
-    )
-
-    assert masker._report_content["title"] == masker.__class__.__name__
-    assert masker.__class__.__name__ in str(report)
+    check_masker_report(masker, **kwargs)
     assert masker._has_report_data() is False
 
     # check masker after fit
@@ -109,24 +100,13 @@ def test_masker_reporting_true(masker, img_func, kwargs):
     assert masker._has_report_data()
 
     # check masker report without title specified
-    report = masker.generate_report(**kwargs)
-    assert masker._report_content["title"] == masker.__class__.__name__
-    assert masker.__class__.__name__ in str(report)
+    check_masker_report(masker, **kwargs)
 
     # check masker report with title specified
-    report = masker.generate_report(title="masker report title", **kwargs)
-    assert masker._report_content["title"] == "masker report title"
-    assert "masker report title" in str(report)
+    check_masker_report(masker, title="masker report title", **kwargs)
 
     masker.reports = False
-    with pytest.warns(UserWarning) as warnings_list:
-        report = masker.generate_report(**kwargs)
-
-    check_warnings(
-        report,
-        warnings_list,
-        warnings_msg_to_check=["Report generation not enabled"],
-    )
+    check_masker_report(masker, **kwargs)
 
 
 @pytest.mark.parametrize(
@@ -166,19 +146,9 @@ def test_masker_reporting_false(masker, img_func):
     assert masker._has_report_data() is False
 
     # check masker report before fit
-    with pytest.warns(UserWarning) as warnings_list:
-        report = masker.generate_report()
+    check_masker_report(masker)
 
     assert masker._has_report_data() is False
-
-    check_warnings(
-        report,
-        warnings_list,
-        warnings_msg_to_check=[
-            "Report generation not enabled",
-            "This estimator has not been fit yet",
-        ],
-    )
 
     # check masker after fit
     input_img = img_func()
@@ -187,47 +157,16 @@ def test_masker_reporting_false(masker, img_func):
     assert masker._has_report_data() is False
 
     # check masker report without title specified
-    with pytest.warns(UserWarning) as warnings_list:
-        report = masker.generate_report()
-
-    check_warnings(
-        report,
-        warnings_list,
-        warnings_msg_to_check=[
-            "Report generation not enabled",
-            "Report generation was disabled when fit was run.",
-        ],
-    )
+    check_masker_report(masker)
 
     # check masker report with title specified
-    report = masker.generate_report(title="masker report title")
-    assert "masker report title" in str(report)
+    check_masker_report(masker, title="masker report title")
 
     # check masker report if the model is fit when reports=False
     # and reports=True is set and report generation is required
     # Regression test for https://github.com/nilearn/nilearn/issues/5831
     masker.reports = True
-    with pytest.warns(UserWarning) as warnings_list:
-        report = masker.generate_report()
-
-    check_warnings(
-        report,
-        warnings_list,
+    check_masker_report(
+        masker,
         warnings_msg_to_check=["Report generation was disabled when fit"],
     )
-
-
-def check_warnings(report, warnings_list, warnings_msg_to_check: list[str]):
-    """Check specific warnings were thrown and are in report HTML."""
-    if not warnings_msg_to_check:
-        return
-    if len(warnings_list) == 0:
-        return
-
-    warnings_msg = [str(x.message) for x in warnings_list]
-    for msg in warnings_msg_to_check:
-        assert any(msg in x for x in warnings_msg), warnings_msg
-
-    assert 'id="warnings"' in str(report)
-    for msg in warnings_msg_to_check:
-        assert msg in str(report)

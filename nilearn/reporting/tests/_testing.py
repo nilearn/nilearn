@@ -12,10 +12,12 @@ from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 
 def check_report(
     estimator,
+    title=None,
     view=False,
     pth: Path | None = None,
     extend_includes: list[str] | None = None,
     extend_excludes: list[str] | None = None,
+    warnings_msg_to_check: list[str] | None = None,
     **kwargs,
 ) -> HTMLReport:
     """Generate a report and run generic checks on it.
@@ -45,7 +47,54 @@ def check_report(
     kwargs : dict
         Extra-parameters to pass to generate_report.
     """
-    report = estimator.generate_report(**kwargs)
+    if warnings_msg_to_check is None:
+        warnings_msg_to_check = []
+
+    includes = []
+    excludes = []
+
+    if is_matplotlib_installed():
+        excludes.extend(
+            [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
+        )
+    else:
+        includes.extend(
+            [
+                MISSING_ENGINE_MSG,
+                'grey">No plotting engine found</p>',
+            ]
+        )
+
+        warnings_msg_to_check.append(MISSING_ENGINE_MSG)
+
+    if not estimator.__sklearn_is_fitted__():
+        warnings_msg_to_check.append("This estimator has not been fit yet.")
+
+    else:
+        excludes.append("This estimator has not been fit yet.")
+
+    if len(warnings_msg_to_check) > 0:
+        includes.extend(['id="warnings"', *warnings_msg_to_check])
+
+    if title is None:
+        title = estimator.__class__.__name__
+    includes.append(title)
+
+    # check masker report before fit
+    if len(warnings_msg_to_check) > 0:
+        with pytest.warns(UserWarning) as warnings_list:
+            report = estimator.generate_report(title=title, **kwargs)
+    else:
+        report = estimator.generate_report(title=title, **kwargs)
+
+    # TODO
+    # maek sure all estimators with generate_report have '_report_content'
+    if hasattr(estimator, "_report_content"):
+        assert estimator._report_content["title"] == title
+
+    # only for debugging
+    if view:
+        report.open_in_browser()
 
     assert isinstance(report, HTMLReport)
 
@@ -66,10 +115,6 @@ def check_report(
 
     assert report._repr_html_() == report.body
 
-    # only for debugging
-    if view:
-        report.open_in_browser()
-
     if pth:
         # save to disk
         # useful for visual inspection
@@ -77,27 +122,10 @@ def check_report(
         report.save_as_html(pth / "tmp.html")
         assert (pth / "tmp.html").exists()
 
-    includes = []
-    excludes = []
-
-    if is_matplotlib_installed():
-        excludes.extend(
-            [MISSING_ENGINE_MSG, 'grey">No plotting engine found</p>']
-        )
-    else:
-        includes.extend(
-            [
-                'id="warnings"',
-                MISSING_ENGINE_MSG,
-                'grey">No plotting engine found</p>',
-            ]
-        )
-
-    if not estimator.__sklearn_is_fitted__():
-        includes.extend(["This estimator has not been fit yet."])
-
-    else:
-        excludes.extend(["This estimator has not been fit yet."])
+    if len(warnings_msg_to_check) > 0:
+        warnings_msg = [str(x.message) for x in warnings_list]
+        for msg in warnings_msg_to_check:
+            assert any(msg in x for x in warnings_msg), warnings_msg
 
     if extend_includes is not None:
         includes.extend(extend_includes)

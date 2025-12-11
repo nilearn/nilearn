@@ -44,16 +44,21 @@ warnings.simplefilter("ignore", category=UserWarning)
 
 def check_masker_report(
     masker,
+    title=None,
     view=False,
     pth: Path | None = None,
     extend_includes: list[str] | None = None,
     extend_excludes: list[str] | None = None,
+    warnings_msg_to_check: list[str] | None = None,
     **kwargs,
 ) -> HTMLReport:
     """Check the presence of some expected code in the html viewer.
 
     Also ensure some common behavior to all reports.
     """
+    if warnings_msg_to_check is None:
+        warnings_msg_to_check = []
+
     includes = []
     excludes = []
 
@@ -61,7 +66,7 @@ def check_masker_report(
     excludes.append("Adapted from Pure CSS navbar")
 
     if not masker.reports:
-        includes.append(
+        warnings_msg_to_check.append(
             "\nReport generation not enabled!\nNo visual outputs created."
         )
     else:
@@ -95,10 +100,12 @@ def check_masker_report(
 
     return check_report(
         masker,
+        title,
         view,
         pth,
         extend_includes=includes,
         extend_excludes=excludes,
+        warnings_msg_to_check=warnings_msg_to_check,
         **kwargs,
     )
 
@@ -364,7 +371,6 @@ def test_nifti_labels_masker_report_cut_coords(
 
 
 @pytest.mark.slow
-@ignore_warnings
 def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
     """Test for NiftiMasker reports with 4D data."""
     # Dummy 4D data
@@ -464,7 +470,6 @@ def test_surface_masker_minimal_report_no_fit(
     check_masker_report(masker)
 
 
-@ignore_warnings()
 @pytest.mark.parametrize("reports", [True, False])
 @pytest.mark.parametrize("empty_mask", [True, False])
 def test_surface_masker_minimal_report_fit(

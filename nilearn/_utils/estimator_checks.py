@@ -3872,7 +3872,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     with pytest.warns(UserWarning, match=match):
         report = _generate_report(estimator)
 
-    check_masker_report(report)
+        check_masker_report(report)
 
     assert 'id="warnings"' in str(report)
     assert match in str(report)
@@ -3887,6 +3887,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     # NiftiSpheresMasker still throws a warning
     if isinstance(estimator, NiftiSpheresMasker):
         return
+
     report = _generate_report_with_no_warning(estimator)
     check_masker_report(report)
 
