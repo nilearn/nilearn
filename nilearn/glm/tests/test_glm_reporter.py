@@ -146,7 +146,7 @@ def check_glm_report(
 
 
 @pytest.fixture
-def rk():
+def rk() -> int:
     """Return rank for design martrix."""
     return 3
 
@@ -160,7 +160,7 @@ def contrasts(rk):
 
 
 @pytest.fixture()
-def flm(rk):
+def flm(rk) -> FirstLevelModel:
     """Generate first level model."""
     shapes = ((7, 7, 7, 5),)
     _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
@@ -171,7 +171,7 @@ def flm(rk):
 
 
 @pytest.fixture()
-def slm():
+def slm() -> SecondLevelModel:
     """Generate a fitted second level model."""
     shapes = ((7, 7, 7, 1),)
     _, fmri_data, _ = generate_fake_fmri_data_and_design(shapes)
