@@ -16,11 +16,11 @@ from nilearn.glm.first_level import FirstLevelModel
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
 from nilearn.reporting import HTMLReport, make_glm_report
-from nilearn.reporting.tests._testing import check_report
+from nilearn.reporting.tests._testing import generate_and_check_report
 from nilearn.surface import SurfaceImage
 
 
-def check_glm_report(
+def generate_and_check_glm_report(
     model: FirstLevelModel | SecondLevelModel,
     view=False,
     pth: Path | None = None,
@@ -114,7 +114,7 @@ def check_glm_report(
     if extend_excludes is not None:
         excludes.extend(extend_excludes)
 
-    return check_report(
+    return generate_and_check_report(
         model,
         view=view,
         pth=pth,
@@ -167,7 +167,7 @@ def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
 
     We use random data, so we should not get activations.
     """
-    check_glm_report(
+    generate_and_check_glm_report(
         model=flm,
         pth=tmp_path,
         extend_includes=["No suprathreshold cluster"],
@@ -192,7 +192,7 @@ def test_empty_reports(tmp_path, model, bg_img):
 
     Both for volume and surface data.
     """
-    check_glm_report(
+    generate_and_check_glm_report(
         model=model(smoothing_fwhm=None),
         pth=tmp_path,
         bg_img=bg_img,
@@ -201,7 +201,7 @@ def test_empty_reports(tmp_path, model, bg_img):
 
 def test_flm_reporting_no_contrasts(flm, tmp_path):
     """Test for model report can be generated with no contrasts."""
-    check_glm_report(
+    generate_and_check_glm_report(
         model=flm,
         pth=tmp_path,
         plot_type="glass",
@@ -224,7 +224,7 @@ def test_flm_reporting_height_control(
     warnings_msg_to_check = []
     if height_control is not None:
         warnings_msg_to_check = ["is only used when"]
-    check_glm_report(
+    generate_and_check_glm_report(
         model=flm,
         pth=tmp_path,
         # glover / cosine are the default
@@ -246,7 +246,7 @@ def test_slm_reporting_method(slm, height_control):
     """Test for the second level reporting."""
     c1 = np.eye(len(slm.design_matrix_.columns))[0]
 
-    check_glm_report(
+    generate_and_check_glm_report(
         slm, contrasts=c1, height_control=height_control, alpha=0.01
     )
 
@@ -264,7 +264,7 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
 
     c1 = np.eye(len(model.design_matrix_.columns))[0]
 
-    check_glm_report(
+    generate_and_check_glm_report(
         model,
         contrasts=c1,
         first_level_contrast=first_level_contrast,
@@ -293,7 +293,7 @@ def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
 
     c1 = np.eye(len(model.design_matrix_.columns))[0]
 
-    check_glm_report(
+    generate_and_check_glm_report(
         model,
         contrasts=c1,
         first_level_contrast="a",
@@ -307,7 +307,7 @@ def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
 @pytest.mark.parametrize("plot_type", ["slice", "glass"])
 def test_report_plot_type(flm, plot_type, contrasts):
     """Smoke test for valid plot type."""
-    check_glm_report(
+    generate_and_check_glm_report(
         flm,
         contrasts=contrasts,
         plot_type=plot_type,
@@ -322,7 +322,7 @@ def test_report_plot_type(flm, plot_type, contrasts):
 @pytest.mark.parametrize("cut_coords", [None, (5, 4, 3)])
 def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
     """Smoke test for valid cut_coords."""
-    check_glm_report(
+    generate_and_check_glm_report(
         flm,
         contrasts=contrasts,
         cut_coords=cut_coords,
@@ -373,7 +373,7 @@ def test_masking_first_level_model(contrasts):
         fmri_data, design_matrices=design_matrices
     )
 
-    check_glm_report(
+    generate_and_check_glm_report(
         flm,
         contrasts=contrasts,
         plot_type="glass",
@@ -402,7 +402,7 @@ def test_fir_delays_in_params(contrasts):
     # matrices were passed at fit time
     # so fir_delays should not appear in report
     # as we do not know which HRF was used to build the matrix
-    check_glm_report(
+    generate_and_check_glm_report(
         model,
         contrasts=contrasts,
         extend_includes=["fir_delays"],
@@ -424,7 +424,7 @@ def test_drift_order_in_params(contrasts):
     model = FirstLevelModel(drift_model="polynomial", drift_order=3)
     model.fit(fmri_data, design_matrices=design_matrices)
 
-    check_glm_report(
+    generate_and_check_glm_report(
         model,
         contrasts=contrasts,
         extend_includes=["drift_order"],
@@ -457,7 +457,7 @@ def test_flm_generate_report_surface_data(rng):
 
     model.fit(fmri_data, events=events)
 
-    check_glm_report(
+    generate_and_check_glm_report(
         model,
         contrasts="c0",
         # the following are to avoid warnings
@@ -511,7 +511,7 @@ def test_carousel_several_runs(
         fmri_data, design_matrices=design_matrices
     )
 
-    report = check_glm_report(
+    report = generate_and_check_glm_report(
         flm_two_runs,
         contrasts=contrasts,
         # the following are to avoid warnings

@@ -16,7 +16,9 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
-from nilearn.maskers.tests.test_html_report import check_masker_report
+from nilearn.maskers.tests.test_html_report import (
+    generate_and_check_masker_report,
+)
 
 
 @pytest.fixture
@@ -91,7 +93,7 @@ def test_masker_reporting_true(masker, img_func, kwargs):
     assert masker._report_content["warning_messages"] == []
 
     # check masker report before fit
-    check_masker_report(masker, **kwargs)
+    generate_and_check_masker_report(masker, **kwargs)
     assert masker._has_report_data() is False
 
     # check masker after fit
@@ -100,10 +102,12 @@ def test_masker_reporting_true(masker, img_func, kwargs):
     assert masker._has_report_data()
 
     # check masker report without title specified
-    check_masker_report(masker, **kwargs)
+    generate_and_check_masker_report(masker, **kwargs)
 
     # check masker report with title specified
-    check_masker_report(masker, title="masker report title", **kwargs)
+    generate_and_check_masker_report(
+        masker, title="masker report title", **kwargs
+    )
 
     masker.reports = False
     match = "Report generation not enabled"
@@ -150,7 +154,7 @@ def test_masker_reporting_false(masker, img_func):
     assert masker._has_report_data() is False
 
     # check masker report before fit
-    check_masker_report(masker)
+    generate_and_check_masker_report(masker)
 
     assert masker._has_report_data() is False
 
@@ -161,16 +165,16 @@ def test_masker_reporting_false(masker, img_func):
     assert masker._has_report_data() is False
 
     # check masker report without title specified
-    check_masker_report(masker)
+    generate_and_check_masker_report(masker)
 
     # check masker report with title specified
-    check_masker_report(masker, title="masker report title")
+    generate_and_check_masker_report(masker, title="masker report title")
 
     # check masker report if the model is fit when reports=False
     # and reports=True is set and report generation is required
     # Regression test for https://github.com/nilearn/nilearn/issues/5831
     masker.reports = True
-    check_masker_report(
+    generate_and_check_masker_report(
         masker,
         warnings_msg_to_check=["Report generation was disabled when fit"],
     )

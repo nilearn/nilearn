@@ -124,7 +124,9 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers._mixin import _MultiMixin
-from nilearn.maskers.tests.test_html_report import check_masker_report
+from nilearn.maskers.tests.test_html_report import (
+    generate_and_check_masker_report,
+)
 from nilearn.masking import load_mask_img
 from nilearn.regions import RegionExtractor
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
@@ -3779,7 +3781,7 @@ def check_masker_generate_report(estimator):
     - check that the masker has report data after fit
 
     """
-    check_masker_report(estimator)
+    generate_and_check_masker_report(estimator)
 
     assert isinstance(estimator._report_content, dict)
     assert estimator._report_content["description"] != ""
@@ -3801,7 +3803,7 @@ def check_masker_generate_report(estimator):
     _generate_report_with_no_warning(estimator)
 
     with TemporaryDirectory() as tmp_dir:
-        check_masker_report(estimator, pth=Path(tmp_dir))
+        generate_and_check_masker_report(estimator, pth=Path(tmp_dir))
 
 
 def check_masker_generate_report_constant(estimator):
@@ -3853,7 +3855,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     assert estimator._report_content["warning_messages"] == []
 
-    check_masker_report(estimator)
+    generate_and_check_masker_report(estimator)
 
     input_img = _img_4d_rand_eye_medium()
 
@@ -3868,7 +3870,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     _generate_report_with_no_warning(estimator)
 
-    check_masker_report(estimator)
+    generate_and_check_masker_report(estimator)
 
 
 @ignore_warnings()
@@ -3885,7 +3887,7 @@ def check_masker_generate_report_false(estimator):
 
     assert estimator._has_report_data() is False
 
-    check_masker_report(estimator)
+    generate_and_check_masker_report(estimator)
 
 
 @ignore_warnings()
@@ -3902,7 +3904,7 @@ def check_multimasker_generate_report(estimator):
 
         estimator.fit(input_img)
 
-        check_masker_report(
+        generate_and_check_masker_report(
             estimator,
             warnings_msg_to_check=[
                 "A list of 4D subject images were provided to fit"
@@ -3912,4 +3914,4 @@ def check_multimasker_generate_report(estimator):
     else:
         # TODO add a warning
         estimator.fit(input_img)
-        check_masker_report(estimator)
+        generate_and_check_masker_report(estimator)

@@ -28,11 +28,11 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.reporting import HTMLReport
-from nilearn.reporting.tests._testing import check_report
+from nilearn.reporting.tests._testing import generate_and_check_report
 from nilearn.surface import SurfaceImage
 
 
-def check_masker_report(
+def generate_and_check_masker_report(
     masker,
     title=None,
     view=False,
@@ -92,7 +92,7 @@ def check_masker_report(
     if extend_excludes is not None:
         excludes.extend(extend_excludes)
 
-    return check_report(
+    return generate_and_check_report(
         masker,
         title,
         view,
@@ -308,7 +308,9 @@ def test_nifti_labels_masker_report(
         "This report shows the regions defined by the labels of the mask."
     )
 
-    check_masker_report(masker, extend_includes=["Regions summary"])
+    generate_and_check_masker_report(
+        masker, extend_includes=["Regions summary"]
+    )
 
     # Check that the number of regions is correct
     assert masker._report_content["number_of_regions"] == n_regions
@@ -376,13 +378,15 @@ def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
 
     assert float(masker._report_content["coverage"]) > 0
 
-    check_masker_report(masker, extend_includes=["The mask includes"])
+    generate_and_check_masker_report(
+        masker, extend_includes=["The mask includes"]
+    )
 
     # test .fit_transform method
     masker = NiftiMasker(mask_img=img_mask_eye, standardize="zscore_sample")
     masker.fit_transform(data_img_4d)
 
-    check_masker_report(masker)
+    generate_and_check_masker_report(masker)
 
 
 def test_nifti_masker_overlaid_report(
@@ -397,7 +401,9 @@ def test_nifti_masker_overlaid_report(
     )
     masker.fit(img_fmri)
 
-    check_masker_report(masker, extend_includes=['<div class="overlay">'])
+    generate_and_check_masker_report(
+        masker, extend_includes=['<div class="overlay">']
+    )
 
 
 @pytest.mark.slow
@@ -413,7 +419,7 @@ def test_multi_nifti_masker_generate_report_mask(
     )
     masker.fit()
 
-    check_masker_report(masker)
+    generate_and_check_masker_report(masker)
 
 
 @pytest.mark.slow
@@ -430,7 +436,7 @@ def test_multi_nifti_masker_generate_report_imgs_and_mask(
     )
     masker.fit([img_fmri, img_fmri])
 
-    check_masker_report(masker)
+    generate_and_check_masker_report(masker)
 
 
 def test_surface_masker_mask_img_generate_report(surf_img_1d, surf_mask_1d):
@@ -444,7 +450,7 @@ def test_surface_masker_mask_img_generate_report(surf_img_1d, surf_mask_1d):
 
     assert isinstance(masker._reporting_data["images"], SurfaceImage)
 
-    check_masker_report(masker)
+    generate_and_check_masker_report(masker)
 
 
 @pytest.mark.parametrize("reports", [True, False])
@@ -455,7 +461,7 @@ def test_surface_masker_minimal_report_no_fit(
     """Test minimal report generation with no fit."""
     mask = None if empty_mask else surf_mask_1d
     masker = SurfaceMasker(mask_img=mask, reports=reports)
-    check_masker_report(masker)
+    generate_and_check_masker_report(masker)
 
 
 @pytest.mark.parametrize("reports", [True, False])
@@ -472,7 +478,7 @@ def test_surface_masker_minimal_report_fit(
     if reports:
         extend_includes = ["The mask includes"]
 
-    check_masker_report(masker, extend_includes=extend_includes)
+    generate_and_check_masker_report(masker, extend_includes=extend_includes)
 
     if reports:
         assert float(masker._report_content["coverage"]) > 0

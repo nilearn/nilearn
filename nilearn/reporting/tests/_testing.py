@@ -12,7 +12,7 @@ from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 
 
 @ignore_warnings()
-def check_report(
+def generate_and_check_report(
     estimator,
     title: str | None = None,
     view: bool = False,
