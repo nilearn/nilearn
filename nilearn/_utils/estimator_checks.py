@@ -124,7 +124,7 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers._mixin import _MultiMixin
-from nilearn.maskers.tests.test_html_report import _check_html
+from nilearn.maskers.tests.test_html_report import check_masker_report
 from nilearn.masking import load_mask_img
 from nilearn.regions import RegionExtractor
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
@@ -3751,7 +3751,7 @@ def _generate_report_with_no_warning(estimator):
         if not isinstance(estimator, (RegionExtractor, SurfaceMapsMasker)):
             assert not unknown_warnings, unknown_warnings
 
-    _check_html(report)
+    check_masker_report(report)
 
     return report
 
@@ -3793,7 +3793,7 @@ def check_masker_generate_report(estimator):
 
     report = _generate_report(estimator)
 
-    _check_html(report, is_fit=False)
+    check_masker_report(report, is_fit=False)
 
     if accept_niimg_input(estimator):
         input_img = _img_3d_rand()
@@ -3810,7 +3810,7 @@ def check_masker_generate_report(estimator):
     # SurfaceMapsMasker, RegionExtractor still throws a warning
     report = _generate_report_with_no_warning(estimator)
     report = _generate_report(estimator)
-    _check_html(report)
+    check_masker_report(report)
 
     with TemporaryDirectory() as tmp_dir:
         report.save_as_html(Path(tmp_dir) / "report.html")
@@ -3872,7 +3872,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     with pytest.warns(UserWarning, match=match):
         report = _generate_report(estimator)
 
-    _check_html(report)
+    check_masker_report(report)
 
     assert 'id="warnings"' in str(report)
     assert match in str(report)
@@ -3888,7 +3888,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     if isinstance(estimator, NiftiSpheresMasker):
         return
     report = _generate_report_with_no_warning(estimator)
-    _check_html(report)
+    check_masker_report(report)
 
 
 @ignore_warnings()
@@ -3910,7 +3910,7 @@ def check_masker_generate_report_false(estimator):
     ):
         report = _generate_report(estimator)
 
-    _check_html(report, reports_requested=False)
+    check_masker_report(report, reports_requested=False)
 
 
 @ignore_warnings()

@@ -5,7 +5,9 @@ import pytest
 
 from nilearn.plotting import html_connectome
 from nilearn.plotting.js_plotting_utils import decode
-from nilearn.plotting.tests.test_js_plotting_utils import check_html
+from nilearn.plotting.tests.test_js_plotting_utils import (
+    check_html_surface_plots,
+)
 
 
 def test_prepare_line():
@@ -96,47 +98,65 @@ def test_get_connectome():
     assert (connectome["line_cmin"], connectome["line_cmax"]) == (-2.5, 2.5)
 
 
-def test_view_connectome(tmp_path):
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"title": "SOME_TITLE"},
+        {"linewidth": 8.5, "node_size": 4.2},
+    ],
+)
+def test_view_connectome(tmp_path, kwargs):
+    """Check output view_connectome."""
     adj, coord = _make_connectome()
-    html = html_connectome.view_connectome(adj, coord)
-    check_html(tmp_path, html, False, "connectome-plot")
-    html = html_connectome.view_connectome(
-        adj, coord, "85.3%", title="SOME_TITLE"
+
+    html = html_connectome.view_connectome(adj, coord, **kwargs)
+    title = kwargs.get("title", None)
+    check_html_surface_plots(
+        tmp_path, html, False, "connectome-plot", title=title
     )
-    check_html(tmp_path, html, False, "connectome-plot", title="SOME_TITLE")
-    assert "SOME_TITLE" in html.html
-    html = html_connectome.view_connectome(
-        adj, coord, "85.3%", linewidth=8.5, node_size=4.2
-    )
-    check_html(
-        tmp_path, html, False, "connectome-plot", title="Connectome plot"
-    )
+
     html = html_connectome.view_connectome(
         adj, coord, "85.3%", linewidth=8.5, node_size=np.arange(len(coord))
     )
-    check_html(tmp_path, html, False, "connectome-plot")
+    check_html_surface_plots(tmp_path, html, False, "connectome-plot")
 
 
-def test_view_markers(tmp_path):
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"colors": ["r", "g", "black", "white"]},
+        {"marker_size": 15},
+        {
+            "marker_size": 5.0,
+            "marker_color": ["r", "g", "black", "white"],
+            "marker_labels": [
+                "red marker",
+                "green marker",
+                "black marker",
+                "white marker",
+            ],
+        },
+    ],
+)
+def test_view_markers(tmp_path, kwargs):
+    """Test output view_markers."""
     coords = np.arange(12).reshape((4, 3))
-    colors = ["r", "g", "black", "white"]
-    labels = ["red marker", "green marker", "black marker", "white marker"]
-    html = html_connectome.view_markers(coords, colors)
-    check_html(tmp_path, html, False, "connectome-plot")
-    html = html_connectome.view_markers(coords)
-    check_html(tmp_path, html, False, "connectome-plot")
-    html = html_connectome.view_markers(coords, marker_size=15)
-    check_html(tmp_path, html, False, "connectome-plot")
+
+    html = html_connectome.view_markers(coords, **kwargs)
+    check_html_surface_plots(tmp_path, html, False, "connectome-plot")
+
     html = html_connectome.view_markers(
         coords, marker_size=np.arange(len(coords))
     )
-    check_html(tmp_path, html, False, "connectome-plot")
+    check_html_surface_plots(tmp_path, html, False, "connectome-plot")
+
     html = html_connectome.view_markers(
         coords, marker_size=list(range(len(coords)))
     )
-    check_html(tmp_path, html, False, "connectome-plot")
-    html = html_connectome.view_markers(
-        coords, marker_size=5.0, marker_color=colors, marker_labels=labels
-    )
-    labels_dict = {"marker_labels": labels}
-    assert json.dumps(labels_dict)[1:-1] in html.html
+    check_html_surface_plots(tmp_path, html, False, "connectome-plot")
+
+    if kwargs.get("marker_labels", None):
+        labels_dict = {"marker_labels": kwargs.get("marker_labels")}
+        assert json.dumps(labels_dict)[1:-1] in html.html

@@ -34,7 +34,7 @@ from nilearn.surface import SurfaceImage
 # warnings
 
 
-def _check_html(html_view, reports_requested=True, is_fit=True):
+def check_masker_report(html_view, reports_requested=True, is_fit=True):
     """Check the presence of some expected code in the html viewer.
 
     Also ensure some common behavior to all reports.
@@ -317,7 +317,7 @@ def test_nifti_labels_masker_report(
         decimal=2,
     )
 
-    _check_html(report)
+    check_masker_report(report)
 
     assert "Regions summary" in str(report)
 
@@ -369,7 +369,7 @@ def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
     assert float(masker._report_content["coverage"]) > 0
 
     html = masker.generate_report()
-    _check_html(html)
+    check_masker_report(html)
     assert "The mask includes" in str(html)
 
     # test .fit_transform method
@@ -377,7 +377,7 @@ def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
     masker.fit_transform(data_img_4d)
 
     html = masker.generate_report()
-    _check_html(html)
+    check_masker_report(html)
 
 
 def test_nifti_masker_overlaid_report(
@@ -449,7 +449,7 @@ def test_surface_masker_minimal_report_no_fit(
     masker = SurfaceMasker(mask_img=mask, reports=reports)
     report = masker.generate_report()
 
-    _check_html(report, reports_requested=reports, is_fit=False)
+    check_masker_report(report, reports_requested=reports, is_fit=False)
 
 
 @pytest.mark.parametrize("reports", [True, False])
@@ -463,7 +463,7 @@ def test_surface_masker_minimal_report_fit(
     masker.fit_transform(surf_img_1d)
     report = masker.generate_report()
 
-    _check_html(report, reports_requested=reports)
+    check_masker_report(report, reports_requested=reports)
 
     if reports:
         assert float(masker._report_content["coverage"]) > 0
