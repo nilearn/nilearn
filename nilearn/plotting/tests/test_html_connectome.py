@@ -129,7 +129,7 @@ def test_view_connectome(tmp_path, kwargs):
     "kwargs",
     [
         {},
-        {"colors": ["r", "g", "black", "white"]},
+        {"marker_color": ["r", "g", "black", "white"]},
         {"marker_size": 15},
         {
             "marker_size": 5.0,
@@ -148,7 +148,16 @@ def test_view_markers(tmp_path, kwargs):
     coords = np.arange(12).reshape((4, 3))
 
     html = html_connectome.view_markers(coords, **kwargs)
+
     check_html_surface_plots(tmp_path, html, False, "connectome-plot")
+    if kwargs.get("marker_labels", None) is not None:
+        labels_dict = {"marker_labels": kwargs.get("marker_labels")}
+        assert json.dumps(labels_dict)[1:-1] in html.html
+
+
+def test_view_markers_coords(tmp_path):
+    """Test output view_markers."""
+    coords = np.arange(12).reshape((4, 3))
 
     html = html_connectome.view_markers(
         coords, marker_size=np.arange(len(coords))
@@ -159,7 +168,3 @@ def test_view_markers(tmp_path, kwargs):
         coords, marker_size=list(range(len(coords)))
     )
     check_html_surface_plots(tmp_path, html, False, "connectome-plot")
-
-    if kwargs.get("marker_labels", None):
-        labels_dict = {"marker_labels": kwargs.get("marker_labels")}
-        assert json.dumps(labels_dict)[1:-1] in html.html
