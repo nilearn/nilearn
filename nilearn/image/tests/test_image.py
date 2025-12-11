@@ -696,7 +696,7 @@ def test_index_img_surface(surf_img_2d, length, index, expected_n_samples):
         assert_array_equal(value, expected_data_3d[hemi])
 
 
-def test_index_img_error_volumne_4d(affine_eye):
+def test_index_img_error_volume_4d(affine_eye):
     """Test impossible indices with volume data."""
     img_4d, _ = generate_fake_fmri(affine=affine_eye)
     fourth_dim_size = img_4d.shape[3]
