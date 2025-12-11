@@ -5,6 +5,7 @@ should go into nilearn/_utils/estimator_checks.
 """
 
 from collections import Counter
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -12,6 +13,11 @@ from nibabel import Nifti1Image
 from numpy.testing import assert_almost_equal
 
 from nilearn._utils.helpers import is_matplotlib_installed, is_plotly_installed
+
+# Note: html output by nilearn view_* functions
+# should validate as html5 using https://validator.w3.org/nu/ with no
+# warnings
+from nilearn._utils.tags import accept_surf_img_input
 from nilearn.conftest import _img_maps, _surf_maps_img
 from nilearn.image import get_data
 from nilearn.maskers import (
@@ -25,43 +31,70 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
+from nilearn.reporting import HTMLReport
+from nilearn.reporting.tests._testing import check_report
 from nilearn.surface import SurfaceImage
 
-# Note: html output by nilearn view_* functions
-# should validate as html5 using https://validator.w3.org/nu/ with no
-# warnings
 
-
-def check_masker_report(html_view, reports_requested=True, is_fit=True):
+def check_masker_report(
+    masker,
+    view=False,
+    pth: Path | None = None,
+    extend_includes: list[str] | None = None,
+    extend_excludes: list[str] | None = None,
+    **kwargs,
+) -> HTMLReport:
     """Check the presence of some expected code in the html viewer.
 
     Also ensure some common behavior to all reports.
     """
-    # navbar and its css is only for GLM reports
-    assert "Adapted from Pure CSS navbar" not in str(html_view)
+    includes = []
+    excludes = []
 
-    if not reports_requested:
-        assert (
+    # navbar and its css is only for GLM reports
+    excludes.append("Adapted from Pure CSS navbar")
+
+    if not masker.reports:
+        includes.append(
             "\nReport generation not enabled!\nNo visual outputs created."
-            in str(html_view)
+        )
+    else:
+        excludes.append(
+            "\nReport generation not enabled!\nNo visual outputs created."
         )
 
-    if not reports_requested or not is_fit:
+    if not masker.reports or not masker.__sklearn_is_fitted__():
         # no image present if reports not requested or masker is not fitted
-        assert '<div class="image">' not in str(html_view)
+        excludes.append('<div class="image">')
+
     else:
-        if is_fit:
-            assert "<th>Parameter</th>" in str(html_view)
+        if masker.__sklearn_is_fitted__():
+            includes.append("<th>Parameter</th>")
 
         if is_matplotlib_installed():
-            if "Surface" in str(html_view):
-                assert "data:image/png;base64," in str(html_view)
+            if accept_surf_img_input(masker):
+                includes.append("data:image/png;base64,")
             else:
-                assert "data:image/svg+xml;base64," in str(html_view)
+                includes.append("data:image/svg+xml;base64,")
 
         else:
-            assert "data:image/svg+xml;base64," not in str(html_view)
-            assert "data:image/png;base64," not in str(html_view)
+            excludes.extend(
+                ["data:image/svg+xml;base64,", "data:image/png;base64,"]
+            )
+
+    if extend_includes is not None:
+        includes.extend(extend_includes)
+    if extend_excludes is not None:
+        excludes.extend(extend_excludes)
+
+    return check_report(
+        masker,
+        view,
+        pth,
+        extend_includes=includes,
+        extend_excludes=excludes,
+        **kwargs,
+    )
 
 
 @pytest.fixture
@@ -262,7 +295,6 @@ def test_nifti_labels_masker_report(
         keep_masked_labels=True,
     )
     masker.fit_transform(img_3d_rand_eye)
-    report = masker.generate_report()
 
     assert masker._reporting_data is not None
 
@@ -284,8 +316,6 @@ def test_nifti_labels_masker_report(
     for col in EXPECTED_COLUMNS:
         assert col in masker._report_content["summary"].columns
 
-    # Check that labels match
-
     # Relative sizes of regions should sum to 100%
     assert_almost_equal(
         sum(masker._report_content["summary"]["relative size (in %)"]),
@@ -293,9 +323,7 @@ def test_nifti_labels_masker_report(
         decimal=2,
     )
 
-    check_masker_report(report)
-
-    assert "Regions summary" in str(report)
+    check_masker_report(masker, extend_includes=["Regions summary"])
 
     # Check region sizes calculations
     expected_region_sizes = Counter(get_data(img_labels).ravel())
@@ -344,16 +372,13 @@ def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
 
     assert float(masker._report_content["coverage"]) > 0
 
-    html = masker.generate_report()
-    check_masker_report(html)
-    assert "The mask includes" in str(html)
+    check_masker_report(masker, extend_includes=["The mask includes"])
 
     # test .fit_transform method
     masker = NiftiMasker(mask_img=img_mask_eye, standardize="zscore_sample")
     masker.fit_transform(data_img_4d)
 
-    html = masker.generate_report()
-    check_masker_report(html)
+    check_masker_report(masker)
 
 
 def test_nifti_masker_overlaid_report(
@@ -423,9 +448,7 @@ def test_surface_masker_minimal_report_no_fit(
     """Test minimal report generation with no fit."""
     mask = None if empty_mask else surf_mask_1d
     masker = SurfaceMasker(mask_img=mask, reports=reports)
-    report = masker.generate_report()
-
-    check_masker_report(report, reports_requested=reports, is_fit=False)
+    check_masker_report(masker)
 
 
 @pytest.mark.parametrize("reports", [True, False])
@@ -437,13 +460,10 @@ def test_surface_masker_minimal_report_fit(
     mask = None if empty_mask else surf_mask_1d
     masker = SurfaceMasker(mask_img=mask, reports=reports)
     masker.fit_transform(surf_img_1d)
-    report = masker.generate_report()
 
-    check_masker_report(report, reports_requested=reports)
+    check_masker_report(masker, extend_includes=["The mask includes"])
 
-    if reports:
-        assert float(masker._report_content["coverage"]) > 0
-        assert "The mask includes" in str(report)
+    assert float(masker._report_content["coverage"]) > 0
 
 
 def test_surface_maps_masker_generate_report_engine_error(

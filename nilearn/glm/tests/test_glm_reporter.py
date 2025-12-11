@@ -139,8 +139,8 @@ def check_glm_report(
         model,
         view=view,
         pth=pth,
-        extend_includes=extend_includes,
-        extend_excludes=extend_excludes,
+        extend_includes=includes,
+        extend_excludes=excludes,
         **kwargs,
     )
 
