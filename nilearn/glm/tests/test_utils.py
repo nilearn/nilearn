@@ -114,6 +114,7 @@ def test_z_score_f_values(rng):
         assert_array_almost_equal(z_score(p, one_minus_pvalue=cdf), z)
 
 
+@pytest.markl.slow
 def test_z_score_opposite_contrast(rng):
     fmri, mask = generate_fake_fmri(
         shape=(50, 20, 50), length=96, random_state=rng
