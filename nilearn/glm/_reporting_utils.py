@@ -9,7 +9,6 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.niimg import load_niimg, safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -19,6 +18,7 @@ from nilearn._utils.tags import (
     is_masker,
 )
 from nilearn.glm.thresholding import threshold_stats_img
+from nilearn.image import check_niimg
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
