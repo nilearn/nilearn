@@ -546,8 +546,8 @@ class BaseGLM(CacheMixin, BaseEstimator):
             warning_messages.append(
                 f"\n'{threshold=}' is not used with '{height_control=}'."
                 "\n'threshold' is only used when 'height_control=None'. "
-                f"\nSet 'threshold' to '{parameters['threshold'].default}' "
-                "to avoid this warning."
+                "\nEither set 'height_control=None' or do not set "
+                "threshold value to avoid this warning."
             )
         model_attributes = _glm_model_attributes_to_dataframe(self)
         with pd.option_context("display.max_colwidth", 100):
