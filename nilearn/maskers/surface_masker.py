@@ -18,7 +18,7 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.param_validation import check_params
 from nilearn.image import concat_imgs, mean_img
 from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
-from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
+from nilearn.surface.surface import SurfaceImage, at_least_2d
 from nilearn.surface.utils import check_polymesh_equal
 
 
@@ -180,8 +180,6 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         img = at_least_2d(img)
 
-        check_surf_img(img)
-
         mask_data = {}
         for part, v in img.data.parts.items():
             # mask out vertices with NaN or infinite values
@@ -222,15 +220,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if imgs is not None:
             self._check_imgs(imgs)
 
-            if isinstance(imgs, SurfaceImage) and any(
-                hemi.ndim > 2 for hemi in imgs.data.parts.values()
-            ):
-                raise ValueError(
-                    "should only be SurfaceImage should 1D or 2D."
-                )
-            elif hasattr(imgs, "__iter__"):
-                for i, x in enumerate(imgs):
-                    x.data._check_n_samples(1, f"imgs[{i}]")
+            if hasattr(imgs, "__iter__"):
+                for x in imgs:
+                    x.data._check_n_samples(1)
 
         return self._fit(imgs)
 
@@ -303,13 +295,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         check_compatibility_mask_and_images(self.mask_img_, imgs)
         check_polymesh_equal(self.mask_img_.mesh, imgs.mesh)
 
-        if isinstance(imgs, SurfaceImage) and any(
-            hemi.ndim > 2 for hemi in imgs.data.parts.values()
-        ):
-            raise ValueError("should only be SurfaceImage should 1D or 2D.")
-        elif hasattr(imgs, "__iter__"):
-            for i, x in enumerate(imgs):
-                x.data._check_n_samples(1, f"imgs[{i}]")
+        if hasattr(imgs, "__iter__"):
+            for x in imgs:
+                x.data._check_n_samples(1)
 
         if self.reports:
             self._reporting_data["images"] = imgs
