@@ -3802,15 +3802,15 @@ def check_masker_generate_report(estimator):
     # SurfaceMapsMasker, RegionExtractor still throws a warning
     _generate_report_with_no_warning(estimator)
 
-    extra_watnings_allowed = False
+    extra_warnings_allowed = False
     if isinstance(estimator, (SurfaceMapsMasker)):
-        extra_watnings_allowed = True
+        extra_warnings_allowed = True
 
     with TemporaryDirectory() as tmp_dir:
         generate_and_check_masker_report(
             estimator,
             pth=Path(tmp_dir),
-            extra_watnings_allowed=extra_watnings_allowed,
+            extra_warnings_allowed=extra_warnings_allowed,
             **_extra_kwargs(estimator),
         )
 

@@ -40,7 +40,7 @@ def generate_and_check_masker_report(
     extend_includes: list[str] | None = None,
     extend_excludes: list[str] | None = None,
     warnings_msg_to_check: list[str] | None = None,
-    extra_watnings_allowed=False,
+    extra_warnings_allowed=False,
     **kwargs,
 ) -> HTMLReport:
     """Generate and check content of masker report.
@@ -101,7 +101,7 @@ def generate_and_check_masker_report(
         extend_includes=includes,
         extend_excludes=excludes,
         warnings_msg_to_check=warnings_msg_to_check,
-        extra_watnings_allowed=extra_watnings_allowed,
+        extra_warnings_allowed=extra_warnings_allowed,
         **kwargs,
     )
 

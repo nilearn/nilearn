@@ -19,7 +19,8 @@ def generate_and_check_report(
     extend_includes: list[str] | None = None,
     extend_excludes: list[str] | None = None,
     warnings_msg_to_check: list[str] | None = None,
-    extra_watnings_allowed=False,
+    extra_warnings_allowed: bool = False,
+    duplicate_warnings_allowed: bool = False,
     **kwargs,
 ) -> HTMLReport:
     """Generate a report and run generic checks on it.
@@ -55,8 +56,13 @@ def generate_and_check_report(
         - raised during report generation
         - AND will be included in the HTML report
 
-    extra_watnings_allowed :  bool
-        Allows extra warnings to be thrown during report generation.
+    extra_warnings_allowed :  bool
+        Allows extra warnings to be thrown during report generation
+        without being included in the HTML of the report.
+
+    duplicate_warnings_allowed : bool
+        In general we want to avoid throwing the same warnings
+        too many times when generating a report.
 
     kwargs : dict
         Extra-parameters to pass to generate_report.
@@ -101,19 +107,43 @@ def generate_and_check_report(
         with warnings.catch_warnings(record=True) as all_warnings:
             report = estimator.generate_report(title=title, **kwargs)
             warnings_msg = [str(x.message) for x in all_warnings]
-            if not extra_watnings_allowed:
+            if not extra_warnings_allowed:
                 assert len(warnings_msg) == 0
+            else:
+                assert len(warnings_msg) > 0, (
+                    "You can set extra_warnings_allowed to False"
+                )
+
+        if not duplicate_warnings_allowed:
+            # make sure that warnings are not thrown several times
+            # during report generation
+            assert len(warnings_msg) == len(set(warnings_msg)), warnings_msg
 
     # TODO
-    # maek sure all estimators with generate_report have '_report_content'
+    # make sure all estimators with generate_report have '_report_content'
     if hasattr(estimator, "_report_content"):
         assert estimator._report_content["title"] == title
+
+    assert isinstance(report, HTMLReport)
 
     # only for debugging
     if view:
         report.open_in_browser()
 
-    assert isinstance(report, HTMLReport)
+    if len(warnings_msg_to_check) > 0:
+        warnings_msg = [str(x.message) for x in warnings_list]
+        for msg in warnings_msg_to_check:
+            assert any(msg in x for x in warnings_msg), warnings_msg
+
+    if extend_includes is not None:
+        includes.extend(extend_includes)
+    for check in set(includes):
+        assert check in str(report)
+
+    if extend_excludes is not None:
+        excludes.extend(extend_excludes)
+    for check in set(excludes):
+        assert check not in str(report)
 
     # catches & raises UnicodeEncodeError in HTMLDocument.get_iframe()
     # in case certain unicode characters are mishandled,
@@ -138,28 +168,5 @@ def generate_and_check_report(
         # for manual checks or in case of test failure
         report.save_as_html(pth / "tmp.html")
         assert (pth / "tmp.html").exists()
-
-    if len(warnings_msg_to_check) > 0:
-        warnings_msg = [str(x.message) for x in warnings_list]
-        for msg in warnings_msg_to_check:
-            assert any(msg in x for x in warnings_msg), warnings_msg
-
-        # make sure that warnings are not thrown several times
-        # during report generation
-        if len(warnings_msg) != len(set(warnings_msg)):
-            warnings.warn(
-                "Some warnings was thrown several time:\n" + str(warnings_msg),
-                stacklevel=2,
-            )
-
-    if extend_includes is not None:
-        includes.extend(extend_includes)
-    for check in set(includes):
-        assert check in str(report)
-
-    if extend_excludes is not None:
-        excludes.extend(extend_excludes)
-    for check in set(excludes):
-        assert check not in str(report)
 
     return report

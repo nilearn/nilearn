@@ -27,6 +27,8 @@ def generate_and_check_glm_report(
     extend_includes: list[str] | None = None,
     extend_excludes: list[str] | None = None,
     warnings_msg_to_check: list[str] | None = None,
+    extra_warnings_allowed: bool = False,
+    duplicate_warnings_allowed: bool = False,
     **kwargs,
 ) -> HTMLReport:
     """Generate and check content of masker report.
@@ -121,6 +123,8 @@ def generate_and_check_glm_report(
         extend_includes=includes,
         extend_excludes=excludes,
         warnings_msg_to_check=warnings_msg_to_check,
+        extra_warnings_allowed=extra_warnings_allowed,
+        duplicate_warnings_allowed=duplicate_warnings_allowed,
         **kwargs,
     )
 
@@ -172,6 +176,7 @@ def test_flm_report_no_activation_found(flm, contrasts, tmp_path):
         pth=tmp_path,
         extend_includes=["No suprathreshold cluster"],
         contrasts=contrasts,
+        extra_warnings_allowed=True,
     )
 
 
@@ -208,6 +213,25 @@ def test_flm_reporting_no_contrasts(flm, tmp_path):
         contrasts=None,
         min_distance=15,
         alpha=0.01,
+        extra_warnings_allowed=True,
+    )
+
+
+def test_flm_reporting_several_contrasts(flm, tmp_path, rk):
+    """Test for model report can be generated with no contrasts."""
+    c0 = np.zeros((1, rk))
+    c0[0][0] = 1
+    c1 = np.zeros((1, rk))
+    c1[0][1] = 1
+    generate_and_check_glm_report(
+        model=flm,
+        pth=tmp_path,
+        plot_type="glass",
+        contrasts=[c0, c1],
+        min_distance=15,
+        alpha=0.01,
+        extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
 
@@ -237,6 +261,7 @@ def test_flm_reporting_height_control(
         alpha=0.01,
         threshold=2,
         warnings_msg_to_check=warnings_msg_to_check,
+        extra_warnings_allowed=True,
     )
 
 
@@ -247,7 +272,11 @@ def test_slm_reporting_method(slm, height_control):
     c1 = np.eye(len(slm.design_matrix_.columns))[0]
 
     generate_and_check_glm_report(
-        slm, contrasts=c1, height_control=height_control, alpha=0.01
+        slm,
+        contrasts=c1,
+        height_control=height_control,
+        alpha=0.01,
+        extra_warnings_allowed=True,
     )
 
 
@@ -268,9 +297,8 @@ def test_slm_with_flm_as_inputs(flm, contrasts):
         model,
         contrasts=c1,
         first_level_contrast=first_level_contrast,
-        # the following are to avoid warnings
-        threshold=1e-8,
-        height_control=None,
+        extra_warnings_allowed=True,
+        duplicate_warnings_allowed=True,
     )
 
 
@@ -297,9 +325,7 @@ def test_slm_with_dataframes_as_input(tmp_path, shape_3d_default):
         model,
         contrasts=c1,
         first_level_contrast="a",
-        # the following are to avoid warnings
-        threshold=1e-8,
-        height_control=None,
+        extra_warnings_allowed=True,
     )
 
 
@@ -311,9 +337,7 @@ def test_report_plot_type(flm, plot_type, contrasts):
         flm,
         contrasts=contrasts,
         plot_type=plot_type,
-        # the following are to avoid warnings
-        threshold=1e-8,
-        height_control=None,
+        extra_warnings_allowed=True,
     )
 
 
@@ -328,9 +352,7 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
         cut_coords=cut_coords,
         display_mode="z",
         plot_type=plot_type,
-        # the following are to avoid warnings
-        threshold=1e-8,
-        height_control=None,
+        extra_warnings_allowed=True,
     )
 
 
@@ -341,9 +363,6 @@ def test_report_invalid_plot_type(flm, contrasts):
         flm.generate_report(
             contrasts=contrasts,
             plot_type="junk",
-            # the following are to avoid warnings
-            threshold=1e-8,
-            height_control=None,
         )
     if is_matplotlib_installed():
         with pytest.raises(ValueError, match="'plot_type' must be one of"):
@@ -351,9 +370,6 @@ def test_report_invalid_plot_type(flm, contrasts):
                 contrasts=contrasts,
                 display_mode="glass",
                 plot_type="junk",
-                # the following are to avoid warnings
-                threshold=1e-8,
-                height_control=None,
             )
 
 
@@ -379,9 +395,7 @@ def test_masking_first_level_model(contrasts):
         plot_type="glass",
         min_distance=15,
         alpha=0.01,
-        # the following are to avoid warnings
-        threshold=1e-8,
-        height_control=None,
+        extra_warnings_allowed=True,
     )
 
 
@@ -406,9 +420,7 @@ def test_fir_delays_in_params(contrasts):
         model,
         contrasts=contrasts,
         extend_includes=["fir_delays"],
-        # the following are to avoid warnings
-        threshold=1e-8,
-        height_control=None,
+        extra_warnings_allowed=True,
     )
 
 
@@ -428,9 +440,7 @@ def test_drift_order_in_params(contrasts):
         model,
         contrasts=contrasts,
         extend_includes=["drift_order"],
-        # the following are to avoid warnings
-        threshold=1e-8,
-        height_control=None,
+        extra_warnings_allowed=True,
     )
 
 
@@ -458,11 +468,7 @@ def test_flm_generate_report_surface_data(rng):
     model.fit(fmri_data, events=events)
 
     generate_and_check_glm_report(
-        model,
-        contrasts="c0",
-        # the following are to avoid warnings
-        threshold=1e-8,
-        height_control=None,
+        model, contrasts="c0", extra_warnings_allowed=True
     )
 
 
@@ -482,9 +488,6 @@ def test_flm_generate_report_surface_data_error(
         model.generate_report(
             "c0",
             bg_img=img_3d_mni,
-            # the following are to avoid warnings
-            threshold=1e-8,
-            height_control=None,
         )
 
 
@@ -512,11 +515,7 @@ def test_carousel_several_runs(
     )
 
     report = generate_and_check_glm_report(
-        flm_two_runs,
-        contrasts=contrasts,
-        # the following are to avoid warnings
-        threshold=1e-8,
-        height_control=None,
+        flm_two_runs, contrasts=contrasts, extra_warnings_allowed=True
     )
 
     # 3 runs should be in the carousel
