@@ -104,9 +104,13 @@ model, imgs, events, confounds = (
 subject = f"sub-{model.subject_label}"
 model.minimize_memory = False  # override default
 
+# %%
+# Get a precomputed design matrix
+
 from pathlib import Path
 
 from nilearn.interfaces.fsl import get_design_from_fslmat
+from nilearn.plotting import plot_design_matrix, show
 
 fsl_design_matrix_path = (
     Path(data_dir)
@@ -119,6 +123,10 @@ fsl_design_matrix_path = (
 design_matrix = get_design_from_fslmat(
     fsl_design_matrix_path, column_names=None
 )
+
+plot_design_matrix(design_matrix)
+
+show()
 
 # %%
 # We identify the columns of the Go and StopSuccess conditions of the
