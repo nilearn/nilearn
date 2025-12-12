@@ -33,6 +33,7 @@ nifti_masker = NiftiMasker(
     memory="nilearn_cache",
     memory_level=1,
     smoothing_fwhm=8,
+    verbose=1,
 )
 nifti_masker.fit(func_filename)
 mask_img = nifti_masker.mask_img_
@@ -49,9 +50,9 @@ plot_roi(mask_img, mean_func_img, display_mode="y", cut_coords=4, title="Mask")
 
 # %%
 # Visualize the mask using the 'generate_report' method
-# This report can be displayed in a Jupyter Notebook,
-# opened in-browser using the .open_in_browser() method,
-# or saved to a file using the .save_as_html(output_filepath) method.
+#
+# .. include:: ../../../examples/report_note.rst
+#
 report = nifti_masker.generate_report()
 report
 

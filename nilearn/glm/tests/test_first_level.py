@@ -104,25 +104,34 @@ def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001
     check(estimator)
 
 
-def test_glm_fit_invalid_mask_img(shape_4d_default):
-    """Raise error when invalid mask are passed to FirstLevelModel."""
+def test_glm_fit_unfitted_masker(shape_4d_default):
+    """Raise error when using unfitted NiftiMasker as mask_img."""
     rk = 3
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes=[shape_4d_default], rk=rk
     )
 
-    # Give an unfitted NiftiMasker as mask_img and check that we get an error
     masker = NiftiMasker(mask)
     with pytest.raises(
-        ValueError, match=r"NiftiMasker instance is not fitted yet."
+        ValueError, match="NiftiMasker instance is not fitted yet"
     ):
         FirstLevelModel(mask_img=masker).fit(
             fmri_data[0], design_matrices=design_matrices[0]
         )
 
-    # Give a fitted NiftiMasker with a None mask_img_ attribute
-    # and check that the masker parameters are overridden by the
-    # FirstLevelModel parameters
+
+def test_glm_override_masker_param(shape_4d_default):
+    """Check masker parameters overridden by the FirstLevelModel parameters.
+
+    Give a fitted NiftiMasker with a None mask_img_ attribute
+    and check that the masker parameters are overridden by the
+    FirstLevelModel parameters.
+    """
+    rk = 3
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default], rk=rk
+    )
+    masker = NiftiMasker(mask)
     masker.fit()
     masker.mask_img_ = None
     with pytest.warns(
@@ -135,6 +144,44 @@ def test_glm_fit_invalid_mask_img(shape_4d_default):
         FirstLevelModel(mask_img=masker).fit(
             fmri_data[0], design_matrices=design_matrices[0]
         )
+
+
+def test_flm_fit_verbose(shape_4d_default, capsys):
+    """Check verbosity levels.
+
+    Standard output content should be larger
+    when we go from verbosity 1 to verbosity 3.
+    """
+    rk = 3
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default], rk=rk
+    )
+
+    FirstLevelModel(verbose=0).fit(
+        fmri_data[0], design_matrices=design_matrices[0]
+    )
+    stdout_verbose_0 = capsys.readouterr().out
+    assert stdout_verbose_0 == ""
+
+    FirstLevelModel(verbose=1).fit(
+        fmri_data[0], design_matrices=design_matrices[0]
+    )
+    stdout_verbose_1 = capsys.readouterr().out
+
+    FirstLevelModel(verbose=2).fit(
+        fmri_data[0], design_matrices=design_matrices[0]
+    )
+    stdout_verbose_2 = capsys.readouterr().out
+
+    assert len(stdout_verbose_1) > 0
+    assert len(stdout_verbose_2) > len(stdout_verbose_1)
+
+    # FIXME according to the doc this verbose=3
+    # FirstLevelModel(verbose=3).fit(
+    #     fmri_data[0], design_matrices=design_matrices[0]
+    # )
+    # stdout_verbose_3 = capsys.readouterr().out
+    # assert len(stdout_verbose_3) > len(stdout_verbose_2)
 
 
 def test_glm_fit_valid_mask_img(shape_4d_default):
@@ -284,6 +331,7 @@ def test_high_level_glm_with_data(shape_3d_default):
     assert get_data(z_image).std() < 3.0
 
 
+@pytest.mark.slow
 def test_glm_target_shape_affine(shape_3d_default, affine_eye):
     """Check that target shape and affine are applied."""
     shapes, rk = [(*shape_3d_default, 5)], 3
@@ -1241,6 +1289,7 @@ def test_first_level_from_bids_get_start_time_from_derivatives(tmp_path):
         assert models[0].slice_time_ref == StartTime / 1.5
 
 
+@pytest.mark.slow
 def test_first_level_contrast_computation():
     """Check contrast_computation."""
     shapes = ((7, 8, 9, 10),)
@@ -1755,7 +1804,9 @@ def test_first_level_from_bids_select_all_runs_of_one_session(bids_dataset):
     assert len(imgs[0]) == n_imgs_expected
 
 
-def test_first_level_from_bids_smoke_test_for_verbose_argument(bids_dataset):
+def test_first_level_from_bids_smoke_test_for_verbose_argument(
+    bids_dataset, capsys
+):
     """Test with verbose mode.
 
     verbose = 0 is the default, so should be covered by other tests.
@@ -1768,6 +1819,7 @@ def test_first_level_from_bids_smoke_test_for_verbose_argument(bids_dataset):
         verbose=1,
         slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
+    assert len(capsys.readouterr().out) > 0
 
 
 @pytest.mark.parametrize(
@@ -2102,7 +2154,6 @@ def test_first_level_from_bids_all_confounds_missing(tmp_path_factory):
         task_label="main",
         space_label="MNI",
         img_filters=[("desc", "preproc")],
-        verbose=0,
         slice_time_ref=0.0,  # set to 0.0 to avoid warnings
     )
 
@@ -2182,7 +2233,6 @@ def test_slice_time_ref_warning_only_when_not_provided(bids_dataset):
             space_label="MNI",
             img_filters=[("desc", "preproc")],
             slice_time_ref=0.6,
-            verbose=0,
         )
 
     # check that no warnings were raised

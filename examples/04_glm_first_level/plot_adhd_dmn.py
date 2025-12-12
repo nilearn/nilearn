@@ -55,7 +55,7 @@ seed_masker = NiftiSpheresMasker(
     t_r=adhd_dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
+    verbose=1,
 )
 seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
 
@@ -90,7 +90,7 @@ contrasts = {"seed_based_glm": dmn_contrast}
 # Perform first level analysis
 # ----------------------------
 # Setup and fit GLM.
-first_level_model = FirstLevelModel()
+first_level_model = FirstLevelModel(verbose=1)
 first_level_model = first_level_model.fit(
     run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
 )
@@ -136,15 +136,7 @@ report = first_level_model.generate_report(
 )
 
 # %%
-# We have several ways to access the report:
 #
-# It can be viewed in a notebook
+# .. include:: ../../../examples/report_note.rst
+#
 report
-
-# %%
-# Or in a separate browser window
-# report.open_in_browser()
-
-# %%
-# Or we can save as an html file.
-report.save_as_html(output_dir / "report.html")

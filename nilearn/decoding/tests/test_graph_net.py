@@ -7,9 +7,7 @@ from numpy.testing import assert_almost_equal
 from scipy import linalg
 
 from nilearn.decoding._objective_functions import divergence, gradient
-from nilearn.decoding.space_net import (
-    SpaceNetRegressor,
-)
+from nilearn.decoding.space_net import SpaceNetRegressor
 from nilearn.decoding.space_net_solvers import (
     _graph_net_adjoint_data_function,
     _graph_net_data_function,
@@ -248,7 +246,6 @@ def test_max_alpha_squared_loss(estimator, l1_ratio):
         mask=mask_,
         max_iter=10,
         penalty="graph-net",
-        verbose=0,
         standardize="zscore_sample",
     )
 
@@ -281,7 +278,6 @@ def test_tikhonov_regularization_vs_graph_net():
         fit_intercept=False,
         screening_percentile=100.0,
         standardize=False,
-        verbose=0,
     )
     graph_net.fit(X_, y.copy())
 

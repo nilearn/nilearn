@@ -37,16 +37,16 @@ description = "Statistical learning for neuroimaging in Python"
 dynamic = ["version"]
 license = "BSD-3-Clause"
 license-files = ["LICENSE"]
-maintainers = [{name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}]
+maintainers = [
+    {name = "Bertrand Thirion", email = "bertrand.thirion@inria.fr"}
+]
 name = "nilearn"
 readme = "README.rst"
 requires-python = ">=3.10"
 
 [project.optional-dependencies]
 # A combination of dependencies useful for developers
-dev = [
-    "nilearn[plotting,doc,style,test]"
-]
+dev = ["nilearn[plotting,doc,style,test]"]
 # Requirements necessary for building the documentation
 doc = [
     "nilearn[plotting]",
@@ -62,7 +62,8 @@ doc = [
     "sphinx-gallery>=0.18.0",
     "sphinxcontrib-bibtex>=2.6.3",
     "sphinxext-opengraph>=0.9.1",
-    "sphinxcontrib-mermaid>=1.0.0"
+    "sphinxcontrib-mermaid>=1.0.0",
+    "marimo"
 ]
 min = [
     "joblib==1.2.0",
@@ -74,12 +75,7 @@ min = [
     "scipy==1.9.0",
     "jinja2==3.1.2"
 ]
-min_plotting = [
-    "nilearn[min]",
-    "matplotlib==3.8.0",
-    "plotly==5.0.0",
-    "kaleido"
-]
+min_plotting = ["nilearn[min]", "matplotlib==3.8.0", "plotly==5.0.0", "kaleido"]
 # the following is kept for "backward compatibility"
 plotly = ["nilearn[plotting]"]
 # Necessary req to use nilearn's plotting module
@@ -120,6 +116,20 @@ builtin = "clear,rare,en-GB_to_en-US"
 ignore-words = ".github/codespell_ignore_words.txt"
 skip = "./.git,*.cff,*.bib,*/tmp,plotly-gl3d-latest.min.js,jquery.min.js,localizer_behavioural.tsv,.mypy_cache,env,venv,./doc/auto_examples,./doc/modules/generated/*,./doc/_build,./maint_tools/*.html,./examples/*/results,AUTHORS.rst"
 
+[tool.djlint]
+blank_line_after_tag = "load,extends,include,endblock,set"
+blank_line_before_tag = "load,extends,include,block,set"
+format_css = true
+ignore = "H030,H031,H021,H006"
+max_line_length = 79
+use_gitignore = true
+
+[tool.djlint.css]
+indent_size = 5
+
+[tool.djlint.per-file-ignores]
+"doc/ci.jinja" = "H025"
+
 [tool.doc8]
 allow-long-titles = true
 ignore-path = [
@@ -158,7 +168,6 @@ ignore_imports = [
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
-    "nilearn.reporting.glm_reporter -> nilearn.glm.thresholding",
     "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
     "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level"  # TODO: (nilearn >= 0.15.0) remove
 ]
@@ -193,14 +202,11 @@ ignore_imports = [
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
-    "nilearn.reporting.glm_reporter -> nilearn.glm.thresholding",
     "nilearn.interfaces.bids.glm -> nilearn.glm.io",  # TODO: (nilearn >= 0.15.0) remove
     "nilearn.interfaces.tests.test_glm -> nilearn.glm.first_level",  # TODO: (nilearn >= 0.15.0) remove
     # additional on top of those of "main architecture"
     "nilearn.plotting.tests.test_img_comparisons -> nilearn._utils.data_gen",  # allowed in tests
-    "nilearn.plotting.tests.test_img_comparisons -> nilearn.conftest",  # allowed in tests
     "nilearn.plotting.tests.test_img_comparisons -> nilearn.maskers",  # allowed in tests
-    "nilearn.plotting.**.tests.* -> nilearn.conftest",  # allowed in tests
     # TODO
     "nilearn.plotting.image.img_plotting -> nilearn.maskers",
     "nilearn.plotting.img_comparison -> nilearn._utils.masker_validation",
@@ -236,9 +242,7 @@ ignore_imports = [
     "nilearn.connectome.tests.test_group_sparse_cov -> nilearn._utils.data_gen"
 ]
 name = "'nilearn.connectome' only imports from 'nilearn.signal'"
-source_modules = [
-    "nilearn.connectome"
-]
+source_modules = ["nilearn.connectome"]
 type = "forbidden"
 
 [[tool.importlinter.contracts]]
@@ -284,6 +288,7 @@ module = [
     "matplotlib.*",
     "memory_profiler.*",
     "mpl_toolkits.*",
+    "marimo.*",
     "nibabel.*",
     "nilearn._version",
     "numpydoc.*",
@@ -303,7 +308,8 @@ doctest_optionflags = "NORMALIZE_WHITESPACE ELLIPSIS"
 junit_family = "xunit2"
 log_cli_level = "INFO"
 markers = [
-    "slow"
+    "slow",  # for tests that exceed the 45 seconds timeout allowed for each test
+    "single_process"  # for test that require testing n_jobs>1 or that are flaky when used xdist testing parallelization
 ]
 minversion = "6.0"
 xfail_strict = true
@@ -403,7 +409,16 @@ max-complexity = 23
 "nilearn/datasets/tests/test_struct.py" = ["D103"]
 "nilearn/datasets/tests/test_testing.py" = ["D103"]
 "nilearn/datasets/tests/test_utils.py" = ["D103"]
-"nilearn/decoding/**/{tests}/*" = ["D103"]  # 81 errors to fix
+"nilearn/decoding/tests/test_decoder.py" = ["D103"]
+"nilearn/decoding/tests/test_fista.py" = ["D103"]
+"nilearn/decoding/tests/test_graph_net.py" = ["D103"]
+"nilearn/decoding/tests/test_objective_functions.py" = ["D103"]
+"nilearn/decoding/tests/test_operators.py" = ["D103"]
+"nilearn/decoding/tests/test_same_api.py" = ["D103"]
+"nilearn/decoding/tests/test_searchlight.py" = ["D103"]
+"nilearn/decoding/tests/test_sklearn_compatibility.py" = ["D103"]
+"nilearn/decoding/tests/test_space_net.py" = ["D103"]
+"nilearn/decoding/tests/test_utils.py" = ["D103"]
 "nilearn/glm/tests/test_check_events_file_uses_tab_separators.py" = ["D103"]
 "nilearn/glm/tests/test_contrasts.py" = ["D103"]
 "nilearn/glm/tests/test_design_matrix.py" = ["D103"]
@@ -414,7 +429,8 @@ max-complexity = 23
 "nilearn/glm/tests/test_second_level.py" = ["D103"]
 "nilearn/glm/tests/test_thresholding.py" = ["D103"]
 "nilearn/glm/tests/test_utils.py" = ["D103"]
-"nilearn/image/**/{tests}/*" = ["D103"]  # 75 errors to fix
+"nilearn/image/tests/test_image.py" = ["D103"]
+"nilearn/image/tests/test_resampling.py" = ["D103"]
 "nilearn/plotting/displays/tests/test_edge_detect.py" = ["D103"]
 "nilearn/plotting/image/tests/test_img_plotting.py" = ["D103"]
 "nilearn/plotting/matrix/tests/test_matrix_plotting.py" = ["D103"]

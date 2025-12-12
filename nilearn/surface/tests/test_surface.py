@@ -13,6 +13,7 @@ from sklearn.exceptions import EfficiencyWarning
 
 from nilearn import datasets, image
 from nilearn._utils import data_gen
+from nilearn._utils.helpers import is_windows_platform
 from nilearn.exceptions import DimensionError
 from nilearn.image import resampling
 from nilearn.surface.surface import (
@@ -478,6 +479,7 @@ def test_load_uniform_ball_cloud_no_warning(n_points):
         assert len(w) == 0
 
 
+@pytest.mark.flaky(reruns=5, reruns_delay=2, condition=is_windows_platform())
 @pytest.mark.parametrize("n_points", [3, 7])
 def test_load_uniform_ball_cloud(n_points):
     """Test requesting n points with no cached results match computation."""

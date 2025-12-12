@@ -96,6 +96,7 @@ fmri_glm = FirstLevelModel(
     hrf_model="spm",
     drift_model="cosine",
     high_pass=0.01,
+    verbose=1,
 )
 
 # %%

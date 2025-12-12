@@ -14,9 +14,9 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn.image import resample_img
+from nilearn.image.image import iter_check_niimg
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
@@ -311,10 +311,16 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                         stacklevel=find_stack_level(),
                     )
 
+            verbose = self.verbose
+            if verbose:
+                verbose = 1
+            elif not verbose:
+                verbose = 0
+
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs,
                 memory=self.memory_,
-                verbose=max(0, self.verbose - 1),
+                verbose=max(0, verbose - 1),
                 **mask_args,
             )
         elif imgs is not None:

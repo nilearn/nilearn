@@ -373,6 +373,7 @@ def test_nifti_labels_masker_resampling(
     assert_array_equal(get_data(compressed_img), get_data(compressed_img2))
 
 
+@pytest.mark.slow
 def test_nifti_labels_masker_resampling_to_labels(
     affine_eye, shape_3d_default, n_regions, length
 ):
@@ -786,6 +787,7 @@ def test_regions_id_names_lut(affine_eye, shape_3d_default):
     check_lut(masker, expected_lut)
 
 
+@pytest.mark.slow
 def test_regions_id_names_lut_too_few(affine_eye, shape_3d_default):
     """Check passing LUT with too few entries."""
     atlas = np.zeros((8, 8, 8))

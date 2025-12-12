@@ -155,6 +155,7 @@ def _handle_modulation(events):
         logger.log(
             "A 'modulation' column was found in "
             "the given events data and is used.",
+            verbose=1,
         )
     else:
         events["modulation"] = 1

@@ -15,9 +15,9 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.decomposition._multi_pca import _MultiPCA
+from nilearn.image.image import iter_check_niimg
 from nilearn.maskers import NiftiLabelsMasker, SurfaceLabelsMasker
 from nilearn.maskers.surface_labels_masker import signals_to_surf_img_labels
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
@@ -360,7 +360,7 @@ class Parcellations(_MultiPCA):
         memory=None,
         memory_level=0,
         n_jobs=1,
-        verbose=1,
+        verbose=0,
     ):
         if memory is None:
             memory = Memory(location=None)
@@ -421,6 +421,12 @@ class Parcellations(_MultiPCA):
             )
         check_parameter_in_allowed(self.method, valid_methods, "method")
 
+        verbose = self.verbose
+        if verbose:
+            verbose = 1
+        elif not verbose:
+            verbose = 0
+
         # we delay importing Ward or AgglomerativeClustering and same
         # time import plotting module before that.
 
@@ -430,7 +436,7 @@ class Parcellations(_MultiPCA):
 
         logger.log(
             f"computing {self.method}",
-            verbose=self.verbose,
+            verbose=verbose,
         )
 
         if self.method == "kmeans":
@@ -441,7 +447,7 @@ class Parcellations(_MultiPCA):
                 init="k-means++",
                 n_init=3,
                 random_state=self.random_state,
-                verbose=max(0, self.verbose - 1),
+                verbose=max(0, verbose - 1),
             )
             labels = self._cache(_estimator_fit, func_memory_level=1)(
                 components.T, kmeans
@@ -454,7 +460,7 @@ class Parcellations(_MultiPCA):
                 n_init=10,
                 max_no_improvement=10,
                 random_state=self.random_state,
-                verbose=max(0, self.verbose - 1),
+                verbose=max(0, verbose - 1),
             )
             # data ou data.T
             labels = self._cache(_estimator_fit, func_memory_level=1)(
@@ -468,7 +474,7 @@ class Parcellations(_MultiPCA):
                 n_iter=self.n_iter,
                 memory=self.memory_,
                 memory_level=self.memory_level,
-                verbose=max(0, self.verbose - 1),
+                verbose=max(0, verbose - 1),
             )
             method = "rena"
             labels = self._cache(_estimator_fit, func_memory_level=1)(

@@ -84,9 +84,11 @@ jobs:
             id: py
             run: |
                 versions='py=["3.14", "3.13", "3.12", "3.11", "3.10"]'
+
                 if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
                     versions='py=["3.14", "3.10"]'
                 fi
+
                 echo "Will run on the following python: ${versions}"
                 echo ${versions} >> "$GITHUB_OUTPUT"
 
@@ -107,10 +109,6 @@ jobs:
                 os: [ubuntu-latest, macos-latest, windows-latest]
                 env: [plotting]
                 include:
-                -   description: pre-release dependencies
-                    py: '3.14'
-                    os: ubuntu-latest
-                    env: pre
                 # Using macos on the following as tests run faster on macos.
                 # As 'no plotting' run fewer tests, this allows to fail event faster if using macos.
                 -   description: oldest dependencies - no plotting
@@ -197,6 +195,79 @@ jobs:
                 flags: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.env }}
                 token: ${{ secrets.CODECOV_TOKEN }}
 
+    test_pre_release:
+        # Test with eventual pre-release version of the dependencies
+        # Run separately to avoid blocking other jobs in case of failure
+        # (as pre-release dependencies stability is not under our control).
+        needs: [check_skip_flags]
+
+        if: github.repository == 'nilearn/nilearn'
+
+        name: 'Test with ${{ matrix.py }} on ${{ matrix.os }}: ${{ matrix.description }}'
+
+        runs-on: ${{ matrix.os }}
+
+        strategy:
+            fail-fast: false
+            matrix:
+                description: [pre-release dependencies]
+                py: ['3.14']
+                os: [ubuntu-latest]
+                env: [pre]
+
+        steps:
+        -   uses: actions/checkout@v6
+            with:
+                # If pull request, checkout HEAD commit with all commit history
+                ref: ${{ github.event.pull_request.head.sha }}
+                fetch-depth: 0
+
+        -   name: Install the latest version of uv
+            uses: astral-sh/setup-uv@v7
+
+        -   name: Setup python
+            uses: actions/setup-python@v6
+            with:
+                python-version: ${{ matrix.py }}
+                allow-prereleases: true
+
+        -   name: Install tox
+            run: uv tool install tox --with=tox-uv --with=tox-gh-actions
+
+        -   name: Show tox config
+            run: tox c
+
+        -   name: Merge with upstream
+            # We do this so that when on a PR,
+            # we only get the files involved in a PR
+            # to avoid running more tests than needed.
+            shell: bash -el {0}
+            run: ./build_tools/github/merge_upstream.sh
+
+        -   name: Run test suite
+            shell: bash -el {0}
+            run: |
+                python build_tools/github/restrict_tests_to_run.py
+                tests_to_run=$(cat tests_to_run.txt)
+                tox run --list-dependencies -e ${{ matrix.env }} -- ${tests_to_run}
+                tox run -e plot_test_timing
+
+        -   name: Upload test report
+            if: success() || failure()
+            uses: actions/upload-artifact@v5
+            with:
+                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
+                path: |
+                    report.html
+                    report_slow.html
+                    report_doc.html
+
+        -   name: Upload test timings
+            if: success() || failure()
+            uses: actions/upload-artifact@v5
+            with:
+                name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
+                path: results/pytest_output
 
     test_flaky:
         # Some tests are marked as flaky in order to reduce the noise in CI results.
