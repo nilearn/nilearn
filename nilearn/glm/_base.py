@@ -550,6 +550,8 @@ class BaseGLM(CacheMixin, BaseEstimator):
                 FutureWarning,
                 stacklevel=find_stack_level(),
             )
+            if height_control is not None:
+                threshold = None
         model_attributes = _glm_model_attributes_to_dataframe(self)
         with pd.option_context("display.max_colwidth", 100):
             model_attributes_html = dataframe_to_html(
@@ -702,8 +704,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         title = f"Statistical Report - {self.__str__()}{title}"
 
         smoothing_fwhm = getattr(self, "smoothing_fwhm", None)
-        if smoothing_fwhm == 0:
-            smoothing_fwhm = None
+        smoothing_fwhm = None if smoothing_fwhm == 0 else smoothing_fwhm
 
         for msg in warning_messages:
             warnings.warn(
