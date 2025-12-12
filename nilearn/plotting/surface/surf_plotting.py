@@ -844,7 +844,7 @@ def plot_surf_roi(
         correct view, `hemi` should have a value corresponding to `roi_map`
         data.
 
-        .. nilearn_versionchanged :: nilearn 0.13.0dev
+        .. nilearn_versionchanged :: nilearn 0.13.0
 
             Negative or non-integer values are no longer allowed.
 

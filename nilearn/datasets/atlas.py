@@ -1355,7 +1355,7 @@ def fetch_atlas_aal(
         The version of the AAL atlas. Must be 'SPM5', 'SPM8', 'SPM12', or '3v2'
         for the latest SPM12 version of AAL3 software.
 
-        .. nilearn_versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0
 
           The default was changed to '3v2'.
 
@@ -1531,7 +1531,7 @@ def fetch_atlas_basc_multiscale_2015(
         Valid resolutions available are
         {7, 12, 20, 36, 64, 122, 197, 325, 444}
 
-        .. nilearn_versionchanged: 0.13.0dev
+        .. nilearn_versionchanged: 0.13.0
 
           Default changed to ``7``.
 

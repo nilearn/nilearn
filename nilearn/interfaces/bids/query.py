@@ -281,7 +281,7 @@ def parse_bids_filename(img_path):
         Returns a dictionary with all key-value pairs in the file name
         parsed and other useful fields.
 
-        .. nilearn_versionadded :: 0.13.0dev
+        .. nilearn_versionadded :: 0.13.0
 
         The dictionary will contain:
 
