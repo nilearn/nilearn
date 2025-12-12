@@ -167,6 +167,15 @@ def cluster_level_inference(
     .. footbibliography::
 
     """
+    # TODO (nilearn >= 0.15.0) remove
+    warnings.warn(
+        "From nilearn version>=0.15, "
+        "the default 'threshold' will be set to "
+        f"{DEFAULT_Z_THRESHOLD}.",
+        FutureWarning,
+        stacklevel=find_stack_level(),
+    )
+
     original_threshold = threshold
     if not isinstance(threshold, list):
         threshold = [threshold]
@@ -385,6 +394,14 @@ def threshold_stats_img(
         without correction.
 
     """
+    # TODO (nilearn >= 0.15.0) remove
+    warnings.warn(
+        "From nilearn version>=0.15, "
+        "the default 'threshold' will be set to "
+        f"{DEFAULT_Z_THRESHOLD}.",
+        FutureWarning,
+        stacklevel=find_stack_level(),
+    )
     if threshold is not None and height_control is not None:
         warnings.warn(
             f"'{threshold=}' is not used with '{height_control=}'."
