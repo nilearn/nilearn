@@ -396,15 +396,28 @@ def threshold_stats_img(
 
     """
     if threshold is not None and height_control is not None:
-        warnings.warn(
-            f"\n'{threshold=}' is not used with '{height_control=}'."
-            "\n'threshold' is only used when 'height_control=None'. "
-            "\nEither set 'height_control=None' or 'threshold=None' to avoid "
-            "this warning.",
-            UserWarning,
-            stacklevel=find_stack_level(),
-        )
-        threshold = None
+        # TODO (nilearn >= 0.15.0) update 3.09 to DEFAULT_Z_THRESHOLD
+        # if user specifies threshold
+        if float(threshold) != 3.0:
+            warnings.warn(
+                f"\n'{threshold=}' is not used with '{height_control=}'."
+                "\n'threshold' is only used when 'height_control=None'. "
+                "\nEither set 'height_control=None' or 'threshold=None' to "
+                "avoid this warning.",
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
+            height_control = None
+        else:
+            warnings.warn(
+                f"\n'{threshold=}' is not used with '{height_control=}'."
+                "\n'threshold' is only used when 'height_control=None'. "
+                "\nSetting 'threshold' to None. ",
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
+            threshold = None
+
     # TODO (nilearn >= 0.15.0) remove
     if threshold == 3.0:
         warnings.warn(
