@@ -13,6 +13,7 @@ from nilearn.decoding._utils import (
 )
 
 
+@pytest.mark.thread_unsafe
 def test_get_mask_extent():
     """Test that hard-coded standard mask volume can be corrected computed."""
     assert _get_mask_extent(load_mni152_brain_mask()) == MNI152_BRAIN_VOLUME

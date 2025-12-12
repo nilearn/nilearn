@@ -80,6 +80,7 @@ def test_plot_functions_invalid_threshold(plot_func, img_3d_mni, tmp_path):
     plt.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "plot_func", PLOTTING_FUNCS_3D.difference({plot_glass_brain})
 )
@@ -172,6 +173,7 @@ def test_plot_with_nans(plot_func, img_3d_mni):
     plot_func(_add_nans_to_img(img_3d_mni))
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "plot_func", [plot_roi, plot_stat_map, plot_glass_brain]
 )
@@ -203,6 +205,7 @@ def test_plotting_functions_with_display_mode_tiled(plot_func, img_3d_mni):
     plt.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
 @pytest.mark.parametrize(
     "threshold, expected_ticks",
@@ -231,6 +234,7 @@ def test_plot_symmetric_colorbar_threshold(
     plt.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_stat_map])
 @pytest.mark.parametrize(
     "threshold, expected_ticks",
