@@ -1,5 +1,4 @@
 import datetime
-import inspect
 import uuid
 import warnings
 from collections import OrderedDict
@@ -530,14 +529,35 @@ class BaseGLM(CacheMixin, BaseEstimator):
             )
             first_level_contrast = None
 
+        warning_messages = []
+
+        if threshold is not None and height_control is not None:
+            # TODO (nilearn >= 0.15.0) update 3.09 to DEFAULT_Z_THRESHOLD
+            # if user specifies threshold
+            if float(threshold) != 3.09:
+                warning_messages.append(
+                    f"\n'{threshold=}' is not used with '{height_control=}'."
+                    "\n'threshold' is only used when 'height_control=None'. "
+                    "\nSetting 'height_control' to None. "
+                )
+                height_control = None
+            else:
+                warning_messages.append(
+                    f"\n'{threshold=}' is not used with '{height_control=}'."
+                    "\n'threshold' is only used when 'height_control=None'. "
+                    "\nSetting 'threshold' to None. "
+                )
+                threshold = None
+
         # TODO (nilearn >= 0.15.0) remove
-        warnings.warn(
-            "\nFrom nilearn version>=0.15, "
-            "the default 'threshold' will be set to "
-            f"{DEFAULT_Z_THRESHOLD}.",
-            FutureWarning,
-            stacklevel=find_stack_level(),
-        )
+        if threshold == 3.09:
+            warnings.warn(
+                "\nFrom nilearn version>=0.15, "
+                "the default 'threshold' will be set to "
+                f"{DEFAULT_Z_THRESHOLD}.",
+                FutureWarning,
+                stacklevel=find_stack_level(),
+            )
         # We silence further warnings about threshold.
         # TODO (nilearn>=0.15)
         # remove
@@ -546,28 +566,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             category=FutureWarning,
             message="\n.*default 'threshold' will be set.*",
         )
-        warning_messages = []
 
-        sig = inspect.signature(self.generate_report).parameters
-        parameters = dict(**sig)
-        # if user specifies threshold
-        if (
-            float(threshold) != float(parameters["threshold"].default)
-            and height_control is not None
-        ):
-            warning_messages.append(
-                f"\n'{threshold=}' is not used with '{height_control=}'."
-                "\n'threshold' is only used when 'height_control=None'. "
-                "\nSetting 'height_control' to None. "
-            )
-            height_control = None
-        elif height_control is not None:
-            warning_messages.append(
-                f"\n'{threshold=}' is not used with '{height_control=}'."
-                "\n'threshold' is only used when 'height_control=None'. "
-                "\nSetting 'threshold' to None. "
-            )
-            threshold = None
         model_attributes = _glm_model_attributes_to_dataframe(self)
         with pd.option_context("display.max_colwidth", 100):
             model_attributes_html = dataframe_to_html(
