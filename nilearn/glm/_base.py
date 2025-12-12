@@ -30,6 +30,7 @@ from nilearn.glm._reporting_utils import (
     _mask_to_plot,
     _turn_into_full_path,
 )
+from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.reporting._utils import dataframe_to_html
@@ -529,6 +530,25 @@ class BaseGLM(CacheMixin, BaseEstimator):
             )
             first_level_contrast = None
 
+        # TODO (nilearn >= 0.15.0) remove
+        warnings.warn(
+            "\nFrom nilearn version>=0.15, "
+            "the default 'threshold' will be set to "
+            f"{DEFAULT_Z_THRESHOLD}.",
+            FutureWarning,
+            stacklevel=find_stack_level(),
+        )
+        # We silence further warnings about threshold:
+        #   it would throw one per contrast and
+        #   and also because threshold_stats_img and make_glm_report
+        #   have different defaults.
+        # TODO (nilearn>=0.15)
+        # remove
+        warnings.filterwarnings(
+            "ignore",
+            category=FutureWarning,
+            message="\n.*default 'threshold' will be set.*",
+        )
         warning_messages = []
 
         sig = inspect.signature(self.generate_report).parameters
@@ -539,14 +559,14 @@ class BaseGLM(CacheMixin, BaseEstimator):
             and height_control is not None
         ):
             warning_messages.append(
-                f"'{threshold=}' is not used with '{height_control=}'."
+                f"\n'{threshold=}' is not used with '{height_control=}'."
                 "\n'threshold' is only used when 'height_control=None'. "
                 "\nSetting 'height_control' to None. "
             )
             height_control = None
         elif height_control is not None:
             warning_messages.append(
-                f"'{threshold=}' is not used with '{height_control=}'."
+                f"\n'{threshold=}' is not used with '{height_control=}'."
                 "\n'threshold' is only used when 'height_control=None'. "
                 "\nSetting 'threshold' to None. "
             )
