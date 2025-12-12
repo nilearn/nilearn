@@ -620,19 +620,31 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
     )
 
 
-def test_deprecation_threshold(surf_img_1d):
+@pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
+def test_deprecation_threshold(surf_img_1d, threshold):
     """Check deprecation warning for default threshold.
 
     # TODO (nilearn >= 0.15.0)
     # remove
     """
-    with pytest.warns(FutureWarning, match="From nilearn version>=0.15"):
-        threshold_stats_img(surf_img_1d, height_control=None, threshold=3.09)
+    with warnings.catch_warnings(record=True) as warning_list:
+        threshold_stats_img(
+            surf_img_1d, height_control=None, threshold=threshold
+        )
+
+    n_warnings = len(
+        [x for x in warning_list if issubclass(x.category, FutureWarning)]
+    )
+    if threshold == 3.0:
+        assert n_warnings == 1
+    else:
+        assert n_warnings == 0
 
 
 @pytest.mark.slow
+@pytest.mark.parametrize("threshold", [3, 3.0, 2.9, DEFAULT_Z_THRESHOLD])
 def test_deprecation_threshold_cluster_level_inference(
-    img_3d_rand_eye, surf_img_1d
+    threshold, img_3d_rand_eye, surf_img_1d
 ):
     """Check cluster_level_inference warns when threshold==old threshold .
 
@@ -640,5 +652,13 @@ def test_deprecation_threshold_cluster_level_inference(
     # remove
     """
     for stat_img in [img_3d_rand_eye, surf_img_1d]:
-        with pytest.warns(FutureWarning, match="From nilearn version>=0.15"):
-            cluster_level_inference(stat_img, threshold=3.09)
+        with warnings.catch_warnings(record=True) as warning_list:
+            cluster_level_inference(stat_img, threshold=threshold)
+
+        n_warnings = len(
+            [x for x in warning_list if issubclass(x.category, FutureWarning)]
+        )
+        if threshold == 3.0:
+            assert n_warnings == 1
+        else:
+            assert n_warnings == 0
