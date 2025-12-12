@@ -84,7 +84,7 @@ def check_html_surface_plots(
     Used to check the output of
     - ``view_connectome``
     - ``view_surf``
-    view_markers
+    -  ``view_markers``
 
     """
     tmpfile = tmp_path / "test.html"
