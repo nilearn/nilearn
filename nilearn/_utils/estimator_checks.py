@@ -3803,14 +3803,18 @@ def check_masker_generate_report(estimator):
     _generate_report_with_no_warning(estimator)
 
     extra_warnings_allowed = False
-    if isinstance(estimator, (SurfaceMapsMasker)):
+    duplicate_warnings_allowed = False
+    if isinstance(estimator, (SurfaceMapsMasker, RegionExtractor)):
         extra_warnings_allowed = True
+    if isinstance(estimator, (RegionExtractor)):
+        duplicate_warnings_allowed = True
 
     with TemporaryDirectory() as tmp_dir:
         generate_and_check_masker_report(
             estimator,
             pth=Path(tmp_dir),
             extra_warnings_allowed=extra_warnings_allowed,
+            duplicate_warnings_allowed=duplicate_warnings_allowed,
             **_extra_kwargs(estimator),
         )
 
@@ -3881,7 +3885,18 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     _generate_report_with_no_warning(estimator)
 
-    generate_and_check_masker_report(estimator, **_extra_kwargs(estimator))
+    extra_warnings_allowed = False
+    duplicate_warnings_allowed = False
+    if isinstance(estimator, RegionExtractor):
+        extra_warnings_allowed = True
+        duplicate_warnings_allowed = True
+
+    generate_and_check_masker_report(
+        estimator,
+        **_extra_kwargs(estimator),
+        extra_warnings_allowed=extra_warnings_allowed,
+        duplicate_warnings_allowed=duplicate_warnings_allowed,
+    )
 
 
 @ignore_warnings()
