@@ -30,7 +30,6 @@ from nilearn.glm._reporting_utils import (
     _mask_to_plot,
     _turn_into_full_path,
 )
-from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.reporting._utils import dataframe_to_html
@@ -534,24 +533,24 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         sig = inspect.signature(self.generate_report).parameters
         parameters = dict(**sig)
-        if float(threshold) != float(parameters["threshold"].default):
-            if height_control is not None:
-                warning_messages.append(
-                    f"'{threshold=}' is not used with '{height_control=}'."
-                    "\n'threshold' is only used when 'height_control=None'. "
-                    "\nSetting 'height_control' to None. "
-                )
-                height_control = None
-        elif threshold != DEFAULT_Z_THRESHOLD:
-            warnings.warn(
-                "From nilearn version>=0.15, "
-                "the default 'threshold' will be set to "
-                f"{DEFAULT_Z_THRESHOLD}.",
-                FutureWarning,
-                stacklevel=find_stack_level(),
+        # if user specifies threshold
+        if (
+            float(threshold) != float(parameters["threshold"].default)
+            and height_control is not None
+        ):
+            warning_messages.append(
+                f"'{threshold=}' is not used with '{height_control=}'."
+                "\n'threshold' is only used when 'height_control=None'. "
+                "\nSetting 'height_control' to None. "
             )
-            if height_control is not None:
-                threshold = None
+            height_control = None
+        elif height_control is not None:
+            warning_messages.append(
+                f"'{threshold=}' is not used with '{height_control=}'."
+                "\n'threshold' is only used when 'height_control=None'. "
+                "\nSetting 'threshold' to None. "
+            )
+            threshold = None
         model_attributes = _glm_model_attributes_to_dataframe(self)
         with pd.option_context("display.max_colwidth", 100):
             model_attributes_html = dataframe_to_html(
