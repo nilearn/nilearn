@@ -56,6 +56,7 @@ from nilearn.glm.first_level.first_level import (
     _yule_walker,
 )
 from nilearn.glm.regression import ARModel, OLSModel
+from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.image import get_data
 from nilearn.interfaces.bids import get_bids_files
 from nilearn.maskers import NiftiMasker, SurfaceMasker
@@ -2711,3 +2712,50 @@ def test_first_level_from_bids_surface(tmp_path):
     )
 
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
+
+
+def test_generate_report(shape_4d_default):
+    """Test nilearn.glm.first_level.FirstLevelModel.generate_report for
+    warnings depending on threshold and height_control values.
+    """
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[shape_4d_default], rk=3
+    )
+
+    flm = FirstLevelModel(mask_img=mask).fit(
+        fmri_data[0], design_matrices=design_matrices[0]
+    )
+
+    contrasts = [
+        np.asarray([1, 0, 0]),
+        np.asarray([1, 1, 0]),
+        np.asarray([1, 1, 1]),
+    ]
+
+    with pytest.warns(UserWarning, match="'threshold' to None"):
+        flm.generate_report(contrasts=contrasts)
+
+    with pytest.warns(UserWarning, match="'height_control' to None"):
+        flm.generate_report(contrasts=contrasts, threshold=3)
+
+    with pytest.warns(FutureWarning, match="the default 'threshold' will be"):
+        flm.generate_report(contrasts=contrasts, height_control=None)
+
+    with pytest.warns(UserWarning, match="'height_control' to None"):
+        flm.generate_report(contrasts=contrasts, threshold=DEFAULT_Z_THRESHOLD)
+
+    with warnings.catch_warnings(record=True) as warning_list:
+        flm.generate_report(
+            contrasts=contrasts,
+            height_control=None,
+            threshold=DEFAULT_Z_THRESHOLD,
+        )
+        assert not any(
+            "the default 'threshold' will be" in str(warning.message)
+            for warning in warning_list
+        )
+
+        assert not any(
+            "is not used with" in str(warning.message)
+            for warning in warning_list
+        )
