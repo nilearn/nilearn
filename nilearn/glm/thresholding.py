@@ -168,13 +168,14 @@ def cluster_level_inference(
 
     """
     # TODO (nilearn >= 0.15.0) remove
-    warnings.warn(
-        "\nFrom nilearn version>=0.15, "
-        "the default 'threshold' will be set to "
-        f"{DEFAULT_Z_THRESHOLD}.",
-        FutureWarning,
-        stacklevel=find_stack_level(),
-    )
+    if threshold == 3.0:
+        warnings.warn(
+            "\nFrom nilearn version>=0.15, "
+            "the default 'threshold' will be set to "
+            f"{DEFAULT_Z_THRESHOLD}.",
+            FutureWarning,
+            stacklevel=find_stack_level(),
+        )
 
     original_threshold = threshold
     if not isinstance(threshold, list):
@@ -394,21 +395,23 @@ def threshold_stats_img(
         without correction.
 
     """
-    # TODO (nilearn >= 0.15.0) remove
-    warnings.warn(
-        "\nFrom nilearn version>=0.15, "
-        "the default 'threshold' will be set to "
-        f"{DEFAULT_Z_THRESHOLD}.",
-        FutureWarning,
-        stacklevel=find_stack_level(),
-    )
     if threshold is not None and height_control is not None:
         warnings.warn(
             f"\n'{threshold=}' is not used with '{height_control=}'."
             "\n'threshold' is only used when 'height_control=None'. "
-            "\nEither set 'height_control=None' or do not set "
-            "threshold value to avoid this warning.",
+            "\nEither set 'height_control=None' or 'threshold=None' to avoid "
+            "this warning.",
             UserWarning,
+            stacklevel=find_stack_level(),
+        )
+        threshold = None
+    # TODO (nilearn >= 0.15.0) remove
+    if threshold == 3.0:
+        warnings.warn(
+            "\nFrom nilearn version>=0.15, "
+            "the default 'threshold' will be set to "
+            f"{DEFAULT_Z_THRESHOLD}.",
+            FutureWarning,
             stacklevel=find_stack_level(),
         )
     check_params(locals())
