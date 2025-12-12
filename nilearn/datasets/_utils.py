@@ -400,12 +400,12 @@ def uncompress_file(file_, delete_archive=True, verbose=1):
         raise
 
 
-def _filter_column(array, col, criteria):
+def _filter_column(array, col: str, criteria):
     """Return index array matching criteria.
 
     Parameters
     ----------
-    array : numpy array with columns
+    array : array-like with columns
         Array in which data will be filtered.
 
     col : string
