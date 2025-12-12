@@ -2733,18 +2733,27 @@ def test_generate_report(shape_4d_default):
         np.asarray([1, 1, 1]),
     ]
 
+    # should return a single warning, set threshold to None
     with pytest.warns(UserWarning, match="'threshold' to None"):
         flm.generate_report(contrasts=contrasts)
 
+    # should return a single warning, set height_control to None
     with pytest.warns(UserWarning, match="'height_control' to None"):
         flm.generate_report(contrasts=contrasts, threshold=3)
 
-    with pytest.warns(FutureWarning, match="the default 'threshold' will be"):
+    # should return a single warning default threshold deprecation
+    with warnings.catch_warnings(record=True) as warning_list:
         flm.generate_report(contrasts=contrasts, height_control=None)
+        n_warnings = len(
+            [x for x in warning_list if issubclass(x.category, FutureWarning)]
+        )
+        assert n_warnings == 1
 
+    # should return a single warning, set height_control to None
     with pytest.warns(UserWarning, match="'height_control' to None"):
         flm.generate_report(contrasts=contrasts, threshold=DEFAULT_Z_THRESHOLD)
 
+    # no warning expected
     with warnings.catch_warnings(record=True) as warning_list:
         flm.generate_report(
             contrasts=contrasts,
