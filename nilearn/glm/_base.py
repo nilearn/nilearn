@@ -538,10 +538,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             FutureWarning,
             stacklevel=find_stack_level(),
         )
-        # We silence further warnings about threshold:
-        #   it would throw one per contrast and
-        #   and also because threshold_stats_img and make_glm_report
-        #   have different defaults.
+        # We silence further warnings about threshold.
         # TODO (nilearn>=0.15)
         # remove
         warnings.filterwarnings(
