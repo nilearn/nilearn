@@ -20,6 +20,7 @@ from nilearn._version import __version__
 from sphinx.domains import changeset
 from sphinx.locale import _
 
+# trigger ci
 # ----------------------------------------------------------------------------
 
 
