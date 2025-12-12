@@ -16,6 +16,7 @@ import zipfile
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 import requests
 
 from nilearn._utils import logger
@@ -449,7 +450,10 @@ def _filter_column(array, col: str, criteria):
 
     # Handle strings with different encodings
     if isinstance(criteria, (str, bytes)):
-        criteria = np.array(criteria).astype(array[col].dtype)
+        dtype = array[col].dtype
+        if isinstance(dtype, pd.StringDtype):
+            dtype = "str"
+        criteria = np.array(criteria).astype(dtype)
 
     return array[col] == criteria
 

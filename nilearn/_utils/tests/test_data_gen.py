@@ -7,7 +7,7 @@ import pandas as pd
 import pytest
 from nibabel import load
 from numpy.testing import assert_almost_equal
-from pandas.api.types import is_numeric_dtype, is_object_dtype
+from pandas.api.types import is_numeric_dtype, is_string_dtype
 from pandas.testing import assert_frame_equal
 
 from nilearn._utils.data_gen import (
@@ -68,7 +68,7 @@ def test_basic_paradigm(have_spaces):
     events = basic_paradigm(condition_names_have_spaces=have_spaces)
 
     assert events.columns.equals(pd.Index(["trial_type", "onset", "duration"]))
-    assert is_object_dtype(events["trial_type"])
+    assert is_string_dtype(events["trial_type"])
     assert is_numeric_dtype(events["onset"])
     assert is_numeric_dtype(events["duration"])
     assert events["trial_type"].str.contains(" ").any() == have_spaces
