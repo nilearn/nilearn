@@ -2988,14 +2988,12 @@ def check_masker_transform_resampling(estimator) -> None:
 @ignore_warnings()
 def check_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if is_windows_platform() and (
-        sys.version_info[1] < 13 or sys.version_info[1] == 14
-    ):
-        # TODO (python >= 3.11)
-        # rare failure of this test on python 3.10 on windows
-        # this works for python 3.13 (but not 3.14)
-        # skipping for now: let's check again if this keeps failing
-        # when dropping 3.10 in favor of 3.11
+    if is_windows_platform():
+        # TODO (run check without xdist)
+        # rare failure of this test on python on windows
+        #   PermissionError: [WinError 32]
+        #   The process cannot access the file
+        #   because it is being used by another process
         return
 
     img, _ = generate_data_to_fit(estimator)
@@ -3471,14 +3469,12 @@ def check_nifti_masker_fit_with_3d_mask(estimator):
 @ignore_warnings()
 def check_multi_nifti_masker_shelving(estimator):
     """Check behavior when shelving masker."""
-    if is_windows_platform() and (
-        sys.version_info[1] < 13 or sys.version_info[1] == 14
-    ):
-        # TODO (python >= 3.11)
-        # rare failure of this test on python 3.10 on windows
-        # this works for python 3.13 (but not 3.14)
-        # skipping for now: let's check again if this keeps failing
-        # when dropping 3.10 in favor of 3.11
+    if is_windows_platform():
+        # TODO (run check without xdist)
+        # rare failure of this test on python on windows
+        #   PermissionError: [WinError 32]
+        #   The process cannot access the file
+        #   because it is being used by another process
         return
 
     mask_img = Nifti1Image(

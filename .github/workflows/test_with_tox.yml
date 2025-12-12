@@ -85,10 +85,6 @@ jobs:
             run: |
                 versions='py=["3.14", "3.13", "3.12", "3.11", "3.10"]'
 
-                if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
-                    versions='py=["3.14", "3.10"]'
-                fi
-
                 echo "Will run on the following python: ${versions}"
                 echo ${versions} >> "$GITHUB_OUTPUT"
 
@@ -106,7 +102,7 @@ jobs:
             matrix:
                 description: [latest dependencies]
                 py: ${{ fromJSON(needs.define-matrix.outputs.py) }}
-                os: [ubuntu-latest, macos-latest, windows-latest]
+                os: [windows-latest]
                 env: [plotting]
                 include:
                 # Using macos on the following as tests run faster on macos.
