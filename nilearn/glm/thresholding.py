@@ -169,7 +169,7 @@ def cluster_level_inference(
     """
     # TODO (nilearn >= 0.15.0) remove
     warnings.warn(
-        "From nilearn version>=0.15, "
+        "\nFrom nilearn version>=0.15, "
         "the default 'threshold' will be set to "
         f"{DEFAULT_Z_THRESHOLD}.",
         FutureWarning,
@@ -396,7 +396,7 @@ def threshold_stats_img(
     """
     # TODO (nilearn >= 0.15.0) remove
     warnings.warn(
-        "From nilearn version>=0.15, "
+        "\nFrom nilearn version>=0.15, "
         "the default 'threshold' will be set to "
         f"{DEFAULT_Z_THRESHOLD}.",
         FutureWarning,
@@ -404,7 +404,7 @@ def threshold_stats_img(
     )
     if threshold is not None and height_control is not None:
         warnings.warn(
-            f"'{threshold=}' is not used with '{height_control=}'."
+            f"\n'{threshold=}' is not used with '{height_control=}'."
             "\n'threshold' is only used when 'height_control=None'. "
             "\nEither set 'height_control=None' or do not set "
             "threshold value to avoid this warning.",
