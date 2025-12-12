@@ -405,7 +405,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
             if img is None:  # images were not provided to fit
                 msg = (
-                    "No image provided to fit in NiftiMasker. "
+                    f"No image provided to fit in {self.__class__.__name__}. "
                     "Setting image to mask for reporting."
                 )
                 self._report_content["warning_messages"].append(msg)

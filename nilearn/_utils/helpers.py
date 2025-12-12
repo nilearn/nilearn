@@ -74,7 +74,7 @@ def set_mpl_backend(message=None):
         if new_backend == "agg":
             warnings.warn(
                 (
-                    f"\nYou are using the '{matplotlib.get_backend()}' "
+                    f"You are using the '{matplotlib.get_backend()}' "
                     "matplotlib backend that is non-interactive."
                     "\nNo figure will be plotted when calling "
                     "matplotlib.pyplot.show() or nilearn.plotting.show()."
