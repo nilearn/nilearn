@@ -1,4 +1,3 @@
-import warnings
 from html import escape  # TODO this should be removed from here
 from pathlib import Path
 
@@ -10,7 +9,6 @@ from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.niimg import load_niimg, safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -20,6 +18,7 @@ from nilearn._utils.tags import (
     is_masker,
 )
 from nilearn.glm.thresholding import threshold_stats_img
+from nilearn.image import check_niimg
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
     clustering_params_to_dataframe,
@@ -263,18 +262,6 @@ def _make_stat_maps_contrast_clusters(
         # and _stat_map_to_png
         # Necessary to avoid :
         # https://github.com/nilearn/nilearn/issues/4192
-
-        # We silence further warnings about threshold:
-        #   it would throw one per contrast and
-        #   and also because threshold_stats_img and make_glm_report
-        #   have different defaults.
-        # TODO (nilearn>=0.15)
-        # remove
-        warnings.filterwarnings(
-            "ignore",
-            category=FutureWarning,
-            message=".*default 'threshold' will be set.*",
-        )
 
         thresholded_img, threshold = threshold_stats_img(
             stat_img=stat_map_img,

@@ -281,7 +281,7 @@ def test_flm_reporting_height_control(
             threshold=2,
         )
     if height_control is not None:
-        assert any("will not be used with" in str(x) for x in warnings_list)
+        assert any("is not used with" in str(x) for x in warnings_list)
 
 
 @pytest.mark.slow

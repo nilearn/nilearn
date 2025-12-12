@@ -3,7 +3,6 @@ cluster-level in brain imaging: cluster-level thresholding, false \
 discovery rate control, false discovery proportion in clusters.
 """
 
-import inspect
 import warnings
 
 import numpy as np
@@ -13,39 +12,21 @@ from scipy.stats import norm
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.image import get_data, math_img, new_img_like, threshold_img
+from nilearn.image import (
+    check_niimg_3d,
+    get_data,
+    math_img,
+    new_img_like,
+    threshold_img,
+)
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface.surface import SurfaceImage, check_surf_img
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
-
-
-def warn_default_threshold(
-    threshold, current_default, old_default, height_control=None
-):
-    """Throw deprecation warning Z threshold.
-
-    TODO (nilearn>=0.15)
-    Can be removed.
-    """
-    if height_control is None and threshold == current_default == old_default:
-        warnings.warn(
-            category=FutureWarning,
-            message=(
-                "From nilearn version>=0.15, "
-                "the default 'threshold' will be set to "
-                f"{DEFAULT_Z_THRESHOLD}."
-                "If you want to silence this warning, "
-                "set the threshold to "
-                "'nilearn.glm.thresholding.DEFAULT_Z_THRESHOLD'."
-            ),
-            stacklevel=find_stack_level(),
-        )
 
 
 def _compute_hommel_value(z_vals, alpha, verbose=0):
@@ -186,8 +167,15 @@ def cluster_level_inference(
     .. footbibliography::
 
     """
-    parameters = dict(**inspect.signature(cluster_level_inference).parameters)
-    warn_default_threshold(threshold, parameters["threshold"].default, 3.0)
+    # TODO (nilearn >= 0.15.0) remove
+    if threshold == 3.0:
+        warnings.warn(
+            "\nFrom nilearn version>=0.15, "
+            "the default 'threshold' will be set to "
+            f"{DEFAULT_Z_THRESHOLD}.",
+            FutureWarning,
+            stacklevel=find_stack_level(),
+        )
 
     original_threshold = threshold
     if not isinstance(threshold, list):
@@ -407,6 +395,38 @@ def threshold_stats_img(
         without correction.
 
     """
+    if threshold is not None and height_control is not None:
+        # TODO (nilearn >= 0.15.0) update 3.09 to DEFAULT_Z_THRESHOLD
+        # if user specifies threshold
+        if float(threshold) != 3.0:
+            warnings.warn(
+                f"\n'{threshold=}' is not used with '{height_control=}'."
+                "\n'threshold' is only used when 'height_control=None'. "
+                "\nEither set 'height_control=None' or 'threshold=None' to "
+                "avoid this warning.",
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
+            height_control = None
+        else:
+            warnings.warn(
+                f"\n'{threshold=}' is not used with '{height_control=}'."
+                "\n'threshold' is only used when 'height_control=None'. "
+                "\nSetting 'threshold' to None. ",
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
+            threshold = None
+
+    # TODO (nilearn >= 0.15.0) remove
+    if threshold == 3.0:
+        warnings.warn(
+            "\nFrom nilearn version>=0.15, "
+            "the default 'threshold' will be set to "
+            f"{DEFAULT_Z_THRESHOLD}.",
+            FutureWarning,
+            stacklevel=find_stack_level(),
+        )
     check_params(locals())
     height_control_methods = [
         "fpr",
@@ -416,27 +436,6 @@ def threshold_stats_img(
     ]
     check_parameter_in_allowed(
         height_control, height_control_methods, "height_control"
-    )
-
-    parameters = dict(**inspect.signature(threshold_stats_img).parameters)
-    if height_control is not None and float(threshold) != float(
-        parameters["threshold"].default
-    ):
-        warnings.warn(
-            (
-                f"'{threshold=}' will not be used with '{height_control=}'. "
-                "'threshold' is only used when 'height_control=None'. "
-                f"Set 'threshold' to '{parameters['threshold'].default}' "
-                "to avoid this warning."
-            ),
-            UserWarning,
-            stacklevel=find_stack_level(),
-        )
-    warn_default_threshold(
-        threshold,
-        parameters["threshold"].default,
-        3.0,
-        height_control=height_control,
     )
 
     # if two-sided, correct alpha by a factor of 2
