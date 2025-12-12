@@ -1203,6 +1203,7 @@ def test_first_level_from_bids_set_slice_timing_ref_errors(
         )
 
 
+@pytest.mark.single_process
 def test_first_level_from_bids_get_metadata_from_derivatives(tmp_path):
     """No warning should be thrown given derivatives have metadata.
 
