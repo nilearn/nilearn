@@ -2714,6 +2714,7 @@ def test_first_level_from_bids_surface(tmp_path):
     _check_output_first_level_from_bids(n_sub, models, imgs, events, confounds)
 
 
+@pytest.mark.slow
 def test_generate_report(shape_4d_default):
     """Test nilearn.glm.first_level.FirstLevelModel.generate_report for
     warnings depending on threshold and height_control values.
