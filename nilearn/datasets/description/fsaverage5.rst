@@ -13,6 +13,12 @@ Notes
 -----
 Fsaverage5 standard surface as distributed with Freesurfer (:footcite:t:`Fischl1999`).
 
+Source
+------
+Source files for this dataset can be found at:
+
+- https://github.com/nilearn/nilearn/tree/main/nilearn/datasets/data/fsaverage5
+
 References
 ----------
 .. footbibliography::
