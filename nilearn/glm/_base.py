@@ -372,7 +372,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         first_level_contrast=None,
         title=None,
         bg_img="MNI152TEMPLATE",
-        threshold=3.09,
+        threshold=None,
         alpha=0.001,
         cluster_threshold=0,
         height_control="fpr",
@@ -435,9 +435,11 @@ class BaseGLM(CacheMixin, BaseEstimator):
             The background image for mask and stat maps to be plotted on upon.
             To turn off background image, just pass "bg_img=None".
 
-        threshold : :obj:`float`, default=3.09
+        threshold : :obj:`float` or :obj:`int` or None, default=None
             Cluster forming threshold in same scale as `stat_img` (either a
             t-scale or z-scale value). Used only if height_control is None.
+            If ``threshold`` is set to None when ``height_control`` is None,
+            ``threshold`` will be set to 3.09.
 
             .. note::
 
@@ -531,41 +533,28 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         warning_messages = []
 
-        if threshold is not None and height_control is not None:
-            # TODO (nilearn >= 0.15.0) update 3.09 to DEFAULT_Z_THRESHOLD
-            # if user specifies threshold
-            if float(threshold) != 3.09:
-                warning_messages.append(
-                    f"\n'{threshold=}' is not used with '{height_control=}'."
-                    "\n'threshold' is only used when 'height_control=None'. "
-                    "\nSetting 'height_control' to None. "
-                )
-                height_control = None
-            else:
-                warning_messages.append(
-                    f"\n'{threshold=}' is not used with '{height_control=}'."
-                    "\n'threshold' is only used when 'height_control=None'. "
-                    "\nSetting 'threshold' to None. "
-                )
-                threshold = None
+        if height_control is None:
+            if threshold is None:
+                threshold = 3.09
 
-        # TODO (nilearn >= 0.15.0) remove
-        if threshold == 3.09:
-            warnings.warn(
-                "\nFrom nilearn version>=0.15, "
-                "the default 'threshold' will be set to "
-                f"{DEFAULT_Z_THRESHOLD}.",
-                FutureWarning,
-                stacklevel=find_stack_level(),
+            # TODO (nilearn >= 0.15.0) remove
+            if threshold == 3.09:
+                warnings.warn(
+                    "\nFrom nilearn version>=0.15, "
+                    "the default 'threshold' will be set to "
+                    f"{DEFAULT_Z_THRESHOLD}.",
+                    FutureWarning,
+                    stacklevel=find_stack_level(),
+                )
+
+        elif threshold is not None:
+            threshold = float(threshold)
+            warning_messages.append(
+                f"\n'{threshold=}' is not used with '{height_control=}'."
+                "\n'threshold' is only used when 'height_control=None'. "
+                "\nSetting 'threshold' to None. "
             )
-        # We silence further warnings about threshold.
-        # TODO (nilearn>=0.15)
-        # remove
-        warnings.filterwarnings(
-            "ignore",
-            category=FutureWarning,
-            message="\n.*default 'threshold' will be set.*",
-        )
+            threshold = None
 
         model_attributes = _glm_model_attributes_to_dataframe(self)
         with pd.option_context("display.max_colwidth", 100):

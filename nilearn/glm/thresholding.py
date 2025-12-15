@@ -412,6 +412,7 @@ def threshold_stats_img(
             )
 
     elif threshold is not None:
+        threshold = float(threshold)
         warnings.warn(
             f"\n'{threshold=}' is not used with '{height_control=}'."
             "\n'threshold' is only used when 'height_control=None'. "

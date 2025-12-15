@@ -2715,12 +2715,19 @@ def test_first_level_from_bids_surface(tmp_path):
 
 
 @pytest.mark.slow
-def test_generate_report(shape_4d_default):
-    """Test nilearn.glm.first_level.FirstLevelModel.generate_report for
-    warnings depending on threshold and height_control values.
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        ({}),
+        ({"height_control": None, "threshold": DEFAULT_Z_THRESHOLD}),
+    ],
+)
+def test_generate_report_default(kwargs):
+    """Make sure generate_report throws no warning by default.
+    or with with height=None and the future default threshold.
     """
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
-        shapes=[shape_4d_default], rk=3
+        shapes=[(30, 31, 32, 33)], rk=3
     )
 
     flm = FirstLevelModel(mask_img=mask).fit(
@@ -2733,15 +2740,33 @@ def test_generate_report(shape_4d_default):
         np.asarray([1, 1, 1]),
     ]
 
-    # should return a single warning, set threshold to None
-    with pytest.warns(UserWarning, match="'threshold' to None"):
-        flm.generate_report(contrasts=contrasts)
+    with warnings.catch_warnings(record=True) as warning_list:
+        flm.generate_report(contrasts=contrasts, **kwargs)
+        assert len(warning_list) == 0
 
-    # should return a single warning, set height_control to None
-    with pytest.warns(UserWarning, match="'height_control' to None"):
-        flm.generate_report(contrasts=contrasts, threshold=3)
 
-    # should return a single warning default threshold deprecation
+@pytest.mark.slow
+def test_generate_report_height_none_future_default():
+    """Make sure generate_report a single FutureWarning
+    about the deprecation of the default threshold.
+
+    TODO (nilearn >= 0.15)
+    Remove this test
+    """
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[(30, 31, 32, 33)], rk=3
+    )
+
+    flm = FirstLevelModel(mask_img=mask).fit(
+        fmri_data[0], design_matrices=design_matrices[0]
+    )
+
+    contrasts = [
+        np.asarray([1, 0, 0]),
+        np.asarray([1, 1, 0]),
+        np.asarray([1, 1, 1]),
+    ]
+
     with warnings.catch_warnings(record=True) as warning_list:
         flm.generate_report(contrasts=contrasts, height_control=None)
         n_warnings = len(
@@ -2749,23 +2774,34 @@ def test_generate_report(shape_4d_default):
         )
         assert n_warnings == 1
 
-    # should return a single warning, set height_control to None
-    with pytest.warns(UserWarning, match="'height_control' to None"):
-        flm.generate_report(contrasts=contrasts, threshold=DEFAULT_Z_THRESHOLD)
 
-    # no warning expected
+@pytest.mark.slow
+@pytest.mark.parametrize("threshold", [4, DEFAULT_Z_THRESHOLD])
+def test_generate_report_threshold_unused(threshold):
+    """Make sure generate_report return a single warning,
+    about threshold not being used.
+    """
+    mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes=[(30, 31, 32, 33)], rk=3
+    )
+
+    flm = FirstLevelModel(mask_img=mask).fit(
+        fmri_data[0], design_matrices=design_matrices[0]
+    )
+
+    contrasts = [
+        np.asarray([1, 0, 0]),
+        np.asarray([1, 1, 0]),
+        np.asarray([1, 1, 1]),
+    ]
+
     with warnings.catch_warnings(record=True) as warning_list:
-        flm.generate_report(
-            contrasts=contrasts,
-            height_control=None,
-            threshold=DEFAULT_Z_THRESHOLD,
-        )
-        assert not any(
-            "the default 'threshold' will be" in str(warning.message)
-            for warning in warning_list
-        )
-
-        assert not any(
-            "is not used with" in str(warning.message)
-            for warning in warning_list
+        flm.generate_report(contrasts=contrasts, threshold=threshold)
+        assert (
+            sum(
+                1
+                for warning in warning_list
+                if "Setting 'threshold' to None" in str(warning.message)
+            )
+            == 1
         )

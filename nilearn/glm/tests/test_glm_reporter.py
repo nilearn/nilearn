@@ -395,7 +395,7 @@ def test_masking_first_level_model(contrasts):
         plot_type="glass",
         min_distance=15,
         alpha=0.01,
-        extra_warnings_allowed=True,
+        extra_warnings_allowed=False,
     )
 
 
