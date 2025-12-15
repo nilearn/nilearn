@@ -75,6 +75,7 @@ def test_plot_functions_black_bg(plot_func, img_3d_mni):
     return plot_func(img_3d_mni, black_bg=True)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_title(plot_func, img_3d_mni):
@@ -151,6 +152,7 @@ def test_plot_functions_vmax(plot_func, vmax):
     return plot_func(load_sample_motor_activation_image(), vmax=vmax)
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare(tolerance=5)
 @pytest.mark.parametrize("plotting_func", PLOTTING_FUNCS_3D)
 def test_plotting_functions_radiological_view(plotting_func):
@@ -592,6 +594,7 @@ def test_plot_with_transparency_range(fn, transparency_range):
 IMG_COMPARISON_FUNCS = {plot_img_comparison, plot_bland_altman}
 
 
+@pytest.mark.slow
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", IMG_COMPARISON_FUNCS)
 def test_img_comparison_default(
