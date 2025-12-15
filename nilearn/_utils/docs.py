@@ -498,7 +498,8 @@ first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
       from the :class:`~pandas.DataFrame` ``map_name`` column.
       (it has to be a 't' contrast).
 
-    This parameter is ignored for all other cases.
+    When the model is a :class:`~nilearn.glm.first_level.FirstLevelModel`:
+    This parameter is ignored.
 """
 
 # fwhm
@@ -1390,12 +1391,11 @@ url : :obj:`str` or None, default=None
 
 # verbose
 verbose = """
-verbose : :obj:`int`, default={}
-    Verbosity level (`0` means no message).
+verbose : :obj:`bool` or :obj:`int`, default={}
+    Verbosity level (``0`` or ``False`` means no message).
 """
 docdict["verbose"] = verbose.format(1)
 docdict["verbose0"] = verbose.format(0)
-docdict["verbose2"] = verbose.format(2)
 docdict["verbose3"] = verbose.format(3)
 
 # view

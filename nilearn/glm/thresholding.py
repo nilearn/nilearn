@@ -13,12 +13,17 @@ from scipy.stats import norm
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.image import get_data, math_img, new_img_like, threshold_img
+from nilearn.image import (
+    check_niimg_3d,
+    get_data,
+    math_img,
+    new_img_like,
+    threshold_img,
+)
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface.surface import SurfaceImage, check_surf_img
 
@@ -186,11 +191,6 @@ def cluster_level_inference(
     .. footbibliography::
 
     """
-    if verbose is False:
-        verbose = 0
-    if verbose is True:
-        verbose = 1
-
     parameters = dict(**inspect.signature(cluster_level_inference).parameters)
     warn_default_threshold(threshold, parameters["threshold"].default, 3.0)
 

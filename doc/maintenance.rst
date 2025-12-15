@@ -265,6 +265,9 @@ Finally, make sure the documentation can be built correctly.
 Prepare the documentation for the release
 -----------------------------------------
 
+Check illustrations
+...................
+
 In several places the user guide relies on figures generated in the examples for illustration.
 
 If the examples are modified, and an expected figure is not created anymore
@@ -278,6 +281,9 @@ but care should be taken that at least the following have not been affected:
 - the tables in the :ref:`plotting` section,
 - ...
 
+Update links
+............
+
 Update the links for the new version of the documentation in ``doc/versions.rst``.
 For example:
 
@@ -288,6 +294,14 @@ For example:
     * `Nilearn latest - dev documentation <http://nilearn.github.io/dev/>`_
     * `Nilearn latest - stable documentation <http://nilearn.github.io/stable/>`_
     * `Nilearn x.y.z documentation <http://nilearn.github.io/x.y.z/>`_
+
+Update atlas figures
+....................
+
+The :ref:`datasets_ref <datasets_ref>` has tables with figures listing all the atlases
+that Nilearn provides.
+
+Run the script ``doc/make_atlas_table.py`` commit the new output to update the tables.
 
 Prepare the release
 -------------------

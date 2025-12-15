@@ -343,7 +343,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
 
             if img is None:
                 msg = (
-                    "No image provided to fit in NiftiLabelsMasker. "
+                    f"No image provided to fit in {self.__class__.__name__}. "
                     "Plotting ROIs of label image on the "
                     "MNI152Template for reporting."
                 )

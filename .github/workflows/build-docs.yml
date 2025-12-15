@@ -202,7 +202,7 @@ jobs:
                 echo "PATTERN = $(cat pattern.txt)"
                 echo "BUILD = $(cat build.txt)"
         -   name: Upload build.txt and pattern.txt
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: build_type
                 path: |
@@ -241,7 +241,7 @@ jobs:
                 python -m pip install .
 
         -   name: Download build type
-            uses: actions/download-artifact@v6
+            uses: actions/download-artifact@v7
             with:
                 name: build_type
         -   name: Verify build type
@@ -263,7 +263,7 @@ jobs:
         -   name: Get cache from a previous attempts on this PR or branch
             if: steps.cache-key.outputs.restore == 'true'
             id: restore-previous-run
-            uses: actions/cache/restore@v4
+            uses: actions/cache/restore@v5
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
@@ -276,7 +276,7 @@ jobs:
             if: ${{ steps.build-type.outputs.build == 'html-strict' && steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit
                 != 'true' }}
             id: restore-previous-full-build
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
@@ -285,7 +285,7 @@ jobs:
                   # only run it if we did not get the data from a previous attempt
             if: ${{ steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit != 'true' && steps.restore-previous-full-build.outputs.cache-hit
                 != 'true' }}
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: |
                     nilearn_data/adhd
@@ -312,7 +312,7 @@ jobs:
                 python doc/get_data_examples.py $BUILD_TYPE
 
         -   name: Save cache to pass to build_docs job
-            uses: actions/cache/save@v4
+            uses: actions/cache/save@v5
             if: always()
             with:
                 path: nilearn_data
@@ -337,6 +337,20 @@ jobs:
                 shell: bash -el {0}
 
         steps:
+        -   name: Free Disk Space (Ubuntu)
+            uses: jlumbroso/free-disk-space@main
+            with:
+                # this might remove tools that are actually needed,
+                # if set to "true" but frees about 6 GB
+                tool-cache: false
+                # all of these default to true, but feel free to set to
+                # "false" if necessary for your workflow
+                android: true
+                dotnet: true
+                haskell: true
+                large-packages: true
+                docker-images: true
+                swap-storage: true
         -   name: Checkout nilearn
             uses: actions/checkout@v6
             with:
@@ -357,7 +371,7 @@ jobs:
             run: date +%m > month_num;
 
         -   name: Get data from the get_data job
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
@@ -378,7 +392,7 @@ jobs:
                 python-version: ${{ matrix.py }}
 
         -   name: Download build type
-            uses: actions/download-artifact@v6
+            uses: actions/download-artifact@v7
             with:
                 name: build_type
 
@@ -419,20 +433,28 @@ jobs:
 
         -   name: Upload doc checks
             if: always()
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.env }}_checks
                 path: doc/tmp
 
+        -   name: Check doc size
+            if: always()
+            run: |
+                du -h -d 3 --exclude=".git"
+
+                mkdir -p doc/_build/html # ensure the folder exists
+                du -h doc/_build/html
+
         -   name: Upload documentation
             if: steps.build-docs.outcome == 'success'
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.env }}
                 path: doc/_build/html
 
         -   name: Upload reports
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.env }}_reports
                 path: doc/modules/generated_reports
@@ -458,7 +480,7 @@ jobs:
                 ssh-agent -a $SSH_AUTH_SOCK > /dev/null
                 ssh-add ~/.ssh/github_actions
 
-        -   uses: actions/download-artifact@v6
+        -   uses: actions/download-artifact@v7
             with:
                 name: doc
                 path: doc/_build/html
