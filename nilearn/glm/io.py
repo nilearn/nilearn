@@ -210,6 +210,12 @@ def save_glm_to_bids(
         check_parameter_in_allowed(key, report_kwargs, "Extra key-word")
         report_kwargs[key] = kwargs[key]
 
+    if (
+        report_kwargs["height_control"] is None
+        and report_kwargs["threshold"] is None
+    ):
+        report_kwargs["threshold"] = 3.09
+
     contrasts = coerce_to_dict(contrasts)
 
     out_dir = Path(out_dir)
@@ -334,7 +340,7 @@ def save_glm_to_bids(
             height_control=report_kwargs["height_control"],
         )
         table_details = clustering_params_to_dataframe(
-            report_kwargs["threshold"],
+            threshold,
             report_kwargs["cluster_threshold"],
             report_kwargs["min_distance"],
             report_kwargs["height_control"],
