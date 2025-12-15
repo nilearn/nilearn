@@ -253,7 +253,7 @@ def test_error_incompatible_cut_coords_2d(
     matplotlib_pyplot, img_3d_rand_eye, display_mode, cut_coords
 ):
     """Test error when incompatible cut_coords is specified for slicers of type
-    `ortho` and `tiled`.
+    `xy`, `yz` and `yx`.
     """
     with pytest.raises(
         ValueError,
