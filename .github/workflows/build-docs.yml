@@ -263,7 +263,7 @@ jobs:
         -   name: Get cache from a previous attempts on this PR or branch
             if: steps.cache-key.outputs.restore == 'true'
             id: restore-previous-run
-            uses: actions/cache/restore@v4
+            uses: actions/cache/restore@v5
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
@@ -276,7 +276,7 @@ jobs:
             if: ${{ steps.build-type.outputs.build == 'html-strict' && steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit
                 != 'true' }}
             id: restore-previous-full-build
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_month-${{ hashFiles('month_num') }}
@@ -285,7 +285,7 @@ jobs:
                   # only run it if we did not get the data from a previous attempt
             if: ${{ steps.cache-key.outputs.restore == 'true' && steps.restore-previous-run.outputs.cache-hit != 'true' && steps.restore-previous-full-build.outputs.cache-hit
                 != 'true' }}
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: |
                     nilearn_data/adhd
@@ -312,7 +312,7 @@ jobs:
                 python doc/get_data_examples.py $BUILD_TYPE
 
         -   name: Save cache to pass to build_docs job
-            uses: actions/cache/save@v4
+            uses: actions/cache/save@v5
             if: always()
             with:
                 path: nilearn_data
@@ -371,7 +371,7 @@ jobs:
             run: date +%m > month_num;
 
         -   name: Get data from the get_data job
-            uses: actions/cache@v4
+            uses: actions/cache@v5
             with:
                 path: nilearn_data
                 key: data_cache-${{ github.workflow }}_ref-${{ github.ref }}_run-${{ github.run_number }}_attempt-${{ github.run_attempt }}
