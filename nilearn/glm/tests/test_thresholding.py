@@ -209,7 +209,7 @@ def test_threshold_stats_img_errors(img_3d_rand_eye):
         threshold_stats_img(
             img_3d_rand_eye, height_control=None, threshold=-2, two_sided=True
         )
-    # but this is OK because threshodl is only used
+    # but this is OK because threshold is only used
     # when height_control=None
     threshold_stats_img(
         img_3d_rand_eye, height_control="fdr", threshold=-2, two_sided=True
@@ -626,7 +626,7 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
 
 @pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
-def test_deprecation_threshold(surf_img_1d, threshold, height_control):
+def test_deprecation_threshold(surf_img_1d, height_control, threshold):
     """Check deprecation warning for default threshold.
 
     # TODO (nilearn >= 0.15.0)
