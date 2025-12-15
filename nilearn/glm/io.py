@@ -328,6 +328,7 @@ def save_glm_to_bids(
                     )
 
         if isinstance(img, SurfaceImage):
+            # TODO
             # cluster computation is not implemented for surface data
             # so we do not save any TSV or JSON to disk in this case.
             continue
