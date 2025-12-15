@@ -202,7 +202,7 @@ jobs:
                 echo "PATTERN = $(cat pattern.txt)"
                 echo "BUILD = $(cat build.txt)"
         -   name: Upload build.txt and pattern.txt
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: build_type
                 path: |
@@ -433,7 +433,7 @@ jobs:
 
         -   name: Upload doc checks
             if: always()
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.env }}_checks
                 path: doc/tmp
@@ -448,13 +448,13 @@ jobs:
 
         -   name: Upload documentation
             if: steps.build-docs.outcome == 'success'
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.env }}
                 path: doc/_build/html
 
         -   name: Upload reports
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.env }}_reports
                 path: doc/modules/generated_reports
