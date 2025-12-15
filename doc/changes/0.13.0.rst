@@ -24,6 +24,18 @@ HIGHLIGHTS
  | **A dependency has been removed:**
  | - lxml
 
+.. warning::
+
+    This release contains many deprecations with breaking changes, so make sure to read the ``Changes`` below.
+
+Regarding support for surface data, we have added multi maskers for surface image, surface label image and surface maps image: those are meant to be used for data extraction of data coming from several subjects or several runs.
+It is now also possible to perform cluter thresholding and cluster level inference on surface data.
+
+Several classes and functions / methods have been added to the public API:
+
+- most notably ``check_niimg``, ``check_niimg_3d`` and ``check_niimg_4d``,
+- Nilearn specific exceptions and warnings,
+- also most maskers can now extract data and return it as a Pandas or `Polar dataframe <https://docs.pola.rs/api/python/stable/reference/index.html>`_ via the scikit-learn ``set_output`` `method <https://scikit-learn.org/stable/auto_examples/miscellaneous/plot_set_output.html>`_
 
 NEW
 ---
@@ -31,7 +43,7 @@ NEW
 Fixes
 -----
 
-- :bdg-dark:`Code` Improve errors thrown when the confounds for a subject or group level analysis GLM contain NaN (:gh:`5739` by `Rémi Gau`_).
+- :bdg-dark:`Code` Improve errors thrown when the confounds for a subject or group level analysis GLM contain ``NaN`` (:gh:`5739` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Make sure names in atlas labels look up tables are not shifted when the background name is not properly indicated (:gh:`5826` by `Rémi Gau`_).
 
@@ -45,6 +57,9 @@ Fixes
 
 - :bdg-info:`Plotting` Allow to pass files to :func:`~nilearn.plotting.plot_img_comparison` (:gh:`5825` by `Rémi Gau`_).
 
+- :bdg-info:`Plotting` Change background to ``'black'`` for functions :func:`~plotting.plot_img_comparison` and :func:`~plotting.plot_bland_altman` (:gh:`5785` by `Hande Gözükan`_).
+
+
 Enhancements
 ------------
 
@@ -54,11 +69,9 @@ Enhancements
 
 - :bdg-success:`API` Add an ``exclude_subjects`` parameter to :func:`~glm.first_level.first_level_from_bids` to skip some subjects when creating GLM models from a BIDS dataset (:gh:`5741` by `Rémi Gau`_).
 
-- :bdg-success:`API` Add ``view`` parameter to :func:`~plotting.view_img_on_surf` to select the default view that will be used when displaying the figure  (:gh:`5692` by `Rémi Gau`_).
-
 - :bdg-success:`API` Add a :class:`~exceptions.NotImplementedWarning` and make :class:`~exceptions.MaskWarning`, :class:`~exceptions.DimensionError`, :class:`~exceptions.AllVolumesRemovedError` and :class:`~exceptions.MeshDimensionError` part of the public API (:gh:`5508`, :gh:`5570`, :gh:`5677` by `Rémi Gau`_).
 
-- :bdg-success:`API` Add support for Scikit-Learn ``set_output()`` in several Nilearn feature extractors (nifti and surface non-multi maskers, and :class:`~regions.HierarchicalKMeans`) to allow ``transform()`` to output to either Pandas or Polars dataframe and not just numpy arrays (:gh:`5508` by `Rémi Gau`_).
+- :bdg-success:`API` Add support for Scikit-Learn ``set_output()`` in several Nilearn feature extractors (nifti and surface non-multi maskers, and :class:`~regions.HierarchicalKMeans`) to allow ``transform()`` to output to either Pandas or `Polar dataframe <https://docs.pola.rs/api/python/stable/reference/index.html>`_ and not just numpy arrays (:gh:`5508` by `Rémi Gau`_).
 
 - :bdg-success:`API` Add a :class:`~maskers.MultiSurfaceMasker`, a :class:`~maskers.MultiSurfaceLabelsMasker` and a a :class:`~maskers.MultiSurfaceMapsMasker` (:gh:`5679`, :gh:`5726`, :gh:`5727`  by `Rémi Gau`_).
 
@@ -72,12 +85,18 @@ Enhancements
 
 - :bdg-dark:`Code` Parameter ``head_tpl`` in  :class:`~reporting.HTMLReport` can now be a Jinja2 template (:gh:`5710` by `Rémi Gau`_).
 
-- :bdg-dark:`Code` NaN values contained in the first row of the confounds loaded by :func:`~glm.first_level.first_level_from_bids` will be turned into 0 to avoid downstream errors when creating design matrices (:gh:`5739` by `Rémi Gau`_).
+- :bdg-dark:`Code` ``NaN`` values contained in the first row of the confounds loaded by :func:`~glm.first_level.first_level_from_bids` will be turned into 0 to avoid downstream errors when creating design matrices (:gh:`5739` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Add anterior and posterior views to :class:`~maskers.SurfaceLabelsMasker`, :class:`~maskers.SurfaceMapsMasker` and :class:`~maskers.SurfaceMasker` (:gh:`5473` by `Chloe Hampson`_).
 
+- :bdg-dark:`Code` Reports (for maskers, GLMs...) can now be generated even when no plotting engine is available (:gh:`5757` by `Rémi Gau`_).
+
+- :bdg-info:`Plotting` Add ``view`` parameter to :func:`~plotting.view_img_on_surf` to select the default view that will be used when displaying the figure  (:gh:`5692` by `Rémi Gau`_).
+
 Changes
 -------
+
+- :bdg-info:`Plotting` Change cmap to ``'RdBu_r'`` for :func:`~plotting.plot_contrast_matrix` (:gh:`5780` by `Hande Gözükan`_).
 
 Given the number of changes in this release,
 the following section has been divided into :
@@ -144,6 +163,8 @@ Changes affecting this release
 Deprecation cycle starting in this release
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+- :bdg-danger:`Deprecation` The functions :func:`~image.check_niimg`, :func:`~image.check_niimg_3d` and :func:`~image.check_niimg_4d` are now part of our public API. The content of ``nilearn._utils.niimg_conversions`` and ``nilearn.image.utils`` was moved to ``nilearn.image.image``. For a smoother transition, ``check_niimg``, ``check_niimg_3d`` and ``check_niimg_4d`` will still be importable from ``nilearn._utils.niimg_conversions`` till Nilearn 0.14.0 (:gh:`5788` by `Rémi Gau`_).
+
 - :bdg-danger:`Deprecation` The function :func:`~nilearn.glm.save_glm_to_bids` was moved to the :mod:`~nilearn.glm` module. It will be importable from its original :mod:`~nilearn.interfaces` till Nilearn version 0.15.0 (:gh:`5770` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` From Nilearn >= 0.15, the function :func:`~reporting.make_glm_report` will be removed. Use :meth:`~glm.first_level.FirstLevelModel.generate_report` or :meth:`~glm.second_level.SecondLevelModel.generate_report` instead. (:gh:`5876` by `Hande Gözükan`_).
@@ -152,15 +173,10 @@ Deprecation cycle starting in this release
 
 - :bdg-danger:`Deprecation` The parameter ``output_type`` of :func:`~mass_univariate.permuted_ols` was changed from ``legacy`` to ``dict``. The parameter ``output_type`` will be removed in Nilearn >= 0.15.0 (:gh:`5631` by `Rémi Gau`_).
 
+
 Documentation
 -------------
-
-- :bdg-dark:`Code` Reports (for maskers, GLMs...)  can now be generated even when no plotting engine is available (:gh:`5757` by `Rémi Gau`_).
 
 - :bdg-primary:`Doc` Clarified that ``nilearn.datasets.fetch_*`` functions do not re-download datasets already present locally. Added cross-reference to dataset storage documentation. (:gh:`5690` by `Victoria McCray`_)
 
 - :bdg-primary:`Doc` Home-made sphinx directives are used instead of default sphinx directives relative to version changes (``versionadded``, ``versionchanged``, ``deprecated``...) to more easily distinguish between feature changes introduced in Nilearn versus those introduced in upstream dependencies (like in Scikit-Learn) (:gh:`5654` by `Rémi Gau`_).
-
-- :bdg-info:`Plotting` Change cmap to ``'RdBu_r'`` for :func:`~plotting.plot_contrast_matrix` (:gh:`5780` by `Hande Gözükan`_).
-
-- :bdg-info:`Plotting` Change background to ``'black'`` for functions :func:`~plotting.plot_img_comparison` and :func:`~plotting.plot_bland_altman` (:gh:`5785` by `Hande Gözükan`_).
