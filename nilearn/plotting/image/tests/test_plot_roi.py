@@ -30,6 +30,7 @@ def demo_plot_roi(**kwargs):
     plot_roi(img, title="Broca's area", **kwargs)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("view_type", ["contours", "continuous"])
 @pytest.mark.parametrize("threshold", [0.5, 0.2])
 @pytest.mark.parametrize("alpha", [0.7, 0.1])
@@ -62,6 +63,7 @@ def test_plot_roi_view_types(
     )
 
 
+@pytest.mark.slow
 def test_plot_roi_no_int_64_warning(matplotlib_pyplot, recwarn):
     """Make sure that no int64 warning is thrown."""
     demo_plot_roi()
