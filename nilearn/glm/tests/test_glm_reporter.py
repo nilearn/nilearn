@@ -247,8 +247,6 @@ def test_flm_reporting_height_control(
     """
     warnings_msg_to_check = []
     if height_control is not None:
-        # assert any("is not used with" in str(x) for x in warnings_list)
-        # assert any("will not be used with" in str(x) for x in warnings_list)
         warnings_msg_to_check = ["is only used when"]
     generate_and_check_glm_report(
         model=flm,
