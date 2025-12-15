@@ -308,10 +308,10 @@ def threshold_stats_img(
     stat_img=None,
     mask_img=None,
     alpha=0.001,
-    threshold=3.0,
+    threshold: float | int | np.floating | np.integer | None = None,
     height_control="fpr",
     cluster_threshold=0,
-    two_sided=True,
+    two_sided: bool = True,
 ):
     """Compute the required threshold level and return the thresholded map.
 
@@ -331,9 +331,11 @@ def threshold_stats_img(
         Its actual meaning depends on the height_control parameter.
         This function translates alpha to a z-scale threshold.
 
-    threshold : :obj:`float`, default=3.0
+    threshold : :obj:`float` or :obj:`int` or None, default=None
        Desired threshold in z-scale.
-       This is used only if height_control is None.
+       This is used only if ``height_control`` is None.
+       If ``threshold`` is set to None when ``height_control`` is None,
+       ``threshold`` will be set to 3.0.
 
        .. note::
 
@@ -395,38 +397,30 @@ def threshold_stats_img(
         without correction.
 
     """
-    if threshold is not None and height_control is not None:
-        # TODO (nilearn >= 0.15.0) update 3.09 to DEFAULT_Z_THRESHOLD
-        # if user specifies threshold
-        if float(threshold) != 3.0:
-            warnings.warn(
-                f"\n'{threshold=}' is not used with '{height_control=}'."
-                "\n'threshold' is only used when 'height_control=None'. "
-                "\nEither set 'height_control=None' or 'threshold=None' to "
-                "avoid this warning.",
-                UserWarning,
-                stacklevel=find_stack_level(),
-            )
-            height_control = None
-        else:
-            warnings.warn(
-                f"\n'{threshold=}' is not used with '{height_control=}'."
-                "\n'threshold' is only used when 'height_control=None'. "
-                "\nSetting 'threshold' to None. ",
-                UserWarning,
-                stacklevel=find_stack_level(),
-            )
-            threshold = None
+    if height_control is None:
+        if threshold is None:
+            threshold = 3.0
 
-    # TODO (nilearn >= 0.15.0) remove
-    if threshold == 3.0:
+        # TODO (nilearn >= 0.15.0) remove
+        if threshold == 3.0:
+            warnings.warn(
+                "\nFrom nilearn version>=0.15, "
+                "the default 'threshold' will be set to "
+                f"{DEFAULT_Z_THRESHOLD}.",
+                FutureWarning,
+                stacklevel=find_stack_level(),
+            )
+
+    elif threshold is not None:
         warnings.warn(
-            "\nFrom nilearn version>=0.15, "
-            "the default 'threshold' will be set to "
-            f"{DEFAULT_Z_THRESHOLD}.",
-            FutureWarning,
+            f"\n'{threshold=}' is not used with '{height_control=}'."
+            "\n'threshold' is only used when 'height_control=None'. "
+            "\nSetting 'threshold' to None. ",
+            UserWarning,
             stacklevel=find_stack_level(),
         )
+        threshold = None
+
     check_params(locals())
     height_control_methods = [
         "fpr",

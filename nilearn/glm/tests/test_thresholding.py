@@ -209,7 +209,7 @@ def test_threshold_stats_img_errors(img_3d_rand_eye):
         threshold_stats_img(
             img_3d_rand_eye, height_control=None, threshold=-2, two_sided=True
         )
-    # but this is OK because threshodld is only used
+    # but this is OK because threshodl is only used
     # when height_control=None
     threshold_stats_img(
         img_3d_rand_eye, height_control="fdr", threshold=-2, two_sided=True
@@ -488,11 +488,16 @@ def test_all_resolution_inference_height_control(
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_threshold_stats_img_surface(surf_img_1d, height_control):
     """Smoke test threshold_stats_img works on surface."""
-    threshold_stats_img(
-        surf_img_1d,
-        height_control=height_control,
-        threshold=DEFAULT_Z_THRESHOLD,
-    )
+    with warnings.catch_warnings(record=True) as warning_list:
+        threshold_stats_img(
+            surf_img_1d,
+            height_control=height_control,
+            threshold=DEFAULT_Z_THRESHOLD,
+        )
+    if height_control is None:
+        assert len(warning_list) == 0
+    else:
+        assert len(warning_list) == 1
 
 
 def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
@@ -549,7 +554,7 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
 
     # one sided positive
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=3, two_sided=False
+        surf_img_1d, height_control=None, two_sided=False
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 4.0]))
@@ -560,7 +565,6 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     result, _ = threshold_stats_img(
         surf_img_1d,
         height_control=None,
-        threshold=3,
         two_sided=False,
         cluster_threshold=2,
     )
@@ -621,7 +625,8 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
 
 
 @pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
-def test_deprecation_threshold(surf_img_1d, threshold):
+@pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
+def test_deprecation_threshold(surf_img_1d, threshold, height_control):
     """Check deprecation warning for default threshold.
 
     # TODO (nilearn >= 0.15.0)
@@ -629,13 +634,13 @@ def test_deprecation_threshold(surf_img_1d, threshold):
     """
     with warnings.catch_warnings(record=True) as warning_list:
         threshold_stats_img(
-            surf_img_1d, height_control=None, threshold=threshold
+            surf_img_1d, height_control=height_control, threshold=threshold
         )
 
     n_warnings = len(
         [x for x in warning_list if issubclass(x.category, FutureWarning)]
     )
-    if threshold == 3.0:
+    if height_control is None and threshold == 3.0:
         assert n_warnings == 1
     else:
         assert n_warnings == 0
