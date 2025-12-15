@@ -627,7 +627,7 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
 @pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_deprecation_threshold(surf_img_1d, height_control, threshold):
-    """Check deprecation warning for default threshold.
+    """Check warning thrown when threshold==old threshold.
 
     # TODO (nilearn >= 0.15.0)
     # remove
