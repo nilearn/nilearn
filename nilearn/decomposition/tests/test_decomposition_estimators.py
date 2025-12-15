@@ -23,8 +23,8 @@ from nilearn.decomposition.tests.conftest import (
 )
 
 ESTIMATORS_TO_CHECK = [
-    DictLearning(verbose=0, standardize="zscore_sample"),
-    CanICA(verbose=0, standardize="zscore_sample"),
+    DictLearning(standardize="zscore_sample"),
+    CanICA(standardize="zscore_sample"),
 ]
 
 if SKLEARN_LT_1_6:
@@ -427,7 +427,6 @@ def test_single_subject_file(
         n_components=4,
         random_state=RANDOM_STATE,
         standardize="zscore_sample",
-        verbose=0,
     )
     img = write_imgs_to_path(
         canica_data_single_img,

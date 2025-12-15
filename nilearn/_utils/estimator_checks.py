@@ -18,7 +18,10 @@ Most of those checks have pytest dependencies
 and importing them will fail if pytest is not installed.
 """
 
+import contextlib
 import inspect
+import io
+import os
 import pickle
 import re
 import sys
@@ -121,7 +124,9 @@ from nilearn.maskers import (
     SurfaceMasker,
 )
 from nilearn.maskers._mixin import _MultiMixin
-from nilearn.maskers.tests.test_html_report import _check_html
+from nilearn.maskers.tests.test_html_report import (
+    generate_and_check_masker_report,
+)
 from nilearn.masking import load_mask_img
 from nilearn.regions import RegionExtractor
 from nilearn.regions.hierarchical_kmeans_clustering import HierarchicalKMeans
@@ -577,13 +582,13 @@ def nilearn_check_generator(estimator: BaseEstimator):
     else:
         requires_y = getattr(tags.target_tags, "required", False)
 
+    yield (clone(estimator), check_doc_attributes)
+    yield (clone(estimator), check_set_output)
     yield (clone(estimator), check_tags)
+    yield (clone(estimator), check_verbose)
 
     if isinstance(estimator, CacheMixin):
         yield (clone(estimator), check_img_estimator_cache_warning)
-
-    yield (clone(estimator), check_img_estimator_doc_attributes)
-    yield (clone(estimator), check_estimator_set_output)
 
     if accept_niimg_input(estimator) or accept_surf_img_input(estimator):
         yield (clone(estimator), check_fit_returns_self)
@@ -597,6 +602,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_n_elements)
         yield (clone(estimator), check_img_estimator_pipeline_consistency)
         yield (clone(estimator), check_img_estimator_standardization)
+        yield (clone(estimator), check_img_estimator_verbose)
         yield (clone(estimator), check_nilearn_methods_sample_order_invariance)
 
         if requires_y:
@@ -811,12 +817,275 @@ def check_tags(estimator):
     assert estimator._more_tags() == estimator.__sklearn_tags__()
 
 
+def check_verbose(estimator):
+    """Check verbose.
+
+    All estimators should have:
+    - verbose set to 0
+    - a default verbose == 0
+    """
+    assert estimator.verbose == 0
+
+    signature = dict(**inspect.signature(estimator.__init__).parameters)
+    default_verbose = signature["verbose"].default
+    assert default_verbose == 0
+
+
+@ignore_warnings()
+def check_set_output(estimator_orig):
+    """Check that set_ouput can be used."""
+    if not hasattr(estimator_orig, "transform") or isinstance(
+        estimator_orig, (SearchLight, ReNA)
+    ):
+        return
+
+    if isinstance(
+        estimator_orig, (_BaseDecomposition, ConnectivityMeasure, _MultiMixin)
+    ):
+        with pytest.raises(NotImplementedError):
+            estimator_orig.set_output(transform="pandas")
+        return
+
+    estimator = clone(estimator_orig)
+    estimator = fit_estimator(estimator)
+
+    img, _ = generate_data_to_fit(estimator)
+
+    signal = estimator.transform(img)
+    if isinstance(estimator, _BaseDecomposition):
+        assert isinstance(signal[0], np.ndarray)
+    else:
+        assert isinstance(signal, np.ndarray)
+
+    estimator.set_output(transform="pandas")
+    signal = estimator.transform(img)
+    assert isinstance(signal, pd.DataFrame)
+
+    estimator.set_output(transform="polars")
+    # if user wants to output to polars,
+    # sklearn will raise error if it's not installed
+    with pytest.raises(ImportError, match="requires polars to be installed"):
+        signal = estimator.transform(img)
+
+    # check on 1D image for estimators that accepts surface
+    if accept_surf_img_input(estimator_orig):
+        estimator = clone(estimator_orig)
+        estimator = fit_estimator(estimator)
+        estimator.set_output(transform="pandas")
+        signal = estimator.transform(img)
+        assert isinstance(signal, pd.DataFrame)
+
+
+def check_doc_attributes(estimator) -> None:
+    """Check that parameters and attributes are documented.
+
+    - Public parameters should be documented.
+    - Attributes should be in same order as in __init__()
+    - All documented parameters should exist after init.
+    - Fitted attributes (ending with a "_") should be documented.
+    - All documented fitted attributes should exist after fit.
+    """
+    doc = NumpyDocString(estimator.__doc__)
+    for section in ["Parameters", "Attributes"]:
+        if section not in doc:
+            raise ValueError(
+                f"Estimator {estimator.__class__.__name__} "
+                f"has no '{section} section."
+            )
+
+    # check public attributes before fit
+    parameters = [x for x in estimator.__dict__ if not x.startswith("_")]
+    documented_parameters = {
+        param.name: param.type for param in doc["Parameters"]
+    }
+    undocumented_parameters = [
+        param for param in parameters if param not in documented_parameters
+    ]
+    if undocumented_parameters:
+        raise ValueError(
+            "Missing docstring for "
+            f"[{', '.join(undocumented_parameters)}] "
+            f"in estimator {estimator.__class__.__name__}."
+        )
+    extra_parameters = [
+        attr
+        for attr in documented_parameters
+        if attr not in parameters and attr != "kwargs"
+    ]
+    if extra_parameters:
+        raise ValueError(
+            "Extra docstring for "
+            f"[{', '.join(extra_parameters)}] "
+            f"in estimator {estimator.__class__.__name__}."
+        )
+
+    # avoid duplicates
+    assert len(documented_parameters) == len(set(documented_parameters))
+
+    verbose_doc = documented_parameters["verbose"]
+    assert "default=0" in verbose_doc
+
+    # Attributes should be in same order as in __init__()
+    tmp = dict(**inspect.signature(estimator.__init__).parameters)
+
+    assert [str(x) for x in documented_parameters] == [str(x) for x in tmp], (
+        f"Parameters of {estimator.__class__.__name__} "
+        f"should be in order {list(tmp)}. "
+        f"Got {list(documented_parameters)}"
+    )
+
+    if isinstance(estimator, (ReNA, GroupSparseCovarianceCV)):
+        # TODO
+        # adapt fit_estimator to handle ReNA and GroupSparseCovarianceCV
+        return
+
+    # check fitted attributes after fit
+    fitted_estimator = fit_estimator(estimator)
+
+    fitted_attributes = [
+        x
+        for x in fitted_estimator.__dict__
+        if x.endswith("_") and not x.startswith("_")
+    ]
+
+    documented_attributes: dict[str, str] = {
+        attr.name: attr.type for attr in doc["Attributes"]
+    }
+    undocumented_attributes: list[str] = [
+        attr for attr in fitted_attributes if attr not in documented_attributes
+    ]
+    if undocumented_attributes:
+        raise ValueError(
+            "Missing docstring for "
+            f"[{', '.join(undocumented_attributes)}] "
+            f"in estimator {estimator.__class__.__name__}."
+        )
+
+    extra_attributes = [
+        attr for attr in documented_attributes if attr not in fitted_attributes
+    ]
+    if extra_attributes:
+        raise ValueError(
+            "Extra docstring for "
+            f"[{', '.join(extra_attributes)}] "
+            f"in estimator {estimator.__class__.__name__}."
+        )
+
+    # avoid duplicates
+    assert len(documented_attributes) == len(set(documented_attributes))
+
+    # nice to have
+    # if possible attributes should be in alphabetical order
+    # not always possible as sometimes doc string are composed from
+    # nilearn._utils.docs
+    if list(documented_attributes) != sorted(documented_attributes):
+        warnings.warn(
+            (
+                f"Attributes of {estimator.__class__.__name__} "
+                f"should be in order {sorted(documented_attributes)}. "
+                f"Got {list(documented_attributes)}"
+            ),
+            stacklevel=find_stack_level(),
+        )
+
+
+# ------------------ GENERIC IMG ESTIMATORS CHECKS ------------------
+
+
 def _check_mask_img_(estimator):
     if accept_niimg_input(estimator):
         assert isinstance(estimator.mask_img_, Nifti1Image)
     else:
         assert isinstance(estimator.mask_img_, SurfaceImage)
     load_mask_img(estimator.mask_img_)
+
+
+def check_img_estimator_verbose(estimator_orig):
+    """Check verbose behavior.
+
+    All estimators:
+    - should be quiet by default (when verbose == 0)
+    - should say something (anything) when verbose > 0
+    - check that outputs are the same for
+      - verbose False and verbose = 0
+      - verbose True and verbose = 1
+    - verbose 2 should have more than output verbose 1
+    """
+    estimator = clone(estimator_orig)
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        fit_estimator(estimator)
+    output = buffer.getvalue()
+    assert output == ""
+
+    # verbose False == verbose 0
+    estimator = clone(estimator_orig)
+    estimator.verbose = False
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        fit_estimator(estimator)
+    output_false = buffer.getvalue()
+    assert output == output_false
+
+    estimator = clone(estimator_orig)
+    estimator.verbose = 1
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        fit_estimator(estimator)
+    output = buffer.getvalue()
+    assert output != ""
+
+    if isinstance(estimator, SearchLight):
+        # TODO
+        pytest.skip("Some failures with SearchLight.")
+
+    # verbose True == verbose 1
+    # should mostly be the same except for object reference
+    estimator.verbose = True
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        fit_estimator(estimator)
+    output_true = buffer.getvalue()
+    if os.getenv("CI") is None:
+        # when running locally the output
+        # can be easily 'cleaned' to be compared
+        assert _sanitize_standard_output(
+            output_true
+        ) == _sanitize_standard_output(output), (
+            f"\n{_sanitize_standard_output(output_true)=}"
+            f"\n{_sanitize_standard_output(output)=}"
+        )
+
+    # verbose 2 should have more than output verbose 1
+    estimator = clone(estimator_orig)
+    estimator.verbose = 2
+
+    buffer = io.StringIO()
+    with contextlib.redirect_stdout(buffer):
+        fit_estimator(estimator)
+    output_2 = buffer.getvalue()
+    if os.getenv("CI") is not None and isinstance(
+        estimator, SurfaceMapsMasker
+    ):
+        # For SurfaceMapsMasker the output is harder to sanitize in CI
+        return
+    assert len(output_2) >= len(output), f"\n{output=}\n{output_2=}"
+
+
+def _sanitize_standard_output(output):
+    output = re.sub(
+        r"<nibabel.nifti1.Nifti1Image object at .*>", "Nifti1Image", output
+    )
+    output = re.sub(r", .* seconds remaining", ", X seconds remaining", output)
+    output = re.sub(
+        r"Time Elapsed: .* seconds", "Time Elapsed: X seconds", output
+    )
+    output = re.sub(r"done in .* seconds", "done in X seconds", output)
+    return output
 
 
 @ignore_warnings()
@@ -937,51 +1206,6 @@ def check_nilearn_methods_sample_order_invariance(estimator_orig):
 
 
 @ignore_warnings()
-def check_estimator_set_output(estimator_orig):
-    """Check that set_ouput can be used."""
-    if not hasattr(estimator_orig, "transform") or isinstance(
-        estimator_orig, (SearchLight, ReNA)
-    ):
-        return
-
-    if isinstance(
-        estimator_orig, (_BaseDecomposition, ConnectivityMeasure, _MultiMixin)
-    ):
-        with pytest.raises(NotImplementedError):
-            estimator_orig.set_output(transform="pandas")
-        return
-
-    estimator = clone(estimator_orig)
-    estimator = fit_estimator(estimator)
-
-    img, _ = generate_data_to_fit(estimator)
-
-    signal = estimator.transform(img)
-    if isinstance(estimator, _BaseDecomposition):
-        assert isinstance(signal[0], np.ndarray)
-    else:
-        assert isinstance(signal, np.ndarray)
-
-    estimator.set_output(transform="pandas")
-    signal = estimator.transform(img)
-    assert isinstance(signal, pd.DataFrame)
-
-    estimator.set_output(transform="polars")
-    # if user wants to output to polars,
-    # sklearn will raise error if it's not installed
-    with pytest.raises(ImportError, match="requires polars to be installed"):
-        signal = estimator.transform(img)
-
-    # check on 1D image for estimators that accepts surface
-    if accept_surf_img_input(estimator_orig):
-        estimator = clone(estimator_orig)
-        estimator = fit_estimator(estimator)
-        estimator.set_output(transform="pandas")
-        signal = estimator.transform(img)
-        assert isinstance(signal, pd.DataFrame)
-
-
-@ignore_warnings()
 def check_fit_returns_self(estimator) -> None:
     """Check maskers return itself after fit.
 
@@ -990,116 +1214,6 @@ def check_fit_returns_self(estimator) -> None:
     fitted_estimator = fit_estimator(estimator)
 
     assert fitted_estimator is estimator
-
-
-def check_img_estimator_doc_attributes(estimator) -> None:
-    """Check that parameters and attributes are documented.
-
-    - Public parameters should be documented.
-    - Attributes should be in same order as in __init__()
-    - All documented parameters should exist after init.
-    - Fitted attributes (ending with a "_") should be documented.
-    - All documented fitted attributes should exist after fit.
-    """
-    doc = NumpyDocString(estimator.__doc__)
-    for section in ["Parameters", "Attributes"]:
-        if section not in doc:
-            raise ValueError(
-                f"Estimator {estimator.__class__.__name__} "
-                f"has no '{section} section."
-            )
-
-    # check public attributes before fit
-    parameters = [x for x in estimator.__dict__ if not x.startswith("_")]
-    documented_parameters = {
-        param.name: param.type for param in doc["Parameters"]
-    }
-    undocumented_parameters = [
-        param for param in parameters if param not in documented_parameters
-    ]
-    if undocumented_parameters:
-        raise ValueError(
-            "Missing docstring for "
-            f"[{', '.join(undocumented_parameters)}] "
-            f"in estimator {estimator.__class__.__name__}."
-        )
-    extra_parameters = [
-        attr
-        for attr in documented_parameters
-        if attr not in parameters and attr != "kwargs"
-    ]
-    if extra_parameters:
-        raise ValueError(
-            "Extra docstring for "
-            f"[{', '.join(extra_parameters)}] "
-            f"in estimator {estimator.__class__.__name__}."
-        )
-
-    # avoid duplicates
-    assert len(documented_parameters) == len(set(documented_parameters))
-
-    # Attributes should be in same order as in __init__()
-    tmp = dict(**inspect.signature(estimator.__init__).parameters)
-
-    assert [str(x) for x in documented_parameters] == [str(x) for x in tmp], (
-        f"Parameters of {estimator.__class__.__name__} "
-        f"should be in order {list(tmp)}. "
-        f"Got {list(documented_parameters)}"
-    )
-
-    if isinstance(estimator, (ReNA, GroupSparseCovarianceCV)):
-        # TODO
-        # adapt fit_estimator to handle ReNA and GroupSparseCovarianceCV
-        return
-
-    # check fitted attributes after fit
-    fitted_estimator = fit_estimator(estimator)
-
-    fitted_attributes = [
-        x
-        for x in fitted_estimator.__dict__
-        if x.endswith("_") and not x.startswith("_")
-    ]
-
-    documented_attributes: dict[str, str] = {
-        attr.name: attr.type for attr in doc["Attributes"]
-    }
-    undocumented_attributes: list[str] = [
-        attr for attr in fitted_attributes if attr not in documented_attributes
-    ]
-    if undocumented_attributes:
-        raise ValueError(
-            "Missing docstring for "
-            f"[{', '.join(undocumented_attributes)}] "
-            f"in estimator {estimator.__class__.__name__}."
-        )
-
-    extra_attributes = [
-        attr for attr in documented_attributes if attr not in fitted_attributes
-    ]
-    if extra_attributes:
-        raise ValueError(
-            "Extra docstring for "
-            f"[{', '.join(extra_attributes)}] "
-            f"in estimator {estimator.__class__.__name__}."
-        )
-
-    # avoid duplicates
-    assert len(documented_attributes) == len(set(documented_attributes))
-
-    # nice to have
-    # if possible attributes should be in alphabetical order
-    # not always possible as sometimes doc string are composed from
-    # nilearn._utils.docs
-    if list(documented_attributes) != sorted(documented_attributes):
-        warnings.warn(
-            (
-                f"Attributes of {estimator.__class__.__name__} "
-                f"should be in order {sorted(documented_attributes)}. "
-                f"Got {list(documented_attributes)}"
-            ),
-            stacklevel=find_stack_level(),
-        )
 
 
 @ignore_warnings()
@@ -3613,10 +3727,25 @@ def check_glm_dtypes(estimator):
 # ------------------ REPORT GENERATION CHECKS ------------------
 
 
+def _extra_kwargs(estimator):
+    """Adapt the call to generate_report to limit warnings.
+
+    For example by only passing the number of displayed maps
+    that a map masker contains.
+    """
+    if isinstance(
+        estimator,
+        (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),
+    ) and hasattr(estimator, "n_elements_"):
+        return {"displayed_maps": estimator.n_elements_}
+    else:
+        return {}
+
+
 def _generate_report_with_no_warning(estimator):
     """Check that report generation throws no warning."""
     with warnings.catch_warnings(record=True) as warning_list:
-        report = _generate_report(estimator)
+        estimator.generate_report(**_extra_kwargs(estimator))
 
         # TODO
         # RegionExtractor, SurfaceMapsMasker still throws too many warnings
@@ -3639,25 +3768,6 @@ def _generate_report_with_no_warning(estimator):
         if not isinstance(estimator, (RegionExtractor, SurfaceMapsMasker)):
             assert not unknown_warnings, unknown_warnings
 
-    _check_html(report)
-
-    return report
-
-
-def _generate_report(estimator):
-    """Adapt the call to generate_report to limit warnings.
-
-    For example by only passing the number of displayed maps
-    that a map masker contains.
-    """
-    if isinstance(
-        estimator,
-        (NiftiMapsMasker, MultiNiftiMapsMasker, SurfaceMapsMasker),
-    ) and hasattr(estimator, "n_elements_"):
-        return estimator.generate_report(displayed_maps=estimator.n_elements_)
-    else:
-        return estimator.generate_report()
-
 
 def check_masker_generate_report(estimator):
     """Check that maskers can generate report.
@@ -3671,17 +3781,11 @@ def check_masker_generate_report(estimator):
     - check that the masker has report data after fit
 
     """
-    if not is_matplotlib_installed():
-        with pytest.warns(UserWarning, match="Report will be missing figures"):
-            report = _generate_report(estimator)
+    generate_and_check_masker_report(estimator)
 
     assert isinstance(estimator._report_content, dict)
     assert estimator._report_content["description"] != ""
     assert estimator._has_report_data() is False
-
-    report = _generate_report(estimator)
-
-    _check_html(report, is_fit=False)
 
     if accept_niimg_input(estimator):
         input_img = _img_3d_rand()
@@ -3696,13 +3800,23 @@ def check_masker_generate_report(estimator):
 
     # TODO
     # SurfaceMapsMasker, RegionExtractor still throws a warning
-    report = _generate_report_with_no_warning(estimator)
-    report = _generate_report(estimator)
-    _check_html(report)
+    _generate_report_with_no_warning(estimator)
+
+    extra_warnings_allowed = False
+    duplicate_warnings_allowed = False
+    if isinstance(estimator, (SurfaceMapsMasker, RegionExtractor)):
+        extra_warnings_allowed = True
+    if isinstance(estimator, (RegionExtractor)):
+        duplicate_warnings_allowed = True
 
     with TemporaryDirectory() as tmp_dir:
-        report.save_as_html(Path(tmp_dir) / "report.html")
-        assert (Path(tmp_dir) / "report.html").is_file()
+        generate_and_check_masker_report(
+            estimator,
+            pth=Path(tmp_dir),
+            extra_warnings_allowed=extra_warnings_allowed,
+            duplicate_warnings_allowed=duplicate_warnings_allowed,
+            **_extra_kwargs(estimator),
+        )
 
 
 def check_masker_generate_report_constant(estimator):
@@ -3713,8 +3827,8 @@ def check_masker_generate_report_constant(estimator):
         input_img = _make_surface_img(2)
     estimator.fit(input_img)
 
-    report = _generate_report(estimator)
-    report_new = _generate_report(estimator)
+    report = estimator.generate_report(**_extra_kwargs(estimator))
+    report_new = estimator.generate_report(**_extra_kwargs(estimator))
 
     # svg/xml of images and UUID may be slightly different across calls
     # so we redact them out
@@ -3754,16 +3868,9 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
 
     assert estimator._report_content["warning_messages"] == []
 
-    match = "Report will be missing figures"
-    if is_matplotlib_installed():
-        match = "No image provided to fit"
-    with pytest.warns(UserWarning, match=match):
-        report = _generate_report(estimator)
-
-    _check_html(report)
-
-    assert 'id="warnings"' in str(report)
-    assert match in str(report)
+    generate_and_check_masker_report(
+        estimator, warnings_msg_to_check=["No image provided to fit"]
+    )
 
     input_img = _img_4d_rand_eye_medium()
 
@@ -3775,8 +3882,21 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(estimator):
     # NiftiSpheresMasker still throws a warning
     if isinstance(estimator, NiftiSpheresMasker):
         return
-    report = _generate_report_with_no_warning(estimator)
-    _check_html(report)
+
+    _generate_report_with_no_warning(estimator)
+
+    extra_warnings_allowed = False
+    duplicate_warnings_allowed = False
+    if isinstance(estimator, RegionExtractor):
+        extra_warnings_allowed = True
+        duplicate_warnings_allowed = True
+
+    generate_and_check_masker_report(
+        estimator,
+        **_extra_kwargs(estimator),
+        extra_warnings_allowed=extra_warnings_allowed,
+        duplicate_warnings_allowed=duplicate_warnings_allowed,
+    )
 
 
 @ignore_warnings()
@@ -3792,13 +3912,8 @@ def check_masker_generate_report_false(estimator):
     estimator.fit(input_img)
 
     assert estimator._has_report_data() is False
-    with pytest.warns(
-        UserWarning,
-        match=("No visual outputs created."),
-    ):
-        report = _generate_report(estimator)
 
-    _check_html(report, reports_requested=False)
+    generate_and_check_masker_report(estimator)
 
 
 @ignore_warnings()
@@ -3815,12 +3930,14 @@ def check_multimasker_generate_report(estimator):
 
         estimator.fit(input_img)
 
-        match = "Report will be missing figures"
-        if is_matplotlib_installed():
-            match = "A list of 4D subject images were provided to fit"
-        with pytest.warns(UserWarning, match=match):
-            _generate_report(estimator)
+        generate_and_check_masker_report(
+            estimator,
+            warnings_msg_to_check=[
+                "A list of 4D subject images were provided to fit"
+            ],
+        )
+
     else:
         # TODO add a warning
         estimator.fit(input_img)
-        _generate_report(estimator)
+        generate_and_check_masker_report(estimator)

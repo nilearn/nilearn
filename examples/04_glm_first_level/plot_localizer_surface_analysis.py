@@ -91,6 +91,7 @@ glm = FirstLevelModel(
     slice_time_ref=slice_time_ref,
     hrf_model="glover + derivative",
     minimize_memory=False,
+    verbose=1,
 ).fit(run_imgs=surface_image, events=data.events)
 
 # %%

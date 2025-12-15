@@ -84,9 +84,11 @@ jobs:
             id: py
             run: |
                 versions='py=["3.14", "3.13", "3.12", "3.11", "3.10"]'
+
                 if [ "$GITHUB_EVENT_NAME" == "pull_request" ]; then
                     versions='py=["3.14", "3.10"]'
                 fi
+
                 echo "Will run on the following python: ${versions}"
                 echo ${versions} >> "$GITHUB_OUTPUT"
 
@@ -164,7 +166,7 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
                 path: |
@@ -174,14 +176,14 @@ jobs:
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
 
         -   name: Upload html coverage
             if: success() || failure()
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_htmlcov
                 path: htmlcov
@@ -252,7 +254,7 @@ jobs:
 
         -   name: Upload test report
             if: success() || failure()
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_report
                 path: |
@@ -262,7 +264,7 @@ jobs:
 
         -   name: Upload test timings
             if: success() || failure()
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: ${{ matrix.os }}_${{ matrix.py }}_${{ matrix.description }}_pytest_output
                 path: results/pytest_output
