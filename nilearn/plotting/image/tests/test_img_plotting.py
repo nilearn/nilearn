@@ -95,6 +95,31 @@ def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_rand_eye):
     plt.close()
 
 
+@pytest.mark.parametrize(
+    "plot_func", PLOTTING_FUNCS_3D.difference({plot_glass_brain})
+)
+@pytest.mark.parametrize("display_mode", ["x", "y", "z"])
+def test_plot_functions_same_cut(
+    plot_func, display_mode, img_3d_rand_eye, tmp_path
+):
+    """Make sure that passing several times the same cut for stacked slicers
+       does not crash.
+
+    Should also throw a warning that a cut has been removed.
+
+    Regression test for:
+    https://github.com/nilearn/nilearn/issues/5903
+    """
+    with pytest.warns(UserWarning, match="Dropping duplicates cuts from"):
+        display = plot_func(
+            img_3d_rand_eye,
+            display_mode=display_mode,
+            cut_coords=[3, 3],
+        )
+        display.savefig(tmp_path / "tmp.png")
+        plt.close()
+
+
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
 def test_plot_threshold_for_uint8(affine_eye, plot_func):
     """Mask was applied in [-threshold, threshold] which is problematic \

@@ -1761,6 +1761,13 @@ class BaseStackedSlicer(BaseSlicer):
                 img, direction=cls._direction, n_cuts=cut_coords
             )
         else:
+            cut_coords = np.asarray(cut_coords).tolist()
+            if len(cut_coords) != len(set(cut_coords)):
+                warnings.warn(
+                    f"Dropping duplicates cuts from: {cut_coords=}",
+                    stacklevel=find_stack_level(),
+                )
+                cut_coords = list(set(cut_coords))
             cls._check_cut_coords_in_bounds(img, cut_coords)
 
         return cut_coords
