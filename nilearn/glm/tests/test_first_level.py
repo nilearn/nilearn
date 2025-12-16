@@ -2723,8 +2723,8 @@ def test_first_level_from_bids_surface(tmp_path):
     ],
 )
 def test_generate_report_default(kwargs):
-    """Make sure generate_report throws no warning by default.
-    or with with height=None and the future default threshold.
+    """Make sure generate_report throws no warning by default,
+    or when height_control=None and the future default threshold.
     """
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
         shapes=[(30, 31, 32, 33)], rk=3
@@ -2747,7 +2747,7 @@ def test_generate_report_default(kwargs):
 
 @pytest.mark.slow
 def test_generate_report_height_none_future_default():
-    """Make sure generate_report a single FutureWarning
+    """Make sure generate_report raises a single FutureWarning
     about the deprecation of the default threshold.
 
     TODO (nilearn >= 0.15)
@@ -2778,7 +2778,7 @@ def test_generate_report_height_none_future_default():
 @pytest.mark.slow
 @pytest.mark.parametrize("threshold", [4, DEFAULT_Z_THRESHOLD])
 def test_generate_report_threshold_unused(threshold):
-    """Make sure generate_report return a single warning,
+    """Make sure generate_report raises a single warning,
     about threshold not being used.
     """
     mask, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
