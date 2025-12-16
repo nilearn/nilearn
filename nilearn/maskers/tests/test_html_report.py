@@ -251,6 +251,7 @@ def test_nifti_spheres_masker_report_1_sphere(
     assert empty_div not in report.body
 
 
+@pytest.mark.slow
 def test_nifti_labels_masker_report_no_image_for_fit(
     img_3d_rand_eye, n_regions, labels, img_labels
 ):

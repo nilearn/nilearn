@@ -16,7 +16,6 @@ from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn.glm.thresholding import threshold_stats_img
 from nilearn.reporting.html_report import MISSING_ENGINE_MSG
-from nilearn.surface import SurfaceImage
 
 
 def _generate_model_metadata(out_file, model):
@@ -326,12 +325,6 @@ def save_glm_to_bids(
                             filename, label, density
                         )
                     )
-
-        if isinstance(img, SurfaceImage):
-            # TODO
-            # cluster computation is not implemented for surface data
-            # so we do not save any TSV or JSON to disk in this case.
-            continue
 
         thresholded_img, threshold = threshold_stats_img(
             stat_img=img,

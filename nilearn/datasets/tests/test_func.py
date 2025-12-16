@@ -963,6 +963,7 @@ def test_fetch_localizer(tmp_path):
     assert isinstance(dataset.epi_img, str)
 
 
+@pytest.mark.single_process
 def test_fetch_language_localizer_demo_dataset(tmp_path, capsys):
     data_dir = tmp_path
     expected_data_dir = tmp_path / "fMRI-language-localizer-demo-dataset"
