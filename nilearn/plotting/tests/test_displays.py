@@ -255,9 +255,13 @@ def test_mosaic_slicer_img_none_false(cut_coords, img):
 def test_mosaic_slicer_wrong_inputs(cut_coords):
     """Tests that providing wrong inputs raises a ``ValueError``."""
     with pytest.raises(
-        ValueError, match="cut_coords passed does not match the display mode"
+        ValueError, match="MosaicSlicer plotting expects tuple of length 3"
     ):
         MosaicSlicer.init_with_figure(img=None, cut_coords=cut_coords)
+
+    with pytest.raises(
+        ValueError, match="MosaicSlicer plotting expects tuple of length 3"
+    ):
         MosaicSlicer(img=None, cut_coords=cut_coords)
 
 

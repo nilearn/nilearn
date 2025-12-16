@@ -176,6 +176,7 @@ def test_outlier_cut_coords(matplotlib_pyplot):
 
     with pytest.warns(UserWarning, match="At least one of the specified"):
         plot_stat_map(img, display_mode="z", cut_coords=cuts, bg_img=bg_img)
+    plot_stat_map(img, display_mode="z", cut_coords=cuts, bg_img=bg_img)
 
 
 def test_plotting_functions_with_dim_invalid_input(
