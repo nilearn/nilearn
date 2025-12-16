@@ -397,11 +397,9 @@ def save_glm_to_bids(
     # as only the surface data but no mesh
     # was saved to disk.
     with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            category=FutureWarning,
-            message="the default 'threshold' will be set to ",
-        )
+        # TODO (nilearn >= 0.15.0) remove
+        warnings.filterwarnings("ignore", category=FutureWarning)
+
         if model._is_volume_glm():
             warnings.filterwarnings(
                 "ignore",

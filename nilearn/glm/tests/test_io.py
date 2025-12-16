@@ -81,6 +81,7 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
             height_control=None,
         )
 
+        # TODO (nilearn >= 0.15.0) remove
         n_future_warnings = len(
             [x for x in warning_list if issubclass(x.category, FutureWarning)]
         )
