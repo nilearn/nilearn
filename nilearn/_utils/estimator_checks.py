@@ -4046,7 +4046,7 @@ def check_masker_generate_report(estimator_orig):
 
     """
     estimator = clone(estimator_orig)
-    
+
     generate_and_check_masker_report(estimator)
 
     assert isinstance(estimator._report_content, dict)
@@ -4153,7 +4153,7 @@ def check_nifti_masker_generate_report_after_fit_with_only_mask(
     # fix for free threaded python
     if not is_gil_enabled():
         pytest.xfail("May fail without the GIL")
-        
+
     generate_and_check_masker_report(
         estimator, warnings_msg_to_check=["No image provided to fit"]
     )
