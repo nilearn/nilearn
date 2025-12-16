@@ -4,6 +4,7 @@ discovery rate control, false discovery proportion in clusters.
 """
 
 import warnings
+from typing import Literal
 
 import numpy as np
 from scipy.ndimage import label
@@ -25,6 +26,7 @@ from nilearn.image import (
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface.surface import SurfaceImage, check_surf_img
+from nilearn.typing import ClusterThreshold
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
 
@@ -309,8 +311,8 @@ def threshold_stats_img(
     mask_img=None,
     alpha=0.001,
     threshold: float | int | np.floating | np.integer | None = None,
-    height_control="fpr",
-    cluster_threshold=0,
+    height_control: Literal[None, "fpr", "fdr", "bonferroni"] = "fpr",
+    cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = True,
 ):
     """Compute the required threshold level and return the thresholded map.
