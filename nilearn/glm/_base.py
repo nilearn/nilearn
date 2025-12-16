@@ -19,7 +19,10 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.param_validation import check_params
+from nilearn._utils.param_validation import (
+    check_parameter_in_allowed,
+    check_params,
+)
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn._version import __version__
 from nilearn.glm._reporting_utils import (
@@ -28,6 +31,7 @@ from nilearn.glm._reporting_utils import (
     _make_stat_maps_contrast_clusters,
     _mask_to_plot,
     _turn_into_full_path,
+    check_generate_report_input,
 )
 from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
@@ -42,7 +46,7 @@ from nilearn.reporting.html_report import (
     return_jinja_env,
 )
 from nilearn.surface import SurfaceImage
-from nilearn.typing import ClusterThreshold
+from nilearn.typing import ClusterThreshold, HeightControl
 
 FIGURE_FORMAT = "png"
 
@@ -376,7 +380,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
         threshold: float | int | np.floating | np.integer | None = None,
         alpha=0.001,
         cluster_threshold: ClusterThreshold = 0,
-        height_control: Literal[None, "fpr", "fdr", "bonferroni"] = "fpr",
+        height_control: HeightControl = "fpr",
         two_sided: bool = False,
         min_distance: float | int | np.floating | np.integer = 8.0,
         plot_type: Literal["slice", "glass"] = "slice",
@@ -522,7 +526,18 @@ class BaseGLM(CacheMixin, BaseEstimator):
             Contains the HTML code for the :term:`GLM` report.
 
         """
+        height_control_methods = [
+            "fpr",
+            "fdr",
+            "bonferroni",
+            None,
+        ]
+        check_parameter_in_allowed(
+            height_control, height_control_methods, "height_control"
+        )
         check_params(locals())
+
+        check_generate_report_input(cluster_threshold, min_distance, plot_type)
 
         if self._is_first_level_glm() and first_level_contrast is not None:
             warnings.warn(
@@ -553,7 +568,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             warning_messages.append(
                 f"\n'{threshold=}' is not used with '{height_control=}'."
                 "\n'threshold' is only used when 'height_control=None'. "
-                "\nSetting 'threshold' to None. "
+                "\n'threshold' was to None. "
             )
             threshold = None
 

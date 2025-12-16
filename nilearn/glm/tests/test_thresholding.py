@@ -138,6 +138,35 @@ def test_threshold_stats_img_no_height_control(
     assert th_map is None
 
 
+def test_threshold_stats_img_error_height_control(
+    data_norm_isf, img_3d_ones_eye, affine_eye
+):
+    data = data_norm_isf
+    data[2:4, 5:7, 6:8] = 5.0
+    stat_img = Nifti1Image(data, affine_eye)
+
+    with pytest.raises(ValueError, match="must be one of"):
+        threshold_stats_img(
+            stat_img,
+            mask_img=img_3d_ones_eye,
+            height_control="knights_of_ni",
+        )
+
+
+def test_threshold_stats_img_error_cluster_threshold(
+    data_norm_isf, img_3d_ones_eye, affine_eye
+):
+    """Raise error for invalid cluster_threshold."""
+    data = data_norm_isf
+    data[2:4, 5:7, 6:8] = 5.0
+    stat_img = Nifti1Image(data, affine_eye)
+
+    with pytest.raises(ValueError, match="'cluster_threshold' must be > 0"):
+        threshold_stats_img(
+            stat_img, mask_img=img_3d_ones_eye, cluster_threshold=-10
+        )
+
+
 @pytest.mark.slow
 def test_threshold_stats_img(data_norm_isf, img_3d_ones_eye, affine_eye):
     data = data_norm_isf

@@ -29,6 +29,22 @@ from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
 
+def check_generate_report_input(cluster_threshold, min_distance, plot_type):
+    if cluster_threshold < 0:
+        raise ValueError(
+            f"'cluster_threshold' must be > 0. Got {cluster_threshold=}"
+        )
+
+    if min_distance < 0:
+        raise ValueError(f"'min_distance' must be > 0. Got {min_distance=}")
+
+    if plot_type not in {"slice", "glass"}:
+        raise ValueError(
+            "'plot_type' must be one of {'slice', 'glass'}. "
+            f"Got {plot_type=}"
+        )
+
+
 def _turn_into_full_path(bunch, dir: Path) -> str | Bunch:
     """Recursively turns str values of a dict into path.
 

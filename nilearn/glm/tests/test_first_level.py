@@ -2801,7 +2801,7 @@ def test_generate_report_threshold_unused(threshold):
             sum(
                 1
                 for warning in warning_list
-                if "Setting 'threshold' to None" in str(warning.message)
+                if "'threshold' was set to 'None'" in str(warning.message)
             )
             == 1
         )

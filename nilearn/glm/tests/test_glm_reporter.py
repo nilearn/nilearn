@@ -237,7 +237,7 @@ def test_flm_reporting_several_contrasts(flm, tmp_path, rk):
 
 @pytest.mark.slow
 @pytest.mark.parametrize("height_control", ["fdr", "bonferroni", None])
-def test_flm_reporting_height_control(
+def test_generate_report_height_control(
     flm, height_control, contrasts, tmp_path
 ):
     """Test for first level model reporting.
@@ -263,6 +263,36 @@ def test_flm_reporting_height_control(
         warnings_msg_to_check=warnings_msg_to_check,
         extra_warnings_allowed=True,
     )
+
+
+def test_generate_report_error_height_control(flm):
+    """Raise error for invalid height_control."""
+    with pytest.raises(ValueError, match="must be one of"):
+        flm.generate_report(height_control="knights_of_ni")
+
+
+def test_generate_report_error_min_distance(flm):
+    """Raise error for invalid min_distance."""
+    with pytest.raises(ValueError, match="'min_distance' must be > 0"):
+        flm.generate_report(min_distance=-8)
+
+
+def test_generate_report_error_cluster_threshold(flm):
+    """Raise error for invalid cluster_threshold."""
+    with pytest.raises(ValueError, match="'cluster_threshold' must be > 0"):
+        flm.generate_report(cluster_threshold=-10)
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("display_mode", [None, "glass", "ortho"])
+def test_generate_report_error_plot_type(flm, contrasts, display_mode):
+    """Check errors when wrong plot type is requested."""
+    with pytest.raises(ValueError, match="'plot_type' must be one of"):
+        flm.generate_report(
+            contrasts=contrasts,
+            display_mode=display_mode,
+            plot_type="junk",
+        )
 
 
 @pytest.mark.slow
@@ -354,23 +384,6 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
         plot_type=plot_type,
         extra_warnings_allowed=True,
     )
-
-
-@pytest.mark.slow
-def test_report_invalid_plot_type(flm, contrasts):
-    """Check errors when wrong plot type is requested."""
-    with pytest.raises(KeyError, match="junk"):
-        flm.generate_report(
-            contrasts=contrasts,
-            plot_type="junk",
-        )
-    if is_matplotlib_installed():
-        with pytest.raises(ValueError, match="'plot_type' must be one of"):
-            flm.generate_report(
-                contrasts=contrasts,
-                display_mode="glass",
-                plot_type="junk",
-            )
 
 
 @pytest.mark.slow

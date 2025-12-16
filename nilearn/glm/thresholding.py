@@ -4,7 +4,6 @@ discovery rate control, false discovery proportion in clusters.
 """
 
 import warnings
-from typing import Literal
 
 import numpy as np
 from scipy.ndimage import label
@@ -26,7 +25,7 @@ from nilearn.image import (
 )
 from nilearn.maskers import NiftiMasker, SurfaceMasker
 from nilearn.surface.surface import SurfaceImage, check_surf_img
-from nilearn.typing import ClusterThreshold
+from nilearn.typing import ClusterThreshold, HeightControl
 
 DEFAULT_Z_THRESHOLD = norm.isf(0.001)
 
@@ -311,7 +310,7 @@ def threshold_stats_img(
     mask_img=None,
     alpha=0.001,
     threshold: float | int | np.floating | np.integer | None = None,
-    height_control: Literal[None, "fpr", "fdr", "bonferroni"] = "fpr",
+    height_control: HeightControl = "fpr",
     cluster_threshold: ClusterThreshold = 0,
     two_sided: bool = True,
 ):
@@ -418,13 +417,12 @@ def threshold_stats_img(
         warnings.warn(
             f"\n'{threshold=}' is not used with '{height_control=}'."
             "\n'threshold' is only used when 'height_control=None'. "
-            "\nSetting 'threshold' to None. ",
+            "\n'threshold' was set to 'None'. ",
             UserWarning,
             stacklevel=find_stack_level(),
         )
         threshold = None
 
-    check_params(locals())
     height_control_methods = [
         "fpr",
         "fdr",
@@ -434,6 +432,12 @@ def threshold_stats_img(
     check_parameter_in_allowed(
         height_control, height_control_methods, "height_control"
     )
+    check_params(locals())
+
+    if cluster_threshold < 0:
+        raise ValueError(
+            f"'cluster_threshold' must be > 0. Got {cluster_threshold=}"
+        )
 
     # if two-sided, correct alpha by a factor of 2
     alpha_ = alpha / 2 if two_sided else alpha
