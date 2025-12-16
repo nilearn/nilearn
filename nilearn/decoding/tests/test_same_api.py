@@ -230,6 +230,7 @@ def test_graph_net_and_tvl1_same_for_pure_l1_logistic(max_iter=20, decimal=2):
     assert_array_almost_equal(a, b, decimal=decimal)
 
 
+@pytest.mark.slow
 @pytest.mark.filterwarnings("ignore:Specified l1_ratio = 1")
 @pytest.mark.parametrize(
     "estimator, standardize",
