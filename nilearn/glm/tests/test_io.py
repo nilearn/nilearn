@@ -17,6 +17,12 @@ from nilearn.glm.io import save_glm_to_bids
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
 
+# generic parameters to reduce n warnings in tests
+KWARGS = {
+    "height_control": None,
+    "threshold": 1,
+}
+
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
@@ -77,10 +83,20 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
             prefix=prefix,
             height_control=None,
         )
-        n_warnings = len(
+
+        n_future_warnings = len(
             [x for x in warning_list if issubclass(x.category, FutureWarning)]
         )
-        assert n_warnings == 1
+        assert n_future_warnings == 1
+
+        n_no_contrasts_warnings = len(
+            [
+                x
+                for x in warning_list
+                if "No contrast passed during report generation." in str(x)
+            ]
+        )
+        assert n_no_contrasts_warnings == 0
 
     assert (tmpdir / "dataset_description.json").exists()
 
@@ -118,8 +134,7 @@ def test_save_glm_to_bids_serialize_affine(tmp_path):
         contrast_types={"effects of interest": "F"},
         out_dir=tmp_path,
         prefix="sub-01_ses-01_task-nback",
-        height_control=None,
-        threshold=1,
+        **KWARGS,
     )
 
 
@@ -251,8 +266,7 @@ def test_save_glm_to_bids_contrast_definitions(
         contrast_types=None,
         out_dir=tmpdir,
         prefix=prefix,
-        height_control=None,
-        threshold=1,
+        **KWARGS,
     )
 
     assert (tmpdir / "dataset_description.json").exists()
@@ -329,8 +343,7 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
         contrast_types=contrast_types,
         out_dir=tmpdir,
         prefix=prefix,
-        height_control=None,
-        threshold=1,
+        **KWARGS,
     )
 
     assert (tmpdir / "dataset_description.json").exists()
@@ -363,8 +376,7 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmp_path,
-        height_control=None,
-        threshold=1,
+        **KWARGS,
     )
 
     assert model._reporting_data.get("filenames", None) is not None
@@ -406,8 +418,7 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmp_path,
-        height_control=None,
-        threshold=1,
+        **KWARGS,
     )
 
     EXPECTED_FILENAMES = [
@@ -551,8 +562,7 @@ def test_save_glm_to_bids_surface_prefix_override(tmp_path):
         out_dir=tmp_path / "output",
         contrasts=["c0"],
         prefix=prefix,
-        height_control=None,
-        threshold=1,
+        **KWARGS,
     )
 
     EXPECTED_FILENAME_ENDINGS = [
@@ -629,8 +639,7 @@ def test_save_glm_to_bids_infer_filenames_override(tmp_path, prefix):
         out_dir=tmp_path / "output",
         contrasts=["c0"],
         prefix=prefix,
-        height_control=None,
-        threshold=1,
+        **KWARGS,
     )
 
     EXPECTED_FILENAME_ENDINGS = [
