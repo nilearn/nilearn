@@ -1,6 +1,7 @@
 """Tests saving glm to bids."""
 
 import json
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -67,13 +68,19 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
 
     contrasts = {"effects of interest": np.eye(rk)}
     contrast_types = {"effects of interest": "F"}
-    save_glm_to_bids(
-        model=single_run_model,
-        contrasts=contrasts,
-        contrast_types=contrast_types,
-        out_dir=tmpdir,
-        prefix=prefix,
-    )
+    with warnings.catch_warnings(record=True) as warning_list:
+        save_glm_to_bids(
+            model=single_run_model,
+            contrasts=contrasts,
+            contrast_types=contrast_types,
+            out_dir=tmpdir,
+            prefix=prefix,
+            height_control=None,
+        )
+        n_warnings = len(
+            [x for x in warning_list if issubclass(x.category, FutureWarning)]
+        )
+        assert n_warnings == 1
 
     assert (tmpdir / "dataset_description.json").exists()
 
@@ -111,6 +118,8 @@ def test_save_glm_to_bids_serialize_affine(tmp_path):
         contrast_types={"effects of interest": "F"},
         out_dir=tmp_path,
         prefix="sub-01_ses-01_task-nback",
+        height_control=None,
+        threshold=1,
     )
 
 
@@ -242,6 +251,8 @@ def test_save_glm_to_bids_contrast_definitions(
         contrast_types=None,
         out_dir=tmpdir,
         prefix=prefix,
+        height_control=None,
+        threshold=1,
     )
 
     assert (tmpdir / "dataset_description.json").exists()
@@ -318,6 +329,8 @@ def test_save_glm_to_bids_second_level(tmp_path_factory, prefix):
         contrast_types=contrast_types,
         out_dir=tmpdir,
         prefix=prefix,
+        height_control=None,
+        threshold=1,
     )
 
     assert (tmpdir / "dataset_description.json").exists()
@@ -350,6 +363,8 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmp_path,
+        height_control=None,
+        threshold=1,
     )
 
     assert model._reporting_data.get("filenames", None) is not None
@@ -391,6 +406,8 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
         contrasts=contrasts,
         contrast_types=contrast_types,
         out_dir=tmp_path,
+        height_control=None,
+        threshold=1,
     )
 
     EXPECTED_FILENAMES = [
@@ -409,7 +426,8 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
 
 
 @pytest.mark.slow
-def test_save_glm_to_bids_infer_filenames(tmp_path):
+@pytest.mark.parametrize("kwargs", ([{}, {"height_control": None}]))
+def test_save_glm_to_bids_infer_filenames(tmp_path, kwargs):
     """Check that output filenames can be inferred from BIDS input."""
     n_sub = 1
 
@@ -441,7 +459,7 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
     assert len(model._reporting_data["run_imgs"]) == 4
 
     model = save_glm_to_bids(
-        model=model, out_dir=tmp_path / "output", contrasts=["c0"]
+        model=model, out_dir=tmp_path / "output", contrasts=["c0"], **kwargs
     )
 
     EXPECTED_FILENAME_ENDINGS = [
@@ -474,12 +492,27 @@ def test_save_glm_to_bids_infer_filenames(tmp_path):
     ).open("r") as f:
         metadata = json.load(f)
 
-    for key in [
-        "Height control",
-        "Threshold (computed)",
+    expected_keys = [
         "Cluster size threshold (voxels)",
         "Minimum distance (mm)",
-    ]:
+    ]
+
+    if "height_control" not in kwargs:
+        expected_keys.extend(
+            [
+                "Height control",
+                "Threshold (computed)",
+            ]
+        )
+    else:
+        expected_keys.extend(
+            [
+                "Height control",
+                "Threshold Z",
+            ]
+        )
+
+    for key in expected_keys:
         assert key in metadata
 
 
@@ -518,6 +551,8 @@ def test_save_glm_to_bids_surface_prefix_override(tmp_path):
         out_dir=tmp_path / "output",
         contrasts=["c0"],
         prefix=prefix,
+        height_control=None,
+        threshold=1,
     )
 
     EXPECTED_FILENAME_ENDINGS = [
@@ -594,6 +629,8 @@ def test_save_glm_to_bids_infer_filenames_override(tmp_path, prefix):
         out_dir=tmp_path / "output",
         contrasts=["c0"],
         prefix=prefix,
+        height_control=None,
+        threshold=1,
     )
 
     EXPECTED_FILENAME_ENDINGS = [

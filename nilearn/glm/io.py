@@ -385,7 +385,12 @@ def save_glm_to_bids(
     # as only the surface data but no mesh
     # was saved to disk.
     if model._is_volume_glm():
-        glm_report = model.generate_report(**kwargs)
+        with warnings.catch_warnings():
+            warnings.filterwarnings(
+                "ignore",
+                message="No contrast passed during report generation.",
+            )
+            glm_report = model.generate_report(**kwargs)
     else:
         glm_report = model.generate_report(contrasts=contrasts, **kwargs)
 
