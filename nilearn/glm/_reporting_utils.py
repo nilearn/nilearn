@@ -31,7 +31,21 @@ from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
 
 
-def check_generate_report_input(cluster_threshold, min_distance, plot_type):
+def check_generate_report_input(
+    height_control, cluster_threshold, min_distance, plot_type
+):
+    height_control_methods = [
+        "fpr",
+        "fdr",
+        "bonferroni",
+        None,
+    ]
+    check_parameter_in_allowed(
+        height_control,
+        height_control_methods,
+        "height_control",
+    )
+
     if cluster_threshold < 0:
         raise ValueError(
             f"'cluster_threshold' must be > 0. Got {cluster_threshold=}"
@@ -66,6 +80,7 @@ def sanitize_generate_report_input(
         first_level_contrast = None
 
     if height_control is None:
+        # TODO (nilearn >= 0.15.0) update to DEFAULT_Z_THRESHOLD
         if threshold is None:
             threshold = 3.09
 
@@ -84,7 +99,7 @@ def sanitize_generate_report_input(
         warning_messages.append(
             f"\n'{threshold=}' is not used with '{height_control=}'."
             "\n'threshold' is only used when 'height_control=None'. "
-            "\n'threshold' was to None. "
+            "\n'threshold' was set to 'None'. "
         )
         threshold = None
 

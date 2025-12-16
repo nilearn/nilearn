@@ -14,6 +14,10 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn.glm._reporting_utils import (
+    check_generate_report_input,
+    sanitize_generate_report_input,
+)
 from nilearn.glm.thresholding import threshold_stats_img
 from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 
@@ -209,11 +213,26 @@ def save_glm_to_bids(
         check_parameter_in_allowed(key, report_kwargs, "Extra key-word")
         report_kwargs[key] = kwargs[key]
 
-    if (
-        report_kwargs["height_control"] is None
-        and report_kwargs["threshold"] is None
-    ):
-        report_kwargs["threshold"] = 3.09
+    check_generate_report_input(
+        report_kwargs["height_control"],
+        report_kwargs["cluster_threshold"],
+        report_kwargs["min_distance"],
+        report_kwargs["plot_type"],
+    )
+
+    (
+        report_kwargs["threshold"],
+        report_kwargs["cut_coords"],
+        first_level_contrast,
+        _,
+    ) = sanitize_generate_report_input(
+        report_kwargs["height_control"],
+        report_kwargs["threshold"],
+        report_kwargs["cut_coords"],
+        report_kwargs["plot_type"],
+        first_level_contrast=first_level_contrast,
+        is_first_level_glm=model._is_first_level_glm(),
+    )
 
     contrasts = coerce_to_dict(contrasts)
 
@@ -377,15 +396,20 @@ def save_glm_to_bids(
     # For surface GLM, we recompute the stats maps
     # as only the surface data but no mesh
     # was saved to disk.
-    if model._is_volume_glm():
-        with warnings.catch_warnings():
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            category=FutureWarning,
+            message="the default 'threshold' will be set to ",
+        )
+        if model._is_volume_glm():
             warnings.filterwarnings(
                 "ignore",
                 message="No contrast passed during report generation.",
             )
             glm_report = model.generate_report(**kwargs)
-    else:
-        glm_report = model.generate_report(contrasts=contrasts, **kwargs)
+        else:
+            glm_report = model.generate_report(contrasts=contrasts, **kwargs)
 
     model.verbose += 1
     glm_report.save_as_html(out_dir / f"{prefix}report.html")

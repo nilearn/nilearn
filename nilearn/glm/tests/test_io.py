@@ -104,6 +104,43 @@ def test_save_glm_to_bids(tmp_path_factory, prefix):
 
 
 @pytest.mark.slow
+def test_save_glm_to_bids_reset_threshold_warning(tmp_path_factory):
+    """Get single warning threshold reset to None."""
+    tmpdir = tmp_path_factory.mktemp("test_save_glm_results")
+
+    shapes, rk = [(7, 8, 9, 15)], 3
+    _, fmri_data, design_matrices = generate_fake_fmri_data_and_design(
+        shapes,
+        rk,
+    )
+
+    single_run_model = FirstLevelModel(
+        mask_img=None,
+        minimize_memory=False,
+    ).fit(fmri_data[0], design_matrices=design_matrices[0])
+
+    contrasts = {"effects of interest": np.eye(rk)}
+    contrast_types = {"effects of interest": "F"}
+    with warnings.catch_warnings(record=True) as warning_list:
+        save_glm_to_bids(
+            model=single_run_model,
+            contrasts=contrasts,
+            contrast_types=contrast_types,
+            out_dir=tmpdir,
+            threshold=1.0,
+        )
+
+        reset_threshold_warnings = len(
+            [
+                x
+                for x in warning_list
+                if "'threshold' was set to 'None'" in str(x)
+            ]
+        )
+        assert reset_threshold_warnings == 1
+
+
+@pytest.mark.slow
 def test_save_glm_to_bids_serialize_affine(tmp_path):
     """Test that affines are turned into a serializable type.
 

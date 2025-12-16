@@ -20,7 +20,6 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import (
-    check_parameter_in_allowed,
     check_params,
 )
 from nilearn._utils.tags import SKLEARN_LT_1_6
@@ -526,18 +525,10 @@ class BaseGLM(CacheMixin, BaseEstimator):
             Contains the HTML code for the :term:`GLM` report.
 
         """
-        height_control_methods = [
-            "fpr",
-            "fdr",
-            "bonferroni",
-            None,
-        ]
-        check_parameter_in_allowed(
-            height_control, height_control_methods, "height_control"
+        check_generate_report_input(
+            height_control, cluster_threshold, min_distance, plot_type
         )
         check_params(locals())
-
-        check_generate_report_input(cluster_threshold, min_distance, plot_type)
 
         threshold, cut_coords, first_level_contrast, warning_messages = (
             sanitize_generate_report_input(
