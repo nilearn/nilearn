@@ -296,6 +296,18 @@ def test_generate_report_error_plot_type(flm, contrasts, display_mode):
 
 
 @pytest.mark.slow
+def test_generate_report_warning_glass_cut_coords(flm, contrasts):
+    """Check cut_coords not used with glass brain."""
+    with pytest.warns(UserWarning, match="'cut_coords' was set to None"):
+        flm.generate_report(
+            contrasts=contrasts,
+            cut_coords=[1.0, 2.0, 3.0],
+            display_mode="z",
+            plot_type="glass",
+        )
+
+
+@pytest.mark.slow
 @pytest.mark.parametrize("height_control", ["fpr", "fdr", "bonferroni", None])
 def test_slm_reporting_method(slm, height_control):
     """Test for the second level reporting."""
@@ -498,10 +510,7 @@ def test_flm_generate_report_surface_data_error(
     with pytest.raises(
         TypeError, match="'bg_img' must a SurfaceImage instance"
     ):
-        model.generate_report(
-            "c0",
-            bg_img=img_3d_mni,
-        )
+        model.generate_report("c0", bg_img=img_3d_mni)
 
 
 @pytest.mark.slow
@@ -542,7 +551,4 @@ def test_report_make_glm_deprecation_warning(flm, contrasts):
     # remove
     """
     with pytest.warns(FutureWarning):
-        make_glm_report(
-            flm,
-            contrasts=contrasts,
-        )
+        make_glm_report(flm, contrasts=contrasts, height_control=None)

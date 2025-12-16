@@ -32,8 +32,8 @@ from nilearn.glm._reporting_utils import (
     _mask_to_plot,
     _turn_into_full_path,
     check_generate_report_input,
+    sanitize_generate_report_input,
 )
-from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD
 from nilearn.interfaces.bids.utils import bids_entities, create_bids_filename
 from nilearn.maskers import SurfaceMasker
 from nilearn.reporting._utils import dataframe_to_html
@@ -500,8 +500,8 @@ class BaseGLM(CacheMixin, BaseEstimator):
         %(cut_coords)s
 
         display_mode :  :obj:`str`, default=None
-            Default is 'z' if plot_type is 'slice'; '
-            ortho' if plot_type is 'glass'.
+            Default is 'z' if plot_type is 'slice';
+            'ortho' if plot_type is 'glass'.
 
             Choose the direction of the cuts:
             'x' - sagittal, 'y' - coronal, 'z' - axial,
@@ -539,38 +539,16 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         check_generate_report_input(cluster_threshold, min_distance, plot_type)
 
-        if self._is_first_level_glm() and first_level_contrast is not None:
-            warnings.warn(
-                "'first_level_contrast' is ignored for FirstLevelModel."
-                "Setting first_level_contrast=None.",
-                stacklevel=find_stack_level(),
+        threshold, cut_coords, first_level_contrast, warning_messages = (
+            sanitize_generate_report_input(
+                height_control,
+                threshold,
+                cut_coords,
+                plot_type,
+                first_level_contrast,
+                self._is_first_level_glm(),
             )
-            first_level_contrast = None
-
-        warning_messages = []
-
-        if height_control is None:
-            if threshold is None:
-                threshold = 3.09
-
-            # TODO (nilearn >= 0.15.0) remove
-            if threshold == 3.09:
-                warnings.warn(
-                    "\nFrom nilearn version>=0.15, "
-                    "the default 'threshold' will be set to "
-                    f"{DEFAULT_Z_THRESHOLD}.",
-                    FutureWarning,
-                    stacklevel=find_stack_level(),
-                )
-
-        elif threshold is not None:
-            threshold = float(threshold)
-            warning_messages.append(
-                f"\n'{threshold=}' is not used with '{height_control=}'."
-                "\n'threshold' is only used when 'height_control=None'. "
-                "\n'threshold' was to None. "
-            )
-            threshold = None
+        )
 
         model_attributes = _glm_model_attributes_to_dataframe(self)
         with pd.option_context("display.max_colwidth", 100):
@@ -618,7 +596,7 @@ class BaseGLM(CacheMixin, BaseEstimator):
             )
 
             bg_img = _load_bg_img(bg_img, self._is_volume_glm())
-            mask_plot = _mask_to_plot(self, bg_img, cut_coords)
+            mask_plot = _mask_to_plot(self, bg_img)
 
             # We try to rely on the content of glm object only
             # by reading images from disk rarther than recomputing them

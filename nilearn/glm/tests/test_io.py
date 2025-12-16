@@ -18,10 +18,7 @@ from nilearn.glm.second_level import SecondLevelModel
 from nilearn.maskers import NiftiMasker
 
 # generic parameters to reduce n warnings in tests
-KWARGS = {
-    "height_control": None,
-    "threshold": 1,
-}
+KWARGS = {"height_control": None, "threshold": 1, "cut_coords": [0.5, 1, 1.5]}
 
 
 @pytest.mark.slow
@@ -393,7 +390,7 @@ def test_save_glm_to_bids_glm_report_no_contrast(two_runs_model, tmp_path):
         for file in EXPECTED_FILENAMES:
             assert f'src="{file}"' in content
 
-    report = model.generate_report()
+    report = model.generate_report(**KWARGS)
 
     report.save_as_html(tmp_path / "new_report.html")
 
@@ -428,7 +425,7 @@ def test_save_glm_to_bids_glm_report_new_contrast(two_runs_model, tmp_path):
     ]
 
     # check content of a new report
-    report = model.generate_report(contrasts=["AAA-BBB"])
+    report = model.generate_report(contrasts=["AAA-BBB"], **KWARGS)
 
     assert "AAA-BBB" in report.__str__()
     assert "BBB-AAA" not in report.__str__()

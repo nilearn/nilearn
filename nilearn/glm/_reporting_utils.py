@@ -1,3 +1,4 @@
+import warnings
 from html import escape  # TODO this should be removed from here
 from pathlib import Path
 
@@ -8,6 +9,7 @@ from sklearn.utils import Bunch
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import is_matplotlib_installed
+from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import load_niimg, safe_get_data
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -17,7 +19,7 @@ from nilearn._utils.tags import (
     accept_niimg_input,
     is_masker,
 )
-from nilearn.glm.thresholding import threshold_stats_img
+from nilearn.glm.thresholding import DEFAULT_Z_THRESHOLD, threshold_stats_img
 from nilearn.image import check_niimg
 from nilearn.reporting._utils import dataframe_to_html
 from nilearn.reporting.get_clusters_table import (
@@ -43,6 +45,58 @@ def check_generate_report_input(cluster_threshold, min_distance, plot_type):
             "'plot_type' must be one of {'slice', 'glass'}. "
             f"Got {plot_type=}"
         )
+
+
+def sanitize_generate_report_input(
+    height_control,
+    threshold,
+    cut_coords,
+    plot_type,
+    first_level_contrast,
+    is_first_level_glm: bool,
+):
+    warning_messages = []
+
+    if is_first_level_glm and first_level_contrast is not None:
+        warnings.warn(
+            "'first_level_contrast' is ignored for FirstLevelModel."
+            "Setting first_level_contrast=None.",
+            stacklevel=find_stack_level(),
+        )
+        first_level_contrast = None
+
+    if height_control is None:
+        if threshold is None:
+            threshold = 3.09
+
+        # TODO (nilearn >= 0.15.0) remove
+        if threshold == 3.09:
+            warnings.warn(
+                "\nFrom nilearn version>=0.15, "
+                "the default 'threshold' will be set to "
+                f"{DEFAULT_Z_THRESHOLD}.",
+                FutureWarning,
+                stacklevel=find_stack_level(),
+            )
+
+    elif threshold is not None:
+        threshold = float(threshold)
+        warning_messages.append(
+            f"\n'{threshold=}' is not used with '{height_control=}'."
+            "\n'threshold' is only used when 'height_control=None'. "
+            "\n'threshold' was to None. "
+        )
+        threshold = None
+
+    if cut_coords is not None and plot_type == "glass":
+        warning_messages.append(
+            f"\n'{cut_coords=}' is not used with '{plot_type=}'."
+            "\n'cut_coords' is only used when 'plot_type='slice''. "
+            "\n'cut_coords' was set to None. "
+        )
+        cut_coords = None
+
+    return threshold, cut_coords, first_level_contrast, warning_messages
 
 
 def _turn_into_full_path(bunch, dir: Path) -> str | Bunch:
@@ -116,7 +170,7 @@ def _load_bg_img(bg_img, is_volume_glm):
         )
 
 
-def _mask_to_plot(model, bg_img, cut_coords):
+def _mask_to_plot(model, bg_img):
     """Plot a mask image and creates PNG code of it.
 
     Parameters
@@ -127,8 +181,6 @@ def _mask_to_plot(model, bg_img, cut_coords):
         See :ref:`extracting_data`.
         The background image that the mask will be plotted on top of.
         To turn off background image, just pass "bg_img=None".
-
-    %(cut_coords)s
 
 
     Returns
@@ -167,7 +219,6 @@ def _mask_to_plot(model, bg_img, cut_coords):
         bg_img=bg_img,
         display_mode="z",
         cmap="Set1",
-        cut_coords=cut_coords,
         colorbar=False,
     )
     mask_plot = figure_to_png_base64(plt.gcf())
