@@ -534,7 +534,9 @@ def test_check_cut_coords_in_bounds_error(img_3d_rand_eye, slicer, cut_coords):
         (TiledSlicer, [9, 7, 8]),
     ],
 )
-def test_cut_coords_out_of_bounds_warning(img_3d_rand_eye, slicer, cut_coords):
+def test_slicer_cut_coords_out_of_bounds_warning(
+    img_3d_rand_eye, slicer, cut_coords
+):
     """Test if nilearn.plotting.displays._slicers._check_cut_coords_in_bounds
     warns when at least one but not all of the elements of cut_coords is out of
     bounds of the image for corresponding coordinate.
@@ -543,6 +545,6 @@ def test_cut_coords_out_of_bounds_warning(img_3d_rand_eye, slicer, cut_coords):
     # [(0.0, 6.0), (0.0, 7.0), (0.0, 8.0)]
     with pytest.warns(
         UserWarning,
-        match=("At least one of the specified cut_coords"),
+        match=("seem to be out of the image bounds"),
     ):
         slicer._check_cut_coords_in_bounds(img_3d_rand_eye, cut_coords)
