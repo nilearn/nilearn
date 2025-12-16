@@ -529,6 +529,8 @@ def test_save_glm_to_bids_surface_prefix_override(tmp_path):
         "hemi-R_den-10242_contrast-c0_stat-z_statmap.gii",
         "run-1_hemi-L_den-10242_stat-rsquared_statmap.gii",
         "run-1_hemi-R_den-10242_stat-rsquared_statmap.gii",
+        "contrast-c0_clusters.tsv",
+        "contrast-c0_clusters.json",
     ]
     if is_matplotlib_installed():
         EXPECTED_FILENAME_ENDINGS.extend(
@@ -546,17 +548,6 @@ def test_save_glm_to_bids_surface_prefix_override(tmp_path):
 
     for fname in EXPECTED_FILENAME_ENDINGS:
         assert (tmp_path / "output" / sub_prefix / f"{prefix}{fname}").exists()
-
-        # clusters cannot yet be computed on surface,
-        # so no TSV should be saved to disk
-        MISSING_FILENAME_ENDINGS = [
-            "contrast-c0_clusters.tsv",
-            "contrast-c0_clusters.json",
-        ]
-    for fname in MISSING_FILENAME_ENDINGS:
-        assert not (
-            tmp_path / "output" / sub_prefix / f"{prefix}{fname}"
-        ).exists()
 
 
 @pytest.mark.slow
