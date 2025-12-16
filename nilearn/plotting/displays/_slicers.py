@@ -1108,7 +1108,7 @@ class BaseSlicer:
         )
 
 
-class ThreeDSlicer(BaseSlicer):
+class _ThreeDSlicer(BaseSlicer):
     _cut_displayed: ClassVar[str] = "yxz"
     _axes_class = CutAxes
 
@@ -1189,7 +1189,7 @@ class ThreeDSlicer(BaseSlicer):
 
 
 @fill_doc
-class OrthoSlicer(ThreeDSlicer):
+class OrthoSlicer(_ThreeDSlicer):
     """Class to create 3 linked axes for plotting orthogonal \
     cuts of 3D maps.
 
@@ -1382,7 +1382,7 @@ class OrthoSlicer(ThreeDSlicer):
                 ax.axhline(y, **kwargs)
 
 
-class TiledSlicer(ThreeDSlicer):
+class TiledSlicer(_ThreeDSlicer):
     """A class to create 3 axes for plotting orthogonal \
     cuts of 3D maps, organized in a 2x2 grid.
 
