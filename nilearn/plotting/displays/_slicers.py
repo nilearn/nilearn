@@ -138,22 +138,32 @@ class BaseSlicer:
 
         coord_in = cls._get_coords_in_bounds(bounds, cut_coords)
 
+        bounds_str = (
+            f"\n\tx: [{bounds[0][0]:.2f}, {bounds[0][1]:.2f}]"
+            f"\n\ty: [{bounds[1][0]:.2f}, {bounds[1][1]:.2f}]"
+            f"\n\tz: [{bounds[2][0]:.2f}, {bounds[2][1]:.2f}]"
+        )
+
         # if none of the coordinates is in bounds
         # raise error
         if not any(coord_in):
             raise ValueError(
-                f"Specified {cut_coords=} is out of the bounds of the "
-                "image. Please specify coordinates within the bounds:\n"
-                f"{bounds}.\n"
+                f"Specified {cut_coords=} is out of the bounds of the image."
+                "\nPlease specify coordinates within the bounds:"
+                f"{bounds_str}"
             )
         # if at least one (but not all) of the coordinates is out of the
         # bounds, warn user
         if any(coord_in) and not all(coord_in):
+            out_of_bounds = np.asarray(cut_coords)[
+                np.logical_not(np.asarray(coord_in))
+            ].tolist()
             warnings.warn(
                 (
-                    f"At least one of the specified {cut_coords=} "
-                    "seem to be out of the image bounds:\n"
-                    f"{bounds}.\n"
+                    f"The following 'cut_coords':"
+                    f"\n{out_of_bounds} "
+                    "\nseem to be out of the image bounds:"
+                    f"{bounds_str}"
                 ),
                 UserWarning,
                 stacklevel=find_stack_level(),

@@ -174,9 +174,8 @@ def test_outlier_cut_coords(matplotlib_pyplot):
     img = Nifti1Image(data, affine)
     cuts = find_cut_slices(img, n_cuts=20, direction="z")
 
-    with pytest.warns(UserWarning, match="At least one of the specified"):
+    with pytest.warns(UserWarning, match="The following 'cut_coords'"):
         plot_stat_map(img, display_mode="z", cut_coords=cuts, bg_img=bg_img)
-    plot_stat_map(img, display_mode="z", cut_coords=cuts, bg_img=bg_img)
 
 
 def test_plotting_functions_with_dim_invalid_input(
