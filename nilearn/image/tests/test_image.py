@@ -34,7 +34,12 @@ from nilearn._utils.testing import (
     with_memory_profiler,
     write_imgs_to_path,
 )
-from nilearn.conftest import _affine_eye, _img_3d_rand, _rng, _shape_4d_default
+from nilearn.conftest import (
+    _affine_eye,
+    _img_3d_rand,
+    _rng,
+    _shape_4d_default,
+)
 from nilearn.exceptions import DimensionError
 from nilearn.image.image import (
     _crop_img_to,
@@ -692,7 +697,7 @@ def test_index_img_surface(surf_img_2d, length, index, expected_n_samples):
         assert_array_equal(value, expected_data_3d[hemi])
 
 
-def test_index_img_error_volumne_4d(affine_eye):
+def test_index_img_error_volume_4d(affine_eye):
     """Test impossible indices with volume data."""
     img_4d, _ = generate_fake_fmri(affine=affine_eye)
     fourth_dim_size = img_4d.shape[3]
@@ -704,7 +709,10 @@ def test_index_img_error_volumne_4d(affine_eye):
     ]:
         with pytest.raises(
             IndexError,
-            match=r"out of bounds|invalid index|out of range|boolean index",
+            match=(
+                r"too large|out of bounds|invalid index|out of range|"
+                "boolean index"
+            ),
         ):
             index_img(img_4d, i)
 
@@ -718,7 +726,7 @@ def test_index_img_error_surface_2d(surf_img_2d, length, index):
 
 
 def test_pd_index_img(rng, img_4d_rand_eye):
-    # confirm indices from pandas dataframes are handled correctly
+    """Confirm indices from pandas dataframes are handled correctly."""
     fourth_dim_size = img_4d_rand_eye.shape[3]
 
     arr = rng.uniform(size=fourth_dim_size) > 0.5

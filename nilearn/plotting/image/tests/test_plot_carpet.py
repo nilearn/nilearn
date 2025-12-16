@@ -86,6 +86,7 @@ def test_plot_carpet_with_atlas(matplotlib_pyplot, img_4d_mni, img_atlas):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.slow
 def test_plot_carpet_with_atlas_and_labels(
     matplotlib_pyplot, img_4d_mni, img_atlas
 ):

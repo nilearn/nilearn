@@ -310,6 +310,7 @@ def test_nifti_maps_masker_resampling_to_mask(
     assert fmri11_img_r.shape == (masker.mask_img_.shape[:3] + (length,))
 
 
+@pytest.mark.slow
 def test_nifti_maps_masker_resampling_to_maps(
     length,
     n_regions,
