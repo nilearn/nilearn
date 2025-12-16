@@ -547,6 +547,7 @@ def test_targets_in_y_space_net_regressor():
 
 
 @ignore_warnings
+@pytest.mark.slow
 @pytest.mark.parametrize("estimator", [SpaceNetRegressor, SpaceNetClassifier])
 # TODO
 # fails with cv=LeaveOneGroupOut()
