@@ -80,6 +80,7 @@ def test_mask_reducer_multiple_image(
     assert data.shape == expected_shape
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.single_process
 @pytest.mark.parametrize("data_type", ["nifti", "surface"])
 def test_mask_reducer_single_image_same_with_multiple_jobs(

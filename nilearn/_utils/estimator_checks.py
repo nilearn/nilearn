@@ -1022,6 +1022,9 @@ def check_img_estimator_verbose(estimator_orig):
     """
     estimator = clone(estimator_orig)
 
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
+
     buffer = io.StringIO()
     with contextlib.redirect_stdout(buffer):
         fit_estimator(estimator)
