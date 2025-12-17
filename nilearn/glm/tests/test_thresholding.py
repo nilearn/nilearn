@@ -66,6 +66,7 @@ def data_norm_isf(shape_3d_default):
     return _data_norm_isf(shape_3d_default)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("height_control", [None, "fpr", "fdr", "bonferroni"])
 def test_threshold_stats_img_warn_threshold_unused(
     data_norm_isf, affine_eye, height_control
@@ -620,6 +621,7 @@ def test_threshold_stats_img_surface_output_threshold_0(surf_img_1d):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", [3.0, 2.9, DEFAULT_Z_THRESHOLD])
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_deprecation_threshold(surf_img_1d, height_control, threshold):
@@ -643,6 +645,7 @@ def test_deprecation_threshold(surf_img_1d, height_control, threshold):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("threshold", [3, 3.0, 2.9, DEFAULT_Z_THRESHOLD])
 def test_deprecation_threshold_cluster_level_inference(
     threshold, img_3d_rand_eye, surf_img_1d

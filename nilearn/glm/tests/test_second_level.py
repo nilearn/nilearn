@@ -1567,6 +1567,7 @@ def test_second_level_input_as_surface_no_design_matrix(
         model.fit(second_level_input, design_matrix=None)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("surf_mask_dim", [1, 2])
 def test_second_level_input_as_surface_image_with_mask(
     surf_img_1d, surf_mask_dim, surf_mask_1d, surf_mask_2d, n_subjects
@@ -1583,6 +1584,7 @@ def test_second_level_input_as_surface_image_with_mask(
     model = model.fit(second_level_input, design_matrix=design_matrix)
 
 
+@pytest.mark.thread_unsafe
 def test_second_level_input_with_wrong_mask(
     surf_img_1d, surf_mask_1d, img_mask_mni, n_subjects
 ):
