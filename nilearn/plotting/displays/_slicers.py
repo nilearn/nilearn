@@ -2352,7 +2352,7 @@ class MosaicSlicer(BaseSlicer):
             Additional arguments to pass to ``self._axes_class``.
 
         """
-        self._check_cut_coords(self.cut_coords)
+        self.cut_coords = self._check_cut_coords(self.cut_coords)
         if not isinstance(self.cut_coords, dict):
             self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
 
