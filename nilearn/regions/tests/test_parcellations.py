@@ -300,6 +300,7 @@ def test_inverse_transform_single_nifti_image(method, n_parcel, test_image_2):
     assert fmri_compressed.shape == test_image_2.shape
 
 
+@pytest.mark.slow
 def test_transform_single_3d_input_images(affine_eye):
     """Test fit_transform single 3D image."""
     data = np.ones((10, 11, 12))
