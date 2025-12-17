@@ -95,6 +95,7 @@ def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_rand_eye):
     plt.close()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
 def test_plot_threshold_for_uint8(affine_eye, plot_func):
     """Mask was applied in [-threshold, threshold] which is problematic \

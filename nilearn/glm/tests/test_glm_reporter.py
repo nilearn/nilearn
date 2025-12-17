@@ -217,6 +217,7 @@ def test_flm_reporting_no_contrasts(flm, tmp_path):
     )
 
 
+@pytest.mark.slow
 def test_flm_reporting_several_contrasts(flm, tmp_path, rk):
     """Test for model report can be generated with no contrasts."""
     c0 = np.zeros((1, rk))
@@ -522,6 +523,7 @@ def test_carousel_several_runs(
     assert str(report).count('id="carousel-obj-') == len(shapes)
 
 
+@pytest.mark.slow
 def test_report_make_glm_deprecation_warning(flm, contrasts):
     """Test deprecation warning for nilearn.reporting.make_glm_report.
 
