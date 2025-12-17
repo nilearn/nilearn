@@ -899,6 +899,9 @@ def check_doc_attributes(estimator) -> None:
                 f"has no '{section} section."
             )
 
+    if not is_gil_enabled():
+        pytest.xfail("May fail without the GIL")
+
     # check public attributes before fit
     parameters = [x for x in estimator.__dict__ if not x.startswith("_")]
     documented_parameters = {
