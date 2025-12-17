@@ -1828,8 +1828,9 @@ class BaseStackedSlicer(BaseSlicer):
         elif not isinstance(cut_coords, numbers.Number):
             raise ValueError(
                 "cut_coords passed does not match the display mode."
-                "cut_coords should to be a number, list, tuple or array of"
-                f" numbers or None. You provided cut_coords={cut_coords}."
+                f" {cls.__name__} plotting expects a number, list, tuple or "
+                "array of numbers or None."
+                f"You provided cut_coords={cut_coords}."
             )
 
         return cut_coords
@@ -2274,9 +2275,10 @@ class MosaicSlicer(BaseSlicer):
             and len(cut_coords) != cls._cut_count()
         ):
             raise ValueError(
-                "cut_coords passed does not match the display mode."
-                "cut_coords should to be a number, list, tuple or array of"
-                f" numbers or None. You provided cut_coords={cut_coords}."
+                "cut_coords passed does not match the display mode. "
+                f" {cls.__name__} plotting expects a number, list, tuple or "
+                "array of numbers or None."
+                f"You provided cut_coords={cut_coords}."
             )
 
         # TODO if dict is allowed, check dict format
