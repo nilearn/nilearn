@@ -340,6 +340,7 @@ def test_standardize_error(rng):
         standardize_signal(a, standardize="zscore")
 
 
+@pytest.mark.thread_unsafe
 def test_standardize(rng):
     """Test starndardize_signal with several options."""
     n_features = 10

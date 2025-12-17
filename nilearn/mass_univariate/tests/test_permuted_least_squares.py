@@ -314,6 +314,7 @@ def test_permuted_ols_no_covar_with_ravelized_tested_var(design):
     compare_to_ref_score(output["t"], tested_var, target_var)
 
 
+@pytest.mark.thread_unsafe
 def test_permuted_ols_no_covar_with_intercept(design):
     """Check output when modeling intercept with no confounds."""
     # Add intercept (should be equivalent to centering variates).

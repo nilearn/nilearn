@@ -247,6 +247,7 @@ def test_get_clusters_table_surface_two_sided(
     assert cluster_labels_negative.size == expected_n_cluster_right + 1
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "stat_threshold, cluster_threshold, expected_n_cluster_two_sided",
     [
