@@ -413,6 +413,7 @@ def test_nifti_labels_masker_resampling_to_labels(
     assert fmri11_img_r.shape == (masker.labels_img_.shape[:3] + (length,))
 
 
+@pytest.mark.slow
 def test_nifti_labels_masker_resampling_to_clipped_labels(
     affine_eye, shape_3d_default, n_regions, length
 ):

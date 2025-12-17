@@ -366,13 +366,18 @@ class BaseSlicer:
         else:
             first_axe = self.cut_coords[0]
         ax = self.axes[first_axe].ax
+
+        kwargs |= {
+            "horizontalalignment": "left",
+            "verticalalignment": "top",
+            "zorder": 1000,
+        }
+
         ax.text(
             x,
             y,
             text,
             transform=self.frame_axes.transAxes,
-            horizontalalignment="left",
-            verticalalignment="top",
             size=size,
             color=color,
             bbox={
@@ -381,7 +386,6 @@ class BaseSlicer:
                 "fc": bgcolor,
                 "alpha": alpha,
             },
-            zorder=1000,
             **kwargs,
         )
         ax.set_zorder(1000)
