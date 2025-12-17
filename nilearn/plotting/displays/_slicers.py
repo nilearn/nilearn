@@ -41,7 +41,7 @@ class BaseSlicer:
 
     Attributes
     ----------
-    %(cut_coords)s
+    cut_coords : the type of allowed will depend on the each child class
 
     frame_axes : :class:`matplotlib.axes.Axes`, optional
         The matplotlib axes that will be subdivided in 3.
@@ -1791,7 +1791,7 @@ class BaseStackedSlicer(BaseSlicer):
         """
         if not (isinstance(cut_coords, (list, tuple, np.ndarray))):
             raise ValueError(
-                "cut_coords should to be list of numbers, "
+                "cut_coords should to be list, tuple or array of numbers, "
                 f"You provided cut_coords={cut_coords}."
             )
 

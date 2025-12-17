@@ -488,11 +488,11 @@ def test_display_projectors_transparency_warning(
     "slicer, cut_coords",
     [
         (XSlicer, [7]),
-        (XSlicer, [7, 8]),
+        (XSlicer, (7, 8)),  # also checking with tuples
         (YSlicer, [8]),
-        (YSlicer, [8, 9]),
+        (YSlicer, np.asarray((8, 9))),  # also checking with array
         (ZSlicer, [9]),
-        (ZSlicer, [9, 10]),
+        (ZSlicer, (9, 10)),
         (XZSlicer, [7, 9]),
         (YZSlicer, [8, 9]),
         (YXSlicer, [7, 8]),
