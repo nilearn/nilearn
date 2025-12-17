@@ -536,6 +536,7 @@ def test_high_level_glm_different_design_matrices_formulas():
         multi_run_model.compute_contrast(formula, output_type="effect_size")
 
 
+@pytest.mark.slow
 def test_compute_contrast_num_contrasts(shape_4d_default):
     """Check error when computing contrast with invalid contrast matrix."""
     shapes, rk = [shape_4d_default, shape_4d_default, shape_4d_default], 3
@@ -718,6 +719,7 @@ def test_scaling(rng):
     assert Y.std() > 1
 
 
+@pytest.mark.slow
 def test_fmri_inputs_shape(shape_4d_default):
     """Test different types of fit inputs.
 
@@ -1020,6 +1022,7 @@ def test_fmri_inputs_errors_confounds(shape_4d_default):
         )
 
 
+@pytest.mark.slow
 def test_first_level_design_creation(shape_4d_default):
     """Check that design matrices equals one built 'manually'."""
     mask, fmri_data, _ = generate_fake_fmri_data_and_design(

@@ -311,14 +311,14 @@ cut_coords : None, allowed types depends on the ``display_mode``, optional
     - If ``display_mode`` is ``"x"``, ``"y"``, or ``"z"``
       this can be:
 
-        - an array-like of :obj:`float` or :obj:`int`
-          representing the coordinates of each cut
-          in the corresponding direction,
+      - an array-like of :obj:`float` or :obj:`int`
+        representing the coordinates of each cut
+        in the corresponding direction,
 
-        - an :obj:`int`
-          in which case it specifies the number of cuts to perform.
+      - an :obj:`int`
+        in which case it specifies the number of cuts to perform.
 
-    - If `None` is given, the cuts are calculated automatically.
+    - If ``None`` is given, the cuts are calculated automatically.
 
     - If ``display_mode`` is ``'mosaic'``, and the number of cuts is the same
       for all directions, ``cut_coords`` can be specified as an :obj:`int`.
