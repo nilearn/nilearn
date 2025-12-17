@@ -26,7 +26,6 @@ from nilearn._utils.data_gen import (
     write_fake_bold_img,
     write_fake_fmri_data_and_design,
 )
-from nilearn._utils.helpers import is_gil_enabled
 from nilearn.image import get_data
 
 
@@ -65,7 +64,6 @@ def test_add_metadata_to_bids_derivatives_with_json_path(tmp_path):
 
 
 @pytest.mark.thread_unsafe
-@pytest.mark.xfail(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize("have_spaces", [False, True])
 def test_basic_paradigm(have_spaces):
     events = basic_paradigm(condition_names_have_spaces=have_spaces)
