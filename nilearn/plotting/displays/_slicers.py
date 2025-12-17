@@ -1836,6 +1836,7 @@ class BaseStackedSlicer(BaseSlicer):
         return coord_in
 
     def _init_axes(self, **kwargs):
+        self._check_cut_coords(self.cut_coords)
         x0, y0, x1, y1 = self.rect
         # Create our axes:
         self.axes = {}
@@ -2314,13 +2315,10 @@ class MosaicSlicer(BaseSlicer):
             Additional arguments to pass to ``self._axes_class``.
 
         """
+        self._check_cut_coords(self.cut_coords)
         if not isinstance(self.cut_coords, dict):
             self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
 
-        if len(self.cut_coords) != len(self._cut_displayed):
-            raise ValueError(
-                "The number cut_coords passed does not match the mosaic mode"
-            )
         x0, y0, x1, y1 = self.rect
 
         # Create our axes:
