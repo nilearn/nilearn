@@ -132,8 +132,8 @@ class BaseSlicer:
             If at least one of the coordinates is not within the bounds.
 
         """
-        cls._check_cut_coords(cut_coords)
-
+        if img is None or cut_coords is None:
+            return
         data = _get_data(img)
         bounds = get_bounds(data.shape, img.affine)
 
@@ -197,6 +197,7 @@ class BaseSlicer:
                 f"{cls._cut_count()}.\n"
                 f"You provided cut_coords={cut_coords}."
             )
+        return cut_coords
 
     @classmethod
     def _cut_count(cls):
@@ -274,6 +275,7 @@ class BaseSlicer:
         if img is not None and img is not False:
             img = check_niimg_3d(img)
 
+        cut_coords = cls._check_cut_coords()
         cut_coords = cls.find_cut_coords(img, threshold, cut_coords)
 
         if isinstance(axes, plt.Axes) and figure is None:
@@ -1241,7 +1243,7 @@ class OrthoSlicer(_ThreeDSlicer):
     _default_figsize: ClassVar[list[float]] = [2.2, 3.5]
 
     def _init_axes(self, **kwargs):
-        self._check_cut_coords(self.cut_coords)
+        self.cut_coords = self._check_cut_coords(self.cut_coords)
         x0, y0, x1, y1 = self.rect
         facecolor = "k" if self._black_bg else "w"
         # Create our axes:
