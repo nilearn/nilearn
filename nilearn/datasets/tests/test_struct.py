@@ -88,6 +88,7 @@ def test_fetch_oasis_vbm(tmp_path, request_mocker, capsys):
     check_fetcher_verbosity(fetch_oasis_vbm, capsys, data_dir=tmp_path)
 
 
+@pytest.mark.single_process
 def test_fetch_oasis_vbm_dartel_false(tmp_path, request_mocker, capsys):
     """Test fetching OASIS VBM dataset without dartel version."""
     request_mocker.url_mapping["*archive.tgz*"] = _make_oasis_data(False)
