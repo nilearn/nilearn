@@ -301,7 +301,7 @@ copy_header : :obj:`bool`, default=True
 
 # cut_coords
 docdict["cut_coords"] = """
-cut_coords : None, allowed types depends on the ``display_mode``, optional
+cut_coords : None, allowed types depend on the ``display_mode``, optional
     The world coordinates of the point where the cut is performed.
 
     - If ``display_mode`` is ``'ortho'`` or ``'tiled'``,
