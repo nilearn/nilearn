@@ -262,6 +262,7 @@ def test_plot_asymmetric_colorbar_threshold(
     plt.close()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
 @pytest.mark.parametrize("vmax", [None, 0])
 def test_img_plotting_vmax_equal_to_zero(plot_func, vmax):
