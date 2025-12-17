@@ -114,10 +114,6 @@ class BaseSlicer:
         Check if the specified ``cut_coords`` is within the bounds of the
         specified image ``img``.
 
-        Warn if at least one of the coordinates is not within the bounds.
-
-        Raise ValueError if none of the coordinates is within the bounds.
-
         Parameters
         ----------
         img : 3D Nifti1Image
@@ -129,6 +125,11 @@ class BaseSlicer:
         ------
         ValueError
             If none of the coords is in the specified image bounds.
+
+        Warns
+        -----
+        UserWarning
+            If at least one of the coordinates is not within the bounds.
 
         """
         cls._check_cut_coords(cut_coords)
