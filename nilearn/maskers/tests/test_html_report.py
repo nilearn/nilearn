@@ -371,6 +371,7 @@ def test_nifti_labels_masker_report_cut_coords(
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_nifti_masker_4d_reports(img_mask_eye, affine_eye):
     """Test for NiftiMasker reports with 4D data."""
     # Dummy 4D data
