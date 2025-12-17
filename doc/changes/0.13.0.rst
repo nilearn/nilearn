@@ -28,6 +28,13 @@ HIGHLIGHTS
 
     This release contains many deprecations with breaking changes, so make sure to read the ``Changes`` below.
 
+.. warning::
+
+    Note that Nilearn is not yet considered thread-safe.
+    For more information about free-threaded python
+    and the packages that currently support it,
+    please see `https://py-free-threading.github.io/`_ .
+
 Regarding support for surface data, we have added multi maskers for surface image, surface label image and surface maps image: those are meant to be used for data extraction of data coming from several subjects or several runs.
 It is now also possible to perform cluster thresholding and cluster level inference on surface data.
 
