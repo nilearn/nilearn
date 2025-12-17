@@ -82,7 +82,7 @@ def test_threshold_stats_img_warn_threshold_unused(
             height_control=height_control,
         )
     if height_control is not None:
-        assert any("will not be used with" in str(x) for x in warnings_list)
+        assert any("is not used with" in str(x) for x in warnings_list)
 
 
 @pytest.mark.slow
@@ -136,6 +136,35 @@ def test_threshold_stats_img_no_height_control(
 
     assert threshold == DEFAULT_Z_THRESHOLD
     assert th_map is None
+
+
+def test_threshold_stats_img_error_height_control(
+    data_norm_isf, img_3d_ones_eye, affine_eye
+):
+    data = data_norm_isf
+    data[2:4, 5:7, 6:8] = 5.0
+    stat_img = Nifti1Image(data, affine_eye)
+
+    with pytest.raises(ValueError, match="must be one of"):
+        threshold_stats_img(
+            stat_img,
+            mask_img=img_3d_ones_eye,
+            height_control="knights_of_ni",
+        )
+
+
+def test_threshold_stats_img_error_cluster_threshold(
+    data_norm_isf, img_3d_ones_eye, affine_eye
+):
+    """Raise error for invalid cluster_threshold."""
+    data = data_norm_isf
+    data[2:4, 5:7, 6:8] = 5.0
+    stat_img = Nifti1Image(data, affine_eye)
+
+    with pytest.raises(ValueError, match="'cluster_threshold' must be > 0"):
+        threshold_stats_img(
+            stat_img, mask_img=img_3d_ones_eye, cluster_threshold=-10
+        )
 
 
 @pytest.mark.slow
@@ -209,7 +238,7 @@ def test_threshold_stats_img_errors(img_3d_rand_eye):
         threshold_stats_img(
             img_3d_rand_eye, height_control=None, threshold=-2, two_sided=True
         )
-    # but this is OK because threshodld is only used
+    # but this is OK because threshold is only used
     # when height_control=None
     threshold_stats_img(
         img_3d_rand_eye, height_control="fdr", threshold=-2, two_sided=True
@@ -488,11 +517,16 @@ def test_all_resolution_inference_height_control(
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_threshold_stats_img_surface(surf_img_1d, height_control):
     """Smoke test threshold_stats_img works on surface."""
-    threshold_stats_img(
-        surf_img_1d,
-        height_control=height_control,
-        threshold=DEFAULT_Z_THRESHOLD,
-    )
+    with warnings.catch_warnings(record=True) as warning_list:
+        threshold_stats_img(
+            surf_img_1d,
+            height_control=height_control,
+            threshold=DEFAULT_Z_THRESHOLD,
+        )
+    if height_control is None:
+        assert len(warning_list) == 0
+    else:
+        assert len(warning_list) == 1
 
 
 def test_threshold_stats_img_surface_with_mask(surf_img_1d, surf_mask_1d):
@@ -549,7 +583,7 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
 
     # one sided positive
     result, _ = threshold_stats_img(
-        surf_img_1d, height_control=None, threshold=3, two_sided=False
+        surf_img_1d, height_control=None, two_sided=False
     )
 
     assert_equal(result.data.parts["left"], np.asarray([0.0, 0.0, 0.0, 4.0]))
@@ -560,7 +594,6 @@ def test_threshold_stats_img_surface_output(surf_img_1d):
     result, _ = threshold_stats_img(
         surf_img_1d,
         height_control=None,
-        threshold=3,
         two_sided=False,
         cluster_threshold=2,
     )
