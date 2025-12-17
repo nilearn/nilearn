@@ -39,7 +39,7 @@ DataDir: TypeAlias = str | pathlib.Path | None
 Detrend: TypeAlias = bool
 DrawCross: TypeAlias = bool
 ForceResample: TypeAlias = bool
-
+HeightControl = Literal[None, "fpr", "fdr", "bonferroni"]
 # Note that for HrfModel
 # str is too generic here
 # and it should actually be Literal["spm", "glover", ...]
