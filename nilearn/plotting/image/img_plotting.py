@@ -1151,34 +1151,46 @@ def plot_prob_atlas(
                 **kwargs_contour,
             )
     if colorbar:
-        display._colorbar = True
-        # Create a colormap from color list to feed display
-        cmap = LinearSegmentedColormap.from_list(
-            "segmented colors", color_list, n_maps + 1
-        )
-        display._show_colorbar(cmap, Normalize(1, n_maps + 1))
-        tick_locator = MaxNLocator(nbins=10)
-        display.locator = tick_locator
-        display._cbar.update_ticks()
-        tick_location = np.round(
-            np.linspace(1, n_maps, min(n_maps, 10))
-        ).astype("int")
-        display._cbar.set_ticks(tick_location + 0.5)
-        display._cbar.set_ticklabels(tick_location)
-        (
-            left,
-            bottom,
-            width,
-            height,
-        ) = display._colorbar_ax.get_position().bounds
-        display._colorbar_ax.set_position([left, bottom, width, height * 0.95])
-        display._colorbar_ax.annotate(
-            "Map #",
-            xy=(1, 1.03),
-            ha="right",
-            va="bottom",
-            xycoords="axes fraction",
-        )
+        if n_maps == 1:
+            warnings.warn(
+                (
+                    "\nThe image maps contains a single image."
+                    "\nNo color map needed."
+                ),
+                RuntimeWarning,
+                stacklevel=find_stack_level(),
+            )
+        else:
+            display._colorbar = True
+            # Create a colormap from color list to feed display
+            cmap = LinearSegmentedColormap.from_list(
+                "segmented colors", color_list, n_maps + 1
+            )
+            display._show_colorbar(cmap, Normalize(1, n_maps + 1))
+            tick_locator = MaxNLocator(nbins=10)
+            display.locator = tick_locator
+            display._cbar.update_ticks()
+            tick_location = np.round(
+                np.linspace(1, n_maps, min(n_maps, 10))
+            ).astype("int")
+            display._cbar.set_ticks(tick_location + 0.5)
+            display._cbar.set_ticklabels(tick_location)
+            (
+                left,
+                bottom,
+                width,
+                height,
+            ) = display._colorbar_ax.get_position().bounds
+            display._colorbar_ax.set_position(
+                [left, bottom, width, height * 0.95]
+            )
+            display._colorbar_ax.annotate(
+                "Map #",
+                xy=(1, 1.03),
+                ha="right",
+                va="bottom",
+                xycoords="axes fraction",
+            )
 
     return save_figure_if_needed(display, output_file)
 

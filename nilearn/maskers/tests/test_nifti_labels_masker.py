@@ -64,7 +64,10 @@ else:
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
-        estimators=[NiftiLabelsMasker(labels_img=_img_labels())]
+        estimators=[
+            NiftiLabelsMasker(labels_img=_img_labels()),
+            NiftiLabelsMasker(labels_img=_img_labels(n_regions=1)),
+        ],
     ),
 )
 def test_check_estimator_nilearn(estimator, check, name):  # noqa: ARG001

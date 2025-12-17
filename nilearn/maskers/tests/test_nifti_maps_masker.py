@@ -68,7 +68,8 @@ else:
     nilearn_check_estimator(
         estimators=[  # pass less than the default number of regions
             # to speed up the tests
-            NiftiMapsMasker(maps_img=_img_maps(n_regions=2), standardize=None)
+            NiftiMapsMasker(maps_img=_img_maps(n_regions=2), standardize=None),
+            NiftiMapsMasker(maps_img=_img_maps(n_regions=1), standardize=None),
         ]
     ),
 )
@@ -108,8 +109,11 @@ def test_nifti_maps_masker_data_atlas_different_shape(
     assert_array_equal(masker.maps_img_.affine, affine2)
 
 
+@pytest.mark.parametrize("n_regions", [1, 3])
 def test_nifti_maps_masker_fit(n_regions, img_maps):
     """Check fitted attributes."""
+    assert img_maps.shape[3] == n_regions
+
     masker = NiftiMapsMasker(
         img_maps, resampling_target=None, standardize=None
     )

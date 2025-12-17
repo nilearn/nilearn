@@ -3330,7 +3330,12 @@ def check_nifti_masker_fit_transform(estimator):
     signal = estimator.transform(_img_3d_rand())
 
     assert isinstance(signal, np.ndarray)
-    assert signal.shape == (estimator.n_elements_,)
+
+    signal_shape = signal.shape
+    if estimator.n_elements_ == 1:
+        assert signal_shape == ()
+    else:
+        assert signal_shape == (estimator.n_elements_,)
 
     signal_2 = estimator.fit_transform(_img_3d_rand())
 
@@ -3344,8 +3349,14 @@ def check_nifti_masker_fit_transform(estimator):
         assert len(signal) == 2
         for x in signal:
             assert isinstance(x, np.ndarray)
-            assert x.ndim == 1
-            assert x.shape == (estimator.n_elements_,)
+            ndim = x.ndim
+            signal_shape = x.shape
+            if estimator.n_elements_ == 1:
+                assert ndim == 0
+                assert signal_shape == ()
+            else:
+                assert ndim == 1
+                assert signal_shape == (estimator.n_elements_,)
     else:
         assert isinstance(signal, np.ndarray)
         assert signal.ndim == 2
