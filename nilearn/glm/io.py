@@ -19,6 +19,10 @@ from nilearn.glm._reporting_utils import (
     sanitize_generate_report_input,
 )
 from nilearn.glm.thresholding import threshold_stats_img
+from nilearn.reporting.get_clusters_table import (
+    clustering_params_to_dataframe,
+    get_clusters_table,
+)
 from nilearn.reporting.html_report import MISSING_ENGINE_MSG
 
 
@@ -199,11 +203,6 @@ def save_glm_to_bids(
     - Contrast weights figure (``contrast-[name]_design.svg``)
 
     """
-    from nilearn.reporting.get_clusters_table import (
-        clustering_params_to_dataframe,
-        get_clusters_table,
-    )
-
     # grab the default from generate_report()
     # fail early if invalid parameters to pass to generate_report()
     tmp = dict(**inspect.signature(model.generate_report).parameters)

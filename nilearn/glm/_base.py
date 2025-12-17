@@ -498,6 +498,10 @@ class BaseGLM(CacheMixin, BaseEstimator):
 
         %(cut_coords)s
 
+            .. note::
+                ``cut_coords`` will not be used when ``plot_type='glass'``.
+
+
         display_mode :  :obj:`str`, default=None
             Default is 'z' if plot_type is 'slice';
             'ortho' if plot_type is 'glass'.
