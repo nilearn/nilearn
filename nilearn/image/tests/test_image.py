@@ -1967,6 +1967,7 @@ def test_check_same_fov(affine_eye):
         )
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
     """Check data dtype equal with dtype='auto'."""
     img_3d_check = check_niimg(img_3d_zeros_eye, dtype="auto")
@@ -1982,6 +1983,7 @@ def test_check_niimg(img_3d_zeros_eye, img_4d_zeros_eye):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_return_iterator_4d_input(
     img_3d_zeros_eye, img_4d_zeros_eye
 ):
@@ -2007,6 +2009,7 @@ def test_check_niimg_return_iterator_4d_input(
     assert len(next(img).shape) == 3
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_return_iterator_3d_input(img_3d_zeros_eye):
     """Check behavior return_iterator on 3D image."""
     # return a 3D image
@@ -2030,6 +2033,7 @@ def test_check_niimg_return_iterator_3d_input(img_3d_zeros_eye):
     assert len(next(img).shape) == 3
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_return_iterator_true_3d_input(img_3d_zeros_eye):
     """Check behavior return_iterator=True on 3D image."""
     expected_error_msg = (
@@ -2044,6 +2048,7 @@ def test_check_niimg_return_iterator_true_3d_input(img_3d_zeros_eye):
         check_niimg(img_3d_zeros_eye, return_iterator=True)
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_errors(img_3d_zeros_eye, img_4d_zeros_eye):
     """Check check_niimg errors."""
     with pytest.raises(TypeError, match="input should be a NiftiLike object"):
@@ -2072,6 +2077,7 @@ def test_check_niimg_errors(img_3d_zeros_eye, img_4d_zeros_eye):
         check_niimg(img_2_4d, ensure_ndim=4)
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_wildcards_errors():
     """Check bad filename."""
     # Non existing file (with no magic) raise a ValueError exception
@@ -2088,6 +2094,7 @@ def test_check_niimg_wildcards_errors():
         check_niimg(nofile_path_wildcards)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("shape", [(10, 10, 10), (10, 10, 10, 3)])
 @pytest.mark.parametrize(
     "wildcards", [True, False]
@@ -2121,6 +2128,7 @@ def img_in_home_folder(img_3d_mni):
     created_file.expanduser().unlink()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "filename", ["~/test.nii", r"~/test.nii", Path("~/test.nii")]
 )
@@ -2134,6 +2142,7 @@ def test_check_niimg_user_expand(img_in_home_folder, filename):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "filename",
     [
@@ -2157,6 +2166,7 @@ def test_check_niimg_user_expand_4d(img_in_home_folder, filename):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
     """Test globbing behavior."""
     file_not_found_msg = "File not found: '%s'"
@@ -2202,6 +2212,7 @@ def set_expand_path_wildcards():
     ni.EXPAND_PATH_WILDCARDS = True
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_no_expand_wildcards_errors(
     set_expand_path_wildcards,  # noqa: ARG001
 ):
@@ -2221,6 +2232,7 @@ def test_check_niimg_no_expand_wildcards_errors(
         check_niimg(nofile_path, wildcards=False)
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_no_expand_wildcards(
     img_3d_zeros_eye,
     img_4d_zeros_eye,
@@ -2274,6 +2286,7 @@ def test_check_niimg_3d_datatype(img_3d_zeros_eye):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_3d_pathlike(img_3d_zeros_eye, tmp_path):
     """Test check_niimg_3d with file."""
     filename = write_imgs_to_path(
@@ -2402,6 +2415,7 @@ def test_check_niimg_4d_phony_image():
     check_niimg_4d(phony_img)
 
 
+@pytest.mark.thread_unsafe
 def test_check_niimg_4d_wildcards_one_file_name(img_3d_zeros_eye, tmp_path):
     """Testing with a glob matching multiple filenames."""
     img_4d = check_niimg_4d((img_3d_zeros_eye, img_3d_zeros_eye))
@@ -2428,6 +2442,7 @@ def test_iter_check_niimgs_error():
         list(iter_check_niimg(nofile_path))
 
 
+@pytest.mark.thread_unsafe
 def test_iter_check_niimgs(tmp_path, img_4d_zeros_eye):
     """Test iter_check_niimg on file on disk and regular 5D image."""
     # Create a test file
