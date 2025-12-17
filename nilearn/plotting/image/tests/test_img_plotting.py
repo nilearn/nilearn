@@ -96,6 +96,7 @@ def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_rand_eye):
     plt.close()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
 def test_plot_threshold_for_uint8(affine_eye, plot_func):
     """Mask was applied in [-threshold, threshold] which is problematic \
@@ -265,6 +266,7 @@ def test_plot_asymmetric_colorbar_threshold(
     plt.close()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_img])
 @pytest.mark.parametrize("vmax", [None, 0])
 def test_img_plotting_vmax_equal_to_zero(plot_func, vmax):

@@ -102,7 +102,7 @@ jobs:
             matrix:
                 description: [latest dependencies]
                 py: ${{ fromJSON(needs.define-matrix.outputs.py) }}
-                os: [windows-latest]
+                os: [windows-latest, macos-latest, ubuntu-latest]
                 env: [plotting]
                 include:
                 # Using macos on the following as tests run faster on macos.

@@ -31,6 +31,8 @@ NEW
 Fixes
 -----
 
+- :bdg-info:`Plotting` Make it possible to use ``kwargs`` to override default in matrix plotting and :meth:`~plotting.displays.BaseSlicer.title` (:gh:`5905` by `Rémi Gau`_).
+
 - :bdg-primary:`Doc` Update allowed values for the parameter ``standardize`` to match those of :func:`~signal.clean` in :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMClassifier`, :class:`~decoding.FREMRegressor`, :class:`~decoding.SpaceNetClassifier`, :class:`~decoding.SpaceNetRegressor`, :class:`~connectome.ConnectivityMeasure`, :class:`~decomposition.DictLearning`, :class:`~decomposition.CanICA` as well as for all maskers  (:gh:`5668` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Allow to pass files to :func:`~nilearn.plotting.plot_img_comparison` (:gh:`5825` by `Rémi Gau`_).
