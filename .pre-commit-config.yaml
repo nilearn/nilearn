@@ -82,7 +82,7 @@ repos:
 
     # Lint and format Python code
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.8
+    rev: v0.14.9
     hooks:
     -   id: ruff-check
         # args: [--statistics]
@@ -92,7 +92,7 @@ repos:
 
     # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter
-    rev: v2.8
+    rev: v2.9
     hooks:
     -   id: import-linter
         args: [--verbose]
@@ -105,7 +105,7 @@ repos:
         args: [--config=pyproject.toml, nilearn]
 
 -   repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.0
+    rev: v1.19.1
     hooks:
     -   id: mypy
         files: nilearn

@@ -389,6 +389,28 @@ def test_position_annotation_with_decimals():
     orthoslicer.close()
 
 
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"horizontalalignment": "left"},
+        {"verticalalignment": "top"},
+        {"zorder": 1000},
+    ],
+)
+def test_title_kwargs(kwargs):
+    """Ensure kwargs can contain value that won't raise duplicate error.
+
+    In this case the value passed in kwargs
+    override the defaults used by Nilearn internally.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5904
+    """
+    orthoslicer = OrthoSlicer(cut_coords=(0, 0, 0))
+    orthoslicer.title("foo", **kwargs)
+    orthoslicer.close()
+
+
 @pytest.mark.parametrize("node_color", ["red", ["red", "blue"]])
 def test_add_graph_with_node_color_as_string(node_color):
     """Tests for ``display.add_graph()``."""
