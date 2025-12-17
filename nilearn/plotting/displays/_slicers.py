@@ -1175,11 +1175,11 @@ class _ThreeDSlicer(BaseSlicer):
 
         """
         if not (
-            (
+            cut_coords is None
+            or (
                 isinstance(cut_coords, (list, tuple, np.ndarray))
                 and len(cut_coords) == cls._cut_count()
             )
-            or cut_coords is None
         ):
             raise ValueError(
                 "cut_coords passed does not match the display mode."
