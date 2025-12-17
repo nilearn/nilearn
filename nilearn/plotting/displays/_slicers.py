@@ -1211,7 +1211,7 @@ class OrthoSlicer(_ThreeDSlicer):
     Attributes
     ----------
     cut_coords : 3D :obj:`list` of :obj:`float`
-        MNI coordinates [x, y, z] of the point where the cut is performed.
+        World coordinates [x, y, z] of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot each view.
@@ -1402,7 +1402,7 @@ class TiledSlicer(_ThreeDSlicer):
     Attributes
     ----------
     cut_coords : 3D :obj:`list` of :obj:`float`
-        MNI coordinates [x, y, z] of the point where the cut is performed.
+        World coordinates [x, y, z] of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~matplotlib.axes.Axes`
         The 3 axes used to plot each view.
@@ -2070,7 +2070,7 @@ class XZSlicer(OrthoSlicer):
     Attributes
     ----------
     cut_coords : 2D :obj:`list` of :obj:`float`
-        MNI coordinates [x, z] of the point where the cut is performed.
+        World coordinates (x, z) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'z' here).
@@ -2108,7 +2108,7 @@ class YXSlicer(OrthoSlicer):
     Attributes
     ----------
     cut_coords : 2D :obj:`list` of :obj:`float`
-        MNI coordinates [x, y] of the point where the cut is performed.
+        World coordinates (x, y) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('x' and 'y' here).
@@ -2146,7 +2146,7 @@ class YZSlicer(OrthoSlicer):
     Attributes
     ----------
     cut_coords : 2D :obj:`list` of :obj:`float`
-        MNI coordinates [y, z] of the point where the cut is performed.
+        World coordinates (y, z) of the point where the cut is performed.
 
     axes : :obj:`dict` of :class:`~nilearn.plotting.displays.CutAxes`
         The axes used for plotting in each direction ('y' and 'z' here).

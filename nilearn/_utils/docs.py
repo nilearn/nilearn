@@ -302,7 +302,7 @@ copy_header : :obj:`bool`, default=True
 # cut_coords
 docdict["cut_coords"] = """
 cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
-    The MNI coordinates of the point where the cut is performed.
+    The world coordinates of the point where the cut is performed.
 
     - If `display_mode` is `'ortho'` or `'tiled'`, this should
       be a 3-tuple: `(x, y, z)`
