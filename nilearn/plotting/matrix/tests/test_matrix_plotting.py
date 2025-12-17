@@ -347,3 +347,15 @@ def test_plot_design_matrix_correlation_errors(mat):
     dmtx = pd.DataFrame({"constant": [1, 1], "drift_1": [0, 1]})
     with pytest.raises(ValueError, match="Nothing left to plot after "):
         plot_design_matrix_correlation(dmtx)
+
+
+def test_override_kwargs(mat):
+    """Ensure kwargs can contain value that won't raise duplicate error.
+
+    In this case the value passed in kwargs
+    override the defaults used by Nilearn internally.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5904
+    """
+    kwargs = {"interpolation": "none", "aspect": "equal"}
+    plot_matrix(mat, **kwargs)
