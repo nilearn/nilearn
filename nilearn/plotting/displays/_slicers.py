@@ -1838,8 +1838,9 @@ class BaseStackedSlicer(BaseSlicer):
 
         return cut_coords
 
-    def _cut_count(self):
-        return len(self._direction)
+    @classmethod
+    def _cut_count(cls):
+        return len(cls._direction)
 
     @classmethod
     def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
