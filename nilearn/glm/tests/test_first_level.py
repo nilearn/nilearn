@@ -2716,6 +2716,7 @@ def test_first_level_from_bids_surface(tmp_path):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "kwargs",
     [

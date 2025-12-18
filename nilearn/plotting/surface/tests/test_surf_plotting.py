@@ -153,6 +153,7 @@ def test_plot_surf(plt, engine, tmp_path, in_memory_mesh, bg_map):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("view", ["anterior", "posterior"])
 @pytest.mark.parametrize("hemi", ["left", "right", "both"])
 def test_plot_surf_hemi_views(plt, engine, in_memory_mesh, hemi, view, bg_map):

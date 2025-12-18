@@ -144,6 +144,7 @@ def test_plot_markers_dimension_mismatch(matplotlib_pyplot, matrix, coords):
         plot_markers(matrix, coords, display_mode="x")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("vmin,vmax", [(5, None), (None, 0)])
 def test_plot_markers_bound_error(matplotlib_pyplot, vmin, vmax, coords):
     """Tests that a ValueError is raised when vmin and vmax \

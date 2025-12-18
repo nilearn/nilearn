@@ -144,6 +144,7 @@ def test_save_glm_to_bids_reset_threshold_warning(tmp_path_factory):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_save_glm_to_bids_serialize_affine(tmp_path):
     """Test that affines are turned into a serializable type.
 

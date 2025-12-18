@@ -369,6 +369,7 @@ def test_get_cut_slices(affine_eye):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "params, warning_msg",
     [

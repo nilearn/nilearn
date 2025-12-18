@@ -515,6 +515,7 @@ def test_all_resolution_inference_height_control(
         assert_equal(np.sum(vals < 0), 0)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("height_control", [None, "bonferroni", "fdr", "fpr"])
 def test_threshold_stats_img_surface(surf_img_1d, height_control):
     """Smoke test threshold_stats_img works on surface."""

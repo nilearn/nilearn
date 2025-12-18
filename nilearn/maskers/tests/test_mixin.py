@@ -1,6 +1,7 @@
 import pytest
 from sklearn import clone
 
+from nilearn._utils.helpers import is_gil_enabled
 from nilearn.conftest import _img_3d_rand, _make_surface_img
 from nilearn.maskers import (
     MultiNiftiLabelsMasker,
@@ -44,6 +45,7 @@ def masker(request, img_maps, surf_maps_img, img_labels, surf_label_img):
 
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize(
     "masker, img_func, kwargs",
     [

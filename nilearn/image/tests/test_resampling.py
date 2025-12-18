@@ -482,6 +482,7 @@ def test_resample_img_copied_header(img_4d_mni_tr2, force_resample):
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("force_resample", [False, True])
 def test_4d_affine_bounding_box_error(affine_eye, force_resample):
     bigger_data = np.zeros([10, 10, 10])
@@ -640,6 +641,7 @@ def test_raises_bbox_error_if_data_outside_box(affine_eye, force_resample):
             )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("force_resample", [False, True])
 @pytest.mark.parametrize(
     "axis_permutation", [[0, 1, 2], [1, 0, 2], [2, 1, 0], [0, 2, 1]]
@@ -1048,6 +1050,7 @@ def test_reorder_img_copied_header(img_4d_mni_tr2):
     )
 
 
+@pytest.mark.thread_unsafe
 def test_coord_transform_trivial(affine_eye, rng):
     sform = affine_eye
     x = rng.random((10,))

@@ -303,6 +303,7 @@ def test_generate_report_error_plot_type(flm, contrasts, display_mode):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_generate_report_warning_glass_cut_coords(flm, contrasts):
     """Check cut_coords not used with glass brain."""
     with pytest.warns(UserWarning, match="'cut_coords' was set to None"):
@@ -411,6 +412,7 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_report_invalid_plot_type(flm, contrasts):
     """Check errors when wrong plot type is requested."""
     with pytest.raises(KeyError, match="junk"):
@@ -502,6 +504,7 @@ def test_drift_order_in_params(contrasts):
 
 
 @pytest.mark.slow
+@pytest.mark.thread_unsafe
 def test_flm_generate_report_surface_data(rng):
     """Generate report from flm fitted surface.
 
