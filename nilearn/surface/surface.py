@@ -6,18 +6,21 @@ import pathlib
 import warnings
 from collections.abc import Iterable, Mapping
 from pathlib import Path
+from typing import Any
 
 import numpy as np
+import pandas as pd
 import sklearn.cluster
 import sklearn.preprocessing
 from nibabel import freesurfer as fs
 from nibabel import gifti, load, nifti1
 from scipy import interpolate, sparse
+from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import connected_components
 from sklearn.exceptions import EfficiencyWarning
 
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
     check_parameter_in_allowed,
@@ -619,7 +622,7 @@ def vol_to_surf(
 ):
     """Extract surface data from a Nifti image.
 
-    .. versionadded:: 0.4.0
+    .. nilearn_versionadded:: 0.4.0
 
     Parameters
     ----------
@@ -651,7 +654,7 @@ def vol_to_surf(
             when the image is a
             :term:`deterministic atlas<Deterministic atlas>`.
 
-            .. versionadded:: 0.12.0
+            .. nilearn_versionadded:: 0.12.0
 
         For one image, the speed difference is small, 'linear' takes about x1.5
         more time. For many images, 'nearest' scales much better, up to x20
@@ -796,8 +799,8 @@ def vol_to_surf(
 
     """
     # avoid circular import
+    from nilearn.image import check_niimg, load_img
     from nilearn.image.image import get_data as get_vol_data
-    from nilearn.image.image import load_img
     from nilearn.image.resampling import resample_to_img
 
     sampling_schemes = {
@@ -1298,7 +1301,7 @@ class PolyData:
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1321,7 +1324,7 @@ class PolyData:
         dtype to enforce on the data.
         If ``None`` the original dtype if used.
 
-        .. versionadded:: 0.12.1
+        .. nilearn_versionadded:: 0.12.1
 
     Examples
     --------
@@ -1362,6 +1365,11 @@ class PolyData:
         self._check_parts()
 
     def _check_parts(self):
+        """Ensure all parts have same shape and type.
+
+        This allows to get the shape of any part
+        and make sure they are the same for all.
+        """
         parts = self.parts
 
         if len(parts) == 1:
@@ -1388,6 +1396,7 @@ class PolyData:
     @property
     def shape(self):
         """Shape of the data."""
+        self._check_parts()
         if len(self.parts) == 1:
             return next(iter(self.parts.values())).shape
 
@@ -1399,6 +1408,16 @@ class PolyData:
             if len(tmp.shape) == 2
             else (sum_vertices,)
         )
+
+    @property
+    def _n_samples(self) -> int:
+        """Return number of sample / timepoints of the Polydata."""
+        self._check_parts()
+        shape = next(iter(self.parts.values())).shape
+        if len(shape) == 1:
+            return 1
+        else:
+            return shape[1]
 
     def __repr__(self):
         return f"<{self.__class__.__name__} {self.shape}>"
@@ -1416,18 +1435,12 @@ class PolyData:
         vmax = max(x.max() for x in self.parts.values())
         return vmin, vmax
 
-    def _check_n_samples(self, samples: int, var_name="img"):
-        max_n_samples = []
-        for hemi in self.parts.values():
-            if hemi.ndim > 1:
-                max_n_samples.append(hemi.shape[1])
-            else:
-                max_n_samples.append(1)
-        max_n_samples = np.max(max_n_samples)
-        if max_n_samples > samples:
+    def _check_n_samples(self, n_samples: int, var_name="img"):
+        """Check that the PolyData does not have more than n_samples."""
+        if self._n_samples > n_samples:
             raise ValueError(
-                f"Data for each part of {var_name} should be {samples}D. "
-                f"Found: {max_n_samples}."
+                f"Data for each part of {var_name} should be {n_samples}D. "
+                f"Found: {self._n_samples}."
             )
 
     def _check_ndims(self, dim: int, var_name="img"):
@@ -1511,7 +1524,7 @@ class SurfaceMesh(abc.ABC):
     """A surface :term:`mesh` having vertex, \
     coordinates and faces (triangles).
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Attributes
     ----------
@@ -1548,7 +1561,7 @@ class SurfaceMesh(abc.ABC):
 class InMemoryMesh(SurfaceMesh):
     """A surface mesh stored as in-memory numpy arrays.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1598,7 +1611,7 @@ class InMemoryMesh(SurfaceMesh):
 class FileMesh(SurfaceMesh):
     """A surface mesh stored in a Gifti or Freesurfer file.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1655,7 +1668,7 @@ class PolyMesh:
     It is a shallow wrapper around the ``parts`` dictionary, which cannot be
     empty and whose keys must be a subset of {"left", "right"}.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1849,7 +1862,7 @@ def _sanitize_filename(filename):
 class SurfaceImage:
     """Surface image containing meshes & data for both hemispheres.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1871,7 +1884,7 @@ class SurfaceImage:
         dtype to enforce on the data.
         If ``None`` the original dtype is used.
 
-        .. versionadded:: 0.12.1
+        .. nilearn_versionadded:: 0.12.1
 
     Attributes
     ----------
@@ -1963,9 +1976,6 @@ class SurfaceImage:
         else:
             left_kwargs, right_kwargs = {}, {}
 
-        if isinstance(volume_img, (str, Path)):
-            volume_img = check_niimg(volume_img)
-
         texture_left = vol_to_surf(
             volume_img, mesh.parts["left"], **vol_to_surf_kwargs, **left_kwargs
         )
@@ -1997,7 +2007,7 @@ def check_surf_img(img: SurfaceImage | Iterable[SurfaceImage]) -> None:
             check_surf_img(x)
 
 
-def get_data(img, ensure_finite=False) -> np.ndarray:
+def get_data(img, ensure_finite: bool = False) -> np.ndarray:
     """Concatenate the data of a SurfaceImage across hemispheres and return
     as a numpy array.
 
@@ -2039,7 +2049,7 @@ def get_data(img, ensure_finite=False) -> np.ndarray:
     return data
 
 
-def extract_data(img, index):
+def extract_data(img, index) -> dict[Any, np.ndarray]:
     """Extract data of a SurfaceImage a specified indices.
 
     Parameters
@@ -2057,8 +2067,20 @@ def extract_data(img, index):
     check_is_of_allowed_type(img, (SurfaceImage,), "img")
     mesh = img.mesh
     data = img.data
+    data._check_parts()
 
-    last_dim = 1 if isinstance(index, int) else len(index)
+    if isinstance(index, np.ndarray):
+        return {hemi: data.parts[hemi][:, index].copy() for hemi in data.parts}
+
+    if isinstance(index, int):
+        last_dim = 1
+    elif isinstance(index, slice):
+        start, stop, step = index.indices(data._n_samples)
+        last_dim = max(0, (stop - start + (step - 1)) // step)
+    elif all(isinstance(x, bool) for x in index):
+        last_dim = sum(index)
+    else:
+        last_dim = len(index)
 
     return {
         hemi: data.parts[hemi][:, index]
@@ -2066,3 +2088,128 @@ def extract_data(img, index):
         .reshape(mesh.parts[hemi].n_vertices, last_dim)
         for hemi in data.parts
     }
+
+
+def compute_adjacency_matrix(mesh: InMemoryMesh, dtype=None):
+    """Compute the adjacency matrix for a surface.
+
+    The adjacency matrix is a matrix
+    with one row and one column for each vertex
+    such that the value of a cell `(u,v)` in the matrix is 1
+    if nodes `u` and `v` are adjacent and 0 otherwise.
+
+    Parameters
+    ----------
+    mesh : InMemoryMesh
+
+    dtype : numpy dtype-like or None, default=None
+        The dtype that should be used for the returned sparse matrix.
+
+    Returns
+    -------
+    matrix : scipy.sparse.csr_matrix
+        A sparse matrix representing the edge relationships in `surface`.
+
+    """
+    n = mesh.coordinates.shape[0]
+
+    # Extract all 3 undirected edges per face:
+    #   (i, j), (i, k), (j, k).
+    edges = np.vstack(
+        [
+            mesh.faces[:, [0, 1]],
+            mesh.faces[:, [0, 2]],
+            mesh.faces[:, [1, 2]],
+        ]
+    )
+    edges = edges.astype(np.int64)
+
+    # To uniquely represent an undirected edge (u, v),
+    # ensure that u < v.
+    # We do this by splitting edges into
+    # "bigcol" (first index > second index)
+    # and "lilcol" (otherwise),
+    # and encoding each pair into a single integer u + v * n.
+    # Then we keep unique pairs.
+    bigcol = edges[:, 0] > edges[:, 1]
+    lilcol = ~bigcol
+    edges = np.concatenate(
+        [
+            edges[bigcol, 0] + edges[bigcol, 1] * n,
+            edges[lilcol, 1] + edges[lilcol, 0] * n,
+        ]
+    )
+    edges = np.unique(edges)
+
+    # Decode back to pairs of vertices (u, v).
+    (u, v) = (edges // n, edges % n)
+
+    if dtype is None:
+        edge_lens = np.ones_like(edges)
+    else:
+        edge_lens = np.ones(edges.shape, dtype=dtype)
+
+    # Build a symmetric adjacency matrix.
+    # For each undirected edge (u, v), we add entries (u, v) and (v, u).
+    # And return as a sparse CSR matrix of shape (n_vertices, n_vertices).
+    ee = np.concatenate([edge_lens, edge_lens])
+    uv = np.concatenate([u, v])
+    vu = np.concatenate([v, u])
+    return csr_matrix((ee, (uv, vu)), shape=(n, n))
+
+
+def find_surface_clusters(
+    mesh, mask, offset: int = 1
+) -> tuple[pd.DataFrame, np.ndarray]:
+    """Find clusters of truthy vertices on a surface mesh.
+
+    Parameters
+    ----------
+    mesh : InMemoryMesh
+        Surface mesh providing coordinates and faces.
+
+    mask : (n_vertices,) array_like of bool
+        Boolean mask, True where vertex is part of a cluster.
+
+    offset: int, default=1
+        Base value to use to index the different clusters.
+
+    Returns
+    -------
+    clusters : pandas.DataFrame
+        A look up table
+        that should be BIDS friendly
+        (resemble the look up table used for discrete segmentation).
+
+        One row per cluster with:
+          - 'name': cluster name
+          - 'index': cluster ID (1..n_clusters)
+          - 'size': number of vertices in the cluster
+
+    labels : np.ndarray of shape (n_vertices,)
+        Integer labels per vertex.
+        0 means background (mask is False).
+        Positive integers index the cluster ID (1..n_clusters).
+    """
+    mask = np.asarray(mask, dtype=bool)
+    if mask.shape[0] != mesh.n_vertices:
+        raise ValueError(
+            f"Mask length {mask.shape[0]} does not match "
+            f"mesh.n_vertices {mesh.n_vertices}"
+        )
+
+    adj = compute_adjacency_matrix(mesh)
+    sub_adj = adj[mask][:, mask]
+
+    _, labels_sub = connected_components(sub_adj, directed=False)
+
+    # full label array (0 = background)
+    labels = np.zeros(mesh.n_vertices, dtype=int)
+    labels[mask] = labels_sub + offset
+
+    unique, counts = np.unique(labels[labels > 0], return_counts=True)
+    clusters = pd.DataFrame(
+        {"name": [str(x) for x in unique], "index": unique, "size": counts}
+    )
+
+    return clusters, labels

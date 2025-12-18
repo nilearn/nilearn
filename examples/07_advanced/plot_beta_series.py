@@ -319,24 +319,18 @@ seed_masker = NiftiSpheresMasker(
     radius=8,
     detrend=True,
     standardize="zscore_sample",
-    low_pass=None,
-    high_pass=None,
-    t_r=None,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
+    verbose=1,
 )
 
 brain_masker = NiftiMasker(
     smoothing_fwhm=6,
     detrend=True,
     standardize="zscore_sample",
-    low_pass=None,
-    high_pass=None,
-    t_r=None,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
+    verbose=1,
 )
 
 # Perform the seed-to-voxel correlation for the LSS 'language' beta series

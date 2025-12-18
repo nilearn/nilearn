@@ -28,7 +28,6 @@ from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -38,6 +37,7 @@ from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import adjust_screening_percentile
 from nilearn.image import get_data
 from nilearn.maskers import SurfaceMasker
+from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.masking import unmask_from_to_3d_array
 from nilearn.surface import SurfaceImage
 
@@ -317,7 +317,7 @@ def path_scores(
     key=None,
     debias=False,
     screening_percentile=20,
-    verbose=1,
+    verbose=0,
 ):
     """Compute scores of different alphas in regression \
     and classification used by CV objects.
@@ -369,7 +369,7 @@ def path_scores(
 
     %(screening_percentile)s
 
-    %(verbose)s
+    %(verbose0)s
 
     """
     if l1_ratios is None:
@@ -377,7 +377,11 @@ def path_scores(
 
     # misc
     _, n_features = X.shape
-    verbose = int(verbose if verbose is not None else 0)
+
+    if verbose:
+        verbose = 1
+    elif not verbose:
+        verbose = 0
 
     # Univariate feature screening. Note that if we have only as few as 100
     # features in the mask's support, then we should use all of them to
@@ -396,9 +400,14 @@ def path_scores(
     X_test, y_test = X[test].copy(), y[test].copy()
 
     # it is essential to center the data in regression
-    X_train, y_train, _, y_train_mean, _ = center_data(
-        X_train, y_train, fit_intercept=True, copy=False
-    )
+    # do not unpack tuple completely
+    # as it returns more values starting from sklearn 1.8
+    # TODO: try to find a public function in sklearn to do this
+    tmp = center_data(X_train, y_train, fit_intercept=True, copy=False)
+    X_train = tmp[0]
+    y_train = tmp[1]
+    y_train_mean = tmp[3]
+    del tmp
 
     # misc
     if not isinstance(l1_ratios, collections.abc.Iterable):
@@ -598,7 +607,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
     tol : :obj:`float`, default=5e-4
         Defines the tolerance for convergence for the backend FISTA solver.
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -606,11 +615,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
 
     %(memory_level1)s
 
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+    %(cv8_5)s
 
     %(debias)s
 
@@ -618,7 +623,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
     %(spacenet_fit_attributes)s
 
@@ -643,7 +648,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,
@@ -711,7 +716,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         # when dropping sklearn>=1.5 and replaced by just:
         #   self.__sklearn_tags__().estimator_type == "classifier"
         if SKLEARN_LT_1_6:
-            # TODO remove for sklearn>=1.6
+            # TODO remove for sklearn>=1.8
             return self._estimator_type == "classifier"
         return self.__sklearn_tags__().estimator_type == "classifier"
 
@@ -953,7 +958,7 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
         # report time elapsed
         duration = time.time() - tic
         logger.log(
-            f"Time Elapsed: {duration} seconds, {duration / 60.0} minutes.",
+            f"Time Elapsed: {duration:.3f} seconds.",
             self.verbose,
         )
 
@@ -994,17 +999,15 @@ class BaseSpaceNet(CacheMixin, LinearRegression):
                 f"expecting {self.n_elements_}."
             )
 
-        # prediction proper
-        if is_classifier(self):
-            scores = self.decision_function(X)
-            if len(scores.shape) == 1:
-                indices = (scores > 0).astype(int)
-            else:
-                indices = scores.argmax(axis=1)
-            return self.classes_[indices]
-        else:
+        if not is_classifier(self):
             # handle regression (least-squared loss)
             return LinearRegression.predict(self, X)
+        scores = self.decision_function(X)
+        if len(scores.shape) == 1:
+            indices = (scores > 0).astype(int)
+        else:
+            indices = scores.argmax(axis=1)
+        return self.classes_[indices]
 
 
 @fill_doc
@@ -1064,7 +1067,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
 
     %(standardize_true)s
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -1072,11 +1075,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``.
 
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+    %(cv8_5)s
 
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
@@ -1089,7 +1088,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.12.1
+        .. nilearn_versionadded:: 0.12.1
 
     %(spacenet_fit_attributes)s
 
@@ -1125,7 +1124,7 @@ class SpaceNetClassifier(_ClassifierMixin, BaseSpaceNet):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,
@@ -1300,7 +1299,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
 
     %(standardize_true)s
 
-    %(verbose)s
+    %(verbose0)s
 
     %(n_jobs)s
 
@@ -1308,11 +1307,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         Length of the path. For example, ``eps=1e-3`` means that
         ``alpha_min / alpha_max = 1e-3``
 
-    cv : :obj:`int`, a cv generator instance, or None, default=8
-        The input specifying which cross-validation generator to use.
-        It can be an integer, in which case it is the number of folds in a
-        KFold, None, in which case 3 fold is used, or another object, that
-        will then be used as a cv generator.
+    %(cv8_5)s
 
     fit_intercept : :obj:`bool`, default=True
         Fit or not an intercept.
@@ -1325,7 +1320,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         When set to ``True``, forces the coefficients to be positive.
         This option is only supported for dense arrays.
 
-        .. versionadded:: 0.12.1
+        .. nilearn_versionadded:: 0.12.1
 
 
     %(spacenet_fit_attributes)s
@@ -1354,7 +1349,7 @@ class SpaceNetRegressor(_RegressorMixin, BaseSpaceNet):
         memory=None,
         memory_level=1,
         standardize=True,
-        verbose=1,
+        verbose=0,
         n_jobs=1,
         eps=1e-3,
         cv=8,

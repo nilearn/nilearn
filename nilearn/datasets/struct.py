@@ -11,7 +11,6 @@ from sklearn.utils import Bunch
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -24,7 +23,7 @@ from nilearn.datasets._utils import (
     get_dataset_descr,
     get_dataset_dir,
 )
-from nilearn.image import get_data, new_img_like, resampling
+from nilearn.image import check_niimg, get_data, new_img_like, resampling
 from nilearn.surface import (
     FileMesh,
     PolyMesh,
@@ -109,9 +108,10 @@ def fetch_icbm152_2009(data_dir=None, url=None, resume=True, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information
     see the :ref:`dataset description <icbm_152_template>`.
-
     """
     check_params(locals())
 
@@ -181,7 +181,7 @@ def load_mni152_template(resolution=None):
     ----------
     %(resolution)s
 
-        .. versionadded:: 0.8.1
+        .. nilearn_versionadded:: 0.8.1
 
     Returns
     -------
@@ -236,7 +236,7 @@ def load_mni152_gm_template(resolution=None):
 
     %(templateflow)s
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -293,7 +293,7 @@ def load_mni152_wm_template(resolution=None):
 
     %(templateflow)s
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -348,13 +348,13 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
 
     %(templateflow)s
 
-    .. versionadded:: 0.2.5
+    .. nilearn_versionadded:: 0.2.5
 
     Parameters
     ----------
     %(resolution)s
 
-        .. versionadded:: 0.8.1
+        .. nilearn_versionadded:: 0.8.1
 
     threshold : :obj:`float`, default=0.2
         Values of the MNI152 T1 template above this threshold will be included.
@@ -393,7 +393,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     %(templateflow)s
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -447,7 +447,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
 
     %(templateflow)s
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     Parameters
     ----------
@@ -500,7 +500,7 @@ def fetch_icbm152_brain_gm_mask(
 
      %(templateflow)s
 
-    .. versionadded:: 0.2.5
+    .. nilearn_versionadded:: 0.2.5
 
     Parameters
     ----------
@@ -517,7 +517,7 @@ def fetch_icbm152_brain_gm_mask(
         and :term:`erosion<Erosion>` steps performed in
         scipy.ndimage.binary_closing function.
 
-        .. versionadded:: 0.8.1
+        .. nilearn_versionadded:: 0.8.1
 
     %(verbose)s
 
@@ -536,6 +536,8 @@ def fetch_icbm152_brain_gm_mask(
 
     Notes
     -----
+    %(fetcher_note)s
+
     This function relies on ICBM152 templates where we particularly pick
     gray matter template and threshold the template at .2 to take one fifth
     of the values. Then, do a bit post processing such as binary closing
@@ -546,7 +548,6 @@ def fetch_icbm152_brain_gm_mask(
 
     For more information
     see the :ref:`dataset description <icbm_152_template>`.
-
     """
     check_params(locals())
 
@@ -662,9 +663,10 @@ def fetch_oasis_vbm(
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information
     see the :ref:`dataset description <oasis_maps>`.
-
     """
     check_params(locals())
 
@@ -1018,7 +1020,7 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
 def load_fsaverage(mesh="fsaverage5", data_dir=None):
     """Load fsaverage for both hemispheres as PolyMesh objects.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -1068,7 +1070,7 @@ def load_fsaverage_data(
 ):
     """Return freesurfer data on an fsaverage mesh as a SurfaceImage.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------

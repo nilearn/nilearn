@@ -7,21 +7,20 @@ from typing import ClassVar
 
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib.colorbar import ColorbarBase
 from matplotlib.colors import ListedColormap
 from matplotlib.transforms import Bbox
 
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import is_binary_niimg, safe_get_data
-from nilearn._utils.niimg_conversions import _check_fov, check_niimg_3d
 from nilearn._utils.param_validation import check_params
-from nilearn.image import get_data, new_img_like, reorder_img
+from nilearn.image import check_niimg_3d, get_data, new_img_like, reorder_img
+from nilearn.image.image import _check_fov
 from nilearn.image.resampling import get_bounds, get_mask_bounds, resample_img
-from nilearn.plotting._engine_utils import threshold_cmap
+from nilearn.plotting._engine_utils import create_colorbar_for_fig
 from nilearn.plotting._utils import (
+    DEFAULT_TICK_FORMAT,
     check_threshold_not_negative,
-    get_cbar_ticks,
 )
 from nilearn.plotting.displays import CutAxes
 from nilearn.plotting.displays._utils import (
@@ -83,7 +82,7 @@ class BaseSlicer:
         self._brain_color = brain_color
         self._colorbar = False
         self._colorbar_width = 0.05 * bb.width
-        self._cbar_tick_format = "%.2g"
+        self._cbar_tick_format = DEFAULT_TICK_FORMAT
         self._colorbar_margin = {
             "left": 0.25 * bb.width,
             "right": 0.02 * bb.width,
@@ -254,13 +253,18 @@ class BaseSlicer:
         else:
             first_axe = self.cut_coords[0]
         ax = self.axes[first_axe].ax
+
+        kwargs |= {
+            "horizontalalignment": "left",
+            "verticalalignment": "top",
+            "zorder": 1000,
+        }
+
         ax.text(
             x,
             y,
             text,
             transform=self.frame_axes.transAxes,
-            horizontalalignment="left",
-            verticalalignment="top",
             size=size,
             color=color,
             bbox={
@@ -269,7 +273,6 @@ class BaseSlicer:
                 "fc": bgcolor,
                 "alpha": alpha,
             },
-            zorder=1000,
             **kwargs,
         )
         ax.set_zorder(1000)
@@ -280,7 +283,7 @@ class BaseSlicer:
         img,
         threshold=1e-6,
         colorbar=False,
-        cbar_tick_format="%.2g",
+        cbar_tick_format=DEFAULT_TICK_FORMAT,
         cbar_vmin=None,
         cbar_vmax=None,
         transparency=None,
@@ -523,6 +526,32 @@ class BaseSlicer:
             data_2d_list.append(data_2d)
             transparency_list.append(transparency_2d)
 
+        n_out_of_bounds = sum(d is None for d in data_2d_list)
+
+        str_image_type = (
+            "Image bounds are:"
+            f"\n\tx: [{xmin_:.2f}, {xmax_:.2f}], "
+            f"\n\ty: [{ymin_:.2f}, {ymax_:.2f}], "
+            f"\n\tz: [{zmin_:.2f}, {zmax_:.2f}]. "
+        )
+        if n_out_of_bounds == len(data_2d_list):
+            raise ValueError(
+                "Nothing to plot. "
+                "This is probably because "
+                "all the cut coordinates are out of the bounds of the image.\n"
+                f"{str_image_type}"
+            )
+        elif n_out_of_bounds > 0:
+            warnings.warn(
+                (
+                    f"{n_out_of_bounds} of the cut coordinates "
+                    "seem to be out of the bounds of the image."
+                    f"\n{str_image_type}"
+                ),
+                UserWarning,
+                stacklevel=find_stack_level(),
+            )
+
         if kwargs.get("vmin") is None:
             kwargs["vmin"] = np.ma.min(
                 [d.min() for d in data_2d_list if d is not None]
@@ -713,12 +742,6 @@ class BaseSlicer:
             Maximal value for the colorbar. If None, the maximal value
             is computed based on the data.
         """
-        offset = 0 if threshold is None else threshold
-        offset = min(offset, norm.vmax)
-
-        cbar_vmin = cbar_vmin if cbar_vmin is not None else norm.vmin
-        cbar_vmax = cbar_vmax if cbar_vmax is not None else norm.vmax
-
         # create new  axis for the colorbar
         figure = self.frame_axes.figure
         _, y0, x1, y1 = self.rect
@@ -735,28 +758,21 @@ class BaseSlicer:
         self._colorbar_ax = figure.add_axes(lt_wid_top_ht)
         self._colorbar_ax.set_facecolor("w")
 
-        if cbar_vmin == cbar_vmax:  # len(np.unique(data)) == 1 ?
-            return
-        else:
-            our_cmap = threshold_cmap(
-                cmap, norm, offset, (*self._brain_color, 0.0)
-            )
-
-        ticks = get_cbar_ticks(cbar_vmin, cbar_vmax, offset, n_ticks=5)
-        bounds = np.linspace(cbar_vmin, cbar_vmax, our_cmap.N)
-
-        self._cbar = ColorbarBase(
+        self._cbar = create_colorbar_for_fig(
+            figure,
             self._colorbar_ax,
-            ticks=ticks,
-            norm=norm,
-            orientation="vertical",
-            cmap=our_cmap,
-            boundaries=bounds,
+            cmap,
+            norm,
+            threshold,
+            cbar_vmin,
+            cbar_vmax,
+            tick_format=self._cbar_tick_format,
             spacing="proportional",
-            format=self._cbar_tick_format,
+            orientation="vertical",
+            threshold_color=(*self._brain_color, 0.0),
         )
-        self._cbar.ax.set_facecolor(self._brain_color)
 
+        self._cbar.ax.set_facecolor(self._brain_color)
         self._colorbar_ax.yaxis.tick_left()
         tick_color = "w" if self._black_bg else "k"
         outline_color = "w" if self._black_bg else "k"
@@ -1092,7 +1108,9 @@ class OrthoSlicer(BaseSlicer):
         cut_coords = self.cut_coords
         if len(cut_coords) != len(self._cut_displayed):
             raise ValueError(
-                "The number cut_coords passed does not match the display_mode"
+                f"The number cut_coords ({len(cut_coords)}) "
+                f"passed does not match the expected "
+                f"for that display_mode ({len(self._cut_displayed)}). "
             )
         x0, y0, x1, y1 = self.rect
         facecolor = "k" if self._black_bg else "w"
@@ -2177,7 +2195,7 @@ class MosaicSlicer(BaseSlicer):
                 ax = fh_c.add_axes(indices)
                 ax.axis("off")
                 display_ax = self._axes_class(ax, direction, coord, **kwargs)
-                self.axes[(direction, coord)] = display_ax
+                self.axes[direction, coord] = display_ax
                 ax.set_axes_locator(self._locator)
 
         # increase color bar width to adapt to the number of cuts

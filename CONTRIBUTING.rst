@@ -239,8 +239,10 @@ with the tools we use for development and deployment.
 |   `Coding Style`_  |    Any        | - No new dependency                                 |
 |                    |               | - Backward compatibility                            |
 |                    |               | - All internal imports are absolute, not relative   |
-|                    |               | - Impacted docstrings have versionadded and/or      |
-|                    |               |   versionchanged directives as needed.              |
+|                    |               | - Impacted docstrings have                          |
+|                    |               |   ``.. nilearn_versionadded`` and/or                |
+|                    |               |   ``.. nilearn_versionchanged`` directives          |
+|                    |               |   as needed.                                        |
 |                    |               |   These should use the current dev version.         |
 +--------------------+---------------+-----------------------------------------------------+
 |                    |               | - Test type is adapted to function behavior         |
@@ -501,14 +503,9 @@ Code inside ``maskers._validation.py``:
 Guidelines for HTML and CSS
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-We use `prettier <https://prettier.io/>`_ to format HTML and CSS.
+We use `prettier <https://prettier.io/>`_ and `djlint <https://github.com/djlint/djlint>`_ to format HTML and CSS.
 
-This is implemented via a pre-commit hook (see below)
-that can be run with
-
-.. code-block:: bash
-
-      pre-commit run --all-files prettier
+This is implemented via a pre-commit hook.
 
 Pre-commit
 ----------
@@ -653,6 +650,16 @@ main documentation and
 `sphinx-gallery <https://sphinx-gallery.github.io/stable/index.html>`_ for the
 example tutorials. If you want to work on those, check out next section to
 learn how to use those tools to build documentation.
+
+Reports
+-------
+
+Reports (for maskers and GLM) are generated using `Jinja templates <https://jinja.palletsprojects.com/en/stable/>`_.
+
+Reports HTML, CSS, javascript and templates are stored in ``nilearn/reporting/data``.
+
+All reports rely on the `pure CSS framework <https://pure-css.github.io/>`_.
+
 
 .. _git_repo:
 

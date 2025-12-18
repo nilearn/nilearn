@@ -148,18 +148,10 @@ for i, (first_level_glm, fmri_img, confound, event) in enumerate(
 
 # %%
 # View the GLM report of the first subject
+#
+# .. include:: ../../../examples/report_note.rst
+#
 report_flm
-
-# %%
-# Or in a separate browser window
-# report_flm.open_in_browser()
-
-
-# %%
-# Save the report to disk
-output_dir = Path.cwd() / "results" / "plot_surface_bids_analysis"
-output_dir.mkdir(exist_ok=True, parents=True)
-report_flm.save_as_html(output_dir / "report_flm.html")
 
 
 # %%
@@ -190,12 +182,7 @@ report_slm = second_level_glm.generate_report(
 
 # %%
 # View the GLM report at the group level.
+#
+# .. include:: ../../../examples/report_note.rst
+#
 report_slm
-
-# %%
-# Or in a separate browser window
-# report_flm.open_in_browser()
-
-# %%
-# Save it as an html file.
-report_slm.save_as_html(output_dir / "report_slm.html")

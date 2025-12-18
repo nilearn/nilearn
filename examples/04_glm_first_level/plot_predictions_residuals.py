@@ -31,7 +31,7 @@ mean_img = image.mean_img(fmri_img)
 mask = masking.compute_epi_mask(mean_img)
 
 # Clean and smooth data
-fmri_img = image.clean_img(fmri_img, standardize=False)
+fmri_img = image.clean_img(fmri_img, standardize=None)
 fmri_img = image.smooth_img(fmri_img, 5.0)
 
 # load events
@@ -48,11 +48,12 @@ events = pd.read_csv(subject_data.events, sep="\t")
 from nilearn.glm.first_level import FirstLevelModel
 
 fmri_glm = FirstLevelModel(
-    t_r=7,
+    t_r=subject_data.t_r,
     drift_model="cosine",
     signal_scaling=False,
     mask_img=mask,
     minimize_memory=False,
+    verbose=1,
 )
 
 fmri_glm = fmri_glm.fit(fmri_img, events)
@@ -77,6 +78,10 @@ show()
 # %%
 # Extract the largest clusters
 # ----------------------------
+# We can extract the 6 largest clusters surviving our threshold.
+# and get the x, y, and z coordinates of their peaks.
+# We then extract the time series from a sphere around each coordinate.
+#
 from nilearn.maskers import NiftiSpheresMasker
 from nilearn.reporting import get_clusters_table
 
@@ -84,16 +89,20 @@ table = get_clusters_table(
     z_map, stat_threshold=threshold, cluster_threshold=20
 )
 table.set_index("Cluster ID", drop=True)
-table.head()
+print(table)
 
-# get the 6 largest clusters' max x, y, and z coordinates
 coords = table.loc[range(1, 7), ["X", "Y", "Z"]].to_numpy()
+print(coords)
 
-# extract time series from each coordinate
-masker = NiftiSpheresMasker(coords)
+masker = NiftiSpheresMasker(coords, verbose=1)
 real_timeseries = masker.fit_transform(fmri_img)
 predicted_timeseries = masker.fit_transform(fmri_glm.predicted[0])
 
+# %%
+# Let's have a look at the report to make sure
+# the spheres are well placed.
+report = masker.generate_report()
+report
 
 # %%
 # Plot predicted and actual time series for 6 most significant clusters

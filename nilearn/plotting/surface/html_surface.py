@@ -7,11 +7,11 @@ import numpy as np
 from nilearn import DEFAULT_DIVERGING_CMAP
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.html_document import HTMLDocument
-from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
+from nilearn.image import check_niimg_3d
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.js_plotting_utils import (
@@ -399,7 +399,7 @@ def view_surf(
         and / or ``surf_mesh`` is :obj:`~nilearn.surface.PolyMesh`.
         Otherwise a warning will be displayed.
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     %(bg_on_data)s
 

@@ -2,7 +2,6 @@
 first level contrasts or directly on fitted first level models.
 """
 
-import inspect
 import operator
 import time
 from pathlib import Path
@@ -22,9 +21,7 @@ from nilearn._utils.glm import check_and_load_tables
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
-    check_embedded_masker,
 )
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -40,9 +37,9 @@ from nilearn.glm.first_level.design_matrix import (
     make_second_level_design_matrix,
 )
 from nilearn.glm.regression import RegressionResults, SimpleRegressionResults
-from nilearn.glm.thresholding import warn_default_threshold
-from nilearn.image import concat_imgs, iter_img, mean_img
+from nilearn.image import check_niimg, concat_imgs, iter_img, mean_img
 from nilearn.maskers import NiftiMasker, SurfaceMasker
+from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.mass_univariate import permuted_ols
 from nilearn.surface.surface import (
     SurfaceImage,
@@ -485,8 +482,9 @@ class SecondLevelModel(BaseGLM):
     %(memory_level1)s
 
     %(verbose0)s
-        If 0 prints nothing. If 1 prints final computation time.
-        If 2 prints masker computation details.
+        If 0, prints nothing.
+        If 1, prints final computation time.
+        If 2, prints masker computation details.
 
     %(n_jobs)s
 
@@ -523,7 +521,7 @@ class SecondLevelModel(BaseGLM):
     n_elements_ : :obj:`int`
         The number of voxels or vertices in the mask.
 
-        .. versionadded:: 0.12.1
+        .. nilearn_versionadded:: 0.12.1
 
     results_ : :obj:`dict`,
         with keys corresponding to the different labels values.
@@ -796,11 +794,11 @@ class SecondLevelModel(BaseGLM):
         output_type : :obj:`str`, default='z_score'
             The type of statistical map to retain from the contrast.
 
-            .. versionadded:: 0.9.2
+            .. nilearn_versionadded:: 0.9.2
 
         %(first_level_contrast)s
 
-            .. versionadded:: 0.12.0
+            .. nilearn_versionadded:: 0.12.0
 
         Returns
         -------
@@ -890,81 +888,6 @@ class SecondLevelModel(BaseGLM):
             )
         return self.masker_.inverse_transform(voxelwise_attribute)
 
-    def generate_report(
-        self,
-        contrasts=None,
-        first_level_contrast=None,
-        title=None,
-        bg_img="MNI152TEMPLATE",
-        threshold=3.09,
-        alpha=0.001,
-        cluster_threshold=0,
-        height_control="fpr",
-        two_sided=False,
-        min_distance=8.0,
-        plot_type="slice",
-        cut_coords=None,
-        display_mode=None,
-        report_dims=(1600, 800),
-    ):
-        """Return a :class:`~nilearn.reporting.HTMLReport` \
-        which shows all important aspects of a fitted :term:`GLM`.
-
-        The :class:`~nilearn.reporting.HTMLReport` can be opened in a
-        browser, displayed in a notebook, or saved to disk as a standalone
-        HTML file.
-
-        The :term:`GLM` must be fitted and have the computed design
-        matrix(ces).
-
-        .. note::
-
-            Refer to the documentation of
-            :func:`~nilearn.reporting.make_glm_report`
-            for details about the parameters
-
-        Returns
-        -------
-        report_text : :class:`~nilearn.reporting.HTMLReport`
-            Contains the HTML code for the :term:`GLM` report.
-
-        """
-        from nilearn.reporting.glm_reporter import make_glm_report
-
-        sig = inspect.signature(SecondLevelModel.generate_report).parameters
-        warn_default_threshold(
-            threshold,
-            sig["threshold"].default,
-            3.09,
-            height_control=height_control,
-        )
-
-        if not hasattr(self, "_reporting_data"):
-            self._reporting_data = {
-                "trial_types": [],
-                "noise_model": getattr(self, "noise_model", None),
-                "hrf_model": getattr(self, "hrf_model", None),
-                "drift_model": None,
-            }
-
-        return make_glm_report(
-            self,
-            contrasts,
-            first_level_contrast=first_level_contrast,
-            title=title,
-            bg_img=bg_img,
-            threshold=threshold,
-            alpha=alpha,
-            cluster_threshold=cluster_threshold,
-            height_control=height_control,
-            two_sided=two_sided,
-            min_distance=min_distance,
-            plot_type=plot_type,
-            cut_coords=cut_coords,
-            display_mode=display_mode,
-            report_dims=report_dims,
-        )
-
 
 @fill_doc
 def non_parametric_inference(
@@ -1003,7 +926,7 @@ def non_parametric_inference(
 
     %(first_level_contrast)s
 
-        .. versionadded:: 0.9.0
+        .. nilearn_versionadded:: 0.9.0
 
     %(second_level_mask)s
 
@@ -1034,7 +957,7 @@ def non_parametric_inference(
         This is only used for cluster-level inference.
         If None, no cluster-level inference will be performed.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
         .. warning::
 
@@ -1047,7 +970,7 @@ def non_parametric_inference(
 
     %(tfce)s
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
         .. warning::
 
@@ -1070,7 +993,7 @@ def non_parametric_inference(
         .. note::
             This is returned if ``tfce`` is True or ``threshold`` is not None.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
         Here are the keys:
 

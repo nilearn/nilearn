@@ -19,7 +19,6 @@ from nilearn._utils.bids import (
 )
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import rename_parameters
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
@@ -30,8 +29,8 @@ from nilearn.datasets._utils import (
     get_dataset_descr,
     get_dataset_dir,
 )
+from nilearn.image import check_niimg, new_img_like, reorder_img
 from nilearn.image import get_data as get_img_data
-from nilearn.image import new_img_like, reorder_img
 
 _TALAIRACH_LEVELS = ["hemisphere", "lobe", "gyrus", "tissue", "ba"]
 
@@ -85,10 +84,12 @@ def fetch_atlas_difumo(
     over a with range of experimental conditions.
     See :footcite:t:`Dadi2020`.
 
-    .. versionadded:: 0.7.1
+    .. nilearn_versionadded:: 0.7.1
 
     Notes
     -----
+    %(fetcher_note)s
+
     Direct download links from OSF:
 
     - 64: https://osf.io/pqu9r/download
@@ -604,7 +605,7 @@ def fetch_atlas_juelich(
     specified by your FSL installed path given in `data_dir` argument.
     See documentation for details.
 
-    .. versionadded:: 0.8.1
+    .. nilearn_versionadded:: 0.8.1
 
     .. note::
 
@@ -1088,9 +1089,10 @@ def fetch_atlas_smith_2009(
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information about this dataset's structure:
     https://www.fmrib.ox.ac.uk/datasets/brainmap+rsns/
-
     """
     check_params(locals())
 
@@ -1176,9 +1178,9 @@ def fetch_atlas_yeo_2011(
         - 7 networks parcellation,
         - 17 networks parcellation.
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
-        .. versionchanged:: 0.13.0
+        .. nilearn_versionchanged:: 0.13.0
 
           The default was changed to 7.
 
@@ -1188,9 +1190,9 @@ def fetch_atlas_yeo_2011(
         - ``"thick"``: parcellation fitted to thick cortex segmentations,
         - ``"thin"``: parcellation fitted to thin cortex segmentations.
 
-        .. versionadded:: 0.12.0
+        .. nilearn_versionadded:: 0.12.0
 
-        .. versionchanged:: 0.13.0
+        .. nilearn_versionchanged:: 0.13.0
 
           The default was changed to "thick".
 
@@ -1221,8 +1223,9 @@ def fetch_atlas_yeo_2011(
 
     Notes
     -----
-    License: unknown.
+    %(fetcher_note)s
 
+    License: unknown.
     """
     check_params(locals())
 
@@ -1352,7 +1355,7 @@ def fetch_atlas_aal(
         The version of the AAL atlas. Must be 'SPM5', 'SPM8', 'SPM12', or '3v2'
         for the latest SPM12 version of AAL3 software.
 
-        .. versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0dev
 
           The default was changed to '3v2'.
 
@@ -1407,8 +1410,9 @@ def fetch_atlas_aal(
 
     Notes
     -----
-    License: unknown.
+    %(fetcher_note)s
 
+    License: unknown.
     """
     check_params(locals())
 
@@ -1510,7 +1514,7 @@ def fetch_atlas_basc_multiscale_2015(
     :term:`fMRI`: finding homotopic regions simply consists of flipping the
     x-axis of the template.
 
-    .. versionadded:: 0.2.3
+    .. nilearn_versionadded:: 0.2.3
 
     Parameters
     ----------
@@ -1527,7 +1531,7 @@ def fetch_atlas_basc_multiscale_2015(
         Valid resolutions available are
         {7, 12, 20, 36, 64, 122, 197, 325, 444}
 
-        .. versionchanged: 0.13.0dev
+        .. nilearn_versionchanged: 0.13.0dev
 
           Default changed to ``7``.
 
@@ -1560,9 +1564,10 @@ def fetch_atlas_basc_multiscale_2015(
 
     Notes
     -----
+    %(fetcher_note)s
+
     For more information on this dataset's structure, see
     https://figshare.com/articles/dataset/Group_multiscale_functional_template_generated_with_BASC_on_the_Cambridge_sample/1285615
-
     """
     check_params(locals())
 
@@ -1689,7 +1694,7 @@ def fetch_coords_seitzman_2018(ordered_regions=True):
 
     See :footcite:t:`Seitzman2020`.
 
-    .. versionadded:: 0.5.1
+    .. nilearn_versionadded:: 0.5.1
 
     Parameters
     ----------
@@ -1824,11 +1829,12 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     Notes
     -----
+    %(fetcher_note)s
+
     License: unknown
 
     See https://trendscenter.org/data/ for more information
     on this dataset.
-
     """
     check_params(locals())
 
@@ -1893,7 +1899,7 @@ def fetch_atlas_surf_destrieux(
     This atlas returns 76 labels per hemisphere based on sulco-gryal patterns
     as distributed with Freesurfer in fsaverage5 surface space.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -1977,8 +1983,8 @@ def fetch_atlas_surf_destrieux(
     lut = generate_atlas_look_up_table(
         "fetch_atlas_surf_destrieux", name=labels
     )
-    check_look_up_table(lut=lut, atlas=annot_left[0])
-    check_look_up_table(lut=lut, atlas=annot_right[0])
+    check_look_up_table(lut=lut, atlas=annot_left[0], verbose=verbose)
+    check_look_up_table(lut=lut, atlas=annot_right[0], verbose=verbose)
 
     return Bunch(
         labels=labels,
@@ -2059,7 +2065,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
     :footcite:t:`Lancaster2000`,
     and :footcite:t:`Lancaster1997`.
 
-    .. versionadded:: 0.4.0
+    .. nilearn_versionadded:: 0.4.0
 
     Parameters
     ----------
@@ -2229,7 +2235,7 @@ def fetch_atlas_schaefer_2018(
 ):
     """Download and return file names for the Schaefer 2018 parcellation.
 
-    .. versionadded:: 0.5.1
+    .. nilearn_versionadded:: 0.5.1
 
     This function returns a :term:`Deterministic atlas`, and the provided
     images are in MNI152 space.
@@ -2284,13 +2290,14 @@ def fetch_atlas_schaefer_2018(
 
     Notes
     -----
+    %(fetcher_note)s
+
     Release v0.14.3 of the Schaefer 2018 parcellation is used by
     default. Versions prior to v0.14.3 are known to contain erroneous region
     label names. For more details, see
     https://github.com/ThomasYeoLab/CBIG/blob/master/stable_projects/brain_parcellation/Schaefer2018_LocalGlobal/Parcellations/Updates/Update_20190916_README.md
 
     License: MIT.
-
     """
     check_params(locals())
 
@@ -2412,7 +2419,7 @@ class Atlas(Bunch):
 
             return None
 
-        check_look_up_table(lut=lut, atlas=maps)
+        check_look_up_table(lut=lut, atlas=maps, verbose=1)
 
         super().__init__(
             maps=maps,

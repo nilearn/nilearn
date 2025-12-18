@@ -92,6 +92,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -693,7 +694,7 @@ def test_connectivity_measure_generic_3d_array(kind, cov_estimator, signals):
 
     assert isinstance(connectivities, np.ndarray)
 
-    signals_as_tuple = tuple(x for x in signals)
+    signals_as_tuple = tuple(signals)
 
     connectivities = conn_measure.fit_transform(signals_as_tuple)
 

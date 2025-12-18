@@ -27,7 +27,6 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.helpers import compare_version
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg_3d, check_niimg_4d
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
@@ -35,6 +34,8 @@ from nilearn._utils.param_validation import (
     check_threshold,
 )
 from nilearn.image import (
+    check_niimg_3d,
+    check_niimg_4d,
     get_data,
     iter_img,
     math_img,
@@ -46,16 +47,13 @@ from nilearn.masking import apply_mask, compute_epi_mask
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import create_colormap_from_lut
 from nilearn.plotting._utils import (
+    DEFAULT_TICK_FORMAT,
     check_threshold_not_negative,
     get_colorbar_and_data_ranges,
 )
 from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import save_figure_if_needed
-from nilearn.plotting.image.utils import (
-    MNI152TEMPLATE,
-    get_cropped_cbar_ticks,
-    load_anat,
-)
+from nilearn.plotting.image.utils import MNI152TEMPLATE, load_anat
 from nilearn.signal import clean
 
 
@@ -98,7 +96,7 @@ def _plot_img_with_bg(
     display_factory=get_slicer,
     cbar_vmin=None,
     cbar_vmax=None,
-    cbar_tick_format="%.2g",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     brain_color=(0.5, 0.5, 0.5),
     decimals=False,
     radiological=False,
@@ -280,12 +278,6 @@ def _plot_img_with_bg(
         display.draw_cross()
     if title is not None and title != "":
         display.title(title)
-    if hasattr(display, "_cbar"):
-        cbar = display._cbar
-        new_tick_locs = get_cropped_cbar_ticks(
-            cbar.vmin, cbar.vmax, threshold, n_ticks=len(cbar.locator.locs)
-        )
-        cbar.set_ticks(new_tick_locs)
 
     return save_figure_if_needed(display, output_file)
 
@@ -304,7 +296,7 @@ def plot_img(
     draw_cross=True,
     black_bg=False,
     colorbar=True,
-    cbar_tick_format="%.2g",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     resampling_interpolation="continuous",
     bg_img=None,
     vmin=None,
@@ -413,7 +405,6 @@ def plot_img(
     """
     check_params(locals())
     check_threshold_not_negative(threshold)
-
     display = _plot_img_with_bg(
         img,
         cut_coords=cut_coords,
@@ -463,7 +454,7 @@ def plot_anat(
     dim="auto",
     cmap="gray",
     colorbar=True,
-    cbar_tick_format="%.2g",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     radiological=False,
     vmin=None,
     vmax=None,
@@ -592,7 +583,7 @@ def plot_epi(
     draw_cross=True,
     black_bg=True,
     colorbar=True,
-    cbar_tick_format="%.2g",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     cmap="gray",
     vmin=None,
     vmax=None,
@@ -751,7 +742,7 @@ def plot_roi(
     cmap="gist_ncar",
     dim="auto",
     colorbar=True,
-    cbar_tick_format="%i",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     vmin=None,
     vmax=None,
     resampling_interpolation="nearest",
@@ -953,7 +944,7 @@ def plot_prob_atlas(
         To turn off background image, just pass "bg_img=False".
         Default=MNI152TEMPLATE.
 
-        .. versionadded:: 0.4.0
+        .. nilearn_versionadded:: 0.4.0
 
     view_type : {'auto', 'contours', 'filled_contours', 'continuous'}, \
                 default='auto'
@@ -1197,7 +1188,7 @@ def plot_stat_map(
     output_file=None,
     display_mode="ortho",
     colorbar=True,
-    cbar_tick_format="%.2g",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     figure=None,
     axes=None,
     title=None,
@@ -1366,7 +1357,7 @@ def plot_glass_brain(
     output_file=None,
     display_mode="ortho",
     colorbar=True,
-    cbar_tick_format="%.2g",
+    cbar_tick_format=DEFAULT_TICK_FORMAT,
     figure=None,
     axes=None,
     title=None,
@@ -1899,7 +1890,7 @@ def plot_carpet(
             If ``t_r`` is not provided, it will be inferred from ``img``'s
             header (``img.header.get_zooms()[-1]``).
 
-        .. versionadded:: 0.9.1
+        .. nilearn_versionadded:: 0.9.1
             Prior to this, ``t_r`` would be inferred from ``img`` without
             user input.
 
@@ -1979,7 +1970,8 @@ def plot_carpet(
             if label_dtype != atlas_values.dtype:
                 logger.log(
                     "Coercing atlas_values to "
-                    f"{label_dtype.__class__.__name__}"
+                    f"{label_dtype.__class__.__name__}",
+                    verbose=1,
                 )
                 atlas_values = atlas_values.astype(type(label_dtype))
 

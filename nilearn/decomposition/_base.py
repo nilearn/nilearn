@@ -26,15 +26,14 @@ from nilearn._utils import logger
 from nilearn._utils.cache_mixin import CacheMixin
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.masker_validation import check_embedded_masker
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import (
     check_is_of_allowed_type,
     check_params,
 )
 from nilearn._utils.path_finding import resolve_globbing
 from nilearn._utils.tags import SKLEARN_LT_1_6
+from nilearn.image import check_niimg
 from nilearn.maskers import (
     MultiNiftiMasker,
     MultiSurfaceMasker,
@@ -42,6 +41,7 @@ from nilearn.maskers import (
     SurfaceMapsMasker,
     SurfaceMasker,
 )
+from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.signal import row_sum_of_squares
 from nilearn.surface import SurfaceImage
 from nilearn.typing import NiimgLike
@@ -303,7 +303,7 @@ class _BaseDecomposition(CacheMixin, TransformerMixin, BaseEstimator):
 
     Handles mask logic, provides transform and inverse_transform methods
 
-     .. versionadded:: 0.2
+     .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------

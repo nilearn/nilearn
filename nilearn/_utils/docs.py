@@ -231,6 +231,14 @@ docdict["clean_args_"] = docdict["clean_args"].replace(
     "clean_args_ : :obj:`dict`",
 )
 
+# cluster_threshold
+docdict["cluster_threshold"] = """
+    cluster_threshold : :obj:`int`, default=0
+        Cluster size threshold.
+        Sets of connected voxels / vertices (`clusters`)
+        with size smaller than this number will be removed.
+"""
+
 # cmap
 docdict["cmap"] = """
 cmap : :class:`matplotlib.colors.Colormap`, or :obj:`str`, optional
@@ -318,6 +326,26 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
 
 """
 
+
+# cross-validation
+cv = """
+cv : cross-validation generator, :obj:`int` or None, default={}
+    A cross-validation generator.
+    See: https://scikit-learn.org/stable/modules/cross_validation.html.
+    If None is passed, cv={} will be used.
+    It can be an integer, in which case it is the number of folds in a
+    KFold using :class:`~sklearn.model_selection.StratifiedKFold`
+    when groups is None in the ``fit`` method for this class.
+    If groups is specified but ``cv``
+    is not set to custom CV splitter, default is
+    :class:`~sklearn.model_selection.LeaveOneGroupOut`.
+"""
+docdict["cv10"] = cv.format(10, 10)
+docdict["cv30"] = cv.format(30, 30)
+docdict["cv8_5"] = cv.format(8, 5)
+docdict["cvNone_3"] = cv.format("None", 3)
+
+
 # data_dir
 docdict["debias"] = """
 debias : :obj:`bool`, default=False
@@ -367,6 +395,46 @@ display_mode : {"ortho", "tiled", "mosaic", "x", \
 
 """
 
+# displayed_maps
+docdict["displayed_maps"] = """
+displayed_maps : :obj:`int`, \
+                  :class:`~numpy.ndarray` or :obj:`list` of :obj:`int`, \
+                  or "all", default=10
+    Indicates which maps will be displayed in the HTML report.
+
+    - If ``"all"``: All maps will be displayed in the report.
+
+    .. code-block:: python
+
+        masker.generate_report("all")
+
+    .. warning:
+        If there are too many maps, this might be time and
+        memory consuming, and will result in very heavy
+        reports.
+
+    - If a :obj:`list` or :class:`~numpy.ndarray`:
+        This indicates the indices of the maps to be displayed in the report.
+        For example, the following code will generate a report with maps
+        6, 3, and 12, displayed in this specific order:
+
+    .. code-block:: python
+
+        masker.generate_report([6, 3, 12])
+
+    - If an :obj:`int`: This will only display the first n maps,
+        n being the value of the parameter. By default, the report
+        will only contain the first 10 maps. Example to display the
+        first 16 maps:
+
+    .. code-block:: python
+
+        masker.generate_report(16)
+"""
+docdict["displayed_spheres"] = docdict["displayed_maps"].replace(
+    "maps", "spheres"
+)
+
 # draw_cross
 docdict["draw_cross"] = """
 draw_cross : :obj:`bool`, default=True
@@ -380,6 +448,7 @@ dtype : dtype like, "auto" or None, default=None
     Data type toward which the data should be converted.
     If "auto", the data will be converted to int32
     if dtype is discrete and float32 if it is continuous.
+    If None, data will not be converted to a new data type.
 """
 
 # extractor / extract_type
@@ -429,7 +498,8 @@ first_level_contrast : :obj:`str` or :class:`numpy.ndarray` of \
       from the :class:`~pandas.DataFrame` ``map_name`` column.
       (it has to be a 't' contrast).
 
-    This parameter is ignored for all other cases.
+    When the model is a :class:`~nilearn.glm.first_level.FirstLevelModel`:
+    This parameter is ignored.
 """
 
 # fwhm
@@ -576,9 +646,9 @@ keep_masked_labels : :obj:`bool`, default=False
     zeros only. If False, the empty labels will be removed from the
     output, ensuring no empty time series are present.
 
-    .. deprecated:: 0.10.2
+    .. nilearn_deprecated:: 0.10.2
 
-    .. versionchanged:: 0.13.0dev
+    .. nilearn_versionchanged:: 0.13.0dev
 
         The ``keep_masked_labels`` parameter will be removed in 0.15.
 
@@ -593,9 +663,9 @@ keep_masked_maps : :obj:`bool`, optional
     invalid maps will be removed from the trimmed atlas, resulting in
     no empty time series in the output.
 
-    .. deprecated:: 0.10.2
+    .. nilearn_deprecated:: 0.10.2
 
-    .. versionchanged:: 0.13.0dev
+    .. nilearn_versionchanged:: 0.13.0dev
 
         The ``keep_masked_maps`` parameter will be removed in 0.15.
 
@@ -687,14 +757,14 @@ mask_strategy : {"background", "epi", "whole-brain-template",\
       data's field of view. Uses
       :func:`nilearn.masking.compute_brain_mask` with ``mask_type="gm"``.
 
-      .. versionadded:: 0.8.1
+      .. nilearn_versionadded:: 0.8.1
 
     - ``"wm-template"``: This will extract the white matter part of your
       data by resampling the corresponding MNI152 template for your
       data's field of view. Uses
       :func:`nilearn.masking.compute_brain_mask` with ``mask_type="wm"``.
 
-      .. versionadded:: 0.8.1
+      .. nilearn_versionadded:: 0.8.1
 """
 
 # mask_type
@@ -717,12 +787,12 @@ docdict["max_iter10"] = verbose.format(10)
 docdict["max_iter50"] = verbose.format(50)
 docdict["max_iter100"] = verbose.format(100)
 docdict["max_iter1000"] = verbose.format(1000)
-docdict["max_iter1000"] = verbose.format(5000)
+docdict["max_iter5000"] = verbose.format(5000)
 
 # memory
 docdict["memory"] = """
 memory : None, instance of :class:`joblib.Memory`, :obj:`str`, or \
-:class:`pathlib.Path`
+:class:`pathlib.Path`, default=None
     Used to cache the masking process.
     By default, no caching is done.
     If a :obj:`str` is given, it is the path to the caching directory.
@@ -1057,7 +1127,8 @@ smoothing_fwhm : :obj:`float` or :obj:`int` or None, optional.
 
 # standardize
 standardize = """
-standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
+standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False or None; \
+              default={}
     Strategy to standardize the signal:
 
     - ``'zscore_sample'``: The signal is z-scored.
@@ -1069,7 +1140,7 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
       Uses population std by calling default
       :obj:`numpy.std` with N - ``ddof=0``.
 
-      .. deprecated:: 0.10.1
+      .. nilearn_deprecated:: 0.10.1
 
         This option will be removed in Nilearn version 0.14.0.
         Use ``zscore_sample`` instead.
@@ -1080,13 +1151,24 @@ standardize : any of: 'zscore_sample', 'zscore', 'psc', True, False; default={}
     - ``True``: The signal is z-scored (same as option `zscore`).
       Timeseries are shifted to zero mean and scaled to unit variance.
 
+      .. nilearn_deprecated:: 0.13.0dev
+
+        In nilearn version 0.15.0,
+        ``True`` will be replaced by  ``'zscore_sample'``.
+
     - ``False``: Do not standardize the data.
+
+      .. nilearn_deprecated:: 0.13.0dev
+
+        In nilearn version 0.15.0,
+        ``False`` will be replaced by ``None``.
+
 
 """
 # TODO (nilearn >= 0.14.0) update to ..versionchanged
 deprecation_notice = """
 
-    .. deprecated:: 0.10.1
+    .. nilearn_deprecated:: 0.10.1
 
         The default will be changed to ``'zscore_sample'``
         and ``'zscore'`` will be removed in
@@ -1094,11 +1176,36 @@ deprecation_notice = """
 
 """
 
-docdict["standardize_false"] = standardize.format("False")
-# TODO (nilearn >= 0.14.0)
-# create a single  standardize_zscore_sample
-# with the updated deprecation notice
-docdict["standardize_true"] = standardize.format("True") + deprecation_notice
+# TODO (nilearn >= 0.15.0) update to ..versionchanged
+deprecation_notice_false_to_none = """
+
+    .. nilearn_deprecated:: 0.15.0dev
+
+        The default will be changed to ``None``
+        in version 0.15.0.
+
+"""
+
+# TODO (nilearn >= 0.15.0) update to ..versionchanged
+deprecation_notice_true_to_zscore_sample = """
+
+    .. nilearn_deprecated:: 0.15.0dev
+
+        The default will be changed to ``'zscore_sample'``
+        in version 0.15.0.
+
+"""
+
+docdict["standardize_false"] = (
+    standardize.format("False") + deprecation_notice_false_to_none
+)
+# TODO (nilearn >= 0.14.0 and 0.15.0)
+# adapt the deprecation notices
+docdict["standardize_true"] = (
+    standardize.format("True")
+    + deprecation_notice
+    + deprecation_notice_true_to_zscore_sample
+)
 docdict["standardize_zscore"] = (
     standardize.format("zscore") + deprecation_notice
 )
@@ -1111,7 +1218,7 @@ standardize_confounds : :obj:`bool`, default=True
     their mean is put to 0 and their variance to 1 in the time dimension.
 """
 
-# standardize_confounds
+# strategy
 docdict["strategy"] = """
 strategy : :obj:`str`, default="mean"
     The name of a valid function to reduce the region with.
@@ -1154,9 +1261,9 @@ t_r : :obj:`float` or :obj:`int` or None, default=None
 
 # target_affine
 docdict["target_affine"] = """
-target_affine : :class:`numpy.ndarray` or None, default=None
+target_affine : 3x3 or a 4x4 array-like, or None, \
+       default=None
     If specified, the image is resampled corresponding to this new affine.
-    `target_affine` can be a 3x3 or a 4x4 matrix.
 """
 
 # target_shape
@@ -1185,7 +1292,7 @@ tfce : :obj:`bool`, default=False
        The number of thresholds used in the TFCE procedure
        will set between 10 and 1000.
 
-       .. versionadded:: 0.12.0
+       .. nilearn_versionadded:: 0.12.0
 
     .. warning::
 
@@ -1225,7 +1332,7 @@ transparency : :obj:`float` between 0 and 1, \
     If an image is passed, voxel-wise alpha blending will be applied,
     by relying on the absolute value of ``transparency`` at each voxel.
 
-    .. versionadded:: 0.12.0
+    .. nilearn_versionadded:: 0.12.0
 """
 
 # transparency
@@ -1254,7 +1361,7 @@ transparency_range : :obj:`tuple` or :obj:`list` of 2 non-negative numbers, \
     if ``None`` is passed,
     this will be set to ``[0, max(abs(transparency))]``.
 
-    .. versionadded:: 0.12.0
+    .. nilearn_versionadded:: 0.12.0
 """
 
 # upper_cutoff
@@ -1284,12 +1391,11 @@ url : :obj:`str` or None, default=None
 
 # verbose
 verbose = """
-verbose : :obj:`int`, default={}
-    Verbosity level (`0` means no message).
+verbose : :obj:`bool` or :obj:`int`, default={}
+    Verbosity level (``0`` or ``False`` means no message).
 """
 docdict["verbose"] = verbose.format(1)
 docdict["verbose0"] = verbose.format(0)
-docdict["verbose2"] = verbose.format(2)
 docdict["verbose3"] = verbose.format(3)
 
 # view
@@ -1377,7 +1483,7 @@ components_img_ : 4D Nifti image \
     The image giving the extracted components.
     Each 3D Nifti image or 1D SurfaceImage is a component.
 
-    .. versionadded:: 0.4.1
+    .. nilearn_versionadded:: 0.4.1
 
 masker_ :  :obj:`~nilearn.maskers.MultiNiftiMasker` or \
         :obj:`~nilearn.maskers.MultiSurfaceMasker`
@@ -1463,7 +1569,7 @@ memory_ : joblib memory cache
 n_elements_ : :obj:`int`
     The number of voxels or vertices in the mask.
 
-    .. versionadded:: 0.12.1
+    .. nilearn_versionadded:: 0.12.1
 
 n_outputs_ : :obj:`int`
     Number of outputs (column-wise)
@@ -1550,7 +1656,7 @@ memory_ : joblib memory cache
 n_elements_ : :obj:`int`
     The number of features in the mask.
 
-    .. versionadded:: 0.12.1
+    .. nilearn_versionadded:: 0.12.1
 
 screening_percentile_ : float
     Screening percentile corrected according to volume of mask,
@@ -1647,7 +1753,7 @@ signals_transform = """signals : :obj:`numpy.ndarray`, \
 
         Signal for each element.
 
-        .. versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0dev
 
             Added ``set_output`` support.
 
@@ -1718,6 +1824,16 @@ docdict["templateflow"] = """
    If you wish to use the exact same release as :term:`fMRIPrep`,
    please refer to `TemplateFlow <https://www.templateflow.org>`_.
 
+"""
+
+
+docdict["fetcher_note"] = """
+If the dataset files are already present in the user's Nilearn data
+directory, this fetcher will **not** re-download them. To force a fresh
+download, you can remove the existing dataset folder from your local
+Nilearn data directory.
+
+For more details on :ref:`how Nilearn stores datasets <datasets>`.
 """
 
 ##############################################################################

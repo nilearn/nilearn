@@ -60,7 +60,7 @@ ENHANCEMENTS
 
 - :bdg-dark:`Code` A cleaner layout and improved navigation for the website, with a better introduction.
 
-- :bdg-dark:`Code` Dataset fetchers are now  more reliable, less verbose.
+- :bdg-dark:`Code` Dataset fetchers are now more reliable, less verbose.
 
 - :bdg-dark:`Code` Anaconda link in the installation documentation updated.
 

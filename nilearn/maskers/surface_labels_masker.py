@@ -10,6 +10,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -20,10 +21,7 @@ from nilearn._utils.param_validation import (
 )
 from nilearn.image import mean_img
 from nilearn.maskers._mixin import _LabelMaskerMixin
-from nilearn.maskers.base_masker import (
-    _BaseSurfaceMasker,
-    mask_logger,
-)
+from nilearn.maskers.base_masker import _BaseSurfaceMasker, mask_logger
 from nilearn.surface.surface import (
     SurfaceImage,
     at_least_2d,
@@ -57,7 +55,7 @@ def signals_to_surf_img_labels(
 class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
     """Extract data from a SurfaceImage, averaging over atlas regions.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -202,6 +200,19 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         self.cmap = cmap
         self.clean_args = clean_args
 
+        self._report_content = {
+            "description": (
+                "This report shows the input surface image overlaid "
+                "with the outlines of the mask. "
+                "We recommend to inspect the report for the overlap "
+                "between the mask and its input image. "
+            ),
+            "n_vertices": {},
+            "number_of_regions": 0,
+            "summary": {},
+            "warning_messages": [],
+        }
+
     @fill_doc
     def fit(self, imgs=None, y=None):
         """Prepare signal extraction from regions.
@@ -219,6 +230,11 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = []
+
         if imgs is not None:
             self._check_imgs(imgs)
 
@@ -235,6 +251,10 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
                 for i, x in enumerate(imgs):
                     x.data._check_n_samples(1, f"imgs[{i}]")
 
+        return self._fit(imgs)
+
+    def _fit(self, imgs):
+        """Keep private to call it with MultiSurfaceLabelsMasker too."""
         check_reduction_strategy(self.strategy)
 
         if self.labels_img is None:
@@ -292,30 +312,14 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         else:
             self.clean_args_ = self.clean_args
 
-        if not self.reports:
-            self._reporting_data = None
-            return self
+        self._report_content["reports_at_fit_time"] = self.reports
+        if self.reports:
+            for part in self.labels_img_.data.parts:
+                self._report_content["n_vertices"][part] = (
+                    self.labels_img_.mesh.parts[part].n_vertices
+                )
 
-        # content to inject in the HTML template
-        self._report_content = {
-            "description": (
-                "This report shows the input surface image overlaid "
-                "with the outlines of the mask. "
-                "We recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "n_vertices": {},
-            "number_of_regions": self.n_elements_,
-            "summary": {},
-            "warning_message": None,
-        }
-
-        for part in self.labels_img_.data.parts:
-            self._report_content["n_vertices"][part] = (
-                self.labels_img_.mesh.parts[part].n_vertices
-            )
-
-        self._reporting_data = self._generate_reporting_data()
+            self._reporting_data = self._generate_reporting_data()
 
         mask_logger("fit_done", verbose=self.verbose)
 
@@ -469,13 +473,7 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
 
         return imgs
 
-    def generate_report(self):
-        """Generate a report."""
-        from nilearn.reporting.html_report import generate_report
-
-        return generate_report(self)
-
-    def _reporting(self):
+    def _reporting(self) -> None | str:
         """Load displays needed for report.
 
         Returns
@@ -483,29 +481,31 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
         displays : list
             A list of all displays to be rendered.
         """
-        import matplotlib.pyplot as plt
+        # Handle the edge case where this function is called
+        # without matplolib or
+        # with a masker having report capabilities disabled
+        if not is_matplotlib_installed() or not self._has_report_data():
+            return None
 
         from nilearn.reporting.utils import figure_to_png_base64
 
-        # Handle the edge case where this function is
-        # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
-            return [None]
-
         fig = self._create_figure_for_report()
 
-        plt.close()
+        if not fig:
+            return None
 
-        init_display = figure_to_png_base64(fig)
+        return figure_to_png_base64(fig)
 
-        return [init_display]
-
-    def _create_figure_for_report(self):
+    def _create_figure_for_report(self) -> list:
         """Create a figure of the contours of label image.
 
         If transform() was applied to an image,
         this image is used as background
         on which the contours are drawn.
+
+        Returns
+        -------
+        list of :class:`~matplotlib.figure.Figure` or None
         """
         roi_map = self._reporting_data["labels_image"]
 
@@ -516,6 +516,6 @@ class SurfaceLabelsMasker(_LabelMaskerMixin, _BaseSurfaceMasker):
             img = mean_img(img)
             vmin, vmax = img.data._get_min_max()
 
-        fig = self._generate_figure(img, roi_map=roi_map, vmin=vmin, vmax=vmax)
-
-        return fig
+        return self._generate_figure(
+            img, roi_map=roi_map, vmin=vmin, vmax=vmax
+        )

@@ -18,10 +18,15 @@ from nilearn._utils.extmath import fast_abs_percentile
 from nilearn._utils.html_document import HTMLDocument
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import check_niimg_3d
 from nilearn._utils.param_validation import check_threshold
 from nilearn.datasets import load_mni152_template
-from nilearn.image import get_data, new_img_like, reorder_img, resample_to_img
+from nilearn.image import (
+    check_niimg_3d,
+    get_data,
+    new_img_like,
+    reorder_img,
+    resample_to_img,
+)
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
@@ -616,6 +621,11 @@ def view_img(
 
     opacity : :obj:`float` in [0,1], default=1
         The level of opacity of the overlay (0: transparent, 1: opaque).
+
+    %(radiological)s
+
+    show_lr : :obj:`bool`, default=True
+        Show left and right labels on the figure
 
     Returns
     -------

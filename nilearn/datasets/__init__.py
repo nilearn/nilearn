@@ -1,6 +1,6 @@
 """Helper functions to download NeuroImaging datasets."""
 
-from .atlas import (
+from nilearn.datasets.atlas import (
     fetch_atlas_aal,
     fetch_atlas_allen_2011,
     fetch_atlas_basc_multiscale_2015,
@@ -20,6 +20,7 @@ from .atlas import (
     fetch_coords_power_2011,
     fetch_coords_seitzman_2018,
 )
+
 from .func import (
     fetch_abide_pcp,
     fetch_adhd,
@@ -70,9 +71,9 @@ from .struct import (
 from .utils import get_data_dirs
 
 __all__ = [
-    "GM_MNI152_FILE_PATH",
-    "MNI152_FILE_PATH",
-    "WM_MNI152_FILE_PATH",
+    "GM_MNI152_FILE_PATH",  # not in the doc or used in the codebase
+    "MNI152_FILE_PATH",  # not in the doc, only used in one example
+    "WM_MNI152_FILE_PATH",  # not in the doc or used in the codebase
     "fetch_abide_pcp",
     "fetch_adhd",
     "fetch_atlas_aal",

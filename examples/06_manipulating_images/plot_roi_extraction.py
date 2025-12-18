@@ -348,7 +348,11 @@ labels_img = new_img_like(fmri_img, labels)
 # for all the data used here, time series signal processing parameters
 # standardize and detrend are set to False
 masker = NiftiLabelsMasker(
-    labels_img, resampling_target=None, standardize=False, detrend=False
+    labels_img,
+    resampling_target=None,
+    standardize=False,
+    detrend=False,
+    verbose=1,
 )
 
 # %%

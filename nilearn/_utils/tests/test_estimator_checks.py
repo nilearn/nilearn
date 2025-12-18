@@ -1,10 +1,4 @@
-"""
-Test the class_inspect module.
-
-This test file is in nilearn/tests because Nosetest,
-which we historically used,
-ignores modules whose name starts with an underscore.
-"""
+"""Test the class_inspect module."""
 
 import pytest
 
@@ -61,7 +55,7 @@ def test_check_masker_dict_unchanged():
 
     with pytest.raises(
         ValueError,
-        match=r"Estimator changes '__dict__' keys during transform.",
+        match=r"Estimator changes '__dict__' keys during 'transform'.",
     ):
         check_img_estimator_dict_unchanged(estimator)
 

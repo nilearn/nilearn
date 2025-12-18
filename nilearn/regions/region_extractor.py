@@ -12,18 +12,16 @@ from nilearn import masking
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.ndimage import peak_local_max
 from nilearn._utils.niimg import safe_get_data
-from nilearn._utils.niimg_conversions import (
-    check_niimg,
-    check_niimg_3d,
-    check_niimg_4d,
-    check_same_fov,
-)
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
 from nilearn._utils.segmentation import random_walker
 from nilearn.image.image import (
+    check_niimg,
+    check_niimg_3d,
+    check_niimg_4d,
+    check_same_fov,
     concat_imgs,
     new_img_like,
     smooth_array,
@@ -154,7 +152,7 @@ def connected_regions(
         The region size should be defined in mm^3.
         See the documentation for more details.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
@@ -276,7 +274,7 @@ class RegionExtractor(NiftiMapsMasker):
 
     See :footcite:t:`Abraham2014`.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
@@ -320,7 +318,7 @@ class RegionExtractor(NiftiMapsMasker):
         Whether the thresholding should yield both positive and negative
         part of the maps.
 
-        .. versionadded:: 0.11.1
+        .. nilearn_versionadded:: 0.11.1
 
     %(extractor)s
 
@@ -412,7 +410,8 @@ class RegionExtractor(NiftiMapsMasker):
         (ie at least two maps have a non-zero value for the same voxel).
 
     %(clean_args)s
-        .. versionadded:: 0.12.1
+
+        .. nilearn_versionadded:: 0.12.1
 
     Attributes
     ----------
@@ -433,7 +432,7 @@ class RegionExtractor(NiftiMapsMasker):
         The number of overlapping maps in the mask.
         This is equivalent to the number of volumes in the mask image.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     regions_img_ : :class:`nibabel.nifti1.Nifti1Image`
         List of separated regions with each region lying on an

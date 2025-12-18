@@ -221,6 +221,8 @@
 
 .. _Michelle Wang: https://michellewang.github.io
 
+.. _Milton Camacho: https://github.com/miltoncamacho
+
 .. _Mohammad Torabi: https://github.com/mtorabi59
 
 .. _Moritz Boos: https://github.com/mjboos
@@ -293,6 +295,8 @@
 
 .. _Sami Jawhar: https://github.com/sjawhar
 
+.. _Sanjana Soni: https://github.com/isha822
+
 .. _Simon Steinkamp: https://github.com/SRSteinkamp
 
 .. _Sin Kim: https://github.com/kimsin98
@@ -324,6 +328,8 @@
 .. _Vasco Diogo: https://github.com/vascosa
 
 .. _Victoria Shevchenko: https://github.com/victoris93
+
+.. _Victoria McCray: https://github.com/victoriamccray
 
 .. _Vincent Michel: https://github.com/vmichel
 

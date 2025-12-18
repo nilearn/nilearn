@@ -14,13 +14,18 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.niimg import _get_data
-from nilearn._utils.niimg_conversions import check_niimg, check_niimg_3d
 from nilearn._utils.numpy_conversions import as_ndarray
 from nilearn._utils.param_validation import (
     check_parameter_in_allowed,
     check_params,
 )
-from nilearn.image.image import copy_img, crop_img, new_img_like
+from nilearn.image import (
+    check_niimg,
+    check_niimg_3d,
+    copy_img,
+    crop_img,
+    new_img_like,
+)
 
 ###############################################################################
 # Affine utils
@@ -391,13 +396,13 @@ def resample_img(
         False is intended for testing,
         this prevents the use of a padding optimization.
 
-        .. versionchanged:: 0.13.0dev
+        .. nilearn_versionchanged:: 0.13.0dev
 
             Default changed to True.
 
     %(copy_header)s
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -734,7 +739,7 @@ def resample_to_img(
 
     No registration is performed: the image should already be aligned.
 
-    .. versionadded:: 0.2.4
+    .. nilearn_versionadded:: 0.2.4
 
     Parameters
     ----------
@@ -773,7 +778,7 @@ def resample_to_img(
 
     %(copy_header)s
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     Returns
     -------
@@ -832,7 +837,7 @@ def reorder_img(img, resample=None, copy_header=True):
 
     %(copy_header)s
 
-        .. versionadded:: 0.11.0
+        .. nilearn_versionadded:: 0.11.0
 
     """
     from .image import new_img_like

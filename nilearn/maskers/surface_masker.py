@@ -1,7 +1,5 @@
 """Masker for surface objects."""
 
-from __future__ import annotations
-
 from copy import deepcopy
 from warnings import warn
 
@@ -12,6 +10,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import DEFAULT_SEQUENTIAL_CMAP, signal
 from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
@@ -27,7 +26,7 @@ from nilearn.surface.utils import check_polymesh_equal
 class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
     """Extract data from a :obj:`~nilearn.surface.SurfaceImage`.
 
-    .. versionadded:: 0.11.0
+    .. nilearn_versionadded:: 0.11.0
 
     Parameters
     ----------
@@ -119,7 +118,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         self.reports = reports
         self.cmap = cmap
         self.clean_args = clean_args
-        # content to inject in the HTML template
+
         self._report_content = {
             "description": (
                 "This report shows the input surface image overlaid "
@@ -130,13 +129,11 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             "n_vertices": {},
             # unused but required in HTML template
             "number_of_regions": None,
-            "summary": None,
-            "warning_message": None,
+            "summary": {},
+            "warning_messages": [],
             "n_elements": 0,
             "coverage": 0,
         }
-        # data necessary to construct figure for the report
-        self._reporting_data = None
 
     def __sklearn_is_fitted__(self):
         return (
@@ -160,7 +157,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 warn(
                     f"[{self.__class__.__name__}.fit] "
                     "Generation of a mask has been"
-                    " requested (y != None) while a mask was"
+                    " requested (img != None) while a mask was"
                     " given at masker creation. Given mask"
                     " will be used.",
                     stacklevel=find_stack_level(),
@@ -217,6 +214,11 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         """
         del y
         check_params(self.__dict__)
+
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = []
+
         if imgs is not None:
             self._check_imgs(imgs)
 
@@ -247,6 +249,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             start = stop
         self.n_elements_ = int(stop)
 
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
             self._report_content["n_elements"] = self.n_elements_
             for part in self.mask_img_.data.parts:
@@ -377,18 +380,7 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
 
         return SurfaceImage(mesh=self.mask_img_.mesh, data=data)
 
-    def generate_report(self):
-        """Generate a report for the SurfaceMasker.
-
-        Returns
-        -------
-        list(None) or HTMLReport
-        """
-        from nilearn.reporting.html_report import generate_report
-
-        return generate_report(self)
-
-    def _reporting(self):
+    def _reporting(self) -> None | str:
         """Load displays needed for report.
 
         Returns
@@ -397,35 +389,27 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             A list of all displays figures encoded as bytes to be rendered.
             Or a list with a single None element.
         """
-        # avoid circular import
-        import matplotlib.pyplot as plt
+        # Handle the edge case where this function is called
+        # without matplolib or
+        # with a masker having report capabilities disabled
+        if not is_matplotlib_installed() or not self._has_report_data():
+            return None
 
         from nilearn.reporting.utils import figure_to_png_base64
-
-        # Handle the edge case where this function is
-        # called with a masker having report capabilities disabled
-        if self._reporting_data is None:
-            return [None]
 
         fig = self._create_figure_for_report()
 
         if not fig:
-            return [None]
+            return None
 
-        plt.close()
-
-        init_display = figure_to_png_base64(fig)
-
-        return [init_display]
+        return figure_to_png_base64(fig)
 
     def _create_figure_for_report(self):
         """Generate figure to include in the report.
 
         Returns
         -------
-        None, :class:`~matplotlib.figure.Figure` or\
-              :class:`~nilearn.plotting.displays.PlotlySurfaceFigure`
-            Returns ``None`` in case the masker was not fitted.
+        list of :class:`~matplotlib.figure.Figure` or None
         """
         if not self._reporting_data["images"] and not getattr(
             self, "mask_img_", None
@@ -440,13 +424,11 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             img = mean_img(img)
             vmin, vmax = img.data._get_min_max()
 
-        fig = self._generate_figure(
+        return self._generate_figure(
             img=img, roi_map=self.mask_img_, vmin=vmin, vmax=vmax
         )
 
-        return fig
-
-    def _set_contour_colors(self, hemi) -> None | str | list[str]:
+    def _set_contour_colors(self, hemi) -> str | list[str] | None:
         """Set the colors for the contours in the report."""
         if hemi in ["left", "right"]:
             n_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
@@ -462,12 +444,9 @@ class SurfaceMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
                 )
             )
 
-        colors: None | str | list[str]
         if n_regions == 1:
-            colors = "b"
+            return "b"
         elif n_regions == 2:
-            colors = ["w", "b"]
+            return ["w", "b"]
         else:
-            colors = None
-
-        return colors
+            return None

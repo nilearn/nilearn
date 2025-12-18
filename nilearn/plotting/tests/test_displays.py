@@ -300,6 +300,7 @@ def test_projectors_basic(projector, img, tmp_path):
     projector.close()
 
 
+@pytest.mark.slow
 def test_contour_fillings_levels_in_add_contours(img):
     """Tests for method ``add_contours`` of ``OrthoSlicer``."""
     oslicer = OrthoSlicer(cut_coords=(0, 0, 0))
@@ -333,6 +334,7 @@ def test_user_given_cmap_with_colorbar(img):
     oslicer.close()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("display", [OrthoSlicer, LYRZProjector])
 def test_data_complete_mask(affine_eye, display):
     """Test for a special case due to matplotlib 2.1.0.
@@ -384,6 +386,28 @@ def test_position_annotation_with_decimals():
     """Test of decimals position annotation with precision of 2."""
     orthoslicer = OrthoSlicer(cut_coords=(0, 0, 0))
     orthoslicer.annotate(positions=True, decimals=2)
+    orthoslicer.close()
+
+
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {},
+        {"horizontalalignment": "left"},
+        {"verticalalignment": "top"},
+        {"zorder": 1000},
+    ],
+)
+def test_title_kwargs(kwargs):
+    """Ensure kwargs can contain value that won't raise duplicate error.
+
+    In this case the value passed in kwargs
+    override the defaults used by Nilearn internally.
+
+    Regression test for https://github.com/nilearn/nilearn/issues/5904
+    """
+    orthoslicer = OrthoSlicer(cut_coords=(0, 0, 0))
+    orthoslicer.title("foo", **kwargs)
     orthoslicer.close()
 
 
@@ -449,6 +473,7 @@ def test_display_slicers_transparency_warning(
     display.title(f"display mode is {name}")
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize("transparency", [None, 0, 0.5, 1])
 @pytest.mark.parametrize(
     "display,name", zip(PROJECTORS, PROJECTOR_KEYS, strict=False)

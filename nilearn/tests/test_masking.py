@@ -1,5 +1,6 @@
 """Test the mask-extracting utilities."""
 
+import re
 import warnings
 
 import numpy as np
@@ -401,7 +402,7 @@ def test_apply_mask_nan(affine_eye):
     assert np.all(np.isfinite(series))
 
 
-def test_apply_mask_errors(affine_eye):
+def test_apply_mask_errors(affine_eye, shape_3d_default):
     """Check errors for dimension."""
     data = np.zeros((40, 40, 40, 2))
     data[20, 20, 20] = 1
@@ -436,8 +437,23 @@ def test_apply_mask_errors(affine_eye):
     with pytest.raises(DimensionError, match=_TEST_DIM_ERROR_MSG % "2D"):
         apply_mask(data_img, Nifti1Image(mask[20, ...], affine_eye))
 
-    with pytest.raises(ValueError, match="is different from img affine"):
+    with pytest.raises(
+        ValueError, match=r"5\]\]\n is different from img affine:\n\[\[1"
+    ):
         apply_mask(data_img, Nifti1Image(mask, affine_eye / 2.0))
+
+    wrong_shape_mask_data = np.zeros(shape_3d_default)
+    wrong_shape_mask_data[1, 1, 0] = True
+    wrong_shape_mask_data[0, 1, 0] = True
+    wrong_shape_mask_data[0, 1, 1] = True
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Mask shape: (7, 8, 9)\n is different from img shape:(40, 40, 40)"
+        ),
+    ):
+        apply_mask(data_img, Nifti1Image(wrong_shape_mask_data, affine_eye))
 
     # Check that full masking raises error
     with pytest.raises(
@@ -814,6 +830,7 @@ def test_compute_multi_brain_mask_error():
         compute_multi_brain_mask(imgs)
 
 
+@pytest.mark.slow
 def test_compute_multi_brain_mask():
     """Check results are the same if affine is the same."""
     imgs1 = [

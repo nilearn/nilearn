@@ -14,9 +14,9 @@ from nilearn._utils.class_inspect import get_params
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.helpers import stringify_path
 from nilearn._utils.logger import find_stack_level
-from nilearn._utils.niimg_conversions import iter_check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn.image import resample_img
+from nilearn.image.image import iter_check_niimg
 from nilearn.maskers._mixin import _MultiMixin
 from nilearn.maskers._utils import compute_middle_image
 from nilearn.maskers.base_masker import (
@@ -169,7 +169,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
     n_elements_ : :obj:`int`
         The number of voxels in the mask.
 
-        .. versionadded:: 0.9.2
+        .. nilearn_versionadded:: 0.9.2
 
     See Also
     --------
@@ -253,21 +253,9 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
         del y
         check_params(self.__dict__)
 
-        self._report_content = {
-            "description": (
-                "This report shows the input Nifti image overlaid "
-                "with the outlines of the mask (in green). We "
-                "recommend to inspect the report for the overlap "
-                "between the mask and its input image. "
-            ),
-            "warning_message": None,
-            "n_elements": 0,
-            "coverage": 0,
-        }
-        self._overlay_text = (
-            "\n To see the input Nifti image before resampling, "
-            "hover over the displayed image."
-        )
+        # Reset warning message
+        # in case where the masker was previously fitted
+        self._report_content["warning_messages"] = []
 
         self.clean_args_ = {} if self.clean_args is None else self.clean_args
 
@@ -300,10 +288,11 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
             # to the mask computing function
             # depending if they are supported.
             signature = dict(**inspect.signature(compute_mask).parameters)
-            mask_args = {}
-            for arg in ["n_jobs", "target_shape", "target_affine"]:
-                if arg in signature and getattr(self, arg) is not None:
-                    mask_args[arg] = getattr(self, arg)
+            mask_args = {
+                arg: getattr(self, arg)
+                for arg in ["n_jobs", "target_shape", "target_affine"]
+                if arg in signature and getattr(self, arg) is not None
+            }
             if self.mask_args:
                 skipped_args = []
                 for arg in self.mask_args:
@@ -322,10 +311,16 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                         stacklevel=find_stack_level(),
                     )
 
+            verbose = self.verbose
+            if verbose:
+                verbose = 1
+            elif not verbose:
+                verbose = 0
+
             self.mask_img_ = self._cache(compute_mask, ignore=["verbose"])(
                 imgs,
                 memory=self.memory_,
-                verbose=max(0, self.verbose - 1),
+                verbose=max(0, verbose - 1),
                 **mask_args,
             )
         elif imgs is not None:
@@ -337,7 +332,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
                 stacklevel=find_stack_level(),
             )
 
-        self._reporting_data = None
+        self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:  # save inputs for reporting
             self._reporting_data = {
                 "mask": self.mask_img_,
@@ -410,7 +405,7 @@ class MultiNiftiMasker(_MultiMixin, NiftiMasker):
 
         %(sample_mask_multi)s
 
-            .. versionadded:: 0.8.0
+            .. nilearn_versionadded:: 0.8.0
 
         copy : :obj:`bool`, default=True
             If True, guarantees that output array has no memory in common with

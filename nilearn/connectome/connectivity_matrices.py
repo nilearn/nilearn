@@ -13,7 +13,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn import signal
 from nilearn._utils.docs import fill_doc
 from nilearn._utils.extmath import is_spd
-from nilearn._utils.logger import find_stack_level
+from nilearn._utils.logger import find_stack_level, log
 from nilearn._utils.param_validation import check_parameter_in_allowed
 from nilearn._utils.tags import SKLEARN_LT_1_6
 
@@ -220,7 +220,7 @@ def sym_matrix_to_vec(symmetric, discard_diagonal=False):
 
     Acts on the last two dimensions of the array if not 2-dimensional.
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -256,7 +256,7 @@ def vec_to_sym_matrix(vec, diagonal=None):
     Diagonal can be encompassed in vec or given separately. In both cases, note
     that diagonal elements are multiplied by sqrt(2).
 
-    .. versionadded:: 0.3
+    .. nilearn_versionadded:: 0.3
 
     Parameters
     ----------
@@ -378,7 +378,7 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
     """A class that computes different kinds of \
        :term:`functional connectivity` matrices.
 
-    .. versionadded:: 0.2
+    .. nilearn_versionadded:: 0.2
 
     Parameters
     ----------
@@ -410,6 +410,8 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
             deprecated.
             This parameter will be changed to "zscore_sample"
             in version 0.14 and removed in version 0.15.
+
+    %(verbose0)s
 
     Attributes
     ----------
@@ -445,12 +447,14 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
         vectorize=False,
         discard_diagonal=False,
         standardize=True,
+        verbose=0,
     ):
         self.cov_estimator = cov_estimator
         self.kind = kind
         self.vectorize = vectorize
         self.discard_diagonal = discard_diagonal
         self.standardize = standardize
+        self.verbose = verbose
 
     def _more_tags(self):
         """Return estimator tags.
@@ -558,12 +562,14 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
 
         # Compute all the matrices, stored in "connectivities"
         if self.kind == "correlation":
+            # TODO (nilearn 0.14: change to "zscore_sample")
+            standardize = "zscore" if self.standardize is True else None
             covariances_std = [
                 self.cov_estimator_.fit(
                     signal.standardize_signal(
                         x,
                         detrend=False,
-                        standardize=self.standardize,
+                        standardize=standardize,
                     )
                 ).covariance_
                 for x in X
@@ -605,6 +611,8 @@ class ConnectivityMeasure(TransformerMixin, BaseEstimator):
                 self.mean_ = self.mean_ + self.mean_.T
                 self.mean_ *= 0.5
                 self.whitening_ = None
+
+                log("Finished fit", verbose=self.verbose)
 
         # Compute the vector we return on transform
         if do_transform:

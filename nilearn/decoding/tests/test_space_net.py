@@ -4,21 +4,17 @@ from functools import partial
 
 import numpy as np
 import pytest
-from numpy.testing import (
-    assert_almost_equal,
-    assert_array_equal,
-)
+from numpy.testing import assert_almost_equal, assert_array_equal
 from scipy import linalg
 from sklearn.datasets import load_iris
-from sklearn.linear_model import (
-    Lasso,
-    LogisticRegression,
-)
+from sklearn.linear_model import Lasso, LogisticRegression
 from sklearn.linear_model._coordinate_descent import _alpha_grid
-from sklearn.metrics import (
-    accuracy_score,
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import KFold
+from sklearn.utils.estimator_checks import (
+    ignore_warnings,
+    parametrize_with_checks,
 )
-from sklearn.utils.estimator_checks import parametrize_with_checks
 
 from nilearn._utils.estimator_checks import (
     check_estimator,
@@ -53,8 +49,8 @@ IS_CLASSIF = [True, False]
 PENALTY = ["graph-net", "tv-l1"]
 
 ESTIMATORS_TO_CHECK = [
-    SpaceNetClassifier(verbose=0, standardize="zscore_sample"),
-    SpaceNetRegressor(verbose=0, standardize="zscore_sample"),
+    SpaceNetClassifier(standardize="zscore_sample"),
+    SpaceNetRegressor(standardize="zscore_sample"),
 ]
 
 if SKLEARN_LT_1_6:
@@ -86,6 +82,7 @@ else:
         check(estimator)
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(estimators=ESTIMATORS_TO_CHECK),
@@ -163,7 +160,7 @@ def test_screening_space_net():
     )
     _, mask = to_niimgs(X_, [size] * 3)
 
-    for verbose in [0, 2]:
+    for verbose in [0, 1]:
         with pytest.warns(UserWarning):
             screening_percentile = adjust_screening_percentile(
                 10, mask, verbose
@@ -246,7 +243,6 @@ def test_tv_regression_simple(rng, l1_ratio, debias):
         penalty="tv-l1",
         max_iter=10,
         debias=debias,
-        verbose=0,
         standardize="zscore_sample",
     ).fit(X, y)
 
@@ -285,7 +281,6 @@ def test_space_net_classifier_invalid_loss(rng):
         standardize=False,
         screening_percentile=100.0,
         loss="logistic",
-        verbose=0,
     ).fit(X_, y)
 
     SpaceNetClassifier(
@@ -295,7 +290,6 @@ def test_space_net_classifier_invalid_loss(rng):
         standardize=False,
         screening_percentile=100.0,
         loss="mse",
-        verbose=0,
     ).fit(X_, y)
 
     with pytest.raises(ValueError, match="'loss' must be one of"):
@@ -306,7 +300,6 @@ def test_space_net_classifier_invalid_loss(rng):
             standardize=False,
             screening_percentile=100.0,
             loss="bar",
-            verbose=0,
         ).fit(X_, y)
 
 
@@ -351,6 +344,7 @@ def test_tv_regression_3d_image_doesnt_crash(rng, l1_ratio):
     ).fit(X, y)
 
 
+@pytest.mark.slow
 def test_graph_net_classifier_score():
     iris = load_iris()
     X, y = iris.data, iris.target
@@ -364,7 +358,6 @@ def test_graph_net_classifier_score():
         tol=1e-10,
         standardize=False,
         screening_percentile=100.0,
-        verbose=0,
     ).fit(X_, y)
 
     accuracy = gnc.score(X_, y)
@@ -395,7 +388,6 @@ def test_log_reg_vs_graph_net_two_classes_iris(
         penalty="tv-l1",
         standardize=False,
         screening_percentile=100.0,
-        verbose=0,
     ).fit(X_, y)
 
     sklogreg = LogisticRegression(
@@ -430,7 +422,6 @@ def test_lasso_vs_graph_net():
         l1_ratios=1,
         penalty="graph-net",
         max_iter=100,
-        verbose=0,
         standardize="zscore_sample",
     )
     lasso.fit(X_, y)
@@ -507,14 +498,11 @@ def test_space_net_one_alpha_no_crash(model):
     X, y = iris.data, iris.target
     X, mask = to_niimgs(X, [2, 2, 2])
 
-    model(n_alphas=1, mask=mask, verbose=0, standardize="zscore_sample").fit(
-        X, y
-    )
+    model(n_alphas=1, mask=mask, standardize="zscore_sample").fit(X, y)
     model(
         n_alphas=2,
         mask=mask,
         alphas=None,
-        verbose=0,
         standardize="zscore_sample",
     ).fit(X, y)
 
@@ -556,6 +544,33 @@ def test_targets_in_y_space_net_regressor():
         ValueError, match="The given input y must have at least 2 targets"
     ):
         regressor.fit(imgs, y)
+
+
+@ignore_warnings
+@pytest.mark.slow
+@pytest.mark.parametrize("estimator", [SpaceNetRegressor, SpaceNetClassifier])
+# TODO
+# fails with cv=LeaveOneGroupOut()
+# ValueError: The 'groups' parameter should not be None.
+@pytest.mark.parametrize("cv", [8, KFold(n_splits=5), None])
+def test_cross_validation(estimator, cv):
+    """Check cross-validation scheme."""
+    iris = load_iris()
+    X, y = iris.data, iris.target
+    X, mask = to_niimgs(X, [2, 2, 2])
+
+    model = estimator(mask=mask, cv=cv)
+
+    model.fit(X, y)
+
+    y_pred = model.predict(X)
+
+    if cv is None:
+        n_cv = len(model.cv_)
+        assert n_cv == 5
+
+    if isinstance(model, (SpaceNetClassifier)):
+        assert accuracy_score(y, y_pred) > 0.7
 
 
 # ------------------------ surface tests ------------------------------------ #

@@ -30,7 +30,7 @@ from nilearn.plotting.html_stat_map import (
 )
 
 
-def _check_html(html_view, title=None):
+def check_html_view_img(html_view, title=None):
     """Check the presence of some expected code in the html viewer."""
     assert isinstance(html_view, StatMapView)
     assert "var brain =" in str(html_view)
@@ -340,7 +340,7 @@ def test_json_view_to_html(affine_eye, black_bg, cbar, radiological):
 
     # Create a viewer
     html_view = _json_view_to_html(json_view)
-    _check_html(html_view)
+    check_html_view_img(html_view)
 
 
 def test_get_cut_slices(affine_eye):
@@ -366,6 +366,7 @@ def test_get_cut_slices(affine_eye):
     assert (cut_slices == [4, 4, 4]).all()
 
 
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "params, warning_msg",
     [
@@ -394,9 +395,10 @@ def test_view_img_3d_warnings(params, warning_msg):
     with pytest.warns(UserWarning, match=warning_msg):
         html_view = view_img(img, **params)
 
-    _check_html(html_view)
+    check_html_view_img(html_view)
 
 
+@pytest.mark.slow
 def test_view_img_3d_warnings_more():
     """Test warning when viewing 3D images.
 
@@ -413,7 +415,7 @@ def test_view_img_3d_warnings_more():
     ):
         html_view = view_img(img)
 
-    _check_html(html_view, title="Slice viewer")
+    check_html_view_img(html_view, title="Slice viewer")
 
     with pytest.warns(
         UserWarning,
@@ -421,7 +423,7 @@ def test_view_img_3d_warnings_more():
     ):
         html_view = view_img(img, threshold="95%", title="SOME_TITLE")
 
-    _check_html(html_view, title="SOME_TITLE")
+    check_html_view_img(html_view, title="SOME_TITLE")
 
 
 @pytest.mark.parametrize(
@@ -447,4 +449,4 @@ def test_view_img_4d_warnings(params):
     ):
         html_view = view_img(img_4d, **params)
 
-    _check_html(html_view)
+    check_html_view_img(html_view)

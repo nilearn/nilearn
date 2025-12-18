@@ -47,14 +47,14 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
-    check_embedded_masker,
 )
-from nilearn._utils.niimg_conversions import check_niimg
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import check_feature_screening
+from nilearn.image import check_niimg
 from nilearn.maskers import SurfaceMasker
+from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
 
@@ -474,9 +474,7 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         or SurfaceMasker to check for default parameters. For use with
         SurfaceImage data, a SurfaceMasker instance must be passed.
 
-    cv : cross-validation generator or int, default=10
-        A cross-validation generator.
-        See: https://scikit-learn.org/stable/modules/cross_validation.html
+    %(cv10)s
 
     param_grid : dict of str to sequence, or sequence of such, default=None
         The parameter grid to explore, as a dictionary mapping estimator
@@ -649,6 +647,11 @@ class _BaseDecoder(CacheMixin, BaseEstimator):
         # splitter, default is LeaveOneGroupOut. If self.cv is manually set to
         # a CV splitter object do check_cv regardless of groups parameter.
         cv = self.cv
+
+        if cv is None:
+            cv = (
+                30 if isinstance(self, (FREMClassifier, FREMRegressor)) else 10
+            )
 
         if isinstance(cv, int) and isinstance(self, FREMClassifier):
             cv_object = StratifiedShuffleSplit(cv, random_state=0)
@@ -1122,14 +1125,7 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         :obj:`~nilearn.maskers.SurfaceMasker`
         to check for default parameters.
 
-    cv : cross-validation generator or :obj:`int`, default=10
-        A cross-validation generator.
-        See: https://scikit-learn.org/stable/modules/cross_validation.html.
-        The default 10 refers to K = 10 folds of
-        :class:`~sklearn.model_selection.StratifiedKFold` when groups is None
-        in the fit method for this class. If groups is specified but ``cv``
-        is not set to custom CV splitter, default is
-        :class:`~sklearn.model_selection.LeaveOneGroupOut`.
+    %(cv10)s
 
     param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such, \
         or None, default=None
@@ -1298,14 +1294,7 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters. Default None
 
-    cv : cross-validation generator or :obj:`int`, default=10
-        A cross-validation generator.
-        See: https://scikit-learn.org/stable/modules/cross_validation.html.
-        The default 10 refers to K = 10 folds of
-        :class:`~sklearn.model_selection.StratifiedKFold` when groups is None
-        in the fit method for this class. If groups is specified but ``cv``
-        is not set to custom CV splitter, default is
-        :class:`~sklearn.model_selection.LeaveOneGroupOut`.
+    %(cv10)s
 
     param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such, \
                 or None, default=None
@@ -1464,12 +1453,7 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters.
 
-    cv : :obj:`int` or cross-validation generator, default=30
-        If int, number of shuffled splits returned, which is usually the right
-        way to train many different classifiers. A good trade-off between
-        stability of the aggregated model and computation time is 50 splits.
-        Shuffled splits are seeded by default for reproducibility.
-        Can also be a cross-validation generator.
+    %(cv30)s
 
     param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such. \
         or None, default=None
@@ -1629,12 +1613,7 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         masker with default parameters. Refer to NiftiMasker or
         MultiNiftiMasker to check for default parameters.
 
-    cv : :obj:`int` or cross-validation generator, default=30
-        If int, number of stratified shuffled splits returned, which is usually
-        the right way to train many different classifiers. A good trade-off
-        between stability of the aggregated model and computation time is
-        50 splits. Shuffled splits are seeded by default for reproducibility.
-        Can also be a cross-validation generator.
+    %(cv30)s
 
     param_grid : :obj:`dict` of :obj:`str` to sequence, or sequence of such. \
                  default=None

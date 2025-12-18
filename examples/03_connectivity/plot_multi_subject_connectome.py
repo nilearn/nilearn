@@ -70,7 +70,7 @@ masker = NiftiMapsMasker(
     high_variance_confounds=True,
     low_pass=None,
     high_pass=0.01,
-    t_r=2,
+    t_r=rest_dataset.t_r,
     standardize="zscore_sample",
     standardize_confounds=True,
     memory="nilearn_cache",
@@ -97,13 +97,13 @@ for func_filename, confound_filename in zip(
 # -----------------------------------------
 from nilearn.connectome import GroupSparseCovarianceCV
 
-gsc = GroupSparseCovarianceCV(verbose=2)
+gsc = GroupSparseCovarianceCV(verbose=1)
 gsc.fit(subject_time_series)
 
 
 from sklearn.covariance import GraphicalLassoCV
 
-gl = GraphicalLassoCV(verbose=2)
+gl = GraphicalLassoCV(verbose=True)
 gl.fit(np.concatenate(subject_time_series))
 
 

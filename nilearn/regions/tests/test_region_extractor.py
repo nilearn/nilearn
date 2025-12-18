@@ -95,6 +95,7 @@ else:
         return_expected_failed_checks,
     )
 
+    @pytest.mark.slow
     @parametrize_with_checks(
         estimators=ESTIMATORS_TO_CHECK,
         expected_failed_checks=return_expected_failed_checks,
@@ -104,7 +105,7 @@ else:
         check(estimator)
 
 
-@pytest.mark.timeout(0)
+@pytest.mark.slow
 @pytest.mark.parametrize(
     "estimator, check, name",
     nilearn_check_estimator(
@@ -324,6 +325,7 @@ def test_region_extractor_two_sided(maps):
     )
 
 
+@pytest.mark.slow
 def test_region_extractor_strategy_percentile(maps_and_mask):
     maps, mask_img = maps_and_mask
 

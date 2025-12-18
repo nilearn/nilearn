@@ -38,10 +38,6 @@ from nilearn.maskers import NiftiSpheresMasker
 # Prepare the data.
 adhd_dataset = fetch_adhd(n_subjects=1)
 
-# Prepare timing
-t_r = 2.0
-n_scans = 176
-
 # Prepare seed
 pcc_coords = (0, -53, 26)
 
@@ -56,13 +52,15 @@ seed_masker = NiftiSpheresMasker(
     standardize="zscore_sample",
     low_pass=0.1,
     high_pass=0.01,
-    t_r=2.0,
+    t_r=adhd_dataset.t_r,
     memory="nilearn_cache",
     memory_level=1,
-    verbose=0,
+    verbose=1,
 )
 seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
-frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
+
+n_scans = seed_time_series.shape[0]
+frametimes = np.linspace(0, (n_scans - 1) * adhd_dataset.t_r, n_scans)
 
 # %%
 # Plot the time course of the seed region.
@@ -92,7 +90,7 @@ contrasts = {"seed_based_glm": dmn_contrast}
 # Perform first level analysis
 # ----------------------------
 # Setup and fit GLM.
-first_level_model = FirstLevelModel()
+first_level_model = FirstLevelModel(verbose=1)
 first_level_model = first_level_model.fit(
     run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
 )
@@ -138,15 +136,7 @@ report = first_level_model.generate_report(
 )
 
 # %%
-# We have several ways to access the report:
 #
-# It can be viewed in a notebook
+# .. include:: ../../../examples/report_note.rst
+#
 report
-
-# %%
-# Or in a separate browser window
-# report.open_in_browser()
-
-# %%
-# Or we can save as an html file.
-report.save_as_html(output_dir / "report.html")
