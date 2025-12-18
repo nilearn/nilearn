@@ -109,7 +109,7 @@ class BaseSlicer:
         raise NotImplementedError
 
     @classmethod
-    def _check_cut_coords_in_bounds(cls, img, cut_coords):
+    def _check_cut_coords_in_bounds(cls, img, cut_coords) -> None:
         """
         Check if the specified ``cut_coords`` is within the bounds of the
         specified image ``img``.
@@ -1190,7 +1190,7 @@ class _ThreeDSlicer(BaseSlicer):
         return cut_coords
 
     @classmethod
-    def _get_coords_in_bounds(cls, bounds, cut_coords):
+    def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
         """Check for each coordinate in `cut_coords` if it is within the
         specified `bounds` and return a list of boolean values corresponding to
         each coordinate.
@@ -1839,7 +1839,7 @@ class BaseStackedSlicer(BaseSlicer):
         return len(self._direction)
 
     @classmethod
-    def _get_coords_in_bounds(cls, bounds, cut_coords):
+    def _get_coords_in_bounds(cls, bounds, cut_coords) -> list[bool]:
         """Check for each element in ``cut_coords`` if it is within the
         ``bounds`` of the direction of this slicer return a list of boolean
         values corresponding to each element.
