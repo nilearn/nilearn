@@ -166,6 +166,13 @@ def test_nifti_labels_masker_errors(
         masker11.fit()
 
 
+def test_nifti_labels_masker_no_label_errors(img_3d_zeros_eye):
+    """Raise an error at fit time if the image has no label."""
+    masker = NiftiLabelsMasker(img_3d_zeros_eye)
+    with pytest.raises(ValueError, match="Image has no label"):
+        masker.fit()
+
+
 def test_nifti_labels_masker_with_nans_and_infs(
     affine_eye, n_regions, length, img_labels, img_fmri
 ):

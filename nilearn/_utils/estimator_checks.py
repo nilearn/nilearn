@@ -3238,7 +3238,7 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
     for imgs, n_sample in zip(
         images_to_transform, expected_n_sample, strict=False
     ):
-        for mask_img in [_surf_mask_1d(), _make_surface_mask()]:
+        for mask_img in [_surf_mask_1d(), _make_surface_mask(n_zeros=2)]:
             estimator = clone(estimator_orig)
 
             estimator.mask_img = mask_img
@@ -3265,9 +3265,6 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
                 assert signals.size == estimator.n_elements_
 
                 if isinstance(estimator, (SurfaceLabelsMasker)):
-                    print(get_surface_data(estimator.mask_img_))
-                    n_elements_ = estimator.n_elements_
-                    print(n_elements_)
                     # TODO having a test where SurfaceLabelsMasker
                     # with mask leads to have only 1 ROI
                     # is a bit of an edge case
