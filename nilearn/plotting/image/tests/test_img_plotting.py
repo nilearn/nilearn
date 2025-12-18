@@ -168,6 +168,7 @@ def test_invalid_cut_coords_with_display_mode(
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_with_nans(plot_func, img_3d_mni):
     """Smoke test for plotting functions with nans in data image."""

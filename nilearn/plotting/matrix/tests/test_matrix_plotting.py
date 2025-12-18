@@ -77,6 +77,7 @@ def test_matrix_plotting_errors(matrix, labels, reorder):
         plot_matrix(matrix, labels=labels, reorder=reorder)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("tri", VALID_TRI_VALUES)
 def test_matrix_plotting_with_labels_and_different_tri(mat, labels, tri):
     """Test plot_matrix with labels on only part of the matrix."""

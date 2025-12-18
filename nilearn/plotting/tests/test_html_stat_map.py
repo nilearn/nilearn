@@ -8,6 +8,7 @@ from matplotlib import pyplot as plt
 from nibabel import Nifti1Image
 
 from nilearn import datasets, image
+from nilearn._utils.helpers import is_gil_enabled
 from nilearn.image import get_data, new_img_like
 from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.html_stat_map import (
@@ -370,6 +371,7 @@ def test_get_cut_slices(affine_eye):
 
 @pytest.mark.slow
 @pytest.mark.thread_unsafe
+@pytest.mark.skipif(not is_gil_enabled(), reason="fails without GIL")
 @pytest.mark.parametrize(
     "params, warning_msg",
     [

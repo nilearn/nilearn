@@ -34,6 +34,7 @@ def test_deprecation_function_moved(matplotlib_pyplot, img_3d_mni):
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker",
     [

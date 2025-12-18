@@ -415,18 +415,11 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
 @pytest.mark.thread_unsafe
 def test_report_invalid_plot_type(flm, contrasts):
     """Check errors when wrong plot type is requested."""
-    with pytest.raises(KeyError, match="junk"):
+    with pytest.raises(ValueError, match="'plot_type' must be one of"):
         flm.generate_report(
             contrasts=contrasts,
             plot_type="junk",
         )
-    if is_matplotlib_installed():
-        with pytest.raises(ValueError, match="'plot_type' must be one of"):
-            flm.generate_report(
-                contrasts=contrasts,
-                display_mode="glass",
-                plot_type="junk",
-            )
 
 
 @pytest.mark.slow
