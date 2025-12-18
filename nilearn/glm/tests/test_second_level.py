@@ -1689,6 +1689,7 @@ def test_second_level_surface_image_contrast_computation(
         )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("two_sided_test", [True, False])
 def test_non_parametric_inference_with_surface_images(
     surf_img_1d, two_sided_test, n_subjects

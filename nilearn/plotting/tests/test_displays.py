@@ -291,6 +291,7 @@ def test_demo_mosaic_slicer(cut_coords, img, expected_cuts):
     slicer.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("projector", PROJECTORS)
 def test_projectors_basic(projector, img, tmp_path):
     """Basic tests for projectors."""

@@ -269,6 +269,7 @@ def test_surface_label_masker_fit_no_report(surf_label_img):
     assert masker._has_report_data() is False
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "strategy",
     (

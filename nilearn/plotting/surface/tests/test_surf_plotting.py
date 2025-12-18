@@ -754,6 +754,7 @@ def test_plot_surf_stat_map_symmetric_cmap_matplotlib_error(
         )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_matplotlib_specific(
     matplotlib_pyplot, in_memory_mesh, bg_map
 ):

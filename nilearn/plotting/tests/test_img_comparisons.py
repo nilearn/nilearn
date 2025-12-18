@@ -213,6 +213,7 @@ def test_plot_bland_altman(
     assert (tmp_path / "spam.jpg").is_file()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "masker",
     [

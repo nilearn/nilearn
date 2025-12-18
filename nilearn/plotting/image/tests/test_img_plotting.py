@@ -186,6 +186,7 @@ def test_plotting_functions_with_cmaps(plot_func, cmap, img_3d_mni):
     plt.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", [plot_anat, plot_roi, plot_stat_map])
 def test_plotting_functions_with_nans_in_bg_img(plot_func, img_3d_mni):
     """Smoke test for plotting functions with nans in background image."""
