@@ -14,7 +14,10 @@ from nilearn.maskers import SurfaceLabelsMasker
 from nilearn.maskers.tests.conftest import sklearn_surf_label_img
 from nilearn.surface import SurfaceImage
 
-ESTIMATORS_TO_CHECK = [SurfaceLabelsMasker(sklearn_surf_label_img())]
+ESTIMATORS_TO_CHECK = [
+    SurfaceLabelsMasker(sklearn_surf_label_img()),
+    SurfaceLabelsMasker(sklearn_surf_label_img(n_regions=1)),
+]
 
 if SKLEARN_LT_1_6:
 
