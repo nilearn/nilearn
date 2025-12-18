@@ -16,7 +16,10 @@ from nilearn._utils.tags import SKLEARN_LT_1_6
 from nilearn.image import get_data, new_img_like
 from nilearn.maskers import NiftiSpheresMasker
 
-ESTIMATORS_TO_CHECK = [NiftiSpheresMasker(seeds=[(1, 1, 1)])]
+ESTIMATORS_TO_CHECK = [
+    NiftiSpheresMasker(seeds=[(1, 1, 1)]),
+    NiftiSpheresMasker(seeds=[(1, 1, 1), (1, 2, 3)]),
+]
 
 if SKLEARN_LT_1_6:
 
