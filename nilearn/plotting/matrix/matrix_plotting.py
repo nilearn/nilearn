@@ -238,9 +238,11 @@ def plot_matrix(
         mat, labels = reorder_matrix(mat, labels, reorder)
     if tri != "full":
         mat = mask_matrix(mat, tri)
-    display = axes.imshow(
-        mat, aspect="equal", interpolation="nearest", cmap=cmap, **kwargs
-    )
+
+    kwargs |= {"aspect": "equal", "interpolation": "nearest"}
+
+    display = axes.imshow(mat, cmap=cmap, **kwargs)
+
     axes.set_autoscale_on(False)
     ymin, ymax = axes.get_ylim()
     _configure_axis(

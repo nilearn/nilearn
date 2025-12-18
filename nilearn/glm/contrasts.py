@@ -223,7 +223,8 @@ class Contrast:
 
         if self.dim > 1 and stat_type == "t":
             logger.log(
-                "Automatically converted multi-dimensional t to F contrast"
+                "Automatically converted multi-dimensional t to F contrast",
+                verbose=1,
             )
             stat_type = "F"
 

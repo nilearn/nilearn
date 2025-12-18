@@ -53,10 +53,7 @@ from nilearn.plotting._utils import (
 )
 from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import save_figure_if_needed
-from nilearn.plotting.image.utils import (
-    MNI152TEMPLATE,
-    load_anat,
-)
+from nilearn.plotting.image.utils import MNI152TEMPLATE, load_anat
 from nilearn.signal import clean
 
 
@@ -1973,7 +1970,8 @@ def plot_carpet(
             if label_dtype != atlas_values.dtype:
                 logger.log(
                     "Coercing atlas_values to "
-                    f"{label_dtype.__class__.__name__}"
+                    f"{label_dtype.__class__.__name__}",
+                    verbose=1,
                 )
                 atlas_values = atlas_values.astype(type(label_dtype))
 

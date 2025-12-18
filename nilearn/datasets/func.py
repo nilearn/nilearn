@@ -1481,7 +1481,9 @@ def fetch_mixed_gambles(
         (f"zmaps{os.sep}sub{int(j + 1):03}_zmaps.nii.gz", url, opts)
         for j in range(n_subjects)
     ]
-    data_dir = get_dataset_dir("jimura_poldrack_2012_zmaps", data_dir=data_dir)
+    data_dir = get_dataset_dir(
+        "jimura_poldrack_2012_zmaps", data_dir=data_dir, verbose=verbose
+    )
     zmap_fnames = fetch_files(data_dir, files, resume=resume, verbose=verbose)
     subject_id = pd.DataFrame(
         {"subject_id": np.repeat(np.arange(n_subjects), 6 * 8).tolist()}
@@ -2206,7 +2208,9 @@ def fetch_development_fmri(
     check_params(locals())
 
     dataset_name = "development_fmri"
-    data_dir = get_dataset_dir(dataset_name, data_dir=data_dir, verbose=1)
+    data_dir = get_dataset_dir(
+        dataset_name, data_dir=data_dir, verbose=verbose
+    )
     keep_confounds = [
         "trans_x",
         "trans_y",
@@ -2757,8 +2761,8 @@ def fetch_localizer_first_level(data_dir=None, verbose=1):
     return data
 
 
-def _download_spm_auditory_data(data_dir):
-    logger.log("Data absent, downloading...")
+def _download_spm_auditory_data(data_dir, verbose):
+    logger.log("Data absent, downloading...", verbose=verbose)
     url = (
         "https://www.fil.ion.ucl.ac.uk/spm/download/data/MoAEpilot/"
         "MoAEpilot.bids.zip"
@@ -2768,7 +2772,7 @@ def _download_spm_auditory_data(data_dir):
     try:
         uncompress_file(archive_path)
     except Exception:
-        logger.log("Archive corrupted, trying to download it again.")
+        logger.log("Archive corrupted, trying to download it again.", verbose)
         return fetch_spm_auditory(data_dir=data_dir, data_name="")
 
 
@@ -2824,7 +2828,7 @@ def fetch_spm_auditory(
     data_dir = get_dataset_dir(data_name, data_dir=data_dir, verbose=verbose)
 
     if not (data_dir / "MoAEpilot" / "sub-01").exists():
-        _download_spm_auditory_data(data_dir)
+        _download_spm_auditory_data(data_dir, verbose)
 
     anat = get_bids_files(
         main_path=data_dir / "MoAEpilot",
@@ -2851,7 +2855,9 @@ def fetch_spm_auditory(
     return Bunch(**spm_auditory_data)
 
 
-def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
+def _get_func_data_spm_multimodal(
+    subject_dir, session, _subject_data, verbose
+):
     session_func = sorted(
         subject_dir.glob(
             f"fMRI/Session{session}/fMETHODS-000{session + 4}-*-01.img"
@@ -2860,7 +2866,8 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
     if len(session_func) < 390:
         logger.log(
             f"Missing {390 - len(session_func)} functional scans "
-            f"for session {session}."
+            f"for session {session}.",
+            verbose=verbose,
         )
         return None
 
@@ -2868,40 +2875,42 @@ def _get_func_data_spm_multimodal(subject_dir, session, _subject_data):
     return _subject_data
 
 
-def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
+def _get_session_trials_spm_multimodal(
+    subject_dir, session, _subject_data, verbose
+):
     sess_trials = subject_dir / f"fMRI/trials_ses{int(session)}.mat"
     if not sess_trials.is_file():
-        logger.log(f"Missing session file: {sess_trials}")
+        logger.log(f"Missing session file: {sess_trials}", verbose)
         return None
 
     _subject_data[f"trials_ses{int(session)}"] = str(sess_trials)
     return _subject_data
 
 
-def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data):
+def _get_anatomical_data_spm_multimodal(subject_dir, _subject_data, verbose):
     anat = subject_dir / "sMRI/smri.img"
     if not anat.is_file():
-        logger.log("Missing structural image.")
+        logger.log("Missing structural image.", verbose=verbose)
         return None
 
     _subject_data["anat"] = str(anat)
     return _subject_data
 
 
-def _glob_spm_multimodal_fmri_data(subject_dir):
+def _glob_spm_multimodal_fmri_data(subject_dir, verbose):
     """Glob data from subject_dir."""
     _subject_data = {"slice_order": "descending"}
 
     for session in range(1, 3):
         # glob func data for session
         _subject_data = _get_func_data_spm_multimodal(
-            subject_dir, session, _subject_data
+            subject_dir, session, _subject_data, verbose
         )
         if not _subject_data:
             return None
         # glob trials .mat file
         _subject_data = _get_session_trials_spm_multimodal(
-            subject_dir, session, _subject_data
+            subject_dir, session, _subject_data, verbose
         )
         if not _subject_data:
             return None
@@ -2923,13 +2932,13 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
 
     # glob for anat data
     _subject_data = _get_anatomical_data_spm_multimodal(
-        subject_dir, _subject_data
+        subject_dir, _subject_data, verbose=verbose
     )
     return Bunch(**_subject_data) if _subject_data else None
 
 
-def _download_data_spm_multimodal(data_dir, subject_dir):
-    logger.log("Data absent, downloading...")
+def _download_data_spm_multimodal(data_dir, subject_dir, verbose):
+    logger.log("Data absent, downloading...", verbose=verbose)
     urls = [
         # fmri
         (
@@ -2949,10 +2958,13 @@ def _download_data_spm_multimodal(data_dir, subject_dir):
         try:
             uncompress_file(archive_path)
         except Exception:
-            logger.log("Archive corrupted, trying to download it again.")
+            logger.log(
+                "Archive corrupted, trying to download it again.",
+                verbose=verbose,
+            )
             return fetch_spm_multimodal_fmri(data_dir=data_dir, data_name="")
 
-    return _glob_spm_multimodal_fmri_data(subject_dir)
+    return _glob_spm_multimodal_fmri_data(subject_dir, verbose)
 
 
 def _make_events_filepath_spm_multimodal_fmri(_subject_data, session):
@@ -3043,10 +3055,10 @@ def fetch_spm_multimodal_fmri(
     description = get_dataset_descr("spm_multimodal")
 
     # maybe data_dir already contains the data ?
-    data = _glob_spm_multimodal_fmri_data(subject_dir)
+    data = _glob_spm_multimodal_fmri_data(subject_dir, verbose)
     if data is None:
         # No. Download the data
-        data = _download_data_spm_multimodal(data_dir, subject_dir)
+        data = _download_data_spm_multimodal(data_dir, subject_dir, verbose)
 
     data.description = description
     data.t_r = 2
@@ -3091,7 +3103,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         "fiac_nilearn.glm", data_dir=data_dir, verbose=verbose
     )
 
-    def _glob_fiac_data():
+    def _glob_fiac_data(verbose):
         """Glob data from subject_dir."""
         _subject_data = {}
         subject_dir = data_dir / "nipy-data-0.2/data/fiac/fiac0"
@@ -3099,7 +3111,10 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
             # glob func data for session
             session_func = subject_dir / f"run{int(run)}.nii.gz"
             if not session_func.is_file():
-                logger.log(f"Missing functional scan for session {int(run)}.")
+                logger.log(
+                    f"Missing functional scan for session {int(run)}.",
+                    verbose=verbose,
+                )
                 return None
 
             _subject_data[f"func{int(run)}"] = str(session_func)
@@ -3107,7 +3122,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
             # glob design matrix .npz file
             sess_dmtx = subject_dir / f"run{int(run)}_design.npz"
             if not sess_dmtx.is_file():
-                logger.log(f"Missing run file: {sess_dmtx}")
+                logger.log(f"Missing run file: {sess_dmtx}", verbose=verbose)
                 return None
 
             design_matrix_data = np.load(str(sess_dmtx))
@@ -3120,7 +3135,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
         # glob for mask data
         mask = subject_dir / "mask.nii.gz"
         if not mask.is_file():
-            logger.log("Missing mask image.")
+            logger.log("Missing mask image.", verbose=verbose)
             return None
 
         _subject_data["mask"] = str(mask)
@@ -3129,13 +3144,13 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     description = get_dataset_descr("fiac")
 
     # maybe data_dir already contains the data ?
-    data = _glob_fiac_data()
+    data = _glob_fiac_data(verbose)
     if data is not None:
         data.description = description
         return data
 
     # No. Download the data
-    logger.log("Data absent, downloading...")
+    logger.log("Data absent, downloading...", verbose=verbose)
     url = "https://nipy.org/data-packages/nipy-data-0.2.tar.gz"
 
     archive_path = data_dir / Path(url).name
@@ -3143,12 +3158,14 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
     try:
         uncompress_file(archive_path)
     except Exception:
-        logger.log("Archive corrupted, trying to download it again.")
+        logger.log(
+            "Archive corrupted, trying to download it again.", verbose=verbose
+        )
         data = fetch_fiac_first_level(data_dir=data_dir)
         data.description = description
         return data
 
-    data = _glob_fiac_data()
+    data = _glob_fiac_data(verbose)
     data.description = description
     return data
 

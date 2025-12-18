@@ -29,12 +29,12 @@ def test_check_memory(tmp_path):
     mem_temp = Memory(location=str(tmp_path))
 
     for mem in [None, mem_none]:
-        memory = check_memory(mem, verbose=0)
+        memory = check_memory(mem)
         assert memory, Memory
         assert memory.location == mem_none.location
 
     for mem in [str(tmp_path), mem_temp]:
-        memory = check_memory(mem, verbose=0)
+        memory = check_memory(mem)
         assert memory.location == mem_temp.location
         assert memory, Memory
 

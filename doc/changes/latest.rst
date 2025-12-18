@@ -31,6 +31,8 @@ NEW
 Fixes
 -----
 
+- :bdg-info:`Plotting` Make it possible to use ``kwargs`` to override default in matrix plotting and :meth:`~plotting.displays.BaseSlicer.title` (:gh:`5905` by `Rémi Gau`_).
+
 - :bdg-primary:`Doc` Update allowed values for the parameter ``standardize`` to match those of :func:`~signal.clean` in :class:`~decoding.Decoder`, :class:`~decoding.DecoderRegressor`, :class:`~decoding.FREMClassifier`, :class:`~decoding.FREMRegressor`, :class:`~decoding.SpaceNetClassifier`, :class:`~decoding.SpaceNetRegressor`, :class:`~connectome.ConnectivityMeasure`, :class:`~decomposition.DictLearning`, :class:`~decomposition.CanICA` as well as for all maskers  (:gh:`5668` by `Rémi Gau`_).
 
 - :bdg-info:`Plotting` Allow to pass files to :func:`~nilearn.plotting.plot_img_comparison` (:gh:`5825` by `Rémi Gau`_).
@@ -80,6 +82,8 @@ Enhancements
 
 Changes
 -------
+
+- :bdg-success:`API` The default verbosity of the spacenet estimators was changed to 0 to match the default of all other Nilearn estimators (:gh:`5778` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` The function :func:`~nilearn.glm.save_glm_to_bids` was moved to the :mod:`~nilearn.glm` module. It will be importable from its original :mod:`~nilearn.interfaces` till Nilearn version 0.15.0 (:gh:`5770` by `Rémi Gau`_).
 
@@ -134,6 +138,8 @@ Changes
 - :bdg-danger:`Deprecation` :func:`~interfaces.bids.parse_bids_filename` will now always return a dictionary with the keys ``'file_path'``, ``'file_basename'``, ``'extension'``, ``'suffix'`` and ``'entities'`` (:gh:`5663` by `Rémi Gau`_).
 
 - :bdg-danger:`Deprecation` Set ``copy_header`` default to True in :func:`~image` functions (:gh:`5656` by `Rémi Gau`_ and `Himanshu Aggarwal`_).
+
+- :bdg-danger:`Deprecation` From Nilearn >= 0.15, the function :func:`~reporting.make_glm_report` will be removed. Use :meth:`~glm.first_level.FirstLevelModel.generate_report` or :meth:`~glm.second_level.SecondLevelModel.generate_report` instead. (:gh:`5876` by `Hande Gözükan`_).
 
 Documentation
 -------------

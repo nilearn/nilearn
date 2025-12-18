@@ -59,7 +59,7 @@ jobs:
 
         -   name: Upload masker reports
             if: success() || failure()
-            uses: actions/upload-artifact@v5
+            uses: actions/upload-artifact@v6
             with:
                 name: label_masker_reports
                 path: maint_tools/tmp
