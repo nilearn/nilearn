@@ -429,6 +429,9 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             ensure_finite=True,
         )
 
+        if np.all(get_data(self.maps_img_)) == 0:
+            raise ValueError("maps_img contains no map.")
+
         if imgs is not None:
             imgs_ = check_niimg(imgs)
 

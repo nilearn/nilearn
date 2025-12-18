@@ -124,10 +124,17 @@ def test_nifti_maps_masker_fit(n_regions, img_maps):
     assert masker.n_elements_ == n_regions
 
 
-def test_nifti_maps_masker_errors():
+def test_nifti_maps_masker_error():
     """Check fitting errors."""
     masker = NiftiMapsMasker()
     with pytest.raises(TypeError, match="input should be a NiftiLike object"):
+        masker.fit()
+
+
+def test_nifti_maps_masker_empty_img_map_error(img_3d_zeros_eye):
+    """Check fitting errors."""
+    masker = NiftiMapsMasker(img_3d_zeros_eye)
+    with pytest.raises(ValueError, match="maps_img contains no map"):
         masker.fit()
 
 

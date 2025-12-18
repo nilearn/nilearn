@@ -457,7 +457,7 @@ def _n_regions():
     return 9
 
 
-def generate_regions_ts(n_features, n_regions):
+def generate_regions_ts(n_features, n_regions) -> np.ndarray:
     """Generate some regions as timeseries.
 
     adapted from nilearn._utils.data_gen.generate_regions_ts
@@ -511,7 +511,7 @@ def n_regions():
     return _n_regions()
 
 
-def _img_maps(n_regions=None):
+def _img_maps(n_regions=None) -> Nifti1Image:
     """Generate a default map image.
 
     adapted from nilearn._utils.data_gen.generate_maps
@@ -529,12 +529,12 @@ def _img_maps(n_regions=None):
 
 
 @pytest.fixture
-def img_maps(n_regions):
+def img_maps(n_regions) -> Nifti1Image:
     """Generate fixture for default map image."""
     return _img_maps(n_regions)
 
 
-def _img_labels(n_regions=None):
+def _img_labels(n_regions=None) -> Nifti1Image:
     """Generate fixture for default label image.
 
     adapted from nilearn._utils.data_gen.generate_labeled_regions
@@ -561,7 +561,7 @@ def _img_labels(n_regions=None):
 
 
 @pytest.fixture
-def img_labels(n_regions):
+def img_labels(n_regions) -> Nifti1Image:
     """Generate fixture for default label image."""
     return _img_labels(n_regions)
 
