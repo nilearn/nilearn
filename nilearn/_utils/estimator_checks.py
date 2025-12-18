@@ -3152,20 +3152,16 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
             assert img.shape == (_make_surface_img().mesh.n_vertices, 1)
 
         elif n_sample == 0:
-            signal_shape = signals.shape
-
             if estimator.n_elements_ == 1:
-                assert signal_shape == ()
+                assert signals.shape == ()
             else:
-                assert signal_shape == (estimator.n_elements_,)
+                assert signals.shape == (estimator.n_elements_,)
 
             img = estimator.inverse_transform(signals)
             assert img.shape == (_make_surface_img().mesh.n_vertices,)
 
         else:
-            signal_shape = signals.shape
-
-            assert signal_shape == (n_sample, estimator.n_elements_)
+            assert signals.shape == (n_sample, estimator.n_elements_)
 
             img = estimator.inverse_transform(signals)
             assert img.shape == (_make_surface_img().mesh.n_vertices, n_sample)
@@ -3260,8 +3256,6 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
                 assert img.shape == (_make_surface_img().mesh.n_vertices, 1)
 
             elif n_sample == 0:
-                signal_shape = signals.shape
-
                 assert signals.size == estimator.n_elements_
 
                 # TODO We have some unexpected behavior from
@@ -3273,12 +3267,12 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
                     )
                     and n_dim_mask == 2
                 ):
-                    assert signal_shape == (1, estimator.n_elements_)
+                    assert signals.shape == (1, estimator.n_elements_)
 
                 elif estimator.n_elements_ == 1:
-                    assert signal_shape == ()
+                    assert signals.shape == ()
                 else:
-                    assert signal_shape == (estimator.n_elements_,)
+                    assert signals.shape == (estimator.n_elements_,)
 
                 img = estimator.inverse_transform(signals)
 
@@ -3296,9 +3290,7 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
                     assert img.shape == (_make_surface_img().mesh.n_vertices,)
 
             else:
-                signal_shape = signals.shape
-
-                assert signal_shape == (n_sample, estimator.n_elements_)
+                assert signals.shape == (n_sample, estimator.n_elements_)
 
                 img = estimator.inverse_transform(signals)
 
@@ -3329,11 +3321,10 @@ def check_nifti_masker_fit_transform(estimator):
 
     assert isinstance(signal, np.ndarray)
 
-    signal_shape = signal.shape
     if estimator.n_elements_ == 1:
-        assert signal_shape == ()
+        assert signal.shape == ()
     else:
-        assert signal_shape == (estimator.n_elements_,)
+        assert signal.shape == (estimator.n_elements_,)
 
     signal_2 = estimator.fit_transform(_img_3d_rand())
 
@@ -3347,14 +3338,12 @@ def check_nifti_masker_fit_transform(estimator):
         assert len(signal) == 2
         for x in signal:
             assert isinstance(x, np.ndarray)
-            ndim = x.ndim
-            signal_shape = x.shape
             if estimator.n_elements_ == 1:
-                assert ndim == 0
-                assert signal_shape == ()
+                assert x.ndim == 0
+                assert x.shape == ()
             else:
-                assert ndim == 1
-                assert signal_shape == (estimator.n_elements_,)
+                assert x.ndim == 1
+                assert x.shape == (estimator.n_elements_,)
     else:
         assert isinstance(signal, np.ndarray)
         assert signal.ndim == 2
