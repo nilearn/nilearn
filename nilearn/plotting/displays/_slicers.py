@@ -2298,7 +2298,6 @@ class MosaicSlicer(BaseSlicer):
                 f"You provided cut_coords={cut_coords}."
             )
 
-        # TODO if dict is allowed, check dict format
         return cut_coords
 
     @classmethod
