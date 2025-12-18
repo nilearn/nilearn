@@ -66,6 +66,7 @@ def test_plot_markers_node_sizes_lyrz_display(
         assert np.all(display_sizes == expected_sizes)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "cmap,vmin,vmax",
     [

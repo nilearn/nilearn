@@ -723,6 +723,7 @@ def test_plot_surf_stat_map_symmetric_cmap_plotly(
     )
 
 
+@pytest.mark.thread_unsafe
 def test_plot_surf_stat_map_symmetric_cmap_matplotlib(
     matplotlib_pyplot, in_memory_mesh, bg_map
 ):
