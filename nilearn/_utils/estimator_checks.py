@@ -3264,15 +3264,6 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
 
                 assert signals.size == estimator.n_elements_
 
-                if isinstance(estimator, (SurfaceLabelsMasker)):
-                    # TODO having a test where SurfaceLabelsMasker
-                    # with mask leads to have only 1 ROI
-                    # is a bit of an edge case
-                    # Should this be changed?
-                    # We should maybe also check what happens
-                    # to the surface maps masker with only 1 map.
-                    assert estimator.n_elements_ == 1
-
                 # TODO We have some unexpected behavior from
                 # SurfaceMapsMasker, SurfaceLabelsMasker
                 # This should be fixed (in a follow up PR).
@@ -3283,10 +3274,7 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
                     and n_dim_mask == 2
                 ):
                     assert signal_shape == (1, estimator.n_elements_)
-                elif isinstance(estimator, (SurfaceLabelsMasker)):
-                    # we probably get a scalar here because
-                    # the label masker has only 1 valid ROI.
-                    assert signal_shape == ()
+
                 elif estimator.n_elements_ == 1:
                     assert signal_shape == ()
                 else:

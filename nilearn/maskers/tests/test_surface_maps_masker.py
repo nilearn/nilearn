@@ -125,19 +125,55 @@ def test_surface_maps_masker_inverse_transform_actual_output(surf_mesh, rng):
     )
 
 
-def test_surface_maps_masker_1d_maps_img(surf_img_1d):
+def test_surface_maps_masker_1d_maps_img_error(surf_img_1d):
     """Test that an error is raised when maps_img has 1D data."""
-    with pytest.raises(
-        ValueError,
-        match="maps_img should be 2D",
-    ):
+    with pytest.raises(ValueError, match="maps_img should be 2D"):
         SurfaceMapsMasker(maps_img=surf_img_1d).fit()
 
 
-def test_surface_maps_masker_labels_img_none():
+def test_surface_maps_masker_labels_img_none_error():
     """Test that an error is raised when maps_img is None."""
     with pytest.raises(
         ValueError,
         match="provide a maps_img during initialization",
     ):
         SurfaceMapsMasker(maps_img=None).fit()
+
+
+def test_surface_maps_masker_empty_map_img_error(surf_mesh):
+    """Raise error if map_img is empty."""
+    maps_img = SurfaceImage(
+        mesh=surf_mesh,
+        data={
+            "left": np.asarray([[0, 0, 0, 0]]).T,
+            "right": np.asarray([[0, 0, 0, 0, 0]]).T,
+        },
+    )
+    with pytest.raises(
+        ValueError,
+        match="maps_img contains no map",
+    ):
+        SurfaceMapsMasker(maps_img=maps_img).fit()
+
+
+def test_surface_maps_masker_mask_img_masks_all_maps_error(surf_mesh):
+    """Raise error if mask_img excludes all vertices with map value."""
+    maps_img = SurfaceImage(
+        mesh=surf_mesh,
+        data={
+            "left": np.asarray([[0.5, 0.3, 0, 0]]).T,
+            "right": np.asarray([[0.6, 0.3, 0.7, 0, 0]]).T,
+        },
+    )
+    mask_img = SurfaceImage(
+        mesh=surf_mesh,
+        data={
+            "left": np.asarray([0, 0, 1, 1]),
+            "right": np.asarray([0, 0, 0, 1, 1]),
+        },
+    )
+    with pytest.raises(
+        ValueError,
+        match="maps_img has no map left after masking",
+    ):
+        SurfaceMapsMasker(maps_img=maps_img, mask_img=mask_img).fit()

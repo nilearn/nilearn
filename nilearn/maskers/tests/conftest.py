@@ -32,14 +32,14 @@ def sklearn_surf_label_img(n_regions: int = 2) -> SurfaceImage:
     """Create a sample surface label image using the sample mesh,
     just to use for scikit-learn and nilearn checks.
     """
-    if n_regions not in [1, 2, 3]:
+    if n_regions not in [1, 2]:
         raise ValueError(
-            f"'n_regions' must be one of [1, 2, 3]. Got {n_regions=}"
+            f"'n_regions' must be one of [1, 2]. Got {n_regions=}"
         )
 
     labels = {
-        "left": np.asarray([2, 3, 1, 1]),
-        "right": np.asarray([1, 1, 2, 2, 2]),
+        "left": np.asarray([1, 1, 1, 1]),
+        "right": np.asarray([2, 2, 2, 1, 1]),
     }
     labels["left"][labels["left"] > n_regions] = 0
     labels["right"][labels["right"] > n_regions] = 0
