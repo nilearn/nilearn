@@ -39,7 +39,7 @@ def sklearn_surf_label_img(n_regions: int = 2) -> SurfaceImage:
         "left": np.asarray([1, 1, 2, 2]),
         "right": np.asarray([1, 1, 2, 2, 2]),
     }
-    labels["left"] = labels["left"][labels["left"] <= n_regions]
-    labels["right"] = labels["right"][labels["left"] <= n_regions]
+    labels["left"][labels["left"] > n_regions] = 0
+    labels["right"][labels["right"] > n_regions] = 0
 
     return SurfaceImage(_make_mesh(), labels)
