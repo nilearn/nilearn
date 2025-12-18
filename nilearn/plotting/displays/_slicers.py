@@ -1752,6 +1752,9 @@ class BaseStackedSlicer(BaseSlicer):
 
     """
 
+    # This should be set by each inheriting Slicer
+    _direction: ClassVar[str] = ""
+
     @classmethod
     def find_cut_coords(
         cls,
