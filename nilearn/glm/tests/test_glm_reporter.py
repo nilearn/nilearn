@@ -217,6 +217,7 @@ def test_flm_reporting_no_contrasts(flm, tmp_path):
     )
 
 
+@pytest.mark.slow
 def test_flm_reporting_several_contrasts(flm, tmp_path, rk):
     """Test for model report can be generated with no contrasts."""
     c0 = np.zeros((1, rk))
@@ -237,7 +238,7 @@ def test_flm_reporting_several_contrasts(flm, tmp_path, rk):
 
 @pytest.mark.slow
 @pytest.mark.parametrize("height_control", ["fdr", "bonferroni", None])
-def test_flm_reporting_height_control(
+def test_generate_report_height_control(
     flm, height_control, contrasts, tmp_path
 ):
     """Test for first level model reporting.
@@ -263,6 +264,48 @@ def test_flm_reporting_height_control(
         warnings_msg_to_check=warnings_msg_to_check,
         extra_warnings_allowed=True,
     )
+
+
+def test_generate_report_error_height_control(flm):
+    """Raise error for invalid height_control."""
+    with pytest.raises(ValueError, match="must be one of"):
+        flm.generate_report(height_control="knights_of_ni")
+
+
+def test_generate_report_error_min_distance(flm):
+    """Raise error for invalid min_distance."""
+    with pytest.raises(ValueError, match="'min_distance' must be > 0"):
+        flm.generate_report(min_distance=-8)
+
+
+def test_generate_report_error_cluster_threshold(flm):
+    """Raise error for invalid cluster_threshold."""
+    with pytest.raises(ValueError, match="'cluster_threshold' must be > 0"):
+        flm.generate_report(cluster_threshold=-10)
+
+
+@pytest.mark.slow
+@pytest.mark.parametrize("display_mode", [None, "glass", "ortho"])
+def test_generate_report_error_plot_type(flm, contrasts, display_mode):
+    """Check errors when wrong plot type is requested."""
+    with pytest.raises(ValueError, match="'plot_type' must be one of"):
+        flm.generate_report(
+            contrasts=contrasts,
+            display_mode=display_mode,
+            plot_type="junk",
+        )
+
+
+@pytest.mark.slow
+def test_generate_report_warning_glass_cut_coords(flm, contrasts):
+    """Check cut_coords not used with glass brain."""
+    with pytest.warns(UserWarning, match="'cut_coords' was set to None"):
+        flm.generate_report(
+            contrasts=contrasts,
+            cut_coords=[1.0, 2.0, 3.0],
+            display_mode="z",
+            plot_type="glass",
+        )
 
 
 @pytest.mark.slow
@@ -357,23 +400,6 @@ def test_report_cut_coords(flm, plot_type, cut_coords, contrasts):
 
 
 @pytest.mark.slow
-def test_report_invalid_plot_type(flm, contrasts):
-    """Check errors when wrong plot type is requested."""
-    with pytest.raises(KeyError, match="junk"):
-        flm.generate_report(
-            contrasts=contrasts,
-            plot_type="junk",
-        )
-    if is_matplotlib_installed():
-        with pytest.raises(ValueError, match="'plot_type' must be one of"):
-            flm.generate_report(
-                contrasts=contrasts,
-                display_mode="glass",
-                plot_type="junk",
-            )
-
-
-@pytest.mark.slow
 def test_masking_first_level_model(contrasts):
     """Check that using NiftiMasker when instantiating FirstLevelModel \
        doesn't raise Error when calling generate_report().
@@ -395,7 +421,7 @@ def test_masking_first_level_model(contrasts):
         plot_type="glass",
         min_distance=15,
         alpha=0.01,
-        extra_warnings_allowed=True,
+        extra_warnings_allowed=False,
     )
 
 
@@ -485,10 +511,7 @@ def test_flm_generate_report_surface_data_error(
     with pytest.raises(
         TypeError, match="'bg_img' must a SurfaceImage instance"
     ):
-        model.generate_report(
-            "c0",
-            bg_img=img_3d_mni,
-        )
+        model.generate_report("c0", bg_img=img_3d_mni)
 
 
 @pytest.mark.slow
@@ -522,6 +545,7 @@ def test_carousel_several_runs(
     assert str(report).count('id="carousel-obj-') == len(shapes)
 
 
+@pytest.mark.slow
 def test_report_make_glm_deprecation_warning(flm, contrasts):
     """Test deprecation warning for nilearn.reporting.make_glm_report.
 
@@ -529,7 +553,4 @@ def test_report_make_glm_deprecation_warning(flm, contrasts):
     # remove
     """
     with pytest.warns(FutureWarning):
-        make_glm_report(
-            flm,
-            contrasts=contrasts,
-        )
+        make_glm_report(flm, contrasts=contrasts, height_control=None)
