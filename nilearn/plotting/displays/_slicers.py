@@ -176,9 +176,9 @@ class BaseSlicer:
         raise NotImplementedError()
 
     @classmethod
-    def _check_cut_coords(cls, cut_coords):
+    def _sanitize_cut_coords(cls, cut_coords):
         """Check if the specified ``cut_coords`` is compatible with this
-        slicer.
+        slicer and adjust its value if possible.
 
         Parameters
         ----------
@@ -1134,7 +1134,7 @@ class _ThreeDSlicer(BaseSlicer):
         """
         # checks if cut_coords is compatible with this slicer
         # and adjust value if necessary
-        cut_coords = cls._check_cut_coords(cut_coords)
+        cut_coords = cls._sanitize_cut_coords(cut_coords)
         if cut_coords is None:
             if img is None or img is False:
                 cut_coords = (0, 0, 0)
@@ -1157,10 +1157,10 @@ class _ThreeDSlicer(BaseSlicer):
         return len(cls._cut_displayed)
 
     @classmethod
-    def _check_cut_coords(cls, cut_coords):
+    def _sanitize_cut_coords(cls, cut_coords):
         """Check if the specified ``cut_coords`` is a list of world coordinates
         with number of elements equal to the number of directions of this
-        slicer.
+        slicer and return the specified value as it is.
 
         Parameters
         ----------
@@ -1269,7 +1269,7 @@ class OrthoSlicer(_ThreeDSlicer):
     _default_figsize: ClassVar[list[float]] = [2.2, 3.5]
 
     def _init_axes(self, **kwargs):
-        self.cut_coords = self._check_cut_coords(self.cut_coords)
+        self.cut_coords = self._sanitize_cut_coords(self.cut_coords)
         x0, y0, x1, y1 = self.rect
         facecolor = "k" if self._black_bg else "w"
         # Create our axes:
@@ -1502,7 +1502,7 @@ class TiledSlicer(_ThreeDSlicer):
             Additional arguments to pass to ``self._axes_class``.
 
         """
-        self.cut_coords = self._check_cut_coords(self.cut_coords)
+        self.cut_coords = self._sanitize_cut_coords(self.cut_coords)
         facecolor = "k" if self._black_bg else "w"
 
         self.axes = {}
@@ -1785,7 +1785,7 @@ class BaseStackedSlicer(BaseSlicer):
         """
         # checks if cut_coords is compatible with this slicer
         # and adjust value if necessary
-        cut_coords = cls._check_cut_coords(cut_coords)
+        cut_coords = cls._sanitize_cut_coords(cut_coords)
         if img is None or img is False:
             if isinstance(cut_coords, numbers.Number):
                 bounds = ((-40, 40), (-30, 30), (-30, 75))
@@ -1803,8 +1803,13 @@ class BaseStackedSlicer(BaseSlicer):
         return cut_coords
 
     @classmethod
-    def _check_cut_coords(cls, cut_coords):
-        """Check if the specified ``cut_coords`` is a list of 1D coordinates.
+    def _sanitize_cut_coords(cls, cut_coords):
+        """Check if the specified ``cut_coords`` is one of :obj:`tuple`,
+        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
+        the number of cuts of this slicer or a :class:`~number.Number` or
+        `None`.
+
+        If `None` is specified return the default value 7.
 
         Parameters
         ----------
@@ -1815,7 +1820,8 @@ class BaseStackedSlicer(BaseSlicer):
         ValueError
             If the specified ``cut_coords`` is not one of :obj:`tuple`,
         :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
-        the number of cuts of this slicer or a :class:`~number.Number` or None.
+        the number of cuts of this slicer or a :class:`~number.Number` or
+        `None`.
 
         """
         if cut_coords is None:
@@ -1875,7 +1881,7 @@ class BaseStackedSlicer(BaseSlicer):
         return coord_in
 
     def _init_axes(self, **kwargs):
-        self._check_cut_coords(self.cut_coords)
+        self._sanitize_cut_coords(self.cut_coords)
         x0, y0, x1, y1 = self.rect
         # Create our axes:
         self.axes = {}
@@ -2254,8 +2260,15 @@ class MosaicSlicer(BaseSlicer):
     _default_figsize: ClassVar[list[float]] = [4.0, 5.0]
 
     @classmethod
-    def _check_cut_coords(cls, cut_coords):
-        """Check if the specified ``cut_coords`` is a list of 1D coordinates.
+    def _sanitize_cut_coords(cls, cut_coords):
+        """Check if the specified ``cut_coords`` is one of :obj:`tuple`,
+        :obj:`list`, :class:`~numpy.ndarray` where number of elements equals to
+        the number of cuts of this slicer, or a :class:`~number.Number` or
+        None.
+
+        If `None` is specified return the default value [7, 7, 7].
+        If a :class:`number.Number` is specified return a list of 3 elements
+        with the specified number.
 
         Parameters
         ----------
@@ -2322,7 +2335,7 @@ class MosaicSlicer(BaseSlicer):
             Each key denotes the direction.
 
         """
-        cut_coords = cls._check_cut_coords(cut_coords)
+        cut_coords = cls._sanitize_cut_coords(cut_coords)
 
         coords = {}
         if img is None or img is False:
@@ -2356,7 +2369,7 @@ class MosaicSlicer(BaseSlicer):
             Additional arguments to pass to ``self._axes_class``.
 
         """
-        self.cut_coords = self._check_cut_coords(self.cut_coords)
+        self.cut_coords = self._sanitize_cut_coords(self.cut_coords)
         if not isinstance(self.cut_coords, dict):
             self.cut_coords = self.find_cut_coords(cut_coords=self.cut_coords)
 
