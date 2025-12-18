@@ -83,8 +83,6 @@ jobs:
                 pip install --upgrade pip
                 pip install asv
                 pip install nilearn
-        -   name: Download and cache nilearn data
-            run: python ../doc/get_data_examples.py full
         -   name: Add SSH key for benchmarks repo
             if: github.event_name != 'pull_request'
             env:
