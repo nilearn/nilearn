@@ -3152,19 +3152,23 @@ def check_surface_masker_list_surf_images_no_mask(estimator_orig):
             assert img.shape == (_make_surface_img().mesh.n_vertices, 1)
 
         elif n_sample == 0:
-            assert signals.shape == (estimator.n_elements_,)
+            signal_shape = signals.shape
+
+            if estimator.n_elements_ == 1:
+                assert signal_shape == ()
+            else:
+                assert signal_shape == (estimator.n_elements_,)
 
             img = estimator.inverse_transform(signals)
             assert img.shape == (_make_surface_img().mesh.n_vertices,)
 
         else:
-            assert signals.shape == (n_sample, estimator.n_elements_)
+            signal_shape = signals.shape
+
+            assert signal_shape == (n_sample, estimator.n_elements_)
 
             img = estimator.inverse_transform(signals)
-            assert img.shape == (
-                _make_surface_img().mesh.n_vertices,
-                n_sample,
-            )
+            assert img.shape == (_make_surface_img().mesh.n_vertices, n_sample)
 
     estimator = clone(estimator_orig)
 
@@ -3256,9 +3260,14 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
                 assert img.shape == (_make_surface_img().mesh.n_vertices, 1)
 
             elif n_sample == 0:
+                signal_shape = signals.shape
+
                 assert signals.size == estimator.n_elements_
 
                 if isinstance(estimator, (SurfaceLabelsMasker)):
+                    print(get_surface_data(estimator.mask_img_))
+                    n_elements_ = estimator.n_elements_
+                    print(n_elements_)
                     # TODO having a test where SurfaceLabelsMasker
                     # with mask leads to have only 1 ROI
                     # is a bit of an edge case
@@ -3276,13 +3285,15 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
                     )
                     and n_dim_mask == 2
                 ):
-                    assert signals.shape == (1, estimator.n_elements_)
+                    assert signal_shape == (1, estimator.n_elements_)
                 elif isinstance(estimator, (SurfaceLabelsMasker)):
                     # we probably get a scalar here because
                     # the label masker has only 1 valid ROI.
-                    assert signals.shape == ()
+                    assert signal_shape == ()
+                elif estimator.n_elements_ == 1:
+                    assert signal_shape == ()
                 else:
-                    assert signals.shape == (estimator.n_elements_,)
+                    assert signal_shape == (estimator.n_elements_,)
 
                 img = estimator.inverse_transform(signals)
 
@@ -3300,7 +3311,9 @@ def check_surface_masker_list_surf_images_with_mask(estimator_orig):
                     assert img.shape == (_make_surface_img().mesh.n_vertices,)
 
             else:
-                assert signals.shape == (n_sample, estimator.n_elements_)
+                signal_shape = signals.shape
+
+                assert signal_shape == (n_sample, estimator.n_elements_)
 
                 img = estimator.inverse_transform(signals)
 
