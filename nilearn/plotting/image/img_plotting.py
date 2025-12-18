@@ -53,10 +53,7 @@ from nilearn.plotting._utils import (
 )
 from nilearn.plotting.displays import get_projector, get_slicer
 from nilearn.plotting.displays._slicers import save_figure_if_needed
-from nilearn.plotting.image.utils import (
-    MNI152TEMPLATE,
-    load_anat,
-)
+from nilearn.plotting.image.utils import MNI152TEMPLATE, load_anat
 from nilearn.signal import clean
 
 

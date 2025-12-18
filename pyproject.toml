@@ -211,10 +211,7 @@ ignore_imports = [
     "nilearn.plotting.image.img_plotting -> nilearn.maskers",
     "nilearn.plotting.img_comparison -> nilearn._utils.masker_validation",
     "nilearn.plotting.img_comparison -> nilearn.maskers",
-    "nilearn.image.image -> nilearn._utils.masker_validation",
-    # TODO
-    "nilearn.reporting.get_clusters_table -> nilearn.image",
-    "nilearn.reporting.tests.test_get_clusters_table -> nilearn.image"
+    "nilearn.image.image -> nilearn._utils.masker_validation"
 ]
 layers = [
     "nilearn.glm",

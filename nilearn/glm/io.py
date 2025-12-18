@@ -14,9 +14,16 @@ from nilearn._utils.glm import coerce_to_dict
 from nilearn._utils.helpers import is_matplotlib_installed
 from nilearn._utils.logger import find_stack_level
 from nilearn._utils.param_validation import check_parameter_in_allowed
+from nilearn.glm._reporting_utils import (
+    check_generate_report_input,
+    sanitize_generate_report_input,
+)
 from nilearn.glm.thresholding import threshold_stats_img
+from nilearn.reporting.get_clusters_table import (
+    clustering_params_to_dataframe,
+    get_clusters_table,
+)
 from nilearn.reporting.html_report import MISSING_ENGINE_MSG
-from nilearn.surface import SurfaceImage
 
 
 def _generate_model_metadata(out_file, model):
@@ -196,11 +203,6 @@ def save_glm_to_bids(
     - Contrast weights figure (``contrast-[name]_design.svg``)
 
     """
-    from nilearn.reporting.get_clusters_table import (
-        clustering_params_to_dataframe,
-        get_clusters_table,
-    )
-
     # grab the default from generate_report()
     # fail early if invalid parameters to pass to generate_report()
     tmp = dict(**inspect.signature(model.generate_report).parameters)
@@ -209,6 +211,27 @@ def save_glm_to_bids(
     for key in kwargs:
         check_parameter_in_allowed(key, report_kwargs, "Extra key-word")
         report_kwargs[key] = kwargs[key]
+
+    check_generate_report_input(
+        report_kwargs["height_control"],
+        report_kwargs["cluster_threshold"],
+        report_kwargs["min_distance"],
+        report_kwargs["plot_type"],
+    )
+
+    (
+        report_kwargs["threshold"],
+        report_kwargs["cut_coords"],
+        first_level_contrast,
+        _,
+    ) = sanitize_generate_report_input(
+        report_kwargs["height_control"],
+        report_kwargs["threshold"],
+        report_kwargs["cut_coords"],
+        report_kwargs["plot_type"],
+        first_level_contrast=first_level_contrast,
+        is_first_level_glm=model._is_first_level_glm(),
+    )
 
     contrasts = coerce_to_dict(contrasts)
 
@@ -321,11 +344,6 @@ def save_glm_to_bids(
                         )
                     )
 
-        if isinstance(img, SurfaceImage):
-            # cluster computation is not implemented for surface data
-            # so we do not save any TSV or JSON to disk in this case.
-            continue
-
         thresholded_img, threshold = threshold_stats_img(
             stat_img=img,
             threshold=report_kwargs["threshold"],
@@ -334,7 +352,7 @@ def save_glm_to_bids(
             height_control=report_kwargs["height_control"],
         )
         table_details = clustering_params_to_dataframe(
-            report_kwargs["threshold"],
+            threshold,
             report_kwargs["cluster_threshold"],
             report_kwargs["min_distance"],
             report_kwargs["height_control"],
@@ -377,10 +395,18 @@ def save_glm_to_bids(
     # For surface GLM, we recompute the stats maps
     # as only the surface data but no mesh
     # was saved to disk.
-    if model._is_volume_glm():
-        glm_report = model.generate_report(**kwargs)
-    else:
-        glm_report = model.generate_report(contrasts=contrasts, **kwargs)
+    with warnings.catch_warnings():
+        # TODO (nilearn >= 0.15.0) remove
+        warnings.filterwarnings("ignore", category=FutureWarning)
+
+        if model._is_volume_glm():
+            warnings.filterwarnings(
+                "ignore",
+                message="No contrast passed during report generation.",
+            )
+            glm_report = model.generate_report(**kwargs)
+        else:
+            glm_report = model.generate_report(contrasts=contrasts, **kwargs)
 
     model.verbose += 1
     glm_report.save_as_html(out_dir / f"{prefix}report.html")
