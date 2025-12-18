@@ -12,7 +12,10 @@ from nilearn.conftest import _surf_maps_img
 from nilearn.maskers import SurfaceMapsMasker
 from nilearn.surface import SurfaceImage
 
-ESTIMATORS_TO_CHECK = [SurfaceMapsMasker(_surf_maps_img())]
+ESTIMATORS_TO_CHECK = [
+    SurfaceMapsMasker(_surf_maps_img()),
+    SurfaceMapsMasker(_surf_maps_img(n_regions=1)),
+]
 
 if SKLEARN_LT_1_6:
 

@@ -770,7 +770,7 @@ def surf_three_labels_img(surf_mesh):
     return SurfaceImage(surf_mesh, data)
 
 
-def _surf_maps_img():
+def _surf_maps_img(n_regions=6):
     """Return a sample surface map image using the sample mesh.
     Has 6 regions in total: 3 in both, 1 only in left and 2 only in right.
     Later we multiply the data with random "probability" values to make it
@@ -795,6 +795,11 @@ def _surf_maps_img():
             ]
         ),
     }
+    data["left"] = data["left"][..., 0:n_regions]
+    data["right"] = data["right"][..., 0:n_regions]
+
+    assert data["left"].shape == (4, n_regions)
+    assert data["right"].shape == (5, n_regions)
     # multiply with random "probability" values
     data = {
         part: data[part] * _rng().random(data[part].shape) for part in data
