@@ -191,6 +191,11 @@ def _get_labels_data(
         labels_diff = labels_before_mask.difference(labels_after_mask)
         # Raising a warning if any label is removed due to the mask
         if labels_diff and not keep_masked_labels:
+            if len(labels_after_mask) == 1:
+                raise ValueError(
+                    "No label left after applying mask to the labels image."
+                )
+
             warnings.warn(
                 "After applying mask to the labels image, "
                 "the following labels were "
