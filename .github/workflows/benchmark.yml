@@ -58,10 +58,17 @@ on:
     # This enables manual triggering from GitHub UI
     # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
     workflow_dispatch:
+        inputs:
+            simulate_schedule:
+                description: Set to "true" to simulate a scheduled (cron) run
+                required: false
+                default: 'false'
 
 jobs:
     benchmark:
-        if: github.event_name == 'pull_request' && github.repository == 'nilearn/nilearn'
+        if: >
+            (github.event_name == 'pull_request' && github.repository == 'nilearn/nilearn')
+            || (github.event_name == 'workflow_dispatch' && github.event.inputs.simulate_schedule == 'true')
         runs-on: ubuntu-24.04
         defaults:
             run:
