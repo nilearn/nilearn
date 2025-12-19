@@ -36,9 +36,6 @@
 name: Run and deploy Nilearn benchmarks
 
 on:
-    push:
-        branches:
-        -   main
     pull_request:
         branches:
         -   '*'
@@ -56,7 +53,7 @@ on:
         #     │ │ │ │ │
         #     │ │ │ │ │
         #     * * * * *
-    -   cron: 0 0 * * 1
+    -   cron: 50 12 * * 5
 
     # This enables manual triggering from GitHub UI
     # https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_dispatch
