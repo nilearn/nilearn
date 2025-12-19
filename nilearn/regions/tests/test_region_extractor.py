@@ -255,9 +255,13 @@ def test_connected_regions_no_regions(map_img_3d):
         two_sided=False,
         copy_header=True,
     )
-    _pos_regions_img, _pos_index = connected_regions(
-        pos_thresholded_img, min_region_size=1000
-    )
+    with pytest.warns(UserWarning, match="No supra threshold regions"):
+        pos_regions_img, pos_index = connected_regions(
+            pos_thresholded_img, min_region_size=1000
+        )
+
+        assert pos_regions_img is None
+        assert pos_index is None
 
 
 def test_invalid_threshold_strategies(dummy_map):
