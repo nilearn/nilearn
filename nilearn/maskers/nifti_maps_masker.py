@@ -496,10 +496,11 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if np.all(maps_data == 0):
             raise ValueError("maps_img contains no map.")
 
-        mask_data = get_data(self.mask_img_).astype(bool)
-        masked_maps_data = maps_data[mask_data, ...]
-        if np.all(masked_maps_data == 0):
-            raise ValueError("maps_img has no map left after masking.")
+        if self.mask_img_ is not None:
+            mask_data = get_data(self.mask_img_).astype(bool)
+            masked_maps_data = maps_data[mask_data, ...]
+            if np.all(masked_maps_data == 0):
+                raise ValueError("maps_img has no map left after masking.")
 
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:
