@@ -203,6 +203,7 @@ def test_stacked_slicer(slicer, img, tmp_path):
     slicer.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("slicer", [OrthoSlicer, TiledSlicer, MosaicSlicer])
 def test_slicer_save_to_file(slicer, img, tmp_path):
     """Tests for saving to file with Ortho/Tiled/Mosaic slicers."""

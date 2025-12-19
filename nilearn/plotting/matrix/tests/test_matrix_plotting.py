@@ -225,6 +225,7 @@ def test_show_event_plot(tmp_path):
     assert (tmp_path / "event.pdf").exists()
 
 
+@pytest.mark.thread_unsafe
 def test_plot_event_error():
     """Test plot_event error with cmap."""
     onset = np.linspace(0, 19.0, 20)

@@ -150,6 +150,7 @@ def test_plot_threshold_for_uint8(affine_eye, plot_func):
     plt.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize(
     "display_mode,cut_coords",
