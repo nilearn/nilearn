@@ -5,10 +5,11 @@ import contextlib
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
-from typing import Any
+from typing import Any, overload
 
 import numpy as np
 from joblib import Memory
+from nibabel import Nifti1Image
 from sklearn.base import (
     BaseEstimator,
     TransformerMixin,
@@ -376,7 +377,13 @@ class BaseMasker(
     def fit(self, imgs=None, y=None):
         """Present only to comply with sklearn estimators checks."""
 
-    def _load_mask(self, imgs):
+    @overload
+    def _load_mask(self, imgs: None) -> None: ...
+
+    @overload
+    def _load_mask(self, imgs: Nifti1Image) -> Nifti1Image: ...
+
+    def _load_mask(self, imgs) -> None | Nifti1Image:
         """Load and validate mask if one passed at init.
 
         Returns
@@ -393,8 +400,8 @@ class BaseMasker(
 
         # ensure that the mask_img_ is a 3D binary image
         tmp = check_niimg(self.mask_img, atleast_4d=True)
-        mask = safe_get_data(tmp, ensure_finite=True)
-        mask = mask.astype(bool).all(axis=3)
+        mask_data = safe_get_data(tmp, ensure_finite=True)
+        mask = mask_data.astype(bool).all(axis=3)
         mask_img_ = new_img_like(self.mask_img, mask)
 
         # Just check that the mask is valid
@@ -611,7 +618,13 @@ class _BaseSurfaceMasker(
                 f"Got: {imgs.__class__.__name__}"
             )
 
-    def _load_mask(self, imgs):
+    @overload
+    def _load_mask(self, imgs: None) -> None: ...
+
+    @overload
+    def _load_mask(self, imgs: SurfaceImage) -> SurfaceImage: ...
+
+    def _load_mask(self, imgs) -> None | SurfaceImage:
         """Load and validate mask if one passed at init.
 
         Returns

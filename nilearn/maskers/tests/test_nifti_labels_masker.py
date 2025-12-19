@@ -173,6 +173,26 @@ def test_nifti_labels_masker_no_label_errors(img_3d_zeros_eye):
         masker.fit()
 
 
+def test_nifti_labels_masker_mask_img_masks_all_labels_error(
+    affine_eye, shape_3d_default
+):
+    """Raise error if mask_img excludes all voxels with label value."""
+    mask = np.zeros(shape_3d_default)
+    mask[-1][-1][-1] = 1
+    mask_img = Nifti1Image(mask, affine_eye)
+
+    labels = np.zeros(shape_3d_default)
+    labels[0][0][0] = 2
+    labels_img = Nifti1Image(labels, affine_eye)
+
+    masker = NiftiLabelsMasker(labels_img, mask_img=mask_img)
+
+    with pytest.raises(
+        ValueError, match="Image has no label left after masking"
+    ):
+        masker.fit()
+
+
 def test_nifti_labels_masker_with_nans_and_infs(
     affine_eye, n_regions, length, img_labels, img_fmri
 ):

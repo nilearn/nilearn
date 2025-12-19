@@ -138,7 +138,7 @@ def test_nifti_maps_masker_empty_img_map_error(img_3d_zeros_eye):
         masker.fit()
 
 
-def test_nifit_maps_masker_mask_img_masks_all_maps_error(
+def test_nifti_maps_masker_mask_img_masks_all_maps_error(
     affine_eye, shape_3d_default
 ):
     """Raise error if mask_img excludes all voxels with map value."""
