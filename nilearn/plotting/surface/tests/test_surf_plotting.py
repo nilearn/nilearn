@@ -65,6 +65,7 @@ def test_check_surface_plotting_inputs_error_negative_threshold(
         fn(in_memory_mesh, threshold=-1)
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "fn",
     [

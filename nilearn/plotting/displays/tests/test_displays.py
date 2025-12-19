@@ -190,6 +190,7 @@ def test_display_basics_projectors(display, name, img, cut_coords):
     display.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "slicer", [XSlicer, YSlicer, ZSlicer, YXSlicer, YZSlicer, XZSlicer]
 )
