@@ -153,6 +153,7 @@ def _surface_mask_img():
     )
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize(
     "mask_img, img",

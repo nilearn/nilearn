@@ -257,6 +257,7 @@ def test_plot_event_error():
         plot_event(model_event, cmap="tab10")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("suffix, sep", [(".csv", ","), (".tsv", "\t")])
 def test_plot_event_path_tsv_csv(tmp_path, suffix, sep):
     """Test plot_events directly from file."""
@@ -308,6 +309,7 @@ def test_show_contrast_matrix_axes():
     assert "constrained" in fig.get_layout_engine().__class__.__name__.lower()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("cmap", ["RdBu_r", "bwr", "seismic_r"])
 def test_plot_design_matrix_correlation(cmap, tmp_path):
     """Smoke test for valid cmaps and output file."""
@@ -323,6 +325,7 @@ def test_plot_design_matrix_correlation(cmap, tmp_path):
     assert (tmp_path / "corr_mat.png").exists()
 
 
+@pytest.mark.thread_unsafe
 def test_plot_design_matrix_correlation_smoke_path(tmp_path):
     """Check that plot_design_matrix_correlation works with paths."""
     frame_times = np.linspace(0, 127 * 1.0, 128)
