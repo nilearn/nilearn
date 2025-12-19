@@ -174,6 +174,6 @@ def test_surface_maps_masker_mask_img_masks_all_maps_error(surf_mesh):
     )
     with pytest.raises(
         ValueError,
-        match="maps_img has no map left after masking",
+        match="No map left after applying mask to the maps image",
     ):
         SurfaceMapsMasker(maps_img=maps_img, mask_img=mask_img).fit()

@@ -250,7 +250,9 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
             mask_data = get_data(self.mask_img_).astype(bool)
             masked_map_data = maps_data[mask_data, ...]
             if np.all(masked_map_data == 0):
-                raise ValueError("maps_img has no map left after masking.")
+                raise ValueError(
+                    "No map left after applying mask to the maps image."
+                )
 
         self._report_content["reports_at_fit_time"] = self.reports
         # initialize reporting content and data

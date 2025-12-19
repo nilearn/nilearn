@@ -139,23 +139,65 @@ def test_nifti_maps_masker_empty_img_map_error(img_3d_zeros_eye):
 
 
 def test_nifti_maps_masker_mask_img_masks_all_maps_error(
-    affine_eye, shape_3d_default
+    affine_eye, shape_3d_default, img_4d_rand_eye
 ):
-    """Raise error if mask_img excludes all voxels with map value."""
+    """Raise error if mask_img excludes all voxels with map value.
+
+    For resampling target is
+    - "maps" or "mask": raise error at fit time whether img is passed or not
+    - "data":
+      - When no data is passed at fit time
+        we cannot know for sure if the mask will include any label
+      - When data is passed at fit time
+        we can raise an error
+
+    """
     mask = np.zeros(shape_3d_default)
     mask[-1][-1][-1] = 1
     mask_img = Nifti1Image(mask, affine_eye)
 
-    maps = np.zeros((*shape_3d_default, 1))
+    # generate label image with slightly different field of view
+    # to force resampling
+    maps = np.zeros((*tuple(x + 1 for x in shape_3d_default), 1))
     maps[0][0][0][0] = 0.5
     maps_img = Nifti1Image(maps, affine_eye)
+
+    for resampling_target in ["mask", "maps"]:
+        masker = NiftiMapsMasker(
+            maps_img, mask_img=mask_img, resampling_target=resampling_target
+        )
+
+        with pytest.raises(
+            ValueError,
+            match="No map left after applying mask to the maps image",
+        ):
+            masker.fit()
+
+        with pytest.raises(
+            ValueError,
+            match="No map left after applying mask to the maps image",
+        ):
+            masker.fit(img_4d_rand_eye)
+
+    # by default we resample to data
+    # in this case if no img is passed at fit time
+    # we cannot know for sure if the mask will include any map
+    # but we can know this if some image is passed at fit time
+    # or we can for sure know it at transform time
 
     masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
 
     with pytest.raises(
-        ValueError, match="maps_img has no map left after masking"
+        ValueError, match="No map left after applying mask to the maps image"
     ):
-        masker.fit()
+        masker.fit(img_4d_rand_eye)
+
+    masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
+    masker.fit()
+    with pytest.raises(
+        ValueError, match="No map left after applying mask to the maps image"
+    ):
+        masker.transform(img_4d_rand_eye)
 
 
 @pytest.mark.parametrize("create_files", (True, False))
