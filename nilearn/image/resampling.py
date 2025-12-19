@@ -163,7 +163,7 @@ def coord_transform(x, y, z, affine):
     return np.reshape(x, shape), np.reshape(y, shape), np.reshape(z, shape)
 
 
-def get_bounds(shape, affine):
+def get_bounds(shape, affine) -> list[tuple[np.float64, np.float64]]:
     """Return the world-space bounds occupied by an array given an affine.
 
     The coordinates returned correspond to the **center** of the corner voxels.

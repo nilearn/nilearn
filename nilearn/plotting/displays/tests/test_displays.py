@@ -255,14 +255,13 @@ def test_mosaic_slicer_img_none_false(cut_coords, img):
 def test_mosaic_slicer_wrong_inputs(cut_coords):
     """Tests that providing wrong inputs raises a ``ValueError``."""
     with pytest.raises(
-        ValueError,
-        match=(
-            r"The number cut_coords passed does not "
-            r"match the display_mode. Mosaic plotting "
-            r"expects tuple of length 3."
-        ),
+        ValueError, match="MosaicSlicer plotting expects a number, list"
     ):
         MosaicSlicer.init_with_figure(img=None, cut_coords=cut_coords)
+
+    with pytest.raises(
+        ValueError, match="MosaicSlicer plotting expects a number, list"
+    ):
         MosaicSlicer(img=None, cut_coords=cut_coords)
 
 
@@ -505,3 +504,118 @@ def test_display_projectors_transparency_warning(
     with pytest.warns(UserWarning, match="Setting it to"):
         display.add_overlay(img, cmap=plt.cm.gray, transparency=transparency)
     display.title(f"display mode is {name}")
+
+
+@pytest.mark.parametrize(
+    "slicer, cut_coords",
+    [
+        (XSlicer, [7]),
+        (XSlicer, (7, 8)),  # also checking with tuples
+        (YSlicer, [8]),
+        (YSlicer, np.asarray((8, 9))),  # also checking with array
+        (ZSlicer, [9]),
+        (ZSlicer, (9, 10)),
+        (XZSlicer, [7, 9]),
+        (YZSlicer, [8, 9]),
+        (YXSlicer, [7, 8]),
+        (OrthoSlicer, [7, 8, 9]),
+        (TiledSlicer, [7, 8, 9]),
+    ],
+)
+def test_check_cut_coords_in_bounds_error(img_3d_rand_eye, slicer, cut_coords):
+    """Test if nilearn.plotting.displays._slicers._check_cut_coords_in_bounds
+    raises error when all elements of cut_coords are out of bounds of the
+    image for corresponding coordinate.
+    """
+    # img_3d_rand_eye has bounds (x, y, z):
+    # [(0.0, 6.0), (0.0, 7.0), (0.0, 8.0)]
+    with pytest.raises(ValueError, match="is out of the bounds of the image"):
+        slicer._check_cut_coords_in_bounds(img_3d_rand_eye, cut_coords)
+
+
+@pytest.mark.parametrize(
+    "slicer, cut_coords",
+    [
+        (XSlicer, [7, 6]),
+        (XSlicer, [6, 7, 8]),
+        (YSlicer, [7, 8]),
+        (YSlicer, [6, 8, 9]),
+        (ZSlicer, [8, 9]),
+        (ZSlicer, [9, 10, 8]),
+        (XZSlicer, [6, 9]),
+        (XZSlicer, [7, 8]),
+        (YZSlicer, [7, 9]),
+        (YZSlicer, [8, 7]),
+        (YXSlicer, [6, 8]),
+        (YXSlicer, [8, 7]),
+        (OrthoSlicer, [6, 8, 9]),
+        (OrthoSlicer, [9, 7, 10]),
+        (OrthoSlicer, [7, 8, 5]),
+        (TiledSlicer, [6, 7, 9]),
+        (TiledSlicer, [6, 9, 8]),
+        (TiledSlicer, [9, 7, 8]),
+    ],
+)
+def test_slicer_cut_coords_out_of_bounds_warning(
+    img_3d_rand_eye, slicer, cut_coords
+):
+    """Test if nilearn.plotting.displays._slicers._check_cut_coords_in_bounds
+    warns when at least one but not all of the elements of cut_coords is out of
+    bounds of the image for corresponding coordinate.
+    """
+    # img_3d_rand_eye has bounds:
+    # [(0.0, 6.0), (0.0, 7.0), (0.0, 8.0)]
+    with pytest.warns(
+        UserWarning,
+        match=("seem to be out of the image bounds"),
+    ):
+        slicer._check_cut_coords_in_bounds(img_3d_rand_eye, cut_coords)
+
+
+@pytest.mark.parametrize(
+    "slicer, cut_coords, expected_cut_coords",
+    [
+        (XSlicer, None, 7),
+        (XSlicer, 5, 5),
+        (YSlicer, [6, 6], [6]),
+        (YSlicer, [6, 6, 7], [6, 7]),
+        (ZSlicer, [7, 8, 9], [7, 8, 9]),
+        (XZSlicer, [6, 9], [6, 9]),
+        (YZSlicer, None, None),
+        (YXSlicer, (8, 7), (8, 7)),
+        (OrthoSlicer, [6, 8, 9], [6, 8, 9]),
+        (TiledSlicer, None, None),
+        (TiledSlicer, (9, 7, 8), (9, 7, 8)),
+        (MosaicSlicer, None, [7, 7, 7]),
+        (MosaicSlicer, 5, [5, 5, 5]),
+        (MosaicSlicer, (9, 7, 8), (9, 7, 8)),
+    ],
+)
+def test_slicer_sanitize_cut_coords(slicer, cut_coords, expected_cut_coords):
+    """Test _sanitize_cut_cooords method for each slicer class in
+    nilearn.plotting.displays._slicers for valid inputs.
+    """
+    assert expected_cut_coords == slicer._sanitize_cut_coords(cut_coords)
+
+
+@pytest.mark.parametrize(
+    "slicer, cut_coords",
+    [
+        (XSlicer, {}),
+        (XZSlicer, [7, 8, 9]),
+        (YZSlicer, (8, 7, 5)),
+        (YXSlicer, 5),
+        (OrthoSlicer, (6, 8)),
+        (OrthoSlicer, 5),
+        (TiledSlicer, [9, 7, 8, 9]),
+        (TiledSlicer, np.asarray([9])),
+        (MosaicSlicer, (2, 3)),
+        (MosaicSlicer, [2, 3, 4, 5]),
+    ],
+)
+def test_slicer_sanitize_cut_coords_error(slicer, cut_coords):
+    """Test _sanitize_cut_cooords method for each slicer class in
+    nilearn.plotting.displays._slicers for errors.
+    """
+    with pytest.raises(ValueError, match="cut_coords passed does not match"):
+        slicer._sanitize_cut_coords(cut_coords)
