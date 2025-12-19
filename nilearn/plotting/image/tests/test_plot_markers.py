@@ -41,6 +41,7 @@ def test_plot_markers_node_sizes(matplotlib_pyplot, node_size, coords):
     plot_markers([1, 2, 3, 4], coords, node_size=node_size, display_mode="x")
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize(
     "node_size", [[10] * 4, [10, 20, 30, 40], np.array([10, 20, 30, 40])]
 )
