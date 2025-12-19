@@ -429,9 +429,6 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             ensure_finite=True,
         )
 
-        if np.all(get_data(self.maps_img_)) == 0:
-            raise ValueError("maps_img contains no map.")
-
         if imgs is not None:
             imgs_ = check_niimg(imgs)
 
@@ -494,6 +491,15 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
                 # Just check that the mask is valid
                 load_mask_img(self.mask_img_)
+
+        maps_data = get_data(self.maps_img_)
+        if np.all(maps_data == 0):
+            raise ValueError("maps_img contains no map.")
+
+        mask_data = get_data(self.mask_img_).astype(bool)
+        masked_map_data = maps_data[mask_data, ...]
+        if np.all(masked_map_data == 0):
+            raise ValueError("maps_img has no map left after masking.")
 
         self._report_content["reports_at_fit_time"] = self.reports
         if self.reports:

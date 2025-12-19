@@ -125,16 +125,36 @@ def test_nifti_maps_masker_fit(n_regions, img_maps):
 
 
 def test_nifti_maps_masker_error():
-    """Check fitting errors."""
+    """Raise error when fitting with no map image."""
     masker = NiftiMapsMasker()
     with pytest.raises(TypeError, match="input should be a NiftiLike object"):
         masker.fit()
 
 
 def test_nifti_maps_masker_empty_img_map_error(img_3d_zeros_eye):
-    """Check fitting errors."""
+    """Raise error when image maps is empty."""
     masker = NiftiMapsMasker(img_3d_zeros_eye)
     with pytest.raises(ValueError, match="maps_img contains no map"):
+        masker.fit()
+
+
+def test_nifit_maps_masker_mask_img_masks_all_maps_error(
+    affine_eye, shape_3d_default
+):
+    """Raise error if mask_img excludes all voxels with map value."""
+    mask = np.zeros(shape_3d_default)
+    mask[-1][-1][-1] = 1
+    mask_img = Nifti1Image(mask, affine_eye)
+
+    maps = np.zeros((*shape_3d_default, 1))
+    maps[0][0][0][0] = 0.5
+    maps_img = Nifti1Image(maps, affine_eye)
+
+    masker = NiftiMapsMasker(maps_img, mask_img=mask_img)
+
+    with pytest.raises(
+        ValueError, match="maps_img has no map left after masking"
+    ):
         masker.fit()
 
 

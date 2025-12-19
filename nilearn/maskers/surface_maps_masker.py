@@ -247,7 +247,7 @@ class SurfaceMapsMasker(ClassNamePrefixFeaturesOutMixin, _BaseSurfaceMasker):
         if self.mask_img_ is not None:
             check_polymesh_equal(self.maps_img.mesh, self.mask_img_.mesh)
 
-            mask_data = get_data(self.mask_img_)
+            mask_data = get_data(self.mask_img_).astype(bool)
             masked_map_data = maps_data[mask_data, ...]
             if np.all(masked_map_data == 0):
                 raise ValueError("maps_img has no map left after masking.")
