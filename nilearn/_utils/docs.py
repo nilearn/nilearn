@@ -301,28 +301,31 @@ copy_header : :obj:`bool`, default=True
 
 # cut_coords
 docdict["cut_coords"] = """
-cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
-    The MNI coordinates of the point where the cut is performed.
+cut_coords : None, allowed types depend on the ``display_mode``, optional
+    The world coordinates of the point where the cut is performed.
 
-    - If `display_mode` is `'ortho'` or `'tiled'`, this should
-      be a 3-tuple: `(x, y, z)`
+    - If ``display_mode`` is ``'ortho'`` or ``'tiled'``,
+      this must be a 3 :obj:`tuple`
+      of :obj:`float` or :obj:`int`: ``(x, y, z)``.
 
-    - For `display_mode == "x"`, "y", or "z", then these are
-      the coordinates of each cut in the corresponding direction.
+    - If ``display_mode`` is ``"x"``, ``"y"``, or ``"z"``
+      this can be:
 
-    - If `None` is given, the cuts are calculated automatically.
+      - an array-like of :obj:`float` or :obj:`int`
+        representing the coordinates of each cut
+        in the corresponding direction,
 
-    - If `display_mode` is 'mosaic', and the number of cuts is the same
-      for all directions, `cut_coords` can be specified as an integer.
-      It can also be a length 3 :obj:`tuple`
+      - an :obj:`int`
+        in which case it specifies the number of cuts to perform.
+
+    - If ``None`` is given, the cuts are calculated automatically.
+
+    - If ``display_mode`` is ``'mosaic'``, and the number of cuts is the same
+      for all directions, ``cut_coords`` can be specified as an :obj:`int`.
+      It can also be a length 3 :obj:`tuple` of  :obj:`int`
       specifying the number of cuts for
       every direction if these are different.
 
-    .. note::
-
-        If `display_mode` is "x", "y" or "z",
-        `cut_coords` can be an integer,
-        in which case it specifies the number of cuts to perform.
 
 """
 

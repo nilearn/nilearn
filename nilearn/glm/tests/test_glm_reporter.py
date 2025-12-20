@@ -314,12 +314,15 @@ def test_slm_reporting_method(slm, height_control):
     """Test for the second level reporting."""
     c1 = np.eye(len(slm.design_matrix_.columns))[0]
 
+    extra_warnings_allowed = False
+    if height_control is None:
+        extra_warnings_allowed = True
     generate_and_check_glm_report(
         slm,
         contrasts=c1,
         height_control=height_control,
         alpha=0.01,
-        extra_warnings_allowed=True,
+        extra_warnings_allowed=extra_warnings_allowed,
     )
 
 

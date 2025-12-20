@@ -95,6 +95,26 @@ def test_plot_functions_mosaic_mode(plot_func, cut_coords, img_3d_rand_eye):
     plt.close()
 
 
+@pytest.mark.parametrize("display_mode", ["x", "y", "z"])
+def test_plot_functions_same_cut(display_mode, img_3d_rand_eye, tmp_path):
+    """Make sure that passing several times the same cut for stacked slicers
+       does not crash.
+
+    Should also throw a warning that a cut has been removed.
+
+    Regression test for:
+    https://github.com/nilearn/nilearn/issues/5903
+    """
+    with pytest.warns(UserWarning, match="Dropping duplicates cuts from"):
+        display = plot_img(
+            img_3d_rand_eye,
+            display_mode=display_mode,
+            cut_coords=[3, 3],
+        )
+        display.savefig(tmp_path / "tmp.png")
+        plt.close()
+
+
 @pytest.mark.slow
 @pytest.mark.parametrize("plot_func", [plot_stat_map, plot_glass_brain])
 def test_plot_threshold_for_uint8(affine_eye, plot_func):
@@ -129,21 +149,6 @@ def test_plot_threshold_for_uint8(affine_eye, plot_func):
     plt.close()
 
 
-@pytest.fixture
-def expected_error_message(display_mode, cut_coords):
-    """Return the expected error message depending on display_mode \
-       and cut_coords. Used in test_invalid_cut_coords_with_display_mode.
-    """
-    if display_mode == "ortho" or (
-        display_mode == "tiled" and cut_coords == 2
-    ):
-        return (
-            f"The input given for display_mode='{display_mode}' needs to "
-            "be a list of 3d world coordinates."
-        )
-    return "The number cut_coords passed does not match the display_mode"
-
-
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 @pytest.mark.parametrize(
     "display_mode,cut_coords",
@@ -154,12 +159,13 @@ def test_invalid_cut_coords_with_display_mode(
     display_mode,
     cut_coords,
     img_3d_mni,
-    expected_error_message,
 ):
     """Tests for invalid combinations of cut_coords and display_mode."""
-    if plot_func is plot_glass_brain and display_mode != "ortho":
+    if plot_func is plot_glass_brain:
         return
-    with pytest.raises(ValueError, match=expected_error_message):
+    with pytest.raises(
+        ValueError, match="cut_coords passed does not match the display mode"
+    ):
         plot_func(
             img_3d_mni,
             display_mode=display_mode,
