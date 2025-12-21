@@ -95,7 +95,7 @@ Fixes
 
 Enhancements
 ------------
-- :bdg-dark:`Code` Added `screening_n_voxels` parameter to :class:`~nilearn.decoding.Decoder` and :class:`~nilearn.decoding.DecoderRegressor` to allow selecting a fixed number of features.
+- :bdg-dark:``Code`` Added ``screening_n_voxels`` parameter to :class:``~nilearn.decoding.Decoder`` and :class:``~nilearn.decoding.DecoderRegressor``
 
 - :bdg-dark:`Code` Move SurfaceImage and associated classes from experimental to :mod:`~nilearn.surface` (:gh:`4723` by `Rémi Gau`_).
 

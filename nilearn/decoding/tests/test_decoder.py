@@ -17,9 +17,6 @@ import numbers
 import warnings
 
 import nibabel as nib
-from sklearn.feature_selection import SelectKBest, SelectPercentile
-
-from nilearn.decoding._utils import check_feature_screening
 import numpy as np
 import pytest
 from nibabel import save
@@ -28,6 +25,7 @@ from sklearn import clone
 from sklearn.datasets import load_iris, make_classification, make_regression
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.feature_selection import SelectKBest, SelectPercentile
 from sklearn.linear_model import (
     LassoCV,
     LogisticRegressionCV,
@@ -1547,7 +1545,6 @@ def test_regressor_vs_sklearn(
 
 def test_screening_priority_logic():
     # Test that check_feature_screening prefers percentile over n_voxels
-
 
     # 1. Create a simple dummy mask
     mask = nib.Nifti1Image(np.zeros((10, 10, 10)), np.eye(4))
